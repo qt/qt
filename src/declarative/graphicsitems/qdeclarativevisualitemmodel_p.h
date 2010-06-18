@@ -54,11 +54,6 @@ Q_DECLARE_METATYPE(QModelIndex)
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-/*****************************************************************************
- *****************************************************************************
- XXX Experimental
- *****************************************************************************
-*****************************************************************************/
 
 class QDeclarativeItem;
 class QDeclarativeComponent;
@@ -72,7 +67,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeVisualModel : public QObject
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    QDeclarativeVisualModel() {}
+    QDeclarativeVisualModel(QObject *parent=0) : QObject(parent) {}
     virtual ~QDeclarativeVisualModel() {}
 
     enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
@@ -117,7 +112,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeVisualItemModel : public QDeclarativeVisu
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
-    QDeclarativeVisualItemModel();
+    QDeclarativeVisualItemModel(QObject *parent=0);
     virtual ~QDeclarativeVisualItemModel() {}
 
     virtual int count() const;
@@ -156,7 +151,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeVisualDataModel : public QDeclarativeVisu
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
     QDeclarativeVisualDataModel();
-    QDeclarativeVisualDataModel(QDeclarativeContext *);
+    QDeclarativeVisualDataModel(QDeclarativeContext *, QObject *parent=0);
     virtual ~QDeclarativeVisualDataModel();
 
     QVariant model() const;

@@ -133,6 +133,7 @@ private:
     QStringList qmakeIncludes;
     QStringList qmakeLibs;
     QString opensslLibs;
+    QString psqlLibs;
 
     QMap<QString,QString> licenseInfo;
     QString outputLine;
@@ -147,7 +148,8 @@ private:
     int outputWidth;
 
     bool useUnixSeparators;
-    QString fixSeparators(QString somePath);
+    QString fixSeparators(const QString &somePath, bool escape = false);
+    QString escapeSeparators(const QString &somePath);
     bool filesDiffer(const QString &file1, const QString &file2);
 
     bool findFile(const QString &fileName);

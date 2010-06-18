@@ -189,7 +189,7 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::onMessage(QScriptContext *ct
     if (!script)
         return engine->undefinedValue();
 
-    if (ctxt->argumentCount() >= 1)
+    if (ctxt->argumentCount() >= 1) 
         script->callback = ctxt->argument(0);
 
     return script->callback;
@@ -277,10 +277,10 @@ void QDeclarativeWorkerScriptEnginePrivate::processMessage(int id, const QVarian
 
 void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 {
-    if (url.isRelative() || url.scheme() != QLatin1String("file"))
+    if (url.isRelative())
         return;
 
-    QString fileName = url.toLocalFile();
+    QString fileName = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
 
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly)) {
@@ -289,8 +289,13 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
 
         QScriptValue activation = getWorker(id);
 
-        QScriptContext *ctxt = workerEngine->pushContext();
+        QScriptContext *ctxt = QScriptDeclarativeClass::pushCleanContext(workerEngine);
+        QScriptValue urlContext = workerEngine->newObject();
+        urlContext.setData(QScriptValue(workerEngine, fileName));
+        ctxt->pushScope(urlContext);
+        ctxt->pushScope(activation);
         ctxt->setActivationObject(activation);
+        QDeclarativeScriptParser::extractPragmas(script);
 
         workerEngine->baseUrl = url;
         workerEngine->evaluate(script);
@@ -516,14 +521,14 @@ void QDeclarativeWorkerScriptEngine::run()
     that the main GUI thread is not blocked.
 
     Messages can be passed between the new thread and the parent thread
-    using sendMessage() and the onMessage() handler.
+    using \l sendMessage() and the \l {WorkerScript::onMessage}{onMessage()} handler.
 
-    Here is an example:
+    An example:
 
     \snippet doc/src/snippets/declarative/workerscript.qml 0
 
     The above worker script specifies a javascript file, "script.js", that handles
-    the operations to be performed in the new thread:
+    the operations to be performed in the new thread. Here is \c script.js:
 
     \qml
     WorkerScript.onMessage = function(message) {
@@ -534,11 +539,14 @@ void QDeclarativeWorkerScriptEngine::run()
 
     When the user clicks anywhere within the rectangle, \c sendMessage() is
     called, triggering the \tt WorkerScript.onMessage() handler in
-    \tt source.js. This in turn sends a reply message that is then received
+    \tt script.js. This in turn sends a reply message that is then received
     by the \tt onMessage() handler of \tt myWorker.
+
+    \sa {declarative/threading/workerscript}{WorkerScript example},
+        {declarative/threading/threadedlistmodel}{Threaded ListModel example}
 */
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)
-: QObject(parent), m_engine(0), m_scriptId(-1)
+: QObject(parent), m_engine(0), m_scriptId(-1), m_componentComplete(true)
 {
 }
 
@@ -550,7 +558,7 @@ QDeclarativeWorkerScript::~QDeclarativeWorkerScript()
 /*!
     \qmlproperty url WorkerScript::source
 
-    This holds the url of the javascript file that implements the
+    This holds the url of the JavaScript file that implements the
     \tt WorkerScript.onMessage() handler for threaded operations.
 */
 QUrl QDeclarativeWorkerScript::source() const
@@ -565,13 +573,13 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
 
     m_source = source;
 
-    if (m_engine)
+    if (engine())
         m_engine->executeUrl(m_scriptId, m_source);
 
     emit sourceChanged();
 }
 
-/*
+/*!
     \qmlmethod WorkerScript::sendMessage(jsobject message)
 
     Sends the given \a message to a worker script handler in another
@@ -580,7 +588,7 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
 */
 void QDeclarativeWorkerScript::sendMessage(const QScriptValue &message)
 {
-    if (!m_engine) {
+    if (!engine()) {
         qWarning("QDeclarativeWorkerScript: Attempt to send message before WorkerScript establishment");
         return;
     }
@@ -588,13 +596,19 @@ void QDeclarativeWorkerScript::sendMessage(const QScriptValue &message)
     m_engine->sendMessage(m_scriptId, QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(message));
 }
 
-void QDeclarativeWorkerScript::componentComplete()
+void QDeclarativeWorkerScript::classBegin()
 {
-    if (!m_engine) {
+    m_componentComplete = false;
+}
+
+QDeclarativeWorkerScriptEngine *QDeclarativeWorkerScript::engine()
+{
+    if (m_engine) return m_engine;
+    if (m_componentComplete) {
         QDeclarativeEngine *engine = qmlEngine(this);
         if (!engine) {
-            qWarning("QDeclarativeWorkerScript: componentComplete() called without qmlEngine() set");
-            return;
+            qWarning("QDeclarativeWorkerScript: engine() called without qmlEngine() set");
+            return 0;
         }
 
         m_engine = QDeclarativeEnginePrivate::get(engine)->getWorkerScriptEngine();
@@ -602,7 +616,16 @@ void QDeclarativeWorkerScript::componentComplete()
 
         if (m_source.isValid())
             m_engine->executeUrl(m_scriptId, m_source);
+
+        return m_engine;
     }
+    return 0;
+}
+
+void QDeclarativeWorkerScript::componentComplete()
+{
+    m_componentComplete = true;
+    engine(); // Get it started now.
 }
 
 /*!

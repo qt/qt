@@ -105,15 +105,19 @@ is the \l SystemPalette item. This provides access to the Qt system palette
 and is used to give the button a more native look-and-feel.
 
 Notice the anchors for the \c Item, \c Button and \c Text elements are set using
-\l {codingconventions.html#Grouped-properties}{group notation} for readability.
+\l {qdeclarativeintroduction.html#dot-properties}{group notation} for readability.
 
 \section2 Adding \c Button and \c Block components
 
-The \c Button item in the code above is defined in a separate file named \c Button.qml.
+The \c Button item in the code above is defined in a separate component file named \c Button.qml.
 To create a functional button, we use the QML elements \l Text and \l MouseArea inside a \l Rectangle.
 Here is the \c Button.qml code:
 
 \snippet declarative/tutorials/samegame/samegame1/Button.qml 0
+
+This essentially defines a rectangle that contains text and can be clicked. The \l MouseArea
+has an \c onClicked() handler that is implemented to emit the \c clicked() signal of the
+\c container when the area is clicked.
 
 In Same Game, the screen is filled with small blocks when the game begins.
 Each block is just an item that contains an image. The block
@@ -174,7 +178,7 @@ The \c createBlock() function creates a block from the \c Block.qml file
 and moves the new block to its position on the game canvas. This involves several steps:
 
 \list
-\o \l {createComponent(url file)}{createComponent()} is called to generate an element from \c Block.qml.
+\o \l {Qt::createComponent()}{Qt.createComponent()} is called to generate an element from \c Block.qml.
    If the component is ready, we can call \c createObject() to create an instance of the \c Block item.
 \o If \c createObject() returned null (i.e. if there was an error while
    loading the object), print the error information.
@@ -226,14 +230,14 @@ until it is won or lost.
 To do this, we have added the following functions to \c samegame.js:
 
 \list
-\o function \c{handleClick(x,y)}
-\o function \c{floodFill(xIdx,yIdx,type)}
-\o function \c{shuffleDown()}
-\o function \c{victoryCheck()}
-\o function \c{floodMoveCheck(xIdx, yIdx, type)}
+\o \c{handleClick(x,y)}
+\o \c{floodFill(xIdx,yIdx,type)}
+\o \c{shuffleDown()}
+\o \c{victoryCheck()}
+\o \c{floodMoveCheck(xIdx, yIdx, type)}
 \endlist
 
-As this is a tutorial about QML, not game design, we will only discuss \c handleClick() and \c victoryCheck() below since they interface directly with the QML elements. Note that although the game logic here is written in JavaScript, it could have been written in C++ and then exposed to JavaScript. 
+As this is a tutorial about QML, not game design, we will only discuss \c handleClick() and \c victoryCheck() below since they interface directly with the QML elements. Note that although the game logic here is written in JavaScript, it could have been written in C++ and then exposed to QML. 
 
 \section3 Enabling mouse click interaction
 
@@ -268,6 +272,8 @@ The Game Over dialog is created using a \c Dialog element that is defined in \c 
 And this is how it is used in the main \c samegame.qml file:
 
 \snippet declarative/tutorials/samegame/samegame3/samegame.qml 2
+
+We give the dialog a \l {Item::z}{z} value of 100 to ensure it is displayed on top of our other components. The default \c z value for an item is 0.
 
 
 \section3 A dash of color
@@ -383,14 +389,40 @@ The theme change here is produced simply by replacing the block images. This can
 
 Another feature we might want to add to the game is a method of storing and retrieving high scores.
 
-In \c samegame.qml we now pop up a dialog when the game is over and requests the player's name so it can be added to a High Scores table. The dialog is created using \c Dialog.qml:
+To do this, we will show a dialog when the game is over to request the player's name and add it to a High Scores table.
+This requires a few changes to \c Dialog.qml. In addition to a \c Text element, it now has a
+\c TextInput child item for receiving keyboard text input:
+
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 0
+\dots 4
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 2
+\dots 4
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 3
+
+We'll also add a \c showWithInput() function. The text input will only be visible if this function
+is called instead of \c show(). When the dialog is closed, it emits a \c closed() signal, and
+other elements can retrieve the text entered by the user through an \c inputText property:
+
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 0
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 1
+\dots 4
+\snippet declarative/tutorials/samegame/samegame4/content/Dialog.qml 3
+
+Now the dialog can be used in \c samegame.qml:
 
 \snippet declarative/tutorials/samegame/samegame4/samegame.qml 0
 
-When the dialog is closed, we call the new \c saveHighScore() function in \c samegame.js, which stores the high score locally in an SQL database and also send the score to an online database if possible. 
+When the dialog emits the \c closed signal, we call the new \c saveHighScore() function in \c samegame.js, which stores the high score locally in an SQL database and also send the score to an online database if possible. 
 
+The \c nameInputDialog is activated in the \c victoryCheck() function in \c samegame.js:
+
+\snippet declarative/tutorials/samegame/samegame4/content/samegame.js 3
+\dots 4
+\snippet declarative/tutorials/samegame/samegame4/content/samegame.js 4
 
 \section3 Storing high scores offline
+
+Now we need to implement the functionality to actually save the High Scores table.
 
 Here is the \c saveHighScore() function in \c samegame.js:
 
@@ -436,6 +468,6 @@ By following this tutorial you've seen how you can write a fully functional appl
 \endlist
 
 There is so much more to learn about QML that we haven't been able to cover in this tutorial. Check out all the
-demos and examples and the \l {Declarative UI (QML)}{documentation} to find out all the things you can do with QML!
+demos and examples and the \l {Qt Quick}{documentation} to see all the things you can do with QML!
 
 */

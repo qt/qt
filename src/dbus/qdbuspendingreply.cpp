@@ -254,7 +254,7 @@ void QDBusPendingReplyData::assign(const QDBusPendingCall &other)
 
 void QDBusPendingReplyData::assign(const QDBusMessage &message)
 {
-    d = new QDBusPendingCallPrivate; // drops the reference to the old one
+    d = new QDBusPendingCallPrivate(QDBusMessage(), 0); // drops the reference to the old one
     d->replyMessage = message;
 }
 
@@ -273,6 +273,7 @@ QVariant QDBusPendingReplyData::argumentAt(int index) const
 void QDBusPendingReplyData::setMetaTypes(int count, const int *types)
 {
     Q_ASSERT(d);
+    QMutexLocker locker(&d->mutex);
     d->setMetaTypes(count, types);
     d->checkReceivedSignature();
 }

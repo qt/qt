@@ -55,6 +55,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
 
+#include <iostream>
+
 QT_USE_NAMESPACE
 
 #ifdef QT_BOOTSTRAPPED
@@ -106,7 +108,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
     ConversionData cd;
     bool ok = tor.load(tsFileName, cd, QLatin1String("auto"));
     if (!ok) {
-        qWarning("lrelease error: %s\n", qPrintable(cd.error()));
+        std::cerr << "lrelease error: " << qPrintable(cd.error());
     } else {
         if (!cd.errors().isEmpty())
             printOut(cd.error());
@@ -130,8 +132,8 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
 
     QFile file(qmFileName);
     if (!file.open(QIODevice::WriteOnly)) {
-        qWarning("lrelease error: cannot create '%s': %s\n",
-                 qPrintable(qmFileName), qPrintable(file.errorString()));
+        std::cerr << "lrelease error: cannot create '" << qPrintable(qmFileName)
+                  << "': " << qPrintable(file.errorString()) << std::endl;
         return false;
     }
 
@@ -140,8 +142,8 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     file.close();
 
     if (!ok) {
-        qWarning("lrelease error: cannot save '%s': %s\n",
-                 qPrintable(qmFileName), qPrintable(cd.error()));
+        std::cerr << "lrelease error: cannot save '" << qPrintable(qmFileName)
+                  << "': " << qPrintable(cd.error());
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
     }
@@ -253,19 +255,20 @@ int main(int argc, char **argv)
             visitor.setVerbose(cd.isVerbose());
 
             if (!visitor.queryProFile(&pro)) {
-                qWarning("lrelease error: cannot read project file '%s'.", qPrintable(inputFile));
+                std::cerr << "lrelease error: cannot read project file '"
+                          << qPrintable(inputFile) << "'.\n";
                 continue;
             }
             if (!visitor.accept(&pro)) {
-                qWarning("lrelease error: cannot process project file '%s'.", qPrintable(inputFile));
+                std::cerr << "lrelease error: cannot process project file '"
+                          << qPrintable(inputFile) << "'.\n";
                 continue;
             }
 
             QStringList translations = visitor.values(QLatin1String("TRANSLATIONS"));
             if (translations.isEmpty()) {
-                qWarning("lrelease warning: Met no 'TRANSLATIONS' entry in"
-                         " project file '%s'\n",
-                         qPrintable(inputFile));
+                std::cerr << "lrelease warning: Met no 'TRANSLATIONS' entry in project file '"
+                          << qPrintable(inputFile) << "'\n";
             } else {
                 QDir proDir(fi.absolutePath());
                 foreach (const QString &trans, translations)

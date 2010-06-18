@@ -79,8 +79,24 @@
 #endif
 #include "private/qdeclarativeanchors_p.h"
 
+static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject *obj, QObject *parent)
+{
+    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
+    if (!gobj)
+        return QDeclarativePrivate::IncompatibleObject;
+
+    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
+    if (!gparent)
+        return QDeclarativePrivate::IncompatibleParent;
+
+    gobj->setParentItem(gparent);
+    return QDeclarativePrivate::Parented;
+}
+
 void QDeclarativeItemModule::defineModule()
 {
+    QDeclarativePrivate::registerAutoParentFunction(qgraphicsobject_autoParent);
+
 #ifdef QT_NO_MOVIE
     qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",
         qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
@@ -112,9 +128,11 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathPercent>("Qt",4,7,"PathPercent");
     qmlRegisterType<QDeclarativePathQuad>("Qt",4,7,"PathQuad");
     qmlRegisterType<QDeclarativePathView>("Qt",4,7,"PathView");
+#ifndef QT_NO_VALIDATOR
     qmlRegisterType<QIntValidator>("Qt",4,7,"IntValidator");
     qmlRegisterType<QDoubleValidator>("Qt",4,7,"DoubleValidator");
     qmlRegisterType<QRegExpValidator>("Qt",4,7,"RegExpValidator");
+#endif
     qmlRegisterType<QDeclarativeRectangle>("Qt",4,7,"Rectangle");
     qmlRegisterType<QDeclarativeRepeater>("Qt",4,7,"Repeater");
     qmlRegisterType<QGraphicsRotation>("Qt",4,7,"Rotation");
@@ -138,12 +156,18 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePathElement>();
     qmlRegisterType<QDeclarativeCurve>();
     qmlRegisterType<QDeclarativeScaleGrid>();
+#ifndef QT_NO_VALIDATOR
     qmlRegisterType<QValidator>();
+#endif
     qmlRegisterType<QDeclarativeVisualModel>();
+#ifndef QT_NO_ACTION
     qmlRegisterType<QAction>();
+#endif
     qmlRegisterType<QDeclarativePen>();
     qmlRegisterType<QDeclarativeFlickableVisibleArea>();
+#ifndef QT_NO_GRAPHICSEFFECT
     qmlRegisterType<QGraphicsEffect>();
+#endif
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));

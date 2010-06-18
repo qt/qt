@@ -1,12 +1,91 @@
-2010-05-02  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+2010-06-17  Mark Brand  <mabrand@mabrand.nl>
 
-        Reviewed by Eric Seidel.
+        Reviewed by Simon Hausmann.
 
-        [Qt] Enable JIT for QtWebKit on Symbian
-        https://bugs.webkit.org/show_bug.cgi?id=38339
+        [Qt] use "win32-g++*" scope to match all MinGW makespecs
 
-        JIT on Symbian has been stable for quite some time, it
-        is time to turn it on by default.
+        The scope "win32-g++" comes from the name of the makespec. However, it
+        is frequently used to check for MinGW. This works fine as long as
+        win32-g++ is the only makespec for MinGW. Now we need the wildcard
+        to cover "win32-g++-cross" as well.
+
+        * JavaScriptCore.pro:
+
+2010-06-07  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Crash when compiling on Snow Leopard and running on Leopard
+        https://bugs.webkit.org/show_bug.cgi?id=31403
+
+        Disable the use of pthread_setname_np and other symbols
+        when targetting Leopard.
+
+        Use the defines TARGETING_XX instead of BUILDING_ON_XX 
+        for features that cannot be used before Snow Leopard.
+
+        * wtf/Platform.h:
+
+2010-04-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        [Qt] Unreviewed speculative buildfix for WinCE after r57882
+        https://bugs.webkit.org/show_bug.cgi?id=37701
+
+        * JavaScriptCore.pri: missing wince* case added.
+
+2010-04-20  Csaba Osztrogonác  <ossy@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Target(WebCore,jsc,...) must depends on static library of JavaScriptCore
+        https://bugs.webkit.org/show_bug.cgi?id=37701
+
+        * JavaScriptCore.pri: dependency added.
+
+2010-05-10  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Alexey Proskuryakov.
+
+        Fix a VS2010 assert in std::copy
+        https://bugs.webkit.org/show_bug.cgi?id=38630
+
+        The assert complains that the output iterator is null.
+
+        * wtf/Vector.h:
+        (WTF::::operator):
+
+2010-05-12  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Detect debug mode consistently
+        https://bugs.webkit.org/show_bug.cgi?id=38863
+
+        * JavaScriptCore.pri:
+        * JavaScriptCore.pro:
+        * jsc.pro:
+        * qt/api/QtScript.pro:
+
+2010-05-10  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        [Qt] Disable JIT support for mingw-w64
+        https://bugs.webkit.org/show_bug.cgi?id=38747
+
+        Disale JIT for mingw-w64 as it is reportedly
+        unstable.
+
+        Thanks for Vanboxem Rruben for the investigation.
+
+        * wtf/Platform.h:
+
+2010-05-06  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Enable YARR_JIT for X86 Mac for QtWebKit
+        https://bugs.webkit.org/show_bug.cgi?id=38668
 
         * wtf/Platform.h:
 

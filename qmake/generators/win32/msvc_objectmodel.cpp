@@ -360,8 +360,11 @@ inline XmlOutput::xml_output xformUsePrecompiledHeaderForNET2005(pchOption whatP
 
 inline XmlOutput::xml_output xformExceptionHandlingNET2005(exceptionHandling eh, DotNET compilerVersion)
 {
-    if (eh == ehDefault)
-        return noxml();
+    if (eh == ehDefault) {
+        if (compilerVersion >= NET2005)
+            return attrE(_ExceptionHandling, ehNone);
+        return attrS(_ExceptionHandling, "false");
+    }
 
     if (compilerVersion >= NET2005)
         return attrE(_ExceptionHandling, eh);
@@ -673,6 +676,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
             RuntimeLibrary = rtMultiThreaded;
             if(third == 'd')
                 RuntimeLibrary = rtMultiThreadedDebug;
+            break;
+        } else if (second == 'P') {
+            if (config->CompilerVersion >= NET2005)
+                AdditionalOptions += option;
+            else
+                warn_msg(WarnLogic, "/MP option is not supported in Visual C++ < 2005, ignoring.");
             break;
         }
         found = false; break;

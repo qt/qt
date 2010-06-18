@@ -40,16 +40,12 @@
 ****************************************************************************/
 
 /*!
-    \group desktop
-    \title Desktop Integration Classes
-*/
-
-/*!
     \page desktop-integration.html
     \title Desktop Integration
     \brief Integrating with the user's desktop environment.
     
     \ingroup best-practices
+    \ingroup qt-gui-concepts
 
     Qt applications behave well in the user's desktop environment, but certain
     integrations require additional, and sometimes platform specific, techniques.

@@ -88,12 +88,20 @@ void InspectorClientQt::openInspectorFrontend(WebCore::InspectorController*)
     InspectorClientWebPage* inspectorPage = new InspectorClientWebPage(inspectorView);
     inspectorView->setPage(inspectorPage);
 
-    QUrl inspectorUrl = m_inspectedWebPage->settings()->inspectorUrl();
+    QWebInspector* inspector = m_inspectedWebPage->d->getOrCreateInspector();
+    // This is a known hook that allows changing the default URL for the
+    // Web inspector. This is used for SDK purposes. Please keep this hook
+    // around and don't remove it.
+    // https://bugs.webkit.org/show_bug.cgi?id=35340
+    QUrl inspectorUrl;
+#ifndef QT_NO_PROPERTIES
+    inspectorUrl = inspector->property("_q_inspectorUrl").toUrl();
+#endif
     if (!inspectorUrl.isValid())
         inspectorUrl = QUrl("qrc:/webkit/inspector/inspector.html");
     inspectorView->page()->mainFrame()->load(inspectorUrl);
     m_inspectedWebPage->d->inspectorFrontend = inspectorView;
-    m_inspectedWebPage->d->getOrCreateInspector()->d->setFrontend(inspectorView);
+    inspector->d->setFrontend(inspectorView);
 
     inspectorView->page()->d->page->inspectorController()->setInspectorFrontendClient(new InspectorFrontendClientQt(m_inspectedWebPage, inspectorView));
 }

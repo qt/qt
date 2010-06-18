@@ -59,23 +59,25 @@ public:
 /*!
     \qmlclass SystemPalette QDeclarativeSystemPalette
     \since 4.7
-    \ingroup group_utility
-    \brief The SystemPalette item gives access to the Qt palettes.
+    \brief The SystemPalette element provides access to the Qt palettes.
+
+    The SystemPalette element provides access to the Qt application
+    palettes. This provides information about the standard colors used 
+    for application windows, buttons and other features. These colors
+    are grouped into three \e {color groups}: \c Active, \c Inactive,
+    and \c Disabled.  See the QPalette documentation for details about
+    color groups and the properties provided by SystemPalette.
+
+    This can be used to color items in a way that provides a more
+    native look and feel.
+
+    The following example creates a palette from the \c Active color
+    group and uses this to color the window and text items
+    appropriately:
+
+    \snippet doc/src/snippets/declarative/systempalette.qml 0
+
     \sa QPalette
-
-    Example:
-    \qml
-    SystemPalette { id: myPalette; colorGroup: Qt.Active }
-
-    Rectangle {
-        width: 640; height: 480
-        color: myPalette.window
-        Text {
-            anchors.fill: parent
-            text: "Hello!"; color: myPalette.windowText
-        }
-    }
-    \endqml
 */
 QDeclarativeSystemPalette::QDeclarativeSystemPalette(QObject *parent)
     : QObject(*(new QDeclarativeSystemPalettePrivate), parent)
@@ -259,10 +261,15 @@ QColor QDeclarativeSystemPalette::highlightedText() const
 }
 
 /*!
-    \qmlproperty QDeclarativeSystemPalette::ColorGroup SystemPalette::colorGroup
+    \qmlproperty enumeration SystemPalette::colorGroup
 
-    The color group of the palette. It can be Active, Inactive or Disabled.
-    Active is the default.
+    The color group of the palette. This can be one of:
+
+    \list
+    \o SystemPalette.Active (default)
+    \o SystemPalette.Inactive
+    \o SystemPalette.Disabled
+    \endlist
 
     \sa QPalette::ColorGroup
 */

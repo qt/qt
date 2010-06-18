@@ -218,6 +218,7 @@ private slots:
     void update();
     void update2_data();
     void update2();
+    void update_ancestorClipsChildrenToShape();
     void inputMethodSensitivity();
     void inputContextReset();
     void indirectPainting();
@@ -3755,6 +3756,62 @@ void tst_QGraphicsView::update2()
     QTRY_VERIFY(view.painted);
     QCOMPARE(view.lastUpdateRegions.size(), 1);
     QCOMPARE(view.lastUpdateRegions.at(0), expectedUpdateRegion);
+#endif
+}
+
+void tst_QGraphicsView::update_ancestorClipsChildrenToShape()
+{
+    QGraphicsScene scene(-150, -150, 300, 300);
+
+    /*
+    Add three rects:
+
+    +------------------+
+    | child            |
+    | +--------------+ |
+    | | parent       | |
+    | |  +-----------+ |
+    | |  |grandParent| |
+    | |  +-----------+ |
+    | +--------------+ |
+    +------------------+
+
+    ... where both the parent and the grand parent clips children to shape.
+    */
+    QApplication::processEvents(); // Get rid of pending update.
+
+    QGraphicsRectItem *grandParent = static_cast<QGraphicsRectItem *>(scene.addRect(0, 0, 50, 50));
+    grandParent->setBrush(Qt::black);
+    grandParent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QGraphicsRectItem *parent = static_cast<QGraphicsRectItem *>(scene.addRect(-50, -50, 100, 100));
+    parent->setBrush(QColor(0, 0, 255, 125));
+    parent->setParentItem(grandParent);
+    parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QGraphicsRectItem *child = static_cast<QGraphicsRectItem *>(scene.addRect(-100, -100, 200, 200));
+    child->setBrush(QColor(255, 0, 0, 125));
+    child->setParentItem(parent);
+
+    CustomView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.painted);
+
+    view.lastUpdateRegions.clear();
+    view.painted = false;
+
+    // Call child->update() and make sure the updated area is within the ancestors' clip.
+    QRectF expected = child->deviceTransform(view.viewportTransform()).mapRect(child->boundingRect());
+    expected &= grandParent->deviceTransform(view.viewportTransform()).mapRect(grandParent->boundingRect());
+
+    child->update();
+    QTRY_VERIFY(view.painted);
+
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
 #endif
 }
 

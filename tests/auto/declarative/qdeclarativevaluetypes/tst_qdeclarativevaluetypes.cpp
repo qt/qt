@@ -46,6 +46,15 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "testtypes.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
+QT_BEGIN_NAMESPACE
+extern int qt_defaultDpi();
+QT_END_NAMESPACE
+
 class tst_qdeclarativevaluetypes : public QObject
 {
     Q_OBJECT
@@ -62,7 +71,11 @@ private slots:
     void sizereadonly();
     void rect();
     void rectf();
+    void vector2d();
     void vector3d();
+    void vector4d();
+    void quaternion();
+    void matrix4x4();
     void font();
 
     void bindingAssignment();
@@ -80,6 +93,7 @@ private slots:
     void enums();
     void conflictingBindings();
     void returnValues();
+    void varAssignment();
 
 private:
     QDeclarativeEngine engine;
@@ -293,6 +307,31 @@ void tst_qdeclarativevaluetypes::rectf()
     }
 }
 
+void tst_qdeclarativevaluetypes::vector2d()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("vector2d_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE((float)object->property("v_x").toDouble(), (float)32.88);
+        QCOMPARE((float)object->property("v_y").toDouble(), (float)1.3);
+        QCOMPARE(object->property("copy"), QVariant(QVector2D(32.88, 1.3)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("vector2d_write.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->vector2(), QVector2D(-0.3, -12.9));
+
+        delete object;
+    }
+}
+
 void tst_qdeclarativevaluetypes::vector3d()
 {
     {
@@ -319,6 +358,106 @@ void tst_qdeclarativevaluetypes::vector3d()
     }
 }
 
+void tst_qdeclarativevaluetypes::vector4d()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("vector4d_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE((float)object->property("v_x").toDouble(), (float)54.2);
+        QCOMPARE((float)object->property("v_y").toDouble(), (float)23.88);
+        QCOMPARE((float)object->property("v_z").toDouble(), (float)3.1);
+        QCOMPARE((float)object->property("v_w").toDouble(), (float)4.3);
+        QCOMPARE(object->property("copy"), QVariant(QVector4D(54.2, 23.88, 3.1, 4.3)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("vector4d_write.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->vector4(), QVector4D(-0.3, -12.9, 907.4, 88.5));
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::quaternion()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("quaternion_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE((float)object->property("v_scalar").toDouble(), (float)4.3);
+        QCOMPARE((float)object->property("v_x").toDouble(), (float)54.2);
+        QCOMPARE((float)object->property("v_y").toDouble(), (float)23.88);
+        QCOMPARE((float)object->property("v_z").toDouble(), (float)3.1);
+        QCOMPARE(object->property("copy"), QVariant(QQuaternion(4.3, 54.2, 23.88, 3.1)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("quaternion_write.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->quaternion(), QQuaternion(88.5, -0.3, -12.9, 907.4));
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativevaluetypes::matrix4x4()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("matrix4x4_read.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE((float)object->property("v_m11").toDouble(), (float)1);
+        QCOMPARE((float)object->property("v_m12").toDouble(), (float)2);
+        QCOMPARE((float)object->property("v_m13").toDouble(), (float)3);
+        QCOMPARE((float)object->property("v_m14").toDouble(), (float)4);
+        QCOMPARE((float)object->property("v_m21").toDouble(), (float)5);
+        QCOMPARE((float)object->property("v_m22").toDouble(), (float)6);
+        QCOMPARE((float)object->property("v_m23").toDouble(), (float)7);
+        QCOMPARE((float)object->property("v_m24").toDouble(), (float)8);
+        QCOMPARE((float)object->property("v_m31").toDouble(), (float)9);
+        QCOMPARE((float)object->property("v_m32").toDouble(), (float)10);
+        QCOMPARE((float)object->property("v_m33").toDouble(), (float)11);
+        QCOMPARE((float)object->property("v_m34").toDouble(), (float)12);
+        QCOMPARE((float)object->property("v_m41").toDouble(), (float)13);
+        QCOMPARE((float)object->property("v_m42").toDouble(), (float)14);
+        QCOMPARE((float)object->property("v_m43").toDouble(), (float)15);
+        QCOMPARE((float)object->property("v_m44").toDouble(), (float)16);
+        QCOMPARE(object->property("copy"),
+                 QVariant(QMatrix4x4(1, 2, 3, 4,
+                                     5, 6, 7, 8,
+                                     9, 10, 11, 12,
+                                     13, 14, 15, 16)));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("matrix4x4_write.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->matrix(), QMatrix4x4(11, 12, 13, 14,
+                                              21, 22, 23, 24,
+                                              31, 32, 33, 34,
+                                              41, 42, 43, 44));
+
+        delete object;
+    }
+}
+
 void tst_qdeclarativevaluetypes::font()
 {
     {
@@ -334,7 +473,7 @@ void tst_qdeclarativevaluetypes::font()
         QCOMPARE(object->property("f_overline").toBool(), object->font().overline());
         QCOMPARE(object->property("f_strikeout").toBool(), object->font().strikeOut());
         QCOMPARE(object->property("f_pointSize").toDouble(), object->font().pointSizeF());
-        QCOMPARE(object->property("f_pixelSize").toInt(), object->font().pixelSize());
+        QCOMPARE(object->property("f_pixelSize").toInt(), int((object->font().pointSizeF() * qt_defaultDpi()) / qreal(72.)));
         QCOMPARE(object->property("f_capitalization").toInt(), (int)object->font().capitalization());
         QCOMPARE(object->property("f_letterSpacing").toDouble(), object->font().letterSpacing());
         QCOMPARE(object->property("f_wordSpacing").toDouble(), object->font().wordSpacing());
@@ -665,7 +804,12 @@ void tst_qdeclarativevaluetypes::cppClasses()
     CPP_TEST(QDeclarativeSizeFValueType, QSizeF(-100.7, 18.2));
     CPP_TEST(QDeclarativeRectValueType, QRect(13, 39, 10928, 88));
     CPP_TEST(QDeclarativeRectFValueType, QRectF(88.2, -90.1, 103.2, 118));
+    CPP_TEST(QDeclarativeVector2DValueType, QVector2D(19.7, 1002));
     CPP_TEST(QDeclarativeVector3DValueType, QVector3D(18.2, 19.7, 1002));
+    CPP_TEST(QDeclarativeVector4DValueType, QVector4D(18.2, 19.7, 1002, 54));
+    CPP_TEST(QDeclarativeQuaternionValueType, QQuaternion(18.2, 19.7, 1002, 54));
+    CPP_TEST(QDeclarativeMatrix4x4ValueType,
+             QMatrix4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
     CPP_TEST(QDeclarativeFontValueType, QFont("Helvetica"));
 
 }
@@ -698,6 +842,14 @@ void tst_qdeclarativevaluetypes::enums()
 
     {
     QDeclarativeComponent component(&engine, TEST_FILE("enums.4.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("enums.5.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
     QVERIFY(object->font().capitalization() == QFont::AllUppercase);
@@ -773,6 +925,19 @@ void tst_qdeclarativevaluetypes::returnValues()
     QCOMPARE(object->property("test1").toBool(), true);
     QCOMPARE(object->property("test2").toBool(), true);
     QCOMPARE(object->property("size").toSize(), QSize(13, 14));
+
+    delete object;
+}
+
+void tst_qdeclarativevaluetypes::varAssignment()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("varAssignment.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("x").toInt(), 1);
+    QCOMPARE(object->property("y").toInt(), 2);
+    QCOMPARE(object->property("z").toInt(), 3);
 
     delete object;
 }

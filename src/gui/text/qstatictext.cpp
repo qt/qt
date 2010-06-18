@@ -115,10 +115,12 @@ QT_BEGIN_NAMESPACE
     Qt::RichText.
 
     If it's the first time the static text is drawn, or if the static text, or the painter's font
-    or matrix have been altered since the last time it was drawn, the text's layout has to be
-    recalculated. This will impose an overhead on the QPainter::drawStaticText() call where the
-    relayout occurs. To avoid this overhead in the paint event, you can call prepare() ahead of
-    time to ensure that the layout is calculated.
+    has been altered since the last time it was drawn, the text's layout has to be
+    recalculated. On some paint engines, changing the matrix of the painter will also cause the
+    layout to be recalculated. In particular, this will happen for any engine except for the
+    OpenGL2 paint engine. Recalculating the layout will impose an overhead on the
+    QPainter::drawStaticText() call where it occurs. To avoid this overhead in the paint event, you
+    can call prepare() ahead of time to ensure that the layout is calculated.
 
     \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
@@ -188,8 +190,9 @@ void QStaticText::detach()
 
   When drawStaticText() is called, the layout of the QStaticText will be recalculated if any part
   of the QStaticText object has changed since the last time it was drawn. It will also be
-  recalculated if the painter's font or matrix are not the same as when the QStaticText was last
-  drawn.
+  recalculated if the painter's font is not the same as when the QStaticText was last drawn, or,
+  on any other paint engine than the OpenGL2 engine, if the painter's matrix has been altered
+  since the static text was last drawn.
 
   To avoid the overhead of creating the layout the first time you draw the QStaticText after
   making changes, you can use the prepare() function and pass in the \a matrix and \a font you
@@ -321,6 +324,26 @@ QStaticText::PerformanceHint QStaticText::performanceHint() const
 }
 
 /*!
+   Sets the text option structure that controls the layout process to the given \a textOption.
+
+   \sa textOption()
+*/
+void QStaticText::setTextOption(const QTextOption &textOption)
+{
+    detach();
+    data->textOption = textOption;
+    data->invalidate();
+}
+
+/*!
+    Returns the current text option used to control the layout process.
+*/
+QTextOption QStaticText::textOption() const
+{
+    return data->textOption;
+}
+
+/*!
     Sets the preferred width for this QStaticText. If the text is wider than the specified width,
     it will be broken into multiple lines and grow vertically. If the text cannot be split into
     multiple lines, it will be larger than the specified \a textWidth.
@@ -363,23 +386,26 @@ QSizeF QStaticText::size() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0),
-          needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText)
+        : textWidth(-1.0), items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0),
+          needsRelayout(true), useBackendOptimizations(false), textFormat(Qt::AutoText),
+          untransformedCoordinates(false)
 {
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
-      items(0), itemCount(0), glyphPool(0), positionPool(0), needsRelayout(true),
-      useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat)
+      items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0), needsRelayout(true),
+      useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat),
+      untransformedCoordinates(other.untransformedCoordinates)
 {
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()
 {
-    delete[] items;    
+    delete[] items;
     delete[] glyphPool;
     delete[] positionPool;
+    delete[] charPool;
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -395,15 +421,9 @@ namespace {
     class DrawTextItemRecorder: public QPaintEngine
     {
     public:
-        DrawTextItemRecorder(int expectedItemCount, QStaticTextItem *items,
-                             int expectedGlyphCount, QFixedPoint *positionPool, glyph_t *glyphPool)
-                : m_items(items),
-                  m_itemCount(0), m_glyphCount(0),
-                  m_expectedItemCount(expectedItemCount),
-                  m_expectedGlyphCount(expectedGlyphCount),
-                  m_glyphPool(glyphPool),
-                  m_positionPool(positionPool),
-                  m_dirtyPen(false)
+        DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations, int numChars)
+                : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
+                  m_untransformedCoordinates(untransformedCoordinates)
         {
         }
 
@@ -415,28 +435,21 @@ namespace {
 
         virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
         {
-            const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);          
+            const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
-            m_itemCount++;
-            m_glyphCount += ti.glyphs.numGlyphs;
-            if (m_items == 0)
-                return;
-
-            Q_ASSERT(m_itemCount <= m_expectedItemCount);
-            Q_ASSERT(m_glyphCount <= m_expectedGlyphCount);
-
-            QStaticTextItem *currentItem = (m_items + (m_itemCount - 1));
-            currentItem->fontEngine = ti.fontEngine;
-            currentItem->font = ti.font();
-            currentItem->chars = ti.chars;
-            currentItem->numChars = ti.num_chars;
-            currentItem->numGlyphs = ti.glyphs.numGlyphs;
-            currentItem->glyphs = m_glyphPool;
-            currentItem->glyphPositions = m_positionPool;
+            QStaticTextItem currentItem;
+            currentItem.fontEngine = ti.fontEngine;
+            currentItem.font = ti.font();
+            currentItem.charOffset = m_chars.size();
+            currentItem.numChars = ti.num_chars;
+            currentItem.numGlyphs = ti.glyphs.numGlyphs;
+            currentItem.glyphOffset = m_glyphs.size(); // Store offset into glyph pool
+            currentItem.positionOffset = m_glyphs.size(); // Offset into position pool
+            currentItem.useBackendOptimizations = m_useBackendOptimizations;
             if (m_dirtyPen)
-                currentItem->color = state->pen().color();
+                currentItem.color = state->pen().color();
 
-            QTransform matrix = state->transform();
+            QTransform matrix = m_untransformedCoordinates ? QTransform() : state->transform();
             matrix.translate(position.x(), position.y());
 
             QVarLengthArray<glyph_t> glyphs;
@@ -447,13 +460,21 @@ namespace {
             Q_ASSERT(size == ti.glyphs.numGlyphs);
             Q_ASSERT(size == positions.size());
 
-            memmove(currentItem->glyphs, glyphs.constData(), sizeof(glyph_t) * size);
-            memmove(currentItem->glyphPositions, positions.constData(), sizeof(QFixedPoint) * size);
+            m_glyphs.resize(m_glyphs.size() + size);
+            m_positions.resize(m_glyphs.size());
+            m_chars.resize(m_chars.size() + ti.num_chars);
 
-            m_glyphPool += size;
-            m_positionPool += size;
+            glyph_t *glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
+            qMemCopy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
+
+            QFixedPoint *positionsDestination = m_positions.data() + currentItem.positionOffset;
+            qMemCopy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
+
+            QChar *charsDestination = m_chars.data() + currentItem.charOffset;
+            qMemCopy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
+
+            m_items.append(currentItem);
         }                
-
 
         virtual bool begin(QPaintDevice *)  { return true; }
         virtual bool end() { return true; }
@@ -463,38 +484,45 @@ namespace {
             return User;
         }
 
-        int itemCount() const
+        QVector<QStaticTextItem> items() const
         {
-            return m_itemCount;
+            return m_items;
         }
 
-        int glyphCount() const
+        QVector<QFixedPoint> positions() const
         {
-            return m_glyphCount;
+            return m_positions;
+        }
+
+        QVector<glyph_t> glyphs() const
+        {
+            return m_glyphs;
+        }
+
+        QVector<QChar> chars() const
+        {
+            return m_chars;
         }
 
     private:
-        QStaticTextItem *m_items;
-        int m_itemCount;
-        int m_glyphCount;
-        int m_expectedItemCount;
-        int m_expectedGlyphCount;
-
-        glyph_t *m_glyphPool;
-        QFixedPoint *m_positionPool;
+        QVector<QStaticTextItem> m_items;
+        QVector<QFixedPoint> m_positions;
+        QVector<glyph_t> m_glyphs;
+        QVector<QChar> m_chars;
 
         bool m_dirtyPen;
+        bool m_useBackendOptimizations;
+        bool m_untransformedCoordinates;
     };
 
     class DrawTextItemDevice: public QPaintDevice
     {
     public:
-        DrawTextItemDevice(int expectedItemCount = -1,  QStaticTextItem *items = 0,
-                           int expectedGlyphCount = -1, QFixedPoint *positionPool = 0,
-                           glyph_t *glyphPool = 0)
+        DrawTextItemDevice(bool untransformedCoordinates, bool useBackendOptimizations,
+                           int numChars)
         {
-            m_paintEngine = new DrawTextItemRecorder(expectedItemCount, items,
-                                                     expectedGlyphCount, positionPool, glyphPool);
+            m_paintEngine = new DrawTextItemRecorder(untransformedCoordinates,
+                                                     useBackendOptimizations, numChars);
         }
 
         ~DrawTextItemDevice()
@@ -538,14 +566,24 @@ namespace {
             return m_paintEngine;
         }
 
-        int itemCount() const
+        QVector<glyph_t> glyphs() const
         {
-            return m_paintEngine->itemCount();
+            return m_paintEngine->glyphs();
         }
 
-        int glyphCount() const
+        QVector<QFixedPoint> positions() const
         {
-            return m_paintEngine->glyphCount();
+            return m_paintEngine->positions();
+        }
+
+        QVector<QStaticTextItem> items() const
+        {
+            return m_paintEngine->items();
+        }
+
+        QVector<QChar> chars() const
+        {
+            return m_paintEngine->chars();
         }
 
     private:
@@ -562,6 +600,7 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
         QTextLayout textLayout;
         textLayout.setText(text);
         textLayout.setFont(font);
+        textLayout.setTextOption(textOption);
 
         qreal leading = QFontMetricsF(font).leading();
         qreal height = -leading;
@@ -592,20 +631,25 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
                                       .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
 #endif
         document.setDefaultFont(font);
-        document.setDocumentMargin(0.0);
-        if (textWidth >= 0.0)
-            document.setTextWidth(textWidth);
+        document.setDocumentMargin(0.0);        
 #ifndef QT_NO_TEXTHTMLPARSER
         document.setHtml(text);
 #else
         document.setPlainText(text);
 #endif
+        if (textWidth >= 0.0)
+            document.setTextWidth(textWidth);
+        else
+            document.adjustSize();
+        document.setDefaultTextOption(textOption);
 
-        document.adjustSize();
         p->save();
         p->translate(topLeftPosition);
         document.drawContents(p);
         p->restore();
+
+        if (textWidth >= 0.0)
+            document.adjustSize(); // Find optimal size
 
         actualSize = document.size();
     }
@@ -616,42 +660,42 @@ void QStaticTextPrivate::init()
     delete[] items;
     delete[] glyphPool;
     delete[] positionPool;
+    delete[] charPool;
 
     position = QPointF(0, 0);
 
-    // Draw once to count number of items and glyphs, so that we can use as little memory
-    // as possible to store the data
-    DrawTextItemDevice counterDevice;
+    DrawTextItemDevice device(untransformedCoordinates, useBackendOptimizations, text.size());
     {
-        QPainter painter(&counterDevice);
+        QPainter painter(&device);
         painter.setFont(font);
         painter.setTransform(matrix);
 
         paintText(QPointF(0, 0), &painter);
-
     }
 
-    itemCount = counterDevice.itemCount();    
+    QVector<QStaticTextItem> deviceItems = device.items();
+    QVector<QFixedPoint> positions = device.positions();
+    QVector<glyph_t> glyphs = device.glyphs();
+    QVector<QChar> chars = device.chars();
+
+    itemCount = deviceItems.size();
     items = new QStaticTextItem[itemCount];
 
-    if (useBackendOptimizations) {
-        for (int i=0; i<itemCount; ++i)
-            items[i].useBackendOptimizations = true;
-    }
+    glyphPool = new glyph_t[glyphs.size()];
+    qMemCopy(glyphPool, glyphs.constData(), glyphs.size() * sizeof(glyph_t));
 
+    positionPool = new QFixedPoint[positions.size()];
+    qMemCopy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
 
-    int glyphCount = counterDevice.glyphCount();
-    glyphPool = new glyph_t[glyphCount];
-    positionPool = new QFixedPoint[glyphCount];
+    charPool = new QChar[chars.size()];
+    qMemCopy(charPool, chars.constData(), chars.size() * sizeof(QChar));
 
-    // Draw again to actually record the items and glyphs
-    DrawTextItemDevice recorderDevice(itemCount, items, glyphCount, positionPool, glyphPool);
-    {
-        QPainter painter(&recorderDevice);
-        painter.setFont(font);
-        painter.setTransform(matrix);
+    for (int i=0; i<itemCount; ++i) {
+        items[i] = deviceItems.at(i);
 
-        paintText(QPointF(0, 0), &painter);
+        items[i].glyphs = glyphPool + items[i].glyphOffset;
+        items[i].glyphPositions = positionPool + items[i].positionOffset;
+        items[i].chars = charPool + items[i].charOffset;
     }
 
     needsRelayout = false;

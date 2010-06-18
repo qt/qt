@@ -82,7 +82,6 @@ public:
         , page(0)
         , resizesToContents(false)
 #if USE(ACCELERATED_COMPOSITING)
-        , rootGraphicsLayer(0)
         , shouldSync(false)
 #endif
     {
@@ -128,7 +127,7 @@ public:
 #endif
 
     void updateResizesToContentsForPage();
-    QRectF graphicsItemVisibleRect() const;
+    virtual QRectF graphicsItemVisibleRect() const;
 #if ENABLE(TILED_BACKING_STORE)
     void updateTiledBackingStoreScale();
 #endif
@@ -158,7 +157,7 @@ public:
     enum { RootGraphicsLayerZValue, OverlayZValue };
 
 #if USE(ACCELERATED_COMPOSITING)
-    QGraphicsItem* rootGraphicsLayer;
+    QWeakPointer<QGraphicsObject> rootGraphicsLayer;
     // we need to sync the layers if we get a special call from the WebCore
     // compositor telling us to do so. We'll get that call from ChromeClientQt
     bool shouldSync;
@@ -171,12 +170,11 @@ public:
 QGraphicsWebViewPrivate::~QGraphicsWebViewPrivate()
 {
 #if USE(ACCELERATED_COMPOSITING)
-    if (rootGraphicsLayer) {
-        // we don't need to delete the root graphics layer
-        // The lifecycle is managed in GraphicsLayerQt.cpp
-        rootGraphicsLayer->setParentItem(0);
-        q->scene()->removeItem(rootGraphicsLayer);
-    }
+    if (!rootGraphicsLayer)
+        return;
+    // we don't need to delete the root graphics layer. The lifecycle is managed in GraphicsLayerQt.cpp.
+    rootGraphicsLayer.data()->setParentItem(0);
+    q->scene()->removeItem(rootGraphicsLayer.data());
 #endif
 }
 
@@ -204,12 +202,12 @@ void QGraphicsWebViewPrivate::createOrDeleteOverlay()
 void QGraphicsWebViewPrivate::setRootGraphicsLayer(QGraphicsItem* layer)
 {
     if (rootGraphicsLayer) {
-        rootGraphicsLayer->setParentItem(0);
-        q->scene()->removeItem(rootGraphicsLayer);
+        rootGraphicsLayer.data()->setParentItem(0);
+        q->scene()->removeItem(rootGraphicsLayer.data());
         QWebFramePrivate::core(q->page()->mainFrame())->view()->syncCompositingStateRecursive();
     }
 
-    rootGraphicsLayer = layer;
+    rootGraphicsLayer = layer ? layer->toGraphicsObject() : 0;
 
     if (layer) {
         layer->setFlag(QGraphicsItem::ItemClipsChildrenToShape, true);
@@ -231,7 +229,7 @@ void QGraphicsWebViewPrivate::updateCompositingScrollPosition()
 {
     if (rootGraphicsLayer && q->page() && q->page()->mainFrame()) {
         const QPoint scrollPosition = q->page()->mainFrame()->scrollPosition();
-        rootGraphicsLayer->setPos(-scrollPosition);
+        rootGraphicsLayer.data()->setPos(-scrollPosition);
     }
 }
 #endif
@@ -599,12 +597,7 @@ void QGraphicsWebView::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
 #if ENABLE(TILED_BACKING_STORE)
     if (WebCore::TiledBackingStore* backingStore = QWebFramePrivate::core(page()->mainFrame())->tiledBackingStore()) {
         // FIXME: We should set the backing store viewport earlier than in paint
-        if (d->resizesToContents)
-            backingStore->viewportChanged(WebCore::IntRect(d->graphicsItemVisibleRect()));
-        else {
-            QRectF visibleRect(d->page->mainFrame()->scrollPosition(), d->page->mainFrame()->geometry().size());
-            backingStore->viewportChanged(WebCore::IntRect(visibleRect));
-        }
+        backingStore->adjustVisibleRect();
         // QWebFrame::render is a public API, bypass it for tiled rendering so behavior does not need to change.
         WebCore::GraphicsContext context(painter); 
         page()->mainFrame()->d->renderFromTiledBackingStore(&context, option->exposedRect.toAlignedRect());

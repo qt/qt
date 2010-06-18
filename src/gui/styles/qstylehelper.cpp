@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qstylehelper_p.h"
-
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
@@ -54,71 +52,28 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
+#include "qstylehelper_p.h"
 #include <qstringbuilder.h>
 
 QT_BEGIN_NAMESPACE
-
-// internal helper. Converts an integer value to an unique string token
-template <typename T>
-struct HexString
-{
-    inline HexString(const T t)
-        : val(t)
-    {}
-
-    inline void write(QChar *&dest) const
-    {
-        const ushort hexChars[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-        const char *c = reinterpret_cast<const char *>(&val);
-        for (uint i = 0; i < sizeof(T); ++i) {
-            *dest++ = hexChars[*c & 0xf];
-            *dest++ = hexChars[(*c & 0xf0) >> 4];
-            ++c;
-        }
-    }
-
-    const T val;
-};
-
-// specialization to enable fast concatenating of our string tokens to a string
-template <typename T>
-struct QConcatenable<HexString<T> >
-{
-    typedef HexString<T> type;
-    enum { ExactSize = true };
-    static int size(const HexString<T> &str) { return sizeof(str.val) * 2; }
-    static inline void appendTo(const HexString<T> &str, QChar *&out) { str.write(out); }
-};
 
 namespace QStyleHelper {
 
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
     const QStyleOptionComplex *complexOption = qstyleoption_cast<const QStyleOptionComplex *>(option);
-
-    QString tmp = key
-                  % QLatin1Char('-')
-                  % HexString<uint>(option->state)
-                  % QLatin1Char('-')
-                  % HexString<uint>(option->direction)
-                  % QLatin1Char('-')
-                  % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
-                  % QLatin1Char('-')
-                  % HexString<quint64>(option->palette.cacheKey())
-                  % QLatin1Char('-')
-                  % HexString<uint>(size.width())
-                  % QLatin1Char('x')
-                  % HexString<uint>(size.height());
+    QString tmp = key % HexString<uint>(option->state)
+                      % HexString<uint>(option->direction)
+                      % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
+                      % HexString<quint64>(option->palette.cacheKey())
+                      % HexString<uint>(size.width())
+                      % HexString<uint>(size.height());
 
 #ifndef QT_NO_SPINBOX
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-        tmp = tmp
-              % QLatin1Char('-')
-              % HexString<uint>(spinBox->buttonSymbols)
-              % QLatin1Char('-')
-              % HexString<uint>(spinBox->stepEnabled)
-              % QLatin1Char('-')
-              % QLatin1Char(spinBox->frame ? '1' : '0');
+        tmp = tmp % HexString<uint>(spinBox->buttonSymbols)
+                  % HexString<uint>(spinBox->stepEnabled)
+                  % QLatin1Char(spinBox->frame ? '1' : '0'); ;
     }
 #endif // QT_NO_SPINBOX
     return tmp;

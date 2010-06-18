@@ -79,24 +79,33 @@ class QNetworkReply;
 class QDeclarativeItemKeyFilter;
 
 //### merge into private?
-class QDeclarativeContents : public QObject
+class QDeclarativeContents : public QObject, public QDeclarativeItemChangeListener
 {
     Q_OBJECT
 public:
-    QDeclarativeContents();
+    QDeclarativeContents(QDeclarativeItem *item);
+    ~QDeclarativeContents();
 
     QRectF rectF() const;
 
-    void setItem(QDeclarativeItem *item);
+    void childRemoved(QDeclarativeItem *item);
+    void childAdded(QDeclarativeItem *item);
 
-public Q_SLOTS:
-    void calcHeight();
-    void calcWidth();
+    void calcGeometry() { calcWidth(); calcHeight(); }
+    void complete();
 
 Q_SIGNALS:
     void rectChanged(QRectF);
 
+protected:
+    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
+    void itemDestroyed(QDeclarativeItem *item);
+    //void itemVisibilityChanged(QDeclarativeItem *item)
+
 private:
+    void calcHeight(QDeclarativeItem *changed = 0);
+    void calcWidth(QDeclarativeItem *changed = 0);
+
     QDeclarativeItem *m_item;
     qreal m_x;
     qreal m_y;
@@ -116,7 +125,7 @@ public:
       _stateGroup(0), origin(QDeclarativeItem::Center),
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
-      smooth(false), transformOriginDirty(true), keyHandler(0),
+      smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
       mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
@@ -150,6 +159,22 @@ public:
     void setHeight(qreal);
     void resetHeight();
 
+    QDeclarativeListProperty<QObject> data();
+    QDeclarativeListProperty<QObject> resources();
+
+    QDeclarativeListProperty<QDeclarativeState> states();
+    QDeclarativeListProperty<QDeclarativeTransition> transitions();
+
+    QString state() const;
+    void setState(const QString &);
+
+    QDeclarativeAnchorLine left() const;
+    QDeclarativeAnchorLine right() const;
+    QDeclarativeAnchorLine horizontalCenter() const;
+    QDeclarativeAnchorLine top() const;
+    QDeclarativeAnchorLine bottom() const;
+    QDeclarativeAnchorLine verticalCenter() const;
+    QDeclarativeAnchorLine baseline() const;
 
     // data property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
@@ -164,6 +189,11 @@ public:
     static void transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
     static QGraphicsTransform *transform_at(QDeclarativeListProperty<QGraphicsTransform> *list, int);
     static void transform_clear(QDeclarativeListProperty<QGraphicsTransform> *list);
+
+    static QDeclarativeItemPrivate* get(QDeclarativeItem *item)
+    {
+        return item->d_func();
+    }
 
     // Accelerated property accessors
     QDeclarativeNotifier parentNotifier;
@@ -224,7 +254,7 @@ public:
     void removeItemChangeListener(QDeclarativeItemChangeListener *, ChangeTypes types);
     QPODVector<ChangeListener,4> changeListeners;
 
-    QDeclarativeStateGroup *states();
+    QDeclarativeStateGroup *_states();
     QDeclarativeStateGroup *_stateGroup;
 
     QDeclarativeItem::TransformOrigin origin:4;
@@ -234,6 +264,7 @@ public:
     bool _keepMouse:1;
     bool smooth:1;
     bool transformOriginDirty : 1;
+    bool doneEventPreHandler : 1;
 
     QDeclarativeItemKeyFilter *keyHandler;
 
@@ -275,12 +306,11 @@ public:
 
     virtual void focusChanged(bool);
 
-    static int consistentTime;
-    static QTime currentTime();
-    static void setConsistentTime(int t);
-    static void start(QTime &);
-    static int elapsed(QTime &);
-    static int restart(QTime &);
+    static qint64 consistentTime;
+    static void setConsistentTime(qint64 t);
+    static void start(QElapsedTimer &);
+    static qint64 elapsed(QElapsedTimer &);
+    static qint64 restart(QElapsedTimer &);
 };
 
 /*
@@ -295,11 +325,13 @@ public:
     QDeclarativeItemKeyFilter(QDeclarativeItem * = 0);
     virtual ~QDeclarativeItemKeyFilter();
 
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
-    virtual void inputMethodEvent(QInputMethodEvent *event);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
+    virtual void inputMethodEvent(QInputMethodEvent *event, bool post);
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
     virtual void componentComplete();
+
+    bool m_processPost;
 
 private:
     QDeclarativeItemKeyFilter *m_next;
@@ -330,6 +362,9 @@ class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeIte
     Q_PROPERTY(QDeclarativeItem *down READ down WRITE setDown NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *tab READ tab WRITE setTab NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *backtab READ backtab WRITE setBacktab NOTIFY changed)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
+
+    Q_ENUMS(Priority)
 
 public:
     QDeclarativeKeyNavigationAttached(QObject * = 0);
@@ -347,14 +382,19 @@ public:
     QDeclarativeItem *backtab() const;
     void setBacktab(QDeclarativeItem *);
 
+    enum Priority { BeforeItem, AfterItem };
+    Priority priority() const;
+    void setPriority(Priority);
+
     static QDeclarativeKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void changed();
+    void priorityChanged();
 
 private:
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
 };
 
 class QDeclarativeKeysAttachedPrivate : public QObjectPrivate
@@ -394,6 +434,9 @@ class QDeclarativeKeysAttached : public QObject, public QDeclarativeItemKeyFilte
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativeItem> forwardTo READ forwardTo)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
+
+    Q_ENUMS(Priority)
 
 public:
     QDeclarativeKeysAttached(QObject *parent=0);
@@ -408,6 +451,10 @@ public:
         }
     }
 
+    enum Priority { BeforeItem, AfterItem};
+    Priority priority() const;
+    void setPriority(Priority);
+
     QDeclarativeListProperty<QDeclarativeItem> forwardTo() {
         Q_D(QDeclarativeKeysAttached);
         return QDeclarativeListProperty<QDeclarativeItem>(this, d->targets);
@@ -419,6 +466,7 @@ public:
 
 Q_SIGNALS:
     void enabledChanged();
+    void priorityChanged();
     void pressed(QDeclarativeKeyEvent *event);
     void released(QDeclarativeKeyEvent *event);
     void digit0Pressed(QDeclarativeKeyEvent *event);
@@ -463,9 +511,9 @@ Q_SIGNALS:
     void volumeDownPressed(QDeclarativeKeyEvent *event);
 
 private:
-    virtual void keyPressed(QKeyEvent *event);
-    virtual void keyReleased(QKeyEvent *event);
-    virtual void inputMethodEvent(QInputMethodEvent *);
+    virtual void keyPressed(QKeyEvent *event, bool post);
+    virtual void keyReleased(QKeyEvent *event, bool post);
+    virtual void inputMethodEvent(QInputMethodEvent *, bool post);
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     const QByteArray keyToSignal(int key) {

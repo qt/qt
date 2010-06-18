@@ -275,8 +275,9 @@ void QWEBKIT_EXPORT qt_drt_evaluateScriptInIsolatedWorld(QWebFrame* qFrame, int 
         JSC::JSValue result = frame->script()->executeScriptInWorld(mainThreadNormalWorld(), script, true).jsValue();
 }
 
-static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy, const QPoint& pos)
+bool QWEBKIT_EXPORT qtwebkit_webframe_scrollOverflow(QWebFrame* qFrame, int dx, int dy, const QPoint& pos)
 {
+    WebCore::Frame* frame = QWebFramePrivate::core(qFrame);
     if (!frame || !frame->document() || !frame->view() || !frame->eventHandler())
         return false;
 
@@ -299,17 +300,24 @@ static bool webframe_scrollOverflow(WebCore::Frame* frame, int dx, int dy, const
     bool scrolledHorizontal = false;
     bool scrolledVertical = false;
 
-    if (dx > 0)
-        scrolledHorizontal = renderLayer->scroll(ScrollRight, ScrollByPixel, dx);
-    else if (dx < 0)
-        scrolledHorizontal = renderLayer->scroll(ScrollLeft, ScrollByPixel, qAbs(dx));
+    do {
+        if (dx > 0)
+            scrolledHorizontal = renderLayer->scroll(ScrollRight, ScrollByPixel, dx);
+        else if (dx < 0)
+            scrolledHorizontal = renderLayer->scroll(ScrollLeft, ScrollByPixel, qAbs(dx));
 
-    if (dy > 0)
-        scrolledVertical = renderLayer->scroll(ScrollDown, ScrollByPixel, dy);
-    else if (dy < 0)
-        scrolledVertical = renderLayer->scroll(ScrollUp, ScrollByPixel, qAbs(dy));
+        if (dy > 0)
+            scrolledVertical = renderLayer->scroll(ScrollDown, ScrollByPixel, dy);
+        else if (dy < 0)
+            scrolledVertical = renderLayer->scroll(ScrollUp, ScrollByPixel, qAbs(dy));
 
-    return (scrolledHorizontal || scrolledVertical);
+        if (scrolledHorizontal || scrolledVertical)
+            return true;
+
+        renderLayer = renderLayer->parent();
+    } while (renderLayer);
+
+    return false;
 }
 
 
@@ -325,7 +333,7 @@ void QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int d
     if (!qFrame)
         return;
 
-    if (webframe_scrollOverflow(QWebFramePrivate::core(qFrame), dx, dy, pos))
+    if (qtwebkit_webframe_scrollOverflow(qFrame, dx, dy, pos))
         return;
 
     bool scrollHorizontal = false;
@@ -339,7 +347,7 @@ void QWEBKIT_EXPORT qtwebkit_webframe_scrollRecursively(QWebFrame* qFrame, int d
 
         if (dy > 0)  // scroll down
             scrollVertical = qFrame->scrollBarValue(Qt::Vertical) < qFrame->scrollBarMaximum(Qt::Vertical);
-            else if (dy < 0) //scroll up
+        else if (dy < 0) //scroll up
             scrollVertical = qFrame->scrollBarValue(Qt::Vertical) > qFrame->scrollBarMinimum(Qt::Vertical);
 
         if (scrollHorizontal || scrollVertical) {
@@ -552,8 +560,10 @@ void QWebFramePrivate::renderRelativeCoords(GraphicsContext* context, QWebFrame:
     can connect to the web page's \l{QWebPage::}{frameCreated()} signal
     to be notified when a new frame is created.
 
-    The hitTestContent() function can be used to programmatically examine the
-    contents of a frame.
+    There are multiple ways to programmatically examine the contents of a frame.
+    The hitTestContent() function can be used to find elements by coordinate.
+    For access to the underlying DOM tree, there is documentElement(),
+    findAllElements() and findFirstElement().
 
     A QWebFrame can be printed onto a QPrinter using the print() function.
     This function is marked as a slot and can be conveniently connected to
@@ -780,6 +790,10 @@ static inline QUrl ensureAbsoluteUrl(const QUrl &url)
 /*!
     \property QWebFrame::url
     \brief the url of the frame currently viewed
+
+    Setting this property clears the view and loads the URL.
+
+    By default, this property contains an empty, invalid URL.
 
     \sa urlChanged()
 */

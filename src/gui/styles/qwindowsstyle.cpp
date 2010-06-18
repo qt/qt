@@ -41,7 +41,6 @@
 
 #include "qwindowsstyle.h"
 #include "qwindowsstyle_p.h"
-#include <private/qstylehelper_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
 
@@ -70,12 +69,13 @@
 #include <private/qmath_p.h>
 #include <qmath.h>
 
-
 #ifdef Q_WS_X11
 #include "qfileinfo.h"
 #include "qdir.h"
 #include <private/qt_x11_p.h>
 #endif
+
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1388,8 +1388,9 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-") + QLatin1String(metaObject()->className()), opt, QSize(size, size))
-                  + QLatin1Char('-') + QString::number(pe);                               
+            QString pixmapName = QStyleHelper::uniqueName(QLatin1String("$qt_ia-")
+                                                          % QLatin1String(metaObject()->className()), opt, QSize(size, size))
+                                 % HexString<uint>(pe);
             if (!QPixmapCache::find(pixmapName, pixmap)) {
                 int border = size/5;
                 int sqsize = 2*(size/2);
@@ -1911,7 +1912,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->setPen(discol);
             }
 
-            int xm = QWindowsStylePrivate::windowsItemFrame + checkcol + QWindowsStylePrivate::windowsItemHMargin;
+            int xm = int(QWindowsStylePrivate::windowsItemFrame) + checkcol + int(QWindowsStylePrivate::windowsItemHMargin);
             int xpos = menuitem->rect.x() + xm;
             QRect textRect(xpos, y + QWindowsStylePrivate::windowsItemVMargin,
                            w - xm - QWindowsStylePrivate::windowsRightBorder - tab + 1, h - 2 * QWindowsStylePrivate::windowsItemVMargin);
@@ -3223,7 +3224,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
             int checkcol = qMax<int>(maxpmw, QWindowsStylePrivate::windowsCheckMarkWidth); // Windows always shows a check column
             w += checkcol;
-            w += QWindowsStylePrivate::windowsRightBorder + 10;
+            w += int(QWindowsStylePrivate::windowsRightBorder) + 10;
             sz.setWidth(w);
         }
         break;

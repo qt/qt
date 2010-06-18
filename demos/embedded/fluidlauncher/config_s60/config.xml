@@ -20,6 +20,14 @@
     <example filename="flickable" name="Kinetic Scrolling" image="screenshots/flickable.png"/>
     <example filename="digiflip" name="Flipping Clock" image="screenshots/digiflip.png"/>
     <example filename="qmediaplayer" name="Media Player" image="screenshots/mediaplayer.png" args="-small-screen"/>
+    <example filename="spectrum" name="Spectrum Analyzer" image="screenshots/spectrum.png" args="-small-screen"/>
+    <example filename="qmlcalculator" name="Qml Calculator" image="screenshots/qmlcalculator.png"/>
+    <example filename="qmlclocks" name="Qml Clocks" image="screenshots/qmlclocks.png"/>
+    <example filename="qmldialcontrol" name="Qml Dial Control" image="screenshots/qmldialcontrol.png"/>
+    <example filename="qmleasing" name="Qml Easing Curves" image="screenshots/qmleasing.png"/>
+    <example filename="qmlflickr" name="Qml flickr" image="screenshots/qmlflickr.jpg"/>
+    <example filename="qmlphotoviewer" name="Qml Photo Viewer" image="screenshots/qmlphotoviewer.jpg"/>
+    <example filename="qmltwitter" name="Qml twitter" image="screenshots/qmltwitter.jpg"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>

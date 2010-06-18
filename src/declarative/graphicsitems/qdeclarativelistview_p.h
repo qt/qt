@@ -124,6 +124,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(Orientation)
     Q_ENUMS(SnapMode)
+    Q_ENUMS(PositionMode)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -200,7 +201,6 @@ public:
     static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };
-    Q_ENUMS(PositionMode);
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;

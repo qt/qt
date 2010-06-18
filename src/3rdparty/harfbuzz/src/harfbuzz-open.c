@@ -1282,9 +1282,10 @@ _HB_OPEN_Get_Class( HB_ClassDefinition* cd,
 
 
 HB_INTERNAL HB_Error
-_HB_OPEN_Load_Device( HB_Device* d,
+_HB_OPEN_Load_Device( HB_Device** device,
 		       HB_Stream    stream )
 {
+  HB_Device*  d;
   HB_Error   error;
 
   HB_UShort   n, count;
@@ -1294,6 +1295,14 @@ _HB_OPEN_Load_Device( HB_Device* d,
 
   if ( ACCESS_Frame( 6L ) )
     return error;
+
+  if ( ALLOC( *device, sizeof(HB_Device)) )
+  {
+    *device = 0;
+    return error;
+  }
+
+  d = *device;
 
   d->StartSize   = GET_UShort();
   d->EndSize     = GET_UShort();
@@ -1318,11 +1327,17 @@ _HB_OPEN_Load_Device( HB_Device* d,
 	      ( 4 - d->DeltaFormat ) ) + 1;
 
   if ( ALLOC_ARRAY( d->DeltaValue, count, HB_UShort ) )
+  {
+    FREE( *device );
+    *device = 0;
     return error;
+  }
 
   if ( ACCESS_Frame( count * 2L ) )
   {
     FREE( d->DeltaValue );
+    FREE( *device );
+    *device = 0;
     return error;
   }
 
@@ -1338,9 +1353,13 @@ _HB_OPEN_Load_Device( HB_Device* d,
 
 
 HB_INTERNAL void
-_HB_OPEN_Free_Device( HB_Device* d )
+_HB_OPEN_Free_Device( HB_Device** d )
 {
-  FREE( d->DeltaValue );
+  if ( *d )
+  {
+    FREE( (*d)->DeltaValue );
+    FREE( *d );
+  }
 }
 
 
@@ -1380,12 +1399,21 @@ _HB_OPEN_Free_Device( HB_Device* d )
      mask = 0x00FF                                    */
 
 HB_INTERNAL HB_Error
-_HB_OPEN_Get_Device( HB_Device* d,
+_HB_OPEN_Get_Device( HB_Device** device,
 		      HB_UShort    size,
 		      HB_Short*    value )
 {
+  HB_Device* d;
   HB_UShort  byte, bits, mask, f, s;
+  HB_Error   error;
 
+  if ( ALLOC( *device, sizeof(HB_Device)) )
+  {
+    *device = 0;
+    return error;
+  }
+
+  d = *device;
 
   f = d->DeltaFormat;
 
@@ -1408,6 +1436,8 @@ _HB_OPEN_Get_Device( HB_Device* d,
   else
   {
     *value = 0;
+    FREE( *device );
+    *device = 0;
     return HB_Err_Not_Covered;
   }
 }

@@ -44,10 +44,6 @@
 #include <QtNetwork>
 #include <QtSvg>
 
-#if defined (Q_OS_SYMBIAN)
-#include "sym_iap_util.h"
-#endif
-
 class WeatherInfo: public QMainWindow
 {
     Q_OBJECT
@@ -67,6 +63,7 @@ private:
     QList<QGraphicsTextItem*> m_rangeItems;
     QTimeLine m_timeLine;
     QHash<QString, QString> m_icons;
+    QNetworkAccessManager m_manager;
 
 public:
     WeatherInfo(QWidget *parent = 0): QMainWindow(parent) {
@@ -98,14 +95,14 @@ public:
         }
         setContextMenuPolicy(Qt::ActionsContextMenu);
 
+        connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
+                this, SLOT(handleNetworkData(QNetworkReply*)));
+
         QTimer::singleShot(0, this, SLOT(delayedInit()));
     }
 
 private slots:
     void delayedInit() {
-#if defined(Q_OS_SYMBIAN)
-        qt_SetDefaultIap();
-#endif
         request("Oslo");
     }
 
@@ -122,7 +119,6 @@ private slots:
         if (!networkReply->error())
             digest(QString::fromUtf8(networkReply->readAll()));
         networkReply->deleteLater();
-        networkReply->manager()->deleteLater();
     }
 
     void animate(int frame) {
@@ -185,10 +181,7 @@ private:
         url.addEncodedQueryItem("hl", "en");
         url.addEncodedQueryItem("weather", QUrl::toPercentEncoding(location));
 
-        QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-        connect(manager, SIGNAL(finished(QNetworkReply*)),
-                this, SLOT(handleNetworkData(QNetworkReply*)));
-        manager->get(QNetworkRequest(url));
+        m_manager.get(QNetworkRequest(url));
 
         city = QString();
         setWindowTitle("Loading...");

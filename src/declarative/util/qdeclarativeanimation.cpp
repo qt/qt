@@ -55,6 +55,7 @@
 #include <qdeclarativemetatype_p.h>
 #include <qdeclarativevaluetype_p.h>
 #include <qdeclarativeproperty_p.h>
+#include <qdeclarativeengine_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>
@@ -178,6 +179,10 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
         d->running = r;
         if (r == false)
             d->avoidPropertyValueSourceStart = true;
+        else {
+            QDeclarativeEnginePrivate *engPriv = QDeclarativeEnginePrivate::get(qmlEngine(this));
+            engPriv->registerFinalizedParserStatusObject(this, this->metaObject()->indexOfSlot("componentFinalized()"));
+        }
         return;
     }
 
@@ -268,6 +273,11 @@ void QDeclarativeAbstractAnimation::componentComplete()
 {
     Q_D(QDeclarativeAbstractAnimation);
     d->componentComplete = true;
+}
+
+void QDeclarativeAbstractAnimation::componentFinalized()
+{
+    Q_D(QDeclarativeAbstractAnimation);
     if (d->running) {
         d->running = false;
         setRunning(true);
@@ -547,6 +557,8 @@ void QDeclarativeAbstractAnimation::timelineComplete()
         NumberAnimation { ... duration: 200 }
     }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -617,6 +629,8 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
     When used in a transition, ColorAnimation will by default animate
     all properties of type color that are changing. If a property or properties
     are explicitly set for the animation, then those will be used instead.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -745,7 +759,7 @@ void QDeclarativeScriptAction::setScript(const QDeclarativeScriptString &script)
 }
 
 /*!
-    \qmlproperty QString ScriptAction::scriptName
+    \qmlproperty string ScriptAction::scriptName
     This property holds the the name of the StateChangeScript to run.
 
     This property is only valid when ScriptAction is used as part of a transition.
@@ -776,12 +790,12 @@ void QDeclarativeScriptActionPrivate::execute()
 
     const QString &str = scriptStr.script();
     if (!str.isEmpty()) {
-        QDeclarativeExpression expr(scriptStr.context(), str, scriptStr.scopeObject());
+        QDeclarativeExpression expr(scriptStr.context(), scriptStr.scopeObject(), str);
         QDeclarativeData *ddata = QDeclarativeData::get(q);
         if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
             expr.setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
         expr.evaluate();
-        if (expr.hasError()) 
+        if (expr.hasError())
             qmlInfo(q) << expr.error();
     }
 }
@@ -834,7 +848,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
     The PropertyAction is immediate -
     the target property is not animated to the selected value in any way.
-    
+
     \sa QtDeclarative
 */
 /*!
@@ -864,7 +878,7 @@ void QDeclarativePropertyActionPrivate::init()
     This property holds an explicit target object to animate.
 
     The exact effect of the \c target property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
+    is being used.  Refer to the \l {QML Animation} documentation for details.
 */
 
 QObject *QDeclarativePropertyAction::target() const
@@ -1072,11 +1086,13 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
-    Animate a set of properties over 200ms, from their values in the start state to
+    For example, to animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
     NumberAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1146,6 +1162,8 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1214,7 +1232,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     When used in a transition RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
-    your own properties via \c properties or \c property.
+    your own properties via \l {PropertyAnimation::properties}{properties} or 
+    \l {PropertyAnimation::property}{property}.
 
     In the following example we use RotationAnimation to animate the rotation
     between states via the shortest path.
@@ -1228,6 +1247,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
         RotationAnimation { direction: RotationAnimation.Shortest }
     }
     \endqml
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -1320,27 +1341,27 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
 /*!
     \qmlproperty enumeration RotationAnimation::direction
     The direction in which to rotate.
-    Possible values are Numerical, Clockwise, Counterclockwise,
-    or Shortest.
+
+    Possible values are:
 
     \table
     \row
-        \o Numerical
+        \o RotationAnimation.Numerical
         \o Rotate by linearly interpolating between the two numbers.
            A rotation from 10 to 350 will rotate 340 degrees clockwise.
     \row
-        \o Clockwise
+        \o RotationAnimation.Clockwise
         \o Rotate clockwise between the two values
     \row
-        \o Counterclockwise
+        \o RotationAnimation.Counterclockwise
         \o Rotate counterclockwise between the two values
     \row
-        \o Shortest
+        \o RotationAnimation.Shortest
         \o Rotate in the direction that produces the shortest animation path.
            A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
     \endtable
 
-    The default direction is Numerical.
+    The default direction is RotationAnimation.Numerical.
 */
 QDeclarativeRotationAnimation::RotationDirection QDeclarativeRotationAnimation::direction() const
 {
@@ -1436,7 +1457,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
     }
     \endcode
 
-    \sa ParallelAnimation
+    \sa ParallelAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent) :
@@ -1498,7 +1519,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
     }
     \endcode
 
-    \sa SequentialAnimation
+    \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 /*!
     \internal
@@ -1605,7 +1626,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Animate any objects that have changed their x or y properties in the target state using
     an InOutQuad easing curve:
     \qml
-    Transition { PropertyAnimation { properties: "x,y"; easing.type: "InOutQuad" } }
+    Transition { PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } }
     \endqml
     \o In a Behavior
 
@@ -1647,6 +1668,8 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Depending on how the animation is used, the set of properties normally used will be
     different. For more information see the individual property documentation, as well
     as the \l{QML Animation} introduction.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativePropertyAnimation::QDeclarativePropertyAnimation(QObject *parent)
@@ -1751,192 +1774,195 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 
     To specify an easing curve you need to specify at least the type. For some curves you can also specify
     amplitude, period and/or overshoot (more details provided after the table). The default easing curve is
-    Linear.
+    \c Easing.Linear.
 
     \qml
-    PropertyAnimation { properties: "y"; easing.type: "InOutElastic"; easing.amplitude: 2.0; easing.period: 1.5 }
+    PropertyAnimation { properties: "y"; easing.type: Easing.InOutElastic; easing.amplitude: 2.0; easing.period: 1.5 }
     \endqml
 
     Available types are:
 
     \table
     \row
-        \o \c Linear
+        \o \c Easing.Linear
         \o Easing curve for a linear (t) function: velocity is constant.
         \o \inlineimage qeasingcurve-linear.png
     \row
-        \o \c InQuad
+        \o \c Easing.InQuad
         \o Easing curve for a quadratic (t^2) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inquad.png
     \row
-        \o \c OutQuad
+        \o \c Easing.OutQuad
         \o Easing curve for a quadratic (t^2) function: decelerating to zero velocity.
         \o \inlineimage qeasingcurve-outquad.png
     \row
-        \o \c InOutQuad
+        \o \c Easing.InOutQuad
         \o Easing curve for a quadratic (t^2) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutquad.png
     \row
-        \o \c OutInQuad
+        \o \c Easing.OutInQuad
         \o Easing curve for a quadratic (t^2) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinquad.png
     \row
-        \o \c InCubic
+        \o \c Easing.InCubic
         \o Easing curve for a cubic (t^3) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-incubic.png
     \row
-        \o \c OutCubic
+        \o \c Easing.OutCubic
         \o Easing curve for a cubic (t^3) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outcubic.png
     \row
-        \o \c InOutCubic
+        \o \c Easing.InOutCubic
         \o Easing curve for a cubic (t^3) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutcubic.png
     \row
-        \o \c OutInCubic
+        \o \c Easing.OutInCubic
         \o Easing curve for a cubic (t^3) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outincubic.png
     \row
-        \o \c InQuart
+        \o \c Easing.InQuart
         \o Easing curve for a quartic (t^4) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inquart.png
     \row
-        \o \c OutQuart
+        \o \c Easing.OutQuart
         \o Easing curve for a cubic (t^4) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outquart.png
     \row
-        \o \c InOutQuart
+        \o \c Easing.InOutQuart
         \o Easing curve for a cubic (t^4) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutquart.png
     \row
-        \o \c OutInQuart
+        \o \c Easing.OutInQuart
         \o Easing curve for a cubic (t^4) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinquart.png
     \row
-        \o \c InQuint
+        \o \c Easing.InQuint
         \o Easing curve for a quintic (t^5) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inquint.png
     \row
-        \o \c OutQuint
+        \o \c Easing.OutQuint
         \o Easing curve for a cubic (t^5) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outquint.png
     \row
-        \o \c InOutQuint
+        \o \c Easing.InOutQuint
         \o Easing curve for a cubic (t^5) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutquint.png
     \row
-        \o \c OutInQuint
+        \o \c Easing.OutInQuint
         \o Easing curve for a cubic (t^5) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinquint.png
     \row
-        \o \c InSine
+        \o \c Easing.InSine
         \o Easing curve for a sinusoidal (sin(t)) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-insine.png
     \row
-        \o \c OutSine
+        \o \c Easing.OutSine
         \o Easing curve for a sinusoidal (sin(t)) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outsine.png
     \row
-        \o \c InOutSine
+        \o \c Easing.InOutSine
         \o Easing curve for a sinusoidal (sin(t)) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutsine.png
     \row
-        \o \c OutInSine
+        \o \c Easing.OutInSine
         \o Easing curve for a sinusoidal (sin(t)) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinsine.png
     \row
-        \o \c InExpo
+        \o \c Easing.InExpo
         \o Easing curve for an exponential (2^t) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inexpo.png
     \row
-        \o \c OutExpo
+        \o \c Easing.OutExpo
         \o Easing curve for an exponential (2^t) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outexpo.png
     \row
-        \o \c InOutExpo
+        \o \c Easing.InOutExpo
         \o Easing curve for an exponential (2^t) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutexpo.png
     \row
-        \o \c OutInExpo
+        \o \c Easing.OutInExpo
         \o Easing curve for an exponential (2^t) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinexpo.png
     \row
-        \o \c InCirc
+        \o \c Easing.InCirc
         \o Easing curve for a circular (sqrt(1-t^2)) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-incirc.png
     \row
-        \o \c OutCirc
+        \o \c Easing.OutCirc
         \o Easing curve for a circular (sqrt(1-t^2)) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outcirc.png
     \row
-        \o \c InOutCirc
+        \o \c Easing.InOutCirc
         \o Easing curve for a circular (sqrt(1-t^2)) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutcirc.png
     \row
-        \o \c OutInCirc
+        \o \c Easing.OutInCirc
         \o Easing curve for a circular (sqrt(1-t^2)) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outincirc.png
     \row
-        \o \c InElastic
+        \o \c Easing.InElastic
         \o Easing curve for an elastic (exponentially decaying sine wave) function: accelerating from zero velocity.
         \br The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
         \o \inlineimage qeasingcurve-inelastic.png
     \row
-        \o \c OutElastic
+        \o \c Easing.OutElastic
         \o Easing curve for an elastic (exponentially decaying sine wave) function: decelerating from zero velocity.
         \br The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
         \o \inlineimage qeasingcurve-outelastic.png
     \row
-        \o \c InOutElastic
+        \o \c Easing.InOutElastic
         \o Easing curve for an elastic (exponentially decaying sine wave) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutelastic.png
     \row
-        \o \c OutInElastic
+        \o \c Easing.OutInElastic
         \o Easing curve for an elastic (exponentially decaying sine wave) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinelastic.png
     \row
-        \o \c InBack
+        \o \c Easing.InBack
         \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inback.png
     \row
-        \o \c OutBack
+        \o \c Easing.OutBack
         \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing out: decelerating to zero velocity.
         \o \inlineimage qeasingcurve-outback.png
     \row
-        \o \c InOutBack
+        \o \c Easing.InOutBack
         \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutback.png
     \row
-        \o \c OutInBack
+        \o \c Easing.OutInBack
         \o Easing curve for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinback.png
     \row
-        \o \c InBounce
+        \o \c Easing.InBounce
         \o Easing curve for a bounce (exponentially decaying parabolic bounce) function: accelerating from zero velocity.
         \o \inlineimage qeasingcurve-inbounce.png
     \row
-        \o \c OutBounce
+        \o \c Easing.OutBounce
         \o Easing curve for a bounce (exponentially decaying parabolic bounce) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outbounce.png
     \row
-        \o \c InOutBounce
+        \o \c Easing.InOutBounce
         \o Easing curve for a bounce (exponentially decaying parabolic bounce) function easing in/out: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutbounce.png
     \row
-        \o \c OutInBounce
+        \o \c Easing.OutInBounce
         \o Easing curve for a bounce (exponentially decaying parabolic bounce) function easing out/in: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinbounce.png
     \endtable
 
-    easing.amplitude is not applicable for all curve types. It is only applicable for bounce and elastic curves (curves of type
-    QEasingCurve::InBounce, QEasingCurve::OutBounce, QEasingCurve::InOutBounce, QEasingCurve::OutInBounce, QEasingCurve::InElastic,
-    QEasingCurve::OutElastic, QEasingCurve::InOutElastic or QEasingCurve::OutInElastic).
+    \c easing.amplitude is only applicable for bounce and elastic curves (curves of type
+    \c Easing.InBounce, \c Easing.OutBounce, \c Easing.InOutBounce, \c Easing.OutInBounce, \c Easing.InElastic,
+    \c Easing.OutElastic, \c Easing.InOutElastic or \c Easing.OutInElastic).
 
-    easing.overshoot is not applicable for all curve types. It is only applicable if type is: QEasingCurve::InBack, QEasingCurve::OutBack,
-    QEasingCurve::InOutBack or QEasingCurve::OutInBack.
+    \c easing.overshoot is only applicable if \c easing.type is: \c Easing.InBack, \c Easing.OutBack,
+    \c Easing.InOutBack or \c Easing.OutInBack.
 
-    easing.period is not applicable for all curve types. It is only applicable if type is: QEasingCurve::InElastic, QEasingCurve::OutElastic,
-    QEasingCurve::InOutElastic or QEasingCurve::OutInElastic.
+    \c easing.period is only applicable if easing.type is: \c Easing.InElastic, \c Easing.OutElastic,
+    \c Easing.InOutElastic or \c Easing.OutInElastic.
+
+    See the \l {declarative/animation/easing}{easing} example for a demonstration of
+    the different easing settings.
 */
 QEasingCurve QDeclarativePropertyAnimation::easing() const
 {
@@ -2019,8 +2045,9 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
     The singular forms are slightly optimized, so if you do have only a single target/property
     to animate you should try to use them.
 
-    In many cases these properties do not need to be explicitly specified -- they can be
-    inferred from the animation framework.
+    In many cases these properties do not need to be explicitly specified, as they can be
+    inferred from the animation framework:
+
     \table 80%
     \row
     \o Value Source / Behavior
@@ -2106,52 +2133,39 @@ QAbstractAnimation *QDeclarativePropertyAnimation::qtAnimation()
     return d->va;
 }
 
-struct PropertyUpdater : public QDeclarativeBulkValueUpdater
+void QDeclarativeAnimationPropertyUpdater::setValue(qreal v)
 {
-    QDeclarativeStateActions actions;
-    int interpolatorType;       //for Number/ColorAnimation
-    int prevInterpolatorType;   //for generic
-    QVariantAnimation::Interpolator interpolator;
-    bool reverse;
-    bool fromSourced;
-    bool fromDefined;
-    bool *wasDeleted;
-    PropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
-    ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
-    void setValue(qreal v)
-    {
-        bool deleted = false;
-        wasDeleted = &deleted;
-        if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
-            v = 1 - v;
-        for (int ii = 0; ii < actions.count(); ++ii) {
-            QDeclarativeAction &action = actions[ii];
+    bool deleted = false;
+    wasDeleted = &deleted;
+    if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+        v = 1 - v;
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        QDeclarativeAction &action = actions[ii];
 
-            if (v == 1.)
-                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
-            else {
-                if (!fromSourced && !fromDefined) {
-                    action.fromValue = action.property.read();
-                    if (interpolatorType)
-                        QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
-                }
-                if (!interpolatorType) {
-                    int propType = action.property.propertyType();
-                    if (!prevInterpolatorType || prevInterpolatorType != propType) {
-                        prevInterpolatorType = propType;
-                        interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
-                    }
-                }
-                if (interpolator)
-                    QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        if (v == 1.)
+            QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+        else {
+            if (!fromSourced && !fromDefined) {
+                action.fromValue = action.property.read();
+                if (interpolatorType)
+                    QDeclarativePropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
             }
-            if (deleted)
-                return;
+            if (!interpolatorType) {
+                int propType = action.property.propertyType();
+                if (!prevInterpolatorType || prevInterpolatorType != propType) {
+                    prevInterpolatorType = propType;
+                    interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
+                }
+            }
+            if (interpolator)
+                QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         }
-        wasDeleted = 0;
-        fromSourced = true;
+        if (deleted)
+            return;
     }
-};
+    wasDeleted = 0;
+    fromSourced = true;
+}
 
 void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions,
                                      QDeclarativeProperties &modified,
@@ -2181,7 +2195,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         props << d->defaultProperties.split(QLatin1Char(','));
     }
 
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
@@ -2306,6 +2320,8 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
 
     When used in a transition, ParentAnimation will by default animate
     all ParentChanges.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 /*!
@@ -2337,7 +2353,7 @@ QDeclarativeParentAnimation::~QDeclarativeParentAnimation()
 }
 
 /*!
-    \qmlproperty item ParentAnimation::target
+    \qmlproperty Item ParentAnimation::target
     The item to reparent.
 
     When used in a transition, if no target is specified all
@@ -2360,7 +2376,7 @@ void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
 }
 
 /*!
-    \qmlproperty item ParentAnimation::newParent
+    \qmlproperty Item ParentAnimation::newParent
     The new parent to animate to.
 
     If not set, then the parent defined in the end state of the transition.
@@ -2382,7 +2398,7 @@ void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
 }
 
 /*!
-    \qmlproperty item ParentAnimation::via
+    \qmlproperty Item ParentAnimation::via
     The item to reparent via. This provides a way to do an unclipped animation
     when both the old parent and new parent are clipped
 
@@ -2526,13 +2542,12 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 viaData->pc << vpc;
                 viaData->actions << myAction;
                 QDeclarativeAction dummyAction;
-                QDeclarativeAction &xAction = pc->xIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &yAction = pc->yIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &sAction = pc->scaleIsSet() ? actions[++i] : dummyAction;
-                QDeclarativeAction &rAction = pc->rotationIsSet() ? actions[++i] : dummyAction;
-                bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
+                QDeclarativeAction &xAction = pc->xIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &yAction = pc->yIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &sAction = pc->scaleIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
+                QDeclarativeAction &rAction = pc->rotationIsSet() && i < actions.size()-1 ? actions[++i] : dummyAction;
                 QDeclarativeItem *target = pc->object();
-                QDeclarativeItem *targetParent = forward ? pc->parent() : pc->originalParent();
+                QDeclarativeItem *targetParent = action.reverseEvent ? pc->originalParent() : pc->parent();
 
                 //### this mirrors the logic in QDeclarativeParentChange.
                 bool ok;
@@ -2573,9 +2588,9 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 if (ok && target->transformOrigin() != QDeclarativeItem::TopLeft) {
                     qreal w = target->width();
                     qreal h = target->height();
-                    if (pc->widthIsSet())
+                    if (pc->widthIsSet() && i < actions.size() - 1)
                         w = actions[++i].toValue.toReal();
-                    if (pc->heightIsSet())
+                    if (pc->heightIsSet() && i < actions.size() - 1)
                         h = actions[++i].toValue.toReal();
                     const QPointF &transformOrigin
                             = d->computeTransformOrigin(target->transformOrigin(), w,h);
@@ -2730,7 +2745,7 @@ void QDeclarativeAnchorAnimation::setDuration(int duration)
     Linear.
 
     \qml
-    AnchorAnimation { easing.type: "InOutQuad" }
+    AnchorAnimation { easing.type: Easing.InOutQuad }
     \endqml
 
     See the \l{PropertyAnimation::easing.type} documentation for information
@@ -2759,7 +2774,7 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
 {
     Q_UNUSED(modified);
     Q_D(QDeclarativeAnchorAnimation);
-    PropertyUpdater *data = new PropertyUpdater;
+    QDeclarativeAnimationPropertyUpdater *data = new QDeclarativeAnimationPropertyUpdater;
     data->interpolatorType = QMetaType::QReal;
     data->interpolator = d->interpolator;
 

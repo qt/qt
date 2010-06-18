@@ -377,6 +377,7 @@ public:
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
+    void updatePaintedViewBoundingRects(bool updateChildren);
     void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
     inline void ensureSceneTransform()
     {
@@ -524,7 +525,9 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
+#ifndef QT_NO_GESTURES
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
+#endif
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;

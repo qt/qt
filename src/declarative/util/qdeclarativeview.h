@@ -90,6 +90,7 @@ public:
     QList<QDeclarativeError> errors() const;
 
     QSize sizeHint() const;
+    QSize initialSize() const;
 
 Q_SIGNALS:
     void sceneResized(QSize size); // ???
@@ -106,9 +107,8 @@ protected:
     virtual bool eventFilter(QObject *watched, QEvent *e);
 
 private:
-    friend class QDeclarativeViewPrivate;
-    QDeclarativeViewPrivate *d;
     Q_DISABLE_COPY(QDeclarativeView)
+    Q_DECLARE_PRIVATE(QDeclarativeView)
 };
 
 QT_END_NAMESPACE

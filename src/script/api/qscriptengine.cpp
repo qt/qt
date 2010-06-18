@@ -294,9 +294,20 @@ QT_BEGIN_NAMESPACE
 
     This enum specifies the ownership when wrapping a C++ value, e.g. by using newQObject().
 
-    \value QtOwnership The standard Qt ownership rules apply, i.e. the associated object will never be explicitly deleted by the script engine. This is the default. (QObject ownership is explained in \l{Object Trees and Object Ownership}.)
-    \value ScriptOwnership The value is owned by the script environment. The associated data will be deleted when appropriate (i.e. after the garbage collector has discovered that there are no more live references to the value).
-    \value AutoOwnership If the associated object has a parent, the Qt ownership rules apply (QtOwnership); otherwise, the object is owned by the script environment (ScriptOwnership).
+    \value QtOwnership The standard Qt ownership rules apply, i.e. the
+    associated object will never be explicitly deleted by the script
+    engine. This is the default. (QObject ownership is explained in
+    \l{Object Trees & Ownership}.)
+
+    \value ScriptOwnership The value is owned by the script
+    environment. The associated data will be deleted when appropriate
+    (i.e. after the garbage collector has discovered that there are no
+    more live references to the value).
+
+    \value AutoOwnership If the associated object has a parent, the Qt
+    ownership rules apply (QtOwnership); otherwise, the object is
+    owned by the script environment (ScriptOwnership).
+
 */
 
 /*!
@@ -1000,12 +1011,17 @@ JSC::JSValue QScriptEnginePrivate::arrayFromVariantList(JSC::ExecState *exec, co
     return arr;
 }
 
-QVariantList QScriptEnginePrivate::variantListFromArray(JSC::ExecState *exec, JSC::JSValue arr)
+QVariantList QScriptEnginePrivate::variantListFromArray(JSC::ExecState *exec, JSC::JSArray *arr)
 {
+    QScriptEnginePrivate *eng = QScript::scriptEngineFromExec(exec);
+    if (eng->visitedConversionObjects.contains(arr))
+        return QVariantList(); // Avoid recursion.
+    eng->visitedConversionObjects.insert(arr);
     QVariantList lst;
     uint len = toUInt32(exec, property(exec, arr, exec->propertyNames().length));
     for (uint i = 0; i < len; ++i)
         lst.append(toVariant(exec, property(exec, arr, i)));
+    eng->visitedConversionObjects.remove(arr);
     return lst;
 }
 
@@ -1018,14 +1034,19 @@ JSC::JSValue QScriptEnginePrivate::objectFromVariantMap(JSC::ExecState *exec, co
     return obj;
 }
 
-QVariantMap QScriptEnginePrivate::variantMapFromObject(JSC::ExecState *exec, JSC::JSValue obj)
+QVariantMap QScriptEnginePrivate::variantMapFromObject(JSC::ExecState *exec, JSC::JSObject *obj)
 {
+    QScriptEnginePrivate *eng = QScript::scriptEngineFromExec(exec);
+    if (eng->visitedConversionObjects.contains(obj))
+        return QVariantMap(); // Avoid recursion.
+    eng->visitedConversionObjects.insert(obj);
     JSC::PropertyNameArray propertyNames(exec);
-    JSC::asObject(obj)->getOwnPropertyNames(exec, propertyNames, JSC::IncludeDontEnumProperties);
+    obj->getOwnPropertyNames(exec, propertyNames, JSC::IncludeDontEnumProperties);
     QVariantMap vmap;
     JSC::PropertyNameArray::const_iterator it = propertyNames.begin();
     for( ; it != propertyNames.end(); ++it)
         vmap.insert(it->ustring(), toVariant(exec, property(exec, obj, *it)));
+    eng->visitedConversionObjects.remove(obj);
     return vmap;
 }
 
@@ -1514,7 +1535,7 @@ void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
 
 #ifndef QT_NO_REGEXP
 
-Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QRegExp &regexp)
 {
@@ -1650,16 +1671,10 @@ QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue valu
             return QVariant(toRegExp(exec, value));
 #endif
         else if (isArray(value))
-            return variantListFromArray(exec, value);
+            return variantListFromArray(exec, JSC::asArray(value));
         else if (QScriptDeclarativeClass *dc = declarativeClass(value))
             return dc->toVariant(declarativeObject(value));
-        // try to convert to primitive
-        JSC::JSValue savedException;
-        saveException(exec, &savedException);
-        JSC::JSValue prim = value.toPrimitive(exec);
-        restoreException(exec, savedException);
-        if (!prim.isObject())
-            return toVariant(exec, prim);
+        return variantMapFromObject(exec, JSC::asObject(value));
     } else if (value.isNumber()) {
         return QVariant(toNumber(exec, value));
     } else if (value.isString()) {
@@ -2008,8 +2023,6 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun,
 }
 
 #ifndef QT_NO_REGEXP
-
-Q_DECL_IMPORT extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 /*!
   Creates a QtScript object of class RegExp with the given
@@ -3120,12 +3133,12 @@ bool QScriptEnginePrivate::convertValue(JSC::ExecState *exec, JSC::JSValue value
         } break;
     case QMetaType::QVariantList:
         if (isArray(value)) {
-            *reinterpret_cast<QVariantList *>(ptr) = variantListFromArray(exec, value);
+            *reinterpret_cast<QVariantList *>(ptr) = variantListFromArray(exec, JSC::asArray(value));
             return true;
         } break;
     case QMetaType::QVariantMap:
         if (isObject(value)) {
-            *reinterpret_cast<QVariantMap *>(ptr) = variantMapFromObject(exec, value);
+            *reinterpret_cast<QVariantMap *>(ptr) = variantMapFromObject(exec, JSC::asObject(value));
             return true;
         } break;
     case QMetaType::QVariant:

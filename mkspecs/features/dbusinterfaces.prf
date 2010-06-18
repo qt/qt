@@ -1,13 +1,10 @@
 load(moc)
 
-isEmpty(QMAKE_QDBUSXML2CPP) {
-    win32:QMAKE_QDBUSXML2CPP = $$[QT_INSTALL_BINS]\qdbusxml2cpp.exe
-    else:QMAKE_QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp
-}
+qtPrepareTool(QMAKE_QDBUSXML2CPP, qdbusxml2cpp)
 
 for(DBUS_INTERFACE, $$list($$unique(DBUS_INTERFACES))) {
 
-    !contains(DBUS_INTERFACE, .*\w\.xml$) {
+    !contains(DBUS_INTERFACE, .*\\w\\.xml$) {
         warning("Invalid D-BUS interface : '$${DBUS_INTERFACE}', please use 'com.mydomain.myinterface.xml' instead.")
         next()
     }

@@ -49,6 +49,7 @@
 /*!
     \page sql-programming.html
     \title SQL Programming
+    \ingroup qt-sql
     \nextpage Connecting to Databases
 
     \brief Database integration for Qt applications.
@@ -72,7 +73,7 @@
         \endlist
     \o \l{Executing SQL Statements}
         \list
-        \o \l{Recommended Use of Data Types in Databases}
+        \o \l{Data Types for Qt-supported Database Systems}
         \endlist
     \o \l{Using the SQL Model Classes}
     \o \l{Presenting Data in a Table View}
@@ -118,6 +119,7 @@
 /*!
     \page sql-connecting.html
     \title Connecting to Databases
+    \ingroup qt-sql
 
     \contentspage SQL Programming
     \previouspage SQL Programming
@@ -187,6 +189,7 @@
 /*!
     \page sql-sqlstatements.html
     \title Executing SQL Statements
+    \ingroup qt-sql
     
     \previouspage Connecting to Databases
     \contentspage SQL Programming
@@ -237,8 +240,9 @@
     QVariant::toString() and QVariant::toInt() to convert
     variants to QString and \c int.
 
-    For an overview of the recommended types used with Qt supported
-    Databases, please refer to \l{Recommended Use of Data Types in Databases}{this table}.
+    For an overview of the recommended types for use with Qt-supported
+    Databases, please refer to \l{Data Types for Qt-supported Database
+    Systems} {this table}.
 
     You can iterate back and forth using QSqlQuery::next(),
     QSqlQuery::previous(), QSqlQuery::first(), QSqlQuery::last(), and
@@ -337,6 +341,7 @@
 /*!
     \page sql-model.html
     \title Using the SQL Model Classes
+    \ingroup qt-sql
     
     \previouspage Executing SQL Statements
     \contentspage SQL Programming
@@ -483,6 +488,7 @@
 /*!
     \page sql-presenting.html
     \title Presenting Data in a Table View
+    \ingroup qt-sql
     
     \previouspage Using the SQL Model Classes
     \contentspage SQL Programming
@@ -587,6 +593,7 @@
 /*!
     \page sql-forms.html
     \title Creating Data-Aware Forms
+    \ingroup qt-sql
     
     \previouspage Presenting Data in a Table View
     \contentspage SQL Programming

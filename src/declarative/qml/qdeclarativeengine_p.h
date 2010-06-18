@@ -57,6 +57,7 @@
 
 #include "private/qdeclarativeclassfactory_p.h"
 #include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativeimport_p.h"
 #include "private/qpodvector_p.h"
 #include "qdeclarative.h"
 #include "private/qdeclarativevaluetype_p.h"
@@ -90,6 +91,7 @@ class QDeclarativeEngine;
 class QDeclarativeContextPrivate;
 class QDeclarativeExpression;
 class QDeclarativeContextScriptClass;
+class QDeclarativeImportDatabase;
 class QDeclarativeObjectScriptClass;
 class QDeclarativeTypeNameScriptClass;
 class QDeclarativeValueTypeScriptClass;
@@ -164,7 +166,6 @@ public:
 
     bool outputWarningsToStdErr;
 
-    struct ImportedNamespace;
     QDeclarativeContextScriptClass *contextClass;
     QDeclarativeContextData *sharedContext;
     QObject *sharedScope;
@@ -217,7 +218,12 @@ public:
 
     QList<SimpleList<QDeclarativeAbstractBinding> > bindValues;
     QList<SimpleList<QDeclarativeParserStatus> > parserStatus;
+    QList<QPair<QDeclarativeGuard<QObject>,int> > finalizedParserStatus;
     QDeclarativeComponentAttached *componentAttached;
+
+    void registerFinalizedParserStatusObject(QObject *obj, int index) {
+        finalizedParserStatus.append(qMakePair(QDeclarativeGuard<QObject>(obj), index));
+    }
 
     bool inBeginCreate;
 
@@ -232,8 +238,8 @@ public:
     mutable QMutex mutex;
 
     QDeclarativeCompositeTypeManager typeManager;
-    QStringList fileImportPath;
-    QStringList filePluginPath;
+    QDeclarativeImportDatabase importDatabase;
+
     QString offlineStoragePath;
 
     mutable quint32 uniqueId;
@@ -244,58 +250,8 @@ public:
     QDeclarativeValueTypeFactory valueTypes;
 
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
-    QDeclarativePropertyCache *cache(QObject *obj) { 
-        Q_Q(QDeclarativeEngine);
-        if (!obj || QObjectPrivate::get(obj)->metaObject || 
-            QObjectPrivate::get(obj)->wasDeleted) return 0;
-        const QMetaObject *mo = obj->metaObject();
-        QDeclarativePropertyCache *rv = propertyCache.value(mo);
-        if (!rv) {
-            rv = QDeclarativePropertyCache::create(q, mo);
-            propertyCache.insert(mo, rv);
-        }
-        return rv;
-    }
-
-    // ### This whole class is embarrassing
-    struct Imports {
-        Imports();
-        ~Imports();
-        Imports(const Imports &copy);
-        Imports &operator =(const Imports &copy);
-
-        void setBaseUrl(const QUrl& url);
-        QUrl baseUrl() const;
-
-        void cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
-
-    private:
-        friend class QDeclarativeEnginePrivate;
-        QDeclarativeImportsPrivate *d;
-    };
-
-
-    QSet<QString> initializedPlugins;
-
-    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
-                          const QStringList &suffixes,
-                          const QString &prefix = QString());
-    QString resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName);
-
-
-    bool addToImport(Imports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
-                     const QString& uri, const QString& prefix, int vmaj, int vmin, 
-                     QDeclarativeScriptParser::Import::Type importType,
-                     QString *errorString) const;
-    bool resolveType(const Imports&, const QByteArray& type,
-                     QDeclarativeType** type_return, QUrl* url_return,
-                     int *version_major, int *version_minor,
-                     ImportedNamespace** ns_return,
-                     QString *errorString = 0) const;
-    void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type,
-                                QDeclarativeType** type_return, QUrl* url_return,
-                                int *version_major, int *version_minor ) const;
-
+    inline QDeclarativePropertyCache *cache(QObject *obj);
+    inline QDeclarativePropertyCache *cache(const QMetaObject *);
 
     void registerCompositeType(QDeclarativeCompiledData *);
 
@@ -327,7 +283,7 @@ public:
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
     static QScriptValue isQtObject(QScriptContext*, QScriptEngine*);
-    static QScriptValue vector(QScriptContext*, QScriptEngine*);
+    static QScriptValue vector3d(QScriptContext*, QScriptEngine*);
     static QScriptValue rgba(QScriptContext*, QScriptEngine*);
     static QScriptValue hsla(QScriptContext*, QScriptEngine*);
     static QScriptValue point(QScriptContext*, QScriptEngine*);
@@ -339,16 +295,18 @@ public:
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
+    static QScriptValue fontFamilies(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
     static QScriptValue atob(QScriptContext*, QScriptEngine*);
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
     static QScriptValue quit(QScriptContext*, QScriptEngine*);
 
+#ifndef QT_NO_TEXTDATE
     static QScriptValue formatDate(QScriptContext*, QScriptEngine*);
     static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
     static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);
-
+#endif
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return &e->d_func()->scriptEngine; }
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeEngine *e) { return e->d_func(); }
@@ -358,8 +316,52 @@ public:
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
     QDeclarativeContextData *getContext(QScriptContext *);
 
+    static QString urlToLocalFileOrQrc(const QUrl& url);
+
     static void defineModule();
 };
+
+/*!
+Returns a QDeclarativePropertyCache for \a obj if one is available.
+
+If \a obj is null, being deleted or contains a dynamic meta object 0 
+is returned.
+*/
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(QObject *obj) 
+{
+    Q_Q(QDeclarativeEngine);
+    if (!obj || QObjectPrivate::get(obj)->metaObject || QObjectPrivate::get(obj)->wasDeleted) 
+        return 0;
+
+    const QMetaObject *mo = obj->metaObject();
+    QDeclarativePropertyCache *rv = propertyCache.value(mo);
+    if (!rv) {
+        rv = new QDeclarativePropertyCache(q, mo);
+        propertyCache.insert(mo, rv);
+    }
+    return rv;
+}
+
+/*!
+Returns a QDeclarativePropertyCache for \a metaObject.  
+
+As the cache is persisted for the life of the engine, \a metaObject must be
+a static "compile time" meta-object, or a meta-object that is otherwise known to 
+exist for the lifetime of the QDeclarativeEngine.
+*/
+QDeclarativePropertyCache *QDeclarativeEnginePrivate::cache(const QMetaObject *metaObject)
+{
+    Q_Q(QDeclarativeEngine);
+    Q_ASSERT(metaObject);
+
+    QDeclarativePropertyCache *rv = propertyCache.value(metaObject);
+    if (!rv) {
+        rv = new QDeclarativePropertyCache(q, metaObject);
+        propertyCache.insert(metaObject, rv);
+    }
+
+    return rv;
+}
 
 QT_END_NAMESPACE
 

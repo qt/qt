@@ -62,7 +62,7 @@
   \endcode
 
   For more information on the Qt Declarative module, see the
-  \l{declarativeui.html}{Declarative UI} documentation.
+  \l{declarativeui.html}{Qt Quick} documentation.
 */
 
 
@@ -112,7 +112,7 @@
 
   Returns the QML type id.
 
-  \sa qmlRegisterTypeNotAvailable
+  \sa qmlRegisterTypeNotAvailable()
 */
 
 /*!
@@ -147,7 +147,7 @@ fun.qml: Get back to work, slacker!
 
   Without this, a generic "Game is not a type" message would be given.
 
-  \sa qmlRegisterUncreatableType
+  \sa qmlRegisterUncreatableType()
 */
 
 /*!

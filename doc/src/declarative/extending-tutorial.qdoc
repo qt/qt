@@ -107,7 +107,7 @@ The class implementation in \c musician.cpp simply sets and returns the \c m_nam
 Our QML file, \c app.qml, creates a \c Musician item and display the musician's details
 using a standard QML \l Text item:
 
-\quotefile declarative/tutorials/extending/chapter1-basics/app.qml
+\snippet declarative/tutorials/extending/chapter1-basics/app.qml 0
 
 We'll also create a C++ application that uses a QDeclarativeView to run and
 display \c app.qml. The application must register the \c Musician type
@@ -147,7 +147,7 @@ to the console and then emits a "performanceEnded" signal.
 Other elements would be able to call \c perform() and receive
 \c performanceEnded() signals like this:
 
-\quotefile declarative/tutorials/extending/chapter2-methods/app.qml
+\snippet declarative/tutorials/extending/chapter2-methods/app.qml 0
 
 To do this, we add a \c perform() method and a \c performanceEnded() signal
 to our C++ class:
@@ -193,7 +193,7 @@ other elements' values when property values change.
 Let's enable property bindings for the \c instrument property. That means 
 if we have code like this:
 
-\quotefile declarative/tutorials/extending/chapter3-bindings/app.qml
+\snippet declarative/tutorials/extending/chapter3-bindings/app.qml 0
 
 The "instrument: reddy.instrument" statement binds the \c instrument value of
 \c craig to the \c instrument of \c reddy.
@@ -275,7 +275,7 @@ For example, let's change the type of the \c instrument property from a string t
 new type called "Instrument". Instead of assigning a string value to \c instrument,
 we assign an \c Instrument value:
 
-\quotefile declarative/tutorials/extending/chapter4-customPropertyTypes/app.qml
+\snippet declarative/tutorials/extending/chapter4-customPropertyTypes/app.qml 0
 
 Like \c Musician, this new \c Instrument type has to inherit from QObject and declare
 its properties with Q_PROPERTY():

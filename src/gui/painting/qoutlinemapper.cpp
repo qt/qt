@@ -154,7 +154,8 @@ QT_FT_Outline *QOutlineMapper::convertPath(const QVectorPath &path)
         // ### We can kill this copying and just use the buffer straight...
 
         m_elements.resize(count);
-        memcpy(m_elements.data(), path.points(), count* sizeof(QPointF));
+        if (count)
+            memcpy(m_elements.data(), path.points(), count* sizeof(QPointF));
 
         m_element_types.resize(0);
     }
@@ -233,12 +234,12 @@ void QOutlineMapper::endOutline()
 
 
     // Check for out of dev bounds...
-    const bool do_clip = (controlPointRect.left() < -QT_RASTER_COORD_LIMIT
+    const bool do_clip = !m_in_clip_elements && ((controlPointRect.left() < -QT_RASTER_COORD_LIMIT
                           || controlPointRect.right() > QT_RASTER_COORD_LIMIT
                           || controlPointRect.top() < -QT_RASTER_COORD_LIMIT
                           || controlPointRect.bottom() > QT_RASTER_COORD_LIMIT
                           || controlPointRect.width() > QT_RASTER_COORD_LIMIT
-                          || controlPointRect.height() > QT_RASTER_COORD_LIMIT);
+                          || controlPointRect.height() > QT_RASTER_COORD_LIMIT));
 
     if (do_clip) {
         clipElements(elements, elementTypes(), element_count);
@@ -352,7 +353,13 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     // instead of going through convenience functionallity, but since
     // this part of code hardly every used, it shouldn't matter.
 
+    m_in_clip_elements = true;
+
     QPainterPath path;
+
+    if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
+        path.setFillRule(Qt::WindingFill);
+
     if (types) {
         for (int i=0; i<element_count; ++i) {
             switch (types[i]) {
@@ -388,6 +395,8 @@ void QOutlineMapper::clipElements(const QPointF *elements,
     else
         convertPath(clippedPath);
     m_txop = old_txop;
+
+    m_in_clip_elements = false;
 }
 
 QT_END_NAMESPACE

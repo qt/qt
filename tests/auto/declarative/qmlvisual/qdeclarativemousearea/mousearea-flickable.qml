@@ -25,7 +25,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onPressed: blue.color = "lightsteelblue"
-                onReleased: blue.color = "steelblue"
+                onCanceled: blue.color = "steelblue"
             }
         }
         Rectangle {
@@ -36,7 +36,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onEntered:  { red.color = "darkred"; tooltip.opacity = 1 }
-                onExited: { red.color = "red"; tooltip.opacity = 0 }
+                onCanceled: { red.color = "red"; tooltip.opacity = 0 }
             }
             Rectangle {
                 id: tooltip

@@ -88,7 +88,7 @@ QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, Q
 
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
                                          QObject *parent)
-: QDeclarativeExpression(QDeclarativeContextData::get(ctxt), str, obj, *new QDeclarativeBindingPrivate)
+: QDeclarativeExpression(QDeclarativeContextData::get(ctxt), obj, str, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
@@ -96,7 +96,7 @@ QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDecl
 
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContextData *ctxt, 
                                          QObject *parent)
-: QDeclarativeExpression(ctxt, str, obj, *new QDeclarativeBindingPrivate)
+: QDeclarativeExpression(ctxt, obj, str, *new QDeclarativeBindingPrivate)
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
@@ -191,9 +191,22 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                 data->error.setUrl(url);
                 data->error.setLine(line);
                 data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
+                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ")
+                    + QLatin1String(QMetaType::typeName(data->property.propertyType()))
+                    + QLatin1String(" ") + data->property.name());
 
-            } else if (data->property.object() && 
+            } else if (!scriptValue.isRegExp() && scriptValue.isFunction()) {
+
+                QUrl url = QUrl(data->url);
+                int line = data->line;
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
+
+                data->error.setUrl(url);
+                data->error.setLine(line);
+                data->error.setColumn(-1);
+                data->error.setDescription(QLatin1String("Unable to assign a function to a property."));
+
+            } else if (data->property.object() &&
                        !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
@@ -275,13 +288,15 @@ QDeclarativeAbstractBinding::QDeclarativeAbstractBinding()
 
 QDeclarativeAbstractBinding::~QDeclarativeAbstractBinding()
 {
-    removeFromObject();
-    if (m_mePtr)
-        *m_mePtr = 0;
+    Q_ASSERT(m_prevBinding == 0);
+    Q_ASSERT(m_mePtr == 0);
 }
 
 void QDeclarativeAbstractBinding::destroy()
 {
+    removeFromObject();
+    clear();
+
     delete this;
 }
 
@@ -340,8 +355,6 @@ void QDeclarativeAbstractBinding::removeFromObject()
     if (m_prevBinding) {
         int index = propertyIndex();
 
-        Q_ASSERT(m_object);
-
         *m_prevBinding = m_nextBinding;
         if (m_nextBinding) m_nextBinding->m_prevBinding = m_prevBinding;
         m_prevBinding = 0;
@@ -350,7 +363,7 @@ void QDeclarativeAbstractBinding::removeFromObject()
         if (index & 0xFF000000) {
             // Value type - we don't remove the proxy from the object.  It will sit their happily
             // doing nothing for ever more.
-        } else {
+        } else if (m_object) {
             QDeclarativeData *data = QDeclarativeData::get(m_object, false);
             if (data) data->clearBindingBit(index);
         }

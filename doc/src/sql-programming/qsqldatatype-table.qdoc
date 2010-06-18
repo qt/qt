@@ -41,19 +41,20 @@
 
 /*!
   \page sql-types.html
-  \title Recommended Use of Data Types in Databases
+  \title Data Types for Qt-supported Database Systems
+  \brief Recommended data types for database systems
   
-  \ingroup best-practices
+  \ingroup qt-sql
 
-  \section1 Recommended Use of Types in Qt Supported Databases
+  \section1 Recommended Data Types for Qt-Supported Database Systems
 
-  This table shows the recommended data types used when extracting data 
-  from the databases supported in Qt. It is important to note that the
-  types used in Qt are not necessarily valid as input to the specific
-  database. One example could be that a double would work perfectly as
-  input for floating point records in a database, but not necessarily
-  as a storage format for output from the database since it would be stored
-  with 64-bit precision in C++.
+  This table shows the recommended data types for extracting data from
+  the databases supported in Qt. Note that types used in Qt are not
+  necessarily valid as input types to a specific database
+  system. e.g., A double might work perfectly as input for floating
+  point records in a particular database, but not necessarily as a
+  storage format for output from that database, because it would be
+  stored with 64-bit precision in C++.
 
   \tableofcontents
 

@@ -37,6 +37,7 @@ function startNewGame()
         startNewGameTimer.running = true;
         return;
     }
+
     numRows = numRowsAvailable;
     numColumns = numColumnsAvailable;
     board = new Array(numRows * numColumns);
@@ -52,15 +53,14 @@ function startNewGame()
             link.spawned = false;
             link.dying = false;
         } else {
-            if(linkComponent.isReady == false){
-                if(linkComponent.isError == true)
-                    console.log(linkComponent.errorsString());
+            if(linkComponent.status != Component.Ready) {
+                if(linkComponent.status == Component.Error) 
+                    console.log(linkComponent.errorString());
                 else
                     console.log("Still loading linkComponent");
                 continue;//TODO: Better error handling?
             }
-            var link = linkComponent.createObject();
-            link.parent = playfield;
+            var link = linkComponent.createObject(playfield);
             link.z = numRows * numColumns + 1 - i;
             link.type = i == 0 ? 2 : 0;
             link.spawned = false;
@@ -293,15 +293,14 @@ function createCookie(value) {
         }
     }
 
-    if(cookieComponent.isReady == false){
-        if(cookieComponent.isError == true)
-            console.log(cookieComponent.errorsString());
+    if(cookieComponent.status != Component.Ready) {
+        if(cookieComponent.status == Component.Error)
+            console.log(cookieComponent.errorString());
         else
             console.log("Still loading cookieComponent");
         return;//TODO: Better error handling?
     }
-    cookie = cookieComponent.createObject();
-    cookie.parent = head.parent;
+    cookie = cookieComponent.createObject(head.parent);
     cookie.value = value;
     cookie.row = row;
     cookie.column = column;

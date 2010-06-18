@@ -5,6 +5,7 @@ DEFINES   += QT_BUILD_OPENGL_LIB
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
+irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 

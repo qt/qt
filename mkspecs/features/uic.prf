@@ -1,13 +1,6 @@
-
-isEmpty(QMAKE_UIC3) {
-    contains(QMAKE_HOST.os,Windows):QMAKE_UIC3 = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}uic3.exe
-    else:QMAKE_UIC3 = $$[QT_INSTALL_BINS]/uic3
-}
-
-isEmpty(QMAKE_UIC) {
-   contains(QMAKE_HOST.os,Windows):QMAKE_UIC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}uic.exe
-   else:QMAKE_UIC = $$[QT_INSTALL_BINS]/uic
-}
+defined(qtPrepareTool)|load(qt_functions) ### Qt 5: see default_pre.prf
+qtPrepareTool(QMAKE_UIC3, uic3)
+qtPrepareTool(QMAKE_UIC, uic)
 
 isEmpty(UI_DIR):UI_DIR = .
 isEmpty(UI_SOURCES_DIR):UI_SOURCES_DIR = $$UI_DIR
@@ -93,14 +86,14 @@ defineReplace(imageCollectionCmd) {
     for(image, $$list($$split(1))) {
            EMBEDDED_IMAGES += $$image
            count(EMBEDDED_IMAGES, 5) {
-                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > images.tmp $$escape_expand(\n\t)
-                else:         RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\n\t)
+                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > images.tmp $$escape_expand(\\n\\t)
+                else:         RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
                 unset(EMBEDDED_IMAGES)
            }
     }
-    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\n\t)
+    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
     !isEmpty(RET) {
-        RET += $$QMAKE_UIC3 -embed $$TARGET -f images.tmp -o $$2 $$escape_expand(\n\t)
+        RET += $$QMAKE_UIC3 -embed $$TARGET -f images.tmp -o $$2 $$escape_expand(\\n\\t)
         return($$RET)
     }
     return($$QMAKE_UIC3 -embed $$TARGET $$1 -o $$2)

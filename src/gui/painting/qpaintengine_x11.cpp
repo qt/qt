@@ -79,6 +79,8 @@
 #include <private/qtessellator_p.h>
 #endif
 
+#include <private/qstylehelper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 extern Drawable qt_x11Handle(const QPaintDevice *pd);
@@ -224,7 +226,10 @@ static const uchar base_dither_matrix[DITHER_SIZE][DITHER_SIZE] = {
 static QPixmap qt_patternForAlpha(uchar alpha, int screen)
 {
     QPixmap pm;
-    QString key = QLatin1String("$qt-alpha-brush$") + QString::number(alpha) + QString::number(screen);
+    QString key = QLatin1Literal("$qt-alpha-brush$")
+                  % HexString<uchar>(alpha)
+                  % HexString<int>(screen);
+
     if (!QPixmapCache::find(key, pm)) {
         // #### why not use a mono image here????
         QImage pattern(DITHER_SIZE, DITHER_SIZE, QImage::Format_ARGB32);
@@ -315,7 +320,7 @@ static Picture getPatternFill(int screen, const QBrush &b)
             return X11->pattern_fills[i].picture;
     }
     // none found, replace one
-    int i = rand() % 16;
+    int i = qrand() % 16;
 
     if (X11->pattern_fills[i].screen != screen && X11->pattern_fills[i].picture) {
 	XRenderFreePicture (X11->display, X11->pattern_fills[i].picture);
@@ -1448,6 +1453,11 @@ void QX11PaintEngine::drawEllipse(const QRectF &rect)
 
 void QX11PaintEngine::drawEllipse(const QRect &rect)
 {
+    if (rect.isEmpty()) {
+        drawRects(&rect, 1);
+        return;
+    }
+
     Q_D(QX11PaintEngine);
     QRect devclip(SHRT_MIN, SHRT_MIN, SHRT_MAX*2 - 1, SHRT_MAX*2 - 1);
     QRect r(rect);

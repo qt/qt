@@ -60,7 +60,9 @@
 
 /*!
     \page paintsystem.html
-    \title The Paint System
+    \title Paint System
+    \brief A system for painting on the screen or on print devices using the same API
+    \ingroup qt-graphics
     \ingroup frameworks-technologies
 
     Qt's paint system enables painting on screen and print devices
@@ -87,7 +89,7 @@
         \o \l{Classes for Painting}
         \o \l{Paint Devices and Backends}
         \o \l{Drawing and Filling}
-        \o \l{The Coordinate System}
+        \o \l{Coordinate System}
         \o \l{Reading and Writing Image Files}
         \o \l{Styling}
         \o \l{Printing with Qt}
@@ -337,10 +339,10 @@
 
     Normally, QPainter draws in a "natural" coordinate system, but it
     is able to perform view and world transformations using the
-    QTransform class. For more information, see \l {The Coordinate
-    System} documentation which also describes the rendering process,
-    i.e. the relation between the logical representation and the
-    rendered pixels, and the benefits of anti-aliased painting.
+    QTransform class. For more information, see \l {Coordinate
+    System}, which also describes the rendering process, i.e. the
+    relation between the logical representation and the rendered
+    pixels, and the benefits of anti-aliased painting.
 
     \table 100%
     \row \o
@@ -566,5 +568,5 @@
     \endtable
     
     For more information about widget styling and appearance, see the
-    documentation about \l{Implementing Styles and Style Aware Widgets}.
+    \l{Styles &amp Style Aware Widgets}.
 */

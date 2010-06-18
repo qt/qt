@@ -42,19 +42,18 @@
 /*!
     \page qmlruntime.html
     \title Qt Declarative UI Runtime
-    \keyword qml runtime
+    \keyword QML Viewer
     \ingroup qttools
 
     This page documents the \e{Declarative UI Runtime} for the Qt GUI
-    toolkit, and the \c qml executable which can be used to run apps
-    written for the runtime. The \c qml executable reads a declarative user interface definition
-    (\c .qml) file and displays the user interface it describes.
+    toolkit, and the \QQV which can be used to run apps
+    written for the runtime. The \QQV reads a declarative
+    user interface definition (\c .qml) file and displays the user interface it describes.
 
-    QML is a runtime, as you can run plain qml files which pull in their required modules.
+    QML is a runtime, as you can run plain QML files which pull in their required modules.
     To run apps with the QML runtime, you can either start the runtime
-    from your own application (using a QDeclarativeView) or with the simple \c qml application.
-    The \c qml application can be
-    installed in a production environment, assuming that it is not already
+    from your own application (using a QDeclarativeView) or with the simple \QQV.
+    The launcher can be installed in a production environment, assuming that it is not already
     present in the system. It is generally packaged alongside Qt.
 
     To deploy an application using the QML runtime, you have two options:
@@ -62,18 +61,18 @@
     \list
     \o Write your own Qt application including a QDeclarative view and deploy it the same as
     any other Qt application (not discussed further on this page), or
-    \o Write a main QML file for your application, and run your application using the included \c qml tool.
+    \o Write a main QML file for your application, and run your application using the included \QQV.
     \endlist
 
-    To run an application with the \c qml tool, pass the filename as an argument:
+    To run an application with the \QQV, pass the filename as an argument:
 
     \code
-    qml myQmlFile.qml
+    qmlviewer myQmlFile.qml
     \endcode
 
-    Deploying a QML application via the \c qml executable allows for QML only deployments, but can also
+    Deploying a QML application via the \QQV allows for QML only deployments, but can also
     include custom C++ modules just as easily. Below is an example of how you might structure
-    a complex application deployed via the qml runtime, it is a listing of the files that would
+    a complex application deployed via the QML runtime, it is a listing of the files that would
     be included in the deployment package.
 
     \code
@@ -93,8 +92,8 @@
     as the appropriate module file is chosen based on platform naming conventions. The C++ 
     modules must contain a QDeclarativeExtentionPlugin subclass.
 
-    The application would be executed either with your own application, the command 'qml MyApp.qml' or by 
-    opening the qml file if your system has the \c qml executable registered as the handler for qml files. The MyApp.qml file would have access
+    The application would be executed either with your own application, the command 'qmlviewer MyApp.qml' or by
+    opening the file if your system has the \QQV registered as the handler for QML files. The MyApp.qml file would have access
     to all of the deployed types using the import statements such as the following:
 
     \code
@@ -102,19 +101,36 @@
     import "OtherModule" 1.0 as Other
     \endcode
 
-    \section1 \c qml application functionality
-    The \c qml application implements some additional functionality to help it serve the role of a launcher
-    for myriad applications. If you implement your own launcher application, you may also wish to reimplement
+    \section1 Qt QML Viewer functionality
+    The \QQV implements some additional functionality to help it supporting
+    myriad applications. If you implement your own application, you may also wish to reimplement
     some or all of this functionality. However, much of this functionality is intended to aid the prototyping of
-    qml applications and may not be necessary for a deployed application.
+    QML applications and may not be necessary for a deployed application.
 
     \section2 Options
 
-    When run with the \c -help option, qml shows available options.
+    When run with the \c -help option, \c qmlviewer shows available options.
+
+    \section2 Translations
+
+    When the launcher loads an initial QML file, it will install a translation file from
+    a "i18n" subdirectory relative to that initial QML file. The actual translation file
+    loaded will be according to the system locale and have the form
+    "qml_<language>.qm", where <language> is a two-letter ISO 639 language,
+    such as "qml_fr.qm", optionally followed by an underscore and an uppercase two-letter ISO 3166 country
+    code, such as "qml_fr_FR.qm" or "qml_fr_CA.qm".
+
+    Such files can be created using \l{Qt Linguist}.
+
+    See the \l{scripting.html#internationalization}{Qt Internationalization} documentation for information about how to make
+    the JavaScript in QML files use translatable strings.
+
+    Additionally, the launcher will load translation files specified on the
+    command line via the \c -translation option.
 
     \section2 Dummy Data
 
-    The secondary use of the qml runtime is to allow QML files to be viewed with
+    The secondary use of the launcher is to allow QML files to be viewed with
     dummy data. This is useful when prototyping the UI, as the dummy data can
     be later replaced with actual data and bindings from a C++ plugin. 
     To provide dummy data: create a directory called "dummydata" in the same directory as
@@ -136,19 +152,27 @@
 
     \section2 Runtime Object
 
-    All applications using the qmlruntime will have access to the 'runtime'
+    All applications using the launcher will have access to the \c runtime
     property on the root context. This property contains several pieces of
     information about the runtime environment of the application.
 
     \section3 Screen Orientation
 
-    A special piece of dummy data which is integrated into the runtime is
+    A special piece of dummy data which is integrated into the launcher is
     a simple orientation property. The orientation can be set via the
-    settings menu in the application, or by pressing Ctrl+T to toggle it.
+    settings menu in the application, or by pressing Ctrl+T to rotate it.
 
-    To use this from within your QML file, access runtime.orientation,
-    which can be either Orientation.Landscape or Orientation.Portrait and which can be bound to in your
-    application. An example is below:
+    To use this from within your QML file, access \c runtime.orientation,
+    which can be one of the following values:
+
+    \list
+    \o \c Orientation.Portrait
+    \o \c Orientation.Landscape
+    \o \c Orientation.PortraitInverted (Portrait orientation, upside-down)
+    \o \c Orientation.LandscapeInverted (Landscape orientation, upside-down)
+    \endlist
+
+    These values can be bound to in your application. For example:
 
     \code
     Item {
@@ -156,13 +180,13 @@
     }
     \endcode
 
-    This allows your application to respond to the orientation of the screen changing. The runtime
+    This allows your application to respond to changes in the screen's orientation. The launcher
     will automatically update this on some platforms (currently the N900 only) to match the physical
     screen's orientation. On other plaforms orientation changes will only happen when explictly asked for.
 
     \section3 Window Active
 
-    The runtime.isActiveWindow property tells whether the main window of the qml runtime is currently active
+    The \c runtime.isActiveWindow property tells whether the main window of the launcher is currently active
     or not. This is especially useful for embedded devices when you want to pause parts of your application,
     including animations, when your application loses focus or goes to the background.
 

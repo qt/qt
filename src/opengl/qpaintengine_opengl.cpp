@@ -668,6 +668,7 @@ public:
         , last_created_state(0)
         , shader_ctx(0)
         , grad_palette(0)
+        , tess_points(0)
         , drawable_texture(0)
         , ref_cleaner(this)
         {}
@@ -1450,6 +1451,11 @@ bool QOpenGLPaintEngine::end()
     d->device->endPaint();
     qt_mask_texture_cache()->maintainCache();
 
+#if defined(Q_WS_X11)
+    // clear out the references we hold for textures bound with the
+    // texture_from_pixmap extension
+    ctx->d_func()->boundPixmaps.clear();
+#endif
     return true;
 }
 
@@ -1950,6 +1956,8 @@ void QOpenGLPaintEnginePrivate::pathToVertexArrays(const QPainterPath &path)
 
 void QOpenGLPaintEnginePrivate::drawVertexArrays()
 {
+    if (tess_points_stops.count() == 0)
+        return;
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, GL_DOUBLE, 0, tess_points.data());
     int previous_stop = 0;
@@ -3947,7 +3955,7 @@ void QOpenGLPaintEnginePrivate::strokeLines(const QPainterPath &path)
     enableClipping();
 }
 
-extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 void QOpenGLPaintEnginePrivate::strokePath(const QPainterPath &path, bool use_cache)
 {
@@ -4991,7 +4999,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     {
         QStaticTextItem staticTextItem;
-        staticTextItem.chars = ti.chars;
+        staticTextItem.chars = const_cast<QChar *>(ti.chars);
         staticTextItem.fontEngine = ti.fontEngine;
         staticTextItem.glyphs = glyphs.data();
         staticTextItem.numChars = ti.num_chars;

@@ -48,6 +48,7 @@
 #include <private/qpaintengineex_p.h>
 #include <qvarlengtharray.h>
 #include <qmath.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1018,7 +1019,9 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
                 ;
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
             } else {                                // color pixmap, no mask
-                QString k = QString::fromLatin1("$qt-drawitem-%1").arg(pm.cacheKey());
+                QString k = QLatin1Literal("$qt-drawitem")
+                              % HexString<qint64>(pm.cacheKey());
+
                 if (!QPixmapCache::find(k, pm)) {
                     pm = pm.createHeuristicMask();
                     pm.setMask((QBitmap&)pm);
@@ -1136,6 +1139,13 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
 
     xTarget.resize(columns + 1);
     yTarget.resize(rows + 1);
+
+    bool oldAA = painter->testRenderHint(QPainter::Antialiasing);
+    if (painter->paintEngine()->type() != QPaintEngine::OpenGL
+        && painter->paintEngine()->type() != QPaintEngine::OpenGL2
+        && oldAA && painter->combinedTransform().type() != QTransform::TxNone) {
+        painter->setRenderHint(QPainter::Antialiasing, false);
+    }
 
     xTarget[0] = targetRect.left();
     xTarget[1] = targetCenterLeft;
@@ -1342,6 +1352,9 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         painter->drawPixmapFragments(opaqueData.data(), opaqueData.size(), pixmap, QPainter::OpaqueHint);
     if (translucentData.size())
         painter->drawPixmapFragments(translucentData.data(), translucentData.size(), pixmap);
+
+    if (oldAA)
+        painter->setRenderHint(QPainter::Antialiasing, true);
 }
 
 QT_END_NAMESPACE

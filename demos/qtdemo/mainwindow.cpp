@@ -266,12 +266,14 @@ void MainWindow::setupSceneItems()
 {
     if (Colors::showFps){
         this->fpsLabel = new DemoTextItem(QString("FPS: --"), Colors::buttonFont(), Qt::white, -1, this->scene, 0, DemoTextItem::DYNAMIC_TEXT);
-        this->fpsLabel->setZValue(100);
+        this->fpsLabel->setZValue(1000);
         this->fpsLabel->setPos(Colors::stageStartX, 600 - QFontMetricsF(Colors::buttonFont()).height() - 5);
     }
 
-    this->companyLogo = new ImageItem(QImage(":/images/trolltech-logo.png"), 1000, 1000, this->scene, 0, true, 0.5f);
-    this->qtLogo = new ImageItem(QImage(":/images/qtlogo_small.png"), 1000, 1000, this->scene, 0, true, 0.5f);
+    this->mainSceneRoot = new QGraphicsWidget();
+    this->scene->addItem(mainSceneRoot);
+    this->companyLogo = new ImageItem(QImage(":/images/trolltech-logo.png"), 1000, 1000, this->scene, mainSceneRoot, true, 0.5f);
+    this->qtLogo = new ImageItem(QImage(":/images/qtlogo_small.png"), 1000, 1000, this->scene, mainSceneRoot, true, 0.5f);
     this->companyLogo->setZValue(100);
     this->qtLogo->setZValue(100);
     this->pausedLabel = new DemoTextItem(QString("PAUSED"), Colors::buttonFont(), Qt::white, -1, this->scene, 0);
@@ -306,6 +308,14 @@ void MainWindow::checkAdapt()
                this->fpsLabel->setText(QString("FPS: (") + QString::number(this->fpsMedian) + QString(")"));
             if (Colors::verbose)
                qDebug() << "- benchmark adaption: removed ticker (fps < 30)";
+        }
+
+        //Note: Because we don't adapt later in the program, if blur makes FPS plummet then we won't catch it
+        if (!Colors::noBlur && MenuManager::instance()->declarativeEngine && this->mainSceneRoot){
+            Colors::noBlur = true;
+            MenuManager::instance()->declarativeEngine->rootContext()->setContextProperty("useBlur", false);
+            if (Colors::verbose)
+               qDebug() << "- benchmark adaption: removed blur (fps < 30)";
         }
 
         if (this->fpsMedian < 20){
@@ -376,7 +386,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         this->loop = false;
         QApplication::quit();
     }
-    else if (event->key() == Qt::Key_1){
+    else if (event->key() == Qt::Key_F1){
             QString s("");
             s += "Rendering system: ";
             if (Colors::openGlRendering)
@@ -415,6 +425,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
             s += Colors::noScreenSync ? "no" : "yes";
             QMessageBox::information(0, QString("Current configuration"), s);
     }
+    QGraphicsView::keyPressEvent(event);
 }
 
 void MainWindow::focusInEvent(QFocusEvent *)

@@ -59,7 +59,7 @@
 
 /*!
     \page classes.html
-    \title All Qt Classes
+    \title All Classes
     \ingroup classlists
 
     \brief If you know the name of the class you want, find it here.
@@ -71,7 +71,7 @@
 
     \generatelist classes
 
-    \sa {Qt3 Support Classes}, {All Qt Modules}, {Obsolete Classes}
+    \sa {Qt3 Support Classes}, {All Modules}, {Obsolete Classes}
 */
 
 /*!
@@ -162,7 +162,7 @@
 
 /*!
     \page namespaces.html
-    \title All Qt Namespaces
+    \title All Namespaces
     \ingroup classlists
 
     \brief A Qt namespace contains enum types, functions, and sometimes classes.

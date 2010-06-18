@@ -104,7 +104,8 @@ QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     if (!object)
-        return newObject(scriptEngine, this, new ObjectData(object, type));
+        return scriptEngine->nullValue();
+//        return newObject(scriptEngine, this, new ObjectData(object, type));
 
     if (QObjectPrivate::get(object)->wasDeleted)
        return scriptEngine->undefinedValue();
@@ -265,7 +266,7 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
             return Value(scriptEngine, rv);
-        } else if (lastData->propType == QMetaType::Int) {
+        } else if (lastData->propType == QMetaType::Int || lastData->flags & QDeclarativePropertyCache::Data::IsEnumType) {
             int rv = 0;
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);
@@ -368,6 +369,9 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         QString error = QLatin1String("Cannot assign [undefined] to ") +
                         QLatin1String(QMetaType::typeName(lastData->propType));
         context->throwError(error);
+    } else if (!value.isRegExp() && value.isFunction()) {
+        QString error = QLatin1String("Cannot assign a function to a property.");
+        context->throwError(error);
     } else {
         QVariant v;
         if (lastData->flags & QDeclarativePropertyCache::Data::IsQList)
@@ -441,7 +445,7 @@ QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QSc
 
     QDeclarativeData *ddata = QDeclarativeData::get(data->object, false);
     if (!ddata || ddata->indestructible)
-        return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
+        return engine->currentContext()->throwError(QLatin1String("Invalid attempt to destroy() an indestructible object"));
 
     QObject *obj = data->object;
     int delay = 0;
@@ -619,7 +623,7 @@ private:
 
     inline void cleanup();
 
-    void *data[4];
+    char data[4 * sizeof(void *)];
     int type;
 };
 }
@@ -772,7 +776,8 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         return QScriptDeclarativeClass::Value(engine, *((QString *)&data));
     } else if (type == QMetaType::QObjectStar) {
         QObject *object = *((QObject **)&data);
-        QDeclarativeData::get(object, true)->setImplicitDestructible();
+        if (object)
+            QDeclarativeData::get(object, true)->setImplicitDestructible();
         QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
         return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
     } else if (type == qMetaTypeId<QList<QObject *> >()) {

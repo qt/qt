@@ -89,6 +89,8 @@ public:
 
     virtual QStyle* style() const = 0;
 
+    virtual QRectF graphicsItemVisibleRect() const { return QRectF(); }
+
 protected:
 #ifndef QT_NO_CURSOR
     virtual QCursor cursor() const = 0;

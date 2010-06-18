@@ -82,6 +82,7 @@
 #endif
 
 #include "qpixmap_raster_p.h"
+#include "private/qstylehelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -635,17 +636,21 @@ void QPixmap::resize_helper(const QSize &s)
     if (size() == s)
         return;
 
+    // QPixmap.data member may be QRuntimePixmapData so use pixmapData() function to get
+    // the actual underlaying runtime pixmap data.
+    QPixmapData *pd = pixmapData();
+
     // Create new pixmap
-    QPixmap pm(QSize(w, h), data ? data->type : QPixmapData::PixmapType);
+    QPixmap pm(QSize(w, h), pd ? pd->type : QPixmapData::PixmapType);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data && data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
+    QX11PixmapData *x11Data = pd && pd->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(pd) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data && data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
+    QMacPixmapData *macData = pd && pd->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -659,7 +664,7 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data.data());
+        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pd);
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                      RootWindow(x11Data->xinfo.display(),
                                                                 x11Data->xinfo.screen()),
@@ -825,8 +830,14 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    QString key = QLatin1String("qt_pixmap_") + info.absoluteFilePath() + QLatin1Char('_') + QString::number(info.lastModified().toTime_t()) + QLatin1Char('_') +
-        QString::number(info.size()) + QLatin1Char('_') + QString::number(data ? data->pixelType() : QPixmapData::PixmapType);
+    if (!info.exists())
+        return false;
+
+    QString key = QLatin1Literal("qt_pixmap")
+                  % info.absoluteFilePath()
+                  % HexString<uint>(info.lastModified().toTime_t())
+                  % HexString<quint64>(info.size())
+                  % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
 
     if (QPixmapCache::find(key, *this))
         return true;
@@ -1163,8 +1174,9 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
-    if (data && data->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(data.constData())->handle();
+    const QPixmapData *pd = pixmapData();
+    if (pd && pd->classId() == QPixmapData::X11Class)
+        return static_cast<const QX11PixmapData*>(pd)->handle();
 #endif
     return 0;
 }
@@ -1281,7 +1293,7 @@ bool QPixmap::convertFromImage(const QImage &image, ColorMode mode)
     image. Note that writing the stream to a file will not produce a
     valid image file.
 
-    \sa QPixmap::save(), {Format of the QDataStream Operators}
+    \sa QPixmap::save(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &stream, const QPixmap &pixmap)
@@ -1294,7 +1306,7 @@ QDataStream &operator<<(QDataStream &stream, const QPixmap &pixmap)
 
     Reads an image from the given \a stream into the given \a pixmap.
 
-    \sa QPixmap::load(), {Format of the QDataStream Operators}
+    \sa QPixmap::load(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
@@ -1754,6 +1766,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     function returns the actual matrix used for transforming the
     pixmap.
 
+    \note When using the native X11 graphics system, the pixmap
+    becomes invalid when the QApplication instance is destroyed.
+
     \sa QBitmap, QImage, QImageReader, QImageWriter
 */
 
@@ -1946,17 +1961,20 @@ void QPixmap::detach()
     if (!data)
         return;
 
-    QPixmapData::ClassId id = data->classId();
+    // QPixmap.data member may be QRuntimePixmapData so use pixmapData() function to get
+    // the actual underlaying runtime pixmap data.
+    QPixmapData *pd = pixmapData();
+    QPixmapData::ClassId id = pd->classId();
     if (id == QPixmapData::RasterClass) {
-        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data.data());
+        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(pd);
         rasterData->image.detach();
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
+        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(pd);
 
 #if defined(Q_WS_MAC)
-    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
+    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(pd) : 0;
     if (macData) {
         if (macData->cg_mask) {
             CGImageRelease(macData->cg_mask);
@@ -1971,8 +1989,8 @@ void QPixmap::detach()
     ++data->detach_no;
 
 #if defined(Q_WS_X11)
-    if (data->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *d = static_cast<QX11PixmapData*>(data.data());
+    if (pd->classId() == QPixmapData::X11Class) {
+        QX11PixmapData *d = static_cast<QX11PixmapData*>(pd);
         d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data
@@ -2062,8 +2080,14 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmapData* QPixmap::pixmapData() const
 {
-    return data.data();
+    if (data) {
+        QPixmapData* pm = data.data();
+        return pm->runtimeData() ? pm->runtimeData() : pm;
+    }
+
+    return 0;
 }
+
 
 /*!
     \enum QPixmap::HBitmapFormat

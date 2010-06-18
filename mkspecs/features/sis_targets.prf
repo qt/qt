@@ -1,5 +1,15 @@
 # Sis file creation
-contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
+GENERATE_SIS_TARGETS = false
+
+contains(TEMPLATE, app): GENERATE_SIS_TARGETS = true
+else:!equals(DEPLOYMENT, default_deployment) {
+    for(dep_item, $$list($$DEPLOYMENT)) {
+        dep_item_sources = $$eval($${dep_item}.sources)
+        !isEmpty(dep_item_sources): GENERATE_SIS_TARGETS = true
+    }
+}
+
+equals(GENERATE_SIS_TARGETS, true) {
     symbian-abld|symbian-sbsv2 {
         sis_destdir =
         make_cache_name = .make.cache
@@ -21,6 +31,24 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
         ok_sis_target.target = ok_sis
         ok_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
+
+        unsigned_sis_target.target = unsigned_sis
+        unsigned_sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
+                                  $(if $(wildcard $$make_cache_name), \
+                                      $(MAKE) -f $(MAKEFILE) ok_unsigned_sis MAKEFILES=$$make_cache_name \
+                                  , \
+                                      $(if $(QT_SIS_TARGET), \
+                                          $(MAKE) -f $(MAKEFILE) ok_unsigned_sis \
+                                      , \
+                                          $(MAKE) -f $(MAKEFILE) fail_sis_nocache \
+                                      ) \
+                                  ) \
+                              , \
+                                  $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
+                              )
+
+        ok_unsigned_sis_target.target = ok_unsigned_sis
+        ok_unsigned_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg $(QT_SIS_TARGET)
 
         target_sis_target.target = $${sis_destdir}$${TARGET}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
@@ -59,11 +87,13 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
                                    )
 
         ok_stub_sis_target.target = ok_stub_sis
-        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
+        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_stub.pkg \
                                           $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         QMAKE_EXTRA_TARGETS += sis_target \
                                ok_sis_target \
+                               unsigned_sis_target \
+                               ok_unsigned_sis_target \
                                target_sis_target \
                                installer_sis_target \
                                ok_installer_sis_target \
@@ -96,13 +126,17 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
         }
     } else {
         sis_destdir = $$DESTDIR
-        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\]$"):sis_destdir = $${sis_destdir}/
+        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
         contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
 
         sis_target.target = sis
         sis_target.commands = createpackage $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
                                   - $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
         sis_target.depends = first
+
+        unsigned_sis_target.target = unsigned_sis
+        unsigned_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg
+        unsigned_sis_target.depends = first
 
         target_sis_target.target = $${sis_destdir}$${TARGET}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
@@ -118,6 +152,7 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
         }
 
         QMAKE_EXTRA_TARGETS += sis_target \
+                               unsigned_sis_target \
                                target_sis_target \
                                installer_sis_target
     }
@@ -129,7 +164,8 @@ contains(TEMPLATE, app)|!count(DEPLOYMENT, 1) {
     } else {
         # Make sure we build everything, since other sis targets in a recursive invocation
         # may depend on them, even if this one is empty.
-        sis_target.depends = first
+        # In abld/sbsv2, we assume that subdir has been built already, as all builds are recursive.
+        !symbian-abld:!symbian-sbsv2: sis_target.depends = first
     }
     sis_target.commands =
     sis_target.target = sis

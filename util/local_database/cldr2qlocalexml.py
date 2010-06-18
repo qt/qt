@@ -123,7 +123,7 @@ def generateLocaleInfo(path):
     result['language_id'] = language_id
     result['country_id'] = country_id
 
-    numberingSystem = None
+    numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
     except:
@@ -458,6 +458,14 @@ print \
         <defaultCountry>\n\
             <language>Persian</language>\n\
             <country>Iran</country>\n\
+        </defaultCountry>\n\
+        <defaultCountry>\n\
+            <language>Mongolian</language>\n\
+            <country>Mongolia</country>\n\
+        </defaultCountry>\n\
+        <defaultCountry>\n\
+            <language>Nepali</language>\n\
+            <country>Nepal</country>\n\
         </defaultCountry>\n\
     </defaultCountryList>"
 

@@ -46,6 +46,11 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeMouseArea: public QObject
 {
     Q_OBJECT
@@ -56,6 +61,8 @@ private slots:
     void updateMouseAreaPosOnClick();
     void updateMouseAreaPosOnResize();
     void noOnClickedWithPressAndHold();
+    void onMousePressRejected();
+
 private:
     QDeclarativeView *createView();
 };
@@ -320,7 +327,7 @@ void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
 
     QTest::qWait(1000);
 
-    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMousePress);
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
     releaseEvent.setScenePos(QPointF(100, 100));
     releaseEvent.setButton(Qt::LeftButton);
     releaseEvent.setButtons(Qt::LeftButton);
@@ -328,6 +335,48 @@ void tst_QDeclarativeMouseArea::noOnClickedWithPressAndHold()
 
     QVERIFY(!canvas->rootObject()->property("clicked").toBool());
     QVERIFY(canvas->rootObject()->property("held").toBool());
+}
+
+void tst_QDeclarativeMouseArea::onMousePressRejected()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/rejectEvent.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QVERIFY(!canvas->rootObject()->property("mr1_pressed").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr1_released").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr2_pressed").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr2_canceled").toBool());
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QVERIFY(canvas->rootObject()->property("mr1_pressed").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr1_released").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
+    QVERIFY(canvas->rootObject()->property("mr2_pressed").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
+    QVERIFY(canvas->rootObject()->property("mr2_canceled").toBool());
+
+    QTest::qWait(200);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(100, 100));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QVERIFY(canvas->rootObject()->property("mr1_released").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
+    QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

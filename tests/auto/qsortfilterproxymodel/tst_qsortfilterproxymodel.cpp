@@ -127,6 +127,8 @@ private slots:
     void sortColumnTracking1();
     void sortColumnTracking2();
 
+    void sortStable();
+
     void task236755_hiddenColumns();
     void task247867_insertRowsSort();
     void task248868_staticSorting();
@@ -138,6 +140,7 @@ private slots:
     void taskQTBUG_6205_doubleProxySelectionSetSourceModel();
     void taskQTBUG_7537_appearsAndSort();
     void taskQTBUG_7716_unnecessaryDynamicSorting();
+    void taskQTBUG_10287_unnecessaryMapCreation();
 
     void testMultipleProxiesWithSelection();
 
@@ -2441,6 +2444,40 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
     QCOMPARE(proxyModel.data(proxyModel.index(strings.count()-1,0)).toString(),QString::fromLatin1("zz"));
 }
 
+void tst_QSortFilterProxyModel::sortStable()
+{
+    QStandardItemModel* model = new QStandardItemModel(5, 2);
+    for (int r=0; r<5; r++) {
+        for (int c=0; c<2; c++)  {
+            QStandardItem* item = new QStandardItem(
+                    QString("Row:%0, Column:%1").arg(r).arg(c) );
+            for( int i=0; i<3; i++ ) {
+                QStandardItem* child = new QStandardItem(
+                        QString("Item %0").arg(i) );
+                item->appendRow( child );
+            }
+            model->setItem(r, c, item);
+        }
+    }
+    model->setHorizontalHeaderItem( 0, new QStandardItem( "Name" ));
+    model->setHorizontalHeaderItem( 1, new QStandardItem( "Value" ) );
+
+
+    QSortFilterProxyModel *filterModel = new QSortFilterProxyModel(model);
+    filterModel->setSourceModel(model);
+
+    QTreeView *view = new QTreeView;
+    view->setModel(filterModel);
+    QModelIndex firstRoot = filterModel->index(0,0);
+    view->expand(firstRoot);
+    view->setSortingEnabled(true);
+
+    view->model()->sort(1, Qt::DescendingOrder);
+    QVariant lastItemData =filterModel->index(2,0, firstRoot).data();
+    view->model()->sort(1, Qt::DescendingOrder);
+    QCOMPARE(lastItemData, filterModel->index(2,0, firstRoot).data());
+}
+
 void tst_QSortFilterProxyModel::task236755_hiddenColumns()
 {
     class MyStandardItemModel : public QStandardItemModel
@@ -3036,6 +3073,66 @@ void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
     // trick the proxy into emitting begin/end reset signals.
     proxy.setSourceModel(0);
 
+}
+
+class Model10287 : public QStandardItemModel
+{
+    Q_OBJECT
+
+public:
+    Model10287(QObject *parent = 0)
+        : QStandardItemModel(0, 1, parent)
+    {
+        parentItem = new QStandardItem("parent");
+        parentItem->setData(false, Qt::UserRole);
+        appendRow(parentItem);
+
+        childItem = new QStandardItem("child");
+        childItem->setData(true, Qt::UserRole);
+        parentItem->appendRow(childItem);
+
+        childItem2 = new QStandardItem("child2");
+        childItem2->setData(true, Qt::UserRole);
+        parentItem->appendRow(childItem2);
+    }
+
+    void removeChild()
+    {
+        childItem2->setData(false, Qt::UserRole);
+        parentItem->removeRow(0);
+    }
+
+private:
+    QStandardItem *parentItem, *childItem, *childItem2;
+};
+
+class Proxy10287 : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+public:
+    Proxy10287(QAbstractItemModel *model, QObject *parent = 0)
+        : QSortFilterProxyModel(parent)
+    {
+        setSourceModel(model);
+        setDynamicSortFilter(true);
+    }
+
+protected:
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+    {
+        // Filter based on UserRole in model
+        QModelIndex i = sourceModel()->index(source_row, 0, source_parent);
+        return i.data(Qt::UserRole).toBool();
+    }
+};
+
+void tst_QSortFilterProxyModel::taskQTBUG_10287_unnecessaryMapCreation()
+{
+    Model10287 m;
+    Proxy10287 p(&m);
+    m.removeChild();
+    // No assert failure, it passes.
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

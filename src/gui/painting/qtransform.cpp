@@ -148,8 +148,8 @@ QT_BEGIN_NAMESPACE
     coordinate system.  The standard coordinate system of a
     QPaintDevice has its origin located at the top-left position. The
     \e x values increase to the right; \e y values increase
-    downward. For a complete description, see the \l {The Coordinate
-    System}{coordinate system} documentation.
+    downward. For a complete description, see the \l {Coordinate
+    System} {coordinate system} documentation.
 
     QPainter has functions to translate, scale, shear and rotate the
     coordinate system without using a QTransform. For example:
@@ -223,7 +223,7 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/transform/main.cpp 2
     \endtable
 
-    \sa QPainter, {The Coordinate System}, {demos/affine}{Affine
+    \sa QPainter, {Coordinate System}, {demos/affine}{Affine
     Transformations Demo}, {Transformations Example}
 */
 
@@ -1028,7 +1028,7 @@ void QTransform::reset()
     Writes the given \a matrix to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream & operator<<(QDataStream &s, const QTransform &m)
 {
@@ -1052,7 +1052,7 @@ QDataStream & operator<<(QDataStream &s, const QTransform &m)
     Reads the given \a matrix from the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream & operator>>(QDataStream &s, QTransform &t)
 {
@@ -1545,12 +1545,19 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
 
     return true;
 }
+Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 static inline bool cubicTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, bool needsMoveTo)
 {
     // Convert projective xformed curves to line
     // segments so they can be transformed more accurately
-    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon();
+
+    qreal scale;
+    qt_scaleForTransform(transform, &scale);
+
+    qreal curveThreshold = scale == 0 ? qreal(0.25) : (qreal(0.25) / scale);
+
+    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon(curveThreshold);
 
     for (int i = 0; i < segment.size() - 1; ++i)
         if (lineTo_clipped(path, transform, segment.at(i), segment.at(i+1), needsMoveTo))
@@ -1619,7 +1626,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
 QPainterPath QTransform::map(const QPainterPath &path) const
 {
     TransformationType t = inline_type();
-    if (t == TxNone || path.isEmpty())
+    if (t == TxNone || path.elementCount() == 0)
         return path;
 
     if (t >= TxProject)

@@ -57,6 +57,11 @@
 
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativePathView : public QObject
 {
     Q_OBJECT
@@ -77,6 +82,8 @@ private slots:
     void pathChanges();
     void componentChanges();
     void modelChanges();
+    void pathUpdateOnStartChanged();
+    void package();
 
 
 private:
@@ -436,11 +443,18 @@ void tst_QDeclarativePathView::pathMoved()
 
     for(int i=0; i<model.count(); i++){
         QDeclarativeRectangle *curItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", i);
-        QCOMPARE(curItem->pos() + offset, path->pointAt(0.25 + i*0.25));
+        QPointF itemPos(path->pointAt(0.25 + i*0.25));
+        QCOMPARE(curItem->pos() + offset, QPointF(qRound(itemPos.x()), qRound(itemPos.y())));
     }
 
     pathview->setOffset(0.0);
     QCOMPARE(firstItem->pos() + offset, start);
+
+    // Change delegate size
+    canvas->rootObject()->setProperty("delegateWidth", 30);
+    QCOMPARE(firstItem->width(), 30.0);
+    offset.setX(firstItem->width()/2);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
 
     delete canvas;
 }
@@ -477,12 +491,35 @@ void tst_QDeclarativePathView::setCurrentIndex()
     QCOMPARE(canvas->rootObject()->property("currentB").toInt(), 0);
 
     pathview->setCurrentIndex(2);
-    QTest::qWait(1000);
 
     firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 2);
-    QCOMPARE(firstItem->pos() + offset, start);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
     QCOMPARE(canvas->rootObject()->property("currentA").toInt(), 2);
     QCOMPARE(canvas->rootObject()->property("currentB").toInt(), 2);
+
+    pathview->decrementCurrentIndex();
+    QTRY_COMPARE(pathview->currentIndex(), 1);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 1);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    pathview->decrementCurrentIndex();
+    QTRY_COMPARE(pathview->currentIndex(), 0);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    pathview->decrementCurrentIndex();
+    QTRY_COMPARE(pathview->currentIndex(), 3);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 3);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    pathview->incrementCurrentIndex();
+    QTRY_COMPARE(pathview->currentIndex(), 0);
+    firstItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
 
     delete canvas;
 }
@@ -672,6 +709,44 @@ void tst_QDeclarativePathView::modelChanges()
     delete canvas;
 }
 
+void tst_QDeclarativePathView::pathUpdateOnStartChanged()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathUpdateOnStartChanged.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativePath *path = canvas->rootObject()->findChild<QDeclarativePath*>("path");
+    QVERIFY(path);
+    QCOMPARE(path->startX(), 400.0);
+    QCOMPARE(path->startY(), 300.0);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->x(), path->startX() - item->width() / 2.0);
+    QCOMPARE(item->y(), path->startY() - item->height() / 2.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::package()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview_package.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("photoPathView");
+    QVERIFY(pathView);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "pathItem");
+    QVERIFY(item);
+    QVERIFY(item->scale() != 1.0);
+
+    delete canvas;
+}
+
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
@@ -696,7 +771,7 @@ T *tst_QDeclarativePathView::findItem(QGraphicsObject *parent, const QString &ob
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
-                QDeclarativeExpression e(qmlContext(item), "index", item);
+                QDeclarativeExpression e(qmlContext(item), item, "index");
                 if (e.evaluate().toInt() == index)
                     return static_cast<T*>(item);
             } else {

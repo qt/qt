@@ -3421,9 +3421,11 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
         dbg.nospace() << "QChildEvent(" << n << ", " << (static_cast<const QChildEvent*>(e))->child();
         return dbg.space();
+#ifndef QT_NO_GESTURES
     case QEvent::Gesture:
         n = "Gesture";
         break;
+#endif
     default:
         dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
         return dbg.space();
@@ -4254,6 +4256,7 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     return *this;
 }
 
+#ifndef QT_NO_GESTURES
 /*!
     \class QGestureEvent
     \since 4.6
@@ -4557,5 +4560,7 @@ const QGestureEventPrivate *QGestureEvent::d_func() const
     \sa QEvent::ignore()
 */
 #endif
+
+#endif // QT_NO_GESTURES
 
 QT_END_NAMESPACE

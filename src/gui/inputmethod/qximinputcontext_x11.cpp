@@ -346,10 +346,7 @@ static XFontSet getFontSet(const QFont &f)
 
 extern bool qt_use_rtl_extensions; // from qapplication_x11.cpp
 #ifndef QT_NO_XKB
-extern void q_getLocaleAndDirection(QLocale *locale,
-                                  Qt::LayoutDirection *direction,
-                                  const QByteArray &layoutName,
-                                  const QByteArray &variantName);
+extern QLocale q_getKeyboardLocale(const QByteArray &layoutName, const QByteArray &variantName);
 #endif
 
 QXIMInputContext::QXIMInputContext()
@@ -407,17 +404,12 @@ QXIMInputContext::QXIMInputContext()
             QList<QByteArray> layoutNames = QByteArray::fromRawData(names[2], qstrlen(names[2])).split(',');
             QList<QByteArray> variantNames = QByteArray::fromRawData(names[3], qstrlen(names[3])).split(',');
             for (int i = 0; i < qMin(layoutNames.count(), variantNames.count()); ++i  ) {
-                QLocale keyboardInputLocale;
-                Qt::LayoutDirection keyboardInputDirection;
                 QByteArray variantName = variantNames.at(i);
                 const int dashPos = variantName.indexOf("-");
                 if (dashPos >= 0)
                     variantName.truncate(dashPos);
-                q_getLocaleAndDirection(&keyboardInputLocale,
-                                      &keyboardInputDirection,
-                                      layoutNames.at(i),
-                                      variantName);
-                if (keyboardInputDirection == Qt::RightToLeft)
+                QLocale keyboardInputLocale = q_getKeyboardLocale(layoutNames.at(i), variantName);
+                if (keyboardInputLocale.textDirection() == Qt::RightToLeft)
                     qt_use_rtl_extensions = true;
             }
         }

@@ -26,45 +26,46 @@ qhp.Qt.indexRoot           =
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = index.html \
-                             images/api_examples.png \
-                             images/api_lookup.png \
-                             images/api_topics.png \
-                             images/bg_l_blank.png \
+			     images/bg_l.png \
+			     images/bg_l_blank.png \
 			     images/bg_ll_blank.png \
-                             images/bg_ll.png \
-                             images/bg_l.png \
-                             images/bg_lr.png \
-                             images/bg_r.png \
-                             images/bg_ul_blank.png \
-                             images/bg_ul.png \
-                             images/bg_ur_blank.png \
-                             images/bg_ur.png \
+			     images/bg_ul_blank.png \
+			     images/header_bg.png \
+                 images/bg_r.png \
 			     images/box_bg.png \
-                             images/breadcrumb.png \
-                             images/bullet_dn.png \
-                             images/bullet_gt.png \
-                             images/bullet_sq.png \
-                             images/bullet_up.png \
-                             images/coloreditorfactoryimage.png \
-                             images/content_bg.png \
-                             images/dynamiclayouts-example.png \
-                             images/feedbackground.png \
-                             images/form_bg.png \
-                             images/horBar.png \
-                             images/page_bg.png \
-                             images/print.png \
-                             images/qt_guide.png \
-                             images/qt_icon.png \
-                             images/qt-logo.png \
-                             images/qt_ref_doc.png \
-                             images/qt_tools.png \
-                             images/sep.png \
-                             images/sprites-combined.png \
-                             images/stylesheet-coffee-plastique.png \
-                             images/taskmenuextension-example.png \
+			     images/breadcrumb.png \
+			     images/bullet_gt.png \
+			     images/bullet_dn.png \
+			     images/bullet_sq.png \
+			     images/bullet_up.png \
+			     images/arrow_down.png \
+			     images/feedbackground.png \
+			     images/horBar.png \
+			     images/page.png \
+			     images/page_bg.png \
+			     images/sprites-combined.png \
+			     images/spinner.gif \
+			     images/stylesheet-coffee-plastique.png \
+			     images/taskmenuextension-example.png \
+			     images/coloreditorfactoryimage.png \
+			     images/dynamiclayouts-example.png \
 			     scripts/functions.js \
 			     scripts/jquery.js \
-                             style/style.css
+			     scripts/shBrushCpp.js \
+			     scripts/shCore.js \
+			     scripts/shLegacy.js \
+			     scripts/narrow.js \
+			     scripts/superfish.js \
+			     style/shCore.css \
+			     style/shThemeDefault.css \
+			     style/narrow.css \
+			     style/superfish.css \
+			     style/superfish_skin.css \
+  				style/OfflineStyle.css \
+			     style/style_ie6.css \
+			     style/style_ie7.css \
+			     style/style_ie8.css \
+			     style/style.css
 
 qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc
 qhp.Qt.customFilters.Qt.name = Qt 4.7.0
@@ -129,6 +130,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/phonon/mmf \
                           $QTDIR/src/3rdparty/phonon/waveout \
                           $QTDIR/doc/src/snippets \
+                          $QTDIR/doc/src/ja_JP \
                           $QTDIR/doc/src/zh_CN
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"

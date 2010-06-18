@@ -63,6 +63,7 @@
 #include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
+#include <private/qlocale_p.h>
 
 #ifdef Q_OS_SYMBIAN
 #  include <exception>
@@ -521,6 +522,9 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
     QFactoryLoader::refreshAll();
 #endif
 
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+    d_func()->symbianInit();
+#endif
 }
 
 // ### move to QCoreApplicationPrivate constructor?
@@ -596,6 +600,15 @@ void QCoreApplication::init()
 
     qt_startup_hook();
 }
+
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SYSTEMLOCALE)
+void QCoreApplicationPrivate::symbianInit()
+{
+    if (!environmentChangeNotifier)
+        environmentChangeNotifier.reset(new QEnvironmentChangeNotifier);
+}
+#endif
+
 
 /*!
     Destroys the QCoreApplication object.
@@ -1060,7 +1073,7 @@ void QCoreApplication::exit(int returnCode)
 
     The event must be allocated on the heap since the post event queue
     will take ownership of the event and delete it once it has been
-    posted.  It is \e {not safe} to modify or delete the event after
+    posted.  It is \e {not safe} to access the event after
     it has been posted.
 
     When control returns to the main event loop, all events that are
@@ -1091,7 +1104,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event)
 
     The event must be allocated on the heap since the post event queue
     will take ownership of the event and delete it once it has been
-    posted.  It is \e {not safe} to modify or delete the event after
+    posted.  It is \e {not safe} to access the event after
     it has been posted.
 
     When control returns to the main event loop, all events that are

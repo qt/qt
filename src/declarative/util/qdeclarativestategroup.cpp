@@ -47,6 +47,7 @@
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
 
+#include <QtCore/qstringbuilder.h>
 #include <QtCore/qdebug.h>
 
 #include <private/qobject_p.h>
@@ -62,7 +63,7 @@ class QDeclarativeStateGroupPrivate : public QObjectPrivate
 public:
     QDeclarativeStateGroupPrivate()
     : nullState(0), componentComplete(true),
-      ignoreTrans(false), applyingState(false) {}
+      ignoreTrans(false), applyingState(false), unnamedCount(0) {}
 
     QString currentState;
     QDeclarativeState *nullState;
@@ -78,6 +79,7 @@ public:
     bool componentComplete;
     bool ignoreTrans;
     bool applyingState;
+    int unnamedCount;
 
     QDeclarativeTransition *findTransition(const QString &from, const QString &to);
     void setCurrentStateInternal(const QString &state, bool = false);
@@ -89,8 +91,8 @@ public:
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
-   Item (and all dervied elements) provides built in support for states and transitions
-   via its state, states and transitions properties. StateGroup provides an easy way to
+   Item (and all derived elements) provides built in support for states and transitions
+   via its \l{Item::state}{state}, \l{Item::states}{states} and \l{Item::transitions}{transitions} properties. StateGroup provides an easy way to
    use this support in other (non-Item-derived) elements.
 
    \qml
@@ -259,6 +261,12 @@ void QDeclarativeStateGroup::componentComplete()
     Q_D(QDeclarativeStateGroup);
     d->componentComplete = true;
 
+    for (int ii = 0; ii < d->states.count(); ++ii) {
+        QDeclarativeState *state = d->states.at(ii);
+        if (!state->isNamed())
+            state->setName(QLatin1String("anonymousState") % QString::number(++d->unnamedCount));
+    }
+
     if (d->updateAutoState()) {
         return;
     } else if (!d->currentState.isEmpty()) {
@@ -287,7 +295,7 @@ bool QDeclarativeStateGroupPrivate::updateAutoState()
     for (int ii = 0; ii < states.count(); ++ii) {
         QDeclarativeState *state = states.at(ii);
         if (state->isWhenKnown()) {
-            if (!state->name().isEmpty()) {
+            if (state->isNamed()) {
                 if (state->when() && state->when()->evaluate().toBool()) {
                     if (stateChangeDebug()) 
                         qWarning() << "Setting auto state due to:" 

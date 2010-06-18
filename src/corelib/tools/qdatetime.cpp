@@ -1705,7 +1705,7 @@ int QTime::secsTo(const QTime &t) const
     Note that the time will wrap if it passes midnight. See addSecs()
     for an example.
 
-    \sa addSecs(), msecsTo()
+    \sa addSecs(), msecsTo(), QDateTime::addMSecs()
 */
 
 QTime QTime::addMSecs(int ms) const
@@ -1734,7 +1734,7 @@ QTime QTime::addMSecs(int ms) const
     seconds in a day, the result is always between -86400000 and
     86400000 ms.
 
-    \sa secsTo(), addMSecs()
+    \sa secsTo(), addMSecs(), QDateTime::msecsTo()
 */
 
 int QTime::msecsTo(const QTime &t) const
@@ -2042,10 +2042,11 @@ int QTime::elapsed() const
     later.
 
     You can increment (or decrement) a datetime by a given number of
-    seconds using addSecs(), or days using addDays(). Similarly you can
-    use addMonths() and addYears(). The daysTo() function returns the
-    number of days between two datetimes, and secsTo() returns the
-    number of seconds between two datetimes.
+    milliseconds using addMSecs(), seconds using addSecs(), or days
+    using addDays(). Similarly you can use addMonths() and addYears().
+    The daysTo() function returns the number of days between two datetimes,
+    secsTo() returns the number of seconds between two datetimes, and
+    msecsTo() returns the number of milliseconds between two datetimes.
 
     QDateTime can store datetimes as \l{Qt::LocalTime}{local time} or
     as \l{Qt::UTC}{UTC}. QDateTime::currentDateTime() returns a
@@ -2719,7 +2720,7 @@ QDateTime QDateTime::addSecs(int s) const
     later than the datetime of this object (or earlier if \a msecs is
     negative).
 
-    \sa addSecs(), secsTo(), addDays(), addMonths(), addYears()
+    \sa addSecs(), msecsTo(), addDays(), addMonths(), addYears()
 */
 QDateTime QDateTime::addMSecs(qint64 msecs) const
 {
@@ -2731,7 +2732,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     datetime. If the \a other datetime is earlier than this datetime,
     the value returned is negative.
 
-    \sa addDays(), secsTo()
+    \sa addDays(), secsTo(), msecsTo()
 */
 
 int QDateTime::daysTo(const QDateTime &other) const
@@ -2764,6 +2765,33 @@ int QDateTime::secsTo(const QDateTime &other) const
 
     return (date1.daysTo(date2) * SECS_PER_DAY) + time1.secsTo(time2);
 }
+
+/*!
+    Returns the number of milliseconds from this datetime to the \a other
+    datetime. If the \a other datetime is earlier than this datetime,
+    the value returned is negative.
+
+    Before performing the comparison, the two datetimes are converted
+    to Qt::UTC to ensure that the result is correct if one of the two
+    datetimes has daylight saving time (DST) and the other doesn't.
+
+    \sa addMSecs(), daysTo(), QTime::msecsTo()
+*/
+
+qint64 QDateTime::msecsTo(const QDateTime &other) const
+{
+    QDate selfDate;
+    QDate otherDate;
+    QTime selfTime;
+    QTime otherTime;
+
+    d->getUTC(selfDate, selfTime);
+    other.d->getUTC(otherDate, otherTime);
+
+    return (static_cast<qint64>(selfDate.daysTo(otherDate)) * static_cast<qint64>(MSECS_PER_DAY))
+           + static_cast<qint64>(selfTime.msecsTo(otherTime));
+}
+
 
 /*!
     \fn QDateTime QDateTime::toTimeSpec(Qt::TimeSpec specification) const
@@ -3545,7 +3573,7 @@ void QDateTime::detach()
 
     Writes the \a date to stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &out, const QDate &date)
@@ -3558,7 +3586,7 @@ QDataStream &operator<<(QDataStream &out, const QDate &date)
 
     Reads a date from stream \a in into the \a date.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
@@ -3574,7 +3602,7 @@ QDataStream &operator>>(QDataStream &in, QDate &date)
 
     Writes \a time to stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &out, const QTime &time)
@@ -3587,7 +3615,7 @@ QDataStream &operator<<(QDataStream &out, const QTime &time)
 
     Reads a time from stream \a in into the given \a time.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QTime &time)
@@ -3603,7 +3631,7 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 
     Writes \a dateTime to the \a out stream.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
@@ -3618,7 +3646,7 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 
     Reads a datetime from the stream \a in into \a dateTime.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)

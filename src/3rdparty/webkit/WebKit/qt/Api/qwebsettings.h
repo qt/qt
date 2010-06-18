@@ -63,7 +63,7 @@ public:
         OfflineStorageDatabaseEnabled,
         OfflineWebApplicationCacheEnabled,
         LocalStorageEnabled,
-#ifdef QT_DEPRECATED
+#if defined(QT_DEPRECATED) || defined(qdoc)
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
@@ -73,7 +73,8 @@ public:
         SpatialNavigationEnabled,
         LocalContentCanAccessFileUrls,
         TiledBackingStoreEnabled,
-        FrameFlatteningEnabled
+        FrameFlatteningEnabled,
+        SiteSpecificQuirksEnabled
     };
     enum WebGraphic {
         MissingImageGraphic,
@@ -135,9 +136,6 @@ public:
     
     void setLocalStoragePath(const QString& path);
     QString localStoragePath() const; 
-
-    void setInspectorUrl(const QUrl &location);
-    QUrl inspectorUrl() const;
 
     static void clearMemoryCaches();
 

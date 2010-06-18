@@ -46,8 +46,7 @@
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
+#define SRCDIR "."
 #endif
 
 class tst_typeimports : public QObject
@@ -72,8 +71,8 @@ class TestType1 : public QObject
 public:
     TestType1(QObject *parent = 0) : QObject(parent) {}
 
-    QDeclarativeListProperty<QObject> resources() { 
-        return QDeclarativeListProperty<QObject>(this, 0, resources_append); 
+    QDeclarativeListProperty<QObject> resources() {
+        return QDeclarativeListProperty<QObject>(this, 0, resources_append);
     }
 
     static void resources_append(QDeclarativeListProperty<QObject> *p, QObject *o) {
@@ -104,7 +103,7 @@ public:
 };
 
 
-tst_typeimports::tst_typeimports() 
+tst_typeimports::tst_typeimports()
 {
     qmlRegisterType<TestType1>("Qt.test", 1, 0, "TestType1");
     qmlRegisterType<TestType2>("Qt.test", 1, 0, "TestType2");
@@ -127,6 +126,9 @@ void tst_typeimports::cpp()
 
 void tst_typeimports::qml()
 {
+    //get rid of initialization effects
+    { QDeclarativeComponent component(&engine, TEST_FILE("qml.qml")); }
+
     QBENCHMARK {
         QDeclarativeComponent component(&engine, TEST_FILE("qml.qml"));
         QVERIFY(component.isReady());

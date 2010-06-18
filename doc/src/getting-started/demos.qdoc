@@ -53,15 +53,14 @@
     \l{Qt Examples} and are used to highlight certain features of
     Qt.
 
-    \table 50%
+    \table 
     \header
     \o {2,1} Getting an Overview
     \row
     \o \inlineimage qtdemo-small.png
-    \o
-    If you run the \l{Examples and Demos Launcher}, you'll see many of Qt's
+    \o If you run the \l{Examples and Demos Launcher}, you'll see many of Qt's
     widgets in action.
-
+	
     The \l{Qt Widget Gallery} also provides overviews of selected Qt
     widgets in each of the styles used on various supported platforms.
     \endtable
@@ -127,16 +126,15 @@
     \section1 Graphics View
 
     \list
-    \o \l{demos/chip}{40000 Chips} uses the
-       \l{The Graphics View Framework}{Graphics View} framework to efficiently
-       display a large number of individual graphical items on a scrolling canvas,
-       highlighting features such as rotation, zooming, level of detail control,
-       and item selection.
-    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's \e{Widgets on
-       the Canvas} feature by embedding a multitude of fully-working dialogs into a
-       scene.
+    \o \l{demos/chip}{40000 Chips} uses the \l{Graphics View Framework} to 
+       efficiently display a large number of individual graphical items on 
+       a scrolling canvas and highlighting features including rotation, 
+       zooming, level of detail control, and item selection.
+    \o \l{demos/embeddeddialogs}{Embedded Dialogs} showcases Qt 4.4's 
+       \e{Widgets on the Canvas} feature by embedding several 
+       fully-functional dialogs in a scene.
     \o \l{demos/boxes}{Boxes} showcases Qt's OpenGL support and the
-       integration with the Graphics View framework.
+       integration with the \l{Graphics View Framework}.
     \endlist
 
     \section1 Tools
@@ -186,7 +184,7 @@
     \o \l{demos/embedded/fluidlauncher}{Fluid Launcher} demo application launcher for embedded screens
     \o \l{demos/embedded/lightmaps}{Light Maps} demonstrates OpenStreetMap integration with WebKit.
     \o \l{demos/embedded/raycasting}{Ray Casting} demonstrates the use of ray casting with the
-       \l{The Graphics View Framework}{Graphics View} framework.
+       \l{Graphics View Framework}.
     \o \l{demos/embedded/styledemo}{Embedded Styles} demonstrates the use of styles.
     \o \l{demos/embedded/weatherinfo}{Weather Info} fetches weather information from the Web.
     \endlist

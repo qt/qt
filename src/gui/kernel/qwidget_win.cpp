@@ -123,9 +123,11 @@ static PtrWTClose ptrWTClose = 0;
 static PtrWTInfo ptrWTInfo = 0;
 static PtrWTQueueSizeGet ptrWTQueueSizeGet = 0;
 static PtrWTQueueSizeSet ptrWTQueueSizeSet = 0;
+#ifndef QT_NO_TABLETEVENT
 static void init_wintab_functions();
 static void qt_tablet_init();
 static void qt_tablet_cleanup();
+#endif // QT_NO_TABLETEVENT
 extern HCTX qt_tablet_context;
 extern bool qt_tablet_tilt_support;
 
@@ -136,6 +138,8 @@ QWidget* qt_get_tablet_widget()
 }
 
 extern bool qt_is_gui_used;
+
+#ifndef QT_NO_TABLETEVENT
 static void init_wintab_functions()
 {
 #if defined(Q_OS_WINCE)
@@ -227,6 +231,7 @@ static void qt_tablet_cleanup()
     delete qt_tablet_widget;
     qt_tablet_widget = 0;
 }
+#endif // QT_NO_TABLETEVENT
 
 const QString qt_reg_winclass(QWidget *w);                // defined in qapplication_win.cpp
 
@@ -512,8 +517,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         DestroyWindow(destroyw);
     }
 
+#ifndef QT_NO_TABLETEVENT
     if (q != qt_tablet_widget && QWidgetPrivate::mapper)
         qt_tablet_init();
+#endif // QT_NO_TABLETEVENT
 
     if (q->testAttribute(Qt::WA_DropSiteRegistered))
         registerDropSite(true);
@@ -537,6 +544,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -2068,7 +2076,7 @@ void QWidgetPrivate::registerTouchWindow()
 
 void QWidgetPrivate::winSetupGestures()
 {
-#if !defined(QT_NO_NATIVE_GESTURES)
+#if !defined(QT_NO_GESTURES) && !defined(QT_NO_NATIVE_GESTURES)
     Q_Q(QWidget);
     if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;

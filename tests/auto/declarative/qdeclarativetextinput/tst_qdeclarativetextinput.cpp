@@ -39,14 +39,21 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include "../../../shared/util.h"
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QFile>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativetextinput_p.h>
+#include <private/qdeclarativetextinput_p_p.h>
 #include <QDebug>
 #include <QStyle>
 #include <QInputContext>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 class tst_qdeclarativetextinput : public QObject
 
@@ -62,6 +69,8 @@ private slots:
     void color();
     void selection();
 
+    void positionAt();
+
     void maxLength();
     void masks();
     void validators();
@@ -71,11 +80,13 @@ private slots:
     void navigation();
     void readOnly();
 
-    void sendRequestSoftwareInputPanelEvent();
+    void openInputPanelOnClick();
+    void openInputPanelOnFocus();
     void setHAlignClearCache();
     void focusOutClearSelection();
 
     void echoMode();
+    void geometrySignals();
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -320,11 +331,11 @@ void tst_qdeclarativetextinput::selection()
 
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
-        textinputObject->setSelectionEnd(i);
+        textinputObject->select(0,i);
         QCOMPARE(testStr.mid(0,i), textinputObject->selectedText());
     }
     for(int i=0; i<= testStr.size(); i++) {
-        textinputObject->setSelectionStart(i);
+        textinputObject->select(i,testStr.size());
         QCOMPARE(testStr.mid(i,testStr.size()-i), textinputObject->selectedText());
     }
 
@@ -334,46 +345,69 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectionEnd() == 0);
     QVERIFY(textinputObject->selectedText().isNull());
 
-    for(int i=0; i< testStr.size(); i++) {
-        textinputObject->setSelectionStart(i);
-        QCOMPARE(textinputObject->selectionEnd(), i);
-        QCOMPARE(testStr.mid(i,0), textinputObject->selectedText());
-        textinputObject->setSelectionEnd(i+1);
-        QCOMPARE(textinputObject->selectionStart(), i);
-        QCOMPARE(testStr.mid(i,1), textinputObject->selectedText());
-    }
-
-    for(int i= testStr.size() - 1; i>0; i--) {
-        textinputObject->setSelectionEnd(i);
-        QCOMPARE(testStr.mid(i,0), textinputObject->selectedText());
-        textinputObject->setSelectionStart(i-1);
-        QCOMPARE(testStr.mid(i-1,1), textinputObject->selectedText());
-    }
-
     //Test Error Ignoring behaviour
     textinputObject->setCursorPosition(0);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(-10);
+    textinputObject->select(-10,0);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(100);
+    textinputObject->select(100,110);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionEnd(-10);
+    textinputObject->select(0,-10);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionEnd(100);
+    textinputObject->select(0,100);
     QVERIFY(textinputObject->selectedText().isNull());
-    textinputObject->setSelectionStart(0);
-    textinputObject->setSelectionEnd(10);
+    textinputObject->select(0,10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionStart(-10);
+    textinputObject->select(-10,10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionStart(100);
+    textinputObject->select(100,101);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionEnd(-10);
+    textinputObject->select(0,-10);
     QVERIFY(textinputObject->selectedText().size() == 10);
-    textinputObject->setSelectionEnd(100);
+    textinputObject->select(0,100);
     QVERIFY(textinputObject->selectedText().size() == 10);
 
     delete textinputObject;
+}
+
+void tst_qdeclarativetextinput::positionAt()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
+    QVERIFY(canvas->rootObject() != 0);
+    canvas->show();
+    canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textinputObject != 0);
+
+    // Check autoscrolled...
+    QFontMetrics fm(textinputObject->font());
+
+    int pos = textinputObject->positionAt(textinputObject->width()/2);
+    int diff = abs(fm.width(textinputObject->text()) - (fm.width(textinputObject->text().left(pos))+textinputObject->width()/2));
+
+    // some tollerance for different fonts.
+#ifdef Q_OS_LINUX
+    QVERIFY(diff < 2);
+#else
+    QVERIFY(diff < 5);
+#endif
+
+    // Check without autoscroll...
+    textinputObject->setAutoScroll(false);
+    pos = textinputObject->positionAt(textinputObject->width()/2);
+    diff = abs(fm.width(textinputObject->text().left(pos))-textinputObject->width()/2);
+
+    // some tollerance for different fonts.
+#ifdef Q_OS_LINUX
+    QVERIFY(diff < 2);
+#else
+    QVERIFY(diff < 5);
+#endif
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::maxLength()
@@ -563,8 +597,7 @@ void tst_qdeclarativetextinput::navigation()
     QVERIFY(input->hasFocus() == true);
     //QT-2944: If text is selected, ensure we deselect upon cursor motion
     input->setCursorPosition(input->text().length());
-    input->setSelectionStart(0);
-    input->setSelectionEnd(input->text().length());
+    input->select(0,input->text().length());
     QVERIFY(input->selectionStart() != input->selectionEnd());
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->selectionStart() == input->selectionEnd());
@@ -574,6 +607,14 @@ void tst_qdeclarativetextinput::navigation()
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == true);
+
+    // Up and Down should NOT do Home/End, even on Mac OS X (QTBUG-10438).
+    input->setCursorPosition(2);
+    QCOMPARE(input->cursorPosition(),2);
+    simulateKey(canvas, Qt::Key_Up);
+    QCOMPARE(input->cursorPosition(),2);
+    simulateKey(canvas, Qt::Key_Down);
+    QCOMPARE(input->cursorPosition(),2);
 
     delete canvas;
 }
@@ -593,13 +634,13 @@ void tst_qdeclarativetextinput::cursorDelegate()
     //Test Delegate gets moved
     for(int i=0; i<= textInputObject->text().length(); i++){
         textInputObject->setCursorPosition(i);
-        //+5 is because the TextInput cursorRect is just a 10xHeight area centered on cursor position
-        QCOMPARE(textInputObject->cursorRect().x() + 5, qRound(delegateObject->x()));
-        QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+        //+5 is because the TextInput cursorRectangle is just a 10xHeight area centered on cursor position
+        QCOMPARE(textInputObject->cursorRectangle().x() + 5, qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     }
     textInputObject->setCursorPosition(0);
-    QCOMPARE(textInputObject->cursorRect().x()+5, qRound(delegateObject->x()));
-    QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+    QCOMPARE(textInputObject->cursorRectangle().x()+5, qRound(delegateObject->x()));
+    QCOMPARE(textInputObject->cursorRectangle().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
     QVERIFY(!textInputObject->findChild<QDeclarativeItem*>("cursorInstance"));
@@ -703,11 +744,10 @@ QDeclarativeView *tst_qdeclarativetextinput::createView(const QString &filename)
 
     return canvas;
 }
-
 class MyInputContext : public QInputContext
 {
 public:
-    MyInputContext() : softwareInputPanelEventReceived(false) {}
+    MyInputContext() : openInputPanelReceived(false), closeInputPanelReceived(false) {}
     ~MyInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -720,23 +760,23 @@ public:
     bool filterEvent( const QEvent *event )
     {
         if (event->type() == QEvent::RequestSoftwareInputPanel)
-            softwareInputPanelEventReceived = true;
+            openInputPanelReceived = true;
+        if (event->type() == QEvent::CloseSoftwareInputPanel)
+            closeInputPanelReceived = true;
         return QInputContext::filterEvent(event);
     }
-    bool softwareInputPanelEventReceived;
+    bool openInputPanelReceived;
+    bool closeInputPanelReceived;
 };
 
-void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
+void tst_qdeclarativetextinput::openInputPanelOnClick()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     MyInputContext ic;
-    view.viewport()->setInputContext(&ic);
-    QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
-            view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
-    if ((behavior != QStyle::RSIP_OnMouseClick))
-        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
+    view.setInputContext(&ic);
     QDeclarativeTextInput input;
+    QSignalSpy focusOnPressSpy(&input, SIGNAL(focusOnPressChanged(bool)));
     input.setText("Hello world");
     input.setPos(0, 0);
     scene.addItem(&input);
@@ -745,9 +785,156 @@ void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(&input);
+    QDeclarativeTextInputPrivate *inputPrivate = static_cast<QDeclarativeTextInputPrivate*>(pri);
+
+    // input panel on click
+    inputPrivate->showInputPanelOnFocus = false;
+
+    QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+            view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
-    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+    if (behavior == QStyle::RSIP_OnMouseClickAndAlreadyFocused) {
+        QCOMPARE(ic.openInputPanelReceived, false);
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+        QApplication::processEvents();
+        QCOMPARE(ic.openInputPanelReceived, true);
+    } else if (behavior == QStyle::RSIP_OnMouseClick) {
+        QCOMPARE(ic.openInputPanelReceived, true);
+    }
+    ic.openInputPanelReceived = false;
+
+    // focus should not cause input panels to open or close
+    input.setFocus(false);
+    input.setFocus(true);
+    input.setFocus(false);
+    input.setFocus(true);
+    input.setFocus(false);
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+}
+
+void tst_qdeclarativetextinput::openInputPanelOnFocus()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.setInputContext(&ic);
+    QDeclarativeTextInput input;
+    QSignalSpy focusOnPressSpy(&input, SIGNAL(focusOnPressChanged(bool)));
+    input.setText("Hello world");
+    input.setPos(0, 0);
+    scene.addItem(&input);
+    view.show();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(&input);
+    QDeclarativeTextInputPrivate *inputPrivate = static_cast<QDeclarativeTextInputPrivate*>(pri);
+    inputPrivate->showInputPanelOnFocus = true;
+
+    // test default values
+    QVERIFY(input.focusOnPress());
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+
+    // focus on press, input panel on focus
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QApplication::processEvents();
+    QVERIFY(input.hasFocus());
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
+
+    // no events on release
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QCOMPARE(ic.openInputPanelReceived, false);
+    ic.openInputPanelReceived = false;
+
+    // if already focused, input panel can be opened on press
+    QVERIFY(input.hasFocus());
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
+
+    // input method should stay enabled if focus
+    // is lost to an item that also accepts inputs
+    QDeclarativeTextInput anotherInput;
+    scene.addItem(&anotherInput);
+    anotherInput.setFocus(true);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
+    QCOMPARE(view.inputContext(), &ic);
+    QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
+
+    // input method should be disabled if focus
+    // is lost to an item that doesn't accept inputs
+    QDeclarativeItem item;
+    scene.addItem(&item);
+    item.setFocus(true);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QVERIFY(view.inputContext() == 0);
+    QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
+
+    // no automatic input panel events should
+    // be sent if focusOnPress is false
+    input.setFocusOnPress(false);
+    QCOMPARE(focusOnPressSpy.count(),1);
+    input.setFocusOnPress(false);
+    QCOMPARE(focusOnPressSpy.count(),1);
+    input.setFocus(false);
+    input.setFocus(true);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+
+    // one show input panel event should
+    // be set when openSoftwareInputPanel is called
+    input.openSoftwareInputPanel();
+    QCOMPARE(ic.openInputPanelReceived, true);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.openInputPanelReceived = false;
+
+    // one close input panel event should
+    // be sent when closeSoftwareInputPanel is called
+    input.closeSoftwareInputPanel();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, true);
+    ic.closeInputPanelReceived = false;
+
+    // set focusOnPress back to true
+    input.setFocusOnPress(true);
+    QCOMPARE(focusOnPressSpy.count(),2);
+    input.setFocusOnPress(true);
+    QCOMPARE(focusOnPressSpy.count(),2);
+    input.setFocus(false);
+    QApplication::processEvents();
+    QCOMPARE(ic.openInputPanelReceived, false);
+    QCOMPARE(ic.closeInputPanelReceived, false);
+    ic.closeInputPanelReceived = false;
+
+    // input panel should not re-open
+    // if focus has already been set
+    input.setFocus(true);
+    QCOMPARE(ic.openInputPanelReceived, true);
+    ic.openInputPanelReceived = false;
+    input.setFocus(true);
+    QCOMPARE(ic.openInputPanelReceived, false);
+
+    // input method should be disabled
+    // if TextEdit loses focus
+    input.setFocus(false);
+    QApplication::processEvents();
+    QVERIFY(view.inputContext() == 0);
+    QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 }
 
 class MyTextInput : public QDeclarativeTextInput
@@ -795,14 +982,23 @@ void tst_qdeclarativetextinput::focusOutClearSelection()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    input.setSelectionStart(2);
-    input.setSelectionEnd(5);
+    input.select(2,5);
     //The selection should work
     QTRY_COMPARE(input.selectedText(), QLatin1String("llo"));
     input2.setFocus(true);
     QApplication::processEvents();
     //The input lost the focus selection should be cleared
     QTRY_COMPARE(input.selectedText(), QLatin1String(""));
+}
+
+void tst_qdeclarativetextinput::geometrySignals()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/geometrySignals.qml");
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("bindingWidth").toInt(), 400);
+    QCOMPARE(o->property("bindingHeight").toInt(), 500);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativetextinput)

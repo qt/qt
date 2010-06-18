@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
 
 void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
 {
+#ifdef QT_NO_DEBUG_STREAM
+    Q_UNUSED(instr)
+    Q_UNUSED(idx)
+#else
     QByteArray lineNumber = QByteArray::number(instr->line);
     if (instr->line == (unsigned short)-1)
         lineNumber = "NA";
@@ -60,6 +64,7 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         break;
     case QDeclarativeInstruction::CreateObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
+        break;
     case QDeclarativeInstruction::CreateSimpleObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE_SIMPLE\t\t" << instr->createSimple.typeSize;
         break;
@@ -135,6 +140,9 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         break;
     case QDeclarativeInstruction::StoreVariantDouble:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
+        break;
+    case QDeclarativeInstruction::StoreVariantBool:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT_BOOL\t\t" << instr->storeBool.propertyIndex << "\t" << instr->storeBool.value;
         break;
     case QDeclarativeInstruction::StoreObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
@@ -213,6 +221,7 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "XXX UNKOWN INSTRUCTION" << "\t" << instr->type;
         break;
     }
+#endif // QT_NO_DEBUG_STREAM
 }
 
 QT_END_NAMESPACE

@@ -131,18 +131,22 @@ public:
     AxisData vData;
 
     QDeclarativeTimeLine timeline;
-    bool flicked : 1;
-    bool moving : 1;
+    bool flickingHorizontally : 1;
+    bool flickingVertically : 1;
+    bool hMoved : 1;
+    bool vMoved : 1;
+    bool movingHorizontally : 1;
+    bool movingVertically : 1;
     bool stealMouse : 1;
     bool pressed : 1;
     bool interactive : 1;
-    QTime lastPosTime;
+    QElapsedTimer lastPosTime;
     QPointF lastPos;
     QPointF pressPos;
-    QTime pressTime;
+    QElapsedTimer pressTime;
     qreal deceleration;
     qreal maxVelocity;
-    QTime velocityTime;
+    QElapsedTimer velocityTime;
     QPointF lastFlickablePosition;
     qreal reportedVelocitySmoothing;
     QGraphicsSceneMouseEvent *delayedPressEvent;
@@ -158,7 +162,7 @@ public:
     int vTime;
     QDeclarativeTimeLine velocityTimeline;
     QDeclarativeFlickableVisibleArea *visibleArea;
-    QDeclarativeFlickable::FlickDirection flickDirection;
+    QDeclarativeFlickable::FlickableDirection flickableDirection;
     QDeclarativeFlickable::BoundsBehavior boundsBehavior;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);

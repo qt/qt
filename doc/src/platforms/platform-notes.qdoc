@@ -517,7 +517,7 @@
 
     Note that some modules rely on other modules. If your application uses
     QtXmlPatterns, QtWebkit or QtScript it may still require \c NetworkServices
-    \o as these modules rely on QtNetwork to go online.
+    as these modules rely on QtNetwork to go online.
 
     For more information see the documentation of the individual Qt classes. If
     a class does not mention Symbian capabilities, it requires none.

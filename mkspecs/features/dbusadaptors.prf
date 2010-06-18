@@ -1,11 +1,8 @@
-isEmpty(QMAKE_QDBUSXML2CPP) {
-    win32:QMAKE_QDBUSXML2CPP = $$[QT_INSTALL_BINS]\qdbusxml2cpp.exe
-    else:QMAKE_QDBUSXML2CPP = $$[QT_INSTALL_BINS]/qdbusxml2cpp
-}
+qtPrepareTool(QMAKE_QDBUSXML2CPP, qdbusxml2cpp)
 
 for(DBUS_ADAPTOR, $$list($$unique(DBUS_ADAPTORS))) {
 
-    !contains(DBUS_ADAPTOR, .*\w\.xml$) {
+    !contains(DBUS_ADAPTOR, .*\\w\\.xml$) {
         warning("Invalid D-BUS adaptor: '$${DBUS_ADAPTOR}', please use 'com.mydomain.myinterface.xml' instead.")
         next()
     }

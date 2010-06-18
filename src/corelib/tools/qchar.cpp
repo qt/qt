@@ -653,14 +653,41 @@ bool QChar::isSymbol() const
     \fn bool QChar::isHighSurrogate() const
 
     Returns true if the QChar is the high part of a utf16 surrogate
-    (ie. if its code point is between 0xd800 and 0xdbff).
+    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
     Returns true if the QChar is the low part of a utf16 surrogate
-    (ie. if its code point is between 0xdc00 and 0xdfff).
+    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::isHighSurrogate(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is the high part of a utf16 surrogate
+    (ie. if its code point is between 0xd800 and 0xdbff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::isLowSurrogate(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is the high part of a utf16 surrogate
+    (ie. if its code point is between 0xdc00 and 0xdfff, inclusive).
+*/
+
+/*!
+    \fn static bool QChar::requiresSurrogates(uint ucs4)
+    \since 4.7
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    can be splited to the high and low parts of a utf16 surrogate
+    (ie. if its code point is greater than or equals to 0x10000).
 */
 
 /*!
@@ -1306,7 +1333,7 @@ QChar QChar::fromAscii(char c)
 
     Writes the char \a chr to the stream \a out.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QChar &chr)
 {
@@ -1319,7 +1346,7 @@ QDataStream &operator<<(QDataStream &out, const QChar &chr)
 
     Reads a char from the stream \a in into char \a chr.
 
-    \sa {Format of the QDataStream operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QChar &chr)
 {
@@ -1453,9 +1480,9 @@ static void decomposeHelper(QString *str, bool canonical, QChar::UnicodeVersion 
         if (!d || (canonical && tag != QChar::Canonical))
             continue;
 
-        s.replace(uc - utf16, ucs4 > 0x10000 ? 2 : 1, (const QChar *)d, length);
-        // since the insert invalidates the pointers and we do decomposition recursive
         int pos = uc - utf16;
+        s.replace(pos, QChar::requiresSurrogates(ucs4) ? 2 : 1, reinterpret_cast<const QChar *>(d), length);
+        // since the insert invalidates the pointers and we do decomposition recursive
         utf16 = reinterpret_cast<unsigned short *>(s.data());
         uc = utf16 + pos + length;
     }
@@ -1540,46 +1567,52 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
         int p2 = pos+1;
         uint u1 = s.at(pos).unicode();
         if (QChar(u1).isHighSurrogate()) {
-            ushort low = s.at(pos+1).unicode();
+            ushort low = s.at(p2).unicode();
             if (QChar(low).isLowSurrogate()) {
-                p2++;
                 u1 = QChar::surrogateToUcs4(u1, low);
                 if (p2 >= l)
                     break;
+                ++p2;
             }
         }
         uint u2 = s.at(p2).unicode();
-        if (QChar(u2).isHighSurrogate() && p2 < l-1) {
+        if (QChar(u2).isHighSurrogate() && p2 < l) {
             ushort low = s.at(p2+1).unicode();
             if (QChar(low).isLowSurrogate()) {
-                p2++;
                 u2 = QChar::surrogateToUcs4(u2, low);
+                ++p2;
             }
         }
 
-        int c2 = QChar::combiningClass(u2);
-        if (QChar::unicodeVersion(u2) > version)
-            c2 = 0;
-
+        ushort c2 = 0;
+        {
+            const QUnicodeTables::Properties *p = qGetProp(u2);
+            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+                c2 = p->combiningClass;
+        }
         if (c2 == 0) {
             pos = p2+1;
             continue;
         }
-        int c1 = QChar::combiningClass(u1);
-        if (QChar::unicodeVersion(u1) > version)
-            c1 = 0;
+
+        ushort c1 = 0;
+        {
+            const QUnicodeTables::Properties *p = qGetProp(u1);
+            if ((QChar::UnicodeVersion)p->unicodeVersion <= version)
+                c1 = p->combiningClass;
+        }
 
         if (c1 > c2) {
             QChar *uc = s.data();
             int p = pos;
             // exchange characters
-            if (u2 < 0x10000) {
+            if (!QChar::requiresSurrogates(u2)) {
                 uc[p++] = u2;
             } else {
                 uc[p++] = QChar::highSurrogate(u2);
                 uc[p++] = QChar::lowSurrogate(u2);
             }
-            if (u1 < 0x10000) {
+            if (!QChar::requiresSurrogates(u1)) {
                 uc[p++] = u1;
             } else {
                 uc[p++] = QChar::highSurrogate(u1);
@@ -1591,7 +1624,7 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
                 --pos;
         } else {
             ++pos;
-            if (u1 > 0x10000)
+            if (QChar::requiresSurrogates(u1))
                 ++pos;
         }
     }

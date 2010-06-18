@@ -43,10 +43,6 @@
 #include <QtGui>
 #include <QtNetwork>
 
-#if defined (Q_OS_SYMBIAN)
-#include "sym_iap_util.h"
-#endif
-
 #include "ui_form.h"
 
 #define FLIGHTVIEW_URL "http://mobile.flightview.com/TrackByFlight.aspx"
@@ -100,6 +96,8 @@ private:
     QUrl m_url;
     QDate m_searchDate;
     QPixmap m_map;
+    QNetworkAccessManager m_manager;
+    QList<QNetworkReply *> mapReplies;
 
 public:
 
@@ -115,7 +113,6 @@ public:
         connect(ui.flightEdit, SIGNAL(returnPressed()), SLOT(startSearch()));
 
         setWindowTitle("Flight Info");
-        QTimer::singleShot(0, this, SLOT(delayedInit()));
 
         // Rendered from the public-domain vectorized aircraft
         // http://openclipart.org/media/people/Jarno
@@ -127,6 +124,8 @@ public:
         connect(searchTodayAction, SIGNAL(triggered()), SLOT(today()));
         connect(searchYesterdayAction, SIGNAL(triggered()), SLOT(yesterday()));
         connect(randomAction, SIGNAL(triggered()), SLOT(randomFlight()));
+        connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
+                this, SLOT(handleNetworkData(QNetworkReply*)));
 #if defined(Q_OS_SYMBIAN)
         menuBar()->addAction(searchTodayAction);
         menuBar()->addAction(searchYesterdayAction);
@@ -140,31 +139,21 @@ public:
     }
 
 private slots:
-    void delayedInit() {
-#if defined(Q_OS_SYMBIAN)
-        qt_SetDefaultIap();
-#endif
-    }
-
 
     void handleNetworkData(QNetworkReply *networkReply) {
         if (!networkReply->error()) {
-            // Assume UTF-8 encoded
-            QByteArray data = networkReply->readAll();
-            QString xml = QString::fromUtf8(data);
-            digest(xml);
+            if (!mapReplies.contains(networkReply)) {
+                // Assume UTF-8 encoded
+                QByteArray data = networkReply->readAll();
+                QString xml = QString::fromUtf8(data);
+                digest(xml);
+            } else {
+                mapReplies.removeOne(networkReply);
+                m_map.loadFromData(networkReply->readAll());
+                update();
+            }
         }
         networkReply->deleteLater();
-        networkReply->manager()->deleteLater();
-    }
-
-    void handleMapData(QNetworkReply *networkReply) {
-        if (!networkReply->error()) {
-            m_map.loadFromData(networkReply->readAll());
-            update();
-        }
-        networkReply->deleteLater();
-        networkReply->manager()->deleteLater();
     }
 
     void today() {
@@ -185,6 +174,10 @@ private slots:
         ui.infoBox->hide();
         ui.flightStatus->hide();
         ui.flightName->setText("Enter flight number");
+        ui.flightEdit->setFocus();
+#ifdef QT_KEYPAD_NAVIGATION
+        ui.flightEdit->setEditFocus(true);
+#endif
         m_map = QPixmap();
         update();
     }
@@ -224,10 +217,7 @@ public slots:
             ui.flightName->setText("Getting a random flight...");
         }
 
-        QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-        connect(manager, SIGNAL(finished(QNetworkReply*)),
-                this, SLOT(handleNetworkData(QNetworkReply*)));
-        manager->get(QNetworkRequest(m_url));
+        m_manager.get(QNetworkRequest(m_url));
     }
 
 
@@ -248,10 +238,7 @@ private:
             regex.indexIn(href);
             QString airport = regex.cap(1);
             m_url.addEncodedQueryItem("dpap", QUrl::toPercentEncoding(airport));
-            QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-            connect(manager, SIGNAL(finished(QNetworkReply*)),
-                    this, SLOT(handleNetworkData(QNetworkReply*)));
-            manager->get(QNetworkRequest(m_url));
+            m_manager.get(QNetworkRequest(m_url));
             return;
         }
 
@@ -287,12 +274,9 @@ private:
                 }
                 if (xml.name() == "img" && inFlightMap) {
                     QString src = xml.attributes().value("src").toString();
-                    src.prepend("http://mobile.flightview.com");
+                    src.prepend("http://mobile.flightview.com/");
                     QUrl url = QUrl::fromPercentEncoding(src.toAscii());
-                    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-                    connect(manager, SIGNAL(finished(QNetworkReply*)),
-                            this, SLOT(handleMapData(QNetworkReply*)));
-                    manager->get(QNetworkRequest(url));
+                    mapReplies.append(m_manager.get(QNetworkRequest(url)));
                 }
             }
 

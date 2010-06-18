@@ -181,6 +181,10 @@ public:
     void initContext(QGLContext *context, const QGLWidget* shareWidget);
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
+    void aboutToDestroy() {
+        if (glcx)
+            glcx->reset();
+    }
 
     QGLContext *glcx;
     QGLWidgetGLPaintDevice glDevice;
@@ -234,7 +238,7 @@ public:
     static void addShare(const QGLContext *context, const QGLContext *share);
     static void removeShare(const QGLContext *context);
 private:
-    QGLContextGroup(const QGLContext *context) : m_context(context), m_guards(0), m_refs(1) { }
+    QGLContextGroup(const QGLContext *context);
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
@@ -348,9 +352,7 @@ public:
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
 #endif
-
-#if !defined(QT_NO_EGL)
-    bool ownsEglContext;
+#ifndef QT_NO_EGL
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
@@ -391,6 +393,16 @@ public:
     uint internal_context : 1;
     uint version_flags_cached : 1;
     uint extension_flags_cached : 1;
+
+    // workarounds for driver/hw bugs on different platforms
+    uint workaround_needsFullClearOnEveryFrame : 1;
+    uint workaround_brokenFBOReadBack : 1;
+    uint workaroundsCached : 1;
+
+#ifndef QT_NO_EGL
+    uint ownsEglContext : 1;
+#endif
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
@@ -525,17 +537,33 @@ public:
     QSize bindCompressedTexturePVR(const char *buf, int len);
 };
 
+struct QGLTextureCacheKey {
+    qint64 key;
+    QGLContextGroup *group;
+};
+
+inline bool operator==(const QGLTextureCacheKey &a, const QGLTextureCacheKey &b)
+{
+    return a.key == b.key && a.group == b.group;
+}
+
+inline uint qHash(const QGLTextureCacheKey &key)
+{
+    return qHash(key.key) ^ qHash(key.group);
+}
+
+
 class Q_AUTOTEST_EXPORT QGLTextureCache {
 public:
     QGLTextureCache();
     ~QGLTextureCache();
 
     void insert(QGLContext *ctx, qint64 key, QGLTexture *texture, int cost);
-    inline void remove(quint64 key);
+    void remove(qint64 key);
     inline int size();
     inline void setMaxCost(int newMax);
     inline int maxCost();
-    inline QGLTexture* getTexture(quint64 key);
+    inline QGLTexture* getTexture(QGLContext *ctx, qint64 key);
 
     bool remove(QGLContext *ctx, GLuint textureId);
     void removeContextTextures(QGLContext *ctx);
@@ -545,7 +573,7 @@ public:
     static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
 
 private:
-    QCache<qint64, QGLTexture> m_cache;
+    QCache<QGLTextureCacheKey, QGLTexture> m_cache;
     QReadWriteLock m_lock;
 };
 
@@ -566,18 +594,12 @@ int QGLTextureCache::maxCost()
     return m_cache.maxCost();
 }
 
-QGLTexture* QGLTextureCache::getTexture(quint64 key)
+QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
 {
     QReadLocker locker(&m_lock);
-    return m_cache.object(key);
+    const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
+    return m_cache.object(cacheKey);
 }
-
-void QGLTextureCache::remove(quint64 key)
-{
-    QWriteLocker locker(&m_lock);
-    m_cache.remove(key);
-}
-
 
 extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
 

@@ -44,9 +44,18 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/qdeclarativeview.h>
+#include <private/qdeclarativelistview_p.h>
+#include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativevisualitemmodel_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include <math.h>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 static void initStandardTreeModel(QStandardItemModel *model)
 {
@@ -74,9 +83,50 @@ public:
 
 private slots:
     void rootIndex();
+    void objectListModel();
 
 private:
     QDeclarativeEngine engine;
+    template<typename T>
+    T *findItem(QGraphicsObject *parent, const QString &objectName, int index);
+};
+
+class DataObject : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString color READ color WRITE setColor NOTIFY colorChanged)
+
+public:
+    DataObject(QObject *parent=0) : QObject(parent) {}
+    DataObject(const QString &name, const QString &color, QObject *parent=0)
+        : QObject(parent), m_name(name), m_color(color) { }
+
+
+    QString name() const { return m_name; }
+    void setName(const QString &name) {
+        if (name != m_name) {
+            m_name = name;
+            emit nameChanged();
+        }
+    }
+
+    QString color() const { return m_color; }
+    void setColor(const QString &color) {
+        if (color != m_color) {
+            m_color = color;
+            emit colorChanged();
+        }
+    }
+
+signals:
+    void nameChanged();
+    void colorChanged();
+
+private:
+    QString m_name;
+    QString m_color;
 };
 
 tst_qdeclarativevisualdatamodel::tst_qdeclarativevisualdatamodel()
@@ -105,6 +155,60 @@ void tst_qdeclarativevisualdatamodel::rootIndex()
     delete obj;
 }
 
+void tst_qdeclarativevisualdatamodel::objectListModel()
+{
+    QDeclarativeView view;
+
+    QList<QObject*> dataList;
+    dataList.append(new DataObject("Item 1", "red"));
+    dataList.append(new DataObject("Item 2", "green"));
+    dataList.append(new DataObject("Item 3", "blue"));
+    dataList.append(new DataObject("Item 4", "yellow"));
+
+    QDeclarativeContext *ctxt = view.rootContext();
+    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/objectlist.qml"));
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "name", 0);
+    QCOMPARE(name->text(), QString("Item 1"));
+
+    dataList[0]->setProperty("name", QLatin1String("Changed"));
+    QCOMPARE(name->text(), QString("Changed"));
+}
+
+template<typename T>
+T *tst_qdeclarativevisualdatamodel::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->childItems().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+            if (index != -1) {
+                QDeclarativeExpression e(qmlContext(item), item, "index");
+                if (e.evaluate().toInt() == index)
+                    return static_cast<T*>(item);
+            } else {
+                return static_cast<T*>(item);
+            }
+        }
+        item = findItem<T>(item, objectName, index);
+        if (item)
+        return static_cast<T*>(item);
+    }
+
+    return 0;
+}
 
 QTEST_MAIN(tst_qdeclarativevisualdatamodel)
 

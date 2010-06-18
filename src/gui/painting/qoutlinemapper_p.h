@@ -87,8 +87,16 @@ const int QT_RASTER_COORD_LIMIT = 32767;
 class QOutlineMapper
 {
 public:
-    QOutlineMapper()
-        : m_round_coords(false)
+    QOutlineMapper() :
+        m_element_types(0),
+        m_elements(0),
+        m_elements_dev(0),
+        m_points(0),
+        m_tags(0),
+        m_contours(0),
+        m_polygon_dev(0),
+        m_round_coords(false),
+        m_in_clip_elements(false)
     {
     }
 
@@ -228,6 +236,7 @@ public:
     qreal m_dy;
 
     bool m_valid;
+    bool m_in_clip_elements;
 
 private:
     bool m_round_coords;

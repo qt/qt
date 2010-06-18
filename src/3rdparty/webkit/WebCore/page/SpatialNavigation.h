@@ -40,6 +40,11 @@ inline long long maxDistance()
     return numeric_limits<long long>::max();
 }
 
+inline unsigned int fudgeFactor()
+{
+    return 2;
+}
+
 // Spatially speaking, two given elements in a web page can be:
 // 1) Fully aligned: There is a full intersection between the rects, either
 //    vertically or horizontally.
@@ -92,6 +97,7 @@ enum RectsAlignment {
 struct FocusCandidate {
     FocusCandidate()
         : node(0)
+        , enclosingScrollableBox(0)
         , distance(maxDistance())
         , parentDistance(maxDistance())
         , alignment(None)
@@ -101,6 +107,7 @@ struct FocusCandidate {
 
     FocusCandidate(Node* n)
         : node(n)
+        , enclosingScrollableBox(0)
         , distance(maxDistance())
         , parentDistance(maxDistance())
         , alignment(None)
@@ -109,9 +116,11 @@ struct FocusCandidate {
     }
 
     bool isNull() const { return !node; }
+    bool inScrollableContainer() const { return node && enclosingScrollableBox; }
     Document* document() const { return node ? node->document() : 0; }
 
     Node* node;
+    Node* enclosingScrollableBox;
     long long distance;
     long long parentDistance;
     RectsAlignment alignment;
@@ -119,10 +128,11 @@ struct FocusCandidate {
 };
 
 void distanceDataForNode(FocusDirection direction, Node* start, FocusCandidate& candidate);
-bool scrollInDirection(Frame*, FocusDirection);
+bool scrollInDirection(Frame*, FocusDirection, const FocusCandidate& candidate = FocusCandidate());
 void scrollIntoView(Element*);
 bool hasOffscreenRect(Node*);
 bool isInRootDocument(Node*);
+bool isScrollableContainerNode(Node*);
 
 } // namspace WebCore
 

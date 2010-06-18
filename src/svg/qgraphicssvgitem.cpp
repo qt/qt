@@ -124,8 +124,10 @@ public:
 
     \snippet doc/src/snippets/code/src_svg_qgraphicssvgitem.cpp 0
 
-    Size of the item can be set via the setSize() method or via
-    direct manipulation of the items transformation matrix.
+    Size of the item can be set via the \l{QRectF::setSize()}
+    {setSize()} method of the \l{QGraphicsSvgItem::boundingRect()}
+    {bounding rectangle} or via direct manipulation of the items
+    transformation matrix.
 
     By default the SVG rendering is cached using QGraphicsItem::DeviceCoordinateCache
     mode to speedup the display of items. Caching can be disabled by passing

@@ -55,6 +55,7 @@
 #include <QFile>
 #include <QThread>
 #include <QMutex>
+#include <QBuffer>
 #include <QWaitCondition>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
@@ -64,14 +65,6 @@
 static const int maxImageRequestCount = 8;
 
 QT_BEGIN_NAMESPACE
-
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
 
 class QDeclarativeImageReaderEvent : public QEvent
 {
@@ -268,7 +261,7 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
                 }
                 QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
             } else {
-                QString lf = toLocalFileOrQrc(url);
+                QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
                 if (!lf.isEmpty()) {
                     // Image is local - load/decode immediately
                     QImage image;
@@ -342,7 +335,10 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
             errorString = reply->errorString();
         } else {
             QSize read_impsize;
-            if (readImage(reply->url(), reply, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
+            QByteArray all = reply->readAll();
+            QBuffer buff(&all);
+            buff.open(QIODevice::ReadOnly);
+            if (readImage(reply->url(), &buff, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
                 qmlOriginalSizes()->insert(reply->url(), read_impsize);
                 error = QDeclarativeImageReaderEvent::NoError;
             } else {
@@ -609,7 +605,7 @@ QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QP
 
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (!async) {
-        QString lf = toLocalFileOrQrc(url);
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
         if (!lf.isEmpty()) {
             status = QDeclarativePixmapReply::Ready;
             if (!QPixmapCache::find(strKey,pixmap)) {

@@ -37,6 +37,7 @@ HEADERS += apigenerator.h \
 	   cppcodeparser.h \
 	   cpptoqsconverter.h \
 	   dcfsection.h \
+	   ditaxmlgenerator.h \
            doc.h \
 	   editdistance.h \
 	   generator.h \
@@ -81,6 +82,7 @@ SOURCES += apigenerator.cpp \
 	   cppcodeparser.cpp \
 	   cpptoqsconverter.cpp \
 	   dcfsection.cpp \
+	   ditaxmlgenerator.cpp \
            doc.cpp \
 	   editdistance.cpp \
 	   generator.cpp \
@@ -115,20 +117,7 @@ SOURCES += apigenerator.cpp \
 
 ### Documentation for qdoc3 ###
 
-win32:!win32-g++ {
-    unixstyle = false
-} else :win32-g++:isEmpty(QMAKE_SH) {
-    unixstyle = false
-} else {
-    unixstyle = true
-}
-
-$$unixstyle {
-    QDOC = cd $$PWD/doc && $$[QT_INSTALL_BINS]/qdoc3
-} else {
-    QDOC = cd $$PWD/doc && $$[QT_INSTALL_BINS]/qdoc3.exe
-    QDOC = $$replace(QDOC, "/", "\\")
-}
+qtPrepareTool(QDOC, qdoc3)
 
 docs.commands = $$QDOC qdoc-manual.qdocconf
 

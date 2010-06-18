@@ -4,4 +4,10 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativeview.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    importFiles.sources = data
+    importFiles.path = .
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}

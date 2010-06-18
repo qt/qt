@@ -124,8 +124,11 @@ static IntRect renderRectRelativeToRootDocument(RenderObject* render)
 
     // Handle nested frames.
     for (Frame* frame = render->document()->frame(); frame; frame = frame->tree()->parent()) {
-        if (HTMLFrameOwnerElement* ownerElement = frame->ownerElement())
-            rect.move(ownerElement->offsetLeft(), ownerElement->offsetTop());
+        if (Element* element = static_cast<Element*>(frame->ownerElement())) {
+            do {
+                rect.move(element->offsetLeft(), element->offsetTop());
+            } while ((element = element->offsetParent()));
+        }
     }
 
     return rect;
@@ -444,7 +447,7 @@ bool hasOffscreenRect(Node* node)
 
 // In a bottom-up way, this method tries to scroll |frame| in a given direction
 // |direction|, going up in the frame tree hierarchy in case it does not succeed.
-bool scrollInDirection(Frame* frame, FocusDirection direction)
+bool scrollInDirection(Frame* frame, FocusDirection direction, const FocusCandidate& candidate)
 {
     if (!frame)
         return false;
@@ -468,6 +471,9 @@ bool scrollInDirection(Frame* frame, FocusDirection direction)
         return false;
     }
 
+    if (!candidate.isNull() && isScrollableContainerNode(candidate.enclosingScrollableBox))
+        return frame->eventHandler()->scrollRecursively(scrollDirection, ScrollByLine, candidate.enclosingScrollableBox);
+
     return frame->eventHandler()->scrollRecursively(scrollDirection, ScrollByLine);
 }
 
@@ -477,9 +483,8 @@ void scrollIntoView(Element* element)
     // it is preferable to inflate |element|'s bounding rect a bit before
     // scrolling it for accurate reason.
     // Element's scrollIntoView method does not provide this flexibility.
-    static const int fudgeFactor = 2;
     IntRect bounds = element->getRect();
-    bounds.inflate(fudgeFactor);
+    bounds.inflate(fudgeFactor());
     element->renderer()->enclosingLayer()->scrollRectToVisible(bounds);
 }
 
@@ -497,14 +502,14 @@ static void deflateIfOverlapped(IntRect& a, IntRect& b)
     if (!a.intersects(b) || a.contains(b) || b.contains(a))
         return;
 
-    static const int fudgeFactor = -2;
+    int deflateFactor = -fudgeFactor();
 
     // Avoid negative width or height values.
-    if ((a.width() + 2 * fudgeFactor > 0) && (a.height() + 2 * fudgeFactor > 0))
-        a.inflate(fudgeFactor);
+    if ((a.width() + 2 * deflateFactor > 0) && (a.height() + 2 * deflateFactor > 0))
+        a.inflate(deflateFactor);
 
-    if ((b.width() + 2 * fudgeFactor > 0) && (b.height() + 2 * fudgeFactor > 0))
-        b.inflate(fudgeFactor);
+    if ((b.width() + 2 * deflateFactor > 0) && (b.height() + 2 * deflateFactor > 0))
+        b.inflate(deflateFactor);
 }
 
 static bool checkNegativeCoordsForNode(Node* node, const IntRect& curRect)
@@ -525,6 +530,19 @@ static bool checkNegativeCoordsForNode(Node* node, const IntRect& curRect)
     }
 
     return canBeScrolled;
+}
+
+bool isScrollableContainerNode(Node* node)
+{
+    if (!node)
+        return false;
+
+    if (RenderObject* renderer = node->renderer()) {
+        return (renderer->isBox() && toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()
+             && node->hasChildNodes() && !node->isDocumentNode());
+    }
+
+    return false;
 }
 
 } // namespace WebCore

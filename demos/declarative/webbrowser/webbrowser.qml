@@ -1,170 +1,79 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 import Qt 4.7
 import org.webkit 1.0
 
 import "content"
 
-Item {
+Rectangle {
     id: webBrowser
 
-    property string urlString : "http://qt.nokia.com/"
+    property string urlString : "http://www.nokia.com/"
 
-    width: 640
-    height: 480
+    width: 800; height: 600
+    color: "#343434"
 
-    Item {
-        id: webPanel
-        anchors.fill: parent
-        clip: true
-        Rectangle {
-            color: "#555555"
-            anchors.fill: parent
-        }
-        Image {
-            source: "content/pics/softshadow-bottom.png"
-            width: webPanel.width
-            height: 16
-        }
-        Image {
-            source: "content/pics/softshadow-top.png"
-            width: webPanel.width
-            height: 16
-            anchors.bottom: footer.top
-        }
-        RectSoftShadow {
-            x: -webView.contentX
-            y: -webView.contentY
-            width: webView.contentWidth
-            height: webView.contentHeight+headerSpace.height
-        }
-        Item {
-            id: headerSpace
-            width: parent.width
-            height: 60
-            z: 1
+    FlickableWebView {
+        id: webView
+        url: webBrowser.urlString
+        onProgressChanged: header.urlChanged = false
+        anchors { top: headerSpace.bottom; left: parent.left; right: parent.right; bottom: parent.bottom }
+    }
 
-            RetractingWebBrowserHeader { id: header }
-        }
-        FlickableWebView {
-            id: webView
-            width: parent.width
-            anchors.top: headerSpace.bottom
-            anchors.bottom: footer.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-        }
-        BorderImage {
-            id: footer
-            source: "content/pics/footer.sci"
-            width: parent.width
-            height: 43
-            anchors.bottom: parent.bottom
-            Rectangle {
-                y: -1
-                width: parent.width
-                height: 1
-                color: "#555555"
-            }
-            Item {
-                id: backbutton
-                width: back_e.width
-                height: back_e.height
-                anchors.right: reload.left
-                anchors.rightMargin: 10
-                anchors.verticalCenter: parent.verticalCenter
-                Image {
-                    id: back_e
-                    source: "content/pics/back.png"
-                    anchors.fill: parent
-                }
-                Image {
-                    id: back_d
-                    source: "content/pics/back-disabled.png"
-                    anchors.fill: parent
-                }
-                states: [
-                    State {
-                        name: "Enabled"
-                        when: webView.back.enabled==true
-                        PropertyChanges { target: back_e; opacity: 1 }
-                        PropertyChanges { target: back_d; opacity: 0 }
-                    },
-                    State {
-                        name: "Disabled"
-                        when: webView.back.enabled==false
-                        PropertyChanges { target: back_e; opacity: 0 }
-                        PropertyChanges { target: back_d; opacity: 1 }
-                    }
-                ]
-                transitions: [
-                    Transition {
-                        NumberAnimation {
-                            properties: "opacity"
-                            easing.type: "InOutQuad"
-                            duration: 300
-                        }
-                    }
-                ]
-                MouseArea {
-                    anchors.fill: back_e
-                    onClicked: { if (webView.back.enabled) webView.back.trigger() }
-                }
-            }
-            Image {
-                id: reload
-                source: "content/pics/reload.png"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            MouseArea {
-                anchors.fill: reload
-                onClicked: { webView.reload.trigger() }
-            }
-            Item {
-                id: forwardbutton
-                width: forward_e.width
-                height: forward_e.height
-                anchors.left: reload.right
-                anchors.leftMargin: 10
-                anchors.verticalCenter: parent.verticalCenter
-                Image {
-                    id: forward_e
-                    source: "content/pics/forward.png"
-                    anchors.fill: parent
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                Image {
-                    id: forward_d
-                    source: "content/pics/forward-disabled.png"
-                    anchors.fill: parent
-                }
-                states: [
-                    State {
-                        name: "Enabled"
-                        when: webView.forward.enabled==true
-                        PropertyChanges { target: forward_e; opacity: 1 }
-                        PropertyChanges { target: forward_d; opacity: 0 }
-                    },
-                    State {
-                        name: "Disabled"
-                        when: webView.forward.enabled==false
-                        PropertyChanges { target: forward_e; opacity: 0 }
-                        PropertyChanges { target: forward_d; opacity: 1 }
-                    }
-                ]
-                transitions: [
-                    Transition {
-                        NumberAnimation {
-                            properties: "opacity"
-                            easing.type: "InOutQuad"
-                            duration: 320
-                        }
-                    }
-                ]
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: { if (webView.forward.enabled) webView.forward.trigger() }
-                }
-            }
-        }
+    Item { id: headerSpace; width: parent.width; height: 62 }
+
+    Header {
+        id: header
+        editUrl: webBrowser.urlString
+        width: headerSpace.width; height: headerSpace.height
+    }
+
+    ScrollBar {
+        scrollArea: webView; width: 8
+        anchors { right: parent.right; top: header.bottom; bottom: parent.bottom }
+    }
+
+    ScrollBar {
+        scrollArea: webView; height: 8; orientation: Qt.Horizontal
+        anchors { right: parent.right; rightMargin: 8; left: parent.left; bottom: parent.bottom }
     }
 }

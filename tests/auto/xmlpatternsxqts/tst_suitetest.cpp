@@ -89,10 +89,17 @@ void tst_SuiteTest::runTestSuite() const
 
     TestSuite::SuiteType suiteType;
     switch (m_suiteType) {
-        case XQuerySuite: suiteType = TestSuite::XQuerySuite;
-        case XsltSuite: suiteType = TestSuite::XsltSuite;
-        case XsdSuite: suiteType = TestSuite::XsdSuite;
-        default: break;
+    case XQuerySuite:
+        suiteType = TestSuite::XQuerySuite;
+        break;
+    case XsltSuite:
+        suiteType = TestSuite::XsltSuite;
+        break;
+    case XsdSuite:
+        suiteType = TestSuite::XsdSuite;
+        break;
+    default:
+        break;
     }
 
     TestSuite *const ts = TestSuite::openCatalog(catalogPath, errMsg, true, suiteType);
@@ -134,8 +141,6 @@ void tst_SuiteTest::checkTestSuiteResult() const
     /* Passed to ResultThreader so it knows what kind of file it is handling. */
     ResultThreader::Type type = ResultThreader::Baseline;
 
-    QProcess::execute(QLatin1String("p4 edit ") + m_existingBaseline);
-
     for(QFileInfoList::const_iterator it(list.constBegin()); it != end; ++it)
     {
         QFileInfo i(*it);
@@ -159,8 +164,6 @@ void tst_SuiteTest::checkTestSuiteResult() const
     }
 
     const int exitCode = eventLoop.exec();
-
-    QProcess::execute(QLatin1String("p4 revert -a ") + m_existingBaseline);
 
     QCOMPARE(exitCode, 0);
 }

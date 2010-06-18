@@ -58,6 +58,8 @@
 #include "private/qwidget_p.h"
 #include "qgesturerecognizer.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 class QBasicTimer;
@@ -85,7 +87,6 @@ public:
     void recycle(QGesture *gesture);
 
 protected:
-    void timerEvent(QTimerEvent *event);
     bool filterEventThroughContexts(const QMultiMap<QObject *, Qt::GestureType> &contexts,
                                     QEvent *event);
 
@@ -93,7 +94,7 @@ private:
     QMultiMap<Qt::GestureType, QGestureRecognizer *> m_recognizers;
 
     QSet<QGesture *> m_activeGestures;
-    QHash<QGesture *, QBasicTimer> m_maybeGestures;
+    QSet<QGesture *> m_maybeGestures;
 
     enum State {
         Gesture,
@@ -127,7 +128,7 @@ private:
 
     int m_lastCustomGestureId;
 
-    QHash<QGestureRecognizer *, QList<QGesture *> > m_obsoleteGestures;
+    QHash<QGestureRecognizer *, QSet<QGesture *> > m_obsoleteGestures;
     QHash<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
@@ -143,5 +144,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QGESTUREMANAGER_P_H

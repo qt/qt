@@ -46,8 +46,7 @@
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
+#define SRCDIR "."
 #endif
 
 class tst_qmlgraphicsimage : public QObject
@@ -68,7 +67,7 @@ private:
 void tst_qmlgraphicsimage::qmlgraphicsimage()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;
@@ -80,7 +79,13 @@ void tst_qmlgraphicsimage::qmlgraphicsimage()
 void tst_qmlgraphicsimage::qmlgraphicsimage_file()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
+    //get rid of initialization effects
+    {
+        QDeclarativeImage *image = new QDeclarativeImage;
+        QDeclarativeEngine::setContextForObject(image, engine.rootContext());
+        image->setSource(url);
+    }
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;
@@ -93,7 +98,7 @@ void tst_qmlgraphicsimage::qmlgraphicsimage_file()
 void tst_qmlgraphicsimage::qmlgraphicsimage_url()
 {
     int x = 0;
-    QUrl url("image.png");
+    QUrl url(SRCDIR "/image.png");
     QBENCHMARK {
         QUrl url2("http://localhost/image" + QString::number(x++) + ".png");
         QDeclarativeImage *image = new QDeclarativeImage;

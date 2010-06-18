@@ -46,6 +46,11 @@
 #include <QDeclarativeComponent>
 #include <QDeclarativeExpression>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativecontext : public QObject
 {
     Q_OBJECT
@@ -398,7 +403,7 @@ void tst_qdeclarativecontext::destruction()
 
     QObject obj;
     QDeclarativeEngine::setContextForObject(&obj, ctxt);
-    QDeclarativeExpression expr(ctxt, "a", 0);
+    QDeclarativeExpression expr(ctxt, 0, "a");
 
     QCOMPARE(ctxt, QDeclarativeEngine::contextForObject(&obj));
     QCOMPARE(ctxt, expr.context());

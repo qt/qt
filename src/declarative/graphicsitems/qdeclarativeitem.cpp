@@ -86,8 +86,8 @@ QT_BEGIN_NAMESPACE
     The Transform elements let you create and control advanced transformations that can be configured
     independently using specialized properties.
 
-    You can assign any number of Transform elements to an Item. Each Transform is applied in order,
-    one at a time, to the Item it's assigned to.
+    You can assign any number of Transform elements to an \l Item. Each Transform is applied in order,
+    one at a time.
 */
 
 /*!
@@ -97,9 +97,11 @@ QT_BEGIN_NAMESPACE
 
     The Translate object provides independent control over position in addition to the Item's x and y properties.
 
-    The following example moves the Y axis of the Rectangles while still allowing the Row element
+    The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
+    import Qt 4.7
+
     Row {
         Rectangle {
             width: 100; height: 100
@@ -113,6 +115,8 @@ QT_BEGIN_NAMESPACE
         }
     }
     \endqml
+
+    \image translate.png
 */
 
 /*!
@@ -130,9 +134,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Scale QGraphicsScale
     \since 4.7
-    \brief The Scale object provides a way to scale an Item.
+    \brief The Scale element provides a way to scale an Item.
 
-    The Scale object gives more control over scaling than using Item's scale property. Specifically,
+    The Scale element gives more control over scaling than using \l Item's \l{Item::scale}{scale} property. Specifically,
     it allows a different scale for the x and y axes, and allows the scale to be relative to an
     arbitrary point.
 
@@ -144,6 +148,8 @@ QT_BEGIN_NAMESPACE
         transform: Scale { origin.x: 25; origin.y: 25; xScale: 3}
     }
     \endqml
+
+    \sa Rotate, Translate
 */
 
 /*!
@@ -171,7 +177,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Rotation object provides a way to rotate an Item.
 
-    The Rotation object gives more control over rotation than using Item's rotation property.
+    The Rotation object gives more control over rotation than using \l Item's \l{Item::rotation}{rotation} property.
     Specifically, it allows (z axis) rotation to be relative to an arbitrary point.
 
     The following example rotates a Rectangle around its interior point 25, 25:
@@ -219,52 +225,27 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-
-/*!
-    \group group_animation
-    \title Animation
-*/
-
-/*!
-    \group group_coreitems
-    \title Basic Items
-*/
-
-/*!
-    \group group_layouts
-    \title Layouts
-*/
-
-/*!
-    \group group_states
-    \title States and Transitions
-*/
-
-/*!
-    \group group_utility
-    \title Utility
-*/
-
-/*!
-    \group group_views
-    \title Views
-*/
-
-/*!
-    \group group_widgets
-    \title Widgets
-*/
-
 /*!
     \internal
     \class QDeclarativeContents
-    \ingroup group_utility
     \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
 
 */
-
-QDeclarativeContents::QDeclarativeContents() : m_x(0), m_y(0), m_width(0), m_height(0)
+QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
+    //### optimize
+    connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
+}
+
+QDeclarativeContents::~QDeclarativeContents()
+{
+    QList<QGraphicsItem *> children = m_item->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+            continue;
+        QDeclarativeItemPrivate::get(child)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    }
 }
 
 QRectF QDeclarativeContents::rectF() const
@@ -272,84 +253,128 @@ QRectF QDeclarativeContents::rectF() const
     return QRectF(m_x, m_y, m_width, m_height);
 }
 
-//TODO: optimization: only check sender(), if there is one
-void QDeclarativeContents::calcHeight()
+void QDeclarativeContents::calcHeight(QDeclarativeItem *changed)
 {
     qreal oldy = m_y;
     qreal oldheight = m_height;
 
-    qreal top = FLT_MAX;
-    qreal bottom = 0;
-
-    QList<QGraphicsItem *> children = m_item->childItems();
-    for (int i = 0; i < children.count(); ++i) {
-        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
-            continue;
-        qreal y = child->y();
-        if (y + child->height() > bottom)
-            bottom = y + child->height();
+    if (changed) {
+        qreal top = oldy;
+        qreal bottom = oldy + oldheight;
+        qreal y = changed->y();
+        if (y + changed->height() > bottom)
+            bottom = y + changed->height();
         if (y < top)
             top = y;
-    }
-    if (!children.isEmpty())
         m_y = top;
-    m_height = qMax(bottom - top, qreal(0.0));
+        m_height = bottom - top;
+    } else {
+        qreal top = FLT_MAX;
+        qreal bottom = 0;
+        QList<QGraphicsItem *> children = m_item->childItems();
+        for (int i = 0; i < children.count(); ++i) {
+            QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+            if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+                continue;
+            qreal y = child->y();
+            if (y + child->height() > bottom)
+                bottom = y + child->height();
+            if (y < top)
+                top = y;
+        }
+        if (!children.isEmpty())
+            m_y = top;
+        m_height = qMax(bottom - top, qreal(0.0));
+    }
 
     if (m_height != oldheight || m_y != oldy)
         emit rectChanged(rectF());
 }
 
-//TODO: optimization: only check sender(), if there is one
-void QDeclarativeContents::calcWidth()
+void QDeclarativeContents::calcWidth(QDeclarativeItem *changed)
 {
     qreal oldx = m_x;
     qreal oldwidth = m_width;
 
-    qreal left = FLT_MAX;
-    qreal right = 0;
-
-    QList<QGraphicsItem *> children = m_item->childItems();
-    for (int i = 0; i < children.count(); ++i) {
-        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
-            continue;
-        qreal x = child->x();
-        if (x + child->width() > right)
-            right = x + child->width();
+    if (changed) {
+        qreal left = oldx;
+        qreal right = oldx + oldwidth;
+        qreal x = changed->x();
+        if (x + changed->width() > right)
+            right = x + changed->width();
         if (x < left)
             left = x;
-    }
-    if (!children.isEmpty())
         m_x = left;
-    m_width = qMax(right - left, qreal(0.0));
+        m_width = right - left;
+    } else {
+        qreal left = FLT_MAX;
+        qreal right = 0;
+        QList<QGraphicsItem *> children = m_item->childItems();
+        for (int i = 0; i < children.count(); ++i) {
+            QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
+            if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
+                continue;
+            qreal x = child->x();
+            if (x + child->width() > right)
+                right = x + child->width();
+            if (x < left)
+                left = x;
+        }
+        if (!children.isEmpty())
+            m_x = left;
+        m_width = qMax(right - left, qreal(0.0));
+    }
 
     if (m_width != oldwidth || m_x != oldx)
         emit rectChanged(rectF());
 }
 
-void QDeclarativeContents::setItem(QDeclarativeItem *item)
+void QDeclarativeContents::complete()
 {
-    m_item = item;
-
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
-        connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
-        connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
+        QDeclarativeItemPrivate::get(child)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+        //###what about changes to visibility?
     }
 
-    calcHeight();
-    calcWidth();
+    calcGeometry();
+}
+
+void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    if (newGeometry.width() != oldGeometry.width())
+        calcWidth(changed);
+    if (newGeometry.height() != oldGeometry.height())
+        calcHeight(changed);
+}
+
+void QDeclarativeContents::itemDestroyed(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcGeometry();
+}
+
+void QDeclarativeContents::childRemoved(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcGeometry();
+}
+
+void QDeclarativeContents::childAdded(QDeclarativeItem *item)
+{
+    if (item)
+        QDeclarativeItemPrivate::get(item)->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry | QDeclarativeItemPrivate::Destroyed);
+    calcWidth(item);
+    calcHeight(item);
 }
 
 QDeclarativeItemKeyFilter::QDeclarativeItemKeyFilter(QDeclarativeItem *item)
-: m_next(0)
+: m_processPost(false), m_next(0)
 {
     QDeclarativeItemPrivate *p =
         item?static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
@@ -363,19 +388,19 @@ QDeclarativeItemKeyFilter::~QDeclarativeItemKeyFilter()
 {
 }
 
-void QDeclarativeItemKeyFilter::keyPressed(QKeyEvent *event)
+void QDeclarativeItemKeyFilter::keyPressed(QKeyEvent *event, bool post)
 {
-    if (m_next) m_next->keyPressed(event);
+    if (m_next) m_next->keyPressed(event, post);
 }
 
-void QDeclarativeItemKeyFilter::keyReleased(QKeyEvent *event)
+void QDeclarativeItemKeyFilter::keyReleased(QKeyEvent *event, bool post)
 {
-    if (m_next) m_next->keyReleased(event);
+    if (m_next) m_next->keyReleased(event, post);
 }
 
-void QDeclarativeItemKeyFilter::inputMethodEvent(QInputMethodEvent *event)
+void QDeclarativeItemKeyFilter::inputMethodEvent(QInputMethodEvent *event, bool post)
 {
-    if (m_next) m_next->inputMethodEvent(event);
+    if (m_next) m_next->inputMethodEvent(event, post);
 }
 
 QVariant QDeclarativeItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
@@ -437,14 +462,16 @@ void QDeclarativeItemKeyFilter::componentComplete()
     }
     \endcode
 
-    KeyNavigation receives key events after the item it is attached to.
+    By default KeyNavigation receives key events after the item it is attached to.
     If the item accepts an arrow key event, the KeyNavigation
-    attached property will not receive an event for that key.
+    attached property will not receive an event for that key.  Setting the
+    \l priority property to KeyNavigation.BeforeItem allows handling
+    of the key events before normal item processing.
 
     If an item has been set for a direction and the KeyNavigation
     attached property receives the corresponding
     key press and release events, the events will be accepted by
-    KeyNaviagtion and will not propagate any further.
+    KeyNavigation and will not propagate any further.
 
     \sa {Keys}{Keys attached property}
 */
@@ -464,6 +491,7 @@ QDeclarativeKeyNavigationAttached::QDeclarativeKeyNavigationAttached(QObject *pa
 : QObject(*(new QDeclarativeKeyNavigationAttachedPrivate), parent),
   QDeclarativeItemKeyFilter(qobject_cast<QDeclarativeItem*>(parent))
 {
+    m_processPost = true;
 }
 
 QDeclarativeKeyNavigationAttached *
@@ -550,11 +578,44 @@ void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
     emit changed();
 }
 
-void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
+/*!
+    \qmlproperty enumeration KeyNavigation::priority
+
+    This property determines whether the keys are processed before
+    or after the attached item's own key handling.
+
+    \list
+    \o KeyNavigation.BeforeItem - process the key events before normal
+    item key processing.  If the event is accepted it will not
+    be passed on to the item.
+    \o KeyNavigation.AfterItem (default) - process the key events after normal item key
+    handling.  If the item accepts the key event it will not be
+    handled by the KeyNavigation attached property handler.
+    \endlist
+*/
+QDeclarativeKeyNavigationAttached::Priority QDeclarativeKeyNavigationAttached::priority() const
+{
+    return m_processPost ? AfterItem : BeforeItem;
+}
+
+void QDeclarativeKeyNavigationAttached::setPriority(Priority order)
+{
+    bool processPost = order == AfterItem;
+    if (processPost != m_processPost) {
+        m_processPost = processPost;
+        emit priorityChanged();
+    }
+}
+
+void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
-
     event->ignore();
+
+    if (post != m_processPost) {
+        QDeclarativeItemKeyFilter::keyPressed(event, post);
+        return;
+    }
 
     switch(event->key()) {
     case Qt::Key_Left:
@@ -597,14 +658,18 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
         break;
     }
 
-    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyPressed(event);
+    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyPressed(event, post);
 }
 
-void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
+void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
-
     event->ignore();
+
+    if (post != m_processPost) {
+        QDeclarativeItemKeyFilter::keyReleased(event, post);
+        return;
+    }
 
     switch(event->key()) {
     case Qt::Key_Left:
@@ -641,7 +706,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
         break;
     }
 
-    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event);
+    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event, post);
 }
 
 /*!
@@ -656,7 +721,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
     The signal properties have a \l KeyEvent parameter, named
     \e event which contains details of the event.  If a key is
     handled \e event.accepted should be set to true to prevent the
-    event from propagating up the item heirarchy.
+    event from propagating up the item hierarchy.
 
     \code
     Item {
@@ -683,6 +748,28 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     See \l {Qt::Key}{Qt.Key} for the list of keyboard codes.
 
+    If priority is Keys.BeforeItem (default) the order of key event processing is:
+
+    \list 1
+    \o Items specified in \c forwardTo
+    \o specific key handlers, e.g. onReturnPressed
+    \o onKeyPress, onKeyRelease handlers
+    \o Item specific key handling, e.g. TextInput key handling
+    \o parent item
+    \endlist
+
+    If priority is Keys.AfterItem the order of key event processing is:
+    \list 1
+    \o Item specific key handling, e.g. TextInput key handling
+    \o Items specified in \c forwardTo
+    \o specific key handlers, e.g. onReturnPressed
+    \o onKeyPress, onKeyRelease handlers
+    \o parent item
+    \endlist
+
+    If the event is accepted during any of the above steps, key
+    propagation stops.
+
     \sa KeyEvent, {KeyNavigation}{KeyNavigation attached property}
 */
 
@@ -694,7 +781,23 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
 */
 
 /*!
-    \qmlproperty List<Object> Keys::forwardTo
+    \qmlproperty enumeration Keys::priority
+
+    This property determines whether the keys are processed before
+    or after the attached item's own key handling.
+
+    \list
+    \o Keys.BeforeItem (default) - process the key events before normal
+    item key processing.  If the event is accepted it will not
+    be passed on to the item.
+    \o Keys.AfterItem - process the key events after normal item key
+    handling.  If the item accepts the key event it will not be
+    handled by the Keys attached property handler.
+    \endlist
+*/
+
+/*!
+    \qmlproperty list<Object> Keys::forwardTo
 
     This property provides a way to forward key presses, key releases, and keyboard input
     coming from input methods to other items. This can be useful when you want
@@ -1013,11 +1116,26 @@ QDeclarativeKeysAttached::QDeclarativeKeysAttached(QObject *parent)
   QDeclarativeItemKeyFilter(qobject_cast<QDeclarativeItem*>(parent))
 {
     Q_D(QDeclarativeKeysAttached);
+    m_processPost = false;
     d->item = qobject_cast<QDeclarativeItem*>(parent);
 }
 
 QDeclarativeKeysAttached::~QDeclarativeKeysAttached()
 {
+}
+
+QDeclarativeKeysAttached::Priority QDeclarativeKeysAttached::priority() const
+{
+    return m_processPost ? AfterItem : BeforeItem;
+}
+
+void QDeclarativeKeysAttached::setPriority(Priority order)
+{
+    bool processPost = order == AfterItem;
+    if (processPost != m_processPost) {
+        m_processPost = processPost;
+        emit priorityChanged();
+    }
 }
 
 void QDeclarativeKeysAttached::componentComplete()
@@ -1034,11 +1152,12 @@ void QDeclarativeKeysAttached::componentComplete()
     }
 }
 
-void QDeclarativeKeysAttached::keyPressed(QKeyEvent *event)
+void QDeclarativeKeysAttached::keyPressed(QKeyEvent *event, bool post)
 {
     Q_D(QDeclarativeKeysAttached);
-    if (!d->enabled || d->inPress) {
+    if (post != m_processPost || !d->enabled || d->inPress) {
         event->ignore();
+        QDeclarativeItemKeyFilter::keyPressed(event, post);
         return;
     }
 
@@ -1073,14 +1192,15 @@ void QDeclarativeKeysAttached::keyPressed(QKeyEvent *event)
         emit pressed(&ke);
     event->setAccepted(ke.isAccepted());
 
-    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyPressed(event);
+    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyPressed(event, post);
 }
 
-void QDeclarativeKeysAttached::keyReleased(QKeyEvent *event)
+void QDeclarativeKeysAttached::keyReleased(QKeyEvent *event, bool post)
 {
     Q_D(QDeclarativeKeysAttached);
-    if (!d->enabled || d->inRelease) {
+    if (post != m_processPost || !d->enabled || d->inRelease) {
         event->ignore();
+        QDeclarativeItemKeyFilter::keyReleased(event, post);
         return;
     }
 
@@ -1103,13 +1223,13 @@ void QDeclarativeKeysAttached::keyReleased(QKeyEvent *event)
     emit released(&ke);
     event->setAccepted(ke.isAccepted());
 
-    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event);
+    if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event, post);
 }
 
-void QDeclarativeKeysAttached::inputMethodEvent(QInputMethodEvent *event)
+void QDeclarativeKeysAttached::inputMethodEvent(QInputMethodEvent *event, bool post)
 {
     Q_D(QDeclarativeKeysAttached);
-    if (d->item && !d->inIM && d->item->scene()) {
+    if (post == m_processPost && d->item && !d->inIM && d->item->scene()) {
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
@@ -1124,7 +1244,7 @@ void QDeclarativeKeysAttached::inputMethodEvent(QInputMethodEvent *event)
         }
         d->inIM = false;
     }
-    if (!event->isAccepted()) QDeclarativeItemKeyFilter::inputMethodEvent(event);
+    if (!event->isAccepted()) QDeclarativeItemKeyFilter::inputMethodEvent(event, post);
 }
 
 class QDeclarativeItemAccessor : public QGraphicsItem
@@ -1168,7 +1288,10 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     width and height, \l {anchor-layout}{anchoring} and key handling.
 
     You can subclass QDeclarativeItem to provide your own custom visual item that inherits
-    these features.
+    these features. Note that, because it does not draw anything, QDeclarativeItem sets the
+    QGraphicsItem::ItemHasNoContents flag. If you subclass QDeclarativeItem to create a visual
+    item, you will need to unset this flag.
+
 */
 
 /*!
@@ -1258,8 +1381,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     changes. For many properties in Item or Item derivatives this can be used
     to add a touch of imperative logic to your application (when absolutely
     necessary).
-
-    \ingroup group_coreitems
 */
 
 /*!
@@ -1388,6 +1509,7 @@ QDeclarativeItem::~QDeclarativeItem()
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
     delete d->_stateGroup; d->_stateGroup = 0;
+    delete d->_contents; d->_contents = 0;
 }
 
 /*!
@@ -1407,7 +1529,7 @@ QDeclarativeItem::~QDeclarativeItem()
     }
     \endqml
 
-    The default transform origin is \c Center.
+    The default transform origin is \c Item.Center.
 */
 
 /*!
@@ -1472,11 +1594,6 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 */
 
 /*!
-    \property QDeclarativeItem::resources
-    \internal
-*/
-
-/*!
     Returns true if construction of the QML component is complete; otherwise
     returns false.
 
@@ -1489,18 +1606,6 @@ bool QDeclarativeItem::isComponentComplete() const
 {
     Q_D(const QDeclarativeItem);
     return d->_componentComplete;
-}
-
-/*!
-    \property QDeclarativeItem::anchors
-    \internal
-*/
-
-/*! \internal */
-QDeclarativeAnchors *QDeclarativeItem::anchors()
-{
-    Q_D(QDeclarativeItem);
-    return d->anchors();
 }
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
@@ -1523,7 +1628,7 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
 {
-    QObjectList children = prop->object->children();
+    const QObjectList children = prop->object->children();
     if (index < children.count())
         return children.at(index);
     else
@@ -1624,30 +1729,25 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*!
-    \property QDeclarativeItem::data
-    \internal
-*/
-
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::data()
+QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::data_append);
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
 }
 
 /*!
     \property QDeclarativeItem::childrenRect
     \brief The geometry of an item's children.
 
-    childrenRect provides an easy way to access the (collective) position and size of the item's children.
+    This property holds the (collective) position and size of the item's children.
 */
 QRectF QDeclarativeItem::childrenRect()
 {
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
-        d->_contents = new QDeclarativeContents;
-        QDeclarative_setParent_noEvent(d->_contents, this);
-        d->_contents->setItem(this);
+        d->_contents = new QDeclarativeContents(this);
+        if (d->_componentComplete)
+            d->_contents->complete();
     }
     return d->_contents->rectF();
 }
@@ -1817,8 +1917,11 @@ void QDeclarativeItemPrivate::removeItemChangeListener(QDeclarativeItemChangeLis
 void QDeclarativeItem::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
+    keyPressPreHandler(event);
+    if (event->isAccepted())
+        return;
     if (d->keyHandler)
-        d->keyHandler->keyPressed(event);
+        d->keyHandler->keyPressed(event, true);
     else
         event->ignore();
 }
@@ -1827,8 +1930,11 @@ void QDeclarativeItem::keyPressEvent(QKeyEvent *event)
 void QDeclarativeItem::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
+    keyReleasePreHandler(event);
+    if (event->isAccepted())
+        return;
     if (d->keyHandler)
-        d->keyHandler->keyReleased(event);
+        d->keyHandler->keyReleased(event, true);
     else
         event->ignore();
 }
@@ -1837,8 +1943,11 @@ void QDeclarativeItem::keyReleaseEvent(QKeyEvent *event)
 void QDeclarativeItem::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeItem);
+    inputMethodPreHandler(event);
+    if (event->isAccepted())
+        return;
     if (d->keyHandler)
-        d->keyHandler->inputMethodEvent(event);
+        d->keyHandler->inputMethodEvent(event, true);
     else
         event->ignore();
 }
@@ -1857,99 +1966,93 @@ QVariant QDeclarativeItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return v;
 }
 
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::left() const
+void QDeclarativeItem::keyPressPreHandler(QKeyEvent *event)
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->left;
+    Q_D(QDeclarativeItem);
+    if (d->keyHandler && !d->doneEventPreHandler)
+        d->keyHandler->keyPressed(event, false);
+    else
+        event->ignore();
+    d->doneEventPreHandler = true;
 }
 
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::right() const
+void QDeclarativeItem::keyReleasePreHandler(QKeyEvent *event)
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->right;
+    Q_D(QDeclarativeItem);
+    if (d->keyHandler && !d->doneEventPreHandler)
+        d->keyHandler->keyReleased(event, false);
+    else
+        event->ignore();
+    d->doneEventPreHandler = true;
 }
 
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::horizontalCenter() const
+void QDeclarativeItem::inputMethodPreHandler(QInputMethodEvent *event)
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->hCenter;
-}
-
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::top() const
-{
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->top;
-}
-
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::bottom() const
-{
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->bottom;
-}
-
-/*!
-    \internal
-*/
-QDeclarativeAnchorLine QDeclarativeItem::verticalCenter() const
-{
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->vCenter;
+    Q_D(QDeclarativeItem);
+    if (d->keyHandler && !d->doneEventPreHandler)
+        d->keyHandler->inputMethodEvent(event, false);
+    else
+        event->ignore();
+    d->doneEventPreHandler = true;
 }
 
 
 /*!
     \internal
 */
-QDeclarativeAnchorLine QDeclarativeItem::baseline() const
+QDeclarativeAnchorLine QDeclarativeItemPrivate::left() const
 {
-    Q_D(const QDeclarativeItem);
-    return d->anchorLines()->baseline;
+    return anchorLines()->left;
 }
 
 /*!
-  \property QDeclarativeItem::top
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::right() const
+{
+    return anchorLines()->right;
+}
 
 /*!
-  \property QDeclarativeItem::bottom
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::horizontalCenter() const
+{
+    return anchorLines()->hCenter;
+}
 
 /*!
-  \property QDeclarativeItem::left
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::top() const
+{
+    return anchorLines()->top;
+}
 
 /*!
-  \property QDeclarativeItem::right
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::bottom() const
+{
+    return anchorLines()->bottom;
+}
 
 /*!
-  \property QDeclarativeItem::horizontalCenter
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::verticalCenter() const
+{
+    return anchorLines()->vCenter;
+}
+
 
 /*!
-  \property QDeclarativeItem::verticalCenter
-  \internal
+    \internal
 */
+QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
+{
+    return anchorLines()->baseline;
+}
 
 /*!
   \qmlproperty AnchorLine Item::top
@@ -2284,6 +2387,28 @@ void QDeclarativeItem::forceFocus()
     }
 }
 
+
+/*!
+  \qmlmethod Item::childAt(real x, real y)
+
+  Returns the visible child item at point (\a x, \a y), which is in this
+  item's coordinate system, or \c null if there is no such item.
+  */
+QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
+{
+    const QList<QGraphicsItem *> children = childItems();
+    for (int i = children.count()-1; i >= 0; --i) {
+        if (QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i))) {
+            if (child->isVisible() && child->x() <= x
+                && child->x() + child->width() >= x
+                && child->y() <= y
+                && child->y() + child->height() >= y)
+                return child;
+        }
+    }
+    return 0;
+}
+
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
@@ -2291,9 +2416,9 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
 }
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
+QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
                                              QDeclarativeItemPrivate::resources_count,
                                              QDeclarativeItemPrivate::resources_at);
 }
@@ -2315,15 +2440,10 @@ QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
   \sa {qmlstate}{States}
 */
 
-/*!
-  \property QDeclarativeItem::states
-  \internal
-*/
 /*! \internal */
-QDeclarativeListProperty<QDeclarativeState> QDeclarativeItem::states()
+QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
-    Q_D(QDeclarativeItem);
-    return d->states()->statesProperty();
+    return _states()->statesProperty();
 }
 
 /*!
@@ -2343,16 +2463,11 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItem::states()
   \sa {state-transitions}{Transitions}
 */
 
-/*!
-  \property QDeclarativeItem::transitions
-  \internal
-*/
 
 /*! \internal */
-QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
+QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
-    Q_D(QDeclarativeItem);
-    return d->states()->transitionsProperty();
+    return _states()->transitionsProperty();
 }
 
 /*
@@ -2426,20 +2541,18 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItem::transitions()
 */
 
 /*! \internal */
-QString QDeclarativeItem::state() const
+QString QDeclarativeItemPrivate::state() const
 {
-    Q_D(const QDeclarativeItem);
-    if (!d->_stateGroup)
+    if (!_stateGroup)
         return QString();
     else
-        return d->_stateGroup->state();
+        return _stateGroup->state();
 }
 
 /*! \internal */
-void QDeclarativeItem::setState(const QString &state)
+void QDeclarativeItemPrivate::setState(const QString &state)
 {
-    Q_D(QDeclarativeItem);
-    d->states()->setState(state);
+    _states()->setState(state);
 }
 
 /*!
@@ -2500,9 +2613,11 @@ void QDeclarativeItem::componentComplete()
     }
     if (d->keyHandler)
         d->keyHandler->componentComplete();
+    if (d->_contents)
+        d->_contents->complete();
 }
 
-QDeclarativeStateGroup *QDeclarativeItemPrivate::states()
+QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
 {
     Q_Q(QDeclarativeItem);
     if (!_stateGroup) {
@@ -2590,7 +2705,13 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
     }
 }
 
-/*! \internal */
+/*!
+    \reimp
+
+    Note that unlike QGraphicsItems, QDeclarativeItem::itemChange() is \e not called
+    during initial widget polishing. Items wishing to optimize start-up construction
+    should instead consider using componentComplete().
+*/
 QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -2617,6 +2738,16 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
                 }
             }
         }
+        break;
+    case ItemChildAddedChange:
+        if (d->_contents)
+            d->_contents->childAdded(qobject_cast<QDeclarativeItem*>(
+                    value.value<QGraphicsItem*>()));
+        break;
+    case ItemChildRemovedChange:
+        if (d->_contents)
+            d->_contents->childRemoved(qobject_cast<QDeclarativeItem*>(
+                    value.value<QGraphicsItem*>()));
         break;
     default:
         break;
@@ -2723,29 +2854,48 @@ void QDeclarativeItem::setSmooth(bool smooth)
     update();
 }
 
+/*!
+    \internal
+    Return the width of the item
+*/
 qreal QDeclarativeItem::width() const
 {
     Q_D(const QDeclarativeItem);
     return d->width();
 }
 
+/*!
+    \internal
+    Set the width of the item
+*/
 void QDeclarativeItem::setWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
     d->setWidth(w);
 }
 
+/*!
+    \internal
+    Reset the width of the item
+*/
 void QDeclarativeItem::resetWidth()
 {
     Q_D(QDeclarativeItem);
     d->resetWidth();
 }
 
+/*!
+    \internal
+    Return the width of the item
+*/
 qreal QDeclarativeItemPrivate::width() const
 {
     return mWidth;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::setWidth(qreal w)
 {
     Q_Q(QDeclarativeItem);
@@ -2765,7 +2915,10 @@ void QDeclarativeItemPrivate::setWidth(qreal w)
                     QRectF(q->x(), q->y(), oldWidth, height()));
 }
 
-void QDeclarativeItemPrivate    ::resetWidth()
+/*!
+    \internal
+*/
+void QDeclarativeItemPrivate::resetWidth()
 {
     Q_Q(QDeclarativeItem);
     widthValid = false;
@@ -2810,29 +2963,47 @@ bool QDeclarativeItem::widthValid() const
     return d->widthValid;
 }
 
+/*!
+    \internal
+    Return the height of the item
+*/
 qreal QDeclarativeItem::height() const
 {
     Q_D(const QDeclarativeItem);
     return d->height();
 }
 
+/*!
+    \internal
+    Set the height of the item
+*/
 void QDeclarativeItem::setHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
     d->setHeight(h);
 }
 
+/*!
+    \internal
+    Reset the height of the item
+*/
 void QDeclarativeItem::resetHeight()
 {
     Q_D(QDeclarativeItem);
     d->resetHeight();
 }
 
+/*!
+    \internal
+*/
 qreal QDeclarativeItemPrivate::height() const
 {
     return mHeight;
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::setHeight(qreal h)
 {
     Q_Q(QDeclarativeItem);
@@ -2852,6 +3023,9 @@ void QDeclarativeItemPrivate::setHeight(qreal h)
                     QRectF(q->x(), q->y(), width(), oldHeight));
 }
 
+/*!
+    \internal
+*/
 void QDeclarativeItemPrivate::resetHeight()
 {
     Q_Q(QDeclarativeItem);
@@ -2956,7 +3130,6 @@ void QDeclarativeItem::setFocus(bool focus)
 }
 
 /*!
-    \reimp
     \internal
 */
 void QDeclarativeItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
@@ -2964,14 +3137,25 @@ void QDeclarativeItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidg
 }
 
 /*!
-    \reimp
     \internal
 */
 bool QDeclarativeItem::event(QEvent *ev)
 {
+    Q_D(QDeclarativeItem);
+    switch (ev->type()) {
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+    case QEvent::InputMethod:
+        d->doneEventPreHandler = false;
+        break;
+    default:
+        break;
+    }
+
     return QGraphicsObject::event(ev);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QDeclarativeItem *item)
 {
     if (!item) {
@@ -2985,42 +3169,58 @@ QDebug operator<<(QDebug debug, QDeclarativeItem *item)
           << ", z =" << item->zValue() << ')';
     return debug;
 }
+#endif
 
-int QDeclarativeItemPrivate::consistentTime = -1;
-void QDeclarativeItemPrivate::setConsistentTime(int t)
+qint64 QDeclarativeItemPrivate::consistentTime = -1;
+void QDeclarativeItemPrivate::setConsistentTime(qint64 t)
 {
     consistentTime = t;
 }
 
-QTime QDeclarativeItemPrivate::currentTime()
+class QElapsedTimerConsistentTimeHack
 {
-    if (consistentTime == -1)
-        return QTime::currentTime();
+public:
+    void start() {
+        t1 = QDeclarativeItemPrivate::consistentTime;
+        t2 = 0;
+    }
+    qint64 elapsed() {
+        return QDeclarativeItemPrivate::consistentTime - t1;
+    }
+    qint64 restart() {
+        qint64 val = QDeclarativeItemPrivate::consistentTime - t1;
+        t1 = QDeclarativeItemPrivate::consistentTime;
+        t2 = 0;
+        return val;
+    }
+
+private:
+    qint64 t1;
+    qint64 t2;
+};
+
+void QDeclarativeItemPrivate::start(QElapsedTimer &t)
+{
+    if (QDeclarativeItemPrivate::consistentTime == -1)
+        t.start();
     else
-        return QTime(0, 0).addMSecs(consistentTime);
+        ((QElapsedTimerConsistentTimeHack*)&t)->start();
 }
 
-void QDeclarativeItemPrivate::start(QTime &t)
+qint64 QDeclarativeItemPrivate::elapsed(QElapsedTimer &t)
 {
-    t = currentTime();
+    if (QDeclarativeItemPrivate::consistentTime == -1)
+        return t.elapsed();
+    else
+        return ((QElapsedTimerConsistentTimeHack*)&t)->elapsed();
 }
 
-int QDeclarativeItemPrivate::elapsed(QTime &t)
+qint64 QDeclarativeItemPrivate::restart(QElapsedTimer &t)
 {
-    int n = t.msecsTo(currentTime());
-    if (n < 0)                                // passed midnight
-        n += 86400 * 1000;
-    return n;
-}
-
-int QDeclarativeItemPrivate::restart(QTime &t)
-{
-    QTime time = currentTime();
-    int n = t.msecsTo(time);
-    if (n < 0)                                // passed midnight
-        n += 86400*1000;
-    t = time;
-    return n;
+    if (QDeclarativeItemPrivate::consistentTime == -1)
+        return t.restart();
+    else
+        return ((QElapsedTimerConsistentTimeHack*)&t)->restart();
 }
 
 QT_END_NAMESPACE

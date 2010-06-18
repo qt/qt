@@ -94,8 +94,6 @@ public:
 #endif
     QNetworkCacheMetaData fetchCacheMetaData(const QNetworkCacheMetaData &metaData) const;
 
-    qint64 deviceReadData(char *buffer, qint64 maxlen);
-
     // we return true since HTTP needs to send PUT/POST data again after having authenticated
     bool needsResetableUploadData() { return true; }
 
@@ -107,6 +105,7 @@ private slots:
     void replyFinished();
     void replyHeaderChanged();
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
+    void httpCacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
     bool sendCacheContents(const QNetworkCacheMetaData &metaData);
     void finished(); // override

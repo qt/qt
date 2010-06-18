@@ -55,12 +55,17 @@
 
 #include "qdeclarativeproperty.h"
 #include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativenullablevalue_p_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qeasingcurve.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
+#include <QtGui/qvector4d.h>
+#include <QtGui/qmatrix4x4.h>
+#include <QtGui/qquaternion.h>
 #include <QtGui/qfont.h>
 
 QT_BEGIN_NAMESPACE
@@ -241,6 +246,28 @@ private:
     QRect rect;
 };
 
+class Q_AUTOTEST_EXPORT QDeclarativeVector2DValueType : public QDeclarativeValueType
+{
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_OBJECT
+public:
+    QDeclarativeVector2DValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
+
+    qreal x() const;
+    qreal y() const;
+    void setX(qreal);
+    void setY(qreal);
+
+private:
+    QVector2D vector;
+};
+
 class Q_AUTOTEST_EXPORT QDeclarativeVector3DValueType : public QDeclarativeValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX)
@@ -264,6 +291,127 @@ public:
 
 private:
     QVector3D vector;
+};
+
+class Q_AUTOTEST_EXPORT QDeclarativeVector4DValueType : public QDeclarativeValueType
+{
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_PROPERTY(qreal z READ z WRITE setZ)
+    Q_PROPERTY(qreal w READ w WRITE setW)
+    Q_OBJECT
+public:
+    QDeclarativeVector4DValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
+
+    qreal x() const;
+    qreal y() const;
+    qreal z() const;
+    qreal w() const;
+    void setX(qreal);
+    void setY(qreal);
+    void setZ(qreal);
+    void setW(qreal);
+
+private:
+    QVector4D vector;
+};
+
+class Q_AUTOTEST_EXPORT QDeclarativeQuaternionValueType : public QDeclarativeValueType
+{
+    Q_PROPERTY(qreal scalar READ scalar WRITE setScalar)
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_PROPERTY(qreal z READ z WRITE setZ)
+    Q_OBJECT
+public:
+    QDeclarativeQuaternionValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
+
+    qreal scalar() const;
+    qreal x() const;
+    qreal y() const;
+    qreal z() const;
+    void setScalar(qreal);
+    void setX(qreal);
+    void setY(qreal);
+    void setZ(qreal);
+
+private:
+    QQuaternion quaternion;
+};
+
+class Q_AUTOTEST_EXPORT QDeclarativeMatrix4x4ValueType : public QDeclarativeValueType
+{
+    Q_PROPERTY(qreal m11 READ m11 WRITE setM11)
+    Q_PROPERTY(qreal m12 READ m12 WRITE setM12)
+    Q_PROPERTY(qreal m13 READ m13 WRITE setM13)
+    Q_PROPERTY(qreal m14 READ m14 WRITE setM14)
+    Q_PROPERTY(qreal m21 READ m21 WRITE setM21)
+    Q_PROPERTY(qreal m22 READ m22 WRITE setM22)
+    Q_PROPERTY(qreal m23 READ m23 WRITE setM23)
+    Q_PROPERTY(qreal m24 READ m24 WRITE setM24)
+    Q_PROPERTY(qreal m31 READ m31 WRITE setM31)
+    Q_PROPERTY(qreal m32 READ m32 WRITE setM32)
+    Q_PROPERTY(qreal m33 READ m33 WRITE setM33)
+    Q_PROPERTY(qreal m34 READ m34 WRITE setM34)
+    Q_PROPERTY(qreal m41 READ m41 WRITE setM41)
+    Q_PROPERTY(qreal m42 READ m42 WRITE setM42)
+    Q_PROPERTY(qreal m43 READ m43 WRITE setM43)
+    Q_PROPERTY(qreal m44 READ m44 WRITE setM44)
+    Q_OBJECT
+public:
+    QDeclarativeMatrix4x4ValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int, QDeclarativePropertyPrivate::WriteFlags);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
+
+    qreal m11() const { return matrix(0, 0); }
+    qreal m12() const { return matrix(0, 1); }
+    qreal m13() const { return matrix(0, 2); }
+    qreal m14() const { return matrix(0, 3); }
+    qreal m21() const { return matrix(1, 0); }
+    qreal m22() const { return matrix(1, 1); }
+    qreal m23() const { return matrix(1, 2); }
+    qreal m24() const { return matrix(1, 3); }
+    qreal m31() const { return matrix(2, 0); }
+    qreal m32() const { return matrix(2, 1); }
+    qreal m33() const { return matrix(2, 2); }
+    qreal m34() const { return matrix(2, 3); }
+    qreal m41() const { return matrix(3, 0); }
+    qreal m42() const { return matrix(3, 1); }
+    qreal m43() const { return matrix(3, 2); }
+    qreal m44() const { return matrix(3, 3); }
+
+    void setM11(qreal value) { matrix(0, 0) = value; }
+    void setM12(qreal value) { matrix(0, 1) = value; }
+    void setM13(qreal value) { matrix(0, 2) = value; }
+    void setM14(qreal value) { matrix(0, 3) = value; }
+    void setM21(qreal value) { matrix(1, 0) = value; }
+    void setM22(qreal value) { matrix(1, 1) = value; }
+    void setM23(qreal value) { matrix(1, 2) = value; }
+    void setM24(qreal value) { matrix(1, 3) = value; }
+    void setM31(qreal value) { matrix(2, 0) = value; }
+    void setM32(qreal value) { matrix(2, 1) = value; }
+    void setM33(qreal value) { matrix(2, 2) = value; }
+    void setM34(qreal value) { matrix(2, 3) = value; }
+    void setM41(qreal value) { matrix(3, 0) = value; }
+    void setM42(qreal value) { matrix(3, 1) = value; }
+    void setM43(qreal value) { matrix(3, 2) = value; }
+    void setM44(qreal value) { matrix(3, 3) = value; }
+
+private:
+    QMatrix4x4 matrix;
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativeEasingValueType : public QDeclarativeValueType
@@ -299,7 +447,7 @@ public:
         InBounce = QEasingCurve::InBounce, OutBounce = QEasingCurve::OutBounce,
         InOutBounce = QEasingCurve::InOutBounce, OutInBounce = QEasingCurve::OutInBounce,
         InCurve = QEasingCurve::InCurve, OutCurve = QEasingCurve::OutCurve,
-        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve,
+        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve
     };
 
     QDeclarativeEasingValueType(QObject *parent = 0);
@@ -400,6 +548,7 @@ private:
     QFont font;
     bool pixelSizeSet;
     bool pointSizeSet;
+    mutable QDeclarativeNullableValue<int> dpi;
 };
 
 QT_END_NAMESPACE

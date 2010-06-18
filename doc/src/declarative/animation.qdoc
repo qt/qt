@@ -46,14 +46,14 @@
 Animation in QML is done by animating properties of objects. Properties of type
 real, int, color, rect, point, size, and vector3d can all be animated.
 
-QML supports three main forms of animation - basic property animation,
+QML supports three main forms of animation: basic property animation,
 transitions, and property behaviors.
 
 \tableofcontents
 
 \section1 Basic Property Animation
 
-The simplest form of animation is directly using \l PropertyAnimation, which can animate all of the property
+The simplest form of animation is a \l PropertyAnimation, which can animate all of the property
 types listed above. If the property you are animating is a number or color, you can alternatively use
 NumberAnimation or ColorAnimation. These elements don't add any additional functionality,
 but will help enforce type correctness and are slightly more efficient.
@@ -62,61 +62,23 @@ A property animation can be specified as a value source using the \e Animation \
 for repeating animations.
 
 The following example creates a bouncing effect:
-\qml
-Rectangle {
-    id: rect
-    width: 120; height: 200;
-    Image {
-        id: img
-        source: "qt-logo.png"
-        x: 60-img.width/2
-        y: 0
-        SequentialAnimation on y {
-            loops: Animation.Infinite
-            NumberAnimation { to: 200-img.height; easing.type: "OutBounce"; duration: 2000 }
-            PauseAnimation { duration: 1000 }
-            NumberAnimation { to: 0; easing.type: "OutQuad"; duration: 1000 }
-        }
-    }
-}
-\endqml
+\snippet doc/src/snippets/declarative/animation.qml property-anim-1
 
 \image propanim.gif
 
 When you assign an animation as a value source, you do not need to specify \c property
-or \c target; they are automatically selected for you. You do, however, need to specify \c to.
+or \c target values; they are automatically selected for you. You do, however, need to specify a \c to value.
 An animation specified as a value source will be \c running by default.
 
-\qml
-Rectangle {
-    id: rect
-    width: 200; height: 200;
-    Rectangle {
-        color: "red"
-        width: 50; height: 50
-        NumberAnimation on x { to: 50 }
-    }
-}
-\endqml
+For example, here is a rectangle that uses a \l NumberAnimation value source to animate the movement
+from its current position to an \c x value of 50. The animation starts immediately, and only the \c to 
+property is required:
+
+\snippet doc/src/snippets/declarative/animation.qml property-anim-2
 
 A property animation can also be specified as a resource that is manipulated from script.
 
-\qml
-PropertyAnimation {
-    id: animation
-    target: image
-    property: "scale"
-    from: 1; to: .5
-}
-Image {
-    id: image
-    source: "image.png"
-    MouseArea {
-        anchors.fill: parent
-        onPressed: animation.start()
-    }
-}
-\endqml
+\snippet doc/src/snippets/declarative/animation.qml property-anim-3
 
 As can be seen, when an animation is used like this (as opposed to as a value source) you will need
 to explicitly set the \c target and \c property to animate.
@@ -131,50 +93,20 @@ can only be triggered by a state change.
 
 For example, a transition could describe how an item moves from its initial position to its new position:
 
-\code
-transitions: [
-    Transition {
-        NumberAnimation {
-            properties: "x,y"
-            easing.type: "OutBounce"
-            duration: 200
-        }
-    }
-]
-\endcode
+\snippet doc/src/snippets/declarative/animation.qml transitions-1
 
 As can be seen, transitions make use of the same basic animation classes introduced above.
 In the above example we have specified that we want to animate the \c x and \c y properties, but have not
-specified the objects to animate or the \c to values. By default these values are supplied by the framework --
+specified the objects to animate or the \c to values. By default these values are supplied by the framework;
 the animation will animate any \c targets whose \c x and \c y have changed, and the \c to values will be those
 defined in the end state. You can always supply explicit values to override these implicit values when needed.
 
-\code
-Transition {
-    from: "*"
-    to: "MyState"
-    reversible: true
-    SequentialAnimation {
-        NumberAnimation {
-            duration: 1000
-            easing.type: "OutBounce"
-            // animate myItem's x and y if they have changed in the state
-            target: myItem
-            properties: "x,y"
-        }
-        NumberAnimation {
-            duration: 1000
-            // animate myItem2's y to 200, regardless of what happens in the state
-            target: myItem2
-            property: "y"
-            to: 200
-        }
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/animation.qml transitions-2
 
 QML transitions have selectors to determine which state changes a transition should apply to.
 The following transition will only be triggered when we enter into the \c "details" state.
+(The "*" value is a wildcard value that specifies the transition should be applied when changing
+from \e any state to the "details" state.)
 
 \code
 Transition {
@@ -188,30 +120,7 @@ Transitions can happen in parallel, in sequence, or in any combination of the tw
 animations in a transition will happen in parallel. The following example shows a rather complex transition
 making use of both sequential and parallel animations:
 
-\code
-Transition {
-    from: "*"
-    to: "MyState"
-    reversible: true
-    SequentialAnimation {
-        ColorAnimation { duration: 1000 }
-        PauseAnimation { duration: 1000 }
-        ParallelAnimation {
-            NumberAnimation {
-                duration: 1000
-                easing.type: "OutBounce"
-                targets: box1
-                properties: "x,y"
-            }
-            NumberAnimation {
-                duration: 1000
-                targets: box2
-                properties: "x,y"
-            }
-        }
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/animation.qml transitions-3
 
 \section1 Property Behaviors
 
@@ -219,24 +128,15 @@ A \l{Behavior}{property behavior} specifies a default animation to run whenever 
 of what caused the change. The \c enabled property can be used to force a \l Behavior
 to only apply under certain circumstances.
 
-In the following snippet, we specify that we want the x position of redRect to be animated
-whenever it changes. The animation will last 300 milliseconds and use an InOutQuad easing curve.
+In the following snippet, we specify that we want the \c x position of \c redRect to be animated
+whenever it changes. The animation will last 300 milliseconds and use an \l{PropertyAnimation::easing.type}{Easing.InOutQuad} easing curve.
 
-\qml
-Rectangle {
-    id: redRect
-    color: "red"
-    width: 100; height: 100
-    Behavior on x { NumberAnimation { duration: 300; easing.type: "InOutQuad" } }
-}
-\endqml
+\snippet doc/src/snippets/declarative/animation.qml behavior
 
 Like using an animation as a value source, when used in a Behavior and animation does not need to specify
 a \c target or \c property.
 
-To trigger this behavior, we could:
-\list
-\o Enter a state that changes x
+To trigger this behavior, we could enter a state that changes \c x:
 
 \qml
 State {
@@ -249,7 +149,7 @@ State {
 }
 \endqml
 
-\o Update x from a script
+Or, update \c x from a script:
 
 \qml
 MouseArea {
@@ -257,11 +157,10 @@ MouseArea {
     onClicked: redRect.x = 24;
 }
 \endqml
-\endlist
 
-If x were bound to another property, triggering the binding would also trigger the behavior.
+If \c x were bound to another property, triggering the binding would also trigger the behavior.
 
-If a state change has a transition animation matching a property with a Behavior, the transition animation
-will override the Behavior for that state change.
+If a state change has a transition animation matching a property with a \l Behavior, the transition animation
+will override the \l Behavior for that state change.
 
 */

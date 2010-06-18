@@ -55,6 +55,8 @@
 
 #include <private/qobject_p.h>
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeGestureAreaPrivate : public QDeclarativeItemPrivate
@@ -226,7 +228,7 @@ void QDeclarativeGestureArea::connectSignals()
         ds >> gesturetype;
         QString script;
         ds >> script;
-        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), script, 0);
+        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), 0, script);
         d->bindings.insert(Qt::GestureType(gesturetype),exp);
         grabGesture(Qt::GestureType(gesturetype));
     }
@@ -259,7 +261,7 @@ bool QDeclarativeGestureAreaPrivate::gestureEvent(QGestureEvent *event)
     bool accept = true;
     for (Bindings::Iterator it = bindings.begin(); it != bindings.end(); ++it) {
         if ((gesture = event->gesture(it.key()))) {
-            it.value()->value();
+            it.value()->evaluate();
             event->setAccepted(true); // XXX only if value returns true?
         }
     }
@@ -267,3 +269,5 @@ bool QDeclarativeGestureAreaPrivate::gestureEvent(QGestureEvent *event)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

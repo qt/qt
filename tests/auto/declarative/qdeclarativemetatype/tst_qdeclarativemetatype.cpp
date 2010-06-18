@@ -54,6 +54,11 @@
 
 #include <private/qdeclarativemetatype_p.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativemetatype : public QObject
 {
     Q_OBJECT
@@ -88,7 +93,10 @@ QML_DECLARE_TYPE(TestType);
 class ParserStatusTestType : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
+    void classBegin(){}
+    void componentComplete(){}
     Q_CLASSINFO("DefaultProperty", "foo") // Missing default property
+    Q_INTERFACES(QDeclarativeParserStatus)
 };
 QML_DECLARE_TYPE(ParserStatusTestType);
 

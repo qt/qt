@@ -1272,7 +1272,7 @@ bool QRect::intersects(const QRect &r) const
     Writes the given \a rectangle to the given \a stream, and returns
     a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QRect &r)
@@ -1293,7 +1293,7 @@ QDataStream &operator<<(QDataStream &s, const QRect &r)
     Reads a rectangle from the given \a stream into the given \a
     rectangle, and returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QRect &r)
@@ -2420,7 +2420,7 @@ QRect QRectF::toAlignedRect() const
     Writes the \a rectangle to the \a stream, and returns a reference to the
     stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QRectF &r)
@@ -2437,7 +2437,7 @@ QDataStream &operator<<(QDataStream &s, const QRectF &r)
     Reads a \a rectangle from the \a stream, and returns a reference to the
     stream.
 
-    \sa \link datastreamformat.html Format of the QDataStream operators \endlink
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QRectF &r)

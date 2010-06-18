@@ -108,11 +108,12 @@ public:
 
 class QDeclarativeComponentAttached;
 class QDeclarativeGuardedContextData;
-class QDeclarativeContextData
+class Q_AUTOTEST_EXPORT QDeclarativeContextData
 {
 public:
     QDeclarativeContextData();
     QDeclarativeContextData(QDeclarativeContext *);
+    void clearExpressions();
     void destroy();
     void invalidate();
 

@@ -39,9 +39,16 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QDebug>
 
+#include <QtGui/qgraphicsitem.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 class tst_qdeclarativecomponent : public QObject
 {
@@ -51,6 +58,7 @@ public:
 
 private slots:
     void loadEmptyUrl();
+    void qmlCreateObject();
 
 private:
     QDeclarativeEngine engine;
@@ -68,6 +76,31 @@ void tst_qdeclarativecomponent::loadEmptyUrl()
     QCOMPARE(error.line(), -1);
     QCOMPARE(error.column(), -1);
     QCOMPARE(error.description(), QLatin1String("Invalid empty URL"));
+}
+
+void tst_qdeclarativecomponent::qmlCreateObject()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/createObject.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QObject *testObject1 = object->property("qobject").value<QObject*>();
+    QVERIFY(testObject1);
+    QVERIFY(testObject1->parent() == object);
+
+    QObject *testObject2 = object->property("declarativeitem").value<QObject*>();
+    QVERIFY(testObject2);
+    QVERIFY(testObject2->parent() == object);
+    QCOMPARE(testObject2->metaObject()->className(), "QDeclarativeItem");
+
+    //Note that QGraphicsObjects are not exposed to QML for instantiation, and so can't be used in a component directly
+    //Also this is actually the extended type QDeclarativeGraphicsWidget, but it still doesn't inherit QDeclarativeItem
+    QGraphicsObject *testObject3 = qobject_cast<QGraphicsObject*>(object->property("graphicswidget").value<QObject*>());
+    QVERIFY(testObject3);
+    QVERIFY(testObject3->parent() == object);
+    QVERIFY(testObject3->parentItem() == qobject_cast<QGraphicsObject*>(object));
+    QCOMPARE(testObject3->metaObject()->className(), "QDeclarativeGraphicsWidget");
 }
 
 QTEST_MAIN(tst_qdeclarativecomponent)

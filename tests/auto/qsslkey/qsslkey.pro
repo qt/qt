@@ -17,11 +17,16 @@ win32 {
 wince*|symbian: {
    keyFiles.sources = keys
    keyFiles.path    = .
-   DEPLOYMENT += keyFiles
+
+   passphraseFiles.sources = rsa-without-passphrase.pem rsa-with-passphrase.pem
+   passphraseFiles.path    = .
+
+   DEPLOYMENT += keyFiles passphraseFiles
 }
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"
 } else:!symbian {
    DEFINES+= SRCDIR=\\\"$$PWD\\\"
+   TARGET.CAPABILITY = NetworkServices
 }

@@ -53,6 +53,7 @@
 #include "private/qdeclarativebinding_p_p.h"
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QStack>
 #include <QStringList>
@@ -63,7 +64,6 @@
 QT_BEGIN_NAMESPACE
 
 class QByteArray;
-int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeComponent::Status");
 
 /*!
     \class QDeclarativeComponent
@@ -77,7 +77,7 @@ int statusId = qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeCom
     \since 4.7
     \brief The Component element encapsulates a QML component description.
 
-    Components are reusable, encapsulated Qml element with a well-defined interface.
+    Components are reusable, encapsulated QML elements with well-defined interfaces.
     They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
 
     The \e Component element allows defining components within a QML file.
@@ -242,11 +242,11 @@ QDeclarativeComponent::~QDeclarativeComponent()
     \qmlproperty enumeration Component::status
     This property holds the status of component loading.  It can be one of:
     \list
-    \o Null - no data is available for the component
-    \o Ready - the component has been loaded, and can be used to create instances.
-    \o Loading - the component is currently being loaded
-    \o Error - an error occurred while loading the component.
-               Calling errorsString() will provide a human-readable description of any errors.
+    \o Component.Null - no data is available for the component
+    \o Component.Ready - the component has been loaded, and can be used to create instances.
+    \o Component.Loading - the component is currently being loaded
+    \o Component.Error - an error occurred while loading the component.
+               Calling errorString() will provide a human-readable description of any errors.
     \endlist
  */
 
@@ -269,19 +269,7 @@ QDeclarativeComponent::Status QDeclarativeComponent::status() const
 }
 
 /*!
-    \qmlproperty bool Component::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status == Component.Null.
-*/
-
-/*!
-    \property QDeclarativeComponent::isNull
-
-    Is true if the component is in the Null state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Null.
+    Returns true if status() == QDeclarativeComponent::Null.
 */
 bool QDeclarativeComponent::isNull() const
 {
@@ -289,19 +277,7 @@ bool QDeclarativeComponent::isNull() const
 }
 
 /*!
-    \qmlproperty bool Component::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status == Component.Ready.
-*/
-
-/*!
-    \property QDeclarativeComponent::isReady
-
-    Is true if the component is in the Ready state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Ready.
+    Returns true if status() == QDeclarativeComponent::Ready.
 */
 bool QDeclarativeComponent::isReady() const
 {
@@ -309,21 +285,7 @@ bool QDeclarativeComponent::isReady() const
 }
 
 /*!
-    \qmlproperty bool Component::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status == Component.Error.
-
-    Calling errorsString() will provide a human-readable description of any errors.
-*/
-
-/*!
-    \property QDeclarativeComponent::isError
-
-    Is true if the component is in the Error state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Error.
+    Returns true if status() == QDeclarativeComponent::Error.
 */
 bool QDeclarativeComponent::isError() const
 {
@@ -331,19 +293,7 @@ bool QDeclarativeComponent::isError() const
 }
 
 /*!
-    \qmlproperty bool Component::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status == Component::Loading.
-*/
-
-/*!
-    \property QDeclarativeComponent::isLoading
-
-    Is true if the component is in the Loading state, false otherwise.
-
-    Equivalent to status() == QDeclarativeComponent::Loading.
+    Returns true if status() == QDeclarativeComponent::Loading.
 */
 bool QDeclarativeComponent::isLoading() const
 {
@@ -421,7 +371,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const Q
 {
     Q_D(QDeclarativeComponent);
     d->engine = engine;
-    loadUrl(QUrl::fromLocalFile(fileName));
+    loadUrl(d->engine->baseUrl().resolved(QUrl::fromLocalFile(fileName)));
 }
 
 /*!
@@ -542,7 +492,7 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 }
 
 /*!
-    \qmlmethod string Component::errorsString()
+    \qmlmethod string Component::errorString()
 
     Returns a human-readable description of any errors.
 
@@ -554,9 +504,9 @@ QList<QDeclarativeError> QDeclarativeComponent::errors() const
 
 /*!
     \internal
-    errorsString is only meant as a way to get the errors in script
+    errorString is only meant as a way to get the errors in script
 */
-QString QDeclarativeComponent::errorsString() const
+QString QDeclarativeComponent::errorString() const
 {
     Q_D(const QDeclarativeComponent);
     QString ret;
@@ -595,17 +545,30 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject()
-    Returns an object instance from this component, or null if object creation fails.
+    \qmlmethod object Component::createObject(parent)
 
-    The object will be created in the same context as the component was created in.
+    Creates and returns an object instance of this component that will have the given 
+    \a parent. Returns null if object creation fails.
+
+    The object will be created in the same context as the one in which the component
+    was created. This function will always return null when called on components
+    which were not created in QML.
+
+    If you wish to create an object without setting a parent, specify \c null for
+    the \a parent value. Note that if the returned object is to be displayed, you 
+    must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
+    property, or else the object will not be visible.
 */
 
 /*!
     \internal
-    A version of create which returns a scriptObject, for use in script
+    A version of create which returns a scriptObject, for use in script.
+    This function will only work on components created in QML.
+
+    Sets graphics object parent because forgetting to do this is a frequent
+    and serious problem.
 */
-QScriptValue QDeclarativeComponent::createObject()
+QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
@@ -614,6 +577,28 @@ QScriptValue QDeclarativeComponent::createObject()
     QObject* ret = create(ctxt);
     if (!ret)
         return QScriptValue(QScriptValue::NullValue);
+
+
+    if (parent) {
+        ret->setParent(parent);
+        QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
+
+        bool needParent = false;
+
+        for (int ii = 0; ii < functions.count(); ++ii) {
+            QDeclarativePrivate::AutoParentResult res = functions.at(ii)(ret, parent);
+            if (res == QDeclarativePrivate::Parented) {
+                needParent = false;
+                break;
+            } else if (res == QDeclarativePrivate::IncompatibleParent) {
+                needParent = true;
+            }
+        }
+
+        if (needParent) 
+            qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
+    }
+
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
     return priv->objectClass->newQObject(ret, QMetaType::QObjectStar);
@@ -716,6 +701,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
+    bool isRoot = !ep->inBeginCreate;
+    if (isRoot) 
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+    QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, cc->url);
+
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;
     ctxt->url = cc->url;
@@ -754,6 +744,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -761,6 +752,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -785,6 +777,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
 
         state->bindValues = enginePriv->bindValues;
         state->parserStatus = enginePriv->parserStatus;
+        state->finalizedParserStatus = enginePriv->finalizedParserStatus;
         state->componentAttached = enginePriv->componentAttached;
         if (state->componentAttached)
             state->componentAttached->prev = &state->componentAttached;
@@ -792,6 +785,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
         enginePriv->componentAttached = 0;
         enginePriv->bindValues.clear();
         enginePriv->parserStatus.clear();
+        enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
     }
@@ -826,6 +820,16 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::clear(ps);
         }
 
+        for (int ii = 0; ii < state->finalizedParserStatus.count(); ++ii) {
+            QPair<QDeclarativeGuard<QObject>, int> status = state->finalizedParserStatus.at(ii);
+            QObject *obj = status.first;
+            if (obj) {
+                void *args[] = { 0 };
+                QMetaObject::metacall(obj, QMetaObject::InvokeMetaMethod,
+                                      status.second, args);
+            }
+        }
+
         while (state->componentAttached) {
             QDeclarativeComponentAttached *a = state->componentAttached;
             a->rem();
@@ -838,6 +842,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
 
         state->bindValues.clear();
         state->parserStatus.clear();
+        state->finalizedParserStatus.clear();
         state->completePending = false;
 
         enginePriv->inProgressCreations--;
@@ -847,6 +852,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
                 enginePriv->erroredBindings->removeError();
             }
         }
+
     }
 }
 
@@ -868,6 +874,8 @@ void QDeclarativeComponentPrivate::completeCreate()
     if (state.completePending) {
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
         complete(ep, &state);
+
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Creating);
     }
 }
 

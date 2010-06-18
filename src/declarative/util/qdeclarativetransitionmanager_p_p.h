@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeStatePrivate;
 class QDeclarativeTransitionManagerPrivate;
-class QDeclarativeTransitionManager 
+class Q_AUTOTEST_EXPORT QDeclarativeTransitionManager 
 {
 public:
     QDeclarativeTransitionManager();
@@ -70,7 +70,7 @@ public:
     void cancel();
 
 private:
-    Q_DISABLE_COPY(QDeclarativeTransitionManager);
+    Q_DISABLE_COPY(QDeclarativeTransitionManager)
     QDeclarativeTransitionManagerPrivate *d;
 
     void complete();

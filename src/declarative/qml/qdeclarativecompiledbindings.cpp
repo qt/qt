@@ -64,6 +64,73 @@ DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties);
 
+#if defined(Q_CC_GNU) && (!defined(Q_CC_INTEL) || __INTEL_COMPILER >= 1200)
+#  define QML_THREADED_INTERPRETER
+#endif
+
+#define FOR_EACH_QML_INSTR(F) \
+    F(Noop)                    /* Nop */ \
+    F(BindingId)               /* id */ \
+    F(Subscribe)               /* subscribe */ \
+    F(SubscribeId)             /* subscribe */ \
+    F(FetchAndSubscribe)       /* fetchAndSubscribe */ \
+    F(LoadId)                  /* load */ \
+    F(LoadScope)               /* load */ \
+    F(LoadRoot)                /* load */ \
+    F(LoadAttached)            /* attached */ \
+    F(ConvertIntToReal)        /* unaryop */ \
+    F(ConvertRealToInt)        /* unaryop */ \
+    F(Real)                    /* real_value */ \
+    F(Int)                     /* int_value */ \
+    F(Bool)                    /* bool_value */ \
+    F(String)                  /* string_value */ \
+    F(AddReal)                 /* binaryop */ \
+    F(AddInt)                  /* binaryop */ \
+    F(AddString)               /* binaryop */ \
+    F(MinusReal)               /* binaryop */ \
+    F(MinusInt)                /* binaryop */ \
+    F(CompareReal)             /* binaryop */ \
+    F(CompareString)           /* binaryop */ \
+    F(NotCompareReal)          /* binaryop */ \
+    F(NotCompareString)        /* binaryop */ \
+    F(GreaterThanReal)         /* binaryop */ \
+    F(MaxReal)                 /* binaryop */ \
+    F(MinReal)                 /* binaryop */ \
+    F(NewString)               /* construct */ \
+    F(NewUrl)                  /* construct */ \
+    F(CleanupUrl)              /* cleanup */ \
+    F(CleanupString)           /* cleanup */ \
+    F(Copy)                    /* copy */ \
+    F(Fetch)                   /* fetch */ \
+    F(Store)                   /* store */ \
+    F(Skip)                    /* skip */ \
+    F(Done)                    /* done */ \
+    /* Speculative property resolution */ \
+    F(InitString)              /* initstring */ \
+    F(FindGeneric)             /* find */ \
+    F(FindGenericTerminal)     /* find */ \
+    F(FindProperty)            /* find */ \
+    F(FindPropertyTerminal)    /* find */ \
+    F(CleanupGeneric)          /* cleanup */ \
+    F(ConvertGenericToReal)    /* unaryop */ \
+    F(ConvertGenericToBool)    /* unaryop */ \
+    F(ConvertGenericToString)  /* unaryop */ \
+    F(ConvertGenericToUrl)     /* unaryop */
+
+#define QML_INSTR_ENUM(I) I,
+#define QML_INSTR_ADDR(I) &&op_##I,
+
+#ifdef QML_THREADED_INTERPRETER
+#  define QML_BEGIN_INSTR(I) op_##I:
+#  define QML_END_INSTR(I) ++instr; goto *instr->common.code;
+#  define QML_INSTR_HEADER void *code;
+#else
+#  define QML_BEGIN_INSTR(I) case Instr::I:
+#  define QML_END_INSTR(I) break;
+#  define QML_INSTR_HEADER
+#endif
+
+
 using namespace QDeclarativeJS;
 
 namespace {
@@ -328,101 +395,45 @@ namespace {
 // This structure is exactly 8-bytes in size
 struct Instr {
     enum {
-        Noop,
-        BindingId,               // id
-
-        Subscribe,               // subscribe
-        SubscribeId,             // subscribe
-
-        FetchAndSubscribe,       // fetchAndSubscribe
-
-        LoadId,                  // load
-        LoadScope,               // load
-        LoadRoot,                // load
-        LoadAttached,            // attached
-
-        ConvertIntToReal,        // unaryop
-        ConvertRealToInt,        // unaryop
-
-        Real,                    // real_value
-        Int,                     // int_value
-        Bool,                    // bool_value
-        String,                  // string_value
-
-        AddReal,                 // binaryop
-        AddInt,                  // binaryop
-        AddString,               // binaryop
-
-        MinusReal,               // binaryop
-        MinusInt,                // binaryop
-
-        CompareReal,             // binaryop
-        CompareString,           // binaryop
-
-        NotCompareReal,          // binaryop
-        NotCompareString,        // binaryop
-        
-        GreaterThanReal,         // binaryop
-        MaxReal,                 // binaryop 
-        MinReal,                 // binaryop
-
-        NewString,               // construct
-        NewUrl,                  // construct
-
-        CleanupUrl,              // cleanup
-        CleanupString,           // cleanup
-
-        Copy,                    // copy
-        Fetch,                   // fetch
-        Store,                   // store
-
-        Skip,                    // skip
-
-        Done,
-
-        // Speculative property resolution
-        InitString,              // initstring
-        FindGeneric,             // find 
-        FindGenericTerminal,     // find 
-        FindProperty,            // find 
-        FindPropertyTerminal,    // find 
-        CleanupGeneric,          // cleanup
-        ConvertGenericToReal,    // unaryop
-        ConvertGenericToBool,    // unaryop
-        ConvertGenericToString,  // unaryop
-        ConvertGenericToUrl,     // unaryop
+        FOR_EACH_QML_INSTR(QML_INSTR_ENUM)
     };
 
     union {
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             quint8 packing[7];
         } common;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             quint8 packing;
             quint16 column;
             quint32 line;
         } id;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             quint8 packing[3];
             quint16 subscriptions;
             quint16 identifiers;
         } init;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint16 offset;
             quint32 index;
         } subscribe;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[2];
             quint32 index;
         } load;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 reg;
@@ -430,6 +441,7 @@ struct Instr {
             quint32 index;
         } attached;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 reg;
@@ -437,6 +449,7 @@ struct Instr {
             quint32 index;
         } store;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 objectReg;
@@ -445,6 +458,7 @@ struct Instr {
             quint16 function;
         } fetchAndSubscribe;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 objectReg;
@@ -452,41 +466,48 @@ struct Instr {
             quint32 index;
         } fetch;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             qint8 src;
             quint8 packing[5];
         } copy;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[6];
         } construct;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[2];
             float value;
         } real_value;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[2];
             int value;
         } int_value;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             bool value;
             quint8 packing[5];
         } bool_value;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint16 length;
             quint32 offset;
         } string_value;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 src1;
@@ -494,18 +515,21 @@ struct Instr {
             quint8 packing[4];
         } binaryop;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 output;
             qint8 src;
             quint8 packing[5];
         } unaryop;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[2];
             quint32 count;
         } skip;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             qint8 src;
@@ -514,11 +538,13 @@ struct Instr {
             quint16 subscribeIndex;
         } find;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             qint8 reg;
             quint8 packing[6];
         } cleanup;
         struct {
+            QML_INSTR_HEADER
             quint8 type;
             quint8 packing[1];
             quint16 offset;
@@ -535,7 +561,7 @@ struct Program {
     quint16 subscriptions;
     quint16 identifiers;
     quint16 instructionCount;
-    quint16 dummy;
+    quint16 compiled;
 
     const char *data() const { return ((const char *)this) + sizeof(Program); }
     const Instr *instructions() const { return (const Instr *)(data() + dataLength); }
@@ -572,7 +598,7 @@ struct QDeclarativeBindingCompilerPrivate
     QDeclarativeParser::Object *component;
     QDeclarativeParser::Property *destination;
     QHash<QString, QDeclarativeParser::Object *> ids;
-    QDeclarativeEnginePrivate::Imports imports;
+    QDeclarativeImports imports;
     QDeclarativeEnginePrivate *engine;
 
     QString contextName() const { return QLatin1String("$$$SCOPE_") + QString::number((intptr_t)context, 16); }
@@ -1097,35 +1123,57 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
     instr += instrIndex;
     const char *data = program->data();
 
+#ifdef QML_THREADED_INTERPRETER
+    static void *decode_instr[] = {
+        FOR_EACH_QML_INSTR(QML_INSTR_ADDR)
+    };
+
+    if (!program->compiled) {
+        program->compiled = true;
+        const Instr *inop = program->instructions();
+        for (int i = 0; i < program->instructionCount; ++i) {
+            Instr *op = (Instr *) inop++;
+            op->common.code = decode_instr[op->common.type];
+        }
+    }
+
+    goto *instr->common.code;
+#else
     // return;
+
 #ifdef COMPILEDBINDINGS_DEBUG
     qWarning().nospace() << "Begin binding run";
 #endif
 
     while (instr) {
+        switch (instr->common.type) {
+
 #ifdef COMPILEDBINDINGS_DEBUG
         dumpInstruction(instr);
 #endif
 
-    switch (instr->common.type) {
-    case Instr::Noop:
-    case Instr::BindingId:
-        break;
+#endif
 
-    case Instr::SubscribeId:
+    QML_BEGIN_INSTR(Noop)
+    QML_END_INSTR(Noop)
+
+    QML_BEGIN_INSTR(BindingId)
+    QML_END_INSTR(BindingId)
+
+    QML_BEGIN_INSTR(SubscribeId)
         subscribeId(context, instr->subscribe.index, instr->subscribe.offset);
-        break;
+    QML_END_INSTR(SubscribeId)
 
-    case Instr::Subscribe:
+    QML_BEGIN_INSTR(Subscribe)
     {
         QObject *o = 0;
         const Register &object = registers[instr->subscribe.reg];
         if (!object.isUndefined()) o = object.getQObject();
         subscribe(o, instr->subscribe.index, instr->subscribe.offset);
     }
-        break;
+    QML_END_INSTR(Subscribe)
 
-    case Instr::FetchAndSubscribe:
+    QML_BEGIN_INSTR(FetchAndSubscribe)
     {
         const Register &input = registers[instr->fetchAndSubscribe.objectReg];
         Register &output = registers[instr->fetchAndSubscribe.output];
@@ -1149,21 +1197,21 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             fastProperties()->accessor(instr->fetchAndSubscribe.function)(object, output.typeDataPtr(), sub);
         }
     }
-        break;
+    QML_END_INSTR(FetchAndSubscribe)
 
-    case Instr::LoadId:
+    QML_BEGIN_INSTR(LoadId)
         registers[instr->load.reg].setQObject(context->idValues[instr->load.index].data());
-        break;
+    QML_END_INSTR(LoadId)
 
-    case Instr::LoadScope:
+    QML_BEGIN_INSTR(LoadScope)
         registers[instr->load.reg].setQObject(scope);
-        break;
+    QML_END_INSTR(LoadScope)
 
-    case Instr::LoadRoot:
+    QML_BEGIN_INSTR(LoadRoot)
         registers[instr->load.reg].setQObject(context->contextObject);
-        break;
+    QML_END_INSTR(LoadRoot)
 
-    case Instr::LoadAttached:
+    QML_BEGIN_INSTR(LoadAttached)
     {
         const Register &input = registers[instr->attached.reg];
         Register &output = registers[instr->attached.output];
@@ -1184,48 +1232,48 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             output.setQObject(attached);
         }
     }
-        break;
+    QML_END_INSTR(LoadAttached)
 
-    case Instr::ConvertIntToReal:
+    QML_BEGIN_INSTR(ConvertIntToReal)
     {
         const Register &input = registers[instr->unaryop.src];
         Register &output = registers[instr->unaryop.output];
         if (input.isUndefined()) output.setUndefined();
         else output.setqreal(qreal(input.getint()));
     }
-        break;
+    QML_END_INSTR(ConvertIntToReal)
 
-    case Instr::ConvertRealToInt:
+    QML_BEGIN_INSTR(ConvertRealToInt)
     {
         const Register &input = registers[instr->unaryop.src];
         Register &output = registers[instr->unaryop.output];
         if (input.isUndefined()) output.setUndefined();
-        else output.setint(int(input.getqreal()));
+        else output.setint(qRound(input.getqreal()));
     }
-        break;
+    QML_END_INSTR(ConvertRealToInt)
 
-    case Instr::Real:
+    QML_BEGIN_INSTR(Real)
         registers[instr->real_value.reg].setqreal(instr->real_value.value);
-        break;
+    QML_END_INSTR(Real)
 
-    case Instr::Int:
+    QML_BEGIN_INSTR(Int)
         registers[instr->int_value.reg].setint(instr->int_value.value);
-        break;
+    QML_END_INSTR(Int)
         
-    case Instr::Bool:
+    QML_BEGIN_INSTR(Bool)
         registers[instr->bool_value.reg].setbool(instr->bool_value.value);
-        break;
+    QML_END_INSTR(Bool)
 
-    case Instr::String:
+    QML_BEGIN_INSTR(String)
     {
         Register &output = registers[instr->string_value.reg];
         new (output.getstringptr()) 
             QString((QChar *)(data + instr->string_value.offset), instr->string_value.length);
         output.settype(QMetaType::QString);
     }
-        break;
+    QML_END_INSTR(String)
 
-    case Instr::AddReal:
+    QML_BEGIN_INSTR(AddReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1233,9 +1281,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setqreal(lhs.getqreal() + rhs.getqreal());
     }
-        break;
+    QML_END_INSTR(AddReal)
 
-    case Instr::AddInt:
+    QML_BEGIN_INSTR(AddInt)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1243,9 +1291,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setint(lhs.getint() + rhs.getint());
     }
-        break;
+    QML_END_INSTR(AddInt)
         
-    case Instr::AddString:
+    QML_BEGIN_INSTR(AddString)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1265,9 +1313,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             output.settype(QMetaType::QString);
         }
     }
-        break;
+    QML_END_INSTR(AddString)
 
-    case Instr::MinusReal:
+    QML_BEGIN_INSTR(MinusReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1275,9 +1323,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setqreal(lhs.getqreal() - rhs.getqreal());
     }
-        break;
+    QML_END_INSTR(MinusReal)
 
-    case Instr::MinusInt:
+    QML_BEGIN_INSTR(MinusInt)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1285,9 +1333,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setint(lhs.getint() - rhs.getint());
     }
-        break;
+    QML_END_INSTR(MinusInt)
 
-    case Instr::CompareReal:
+    QML_BEGIN_INSTR(CompareReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1295,9 +1343,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setbool(lhs.isUndefined() == rhs.isUndefined());
         else output.setbool(lhs.getqreal() == rhs.getqreal());
     }
-        break;
+    QML_END_INSTR(CompareReal)
 
-    case Instr::CompareString:
+    QML_BEGIN_INSTR(CompareString)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1305,9 +1353,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setbool(lhs.isUndefined() == rhs.isUndefined());
         else output.setbool(*lhs.getstringptr() == *rhs.getstringptr());
     }
-        break;
+    QML_END_INSTR(CompareString)
 
-    case Instr::NotCompareReal:
+    QML_BEGIN_INSTR(NotCompareReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1315,9 +1363,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setbool(lhs.isUndefined() != rhs.isUndefined());
         else output.setbool(lhs.getqreal() != rhs.getqreal());
     }
-        break;
+    QML_END_INSTR(NotCompareReal)
 
-    case Instr::NotCompareString:
+    QML_BEGIN_INSTR(NotCompareString)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1325,9 +1373,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setbool(lhs.isUndefined() != rhs.isUndefined());
         else output.setbool(*lhs.getstringptr() != *rhs.getstringptr());
     }
-        break;
+    QML_END_INSTR(NotCompareString)
 
-    case Instr::GreaterThanReal:
+    QML_BEGIN_INSTR(GreaterThanReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1335,9 +1383,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setbool(false);
         else output.setbool(lhs.getqreal() > rhs.getqreal());
     }
-        break;
+    QML_END_INSTR(GreaterThanReal)
 
-    case Instr::MaxReal:
+    QML_BEGIN_INSTR(MaxReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1345,9 +1393,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setqreal(qMax(lhs.getqreal(), rhs.getqreal()));
     }
-        break;
+    QML_END_INSTR(MaxReal)
 
-    case Instr::MinReal:
+    QML_BEGIN_INSTR(MinReal)
     {
         const Register &lhs = registers[instr->binaryop.src1];
         const Register &rhs = registers[instr->binaryop.src2];
@@ -1355,33 +1403,33 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
         else output.setqreal(qMin(lhs.getqreal(), rhs.getqreal()));
     }
-        break;
+    QML_END_INSTR(MinReal)
 
-    case Instr::NewString:
+    QML_BEGIN_INSTR(NewString)
     {
         Register &output = registers[instr->construct.reg];
         new (output.getstringptr()) QString;
         output.settype(QMetaType::QString);
     }
-        break;
+    QML_END_INSTR(NewString)
 
-    case Instr::NewUrl:
+    QML_BEGIN_INSTR(NewUrl)
     {
         Register &output = registers[instr->construct.reg];
         new (output.geturlptr()) QUrl;
         output.settype(QMetaType::QUrl);
     }
-        break;
+    QML_END_INSTR(NewUrl)
 
-    case Instr::CleanupString:
+    QML_BEGIN_INSTR(CleanupString)
         registers[instr->cleanup.reg].getstringptr()->~QString();
-        break;
+    QML_END_INSTR(CleanupString)
 
-    case Instr::CleanupUrl:
+    QML_BEGIN_INSTR(CleanupUrl)
         registers[instr->cleanup.reg].geturlptr()->~QUrl();
-        break;
+    QML_END_INSTR(CleanupUrl)
 
-    case Instr::Fetch:
+    QML_BEGIN_INSTR(Fetch)
     {
         const Register &input = registers[instr->fetch.objectReg];
         Register &output = registers[instr->fetch.output];
@@ -1399,9 +1447,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             QMetaObject::metacall(object, QMetaObject::ReadProperty, instr->fetch.index, argv);
         }
     }
-        break;
+    QML_END_INSTR(Fetch)
 
-    case Instr::Store:
+    QML_BEGIN_INSTR(Store)
     {
         Register &data = registers[instr->store.reg];
         if (data.isUndefined()) {
@@ -1415,21 +1463,22 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         QMetaObject::metacall(output, QMetaObject::WriteProperty, 
                               instr->store.index, argv);
     }
-        break;
+    QML_END_INSTR(Store)
 
-    case Instr::Copy:
+    QML_BEGIN_INSTR(Copy)
         registers[instr->copy.reg] = registers[instr->copy.src];
-        break;
+    QML_END_INSTR(Copy)
 
-    case Instr::Skip:
+    QML_BEGIN_INSTR(Skip)
         if (instr->skip.reg == -1 || !registers[instr->skip.reg].getbool()) 
             instr += instr->skip.count;
-        break;
+    QML_END_INSTR(Skip)
 
-    case Instr::Done:
+    QML_BEGIN_INSTR(Done)
         return;
+    QML_END_INSTR(Done)
 
-    case Instr::InitString:
+    QML_BEGIN_INSTR(InitString)
         if (!identifiers[instr->initstring.offset].identifier) {
             quint32 len = *(quint32 *)(data + instr->initstring.dataIdx);
             QChar *strdata = (QChar *)(data + instr->initstring.dataIdx + sizeof(quint32)); 
@@ -1438,10 +1487,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
 
             identifiers[instr->initstring.offset] = engine->objectClass->createPersistentIdentifier(str);
         }
-        break;
+    QML_END_INSTR(InitString)
 
-    case Instr::FindGenericTerminal:
-    case Instr::FindGeneric:
+    QML_BEGIN_INSTR(FindGenericTerminal)
         // We start the search in the parent context, as we know that the 
         // name is not present in the current context or it would have been
         // found during the static compile
@@ -1449,10 +1497,19 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
                     context->parent,
                     identifiers[instr->find.name].identifier, 
                     instr->common.type == Instr::FindGenericTerminal);
-        break;
+    QML_END_INSTR(FindGenericTerminal)
 
-    case Instr::FindPropertyTerminal:
-    case Instr::FindProperty:
+    QML_BEGIN_INSTR(FindGeneric)
+        // We start the search in the parent context, as we know that the
+        // name is not present in the current context or it would have been
+        // found during the static compile
+        findgeneric(registers + instr->find.reg, instr->find.subscribeIndex,
+                    context->parent,
+                    identifiers[instr->find.name].identifier,
+                    instr->common.type == Instr::FindGenericTerminal);
+    QML_END_INSTR(FindGeneric)
+
+    QML_BEGIN_INSTR(FindPropertyTerminal)
     {
         const Register &object = registers[instr->find.src];
         if (object.isUndefined()) {
@@ -1465,9 +1522,24 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
                      instr->find.subscribeIndex, identifiers[instr->find.name].identifier, 
                      instr->common.type == Instr::FindPropertyTerminal);
     }
-        break;
+    QML_END_INSTR(FindPropertyTerminal)
 
-    case Instr::CleanupGeneric:
+    QML_BEGIN_INSTR(FindProperty)
+    {
+        const Register &object = registers[instr->find.src];
+        if (object.isUndefined()) {
+            throwException(instr->find.exceptionId, error, program, context);
+            return;
+        }
+
+        findproperty(object.getQObject(), registers + instr->find.reg,
+                     QDeclarativeEnginePrivate::get(context->engine),
+                     instr->find.subscribeIndex, identifiers[instr->find.name].identifier,
+                     instr->common.type == Instr::FindPropertyTerminal);
+    }
+    QML_END_INSTR(FindProperty)
+
+    QML_BEGIN_INSTR(CleanupGeneric)
     {
         int type = registers[instr->cleanup.reg].gettype();
         if (type == qMetaTypeId<QVariant>()) {
@@ -1478,9 +1550,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             registers[instr->cleanup.reg].geturlptr()->~QUrl();
         }
     }
-        break;
+    QML_END_INSTR(CleanupGeneric)
 
-    case Instr::ConvertGenericToReal:
+    QML_BEGIN_INSTR(ConvertGenericToReal)
     {
         Register &output = registers[instr->unaryop.output];
         Register &input = registers[instr->unaryop.src];
@@ -1488,9 +1560,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         output.setqreal(toReal(&input, input.gettype(), &ok));
         if (!ok) output.setUndefined();
     }
-        break;
+    QML_END_INSTR(ConvertGenericToReal)
 
-    case Instr::ConvertGenericToBool:
+    QML_BEGIN_INSTR(ConvertGenericToBool)
     {
         Register &output = registers[instr->unaryop.output];
         Register &input = registers[instr->unaryop.src];
@@ -1498,9 +1570,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         output.setbool(toBool(&input, input.gettype(), &ok));
         if (!ok) output.setUndefined();
     }
-        break;
+    QML_END_INSTR(ConvertGenericToBool)
 
-    case Instr::ConvertGenericToString:
+    QML_BEGIN_INSTR(ConvertGenericToString)
     {
         Register &output = registers[instr->unaryop.output];
         Register &input = registers[instr->unaryop.src];
@@ -1509,9 +1581,9 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (ok) { new (output.getstringptr()) QString(str); output.settype(QMetaType::QString); }
         else { output.setUndefined(); }
     }
-        break;
+    QML_END_INSTR(ConvertGenericToString)
 
-    case Instr::ConvertGenericToUrl:
+    QML_BEGIN_INSTR(ConvertGenericToUrl)
     {
         Register &output = registers[instr->unaryop.output];
         Register &input = registers[instr->unaryop.src];
@@ -1520,15 +1592,19 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         if (ok) { new (output.geturlptr()) QUrl(url); output.settype(QMetaType::QUrl); }
         else { output.setUndefined(); }
     }
-        break;
+    QML_END_INSTR(ConvertGenericToUrl)
 
+#ifdef QML_THREADED_INTERPRETER
+    // nothing to do
+#else
     default:
         qFatal("EEK");
         break;
-    }
+    } // switch
 
-    instr++;
-    }
+    ++instr;
+    } // while
+#endif
 }
 
 void QDeclarativeBindingCompiler::dump(const QByteArray &programData)
@@ -1624,6 +1700,8 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
             return false;
 
         int convertReg = acquireReg();
+        if (convertReg == -1)
+            return false;
 
         if (destination->type == QMetaType::QReal) {
             Instr convert;
@@ -1795,8 +1873,8 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
             if (nameParts.at(ii + 1).at(0).isUpper())
                 return false;
 
-            QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
-            if (!engine->resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
+            QDeclarativeImportedNamespace *ns = 0;
+            if (!engine->importDatabase.resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
                 return false;
             if (ns || !attachType || !attachType->attachedPropertiesType())
                 return false;
@@ -2011,6 +2089,8 @@ bool QDeclarativeBindingCompilerPrivate::parseArith(QDeclarativeJS::AST::Node *n
     AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
 
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
 
     Result lhs;
     Result rhs;
@@ -2062,6 +2142,8 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
             return false;
 
         lhsTmp = acquireReg();
+        if (lhsTmp == -1)
+            return false;
 
         Instr conv;
         conv.common.type = Instr::ConvertGenericToReal;
@@ -2075,6 +2157,8 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
             return false;
 
         rhsTmp = acquireReg();
+        if (rhsTmp == -1)
+            return false;
 
         Instr conv;
         conv.common.type = Instr::ConvertGenericToReal;
@@ -2123,6 +2207,8 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
             return false;
 
         lhsTmp = acquireReg(Instr::CleanupString);
+        if (lhsTmp == -1)
+            return false;
 
         Instr convert;
         convert.common.type = Instr::ConvertGenericToString;
@@ -2136,6 +2222,8 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
             return false;
 
         rhsTmp = acquireReg(Instr::CleanupString);
+        if (rhsTmp == -1)
+            return false;
 
         Instr convert;
         convert.common.type = Instr::ConvertGenericToString;
@@ -2145,6 +2233,9 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     }
 
     type.reg = acquireReg(Instr::CleanupString);
+    if (type.reg == -1)
+        return false;
+
     type.type = QMetaType::QString;
 
     Instr add;
@@ -2185,6 +2276,9 @@ bool QDeclarativeBindingCompilerPrivate::parseLogic(QDeclarativeJS::AST::Node *n
     if (!parseExpression(expression->right, rhs)) return false;
 
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
+
     type.metaObject = 0;
     type.type = QVariant::Bool;
 
@@ -2310,6 +2404,8 @@ bool QDeclarativeBindingCompilerPrivate::parseConstant(QDeclarativeJS::AST::Node
     type.metaObject = 0;
     type.type = -1;
     type.reg = acquireReg();
+    if (type.reg == -1)
+        return false;
 
     if (node->kind == AST::Node::Kind_TrueLiteral) {
         type.type = QVariant::Bool;
@@ -2398,6 +2494,9 @@ bool QDeclarativeBindingCompilerPrivate::parseMethod(QDeclarativeJS::AST::Node *
     releaseReg(r1.reg);
 
     op.binaryop.output = acquireReg();
+    if (op.binaryop.output == -1)
+        return false;
+
     op.binaryop.src1 = r0.reg;
     op.binaryop.src2 = r1.reg;
     bytecode << op;
@@ -2473,6 +2572,8 @@ bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo
 
     if (rv.type == QMetaType::QString) {
         int tmp = acquireReg();
+        if (tmp == -1)
+            return false;
         Instr copy;
         copy.common.type = Instr::Copy;
         copy.copy.reg = tmp;
@@ -2549,6 +2650,8 @@ int QDeclarativeBindingCompilerPrivate::registerLiteralString(const QString &str
     data += strdata;
 
     int reg = acquireReg(Instr::CleanupString);
+    if (reg == -1)
+        return false;
 
     Instr string;
     string.common.type = Instr::String;
@@ -2754,6 +2857,7 @@ QByteArray QDeclarativeBindingCompiler::program() const
         prog.subscriptions = d->committed.subscriptionIds.count();
         prog.identifiers = d->committed.registeredStrings.count();
         prog.instructionCount = bytecode.count();
+        prog.compiled = false;
         int size = sizeof(Program) + bytecode.count() * sizeof(Instr);
         size += prog.dataLength;
 

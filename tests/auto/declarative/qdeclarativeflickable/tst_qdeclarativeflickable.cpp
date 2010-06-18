@@ -46,6 +46,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include <math.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativeflickable : public QObject
 {
     Q_OBJECT
@@ -61,6 +66,7 @@ private slots:
     void maximumFlickVelocity();
     void flickDeceleration();
     void pressDelay();
+    void flickableDirection();
 
 private:
     QDeclarativeEngine engine;
@@ -222,6 +228,33 @@ void tst_qdeclarativeflickable::pressDelay()
     QCOMPARE(spy.count(),1);
     flickable->setPressDelay(200);
     QCOMPARE(spy.count(),1);
+}
+
+void tst_qdeclarativeflickable::flickableDirection()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.7; Flickable { flickableDirection: Flickable.VerticalFlick; }", QUrl::fromLocalFile(""));
+    QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
+    QSignalSpy spy(flickable, SIGNAL(flickableDirectionChanged()));
+
+    QVERIFY(flickable);
+    QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::VerticalFlick);
+
+    flickable->setFlickableDirection(QDeclarativeFlickable::HorizontalAndVerticalFlick);
+    QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::HorizontalAndVerticalFlick);
+    QCOMPARE(spy.count(),1);
+
+    flickable->setFlickableDirection(QDeclarativeFlickable::AutoFlickDirection);
+    QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::AutoFlickDirection);
+    QCOMPARE(spy.count(),2);
+
+    flickable->setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
+    QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::HorizontalFlick);
+    QCOMPARE(spy.count(),3);
+
+    flickable->setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
+    QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::HorizontalFlick);
+    QCOMPARE(spy.count(),3);
 }
 
 QTEST_MAIN(tst_qdeclarativeflickable)

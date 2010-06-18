@@ -8,8 +8,13 @@ SOURCES += tst_qdeclarativeimageprovider.cpp
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
-# Define SRCDIR equal to test's source directory
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+symbian: {
+    importFiles.sources = data
+    importFiles.path = .
+    DEPLOYMENT = importFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test
 

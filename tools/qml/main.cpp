@@ -50,11 +50,10 @@
 #include <QDebug>
 #include <QMessageBox>
 #include "qdeclarativetester.h"
-#include "qdeclarativefolderlistmodel.h"
 
 QT_USE_NAMESPACE
 
-QtMsgHandler systemMsgOutput;
+QtMsgHandler systemMsgOutput = 0;
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -86,7 +85,7 @@ QString warnings;
 void showWarnings()
 {
     if (!warnings.isEmpty()) {
-        QMessageBox::warning(0, QApplication::tr("Qt Declarative UI Runtime"), warnings);
+        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
     }
 }
 
@@ -111,7 +110,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 void usage()
 {
-    qWarning("Usage: qml [options] <filename>");
+    qWarning("Usage: qmlviewer [options] <filename>");
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -v, -version ............................. display version");
@@ -119,13 +118,10 @@ void usage()
     qWarning("  -maximized................................ run maximized");
     qWarning("  -fullscreen............................... run fullscreen");
     qWarning("  -stayontop................................ keep viewer window on top");
-    qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
-    qWarning("                                             \"list\" for a list of built-ins");
-    qWarning("  -resizeview .............................. resize the view, not the skin");
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
     qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
-    qWarning("  -nolog ................................... do not show log window");
+    qWarning("  -warnings [show|hide]..................... show warnings in a separate log window");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -152,7 +148,7 @@ void usage()
 
 void scriptOptsUsage()
 {
-    qWarning("Usage: qml -scriptopts <option>[,<option>...] ...");
+    qWarning("Usage: qmlviewer -scriptopts <option>[,<option>...] ...");
     qWarning(" options:");
     qWarning("  record ................................... record a new script");
     qWarning("  play ..................................... playback an existing script");
@@ -168,6 +164,8 @@ void scriptOptsUsage()
     exit(1);
 }
 
+enum WarningsConfig { ShowWarnings, HideWarnings, DefaultWarnings };
+
 int main(int argc, char ** argv)
 {
 #if defined (Q_OS_SYMBIAN)
@@ -182,7 +180,7 @@ int main(int argc, char ** argv)
     atexit(showWarnings);
 #endif
 
-#if defined (Q_WS_X11)
+#if defined (Q_WS_X11) || defined (Q_WS_MAC)
     //### default to using raster graphics backend for now
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
@@ -198,16 +196,14 @@ int main(int argc, char ** argv)
 #endif
 
     QApplication app(argc, argv);
-    app.setApplicationName("QtQmlRuntime");
+    app.setApplicationName("QtQmlViewer");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
-    QDeclarativeFolderListModel::registerTypes();
 
     bool frameless = false;
-    bool resizeview = false;
     QString fileName;
     double fps = 0;
     int autorecord_from = 0;
@@ -217,7 +213,6 @@ int main(int argc, char ** argv)
     QStringList recordargs;
     QStringList imports;
     QStringList plugins;
-    QString skin;
     QString script;
     QString scriptopts;
     bool runScript = false;
@@ -229,12 +224,18 @@ int main(int argc, char ** argv)
     bool stayOnTop = false;
     bool maximized = false;
     bool useNativeFileBrowser = true;
-    bool showLogWidget = true;
+    bool experimentalGestures = false;
+
+    WarningsConfig warningsConfig = DefaultWarnings;
     bool sizeToView = true;
 
 #if defined(Q_OS_SYMBIAN)
     maximized = true;
     useNativeFileBrowser = false;
+#endif
+
+#if defined(Q_WS_MAC)
+    useGL = true;
 #endif
 
     for (int i = 1; i < argc; ++i) {
@@ -248,11 +249,6 @@ int main(int argc, char ** argv)
             fullScreen = true;
         } else if (arg == "-stayontop") {
             stayOnTop = true;
-        } else if (arg == "-skin") {
-            if (lastArg) usage();
-            skin = QString(argv[++i]);
-        } else if (arg == "-resizeview") {
-            resizeview = true;
         } else if (arg == "-netcache") {
             if (lastArg) usage();
             cache = QString(argv[++i]).toInt();
@@ -281,7 +277,7 @@ int main(int argc, char ** argv)
             if (lastArg) usage();
             app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            qWarning("Qt Qml Runtime version %s", QT_VERSION_STR);
+            qWarning("Qt QML Viewer version %s", QT_VERSION_STR);
             exit(0);
         } else if (arg == "-translation") {
             if (lastArg) usage();
@@ -290,8 +286,16 @@ int main(int argc, char ** argv)
             useGL = true;
         } else if (arg == "-qmlbrowser") {
             useNativeFileBrowser = false;
-        } else if (arg == "-nolog") {
-            showLogWidget = false;
+        } else if (arg == "-warnings") {
+            if (lastArg) usage();
+            QString warningsStr = QString(argv[++i]);
+            if (warningsStr == QLatin1String("show")) {
+                warningsConfig = ShowWarnings;
+            } else if (warningsStr == QLatin1String("hide")) {
+                warningsConfig = HideWarnings;
+            } else {
+                usage();
+            }
         } else if (arg == "-I" || arg == "-L") {
             if (arg == "-L")
                 qWarning("-L option provided for compatibility only, use -I instead");
@@ -323,6 +327,8 @@ int main(int argc, char ** argv)
             sizeToView = false;
         } else if (arg == "-sizerootobjecttoview") {
             sizeToView = true;
+        } else if (arg == "-experimentalgestures") {
+            experimentalGestures = true;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -340,16 +346,10 @@ int main(int argc, char ** argv)
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
 
-#if !defined(Q_OS_SYMBIAN)
-    LoggerWidget loggerWidget(0);
-    if (showLogWidget) {
-        logger = &loggerWidget;
-    }
-#endif
-
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
+    viewer->setAttribute(Qt::WA_DeleteOnClose, true);
     if (!scriptopts.isEmpty()) {
-        QStringList options = 
+        QStringList options =
             scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
 
         QDeclarativeViewer::ScriptOptions scriptOptions = 0;
@@ -389,6 +389,19 @@ int main(int argc, char ** argv)
         usage();
     }
 
+#if !defined(Q_OS_SYMBIAN)
+    logger = viewer->warningsWidget();
+    if (warningsConfig == ShowWarnings) {
+        logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
+        logger.data()->show();
+    } else if (warningsConfig == HideWarnings){
+        logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
+    }
+#endif
+
+    if (experimentalGestures)
+        viewer->enableExperimentalGestures();
+
     foreach (QString lib, imports)
         viewer->addLibraryPath(lib);
 
@@ -398,21 +411,10 @@ int main(int argc, char ** argv)
     viewer->setNetworkCacheSize(cache);
     viewer->setRecordFile(recordfile);
     viewer->setSizeToView(sizeToView);
-    if (resizeview)
-        viewer->setScaleView();
     if (fps>0)
         viewer->setRecordRate(fps);
     if (autorecord_to)
         viewer->setAutoRecord(autorecord_from,autorecord_to);
-    if (!skin.isEmpty()) {
-        if (skin == "list") {
-            foreach (QString s, viewer->builtinSkins())
-                qWarning() << qPrintable(s);
-            exit(0);
-        } else {
-            viewer->setSkin(skin);
-        }
-    }
     if (devkeys)
         viewer->setDeviceKeys(true);
     viewer->setRecordDither(dither);
@@ -450,7 +452,5 @@ int main(int argc, char ** argv)
     viewer->setUseGL(useGL);
     viewer->raise();
 
-    int rv = app.exec();
-    delete viewer;
-    exit(rv);
+    return app.exec();
 }

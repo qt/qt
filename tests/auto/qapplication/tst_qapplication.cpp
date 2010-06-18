@@ -106,6 +106,7 @@ private slots:
 
     void lastWindowClosed();
     void quitOnLastWindowClosed();
+    void closeAllWindows();
     void testDeleteLater();
     void testDeleteLaterProcessEvents();
 
@@ -188,15 +189,22 @@ void tst_QApplication::getSetCheck()
 {
     int argc = 0;
     QApplication obj1(argc, 0, QApplication::GuiServer);
-    // QInputContext * QApplication::inputContext()
-    // void QApplication::setInputContext(QInputContext *)
     MyInputContext *var1 = new MyInputContext;
+
+    // QApplication takes ownership, so check for reparenting:
     obj1.setInputContext(var1);
-    QCOMPARE((QInputContext *)var1, obj1.inputContext());
+    QCOMPARE(var1->parent(), static_cast<QObject *>(&obj1));
+
+    // Test for self-assignment:
+    obj1.setInputContext(obj1.inputContext());
+    QVERIFY(obj1.inputContext());
+    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
+
+    // Resetting the input context to 0 is not allowed:
     QTest::ignoreMessage(QtWarningMsg, "QApplication::setInputContext: called with 0 input context");
-    obj1.setInputContext((QInputContext *)0);
-    QCOMPARE((QInputContext *)var1, obj1.inputContext());
-    // delete var1; // No delete, since QApplication takes ownership
+    obj1.setInputContext(0);
+
+    QCOMPARE(static_cast<QInputContext *>(var1), obj1.inputContext());
 }
 
 class CloseEventTestWindow : public QWidget
@@ -743,6 +751,83 @@ void tst_QApplication::quitOnLastWindowClosed()
         QCOMPARE(timerSpy.count(), 1);
         QCOMPARE(appSpy.count(), 2);
     }
+}
+
+class PromptOnCloseWidget : public QWidget
+{
+public:
+    void closeEvent(QCloseEvent *event)
+    {
+        QMessageBox *messageBox = new QMessageBox(this);
+        messageBox->setWindowTitle("Unsaved data");
+        messageBox->setText("Would you like to save or discard your current data?");
+        messageBox->setStandardButtons(QMessageBox::Save|QMessageBox::Discard|QMessageBox::Cancel);
+        messageBox->setDefaultButton(QMessageBox::Save);
+
+        messageBox->show();
+        QTest::qWaitForWindowShown(messageBox);
+
+        // verify that all windows are visible
+        foreach (QWidget *w, qApp->topLevelWidgets())
+            QVERIFY(w->isVisible());
+        // flush event queue
+        qApp->processEvents();
+        // close all windows
+        qApp->closeAllWindows();
+
+        if (messageBox->standardButton(messageBox->clickedButton()) == QMessageBox::Cancel)
+            event->ignore();
+        else
+            event->accept();
+
+        delete messageBox;
+    }
+};
+
+void tst_QApplication::closeAllWindows()
+{
+    int argc = 0;
+    QApplication app(argc, 0, QApplication::GuiServer);
+
+    // create some windows
+    new QWidget;
+    new QWidget;
+    new QWidget;
+
+    // show all windows
+    foreach (QWidget *w, app.topLevelWidgets()) {
+        w->show();
+        QTest::qWaitForWindowShown(w);
+    }
+    // verify that they are visible
+    foreach (QWidget *w, app.topLevelWidgets())
+        QVERIFY(w->isVisible());
+    // empty event queue
+    app.processEvents();
+    // close all windows
+    app.closeAllWindows();
+    // all windows should no longer be visible
+    foreach (QWidget *w, app.topLevelWidgets())
+        QVERIFY(!w->isVisible());
+
+    // add a window that prompts the user when closed
+    PromptOnCloseWidget *promptOnCloseWidget = new PromptOnCloseWidget;
+    // show all windows
+    foreach (QWidget *w, app.topLevelWidgets()) {
+        w->show();
+        QTest::qWaitForWindowShown(w);
+    }
+    // close the last window to open the prompt (eventloop recurses)
+    promptOnCloseWidget->close();
+    // all windows should not be visible, except the one that opened the prompt
+    foreach (QWidget *w, app.topLevelWidgets()) {
+        if (w == promptOnCloseWidget)
+            QVERIFY(w->isVisible());
+        else
+            QVERIFY(!w->isVisible());
+    }
+
+    qDeleteAll(app.topLevelWidgets());
 }
 
 bool isPathListIncluded(const QStringList &l, const QStringList &r)

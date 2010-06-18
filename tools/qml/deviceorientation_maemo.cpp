@@ -40,96 +40,87 @@
 ****************************************************************************/
 
 #include "deviceorientation.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <QtDBus>
+
+#include <mce/mode-names.h>
+#include <mce/dbus-names.h>
 
 class MaemoOrientation : public DeviceOrientation
 {
     Q_OBJECT
 public:
     MaemoOrientation()
-        : DeviceOrientation(),m_current(Portrait), m_lastSeen(Portrait), m_lastSeenCount(0)
+        : o(UnknownOrientation)
     {
-        m_current = get();
-        if (m_current == UnknownOrientation) 
-            m_current = Portrait;
+        // enable the orientation sensor
+        QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+                                               MCE_REQUEST_IF, MCE_ACCELEROMETER_ENABLE_REQ));
 
-        startTimer(100);
-    }
-
-    Orientation orientation() const {
-        return m_current;
-    }
-
-    void setOrientation(Orientation) { }
-
-protected:
-    virtual void timerEvent(QTimerEvent *)
-    {
-        Orientation c = get();
-
-        if (c == m_lastSeen) {
-            m_lastSeenCount++;
+        // query the initial orientation
+        QDBusMessage reply = QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+                                               MCE_REQUEST_IF, MCE_DEVICE_ORIENTATION_GET));
+        if (reply.type() == QDBusMessage::ErrorMessage) {
+            qWarning("Unable to retrieve device orientation: %s", qPrintable(reply.errorMessage()));
         } else {
-            m_lastSeenCount = 0;
-            m_lastSeen = c;
+            o = toOrientation(reply.arguments().value(0).toString());
         }
 
-        if (m_lastSeen != UnknownOrientation && m_lastSeen != m_current && m_lastSeenCount > 4) {
-            m_current = m_lastSeen;
-            emit orientationChanged();
-            printf("%d\n", m_current);
-        }
+        // connect to the orientation change signal
+        QDBusConnection::systemBus().connect(QString(), MCE_SIGNAL_PATH, MCE_SIGNAL_IF,
+                MCE_DEVICE_ORIENTATION_SIG,
+                this,
+                SLOT(deviceOrientationChanged(QString)));
     }
 
-signals:
-    void changed();
-
-private:
-    Orientation m_current;
-    Orientation m_lastSeen;
-    int m_lastSeenCount;
-
-    Orientation get()
+    ~MaemoOrientation()
     {
-        Orientation o = UnknownOrientation;
+        // disable the orientation sensor
+        QDBusConnection::systemBus().call(
+                QDBusMessage::createMethodCall(MCE_SERVICE, MCE_REQUEST_PATH,
+                                               MCE_REQUEST_IF, MCE_ACCELEROMETER_DISABLE_REQ));
+    }
 
-        int ax, ay, az;
-
-        read(&ax, &ay, &az);
-
-        if (abs(az) > 850) {
-            o = UnknownOrientation;
-        } else if (ax < -750) {
-            o = Portrait;
-        } else if (ay < -750) {
-            o = Landscape;
-        }
-
+    inline Orientation orientation() const
+    {
         return o;
     }
 
-    int read(int *ax,int *ay,int *az)
+    void setOrientation(Orientation o)
     {
-        static const char *accel_filename = "/sys/class/i2c-adapter/i2c-3/3-001d/coord";
-
-        FILE *fd;
-        int rs;
-        fd = fopen(accel_filename, "r");
-        if(fd==NULL){ printf("liqaccel, cannot open for reading\n"); return -1;}
-        rs=fscanf((FILE*) fd,"%i %i %i",ax,ay,az);
-        fclose(fd);
-        if(rs != 3){ printf("liqaccel, cannot read information\n"); return -2;}
-        return 0;
     }
-};
 
+private Q_SLOTS:
+    void deviceOrientationChanged(const QString &newOrientation)
+    {
+        o = toOrientation(newOrientation);
+
+        emit orientationChanged();
+//        printf("%d\n", o);
+    }
+
+private:
+    static Orientation toOrientation(const QString &nativeOrientation)
+    {
+        if (nativeOrientation == MCE_ORIENTATION_LANDSCAPE)
+            return Landscape;
+        else if (nativeOrientation == MCE_ORIENTATION_LANDSCAPE_INVERTED)
+            return LandscapeInverted;
+        else if (nativeOrientation == MCE_ORIENTATION_PORTRAIT)
+            return Portrait;
+        else if (nativeOrientation == MCE_ORIENTATION_PORTRAIT_INVERTED)
+            return PortraitInverted;
+        return UnknownOrientation;
+    }
+
+private:
+    Orientation o;
+};
 
 DeviceOrientation* DeviceOrientation::instance()
 {
-    static MaemoOrientation *o = 0;
-    if (!o)
-        o = new MaemoOrientation;
+    static MaemoOrientation *o = new MaemoOrientation;
     return o;
 }
 

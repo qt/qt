@@ -285,6 +285,15 @@ public:
     inline void setCell(uchar cell);
     inline void setRow(uchar row);
 
+    static inline bool isHighSurrogate(uint ucs4) {
+        return ((ucs4 & 0xfffffc00) == 0xd800);
+    }
+    static inline bool isLowSurrogate(uint ucs4) {
+        return ((ucs4 & 0xfffffc00) == 0xdc00);
+    }
+    static inline bool requiresSurrogates(uint ucs4) {
+        return (ucs4 >= 0x10000);
+    }
     static inline uint surrogateToUcs4(ushort high, ushort low) {
         return (uint(high)<<10) + low - 0x35fdc00;
     }
@@ -349,11 +358,7 @@ private:
     QChar(uchar c);
 #endif
     ushort ucs;
-}
-#if (defined(__arm__) || defined(__ARMEL__))
-    Q_PACKED
-#endif
-    ;
+};
 
 Q_DECLARE_TYPEINFO(QChar, Q_MOVABLE_TYPE);
 

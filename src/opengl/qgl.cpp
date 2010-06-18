@@ -91,6 +91,7 @@
 #include "qcolormap.h"
 #include "qfile.h"
 #include "qlibrary.h"
+#include <qmutex.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -1255,6 +1256,8 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_2_1 |
                             QGLFormat::OpenGL_Version_3_0;
             switch (versionString[2].toAscii()) {
+            case '3':
+                versionFlags |= QGLFormat::OpenGL_Version_3_3;
             case '2':
                 versionFlags |= QGLFormat::OpenGL_Version_3_2;
             case '1':
@@ -1263,9 +1266,23 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                 break;
             default:
                 versionFlags |= QGLFormat::OpenGL_Version_3_1 |
-                                QGLFormat::OpenGL_Version_3_2;
+                                QGLFormat::OpenGL_Version_3_2 |
+                                QGLFormat::OpenGL_Version_3_3;
                 break;
             }
+        } else if (versionString.startsWith(QLatin1String("4."))) {
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0 |
+                            QGLFormat::OpenGL_Version_3_1 |
+                            QGLFormat::OpenGL_Version_3_2 |
+                            QGLFormat::OpenGL_Version_3_3 |
+                            QGLFormat::OpenGL_Version_4_0;
         } else {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
@@ -1276,7 +1293,9 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_2_1 |
                             QGLFormat::OpenGL_Version_3_0 |
                             QGLFormat::OpenGL_Version_3_1 |
-                            QGLFormat::OpenGL_Version_3_2;
+                            QGLFormat::OpenGL_Version_3_2 |
+                            QGLFormat::OpenGL_Version_3_3 |
+                            QGLFormat::OpenGL_Version_4_0;
         }
     }
     return versionFlags;
@@ -1519,9 +1538,32 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
     return !(a == b);
 }
 
+struct QGLContextGroupList {
+    void append(QGLContextGroup *group) {
+        QMutexLocker locker(&m_mutex);
+        m_list.append(group);
+    }
+
+    void remove(QGLContextGroup *group) {
+        QMutexLocker locker(&m_mutex);
+        m_list.removeOne(group);
+    }
+
+    QList<QGLContextGroup *> m_list;
+    QMutex m_mutex;
+};
+
+Q_GLOBAL_STATIC(QGLContextGroupList, qt_context_groups)
+
 /*****************************************************************************
   QGLContext implementation
  *****************************************************************************/
+
+QGLContextGroup::QGLContextGroup(const QGLContext *context)
+    : m_context(context), m_guards(0), m_refs(1)
+{
+    qt_context_groups()->append(this);
+}
 
 QGLContextGroup::~QGLContextGroup()
 {
@@ -1532,6 +1574,7 @@ QGLContextGroup::~QGLContextGroup()
         guard->m_id = 0;
         guard = guard->m_next;
     }
+    qt_context_groups()->remove(this);
 }
 
 void QGLContextGroup::addGuard(QGLSharedResourceGuard *guard)
@@ -1619,6 +1662,9 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
+    workaround_needsFullClearOnEveryFrame = false;
+    workaround_brokenFBOReadBack = false;
+    workaroundsCached = false;
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -1730,7 +1776,6 @@ QGLTextureCache::QGLTextureCache()
 
 QGLTextureCache::~QGLTextureCache()
 {
-    Q_ASSERT(size() == 0);
     QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
     QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
@@ -1741,7 +1786,7 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
     QWriteLocker locker(&m_lock);
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
-        const QList<qint64> keys = m_cache.keys();
+        const QList<QGLTextureCacheKey> keys = m_cache.keys();
         int i = 0;
         while (i < m_cache.count()
                && (m_cache.totalCost() + cost > m_cache.maxCost())) {
@@ -1751,13 +1796,26 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
             ++i;
         }
     }
-    m_cache.insert(key, texture, cost);
+    const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
+    m_cache.insert(cacheKey, texture, cost);
+}
+
+void QGLTextureCache::remove(qint64 key)
+{
+    QWriteLocker locker(&m_lock);
+    QMutexLocker groupLocker(&qt_context_groups()->m_mutex);
+    QList<QGLContextGroup *>::const_iterator it = qt_context_groups()->m_list.constBegin();
+    while (it != qt_context_groups()->m_list.constEnd()) {
+        const QGLTextureCacheKey cacheKey = {key, *it};
+        m_cache.remove(cacheKey);
+        ++it;
+    }
 }
 
 bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 {
     QWriteLocker locker(&m_lock);
-    QList<qint64> keys = m_cache.keys();
+    QList<QGLTextureCacheKey> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
         if (tex->id == textureId && tex->context == ctx) {
@@ -1772,9 +1830,9 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 {
     QWriteLocker locker(&m_lock);
-    QList<qint64> keys = m_cache.keys();
+    QList<QGLTextureCacheKey> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
-        const qint64 &key = keys.at(i);
+        const QGLTextureCacheKey &key = keys.at(i);
         if (m_cache.object(key)->context == ctx)
             m_cache.remove(key);
     }
@@ -1787,7 +1845,6 @@ void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
     qt_gl_texture_cache()->remove(cacheKey);
-    Q_ASSERT(qt_gl_texture_cache()->getTexture(cacheKey) == 0);
 }
 
 
@@ -2430,7 +2487,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum target)
 {
     Q_Q(QGLContext);
-    QGLTexture *texture = QGLTextureCache::instance()->getTexture(key);
+    QGLTexture *texture = QGLTextureCache::instance()->getTexture(q, key);
     if (texture && texture->target == target
         && (texture->context == q || QGLContext::areSharing(q, texture->context)))
     {
@@ -2780,23 +2837,27 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId, to the given target rectangle,
-    \a target, in OpenGL model space. The \a textureTarget should be a 2D
-    texture target.
+    This function supports the following use cases:
 
-    \note This function is not supported under OpenGL/ES 2.0.
+    \list
+    \i On OpenGL and OpenGL ES 1.x it draws the given texture, \a textureId,
+    to the given target rectangle, \a target, in OpenGL model space. The
+    \a textureTarget should be a 2D texture target.
+    \i On OpenGL and OpenGL ES 2.x, if a painter is active, not inside a
+    beginNativePainting / endNativePainting block, and uses the
+    engine with type QPaintEngine::OpenGL2, the function will draw the given
+    texture, \a textureId, to the given target rectangle, \a target,
+    respecting the current painter state. This will let you draw a texture
+    with the clip, transform, render hints, and composition mode set by the
+    painter. Note that the texture target needs to be GL_TEXTURE_2D for this
+    use case, and that this is the only supported use case under OpenGL ES 2.x.
+    \endlist
+
 */
 void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
-#ifndef QT_OPENGL_ES_2
-#ifdef QT_OPENGL_ES
-    if (textureTarget != GL_TEXTURE_2D) {
-        qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
-        return;
-    }
-#else
-
-     if (d_ptr->active_engine && 
+#if !defined(QT_OPENGL_ES) || defined(QT_OPENGL_ES_2)
+     if (d_ptr->active_engine &&
          d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
          QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
          if (!eng->isNativePaintingActive()) {
@@ -2806,7 +2867,15 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
                 return;
         }
      }
+#endif
 
+#ifndef QT_OPENGL_ES_2
+#ifdef QT_OPENGL_ES
+    if (textureTarget != GL_TEXTURE_2D) {
+        qWarning("QGLContext::drawTexture(): texture target must be GL_TEXTURE_2D on OpenGL ES");
+        return;
+    }
+#else
     const bool wasEnabled = glIsEnabled(GL_TEXTURE_2D);
     GLint oldTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTexture);
@@ -2828,7 +2897,7 @@ void QGLContext::drawTexture(const QRectF &target, GLuint textureId, GLenum text
     Q_UNUSED(target);
     Q_UNUSED(textureId);
     Q_UNUSED(textureTarget);
-    qWarning("drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget) not supported with OpenGL ES/2.0");
+    qWarning("drawTexture() with OpenGL ES 2.0 requires an active OpenGL2 paint engine");
 #endif
 }
 
@@ -2843,14 +2912,26 @@ void QGLContext::drawTexture(const QRectF &target, QMacCompatGLuint textureId, Q
 /*!
     \since 4.4
 
-    Draws the given texture at the given \a point in OpenGL model
-    space. The \a textureTarget should be a 2D texture target.
+    This function supports the following use cases:
 
-    \note This function is not supported under OpenGL/ES.
+    \list
+    \i By default it draws the given texture, \a textureId,
+    at the given \a point in OpenGL model space. The
+    \a textureTarget should be a 2D texture target.
+    \i If a painter is active, not inside a
+    beginNativePainting / endNativePainting block, and uses the
+    engine with type QPaintEngine::OpenGL2, the function will draw the given
+    texture, \a textureId, at the given \a point,
+    respecting the current painter state. This will let you draw a texture
+    with the clip, transform, render hints, and composition mode set by the
+    painter. Note that the texture target needs to be GL_TEXTURE_2D for this
+    use case.
+    \endlist
+
+    \note This function is not supported under any version of OpenGL ES.
 */
 void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {
-    // this would be ok on OpenGL ES 2.0, but currently we don't have a define for that
 #ifdef QT_OPENGL_ES
     Q_UNUSED(point);
     Q_UNUSED(textureId);
@@ -2871,7 +2952,7 @@ void QGLContext::drawTexture(const QPointF &point, GLuint textureId, GLenum text
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_WIDTH, &textureWidth);
     glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
 
-    if (d_ptr->active_engine && 
+    if (d_ptr->active_engine &&
         d_ptr->active_engine->type() == QPaintEngine::OpenGL2) {
         QGL2PaintEngineEx *eng = static_cast<QGL2PaintEngineEx*>(d_ptr->active_engine);
         if (!eng->isNativePaintingActive()) {
@@ -3600,8 +3681,10 @@ QGLWidget::~QGLWidget()
     bool doRelease = (glcx && glcx->windowCreated());
 #endif
     delete d->glcx;
+    d->glcx = 0;
 #if defined(Q_WGL)
     delete d->olcx;
+    d->olcx = 0;
 #endif
 #if defined(GLX_MESA_release_buffers) && defined(QGL_USE_MESA_EXT)
     if (doRelease)
@@ -4918,11 +5001,8 @@ void QGLWidget::deleteTexture(QMacCompatGLuint id)
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId to the given target rectangle,
-    \a target, in OpenGL model space. The \a textureTarget should be a 2D
-    texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
+    Calls the corresponding QGLContext::drawTexture() on
+    this widget's context.
 */
 void QGLWidget::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
@@ -4942,10 +5022,8 @@ void QGLWidget::drawTexture(const QRectF &target, QMacCompatGLuint textureId, QM
 /*!
     \since 4.4
 
-    Draws the given texture, \a textureId, at the given \a point in OpenGL
-    model space. The \a textureTarget should be a 2D texture target.
-
-    Equivalent to the corresponding QGLContext::drawTexture().
+    Calls the corresponding QGLContext::drawTexture() on
+    this widget's context.
 */
 void QGLWidget::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {

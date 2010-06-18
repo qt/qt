@@ -43,9 +43,16 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativebehavior_p.h>
 #include <private/qdeclarativeanimation_p.h>
+#include <private/qdeclarativeitem_p.h>
 #include "../../../shared/util.h"
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 class tst_qdeclarativebehaviors : public QObject
 {
@@ -70,6 +77,7 @@ private slots:
     void disabled();
     void dontStart();
     void startup();
+    void groupedPropertyCrash();
 };
 
 void tst_qdeclarativebehaviors::simpleBehavior()
@@ -80,7 +88,7 @@ void tst_qdeclarativebehaviors::simpleBehavior()
     QTRY_VERIFY(rect);
     QTRY_VERIFY(qobject_cast<QDeclarativeBehavior*>(rect->findChild<QDeclarativeBehavior*>("MyBehavior"))->animation());
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() > 0);
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() < 200);
     //i.e. the behavior has been triggered
@@ -128,7 +136,7 @@ void tst_qdeclarativebehaviors::loop()
     QTRY_VERIFY(rect);
 
     //don't crash
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
 
     delete rect;
 }
@@ -140,7 +148,7 @@ void tst_qdeclarativebehaviors::colorBehavior()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QTRY_VERIFY(rect);
 
-    rect->setState("red");
+    QDeclarativeItemPrivate::get(rect)->setState("red");
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->color() != QColor("red"));
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->color() != QColor("green"));
     //i.e. the behavior has been triggered
@@ -155,7 +163,7 @@ void tst_qdeclarativebehaviors::parentBehavior()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QTRY_VERIFY(rect);
 
-    rect->setState("reparented");
+    QDeclarativeItemPrivate::get(rect)->setState("reparented");
     QTRY_VERIFY(rect->findChild<QDeclarativeRectangle*>("MyRect")->parentItem() != rect->findChild<QDeclarativeItem*>("NewParent"));
     QTRY_VERIFY(rect->findChild<QDeclarativeRectangle*>("MyRect")->parentItem() == rect->findChild<QDeclarativeItem*>("NewParent"));
 
@@ -169,7 +177,7 @@ void tst_qdeclarativebehaviors::replaceBinding()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QTRY_VERIFY(rect);
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
     QTRY_VERIFY(innerRect);
     QTRY_VERIFY(innerRect->x() > 0);
@@ -181,7 +189,7 @@ void tst_qdeclarativebehaviors::replaceBinding()
     rect->setProperty("movedx", 210);
     QTRY_COMPARE(innerRect->x(), (qreal)210);
 
-    rect->setState("");
+    QDeclarativeItemPrivate::get(rect)->setState("");
     QTRY_VERIFY(innerRect->x() > 10);
     QTRY_VERIFY(innerRect->x() < 210);  //i.e. the behavior has been triggered
     QTRY_COMPARE(innerRect->x(), (qreal)10);
@@ -201,7 +209,7 @@ void tst_qdeclarativebehaviors::group()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QTRY_VERIFY(rect);
 
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         //QTest::qWait(200);
         QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() > 0);
         QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() < 200);
@@ -216,7 +224,7 @@ void tst_qdeclarativebehaviors::group()
         QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
         QTRY_VERIFY(rect);
 
-        rect->setState("moved");
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
         QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() > 0);
         QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() < 200);
         //i.e. the behavior has been triggered
@@ -230,11 +238,11 @@ void tst_qdeclarativebehaviors::emptyBehavior()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/empty.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
+    QVERIFY(rect);
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
-    QTRY_COMPARE(x, qreal(200));    //should change immediately
+    QCOMPARE(x, qreal(200));    //should change immediately
 
     delete rect;
 }
@@ -244,9 +252,9 @@ void tst_qdeclarativebehaviors::explicitSelection()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/explicit.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
+    QVERIFY(rect);
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() > 0);
     QTRY_VERIFY(qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x() < 200);
     //i.e. the behavior has been triggered
@@ -259,11 +267,11 @@ void tst_qdeclarativebehaviors::nonSelectingBehavior()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting2.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
+    QVERIFY(rect);
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
-    QTRY_COMPARE(x, qreal(200));    //should change immediately
+    QCOMPARE(x, qreal(200));    //should change immediately
 
     delete rect;
 }
@@ -275,10 +283,9 @@ void tst_qdeclarativebehaviors::reassignedAnimation()
     QString warning = QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:9: QML Behavior: Cannot change the animation assigned to a Behavior.";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
-    QTRY_COMPARE(qobject_cast<QDeclarativeNumberAnimation*>(
-                 qobject_cast<QDeclarativeBehavior*>(
-                     rect->findChild<QDeclarativeBehavior*>("MyBehavior"))->animation())->duration(), 200);
+    QVERIFY(rect);
+    QCOMPARE(qobject_cast<QDeclarativeNumberAnimation*>(
+                 rect->findChild<QDeclarativeBehavior*>("MyBehavior")->animation())->duration(), 200);
 
     delete rect;
 }
@@ -288,12 +295,12 @@ void tst_qdeclarativebehaviors::disabled()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
-    QTRY_COMPARE(rect->findChild<QDeclarativeBehavior*>("MyBehavior")->enabled(), false);
+    QVERIFY(rect);
+    QCOMPARE(rect->findChild<QDeclarativeBehavior*>("MyBehavior")->enabled(), false);
 
-    rect->setState("moved");
+    QDeclarativeItemPrivate::get(rect)->setState("moved");
     qreal x = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"))->x();
-    QTRY_COMPARE(x, qreal(200));    //should change immediately
+    QCOMPARE(x, qreal(200));    //should change immediately
 
     delete rect;
 }
@@ -307,28 +314,56 @@ void tst_qdeclarativebehaviors::dontStart()
     QString warning = c.url().toString() + ":13:13: QML NumberAnimation: setRunning() cannot be used on non-root animation nodes.";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
+    QVERIFY(rect);
 
     QDeclarativeAbstractAnimation *myAnim = rect->findChild<QDeclarativeAbstractAnimation*>("MyAnim");
-    QTRY_VERIFY(myAnim && myAnim->qtAnimation());
-    QTRY_VERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    QVERIFY(myAnim && myAnim->qtAnimation());
+    QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
 
     delete rect;
 }
 
 void tst_qdeclarativebehaviors::startup()
 {
+    {
+        QDeclarativeEngine engine;
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/startup.qml"));
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QDeclarativeRectangle *innerRect = rect->findChild<QDeclarativeRectangle*>("innerRect");
+        QVERIFY(innerRect);
+
+        QCOMPARE(innerRect->x(), qreal(100));    //should be set immediately
+
+        delete rect;
+    }
+
+    {
+        QDeclarativeEngine engine;
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/startup2.qml"));
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QDeclarativeRectangle *innerRect = rect->findChild<QDeclarativeRectangle*>("innerRect");
+        QVERIFY(innerRect);
+
+        QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
+        QVERIFY(text);
+
+        QCOMPARE(innerRect->x(), text->width());    //should be set immediately
+
+        delete rect;
+    }
+}
+
+//QTBUG-10799
+void tst_qdeclarativebehaviors::groupedPropertyCrash()
+{
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/startup.qml"));
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/groupedPropertyCrash.qml"));
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
-    QTRY_VERIFY(rect);
-
-    QDeclarativeRectangle *innerRect = rect->findChild<QDeclarativeRectangle*>("innerRect");
-    QTRY_VERIFY(innerRect);
-
-    QTRY_COMPARE(innerRect->x(), qreal(100));    //should be set immediately
-
-    delete rect;
+    QVERIFY(rect);  //don't crash
 }
 
 QTEST_MAIN(tst_qdeclarativebehaviors)

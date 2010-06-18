@@ -45,7 +45,7 @@
 
 #include <qfile.h>
 #include <qfileinfo.h>
-
+#include <qdebug.h>
 #include "pagegenerator.h"
 #include "tree.h"
 
@@ -66,6 +66,110 @@ PageGenerator::~PageGenerator()
 {
     while (!outStreamStack.isEmpty())
 	endSubPage();
+}
+
+static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
+static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
+static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
+static QRegExp unknownTag("</?@[^>]*>");
+
+bool PageGenerator::parseArg(const QString& src,
+                             const QString& tag,
+                             int* pos,
+                             int n,
+                             QStringRef* contents,
+                             QStringRef* par1,
+                             bool debug)
+{
+#define SKIP_CHAR(c) \
+    if (debug) \
+        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
+    if (i >= n || src[i] != c) { \
+        if (debug) \
+            qDebug() << " char '" << c << "' not found"; \
+        return false; \
+    } \
+    ++i;
+
+
+#define SKIP_SPACE \
+    while (i < n && src[i] == ' ') \
+        ++i;
+
+    int i = *pos;
+    int j = i;
+
+    // assume "<@" has been parsed outside
+    //SKIP_CHAR('<');
+    //SKIP_CHAR('@');
+
+    if (tag != QStringRef(&src, i, tag.length())) {
+        if (0 && debug)
+            qDebug() << "tag " << tag << " not found at " << i;
+        return false;
+    }
+
+    if (debug)
+        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
+
+    // skip tag
+    i += tag.length();
+
+    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+    if (par1) {
+        SKIP_SPACE;
+        // read parameter name
+        j = i;
+        while (i < n && src[i].isLetter())
+            ++i;
+        if (src[i] == '=') {
+            if (debug)
+                qDebug() << "read parameter" << QString(src.data() + j, i - j);
+            SKIP_CHAR('=');
+            SKIP_CHAR('"');
+            // skip parameter name
+            j = i;
+            while (i < n && src[i] != '"')
+                ++i;
+            *par1 = QStringRef(&src, j, i - j);
+            SKIP_CHAR('"');
+            SKIP_SPACE;
+        } else {
+            if (debug)
+                qDebug() << "no optional parameter found";
+        }
+    }
+    SKIP_SPACE;
+    SKIP_CHAR('>');
+
+    // find contents up to closing "</@tag>
+    j = i;
+    for (; true; ++i) {
+        if (i + 4 + tag.length() > n)
+            return false;
+        if (src[i] != '<')
+            continue;
+        if (src[i + 1] != '/')
+            continue;
+        if (src[i + 2] != '@')
+            continue;
+        if (tag != QStringRef(&src, i + 3, tag.length()))
+            continue;
+        if (src[i + 3 + tag.length()] != '>')
+            continue;
+        break;
+    }
+
+    *contents = QStringRef(&src, j, i - j);
+
+    i += tag.length() + 4;
+
+    *pos = i;
+    if (debug)
+        qDebug() << " tag " << tag << " found: pos now: " << i;
+    return true;
+#undef SKIP_CHAR
 }
 
 /*!
@@ -195,8 +299,8 @@ QTextStream &PageGenerator::out()
 /*!
   Recursive writing of html files from the root \a node.
  */
-void PageGenerator::generateInnerNode(const InnerNode *node,
-                                      CodeMarker *marker)
+void
+PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
 {
     if (!node->url().isNull())
         return;

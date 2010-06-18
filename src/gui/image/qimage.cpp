@@ -272,6 +272,8 @@ bool QImageData::checkForAlphaPixels() const
 
     switch (format) {
 
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
         has_alpha_pixels = has_alpha_clut;
         break;
@@ -4208,6 +4210,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
     int w = width();
     int h = height();
     QImage m(w, h, Format_MonoLSB);
+    QIMAGE_SANITYCHECK_MEMORY(m);
     m.setColorCount(2);
     m.setColor(0, QColor(Qt::color0).rgba());
     m.setColor(1, QColor(Qt::color1).rgba());
@@ -4300,6 +4303,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
     if (!d)
         return QImage();
     QImage maskImage(size(), QImage::Format_MonoLSB);
+    QIMAGE_SANITYCHECK_MEMORY(maskImage);
     maskImage.fill(0);
     uchar *s = maskImage.bits();
 
@@ -4360,6 +4364,7 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
     int h = d->height;
     // Create result image, copy colormap
     QImage result(d->width, d->height, d->format);
+    QIMAGE_SANITYCHECK_MEMORY(result);
 
     // check if we ran out of of memory..
     if (!result.d)
@@ -4497,6 +4502,7 @@ QImage QImage::rgbSwapped() const
     case Format_ARGB32:
     case Format_ARGB32_Premultiplied:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             uint *q = (uint*)res.scanLine(i);
             uint *p = (uint*)scanLine(i);
@@ -4510,6 +4516,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_RGB16:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             ushort *q = (ushort*)res.scanLine(i);
             const ushort *p = (const ushort*)scanLine(i);
@@ -4523,6 +4530,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_ARGB8565_Premultiplied:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             quint8 *p = (quint8*)scanLine(i);
             const quint8 *end = p + d->width * sizeof(qargb8565);
@@ -4535,6 +4543,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_RGB666:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             qrgb666 *q = reinterpret_cast<qrgb666*>(res.scanLine(i));
             const qrgb666 *p = reinterpret_cast<const qrgb666*>(scanLine(i));
@@ -4547,6 +4556,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_ARGB6666_Premultiplied:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             qargb6666 *q = reinterpret_cast<qargb6666*>(res.scanLine(i));
             const qargb6666 *p = reinterpret_cast<const qargb6666*>(scanLine(i));
@@ -4559,6 +4569,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_RGB555:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             ushort *q = (ushort*)res.scanLine(i);
             const ushort *p = (const ushort*)scanLine(i);
@@ -4572,6 +4583,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_ARGB8555_Premultiplied:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             quint8 *p = (quint8*)scanLine(i);
             const quint8 *end = p + d->width * sizeof(qargb8555);
@@ -4584,6 +4596,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_RGB888:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             quint8 *q = reinterpret_cast<quint8*>(res.scanLine(i));
             const quint8 *p = reinterpret_cast<const quint8*>(scanLine(i));
@@ -4599,6 +4612,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_RGB444:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             quint8 *q = reinterpret_cast<quint8*>(res.scanLine(i));
             const quint8 *p = reinterpret_cast<const quint8*>(scanLine(i));
@@ -4613,6 +4627,7 @@ QImage QImage::rgbSwapped() const
         break;
     case Format_ARGB4444_Premultiplied:
         res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
             quint8 *q = reinterpret_cast<quint8*>(res.scanLine(i));
             const quint8 *p = reinterpret_cast<const quint8*>(scanLine(i));
@@ -4812,7 +4827,7 @@ bool QImageData::doImageIO(const QImage *image, QImageWriter *writer, int qualit
     or as a BMP image if the stream's version is 1. Note that writing
     the stream to a file will not produce a valid image file.
 
-    \sa QImage::save(), {Format of the QDataStream Operators}
+    \sa QImage::save(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QImage &image)
@@ -4838,7 +4853,7 @@ QDataStream &operator<<(QDataStream &s, const QImage &image)
     Reads an image from the given \a stream and stores it in the given
     \a image.
 
-    \sa QImage::load(), {Format of the QDataStream Operators}
+    \sa QImage::load(), {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QImage &image)

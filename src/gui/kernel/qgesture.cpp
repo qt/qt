@@ -42,6 +42,8 @@
 #include "qgesture.h"
 #include "private/qgesture_p.h"
 
+#ifndef QT_NO_GESTURES
+
 QT_BEGIN_NAMESPACE
 
  /*!
@@ -612,7 +614,7 @@ void QPinchGesture::setRotationAngle(qreal value)
     If the gesture has either a horizontal or vertical component, the
     swipe angle describes the angle between the direction of motion and the
     x-axis as defined using the standard widget
-    \l{The Coordinate System}{coordinate system}.
+    \l{Coordinate System}{coordinate system}.
 
     \sa horizontalDirection, verticalDirection
 */
@@ -725,3 +727,5 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES

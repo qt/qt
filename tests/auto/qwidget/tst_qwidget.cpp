@@ -385,6 +385,7 @@ private slots:
     void setGraphicsEffect();
 
     void destroyBackingStore();
+    void destroyBackingStoreWhenHidden();
 
     void activateWindow();
 
@@ -403,6 +404,10 @@ private slots:
 
     void taskQTBUG_7532_tabOrderWithFocusProxy();
     void movedAndResizedAttributes();
+    void childAt();
+#ifdef Q_WS_MAC
+    void childAt_unifiedToolBar();
+#endif
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -605,10 +610,14 @@ void tst_QWidget::getSetCheck()
     obj1.setAttribute(Qt::WA_InputMethodEnabled);
     obj1.setInputContext(var13);
     QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
+    // QWidget takes ownership, so check parent
+    QCOMPARE(var13->parent(), static_cast<QObject *>(&obj1));
+    // Check self assignment
+    obj1.setInputContext(obj1.inputContext());
+    QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
     obj1.setInputContext((QInputContext *)0);
     QCOMPARE(qApp->inputContext(), obj1.inputContext());
     QVERIFY(qApp->inputContext() != var13);
-    //delete var13; // No delete, since QWidget takes ownership
 
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
@@ -9502,9 +9511,7 @@ void tst_QWidget::destroyBackingStore()
     QTRY_VERIFY(w.numPaintEvents > 0);
     w.reset();
     w.update();
-    delete qt_widget_private(&w)->topData()->backingStore;
-    qt_widget_private(&w)->topData()->backingStore = 0;
-    qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
+    qt_widget_private(&w)->topData()->backingStore.create(&w);
 
     w.update();
     QApplication::processEvents();
@@ -9517,8 +9524,256 @@ void tst_QWidget::destroyBackingStore()
     w.update();
     QApplication::processEvents();
     QCOMPARE(w.numPaintEvents, 2);
+#else
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
 #endif
 }
+
+// Helper function
+QWidgetBackingStore* backingStore(QWidget &widget)
+{
+    QWidgetBackingStore *backingStore = 0;
+#ifdef QT_BUILD_INTERNAL
+    if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
+        backingStore = topExtra->backingStore.data();
+#endif
+    return backingStore;
+}
+
+// Wait for a condition to be true, timing out after 1 second
+// This is used following calls to QWidget::show() and QWidget::hide(), which are
+// expected to asynchronously trigger native window visibility events.
+#define WAIT_AND_VERIFY(condition)                                              \
+    do {                                                                        \
+        QTime start = QTime::currentTime();                                     \
+        while (!(condition) && (start.elapsed() < 1000)) {                      \
+            qApp->processEvents();                                              \
+            QTest::qWait(50);                                                   \
+        }                                                                       \
+        if (!QTest::qVerify((condition), #condition, "", __FILE__, __LINE__))   \
+            return;                                                             \
+    } while (0)
+
+void tst_QWidget::destroyBackingStoreWhenHidden()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test step requires access to Q_AUTOTEST_EXPORT", SkipAll);
+#endif
+
+#ifndef Q_OS_SYMBIAN
+    QSKIP("Only Symbian destroys backing store when native window becomes invisible", SkipAll);
+#endif
+
+    testWidget->hide();
+    QTest::qWait(1000);
+
+    // 1. Single top-level QWidget
+    {
+    QWidget w;
+    w.setAutoFillBackground(true);
+    w.setPalette(Qt::yellow);
+    w.setGeometry(0, 0, 100, 100);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QVERIFY(0 != backingStore(w));
+
+    w.hide();
+    WAIT_AND_VERIFY(0 == backingStore(w));
+
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QVERIFY(0 != backingStore(w));
+    }
+
+    // 2. Two top-level widgets
+    {
+    QWidget w1;
+    w1.setGeometry(0, 0, 100, 100);
+    w1.setAutoFillBackground(true);
+    w1.setPalette(Qt::red);
+    w1.show();
+    QTest::qWaitForWindowShown(&w1);
+    QVERIFY(0 != backingStore(w1));
+
+    QWidget w2;
+    w2.setGeometry(w1.geometry());
+    w1.setAutoFillBackground(true);
+    w1.setPalette(Qt::blue);
+    w2.show();
+    QTest::qWaitForWindowShown(&w2);
+    QVERIFY(0 != backingStore(w2));
+
+    // Check that w1 deleted its backing store when obscured by w2
+    QVERIFY(0 == backingStore(w1));
+
+    w2.move(w2.pos() + QPoint(10, 10));
+
+    // Check that w1 recreates its backing store when partially revealed
+    WAIT_AND_VERIFY(0 != backingStore(w1));
+    }
+
+    // 3. Native child widget
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::yellow);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::green);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    child.winId();
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QWidgetBackingStore *const parentBs = backingStore(parent);
+    QVERIFY(0 != parentBs);
+    QVERIFY(0 == backingStore(child));
+
+    // Set margins to zero so that child widget totally obscures parent
+    layout.setContentsMargins(0, 0, 0, 0);
+
+    WAIT_AND_VERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Backing store should remain unchanged despite child window obscuring
+    // parent window
+    QVERIFY(parentBs == backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+    }
+
+    // 4. Alien child widget which is made full-screen
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::red);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::blue);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+
+    // Make child widget full screen
+    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
+    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that child window obscures parent window
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Now that extent of child widget goes beyond parent's extent,
+    // a new backing store should be created for the child widget.
+    QVERIFY(0 != backingStore(child));
+
+    // Parent is obscured, therefore its backing store should be destroyed
+    QVERIFY(0 == backingStore(parent));
+
+    // Disable full screen
+    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
+    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that parent is now visible again
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should once again share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QVERIFY(0 == backingStore(child));
+    }
+
+    // 5. Native child widget which is made full-screen
+    {
+    QWidget parent;
+    parent.setGeometry(0, 0, 100, 100);
+    parent.setAutoFillBackground(true);
+    parent.setPalette(Qt::red);
+
+    QWidget child(&parent);
+    child.setAutoFillBackground(true);
+    child.setPalette(Qt::blue);
+
+    QVBoxLayout layout(&parent);
+    layout.setContentsMargins(10, 10, 10, 10);
+    layout.addWidget(&child);
+    parent.setLayout(&layout);
+
+    child.winId();
+
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
+
+    // Check that child window does not obscure parent window
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QVERIFY(0 == backingStore(child));
+
+    // Make child widget full screen
+    child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
+    child.setWindowState(child.windowState() | Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Ensure that 'window hidden' event is received by parent
+    qApp->processEvents();
+
+    // Check that child window obscures parent window
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Now that extent of child widget goes beyond parent's extent,
+    // a new backing store should be created for the child widget.
+    QVERIFY(0 != backingStore(child));
+
+    // Parent is obscured, therefore its backing store should be destroyed
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QVERIFY(0 == backingStore(parent));
+
+    // Disable full screen
+    child.setWindowFlags(child.windowFlags() ^ (Qt::Window | Qt::SubWindow));
+    child.setWindowState(child.windowState() ^ Qt::WindowFullScreen);
+    child.show();
+    QTest::qWaitForWindowShown(&child);
+
+    // Check that parent is now visible again
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+
+    // Native child widget should once again share parent's backing store
+    QVERIFY(0 != backingStore(parent));
+    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QVERIFY(0 == backingStore(child));
+    }
+}
+
+#undef WAIT_AND_VERIFY
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
@@ -9995,28 +10250,28 @@ void tst_QWidget::focusProxyAndInputMethods()
     delete toplevel;
 }
 
+#ifdef QT_BUILD_INTERNAL
 class scrollWidgetWBS : public QWidget
 {
 public:
     void deleteBackingStore()
     {
-        if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
-        }
+        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.destroy();
     }
     void enableBackingStore()
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = new QWidgetBackingStore(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore.create(this);
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBuffer(this->rect());
             repaint();
         }
     }
 };
+#endif
 
 void tst_QWidget::scrollWithoutBackingStore()
 {
+#ifdef QT_BUILD_INTERNAL
     scrollWidgetWBS scrollable;
     scrollable.resize(100,100);
     QLabel child(QString("@"),&scrollable);
@@ -10030,6 +10285,9 @@ void tst_QWidget::scrollWithoutBackingStore()
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
     QCOMPARE(child.pos(),QPoint(25,25));
+#else
+    QSKIP("Test case relies on developer build (AUTOTEST_EXPORT)", SkipAll);
+#endif
 }
 
 void tst_QWidget::taskQTBUG_7532_tabOrderWithFocusProxy()
@@ -10099,6 +10357,99 @@ void tst_QWidget::movedAndResizedAttributes()
     QVERIFY(w.testAttribute(Qt::WA_Resized));
 #endif
 }
+
+void tst_QWidget::childAt()
+{
+    QWidget parent(0, Qt::FramelessWindowHint);
+    parent.resize(200, 200);
+
+    QWidget *child = new QWidget(&parent);
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setGeometry(20, 20, 160, 160);
+
+    QWidget *grandChild = new QWidget(child);
+    grandChild->setPalette(Qt::blue);
+    grandChild->setAutoFillBackground(true);
+    grandChild->setGeometry(-20, -20, 220, 220);
+
+    QVERIFY(!parent.childAt(19, 19));
+    QVERIFY(!parent.childAt(180, 180));
+    QCOMPARE(parent.childAt(20, 20), grandChild);
+    QCOMPARE(parent.childAt(179, 179), grandChild);
+
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents);
+    QCOMPARE(parent.childAt(20, 20), child);
+    QCOMPARE(parent.childAt(179, 179), child);
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    child->setMask(QRect(50, 50, 60, 60));
+
+    QVERIFY(!parent.childAt(69, 69));
+    QVERIFY(!parent.childAt(130, 130));
+    QCOMPARE(parent.childAt(70, 70), grandChild);
+    QCOMPARE(parent.childAt(129, 129), grandChild);
+
+    child->setAttribute(Qt::WA_MouseNoMask);
+    QCOMPARE(parent.childAt(69, 69), grandChild);
+    QCOMPARE(parent.childAt(130, 130), grandChild);
+    child->setAttribute(Qt::WA_MouseNoMask, false);
+
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents);
+    QCOMPARE(parent.childAt(70, 70), child);
+    QCOMPARE(parent.childAt(129, 129), child);
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    grandChild->setMask(QRect(80, 80, 40, 40));
+
+    QCOMPARE(parent.childAt(79, 79), child);
+    QCOMPARE(parent.childAt(120, 120), child);
+    QCOMPARE(parent.childAt(80, 80), grandChild);
+    QCOMPARE(parent.childAt(119, 119), grandChild);
+
+    grandChild->setAttribute(Qt::WA_MouseNoMask);
+
+    QCOMPARE(parent.childAt(79, 79), grandChild);
+    QCOMPARE(parent.childAt(120, 120), grandChild);
+}
+
+#ifdef Q_WS_MAC
+void tst_QWidget::childAt_unifiedToolBar()
+{
+    QLabel *label = new QLabel(QLatin1String("foo"));
+    QToolBar *toolBar = new QToolBar;
+    toolBar->addWidget(new QLabel("dummy"));
+    toolBar->addWidget(label);
+
+    QMainWindow mainWindow;
+    mainWindow.addToolBar(toolBar);
+    mainWindow.show();
+
+    // Calculate the top-left corner of the tool bar and the label (in mainWindow's coordinates).
+    QPoint labelTopLeft = label->mapTo(&mainWindow, QPoint());
+    QPoint toolBarTopLeft = toolBar->mapTo(&mainWindow, QPoint());
+
+    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
+    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
+
+    // Enable unified tool bars.
+    mainWindow.setUnifiedTitleAndToolBarOnMac(true);
+    QTest::qWait(50);
+
+    // The tool bar is now in the "non-client" area of QMainWindow, i.e.
+    // outside the mainWindow's rect(), and since mapTo et al. doesn't work
+    // in that case (see commit 35667fd45ada49269a5987c235fdedfc43e92bb8),
+    // we use mapToGlobal/mapFromGlobal to re-calculate the corners.
+    QPoint oldToolBarTopLeft = toolBarTopLeft;
+    toolBarTopLeft = mainWindow.mapFromGlobal(toolBar->mapToGlobal(QPoint()));
+    QVERIFY(toolBarTopLeft != oldToolBarTopLeft);
+    QVERIFY(toolBarTopLeft.y() < 0);
+    labelTopLeft = mainWindow.mapFromGlobal(label->mapToGlobal(QPoint()));
+
+    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
+    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
+}
+#endif
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

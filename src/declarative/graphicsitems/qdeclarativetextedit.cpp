@@ -46,6 +46,8 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <qdeclarativeinfo.h>
 
+#include <QtCore/qmath.h>
+
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -59,33 +61,51 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
-  \since 4.7
-    \brief The TextEdit item allows you to add editable formatted text to a scene.
+    \since 4.7
+    \brief The TextEdit item displays multiple lines of editable formatted text.
+    \inherits Item
+
+    The TextEdit item displays a block of editable, formatted text.
 
     It can display both plain and rich text. For example:
 
     \qml
 TextEdit {
-    id: edit
+    width: 240
     text: "<b>Hello</b> <i>World!</i>"
-    focus: true
     font.family: "Helvetica"
     font.pointSize: 20
     color: "blue"
-    width: 240
+    focus: true
 }
     \endqml
 
     \image declarative-textedit.gif
 
-    \sa Text
+    Setting \l {Item::focus}{focus} to \c true enables the TextEdit item to receive keyboard focus.
+
+    Note that the TextEdit does not implement scrolling, following the cursor, or other behaviors specific
+    to a look-and-feel. For example, to add flickable scrolling that follows the cursor:
+
+    \snippet snippets/declarative/texteditor.qml 0
+
+    A particular look-and-feel might use smooth scrolling (eg. using SmoothedFollow), might have a visible
+    scrollbar, or a scrollbar that fades in to show location, etc.
+
+    Clipboard support is provided by the cut(), copy(), and paste() functions, and the selection can
+    be handled in a traditional "mouse" mechanism by setting selectByMouse, or handled completely
+    from QML by manipulating selectionStart and selectionEnd, or using selectAll() or selectWord().
+
+    You can translate between cursor positions (characters from the start of the document) and pixel
+    points using positionAt() and positionToRectangle().
+
+    \sa Text, TextInput
 */
 
 /*!
     \internal
     \class QDeclarativeTextEdit
     \qmlclass TextEdit
-    \ingroup group_coreitems
 
     \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
 
@@ -93,7 +113,7 @@ TextEdit {
 
     \image declarative-textedit.png
 
-    A QDeclarativeTextEdit object can be instantiated in Qml using the tag \c &lt;TextEdit&gt;.
+    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
 */
 
 /*!
@@ -110,9 +130,11 @@ QString QDeclarativeTextEdit::text() const
 {
     Q_D(const QDeclarativeTextEdit);
 
+#ifndef QT_NO_TEXTHTMLPARSER
     if (d->richText)
         return d->document->toHtml();
     else
+#endif
         return d->document->toPlainText();
 }
 
@@ -129,7 +151,7 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -139,11 +161,11 @@ QString QDeclarativeTextEdit::text() const
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -154,25 +176,25 @@ QString QDeclarativeTextEdit::text() const
 /*!
     \qmlproperty bool TextEdit::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool TextEdit::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -187,7 +209,7 @@ QString QDeclarativeTextEdit::text() const
     Sets the font size in pixels.
 
     Using this function makes the font device dependent.
-    Use \c pointSize to set the size of the font in a device independent manner.
+    Use \l pointSize to set the size of the font in a device independent manner.
 */
 
 /*!
@@ -216,11 +238,11 @@ QString QDeclarativeTextEdit::text() const
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -243,7 +265,11 @@ void QDeclarativeTextEdit::setText(const QString &text)
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(text);
+#else
+        d->control->setPlainText(text);
+#endif
     } else {
         d->control->setPlainText(text);
     }
@@ -255,9 +281,14 @@ void QDeclarativeTextEdit::setText(const QString &text)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText and \c RichText.
+    \list
+    \o TextEdit.AutoText
+    \o TextEdit.PlainText
+    \o TextEdit.RichText
+    \o TextEdit.StyledText
+    \endlist
 
-    The default is AutoText.  If the text format is AutoText the text edit
+    The default is TextEdit.AutoText.  If the text format is TextEdit.AutoText the text edit
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
@@ -303,7 +334,11 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
         d->control->setPlainText(d->text);
         updateSize();
     } else if (!wasRich && d->richText) {
+#ifndef QT_NO_TEXTHTMLPARSER
         d->control->setHtml(d->text);
+#else
+        d->control->setPlainText(d->text);
+#endif
         updateSize();
     }
     d->format = format;
@@ -421,12 +456,22 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \qmlproperty enumeration TextEdit::horizontalAlignment
     \qmlproperty enumeration TextEdit::verticalAlignment
 
-    Sets the horizontal and vertical alignment of the text within the TextEdit items
+    Sets the horizontal and vertical alignment of the text within the TextEdit item's
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
-    and \c AlignVCenter.
+    Valid values for \c horizontalAlignment are:
+    \list
+    \o TextEdit.AlignLeft (default)
+    \o TextEdit.AlignRight 
+    \o TextEdit.AlignHCenter
+    \endlist
+    
+    Valid values for \c verticalAlignment are:
+    \list
+    \o TextEdit.AlignTop (default)
+    \o TextEdit.AlignBottom
+    \c TextEdit.AlignVCenter
+    \endlist
 */
 QDeclarativeTextEdit::HAlignment QDeclarativeTextEdit::hAlign() const
 {
@@ -469,14 +514,13 @@ void QDeclarativeTextEdit::setVAlign(QDeclarativeTextEdit::VAlignment alignment)
     The text will only wrap if an explicit width has been set.
 
     \list
-    \o NoWrap - no wrapping will be performed.
-    \o WordWrap - wrapping is done on word boundaries.
-    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
-       will occur at the appropriate point on the line, even in the middle of a word.
+    \o TextEdit.NoWrap - no wrapping will be performed. If the text contains insufficient newlines, then implicitWidth will exceed a set width.
+    \o TextEdit.WordWrap - wrapping is done on word boundaries only. If a word is too long, implicitWidth will exceed a set width.
+    \o TextEdit.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
+    \o TextEdit.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
 
-    The default is NoWrap.
+    The default is TextEdit.NoWrap. If you set a width, consider using TextEdit.Wrap.
 */
 QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode() const
 {
@@ -493,6 +537,93 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
     d->updateDefaultTextOption();
     updateSize();
     emit wrapModeChanged();
+}
+
+/*!
+    \qmlproperty real TextEdit::paintedWidth
+
+    Returns the width of the text, including the width past the width
+    which is covered due to insufficient wrapping if \l wrapMode is set.
+*/
+qreal QDeclarativeTextEdit::paintedWidth() const
+{
+    return implicitWidth();
+}
+
+/*!
+    \qmlproperty real TextEdit::paintedHeight
+
+    Returns the height of the text, including the height past the height
+    that is covered if the text does not fit within the set height.
+*/
+qreal QDeclarativeTextEdit::paintedHeight() const
+{
+    return implicitHeight();
+}
+
+/*!
+    \qmlmethod rectangle TextEdit::positionToRectangle(position)
+
+    Returns the rectangle at the given \a position in the text. The x, y,
+    and height properties correspond to the cursor that would describe
+    that position.
+*/
+QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
+{
+    Q_D(const QDeclarativeTextEdit);
+    QTextCursor c(d->document);
+    c.setPosition(pos);
+    return d->control->cursorRect(c);
+
+}
+
+/*!
+    \qmlmethod int TextEdit::positionAt(x,y)
+
+    Returns the text position closest to pixel position (\a x, \a y).
+
+    Position 0 is before the first character, position 1 is after the first character
+    but before the second, and so on until position \l {text}.length, which is after all characters.
+*/
+int QDeclarativeTextEdit::positionAt(int x, int y) const
+{
+    Q_D(const QDeclarativeTextEdit);
+    int r = d->document->documentLayout()->hitTest(QPoint(x,y-d->yoff), Qt::FuzzyHit);
+    return r;
+}
+
+/*!
+    \qmlmethod int TextEdit::moveCursorSelection(int pos)
+
+    Moves the cursor to \a position and updates the selection accordingly.
+    (To only move the cursor, set the \l cursorPosition property.)
+
+    When this method is called it additionally sets either the
+    selectionStart or the selectionEnd (whichever was at the previous cursor position)
+    to the specified position. This allows you to easily extend and contract the selected
+    text range.
+
+    For example, take this sequence of calls:
+
+    \code
+        cursorPosition = 5
+        moveCursorSelection(9)
+        moveCursorSelection(7)
+    \endcode
+
+    This moves the cursor to position 5, extend the selection end from 5 to 9
+    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
+    selected (the 6th and 7th characters).
+*/
+void QDeclarativeTextEdit::moveCursorSelection(int pos)
+{
+    //Note that this is the same as setCursorPosition but with the KeepAnchor flag set
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor cursor = d->control->textCursor();
+    if (cursor.position() == pos)
+        return;
+    cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    d->control->setTextCursor(cursor);
 }
 
 /*!
@@ -517,7 +648,7 @@ void QDeclarativeTextEdit::setCursorVisible(bool on)
     QFocusEvent focusEvent(on ? QEvent::FocusIn : QEvent::FocusOut);
     if (!on && !d->persistentSelection)
         d->control->setCursorIsFocusIndicator(true);
-    d->control->processEvent(&focusEvent, QPointF(0, 0));
+    d->control->processEvent(&focusEvent, QPointF(0, -d->yoff));
     emit cursorVisibleChanged(d->cursorVisible);
 }
 
@@ -568,7 +699,7 @@ void QDeclarativeTextEdit::setCursorDelegate(QDeclarativeComponent* c)
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
                     this, SLOT(moveCursorDelegate()));
             d->control->setCursorWidth(-1);
-            dirtyCache(cursorRect());
+            dirtyCache(cursorRectangle());
             delete d->cursor;
             d->cursor = 0;
         }
@@ -595,7 +726,7 @@ void QDeclarativeTextEdit::loadCursorDelegate()
         connect(d->control, SIGNAL(cursorPositionChanged()),
                 this, SLOT(moveCursorDelegate()));
         d->control->setCursorWidth(0);
-        dirtyCache(cursorRect());
+        dirtyCache(cursorRectangle());
         QDeclarative_setParent_noEvent(d->cursor, this);
         d->cursor->setParentItem(this);
         d->cursor->setHeight(QFontMetrics(d->font).height());
@@ -609,12 +740,9 @@ void QDeclarativeTextEdit::loadCursorDelegate()
     \qmlproperty int TextEdit::selectionStart
 
     The cursor position before the first character in the current selection.
-    Setting this and selectionEnd allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionStart to a value outside of
-    the current text, selectionStart will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionEnd, cursorPosition, selectedText
 */
@@ -624,25 +752,13 @@ int QDeclarativeTextEdit::selectionStart() const
     return d->control->textCursor().selectionStart();
 }
 
-void QDeclarativeTextEdit::setSelectionStart(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionStart == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionStart = s;
-    d->updateSelection();// Will emit the relevant signals
-}
-
 /*!
     \qmlproperty int TextEdit::selectionEnd
 
     The cursor position after the last character in the current selection.
-    Setting this and selectionStart allows you to specify a selection in the
-    text edit.
 
-    Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionEnd to a value outside of
-    the current text, selectionEnd will not be changed.
+    This property is read-only. To change the selection, use select(start,end),
+    selectAll(), or selectWord().
 
     \sa selectionStart, cursorPosition, selectedText
 */
@@ -650,15 +766,6 @@ int QDeclarativeTextEdit::selectionEnd() const
 {
     Q_D(const QDeclarativeTextEdit);
     return d->control->textCursor().selectionEnd();
-}
-
-void QDeclarativeTextEdit::setSelectionEnd(int s)
-{
-    Q_D(QDeclarativeTextEdit);
-    if(d->lastSelectionEnd == s || s < 0 || s > text().length())
-        return;
-    d->lastSelectionEnd = s;
-    d->updateSelection();// Will emit the relevant signals
 }
 
 /*!
@@ -724,7 +831,7 @@ void QDeclarativeTextEdit::setPersistentSelection(bool on)
 }
 
 /*
-   \qmlproperty number TextEdit::textMargin
+   \qmlproperty real TextEdit::textMargin
 
    The margin, in pixels, around the text in the TextEdit.
 */
@@ -765,6 +872,33 @@ void QDeclarativeTextEdit::componentComplete()
         d->dirty = false;
     }
 }
+
+/*!
+    \qmlproperty bool TextEdit::selectByMouse
+
+    Defaults to false.
+
+    If true, the user can use the mouse to select text in some
+    platform-specific way. Note that for some platforms this may
+    not be an appropriate interaction (eg. may conflict with how
+    the text needs to behave inside a Flickable.
+*/
+bool QDeclarativeTextEdit::selectByMouse() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->selectByMouse;
+}
+
+void QDeclarativeTextEdit::setSelectByMouse(bool on)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (d->selectByMouse != on) {
+        d->selectByMouse = on;
+        emit selectByMouseChanged(on);
+    }
+}
+
+
 
 /*!
     \qmlproperty bool TextEdit::readOnly
@@ -821,13 +955,15 @@ Qt::TextInteractionFlags QDeclarativeTextEdit::textInteractionFlags() const
 }
 
 /*!
-    Returns the rectangle where the text cursor is rendered
-    within the text edit.
+    \qmlproperty rectangle TextEdit::cursorRectangle
+
+    The rectangle where the text cursor is rendered
+    within the text edit. Read-only.
 */
-QRect QDeclarativeTextEdit::cursorRect() const
+QRect QDeclarativeTextEdit::cursorRectangle() const
 {
     Q_D(const QDeclarativeTextEdit);
-    return d->control->cursorRect().toRect();
+    return d->control->cursorRect().toRect().translated(0,-d->yoff);
 }
 
 
@@ -839,7 +975,7 @@ bool QDeclarativeTextEdit::event(QEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (event->type() == QEvent::ShortcutOverride) {
-        d->control->processEvent(event, QPointF(0, 0));
+        d->control->processEvent(event, QPointF(0, -d->yoff));
         return event->isAccepted();
     }
     return QDeclarativePaintedItem::event(event);
@@ -852,8 +988,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-
+    keyPressPreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyPressEvent(event);
 }
@@ -865,7 +1002,9 @@ Handles the given key \a event.
 void QDeclarativeTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    keyReleasePreHandler(event);
+    if (!event->isAccepted())
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::keyReleaseEvent(event);
 }
@@ -878,6 +1017,8 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 }
 
 /*!
+    \qmlmethod void TextEdit::selectAll()
+
     Causes all text to be selected.
 */
 void QDeclarativeTextEdit::selectAll()
@@ -887,6 +1028,83 @@ void QDeclarativeTextEdit::selectAll()
 }
 
 /*!
+    \qmlmethod void TextEdit::selectWord()
+
+    Causes the word closest to the current cursor position to be selected.
+*/
+void QDeclarativeTextEdit::selectWord()
+{
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor c = d->control->textCursor();
+    c.select(QTextCursor::WordUnderCursor);
+    d->control->setTextCursor(c);
+}
+
+/*!
+    \qmlmethod void TextEdit::select(start,end)
+
+    Causes the text from \a start to \a end to be selected.
+
+    If either start or end is out of range, the selection is not changed.
+
+    After calling this, selectionStart will become the lesser
+    and selectionEnd will become the greater (regardless of the order passed
+    to this method).
+
+    \sa selectionStart, selectionEnd
+*/
+void QDeclarativeTextEdit::select(int start, int end)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (start < 0 || end < 0 || start > d->text.length() || end > d->text.length())
+        return;
+    QTextCursor cursor = d->control->textCursor();
+    cursor.beginEditBlock();
+    cursor.setPosition(start, QTextCursor::MoveAnchor);
+    cursor.setPosition(end, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    d->control->setTextCursor(cursor);
+
+    // QTBUG-11100
+    updateSelectionMarkers();
+}
+
+#ifndef QT_NO_CLIPBOARD
+/*!
+    \qmlmethod TextEdit::cut()
+
+    Moves the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextEdit::cut()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->cut();
+}
+
+/*!
+    \qmlmethod TextEdit::copy()
+
+    Copies the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextEdit::copy()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->copy();
+}
+
+/*!
+    \qmlmethod TextEdit::paste()
+
+    Replaces the currently selected text by the contents of the system clipboard.
+*/
+void QDeclarativeTextEdit::paste()
+{
+    Q_D(QDeclarativeTextEdit);
+    d->control->paste();
+}
+#endif // QT_NO_CLIPBOARD
+
+/*!
 \overload
 Handles the given mouse \a event.
 */
@@ -894,17 +1112,21 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (d->focusOnPress){
-        QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
-        while(p) {
-            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
-                p->setFocus();
-                break;
+        bool hadFocus = hasFocus();
+        forceFocus();
+        if (d->showInputPanelOnFocus) {
+            if (hasFocus() && hadFocus && !isReadOnly()) {
+                // re-open input panel on press if already focused
+                openSoftwareInputPanel();
             }
-            p = p->parentItem();
+        } else { // show input panel on click
+            if (hasFocus() && !hadFocus) {
+                d->clickCausedFocus = true;
+            }
         }
-        setFocus(true);
     }
-    d->control->processEvent(event, QPointF(0, 0));
+    if (event->type() != QEvent::GraphicsSceneMouseDoubleClick || d->selectByMouse)
+        d->control->processEvent(event, QPointF(0, -d->yoff));
     if (!event->isAccepted())
         QDeclarativePaintedItem::mousePressEvent(event);
 }
@@ -916,13 +1138,20 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    QWidget *widget = event->widget();
-    if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
-        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+    d->control->processEvent(event, QPointF(0, -d->yoff));
+    if (!d->showInputPanelOnFocus) { // input panel on click
+        if (d->focusOnPress && !isReadOnly() && boundingRect().contains(event->pos())) {
+            if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+                if (view->scene() && view->scene() == scene()) {
+                    qt_widget_private(view)->handleSoftwareInputPanel(event->button(), d->clickCausedFocus);
+                }
+            }
+        }
+    }
+    d->clickCausedFocus = false;
 
-    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativePaintedItem::mouseReleaseEvent(event);
 }
 
 /*!
@@ -932,9 +1161,13 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-    if (!event->isAccepted())
+    if (d->selectByMouse) {
+        d->control->processEvent(event, QPointF(0, -d->yoff));
+        if (!event->isAccepted())
+            QDeclarativePaintedItem::mouseDoubleClickEvent(event);
+    } else {
         QDeclarativePaintedItem::mouseDoubleClickEvent(event);
+    }
 }
 
 /*!
@@ -944,9 +1177,14 @@ Handles the given mouse \a event.
 void QDeclarativeTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
-    if (!event->isAccepted())
-        QDeclarativePaintedItem::mousePressEvent(event);
+    if (d->selectByMouse) {
+        d->control->processEvent(event, QPointF(0, -d->yoff));
+        if (!event->isAccepted())
+            QDeclarativePaintedItem::mouseMoveEvent(event);
+        event->setAccepted(true);
+    } else {
+        QDeclarativePaintedItem::mouseMoveEvent(event);
+    }
 }
 
 /*!
@@ -956,7 +1194,7 @@ Handles the given input method \a event.
 void QDeclarativeTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
-    d->control->processEvent(event, QPointF(0, 0));
+    d->control->processEvent(event, QPointF(0, -d->yoff));
 }
 
 /*!
@@ -978,21 +1216,34 @@ void QDeclarativeTextEdit::drawContents(QPainter *painter, const QRect &bounds)
     Q_D(QDeclarativeTextEdit);
 
     painter->setRenderHint(QPainter::TextAntialiasing, true);
+    painter->translate(0,d->yoff);
 
-    d->control->drawContents(painter, bounds);
+    d->control->drawContents(painter, bounds.translated(0,-d->yoff));
+
+    painter->translate(0,-d->yoff);
 }
 
-void QDeclarativeTextEdit::updateImgCache(const QRectF &r)
+void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
 {
-    dirtyCache(r.toRect());
+    Q_D(const QDeclarativeTextEdit);
+    QRect r;
+    if (!rf.isValid()) {
+        r = QRect(0,0,INT_MAX,INT_MAX);
+    } else {
+        r = rf.toRect();
+        if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+            r = r.translated(0,d->yoff);
+    }
+    dirtyCache(r);
     emit update();
 }
 
 /*!
     \qmlproperty bool TextEdit::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 
@@ -1020,6 +1271,7 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(selectionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
 
     document = control->document();
     document->setDefaultFont(font);
@@ -1051,7 +1303,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
     QTextCursor cursor = control->textCursor();
     bool startChange = (lastSelectionStart != cursor.selectionStart());
     bool endChange = (lastSelectionEnd != cursor.selectionEnd());
-    //### Is it worth calculating a more minimal set of movements?
     cursor.beginEditBlock();
     cursor.setPosition(lastSelectionStart, QTextCursor::MoveAnchor);
     cursor.setPosition(lastSelectionEnd, QTextCursor::KeepAnchor);
@@ -1061,8 +1312,6 @@ void QDeclarativeTextEditPrivate::updateSelection()
         q->selectionStartChanged();
     if(endChange)
         q->selectionEndChanged();
-    startChange = (lastSelectionStart != control->textCursor().selectionStart());
-    endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
 }
 
 void QDeclarativeTextEdit::updateSelectionMarkers()
@@ -1088,22 +1337,24 @@ void QDeclarativeTextEdit::updateSize()
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid())
+        if (widthValid() && d->document->textWidth() != width())
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
-        int yoff = 0;
         if (heightValid()) {
             if (d->vAlign == AlignBottom)
-                yoff = dy;
+                d->yoff = dy;
             else if (d->vAlign == AlignVCenter)
-                yoff = dy/2;
+                d->yoff = dy/2;
+        } else {
+            d->yoff = 0;
         }
-        setBaselineOffset(fm.ascent() + yoff + d->textMargin);
+        setBaselineOffset(fm.ascent() + d->yoff + d->textMargin);
 
         //### need to comfirm cost of always setting these
-        int newWidth = (int)d->document->idealWidth();
-        d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set. Does Text need this line as well?
+        int newWidth = qCeil(d->document->idealWidth());
+        if (!widthValid() && d->document->textWidth() != newWidth)
+            d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         int cursorWidth = 1;
         if(d->cursor)
             cursorWidth = d->cursor->width();
@@ -1112,9 +1363,12 @@ void QDeclarativeTextEdit::updateSize()
             newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
-        setImplicitHeight(d->text.isEmpty() ? fm.height() : (int)d->document->size().height());
+        qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
+        setImplicitHeight(newHeight);
 
-        setContentsSize(QSize(width(), height()));
+        setContentsSize(QSize(newWidth, newHeight));
+
+        emit paintedSizeChanged();
     } else {
         d->dirty = true;
     }
@@ -1133,6 +1387,120 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     if (oldWrapMode == opt.wrapMode() && oldAlignment == opt.alignment())
         return;
     document->setDefaultTextOption(opt);
+}
+
+
+/*!
+    \qmlmethod void TextEdit::openSoftwareInputPanel()
+
+    Opens software input panels like virtual keyboards for typing, useful for
+    customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
+
+    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            focusOnPress: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                    }
+                }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
+            }
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::openSoftwareInputPanel()
+{
+    QEvent event(QEvent::RequestSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+/*!
+    \qmlmethod void TextEdit::closeSoftwareInputPanel()
+
+    Closes a software input panel like a virtual keyboard shown on the screen, useful
+    for customizing when you want the input keyboard to be shown and hidden in
+    your application.
+
+    By default the opening of input panels follows the platform style. On Symbian^1 and
+    Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
+    the panels are automatically opened when TextEdit element gains focus. Input panels are
+    always closed if no editor owns focus.
+
+    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
+    the behavior you want.
+
+    Only relevant on platforms, which provide virtual keyboards.
+
+    \code
+        import Qt 4.7
+        TextEdit {
+            id: textEdit
+            text: "Hello world!"
+            focusOnPress: false
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (!textEdit.focus) {
+                        textEdit.focus = true;
+                        textEdit.openSoftwareInputPanel();
+                    } else {
+                        textEdit.focus = false;
+                    }
+                }
+                onPressAndHold: textEdit.closeSoftwareInputPanel();
+            }
+        }
+    \endcode
+*/
+void QDeclarativeTextEdit::closeSoftwareInputPanel()
+{
+    QEvent event(QEvent::CloseSoftwareInputPanel);
+    if (qApp) {
+        if (QGraphicsView * view = qobject_cast<QGraphicsView*>(qApp->focusWidget())) {
+            if (view->scene() && view->scene() == scene()) {
+                QApplication::sendEvent(view, &event);
+            }
+        }
+    }
+}
+
+void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
+{
+    Q_D(const QDeclarativeTextEdit);
+    if (d->showInputPanelOnFocus) {
+        if (d->focusOnPress && !isReadOnly()) {
+            openSoftwareInputPanel();
+        }
+    }
+    QDeclarativePaintedItem::focusInEvent(event);
 }
 
 QT_END_NAMESPACE

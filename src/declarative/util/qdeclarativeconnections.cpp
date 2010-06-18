@@ -57,11 +57,13 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeConnectionsPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeConnectionsPrivate() : target(0), componentcomplete(false) {}
+    QDeclarativeConnectionsPrivate() : target(0), targetSet(false), ignoreUnknownSignals(false), componentcomplete(true) {}
 
     QList<QDeclarativeBoundSignal*> boundsignals;
     QObject *target;
 
+    bool targetSet;
+    bool ignoreUnknownSignals;
     bool componentcomplete;
 
     QByteArray data;
@@ -70,7 +72,9 @@ public:
 /*!
     \qmlclass Connections QDeclarativeConnections
   \since 4.7
-    \brief A Connections object describes generalized connections to signals.
+    \brief A Connections element describes generalized connections to signals.
+
+    A Connections object creates a connection to a QML signal.
 
     When connecting to signals in QML, the usual way is to create an
     "on<Signal>" handler that reacts when a signal is received, like this:
@@ -81,16 +85,16 @@ public:
     }
     \endqml
 
-    However, in some cases, it is not possible to connect to a signal in this
-    way, such as:
+    However, it is not possible to connect to a signal in this way in some 
+    cases, such as when:
 
     \list
-        \i multiple connections to the same signal
-        \i connections outside the scope of the signal sender
-        \i connections to targets not defined in QML
+        \i Multiple connections to the same signal are required
+        \i Creating connections outside the scope of the signal sender
+        \i Connecting to targets not defined in QML
     \endlist
 
-    When any of these are needed, the Connections object can be used instead.
+    When any of these are needed, the Connections element can be used instead.
 
     For example, the above code can be changed to use a Connections object,
     like this:
@@ -103,7 +107,7 @@ public:
     }
     \endqml
 
-    More generally, the Connections object can be a child of some other object than
+    More generally, the Connections object can be a child of some object other than
     the sender of the signal:
 
     \qml
@@ -139,17 +143,21 @@ QDeclarativeConnections::~QDeclarativeConnections()
     \qmlproperty Object Connections::target
     This property holds the object that sends the signal.
 
-    By default, the target is assumed to be the parent of the Connections.
+    If this property is not set, the \c target defaults to the parent of the Connection.
+
+    If set to null, no connection is made and any signal handlers are ignored
+    until the target is not null.
 */
 QObject *QDeclarativeConnections::target() const
 {
     Q_D(const QDeclarativeConnections);
-    return d->target ? d->target : parent();
+    return d->targetSet ? d->target : parent();
 }
 
 void QDeclarativeConnections::setTarget(QObject *obj)
 {
     Q_D(QDeclarativeConnections);
+    d->targetSet = true; // even if setting to 0, it is *set*
     if (d->target == obj)
         return;
     foreach (QDeclarativeBoundSignal *s, d->boundsignals) {
@@ -165,6 +173,28 @@ void QDeclarativeConnections::setTarget(QObject *obj)
     connectSignals();
     emit targetChanged();
 }
+
+/*!
+    \qmlproperty bool Connections::ignoreUnknownSignals
+
+    Normally, a connection to a non-existent signal produces runtime errors.
+
+    If this property is set to \c true, such errors are ignored.
+    This is useful if you intend to connect to different types of objects, handling
+    a different set of signals for each object.
+*/
+bool QDeclarativeConnections::ignoreUnknownSignals() const
+{
+    Q_D(const QDeclarativeConnections);
+    return d->ignoreUnknownSignals;
+}
+
+void QDeclarativeConnections::setIgnoreUnknownSignals(bool ignore)
+{
+    Q_D(QDeclarativeConnections);
+    d->ignoreUnknownSignals = ignore;
+}
+
 
 
 QByteArray
@@ -220,7 +250,7 @@ void QDeclarativeConnectionsParser::setCustomData(QObject *object,
 void QDeclarativeConnections::connectSignals()
 {
     Q_D(QDeclarativeConnections);
-    if (!d->componentcomplete)
+    if (!d->componentcomplete || (d->targetSet && !target()))
         return;
 
     QDataStream ds(d->data);
@@ -230,17 +260,22 @@ void QDeclarativeConnections::connectSignals()
         QString script;
         ds >> script;
         QDeclarativeProperty prop(target(), propName);
-        if (!prop.isValid()) {
-            qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
-        } else if (prop.type() & QDeclarativeProperty::SignalProperty) {
+        if (prop.isValid() && (prop.type() & QDeclarativeProperty::SignalProperty)) {
             QDeclarativeBoundSignal *signal =
                 new QDeclarativeBoundSignal(target(), prop.method(), this);
-            signal->setExpression(new QDeclarativeExpression(qmlContext(this), script, 0));
+            signal->setExpression(new QDeclarativeExpression(qmlContext(this), 0, script));
             d->boundsignals += signal;
         } else {
-            qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
+            if (!d->ignoreUnknownSignals)
+                qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
         }
     }
+}
+
+void QDeclarativeConnections::classBegin()
+{
+    Q_D(QDeclarativeConnections);
+    d->componentcomplete=false;
 }
 
 void QDeclarativeConnections::componentComplete()

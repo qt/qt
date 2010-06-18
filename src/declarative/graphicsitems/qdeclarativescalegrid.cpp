@@ -130,8 +130,9 @@ QDeclarativeGridScaledImage::QDeclarativeGridScaledImage(QIODevice *data)
     int b = -1;
     QString imgFile;
 
-    while(!data->atEnd()) {
-        QString line = QString::fromUtf8(data->readLine().trimmed());
+    QByteArray raw;
+    while(raw = data->readLine(), !raw.isEmpty()) {
+        QString line = QString::fromUtf8(raw.trimmed());
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
 

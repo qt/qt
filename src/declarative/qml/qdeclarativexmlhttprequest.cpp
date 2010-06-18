@@ -46,6 +46,7 @@
 #include "private/qdeclarativerefcount_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "private/qdeclarativeexpression_p.h"
+#include "qdeclarativeglobal_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
@@ -93,6 +94,8 @@
 #define A(arg) (arg)->addref()
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(xhrDump, QML_XHR_DUMP);
 
 class DocumentImpl;
 class NodeImpl 
@@ -318,9 +321,9 @@ public:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(Node);
-Q_DECLARE_METATYPE(NodeList);
-Q_DECLARE_METATYPE(NamedNodeMap);
+Q_DECLARE_METATYPE(Node)
+Q_DECLARE_METATYPE(NodeList)
+Q_DECLARE_METATYPE(NamedNodeMap)
 
 QT_BEGIN_NAMESPACE
 
@@ -992,7 +995,7 @@ private:
     int m_status;
     QString m_statusText;
     QNetworkRequest m_request;
-    QNetworkReply *m_network;
+    QDeclarativeGuard<QNetworkReply> m_network;
     void destroyNetwork();
 
     QNetworkAccessManager *m_nam;
@@ -1131,6 +1134,14 @@ void QDeclarativeXMLHttpRequest::requestFromUrl(const QUrl &url)
         }
     }
 
+    if (xhrDump()) {
+        qWarning().nospace() << "XMLHttpRequest: " << qPrintable(m_method) << " " << qPrintable(url.toString());
+        if (!m_data.isEmpty()) {
+            qWarning().nospace() << "                " 
+                                 << qPrintable(QString::fromUtf8(m_data));
+        }
+    }
+
     if (m_method == QLatin1String("GET"))
         m_network = networkAccessManager()->get(request);
     else if (m_method == QLatin1String("HEAD"))
@@ -1264,6 +1275,16 @@ void QDeclarativeXMLHttpRequest::finished()
         if (cbv.isError()) printError(cbv);
     }
     m_responseEntityBody.append(m_network->readAll());
+
+    if (xhrDump()) {
+        qWarning().nospace() << "XMLHttpRequest: RESPONSE " << qPrintable(m_url.toString());
+        if (!m_responseEntityBody.isEmpty()) {
+            qWarning().nospace() << "                " 
+                                 << qPrintable(QString::fromUtf8(m_responseEntityBody));
+        }
+    }
+
+
     m_data.clear();
     destroyNetwork();
     if (m_state < Loading) {

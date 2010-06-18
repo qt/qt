@@ -47,14 +47,9 @@
 
 /*!
     \page style-reference.html
-    \title Implementing Styles and Style Aware Widgets
-    \brief An overview of styles and the styling of widgets.
-
-    \ingroup frameworks-technologies
-
-    \previouspage Widget Classes
-    \contentspage Widgets and Layouts
-    \nextpage {Qt Style Sheets}{Style sheets}
+    \title Styles &amp Style Aware Widgets
+    \ingroup qt-gui-concepts
+    \brief Styles and the styling of widgets.
 
     Styles (classes that inherit QStyle) draw on behalf of widgets
     and encapsulate the look and feel of a GUI. The QStyle class is
@@ -89,8 +84,6 @@
     the style in which they are drawn), you need to draw them using the
     current style. This document shows how widgets draw themselves
     and which possibilities the style gives them.
-
-    \tableofcontents
 
     \section1 Classes for Widget Styling
 

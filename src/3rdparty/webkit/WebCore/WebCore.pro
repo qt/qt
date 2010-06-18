@@ -60,7 +60,7 @@ CONFIG(standalone_package) {
     isEmpty(WC_GENERATED_SOURCES_DIR):WC_GENERATED_SOURCES_DIR = generated
     isEmpty(JSC_GENERATED_SOURCES_DIR):JSC_GENERATED_SOURCES_DIR = ../JavaScriptCore/generated
 
-    CONFIG(debug, debug|release) {
+    !CONFIG(release, debug|release) {
         OBJECTS_DIR = obj/debug
     } else { # Release
         OBJECTS_DIR = obj/release
@@ -75,7 +75,8 @@ CONFIG(QTDIR_build) {
     !static: DEFINES += QT_MAKEDLL
     symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
-include($$PWD/../WebKit/qt/qtwebkit_version.pri)
+moduleFile=$$PWD/../WebKit/qt/qt_webkit_version.pri
+include($$moduleFile)
 VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 unix {
@@ -103,7 +104,7 @@ win32-msvc2005|win32-msvc2008:{
 }
 
 # Pick up 3rdparty libraries from INCLUDE/LIB just like with MSVC
-win32-g++ {
+win32-g++* {
     TMPPATH            = $$quote($$(INCLUDE))
     QMAKE_INCDIR_POST += $$split(TMPPATH,";")
     TMPPATH            = $$quote($$(LIB))
@@ -126,7 +127,7 @@ maemo5|symbian|embedded {
     DEFINES += ENABLE_FAST_MOBILE_SCROLLING=1
 }
 
-maemo5 {
+maemo5|symbian {
     DEFINES += WTF_USE_QT_MOBILE_THEME=1
 }
 
@@ -160,7 +161,7 @@ defineTest(addExtraCompiler) {
 
     for(file,input) {
         base = $$basename(file)
-        base ~= s/\..+//
+        base ~= s/\\..+//
         newfile=$$replace(outputRule,\\$\\{QMAKE_FILE_BASE\\},$$base)
         SOURCES += $$newfile
     }
@@ -432,7 +433,6 @@ SOURCES += \
     css/FontFamilyValue.cpp \
     css/FontValue.cpp \
     css/MediaFeatureNames.cpp \
-    css/Media.cpp \
     css/MediaList.cpp \
     css/MediaQuery.cpp \
     css/MediaQueryEvaluator.cpp \
@@ -441,6 +441,7 @@ SOURCES += \
     css/ShadowValue.cpp \
     css/StyleBase.cpp \
     css/StyleList.cpp \
+    css/StyleMedia.cpp \
     css/StyleSheet.cpp \
     css/StyleSheetList.cpp \
     css/WebKitCSSKeyframeRule.cpp \
@@ -1146,7 +1147,6 @@ HEADERS += \
     css/FontFamilyValue.h \
     css/FontValue.h \
     css/MediaFeatureNames.h \
-    css/Media.h \
     css/MediaList.h \
     css/MediaQueryEvaluator.h \
     css/MediaQueryExp.h \
@@ -1155,6 +1155,7 @@ HEADERS += \
     css/ShadowValue.h \
     css/StyleBase.h \
     css/StyleList.h \
+    css/StyleMedia.h \
     css/StyleSheet.h \
     css/StyleSheetList.h \
     css/WebKitCSSKeyframeRule.h \
@@ -2082,7 +2083,7 @@ SOURCES += \
     platform/qt/SoundQt.cpp \
     platform/qt/LoggingQt.cpp \
     platform/text/qt/StringQt.cpp \
-    platform/qt/TemporaryLinkStubs.cpp \
+    platform/qt/TemporaryLinkStubsQt.cpp \
     platform/text/qt/TextBoundariesQt.cpp \
     platform/text/qt/TextBreakIteratorQt.cpp \
     platform/text/qt/TextCodecQt.cpp \
@@ -2166,7 +2167,7 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
             mac {
                 SOURCES += \
                     plugins/mac/PluginPackageMac.cpp \
-                    plugins/mac/PluginViewMac.cpp
+                    plugins/mac/PluginViewMac.mm
                 OBJECTIVE_SOURCES += \
                     platform/text/mac/StringImplMac.mm \
                     platform/mac/WebCoreNSStringExtras.mm
@@ -2496,8 +2497,12 @@ contains(DEFINES, ENABLE_QT_BEARER=1) {
     SOURCES += \
         platform/network/qt/NetworkStateNotifierQt.cpp
 
-    CONFIG += mobility
-    MOBILITY += bearer
+    # Bearer management is part of Qt 4.7, so don't accidentially
+    # pull in Qt Mobility when building against >= 4.7
+    !greaterThan(QT_MINOR_VERSION, 6) {
+        CONFIG += mobility
+        MOBILITY += bearer
+    }
 }
 
 contains(DEFINES, ENABLE_SVG=1) {
@@ -2847,18 +2852,34 @@ HEADERS += $$WEBKIT_API_HEADERS
 
     !symbian {
         headers.files = $$WEBKIT_INSTALL_HEADERS
-        headers.path = $$[QT_INSTALL_HEADERS]/QtWebKit
-        target.path = $$[QT_INSTALL_LIBS]
 
-        INSTALLS += target headers
+        !isEmpty(INSTALL_HEADERS): headers.path = $$INSTALL_HEADERS/QtWebKit
+        else: headers.path = $$[QT_INSTALL_HEADERS]/QtWebKit
+
+        !isEmpty(INSTALL_LIBS): target.path = $$INSTALL_LIBS
+        else: target.path = $$[QT_INSTALL_LIBS]
+
+        modfile.files = $$moduleFile
+        modfile.path = $$[QMAKE_MKSPECS]/modules
+
+        INSTALLS += target headers modfile
     } else {
         # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
         inst_headers.input = WEBKIT_INSTALL_HEADERS
-        inst_headers.output = $$[QT_INSTALL_HEADERS]/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+
+        !isEmpty(INSTALL_HEADERS): inst_headers.output = $$INSTALL_HEADERS/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+        else: inst_headers.output = $$[QT_INSTALL_HEADERS]/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+
         QMAKE_EXTRA_COMPILERS += inst_headers
 
-        install.depends += compiler_inst_headers_make_all
+        inst_modfile.commands = $$inst_headers.commands
+        inst_modfile.input = moduleFile
+        inst_modfile.output = $$[QMAKE_MKSPECS]/modules
+
+        QMAKE_EXTRA_COMPILERS += inst_modfile
+
+        install.depends += compiler_inst_headers_make_all compiler_inst_modfile_make_all
         QMAKE_EXTRA_TARGETS += install
     }
 
@@ -2876,7 +2897,7 @@ HEADERS += $$WEBKIT_API_HEADERS
         QMAKE_PKGCONFIG_LIBDIR = $$target.path
         QMAKE_PKGCONFIG_INCDIR = $$headers.path
         QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-        lib_replace.match = $$DESTDIR
+        lib_replace.match = $$re_escape($$DESTDIR)
         lib_replace.replace = $$[QT_INSTALL_LIBS]
         QMAKE_PKGCONFIG_INSTALL_REPLACE += lib_replace
     }
@@ -2910,7 +2931,7 @@ CONFIG(QTDIR_build) {
     CONFIG += no_debug_info
 }
 
-!win32-g++:win32:contains(QMAKE_HOST.arch, x86_64):{
+win32:!win32-g++*:contains(QMAKE_HOST.arch, x86_64):{
     asm_compiler.commands = ml64 /c
     asm_compiler.commands +=  /Fo ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     asm_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#define Q_TEST_QPIXMAPCACHE
 #include "qpixmapcache.h"
 #include "qobject.h"
 #include "qdebug.h"
@@ -194,7 +195,11 @@ public:
 
     static QPixmapCache::KeyData* getKeyData(QPixmapCache::Key *key);
 
+    QList< QPair<QString,QPixmap> > allPixmaps() const;
+    bool flushDetachedPixmaps(bool nt);
+
 private:
+    enum { soon_time = 10000, flush_time = 30000 };
     int *keyArray;
     int theid;
     int ps;
@@ -232,36 +237,48 @@ QPMCache::~QPMCache()
   cleaning-up, and to not cut down the size of the cache while the
   cache is in active use.
 
-  When the last pixmap has been deleted from the cache, kill the
-  timer so Qt won't keep the CPU from going into sleep mode.
+  When the last detached pixmap has been deleted from the cache, kill the
+  timer so Qt won't keep the CPU from going into sleep mode. Currently
+  the timer is not restarted when the pixmap becomes unused, but it does
+  restart once something else is added (i.e. the cache space is actually needed).
+
+  Returns true if any were removed.
 */
-void QPMCache::timerEvent(QTimerEvent *)
+bool QPMCache::flushDetachedPixmaps(bool nt)
 {
     int mc = maxCost();
-    bool nt = totalCost() == ps;
     setMaxCost(nt ? totalCost() * 3 / 4 : totalCost() -1);
     setMaxCost(mc);
     ps = totalCost();
 
+    bool any = false;
     QHash<QString, QPixmapCache::Key>::iterator it = cacheKeys.begin();
     while (it != cacheKeys.end()) {
         if (!contains(it.value())) {
             releaseKey(it.value());
             it = cacheKeys.erase(it);
+            any = true;
         } else {
             ++it;
         }
     }
 
-    if (!size()) {
+    return any;
+}
+
+void QPMCache::timerEvent(QTimerEvent *)
+{
+    bool nt = totalCost() == ps;
+    if (!flushDetachedPixmaps(nt)) {
         killTimer(theid);
         theid = 0;
     } else if (nt != t) {
         killTimer(theid);
-        theid = startTimer(nt ? 10000 : 30000);
+        theid = startTimer(nt ? soon_time : flush_time);
         t = nt;
     }
 }
+
 
 QPixmap *QPMCache::object(const QString &key) const
 {
@@ -305,7 +322,7 @@ bool QPMCache::insert(const QString& key, const QPixmap &pixmap, int cost)
     if (success) {
         cacheKeys.insert(key, cacheKey);
         if (!theid) {
-            theid = startTimer(30000);
+            theid = startTimer(flush_time);
             t = false;
         }
     } else {
@@ -321,7 +338,7 @@ QPixmapCache::Key QPMCache::insert(const QPixmap &pixmap, int cost)
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         if (!theid) {
-            theid = startTimer(30000);
+            theid = startTimer(flush_time);
             t = false;
         }
     } else {
@@ -342,7 +359,7 @@ bool QPMCache::replace(const QPixmapCache::Key &key, const QPixmap &pixmap, int 
     bool success = QCache<QPixmapCache::Key, QPixmapCacheEntry>::insert(cacheKey, new QPixmapCacheEntry(cacheKey, pixmap), cost);
     if (success) {
         if(!theid) {
-            theid = startTimer(30000);
+            theid = startTimer(flush_time);
             t = false;
         }
         const_cast<QPixmapCache::Key&>(key) = cacheKey;
@@ -421,6 +438,20 @@ QPixmapCache::KeyData* QPMCache::getKeyData(QPixmapCache::Key *key)
         key->d = new QPixmapCache::KeyData;
     return key->d;
 }
+
+QList< QPair<QString,QPixmap> > QPMCache::allPixmaps() const
+{
+    QList< QPair<QString,QPixmap> > r;
+    QHash<QString, QPixmapCache::Key>::const_iterator it = cacheKeys.begin();
+    while (it != cacheKeys.end()) {
+        QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(it.value());
+        if (ptr)
+            r.append(QPair<QString,QPixmap>(it.key(),*ptr));
+        ++it;
+    }
+    return r;
+}
+
 
 Q_GLOBAL_STATIC(QPMCache, pm_cache)
 
@@ -631,6 +662,21 @@ void QPixmapCache::clear()
         // if we ran out of memory during pm_cache(), it's no leak,
         // so just ignore it.
     }
+}
+
+void QPixmapCache::flushDetachedPixmaps()
+{
+    pm_cache()->flushDetachedPixmaps(true);
+}
+
+int QPixmapCache::totalUsed()
+{
+    return (pm_cache()->totalCost()+1023) / 1024;
+}
+
+QList< QPair<QString,QPixmap> > QPixmapCache::allPixmaps()
+{
+    return pm_cache()->allPixmaps();
 }
 
 QT_END_NAMESPACE

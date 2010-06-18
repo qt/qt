@@ -117,8 +117,6 @@ protected:
     void writeMmpFileBinaryVersionPart(QTextStream& t);
     void writeMmpFileRulesPart(QTextStream& t);
 
-    void writeCustomDefFile();
-
     void appendIfnotExist(QStringList &list, QString value);
     void appendIfnotExist(QStringList &list, QStringList values);
 
@@ -131,7 +129,6 @@ protected:
                                const QString& itemSuffix);
 
     void generateDistcleanTargets(QTextStream& t);
-    void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 
     // Subclass implements
     virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;

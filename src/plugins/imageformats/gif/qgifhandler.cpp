@@ -132,8 +132,8 @@ private:
 
     int code_size, clear_code, end_code, max_code_size, max_code;
     int firstcode, oldcode, incode;
-    short table[2][1<< max_lzw_bits];
-    short stack[(1<<(max_lzw_bits))*2];
+    short* table[2];
+    short* stack;
     short *sp;
     bool needfirst;
     int x, y;
@@ -162,6 +162,9 @@ QGIFFormat::QGIFFormat()
     lcmap = false;
     newFrame = false;
     partialNewFrame = false;
+    table[0] = 0;
+    table[1] = 0;
+    stack = 0;
 }
 
 /*!
@@ -171,6 +174,7 @@ QGIFFormat::~QGIFFormat()
 {
     if (globalcmap) delete[] globalcmap;
     if (localcmap) delete[] localcmap;
+    delete [] stack;
 }
 
 void QGIFFormat::disposePrevious(QImage *image)
@@ -236,6 +240,12 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
     //    "The Graphics Interchange Format(c) is the Copyright property of
     //    CompuServe Incorporated. GIF(sm) is a Service Mark property of
     //    CompuServe Incorporated."
+
+    if (!stack) {
+        stack = new short[(1 << max_lzw_bits) * 4];
+        table[0] = &stack[(1 << max_lzw_bits) * 2];
+        table[1] = &stack[(1 << max_lzw_bits) * 3];
+    }
 
     image->detach();
     int bpl = image->bytesPerLine();
@@ -1026,7 +1036,7 @@ inline QRgb QGIFFormat::color(uchar index) const
 QGifHandler::QGifHandler()
 {
     gifFormat = new QGIFFormat;
-    nextDelay = 0;
+    nextDelay = 100;
     loopCnt = 1;
     frameNumber = -1;
     scanIsCached = false;
@@ -1061,12 +1071,12 @@ bool QGifHandler::imageIsComing() const
 
 bool QGifHandler::canRead() const
 {
-    if (!nextDelay && canRead(device())) {
+    if (canRead(device()) || imageIsComing()) {
         setFormat("gif");
         return true;
     }
 
-    return imageIsComing();
+    return false;
 }
 
 bool QGifHandler::canRead(QIODevice *device)
@@ -1119,8 +1129,11 @@ bool QGifHandler::write(const QImage &image)
 
 bool QGifHandler::supportsOption(ImageOption option) const
 {
-    return option == Size
-        || option == Animation;
+    if (!device() || device()->isSequential())
+        return option == Animation;
+    else
+        return option == Size
+            || option == Animation;
 }
 
 QVariant QGifHandler::option(ImageOption option) const

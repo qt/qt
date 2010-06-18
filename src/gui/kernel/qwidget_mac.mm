@@ -752,6 +752,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
     return window;
 }
 
+#ifndef QT_NO_GESTURES
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
 /* We build the release package against the 10.4 SDK.
    So, to enable gestures for applications running on
@@ -768,6 +769,7 @@ enum {
     kEventParamMagnificationAmount  = 'magn'
 };
 #endif
+#endif // QT_NO_GESTURES
 
 // window events
 static EventTypeSpec window_events[] = {
@@ -1076,6 +1078,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
         handled_event = false;
         break; }
 
+#ifndef QT_NO_GESTURES
     case kEventClassGesture: {
         // First, find the widget that was under
         // the mouse when the gesture happened:
@@ -1142,6 +1145,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
         QApplication::sendSpontaneousEvent(widget, &qNGEvent);
     break; }
+#endif // QT_NO_GESTURES
 
     default:
         handled_event = false;
@@ -2684,6 +2688,7 @@ QWidget::macCGHandle() const
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -3824,9 +3829,35 @@ void QWidgetPrivate::raise_sys()
 #if QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     if (isRealWindow()) {
-        // Calling orderFront shows the window on Cocoa too.
+        // With the introduction of spaces it is not as simple as just raising the window.
+        // First we need to check if we are in the right space. If we are, then we just continue
+        // as usual. The problem comes when we are not in the active space. There are two main cases:
+        // 1. Our parent was moved to a new space. In this case we want the window to be raised
+        // in the same space as its parent.
+        // 2. We don't have a parent. For this case we will just raise the window and let Cocoa
+        // switch to the corresponding space.
+        // NOTICE: There are a lot of corner cases here. We are keeping this simple for now, if
+        // required we will introduce special handling for some of them.
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && q->isVisible()) {
-            [qt_mac_window_for(q) orderFront:qt_mac_window_for(q)];
+            OSWindowRef window = qt_mac_window_for(q);
+            // isOnActiveSpace is available only from 10.6 onwards, so we need to check if it is
+            // available before calling it.
+            if([window respondsToSelector:@selector(isOnActiveSpace)]) {
+                if(![window performSelector:@selector(isOnActiveSpace)]) {
+                    QWidget *parentWidget = q->parentWidget();
+                    if(parentWidget) {
+                        OSWindowRef parentWindow = qt_mac_window_for(parentWidget);
+                        if(parentWindow && [parentWindow isOnActiveSpace]) {
+                            // The window was created in a different space. Therefore if we want
+                            // to show it in the current space we need to recreate it in the new
+                            // space.
+                            recreateMacWindow();
+                            window = qt_mac_window_for(q);
+                        }
+                    }
+                }
+            }
+            [window orderFront:window];
         }
         if (qt_mac_raise_process) { //we get to be the active process now
             ProcessSerialNumber psn;
@@ -3964,10 +3995,10 @@ static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRe
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object || 
-        
-        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
-        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
+        QDragManager::self()->object ||
+
+        // we are on Panther (no HIViewSetNeedsDisplayInRect)
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4
     ){
         HIViewSetFrame(view, &bounds);
         return;

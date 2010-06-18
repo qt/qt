@@ -80,6 +80,8 @@ extern bool qt_wince_is_smartphone();        //defined in qguifunctions_wince.cp
 extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cpp
 #endif // Q_WS_WINCE
 
+#include "qstylehelper_p.h"
+
 QT_BEGIN_NAMESPACE
 
 static const int windowsItemFrame        =  1; // menu item frame width
@@ -5355,6 +5357,50 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
         }
         painter->setPen(option->palette.text().color());
         painter->drawLines(a);
+        break; }
+    case PE_IndicatorBranch: {
+        // Copied from the Windows style.
+        static const int decoration_size = d->doubleControls ? 18 : 9;
+        static const int ofsA  = d->doubleControls ?  4 : 2;
+        static const int ofsB  = d->doubleControls ?  8 : 4;
+        static const int ofsC  = d->doubleControls ? 12 : 6;
+        static const int ofsD  = d->doubleControls ? 1 : 0;
+        int mid_h = option->rect.x() + option->rect.width() / 2;
+        int mid_v = option->rect.y() + option->rect.height() / 2;
+        int bef_h = mid_h;
+        int bef_v = mid_v;
+        int aft_h = mid_h;
+        int aft_v = mid_v;
+        if (option->state & State_Children) {
+            int delta = decoration_size / 2;
+            bef_h -= delta;
+            bef_v -= delta;
+            aft_h += delta;
+            aft_v += delta;
+            QPen oldPen = painter->pen();
+            QPen crossPen = oldPen;
+            crossPen.setWidth(2);
+            painter->setPen(crossPen);
+            painter->drawLine(bef_h + ofsA + ofsD, bef_v + ofsB + ofsD, bef_h + ofsC + ofsD, bef_v + ofsB + ofsD);
+            if (!(option->state & State_Open))
+                painter->drawLine(bef_h + ofsB + ofsD, bef_v + ofsA + ofsD, bef_h + ofsB + ofsD, bef_v + ofsC + ofsD);
+            painter->setPen(option->palette.dark().color());
+            painter->drawRect(bef_h, bef_v, decoration_size - 1, decoration_size - 1);
+            if (d->doubleControls)
+                painter->drawRect(bef_h + 1, bef_v + 1, decoration_size - 3, decoration_size - 3);
+            painter->setPen(oldPen);
+        }
+        QBrush brush(option->palette.dark().color(), Qt::Dense4Pattern);
+        if (option->state & State_Item) {
+            if (option->direction == Qt::RightToLeft)
+                painter->fillRect(option->rect.left(), mid_v, bef_h - option->rect.left(), 1, brush);
+            else
+                painter->fillRect(aft_h, mid_v, option->rect.right() - aft_h + 1, 1, brush);
+        }
+        if (option->state & State_Sibling)
+            painter->fillRect(mid_h, aft_v, 1, option->rect.bottom() - aft_v + 1, brush);
+        if (option->state & (State_Open | State_Children | State_Item | State_Sibling))
+            painter->fillRect(mid_h, option->rect.y(), 1, bef_v - option->rect.y(), brush);
         break; }
     case PE_Frame:
         qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),

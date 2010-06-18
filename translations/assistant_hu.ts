@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="hu">
+<TS version="2.0" language="hu_HU">
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+110"/>
+        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+117"/>
         <source>&amp;Close</source>
-        <translation>&amp;Bezárás</translation>
+        <translation>Be&amp;zárás</translation>
     </message>
 </context>
 <context>
     <name>AboutLabel</name>
     <message>
-        <location line="-14"/>
+        <location line="-15"/>
         <source>Warning</source>
         <translation>Figyelmeztetés</translation>
     </message>
@@ -20,16 +20,90 @@
         <location line="+1"/>
         <source>Unable to launch external application.
 </source>
-        <translation>Nem lehet külső alkalmazást elindítani.</translation>
+        <translation>A külső alkalmazás elindítása sikertelen.
+</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+0"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
 </context>
 <context>
+    <name>Assistant</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+177"/>
+        <source>Error registering documentation file &apos;%1&apos;: %2</source>
+        <translation>Hiba a(z) &apos;%1&apos; dokumentáció fájl regisztrálásakor: %2</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Error: %1</source>
+        <translation>Hiba: %1</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Could not register documentation file
+%1
+
+Reason:
+%2</source>
+        <translation>A dokumentációs fájl regisztrálása sikertelen
+%1
+
+Oka:
+%2</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Documentation successfully registered.</source>
+        <translation>A dokumentáció regisztrálása sikerült.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Could not unregister documentation file
+%1
+
+Reason:
+%2</source>
+        <translation>A dokumentációs fájl eltávolítása sikertelen
+%1
+
+Oka:
+%2</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Documentation successfully unregistered.</source>
+        <translation>A dokumentáció eltávolítása sikerült.</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Error reading collection file &apos;%1&apos;: %2.</source>
+        <translation>Hiba a(z) &apos;%1&apos; gyűjteményfájl olvasásakor: %2.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Error creating collection file &apos;%1&apos;: %2.</source>
+        <translation>Hiba a(z) &apos;%1&apos; gyűjteményfájl létrehozásakor: %2.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Error reading collection file &apos;%1&apos;: %2</source>
+        <translation>Hiba a(z) &apos;%1&apos; gyűjteményfájl olvasásakor: %2</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Cannot load sqlite database driver!</source>
+        <translation>Az sqlite adatbázisdriver nem tölthető be!</translation>
+    </message>
+</context>
+<context>
     <name>BookmarkDialog</name>
+    <message>
+        <source>Bookmarks</source>
+        <translation type="obsolete">Könyvjelzők</translation>
+    </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/bookmarkdialog.ui"/>
         <source>Add Bookmark</source>
@@ -43,96 +117,85 @@
     <message>
         <location/>
         <source>Add in Folder:</source>
-        <translation>Hozzáadás dossziéban:</translation>
+        <translation>Hozzáadás ide:</translation>
     </message>
     <message>
         <location/>
-        <source>New Folder</source>
-        <translation>Új dosszié</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+184"/>
-        <location line="+18"/>
-        <location line="+39"/>
-        <location line="+18"/>
-        <location line="+30"/>
-        <source>Bookmarks</source>
-        <translation>Könyvjelzők</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkdialog.ui"/>
         <source>+</source>
         <translation>+</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="-61"/>
-        <source>Delete Folder</source>
-        <translation>Dosszié törlése</translation>
+        <location/>
+        <source>New Folder</source>
+        <translation>Új mappa</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <source>Delete Folder</source>
+        <translation type="obsolete">Mappa törlése</translation>
+    </message>
+    <message>
         <source>Rename Folder</source>
-        <translation>Dosszié átnevezése</translation>
+        <translation type="obsolete">Mappa átnevezése</translation>
     </message>
 </context>
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+435"/>
         <source>Bookmarks</source>
-        <translation>Könyvjelzők</translation>
+        <translation type="obsolete">Könyvjelzők</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+151"/>
+        <source>Untitled</source>
+        <translation>Névtelen</translation>
+    </message>
+    <message>
+        <location line="+65"/>
         <source>Remove</source>
-        <translation>Áthelyezés</translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>You are going to delete a Folder, this will also&lt;br&gt;remove it&apos;s content. Are you sure to continue?</source>
-        <translation>Egy olyan dossziét fog törölni, ami &lt;br&gt; törli annak tartalmát is. Biztos benne, hogy folytatja?</translation>
+        <translation>A mappa törlésekor a tartalma is megsemmisül.&lt;br&gt;Biztosan folytatja?</translation>
     </message>
     <message>
-        <location line="+143"/>
-        <location line="+9"/>
-        <source>New Folder</source>
-        <translation>Új Dosszié</translation>
-    </message>
-</context>
-<context>
-    <name>BookmarkWidget</name>
-    <message>
-        <location line="-417"/>
-        <source>Filter:</source>
-        <translation>Szűrő:</translation>
+        <location line="+147"/>
+        <source>Manage Bookmarks...</source>
+        <translation>Könyvjelzők kezelése...</translation>
     </message>
     <message>
-        <location line="+33"/>
-        <source>Remove</source>
-        <translation>Eltávolítás</translation>
+        <location line="+3"/>
+        <source>Add Bookmark...</source>
+        <translation>Könyvjelző hozzáadása...</translation>
     </message>
     <message>
-        <location line="-79"/>
+        <location line="+1"/>
+        <source>Ctrl+D</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+68"/>
         <source>Delete Folder</source>
-        <translation>Dosszié törlése</translation>
+        <translation>Mappa törlése</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Rename Folder</source>
-        <translation>Dosszié átnevezése</translation>
+        <translation>Mappa átnevezése</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show Bookmark</source>
-        <translation>Könyvjelző megjelenítése</translation>
+        <translation>Könyvjelző megnyitása</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show Bookmark in New Tab</source>
-        <translation>Könyvjelző megjelenítése új lapon</translation>
+        <translation>Könyvjelző megnyitása új fülön</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+2"/>
         <source>Delete Bookmark</source>
         <translation>Könyvjelző törlése</translation>
     </message>
@@ -142,64 +205,165 @@
         <translation>Könyvjelző átnevezése</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <source>New Folder</source>
+        <translation type="obsolete">Új mappa</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkWidget</name>
+    <message>
+        <source>Filter:</source>
+        <translation type="obsolete">Szűrő:</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="obsolete">Törlés</translation>
+    </message>
+    <message>
+        <source>Delete Folder</source>
+        <translation type="obsolete">Mappa törlése</translation>
+    </message>
+    <message>
+        <source>Rename Folder</source>
+        <translation type="obsolete">Mappa átnevezése</translation>
+    </message>
+    <message>
+        <source>Show Bookmark</source>
+        <translation type="obsolete">Könyvjelző megnyitása</translation>
+    </message>
+    <message>
+        <source>Show Bookmark in New Tab</source>
+        <translation type="obsolete">Könyvjelző megnyitása új fülön</translation>
+    </message>
+    <message>
+        <source>Delete Bookmark</source>
+        <translation type="obsolete">Könyvjelző törlése</translation>
+    </message>
+    <message>
+        <source>Rename Bookmark</source>
+        <translation type="obsolete">Könyvjelző átnevezése</translation>
+    </message>
+    <message>
         <source>Add</source>
-        <translation>Hozzáadás</translation>
+        <translation type="obsolete">Hozzáadás</translation>
     </message>
 </context>
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+239"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+121"/>
         <source>Add new page</source>
-        <translation>Új lap hozzáadása</translation>
+        <translation>Új fül hozzáadása</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Close current page</source>
-        <translation>Aktuális lap bezárása</translation>
+        <translation>Az aktuális fül bezárása</translation>
     </message>
     <message>
-        <location line="+312"/>
+        <location line="+287"/>
         <source>Print Document</source>
         <translation>Dokumentum nyomtatása</translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+126"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>ismeretlen</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+101"/>
         <source>Add New Page</source>
-        <translation>Új lap hozzáadása</translation>
+        <translation>Új fül hozzáadása</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Close This Page</source>
-        <translation>Lap bezárása</translation>
+        <translation>Az aktuális fül bezárása</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Close Other Pages</source>
-        <translation>Többi lap bezárása</translation>
+        <translation>A többi fül bezárása</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Add Bookmark for this Page...</source>
-        <translation>Könyvjelző hozzáadása ehhez a laphoz...</translation>
+        <translation>A lap mentése könyvjelzőként...</translation>
     </message>
     <message>
-        <location line="+235"/>
+        <location line="+264"/>
         <source>Search</source>
         <translation>Keresés</translation>
     </message>
 </context>
 <context>
+    <name>CmdLineParser</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+137"/>
+        <source>Unknown option: %1</source>
+        <translation>Ismeretlen opció: %1</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>The collection file &apos;%1&apos; does not exist.</source>
+        <translation>A(z) &apos;%1&apos; gyűjteményfájl nem található.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Missing collection file.</source>
+        <translation>Hiányzó gyűjteményfájl.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Invalid URL &apos;%1&apos;.</source>
+        <translation>Érvénytelen URL: &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Missing URL.</source>
+        <translation>Hiányzó URL.</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Unknown widget: %1</source>
+        <translation>Ismeretlen elem: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Missing widget.</source>
+        <translation>Hiányzó elem.</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>The Qt help file &apos;%1&apos; does not exist.</source>
+        <translation>A(z) &apos;%1&apos; Qt súgófájl nem létezik.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Missing help file.</source>
+        <translation>Hiányzó súgófájl.</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Missing filter argument.</source>
+        <translation>Hiányzó szűrőparaméter.</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Error</source>
+        <translation>Hiba</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Notice</source>
+        <translation>Információ</translation>
+    </message>
+</context>
+<context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+158"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+173"/>
         <source>Open Link</source>
         <translation>Link megnyitása</translation>
     </message>
@@ -214,40 +378,35 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/filternamedialog.ui"/>
         <source>Add Filter Name</source>
-        <translation>Szűrő név hozzáadása</translation>
+        <translation>Szűrőnév hozzáadása</translation>
     </message>
     <message>
         <location/>
         <source>Filter Name:</source>
-        <translation>Szűrő név:</translation>
+        <translation>Szűrő neve:</translation>
     </message>
 </context>
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-918"/>
         <source>Previous</source>
-        <translation>Előző</translation>
+        <translation type="obsolete">Előző</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Next</source>
-        <translation>Következő</translation>
+        <translation type="obsolete">Következő</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Case Sensitive</source>
-        <translation>Kis és nagybetű érzékeny</translation>
+        <translation type="obsolete">Kis/nagybetű érzékeny</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Whole words</source>
-        <translation>Egész szavakat</translation>
+        <translation type="obsolete">Teljes szó</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Keresés tördelése</translation>
+        <translation type="obsolete">&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;A keresés megszakítva</translation>
     </message>
 </context>
 <context>
@@ -255,77 +414,77 @@
     <message>
         <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
-        <translation>Betű</translation>
+        <translation>Betűtípus</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>&amp;Writing system</source>
-        <translation>Rendszer &amp;írása</translation>
+        <translation>Írás&amp;rendszer</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Family</source>
-        <translation>&amp;Család</translation>
+        <translation>Betű&amp;típus</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Style</source>
-        <translation>&amp;Stílus</translation>
+        <translation>Betű&amp;stílus</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Point size</source>
-        <translation>&amp;Pont méret</translation>
+        <translation>Betű&amp;méret</translation>
     </message>
 </context>
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+489"/>
         <source>Help</source>
-        <translation>Segítség</translation>
+        <translation type="obsolete">Súgó</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
-        <location line="-62"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+58"/>
+        <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
-        <translation>&lt;title&gt;404-es hiba...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;A lap nem található &lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
+        <translation>&lt;title&gt;404-es hiba...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;A lap nem található&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
-        <location line="+125"/>
         <source>Copy &amp;Link Location</source>
-        <translation>&amp;Link címének másolása</translation>
+        <translation type="obsolete">&amp;Link címének másolása</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Open Link in New Tab	Ctrl+LMB</source>
-        <translation>Link megnyitása új lapon	Ctrl+LMB</translation>
+        <translation type="obsolete">Link megnyitása új lapon	Ctrl+LMB</translation>
     </message>
     <message>
-        <location line="-275"/>
         <source>Open Link in New Tab</source>
-        <translation>Link megnyitása új lapon</translation>
+        <translation type="obsolete">Link megnyitása új lapon</translation>
     </message>
     <message>
-        <location line="+209"/>
         <source>Unable to launch external application.
 </source>
-        <translation>Nem lehet külső alkalmazást indítani.</translation>
+        <translation type="obsolete">A külső alkalmazás elindítása sikertelen.
+</translation>
     </message>
 </context>
 <context>
     <name>IndexWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
+        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+68"/>
         <source>&amp;Look for:</source>
-        <translation>&amp;Keresés:</translation>
+        <translation>&amp;Amit keres:</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+74"/>
         <source>Open Link</source>
         <translation>Link megnyitása</translation>
     </message>
@@ -339,36 +498,36 @@
     <name>InstallDialog</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+78"/>
         <source>Install Documentation</source>
-        <translation></translation>
+        <translation>Dokumentáció telepítése</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+30"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+33"/>
         <source>Downloading documentation info...</source>
-        <translation>Dokumentum információ letöltése...</translation>
+        <translation>A dokumentáció információinak letöltése...</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Download canceled.</source>
-        <translation>Letöltés vmegszakítva.</translation>
+        <translation>Letöltés megszakítva.</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <location line="+78"/>
+        <location line="+28"/>
+        <location line="+79"/>
         <location line="+27"/>
         <source>Done.</source>
         <translation>Kész.</translation>
     </message>
     <message>
-        <location line="-90"/>
+        <location line="-91"/>
         <source>The file %1 already exists. Do you want to overwrite it?</source>
-        <translation>A(z) %1 fájl már létezik. Felül szeretné írni?</translation>
+        <translation>A(z) &apos;%1&apos; nevű fájl már létezik. Felülírja?</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Unable to save the file %1: %2.</source>
-        <translation>Nem lehet elmenteni a(z) %1 fájlt: %2.</translation>
+        <translation>A(z) %1 mentése sikertelen: %2.</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -376,37 +535,38 @@
         <translation>%1 letöltése...</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <location line="+42"/>
-        <location line="+38"/>
+        <location line="+40"/>
         <source>Download failed: %1.</source>
-        <translation>Nem sikerült a letöltés: %1.</translation>
+        <translation>A letöltés sikertelen: %1.</translation>
     </message>
     <message>
-        <location line="-70"/>
+        <location line="-72"/>
         <source>Documentation info file is corrupt!</source>
-        <translation>Dokumentum információ sérült!</translation>
+        <translation>A dokumentáció információs fájlja sérült!</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Download failed: Downloaded file is corrupted.</source>
-        <translation>Nem sikerült letölteni: A letöltött fájl sérült.</translation>
+        <translation>A letöltés sikertelen: a letöltött fájl sérült.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Installing documentation %1...</source>
-        <translation>%1 dokumentáció telepítése...</translation>
+        <translation>Dokumentáció telepítése %1...</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Error while installing documentation:
 %1</source>
-        <translation>Hiba történt a dokumentáció telepítése közben: %1</translation>
+        <translation>Hiba a dokumentáció telepítésekor:
+%1</translation>
     </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <source>Available Documentation:</source>
-        <translation>Elérhető dokumentáció:</translation>
+        <translation>Elérhető dokumentációk:</translation>
     </message>
     <message>
         <location/>
@@ -416,7 +576,7 @@
     <message>
         <location/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
         <location/>
@@ -437,20 +597,20 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+383"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+123"/>
+        <location line="+369"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location line="-377"/>
-        <location line="+375"/>
+        <location line="-363"/>
+        <location line="+361"/>
         <source>Contents</source>
         <translation>Tartalom</translation>
     </message>
     <message>
-        <location line="-370"/>
-        <location line="+374"/>
+        <location line="-354"/>
+        <location line="+358"/>
         <source>Bookmarks</source>
         <translation>Könyvjelzők</translation>
     </message>
@@ -460,27 +620,25 @@
         <translation>Keresés</translation>
     </message>
     <message>
-        <location line="-364"/>
-        <location line="+207"/>
-        <location line="+514"/>
+        <location line="-338"/>
+        <location line="+680"/>
+        <location line="+284"/>
         <source>Qt Assistant</source>
-        <translation>Qt Assistant</translation>
+        <translation>Qt Asszisztens</translation>
     </message>
     <message>
-        <location line="-546"/>
-        <location line="+5"/>
         <source>Unfiltered</source>
-        <translation>Szűrés nélküli</translation>
+        <translation type="obsolete">Szűrő kikapcsolása</translation>
     </message>
     <message>
-        <location line="+107"/>
+        <location line="-705"/>
         <source>Page Set&amp;up...</source>
-        <translation>Lap Beállí&amp;tás...</translation>
+        <translation>&amp;Oldalbeállítás...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Print Preview...</source>
-        <translation>Nyomtatási előnézet...</translation>
+        <translation>Nyomtatási kép...</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -488,29 +646,34 @@
         <translation>&amp;Nyomtatás...</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-10"/>
         <source>New &amp;Tab</source>
-        <translation>Új &amp;Lap</translation>
+        <translation>Új &amp;fül</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+17"/>
         <source>&amp;Close Tab</source>
-        <translation>Lap &amp;bezárása</translation>
+        <translation>Fül be&amp;zárása</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Quit</source>
         <translation>&amp;Kilépés</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
+        <source>CTRL+Q</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+6"/>
         <source>&amp;Copy selected Text</source>
-        <translation>Kiválasztott szöveg &amp;másolása</translation>
+        <translation>A kijelölés &amp;másolása</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>&amp;Find in Text...</source>
-        <translation>&amp;Keresés szövegben...</translation>
+        <translation>Ke&amp;resés a szövegben...</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -520,12 +683,12 @@
     <message>
         <location line="+4"/>
         <source>Find &amp;Next</source>
-        <translation>&amp;Következő keresés</translation>
+        <translation>Követke&amp;ző  keresése</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Find &amp;Previous</source>
-        <translation>&amp;Előző keresés</translation>
+        <translation>&amp;Előző keresése</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -535,42 +698,42 @@
     <message>
         <location line="+4"/>
         <source>Zoom &amp;in</source>
-        <translation>&amp;Nagyítás</translation>
+        <translation>Na&amp;gyítás</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Zoom &amp;out</source>
-        <translation>&amp;Kicsinyítés</translation>
+        <translation>Ki&amp;csinyítés</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Normal &amp;Size</source>
-        <translation>Normál &amp;méret</translation>
+        <translation>Normá&amp;l méret</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Ctrl+0</source>
-        <translation>Ctrl + 0</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+5"/>
         <source>ALT+C</source>
-        <translation>ALT + C</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>ALT+I</source>
-        <translation>ALT + l</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+4"/>
         <source>ALT+S</source>
-        <translation>ALT + S</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Home</source>
-        <translation>&amp;Otthon</translation>
+        <translation>Kezdőla&amp;p</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -585,7 +748,7 @@
     <message>
         <location line="+6"/>
         <source>Sync with Table of Contents</source>
-        <translation>Tartalomjegyzékkel való szinkronizálás</translation>
+        <translation>Szinkronizálás a tartalomjegyzékkel</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -595,57 +758,61 @@
     <message>
         <location line="+5"/>
         <source>Next Page</source>
-        <translation>Következő lap</translation>
+        <translation>Következő oldal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ctrl+Alt+Right</source>
-        <translation>Ctrl+Alt+Right</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Previous Page</source>
-        <translation>Előző lap</translation>
+        <translation>Előző oldal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ctrl+Alt+Left</source>
-        <translation>Ctrl+Alt+Left</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+596"/>
+        <source>Could not register file &apos;%1&apos;: %2</source>
+        <translation>A(z) &apos;%1&apos; fájl regisztrálása sikertelen: %2</translation>
+    </message>
+    <message>
         <source>Add Bookmark...</source>
-        <translation>Könyvjelző hozzáadása...</translation>
+        <translation type="obsolete">Könyvjelző hozzáadása...</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-589"/>
         <source>About...</source>
         <translation>Névjegy...</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+21"/>
         <source>Navigation Toolbar</source>
         <translation>Navigációs eszköztár</translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+69"/>
         <source>Toolbars</source>
-        <translation>Eszköztár</translation>
+        <translation>Eszköztárak</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>Filter Toolbar</source>
-        <translation>Eszköztár szűrő</translation>
+        <translation>Szűrő eszköztár</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Filtered by:</source>
-        <translation>Szűrési feltétel:</translation>
+        <translation>Szűrés alapja: </translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+26"/>
         <source>Address Toolbar</source>
-        <translation>Eszköztár cím</translation>
+        <translation>Cím eszköztár</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -653,27 +820,27 @@
         <translation>Cím:</translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+112"/>
         <source>Could not find the associated content item.</source>
-        <translation>Nem sikerült az összekapcsolt tartalom elemet megtalálni.</translation>
+        <translation>A hozzárendelt tartalom nem található.</translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+60"/>
         <source>About %1</source>
-        <translation>%1-ről</translation>
+        <translation>%1 névjegye</translation>
     </message>
     <message>
-        <location line="+114"/>
+        <location line="+175"/>
         <source>Updating search index</source>
         <translation>Keresési index frissítése</translation>
     </message>
     <message>
-        <location line="-640"/>
+        <location line="-669"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Qt dokumentáció keresése...</translation>
     </message>
     <message>
-        <location line="+241"/>
+        <location line="+227"/>
         <source>&amp;Window</source>
         <translation>&amp;Ablak</translation>
     </message>
@@ -685,22 +852,22 @@
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation>Ctrl + M</translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-2"/>
         <source>Zoom</source>
-        <translation>Zoomolás</translation>
+        <translation>Nagyítás</translation>
     </message>
     <message>
-        <location line="-159"/>
+        <location line="-169"/>
         <source>&amp;File</source>
         <translation>&amp;Fájl</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+32"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Szerkesztés</translation>
+        <translation>S&amp;zerkesztés</translation>
     </message>
     <message>
         <location line="+27"/>
@@ -710,51 +877,46 @@
     <message>
         <location line="+30"/>
         <source>&amp;Go</source>
-        <translation>&amp;Gyerünk</translation>
+        <translation>&amp;Előre</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>ALT+Home</source>
-        <translation>ALT+Home</translation>
+        <translation></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>&amp;Bookmarks</source>
-        <translation>&amp;Könyvjelzők</translation>
+        <translation>Könyv&amp;jelzők</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
         <source>&amp;Help</source>
-        <translation>&amp;Segítség</translation>
+        <translation>&amp;Súgó</translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-38"/>
         <source>ALT+O</source>
-        <translation>ALT + 0</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>CTRL+D</source>
-        <translation>CTRL+D</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+259"/>
-        <location line="+43"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+252"/>
+        <location line="+44"/>
         <source>Add Documentation</source>
         <translation>Dokumentáció hozzáadása</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-44"/>
         <source>Qt Compressed Help Files (*.qch)</source>
-        <translation>Qt tömörített súgó fájlok (*.qch)</translation>
+        <translation>Qt tömörített súgófájlok (*.qch)</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+38"/>
         <source>The specified file is not a valid Qt Help File!</source>
-        <translation>A meghatározott fájl egy érvénytelen Qt Súgó fájl!</translation>
+        <translation>A megadott fájl nem Qt súgófájl!</translation>
     </message>
     <message>
         <location line="-8"/>
@@ -762,19 +924,19 @@
         <translation>A(z) %1 névtér már regisztrálva van!</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+32"/>
         <source>Remove Documentation</source>
         <translation>Dokumentáció eltávolítása</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation>Néhány dokumentum jelenleg az Assistant hivatkozásban lett megnyitva, amely az a dokumentum, amit megpróbál eltávolítani. A dokumentum eltávolítása be fogja zárni azokat a dokumentumokat.</translation>
+        <translation>Az eltávolítani kívánt dokumentációból néhány dokumentum jelenleg meg van nyitva az Asszisztensben. A dokumentáció eltávolításával ezen dokumentumok automatikusan bezárulnak.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cancel</source>
-        <translation>Mégse</translation>
+        <translation>Mégsem</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -782,9 +944,9 @@
         <translation>OK</translation>
     </message>
     <message>
-        <location line="+88"/>
+        <location line="+83"/>
         <source>Use custom settings</source>
-        <translation>Szokásos beállítások használata</translation>
+        <translation>Egyéni beállítások használata</translation>
     </message>
 </context>
 <context>
@@ -797,12 +959,12 @@
     <message>
         <location/>
         <source>Fonts</source>
-        <translation>Betűk</translation>
+        <translation>Betűtípus</translation>
     </message>
     <message>
         <location/>
         <source>Font settings:</source>
-        <translation>Betű beállítások:</translation>
+        <translation>Betűtípus beállítása:</translation>
     </message>
     <message>
         <location/>
@@ -822,17 +984,17 @@
     <message>
         <location/>
         <source>Filter:</source>
-        <translation>Szűrők:</translation>
+        <translation>Szűrő:</translation>
     </message>
     <message>
         <location/>
         <source>Attributes:</source>
-        <translation>Attrubútumok:</translation>
+        <translation>Attribútumok:</translation>
     </message>
     <message>
         <location/>
         <source>1</source>
-        <translation>1</translation>
+        <translation></translation>
     </message>
     <message>
         <location/>
@@ -842,7 +1004,7 @@
     <message>
         <location/>
         <source>Remove</source>
-        <translation>Eltávolítás</translation>
+        <translation>Törlés</translation>
     </message>
     <message>
         <location/>
@@ -867,37 +1029,38 @@
     <message>
         <location/>
         <source>Current Page</source>
-        <translation>Aktuális lap</translation>
+        <translation>Aktuális oldal</translation>
     </message>
     <message>
         <location/>
         <source>Restore to default</source>
-        <translation>Alapértelmezett beállítások visszaállítása</translation>
+        <translation>Alapértelmezés</translation>
     </message>
     <message>
         <location/>
         <source>Homepage</source>
-        <translation>Honlap</translation>
+        <translation>Kezdőlap</translation>
     </message>
     <message>
         <location/>
         <source>On help start:</source>
-        <translation>Súgó indításra:</translation>
+        <translation>A súgó indításakor:</translation>
     </message>
     <message>
         <location/>
         <source>Show my home page</source>
-        <translation>Honlapom megjelenítése</translation>
+        <translation>Mutassa a kezdőlapomat</translation>
     </message>
     <message>
         <location/>
         <source>Show a blank page</source>
-        <translation>Egy üres lap megjelenítése</translation>
+        <translation>Mutasson egy üres lapot</translation>
     </message>
     <message>
         <location/>
         <source>Show my tabs from last session</source>
-        <translation>A lapjaim megjelenításe a legutolsó szakaszból</translation>
+        <translatorcomment>Too long...</translatorcomment>
+        <translation>Mutassa az előzőleg megnyitott füleket</translation>
     </message>
     <message>
         <location/>
@@ -908,131 +1071,111 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
-        <translation>A meghatározott gyűjtemény fájl nem létezik!</translation>
+        <translation type="obsolete">A megadott gyűjtemény nem található!</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Missing collection file!</source>
-        <translation>Hiányzó gyűjtemény fájl!</translation>
+        <translation type="obsolete">A gyűjtemény fájl hiányzik!</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Invalid URL!</source>
-        <translation>Érvénytelen URL!</translation>
+        <translation type="obsolete">Az URL érvénytelen!</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Missing URL!</source>
-        <translation>Hiányzó URL!</translation>
+        <translation type="obsolete">Az URL hiányzik!</translation>
     </message>
     <message>
-        <location line="+17"/>
-        <location line="+19"/>
-        <location line="+19"/>
         <source>Unknown widget: %1</source>
-        <translation>Ismeretlen widget: %1</translation>
+        <translation type="obsolete">Ismeretlen elem: %1</translation>
     </message>
     <message>
-        <location line="-34"/>
-        <location line="+19"/>
-        <location line="+19"/>
         <source>Missing widget!</source>
-        <translation>Hiányzó widget!</translation>
+        <translation type="obsolete">Az elem hiányzik!</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+12"/>
         <source>The specified Qt help file does not exist!</source>
-        <translation>A meghatározott Qt súgó fájl nem létezik!</translation>
+        <translation type="obsolete">A megadott Qt súgófájl nem található!</translation>
     </message>
     <message>
-        <location line="-7"/>
-        <location line="+12"/>
         <source>Missing help file!</source>
-        <translation>Hiányzó súgó fájl!</translation>
+        <translation type="obsolete">A súgófájl hiányzik!</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Missing filter argument!</source>
-        <translation>Hiányzó szűrő argumentum!</translation>
+        <translation type="obsolete">A szűrőparaméter hiányzik!</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Unknown option: %1</source>
-        <translation>Ismeretlen opció: %1</translation>
+        <translation type="obsolete">Ismeretlen opció: %1</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <location line="+2"/>
         <source>Qt Assistant</source>
-        <translation>Qt Assistant</translation>
+        <translation type="obsolete">Qt Asszisztens</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+225"/>
         <source>Could not register documentation file
 %1
 
 Reason:
 %2</source>
-        <translation>Nem sikerült a dokumentációs fájl regisztrálása
+        <translation type="obsolete">A dokumentációs fájl regisztrálása sikertelen
 %1
 
-Ok:
+Oka:
 %2</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Documentation successfully registered.</source>
-        <translation>A dokumentáció regisztrálása sikeresen megtörtént.</translation>
+        <translation type="obsolete">A dokumentáció regisztrálása sikerült.</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Could not unregister documentation file
 %1
 
 Reason:
 %2</source>
-        <translation>Nem sikerült regisztrálni a dokumentációs fájlt
+        <translation type="obsolete">A dokumentációs fájl eltávolítása sikertelen
 %1
 
-Ok:
+Oka:
 %2</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>Documentation successfully unregistered.</source>
-        <translation>Dokumentáció regisztrációjának megszűntetése sikeresen megtörtént.</translation>
+        <translation type="obsolete">A dokumentáció eltávolítása sikerült.</translation>
     </message>
     <message>
-        <location line="+40"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation>Nem lehet betölteni az sqlite adatbázis vezérlőt!</translation>
+        <translation type="obsolete">Az sqlite adatbázisdriver nem tölthető be!</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>The specified collection file could not be read!</source>
-        <translation>A meghatározott gyűjtemény fájlt nem lehet olvasni!</translation>
+        <translation type="obsolete">A megadott gyűjtemény nem olvasható!</translation>
+    </message>
+    <message>
+        <source>Bookmark</source>
+        <translation type="obsolete">Könyvjelző</translation>
     </message>
 </context>
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+165"/>
         <source>Debugging Remote Control</source>
-        <translation>Debuggolás Távoli Vezérlő</translation>
+        <translation>Hibakövetés távoli vezérlése</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Received Command: %1 %2</source>
-        <translation>Elfogadott parancs: %1 %2</translation>
+        <translation>A kapott parancs: %1 %2</translation>
     </message>
 </context>
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+196"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+210"/>
         <source>&amp;Copy</source>
         <translation>&amp;Másolás</translation>
     </message>
@@ -1044,40 +1187,44 @@ Ok:
     <message>
         <location line="+4"/>
         <source>Open Link in New Tab</source>
-        <translation>Link megnyitása új lapon</translation>
+        <translation>Link megnyitása új fülön</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Select All</source>
-        <translation>Az összes kiválasztása</translation>
+        <translation>Mindent kijelöl</translation>
+    </message>
+    <message>
+        <source>Open Link</source>
+        <translation type="obsolete">Link megnyitása</translation>
     </message>
 </context>
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
+        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+53"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
-        <translation>Topik választása a következőhöz: &lt;b&gt;%1&lt;/b&gt;:</translation>
+        <translation>Téma választása ehhez: &lt;b&gt;%1&lt;/b&gt;:</translation>
     </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/topicchooser.ui"/>
         <source>Choose Topic</source>
-        <translation>Topik választása</translation>
+        <translation>Téma választása </translation>
     </message>
     <message>
         <location/>
         <source>&amp;Topics</source>
-        <translation>&amp;Topikok</translation>
+        <translation>&amp;Témák</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Display</source>
-        <translation>&amp;Kijelzés</translation>
+        <translation>Meg&amp;jelenítés</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Close</source>
-        <translation>&amp;Bezárás</translation>
+        <translation>Be&amp;zárás</translation>
     </message>
 </context>
 </TS>

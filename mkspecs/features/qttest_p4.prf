@@ -1,51 +1,17 @@
 isEmpty(TEMPLATE):TEMPLATE=app
-CONFIG += qt warn_on console depend_includepath
+CONFIG += qt warn_on console depend_includepath testcase
 
 qtAddLibrary(QtTest)
 
 symbian:{
     TARGET.EPOCHEAPSIZE = 0x100000 0x2000000
 #    DEFINES += QTEST_NO_SPECIALIZATIONS
-    TARGET.CAPABILITY="ALL -TCB"
+    TARGET.CAPABILITY="None"
     RSS_RULES ="group_name=\"QtTests\";" 
 }
 
 # prefix test binary with tst_
 !contains(TARGET, ^tst_.*):TARGET = $$join(TARGET,,"tst_")
-
-
-check.files                =
-check.path                 = .
-!isEmpty(DESTDIR): check.commands = cd ./$(DESTDIR) &&
-macx:      check.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
-else:unix: check.commands += ./$(QMAKE_TARGET)
-else:win32: {
-    CONFIG(debug, debug|release):check.commands += $(DESTDIR_TARGET)
-    else:check.commands += $(DESTDIR_TARGET)
-}
-embedded:  check.commands += -qws
-QMAKE_EXTRA_TARGETS += check
-
-!debug_and_release|build_pass {
-    check.depends = first
-} else {
-    check.CONFIG = recursive
-    # In debug and release mode, only run the test once.
-    # Run debug if available, release otherwise.
-    debug_and_release {
-        check.target = dummy_check
-        check.recurse_target = check
-        debug {
-            real_check.depends = debug-check
-            real_check.target = check
-            QMAKE_EXTRA_TARGETS += real_check
-        } else {
-            real_check.depends = release-check
-            real_check.target = check
-            QMAKE_EXTRA_TARGETS += real_check
-        }
-    }
-}
 
 target.path += $$[QT_INSTALL_PREFIX]/tests/qt4
 INSTALLS += target

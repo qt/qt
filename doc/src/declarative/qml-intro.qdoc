@@ -1,0 +1,967 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+
+
+/*!
+
+\page  qml-intro.html
+\title Beginning Qt Quick
+
+
+\section1 Overview
+
+
+QML is a high level, scripted language. Its commands, more correctly \e elements,
+leverage the power and efficiency of the Qt libraries to make easy to use
+commands that perform intuitive functions. Draw a rectangle, display an image at
+a position and so on. Behind these elements are complex C++ libraries that
+efficiently perform the action. As with any graphical application, always
+consider that this ability to easily build graphically rich applications means
+that some care may be needed to prevent performance problems.
+
+The language also allows more flexibility of these commands by using
+Javascript rather than C++ to add new layers of logic to your application.
+Javascript is easier to learn than C++ and can be embedded into the QML
+files or imported from a separate file.
+
+\bold{In QML the types of various 'objects' are referred to as \l {QML
+Elements}{ elements}}.
+
+An element usually has various \e properties that help define the element. For
+example, if we created an element called Circle then the radius of the circle
+would be a property.
+
+
+\section1 A First Look
+
+The basic syntax of an \l {QML Elements}{element} is
+
+    \code
+    SomeElement {
+        id: myObject
+        ... some other things here ...
+    }
+    \endcode
+
+Here we are defining a new object. We specify its 'type' first as SomeElement.
+Then within matching braces { ... } we specify the various parts of our 
+element.
+
+The \c id is a unique identifier for the element, it must start with a lower
+case letter and only contain letters, numbers and underscores. It is this
+particular object's name. If this SomeElement \l {QML Elements}{element} was
+a Rectangle instead and it was one of many then the \e optional unique id
+would allow us to manipulate each element individually.
+
+Each visual element is ultimately based on, or inherits from, an element
+called \l Item. \l Item has certain properties and actions that may be
+useful. The properties have default values so you need only specify the
+ones you will need.
+
+Take a simple element such as a \l Rectangle. It has an \c id, we will call
+it \e myRectangle, it has a \c width and a \c height. Imagine that we
+want a rectangle that is 500 pixels by 400 pixels in the x and y directions
+(horizontal by vertical).
+
+We can implement this \l Rectangle with these properties this way
+
+    \code
+    import Qt 4.7
+
+    // This is a comment. And below myRectangle is defined.
+    Rectangle {
+        id: myRectangle
+        width: 500
+        height: 400
+    }
+    \endcode
+
+This is a valid QML script. To run it, copy it and save it to a file, say
+myexample.qml, and on the command line run the command
+
+    \code
+    qml myexample.qml
+    \endcode
+
+It will create a very boring rectangle in its own window.
+
+
+
+\section1 Hello World!
+
+We can now add some color and text to make a Hello World QML program.
+
+\l Rectangle has the property \l {Rectangle::color}{color} to produce a
+background color.
+
+Text is handled by a different element called \l Text. We need to create a
+\l Text object inside the \l Rectangle and set its \l {Text::text}{text}
+property to "Hello World!". So to set the text to 'Hello world' and the
+background colour to light gray,
+
+    \code
+    import Qt 4.7
+    
+    Rectangle {
+        id: myRectangle
+        width: 500
+        height: 400
+
+        Text { text: "Hello World!" }
+
+        color: "lightgray"
+    }
+    \endcode
+
+
+\section1 Hello World Again
+
+From now on we will not always show the import statement for Qt but it
+should still be there when you create your QML scripts.
+
+To make our Hello World example a little nicer set the position of the text
+to be at pixel position x = 100, y = 100 within the displayed window. This
+position belongs to the \l Text element so we set the position inside its
+definition. Note that we separate different QML statements on the same line
+with a semi-colon, or we could have simply put each statement on a new line
+
+    \code
+    Text {
+        text: "<h2>Hello World</h2>"; color: "darkgreen"
+        x: 100; y:100
+    }
+    \endcode
+
+Not only did we reposition the text, but the text was altered by adding
+HTML tags to change the font size. The text color was also changed from the
+default black to dark green by using a standard string for the color's SVG
+name.
+
+We could also have used a hexadecimal string for the RGB (red-green-blue, as
+#rrggbb) values of the color similar to the method used in HTML. For
+example, mostly blue with a green tint,
+
+    \code
+    Text {
+        text: "<h1>Hello world again</h1>"
+        color: "#002288"
+        x: 100; y: 100
+    }
+    \endcode
+
+All of these changes occurred within the \l Text object which is the scope
+of these property changes.
+
+Other objects may use the information but it belongs to the element where
+the property has been defined.
+
+
+\section1 Images
+
+To add an image to our little application we use the \l Image element. An
+\l Image uses a path to an image file, and has properties to control
+the aspect ratio, the image size, to tile the area amongst others. The
+source of the image, the path to the file, is a URL. Therefore the file can
+be local: \e {mydir/myimage1.png}. Or it can be remote:
+\e {"http://www.example.com/images/myimage1.png"}.
+
+    \code
+    Image {
+        source: "images/qt-logo.png"
+    }
+    \endcode
+
+This displays the image, as we would expect, at the top left of the window.
+The position of the default x = 0, y = 0 coordinate. The example here uses
+a PNG file, but it could have been one of various supported formats,
+including JPG and GIF.
+
+Let us reposition the image and enlarge it. Place it at the same 'x' offset
+as the "Hello world again" text, but put it another 50 pixels below the
+text, also make it 150 by 150 pixels in size,
+
+    \code
+    Image {
+        source: "images/qt-logo.png"
+        x: 100; y: 150
+        width: 150; height: 150
+    }
+    \endcode
+
+Adding the Hello World example, with the text and the image example we can
+write a simple piece of QML that starts to look a bit better.
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: myRectangle
+        width: 500
+        height: 400
+        
+        // A light gray background
+        color: "lightgray"
+
+        // Position and color some text
+        Text {
+            text: "<h1>Hello world again</h1>"
+            color: "darkgreen"
+            x: 100; y: 100
+        }
+
+        // Using the opportunity to resize the image.
+        Image {
+            source: "images/qt-logo.png"
+            x: 100; y: 150
+            width: 150; height: 150
+        }
+
+    }
+    \endcode
+
+The result is still quite simple
+
+\image qml-intro-helloa.png
+
+
+\section1 Anchors: Aligning Elements
+
+Using absolute positioning, such as saying x = 100 and y = 150, works well
+until the user or developer stretches or increases the size of the window.
+Then the positions need to be recalculated. What would be nice would be a
+relative means of positioning of objects in a window or rectangle. For
+example, we want to place an image at the bottom of a rectangle, we would
+like to specify the image's location as the 'bottom of the window', not a
+specific coordinate. We can do this with the anchors property, which
+objects inherit from Item.
+
+The anchors property is really a property group. It is a collection of
+related properties. It has properties within it which can be used by means
+of the dot notation.
+
+The dot notation uses object \c{id}s and property names to use a particular
+object or property. Say I have a rectangle r1, which contains a rectangle
+r2, which contains an Item item1, which has an 'x' property I want to
+change. I just use the dot notation to identify it: r1.r2.item1.x
+
+If we want to position an image at the bottom of the rectangle it is
+inside. I have to specify that the bottom of the image is also at the
+bottom of the rectangle
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: myWin
+        width: 500
+        height: 400
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            width: 150; height: 150
+            anchors.bottom: myWin.bottom
+        }
+    }
+    \endcode
+
+This places the logo at the bottom left of the window.
+
+\image qml-intro-anchors1.png  "A simple anchor"
+
+We would like it centered and not touching the bottom of the window, for
+aesthetic reasons. For the centering we use the horizontalCenter property,
+and to prevent the touching of the image to the bottom of the rectangle,
+the bottomMargin property is used. So the new actions for the script are
+
+    \list
+    \o set the bottom of the image (anchors.bottom) to be the bottom of the window
+    \o move the image to be in the horizontal center of the window
+    \o set a margin of 10 pixels so that the image does not touch the bottom window border
+    \endlist
+
+Encoded into QML the script becomes
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: myWin
+        width: 500
+        height: 400
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            width: 150; height: 150
+            anchors.bottom: myWin.bottom
+            anchors.horizontalCenter: myWin.horizontalCenter
+            anchors.bottomMargin: 10
+        }
+    }
+    \endcode
+
+
+Run this and resize the window. You will see that now the position of the
+image adjusts during the resize.
+
+\image qml-intro-anchors2.png  "Image Centered at the Bottom"
+
+You can also add another object say a block of descriptive text and place
+it above or below the image or to the side. This code places some text just
+above the image
+
+    \code
+    Text {
+        text: "<h2>The Qt Logo</h2>"
+        anchors.bottom: image1.top
+        anchors.horizontalCenter: myWin.horizontalCenter
+        anchors.bottomMargin: 15
+    }
+    \endcode
+
+\image qml-intro-anchors3.png
+
+\note \e anchors is a property group, to be used within the object. When
+referencing these properties from another object we use the property
+directly, instead of saying:
+
+    \code
+    myRectangle.anchors.top  // Wrong
+    \endcode
+
+we use
+
+    \code
+    myRectangle.top         // Correct
+    \endcode
+
+
+
+
+\section1 Transformations
+
+We can transform a graphical object to get additional effects. Rotate a
+piece of text by 180 degrees to display upside-down text. Rotate an image
+by 90 degrees to lay it on its side. These transformations require
+additonal information.
+
+For rotation, the additional information includes: the origin relative to
+the object being rotated, the axis of rotation, and the angle in degrees to
+rotate the image through in a clockwise direction. The axis does not have
+to be the z-axis, the line between your eyes and the image, it could be
+along the vertical y-axis or the horizontal x-axis. We have three
+dimensions to play with. For simplicity in this example we will rotate
+about the z-axis by 90 degrees in a negative direction, anti-clockwise.
+
+Rotation of text was also suggested. It could also be useful to scale the
+text. We can do both. The \l {Item::transform}{transform} property is a
+\e list of \l Transform elements, so using the list syntax
+
+    \code
+    myList: [ listElement1, listElement2, ... } ]
+    \endcode
+
+we can produce a list of transformations.
+
+The text will be rotated by 45 degrees anti-clockwise and scaled 
+vertically by a factor of 1.5 and by 1.2 horizontally.
+
+Using the example above as the basis for this we have,
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: myWin
+        width: 500
+        height: 400
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            width: 150; height: 150
+            anchors.bottom: myWin.bottom
+            anchors.horizontalCenter: myWin.horizontalCenter
+            anchors.bottomMargin: 10
+
+            transform: Rotation {
+                origin.x: 75; origin.y: 75
+                axis{ x: 0; y: 0; z:1 }  angle: -90
+            }
+
+        }
+        
+        Text {
+            text: "<h2>The Qt Logo -- taking it easy</h2>"
+            anchors.bottom: image1.top
+            anchors.horizontalCenter: myWin.horizontalCenter
+            anchors.bottomMargin: 15
+
+            transform: [
+                Scale { xScale: 1.5; yScale: 1.2 } ,
+            
+                Rotation {
+                    origin.x: 75; origin.y: 75
+                    axis{ x: 0; y: 0; z:1 }  angle: -45
+                }
+            ]
+        }
+    }
+    \endcode
+
+The code block in \c image1 starting with \c transform specifies that the
+\l {Item::transform}{transform} property will be a Rotation through -90
+degrees, which is anti-clockwise, about the z-axis running through the
+center of the image at (75,75), since the image is 150 x 150 pixels.
+
+The other transformation available is \l Translate. This produces a change
+in position of the item.
+
+\note In a list of transformations the order of the transformations is
+important. In the above example try swapping around the Scale transform with
+the Rotation transform, remember to remove or add the comma. The results are
+acceptable for our little test but not the same.
+
+
+\section1 Animations
+
+Animation in QML is done by animating properties of objects. Properties
+that are numbers, colors, Rectangles, points and directions. In QML these
+are \l {QML Basic Types} named as real, int, color, rect, point, size, and
+vector3d. There are a number of different ways to do animation. Here we
+will look at a few of them.
+
+\section2 Number Animation
+
+Previously we have used a rotation transformation to change the orientation
+of an image. We could easily animate this rotation so that instead of a
+straight rotation counter-clockwise of 90 degrees we could rotate the image
+through a full 360 degrees in an animation. The axis of rotation wont
+change, the position of the center of the image will not change, only the
+angle will change. Therefore, a NumberAnimation of a rotation's angle should
+be enough for the task. If we wish for a simple rotation about the center
+of the image then we can use the \c rotation property that is inherited
+from \l Item. The rotation property is a real number that specifies the
+angle in a clockwise direction for the rotation of the object. Here is the
+code for our animated rotating image.
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: mainRec
+        width:  600
+        height: 400
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            x: 200; y: 100
+            width: 100; height: 100
+            
+            // Animate a rotation
+            transformOrigin: Item.Center
+            NumberAnimation on rotation {
+                from: 0; to: 360
+                duration: 2000
+                loops: Animation.Infinite
+            }
+        }
+    }
+    \endcode
+
+The \c {transformOrigin: Item.Center} is redundant since this is the default
+axis of rotation anyway. But if you change \c Center to \c BottomRight you
+will see an interesting variation.
+
+Also if instead the \l Rotation transformation had been used then we would have
+more control over the various parameters. We could vary the axis, to be not
+just a different offset from the z-axis but along the y-axis, x-axis or
+combination. For example, if the task had been to animate the rotation
+about the y-axis passing through the center of the image then the following
+code would do it.
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: mainRec
+        width:  600
+        height: 400
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            x: 200; y: 100
+            width: 100; height: 100
+
+            // Animate a rotation
+            transform: Rotation {
+                origin.x: 50; origin.y: 50; axis {x:0; y:1; z:0} angle:0
+                NumberAnimation on angle  {
+                    from: 0; to: 360;
+                    duration: 3000;
+                    loops: Animation.Infinite
+                }
+            }
+        }
+    }
+    \endcode
+
+Here there is a rectangle 600 by 400 pixels. Placed within that rectangle
+is an image 100 by 100 pixels. It is rotated about the center of the image
+about the y-axis so that it looks as if it is rotating about an invisible
+vertical string holding it up. The time it takes to complete the rotation is 3
+seconds (3,000 milliseconds). The NumberAnimation is applied to the angle
+taking it from 0 (no change) to 360 degrees, back where it started.
+Strictly speaking it isn't necessary to go from 0 to 360 since the same
+location is duplicated, but it makes it easier to read in this example and
+it has no visible effect on the animation. The number of loops that the
+animation will execute is set to \c {Animation.Infinite} which means that the
+animation is in an endless loop.
+
+To see an interesting variation. Change the axis to \c {axis { x:1; y:1; z:1
+}}. This is a line coming from the center of the image downwards to the
+right and out of the screen. Although the change is simple the rotation
+seems complex.
+
+\section2 Sequential Animation
+
+For a more complex animation we will need two images. The first image will
+be placed at the center of a window (Rectangle) and the second image will
+be at the upper left of the window. The animation will move the second
+image from the top left of the window to the bottom right. In doing so we
+will be animating the position and the size of the image.
+
+First create two images
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: mainRec
+        width:  600
+        height: 400
+        z: 0
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            x: 20; y: 20 ; z: 1
+            width: 100; height: 100
+        }
+
+        Image {
+            id: image2
+            source: "images/qt-logo.png"
+            width: 100; height: 100
+            x: (mainRec.width - 100)/2; y: (mainRec.height - 100)/2
+            z: 2
+        }
+    }
+    \endcode
+
+We will add to 'image1' a SequentialAnimation from x = 20 to the target of
+x = 450. The 'from' values will be used because we will be repeating the
+animation, so the object needs to know where the original position is, both
+x and y. The SequentialAnimation of x will set it to repeat by indicating
+that the number of animation loops is infinite, meaning that the 'loop'
+counter will be set to a value Animation.Infinite that indicates an endless
+cycle. Also there will be a NumberAnimation to vary the numeric property
+between the x values and over a given duration. After the NumberAnimation
+there will be a PauseAnimation that will pause the animation for 500
+milliseconds (half a second) simply for the visual effect.
+
+    \code
+    SequentialAnimation on x {
+        loops: Animation.Infinite
+        NumberAnimation { from: 20; to: 450; easing.type: "InOutQuad";
+duration: 2000 }
+        PauseAnimation { duration: 500 }
+    }
+    \endcode
+
+A similar block of code is written for the animation of the 'y' value of
+the position.
+
+We will also animate the scale of the object, so as it goes from top left
+to bottom right of the window it will become smaller until about midway,
+and then become larger. To complete the animation we will set the 'z'
+values of the images. 'z' is the stacking order, the z-axis effectively
+points out from the screen to your eyes with the default value of 'z' being
+0. So if we set the Rectangle to have z with value zero, just to be sure,
+and image1 to 1 and image2 to 2 then image2 will be in the foreground and
+image1 in the background. When image1 passes image2 it will pass behind it.
+The completed code looks like
+
+    \code
+    Rectangle {
+        id: mainRec
+        width:  600
+        height: 400
+        z: 0
+
+        Image {
+            id: image2
+            source: "images/qt-logo.png"
+            width: 100; height: 100
+            x: (mainRec.width - 100)/2; y: (mainRec.height - 100)/2
+            z: 2
+        }
+
+        Image {
+            id: image1
+            source: "images/qt-logo.png"
+            x: 20; y: 20 ; z: 1
+            width: 100; height: 100
+
+            SequentialAnimation on x {
+                loops: Animation.Infinite
+                NumberAnimation {
+                    from: 20; to: 450
+                    easing.type: "InOutQuad"; duration: 2000
+                }
+                PauseAnimation { duration: 500 }
+            }
+            
+            SequentialAnimation on y {
+                loops: Animation.Infinite
+                NumberAnimation {
+                    from: 20; to: 250
+                    easing.type: "InOutQuad"; duration: 2000
+                }
+                PauseAnimation { duration: 500 }
+            }
+
+            SequentialAnimation on scale {
+                loops: Animation.Infinite
+                NumberAnimation { from: 1; to: 0.5; duration: 1000 }
+                NumberAnimation { from: 0.5; to: 1; duration: 1000 }
+                PauseAnimation { duration: 500 }
+            }
+        }
+    }
+    \endcode
+
+The \c {easing.type} has many options, expressed as a string. It specifies the
+kind of equation that describes the acceleration of the property value, not
+necessarily position, over time.
+
+For example, \e InOutQuad means that at the start and the end of the animation the
+'velocity' is low but the acceleration or deceleration is high. Much like a car
+accelerating from stop, and decelerating to stop at the end of a journey,
+with the maximum speed being in the middle. Examine the \l {PropertyAnimation::easing.type}
+{easing} documentation and the various graphs that show the effect. The horizontal
+axis, 'progress', can be thought of as time. The vertical axis is the value
+of the particular property.
+
+In discussing animation we need to describe three objects: State, MouseArea
+and Signals. Although independent of the animation elements, animation
+delivers some of the best examples that illustrate these new elements.
+
+
+
+\section2 Animation Summary
+
+\table
+    \header
+        \o Name
+        \o Description
+    \row
+        \o PropertyAnimation
+        \o a property value on a target object is varied to a specified value over a given time.
+
+    \row
+        \o NumberAnimation
+        \o animate a numeric property from one value to another over a given time.
+
+    \row
+        \o PauseAnimation
+        \o results in the task waiting for the specified duration, in milliseconds.
+
+    \row
+        \o SequentialAnimation
+        \o allows us to list in order the animation events we want to occur, first A then B then C and so on.
+
+    \row
+        \o ParallelAnimation
+        \o enables us to run different animations at the same time instead of sequentially.
+
+\endtable
+
+
+
+
+
+\section1 Using States
+
+A state is a defined set of values in the configuration of an object and
+often depends on the previous state. For example, a glass could be in a
+state we call 'HalfFull' if it is being filled with a liquid and has
+reached half of its total capacity. We could also have a state called
+HalfEmpty which is the state that occurs when the amount of liquid drops to
+half of the glass's capacity. Both states represent the same amount of
+liquid, but we consider them different. Likewise, states in a program
+represent not just values but may include how the current values were
+reached.
+
+When a state changes a \e transition occurs. This is an opportunity to make
+changes or take actions that depend on the movement to the new state. For
+example, if we had a scene in the country where the state variable has two
+states "daylight" and "night". Then when the state changes to "night" at
+this transition the sky would be made dark, stars would be shown, the
+countryside would be darkened. And when the state changes to "daylight" the
+opposite changes would be made: the sky is now blue, the scenery is green,
+there is a sun in the sky.
+
+Here is a simple QML program that shows the change of state in the above
+example. We have two rectangles, the top one is the 'sky' and the bottom
+one is the 'ground'. We will animate the change from daylight to night.
+There will be two states, but we only need to define one since 'daylight'
+will be the default state. We will just go to 'night' by clicking and
+holding the left mouse button down, releasing the mouse button will reverse
+the process
+
+    \code
+    import Qt 4.7
+
+    Rectangle {
+        id: mainRectangle
+        width:  600
+        height: 400
+        color: "black"
+
+        Rectangle {
+            id: sky
+            width: 600
+            height: 200
+            y: 0
+            color: "lightblue"
+        }
+
+        Rectangle {
+            id: ground
+            width: 600; height: 200
+            y: 200
+            color: "green"
+        }
+
+        MouseArea {
+            id: mousearea
+            anchors.fill: mainRectangle
+        }
+
+        states: [ State {
+                name: "night"
+                when: mousearea.pressed == true
+                PropertyChanges { target: sky; color: "darkblue" }
+                PropertyChanges { target: ground; color: "black" }
+            },
+            State {
+                name: "daylight"
+                when: mousearea.pressed == false
+                PropertyChanges { target: sky; color: "lightblue" }
+                PropertyChanges { target: ground; color: "green" }
+            }
+        ]
+
+        transitions: [ Transition {
+                from: "daylight"; to: "night"
+                ColorAnimation { duration: 1000 }
+            },
+            Transition {
+                from: "night"; to: "daylight"
+                ColorAnimation { duration: 500 }
+            }
+        ]
+    }
+    \endcode
+
+Several new things appear in this sample. Firstly, we use a \l MouseArea
+element to detect mouse clicks in the \e mainRectangle. Secondly, we use
+the list notation [ thing1 , thing2, ... ] to build a list of states and a
+list of transitions.
+
+\l MouseArea defines a region that will respond to mouse clicks. In this case
+we are only concerned with when the mouse is pressed or not pressed, not
+the particular button or other details. The area of the MouseArea is the
+entire main window, mainRectangle, so that clicking anywhere in this region
+will start the animation. Since we are using the 'pressed' mouse state,
+then the animation will move from 'daylight' to 'night' only while the mouse
+button remains pressed.
+
+When the button is released the 'daylight' state is entered and the
+transition from 'night' to 'daylight' is triggered causing the animation to
+run. The transition specifies the duration in milliseconds of the
+ColorAnimation, while the state specifies the color of the new state.
+
+The PropertyChanges command is the way that we nominate which properties
+will change in a change of state, and what new value the property will
+take. Since, for example, we want the 'sky' region to turn to dark blue and
+the 'ground' region to turn to black for the 'night' state, then the
+rectangles for those regions are the 'target' and the property in the target
+is 'color'.
+
+
+\section1 Signals
+
+Signals are simply events that can be hooked up to actions we want performed.
+In QML they are usually preceded by the word 'on', for example in the animation
+using a MouseArea the signal was \l {MouseArea::onPressed}{onPressed}. If
+you look at the C++ documentation you will see a lot of talk about
+\l {Signals & Slots}{Signals and Slots}. Signals are connected to Slots. The
+signal represents an event and the Slot is the function that does something
+based on that event. You can also have Signals connected to other Signals, so
+that one Signal (event) triggers another Signal (event), and so forth. It is
+nice to know this is what happens beneath the QML layer but not essential for
+using QML.
+
+Most elements do not have Signals associated with them. However, a few like
+the \l Audio element have many signals. Some of the \l Audio signals are
+used to represent events such as when the audio is stopped, play is pressed,
+paused, and reaching the end of the media. They allow the developer to connect,
+ for example, the press of a user interface button (perhaps a MouseArea) to
+ some QML that will handle this event.
+
+
+\section1 Analyzing An Example: Dial Control
+
+In the Qt \e {examples/declarative/ui-components} folder you will find a folder
+\e {dialcontrol} which contains the \e dialcontrol example.
+
+\image qml-dial.png  "QML Dial example with Slider"
+
+In essence this small application has a sliding bar that you can slide using
+a mouse, and a graphical dial that responds to the position of the slider.
+
+The code for the example is in two parts: Dial.qml and dialcontrol.qml.
+
+\e {Dial.qml} can be found in the \e content sub-directory. It defines a \c Dial
+component similar to an odometer. Eventually, the example will hook up a slider
+component so that moving the slider will change the position of a needle on the
+dial.
+
+The code for the \c Dial, identified by the name of the file, contains four images
+in overlapping order: the background (numbers and divisions), the shadow of the
+needle, the needle itself, and finally the 'glass' overlay (containing
+transparent layers).
+
+The \c needle_shadow.png image has a \l Rotation assigned to the \e transform
+attribute of the \l Image. The rotation is set to match the angle of the needle
+image angle value \e {needleRotation.angle}. Both the needle and the
+needle_shadow have the same default \e x and \e y values but the rotation origin
+for the needle is slightly different so that a shadow will be evident as the
+needle moves.
+
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle_shadow
+
+And the needle
+
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle
+
+The final image is the overlay which simply has a position defined.
+
+\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  overlay
+
+\e {dialcontrol.qml} in the \e {examples/declarative/ui-components/dialcontrol} directory is the
+main file of the example. It defines the visual environment that the Dial
+will fit into. Because the \e Dial component and the images live in the \e
+content sub-directory we will have to import this into \e dialcontrol.qml. So the
+start of the file looks like
+
+    \code
+    import Qt 4.7
+    import "content"
+    \endcode
+
+The visual space is bound by a 300 by 300 pixel \l Rectangle which is given
+a gray color. Inside this rectangle is our component \e Dial and a \l Rectangle.
+Inside the rectangle called 'container' is another rectangle with the
+interesting name 'slider'.
+
+\snippet ../../examples/declarative/ui-components/dialcontrol/dialcontrol.qml  0
+
+The Dial component, named 'dial, is \e anchored to the center of the main
+rectangle. The \c value attribute of 'dial' is set to a value based on the
+'slider' horizontal position and the 'container' width. So changes to the
+'slider' position will change the Dial \c value which is used in Dial to compute
+the rotation of the needle image. Notice this piece of code in Dial where
+the change in \c value modifies the position of the needle.
+
+    \code
+    SpringFollow on angle {
+        spring: 1.4
+        damping: .15
+        to: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+    }
+    \endcode
+
+This is part of the \c needleRotation that rotates the needle and causes the
+rotation of its shadow. \l SpringFollow is an element that modifies the value
+of that rotation angle \e to and mimics the oscillatory behavior of a spring,
+with the appropriate \e spring constant to control the acceleration and the \e
+damping to control how quickly the effect dies away.
+
+The 'container' is light gray with a color gradient defined using
+\l GradientStop. The gradient is applied vertically. If you need a horizontal
+gradient then you could apply the vertical gradient and then rotate the item
+by 90 degrees.
+
+The 'slider' is dark gray and also has a vertical color gradient. The most
+important thing about the 'slider' is that it has a MouseArea defined, which
+specifies a \c {drag.target} on itself along the X-axis. With minimum
+and maximum values on the X-axis defined. So we can click on the 'slider' and
+drag it left and right within the confines of the 'container'. The motion of
+the 'slider' will then change the \c value attribute in \e Dial as discussed
+already.
+
+Also notice the use of a \c radius value for a rectangle. This produces rounded
+corners. That is how the 'container' and 'slider' are displayed with a
+pleasant rounded look.
+
+
+
+*/
+
+
+

@@ -1,7 +1,7 @@
 # we have some module specific options (defined in qt.prf) lets add them
-!contains(TARGET, ".*[ -].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
+!contains(TARGET, ".*[ -/].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
 !isEmpty(TMPVAR):QMAKE_CXXFLAGS += $$TMPVAR
-!contains(TARGET, ".*[ -].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
+!contains(TARGET, ".*[ -/].*"):eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
 !isEmpty(TMPVAR) {
     QMAKE_LFLAGS += $$TMPVAR
 } else :linux-gcce {  # lets provide a simple default. Without elf2e32 complains
@@ -22,16 +22,16 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(Q
 }
 
 defineReplace(processSymbianLibraries) {
-    library = $$replace(1, "\.dll$", ".dso")
+    library = $$replace(1, "\\.dll$", ".dso")
     library = $$replace(library, "^-l", "")
-    isFullName = $$find(library, \.)
+    isFullName = $$find(library, \\.)
     isEmpty(isFullName):library="$${library}.dso"
     linux-gcce {
         newLIB = "-l:$${library}"
     } else {
         newLIB = "$${library}"
     }
-    contains(library, "\.dso$")|contains(library, ".lib$"):PRE_TARGETDEPS += $$library
+    contains(library, "\\.dso$")|contains(library, "\\.lib$"):PRE_TARGETDEPS += $$library
     return($$newLIB)
 }
 
@@ -55,7 +55,7 @@ isEmpty(VERSION) {
 }
 
 # Check for version validity.
-!isEmpty(VERSION):!contains(VERSION, "[0-9]+"):!contains(VERSION, "[0-9]+\.[0-9]+")!contains(VERSION, "[0-9]+(\.[0-9]+){2}") {
+!isEmpty(VERSION):!contains(VERSION, "[0-9]+"):!contains(VERSION, "[0-9]+\\.[0-9]+")!contains(VERSION, "[0-9]+(\\.[0-9]+){2}") {
     error("Invalid VERSION for Symbian: $$VERSION")
 }
 
@@ -86,7 +86,7 @@ isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
 
 capability = $$replace(TARGET.CAPABILITY, " ", "+")
 capability = $$join(capability, "+")
-capability = $$replace(capability, "\+-", "-")
+capability = $$replace(capability, "\\+-", "-")
 isEmpty(capability): capability = "None"
 capability = "--capability=$$capability"
 
@@ -96,17 +96,26 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
         QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
         QMAKE_POST_LINK = && $$QMAKE_POST_LINK
     }
+
+    contains(CONFIG, plugin):QMAKE_ELF2E32_FLAGS += --definput=plugin_commonu.def
+
     # The tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error.
     # The comparison of dso files is to avoid extra building of modules that depend on this dso, in
     # case it has not changed.
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET}.dll $$symbianDestdir/$${TARGET}.sym \
-                      && elf2e32  --version=$$decVersion --sid=$$TARGET.SID  --uid1=0x10000079 \
-                      --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 \
-                      --stack=0x00014000 --fpu=softvfp --targettype=DLL \
-                      --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.dll \
-                      --dso=$$symbianObjdir/$${TARGET}.dso --defoutput=$$symbianObjdir/$${TARGET}.def \
-                      --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
-                      --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      && elf2e32  --version=$$decVersion \
+                      --sid=$$TARGET.SID \
+                      --uid1=0x10000079 \
+                      --uid2=$$TARGET.UID2 \
+                      --uid3=$$TARGET.UID3 \
+                      --targettype=DLL \
+                      --elfinput=$${symbianDestdir}/$${TARGET}.sym \
+                      --output=$${symbianDestdir}/$${TARGET}.dll \
+                      --dso=$$symbianObjdir/$${TARGET}.dso \
+                      --defoutput=$$symbianObjdir/$${TARGET}.def \
+                      --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+                      $$elf2e32_LIBPATH \
+                      $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
                       | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
                       && if ! diff -q $${symbianObjdir}/$${TARGET}.dso $${symbianDestdir}/$${TARGET}.dso \
@@ -120,9 +129,10 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
     linux-armcc: {
-        QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
+        LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
+        LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
     } else :linux-gcce {
-        QMAKE_LIBS += \
+        LIBS += \
             -l:edll.lib \
             -l:usrt2_2.lib \
             -l:dfpaeabi.dso \
@@ -144,12 +154,17 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     }
     # the tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym \
-                      && elf2e32  --version $$decVersion --sid=$$TARGET.SID  --uid1=0x1000007a \
-                      --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 \
-                      --stack=0x00014000 --fpu=softvfp --targettype=EXE \
-                      --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.exe \
-                      --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
-                      --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      && elf2e32  --version $$decVersion \
+                      --sid=$$TARGET.SID \
+                      --uid1=0x1000007a \
+                      --uid2=$$TARGET.UID2 \
+                      --uid3=$$TARGET.UID3 \
+                      --targettype=EXE \
+                      --elfinput=$${symbianDestdir}/$${TARGET}.sym \
+                      --output=$${symbianDestdir}/$${TARGET}.exe \
+                      --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+                      $$elf2e32_LIBPATH \
+                      $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
                       | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
                       && ln "$${symbianDestdir}/$${TARGET}.exe" "$${symbianDestdir}/$$TARGET" \
@@ -159,6 +174,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     QMAKE_CLEAN += $${symbianDestdir}/$${TARGET}
 
     linux-armcc: {
+        QMAKE_LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
         contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
             QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
@@ -201,9 +217,9 @@ symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
 
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
-    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rsc")
+    symbian_resource_clean = $$replace(symbian_resource, "\\.rss$", ".rsc")
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${symbian_resource_clean}
-    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rpp")
+    symbian_resource_clean = $$replace(symbian_resource, "\\.rss$", ".rpp")
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
 }
 

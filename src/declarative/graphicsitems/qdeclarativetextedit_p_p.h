@@ -70,10 +70,17 @@ public:
     QDeclarativeTextEditPrivate()
       : color("black"), hAlign(QDeclarativeTextEdit::AlignLeft), vAlign(QDeclarativeTextEdit::AlignTop),
       imgDirty(true), dirty(false), richText(false), cursorVisible(false), focusOnPress(true),
-      persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
-      cursorComponent(0), cursor(0), format(QDeclarativeTextEdit::AutoText), document(0),
-      wrapMode(QDeclarativeTextEdit::NoWrap)
+      showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), textMargin(0.0),
+      lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
+      format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
+      selectByMouse(false),
+      yoff(0)
     {
+#ifdef Q_OS_SYMBIAN
+        if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
+            showInputPanelOnFocus = false;
+        }
+#endif
     }
 
     void init();
@@ -99,6 +106,8 @@ public:
     bool richText : 1;
     bool cursorVisible : 1;
     bool focusOnPress : 1;
+    bool showInputPanelOnFocus : 1;
+    bool clickCausedFocus : 1;
     bool persistentSelection : 1;
     qreal textMargin;
     int lastSelectionStart;
@@ -109,6 +118,8 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
+    bool selectByMouse;
+    int yoff;
 };
 
 QT_END_NAMESPACE

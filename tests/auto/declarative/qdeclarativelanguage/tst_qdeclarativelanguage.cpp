@@ -55,6 +55,11 @@
 #include "../../../shared/util.h"
 #include "testhttpserver.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 DEFINE_BOOL_CONFIG_OPTION(qmlCheckTypes, QML_CHECK_TYPES)
 
 
@@ -351,8 +356,8 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidAttachedProperty.12") << "invalidAttachedProperty.12.qml" << "invalidAttachedProperty.12.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.13") << "invalidAttachedProperty.13.qml" << "invalidAttachedProperty.13.errors.txt" << false;
 
+    QTest::newRow("assignValueToSignal") << "assignValueToSignal.qml" << "assignValueToSignal.errors.txt" << false;
     QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
-    QTest::newRow("emptySignal.2") << "emptySignal.2.qml" << "emptySignal.2.errors.txt" << false;
 
     QTest::newRow("nestedErrors") << "nestedErrors.qml" << "nestedErrors.errors.txt" << false;
     QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
@@ -536,6 +541,8 @@ void tst_qdeclarativelanguage::assignLiteralToVariant()
     QCOMPARE(object->property("test7").userType(), (int)QVariant::SizeF);
     QCOMPARE(object->property("test8").userType(), (int)QVariant::Vector3D);
     QCOMPARE(object->property("test9").userType(), (int)QVariant::String);
+    QCOMPARE(object->property("test10").userType(), (int)QVariant::Bool);
+    QCOMPARE(object->property("test11").userType(), (int)QVariant::Bool);
 
     QVERIFY(object->property("test1") == QVariant(1));
     QVERIFY(object->property("test2") == QVariant((double)1.7));
@@ -546,6 +553,8 @@ void tst_qdeclarativelanguage::assignLiteralToVariant()
     QVERIFY(object->property("test7") == QVariant(QSizeF(10, 10)));
     QVERIFY(object->property("test8") == QVariant(QVector3D(100, 100, 100)));
     QVERIFY(object->property("test9") == QVariant(QString(QLatin1String("#FF008800"))));
+    QVERIFY(object->property("test10") == QVariant(bool(true)));
+    QVERIFY(object->property("test11") == QVariant(bool(false)));
 
     delete object;
 }
@@ -679,6 +688,7 @@ void tst_qdeclarativelanguage::listProperties()
 // ### Not complete
 void tst_qdeclarativelanguage::dynamicObjectProperties()
 {
+    {
     QDeclarativeComponent component(&engine, TEST_FILE("dynamicObjectProperties.qml"));
     VERIFY_ERRORS(0);
     QObject *object = component.create();
@@ -686,6 +696,16 @@ void tst_qdeclarativelanguage::dynamicObjectProperties()
 
     QVERIFY(object->property("objectProperty") == qVariantFromValue((QObject*)0));
     QVERIFY(object->property("objectProperty2") != qVariantFromValue((QObject*)0));
+    }
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("dynamicObjectProperties.2.qml"));
+    QEXPECT_FAIL("", "QTBUG-10822", Abort);
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("objectProperty") != qVariantFromValue((QObject*)0));
+    }
 }
 
 // Tests the declaration of dynamic signals and slots
@@ -1101,19 +1121,48 @@ void tst_qdeclarativelanguage::onDestruction()
 // Check that assignments to QDeclarativeScriptString properties work
 void tst_qdeclarativelanguage::scriptString()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("scriptString.qml"));
-    VERIFY_ERRORS(0);
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString.qml"));
+        VERIFY_ERRORS(0);
 
-    MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
-    QVERIFY(object != 0);
-    QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
-    QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
-    QCOMPARE(object->scriptProperty().context(), qmlContext(object));
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("foo + bar"));
+        QCOMPARE(object->scriptProperty().scopeObject(), qobject_cast<QObject*>(object));
+        QCOMPARE(object->scriptProperty().context(), qmlContext(object));
 
-    QVERIFY(object->grouped() != 0);
-    QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
-    QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
-    QCOMPARE(object->grouped()->script().context(), qmlContext(object));
+        QVERIFY(object->grouped() != 0);
+        QCOMPARE(object->grouped()->script().script(), QString("console.log(1921)"));
+        QCOMPARE(object->grouped()->script().scopeObject(), qobject_cast<QObject*>(object));
+        QCOMPARE(object->grouped()->script().context(), qmlContext(object));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString2.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("\"hello\\n\\\"world\\\"\""));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString3.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("12.345"));
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptString4.qml"));
+        VERIFY_ERRORS(0);
+
+        MyTypeObject *object = qobject_cast<MyTypeObject*>(component.create());
+        QVERIFY(object != 0);
+        QCOMPARE(object->scriptProperty().script(), QString("true"));
+    }
 }
 
 // Check that default property assignments are correctly spliced into explicit 

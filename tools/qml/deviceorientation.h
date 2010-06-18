@@ -52,7 +52,14 @@ class DeviceOrientation : public QObject
     Q_OBJECT
     Q_ENUMS(Orientation)
 public:
-    enum Orientation { UnknownOrientation, Portrait, Landscape };
+    enum Orientation { 
+        UnknownOrientation, 
+        Portrait,
+        Landscape,
+        PortraitInverted,
+        LandscapeInverted
+    };
+
     virtual Orientation orientation() const = 0;
     virtual void setOrientation(Orientation) = 0;
 

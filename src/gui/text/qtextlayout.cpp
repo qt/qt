@@ -69,7 +69,7 @@ static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line
     if (!line.hasTrailingSpaces
         || (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
         || !(eng->option.alignment() & Qt::AlignRight)
-        || (eng->option.textDirection() != Qt::RightToLeft))
+        || !eng->isRightToLeft())
         return QFixed();
 
     int pos = line.length;
@@ -86,12 +86,12 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
     // if width is QFIXED_MAX that means we used setNumColumns() and that implicitly makes this line left aligned.
     if (!line.justified && line.width != QFIXED_MAX) {
         int align = eng->option.alignment();
-        if (align & Qt::AlignJustify && eng->option.textDirection() == Qt::RightToLeft)
+        if (align & Qt::AlignJustify && eng->isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
-            x = line.width - (line.textWidth + leadingSpaceWidth(eng, line));
+            x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
         else if (align & Qt::AlignHCenter)
-            x = (line.width - line.textWidth)/2;
+            x = (line.width - line.textAdvance)/2;
     }
     return x;
 }
@@ -858,7 +858,8 @@ QRectF QTextLayout::boundingRect() const
         const QScriptLine &si = d->lines[i];
         xmin = qMin(xmin, si.x);
         ymin = qMin(ymin, si.y);
-        xmax = qMax(xmax, si.x+qMax(si.width, si.textWidth));
+        QFixed lineWidth = si.width < QFIXED_MAX ? qMax(si.width, si.textWidth) : si.textWidth;
+        xmax = qMax(xmax, si.x+lineWidth);
         // ### shouldn't the ascent be used in ymin???
         ymax = qMax(ymax, si.y+si.height());
     }
@@ -1336,7 +1337,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     int itm = d->findItem(cursorPosition - 1);
     QFixed base = sl.base();
     QFixed descent = sl.descent;
-    bool rightToLeft = (d->option.textDirection() == Qt::RightToLeft);
+    bool rightToLeft = d->isRightToLeft();
     if (itm >= 0) {
         const QScriptItem &si = d->layoutData->items.at(itm);
         if (si.ascent > 0)

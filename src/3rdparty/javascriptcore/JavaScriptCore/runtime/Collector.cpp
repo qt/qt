@@ -231,7 +231,7 @@ NEVER_INLINE CollectorBlock* Heap::allocateBlock()
 #elif OS(WINCE)
     void* address = VirtualAlloc(NULL, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 #elif OS(WINDOWS)
-#if COMPILER(MINGW) && !CPU(X86_64)
+#if COMPILER(MINGW) && !COMPILER(MINGW64)
     void* address = __mingw_aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
 #else
     void* address = _aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
@@ -324,7 +324,7 @@ NEVER_INLINE void Heap::freeBlockPtr(CollectorBlock* block)
 #elif OS(WINCE)
     VirtualFree(block, 0, MEM_RELEASE);
 #elif OS(WINDOWS)
-#if COMPILER(MINGW) && !CPU(X86_64)
+#if COMPILER(MINGW) && !COMPILER(MINGW64)
     __mingw_aligned_free(block);
 #else
     _aligned_free(block);
@@ -637,6 +637,8 @@ static inline void* currentThreadStackBase()
 #elif OS(HPUX)
     return hpux_get_stack_base();
 #elif OS(QNX)
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
     return currentThreadStackBaseQNX();
 #elif OS(SOLARIS)
     stack_t s;
@@ -660,19 +662,17 @@ static inline void* currentThreadStackBase()
     pthread_stackseg_np(thread, &stack);
     return stack.ss_sp;
 #elif OS(SYMBIAN)
-    static void* stackBase = 0;
-    if (stackBase == 0) {
-        TThreadStackInfo info;
-        RThread thread;
-        thread.StackInfo(info);
-        stackBase = (void*)info.iBase;
-    }
-    return (void*)stackBase;
+    TThreadStackInfo info;
+    RThread thread;
+    thread.StackInfo(info);
+    return (void*)info.iBase;
 #elif OS(HAIKU)
     thread_info threadInfo;
     get_thread_info(find_thread(NULL), &threadInfo);
     return threadInfo.stack_end;
 #elif OS(UNIX)
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
     static void* stackBase = 0;
     static size_t stackSize = 0;
     static pthread_t stackThread;
@@ -695,6 +695,8 @@ static inline void* currentThreadStackBase()
     }
     return static_cast<char*>(stackBase) + stackSize;
 #elif OS(WINCE)
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
     if (g_stackBase)
         return g_stackBase;
     else {

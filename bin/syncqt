@@ -50,8 +50,7 @@ my %modules = ( # path to module name map
         "QtDBus" => "$basedir/src/dbus",
         "QtWebKit" => "$basedir/src/3rdparty/webkit/WebCore",
         "phonon" => "$basedir/src/phonon",
-        "QtMultimedia" => "$basedir/src/multimedia/multimedia",
-        "QtMediaServices" => "$basedir/src/multimedia/mediaservices",
+        "QtMultimedia" => "$basedir/src/multimedia",
 );
 my %moduleheaders = ( # restrict the module headers to those found in relative path
         "QtWebKit" => "../WebKit/qt/Api",
@@ -147,12 +146,12 @@ sub shouldMasterInclude {
     return 0 if(basename($iheader) =~ /qconfig/);
     if(open(F, "<$iheader")) {
         while(<F>) {
-	    chomp;
-	    return 0 if(/^\#pragma qt_no_master_include$/);
-	}
-	close(F);
+            chomp;
+            return 0 if(/^\#pragma qt_no_master_include$/);
+        }
+        close(F);
     } else {
-	return 0;
+        return 0;
     }
     return 1;
 }
@@ -169,17 +168,17 @@ sub classNames {
     my @ret;
     my ($iheader) = @_;
     if(basename($iheader) eq "qglobal.h") {
-	push @ret, "QtGlobal";
+        push @ret, "QtGlobal";
     } elsif(basename($iheader) eq "qendian.h") {
-	push @ret, "QtEndian";
+        push @ret, "QtEndian";
     } elsif(basename($iheader) eq "qconfig.h") {
         push @ret, "QtConfig";
     } elsif(basename($iheader) eq "qplugin.h") {
-	push @ret, "QtPlugin";
+        push @ret, "QtPlugin";
     } elsif(basename($iheader) eq "qalgorithms.h") {
-	push @ret, "QtAlgorithms";
+        push @ret, "QtAlgorithms";
     } elsif(basename($iheader) eq "qcontainerfwd.h") {
-	push @ret, "QtContainerFwd";
+        push @ret, "QtContainerFwd";
     } elsif(basename($iheader) eq "qdebug.h") {
         push @ret, "QtDebug";
     } elsif(basename($iheader) eq "qevent.h") {
@@ -187,7 +186,7 @@ sub classNames {
     } elsif(basename($iheader) eq "qnamespace.h") {
         push @ret, "Qt"
     } elsif(basename($iheader) eq "qssl.h") {
-	push @ret, "QSsl";
+        push @ret, "QSsl";
     } elsif(basename($iheader) eq "qtest.h") {
         push @ret, "QTest"
     } elsif(basename($iheader) eq "qtconcurrentmap.h") {
@@ -205,7 +204,7 @@ sub classNames {
         while(<F>) {
             my $line = $_;
             chomp $line;
-			chop $line if ($line =~ /\r$/);
+                        chop $line if ($line =~ /\r$/);
             if($line =~ /^\#/) {
                 if($line =~ /\\$/) {
                     while($line = <F>) {
@@ -213,18 +212,18 @@ sub classNames {
                         last unless($line =~ /\\$/);
                     }
                 }
-		return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
+                return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
                 push(@ret, "$1") if($line =~ m/^#pragma qt_class\(([^)]*)\)[\r\n]*$/);
-		$line = 0;
+                $line = 0;
             }
-	    if($line) {
+            if($line) {
                 $line =~ s,//.*$,,; #remove c++ comments
-	        $line .= ";" if($line =~ m/^Q_[A-Z_]*\(.*\)[\r\n]*$/); #qt macro
-	        $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro
-	        $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE[\r\n]*$/); #qt macro
-	        $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
+                $line .= ";" if($line =~ m/^Q_[A-Z_]*\(.*\)[\r\n]*$/); #qt macro
+                $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro
+                $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE[\r\n]*$/); #qt macro
+                $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
                 $parsable .= " " . $line;
-	    }
+            }
         }
         close(F);
     }
@@ -260,7 +259,7 @@ sub classNames {
                               $i = $i2 if($end eq ";");
                               $last_definition = $i + 1;
                               last BLOCK;
-			  }
+                          }
                       }
                   }
               }
@@ -268,42 +267,42 @@ sub classNames {
         } elsif($character eq ";") {
             $definition = substr($parsable, $last_definition, $i - $last_definition + 1);
             $last_definition = $i + 1;
-	} elsif($character eq "}") {
-	    # a naked } must be a namespace ending
-	    # if it's not a namespace, it's eaten by the loop above
-	    pop @namespaces;
-	    $last_definition = $i + 1;
-	}
+        } elsif($character eq "}") {
+            # a naked } must be a namespace ending
+            # if it's not a namespace, it's eaten by the loop above
+            pop @namespaces;
+            $last_definition = $i + 1;
+        }
 
-	if (substr($parsable, $last_definition, $i - $last_definition + 1) =~ m/ namespace ([^ ]*) /
-	    && substr($parsable, $i+1, 1) eq "{") {
-	    push @namespaces, $1;
+        if (substr($parsable, $last_definition, $i - $last_definition + 1) =~ m/ namespace ([^ ]*) /
+            && substr($parsable, $i+1, 1) eq "{") {
+            push @namespaces, $1;
 
-	    # Eat the opening { so that the condensing loop above doesn't see it
-	    $i++;
-	    $last_definition = $i + 1;
-	}
+            # Eat the opening { so that the condensing loop above doesn't see it
+            $i++;
+            $last_definition = $i + 1;
+        }
 
         if($definition) {
-	    $definition =~ s=[\n\r]==g;
+            $definition =~ s=[\n\r]==g;
             my @symbols;
             if($definition =~ m/^ *typedef *.*\(\*([^\)]*)\)\(.*\);$/) {
-		push @symbols, $1;
+                push @symbols, $1;
             } elsif($definition =~ m/^ *typedef +(.*) +([^ ]*);$/) {
-		push @symbols, $2;
+                push @symbols, $2;
             } elsif($definition =~ m/^ *(template *<.*> *)?(class|struct) +([^ ]* +)?([^<\s]+) ?(<[^>]*> ?)?\s*((,|:)\s*(public|protected|private) *.*)? *\{\}$/) {
-		push @symbols, $4;
+                push @symbols, $4;
             } elsif($definition =~ m/^ *Q_DECLARE_.*ITERATOR\((.*)\);$/) {
-		push @symbols, "Q" . $1 . "Iterator";
-		push @symbols, "QMutable" . $1 . "Iterator";
-	    }
+                push @symbols, "Q" . $1 . "Iterator";
+                push @symbols, "QMutable" . $1 . "Iterator";
+            }
 
-	    foreach (@symbols) {
-		my $symbol = $_;
-		$symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
-		push @ret, $symbol
-		    if ($symbol =~ /^Q[^:]*$/		# no-namespace, starting with Q
-			|| $symbol =~ /^Phonon::/);	# or in the Phonon namespace
+            foreach (@symbols) {
+                my $symbol = $_;
+                $symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
+                push @ret, $symbol
+                    if ($symbol =~ /^Q[^:]*$/           # no-namespace, starting with Q
+                        || $symbol =~ /^Phonon::/);     # or in the Phonon namespace
             }
         }
     }
@@ -454,37 +453,37 @@ sub copyFile
     $filecontents = <I>;
     close I;
     if ( open(I, "< " . $ifile) ) {
-	local $/;
-	binmode I;
-	$ifilecontents = <I>;
-	close I;
-	$copy = fileCompare($file, $ifile);
-	$knowdiff = 0,
+        local $/;
+        binmode I;
+        $ifilecontents = <I>;
+        close I;
+        $copy = fileCompare($file, $ifile);
+        $knowdiff = 0,
     } else {
-	$copy = -1;
-	$knowdiff = 1;
+        $copy = -1;
+        $knowdiff = 1;
     }
 
     if ( $knowdiff || ($filecontents ne $ifilecontents) ) {
-	if ( $copy > 0 ) {
-	    my $file_dir = dirname($file);
-	    mkpath $file_dir, !$quiet unless(-e "$file_dir");
-	    open(O, "> " . $file) || die "Could not open $file for writing (no write permission?)";
-	    local $/;
-	    binmode O;
-	    print O $ifilecontents;
-	    close O;
-	    return 1;
-	} elsif ( $copy < 0 ) {
-	    my $ifile_dir = dirname($ifile);
-	    mkpath $ifile_dir, !$quiet unless(-e "$ifile_dir");
-	    open(O, "> " . $ifile) || die "Could not open $ifile for writing (no write permission?)";
-	    local $/;
-	    binmode O;
-	    print O $filecontents;
-	    close O;
-	    return 1;
-	}
+        if ( $copy > 0 ) {
+            my $file_dir = dirname($file);
+            mkpath $file_dir, !$quiet unless(-e "$file_dir");
+            open(O, "> " . $file) || die "Could not open $file for writing (no write permission?)";
+            local $/;
+            binmode O;
+            print O $ifilecontents;
+            close O;
+            return 1;
+        } elsif ( $copy < 0 ) {
+            my $ifile_dir = dirname($ifile);
+            mkpath $ifile_dir, !$quiet unless(-e "$ifile_dir");
+            open(O, "> " . $ifile) || die "Could not open $ifile for writing (no write permission?)";
+            local $/;
+            binmode O;
+            print O $filecontents;
+            close O;
+            return 1;
+        }
     }
     return 0;
 }
@@ -569,37 +568,37 @@ while ( @ARGV ) {
     #parse
     my $arg = shift @ARGV;
     if ("$arg" eq "-h" || "$arg" eq "-help" || "$arg" eq "?") {
-	$var = "show_help";
-	$val = "yes";
+        $var = "show_help";
+        $val = "yes";
     } elsif("$arg" eq "-copy") {
-	$var = "copy";
-	$val = "yes";
+        $var = "copy";
+        $val = "yes";
     } elsif("$arg" eq "-o" || "$arg" eq "-outdir") {
-	$var = "output";
-	$val = shift @ARGV;
+        $var = "output";
+        $val = shift @ARGV;
     } elsif("$arg" eq "-showonly" || "$arg" eq "-remove-stale" || "$arg" eq "-windows" ||
-	    "$arg" eq "-relative" || "$arg" eq "-check-includes") {
-	$var = substr($arg, 1);
-	$val = "yes";
+            "$arg" eq "-relative" || "$arg" eq "-check-includes") {
+        $var = substr($arg, 1);
+        $val = "yes";
     } elsif("$arg" =~ /^-no-(.*)$/) {
-	$var = $1;
-	$val = "no";
-	#these are for commandline compat
+        $var = $1;
+        $val = "no";
+        #these are for commandline compat
     } elsif("$arg" eq "-inc") {
-	$var = "output";
-	$val = shift @ARGV;
+        $var = "output";
+        $val = shift @ARGV;
     } elsif("$arg" eq "-module") {
-	$var = "module";
-	$val = shift @ARGV;
+        $var = "module";
+        $val = shift @ARGV;
     } elsif("$arg" eq "-separate-module") {
-	$var = "separate-module";
-	$val = shift @ARGV;
+        $var = "separate-module";
+        $val = shift @ARGV;
     } elsif("$arg" eq "-show") {
-	$var = "showonly";
-	$val = "yes";
+        $var = "showonly";
+        $val = "yes";
     } elsif("$arg" eq "-quiet") {
-	$var = "quiet";
-	$val = "yes";
+        $var = "quiet";
+        $val = "yes";
     } elsif("$arg" eq "-base-dir") {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
@@ -608,54 +607,54 @@ while ( @ARGV ) {
 
     #do something
     if(!$var || "$var" eq "show_help") {
-	print "Unknown option: $arg\n\n" if(!$var);
-	showUsage();
+        print "Unknown option: $arg\n\n" if(!$var);
+        showUsage();
     } elsif ("$var" eq "copy") {
-	if("$val" eq "yes") {
-	    $copy_headers++;
-	} elsif($showonly) {
-	    $copy_headers--;
-	}
+        if("$val" eq "yes") {
+            $copy_headers++;
+        } elsif($showonly) {
+            $copy_headers--;
+        }
     } elsif ("$var" eq "showonly") {
-	if("$val" eq "yes") {
-	    $showonly++;
-	} elsif($showonly) {
-	    $showonly--;
-	}
+        if("$val" eq "yes") {
+            $showonly++;
+        } elsif($showonly) {
+            $showonly--;
+        }
     } elsif ("$var" eq "quiet") {
-	if("$val" eq "yes") {
-	    $quiet++;
-	} elsif($quiet) {
-	    $quiet--;
-	}
+        if("$val" eq "yes") {
+            $quiet++;
+        } elsif($quiet) {
+            $quiet--;
+        }
     } elsif ("$var" eq "check-includes") {
-	if("$val" eq "yes") {
-	    $check_includes++;
-	} elsif($check_includes) {
-	    $check_includes--;
-	}
+        if("$val" eq "yes") {
+            $check_includes++;
+        } elsif($check_includes) {
+            $check_includes--;
+        }
     } elsif ("$var" eq "remove-stale") {
-	if("$val" eq "yes") {
-	    $remove_stale++;
-	} elsif($remove_stale) {
-	    $remove_stale--;
-	}
+        if("$val" eq "yes") {
+            $remove_stale++;
+        } elsif($remove_stale) {
+            $remove_stale--;
+        }
     } elsif ("$var" eq "windows") {
-	if("$val" eq "yes") {
-	    $force_win++;
-	} elsif($force_win) {
-	    $force_win--;
-	}
+        if("$val" eq "yes") {
+            $force_win++;
+        } elsif($force_win) {
+            $force_win--;
+        }
     } elsif ("$var" eq "relative") {
-	if("$val" eq "yes") {
-	    $force_relative++;
-	} elsif($force_relative) {
-	    $force_relative--;
-	}
+        if("$val" eq "yes") {
+            $force_relative++;
+        } elsif($force_relative) {
+            $force_relative--;
+        }
     } elsif ("$var" eq "module") {
-	print "module :$val:\n" unless $quiet;
-	die "No such module: $val" unless(defined $modules{$val});
-	push @modules_to_sync, $val;
+        print "module :$val:\n" unless $quiet;
+        die "No such module: $val" unless(defined $modules{$val});
+        push @modules_to_sync, $val;
     } elsif ("$var" eq "separate-module") {
         my ($module, $prodir, $headerdir) = split(/:/, $val);
         $modules{$module} = $prodir;
@@ -664,16 +663,16 @@ while ( @ARGV ) {
         $create_uic_class_map = 0;
         $create_private_headers = 0;
     } elsif ("$var" eq "output") {
-	my $outdir = $val;
-	if(checkRelative($outdir)) {
-	    $out_basedir = getcwd();
-	    chomp $out_basedir;
-	    $out_basedir .= "/" . $outdir;
-	} else {
-	    $out_basedir = $outdir;
-	}
-	# \ -> /
-	$out_basedir =~ s=\\=/=g;
+        my $outdir = $val;
+        if(checkRelative($outdir)) {
+            $out_basedir = getcwd();
+            chomp $out_basedir;
+            $out_basedir .= "/" . $outdir;
+        } else {
+            $out_basedir = $outdir;
+        }
+        # \ -> /
+        $out_basedir =~ s=\\=/=g;
     }
 }
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
@@ -682,6 +681,7 @@ $isunix = checkUnix; #cache checkUnix
 
 # create path
 mkpath "$out_basedir/include", !$quiet;
+mkpath "$out_basedir/include/Qt", !$quiet;
 
 my @ignore_headers = ();
 my $class_lib_map_contents = "";
@@ -690,6 +690,7 @@ my @ignore_for_include_check = ( "qatomic.h" );
 my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h" );
 my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
+my %colliding_headers = ();
 
 foreach (@modules_to_sync) {
     #iteration info
@@ -709,77 +710,77 @@ foreach (@modules_to_sync) {
 
     #get dependencies
     if(-e "$dir/" . basename($dir) . ".pro") {
-	if(open(F, "<$dir/" . basename($dir) . ".pro")) {
-	    while(<F>) {
-		my $line = $_;
-		chomp $line;
-		if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
-		    foreach(split(/ /, "$1")) {
-			$master_contents .= "#include <QtCore/QtCore>\n" if("$_" eq "core");
-			$master_contents .= "#include <QtGui/QtGui>\n" if("$_" eq "gui");
-			$master_contents .= "#include <QtNetwork/QtNetwork>\n" if("$_" eq "network");
-			$master_contents .= "#include <QtSvg/QtSvg>\n" if("$_" eq "svg");
-			$master_contents .= "#include <QtDeclarative/QtDeclarative>\n" if("$_" eq "declarative");
-			$master_contents .= "#include <QtScript/QtScript>\n" if("$_" eq "script");
-			$master_contents .= "#include <QtScriptTools/QtScriptTools>\n" if("$_" eq "scripttools");
-			$master_contents .= "#include <Qt3Support/Qt3Support>\n" if("$_" eq "qt3support");
-			$master_contents .= "#include <QtSql/QtSql>\n" if("$_" eq "sql");
-			$master_contents .= "#include <QtXml/QtXml>\n" if("$_" eq "xml");
-			$master_contents .= "#include <QtXmlPatterns/QtXmlPatterns>\n" if("$_" eq "xmlpatterns");
-			$master_contents .= "#include <QtOpenGL/QtOpenGL>\n" if("$_" eq "opengl");
-			$master_contents .= "#include <QtOpenVG/QtOpenVG>\n" if("$_" eq "openvg");
-		    }
-		}
-	    }
-	    close(F);
-	}
+        if(open(F, "<$dir/" . basename($dir) . ".pro")) {
+            while(<F>) {
+                my $line = $_;
+                chomp $line;
+                if($line =~ /^ *QT *\+?= *([^\r\n]*)/) {
+                    foreach(split(/ /, "$1")) {
+                        $master_contents .= "#include <QtCore/QtCore>\n" if("$_" eq "core");
+                        $master_contents .= "#include <QtGui/QtGui>\n" if("$_" eq "gui");
+                        $master_contents .= "#include <QtNetwork/QtNetwork>\n" if("$_" eq "network");
+                        $master_contents .= "#include <QtSvg/QtSvg>\n" if("$_" eq "svg");
+                        $master_contents .= "#include <QtDeclarative/QtDeclarative>\n" if("$_" eq "declarative");
+                        $master_contents .= "#include <QtScript/QtScript>\n" if("$_" eq "script");
+                        $master_contents .= "#include <QtScriptTools/QtScriptTools>\n" if("$_" eq "scripttools");
+                        $master_contents .= "#include <Qt3Support/Qt3Support>\n" if("$_" eq "qt3support");
+                        $master_contents .= "#include <QtSql/QtSql>\n" if("$_" eq "sql");
+                        $master_contents .= "#include <QtXml/QtXml>\n" if("$_" eq "xml");
+                        $master_contents .= "#include <QtXmlPatterns/QtXmlPatterns>\n" if("$_" eq "xmlpatterns");
+                        $master_contents .= "#include <QtOpenGL/QtOpenGL>\n" if("$_" eq "opengl");
+                        $master_contents .= "#include <QtOpenVG/QtOpenVG>\n" if("$_" eq "openvg");
+                    }
+                }
+            }
+            close(F);
+        }
     }
 
     #remove the old files
     if($remove_stale) {
-	my @subdirs = ("$out_basedir/include/$lib");
-	foreach (@subdirs) {
-	    my $subdir = "$_";
-	    if (opendir DIR, "$subdir") {
-		while(my $t = readdir(DIR)) {
-		    my $file = "$subdir/$t";
-		    if(-d "$file") {
-			push @subdirs, "$file" unless($t eq "." || $t eq "..");
-		    } else {
-			my @files = ("$file");
-			#push @files, "$out_basedir/include/Qt/$t" if(-e "$out_basedir/include/Qt/$t");
-			foreach (@files) {
-			   my $file = $_;
-			   my $remove_file = 0;
-			   if(open(F, "<$file")) {
-				while(<F>) {
-				    my $line = $_;
-				    chomp $line;
-				    if($line =~ /^\#include \"([^\"]*)\"$/) {
-					my $include = $1;
-					$include = $subdir . "/" . $include unless(substr($include, 0, 1) eq "/");
-					$remove_file = 1 unless(-e "$include");
-				    } else {
-					$remove_file = 0;
-					last;
-				    }
-				}
-				close(F);
-				unlink "$file" if($remove_file);
-			    }
-			}
-		    }
-		}
-		closedir DIR;
+        my @subdirs = ("$out_basedir/include/$lib");
+        foreach (@subdirs) {
+            my $subdir = "$_";
+            if (opendir DIR, "$subdir") {
+                while(my $t = readdir(DIR)) {
+                    my $file = "$subdir/$t";
+                    if(-d "$file") {
+                        push @subdirs, "$file" unless($t eq "." || $t eq "..");
+                    } else {
+                        my @files = ("$file");
+                        #push @files, "$out_basedir/include/Qt/$t" if(-e "$out_basedir/include/Qt/$t");
+                        foreach (@files) {
+                           my $file = $_;
+                           my $remove_file = 0;
+                           if(open(F, "<$file")) {
+                                while(<F>) {
+                                    my $line = $_;
+                                    chomp $line;
+                                    if($line =~ /^\#include \"([^\"]*)\"$/) {
+                                        my $include = $1;
+                                        $include = $subdir . "/" . $include unless(substr($include, 0, 1) eq "/");
+                                        $remove_file = 1 unless(-e "$include");
+                                    } else {
+                                        $remove_file = 0;
+                                        last;
+                                    }
+                                }
+                                close(F);
+                                unlink "$file" if($remove_file);
+                            }
+                        }
+                    }
+                }
+                closedir DIR;
             }
 
-	}
+        }
     }
 
     #create the new ones
     foreach (split(/;/, $dir)) {
-	my $current_dir = "$_";
-	my $headers_dir = $current_dir;
+        my $current_dir = "$_";
+        my $headers_dir = $current_dir;
         $headers_dir .= "/$pathtoheaders" if ($pathtoheaders);
         #calc subdirs
         my @subdirs = ($headers_dir);
@@ -788,7 +789,7 @@ foreach (@modules_to_sync) {
             opendir DIR, "$subdir" or next;
             while(my $t = readdir(DIR)) {
                 push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
-					       !($t eq "..") && !($t eq ".obj") &&
+                                               !($t eq "..") && !($t eq ".obj") &&
                                                !($t eq ".moc") && !($t eq ".rcc") &&
                                                !($t eq ".uic") && !($t eq "build"));
             }
@@ -806,85 +807,105 @@ foreach (@modules_to_sync) {
                     $header = 0 if("$header" eq "$_");
                 }
                 if($header) {
-		    my $header_copies = 0;
-		    #figure out if it is a public header
-		    my $public_header = $header;
-		    if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
-			$public_header = 0;
-		    } else {
-			foreach (@ignore_for_master_contents) {
-			    $public_header = 0 if("$header" eq "$_");
-			}
-		    }
+                    my $header_copies = 0;
+                    #figure out if it is a public header
+                    my $public_header = $header;
+                    if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                        $public_header = 0;
+                    } else {
+                        foreach (@ignore_for_master_contents) {
+                            $public_header = 0 if("$header" eq "$_");
+                        }
+                    }
 
                     my $iheader = $subdir . "/" . $header;
-		    my @classes = $public_header ? classNames($iheader) : ();
+                    my @classes = $public_header ? classNames($iheader) : ();
                     if($showonly) {
                         print "$header [$lib]\n";
-			foreach(@classes) {
-			    print "SYMBOL: $_\n";
-			}
+                        foreach(@classes) {
+                            print "SYMBOL: $_\n";
+                        }
                     } else {
-			#find out all the places it goes..
-			my @headers;
-			if ($public_header) {
-			    @headers = ( "$out_basedir/include/$lib/$header" );
-			    push @headers, "$out_basedir/include/Qt/$header"
-			      if ("$lib" ne "phonon" && "$subdir" =~ /^$basedir\/src/);
+                        #find out all the places it goes..
+                        my @headers;
+                        if ($public_header) {
+                            @headers = ( "$out_basedir/include/$lib/$header" );
 
-			    foreach(@classes) {
-				my $header_base = basename($header);
-				my $class = $_;
-				# Strip namespaces:
-				$class =~ s/^.*:://;
-#				if ($class =~ m/::/) {
-#				   class =~ s,::,/,g;
-#				}
-				$class_lib_map_contents .= "QT_CLASS_LIB($_, $lib, $header_base)\n";
-				$header_copies++ if(syncHeader("$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0));
+                            # write forwarding headers to include/Qt
+                            if ("$lib" ne "phonon" && "$subdir" =~ /^$basedir\/src/) {
+                                my $file_name = "$out_basedir/include/Qt/$header";
+                                my $header_content = '';
+                                if (exists $colliding_headers{$file_name}) {
+                                    $file_name = ">>$file_name";
+                                } else {
+                                    $colliding_headers{$file_name} = 1;
+                                    $file_name = ">$file_name";
+                                    my $warning_msg = 'Inclusion of header files from include/Qt is deprecated.';
+                                    $header_content = "#ifndef QT_NO_QT_INCLUDE_WARN\n" .
+                                                      "    #if defined(__GNUC__)\n" .
+                                                      "        #pragma warning \"$warning_msg\"\n" .
+                                                      "    #elif defined(_MSC_VER)\n" .
+                                                      "        #pragma message \"WARNING: $warning_msg\"\n" .
+                                                      "    #endif\n".
+                                                      "#endif\n\n";
+                                }
+                                $header_content .= '#include "' . "../$lib/$header" . "\"\n";
+                                open HEADERFILE, $file_name;
+                                print HEADERFILE $header_content;
+                                close HEADERFILE;
+                            }
 
-				# KDE-Compat headers for Phonon
-				if ($lib eq "phonon") {
-				    $header_copies++ if (syncHeader("$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0));
-				}
-			    }
-			} elsif ($create_private_headers) {
-			    @headers = ( "$out_basedir/include/$lib/private/$header" );
-			    push @headers, "$out_basedir/include/Qt/private/$header"
-                              if ("$lib" ne "phonon");
-			}
-			foreach(@headers) { #sync them
-			    $header_copies++ if(syncHeader($_, $iheader, $copy_headers));
-			}
+                            foreach(@classes) {
+                                my $header_base = basename($header);
+                                my $class = $_;
+                                # Strip namespaces:
+                                $class =~ s/^.*:://;
+#                               if ($class =~ m/::/) {
+#                                  class =~ s,::,/,g;
+#                               }
+                                $class_lib_map_contents .= "QT_CLASS_LIB($_, $lib, $header_base)\n";
+                                $header_copies++ if(syncHeader("$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0));
 
-			if($public_header) {
-			    #put it into the master file
-			    $master_contents .= "#include \"$public_header\"\n" if(shouldMasterInclude($iheader));
+                                # KDE-Compat headers for Phonon
+                                if ($lib eq "phonon") {
+                                    $header_copies++ if (syncHeader("$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0));
+                                }
+                            }
+                        } elsif ($create_private_headers) {
+                            @headers = ( "$out_basedir/include/$lib/private/$header" );
+                        }
+                        foreach(@headers) { #sync them
+                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers));
+                        }
 
-			    #deal with the install directives
-			    if($public_header) {
-				my $pri_install_iheader = fixPaths($iheader, $current_dir);
-				foreach(@classes) {
-				    my $class = $_;
-				    # Strip namespaces:
-				    $class =~ s/^.*:://;
-#				    if ($class =~ m/::/) {
-#					$class =~ s,::,/,g;
-#				    }
-				    my $class_header = fixPaths("$out_basedir/include/$lib/$class",
-								$current_dir) . " ";
-				    $pri_install_classes .= $class_header
-								unless($pri_install_classes =~ $class_header);
-				}
-				$pri_install_files.= "$pri_install_iheader ";;
-			    }
-			}
-			else {
-			    my $pri_install_iheader = fixPaths($iheader, $current_dir);
-			    $pri_install_pfiles.= "$pri_install_iheader ";;
-			}
+                        if($public_header) {
+                            #put it into the master file
+                            $master_contents .= "#include \"$public_header\"\n" if(shouldMasterInclude($iheader));
+
+                            #deal with the install directives
+                            if($public_header) {
+                                my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                foreach(@classes) {
+                                    my $class = $_;
+                                    # Strip namespaces:
+                                    $class =~ s/^.*:://;
+#                                   if ($class =~ m/::/) {
+#                                       $class =~ s,::,/,g;
+#                                   }
+                                    my $class_header = fixPaths("$out_basedir/include/$lib/$class",
+                                                                $current_dir) . " ";
+                                    $pri_install_classes .= $class_header
+                                                                unless($pri_install_classes =~ $class_header);
+                                }
+                                $pri_install_files.= "$pri_install_iheader ";;
+                            }
+                        }
+                        else {
+                            my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                            $pri_install_pfiles.= "$pri_install_iheader ";;
+                        }
                     }
-		    print "header created for $iheader ($header_copies)\n" if($header_copies > 0 && !$quiet);
+                    print "header created for $iheader ($header_copies)\n" if($header_copies > 0 && !$quiet);
                 }
             }
         }
@@ -895,8 +916,8 @@ foreach (@modules_to_sync) {
 
     unless($showonly) {
         my @master_includes;
-	push @master_includes, "$out_basedir/include/$lib/$lib";
-	push @master_includes, "$out_basedir/include/phonon_compat/Phonon/Phonon" if ($lib eq "phonon");
+        push @master_includes, "$out_basedir/include/$lib/$lib";
+        push @master_includes, "$out_basedir/include/phonon_compat/Phonon/Phonon" if ($lib eq "phonon");
         foreach my $master_include (@master_includes) {
             #generate the "master" include file
             my @tmp = split(/;/,$modules{$lib});
@@ -921,10 +942,10 @@ foreach (@modules_to_sync) {
         }
 
         #handle the headers.pri for each module
-	my $headers_pri_contents = "";
-	$headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
-	$headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
-	$headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
+        my $headers_pri_contents = "";
+        $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
+        $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
+        $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
         if(-e "$headers_pri_file") {
             open HEADERS_PRI_FILE, "<$headers_pri_file";
@@ -948,125 +969,125 @@ foreach (@modules_to_sync) {
 unless($showonly || !$create_uic_class_map) {
     my $class_lib_map = "$out_basedir/src/tools/uic/qclass_lib_map.h";
     if(-e "$class_lib_map") {
-	open CLASS_LIB_MAP, "<$class_lib_map";
-	local $/;
-	binmode CLASS_LIB_MAP;
-	my $old_class_lib_map_contents = <CLASS_LIB_MAP>;
-	close CLASS_LIB_MAP;
-	$old_class_lib_map_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-	$class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents);
+        open CLASS_LIB_MAP, "<$class_lib_map";
+        local $/;
+        binmode CLASS_LIB_MAP;
+        my $old_class_lib_map_contents = <CLASS_LIB_MAP>;
+        close CLASS_LIB_MAP;
+        $old_class_lib_map_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
+        $class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents);
     }
     if($class_lib_map) {
-	my $class_lib_map_dir = dirname($class_lib_map);
-	mkpath $class_lib_map_dir, !$quiet;
-	open CLASS_LIB_MAP, ">$class_lib_map";
-	print CLASS_LIB_MAP "$class_lib_map_contents";
-	close CLASS_LIB_MAP;
+        my $class_lib_map_dir = dirname($class_lib_map);
+        mkpath $class_lib_map_dir, !$quiet;
+        open CLASS_LIB_MAP, ">$class_lib_map";
+        print CLASS_LIB_MAP "$class_lib_map_contents";
+        close CLASS_LIB_MAP;
     }
 }
 
 if($check_includes) {
     for (keys(%modules)) {
-	#iteration info
-	my $lib = $_;
-	my $dir = "$modules{$lib}";
-	foreach (split(/;/, $dir)) {
-	    my $current_dir = "$_";
-	    #calc subdirs
-	    my @subdirs = ($current_dir);
-	    foreach (@subdirs) {
-		my $subdir = "$_";
-		opendir DIR, "$subdir";
-		while(my $t = readdir(DIR)) {
+        #iteration info
+        my $lib = $_;
+        my $dir = "$modules{$lib}";
+        foreach (split(/;/, $dir)) {
+            my $current_dir = "$_";
+            #calc subdirs
+            my @subdirs = ($current_dir);
+            foreach (@subdirs) {
+                my $subdir = "$_";
+                opendir DIR, "$subdir";
+                while(my $t = readdir(DIR)) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                    !($t eq "..") && !($t eq ".obj") &&
                                                    !($t eq ".moc") && !($t eq ".rcc") &&
                                                    !($t eq ".uic") && !($t eq "build"));
-		}
-		closedir DIR;
-	    }
+                }
+                closedir DIR;
+            }
 
-	    foreach (@subdirs) {
-		my $subdir = "$_";
+            foreach (@subdirs) {
+                my $subdir = "$_";
                 my $header_skip_qt_module_test = 0;
                 foreach(@ignore_for_qt_module_check) {
                     foreach (split(/;/, $_)) {
                         $header_skip_qt_module_test = 1 if ("$subdir" =~ /^$_/);
                     }
                 }
-		my @headers = findFiles("$subdir", "^[-a-z0-9_]*\\.h\$" , 0);
-		foreach (@headers) {
-		    my $header = "$_";
+                my @headers = findFiles("$subdir", "^[-a-z0-9_]*\\.h\$" , 0);
+                foreach (@headers) {
+                    my $header = "$_";
                     my $header_skip_qt_begin_header_test = 0;
                     my $header_skip_qt_begin_namespace_test = 0;
-		    $header = 0 if("$header" =~ /^ui_.*.h/);
-		    foreach (@ignore_headers) {
-			$header = 0 if("$header" eq "$_");
-		    }
-		    if($header) {
-			my $public_header = $header;
-			if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
-			    $public_header = 0;
-			} else {
-			    foreach (@ignore_for_master_contents) {
-				$public_header = 0 if("$header" eq "$_");
-			    }
-			    if($public_header) {
-				foreach (@ignore_for_include_check) {
-				    $public_header = 0 if("$header" eq "$_");
-				}
+                    $header = 0 if("$header" =~ /^ui_.*.h/);
+                    foreach (@ignore_headers) {
+                        $header = 0 if("$header" eq "$_");
+                    }
+                    if($header) {
+                        my $public_header = $header;
+                        if($public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                            $public_header = 0;
+                        } else {
+                            foreach (@ignore_for_master_contents) {
+                                $public_header = 0 if("$header" eq "$_");
+                            }
+                            if($public_header) {
+                                foreach (@ignore_for_include_check) {
+                                    $public_header = 0 if("$header" eq "$_");
+                                }
                                 foreach(@ignore_for_qt_begin_header_check) {
                                     $header_skip_qt_begin_header_test = 1 if ("$header" eq "$_");
                                 }
                                 foreach(@ignore_for_qt_begin_namespace_check) {
                                     $header_skip_qt_begin_namespace_test = 1 if ("$header" eq "$_");
                                 }
-			    }
-			}
+                            }
+                        }
 
-			my $iheader = $subdir . "/" . $header;
-			if($public_header) {
-			    if(open(F, "<$iheader")) {
+                        my $iheader = $subdir . "/" . $header;
+                        if($public_header) {
+                            if(open(F, "<$iheader")) {
                                 my $qt_module_found = 0;
-				my $qt_begin_header_found = 0;
-				my $qt_end_header_found = 0;
-				my $qt_begin_namespace_found = 0;
-				my $qt_end_namespace_found = 0;
-				my $line;
-				while($line = <F>) {
-				    chomp $line;
-				    my $output_line = 1;
+                                my $qt_begin_header_found = 0;
+                                my $qt_end_header_found = 0;
+                                my $qt_begin_namespace_found = 0;
+                                my $qt_end_namespace_found = 0;
+                                my $line;
+                                while($line = <F>) {
+                                    chomp $line;
+                                    my $output_line = 1;
                                     if($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
-			                last;
-				    } elsif($line =~ /^ *\# *include/) {
-					my $include = $line;
-					if($line =~ /<.*>/) {
-					    $include =~ s,.*<(.*)>.*,$1,;
-					} elsif($line =~ /".*"/) {
-					    $include =~ s,.*"(.*)".*,$1,;
-					} else {
-					    $include = 0;
-					}
-					if($include) {
-					    for (keys(%modules)) {
-						my $trylib = $_;
-						if(-e "$out_basedir/include/$trylib/$include") {
-						    print "WARNING: $iheader includes $include when it should include $trylib/$include\n";
-						}
-					    }
-					}
-				    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_BEGIN_HEADER\s*$/) {
-					$qt_begin_header_found = 1;
-				    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_END_HEADER\s*$/) {
-					$qt_end_header_found = 1;
-				    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE\s*$/) {
-					$qt_begin_namespace_found = 1;
-				    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE\s*$/) {
-					$qt_end_namespace_found = 1;
+                                        last;
+                                    } elsif($line =~ /^ *\# *include/) {
+                                        my $include = $line;
+                                        if($line =~ /<.*>/) {
+                                            $include =~ s,.*<(.*)>.*,$1,;
+                                        } elsif($line =~ /".*"/) {
+                                            $include =~ s,.*"(.*)".*,$1,;
+                                        } else {
+                                            $include = 0;
+                                        }
+                                        if($include) {
+                                            for (keys(%modules)) {
+                                                my $trylib = $_;
+                                                if(-e "$out_basedir/include/$trylib/$include") {
+                                                    print "WARNING: $iheader includes $include when it should include $trylib/$include\n";
+                                                }
+                                            }
+                                        }
+                                    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_BEGIN_HEADER\s*$/) {
+                                        $qt_begin_header_found = 1;
+                                    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_END_HEADER\s*$/) {
+                                        $qt_end_header_found = 1;
+                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE\s*$/) {
+                                        $qt_begin_namespace_found = 1;
+                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE\s*$/) {
+                                        $qt_end_namespace_found = 1;
                                     } elsif ($header_skip_qt_module_test == 0 and $line =~ /^QT_MODULE\(.*\)\s*$/) {
                                         $qt_module_found = 1;
                                     }
-				}
+                                }
                                 if ($header_skip_qt_begin_header_test == 0) {
                                     if ($qt_begin_header_found == 0) {
                                         print "WARNING: $iheader does not include QT_BEGIN_HEADER\n";
@@ -1092,13 +1113,13 @@ if($check_includes) {
                                         print "WARNING: $iheader does not include QT_MODULE\n";
                                     }
                                 }
-				close(F);
-			    }
-			}
-		    }
-		}
-	    }
-	}
+                                close(F);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

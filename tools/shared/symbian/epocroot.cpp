@@ -105,10 +105,6 @@ static void fixEpocRoot(QString &path)
 {
     path.replace("\\", "/");
 
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
     if (!path.size() || path[path.size()-1] != QChar('/')) {
         path += QChar('/');
     }
@@ -153,10 +149,13 @@ QString epocRoot()
                                 while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
                                     xml.readNext();
                                     if (xml.isStartElement() && xml.name() == "device") {
-                                        const bool isDefault =  xml.attributes().value("default") == "yes";
+                                        const bool isDefault = xml.attributes().value("default") == "yes";
                                         const QString id = xml.attributes().value("id").toString();
-                                        const QString name =  xml.attributes().value("name").toString();
-                                        const bool epocDeviceMatch = (id + ":" + name) == epocDeviceValue;
+                                        const QString name = xml.attributes().value("name").toString();
+                                        const QString alias = xml.attributes().value("alias").toString();
+                                        bool epocDeviceMatch = (id + ":" + name) == epocDeviceValue;
+                                        if (!alias.isEmpty())
+                                            epocDeviceMatch |= alias == epocDeviceValue;
                                         epocDeviceFound |= epocDeviceMatch;
 
                                         if((epocDeviceValue.isEmpty() && isDefault) || epocDeviceMatch) {

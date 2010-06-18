@@ -385,6 +385,7 @@ VCXCLCompilerTool::VCXCLCompilerTool()
         DisableLanguageExtensions(unset),
         EnableFiberSafeOptimizations(unset),
         EnablePREfast(unset),
+        ExceptionHandling("false"),
         ExpandAttributedSource(unset),
         FloatingPointExceptions(unset),
         ForceConformanceInForLoopScope(unset),
@@ -396,6 +397,7 @@ VCXCLCompilerTool::VCXCLCompilerTool()
         MultiProcessorCompilation(unset),
         OmitDefaultLibName(unset),
         OmitFramePointers(unset),
+        Optimization("Disabled"),
         OpenMPSupport(unset),
         PreprocessKeepComments(unset),
         PreprocessSuppressLineNumbers(unset),
@@ -2655,6 +2657,14 @@ bool VCXFilter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QSt
 
                     xml << tag("ClCompile")
                         << attrTag("Include",Option::fixPathToLocalOS(filename));
+                } else if(filename.endsWith(".res")) {
+
+                    xmlFilter << tag("CustomBuild")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
                 } else {
 
                     xmlFilter << tag("CustomBuild")
@@ -2662,6 +2672,16 @@ bool VCXFilter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QSt
                               << attrTagS("Filter", filtername);
 
                     xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                }
+            } else if(filtername == "Root Files") {
+
+                if (filename.endsWith(".rc")) {
+
+                    xmlFilter << tag("ResourceCompile")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename));
+
+                    xml << tag("ResourceCompile")
                         << attrTag("Include",Option::fixPathToLocalOS(filename));
                 }
             }
@@ -2695,8 +2715,6 @@ bool VCXFilter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QSt
                     << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg((*Config).Name))
                     << valueTag(CompilerTool.PrecompiledHeader);
             }
-
-            //xml << CompilerTool;
         }
     }
 
@@ -3022,6 +3040,14 @@ void VCXProject::outputFileConfigs(XmlOutput &xml,
 
                 xml << tag("ClCompile")
                     << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            } else if(info.file.endsWith(".res")) {
+
+                    xmlFilter << tag("CustomBuild")
+                              << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(info.file));
             } else {
 
                 xmlFilter << tag("CustomBuild")
@@ -3032,6 +3058,16 @@ void VCXProject::outputFileConfigs(XmlOutput &xml,
                     << attrTag("Include",Option::fixPathToLocalOS(info.file));
             }
 
+        } else if(filtername == "Root Files") {
+
+            if (info.file.endsWith(".rc")) {
+
+                xmlFilter << tag("ResourceCompile")
+                          << attrTag("Include",Option::fixPathToLocalOS(info.file));
+
+                xml << tag("ResourceCompile")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            }
         } else {
 
             xmlFilter << tag("None")
@@ -3328,6 +3364,7 @@ XmlOutput &operator<<(XmlOutput &xml, VCXProject &tool)
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
         tool.outputFilter(xml, xmlFilter, tool.ExtraCompilers.at(x));
     }
+    tool.outputFilter(xml, xmlFilter, "Root Files");
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 

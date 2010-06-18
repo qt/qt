@@ -1,7 +1,5 @@
-isEmpty(QMAKE_RCC) {
-    win32:QMAKE_RCC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}rcc.exe
-    else:QMAKE_RCC = $$[QT_INSTALL_BINS]$${DIR_SEPARATOR}rcc
-}
+defined(qtPrepareTool)|load(qt_functions) ### Qt 5: see default_pre.prf
+qtPrepareTool(QMAKE_RCC, rcc)
 
 isEmpty(RCC_DIR):RCC_DIR = .
 isEmpty(QMAKE_RESOURCE_PREFIX):QMAKE_RESOURCE_PREFIX = /tmp/

@@ -6,7 +6,7 @@ DESTDIR = $$DEMO_DESTDIR/bin
 INSTALLS += target sources
 
 
-QT += xml network
+QT += xml network declarative
 
 contains(QT_CONFIG, opengl) {
     DEFINES += QT_OPENGL_SUPPORT
@@ -74,3 +74,5 @@ target.path = $$[QT_INSTALL_BINS]
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES qtdemo.pro images xml *.ico *.icns *.rc *.plist
 sources.path = $$[QT_INSTALL_DEMOS]/qtdemo
 
+OTHER_FILES += \
+    qmlShell.qml

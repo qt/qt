@@ -40,319 +40,377 @@
 ****************************************************************************/
 
 /*!
-  \page qdeclarativebasictypes.html
-  \title QML Basic Types
+    \page qdeclarativebasictypes.html
+    \title QML Basic Types
 
-  QML uses a set of property types, which are primitive within QML.
-  These basic types are referenced throughout the documentation of the
-  QML elements. Almost all of them are exactly what you would expect.
+    QML has a set of primitive types, as listed below, that are used throughout
+    the \l {QML Elements}.
 
-  \annotatedlist qmlbasictypes
+    Some of these types can also be used for defining 
+    \c property values in QML. See \l{Extending types from QML} for the
+    list of types that can be used for \c property values.
+
+    \annotatedlist qmlbasictypes
 */
 
 /*!
-  \qmlbasictype int
-  \ingroup qmlbasictypes
+    \qmlbasictype int
+    \ingroup qmlbasictypes
 
-  \brief An integer is a whole number, e.g. 0, 10, or -20.  
+    \brief An integer is a whole number, e.g. 0, 10, or -20. 
 
-  An integer is a whole number, e.g. 0, 10, or -20.  The possible \c
-  int values range from around -2000000000 to around 2000000000,
-  although most elements will only accept a reduced range (which they
-  mention in their documentation).
+    An integer is a whole number, e.g. 0, 10, or -20. The possible \c
+    int values range from around -2000000000 to around 2000000000,
+    although most elements will only accept a reduced range (which they
+    mention in their documentation).
 
-  Example:
-  \qml
-  Item { width: 100; height: 200 }
-  \endqml
+    Example:
+    \qml
+    Item { width: 100; height: 200 }
+    \endqml
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype bool
-  \ingroup qmlbasictypes
+    \qmlbasictype bool
+    \ingroup qmlbasictypes
 
-  \brief A boolean is a binary true/false value.
+    \brief A boolean is a binary true/false value.
 
-  A boolean is a binary true/false value.
+    A boolean is a binary true/false value.
 
-  Example:
-  \qml
-  Item { focus: true; clip: false }
-  \endqml
+    Example:
+    \qml
+    Item { focus: true; clip: false }
+    \endqml
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype real
-  \ingroup qmlbasictypes
+    \qmlbasictype real
+    \ingroup qmlbasictypes
 
-  \brief A real number has a decimal point, e.g. 1.2 or -29.8.
+    \brief A real number has a decimal point, e.g. 1.2 or -29.8.
 
-  A real number has a decimal point, e.g. 1.2 or -29.8.
+    A real number has a decimal point, e.g. 1.2 or -29.8.
 
-  Example:
-  \qml
-  Item { width: 100.45; height: 150.82 }
-  \endqml
+    Example:
+    \qml
+    Item { width: 100.45; height: 150.82 }
+    \endqml
 
-  \note In QML all reals are stored in single precision, \l
-  {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
-  format.
+    \note In QML all reals are stored in single precision, \l
+    {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
+    format.
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype string
-  \ingroup qmlbasictypes
+    \qmlbasictype string
+    \ingroup qmlbasictypes
 
-  \brief A string is a free form text in quotes, e.g. "Hello world!".
+    \brief A string is a free form text in quotes, e.g. "Hello world!".
 
-  A string is a free form text in quotes, e.g. "Hello world!".
+    A string is a free form text in quotes, e.g. "Hello world!".
 
-  Example:
-  \qml
-  Text { text: "Hello world!" }
-  \endqml
+    Example:
+    \qml
+    Text { text: "Hello world!" }
+    \endqml
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype url
-  \ingroup qmlbasictypes
+    \qmlbasictype url
+    \ingroup qmlbasictypes
 
-  \brief A URL is a resource locator, like a file name. 
+    \brief A URL is a resource locator, like a file name. 
 
-  A URL is a resource locator, like a file name.  It can be either
-  absolute, e.g. "http://qt.nokia.com", or relative, e.g.
-  "pics/logo.png". A relative URL is resolved relative to the URL of
-  the component where the URL is converted from a JavaScript string
-  expression to a url property value.
+    A URL is a resource locator, like a file name. It can be either
+    absolute, e.g. "http://qt.nokia.com", or relative, e.g.
+    "pics/logo.png". A relative URL is resolved relative to the URL of
+    the component where the URL is converted from a JavaScript string
+    expression to a url property value.
 
-  Example:
-  \qml
-  Image { source: "pics/logo.png" }
-  \endqml
+    Example:
+    \qml
+    Image { source: "pics/logo.png" }
+    \endqml
 
-  \raw HTML
-  \endraw
+    \raw HTML
+    \endraw
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype color
-  \ingroup qmlbasictypes
+    \qmlbasictype color
+    \ingroup qmlbasictypes
 
-  \brief A color is a standard color name in quotes.
+    \brief A color is a standard color name in quotes.
 
-  A color is a standard color name in quotes. It is normally specified
-  as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords} {SVG
-  color name}.  These names include colors like "red", "green" and
-  "lightsteelblue".
+    A color is a standard color name in quotes. It is normally specified
+    as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords} {SVG
+    color name}. These names include colors like "red", "green" and
+    "lightsteelblue".
 
-  If the color you want isn't part of this list, colors can also be
-  specified in hexidecimal triplets or quads that take the form \c
-  "#RRGGBB" and \c "#AARRGGBB" respectively.  For example, the color
-  red corresponds to a triplet of \c "#FF0000" and a slightly
-  transparent blue to a quad of \c "#800000FF".
+    If the color you want isn't part of this list, colors can also be
+    specified in hexidecimal triplets or quads that take the form \c
+    "#RRGGBB" and \c "#AARRGGBB" respectively. For example, the color
+    red corresponds to a triplet of \c "#FF0000" and a slightly
+    transparent blue to a quad of \c "#800000FF".
 
-  Example:
-  \qml
-  Rectangle { color: "steelblue" }
-  Rectangle { color: "#FF0000" }
-  Rectangle { color: "#800000FF" }
-  \endqml
+    Example:
+    \qml
+    Rectangle { color: "steelblue" }
+    Rectangle { color: "#FF0000" }
+    Rectangle { color: "#800000FF" }
+    \endqml
 
-  \sa {QML Basic Types}
+    Or with the \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()},
+    \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()} functions:
+
+    \qml
+    Rectangle { color: Qt.rgba(255, 0, 0, 1) }
+    \endqml
+
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype point
-  \ingroup qmlbasictypes
+    \qmlbasictype point
+    \ingroup qmlbasictypes
 
-  \brief A point is specified as "x,y".
+    \brief A point type has x and y attributes.
 
-  A point is specified as "x,y".
+    A \c point type has \c x and \c y attributes.
 
-  Example:
-  \qml
-  Widget { pos: "0,20" }
-  \endqml
+    To create a \c point value, specify it as a "x,y" string:
 
-  \sa {QML Basic Types}
+    \qml
+    CustomObject { myPointProperty: "0,20" }
+    \endqml
+
+    Or use the \l{Qt::point()}{Qt.point()} function:
+
+    \qml
+    CustomObject { myPointProperty: Qt.point(0, 20) }
+    \endqml
+
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype size
-  \ingroup qmlbasictypes
+    \qmlbasictype size
+    \ingroup qmlbasictypes
+    
+    \brief A size type has width and height attributes
 
-  \brief A size is specified as "width x height".
+    A \c size type has \c width and \c height attributes.
 
-  A size is specified as "width x height".
+    For example, to read the \l {Image::sourceSize} \c size property:
 
-  Example:
-  \qml
-  Widget { size: "150x50" }
-  \endqml
+    \qml
+    Column {
+        Image { id: image; source: "logo.png" }
+        Text { text: image.sourceSize.width + "," + image.sourceSize.height }
+    }
+    \endqml
 
-  \sa {QML Basic Types}
+    To create a \c size value, specify it as a "width x height" string:
+
+    \qml
+    LayoutItem { preferredSize: "150x50" }
+    \endqml
+
+    Or use the \l{Qt::size()}{Qt.size()} function:
+
+    \qml
+    LayoutItem { preferredSize: Qt.size(150, 50) }
+    \endqml
+
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype rect
-  \ingroup qmlbasictypes
+    \qmlbasictype rect
+    \ingroup qmlbasictypes
 
-  \brief A rect is specified as "x, y, width x height".
+    \brief A rect type has x, y, width and height attributes.
 
-  A rect is specified as "x, y, width x height".
+    A \c rect type has \c x, \c y, \c width and \c height attributes.
 
-  Example:
-  \qml
-  Widget { geometry: "50,50,100x100" }
-  \endqml
+    For example, to read the \l {Item::childrenRect.x}{Item::childrenRect} \c rect property:
+    \qml
+    Rectangle { 
+        width: childrenRect.width
+        height: childrenRect.height
 
-  \sa {QML Basic Types}
+        Rectangle { width: 100; height: 100 }
+    }
+    \endqml
+
+    To create a \c rect value, specify it as a "x, y, width x height" string:
+
+    \qml
+    CustomObject { myRectProperty: "50,50,100x100" }
+    \endqml
+
+    Or use the \l{Qt::rect()}{Qt.rect()} function:
+
+    \qml
+    CustomObject { myRectProperty: Qt.rect(50, 50, 100, 100) }
+    \endqml
+
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype date
-  \ingroup qmlbasictypes
+    \qmlbasictype date
+    \ingroup qmlbasictypes
 
-  \brief A date is specified as "YYYY-MM-DD".
+    \brief A date is specified as "YYYY-MM-DD".
 
-  A date is specified as "YYYY-MM-DD".
+    To create a \c date value, specify it as a "YYYY-MM-DD" string:
 
-  Example:
-  \qml
-  DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
-  \endqml
+    Example:
+    \qml
+    MyDatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
+    \endqml
 
-  \sa {QML Basic Types}
+    To read a date value returned from a C++ extension class, use 
+    \l{Qt::formatDate()}{Qt.formatDate()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype time
-  \ingroup qmlbasictypes
+    \qmlbasictype time
+    \ingroup qmlbasictypes
 
-  \brief A time is specified as "hh:mm:ss".
+    \brief A time is specified as "hh:mm:ss".
 
-  A time is specified as "hh:mm:ss".
+    A time is specified as "hh:mm:ss".
 
-  Example:
-  \qml
-  TimePicker { time: "14:22:15" }
-  \endqml
+    Example:
+    \qml
+    MyTimePicker { time: "14:22:15" }
+    \endqml
 
-  \sa {QML Basic Types}
+    To read a time value returned from a C++ extension class, use 
+    \l{Qt::formatTime()}{Qt.formatTime()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+    \sa {QML Basic Types}
  */
 
 /*!
-  \qmlbasictype font
-  \ingroup qmlbasictypes
+    \qmlbasictype font
+    \ingroup qmlbasictypes
 
-  \brief A font type has the properties of a QFont.
+    \brief A font type has the properties of a QFont.
 
-  A font type has the properties of a QFont. The properties are:
+    A font type has the properties of a QFont. The properties are:
 
-  \list
-  \o \c string font.family
-  \o \c bool font.bold
-  \o \c bool font.italic
-  \o \c bool font.underline
-  \o \c real font.pointSize
-  \o \c int font.pixelSize
-  \endlist
+    \list
+    \o \c string font.family
+    \o \c bool font.bold
+    \o \c bool font.italic
+    \o \c bool font.underline
+    \o \c real font.pointSize
+    \o \c int font.pixelSize
+    \endlist
 
-  Example:
-  \qml
-  Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
-  \endqml
+    Example:
+    \qml
+    Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
+    \endqml
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype action
-  \ingroup qmlbasictypes
+    \qmlbasictype action
+    \ingroup qmlbasictypes
 
-  \brief The action type has all the properties of QAction.
+    \brief The action type has all the properties of QAction.
 
-  The action type has all the properties of QAction. The properties
-  are:
+    The action type has all the properties of QAction. The properties
+    are:
 
-  \list
-  \o \c slot action.trigger - invoke the action
-  \o \c bool action.enabled - true if the action is enabled
-  \o \c string action.text - the text associated with the action
-  \endlist
+    \list
+    \o \c slot action.trigger - invoke the action
+    \o \c bool action.enabled - true if the action is enabled
+    \o \c string action.text - the text associated with the action
+    \endlist
 
-  Actions are used like this:
+    Actions are used like this:
 
-  \qml
-  MouseArea { onClicked: MyItem.myaction.trigger() }
-  State { name: "enabled"; when: MyItem.myaction.enabled == true }
-  Text { text: MyItem.someaction.text }
-  \endqml
+    \qml
+    MouseArea { onClicked: myaction.trigger() }
+    State { name: "enabled"; when: myaction.enabled == true }
+    Text { text: someaction.text }
+    \endqml
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype list
-  \ingroup qmlbasictypes
+    \qmlbasictype list
+    \ingroup qmlbasictypes
 
-  \brief A list of objects.
+    \brief A list of objects.
 
-  A list of objects.  While not technically a basic type, QML also
-  supports lists of object types. When used from QML, the engine
-  automatically appends each value to the list.
+    A list of objects. While not technically a basic type, QML also
+    supports lists of object types. When used from QML, the engine
+    automatically appends each value to the list.
 
-  For example, the \l Item class contains a list property named
-  children that can be used like this:
+    For example, the \l Item class contains a list property named
+    children that can be used like this:
 
-  \qml
-  Item {
-    children: [
-      Item { id: child1 },
-      Rectangle { id: child2 },
-      Text { id: child3 }
-    ]
-  }
-  \endqml
-  \c Child1, \c Child2 and \c Child3 will all be added to the children list
-  in the order in which they appear.
+    \qml
+    Item {
+        children: [
+            Item { id: child1 },
+            Rectangle { id: child2 },
+            Text { id: child3 }
+        ]
+    }
+    \endqml
+    \c child1, \c child2 and \c child3 will all be added to the children list
+    in the order in which they appear.
 
-  \sa {QML Basic Types}
+    \sa {QML Basic Types}
 */
 
 /*!
-  \qmlbasictype vector3d
-  \ingroup qmlbasictypes
+    \qmlbasictype vector3d
+    \ingroup qmlbasictypes
 
-  \brief A vector3d is specified as "x,y,z".
+    \brief A vector3d type has x, y, and z attributes.
 
-  A vector3d is specified as "x,y,z".
+    A \c vector3d type has \c x, \c y, and \c z attributes.
 
-  \qml
-  Rotation { angle: 60; axis: "0,1,0" }
-  \endqml
+    To create a \c vector3d value, specify it as a "x,y,z" string:
 
-  or with the \c{Qt.vector3d()} helper function:
+    \qml
+    Rotation { angle: 60; axis: "0,1,0" }
+    \endqml
 
-  \qml
-  Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
-  \endqml
+    or with the \l{Qt::vector3d()}{Qt.vector3d()} function:
 
-  or as separate \c x, \c y, and \c z components:
+    \qml
+    Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
+    \endqml
 
-  \qml
-  Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
-  \endqml
+    or as separate \c x, \c y, and \c z components:
 
-  \sa {QML Basic Types}
+    \qml
+    Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
+    \endqml
+
+    \sa {QML Basic Types}
 */

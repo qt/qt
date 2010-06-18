@@ -972,7 +972,7 @@ MakefileGenerator::writePrlFile(QTextStream &t)
             libs << "QMAKE_LIBS_PRIVATE";
         t << "QMAKE_PRL_LIBS = ";
         for(QStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
-            t << project->values((*it)).join(" ") << " ";
+            t << project->values((*it)).join(" ").replace('\\', "\\\\") << " ";
         t << endl;
     }
 }
@@ -1236,7 +1236,7 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 target += "\n";
             do_default = false;
             for(QStringList::Iterator wild_it = tmp.begin(); wild_it != tmp.end(); ++wild_it) {
-                QString wild = Option::fixPathToLocalOS((*wild_it), false, false);
+                QString wild = Option::fixPathToTargetOS((*wild_it), false, false);
                 QString dirstr = qmake_getpwd(), filestr = wild;
                 int slsh = filestr.lastIndexOf(Option::dir_sep);
                 if(slsh != -1) {
@@ -1277,13 +1277,26 @@ MakefileGenerator::writeInstalls(QTextStream &t, const QString &installs, bool n
                 }
                 QString local_dirstr = Option::fixPathToLocalOS(dirstr, true);
                 QStringList files = QDir(local_dirstr).entryList(QStringList(filestr));
-                if(project->values((*it) + ".CONFIG").indexOf("no_check_exist") != -1 && files.isEmpty()) {
+                const QStringList &installConfigValues = project->values((*it) + ".CONFIG");
+                if (installConfigValues.contains("no_check_exist") && files.isEmpty()) {
                     if(!target.isEmpty())
                         target += "\t";
                     QString dst_file = filePrefixRoot(root, dst);
                     QFileInfo fi(fileInfo(wild));
-                    QString cmd =  QString(fi.isExecutable() ? "-$(INSTALL_PROGRAM)" : "-$(INSTALL_FILE)") + " " +
-                                   wild + " " + dst_file + "\n";
+                    QString cmd;
+                    if (installConfigValues.contains("directory")) {
+                        cmd = QLatin1String("-$(INSTALL_DIR)");
+                        if (!dst_file.endsWith(Option::dir_sep))
+                            dst_file += Option::dir_sep;
+                        dst_file += fi.fileName();
+                    } else if (installConfigValues.contains("executable")) {
+                        cmd = QLatin1String("-$(INSTALL_PROGRAM)");
+                    } else if (installConfigValues.contains("data")) {
+                        cmd = QLatin1String("-$(INSTALL_FILE)");
+                    } else {
+                        cmd = QString(fi.isExecutable() ? "-$(INSTALL_PROGRAM)" : "-$(INSTALL_FILE)");
+                    }
+                    cmd += " " + wild + " " + dst_file + "\n";
                     target += cmd;
                     if(!uninst.isEmpty())
                         uninst.append("\n\t");

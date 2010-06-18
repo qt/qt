@@ -71,8 +71,8 @@ public:
 
     bool handleForwardBackwardMouseButtons(QMouseEvent *e);
 
+    QUrl source() const;
     void setSource(const QUrl &url);
-    inline QUrl source() const { return url(); }
 
     inline QString documentTitle() const
     { return title(); }
@@ -100,6 +100,7 @@ Q_SIGNALS:
     void backwardAvailable(bool enabled);
     void highlighted(const QString &);
     void sourceChanged(const QUrl &);
+    void printRequested();
 
 protected:
     virtual void wheelEvent(QWheelEvent *);
@@ -108,6 +109,7 @@ protected:
 
 private Q_SLOTS:
     void actionChanged();
+    void setLoadStarted();
     void setLoadFinished(bool ok);
 
 private:

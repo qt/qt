@@ -109,6 +109,7 @@ private slots:
     void task256066toPem();
     void nulInCN();
     void nulInSan();
+    void largeSerialNumber();
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -541,6 +542,9 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d.*/c.*.pem\" regexp der") << QString("d.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
     QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
+#ifdef Q_OS_LINUX
+    QTest::newRow("absolute path wildcard pem") << QString(QDir::currentPath() + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 4;
+#endif
 
     QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
     QTest::newRow("no-ending-newline") << QString("more-certificates/no-ending-newline.pem") << int(QRegExp::FixedString) << true << 1;
@@ -784,6 +788,18 @@ void tst_QSslCertificate::nulInSan()
 
     static const char realSAN[] = "www.bank.com\0www.badguy.com";
     QCOMPARE(dnssan, QString::fromLatin1(realSAN, sizeof realSAN - 1));
+}
+
+void tst_QSslCertificate::largeSerialNumber()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-serial-number.pem");
+
+    QCOMPARE(certList.size(), 1);
+
+    const QSslCertificate &cert = certList.at(0);
+    QVERIFY(!cert.isNull());
+    QCOMPARE(cert.serialNumber(), QByteArray("01:02:03:04:05:06:07:08:09:10:aa:bb:cc:dd:ee:ff:17:18:19:20"));
 }
 
 #endif // QT_NO_OPENSSL

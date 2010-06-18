@@ -127,6 +127,7 @@
     \row \o \c run           \o Run the application on the emulator.
     \row \o \c runonphone    \o Run the application on a device.
     \row \o \c sis           \o Create signed \c .sis file for project.
+    \row \o \c unsigned_sis  \o Create unsigned \c .sis file for project.
     \row \o \c installer_sis \o Create signed \l{Smart Installer}{smart installer}
                                 \c .sis file for project.
                                 Smart installer will attempt to download
@@ -191,7 +192,11 @@
     \table
     \row \o -i                  \o Install the package right away using PC suite.
     \row \o -p                  \o Only preprocess the template \c .pkg file.
-    \row \o -c=<file>           \o Read certificate information from a file.
+    \row \o -c <file>           \o Read certificate information from a file.
+    \row \o -u                  \o Preserves unsigned package.
+    \row \o -o                  \o Creates only unsigned package.
+    \row \o -s                  \o Generates stub sis for ROM.
+    \row \o -n <name>           \o Specifies the final sis name.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

@@ -112,6 +112,10 @@ public:
 
     void inputMethodEvent(QInputMethodEvent*);
 
+#ifndef QT_NO_PROPERTIES
+    void dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent*);
+#endif
+
     void shortcutOverrideEvent(QKeyEvent*);
     void leaveEvent(QEvent*);
     void handleClipboard(QEvent*, Qt::MouseButton);

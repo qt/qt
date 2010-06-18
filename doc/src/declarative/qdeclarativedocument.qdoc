@@ -96,9 +96,6 @@ Once created, instances are not dependent on the component that created them, so
 operate on independent data.  Here is an example of a simple "Button" component that is 
 instantiated four times, each with a different value for its \c text property.
 
-\table
-\row
-\o
 \raw HTML
 <table><tr><td>
 \endraw
@@ -125,10 +122,19 @@ BorderImage {
 \raw HTML
 </td> </tr> </table>
 \endraw
-\endtable
 
-In addition to the top-level component that all QML documents define, documents may also 
-include additional \e inline components.  Inline components are declared  using the 
+Any snippet of QML code can become a component, just by placing it in the file "<Name>.qml"
+where <Name> is the new element name, and begins with an uppercase letter.  Note that
+the case of all characters in the <Name> are significant on some filesystems, notably
+UNIX filesystems.  It is recommended that the case of the filename matches the case of
+the component name in QML exactly, regardless of the platform the QML will be deployed to.
+
+These QML files automatically become available as new QML element types
+to other QML components and applications in the same directory.
+
+In addition to the top-level component that all QML documents define, and any reusable
+components placed in separate files, documents may also 
+include \e inline components.  Inline components are declared using the 
 \l Component element, as can be seen in the first example above.  Inline components share 
 all the characteristics of regular top-level components and use the same \c import list as their
 containing QML document.  Components are one of the most basic building blocks in QML, and are 

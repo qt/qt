@@ -154,6 +154,41 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
+  Returns a string representing the access specifier.
+ */
+QString Node::accessString() const
+{
+    switch (acc) {
+    case Protected:
+        return "protected";
+    case Private:
+        return "private";
+    case Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+
+/*!
+  Returns a string representing the access specifier.
+ */
+QString RelatedClass::accessString() const
+{
+    switch (access) {
+    case Node::Protected:
+        return "protected";
+    case Node::Private:
+        return "private";
+    case Node::Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+/*!
  */
 Node::Status Node::inheritedStatus() const
 {
@@ -624,7 +659,7 @@ void InnerNode::removeChild(Node *child)
 	QMap<QString, Node *>::Iterator prim =
 		primaryFunctionMap.find(child->name());
 	NodeList& secs = secondaryFunctionMap[child->name()];
-	if (*prim == child) {
+	if (prim != primaryFunctionMap.end() && *prim == child) {
 	    if (secs.isEmpty()) {
 		primaryFunctionMap.remove(child->name());
 	    }
@@ -636,12 +671,12 @@ void InnerNode::removeChild(Node *child)
 	    secs.removeAll(child);
 	}
         QMap<QString, Node *>::Iterator ent = childMap.find( child->name() );
-        if ( *ent == child )
+        if (ent != childMap.end() && *ent == child)
             childMap.erase( ent );
     }
     else {
 	QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
-	if (*ent == child)
+	if (ent != childMap.end() && *ent == child)
 	    childMap.erase(ent);
     }
 }
@@ -754,6 +789,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
+    abstract = false;
     setPageType(ApiPage);
 }
 
@@ -1043,6 +1079,19 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
 }
 
 /*!
+  Sets the \a virtualness of this function. If the \a virtualness
+  is PureVirtual, and if the parent() is a ClassNode, set the parent's
+  \e abstract flag to true.
+ */
+void FunctionNode::setVirtualness(Virtualness virtualness)
+{
+    vir = virtualness;
+    if ((virtualness == PureVirtual) && parent() &&
+        (parent()->type() == Node::Class))
+        parent()->setAbstract(true);
+}
+
+/*!
  */
 void FunctionNode::setOverload(bool overlode)
 {
@@ -1289,7 +1338,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
+    setTitle((qmlOnly ? "" : "QML ") + name + " Element");
 }
 
 /*!

@@ -6,35 +6,34 @@
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
+** $QT_BEGIN_LICENSE:BSD$
+** You may use this file under the terms of the BSD license as follows:
 **
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** "Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are
+** met:
+**   * Redistributions of source code must retain the above copyright
+**     notice, this list of conditions and the following disclaimer.
+**   * Redistributions in binary form must reproduce the above copyright
+**     notice, this list of conditions and the following disclaimer in
+**     the documentation and/or other materials provided with the
+**     distribution.
+**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+**     the names of its contributors may be used to endorse or promote
+**     products derived from this software without specific prior written
+**     permission.
 **
-** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
-**
-**
-**
-**
-**
-**
-**
-**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,122 +42,72 @@
 
 #include <QtGui/QtGui>
 
-RoundRectItem::RoundRectItem(const QRectF &rect, const QBrush &brush, QWidget *embeddedWidget)
-    : QGraphicsRectItem(rect),
-      brush(brush),
-      timeLine(75),
-      lastVal(0),
-      opa(1),
-      proxyWidget(0)
+//! [0]
+RoundRectItem::RoundRectItem(const QRectF &bounds, const QColor &color,
+                             QGraphicsItem *parent)
+    : QGraphicsObject(parent), fillRect(false), bounds(bounds)
 {
-    connect(&timeLine, SIGNAL(valueChanged(qreal)),
-            this, SLOT(updateValue(qreal)));
-    
-    if (embeddedWidget) {
-        proxyWidget = new QGraphicsProxyWidget(this);
-        proxyWidget->setFocusPolicy(Qt::StrongFocus);
-        proxyWidget->setWidget(embeddedWidget);
-        proxyWidget->setGeometry(boundingRect().adjusted(25, 25, -25, -25));
-    }
+    gradient.setStart(bounds.topLeft());
+    gradient.setFinalStop(bounds.bottomRight());
+    gradient.setColorAt(0, color);
+    gradient.setColorAt(1, color.dark(200));
+    setCacheMode(ItemCoordinateCache);
 }
+//! [0]
 
-void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+//! [1]
+QPixmap RoundRectItem::pixmap() const
 {
-    QTransform x = painter->worldTransform();
-
-    QLineF unit = x.map(QLineF(0, 0, 1, 1));
-    if (unit.p1().x() > unit.p2().x() || unit.p1().y() > unit.p2().y()) {
-        if (proxyWidget && proxyWidget->isVisible()) {
-            proxyWidget->hide();
-            proxyWidget->setGeometry(rect());
-        }
-        return;
-    }
-
-    if (proxyWidget && !proxyWidget->isVisible()) {
-        proxyWidget->show();
-        proxyWidget->setFocus();
-    }
-    if (proxyWidget && proxyWidget->pos() != QPoint())
-        proxyWidget->setGeometry(boundingRect().adjusted(25, 25, -25, -25));
-
-    painter->setOpacity(opacity());
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(0, 0, 0, 64));
-    painter->drawRoundRect(rect().translated(2, 2));
-
-    if (!proxyWidget) {
-        QLinearGradient gradient(rect().topLeft(), rect().bottomRight());
-        const QColor col = brush.color();
-        gradient.setColorAt(0, col);
-        gradient.setColorAt(1, col.dark(int(200 + lastVal * 50)));
-        painter->setBrush(gradient);
-    } else {
-        painter->setBrush(brush);
-    }
-
-    painter->setPen(QPen(Qt::black, 1));
-    painter->drawRoundRect(rect());
-    if (!pix.isNull()) {
-        painter->scale(1.95, 1.95);
-        painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);;
-    }
+    return pix;
 }
-
-QRectF RoundRectItem::boundingRect() const
-{
-    qreal penW = 0.5;
-    qreal shadowW = 2.0;
-    return rect().adjusted(-penW, -penW, penW + shadowW, penW + shadowW);
-}
-
 void RoundRectItem::setPixmap(const QPixmap &pixmap)
 {
     pix = pixmap;
-    if (scene() && isVisible())
-        update();
-}
-
-qreal RoundRectItem::opacity() const
-{
-    RoundRectItem *parent = parentItem() ? (RoundRectItem *)parentItem() : 0;
-    return opa + (parent ? parent->opacity() : 0);
-}
-
-void RoundRectItem::setOpacity(qreal opacity)
-{
-    opa = opacity;
     update();
 }
+//! [1]
 
-void RoundRectItem::keyPressEvent(QKeyEvent *event)
+//! [2]
+QRectF RoundRectItem::boundingRect() const
 {
-    if (event->isAutoRepeat() || event->key() != Qt::Key_Return
-        || (timeLine.state() == QTimeLine::Running && timeLine.direction() == QTimeLine::Forward)) {
-        QGraphicsRectItem::keyPressEvent(event);
-        return;
+    return bounds.adjusted(0, 0, 2, 2);
+}
+//! [2]
+
+//! [3]
+void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                          QWidget *widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(QColor(0, 0, 0, 64));
+    painter->drawRoundRect(bounds.translated(2, 2));
+//! [3]
+//! [4]
+    if (fillRect)
+        painter->setBrush(QApplication::palette().brush(QPalette::Window));
+    else
+        painter->setBrush(gradient);
+    painter->setPen(QPen(Qt::black, 1));
+    painter->drawRoundRect(bounds);
+//! [4]
+//! [5]
+    if (!pix.isNull()) {
+        painter->scale(1.95, 1.95);
+        painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);
     }
-
-    timeLine.stop();
-    timeLine.setDirection(QTimeLine::Forward);
-    timeLine.start();
-    emit activated();
 }
+//! [5]
 
-void RoundRectItem::keyReleaseEvent(QKeyEvent *event)
+//! [6]
+bool RoundRectItem::fill() const
 {
-    if (event->key() != Qt::Key_Return) {
-        QGraphicsRectItem::keyReleaseEvent(event);
-        return;
-    }
-    timeLine.stop();
-    timeLine.setDirection(QTimeLine::Backward);
-    timeLine.start();
+    return fillRect;
 }
-
-void RoundRectItem::updateValue(qreal value)
+void RoundRectItem::setFill(bool fill)
 {
-    lastVal = value;
-    if (!proxyWidget)
-        setTransform(QTransform().scale(1 - value / 10.0, 1 - value / 10.0));
+    fillRect = fill;
+    update();
 }
+//! [6]

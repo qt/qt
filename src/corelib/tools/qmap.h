@@ -125,6 +125,10 @@ template <class Key, class T>
 struct QMapNode {
     Key key;
     T value;
+
+private:
+    // never access these members through this structure.
+    // see below
     QMapData::Node *backward;
     QMapData::Node *forward[1];
 };
@@ -134,6 +138,22 @@ struct QMapPayloadNode
 {
     Key key;
     T value;
+
+private:
+    // QMap::e is a pointer to QMapData::Node, which matches the member
+    // below. However, the memory allocation node in QMapData::node_create
+    // allocates sizeof(QMapPayloNode) and incorrectly calculates the offset
+    // of 'backward' below. If the alignment of QMapPayloadNode is larger
+    // than the alignment of a pointer, the 'backward' member is aligned to
+    // the end of this structure, not to 'value' above, and will occupy the
+    // tail-padding area.
+    //
+    //  e.g., on a 32-bit archictecture with Key = int and
+    //        sizeof(T) = alignof(T) = 8
+    //   0        4        8        12       16       20       24  byte
+    //   |   key  |   PAD  |      value      |backward|  PAD   |   correct layout
+    //   |   key  |   PAD  |      value      |        |backward|   how it's actually used
+    //   |<-----  value of QMap::payload() = 20 ----->|
     QMapData::Node *backward;
 };
 
@@ -957,7 +977,7 @@ public:
     { return QMap<Key, T>::insertMulti(key, value); }
 
     inline QMultiMap &operator+=(const QMultiMap &other)
-    { unite(other); return *this; }
+    { this->unite(other); return *this; }
     inline QMultiMap operator+(const QMultiMap &other) const
     { QMultiMap result = *this; result += other; return result; }
 
@@ -1032,12 +1052,7 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
     typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
-#if defined(Q_CC_RVCT)
-            // RVCT has problems with scoping, apparently.
-            i = QMap<Key, T>::erase(i);
-#else
-            i = erase(i);
-#endif
+            i = this->erase(i);
             ++n;
         } else {
             ++i;

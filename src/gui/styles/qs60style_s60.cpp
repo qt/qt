@@ -50,17 +50,17 @@
 #include "qapplication.h"
 
 #include <w32std.h>
-#include <AknsConstants.h>
+#include <aknsconstants.h>
 #include <aknconsts.h>
-#include <AknsItemID.h>
-#include <AknsUtils.h>
-#include <AknsDrawUtils.h>
-#include <AknsSkinInstance.h>
-#include <AknsBasicBackgroundControlContext.h>
+#include <aknsitemid.h>
+#include <aknsutils.h>
+#include <aknsdrawutils.h>
+#include <aknsskininstance.h>
+#include <aknsbasicbackgroundcontrolcontext.h>
 #include <avkon.mbg>
 #include <aknfontaccess.h>
 #include <aknlayoutfont.h>
-#include <AknUtils.h>
+#include <aknutils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <aknbitmapanimation.h>
@@ -179,7 +179,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafBarFrameSideR */          {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarProgress */            {KAknsIIDQgnGrafBarProgress,            EDrawIcon,   ES60_All,    -1,-1},
     // No drop area for 3.x non-touch devices
-    /* SP_QgnGrafOrgBgGrid */              {KAknsIIDNone,                          EDrawIcon,   ES60_3_X,    EAknsMajorGeneric ,0x1eba}, //KAknsIIDQgnGrafOrgBgGrid   
+    /* SP_QgnGrafOrgBgGrid */              {KAknsIIDNone,                          EDrawIcon,   ES60_3_X,    EAknsMajorGeneric ,0x1eba}, //KAknsIIDQgnGrafOrgBgGrid
     /* SP_QgnGrafScrollArrowDown */        {KAknsIIDQgnGrafScrollArrowDown,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowLeft */        {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowRight */       {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},
@@ -214,7 +214,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     // In 3.1 there different slider graphic and no pressed state.
     /* SP_QgnGrafNsliderMarker */          {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x19d1 /* KAknsIIDQgnGrafNsliderMarker */},
     /* SP_QgnGrafNsliderMarkerSelected */  {KAknsIIDQgnIndiSliderEdit,             EDrawIcon,   ES60_3_1,    EAknsMajorGeneric, 0x1a4a /* KAknsIIDQgnGrafNsliderMarkerSelected */},
-    /* SP_QgnIndiSubMenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnIndiSubmenu */                {KAknsIIDQgnIndiSubmenu,                EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteErased */                 {KAknsIIDQgnNoteErased,                 EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteError */                  {KAknsIIDQgnNoteError,                  EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnNoteInfo */                   {KAknsIIDQgnNoteInfo,                   EDrawIcon,   ES60_All,    -1,-1},
@@ -226,6 +226,28 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnPropFolderSmall */            {KAknsIIDQgnPropFolderSmall,            EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnPropFolderSmallNew */         {KAknsIIDQgnPropFolderSmallNew,         EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnPropPhoneMemcLarge */         {KAknsIIDQgnPropPhoneMemcLarge,         EDrawIcon,   ES60_All,    -1,-1},
+
+    // Toolbar graphics is different in 3.1/3.2 vs. 5.0
+    /* SP_QgnFrSctrlButtonCornerTl */   {KAknsIIDQsnFrButtonTbCornerTl,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2301}, /* KAknsIIDQgnFrSctrlButtonCornerTl*/
+    /* SP_QgnFrSctrlButtonCornerTr */   {KAknsIIDQsnFrButtonTbCornerTr,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2302},
+    /* SP_QgnFrSctrlButtonCornerBl */   {KAknsIIDQsnFrButtonTbCornerBl,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2303},
+    /* SP_QgnFrSctrlButtonCornerBr */   {KAknsIIDQsnFrButtonTbCornerBr,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2304},
+    /* SP_QgnFrSctrlButtonSideT */      {KAknsIIDQsnFrButtonTbSideT,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2305},
+    /* SP_QgnFrSctrlButtonSideB */      {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2306},
+    /* SP_QgnFrSctrlButtonSideL */      {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2307},
+    /* SP_QgnFrSctrlButtonSideR */      {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2308},
+    /* SP_QgnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
+
+    // No pressed state for toolbar button in 3.1/3.2.
+    /* SP_QgnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2621},  /*KAknsIIDQgnFrSctrlButtonCornerTlPressed*/
+    /* SP_QgnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2622},
+    /* SP_QgnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2623},
+    /* SP_QgnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2624},
+    /* SP_QgnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2625},
+    /* SP_QgnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2626},
+    /* SP_QgnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2627},
+    /* SP_QgnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2628},
+    /* SP_QgnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2629},
 
     // 3.1 & 3.2 do not have pressed state for scrollbar, so use normal scrollbar graphics instead.
     /* SP_QsnCpScrollHandleBottomPressed*/ {KAknsIIDQsnCpScrollHandleBottom,    EDrawIcon,   ES60_3_X,    EAknsMajorGeneric, 0x20f8}, /*KAknsIIDQsnCpScrollHandleBottomPressed*/
@@ -266,10 +288,10 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrCaleCornerTr */          {KAknsIIDQsnFrCaleCornerTr,             ENoDraw,     ES60_All,    -1,-1},
     /* SP_QsnFrCaleCornerBl */          {KAknsIIDQsnFrCaleCornerBl,             ENoDraw,     ES60_All,    -1,-1},
     /* SP_QsnFrCaleCornerBr */          {KAknsIIDQsnFrCaleCornerBr,             ENoDraw,     ES60_All,    -1,-1},
-    /* SP_QsnFrCaleGSideT */            {KAknsIIDQsnFrCaleSideT,                ENoDraw,     ES60_All,    -1,-1},
-    /* SP_QsnFrCaleGSideB */            {KAknsIIDQsnFrCaleSideB,                ENoDraw,     ES60_All,    -1,-1},
-    /* SP_QsnFrCaleGSideL */            {KAknsIIDQsnFrCaleSideL,                ENoDraw,     ES60_All,    -1,-1},
-    /* SP_QsnFrCaleGSideR */            {KAknsIIDQsnFrCaleSideR,                ENoDraw,     ES60_All,    -1,-1},
+    /* SP_QsnFrCaleSideT */             {KAknsIIDQsnFrCaleSideT,                ENoDraw,     ES60_All,    -1,-1},
+    /* SP_QsnFrCaleSideB */             {KAknsIIDQsnFrCaleSideB,                ENoDraw,     ES60_All,    -1,-1},
+    /* SP_QsnFrCaleSideL */             {KAknsIIDQsnFrCaleSideL,                ENoDraw,     ES60_All,    -1,-1},
+    /* SP_QsnFrCaleSideR */             {KAknsIIDQsnFrCaleSideR,                ENoDraw,     ES60_All,    -1,-1},
     /* SP_QsnFrCaleCenter */            {KAknsIIDQsnFrCaleCenter,               ENoDraw,     ES60_All,    -1,-1},
 
     /* SP_QsnFrCaleHeadingCornerTl */   {KAknsIIDQsnFrCaleHeadingCornerTl,      ENoDraw,     ES60_All,    -1,-1},
@@ -344,28 +366,6 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrPopupSubSideR */         {KAknsIIDQsnFrPopupSubSideR,            ENoDraw,     ES60_3_X,    -1,-1},
     /* SP_QsnFrPopupSubCenter */        {KAknsIIDQsnFrPopupCenterSubmenu,       ENoDraw,     ES60_3_X,    -1,-1},
 
-    // Toolbar graphics is different in 3.1/3.2 vs. 5.0
-    /* SP_QsnFrSctrlButtonCornerTl */   {KAknsIIDQsnFrButtonTbCornerTl,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2301}, /* KAknsIIDQgnFrSctrlButtonCornerTl*/
-    /* SP_QsnFrSctrlButtonCornerTr */   {KAknsIIDQsnFrButtonTbCornerTr,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2302},
-    /* SP_QsnFrSctrlButtonCornerBl */   {KAknsIIDQsnFrButtonTbCornerBl,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2303},
-    /* SP_QsnFrSctrlButtonCornerBr */   {KAknsIIDQsnFrButtonTbCornerBr,         ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2304},
-    /* SP_QsnFrSctrlButtonSideT */      {KAknsIIDQsnFrButtonTbSideT,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2305},
-    /* SP_QsnFrSctrlButtonSideB */      {KAknsIIDQsnFrButtonTbSideB,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2306},
-    /* SP_QsnFrSctrlButtonSideL */      {KAknsIIDQsnFrButtonTbSideL,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2307},
-    /* SP_QsnFrSctrlButtonSideR */      {KAknsIIDQsnFrButtonTbSideR,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2308},
-    /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,           ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
-
-    // No pressed state for toolbar button in 3.1/3.2.
-    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
-    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2622},
-    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2623},
-    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBr,    ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2624},
-    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2625},
-    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2626},
-    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2627},
-    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2628},
-    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2629},
-
     // No inactive button graphics in 3.1/3.2
     /* SP_QsnFrButtonCornerTlInactive */ {KAknsIIDQsnFrButtonTbCornerTl,        ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x21b1}, /*KAknsIIDQsnFrButtonCornerTlInactive*/
     /* SP_QsnFrButtonCornerTrInactive */ {KAknsIIDQsnFrButtonTbCornerTr,        ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x21b2},
@@ -397,7 +397,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrListSideBPressed */       {KAknsIIDQsnFrListSideB,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2690},
     /* SP_QsnFrListSideLPressed */       {KAknsIIDQsnFrListSideL,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2691},
     /* SP_QsnFrListSideRPressed */       {KAknsIIDQsnFrListSideR,       ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2692},
-    /* SP_QsnFrListPressed */            {KAknsIIDQsnFrList,            ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2693},
+    /* SP_QsnFrListCenterPressed */      {KAknsIIDQsnFrListCenter,      ENoDraw,     ES60_3_X,    EAknsMajorSkin, 0x2693},
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -514,7 +514,7 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
         case QS60StyleEnums::SP_QgnGrafNsliderMarkerSelected:
             fallbackIndex = 17574; /* EMbmAvkonQgn_graf_nslider_marker_selected */
             break;
-        case QS60StyleEnums::SP_QgnIndiSubMenu:
+        case QS60StyleEnums::SP_QgnIndiSubmenu:
             fallbackIndex = EMbmAvkonQgn_indi_submenu;
             break;
         case QS60StyleEnums::SP_QgnNoteErased:
@@ -654,6 +654,14 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
 
         pixmap = QPixmap::fromImage(iconImage);
     }
+    if ((flags & QS60StylePrivate::SF_Mirrored_X_Axis) ||
+        (flags & QS60StylePrivate::SF_Mirrored_Y_Axis)) {
+        QImage iconImage = pixmap.toImage().mirrored(
+            flags & QS60StylePrivate::SF_Mirrored_X_Axis,
+            flags & QS60StylePrivate::SF_Mirrored_Y_Axis);
+        pixmap = QPixmap::fromImage(iconImage);
+    }
+
     return pixmap;
 }
 
@@ -969,7 +977,7 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version()!=QSysInfo::SV_S60_3_1) {
+            if (QSysInfo::s60Version() != QSysInfo::SV_S60_3_1) {
                 centerId.Set(EAknsMajorGeneric, 0x19c2);
                 frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
@@ -978,7 +986,8 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             }
             break;
         case QS60StylePrivate::SF_ToolBar:
-            if (QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+            if (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || 
+                QSysInfo::s60Version() == QSysInfo::SV_S60_3_2) {
                 centerId.Set(KAknsIIDQsnFrPopupCenterSubmenu);
                 frameId.Set(KAknsIIDQsnFrPopupSub);
             }
@@ -1014,8 +1023,14 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
             heightShrink = heightShrink >> 1;
             break;
         case QS60StylePrivate::SF_ListHighlight:
-            widthShrink = widthShrink - 2;
-            heightShrink = heightShrink - 2;
+            //In Sym^3 devices highlights are less blocky
+            if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0) {
+                widthShrink += 2;
+                heightShrink += 2;
+            } else {
+                widthShrink -= 2;
+                heightShrink -= 2;
+            }
             break;
         case QS60StylePrivate::SF_PopupBackground:
             widthShrink = widthShrink + 5;

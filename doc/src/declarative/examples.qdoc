@@ -40,12 +40,10 @@
 ****************************************************************************/
 
 /*!
-\page qdeclarativeexamples.html
-\title QML Examples and Demos
-
-\previouspage Graphics View Examples
-\contentspage Qt Examples
-\nextpage Painting Examples
+  \page qdeclarativeexamples.html
+  \title QML Examples and Demos
+  \brief Building UI's with QML
+  \ingroup all-examples
 
 \section1 Running the examples
 
@@ -55,74 +53,133 @@ sub-directory that show how to use various aspects of QML. In addition, the
 applications. These demos are intended to show integrated functionality
 rather than being instructive on specific elements.
 
-To run the examples and demos, you can use Qt Creator or the included \l {Qt Declarative UI Runtime}{qml}
+To run the examples and demos, you can use Qt Creator or the included \l {Qt Declarative UI Runtime}{qmlviewer}
 command-line application. It has some useful options, revealed by:
 
 \code
-    bin/qml -help
+    bin/qmlviewer -help
 \endcode
 
 For example, from your build directory, run:
 
 \code
-    bin/qml $QTDIR/demos/declarative/samegame/samegame.qml
+    bin/qmlviewer $QTDIR/demos/declarative/samegame/samegame.qml
 \endcode
 
 \section1 Examples
 
+\section2 Animation
 \list
-\o \l{declarative/animations}{Animations}
-\o \l{declarative/aspectratio}{Aspect Ratio}
-\o \l{declarative/behaviors}{Behaviors}
-\o \l{declarative/border-image}{Border Image}
-\o \l{declarative/clocks}{Clocks}
-\o \l{declarative/connections}{Connections}
-\o \l{declarative/dial}{Dial}
-\o \l{declarative/dynamic}{Dynamic}
-\o \l{declarative/extending}{Extending}
-\o \l{declarative/fillmode}{Fillmode}
-\o \l{declarative/flipable}{Flipable}
-\o \l{declarative/focus}{Focus}
-\o \l{declarative/fonts}{Fonts}
-\o \l{declarative/gridview}{GridView}
-\o \l{declarative/imageprovider}{Image Provider}
-\o \l{declarative/images}{Images}
-\o \l{declarative/layouts}{Layouts}
-\o \l{declarative/listmodel-threaded}{ListModel Threaded}
-\o \l{declarative/listview}{ListView}
-\o \l{declarative/mousearea}{Mouse Area}
-\o \l{declarative/objectlistmodel}{Object ListModel}
-\o \l{declarative/package}{Package}
-\o \l{declarative/parallax}{Parallax}
-\o \l{declarative/plugins}{Plugins}
-\o \l{declarative/progressbar}{Progress Bars}
-\o \l{declarative/proxywidgets}{Proxy Widgets}
-\o \l{declarative/scrollbar}{Scrollbar}
-\o \l{declarative/searchbox}{Search Box}
-\o \l{declarative/slideswitch}{Slide Switch}
-\o \l{declarative/sql}{SQL}
-\o \l{declarative/states}{States}
-\o \l{declarative/stringlistmodel}{String ListModel}
-\o \l{declarative/tabwidget}{Tab Widget}
-\o \l{declarative/tic-tac-toe}{Tic-Tac-Toe}
-\o \l{declarative/tvtennis}{TV Tennis}
-\o \l{declarative/velocity}{Velocity}
-\o \l{declarative/webview}{WebView}
-\o \l{declarative/workerscript}{WorkerScript}
-\o \l{declarative/xmldata}{XML Data}
-\o \l{declarative/xmlhttprequest}{XMLHttpRequest}
-
+\o \l{declarative/animation/basics}{Basics}
+\o \l{declarative/animation/behaviors}{Behaviors}
+\o \l{declarative/animation/easing}{Easing types}
+\o \l{declarative/animation/states}{States}
 \endlist
+
+\section2 Image Elements
+\list
+\o \l{declarative/imageelements/borderimage}{BorderImage}
+\o \l{declarative/imageelements/image}{Image}
+\endlist
+
+\section2 Positioners
+\list
+\o \l{declarative/positioners}{Example}
+\endlist
+
+\section2 Key Interaction
+\list
+\o \l{declarative/keyinteraction/focus}{Focus}
+\endlist
+
+\section2 Touch Interaction
+\list
+\o \l{declarative/touchinteraction/gestures}{Gestures}
+\o \l{declarative/touchinteraction/mousearea}{MouseArea}
+\endlist
+
+\section2 UI Components
+\list
+\o \l{declarative/ui-components/dialcontrol}{Dial control}
+\o \l{declarative/ui-components/flipable}{Flipable}
+\o \l{declarative/ui-components/progressbar}{Progress bar}
+\o \l{declarative/ui-components/scrollbar}{Scroll bar}
+\o \l{declarative/ui-components/searchbox}{Search box}
+\o \l{declarative/ui-components/slideswitch}{Slide switch}
+\o \l{declarative/ui-components/spinner}{Spinner}
+\o \l{declarative/ui-components/tabwidget}{Tab widget}
+\endlist
+
+\section2 Models and Views
+\list
+\o \l{declarative/modelviews/gridview}{GridView}
+\o \l{declarative/modelviews/listview}{ListView}
+\o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
+\o \l{declarative/modelviews/package}{Package}
+\o \l{declarative/modelviews/parallax}{Parallax}
+\o \l{declarative/modelviews/stringlistmodel}{String ListModel}
+\o \l{declarative/modelviews/visualitemmodel}{VisualItemModel}
+\o \l{declarative/modelviews/webview}{WebView}
+\endlist
+
+\section2 XML
+\list
+\o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
+\endlist
+
+\section2 Internationalization (i18n)
+\list
+\o \l{declarative/i18n}{Example}
+\endlist
+
+\section2 Threading
+\list
+\o \l{declarative/threading/threadedlistmodel}{Threaded ListModel}
+\o \l{declarative/threading/workerscript}{WorkerScript}
+\endlist
+
+\section2 SQL Local Storage
+\list
+\o \l{declarative/sqllocalstorage}{Example}
+\endlist
+
+\section2 C++ Extensions
+\list
+\o \l{declarative-cppextensions-reference.html}{Reference examples}
+\o \l{declarative/cppextensions/plugins}{Plugins}
+\o \l{declarative-cppextensions-qgraphicslayouts.html}{QGraphicsLayouts}
+\o \l{declarative/cppextensions/qwidgets}{QWidgets}
+\o \l{declarative/cppextensions/imageprovider}{Image provider}
+\o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
+\endlist
+
+\section2 Toys
+\list
+\o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/corkboards}{Corkboards}
+\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
+\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
+\o \l{declarative/toys/tvtennis}{TV Tennis}
+\endlist
+
 
 \section1 Demos
 
 \list
 \o \l{demos/declarative/calculator}{Calculator}
+\o \l{demos/declarative/flickr}{Flickr Mobile}
 \o \l{demos/declarative/minehunt}{Minehunt}
 \o \l{demos/declarative/photoviewer}{Photo Viewer}
-\o \l{demos/declarative/flickr}{Flickr Mobile}
+\o \l{demos/declarative/rssnews}{RSS News Reader}
 \o \l{demos/declarative/samegame}{Same Game}
 \o \l{demos/declarative/snake}{Snake}
 \endlist
 
+\section1 Labs
+
+\list
+\o \l{src/imports/folderlistmodel}{Folder List Model} - a C++ model plugin
+\endlist
+
 */
+

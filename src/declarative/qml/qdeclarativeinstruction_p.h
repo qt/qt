@@ -116,6 +116,7 @@ public:
         StoreVariant,             /* storeString */
         StoreVariantInteger,      /* storeInteger */
         StoreVariantDouble,       /* storeDouble */
+        StoreVariantBool,         /* storeBool */
         StoreObject,              /* storeObject */
         StoreVariantObject,       /* storeObject */
         StoreInterface,           /* storeObject */
@@ -157,7 +158,7 @@ public:
         // 
         // Deferred creation
         //
-        Defer,                    /* defer */
+        Defer                    /* defer */
     };
     QDeclarativeInstruction()
         : line(0) {}

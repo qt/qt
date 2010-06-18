@@ -380,7 +380,7 @@ void QSize::scale(const QSize &s, Qt::AspectRatioMode mode)
     Writes the given \a size to the given \a stream, and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QSize &sz)
@@ -399,7 +399,7 @@ QDataStream &operator<<(QDataStream &s, const QSize &sz)
     Reads a size from the given \a stream into the given \a size, and
     returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QSize &sz)
@@ -784,7 +784,7 @@ void QSizeF::scale(const QSizeF &s, Qt::AspectRatioMode mode)
     Writes the given \a size to the given \a stream and returns a
     reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QSizeF &sz)
@@ -800,7 +800,7 @@ QDataStream &operator<<(QDataStream &s, const QSizeF &sz)
     Reads a size from the given \a stream into the given \a size and
     returns a reference to the stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QSizeF &sz)

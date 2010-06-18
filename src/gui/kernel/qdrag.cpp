@@ -253,7 +253,9 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
-    blocked while during the operation.
+    blocked during the operation. However, QDrag::exec() on
+	Windows causes processEvents() to be called frequently to keep the GUI responsive.
+	If any loops or operations are called while a drag operation is active, it will block the drag operation.
 */
 
 Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defaultDropAction)

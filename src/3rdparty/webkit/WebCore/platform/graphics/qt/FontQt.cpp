@@ -73,28 +73,31 @@ void Font::drawComplexText(GraphicsContext* ctx, const TextRun& run, const Float
 
     QPainter *p = ctx->platformContext();
 
+    QPen textFillPen;
     if (ctx->textDrawingMode() & cTextFill) {
         if (ctx->fillGradient()) {
             QBrush brush(*ctx->fillGradient()->platformGradient());
             brush.setTransform(ctx->fillGradient()->gradientSpaceTransform());
-            p->setPen(QPen(brush, 0));
+            textFillPen = QPen(brush, 0);
         } else if (ctx->fillPattern()) {
             AffineTransform affine;
-            p->setPen(QPen(QBrush(ctx->fillPattern()->createPlatformPattern(affine)), 0));
+            textFillPen = QPen(QBrush(ctx->fillPattern()->createPlatformPattern(affine)), 0);
         } else
-            p->setPen(QColor(ctx->fillColor()));
+            textFillPen = QPen(QColor(ctx->fillColor()));
     }
 
+    QPen textStrokePen;
     if (ctx->textDrawingMode() & cTextStroke) {
         if (ctx->strokeGradient()) {
             QBrush brush(*ctx->strokeGradient()->platformGradient());
             brush.setTransform(ctx->strokeGradient()->gradientSpaceTransform());
-            p->setPen(QPen(brush, ctx->strokeThickness()));
+            textStrokePen = QPen(brush, ctx->strokeThickness());
         } else if (ctx->strokePattern()) {
             AffineTransform affine;
-            p->setPen(QPen(QBrush(ctx->strokePattern()->createPlatformPattern(affine)), ctx->strokeThickness()));
+            QBrush brush(ctx->strokePattern()->createPlatformPattern(affine));
+            textStrokePen = QPen(brush, ctx->strokeThickness());
         } else
-            p->setPen(QPen(QColor(ctx->strokeColor()), ctx->strokeThickness()));
+            textStrokePen = QPen(QColor(ctx->strokeColor()), ctx->strokeThickness());
     }
 
     String sanitized = Font::normalizeSpaces(String(run.characters(), run.length()));
@@ -143,6 +146,7 @@ void Font::drawComplexText(GraphicsContext* ctx, const TextRun& run, const Float
             line.draw(p, pt);
             p->restore();
         }
+        p->setPen(textFillPen);
         line.draw(p, pt);
         p->restore();
         return;
@@ -163,10 +167,13 @@ void Font::drawComplexText(GraphicsContext* ctx, const TextRun& run, const Float
     if (ctx->textDrawingMode() & cTextStroke) {
         QPainterPath path;
         path.addText(pt, font(), string);
+        p->setPen(textStrokePen);
         p->strokePath(path, p->pen());
     }
-    if (ctx->textDrawingMode() & cTextFill)
+    if (ctx->textDrawingMode() & cTextFill) {
+        p->setPen(textFillPen);
         p->drawText(pt, string, flags, run.padding());
+    }
 }
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>*) const

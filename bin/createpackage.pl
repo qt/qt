@@ -69,15 +69,18 @@ Convenience script for creating signed packages you can install on your phone.
 Usage: createpackage.pl [options] templatepkg [target]-[platform] [certificate key [passphrase]]
 
 Where supported options are as follows:
-     [-i|install]            = Install the package right away using PC suite
+     [-i|install]            = Install the package right away using PC suite.
      [-p|preprocess]         = Only preprocess the template .pkg file.
-     [-c|certfile=<file>]    = The file containing certificate information for signing.
+     [-c|certfile <file>]    = The file containing certificate information for signing.
                                The file can have several certificates, each specified in
                                separate line. The certificate, key and passphrase in line
                                must be ';' separated. Lines starting with '#' are treated
                                as a comments. Also empty lines are ignored. The paths in
                                <file> can be absolute or relative to <file>.
-     [-u|unsigned]           = Preserves the unsigned package
+     [-u|unsigned]           = Preserves the unsigned package.
+     [-o|only-unsigned]      = Creates only unsigned package.
+     [-s|stub]               = Generates stub sis for ROM.
+     [-n|sisname <name>]     = Specifies the final sis name.
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
@@ -118,12 +121,16 @@ my $preprocessonly = "";
 my $certfile = "";
 my $preserveUnsigned = "";
 my $stub = "";
+my $signed_sis_name = "";
+my $onlyUnsigned = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
                    'c|certfile=s' => \$certfile,
                    'u|unsigned' => \$preserveUnsigned,
-                   's|stub' => \$stub,)){
+                   'o|only-unsigned' => \$onlyUnsigned,
+                   's|stub' => \$stub,
+                   'n|sisname=s' => \$signed_sis_name,)) {
     Usage();
 }
 
@@ -162,11 +169,22 @@ $pkgoutputbasename = $pkgoutputbasename;
 
 # Store output file names to variables
 my $pkgoutput = $pkgoutputbasename.".pkg";
-my $sisoutputbasename = $pkgoutputbasename;
-$sisoutputbasename =~ s/_$targetplatform//g;
+my $sisoutputbasename;
+if ($signed_sis_name eq "") {
+    $sisoutputbasename = $pkgoutputbasename;
+    $sisoutputbasename =~ s/_$targetplatform//g;
+    $signed_sis_name = $sisoutputbasename.".sis";
+} else {
+    $sisoutputbasename = $signed_sis_name;
+    if ($sisoutputbasename =~ m/(\.sis$|\.sisx$)/i) {
+        $sisoutputbasename =~ s/$1//i;
+    } else {
+        $signed_sis_name = $signed_sis_name.".sis";
+    }
+}
+
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
-my $signed_sis_name = $sisoutputbasename.".sis";
-my $stub_sis_name = $sisoutputbasename."_stub.sis";
+my $stub_sis_name = $sisoutputbasename.".sis";
 
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
@@ -277,7 +295,10 @@ if($stub) {
     # Create stub SIS.
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
-    if ($certtext eq "Self Signed" && !@certificates) {
+    if ($certtext eq "Self Signed"
+        && !@certificates
+        && $templatepkg !~ m/_installer\.pkg$/i
+        && !$onlyUnsigned) {
         print("Auto-patching capabilities for self signed package.\n");
         system ("patch_capabilities $pkgoutput");
     }
@@ -286,6 +307,25 @@ if($stub) {
     # The 'and' is because system uses 0 to indicate success.
     system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
     print("\n");
+
+    my $targetInsert = "";
+    if ($targetplatform ne "-") {
+        $targetInsert = " for $targetplatform";
+    }
+
+    if ($onlyUnsigned) {
+        stat($unsigned_sis_name);
+        if( -e _ ) {
+            print ("Successfully created unsigned package ${unsigned_sis_name}${targetInsert}!\n");
+        } else {
+            print ("\nUnsigned package creation failed!\n");
+        }
+
+        if (!$preservePkgOutput) {
+            unlink $pkgoutput;
+        }
+        exit;
+    }
 
     # Sign SIS with certificate info given as an argument.
     my $relcert = File::Spec->abs2rel($certificate);
@@ -296,11 +336,7 @@ if($stub) {
     # Check if creating signed SIS Succeeded
     stat($signed_sis_name);
     if( -e _ ) {
-        my $targetInsert = "";
-        if ($targetplatform ne "-") {
-            $targetInsert = "for $targetplatform ";
-        }
-        print ("Successfully created $signed_sis_name ${targetInsert}using certificate: $certtext!\n");
+        print ("Successfully created signed package ${signed_sis_name}${targetInsert} using certificate: $certtext!\n");
 
         # Sign with additional certificates & keys
         for my $row ( @certificates ) {

@@ -1,15 +1,45 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 RC
 
-Flickable: overShoot is replaced by boundsBehavior enumeration.
+QDeclarativeView
+   - initialSize() function added
+TextInput and TextEdit: 
+   - openSoftwareInputPanel() and closeSoftwareInputPanel() functions added
+Flickable:
+   - overShoot is replaced by boundsBehavior enumeration
+   - flickingHorizontally and flickingVertically properties added
+   - movingHorizontally and movingVertically properties added
+   - flickDirection is renamed flickableDirection
+Component:
+    - isReady, isLoading, isError and isNull properties removed, use
+      status property instead
+    - errorsString() renamed to errorString()
+
+TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
+
+QList<QObject*> models no longer provide properties in model object.  The
+properties are now updated when the object changes.  An object's property
+"foo" may now be accessed as "foo", modelData.foo" or model.modelData.foo"
+component.createObject has gained a mandatory "parent" argument
+TextEdit and TextInput now have a "selectByMouse" property that defaults to false.
 
 C++ API
 -------
 QDeclarativeExpression::value() has been renamed to
 QDeclarativeExpression::evaluate()
 
+The QDeclarativeExpression constructor has changed from
+    QDeclarativeExpression(context, expression, scope)
+to
+    QDeclarativeExpression(context, scope, expression, parent = 0)
+
+QML Viewer
+------------
+The standalone qml executable has been renamed back to Qml Viewer. Runtime warnings
+can be now accessed via the menu (Debugging->Show Warnings).
+
 =============================================================================
-The changes below are pre Qt 4.7.0 beta
+The changes below are pre Qt 4.7.0 beta 1
 
 TextEdit: wrap property is replaced by wrapMode enumeration.
 Text: wrap property is replaced by wrapMode enumeration.

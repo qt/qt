@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
+VERSION = $$QT_VERSION
 
 # Input
 HEADERS += \
@@ -116,6 +117,10 @@ symbian {
         reg_resource.sources += $$regResourceDir(demos/qmediaplayer/qmediaplayer_reg.rsc)
     }
 
+    contains(QT_CONFIG, multimedia) {
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/spectrum_reg.rsc
+    }
+
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
@@ -196,12 +201,29 @@ symbian {
             $$appResourceDir(demos/qmediaplayer/qmediaplayer.mif)
     }
 
+    contains(QT_CONFIG, multimedia) {
+        executables.sources += spectrum.exe fftreal.dll
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.rsc
+        mifs.sources += \
+            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.mif
+    }
+
     contains(QT_CONFIG, script) {
         executables.sources += $$QT_BUILD_TREE/examples/script/context2d/context2d.exe
         reg_resource.sources += $$regResourceDir(examples/script/context2d/context2d_reg.rsc)
         resource.sources += $$appResourceDir(examples/script/context2d/context2d.rsc)
         mifs.sources += \
             $$appResourceDir(examples/script/context2d/context2d.mif)
+    }
+
+    qmldemos = qmlcalculator qmlclocks qmldialcontrol qmleasing qmlflickr qmlphotoviewer qmltwitter
+    contains(QT_CONFIG, declarative) {
+        for(qmldemo, qmldemos) {
+            executables.sources += $$QT_BUILD_TREE/demos/embedded/$${qmldemo}/$${qmldemo}.exe
+            reg_resource.sources += $$regResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}_reg.rsc)
+            resource.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.rsc)
+            mifs.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.mif)
+        }
     }
 
     files.sources = $$PWD/screenshots $$PWD/slides
@@ -231,6 +253,8 @@ symbian {
 
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \
         mifs desktopservices_music desktopservices_images fluidbackup
+
+    contains(QT_CONFIG, declarative):for(qmldemo, qmldemos):include($$QT_BUILD_TREE/demos/embedded/$${qmldemo}/deployment.pri)
 
     DEPLOYMENT.installer_header = 0xA000D7CD
 

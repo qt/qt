@@ -116,7 +116,7 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
-    It can display both plain and rich text. For example:
+    A Text item can display both plain and rich text. For example:
 
     \qml
     Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
@@ -126,14 +126,14 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     \image declarative-text.png
 
     If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
+    much room is needed and set it accordingly. Unless \l wrapMode is set, it will always
     prefer width to height (all text will be placed on a single line).
 
-    The \c elide property can alternatively be used to fit a single line of
+    The \l elide property can alternatively be used to fit a single line of
     plain text to a set width.
 
-    Note that the \l{Supported HTML Subset} is limited, and that if IMG tags
-    load remote images, the text reloads (see resourcesLoading).
+    Note that the \l{Supported HTML Subset} is limited. Also, if the text contains
+    HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
 */
@@ -142,7 +142,6 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     \internal
     \class QDeclarativeText
     \qmlclass Text
-    \ingroup group_coreitems
 
     \brief The QDeclarativeText class provides a formatted text item that you can add to a QDeclarativeView.
 
@@ -162,7 +161,7 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
 
-    A QDeclarativeText object can be instantiated in Qml using the tag \c Text.
+    A QDeclarativeText object can be instantiated in QML using the tag \c Text.
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
@@ -191,7 +190,7 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 /*!
     \qmlproperty bool Text::font.bold
 
-    Sets the font's weight to bold.
+    Sets whether the font weight is bold.
 */
 
 /*!
@@ -201,11 +200,11 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 
     The weight can be one of:
     \list
-    \o Light
-    \o Normal - the default
-    \o DemiBold
-    \o Bold
-    \o Black
+    \o Font.Light
+    \o Font.Normal - the default
+    \o Font.DemiBold
+    \o Font.Bold
+    \o Font.Black
     \endlist
 
     \qml
@@ -216,25 +215,25 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 /*!
     \qmlproperty bool Text::font.italic
 
-    Sets the style of the text to italic.
+    Sets whether the font has an italic style.
 */
 
 /*!
     \qmlproperty bool Text::font.underline
 
-    Set the style of the text to underline.
+    Sets whether the text is underlined.
 */
 
 /*!
     \qmlproperty bool Text::font.outline
 
-    Set the style of the text to outline.
+    Sets whether the font has an outline style.
 */
 
 /*!
     \qmlproperty bool Text::font.strikeout
 
-    Set the style of the text to strikeout.
+    Sets whether the font has a strikeout style.
 */
 
 /*!
@@ -278,11 +277,11 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     Sets the capitalization for the text.
 
     \list
-    \o MixedCase - This is the normal text rendering option where no capitalization change is applied.
-    \o AllUppercase - This alters the text to be rendered in all uppercase type.
-    \o AllLowercase	 - This alters the text to be rendered in all lowercase type.
-    \o SmallCaps -	This alters the text to be rendered in small-caps type.
-    \o Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
+    \o Font.MixedCase - This is the normal text rendering option where no capitalization change is applied.
+    \o Font.AllUppercase - This alters the text to be rendered in all uppercase type.
+    \o Font.AllLowercase	 - This alters the text to be rendered in all lowercase type.
+    \o Font.SmallCaps -	This alters the text to be rendered in small-caps type.
+    \o Font.Capitalize - This alters the text to be rendered with the first character of each word as an uppercase character.
     \endlist
 
     \qml
@@ -319,7 +318,11 @@ void QDeclarativeText::setText(const QString &n)
     if (d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(n);
+#else
+            d->doc->setPlainText(n);
+#endif
         }
     }
 
@@ -381,10 +384,10 @@ QColor QDeclarativeText::color() const
 
     Supported text styles are:
     \list
-    \o Normal - the default
-    \o Outline
-    \o Raised
-    \o Sunken
+    \o Text.Normal - the default
+    \o Text.Outline
+    \o Text.Raised
+    \o Text.Sunken
     \endlist
 
     \qml
@@ -452,9 +455,14 @@ QColor QDeclarativeText::styleColor() const
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
-    and \c AlignVCenter.
+    The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight and
+    \c Text.AlignHCenter.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
+    and \c Text.AlignVCenter.
+
+    Note that for a single line of text, the size of the text is the area of the text. In this common case,
+    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
+    that of the parent.
 */
 QDeclarativeText::HAlignment QDeclarativeText::hAlign() const
 {
@@ -469,6 +477,7 @@ void QDeclarativeText::setHAlign(HAlignment align)
         return;
 
     d->hAlign = align;
+    update();
     emit horizontalAlignmentChanged(align);
 }
 
@@ -485,6 +494,7 @@ void QDeclarativeText::setVAlign(VAlignment align)
         return;
 
     d->vAlign = align;
+    update();
     emit verticalAlignmentChanged(align);
 }
 
@@ -495,16 +505,11 @@ void QDeclarativeText::setVAlign(VAlignment align)
     wrap if an explicit width has been set.  wrapMode can be one of:
 
     \list
-    \o NoWrap - no wrapping will be performed.
-    \o WordWrap - wrapping is done on word boundaries. If the text cannot be
-    word-wrapped to the specified width it will be partially drawn outside of the item's bounds.
-    If this is undesirable then enable clipping on the item (Item::clip).
-    \o WrapAnywhere - Text can be wrapped at any point on a line, even if it occurs in the middle of a word.
-    \o WrapAtWordBoundaryOrAnywhere - If possible, wrapping occurs at a word boundary; otherwise it
-       will occur at the appropriate point on the line, even in the middle of a word.
+    \o Text.NoWrap (default) - no wrapping will be performed. If the text contains insufficient newlines, then \l paintedWidth will exceed a set width.
+    \o Text.WordWrap - wrapping is done on word boundaries only. If a word is too long, \l paintedWidth will exceed a set width.
+    \o Text.WrapAnywhere - wrapping is done at any point on a line, even if it occurs in the middle of a word.
+    \o Text.Wrap - if possible, wrapping occurs at a word boundary; otherwise it will occur at the appropriate point on the line, even in the middle of a word.
     \endlist
-
-    The default is NoWrap.
 */
 QDeclarativeText::WrapMode QDeclarativeText::wrapMode() const
 {
@@ -531,13 +536,20 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
 
     The way the text property should be displayed.
 
-    Supported text formats are \c AutoText, \c PlainText, \c RichText and \c StyledText
+    Supported text formats are:
+    
+    \list
+    \o Text.AutoText (default)
+    \o Text.PlainText
+    \o Text.RichText
+    \o Text.StyledText
+    \endlist
 
-    The default is AutoText.  If the text format is AutoText the text element
+    If the text format is \c Text.AutoText the text element
     will automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 
-    StyledText is an optimized format supporting some basic text
+    Text.StyledText is an optimized format supporting some basic text
     styling markup, in the style of html 3.2:
 
     \code
@@ -548,7 +560,7 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     &gt; &lt; &amp;
     \endcode
 
-    \c StyledText parser is strict, requiring tags to be correctly nested.
+    \c Text.StyledText parser is strict, requiring tags to be correctly nested.
 
     \table
     \row
@@ -597,7 +609,11 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     } else if (!wasRich && d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->markImgDirty();
@@ -616,13 +632,13 @@ void QDeclarativeText::setTextFormat(TextFormat format)
 
     Eliding can be:
     \list
-    \o ElideNone  - the default
-    \o ElideLeft
-    \o ElideMiddle
-    \o ElideRight
+    \o Text.ElideNone  - the default
+    \o Text.ElideLeft
+    \o Text.ElideMiddle
+    \o Text.ElideRight
     \endlist
 
-    If the text is a multi-length string, and the mode is not \c ElideNone,
+    If the text is a multi-length string, and the mode is not \c Text.ElideNone,
     the first string that fits will be used, otherwise the last will be elided.
 
     Multi-length strings are ordered from longest to shortest, separated by the
@@ -704,6 +720,7 @@ void QDeclarativeTextPrivate::updateSize()
         QFontMetrics fm(font);
         if (text.isEmpty()) {
             q->setImplicitHeight(fm.height());
+            emit q->paintedSizeChanged();
             return;
         }
 
@@ -742,10 +759,35 @@ void QDeclarativeTextPrivate::updateSize()
         //### need to comfirm cost of always setting these for richText
         q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
         q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
+        emit q->paintedSizeChanged();
     } else {
         dirty = true;
     }
 }
+
+/*!
+    \qmlproperty real Text::paintedWidth
+
+    Returns the width of the text, including width past the width
+    which is covered due to insufficient wrapping if WrapMode is set.
+*/
+qreal QDeclarativeText::paintedWidth() const
+{
+    return implicitWidth();
+}
+
+/*!
+    \qmlproperty real Text::paintedHeight
+
+    Returns the height of the text, including height past the height
+    which is covered due to there being more text than fits in the set height.
+*/
+qreal QDeclarativeText::paintedHeight() const
+{
+    return implicitHeight();
+}
+
+
 
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
@@ -957,7 +999,11 @@ void QDeclarativeText::reloadWithResources()
     Q_D(QDeclarativeText);
     if (!d->richText)
         return;
+#ifndef QT_NO_TEXTHTMLPARSER
     d->doc->setHtml(d->text);
+#else
+    d->doc->setPlainText(d->text);
+#endif
     d->updateLayout();
     d->markImgDirty();
 }
@@ -1069,8 +1115,9 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
 /*!
     \qmlproperty bool Text::smooth
 
-    Set this property if you want the text to be smoothly scaled or
-    transformed.  Smooth filtering gives better visual quality, but is slower.  If
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
     the item is displayed at its natural size, this property has no visual or
     performance effect.
 
@@ -1086,7 +1133,11 @@ void QDeclarativeText::componentComplete()
     if (d->dirty) {
         if (d->richText) {
             d->ensureDoc();
+#ifndef QT_NO_TEXTHTMLPARSER
             d->doc->setHtml(d->text);
+#else
+            d->doc->setPlainText(d->text);
+#endif
         }
         d->updateLayout();
         d->dirty = false;
@@ -1116,7 +1167,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \qmlsignal Text::linkActivated(link)
+    \qmlsignal Text::onLinkActivated(link)
 
     This handler is called when the user clicks on a link embedded in the text.
 */

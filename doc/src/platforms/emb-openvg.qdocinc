@@ -135,8 +135,25 @@ transformations for non-image elements in performance critical code.
 \endlist
 
 The other members of QPainter::CompositionMode are not supported
-because OpenVG 1.1 does not have an equivalent in its \c VGBlendMode
-enumeration.  Any attempt to set an unsupported mode will result in
+unless the \c{VG_KHR_advanced_blending} extension is present,
+in which case the following additional modes are supported:
+
+\list
+\o QPainter::CompositionMode_Overlay
+\o QPainter::CompositionMode_ColorDodge
+\o QPainter::CompositionMode_ColorBurn
+\o QPainter::CompositionMode_HardLight
+\o QPainter::CompositionMode_SoftLight
+\o QPainter::CompositionMode_Difference
+\o QPainter::CompositionMode_Exclusion
+\o QPainter::CompositionMode_SourceOut
+\o QPainter::CompositionMode_DestinationOut
+\o QPainter::CompositionMode_SourceAtop
+\o QPainter::CompositionMode_DestinationAtop
+\o QPainter::CompositionMode_Xor
+\endlist
+
+Any attempt to set an unsupported mode will result in
 the actual mode being set to QPainter::CompositionMode_SourceOver.
 Client applications should avoid using unsupported modes.
 
@@ -208,7 +225,9 @@ The QVG_NO_RENDER_TO_MASK define will disable the use of vgRenderToMask().
 
 The QVG_SCISSOR_CLIP define will disable clipping with vgMask() or
 vgRenderToMask() and instead use the scissor rectangle list to perform
-clipping.  Clipping with an arbitrary QPainterPath will not be supported.
+clipping.  Clipping with an arbitrary QPainterPath will need to convert
+the path into a series of rectangles.  If the number of rectangles
+exceeds VG_MAX_SCISSOR_RECTS, then the results will not be exact.
  
 The QVG_SCISSOR_CLIP define should only be used if the OpenVG engine does
 not support vgMask() or vgRenderToMask().

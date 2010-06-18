@@ -50,6 +50,11 @@
 #include <private/qdeclarativexmllistmodel_p.h>
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 typedef QPair<int, int> QDeclarativeXmlListRange;
 typedef QList<QVariantList> QDeclarativeXmlModelData;
 
@@ -81,6 +86,7 @@ private slots:
     void source();
     void source_data();
     void data();
+    void get();
     void reload();
     void useKeys();
     void useKeys_data();
@@ -223,6 +229,8 @@ void tst_qdeclarativexmllistmodel::roleErrors()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml"));
     QTest::ignoreMessage(QtWarningMsg, (QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":6:5: QML XmlRole: An XmlRole query must not start with '/'").toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, (QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":9:5: QML XmlRole: invalid query: \"age/\"").toUtf8().constData());
+
     //### make sure we receive all expected warning messages.
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QVERIFY(model != 0);
@@ -238,7 +246,7 @@ void tst_qdeclarativexmllistmodel::roleErrors()
     QCOMPARE(data.value(Qt::UserRole+1), QVariant());
     QCOMPARE(data.value(Qt::UserRole+2), QVariant());
 
-    QEXPECT_FAIL("", "QT-2456", Continue);
+    QEXPECT_FAIL("", "QTBUG-10797", Continue);
     QCOMPARE(data.value(Qt::UserRole+3), QVariant());
 
     delete model;
@@ -268,10 +276,12 @@ void tst_qdeclarativexmllistmodel::xml()
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QSignalSpy spy(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)));
 
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(0.0));
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(1.0));
     QCOMPARE(model->count(), 9);
 
@@ -284,6 +294,7 @@ void tst_qdeclarativexmllistmodel::xml()
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->count(), count);
 
     delete model;
@@ -309,10 +320,12 @@ void tst_qdeclarativexmllistmodel::source()
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QSignalSpy spy(model, SIGNAL(statusChanged(QDeclarativeXmlListModel::Status)));
 
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(0.0));
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+    QVERIFY(model->errorString().isEmpty());
     QCOMPARE(model->progress(), qreal(1.0));
     QCOMPARE(model->count(), 9);
 
@@ -320,6 +333,7 @@ void tst_qdeclarativexmllistmodel::source()
     QCOMPARE(model->progress(), qreal(0.0));
     QTRY_COMPARE(spy.count(), 1); spy.clear();
     QCOMPARE(model->status(), QDeclarativeXmlListModel::Loading);
+    QVERIFY(model->errorString().isEmpty());
 
     QEventLoop loop;
     QTimer timer;
@@ -337,8 +351,11 @@ void tst_qdeclarativexmllistmodel::source()
 
     QCOMPARE(model->status(), status);
     QCOMPARE(model->count(), count);
+
     if (status == QDeclarativeXmlListModel::Ready)
         QCOMPARE(model->progress(), qreal(1.0));
+
+    QCOMPARE(model->errorString().isEmpty(), status == QDeclarativeXmlListModel::Ready);
 
     delete model;
 }
@@ -375,6 +392,46 @@ void tst_qdeclarativexmllistmodel::data()
         }
     }
     QTRY_COMPARE(model->count(), 9);
+
+    delete model;
+}
+
+void tst_qdeclarativexmllistmodel::get()
+{
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());    
+    QVERIFY(model != 0);
+    QVERIFY(model->get(0).isUndefined());
+
+    QTRY_COMPARE(model->count(), 9);
+    QVERIFY(model->get(-1).isUndefined());
+
+    QScriptValue sv = model->get(0);
+    QCOMPARE(sv.property("name").toString(), QLatin1String("Polly"));
+    QCOMPARE(sv.property("type").toString(), QLatin1String("Parrot"));
+    QCOMPARE(sv.property("age").toNumber(), qsreal(12));
+    QCOMPARE(sv.property("size").toString(), QLatin1String("Small"));
+
+    sv = model->get(1);
+    QCOMPARE(sv.property("name").toString(), QLatin1String("Penny"));
+    QCOMPARE(sv.property("type").toString(), QLatin1String("Turtle"));
+    QCOMPARE(sv.property("age").toNumber(), qsreal(4));
+    QCOMPARE(sv.property("size").toString(), QLatin1String("Small"));
+
+    sv = model->get(7);
+    QCOMPARE(sv.property("name").toString(), QLatin1String("Rover"));
+    QCOMPARE(sv.property("type").toString(), QLatin1String("Dog"));
+    QCOMPARE(sv.property("age").toNumber(), qsreal(0));
+    QCOMPARE(sv.property("size").toString(), QLatin1String("Large"));
+
+    sv = model->get(8);
+    QCOMPARE(sv.property("name").toString(), QLatin1String("Tiny"));
+    QCOMPARE(sv.property("type").toString(), QLatin1String("Elephant"));
+    QCOMPARE(sv.property("age").toNumber(), qsreal(15));
+    QCOMPARE(sv.property("size").toString(), QLatin1String("Large"));
+
+    sv = model->get(9);
+    QVERIFY(sv.isUndefined());
 
     delete model;
 }

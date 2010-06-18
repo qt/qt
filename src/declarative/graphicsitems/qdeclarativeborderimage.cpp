@@ -42,8 +42,8 @@
 #include "private/qdeclarativeborderimage_p.h"
 #include "private/qdeclarativeborderimage_p_p.h"
 
-#include <qdeclarativeengine.h>
 #include <qdeclarativeinfo.h>
+#include <private/qdeclarativeengine_p.h>
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -57,9 +57,25 @@ QT_BEGIN_NAMESPACE
     \inherits Item
     \since 4.7
 
-    \snippet snippets/declarative/border-image.qml 0
+    A BorderImage breaks an image into 9 sections, as shown below:
+
+    \image declarative-scalegrid.png
+
+    When the image is scaled:
+    \list
+    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
+    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
+    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \endlist
+
+    Examples:
+    \snippet snippets/declarative/borderimage.qml 0
 
     \image BorderImage.png
+
+    The \l{declarative/imageelements/borderimage}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
+    rectangular item.
  */
 
 /*!
@@ -86,10 +102,10 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     This property holds the status of image loading.  It can be one of:
     \list
-    \o Null - no image has been set
-    \o Ready - the image has been loaded
-    \o Loading - the image is currently being loaded
-    \o Error - an error occurred while loading the image
+    \o BorderImage.Null - no image has been set
+    \o BorderImage.Ready - the image has been loaded
+    \o BorderImage.Loading - the image is currently being loaded
+    \o BorderImage.Error - an error occurred while loading the image
     \endlist
 
     \sa progress
@@ -122,7 +138,7 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     BorderImage can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
-    It can also handle .sci files, which are a Qml-specific format. A .sci file uses a simple text-based format that specifies
+    It can also handle .sci files, which are a QML-specific format. A .sci file uses a simple text-based format that specifies
     the borders, the image file and the tile rules.
 
     The following .sci file sets the borders to 10 on each side for the image \c picture.png:
@@ -136,16 +152,6 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     The URL may be absolute, or relative to the URL of the component.
 */
-
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    QString r = url.toLocalFile();
-    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
-        r = QLatin1Char(':') + url.path();
-    return r;
-}
-
-
 void QDeclarativeBorderImage::setSource(const QUrl &url)
 {
     Q_D(QDeclarativeBorderImage);
@@ -194,7 +200,7 @@ void QDeclarativeBorderImage::load()
         d->status = Loading;
         if (d->url.path().endsWith(QLatin1String("sci"))) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-            QString lf = toLocalFileOrQrc(d->url);
+            QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
             if (!lf.isEmpty()) {
                 QFile file(lf);
                 file.open(QIODevice::ReadOnly);
@@ -255,21 +261,17 @@ void QDeclarativeBorderImage::load()
     \qmlproperty int BorderImage::border.top
     \qmlproperty int BorderImage::border.bottom
 
-    \target ImagexmlpropertiesscaleGrid
-
-    The 4 border lines (2 horizontal and 2 vertical) break an image into 9 sections, as shown below:
+    The 4 border lines (2 horizontal and 2 vertical) break the image into 9 sections, as shown below:
 
     \image declarative-scalegrid.png
 
-    When the image is scaled:
-    \list
-    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
-    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
-    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
-    \endlist
+    Each border line (left, right, top, and bottom) specifies an offset in pixels from the respective side.
 
-    Each border line (left, right, top, and bottom) specifies an offset from the respective side. For example, \c{border.bottom: 10} sets the bottom line 10 pixels up from the bottom of the image.
+    For example:
+    \qml
+    border.bottom: 10
+    \endqml
+    sets the bottom line 10 pixels up from the bottom of the image.
 
     The border lines can also be specified using a
     \l {BorderImage::source}{.sci file}.
@@ -288,9 +290,9 @@ QDeclarativeScaleGrid *QDeclarativeBorderImage::border()
     This property describes how to repeat or stretch the middle parts of the border image.
 
     \list
-    \o Stretch - Scale the image to fit to the available area.
-    \o Repeat - Tile the image until there is no more space. May crop the last image.
-    \o Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
+    \o BorderImage.Stretch - Scale the image to fit to the available area.
+    \o BorderImage.Repeat - Tile the image until there is no more space. May crop the last image.
+    \o BorderImage.Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
     \endlist
 */
 QDeclarativeBorderImage::TileMode QDeclarativeBorderImage::horizontalTileMode() const

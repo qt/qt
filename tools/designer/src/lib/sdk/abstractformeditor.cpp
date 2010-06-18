@@ -71,7 +71,6 @@ static void initResources()
 {
     Q_INIT_RESOURCE(shared);
     Q_INIT_RESOURCE(ClamshellPhone);
-    Q_INIT_RESOURCE(PDAPhone);
     Q_INIT_RESOURCE(PortableMedia);
     Q_INIT_RESOURCE(S60_nHD_Touchscreen);
     Q_INIT_RESOURCE(S60_QVGA_Candybar);
@@ -79,8 +78,6 @@ static void initResources()
     Q_INIT_RESOURCE(SmartPhone);
     Q_INIT_RESOURCE(SmartPhoneWithButtons);
     Q_INIT_RESOURCE(TouchscreenPhone);
-    Q_INIT_RESOURCE(Trolltech_Keypad);
-    Q_INIT_RESOURCE(Trolltech_Touchscreen);
 }
 
 QT_BEGIN_NAMESPACE

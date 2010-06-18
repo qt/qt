@@ -1023,6 +1023,7 @@ bool QWidgetPrivate::isBackgroundInherited() const
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -3000,7 +3001,7 @@ Picture QX11Data::getSolidFill(int screen, const QColor &c)
             return X11->solid_fills[i].picture;
     }
     // none found, replace one
-    int i = rand() % 16;
+    int i = qrand() % 16;
 
     if (X11->solid_fills[i].screen != screen && X11->solid_fills[i].picture) {
         XRenderFreePicture (X11->display, X11->solid_fills[i].picture);

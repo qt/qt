@@ -44,7 +44,6 @@
 
 #if !defined(QT_NO_STYLE_CLEANLOOKS) || defined(QT_PLUGIN)
 
-#include <private/qstylehelper_p.h>
 #include "qwindowsstyle_p.h"
 #include <qcombobox.h>
 #include <qpushbutton.h>
@@ -67,6 +66,7 @@
 #include <qtoolbar.h>
 #include <qwizard.h>
 #include <qlibrary.h>
+#include <private/qstylehelper_p.h>
 
 #define CL_MAX(a,b) (a)>(b) ? (a):(b) // ### qMin/qMax does not work for vc6
 #define CL_MIN(a,b) (a)<(b) ? (a):(b) // remove this when it is working
@@ -1397,7 +1397,6 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                                                 dark.lighter(135), 60);
 
     QColor highlight = option->palette.highlight().color();
-    QColor highlightText = option->palette.highlightedText().color();
 
     switch(element) {
      case CE_RadioButton: //fall through
@@ -2723,7 +2722,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             {
                 // Fill title bar gradient
                 QColor titlebarColor = QColor(active ? highlight: palette.background().color());
-                QColor titleBarGradientStop(active ? highlight.darker(150): palette.background().color().darker(120));
                 QLinearGradient gradient(option->rect.center().x(), option->rect.top(),
                                          option->rect.center().x(), option->rect.bottom());
 
@@ -2986,7 +2984,6 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
 
             painter->fillRect(option->rect, option->palette.background());
 
-            QRect rect = scrollBar->rect;
             QRect scrollBarSubLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
             QRect scrollBarAddLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
             QRect scrollBarSlider = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
@@ -3714,6 +3711,9 @@ int QCleanlooksStyle::pixelMetric(PixelMetric metric, const QStyleOption *option
 {
     int ret = -1;
     switch (metric) {
+    case PM_ToolTipLabelFrameWidth:
+        ret = 2;
+        break;
     case PM_ButtonDefaultIndicator:
         ret = 0;
         break;

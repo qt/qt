@@ -5,7 +5,9 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativecomponent.cpp 
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+!symbian: {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 CONFIG += parallel_test
 

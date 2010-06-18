@@ -50,19 +50,71 @@
 #include <e32std.h>
 #include <eikenv.h>
 #include <gdi.h>
+#if defined(Q_SYMBIAN_HAS_FONTTABLE_API) || defined(Q_SYMBIAN_HAS_GLYPHOUTLINE_API)
+#include <graphics/gdi/gdiplatapi.h>
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API || Q_SYMBIAN_HAS_GLYPHOUTLINE_API
 
 QT_BEGIN_NAMESPACE
 
-QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* fontOwner, COpenFont *font)
-    : m_font(font)
-    , m_cmap(0)
+#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
+QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
+    : m_cFont(cFont)
     , m_symbolCMap(false)
-    , m_fontOwner(fontOwner)
+{
+    Q_UNUSED(openFont)
+}
+
+QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
+{
+    S60->screenDevice()->ReleaseFont(m_cFont);
+}
+
+QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
+{
+    RFontTable fontTable;
+    if (fontTable.Open(*m_cFont, tag) != KErrNone)
+        return QByteArray();
+    const QByteArray byteArray(reinterpret_cast<const char *>
+            (fontTable.TableContent()),fontTable.TableLength());
+    fontTable.Close();
+    return byteArray;
+}
+
+bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *length) const
+{
+    RFontTable fontTable;
+    if (fontTable.Open(*m_cFont, tag) != KErrNone)
+        return false;
+
+    bool result = true;
+    const TInt tableByteLength = fontTable.TableLength();
+
+    if (*length > 0 && *length < tableByteLength) {
+        result = false; // Caller did not allocate enough memory
+    } else {
+        *length = tableByteLength;
+        if (buffer)
+            qMemCopy(buffer, fontTable.TableContent(), tableByteLength);
+    }
+
+    fontTable.Close();
+    return result;
+}
+
+#else // Q_SYMBIAN_HAS_FONTTABLE_API
+QSymbianTypeFaceExtras::QSymbianTypeFaceExtras(CFont* cFont, COpenFont *openFont)
+    : m_cFont(cFont)
+    , m_symbolCMap(false)
+    , m_openFont(openFont)
 {
     TAny *trueTypeExtension = NULL;
-    m_font->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
+    m_openFont->ExtendedInterface(KUidOpenFontTrueTypeExtension, trueTypeExtension);
     m_trueTypeExtension = static_cast<MOpenFontTrueTypeExtension*>(trueTypeExtension);
     Q_ASSERT(m_trueTypeExtension);
+}
+
+QSymbianTypeFaceExtras::~QSymbianTypeFaceExtras()
+{
 }
 
 QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
@@ -100,22 +152,24 @@ bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *len
     m_trueTypeExtension->ReleaseTrueTypeTable(table);
     return result;
 }
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
 
-const unsigned char *QSymbianTypeFaceExtras::cmap() const
+const uchar *QSymbianTypeFaceExtras::cmap() const
 {
-    if (!m_cmap) {
-        m_cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
+    if (m_cmapTable.isNull()) {
+        const QByteArray cmapTable = getSfntTable(MAKE_TAG('c', 'm', 'a', 'p'));
         int size = 0;
-        m_cmap = QFontEngineS60::getCMap(reinterpret_cast<const uchar *>(m_cmapTable.constData()), m_cmapTable.size(), &m_symbolCMap, &size);
+        const uchar *cmap = QFontEngine::getCMap(reinterpret_cast<const uchar *>
+                (cmapTable.constData()), cmapTable.size(), &m_symbolCMap, &size);
+        m_cmapTable = QByteArray(reinterpret_cast<const char *>(cmap), size);
     }
-    return m_cmap;
+    return reinterpret_cast<const uchar *>(m_cmapTable.constData());
 }
 
 CFont *QSymbianTypeFaceExtras::fontOwner() const
 {
-    return m_fontOwner;
+    return m_cFont;
 }
-
 
 // duplicated from qfontengine_xyz.cpp
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
@@ -223,6 +277,35 @@ void QFontEngineS60::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
         glyphs->advances_x[i] = bbox.xoff;
         glyphs->advances_y[i] = bbox.yoff;
     }
+}
+
+#ifdef Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+static bool parseGlyphPathData(const char *dataStr, const char *dataEnd, QPainterPath &path,
+                               qreal fontPixelSize, const QPointF &offset, bool hinted);
+#endif //Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+
+void QFontEngineS60::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions,
+                                     int nglyphs, QPainterPath *path,
+                                     QTextItem::RenderFlags flags)
+{
+#ifdef Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+    Q_UNUSED(flags)
+    RGlyphOutlineIterator iterator;
+    const TInt error = iterator.Open(*m_activeFont, glyphs, nglyphs);
+    if (KErrNone != error)
+        return;
+    const qreal fontSizeInPixels = qreal(m_activeFont->HeightInPixels());
+    int count = 0;
+    do {
+        const TUint8* outlineUint8 = iterator.Outline();
+        const char* const outlineChar = reinterpret_cast<const char*>(outlineUint8);
+        const char* const outlineEnd = outlineChar + iterator.OutlineLength();
+        parseGlyphPathData(outlineChar, outlineEnd, *path, fontSizeInPixels,
+                positions[count++].toPointF(), false);
+    } while(KErrNone == iterator.Next() && count <= nglyphs);
+#else // Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+    QFontEngine::addGlyphsToPath(glyphs, positions, nglyphs, path, flags);
+#endif //Q_SYMBIAN_HAS_GLYPHOUTLINE_API
 }
 
 QImage QFontEngineS60::alphaMapForGlyph(glyph_t glyph)
@@ -355,5 +438,70 @@ void QFontEngineS60::getCharacterData(glyph_t glyph, TOpenFontCharMetrics& metri
         Q_ASSERT(fallbackAvailability == CFont::EAllCharacterData);
     }
 }
+
+#ifdef Q_SYMBIAN_HAS_GLYPHOUTLINE_API
+static inline void skipSpacesAndComma(const char* &str, const char* const strEnd)
+{
+    while (str <= strEnd && (*str == ' ' || *str == ','))
+        ++str;
+}
+
+static bool parseGlyphPathData(const char *svgPath, const char *svgPathEnd, QPainterPath &path,
+                               qreal fontPixelSize, const QPointF &offset, bool hinted)
+{
+    Q_UNUSED(hinted)
+    QPointF p1, p2, firstSubPathPoint;
+    qreal *elementValues[] =
+        {&p1.rx(), &p1.ry(), &p2.rx(), &p2.ry()};
+    const int unitsPerEm = 2048; // See: http://en.wikipedia.org/wiki/Em_%28typography%29
+    const qreal resizeFactor = fontPixelSize / unitsPerEm;
+
+    while (svgPath < svgPathEnd) {
+        skipSpacesAndComma(svgPath, svgPathEnd);
+        const char pathElem = *svgPath++;
+        skipSpacesAndComma(svgPath, svgPathEnd);
+
+        if (pathElem != 'Z') {
+            char *endStr = 0;
+            int elementValuesCount = 0;
+            for (int i = 0; i < 4; ++i) { // 4 = size of elementValues[]
+                qreal coordinateValue = strtod(svgPath, &endStr);
+                if (svgPath == endStr)
+                    break;
+                if (i % 2) // Flip vertically
+                    coordinateValue = -coordinateValue;
+                *elementValues[i] = coordinateValue * resizeFactor;
+                elementValuesCount++;
+                svgPath = endStr;
+                skipSpacesAndComma(svgPath, svgPathEnd);
+            }
+            p1 += offset;
+            if (elementValuesCount == 2)
+                p2 = firstSubPathPoint;
+            else
+                p2 += offset;
+        }
+
+        switch (pathElem) {
+        case 'M':
+            firstSubPathPoint = p1;
+            path.moveTo(p1);
+            break;
+        case 'Z':
+            path.closeSubpath();
+            break;
+        case 'L':
+            path.lineTo(p1);
+            break;
+        case 'Q':
+            path.quadTo(p1, p2);
+            break;
+        default:
+            return false;
+        }
+    }
+    return true;
+}
+#endif // Q_SYMBIAN_HAS_GLYPHOUTLINE_API
 
 QT_END_NAMESPACE

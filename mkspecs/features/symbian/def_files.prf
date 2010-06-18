@@ -7,7 +7,8 @@ symbian-abld|symbian-sbsv2 {
     # Firstly, if the MMP_RULES already contain a defBlock variable, don't generate another one
     # (this bit is slightly magic, because it depends upon everyone creating their DEFFILE statements
     # in a defBlock variable; but otherwise we have to expand MMP_RULES then scan for the DEFFILE keyword)
-    !contains(MMP_RULES, defBlock) {
+    # Similarly, explicit EXPORTUNFROZEN should block adding defBlock
+    !contains(MMP_RULES, defBlock):!contains(MMP_RULES, EXPORTUNFROZEN) {
         # Apps are executables on Symbian, so don't have exports, and therefore don't have DEF files
         # Plugins use standard DEF files, which qmake generates, so shouldn't be using these DEFFILE
         # statements - they use the qmake generated statements instead
@@ -41,7 +42,7 @@ symbian-abld|symbian-sbsv2 {
         }
     }
 
-} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
+} else:contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib):!contains(CONFIG, plugin) {
     !isEmpty(DEF_FILE) {
         defFile = $$DEF_FILE
     } else {
@@ -63,15 +64,15 @@ symbian-abld|symbian-sbsv2 {
     freeze_target.target = freeze
     freeze_target.depends = first
     # The perl part is to convert to unix line endings and remove comments, which the s60 tools refuse to do.
-    freeze_target.commands = perl -n -e \'next if (/; NEW/); s/\r//g; if (/MISSING:(.*)/x) { print(\"\$\$1 ABSENT\\n\"); } else { print; }\' < $$symbianObjdir/$${TARGET}.def >  $$elf2e32FileToAdd
-    #QMAKE_EXTRA_TARGETS += freeze_target
+    freeze_target.commands = perl -n -e \'next if (/; NEW/); s/\\r//g; if (/MISSING:(.*)/x) { print(\"\$\$1 ABSENT\\n\"); } else { print; }\' < $$symbianObjdir/$${TARGET}.def >  $$elf2e32FileToAdd
+    QMAKE_EXTRA_TARGETS += freeze_target
 } else:contains(TEMPLATE, subdirs) {
     freeze_target.target = freeze
     freeze_target.CONFIG = recursive
     freeze_target.recurse = $$SUBDIRS
-    #QMAKE_EXTRA_TARGETS += freeze_target
+    QMAKE_EXTRA_TARGETS += freeze_target
 } else {
     freeze_target.target = freeze
     freeze_target.commands =
-    #QMAKE_EXTRA_TARGETS += freeze_target
+    QMAKE_EXTRA_TARGETS += freeze_target
 }

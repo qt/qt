@@ -45,14 +45,14 @@
 #include <commdb.h>
 #include <cdbcols.h>
 #include <d32dbms.h>
+#include <nifvar.h>
 #include <QEventLoop>
 #include <QTimer>
 #include <QTime>  // For randgen seeding
 #include <QtCore> // For randgen seeding
 
-// #define QT_BEARERMGMT_CONFIGMGR_DEBUG
 
-#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
 #include <QDebug>
 #endif
 
@@ -73,7 +73,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static const int KValueThatWillBeAddedToSNAPId = 1000;
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    static const int KValueThatWillBeAddedToSNAPId = 1000;
+#endif
 static const int KUserChoiceIAPId = 0;
 
 SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
@@ -113,13 +115,18 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 
 SymbianEngine::SymbianEngine(QObject *parent)
 :   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iFirstUpdate(true), iInitOk(true),
-    iIgnoringUpdates(false), iTimeToWait(0), iIgnoreEventLoop(0)
+    iIgnoringUpdates(false)
 {
+}
+
+void SymbianEngine::initialize()
+{
+    QMutexLocker locker(&mutex);
+
     CActiveScheduler::Add(this);
 
     // Seed the randomgenerator
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
-    iIgnoreEventLoop = new QEventLoop(this);
 
     TRAPD(error, ipCommsDB = CCommsDatabase::NewL(EDatabaseTypeIAP));
     if (error != KErrNone) {
@@ -130,18 +137,13 @@ SymbianEngine::SymbianEngine(QObject *parent)
     TRAP_IGNORE(iConnectionMonitor.ConnectL());
     TRAP_IGNORE(iConnectionMonitor.NotifyEventL(*this));
 
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE    
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
     TRAP(error, iCmManager.OpenL());
     if (error != KErrNone) {
         iInitOk = false;
         return;
     }
 #endif
-}
-
-void SymbianEngine::initialize()
-{
-    QMutexLocker locker(&mutex);
 
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
@@ -236,19 +238,14 @@ void SymbianEngine::requestUpdate()
 
 void SymbianEngine::updateConfigurations()
 {
-    QMutexLocker locker(&mutex);
-
-    if (!iInitOk) {
+    if (!iInitOk)
         return;
-    }
 
     TRAP_IGNORE(updateConfigurationsL());
 }
 
 void SymbianEngine::updateConfigurationsL()
 {
-    QMutexLocker locker(&mutex);
-
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
 
@@ -274,9 +271,9 @@ void SymbianEngine::updateConfigurationsL()
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
 
-                locker.unlock();
+                mutex.unlock();
                 emit configurationAdded(ptr);
-                locker.relock();
+                mutex.lock();
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -315,9 +312,9 @@ void SymbianEngine::updateConfigurationsL()
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
 
-            locker.unlock();
+            mutex.unlock();
             emit configurationAdded(ptr);
-            locker.relock();
+            mutex.lock();
             
             CleanupStack::Pop(cpPriv);
         }
@@ -336,34 +333,35 @@ void SymbianEngine::updateConfigurationsL()
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
-                    toSymbianConfig(ptr)->serviceNetworkPtr = privSNAP;
                     accessPointConfigurations.insert(ptr->id, ptr);
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationAdded(ptr);
-                    locker.relock();
+                    mutex.lock();
 
+                    QMutexLocker configLocker(&privSNAP->mutex);
                     privSNAP->serviceNetworkMembers.append(ptr);
                 }
             } else {
                 knownConfigs.removeOne(iface);
                 // Check that IAP can be found from related SNAP's configuration list
                 bool iapFound = false;
+                QMutexLocker snapConfigLocker(&privSNAP->mutex);
                 for (int i = 0; i < privSNAP->serviceNetworkMembers.count(); i++) {
-                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericId == iapId) {
+                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericIdentifier() ==
+                        iapId) {
                         iapFound = true;
                         break;
                     }
                 }
-                if (!iapFound) {
-                    toSymbianConfig(priv)->serviceNetworkPtr = privSNAP;
+                if (!iapFound)
                     privSNAP->serviceNetworkMembers.append(priv);
-                }
             }
             
             CleanupStack::PopAndDestroy(&connectionMethod);
         }
         
+        QMutexLocker snapConfigLocker(&privSNAP->mutex);
         if (privSNAP->serviceNetworkMembers.count() > 1) {
             // Roaming is supported only if SNAP contains more than one IAP
             privSNAP->roamingSupported = true;
@@ -391,9 +389,9 @@ void SymbianEngine::updateConfigurationsL()
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
 
-                locker.unlock();
+                mutex.unlock();
                 emit configurationAdded(ptr);
-                locker.relock();
+                mutex.lock();
             } else {
                 delete cpPriv;
             }
@@ -408,17 +406,18 @@ void SymbianEngine::updateConfigurationsL()
         //remove non existing IAP
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
 
-        locker.unlock();
+        mutex.unlock();
         emit configurationRemoved(ptr);
-        locker.relock();
+        mutex.lock();
 
         // Remove non existing IAP from SNAPs
         foreach (const QString &iface, snapConfigurations.keys()) {
             QNetworkConfigurationPrivatePointer ptr2 = snapConfigurations.value(iface);
             // => Check if one of the IAPs of the SNAP is active
+            QMutexLocker snapConfigLocker(&ptr2->mutex);
             for (int i = 0; i < ptr2->serviceNetworkMembers.count(); ++i) {
-                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericId ==
-                    toSymbianConfig(ptr)->numericId) {
+                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericIdentifier() ==
+                    toSymbianConfig(ptr)->numericIdentifier()) {
                     ptr2->serviceNetworkMembers.removeAt(i);
                     break;
                 }
@@ -430,18 +429,21 @@ void SymbianEngine::updateConfigurationsL()
         //remove non existing SNAPs
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.take(oldIface);
 
-        locker.unlock();
+        mutex.unlock();
         emit configurationRemoved(ptr);
-        locker.relock();
+        mutex.lock();
     }
+
+    // find default configuration.
+    stopCommsDatabaseNotifications();
+    TRAP_IGNORE(defaultConfig = defaultConfigurationL());
+    startCommsDatabaseNotifications();
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
 SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         RCmConnectionMethod& connectionMethod)
 {
-    QMutexLocker locker(&mutex);
-
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     CleanupStack::PushL(cpPriv);
     
@@ -524,8 +526,6 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
 bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
         TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
-    QMutexLocker locker(&mutex);
-
     TRAPD(error, readNetworkConfigurationValuesFromCommsDbL(aApId,apNetworkConfiguration));
     if (error != KErrNone) {
         return false;        
@@ -536,8 +536,6 @@ bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
 void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
-    QMutexLocker locker(&mutex);
-
     CApDataHandler* pDataHandler = CApDataHandler::NewLC(*ipCommsDB); 
     CApAccessPointItem* pAPItem = CApAccessPointItem::NewLC(); 
     TBuf<KCommsDbSvrMaxColumnNameLength> name;
@@ -600,15 +598,7 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfiguration()
 {
     QMutexLocker locker(&mutex);
 
-    QNetworkConfigurationPrivatePointer ptr;
-
-    if (iInitOk) {
-        stopCommsDatabaseNotifications();
-        TRAP_IGNORE(ptr = defaultConfigurationL());
-        startCommsDatabaseNotifications();
-    }
-
-    return ptr;
+    return defaultConfig;
 }
 
 QStringList SymbianEngine::accessPointConfigurationIdentifiers()
@@ -620,8 +610,6 @@ QStringList SymbianEngine::accessPointConfigurationIdentifiers()
 
 QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkConfigurationPrivatePointer ptr;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -637,18 +625,18 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
     }
 #endif
     
-    if (!ptr || !ptr->isValid) {
-        QString iface = QString::number(qHash(KUserChoiceIAPId));
-        ptr = userChoiceConfigurations.value(iface);
+    if (ptr) {
+        QMutexLocker configLocker(&ptr->mutex);
+        if (ptr->isValid)
+            return ptr;
     }
-    
-    return ptr;
+
+    QString iface = QString::number(qHash(KUserChoiceIAPId));
+    return userChoiceConfigurations.value(iface);
 }
 
 void SymbianEngine::updateActiveAccessPoints()
 {
-    QMutexLocker locker(&mutex);
-
     bool online = false;
     QList<QString> inactiveConfigs = accessPointConfigurations.keys();
 
@@ -657,26 +645,35 @@ void SymbianEngine::updateActiveAccessPoints()
     iConnectionMonitor.GetConnectionCount(connectionCount, status);
     User::WaitForRequest(status);
     
-    // Go through all connections and set state of related IAPs to Active
+    // Go through all connections and set state of related IAPs to Active.
+    // Status needs to be checked carefully, because ConnMon lists also e.g.
+    // WLAN connections that are being currently tried --> we don't want to
+    // state these as active.
     TUint connectionId;
     TUint subConnectionCount;
     TUint apId;
+    TInt connectionStatus;
     if (status.Int() == KErrNone) {
         for (TUint i = 1; i <= connectionCount; i++) {
             iConnectionMonitor.GetConnectionInfo(i, connectionId, subConnectionCount);
             iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
             User::WaitForRequest(status);
             QString ident = QString::number(qHash(apId));
-
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
-                online = true;
-                inactiveConfigs.removeOne(ident);
+                iConnectionMonitor.GetIntAttribute(connectionId, subConnectionCount, KConnectionStatus, connectionStatus, status);
+                User::WaitForRequest(status);          
+                if (connectionStatus == KLinkLayerOpen) {
+                    online = true;
+                    inactiveConfigs.removeOne(ident);
 
-                toSymbianConfig(ptr)->connectionId = connectionId;
+                    ptr->mutex.lock();
+                    toSymbianConfig(ptr)->connectionId = connectionId;
+                    ptr->mutex.unlock();
 
-                // Configuration is Active
-                changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
+                    // Configuration is Active
+                    changeConfigurationStateTo(ptr, QNetworkConfiguration::Active);
+                }
             }
         }
     }
@@ -692,16 +689,14 @@ void SymbianEngine::updateActiveAccessPoints()
 
     if (iOnline != online) {
         iOnline = online;
-        locker.unlock();
+        mutex.unlock();
         emit this->onlineStateChanged(iOnline);
-        locker.relock();
+        mutex.lock();
     }
 }
 
 void SymbianEngine::updateAvailableAccessPoints()
 {
-    QMutexLocker locker(&mutex);
-
     if (!ipAccessPointsAvailabilityScanner) {
         ipAccessPointsAvailabilityScanner = new AccessPointsAvailabilityScanner(*this, iConnectionMonitor);
     }
@@ -713,8 +708,6 @@ void SymbianEngine::updateAvailableAccessPoints()
 
 void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapInfo iapInfo)
 {
-    QMutexLocker locker(&mutex);
-
     iUpdateGoingOn = false;
     if (scanSuccessful) {
         QList<QString> unavailableConfigs = accessPointConfigurations.keys();
@@ -726,6 +719,8 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
             if (ptr) {
                 unavailableConfigs.removeOne(ident);
+
+                QMutexLocker configLocker(&ptr->mutex);
                 if (ptr->state < QNetworkConfiguration::Active) {
                     // Configuration is either Discovered or Active
                     changeConfigurationStateAtMinTo(ptr, QNetworkConfiguration::Discovered);
@@ -733,12 +728,12 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
             }
         }
         
-        // Make sure that state of rest of the IAPs won't be Discovered or Active
+        // Make sure that state of rest of the IAPs won't be Active
         foreach (const QString &iface, unavailableConfigs) {
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
             if (ptr) {
                 // Configuration is Defined
-                changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Defined);
+                changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered);
             }
         }
     }
@@ -747,25 +742,28 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
     
     if (!iFirstUpdate) {
         startCommsDatabaseNotifications();
-        locker.unlock();
+        mutex.unlock();
         emit updateCompleted();
-        locker.relock();
+        mutex.lock();
     }
 }
 
 void SymbianEngine::updateStatesToSnaps()
 {
-    QMutexLocker locker(&mutex);
-
     // Go through SNAPs and set correct state to SNAPs
     foreach (const QString &iface, snapConfigurations.keys()) {
         bool discovered = false;
         bool active = false;
         QNetworkConfigurationPrivatePointer ptr = snapConfigurations.value(iface);
+
+        QMutexLocker snapConfigLocker(&ptr->mutex);
+
         // => Check if one of the IAPs of the SNAP is discovered or active
         //    => If one of IAPs is active, also SNAP is active
         //    => If one of IAPs is discovered but none of the IAPs is active, SNAP is discovered
         for (int i=0; i<ptr->serviceNetworkMembers.count(); i++) {
+            QMutexLocker configLocker(&ptr->serviceNetworkMembers[i]->mutex);
+
             if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active)
                     == QNetworkConfiguration::Active) {
                 active = true;
@@ -788,16 +786,14 @@ void SymbianEngine::updateStatesToSnaps()
 bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
                                                QNetworkConfiguration::StateFlags newState)
 {
-    QMutexLocker locker(&mutex);
-
     ptr->mutex.lock();
     if (newState != ptr->state) {
         ptr->state = newState;
         ptr->mutex.unlock();
 
-        locker.unlock();
+        mutex.unlock();
         emit configurationChanged(ptr);
-        locker.relock();
+        mutex.lock();
 
         return true;
     } else {
@@ -813,16 +809,14 @@ bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePoint
 bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivatePointer ptr,
                                                     QNetworkConfiguration::StateFlags newState)
 {
-    QMutexLocker locker(&mutex);
-
     ptr->mutex.lock();
     if ((newState | ptr->state) != ptr->state) {
         ptr->state = (ptr->state | newState);
         ptr->mutex.unlock();
 
-        locker.unlock();
+        mutex.unlock();
         emit configurationChanged(ptr);
-        locker.relock();
+        mutex.lock();
 
         return true;
     } else {
@@ -839,16 +833,14 @@ bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivate
 bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivatePointer ptr,
                                                     QNetworkConfiguration::StateFlags newState)
 {
-    QMutexLocker locker(&mutex);
-
     ptr->mutex.lock();
     if ((newState & ptr->state) != ptr->state) {
         ptr->state = (newState & ptr->state);
         ptr->mutex.unlock();
 
-        locker.unlock();
+        mutex.unlock();
         emit configurationChanged(ptr);
-        locker.relock();
+        mutex.lock();
 
         return true;
     } else {
@@ -859,8 +851,6 @@ bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivate
 
 void SymbianEngine::startCommsDatabaseNotifications()
 {
-    QMutexLocker locker(&mutex);
-
     if (!iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = ETrue;
         if (!IsActive()) {
@@ -873,19 +863,9 @@ void SymbianEngine::startCommsDatabaseNotifications()
 
 void SymbianEngine::stopCommsDatabaseNotifications()
 {
-    QMutexLocker locker(&mutex);
-
     if (iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = EFalse;
-        if (!IsActive()) {
-            SetActive();
-            // Make sure that notifier recorded events will not be returned
-            // as soon as the client issues the next RequestNotification() request.
-            ipCommsDB->RequestNotification(iStatus);
-            ipCommsDB->CancelRequestNotification();
-        } else {
-            ipCommsDB->CancelRequestNotification();
-        }
+        Cancel();
     }
 }
 
@@ -894,51 +874,54 @@ void SymbianEngine::RunL()
     QMutexLocker locker(&mutex);
 
     if (iIgnoringUpdates) {
-#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
-        qDebug("CommsDB event handling postponed (postpone-timer running because IAPs/SNAPs were updated very recently).");
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+        qDebug("QNCM CommsDB event handling postponed (postpone-timer running because IAPs/SNAPs were updated very recently).");
 #endif
         return;
     }
 
-    if (iStatus != KErrCancel) {
-        RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
-        switch (event) {
-        case RDbNotifier::EUnlock:   /** All read locks have been removed.  */
-        case RDbNotifier::ECommit:   /** A transaction has been committed.  */ 
-        case RDbNotifier::ERollback: /** A transaction has been rolled back */
-        case RDbNotifier::ERecover:  /** The database has been recovered    */
-#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
-            qDebug("CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
+    RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
+
+    switch (event) {
+    case RDbNotifier::EUnlock:   /** All read locks have been removed.  */
+    case RDbNotifier::ECommit:   /** A transaction has been committed.  */
+    case RDbNotifier::ERollback: /** A transaction has been rolled back */
+    case RDbNotifier::ERecover:  /** The database has been recovered    */
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+        qDebug("QNCM CommsDB event (of type RDbNotifier::TEvent) received: %d", iStatus.Int());
 #endif
-            iIgnoringUpdates = true;
-            // Other events than ECommit get lower priority. In practice with those events,
-            // we delay_before_updating methods, whereas
-            // with ECommit we _update_before_delaying the reaction to next event.
-            // Few important notes: 1) listening to only ECommit does not seem to be adequate,
-            // but updates will be missed. Hence other events are reacted upon too.
-            // 2) RDbNotifier records the most significant event, and that will be returned once
-            // we issue new RequestNotification, and hence updates will not be missed even
-            // when we are 'not reacting to them' for few seconds.
-            if (event == RDbNotifier::ECommit) {
-                TRAPD(error, updateConfigurationsL());
-                if (error == KErrNone) {
-                    updateStatesToSnaps();
-                }
-                waitRandomTime();
-            } else {
-                waitRandomTime();
-                TRAPD(error, updateConfigurationsL());
-                if (error == KErrNone) {
-                    updateStatesToSnaps();
-                }   
+        iIgnoringUpdates = true;
+        // Other events than ECommit get lower priority. In practice with those events,
+        // we delay_before_updating methods, whereas
+        // with ECommit we _update_before_delaying the reaction to next event.
+        // Few important notes: 1) listening to only ECommit does not seem to be adequate,
+        // but updates will be missed. Hence other events are reacted upon too.
+        // 2) RDbNotifier records the most significant event, and that will be returned once
+        // we issue new RequestNotification, and hence updates will not be missed even
+        // when we are 'not reacting to them' for few seconds.
+        if (event == RDbNotifier::ECommit) {
+            TRAPD(error, updateConfigurationsL());
+            if (error == KErrNone) {
+                updateStatesToSnaps();
             }
-            iIgnoringUpdates = false; // Wait time done, allow updating again
-            iWaitingCommsDatabaseNotifications = true;
-            break;
-        default:
-            // Do nothing
-            break;
+            locker.unlock();
+            waitRandomTime();
+            locker.relock();
+        } else {
+            locker.unlock();
+            waitRandomTime();
+            locker.relock();
+            TRAPD(error, updateConfigurationsL());
+            if (error == KErrNone) {
+                updateStatesToSnaps();
+            }
         }
+        iIgnoringUpdates = false; // Wait time done, allow updating again
+        iWaitingCommsDatabaseNotifications = true;
+        break;
+    default:
+        // Do nothing
+        break;
     }
 
     if (iWaitingCommsDatabaseNotifications) {
@@ -957,73 +940,101 @@ void SymbianEngine::DoCancel()
     ipCommsDB->CancelRequestNotification();
 }
 
-
 void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 {
     QMutexLocker locker(&mutex);
 
     switch (aEvent.EventType()) {
-    case EConnMonCreateConnection:
+    case EConnMonConnectionStatusChange:
         {
-        CConnMonCreateConnection* realEvent;
-        realEvent = (CConnMonCreateConnection*) &aEvent;
-        TUint subConnectionCount = 0;
-        TUint apId;            
-        TUint connectionId = realEvent->ConnectionId();
-        TRequestStatus status;
-        iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
-        User::WaitForRequest(status);
-        QString ident = QString::number(qHash(apId));
+        CConnMonConnectionStatusChange* realEvent;
+        realEvent = (CConnMonConnectionStatusChange*) &aEvent;
+        TInt connectionStatus = realEvent->ConnectionStatus();
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+        qDebug() << "QNCM Connection status : " << QString::number(connectionStatus) << " , connection monitor Id : " << realEvent->ConnectionId();
+#endif
+        if (connectionStatus == KConfigDaemonStartingRegistration) {
+            TUint connectionId = realEvent->ConnectionId();
+            TUint subConnectionCount = 0;
+            TUint apId;            
+            TRequestStatus status;
+            iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
+            User::WaitForRequest(status);
+            QString ident = QString::number(qHash(apId));
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
+                ptr->mutex.lock();
+                toSymbianConfig(ptr)->connectionId = connectionId;
+                ptr->mutex.unlock();
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Connecting);
+            }
+        } else if (connectionStatus == KLinkLayerOpen) {
+            // Connection has been successfully opened
+            TUint connectionId = realEvent->ConnectionId();
+            TUint subConnectionCount = 0;
+            TUint apId;            
+            TRequestStatus status;
+            iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
+            User::WaitForRequest(status);
+            QString ident = QString::number(qHash(apId));
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
+                ptr->mutex.lock();
+                toSymbianConfig(ptr)->connectionId = connectionId;
+                ptr->mutex.unlock();
 
-        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-        if (ptr) {
-            toSymbianConfig(ptr)->connectionId = connectionId;
-            // Configuration is Active
-            if (changeConfigurationStateTo(ptr, QNetworkConfiguration::Active))
-                updateStatesToSnaps();
+                // Configuration is Active
+                if (changeConfigurationStateTo(ptr, QNetworkConfiguration::Active)) {
+                    updateStatesToSnaps();
+                }
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Connected);
 
-            if (!iOnline) {
-                iOnline = true;
+                if (!iOnline) {
+                    iOnline = true;
+                    emit this->onlineStateChanged(iOnline);
+                }
+            }
+        } else if (connectionStatus == KConfigDaemonStartingDeregistration) {
+            TUint connectionId = realEvent->ConnectionId();
+            QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);
+            if (ptr) {
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Closing);
+            }
+        } else if (connectionStatus == KLinkLayerClosed ||
+                   connectionStatus == KConnectionClosed) {
+            // Connection has been closed. Which of the above events is reported, depends on the Symbian
+            // platform.
+            TUint connectionId = realEvent->ConnectionId();
+            QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);
+            if (ptr) {
+                // Configuration is either Defined or Discovered
+                if (changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered)) {
+                    updateStatesToSnaps();
+                }
 
-                locker.unlock();
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               connectionId, QNetworkSession::Disconnected);
+            }
+            
+            bool online = false;
+            foreach (const QString &iface, accessPointConfigurations.keys()) {
+                QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+                QMutexLocker configLocker(&ptr->mutex);
+                if (ptr->state == QNetworkConfiguration::Active) {
+                    online = true;
+                    break;
+                }
+            }
+            if (iOnline != online) {
+                iOnline = online;
                 emit this->onlineStateChanged(iOnline);
-                locker.relock();
             }
         }
         }
-        break;
-
-    case EConnMonDeleteConnection:
-        {
-        CConnMonDeleteConnection* realEvent;
-        realEvent = (CConnMonDeleteConnection*) &aEvent;
-        TUint connectionId = realEvent->ConnectionId();
-
-        QNetworkConfigurationPrivatePointer ptr = dataByConnectionId(connectionId);
-        if (ptr) {
-            toSymbianConfig(ptr)->connectionId = 0;
-            // Configuration is either Defined or Discovered
-            if (changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered))
-                updateStatesToSnaps();
-        }
-        
-        bool online = false;
-        foreach (const QString &iface, accessPointConfigurations.keys()) {
-            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
-            if (ptr->state == QNetworkConfiguration::Active) {
-                online = true;
-                break;
-            }
-        }
-        if (iOnline != online) {
-            iOnline = online;
-
-            locker.unlock();
-            emit this->onlineStateChanged(iOnline);
-            locker.relock();
-        }
-        }
-        break;
+        break;    
 
     case EConnMonIapAvailabilityChange:
         {
@@ -1051,37 +1062,92 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         }
         break;
 
+    case EConnMonCreateConnection:
+        {
+        // This event is caught to keep connection monitor IDs up-to-date.
+        CConnMonCreateConnection* realEvent;
+        realEvent = (CConnMonCreateConnection*) &aEvent;
+        TUint subConnectionCount = 0;
+        TUint apId;
+        TUint connectionId = realEvent->ConnectionId();
+        TRequestStatus status;
+        iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount, KIAPId, apId, status);
+        User::WaitForRequest(status);
+        QString ident = QString::number(qHash(apId));
+        QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+        if (ptr) {
+            QMutexLocker configLocker(&ptr->mutex);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+            qDebug() << "QNCM updating connection monitor ID : from, to, whose: " << toSymbianConfig(ptr)->connectionId << connectionId << ptr->name;
+#endif
+            toSymbianConfig(ptr)->connectionId = connectionId;
+        }
+        }
+        break;
     default:
         // For unrecognized events
         break;
     }
 }
 
-// Waits for 1..4 seconds.
+// Sessions may use this function to report configuration state changes,
+// because on some Symbian platforms (especially Symbian^3) all state changes are not
+// reported by the RConnectionMonitor, in particular in relation to stop() call,
+// whereas they _are_ reported on RConnection progress notifier used by sessions --> centralize
+// this data here so that other sessions may benefit from it too (not all sessions necessarily have
+// RConnection progress notifiers available but they relay on having e.g. disconnected information from
+// manager). Currently only 'Disconnected' state is of interest because it has proven to be troublesome.
+void SymbianEngine::configurationStateChangeReport(TUint32 accessPointId, QNetworkSession::State newState)
+{
+    QMutexLocker locker(&mutex);
+
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNCM A session reported state change for IAP ID: " << accessPointId << " whose new state is: " << newState;
+#endif
+    switch (newState) {
+    case QNetworkSession::Disconnected:
+        {
+            QString ident = QString::number(qHash(accessPointId));
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
+            if (ptr) {
+                // Configuration is either Defined or Discovered
+                if (changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Discovered)) {
+                    updateStatesToSnaps();
+                }
+
+                locker.unlock();
+                emit configurationStateChanged(toSymbianConfig(ptr)->numericIdentifier(),
+                                               toSymbianConfig(ptr)->connectionIdentifier(),
+                                               QNetworkSession::Disconnected);
+                locker.relock();
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+// Waits for 2..6 seconds.
 void SymbianEngine::waitRandomTime()
 {
-    iTimeToWait = (qAbs(qrand()) % 5) * 1000;
-    if (iTimeToWait < 1000) {
-        iTimeToWait = 1000;
-    }
-#ifdef QT_BEARERMGMT_CONFIGMGR_DEBUG
-    qDebug("QNetworkConfigurationManager waiting random time: %d ms", iTimeToWait);
+    int iTimeToWait = qMax(2000, (qAbs(qrand()) % 7) * 1000);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug("QNCM waiting random time: %d ms", iTimeToWait);
 #endif
-    QTimer::singleShot(iTimeToWait, iIgnoreEventLoop, SLOT(quit()));
-    iIgnoreEventLoop->exec();
+    QEventLoop loop;
+    QTimer::singleShot(iTimeToWait, &loop, SLOT(quit()));
+    loop.exec();
 }
 
 QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aConnectionId)
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkConfiguration item;
-    
     QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
             accessPointConfigurations.constBegin();
     while (i != accessPointConfigurations.constEnd()) {
         QNetworkConfigurationPrivatePointer ptr = i.value();
-        if (toSymbianConfig(ptr)->connectionId == aConnectionId)
+        if (toSymbianConfig(ptr)->connectionIdentifier() == aConnectionId)
             return ptr;
 
         ++i;
@@ -1128,6 +1194,8 @@ void AccessPointsAvailabilityScanner::StartScanning()
 
 void AccessPointsAvailabilityScanner::RunL()
 {
+    QMutexLocker locker(&iOwner.mutex);
+
     if (iStatus.Int() != KErrNone) {
         iIapBuf().iCount = 0;
         iOwner.accessPointScanningReady(false,iIapBuf());

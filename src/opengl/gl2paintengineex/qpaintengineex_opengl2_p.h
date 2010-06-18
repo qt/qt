@@ -177,6 +177,7 @@ public:
             ctx(0),
             useSystemClip(true),
             elementIndicesVBOId(0),
+            opacityArray(0),
             snapToPixelGrid(false),
             addOffset(false),
             nativePaintingActive(false),
@@ -201,8 +202,7 @@ public:
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
                              QPainter::PixmapFragmentHints hints);
-    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem,
-                          bool includeMatrixInCache);
+    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem);
 
     // Calls glVertexAttributePointer if the pointer has changed
     inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);

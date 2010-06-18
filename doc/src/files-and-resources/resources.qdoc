@@ -54,6 +54,8 @@
 /*!
     \page resources.html
     \title The Qt Resource System
+    \ingroup qt-network
+    \brief A platform-independent mechanism for storing binary files in an application.
 
     \keyword resource system
 

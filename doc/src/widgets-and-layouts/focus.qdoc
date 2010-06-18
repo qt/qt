@@ -82,7 +82,7 @@
     Pressing \key Tab is by far the most common way to move focus
     using the keyboard. (Sometimes in data-entry applications Enter
     does the same as \key{Tab}; this can easily be achieved in Qt by
-    implementing an \l{Events and Event Filters}{event filter}.)
+    implementing an \l{The Event System}{event filter}.)
 
     Pressing \key Tab, in all window systems in common use today,
     moves the keyboard focus to the next widget in a circular

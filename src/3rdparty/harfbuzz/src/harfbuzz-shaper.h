@@ -34,6 +34,22 @@
 
 HB_BEGIN_HEADER
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
+/*
+   using anything else than signed or unsigned for bitfields in C is non standard,
+   but accepted by almost all compilers. And it gives a significant reduction in
+   memory consumption as HB_CharAttributes and HB_GlyphAttributes will not have
+   a 4 byte alignment
+*/
+#ifdef  __xlC__
+typedef unsigned hb_bitfield;
+#else
+typedef hb_uint8 hb_bitfield;
+#endif
+
 typedef enum {
         HB_Script_Common,
         HB_Script_Greek,
@@ -123,12 +139,12 @@ typedef enum {
 
 
 typedef struct {
-    /*HB_LineBreakType*/ unsigned lineBreakType  :2;
-    /*HB_Bool*/ unsigned whiteSpace              :1;     /* A unicode whitespace character, except NBSP, ZWNBSP */
-    /*HB_Bool*/ unsigned charStop                :1;     /* Valid cursor position (for left/right arrow) */
-    /*HB_Bool*/ unsigned wordBoundary            :1;
-    /*HB_Bool*/ unsigned sentenceBoundary        :1;
-    unsigned unused                  :2;
+    /*HB_LineBreakType*/ hb_bitfield lineBreakType  :2;
+    /*HB_Bool*/ hb_bitfield whiteSpace              :1;     /* A unicode whitespace character, except NBSP, ZWNBSP */
+    /*HB_Bool*/ hb_bitfield charStop                :1;     /* Valid cursor position (for left/right arrow) */
+    /*HB_Bool*/ hb_bitfield wordBoundary            :1;
+    /*HB_Bool*/ hb_bitfield sentenceBoundary        :1;
+    hb_bitfield unused                  :2;
 } HB_CharAttributes;
 
 void HB_GetCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,
@@ -181,12 +197,12 @@ typedef enum {
  * it like that. If this is a problem please tell Trolltech :)
  */
 typedef struct {
-    unsigned justification   :4;  /* Justification class */
-    unsigned clusterStart    :1;  /* First glyph of representation of cluster */
-    unsigned mark            :1;  /* needs to be positioned around base char */
-    unsigned zeroWidth       :1;  /* ZWJ, ZWNJ etc, with no width */
-    unsigned dontPrint       :1;
-    unsigned combiningClass  :8;
+    hb_bitfield justification   :4;  /* Justification class */
+    hb_bitfield clusterStart    :1;  /* First glyph of representation of cluster */
+    hb_bitfield mark            :1;  /* needs to be positioned around base char */
+    hb_bitfield zeroWidth       :1;  /* ZWJ, ZWNJ etc, with no width */
+    hb_bitfield dontPrint       :1;
+    hb_bitfield combiningClass  :8;
 } HB_GlyphAttributes;
 
 typedef struct HB_FaceRec_ {
@@ -268,6 +284,10 @@ struct HB_ShaperItem_ {
 };
 
 HB_Bool HB_ShapeItem(HB_ShaperItem *item);
+
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 

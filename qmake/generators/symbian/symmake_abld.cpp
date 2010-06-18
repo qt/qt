@@ -199,7 +199,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
 
-    t << "MAKEFILE          = " << wrapperFile.fileName() << endl;
+    t << "MAKEFILE          = " << fileInfo(wrapperFile.fileName()).fileName() << endl;
     t << "QMAKE             = " << var("QMAKE_QMAKE") << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -409,8 +409,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
     }
     t << endl;
-
-    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

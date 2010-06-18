@@ -48,12 +48,12 @@
 #include <QGraphicsItem>
 #include <QDeclarativeItem>
 #include <QDeclarativeContext>
+#include <private/qdeclarativetextinput_p.h>
 #include <private/qobject_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
-// Application private dir is default serach path for files, so SRCDIR can be set to empty
-#define SRCDIR ""
+#define SRCDIR "."
 #endif
 
 class tst_creation : public QObject
@@ -91,14 +91,14 @@ private:
 class TestType : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources);
-Q_CLASSINFO("DefaultProperty", "resources");
+Q_PROPERTY(QDeclarativeListProperty<QObject> resources READ resources)
+Q_CLASSINFO("DefaultProperty", "resources")
 public:
     TestType(QObject *parent = 0)
     : QObject(parent) {}
 
-    QDeclarativeListProperty<QObject> resources() { 
-        return QDeclarativeListProperty<QObject>(this, 0, resources_append); 
+    QDeclarativeListProperty<QObject> resources() {
+        return QDeclarativeListProperty<QObject>(this, 0, resources_append);
     }
 
     static void resources_append(QDeclarativeListProperty<QObject> *p, QObject *o) {
@@ -106,9 +106,12 @@ public:
     }
 };
 
-tst_creation::tst_creation() 
+tst_creation::tst_creation()
 {
     qmlRegisterType<TestType>("Qt.test", 1, 0, "TestType");
+
+    //get rid of initialization effects
+    QDeclarativeTextInput te;
 }
 
 inline QUrl TEST_FILE(const QString &filename)
@@ -203,7 +206,7 @@ void tst_creation::qobject_10tree_cpp()
 
 void tst_creation::qobject_qmltype()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/QtObject", 4, 6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/QtObject", 4, 7);
 
     QBENCHMARK {
         QObject *obj = t->create();
@@ -347,7 +350,7 @@ void tst_creation::elements_data()
 void tst_creation::elements()
 {
     QFETCH(QByteArray, type);
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 6);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType(type, 4, 7);
     if (!t || !t->isCreatable())
         QSKIP("Non-creatable type", SkipSingle);
 

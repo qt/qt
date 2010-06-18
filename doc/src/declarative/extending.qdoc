@@ -56,13 +56,16 @@ QML for their own independent use.
 \section1 Adding Types
 \target adding-types
 
-\snippet examples/declarative/extending/adding/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/adding/example.qml 0
 
 The QML snippet shown above instantiates one \c Person instance and sets
 the \c name and \c shoeSize properties on it.  Everything in QML ultimately comes down
 to either instantiating an object instance, or assigning a property a value.
+
 QML relies heavily on Qt's meta object system and can only instantiate classes
-that derive from QObject.
+that derive from QObject. For visual element types, this will usually mean a subclass
+of QDeclarativeItem; for models used with the view elements, a subclass of QAbstractItemModel;
+and for abitrary objects with properties, a direct subclass of QObject.
 
 The QML engine has no intrinsic knowledge of any class types.  Instead the
 programmer must register the C++ types with their corresponding QML names.
@@ -121,7 +124,7 @@ the \c Person type.
 
 \section1 Object and List Property Types
 
-\snippet examples/declarative/extending/properties/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/properties/example.qml 0
 
 The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
 \c host property, and assigns three \c Person objects to the guests property.
@@ -136,7 +139,7 @@ Properties that are pointers to objects or Qt interfaces are declared with the
 Q_PROPERTY() macro, just like other properties.  The \c host property
 declaration looks like this:
 
-\snippet examples/declarative/extending/properties/birthdayparty.h 1
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 1
 
 As long as the property type, in this case \c Person, is registered with QML the
 property can be assigned.
@@ -165,14 +168,14 @@ As with object properties, the type \a T must be registered with QML.
 
 The \c guest property declaration looks like this:
 
-\snippet examples/declarative/extending/properties/birthdayparty.h 2
+\snippet examples/declarative/cppextensions/referenceexamples/properties/birthdayparty.h 2
 
 \l {Extending QML - Object and List Property Types Example} shows the complete
 code used to create the \c BirthdayParty type.
 
 \section1 Inheritance and Coercion
 
-\snippet examples/declarative/extending/coercion/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/coercion/example.qml 0
 
 The QML snippet shown above assigns a \c Boy object to the \c BirthdayParty's
 \c host property, and assigns three other objects to the \c guests property.
@@ -214,7 +217,7 @@ code used to create the \c Boy and \c Girl types.
 
 \section1 Default Property
 
-\snippet examples/declarative/extending/default/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/default/example.qml 0
 
 The QML snippet shown above assigns a collection of objects to the
 \c BirthdayParty's default property.
@@ -246,7 +249,7 @@ specify a default property.
 
 \section1 Grouped Properties
 
-\snippet examples/declarative/extending/grouped/example.qml 1
+\snippet examples/declarative/cppextensions/referenceexamples/grouped/example.qml 1
 
 The QML snippet shown above assigns a number of properties to the \c Boy object,
 including four properties using the grouped property syntax.
@@ -259,7 +262,7 @@ different types through implementation reuse.
 A grouped property block is implemented as a read-only object property.  The
 \c shoe property shown is declared like this:
 
-\snippet examples/declarative/extending/grouped/person.h 1
+\snippet examples/declarative/cppextensions/referenceexamples/grouped/person.h 1
 
 The \c ShoeDescription type declares the properties available to the grouped
 property block - in this case the \c size, \c color, \c brand and \c price properties.
@@ -271,7 +274,7 @@ implement the \c shoe property grouping.
 
 \section1 Attached Properties
 
-\snippet examples/declarative/extending/attached/example.qml 1
+\snippet examples/declarative/cppextensions/referenceexamples/attached/example.qml 1
 
 The QML snippet shown above assigns a date to the \c rsvp property using the attached
 property syntax.
@@ -393,8 +396,8 @@ this situation, but it must not crash.
 
 \section1 Signal Support
 
-\snippet examples/declarative/extending/signal/example.qml 0
-\snippet examples/declarative/extending/signal/example.qml 1
+\snippet examples/declarative/cppextensions/referenceexamples/signal/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/signal/example.qml 1
 
 The QML snippet shown above associates the evaluation of a JavaScript expression
 with the emission of a Qt signal.
@@ -406,7 +409,7 @@ signal name: "on" is prepended, and the first letter of the signal name upper
 cased.  For example, the signal used in the example above has the following
 C++ signature:
 
-\snippet examples/declarative/extending/signal/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/signal/birthdayparty.h 0
 
 In classes with multiple signals with the same name, only the final signal
 is accessible as a signal property.  Note that signals with the same name
@@ -422,10 +425,13 @@ value will not be accessible from script.
 \l {Extending QML - Signal Support Example} shows the complete code used to
 implement the onPartyStarted signal property.
 
+If you want to use signals from items not created in QML, you can access their
+signals with the \l {Connections} element.
+
 \section1 Property Value Sources
 
-\snippet examples/declarative/extending/valuesource/example.qml 0
-\snippet examples/declarative/extending/valuesource/example.qml 1
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 1
 
 The QML snippet shown above applies a property value source to the \c announcment property.
 A property value source generates a value for a property that changes over time.
@@ -440,7 +446,7 @@ The example shown here is rather contrived: the \c announcment property of the
 the \c HappyBirthdaySong value source generates the lyrics of the song
 "Happy Birthday".
 
-\snippet examples/declarative/extending/valuesource/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/birthdayparty.h 0
 
 Normally, assigning an object to a string property would not be allowed.  In
 the case of a property value source, rather than assigning the object instance
@@ -453,9 +459,9 @@ QDeclarativePropertyValueSource::setTarget(), that the QML engine invokes when
 associating the property value source with a property.  The relevant part of
 the \c HappyBirthdaySong type declaration looks like this:
 
-\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 0
-\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 1
-\snippet examples/declarative/extending/valuesource/happybirthdaysong.h 2
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/happybirthdaysong.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/happybirthdaysong.h 1
+\snippet examples/declarative/cppextensions/referenceexamples/valuesource/happybirthdaysong.h 2
 
 In all other respects, property value sources are regular QML types.  They must
 be registered with the QML engine using the same macros as other types, and can
@@ -471,8 +477,8 @@ implement the \c HappyBirthdaySong property value source.
 
 \section1 Property Binding
 
-\snippet examples/declarative/extending/binding/example.qml 0
-\snippet examples/declarative/extending/binding/example.qml 1
+\snippet examples/declarative/cppextensions/referenceexamples/binding/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/binding/example.qml 1
 
 The QML snippet shown above uses a property binding to ensure the
 \c HappyBirthdaySong's \c name property remains up to date with the \c host.
@@ -492,7 +498,7 @@ the property's value.  QML relies on the presence of a
 
 Here is the \c host property declaration:
 
-\snippet examples/declarative/extending/binding/birthdayparty.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/binding/birthdayparty.h 0
 
 The NOTIFY attribute is followed by a signal name.  It is the responsibility of
 the class implementer to ensure that whenever the property's value changes, the
@@ -531,7 +537,7 @@ subsequently change.  The most common case of this is when a type uses
 only freed when the object is deleted.  In these cases, the CONSTANT attribute
 may be added to the property declaration instead of a NOTIFY signal.
 
-\snippet examples/declarative/extending/binding/person.h 0
+\snippet examples/declarative/cppextensions/referenceexamples/binding/person.h 0
 
 Extreme care must be taken here or applications using your type may misbehave.
 The CONSTANT attribute should only be used for properties whose value is set,
@@ -543,7 +549,7 @@ include NOTIFY signals for use in binding.
 
 \section1 Extension Objects
 
-\snippet examples/declarative/extending/extended/example.qml 0
+\snippet examples/declarative/cppextensions/referenceexamples/extended/example.qml 0
 
 The QML snippet shown above adds a new property to an existing C++ type without
 modifying its source code.
@@ -893,9 +899,13 @@ in other projects without the use of C++.  Components can also help to reduce
 duplication inside one project by limiting the need for large numbers of
 copy-and-pasted blocks.
 
-Any snippet of QML code can become a component, just by placing it in the file
-"<Name>.qml" where <Name> is the new element name, and begins with an uppercase
-letter.  These QML files automatically become available as new QML element types
+Any snippet of QML code can become a component, just by placing it in the file "<Name>.qml" 
+where <Name> is the new element name, and begins with an uppercase letter.  Note that
+the case of all characters in the <Name> are significant on some filesystems, notably
+UNIX filesystems.  It is recommended that the case of the filename matches the case of
+the component name in QML exactly, regardless of the platform the QML will be deployed to.
+
+These QML files automatically become available as new QML element types
 to other QML components and applications in the same directory.
 
 For example, here we show how a component named "Box" is defined and used

@@ -106,8 +106,9 @@ contains(QT_CONFIG, zlib) {
         ../3rdparty/zlib/uncompr.c \
         ../3rdparty/zlib/zutil.c
 } else:!contains(QT_CONFIG, no-zlib) {
-   unix:LIBS_PRIVATE += -lz
-#  win32:LIBS += libz.lib
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
 
 DEFINES += HB_EXPORT=Q_CORE_EXPORT

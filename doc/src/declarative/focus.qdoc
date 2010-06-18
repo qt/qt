@@ -67,7 +67,12 @@ item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 \code
 Item {
     Item {
-        Keys.onPressed: if (event.key == Qt.Key_A) { console.log('Key A was pressed'); event.accepted = true }
+        Keys.onPressed: {
+            if (event.key == Qt.Key_A) { 
+                console.log('Key A was pressed');
+                event.accepted = true;
+            }
+        }
         Rectangle {}
     }
 }
@@ -291,28 +296,7 @@ print the name of the current list item.
 
 \table
 \row
-\o \code
-Rectangle {
-    color: "lightsteelblue"; width: 240; height: 320
-
-    ListView {
-        id: myView; anchors.fill: parent; focus: true
-        model: ListModel {
-            ListElement { name: "Bob" }
-            ListElement { name: "John" }
-            ListElement { name: "Michael" }
-        }
-        delegate: FocusScope {
-            width: contents.width; height: contents.height
-            Text {
-                focus: true
-                text: name
-                Keys.onReturnPressed: console.log(name)
-            }
-        }
-    }
-}
-\endcode
+\o \snippet doc/src/snippets/declarative/focusscopes.qml 0
 \o \image declarative-qmlfocus4.png
 \endtable
 

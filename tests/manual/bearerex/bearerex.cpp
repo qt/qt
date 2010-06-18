@@ -300,8 +300,12 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
 
 SessionTab::~SessionTab()
 {
+    // Need to be nulled, because modal dialogs may return after destruction of this object and
+    // use already released resources.
     delete m_NetworkSession;
+    m_NetworkSession = NULL;
     delete m_http;
+    m_http = NULL;
 }
 
 void SessionTab::on_createQHttpButton_clicked()
@@ -551,10 +555,16 @@ void SessionTab::done(bool error)
         msgBox.setText(QString("HTTP request finished successfully.\nReceived ")+QString::number(result.length())+QString(" bytes."));
     }
     msgBox.exec();
-    
-    sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
-                                 QString(" / ")+
-                                 QString::number(m_NetworkSession->bytesReceived()));
+    // Check if the networksession still exists - it may have gone after returning from
+    // the modal dialog (in the case that app has been closed, and deleting QHttp will
+    // trigger the done() invokation).
+    if (m_NetworkSession) {
+        sentRecDataLineEdit->setText(QString::number(m_NetworkSession->bytesWritten())+
+                                     QString(" / ")+
+                                     QString::number(m_NetworkSession->bytesReceived()));
+    } else {
+        sentRecDataLineEdit->setText("Data amounts not available.");
+    }
 }
 
 // End of file

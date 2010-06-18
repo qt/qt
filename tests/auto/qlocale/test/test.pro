@@ -25,7 +25,7 @@ wince*: {
    addFiles.sources = \
         ../syslocaleapp
 
-   addFiles.path = \Program Files\tst_qlocale
+   addFiles.path = "\\Program Files\\tst_qlocale"
    DEPLOYMENT += addFiles
 }
 

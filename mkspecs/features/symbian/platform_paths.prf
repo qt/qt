@@ -45,8 +45,17 @@
 #         INCLUDEPATH += $$OS_LAYER_DBUS_SYSTEMINCLUDE
 #         INCLUDEPATH += $$OS_LAYER_LIBUTILITY_SYSTEMINCLUDE
 #
+#     These paths are primarily meant to be used as is in bld.inf and .mmp
+#     files, so they do not contain epocroot when using official symbian
+#     toolchains (symbian-abld or symbian-sbsv2).
+#     For makefile based mkspecs, epocroot is prepended to all paths for
+#     convenience.
 #
-#       
+#     To use paths defined here in other contexts that require epocroot to be
+#     prepended always, such as exists checks, please use prependEpocroot
+#     replacement function:
+#
+#         exists($$prependEpocroot($$MW_LAYER_PUBLIC_EXPORT_PATH(foobar.h)))
 #
 # ==============================================================================
 
@@ -472,6 +481,13 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
     STLLIB_USAGE_CW_FLAGS = "-wchar_t on"
     STLLIB_USAGE_DEFINES = _WCHAR_T_DECLARED
 
-}
+    # Smart prepend of EPOCROOT to a string
+    defineReplace(prependEpocroot) {
+        contains(1, ^$${EPOCROOT}) {
+            return($$1)
+        } else {
+            return($${EPOCROOT}$$replace(1,"^/",))
+        }
+    }
 
-epocroot_prefix =
+}

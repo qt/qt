@@ -42,11 +42,9 @@
 #include "qdeclarativewebview_p.h"
 #include "qdeclarativewebview_p_p.h"
 
-#include <private/qdeclarativepainteditem_p_p.h>
-
 #include <qdeclarative.h>
 #include <qdeclarativeengine.h>
-#include <private/qdeclarativestate_p.h>
+#include <qdeclarativecontext.h>
 
 #include <QDebug>
 #include <QPen>
@@ -61,29 +59,29 @@
 #include <QtWebKit/QWebFrame>
 #include <QtWebKit/QWebElement>
 #include <QtWebKit/QWebSettings>
-#include <private/qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 
-class QDeclarativeWebViewPrivate : public QDeclarativePaintedItemPrivate
+class QDeclarativeWebViewPrivate
 {
-    Q_DECLARE_PUBLIC(QDeclarativeWebView)
-
 public:
-    QDeclarativeWebViewPrivate()
-      : QDeclarativePaintedItemPrivate(), page(0), preferredwidth(0), preferredheight(0),
+    QDeclarativeWebViewPrivate(QDeclarativeWebView* qq)
+      : q(qq), page(0), preferredwidth(0), preferredheight(0),
             progress(1.0), status(QDeclarativeWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
             pressTime(400),
             rendering(true)
     {
+        QObject::connect(q, SIGNAL(focusChanged(bool)), q, SLOT(propagateFocusToWebPage(bool)));
     }
-    void focusChanged(bool);
+
+    QDeclarativeWebView *q;
 
     QUrl url; // page url might be different if it has not loaded yet
     QWebPage *page;
+    QGraphicsWebView* view;
 
     int preferredwidth, preferredheight;
     qreal progress;
@@ -100,7 +98,6 @@ public:
     QBasicTimer pressTimer;
     QPoint pressPoint;
     int pressTime; // milliseconds before it's a "hold"
-
 
     static void windowObjects_append(QDeclarativeListProperty<QObject> *prop, QObject *o) {
         static_cast<QDeclarativeWebViewPrivate *>(prop->data)->windowObjects.append(o);
@@ -129,6 +126,9 @@ public:
     dynamically adjust to a size appropriate for the content.
     This width may be large for typical online web pages.
 
+    If the width or height is explictly set, the rendered website
+    will be clipped, not scaled, to fit into the set dimensions.
+
     If the preferredWidth is set, the width will be this amount or larger,
     usually laying out the web content to fit the preferredWidth.
 
@@ -137,8 +137,8 @@ public:
 
     WebView {
         url: "http://www.nokia.com"
-        width: 490
-        height: 400
+        preferredWidth: 490
+        preferredHeight: 400
         scale: 0.5
         smooth: false
         smoothCache: true
@@ -150,6 +150,9 @@ public:
     The item includes no scrolling, scaling,
     toolbars, etc., those must be implemented around WebView. See the WebBrowser example
     for a demonstration of this.
+
+    When this item has keyboard focus, all keyboard input will be sent directly to the
+    web page within.
 */
 
 /*!
@@ -169,34 +172,39 @@ public:
 */
 
 QDeclarativeWebView::QDeclarativeWebView(QDeclarativeItem *parent)
-  : QDeclarativePaintedItem(*(new QDeclarativeWebViewPrivate), parent)
+  : QDeclarativeItem(parent)
 {
     init();
 }
 
 QDeclarativeWebView::~QDeclarativeWebView()
 {
-    Q_D(QDeclarativeWebView);
     delete d->page;
+    delete d;
 }
 
 void QDeclarativeWebView::init()
 {
-    Q_D(QDeclarativeWebView);
+    d = new QDeclarativeWebViewPrivate(this);
 
     QWebSettings::enablePersistentStorage();
 
     setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
+    setFlag(QGraphicsItem::ItemHasNoContents, true);
+    setClip(true);
 
     d->page = 0;
+    d->view = new QGraphicsWebView(this);
+    d->view->setResizesToContents(true);
+    d->view->setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+    connect(d->view, SIGNAL(geometryChanged()), this, SLOT(updateDeclarativeWebViewSize()));
+    connect(d->view, SIGNAL(scaleChanged()), this, SIGNAL(contentsScaleChanged()));
 }
 
 void QDeclarativeWebView::componentComplete()
 {
-    QDeclarativePaintedItem::componentComplete();
-    Q_D(QDeclarativeWebView);
+    QDeclarativeItem::componentComplete();
     switch (d->pending) {
         case QDeclarativeWebViewPrivate::PendingUrl:
             setUrl(d->pending_url);
@@ -216,7 +224,6 @@ void QDeclarativeWebView::componentComplete()
 
 QDeclarativeWebView::Status QDeclarativeWebView::status() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->status;
 }
 
@@ -230,13 +237,11 @@ QDeclarativeWebView::Status QDeclarativeWebView::status() const
 */
 qreal QDeclarativeWebView::progress() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->progress;
 }
 
 void QDeclarativeWebView::doLoadStarted()
 {
-    Q_D(QDeclarativeWebView);
 
     if (!d->url.isEmpty()) {
         d->status = Loading;
@@ -247,7 +252,6 @@ void QDeclarativeWebView::doLoadStarted()
 
 void QDeclarativeWebView::doLoadProgress(int p)
 {
-    Q_D(QDeclarativeWebView);
     if (d->progress == p/100.0)
         return;
     d->progress = p/100.0;
@@ -256,12 +260,7 @@ void QDeclarativeWebView::doLoadProgress(int p)
 
 void QDeclarativeWebView::pageUrlChanged()
 {
-    Q_D(QDeclarativeWebView);
-
-    page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(),
-        d->preferredheight>0 ? d->preferredheight : height()));
-    expandToWebPage();
+    updateContentsSize();
 
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
         || (d->url != page()->mainFrame()->url() && !page()->mainFrame()->url().isEmpty()))
@@ -275,7 +274,6 @@ void QDeclarativeWebView::pageUrlChanged()
 
 void QDeclarativeWebView::doLoadFinished(bool ok)
 {
-    Q_D(QDeclarativeWebView);
 
     if (title().isEmpty())
         pageUrlChanged(); // XXX bug 232556 - pages with no title never get urlChanged()
@@ -302,21 +300,17 @@ void QDeclarativeWebView::doLoadFinished(bool ok)
 */
 QUrl QDeclarativeWebView::url() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->url;
 }
 
 void QDeclarativeWebView::setUrl(const QUrl &url)
 {
-    Q_D(QDeclarativeWebView);
     if (url == d->url)
         return;
 
     if (isComponentComplete()) {
         d->url = url;
-        page()->setViewportSize(QSize(
-            d->preferredwidth>0 ? d->preferredwidth : width(),
-            d->preferredheight>0 ? d->preferredheight : height()));
+        updateContentsSize();
         QUrl seturl = url;
         if (seturl.isEmpty())
             seturl = QUrl(QLatin1String("about:blank"));
@@ -338,16 +332,14 @@ void QDeclarativeWebView::setUrl(const QUrl &url)
 */
 int QDeclarativeWebView::preferredWidth() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->preferredwidth;
 }
 
 void QDeclarativeWebView::setPreferredWidth(int iw)
 {
-    Q_D(QDeclarativeWebView);
     if (d->preferredwidth == iw) return;
     d->preferredwidth = iw;
-    //expandToWebPage();
+    updateContentsSize();
     emit preferredWidthChanged();
 }
 
@@ -358,14 +350,14 @@ void QDeclarativeWebView::setPreferredWidth(int iw)
 */
 int QDeclarativeWebView::preferredHeight() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->preferredheight;
 }
+
 void QDeclarativeWebView::setPreferredHeight(int ih)
 {
-    Q_D(QDeclarativeWebView);
     if (d->preferredheight == ih) return;
     d->preferredheight = ih;
+    updateContentsSize();
     emit preferredHeightChanged();
 }
 
@@ -383,12 +375,17 @@ QVariant QDeclarativeWebView::evaluateJavaScript(const QString &scriptSource)
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
 }
 
-void QDeclarativeWebViewPrivate::focusChanged(bool hasFocus)
+void QDeclarativeWebView::propagateFocusToWebPage(bool hasFocus)
 {
-    Q_Q(QDeclarativeWebView);
     QFocusEvent e(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
-    q->page()->event(&e);
-    QDeclarativeItemPrivate::focusChanged(hasFocus);
+    page()->event(&e);
+}
+
+void QDeclarativeWebView::updateDeclarativeWebViewSize()
+{
+    QSizeF size = d->view->geometry().size() * contentsScale();
+    setImplicitWidth(size.width());
+    setImplicitHeight(size.height());
 }
 
 void QDeclarativeWebView::initialLayout()
@@ -396,69 +393,68 @@ void QDeclarativeWebView::initialLayout()
     // nothing useful to do at this point
 }
 
-void QDeclarativeWebView::noteContentsSizeChanged(const QSize&)
+void QDeclarativeWebView::updateContentsSize()
 {
-    expandToWebPage();
-}
-
-void QDeclarativeWebView::expandToWebPage()
-{
-    Q_D(QDeclarativeWebView);
-    QSize cs = page()->mainFrame()->contentsSize();
-    if (cs.width() < d->preferredwidth)
-        cs.setWidth(d->preferredwidth);
-    if (cs.height() < d->preferredheight)
-        cs.setHeight(d->preferredheight);
-    if (widthValid())
-        cs.setWidth(width());
-    if (heightValid())
-        cs.setHeight(height());
-    if (cs != page()->viewportSize()) {
-        page()->setViewportSize(cs);
-    }
-    if (cs != contentsSize())
-        setContentsSize(cs);
+    if (d->page)
+        d->page->setPreferredContentsSize(QSize(
+            d->preferredwidth>0 ? d->preferredwidth : width(),
+            d->preferredheight>0 ? d->preferredheight : height()));
 }
 
 void QDeclarativeWebView::geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry)
 {
-    if (newGeometry.size() != oldGeometry.size())
-        expandToWebPage();
-    QDeclarativePaintedItem::geometryChanged(newGeometry, oldGeometry);
-}
-
-void QDeclarativeWebView::paintPage(const QRect& r)
-{
-    dirtyCache(r);
-    update();
+    if (newGeometry.size() != oldGeometry.size() && d->page) {
+        QSize cs = d->page->preferredContentsSize();
+        if (widthValid())
+            cs.setWidth(width());
+        if (heightValid())
+            cs.setHeight(height());
+        if (cs != d->page->preferredContentsSize())
+            d->page->setPreferredContentsSize(cs);
+    }
+    QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 /*!
     \qmlproperty list<object> WebView::javaScriptWindowObjects
 
-    This property is a list of object that are available from within
-    the webview's JavaScript context.
+    A list of QML objects to expose to the web page.
 
-    The \a object will be inserted as a child of the frame's window
-    object, under the name given by the attached property \c WebView.windowObjectName.
+    Each object will be added as a property of the web frame's window object.  The
+    property name is controlled by the value of \c WebView.windowObjectName 
+    attached property.
+
+    Exposing QML objects to a web page allows JavaScript executing in the web 
+    page itself to communicate with QML, by reading and writing properties and
+    by calling methods of the exposed QML objects.
+
+    This example shows how to call into a QML method using a window object.
 
     \qml
     WebView {
-        javaScriptWindowObjects: Object {
-            WebView.windowObjectName: "coordinates"
+        javaScriptWindowObjects: QtObject {
+            WebView.windowObjectName: "qml"
+
+            function qmlCall() { 
+                console.log("This call is in QML!");
+            }
         }
+
+        html: "<script>console.log(\"This is in WebKit!\"); window.qml.qmlCall();</script>"
     }
     \endqml
 
-    Properties of the object will be exposed as JavaScript properties and slots as
-    JavaScript methods.
+    The output of the example will be:
+    \code
+    This is in WebKit!
+    This call is in QML!
+    \endcode
 
-    If Javascript is not enabled for this page, then this property does nothing.
+    If Javascript is not enabled for the page, then this property does nothing.
 */
 QDeclarativeListProperty<QObject> QDeclarativeWebView::javaScriptWindowObjects()
 {
-    Q_D(QDeclarativeWebView);
     return QDeclarativeListProperty<QObject>(this, d, &QDeclarativeWebViewPrivate::windowObjects_append);
 }
 
@@ -469,8 +465,7 @@ QDeclarativeWebViewAttached *QDeclarativeWebView::qmlAttachedProperties(QObject 
 
 void QDeclarativeWebViewPrivate::updateWindowObjects()
 {
-    Q_Q(QDeclarativeWebView);
-    if (!q->isComponentComplete() || !page)
+    if (!q->isComponentCompletePublic() || !page)
         return;
 
     for (int ii = 0; ii < windowObjects.count(); ++ii) {
@@ -484,29 +479,17 @@ void QDeclarativeWebViewPrivate::updateWindowObjects()
 
 bool QDeclarativeWebView::renderingEnabled() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->rendering;
 }
 
 void QDeclarativeWebView::setRenderingEnabled(bool enabled)
 {
-    Q_D(QDeclarativeWebView);
     if (d->rendering == enabled)
         return;
     d->rendering = enabled;
     emit renderingEnabledChanged();
 
-    setCacheFrozen(!enabled);
-    if (enabled)
-        clearCache();
-}
-
-
-void QDeclarativeWebView::drawContents(QPainter *p, const QRect &r)
-{
-    Q_D(QDeclarativeWebView);
-    if (d->rendering)
-        page()->mainFrame()->render(p,r);
+    d->view->setTiledBackingStoreFrozen(!enabled);
 }
 
 QMouseEvent *QDeclarativeWebView::sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
@@ -541,7 +524,6 @@ QMouseEvent *QDeclarativeWebView::sceneHoverMoveEventToMouseEvent(QGraphicsScene
     return me;
 }
 
-
 /*!
     \qmlsignal WebView::onDoubleClick(clickx,clicky)
 
@@ -573,7 +555,6 @@ void QDeclarativeWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 */
 bool QDeclarativeWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
 {
-    Q_D(QDeclarativeWebView);
     if (contentsScale() >= maxzoom/zoomFactor())
         return false;
     qreal ozf = contentsScale();
@@ -602,13 +583,11 @@ bool QDeclarativeWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
 */
 int QDeclarativeWebView::pressGrabTime() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->pressTime;
 }
 
 void QDeclarativeWebView::setPressGrabTime(int ms)
 {
-    Q_D(QDeclarativeWebView);
     if (d->pressTime == ms) 
         return;
     d->pressTime = ms;
@@ -617,8 +596,6 @@ void QDeclarativeWebView::setPressGrabTime(int ms)
 
 void QDeclarativeWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QDeclarativeWebView);
-
     setFocus (true);
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
 
@@ -646,14 +623,12 @@ void QDeclarativeWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         );
     delete me;
     if (!event->isAccepted()) {
-        QDeclarativePaintedItem::mousePressEvent(event);
+        QDeclarativeItem::mousePressEvent(event);
     }
 }
 
 void QDeclarativeWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QDeclarativeWebView);
-
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     page()->event(me);
     d->pressTimer.stop();
@@ -670,7 +645,7 @@ void QDeclarativeWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         );
     delete me;
     if (!event->isAccepted()) {
-        QDeclarativePaintedItem::mouseReleaseEvent(event);
+        QDeclarativeItem::mouseReleaseEvent(event);
     }
     setKeepMouseGrab(false);
     ungrabMouse();
@@ -678,7 +653,6 @@ void QDeclarativeWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void QDeclarativeWebView::timerEvent(QTimerEvent *event)
 {
-    Q_D(QDeclarativeWebView);
     if (event->timerId() == d->pressTimer.timerId()) {
         d->pressTimer.stop();
         grabMouse();
@@ -688,8 +662,6 @@ void QDeclarativeWebView::timerEvent(QTimerEvent *event)
 
 void QDeclarativeWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QDeclarativeWebView);
-
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     if (d->pressTimer.isActive()) {
         if ((me->pos() - d->pressPoint).manhattanLength() > QApplication::startDragDistance())  {
@@ -713,9 +685,9 @@ void QDeclarativeWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
     delete me;
     if (!event->isAccepted())
-        QDeclarativePaintedItem::mouseMoveEvent(event);
-
+        QDeclarativeItem::mouseMoveEvent(event);
 }
+
 void QDeclarativeWebView::hoverMoveEvent (QGraphicsSceneHoverEvent * event)
 {
     QMouseEvent *me = sceneHoverMoveEventToMouseEvent(event);
@@ -729,39 +701,17 @@ void QDeclarativeWebView::hoverMoveEvent (QGraphicsSceneHoverEvent * event)
     );
     delete me;
     if (!event->isAccepted())
-        QDeclarativePaintedItem::hoverMoveEvent(event);
+        QDeclarativeItem::hoverMoveEvent(event);
 }
 
-void QDeclarativeWebView::keyPressEvent(QKeyEvent* event)
+bool QDeclarativeWebView::sceneEvent(QEvent *event)
 {
-    page()->event(event);
-    if (!event->isAccepted())
-        QDeclarativePaintedItem::keyPressEvent(event);
+    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease)//Key events go to the page
+                return page()->event(event);
+    return QDeclarativeItem::sceneEvent(event);
 }
 
-void QDeclarativeWebView::keyReleaseEvent(QKeyEvent* event)
-{
-    page()->event(event);
-    if (!event->isAccepted())
-        QDeclarativePaintedItem::keyReleaseEvent(event);
-}
-
-bool QDeclarativeWebView::sceneEvent(QEvent *event) 
-{ 
-    if (event->type() == QEvent::KeyPress) { 
-        QKeyEvent *k = static_cast<QKeyEvent *>(event); 
-        if (k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) { 
-            if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) { //### Add MetaModifier? 
-                page()->event(event); 
-                if (event->isAccepted()) 
-                    return true; 
-            } 
-        } 
-    } 
-    return QDeclarativePaintedItem::sceneEvent(event); 
-} 
-
-
+#ifndef QT_NO_ACTION
 /*!
     \qmlproperty action WebView::back
     This property holds the action for causing the previous URL in the history to be displayed.
@@ -797,6 +747,7 @@ QAction *QDeclarativeWebView::stopAction() const
 {
     return page()->action(QWebPage::Stop);
 }
+#endif // QT_NO_ACTION
 
 /*!
     \qmlproperty real WebView::title
@@ -827,15 +778,11 @@ QPixmap QDeclarativeWebView::icon() const
 */
 void QDeclarativeWebView::setZoomFactor(qreal factor)
 {
-    Q_D(QDeclarativeWebView);
     if (factor == page()->mainFrame()->zoomFactor())
         return;
 
     page()->mainFrame()->setZoomFactor(factor);
-    page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth*factor : width()*factor,
-        d->preferredheight>0 ? d->preferredheight*factor : height()*factor));
-    expandToWebPage();
+    updateContentsSize();
 
     emit zoomFactorChanged();
 }
@@ -853,36 +800,26 @@ qreal QDeclarativeWebView::zoomFactor() const
 */
 void QDeclarativeWebView::setStatusText(const QString& s)
 {
-    Q_D(QDeclarativeWebView);
     d->statusText = s;
     emit statusTextChanged();
 }
 
 void QDeclarativeWebView::windowObjectCleared()
 {
-    Q_D(QDeclarativeWebView);
     d->updateWindowObjects();
 }
 
 QString QDeclarativeWebView::statusText() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->statusText;
 }
 
 QWebPage *QDeclarativeWebView::page() const
 {
-    Q_D(const QDeclarativeWebView);
 
     if (!d->page) {
         QDeclarativeWebView *self = const_cast<QDeclarativeWebView*>(this);
         QWebPage *wp = new QDeclarativeWebPage(self);
-
-        // QML items don't default to having a background,
-        // even though most we pages will set one anyway.
-        QPalette pal = QApplication::palette();
-        pal.setBrush(QPalette::Base, QColor::fromRgbF(0, 0, 0, 0));
-        wp->setPalette(pal);
 
         wp->setNetworkAccessManager(qmlEngine(this)->networkAccessManager());
 
@@ -939,14 +876,12 @@ QWebPage *QDeclarativeWebView::page() const
 */
 QDeclarativeWebSettings *QDeclarativeWebView::settingsObject() const
 {
-    Q_D(const QDeclarativeWebView);
     d->settings.s = page()->settings();
     return &d->settings;
 }
 
 void QDeclarativeWebView::setPage(QWebPage *page)
 {
-    Q_D(QDeclarativeWebView);
     if (d->page == page)
         return;
     if (d->page) {
@@ -957,18 +892,15 @@ void QDeclarativeWebView::setPage(QWebPage *page)
         }
     }
     d->page = page;
-    d->page->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(),
-        d->preferredheight>0 ? d->preferredheight : height()));
+    updateContentsSize();
     d->page->mainFrame()->setScrollBarPolicy(Qt::Horizontal,Qt::ScrollBarAlwaysOff);
     d->page->mainFrame()->setScrollBarPolicy(Qt::Vertical,Qt::ScrollBarAlwaysOff);
-    connect(d->page,SIGNAL(repaintRequested(QRect)),this,SLOT(paintPage(QRect)));
     connect(d->page->mainFrame(),SIGNAL(urlChanged(QUrl)),this,SLOT(pageUrlChanged()));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(iconChanged()));
     connect(d->page->mainFrame(), SIGNAL(iconChanged()), this, SIGNAL(iconChanged()));
-    connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(noteContentsSizeChanged(QSize)));
     connect(d->page->mainFrame(), SIGNAL(initialLayoutCompleted()), this, SLOT(initialLayout()));
+    connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SIGNAL(contentsSizeChanged(QSize)));
 
     connect(d->page,SIGNAL(loadStarted()),this,SLOT(doLoadStarted()));
     connect(d->page,SIGNAL(loadProgress(int)),this,SLOT(doLoadProgress(int)));
@@ -976,6 +908,10 @@ void QDeclarativeWebView::setPage(QWebPage *page)
     connect(d->page,SIGNAL(statusBarMessage(QString)),this,SLOT(setStatusText(QString)));
 
     connect(d->page->mainFrame(),SIGNAL(javaScriptWindowObjectCleared()),this,SLOT(windowObjectCleared()));
+
+    d->page->settings()->setAttribute(QWebSettings::TiledBackingStoreEnabled, true);
+
+    d->view->setPage(page);
 }
 
 /*!
@@ -1030,10 +966,7 @@ QString QDeclarativeWebView::html() const
 */
 void QDeclarativeWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
-    Q_D(QDeclarativeWebView);
-    page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(),
-        d->preferredheight>0 ? d->preferredheight : height()));
+    updateContentsSize();
     if (isComponentComplete())
         page()->mainFrame()->setHtml(html, baseUrl);
     else {
@@ -1046,10 +979,7 @@ void QDeclarativeWebView::setHtml(const QString &html, const QUrl &baseUrl)
 
 void QDeclarativeWebView::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
-    Q_D(QDeclarativeWebView);
-    page()->setViewportSize(QSize(
-        d->preferredwidth>0 ? d->preferredwidth : width(),
-        d->preferredheight>0 ? d->preferredheight : height()));
+    updateContentsSize();
 
     if (isComponentComplete())
         page()->mainFrame()->setContent(data,mimeType,qmlContext(this)->resolvedUrl(baseUrl));
@@ -1073,7 +1003,6 @@ QWebSettings *QDeclarativeWebView::settings() const
 
 QDeclarativeWebView *QDeclarativeWebView::createWindow(QWebPage::WebWindowType type)
 {
-    Q_D(QDeclarativeWebView);
     switch (type) {
         case QWebPage::WebBrowserWindow: {
             if (!d->newWindowComponent && d->newWindowParent)
@@ -1127,13 +1056,11 @@ QDeclarativeWebView *QDeclarativeWebView::createWindow(QWebPage::WebWindowType t
 */
 QDeclarativeComponent *QDeclarativeWebView::newWindowComponent() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->newWindowComponent;
 }
 
 void QDeclarativeWebView::setNewWindowComponent(QDeclarativeComponent *newWindow)
 {
-    Q_D(QDeclarativeWebView);
     if (newWindow == d->newWindowComponent)
         return;
     d->newWindowComponent = newWindow;
@@ -1150,13 +1077,11 @@ void QDeclarativeWebView::setNewWindowComponent(QDeclarativeComponent *newWindow
 */
 QDeclarativeItem *QDeclarativeWebView::newWindowParent() const
 {
-    Q_D(const QDeclarativeWebView);
     return d->newWindowParent;
 }
 
 void QDeclarativeWebView::setNewWindowParent(QDeclarativeItem *parent)
 {
-    Q_D(QDeclarativeWebView);
     if (parent == d->newWindowParent)
         return;
     if (d->newWindowParent && parent) {
@@ -1167,6 +1092,25 @@ void QDeclarativeWebView::setNewWindowParent(QDeclarativeItem *parent)
     }
     d->newWindowParent = parent;
     emit newWindowParentChanged();    
+}
+
+QSize QDeclarativeWebView::contentsSize() const
+{
+    return d->page->mainFrame()->contentsSize() * contentsScale();
+}
+
+qreal QDeclarativeWebView::contentsScale() const
+{
+    return d->view->scale();
+}
+
+void QDeclarativeWebView::setContentsScale(qreal scale)
+{
+    if (scale == d->view->scale())
+        return;
+    d->view->setScale(scale);
+    updateDeclarativeWebViewSize();
+    emit contentsScaleChanged();
 }
 
 /*!
@@ -1219,9 +1163,9 @@ QString QDeclarativeWebPage::chooseFile(QWebFrame *originatingFrame, const QStri
 }
 
 /*!
-    \qmlsignal WebView::alert(message)
+    \qmlsignal WebView::onAlert(message)
 
-    This signal is emitted when the web engine sends a JavaScript alert. The \a message is the text
+    This handler is called when the web engine sends a JavaScript alert. The \a message is the text
     to be displayed in the alert to the user.
 */
 
@@ -1265,3 +1209,4 @@ QWebPage *QDeclarativeWebPage::createWindow(WebWindowType type)
 }
 
 QT_END_NAMESPACE
+

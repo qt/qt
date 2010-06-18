@@ -27,45 +27,33 @@ qhp.Qml.indexTitle          = Qml Reference
 
 # Files not referenced in any qdoc file
 # See also extraimages.HTML
-qhp.Qml.extraFiles            = images/api_examples.png \
-                             	images/api_lookup.png \
-                             	images/api_topics.png \
-                             	images/bg_l_blank.png \
-			     	images/bg_ll_blank.png \
-                             	images/bg_ll.png \
-                             	images/bg_l.png \
-                             	images/bg_lr.png \
-                             	images/bg_r.png \
-                             	images/bg_ul_blank.png \
-                             	images/bg_ul.png \
-                             	images/bg_ur_blank.png \
-                             	images/bg_ur.png \
-			     	images/box_bg.png \
-                             	images/breadcrumb.png \
-                             	images/bullet_dn.png \
-                             	images/bullet_gt.png \
-                             	images/bullet_sq.png \
-                             	images/bullet_up.png \
-                             	images/coloreditorfactoryimage.png \
-                             	images/content_bg.png \
-                             	images/dynamiclayouts-example.png \
-                             	images/feedbackground.png \
-                             	images/form_bg.png \
-                             	images/horBar.png \
-                             	images/page_bg.png \
-                             	images/print.png \
-                             	images/qt_guide.png \
-                             	images/qt_icon.png \
-                             	images/qt-logo.png \
-                             	images/qt_ref_doc.png \
-                             	images/qt_tools.png \
-                             	images/sep.png \
-                             	images/sprites-combined.png \
-                             	images/stylesheet-coffee-plastique.png \
-                             	images/taskmenuextension-example.png \
-			     	scripts/functions.js \
-			     	scripts/jquery.js \
-                             	style/style.css
+qhp.Qml.extraFiles            = images/bg_l.png \
+                             	    images/bg_l_blank.png \
+                             	    images/bg_r.png \
+									images/box_bg.png \
+									images/breadcrumb.png \
+									images/bullet_gt.png \
+                             	    images/bullet_dn.png \
+									images/bullet_sq.png \
+                             	    images/bullet_up.png \
+                             	    images/feedbackground.png \
+                             	    images/horBar.png \
+									images/page.png \
+									images/page_bg.png \
+									images/sprites-combined.png \
+									images/arrow-down.png \
+									images/spinner.png \
+                             	    images/stylesheet-coffee-plastique.png \
+                             	    images/taskmenuextension-example.png \
+                             	   images/coloreditorfactoryimage.png \
+                             	   images/dynamiclayouts-example.png \
+									scripts/functions.js \
+									scripts/jquery.js \
+									style/OfflineStyle.css \
+									style/style_ie6.css \
+									style/style_ie7.css \
+									style/style_ie8.css \
+                             	    style/style.css
 
 qhp.Qml.filterAttributes    = qt 4.6.0 qtrefdoc
 qhp.Qml.customFilters.Qt.name = Qt 4.6.0

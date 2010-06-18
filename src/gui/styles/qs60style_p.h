@@ -154,7 +154,7 @@ public:
         SP_QgnIndiRadiobuttOn,
         SP_QgnGrafNsliderMarker,
         SP_QgnGrafNsliderMarkerSelected,
-        SP_QgnIndiSubMenu,
+        SP_QgnIndiSubmenu,
         SP_QgnNoteErased,
         SP_QgnNoteError,
         SP_QgnNoteInfo,
@@ -166,6 +166,24 @@ public:
         SP_QgnPropFolderSmall,
         SP_QgnPropFolderSmallNew,
         SP_QgnPropPhoneMemcLarge,
+        SP_QgnFrSctrlButtonCornerTl,        // Toolbar button
+        SP_QgnFrSctrlButtonCornerTr,
+        SP_QgnFrSctrlButtonCornerBl,
+        SP_QgnFrSctrlButtonCornerBr,
+        SP_QgnFrSctrlButtonSideT,
+        SP_QgnFrSctrlButtonSideB,
+        SP_QgnFrSctrlButtonSideL,
+        SP_QgnFrSctrlButtonSideR,
+        SP_QgnFrSctrlButtonCenter,
+        SP_QgnFrSctrlButtonCornerTlPressed,    // Toolbar button, pressed
+        SP_QgnFrSctrlButtonCornerTrPressed,
+        SP_QgnFrSctrlButtonCornerBlPressed,
+        SP_QgnFrSctrlButtonCornerBrPressed,
+        SP_QgnFrSctrlButtonSideTPressed,
+        SP_QgnFrSctrlButtonSideBPressed,
+        SP_QgnFrSctrlButtonSideLPressed,
+        SP_QgnFrSctrlButtonSideRPressed,
+        SP_QgnFrSctrlButtonCenterPressed,
         SP_QsnCpScrollHandleBottomPressed, //ScrollBar handle, pressed state
         SP_QsnCpScrollHandleMiddlePressed,
         SP_QsnCpScrollHandleTopPressed,
@@ -198,10 +216,10 @@ public:
         SP_QsnFrCaleCornerTr,
         SP_QsnFrCaleCornerBl,
         SP_QsnFrCaleCornerBr,
-        SP_QsnFrCaleGSideT,
-        SP_QsnFrCaleGSideB,
-        SP_QsnFrCaleGSideL,
-        SP_QsnFrCaleGSideR,
+        SP_QsnFrCaleSideT,
+        SP_QsnFrCaleSideB,
+        SP_QsnFrCaleSideL,
+        SP_QsnFrCaleSideR,
         SP_QsnFrCaleCenter,
         SP_QsnFrCaleHeadingCornerTl,        // calendar grid header
         SP_QsnFrCaleHeadingCornerTr,
@@ -266,24 +284,6 @@ public:
         SP_QsnFrPopupSubSideL,
         SP_QsnFrPopupSubSideR,
         SP_QsnFrPopupSubCenter,
-        SP_QsnFrSctrlButtonCornerTl,        // Toolbar button
-        SP_QsnFrSctrlButtonCornerTr,
-        SP_QsnFrSctrlButtonCornerBl,
-        SP_QsnFrSctrlButtonCornerBr,
-        SP_QsnFrSctrlButtonSideT,
-        SP_QsnFrSctrlButtonSideB,
-        SP_QsnFrSctrlButtonSideL,
-        SP_QsnFrSctrlButtonSideR,
-        SP_QsnFrSctrlButtonCenter,
-        SP_QsnFrSctrlButtonCornerTlPressed,    // Toolbar button, pressed
-        SP_QsnFrSctrlButtonCornerTrPressed,
-        SP_QsnFrSctrlButtonCornerBlPressed,
-        SP_QsnFrSctrlButtonCornerBrPressed,
-        SP_QsnFrSctrlButtonSideTPressed,
-        SP_QsnFrSctrlButtonSideBPressed,
-        SP_QsnFrSctrlButtonSideLPressed,
-        SP_QsnFrSctrlButtonSideRPressed,
-        SP_QsnFrSctrlButtonCenterPressed,
         SP_QsnFrButtonCornerTlInactive,     // Inactive button
         SP_QsnFrButtonCornerTrInactive,
         SP_QsnFrButtonCornerBlInactive,
@@ -310,7 +310,7 @@ public:
         SP_QsnFrListSideBPressed,
         SP_QsnFrListSideLPressed,
         SP_QsnFrListSideRPressed,
-        SP_QsnFrListPressed,
+        SP_QsnFrListCenterPressed,
     };
 
     enum ColorLists {
@@ -476,6 +476,8 @@ public:
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
         SF_Animation =        0x0080,
+        SF_Mirrored_X_Axis =  0x0100,
+        SF_Mirrored_Y_Axis =  0x0200
     };
 
     enum CacheClearReason {

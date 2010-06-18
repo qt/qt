@@ -54,38 +54,8 @@
 //
 
 #include <QGestureRecognizer>
-#include <objbase.h>
 
-class IInkRectangle;
-class TabletHardwareCapabilities;
-class TabletPropertyMetricUnit;
-DECLARE_INTERFACE_(IInkTablet, IDispatch)
-{
-	STDMETHOD(get_Name)(THIS_ BSTR *Name) PURE;
-	STDMETHOD(get_PlugAndPlayId)(THIS_ BSTR *Id) PURE;
-	STDMETHOD(get_MaximumInputRectangle)(THIS_ IInkRectangle **Rectangle) PURE;
-	STDMETHOD(get_HardwareCapabilities)(THIS_ TabletHardwareCapabilities *Capabilities) PURE;
-	STDMETHOD(IsPacketPropertySupported)(THIS_ BSTR packetPropertyName) PURE;
-	STDMETHOD(GetPropertyMetrics)(THIS_ BSTR propertyName, long *Minimum, long *Maximum, TabletPropertyMetricUnit *Units, float *Resolution) PURE;
-};
-enum TabletDeviceKind
-{
-	TDK_Mouse = 0,
-	TDK_Pen   = 1,
-	TDK_Touch = 2
-};
-DECLARE_INTERFACE_(IInkTablet2, IDispatch)
-{
-	STDMETHOD(get_DeviceKind)(THIS_ TabletDeviceKind *Kind) PURE;
-};
-DECLARE_INTERFACE_(IInkTablets, IDispatch)
-{
-	STDMETHOD(get_Count)(THIS_ long *Count) PURE;
-	STDMETHOD(get__NewEnum)(THIS_ IUnknown **_NewEnum) PURE;
-	STDMETHOD(get_DefaultTablet)(THIS_ IInkTablet **DefaultTablet) PURE;
-	STDMETHOD(Item)(THIS_ long Index, IInkTablet **Tablet) PURE;
-	STDMETHOD(IsPacketPropertySupported)(THIS_ BSTR packetPropertyName, VARIANT_BOOL *Supported) PURE;
-};
+#ifndef QT_NO_GESTURES
 
 QT_BEGIN_NAMESPACE
 
@@ -104,5 +74,7 @@ public:
 #endif // QT_NO_NATIVE_GESTURES
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
 
 #endif // QWINNATIVEPANGESTURERECOGNIZER_WIN_P_H

@@ -65,49 +65,75 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     \since 4.7
     \inherits Item
 
-    \brief The Repeater item allows you to repeat an Item-based component using a model.
+    \brief The Repeater element allows you to repeat an Item-based component using a model.
 
-    The Repeater item is used when you want to create a large number of
-    similar items.  For each entry in the model, an item is instantiated
-    in a context seeded with data from the model.  If the repeater will
-    be instantiating a large number of instances, it may be more efficient to
-    use one of Qt Declarative's \l {xmlViews}{view items}.
+    The Repeater element is used to create a large number of
+    similar items. Like other view elements, a Repeater has a \l model and a \l delegate:
+    for each entry in the model, the delegate is instantiated
+    in a context seeded with data from the model. A Repeater item is usually
+    enclosed in a positioner element such as \l Row or \l Column to visually
+    position the multiple delegate items created by the Repeater.
 
-    The model may be either an object list, a string list, a number or a Qt model.
-    In each case, the data element and the index is exposed to each instantiated
-    component.  
-    
-    The index is always exposed as an accessible \c index property.
-    In the case of an object or string list, the data element (of type string
-    or object) is available as the \c modelData property.  In the case of a Qt model,
-    all roles are available as named properties just like in the view classes. The
-    following example shows how to use the index property inside the instantiated
-    items.
+    The following Repeater creates three instances of a \l Rectangle item within
+    a \l Row:
 
-    \snippet doc/src/snippets/declarative/repeater-index.qml 0
+    \snippet doc/src/snippets/declarative/repeater.qml import
+    \codeline
+    \snippet doc/src/snippets/declarative/repeater.qml simple
 
-    \image repeater-index.png
+    \image repeater-simple.png
+
+    The \l model of a Repeater can be specified as a model object, a number, a string list 
+    or an object list. If a model object is used, the
+    \l delegate can access the model roles as named properties, just as for view elements like
+    ListView and GridView. 
+
+    The \l delegate can also access two additional properties:
+
+    \list
+    \o \c index - the index of the delegate's item
+    \o \c modelData - the data element for the delegate, which is useful where the \l model is a string or object list
+    \endlist
+
+    Here is a Repeater that uses the \c index property inside the instantiated items:
+
+    \table
+    \row
+    \o \snippet doc/src/snippets/declarative/repeater.qml index
+    \o \image repeater-index.png
+    \endtable
+
+    Here is another Repeater that uses the \c modelData property to reference the data for a
+    particular index:
+
+    \table
+    \row
+    \o \snippet doc/src/snippets/declarative/repeater.qml modeldata
+    \o \image repeater-modeldata.png
+    \endtable
 
     Items instantiated by the Repeater are inserted, in order, as
     children of the Repeater's parent.  The insertion starts immediately after
-    the repeater's position in its parent stacking list.  This is to allow
-    you to use a Repeater inside a layout.  The following QML example shows how
-    the instantiated items would visually appear stacked between the red and
-    blue rectangles.
-
-    \snippet doc/src/snippets/declarative/repeater.qml 0
+    the repeater's position in its parent stacking list.  This allows
+    a Repeater to be used inside a layout. For example, the following Repeater's
+    items are stacked between a red rectangle and a blue rectangle:
+   
+    \snippet doc/src/snippets/declarative/repeater.qml layout
 
     \image repeater.png
 
-    The repeater instance continues to own all items it instantiates, even
-    if they are otherwise manipulated.  It is illegal to manually remove an item
-    created by the Repeater.
+    A Repeater item owns all items it instantiates. Removing or dynamically destroying
+    an item created by a Repeater results in unpredictable behavior.
 
-    \note Repeater is Item-based, and cannot be used to repeat non-Item-derived objects.
+    Note that if a repeater is
+    required to instantiate a large number of items, it may be more efficient to
+    use other view elements such as ListView.
+
+    \note Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
     For example, it cannot be used to repeat QtObjects.
     \badcode
     Item {
-        //XXX illegal. Can't repeat QtObject as it doesn't derive from Item.
+        //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.
         Repeater {
             model: 10
             QtObject {}
@@ -143,7 +169,15 @@ QDeclarativeRepeater::~QDeclarativeRepeater()
 
     The model providing data for the repeater.
 
-    The model may be either an object list, a string list, a number or a Qt model.
+    This property can be set to any of the following:
+
+    \list
+    \o A number that indicates the number of delegates to be created
+    \o A model (e.g. a ListModel item, or a QAbstractItemModel subclass)
+    \o A string list
+    \o An object list
+    \endlist
+
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
@@ -193,7 +227,7 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QDeclarativeVisualDataModel(qmlContext(this));
+            d->model = new QDeclarativeVisualDataModel(qmlContext(this), this);
             d->ownModel = true;
         }
         if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model))

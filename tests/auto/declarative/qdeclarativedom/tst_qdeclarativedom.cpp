@@ -46,6 +46,11 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativedom : public QObject
 {
     Q_OBJECT
@@ -419,10 +424,8 @@ void tst_qdeclarativedom::loadSyntaxErrors()
 void tst_qdeclarativedom::loadRemoteErrors()
 {
     QByteArray qml = "import Qt 4.7\n"
+                     "import \"http://localhost/exampleQmlScript.js\" as Script\n"
                      "Item {\n"
-                     "    Script {\n"
-                     "        source: \"http://localhost/exampleQmlScript.js\""
-                     "    }\n"
                      "}";
     QDeclarativeDomDocument document;
     QVERIFY(false == document.load(&engine, qml));

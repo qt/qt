@@ -172,17 +172,21 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     A MouseArea is typically used in conjunction with a visible item,
     where the MouseArea effectively 'proxies' mouse handling for that
-    item. For example, we can put a MouseArea in a Rectangle that changes
-    the Rectangle color to red when clicked:
-    \snippet doc/src/snippets/declarative/mouseregion.qml 0
+    item. For example, we can put a MouseArea in a \l Rectangle that changes
+    the \l Rectangle color to red when clicked:
+
+    \snippet doc/src/snippets/declarative/mousearea.qml import
+    \codeline
+    \snippet doc/src/snippets/declarative/mousearea.qml intro
 
     Many MouseArea signals pass a \l {MouseEvent}{mouse} parameter that contains
     additional information about the mouse event, such as the position, button,
     and any key modifiers.
 
-    Below we have the previous
-    example extended so as to give a different color when you right click.
-    \snippet doc/src/snippets/declarative/mouseregion.qml 1
+    Here is an extension of the previous example that produces a different
+    color when the area is right clicked:
+
+    \snippet doc/src/snippets/declarative/mousearea.qml intro-extended
 
     For basic key handling, see the \l {Keys}{Keys attached property}.
 
@@ -197,8 +201,8 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse enters the mouse area.
 
     By default the onEntered handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
-    onExited when no mouse button is pressed.
+    pressed. Setting hoverEnabled to true enables handling of
+    onEntered when no mouse button is pressed.
 
     \sa hoverEnabled
 */
@@ -209,7 +213,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     This handler is called when the mouse exists the mouse area.
 
     By default the onExited handler is only called while a button is
-    pressed.  Setting hoverEnabled to true enables handling of
+    pressed. Setting hoverEnabled to true enables handling of
     onExited when no mouse button is pressed.
 
     \sa hoverEnabled
@@ -238,7 +242,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     releasing is also considered a click).
 
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
@@ -262,7 +266,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
@@ -282,22 +286,31 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
-    position of the release of the click, and whether the click wasHeld.
+    position of the release of the click, and whether the click was held.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
+    \qmlsignal MouseArea::onCanceled()
+
+    This handler is called when the mouse events are canceled, either because the event was not accepted or
+    another element stole the mouse event handling. This signal is for advanced users, it's useful in case there
+    is more than one mouse areas handling input, or when there is a mouse area inside a flickable. In the latter
+    case, if you do some logic on pressed and then start dragging, the flickable will steal the mouse handling
+    from the mouse area. In these cases, to reset the logic when there is no mouse handling anymore, you should
+    use onCanceled, in addition to onReleased.
+*/
+
+/*!
     \internal
     \class QDeclarativeMouseArea
-    \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within Qml.
-
-    \ingroup group_coreitems
+    \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within QML.
 
     All QDeclarativeItem derived classes can do mouse handling but the QDeclarativeMouseArea class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.
 
-    A QDeclarativeMouseArea object can be instantiated in Qml using the tag \l MouseArea.
+    A QDeclarativeMouseArea object can be instantiated in QML using the tag \l MouseArea.
  */
 QDeclarativeMouseArea::QDeclarativeMouseArea(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeMouseAreaPrivate), parent)
@@ -319,10 +332,10 @@ QDeclarativeMouseArea::~QDeclarativeMouseArea()
     while a button is pressed, and will remain valid as long as the button is held
     even if the mouse is moved outside the area.
 
-    If hoverEnabled is true then these properties will be valid:
+    If hoverEnabled is true then these properties will be valid when:
     \list
-        \i when no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
-        \i if a button is pressed and held, even if it has since moved out of the area.
+        \i no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
+        \i a button is pressed and held, even if it has since moved out of the area.
     \endlist
 
     The coordinates are relative to the MouseArea.
@@ -365,22 +378,11 @@ void QDeclarativeMouseArea::setEnabled(bool a)
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 
     The code below displays "right" when the right mouse buttons is pressed:
-    \code
-    Text {
-        text: mr.pressedButtons & Qt.RightButton ? "right" : ""
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        MouseArea {
-            id: mr
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            anchors.fill: parent
-        }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/mousearea.qml mousebuttons
 
     \sa acceptedButtons
 */
@@ -408,7 +410,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         setHovered(true);
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
-        if (d->isConnected("pressAndHold(QDeclarativeMouseEvent*)"))
+        if (d->isPressAndHoldConnected())
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
         event->setAccepted(setPressed(true));
@@ -564,10 +566,12 @@ bool QDeclarativeMouseArea::sceneEvent(QEvent *event)
             // state
             d->pressed = false;
             setKeepMouseGrab(false);
-            QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, false);
-            emit released(&me);
+            emit canceled();
             emit pressedChanged();
-            setHovered(false);
+            if (d->hovered) {
+                d->hovered = false;
+                emit hoveredChanged();
+            }
         }
     }
     return rv;
@@ -599,6 +603,23 @@ void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
         d->lastPos = mapFromScene(d->lastScenePos);
 }
 
+/*! \internal */
+QVariant QDeclarativeMouseArea::itemChange(GraphicsItemChange change,
+                                       const QVariant &value)
+{
+    Q_D(QDeclarativeMouseArea);
+    switch (change) {
+    case ItemVisibleHasChanged:
+        if (acceptHoverEvents() && d->hovered != (isVisible() && isUnderMouse()))
+            setHovered(!d->hovered);
+        break;
+    default:
+        break;
+    }
+
+    return QDeclarativeItem::itemChange(change, value);
+}
+
 /*!
     \qmlproperty bool MouseArea::hoverEnabled
     This property holds whether hover events are handled.
@@ -609,6 +630,22 @@ void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
 
     This property affects the containsMouse property and the onEntered, onExited and onPositionChanged signals.
 */
+bool QDeclarativeMouseArea::hoverEnabled() const
+{
+    return acceptHoverEvents();
+}
+
+void QDeclarativeMouseArea::setHoverEnabled(bool h)
+{
+    Q_D(QDeclarativeMouseArea);
+    if (h == acceptHoverEvents())
+        return;
+
+    setAcceptHoverEvents(h);
+    emit hoverEnabledChanged();
+    if (d->hovered != isUnderMouse())
+        setHovered(!d->hovered);
+}
 
 /*!
     \qmlproperty bool MouseArea::containsMouse
@@ -651,7 +688,7 @@ void QDeclarativeMouseArea::setHovered(bool h)
     \list
     \o Qt.LeftButton
     \o Qt.RightButton
-    \o Qt.MidButton
+    \o Qt.MiddleButton
     \endlist
 
     To accept more than one button the flags can be combined with the
@@ -661,7 +698,7 @@ void QDeclarativeMouseArea::setHovered(bool h)
     MouseArea { acceptedButtons: Qt.LeftButton | Qt.RightButton }
     \endcode
 
-    The default is to accept the Left button.
+    The default value is \c Qt.LeftButton.
 */
 Qt::MouseButtons QDeclarativeMouseArea::acceptedButtons() const
 {
@@ -715,23 +752,25 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
 /*!
     \qmlproperty Item MouseArea::drag.target
     \qmlproperty bool MouseArea::drag.active
-    \qmlproperty Axis MouseArea::drag.axis
+    \qmlproperty enumeration MouseArea::drag.axis
     \qmlproperty real MouseArea::drag.minimumX
     \qmlproperty real MouseArea::drag.maximumX
     \qmlproperty real MouseArea::drag.minimumY
     \qmlproperty real MouseArea::drag.maximumY
 
-    drag provides a convenient way to make an item draggable.
+    \c drag provides a convenient way to make an item draggable.
 
     \list
-    \i \c target specifies the item to drag.
-    \i \c active specifies if the target item is being currently dragged.
-    \i \c axis specifies whether dragging can be done horizontally (XAxis), vertically (YAxis), or both (XandYAxis)
-    \i the minimum and maximum properties limit how far the target can be dragged along the corresponding axes.
+    \i \c drag.target specifies the item to drag.
+    \i \c drag.active specifies if the target item is currently being dragged.
+    \i \c drag.axis specifies whether dragging can be done horizontally (\c Drag.XAxis), vertically (\c Drag.YAxis), or both (\c Drag.XandYAxis)
+    \i \c drag.minimum and \c drag.maximum limit how far the target can be dragged along the corresponding axes.
     \endlist
 
-    The following example uses drag to reduce the opacity of an image as it moves to the right:
-    \snippet doc/src/snippets/declarative/drag.qml 0
+    The following example displays an image that can be dragged along the X-axis. The opacity
+    of the image is reduced when it is dragged to the right.
+
+    \snippet doc/src/snippets/declarative/mousearea.qml drag
 */
 
 QT_END_NAMESPACE

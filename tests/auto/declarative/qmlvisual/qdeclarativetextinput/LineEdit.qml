@@ -30,13 +30,14 @@ Item {
         y: 5
         //Below function implements all scrolling logic
         onCursorPositionChanged: {
-            if(cursorRect.x < leftMargin - textInp.x){//Cursor went off the front
-                textInp.x = leftMargin - Math.max(0, cursorRect.x);
-            }else if(cursorRect.x > parent.width - leftMargin - rightMargin - textInp.x){//Cusor went off the end
-                textInp.x = leftMargin - Math.max(0, cursorRect.x - (parent.width - leftMargin - rightMargin));
+            if(cursorRectangle.x < leftMargin - textInp.x){//Cursor went off the front
+                textInp.x = leftMargin - Math.max(0, cursorRectangle.x);
+            }else if(cursorRectangle.x > parent.width - leftMargin - rightMargin - textInp.x){//Cusor went off the end
+                textInp.x = leftMargin - Math.max(0, cursorRectangle.x - (parent.width - leftMargin - rightMargin));
             }
         }
 
+        autoScroll: false //It is preferable to implement your own scrolling
         text:""
         horizontalAlignment: TextInput.AlignLeft
         font.pixelSize:15
@@ -50,16 +51,15 @@ Item {
         }
         onPressed: {
             textInp.focus = true;
-            textInp.cursorPosition = textInp.xToPosition(translateX(mouse.x));
+            textInp.cursorPosition = textInp.positionAt(translateX(mouse.x));
         }
         onPositionChanged: {
-            textInp.moveCursorSelection(textInp.xToPosition(translateX(mouse.x)));
+            textInp.moveCursorSelection(textInp.positionAt(translateX(mouse.x)));
         }
         onReleased: {
         }
         onDoubleClicked: {
-            textInp.selectionStart=0;
-            textInp.selectionEnd=textInp.text.length;
+            textInp.selectAll()
         }
         z: textInp.z + 1
     }

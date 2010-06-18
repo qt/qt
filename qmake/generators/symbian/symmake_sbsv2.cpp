@@ -99,7 +99,9 @@ void SymbianSbsv2MakefileGenerator::writeSbsDeploymentList(const DeploymentList&
         fromItem.replace("\\", "/");
         toItem.replace("\\", "/");
 #if defined(Q_OS_WIN)
-        toItem.prepend(QDir::current().absolutePath().left(2)); // add drive
+        // add drive if it doesn't have one yet
+        if (toItem.size() > 1 && toItem[1] != QLatin1Char(':'))
+            toItem.prepend(QDir::current().absolutePath().left(2));
 #endif
         t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
         t << "OPTION DEPLOY_TARGET " << toItem << endl;
@@ -143,7 +145,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "#" << endl;
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
-    t << "MAKEFILE          = " << wrapperFile.fileName() << endl;
+    t << "MAKEFILE          = " << fileInfo(wrapperFile.fileName()).fileName() << endl;
     t << "QMAKE             = " << var("QMAKE_QMAKE") << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -282,8 +284,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << "\t$(SBS) reallyclean -c " << item << "_urel" << testClause << endl;
     }
     t << endl;
-
-    generateExecutionTargets(t, debugPlatforms);
 }
 
 void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)

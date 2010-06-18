@@ -775,24 +775,8 @@
     assemblies at the
     \l {http://msdn.microsoft.com/en-us/library/aa376307.aspx}{MSDN website}.
 
-    There are two ways to include the run time libraries: by bundling them
-    directly with your application or by installing them on the end-user's
-    system.
-
-    To bundle the run time libraries with your application, copy the directory
-
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 22
-
-    into the folder where your executable is, so that you are including a
-    \c Microsoft.VC80.CRT directory alongside your application's executable. If
-    you are bundling the runtimes and need to deploy plugins as well, you have
-    to remove the manifest from the plugins (embedded as a resource) by adding
-    the following line to the \c{.pro} file of the plugins you are compiling:
-
-    \snippet doc/src/snippets/code/doc_src_deployment.qdoc 23
-
-    \warning If you skip the step above, the plugins will not load on some
-    systems.
+    The correct way to include the runtime libraries with your application
+    is to ensure that they are installed on the end-user's system.
 
     To install the runtime libraries on the end-user's system, you need to
     include the appropriate Visual C++ Redistributable Package (VCRedist)
@@ -823,11 +807,11 @@
     In brief the steps are
 
     \list 1
-    
+
         \o create a folder structure on the development computer that will match the target USB stick directory structure, for example '\\app' and for your dlls, '\\app\\lib'.
-        
+
         \o on the development computer, from the appropriate 'redist' folder copy over Microsoft.VC80.CRT and Microsoft.VC80.MFC to the directories '\\app' and '\\app\\lib' on the development PC.
-        
+
         \o xcopy the \\app folder to the target USB stick.
     \endlist
 

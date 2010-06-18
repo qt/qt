@@ -97,17 +97,17 @@ The following example shows how to expose a background color to a QML file throu
 \row
 \o
 \c {// main.cpp}
-\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.cpp 0
+\snippet doc/src/snippets/declarative/qtbinding/contextproperties/main.cpp 0
 
 \o
 \c {// main.qml}
-\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.qml 0
+\snippet doc/src/snippets/declarative/qtbinding/contextproperties/main.qml 0
 
 \endtable
 
 Or, if you want \c main.cpp to create the component without showing it in a QDeclarativeView, you could create an instance of QDeclarativeContext using QDeclarativeEngine::rootContext() instead:
 
-\snippet doc/src/declarative/snippets/qtbinding/contextproperties/main.cpp 1
+\snippet doc/src/snippets/declarative/qtbinding/contextproperties/main.cpp 1
 
 Context properties work just like normal properties in QML bindings - if the \c backgroundColor
 context property in this example was changed to red, the component object instances would
@@ -135,15 +135,15 @@ allow QML to set values.
 The following example creates a \c CustomPalette object, and sets it as the \c palette context
 property.
 
-\snippet doc/src/declarative/snippets/qtbinding/custompalette/custompalette.h 0
+\snippet doc/src/snippets/declarative/qtbinding/custompalette/custompalette.h 0
 
-\snippet doc/src/declarative/snippets/qtbinding/custompalette/main.cpp 0
+\snippet doc/src/snippets/declarative/qtbinding/custompalette/main.cpp 0
 
 The QML that follows references the palette object, and its properties, to set the appropriate
 background and text colors.  When the window is clicked, the palette's text color is changed, and
 the window text will update accordingly.
 
-\snippet doc/src/declarative/snippets/qtbinding/custompalette/main.qml 0
+\snippet doc/src/snippets/declarative/qtbinding/custompalette/main.qml 0
 
 To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
 changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal
@@ -185,12 +185,12 @@ This example toggles the "Stopwatch" object on/off when the MouseArea is clicked
 \row
 \o
 \c {// main.cpp}
-\snippet doc/src/declarative/snippets/qtbinding/stopwatch/stopwatch.h 0
-\snippet doc/src/declarative/snippets/qtbinding/stopwatch/main.cpp 0
+\snippet doc/src/snippets/declarative/qtbinding/stopwatch/stopwatch.h 0
+\snippet doc/src/snippets/declarative/qtbinding/stopwatch/main.cpp 0
 
 \o
 \c {// main.qml}
-\snippet doc/src/declarative/snippets/qtbinding/stopwatch/main.qml 0
+\snippet doc/src/snippets/declarative/qtbinding/stopwatch/main.qml 0
 
 \endtable
 
@@ -258,16 +258,21 @@ QML content can be loaded from \l {The Qt Resource System} using the \e qrc: URL
 For example:
 
 \c [project/example.qrc]
-\quotefile doc/src/declarative/snippets/qtbinding/resources/example.qrc 
+\quotefile doc/src/snippets/declarative/qtbinding/resources/example.qrc 
 
 \c [project/project.pro]
-\quotefile doc/src/declarative/snippets/qtbinding/resources/resources.pro 
+\quotefile doc/src/snippets/declarative/qtbinding/resources/resources.pro 
 
 \c [project/main.cpp]
-\snippet doc/src/declarative/snippets/qtbinding/resources/main.cpp 0
+\snippet doc/src/snippets/declarative/qtbinding/resources/main.cpp 0
 
 \c [project/main.qml]
-\snippet doc/src/declarative/snippets/qtbinding/resources/main.qml 0
+\snippet doc/src/snippets/declarative/qtbinding/resources/main.qml 0
 
+Note that the resource system cannot be accessed from QML directly. If the main QML file is
+loaded as a resource, all files specifed as relative paths in QML will also be loaded from
+the resource system. Using the resource system is completely transparent to the QML layer.
+This also means that if the main QML file is not loaded as a resource then files in the resource
+system cannot be accessed from QML.
 */
 

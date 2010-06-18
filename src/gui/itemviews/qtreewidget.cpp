@@ -1472,6 +1472,10 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after
 
 /*!
   Destroys this tree widget item.
+  
+  The item will be removed from \l{QTreeWidget}s to which it has
+  been added. This makes it safe to delete an item at any time.
+
 */
 
 QTreeWidgetItem::~QTreeWidgetItem()
@@ -2199,7 +2203,7 @@ void QTreeWidgetItem::executePendingSort() const
 
     This operator uses QTreeWidgetItem::write().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator<<(QDataStream &out, const QTreeWidgetItem &item)
 {
@@ -2214,7 +2218,7 @@ QDataStream &operator<<(QDataStream &out, const QTreeWidgetItem &item)
 
     This operator uses QTreeWidgetItem::read().
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &in, QTreeWidgetItem &item)
 {

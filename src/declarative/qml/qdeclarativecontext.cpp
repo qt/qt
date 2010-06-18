@@ -116,7 +116,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     All properties added explicitly by QDeclarativeContext::setContextProperty() take 
     precedence over the context object's properties.
 
-    Contexts form a hierarchy.  The root of this heirarchy is the QDeclarativeEngine's
+    Contexts form a hierarchy.  The root of this hierarchy is the QDeclarativeEngine's
     \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
     access the data in its own context, as well as all its ancestor contexts.  Data
     can be made available to all instances by modifying the 
@@ -528,13 +528,8 @@ void QDeclarativeContextData::invalidate()
     parent = 0;
 }
 
-void QDeclarativeContextData::destroy()
+void QDeclarativeContextData::clearExpressions()
 {
-    if (linkedContext) 
-        linkedContext->destroy();
-
-    if (engine) invalidate();
-
     QDeclarativeAbstractExpression *expression = expressions;
     while (expression) {
         QDeclarativeAbstractExpression *nextExpression = expression->m_nextExpression;
@@ -546,6 +541,16 @@ void QDeclarativeContextData::destroy()
         expression = nextExpression;
     }
     expressions = 0;
+}
+
+void QDeclarativeContextData::destroy()
+{
+    if (linkedContext) 
+        linkedContext->destroy();
+
+    if (engine) invalidate();
+
+    clearExpressions();
 
     while (contextObjects) {
         QDeclarativeData *co = contextObjects;
@@ -654,7 +659,7 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
         if (iter == enginePriv->m_sharedScriptImports.end()) {
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
-            scriptContext->pushScope(enginePriv->contextClass->newContext(0, 0));
+            scriptContext->pushScope(enginePriv->contextClass->newUrlContext(url));
             scriptContext->pushScope(enginePriv->globalClass->globalObject());
         
             QScriptValue scope = scriptEngine->newObject();
@@ -680,7 +685,7 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
 
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
-        scriptContext->pushScope(enginePriv->contextClass->newContext(this, 0));
+        scriptContext->pushScope(enginePriv->contextClass->newUrlContext(this, 0, url));
         scriptContext->pushScope(enginePriv->globalClass->globalObject());
         
         QScriptValue scope = scriptEngine->newObject();

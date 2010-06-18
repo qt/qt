@@ -68,6 +68,7 @@
 //   #include <private/qrasterizer_p.h>
 #include <private/qimage_p.h>
 #include <private/qstatictext_p.h>
+#include "qmemrotate_p.h"
 
 #include "qpaintengine_raster_p.h"
 //   #include "qbezier_p.h"
@@ -253,6 +254,11 @@ static void qt_debug_path(const QPainterPath &path)
 }
 #endif
 
+QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
+    QPaintEngineExPrivate(),
+    cachedLines(0)
+{
+}
 
 
 /*!
@@ -338,25 +344,12 @@ void QRasterPaintEngine::init()
     d->hdc = 0;
 #endif
 
-    d->rasterPoolSize = 8192;
-    d->rasterPoolBase =
-#if defined(Q_WS_WIN64)
-        // We make use of setjmp and longjmp in qgrayraster.c which requires
-        // 16-byte alignment, hence we hardcode this requirement here..
-        (unsigned char *) _aligned_malloc(d->rasterPoolSize, sizeof(void*) * 2);
-#else
-        (unsigned char *) malloc(d->rasterPoolSize);
-#endif
-    Q_CHECK_PTR(d->rasterPoolBase);
-
     // The antialiasing raster.
     d->grayRaster.reset(new QT_FT_Raster);
     Q_CHECK_PTR(d->grayRaster.data());
-    if (qt_ft_grays_raster.raster_new(0, d->grayRaster.data()))
+    if (qt_ft_grays_raster.raster_new(d->grayRaster.data()))
         QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
-
-    qt_ft_grays_raster.raster_reset(*d->grayRaster.data(), d->rasterPoolBase, d->rasterPoolSize);
 
     d->rasterizer.reset(new QRasterizer);
     d->rasterBuffer.reset(new QRasterBuffer());
@@ -439,12 +432,6 @@ QRasterPaintEngine::~QRasterPaintEngine()
 {
     Q_D(QRasterPaintEngine);
 
-#if defined(Q_WS_WIN64)
-    _aligned_free(d->rasterPoolBase);
-#else
-    free(d->rasterPoolBase);
-#endif
-
     qt_ft_grays_raster.raster_done(*d->grayRaster.data());
 }
 
@@ -457,8 +444,9 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (device->devType() == QInternal::Pixmap) {
         QPixmap *pixmap = static_cast<QPixmap *>(device);
-        if (pixmap->data->classId() == QPixmapData::RasterClass || pixmap->data->classId() == QPixmapData::BlitterClass)
-                d->device = pixmap->data->buffer();
+        QPixmapData *pd = pixmap->pixmapData();
+        if (pd->classId() == QPixmapData::RasterClass || pd->classId() == QPixmapData::BlitterClass)
+            d->device = pd->buffer();
     } else {
         d->device = device;
     }
@@ -473,13 +461,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
-    d->outlineMapper->m_clip_rect = d->deviceRect.adjusted(-10, -10, 10, 10);
+    d->outlineMapper->m_clip_rect = d->deviceRect;
 
-    // This is the upp
-    QRect bounds(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT,
-                 QT_RASTER_COORD_LIMIT*2 - 1, QT_RASTER_COORD_LIMIT * 2 - 1);
-    d->outlineMapper->m_clip_rect = bounds.intersected(d->outlineMapper->m_clip_rect);
-
+    if (d->outlineMapper->m_clip_rect.width() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setWidth(QT_RASTER_COORD_LIMIT);
+    if (d->outlineMapper->m_clip_rect.height() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setHeight(QT_RASTER_COORD_LIMIT);
 
     d->rasterizer->setClipRect(d->deviceRect);
 
@@ -2374,8 +2361,9 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
     qDebug() << " - QRasterPaintEngine::drawPixmap(), pos=" << pos << " pixmap=" << pixmap.size() << "depth=" << pixmap.depth();
 #endif
 
-    if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
+    QPixmapData *pd = pixmap.pixmapData();
+    if (pd->classId() == QPixmapData::RasterClass) {
+        const QImage &image = static_cast<QRasterPixmapData *>(pd)->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2414,8 +2402,9 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
     qDebug() << " - QRasterPaintEngine::drawPixmap(), r=" << r << " sr=" << sr << " pixmap=" << pixmap.size() << "depth=" << pixmap.depth();
 #endif
 
-    if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
+    QPixmapData* pd = pixmap.pixmapData();
+    if (pd->classId() == QPixmapData::RasterClass) {
+        const QImage &image = static_cast<QRasterPixmapData *>(pd)->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2534,6 +2523,58 @@ QRectF qt_mapRect_non_normalizing(const QRectF &r, const QTransform &t)
     return QRectF(r.topLeft() * t, r.bottomRight() * t);
 }
 
+namespace {
+    enum RotationType {
+        Rotation90,
+        Rotation180,
+        Rotation270,
+        NoRotation
+    };
+
+    inline RotationType qRotationType(const QTransform &transform)
+    {
+        QTransform::TransformationType type = transform.type();
+
+        if (type > QTransform::TxRotate)
+            return NoRotation;
+
+        if (type == QTransform::TxRotate && qFuzzyIsNull(transform.m11()) && qFuzzyCompare(transform.m12(), qreal(-1))
+            && qFuzzyCompare(transform.m21(), qreal(1)) && qFuzzyIsNull(transform.m22()))
+            return Rotation90;
+
+        if (type == QTransform::TxScale && qFuzzyCompare(transform.m11(), qreal(-1)) && qFuzzyIsNull(transform.m12())
+            && qFuzzyIsNull(transform.m21()) && qFuzzyCompare(transform.m22(), qreal(-1)))
+            return Rotation180;
+
+        if (type == QTransform::TxRotate && qFuzzyIsNull(transform.m11()) && qFuzzyCompare(transform.m12(), qreal(1))
+            && qFuzzyCompare(transform.m21(), qreal(-1)) && qFuzzyIsNull(transform.m22()))
+            return Rotation270;
+
+        return NoRotation;
+    }
+
+    template <typename T> void memRotate(RotationType type, const T *srcBase, int w, int h, int sbpl, T *dstBase, int dbpl)
+    {
+        switch (type) {
+        case Rotation90:
+            qt_memrotate90(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case Rotation180:
+            qt_memrotate180(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case Rotation270:
+            qt_memrotate270(srcBase, w, h, sbpl, dstBase, dbpl);
+            break;
+        case NoRotation:
+            break;
+        }
+    }
+
+    inline bool isPixelAligned(const QRectF &rect) {
+        return QRectF(rect.toRect()) == rect;
+    }
+}
+
 /*!
     \reimp
 */
@@ -2594,6 +2635,58 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     bool stretch_sr = r.width() != sr.width() || r.height() != sr.height();
 
     const QClipData *clip = d->clip();
+
+    if (s->matrix.type() > QTransform::TxTranslate
+        && !stretch_sr
+        && (!clip || clip->hasRectClip)
+        && s->intOpacity == 256
+        && (d->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
+            || d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)
+        && d->rasterBuffer->format == img.format()
+        && (d->rasterBuffer->format == QImage::Format_RGB16
+            || d->rasterBuffer->format == QImage::Format_RGB32
+            || (d->rasterBuffer->format == QImage::Format_ARGB32_Premultiplied
+                && d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)))
+    {
+        RotationType rotationType = qRotationType(s->matrix);
+
+        if (rotationType != NoRotation && img.rect().contains(sr.toAlignedRect())) {
+            QRectF transformedTargetRect = s->matrix.mapRect(r);
+
+            if ((!(s->renderHints & QPainter::SmoothPixmapTransform) && !(s->renderHints & QPainter::Antialiasing))
+                || (isPixelAligned(transformedTargetRect) && isPixelAligned(sr)))
+            {
+                QRect clippedTransformedTargetRect = transformedTargetRect.toRect().intersected(clip ? clip->clipRect : d->deviceRect);
+                if (clippedTransformedTargetRect.isNull())
+                    return;
+
+                QRectF clippedTargetRect = s->matrix.inverted().mapRect(QRectF(clippedTransformedTargetRect));
+
+                QRect clippedSourceRect
+                    = QRectF(sr.x() + clippedTargetRect.x() - r.x(), sr.y() + clippedTargetRect.y() - r.y(),
+                            clippedTargetRect.width(), clippedTargetRect.height()).toRect();
+
+                uint dbpl = d->rasterBuffer->bytesPerLine();
+                uint sbpl = img.bytesPerLine();
+
+                uchar *dst = d->rasterBuffer->buffer();
+                uint bpp = img.depth() >> 3;
+
+                const uchar *srcBase = img.bits() + clippedSourceRect.y() * sbpl + clippedSourceRect.x() * bpp;
+                uchar *dstBase = dst + clippedTransformedTargetRect.y() * dbpl + clippedTransformedTargetRect.x() * bpp;
+
+                uint cw = clippedSourceRect.width();
+                uint ch = clippedSourceRect.height();
+
+                if (d->rasterBuffer->format == QImage::Format_RGB16)
+                    memRotate(rotationType, (quint16 *)srcBase, cw, ch, sbpl, (quint16 *)dstBase, dbpl);
+                else
+                    memRotate(rotationType, (quint32 *)srcBase, cw, ch, sbpl, (quint32 *)dstBase, dbpl);
+
+                return;
+            }
+        }
+    }
 
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
@@ -2719,8 +2812,9 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
 
     QImage image;
 
-    if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
+    QPixmapData *pd = pixmap.pixmapData();
+    if (pd->classId() == QPixmapData::RasterClass) {
+        image = static_cast<QRasterPixmapData *>(pd)->image;
     } else {
         image = pixmap.toImage();
     }
@@ -3696,6 +3790,7 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
          || (qpen_style(s->lastPen) == Qt::NoPen && !s->flags.antialiased))
         && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
+        && !rect.isEmpty()
         && s->matrix.type() <= QTransform::TxScale) // no shear
     {
         ensureBrush();
@@ -4092,6 +4187,26 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         return;
     }
 
+    // Initial size for raster pool is MINIMUM_POOL_SIZE so as to
+    // minimize memory reallocations. However if initial size for
+    // raster pool is changed for lower value, reallocations will
+    // occur normally.
+    const int rasterPoolInitialSize = MINIMUM_POOL_SIZE;
+    int rasterPoolSize = rasterPoolInitialSize;
+    unsigned char *rasterPoolBase;
+#if defined(Q_WS_WIN64)
+    rasterPoolBase =
+        // We make use of setjmp and longjmp in qgrayraster.c which requires
+        // 16-byte alignment, hence we hardcode this requirement here..
+        (unsigned char *) _aligned_malloc(rasterPoolSize, sizeof(void*) * 2);
+#else
+    unsigned char rasterPoolOnStack[rasterPoolInitialSize];
+    rasterPoolBase = rasterPoolOnStack;
+#endif
+    Q_CHECK_PTR(rasterPoolBase);
+
+    qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
+
     void *data = userData;
 
     QT_FT_BBox clip_box = { deviceRect.x(),
@@ -4120,17 +4235,18 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
-        if (error == -6) { // -6 is Result_err_OutOfMemory
+        if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
             int new_size = rasterPoolSize * 2;
             if (new_size > 1024 * 1024) {
                 qWarning("QPainter: Rasterization of primitive failed");
-                return;
+                break;
             }
 
 #if defined(Q_WS_WIN64)
             _aligned_free(rasterPoolBase);
 #else
-            free(rasterPoolBase);
+            if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
+                free(rasterPoolBase);
 #endif
 
             rasterPoolSize = new_size;
@@ -4145,12 +4261,19 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
             Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
             qt_ft_grays_raster.raster_done(*grayRaster.data());
-            qt_ft_grays_raster.raster_new(0, grayRaster.data());
+            qt_ft_grays_raster.raster_new(grayRaster.data());
             qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
         } else {
             done = true;
         }
     }
+
+#if defined(Q_WS_WIN64)
+    _aligned_free(rasterPoolBase);
+#else
+    if (rasterPoolBase != rasterPoolOnStack) // initially on the stack
+        free(rasterPoolBase);
+#endif
 }
 
 void QRasterPaintEnginePrivate::recalculateFastImages()

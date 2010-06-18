@@ -104,33 +104,33 @@ unix:!symbian {
  			(cd qmake && $(MAKE) distclean);
 }
 win32 {
-  confclean.commands += -$(DEL_FILE) src\core\global\qconfig.h $$escape_expand(\n\t) \
-			-$(DEL_FILE) src\core\global\qconfig.cpp $$escape_expand(\n\t) \
-			-$(DEL_FILE) mkspecs\qconfig.pri $$escape_expand(\n\t) \
-			-$(DEL_FILE) .qmake.cache $$escape_expand(\n\t) \
+  confclean.commands += -$(DEL_FILE) src\\core\\global\\qconfig.h $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) src\\core\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
+			-$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
 			(cd qmake && $(MAKE) distclean)
 }
 symbian {
   confclean.depends += distclean
   contains(QMAKE_HOST.os, "Windows") {
     confclean.commands += \
-            (cd src\tools\moc && $(MAKE) distclean) $$escape_expand(\n\t) \
-            (cd src\tools\rcc && $(MAKE) distclean) $$escape_expand(\n\t) \
-            (cd src\tools\uic && $(MAKE) distclean) $$escape_expand(\n\t) \
-            -$(DEL_FILE) src\corelib\global\qconfig.h $$escape_expand(\n\t) \
-            -$(DEL_FILE) src\corelib\global\qconfig.cpp $$escape_expand(\n\t) \
-            -$(DEL_FILE) mkspecs\qconfig.pri $$escape_expand(\n\t) \
-            -$(DEL_FILE) .qmake.cache $$escape_expand(\n\t) \
+            (cd src\\tools\\moc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            (cd src\\tools\\rcc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            (cd src\\tools\\uic && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) src\\corelib\\global\\qconfig.h $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) src\\corelib\\global\\qconfig.cpp $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) mkspecs\\qconfig.pri $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
             (cd qmake && $(MAKE) distclean)
   } else {
     confclean.commands += \
-            (cd src/tools/moc && $(MAKE) distclean) $$escape_expand(\n\t) \
-            (cd src/tools/rcc && $(MAKE) distclean) $$escape_expand(\n\t) \
-            (cd src/tools/uic && $(MAKE) distclean) $$escape_expand(\n\t) \
-            -$(DEL_FILE) src/corelib/global/qconfig.h $$escape_expand(\n\t) \
-            -$(DEL_FILE) src/corelib/global/qconfig.cpp $$escape_expand(\n\t) \
-            -$(DEL_FILE) mkspecs/qconfig.pri $$escape_expand(\n\t) \
-            -$(DEL_FILE) .qmake.cache $$escape_expand(\n\t) \
+            (cd src/tools/moc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            (cd src/tools/rcc && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            (cd src/tools/uic && $(MAKE) distclean) $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) src/corelib/global/qconfig.h $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) src/corelib/global/qconfig.cpp $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) mkspecs/qconfig.pri $$escape_expand(\\n\\t) \
+            -$(DEL_FILE) .qmake.cache $$escape_expand(\\n\\t) \
             (cd qmake && $(MAKE) distclean)
   }
 }
@@ -164,6 +164,10 @@ unix {
    DEFAULT_QMAKESPEC = $$QMAKESPEC
    DEFAULT_QMAKESPEC ~= s,^.*mkspecs/,,g
    mkspecs.commands += $(DEL_FILE) $(INSTALL_ROOT)$$mkspecs.path/default; $(SYMLINK) $$DEFAULT_QMAKESPEC $(INSTALL_ROOT)$$mkspecs.path/default
+}
+win32:!equals(QT_BUILD_TREE, $$QT_SOURCE_TREE) {
+    # When shadow building on Windows, the default mkspec only exists in the build tree.
+    mkspecs.files += $$QT_BUILD_TREE/mkspecs/default
 }
 INSTALLS += mkspecs
 

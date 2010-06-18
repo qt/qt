@@ -50,7 +50,6 @@ static const int ProgressBarFps = 25;
 static const int blueFrameWidth =  2;  // with of line edit focus frame
 
 #include "qwindowsstyle_p.h"
-#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qabstractitemview.h>
@@ -88,6 +87,7 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qprocess.h>
 #include <qvarlengtharray.h>
 #include <limits.h>
+#include <private/qstylehelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -488,7 +488,9 @@ static void qBrushSetAlphaF(QBrush *brush, qreal alpha)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush->texture();
         QPixmap pixmap;
-        QString name = QString::fromLatin1("qbrushtexture-alpha-%1-%2").arg(alpha).arg(texture.cacheKey());
+        QString name = QLatin1Literal("qbrushtexture-alpha")
+                       % HexString<qreal>(alpha)
+                       % HexString<qint64>(texture.cacheKey());
         if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
@@ -549,7 +551,10 @@ static QBrush qBrushLight(QBrush brush, int light)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush.texture();
         QPixmap pixmap;
-        QString name = QString::fromLatin1("qbrushtexture-light-%1-%2").arg(light).arg(texture.cacheKey());
+        QString name = QLatin1Literal("qbrushtexture-light")
+                       % HexString<int>(light)
+                       % HexString<qint64>(texture.cacheKey());
+
         if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
@@ -608,7 +613,10 @@ static QBrush qBrushDark(QBrush brush, int dark)
         // Modify the texture - ridiculously expensive.
         QPixmap texture = brush.texture();
         QPixmap pixmap;
-        QString name = QString::fromLatin1("qbrushtexture-dark-%1-%2").arg(dark).arg(brush.texture().cacheKey());
+        QString name = QLatin1Literal("qbrushtexture-dark")
+                       % HexString<int>(dark)
+                       % HexString<qint64>(texture.cacheKey());
+
         if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
@@ -732,8 +740,12 @@ static QColor mergedColors(const QColor &colorA, const QColor &colorB, int facto
 static void qt_plastique_draw_gradient(QPainter *painter, const QRect &rect, const QColor &gradientStart,
                                        const QColor &gradientStop)
 {
-    QString gradientName;
-    gradientName.sprintf("%dx%d-%x-%x", rect.width(), rect.height(), gradientStart.rgba(), gradientStop.rgba());
+    QString gradientName = QLatin1Literal("qplastique-g")
+                   % HexString<int>(rect.width())
+                   % HexString<int>(rect.height())
+                   % HexString<QRgb>(gradientStart.rgba())
+                   % HexString<QRgb>(gradientStop.rgba());
+
     QPixmap cache;
     QPainter *p = painter;
     QRect r = rect;
@@ -1092,14 +1104,6 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     Q_ASSERT(option);
 
     QColor borderColor = option->palette.background().color().darker(178);
-    QColor gradientStartColor = option->palette.button().color().lighter(104);
-    QColor gradientStopColor = option->palette.button().color().darker(105);
-    QColor highlightedGradientStartColor = option->palette.button().color().lighter(101);
-    QColor highlightedGradientStopColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 85);
-    QColor highlightedBaseGradientStartColor = option->palette.base().color();
-    QColor highlightedBaseGradientStopColor = mergedColors(option->palette.base().color().darker(105), option->palette.highlight().color(), 70);
-    QColor highlightedDarkInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 35);
-    QColor highlightedLightInnerBorderColor = mergedColors(option->palette.button().color(), option->palette.highlight().color(), 58);
     QColor alphaCornerColor;
     if (widget) {
         // ### backgroundrole/foregroundrole should be part of the style option
@@ -1107,13 +1111,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     } else {
         alphaCornerColor = mergedColors(option->palette.background().color(), borderColor);
     }
-    QColor alphaInnerColor = mergedColors(highlightedLightInnerBorderColor, gradientStartColor);
-    QColor alphaInnerColorNoHover = mergedColors(borderColor, gradientStartColor);
     QColor alphaTextColor = mergedColors(option->palette.background().color(), option->palette.text().color());
-    QColor alphaLightTextColor = mergedColors(option->palette.background().color().lighter(250), option->palette.text().color().lighter(250));
-    QColor lightShadow = option->palette.button().color().lighter(105);
-    QColor shadowGradientStartColor = option->palette.button().color().darker(115);
-    QColor shadow = shadowGradientStartColor;
 
     switch (element) {
     case PE_IndicatorButtonDropDown:
@@ -2057,7 +2055,6 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             bool reverse = (tab->direction == Qt::RightToLeft);
 
             int lowerTop = selected ? 0 : 3; // to make the selected tab bigger than the rest
-            QRect adjustedRect;
             bool atEnd = (tab->position == QStyleOptionTab::End) || onlyTab;
             bool atBeginning = ((tab->position == QStyleOptionTab::Beginning) || onlyTab)
                                && !leftCornerWidget;

@@ -52,6 +52,11 @@
 #include <QtDeclarative/private/qlistmodelinterface_p.h>
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeListView : public QObject
 {
     Q_OBJECT
@@ -90,6 +95,8 @@ private slots:
     void componentChanges();
     void modelChanges();
     void QTBUG_9791();
+    void manualHighlight();
+    void QTBUG_11105();
 
 private:
     template <class T> void items();
@@ -800,6 +807,14 @@ void tst_QDeclarativeListView::enforceRange()
 
     QTRY_COMPARE(listview->currentIndex(), 6);
 
+    // change model
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+    QCOMPARE(listview->count(), 5);
+
     delete canvas;
 }
 
@@ -1432,8 +1447,6 @@ void tst_QDeclarativeListView::QTBUG_9791()
 {
     QDeclarativeView *canvas = createView();
 
-    QDeclarativeContext *ctxt = canvas->rootContext();
-
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/strictlyenforcerange.qml"));
     qApp->processEvents();
 
@@ -1465,6 +1478,81 @@ void tst_QDeclarativeListView::QTBUG_9791()
     delete canvas;
 }
 
+void tst_QDeclarativeListView::manualHighlight()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+
+    QString filename(SRCDIR "/data/manual-highlight.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QTRY_VERIFY(viewport != 0);
+
+    QTRY_COMPARE(listview->currentIndex(), 0);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 0));
+    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+
+    listview->setCurrentIndex(2);
+
+    QTRY_COMPARE(listview->currentIndex(), 2);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 2));
+    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+}
+
+void tst_QDeclarativeListView::QTBUG_11105()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QTRY_VERIFY(viewport != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_VERIFY(item->y() == i*20);
+    }
+
+    listview->positionViewAtIndex(20, QDeclarativeListView::Beginning);
+    QCOMPARE(listview->contentY(), 280.);
+
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+
+    itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
+    QCOMPARE(itemCount, 5);
+
+    delete canvas;
+}
 
 void tst_QDeclarativeListView::qListModelInterface_items()
 {
@@ -1552,7 +1640,7 @@ T *tst_QDeclarativeListView::findItem(QGraphicsObject *parent, const QString &ob
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
-                QDeclarativeExpression e(qmlContext(item), "index", item);
+                QDeclarativeExpression e(qmlContext(item), item, "index");
                 if (e.evaluate().toInt() == index)
                     return static_cast<T*>(item);
             } else {

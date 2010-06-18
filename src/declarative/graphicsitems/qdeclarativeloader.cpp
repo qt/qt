@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
     : item(0), component(0), ownComponent(false)
-    , resizeMode(QDeclarativeLoader::SizeLoaderToItem)
 {
 }
 
@@ -59,9 +58,8 @@ QDeclarativeLoaderPrivate::~QDeclarativeLoaderPrivate()
 
 void QDeclarativeLoaderPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    if (resizeItem == item && resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-        _q_updateSize();
-    }
+    if (resizeItem == item)
+        _q_updateSize(false);
     QDeclarativeItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
 }
 
@@ -76,17 +74,19 @@ void QDeclarativeLoaderPrivate::clear()
 
     if (item) {
         if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(item)) {
-            if (resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-                QDeclarativeItemPrivate *p =
+            QDeclarativeItemPrivate *p =
                     static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
-                p->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
-            }
+            p->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
         }
 
         // We can't delete immediately because our item may have triggered
         // the Loader to load a different item.
-        item->setVisible(false);
-        item->setParentItem(0);
+        if (item->scene()) {
+            item->scene()->removeItem(item);
+        } else {
+            item->setParentItem(0);
+            item->setVisible(false);
+        }
         item->deleteLater();
         item = 0;
     }
@@ -96,16 +96,12 @@ void QDeclarativeLoaderPrivate::initResize()
 {
     Q_Q(QDeclarativeLoader);
     if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(item)) {
-        if (resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-            QDeclarativeItemPrivate *p =
+        QDeclarativeItemPrivate *p =
                 static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
-            p->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
-        }
+        p->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
     } else if (item && item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
-        if (resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-            widget->installEventFilter(q);
-        }
+        widget->installEventFilter(q);
     }
     _q_updateSize();
 }
@@ -116,30 +112,48 @@ void QDeclarativeLoaderPrivate::initResize()
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based
-    subtree from a QML URL or Component.
+    subtree from a URL or Component.
 
-    Loader instantiates an item from a component. The component to
-    instantiate may be specified directly by the \c sourceComponent
-    property, or loaded from a URL via the \c source property.
+    The Loader element instantiates an item from a component. The component to
+    be instantiated may be specified directly by the \l sourceComponent
+    property, or loaded from a URL via the \l source property.
 
-    It is also an effective means of delaying the creation of a component
-    until it is required:
+    Loader can be used to delay the creation of a component until it is required.
+    For example, this loads "Page1.qml" as a component into the \l Loader element
+    when the \l MouseArea is clicked:
+
     \code
-    Loader { id: pageLoader }
-    Rectangle {
-        MouseArea { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: pageLoader.source = "Page1.qml"
+        }
+
+        Loader { id: pageLoader }
     }
     \endcode
 
+    Note that Loader is like any other graphical Item and needs to be positioned 
+    and sized accordingly to become visible. When a component is loaded, the 
+    Loader is automatically resized to the size of the component.
+
     If the Loader source is changed, any previous items instantiated
-    will be destroyed.  Setting \c source to an empty string, or setting
+    will be destroyed.  Setting \l source to an empty string, or setting
     sourceComponent to \e undefined
     will destroy the currently instantiated items, freeing resources
     and leaving the Loader empty.  For example:
 
     \code
     pageLoader.source = ""
+    \endcode
+
       or
+
+    \code
     pageLoader.sourceComponent = undefined
     \endcode
 
@@ -219,7 +233,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
 
 /*!
     \qmlproperty Component Loader::sourceComponent
-    The sourceComponent property holds the \l{Component} to instantiate.
+    This property holds the \l{Component} to instantiate.
 
     \qml
     Item {
@@ -232,6 +246,8 @@ void QDeclarativeLoader::setSource(const QUrl &url)
         Loader { sourceComponent: redSquare; x: 10 }
     }
     \endqml
+
+    Note this value must hold a \l Component object; it cannot be a \l Item.
 
     \sa source, progress
 */
@@ -329,6 +345,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
         emit q->statusChanged();
         emit q->progressChanged();
         emit q->itemChanged();
+        emit q->loaded();
     }
 }
 
@@ -337,21 +354,36 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
 
     This property holds the status of QML loading.  It can be one of:
     \list
-    \o Null - no QML source has been set
-    \o Ready - the QML source has been loaded
-    \o Loading - the QML source is currently being loaded
-    \o Error - an error occurred while loading the QML source
+    \o Loader.Null - no QML source has been set
+    \o Loader.Ready - the QML source has been loaded
+    \o Loader.Loading - the QML source is currently being loaded
+    \o Loader.Error - an error occurred while loading the QML source
     \endlist
 
-    Note that a change in the status property does not cause anything to happen
-    (although it reflects what has happened to the loader internally). If you wish
-    to react to the change in status you need to do it yourself, for example in one
-    of the following ways:
-    \list
-    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: loader.status = Loader.Ready;}
-    \o Do something inside the onStatusChanged signal handler, e.g. Loader{id: loader; onStatusChanged: if(loader.status == Loader.Ready) console.log('Loaded');}
-    \o Bind to the status variable somewhere, e.g. Text{text: if(loader.status!=Loader.Ready){'Not Loaded';}else{'Loaded';}}
-    \endlist
+    Use this status to provide an update or respond to the status change in some way.
+    For example, you could:
+
+    \e {Trigger a state change:}
+    \qml 
+        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \endqml
+
+    \e {Implement an \c onStatusChanged signal handler:}
+    \qml 
+        Loader {
+            id: loader
+            onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
+        }
+    \endqml
+
+    \e {Bind to the status value:}
+    \qml
+        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+    \endqml
+
+    Note that if the source is a local file, the status will initially be Ready (or Error). While
+    there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.
+
     \sa progress
 */
 
@@ -367,6 +399,22 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 
     return d->source.isEmpty() ? Null : Error;
 }
+
+void QDeclarativeLoader::componentComplete()
+{
+    QDeclarativeItem::componentComplete();
+    if (status() == Ready)
+        emit loaded();
+}
+
+
+/*!
+    \qmlsignal Loader::onLoaded()
+
+    This handler is called when the \l status becomes \c Loader.Ready, or on successful
+    initial load.
+*/
+
 
 /*!
 \qmlproperty real Loader::progress
@@ -390,83 +438,29 @@ qreal QDeclarativeLoader::progress() const
     return 0.0;
 }
 
-/*!
-    \qmlproperty enumeration Loader::resizeMode
-
-    This property determines how the Loader or item are resized:
-    \list
-    \o NoResize - no item will be resized
-    \o SizeLoaderToItem - the Loader will be sized to the size of the item, unless the size of the Loader has been otherwise specified.
-    \o SizeItemToLoader - the item will be sized to the size of the Loader.
-    \endlist
-
-    Note that changing from SizeItemToLoader to SizeLoaderToItem
-    after the component is loaded will not return the item or Loader
-    to it's original size.  This is due to the item size being adjusted
-    to the Loader size, thereby losing the original size of the item.
-    Future changes to the item's size will affect the loader, however.
-
-    The default resizeMode is SizeLoaderToItem.
-*/
-QDeclarativeLoader::ResizeMode QDeclarativeLoader::resizeMode() const
-{
-    Q_D(const QDeclarativeLoader);
-    return d->resizeMode;
-}
-
-void QDeclarativeLoader::setResizeMode(ResizeMode mode)
-{
-    Q_D(QDeclarativeLoader);
-    if (mode == d->resizeMode)
-        return;
-
-    if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(d->item)) {
-        if (d->resizeMode == SizeLoaderToItem) {
-            QDeclarativeItemPrivate *p =
-                static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
-            p->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
-        }
-    } else if (d->item && d->item->isWidget()) {
-        if (d->resizeMode == SizeLoaderToItem)
-            d->item->removeEventFilter(this);
-    }
-
-    d->resizeMode = mode;
-    emit resizeModeChanged();
-    d->initResize();
-}
-
-void QDeclarativeLoaderPrivate::_q_updateSize()
+void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
 {
     Q_Q(QDeclarativeLoader);
     if (!item)
         return;
     if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(item)) {
-        if (resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-            q->setWidth(qmlItem->width());
-            q->setHeight(qmlItem->height());
-        } else if (resizeMode == QDeclarativeLoader::SizeItemToLoader) {
+        q->setImplicitWidth(qmlItem->width());
+        if (loaderGeometryChanged && q->widthValid())
             qmlItem->setWidth(q->width());
+        q->setImplicitHeight(qmlItem->height());
+        if (loaderGeometryChanged && q->heightValid())
             qmlItem->setHeight(q->height());
-        }
     } else if (item && item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
-        if (resizeMode == QDeclarativeLoader::SizeLoaderToItem) {
-            QSizeF newSize = widget->size();
-            if (newSize.isValid()) {
-                q->setWidth(newSize.width());
-                q->setHeight(newSize.height());
-            }
-        } else if (resizeMode == QDeclarativeLoader::SizeItemToLoader) {
-            QSizeF oldSize = widget->size();
-            QSizeF newSize = oldSize;
-            if (q->heightValid())
-                newSize.setHeight(q->height());
-            if (q->widthValid())
-                newSize.setWidth(q->width());
-            if (oldSize != newSize)
-                widget->resize(newSize);
-        }
+        QSizeF widgetSize = widget->size();
+        q->setImplicitWidth(widgetSize.width());
+        if (loaderGeometryChanged && q->widthValid())
+            widgetSize.setWidth(q->width());
+        q->setImplicitHeight(widgetSize.height());
+        if (loaderGeometryChanged && q->heightValid())
+            widgetSize.setHeight(q->height());
+        if (widget->size() != widgetSize)
+            widget->resize(widgetSize);
     }
 }
 
@@ -484,9 +478,7 @@ void QDeclarativeLoader::geometryChanged(const QRectF &newGeometry, const QRectF
 {
     Q_D(QDeclarativeLoader);
     if (newGeometry != oldGeometry) {
-        if (d->resizeMode == SizeItemToLoader) {
-            d->_q_updateSize();
-        }
+        d->_q_updateSize();
     }
     QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
 }
@@ -496,10 +488,8 @@ QVariant QDeclarativeLoader::itemChange(GraphicsItemChange change, const QVarian
     Q_D(QDeclarativeLoader);
     if (change == ItemSceneHasChanged) {
         if (d->item && d->item->isWidget()) {
-            if (d->resizeMode == SizeLoaderToItem) {
-                d->item->removeEventFilter(this);
-                d->item->installEventFilter(this);
-            }
+            d->item->removeEventFilter(this);
+            d->item->installEventFilter(this);
         }
     }
     return QDeclarativeItem::itemChange(change, value);
@@ -509,9 +499,8 @@ bool QDeclarativeLoader::eventFilter(QObject *watched, QEvent *e)
 {
     Q_D(QDeclarativeLoader);
     if (watched == d->item && e->type() == QEvent::GraphicsSceneResize) {
-        if (d->item && d->item->isWidget() && d->resizeMode == SizeLoaderToItem) {
-            d->_q_updateSize();
-       }
+        if (d->item && d->item->isWidget())
+            d->_q_updateSize(false);
     }
     return QDeclarativeItem::eventFilter(watched, e);
 }

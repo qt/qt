@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECL_IMPORT extern int qt_defaultDpi();
+
 template<typename T>
 int qmlRegisterValueTypeEnums(const char *qmlName)
 {
@@ -116,8 +118,16 @@ QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)
         return new QDeclarativeRectValueType;
     case QVariant::RectF:
         return new QDeclarativeRectFValueType;
+    case QVariant::Vector2D:
+        return new QDeclarativeVector2DValueType;
     case QVariant::Vector3D:
         return new QDeclarativeVector3DValueType;
+    case QVariant::Vector4D:
+        return new QDeclarativeVector4DValueType;
+    case QVariant::Quaternion:
+        return new QDeclarativeQuaternionValueType;
+    case QVariant::Matrix4x4:
+        return new QDeclarativeMatrix4x4ValueType;
     case QVariant::EasingCurve:
         return new QDeclarativeEasingValueType;
     case QVariant::Font:
@@ -460,6 +470,54 @@ void QDeclarativeRectValueType::setHeight(int h)
     rect.setHeight(h);
 }
 
+QDeclarativeVector2DValueType::QDeclarativeVector2DValueType(QObject *parent)
+: QDeclarativeValueType(parent)
+{
+}
+
+void QDeclarativeVector2DValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &vector, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QDeclarativeVector2DValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    int status = -1;
+    void *a[] = { &vector, 0, &status, &flags };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant  QDeclarativeVector2DValueType::value()
+{
+    return QVariant(vector);
+}
+
+void QDeclarativeVector2DValueType::setValue(QVariant value)
+{
+    vector = qvariant_cast<QVector2D>(value);
+}
+
+qreal QDeclarativeVector2DValueType::x() const
+{
+    return vector.x();
+}
+
+qreal QDeclarativeVector2DValueType::y() const
+{
+    return vector.y();
+}
+
+void QDeclarativeVector2DValueType::setX(qreal x)
+{
+    vector.setX(x);
+}
+
+void QDeclarativeVector2DValueType::setY(qreal y)
+{
+    vector.setY(y);
+}
+
 QDeclarativeVector3DValueType::QDeclarativeVector3DValueType(QObject *parent)
 : QDeclarativeValueType(parent)
 {
@@ -516,6 +574,170 @@ void QDeclarativeVector3DValueType::setY(qreal y)
 void QDeclarativeVector3DValueType::setZ(qreal z)
 {
     vector.setZ(z);
+}
+
+QDeclarativeVector4DValueType::QDeclarativeVector4DValueType(QObject *parent)
+: QDeclarativeValueType(parent)
+{
+}
+
+void QDeclarativeVector4DValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &vector, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QDeclarativeVector4DValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    int status = -1;
+    void *a[] = { &vector, 0, &status, &flags };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant  QDeclarativeVector4DValueType::value()
+{
+    return QVariant(vector);
+}
+
+void QDeclarativeVector4DValueType::setValue(QVariant value)
+{
+    vector = qvariant_cast<QVector4D>(value);
+}
+
+qreal QDeclarativeVector4DValueType::x() const
+{
+    return vector.x();
+}
+
+qreal QDeclarativeVector4DValueType::y() const
+{
+    return vector.y();
+}
+
+qreal QDeclarativeVector4DValueType::z() const
+{
+    return vector.z();
+}
+
+qreal QDeclarativeVector4DValueType::w() const
+{
+    return vector.w();
+}
+
+void QDeclarativeVector4DValueType::setX(qreal x)
+{
+    vector.setX(x);
+}
+
+void QDeclarativeVector4DValueType::setY(qreal y)
+{
+    vector.setY(y);
+}
+
+void QDeclarativeVector4DValueType::setZ(qreal z)
+{
+    vector.setZ(z);
+}
+
+void QDeclarativeVector4DValueType::setW(qreal w)
+{
+    vector.setW(w);
+}
+
+QDeclarativeQuaternionValueType::QDeclarativeQuaternionValueType(QObject *parent)
+: QDeclarativeValueType(parent)
+{
+}
+
+void QDeclarativeQuaternionValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &quaternion, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QDeclarativeQuaternionValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    int status = -1;
+    void *a[] = { &quaternion, 0, &status, &flags };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant  QDeclarativeQuaternionValueType::value()
+{
+    return QVariant(quaternion);
+}
+
+void QDeclarativeQuaternionValueType::setValue(QVariant value)
+{
+    quaternion = qvariant_cast<QQuaternion>(value);
+}
+
+qreal QDeclarativeQuaternionValueType::scalar() const
+{
+    return quaternion.scalar();
+}
+
+qreal QDeclarativeQuaternionValueType::x() const
+{
+    return quaternion.x();
+}
+
+qreal QDeclarativeQuaternionValueType::y() const
+{
+    return quaternion.y();
+}
+
+qreal QDeclarativeQuaternionValueType::z() const
+{
+    return quaternion.z();
+}
+
+void QDeclarativeQuaternionValueType::setScalar(qreal scalar)
+{
+    quaternion.setScalar(scalar);
+}
+
+void QDeclarativeQuaternionValueType::setX(qreal x)
+{
+    quaternion.setX(x);
+}
+
+void QDeclarativeQuaternionValueType::setY(qreal y)
+{
+    quaternion.setY(y);
+}
+
+void QDeclarativeQuaternionValueType::setZ(qreal z)
+{
+    quaternion.setZ(z);
+}
+
+QDeclarativeMatrix4x4ValueType::QDeclarativeMatrix4x4ValueType(QObject *parent)
+: QDeclarativeValueType(parent)
+{
+}
+
+void QDeclarativeMatrix4x4ValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &matrix, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QDeclarativeMatrix4x4ValueType::write(QObject *obj, int idx, QDeclarativePropertyPrivate::WriteFlags flags)
+{
+    int status = -1;
+    void *a[] = { &matrix, 0, &status, &flags };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant  QDeclarativeMatrix4x4ValueType::value()
+{
+    return QVariant(matrix);
+}
+
+void QDeclarativeMatrix4x4ValueType::setValue(QVariant value)
+{
+    matrix = qvariant_cast<QMatrix4x4>(value);
 }
 
 QDeclarativeEasingValueType::QDeclarativeEasingValueType(QObject *parent)
@@ -689,6 +911,11 @@ void QDeclarativeFontValueType::setStrikeout(bool b)
 
 qreal QDeclarativeFontValueType::pointSize() const
 {
+    if (font.pointSizeF() == -1) {
+        if (dpi.isNull)
+            dpi = qt_defaultDpi();
+        return font.pixelSize() * qreal(72.) / qreal(dpi);
+    }
     return font.pointSizeF();
 }
 
@@ -709,6 +936,11 @@ void QDeclarativeFontValueType::setPointSize(qreal size)
 
 int QDeclarativeFontValueType::pixelSize() const
 {
+    if (font.pixelSize() == -1) {
+        if (dpi.isNull)
+            dpi = qt_defaultDpi();
+        return (font.pointSizeF() * dpi) / qreal(72.);
+    }
     return font.pixelSize();
 }
 

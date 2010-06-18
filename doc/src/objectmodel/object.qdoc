@@ -41,10 +41,9 @@
 
 /*!
     \page object.html
-    \title Qt Object Model
+    \title Object Model
+    \ingroup qt-basic-concepts
     \brief A description of the powerful features made possible by Qt's dynamic object model.
-
-    \ingroup frameworks-technologies
 
     The standard C++ object model provides very efficient runtime
     support for the object paradigm. But its static nature is
@@ -60,11 +59,11 @@
        communication called \l{signals and slots}
     \o queryable and designable \l{Qt's Property System}{object
        properties}
-    \o powerful \l{events and event filters}
+    \o powerful \l{The Event System}{events and event filters}
     \o contextual \l{i18n}{string translation for internationalization}
     \o sophisticated interval driven \l timers that make it possible
        to elegantly integrate many tasks in an event-driven GUI
-    \o hierarchical and queryable \l{Object Trees and Object Ownership}{object
+    \o hierarchical and queryable \l{Object Trees & Ownership}{object
        trees} that organize object ownership in a natural way
     \o guarded pointers (QPointer) that are automatically
        set to 0 when the referenced object is destroyed, unlike normal C++
@@ -114,7 +113,7 @@
     \o might have a unique \l{QObject::objectName()}.  If we copy a Qt
     Object, what name should we give the copy?
 
-    \o has a location in an \l{Object Trees and Object Ownership}
+    \o has a location in an \l{Object Trees & Ownership}
     {object hierarchy}. If we copy a Qt Object, where should the copy
     be located?
 

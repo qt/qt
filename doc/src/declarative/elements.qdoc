@@ -59,8 +59,8 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l State
 \o \l PropertyChanges
 \o \l StateGroup
+\o \l StateChangeScript
 \o \l ParentChange (Item-specific)
-\o \l StateChangeScript (Item-specific)
 \o \l AnchorChanges (Item-specific)
 \endlist
 
@@ -76,6 +76,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l ParentAnimation
 \o \l AnchorAnimation
 \o \l SmoothedAnimation
+\o \l Vector3dAnimation
 \o \l PropertyAction
 \o \l ScriptAction
 \o \l Transition
@@ -120,11 +121,22 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \list
 \o \l Item
 \o \l Rectangle
+    \list
+    \o \l Gradient
+        \list
+        \o \l GradientStop
+        \endlist
+    \endlist
 \o \l Image
 \o \l BorderImage
 \o \l AnimatedImage
 \o \l Text
 \o \l TextInput
+    \list
+    \o \l IntValidator
+    \o \l DoubleValidator
+    \o \l RegExpValidator
+    \endlist
 \o \l TextEdit
 \endlist
 
@@ -142,6 +154,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l Loader
 \o \l Repeater
 \o \l SystemPalette
+\o \l FontLoader
 \o \l LayoutItem
 \endlist
 
@@ -155,8 +168,8 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \header
 \o \bold {Views}
 \o \bold {Positioners}
-\o \bold {Media}
 \o \bold {Effects}
+\o
 
 \row
 \o
@@ -185,13 +198,6 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \o \l Row
 \o \l Grid
 \o \l Flow
-\endlist
-
-\o
-\list
-\o \l SoundEffect
-\o \l Audio
-\o \l Video
 \endlist
 
 \o

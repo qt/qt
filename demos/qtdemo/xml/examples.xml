@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <categories name="Qt Examples and Demos">
   <demos dirname="." docname="demos" name="Demonstrations">
+    <example filename="declarative/samegame" name="SameGame" executable="false" qml="true"/>
+    <example filename="declarative/flickr" name="Flickr Client" executable="false" qml="true"/>
     <example filename="affine" name="Affine Transformations" />
-    <example filename="arthurplugin" name="Arthur Plugin" executable="false" />
     <example filename="composition" name="Composition Modes" />
     <example filename="gradients" name="Gradients" />
     <example filename="pathstroke" name="Path Stroking" />
+    <example filename="textedit" name="Text Edit" />
+    <example filename="chip" name="40000 Chips" />
+    <example filename="embeddeddialogs" name="Embedded Dialogs" />
+    <example filename="interview" name="Interview" />
+    <example filename="declarative/rssnews" name="Rss Client" executable="false" qml="true"/>
+    <example filename="declarative/twitter" name="Twitter Client" executable="false" qml="true"/>
+    <example filename="browser" name="Browser" />
+    <example filename="qmediaplayer" name="Media Player" />
+    <example filename="boxes" name="Boxes" />
+    <example filename="sub-attaq" name="Sub-attaq" />
+    <example filename="spectrum" name="Spectrum Analyzer" />
+    <example filename="declarative/minehunt" name="Minehunt" executable="false" qml="true"/>
+    <example filename="declarative/snake" name="Snake" executable="false" qml="true"/>
     <example filename="deform" name="Vector Deformation" />
     <example filename="books" name="Books" />
     <example filename="mainwindow" name="Main Window" />
     <example filename="spreadsheet" name="Spreadsheet" />
     <example filename="sqlbrowser" name="SQL Browser" />
-    <example filename="textedit" name="Text Edit" />
-    <example filename="chip" name="40000 Chips" />
-    <example filename="embeddeddialogs" name="Embedded Dialogs" />
-    <example filename="interview" name="Interview" />
-    <example filename="browser" name="Browser" />
-    <example filename="qmediaplayer" name="Media Player" />
-    <example filename="boxes" name="Boxes" />
-    <example filename="sub-attaq" name="Sub-attaq" />
+    <example filename="arthurplugin" name="Arthur Plugin" executable="false" />
+
   </demos>
   <category dirname="animation" name="Animation Framework">
     <example filename="animatedtiles" name="Animated Tiles" />
@@ -33,6 +41,13 @@
     <example filename="progressdialog" name="Progress Dialog" />
     <example filename="runfunction" name="Run Function" executable="false"/>
     <example filename="wordcount" name="Word Count" executable="false" />
+  </category>
+  <category dirname="declarative/toys" name="Qt Declarative Examples">
+    <example filename="dynamicscene" name="Dynamic Scene" executable="false" qml="true" />
+    <example filename="tic-tac-toe" name="Tic Tac Toe" executable="false" qml="true" />
+    <example filename="clocks" name="Clocks" executable="false" qml="true" />
+    <example filename="corkboards" name="Corkboards" executable="false" qml="true" />
+    <example filename="tvtennis" name="TV Tennis" executable="false" qml="true" />
   </category>
   <category dirname="designer" name="Qt Designer">
     <example filename="calculatorbuilder" name="Calculator Builder" />
@@ -114,6 +129,16 @@
     <example filename="sdi" name="SDI" />
     <example filename="menus" name="Menus" />
     <example filename="recentfiles" name="Recent Files" />
+  </category>
+  <category dirname="declarative/ui-components" name="QML UI Components">
+    <example filename="dialcontrol" name="Dial" executable="false" qml="true" />
+    <example filename="flipable" name="Flipable" executable="false" qml="true" />
+    <example filename="progressbar" name="Progress bar" executable="false" qml="true" />
+    <example filename="scrollbar" name="Scroll bar" executable="false" qml="true" />
+    <example filename="searchbox" name="Search box" executable="false" qml="true" />
+    <example filename="slideswitch" name="Slide switch" executable="false" qml="true" />
+    <example filename="spinner" name="Spinner" executable="false" qml="true" />
+    <example filename="tabwidget" name="Tab widget" executable="false" qml="true" />
   </category>
   <category dirname="network" name="Networking">
     <example filename="blockingfortuneclient" name="Blocking Fortune Client" />

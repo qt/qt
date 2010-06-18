@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeOpenMetaObjectType;
 class QDeclarativePathViewAttached;
-class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate
+class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativePathView)
 
@@ -77,7 +77,8 @@ public:
       : path(0), currentIndex(0), currentItemOffset(0.0), startPc(0), lastDist(0)
         , lastElapsed(0), mappedRange(1.0)
         , stealMouse(false), ownModel(false), interactive(true), haveHighlightRange(true)
-        , autoHighlight(true), highlightUp(false), dragMargin(0), deceleration(100)
+        , autoHighlight(true), highlightUp(false), layoutScheduled(false)
+        , dragMargin(0), deceleration(100)
         , moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
         , firstIndex(-1), pathItems(-1), requestedIndex(-1)
         , moveReason(Other), attType(0), highlightComponent(0), highlightItem(0)
@@ -89,14 +90,29 @@ public:
     {
     }
 
-    void init()
-    {
+    void init() {
         Q_Q(QDeclarativePathView);
         offset = 0;
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemIsFocusScope);
         q->setFiltersChildEvents(true);
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
+        lastPosTime.invalidate();
+    }
+
+    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
+        if ((newGeometry.size() != oldGeometry.size())
+            && (!highlightItem || item != highlightItem)) {
+            scheduleLayout();
+        }
+    }
+
+    void scheduleLayout() {
+        Q_Q(QDeclarativePathView);
+        if (!layoutScheduled) {
+            layoutScheduled = true;
+            QCoreApplication::postEvent(q, new QEvent(QEvent::User), Qt::HighEventPriority);
+        }
     }
 
     QDeclarativeItem *getItem(int modelIndex);
@@ -138,7 +154,8 @@ public:
     bool haveHighlightRange : 1;
     bool autoHighlight : 1;
     bool highlightUp : 1;
-    QTime lastPosTime;
+    bool layoutScheduled : 1;
+    QElapsedTimer lastPosTime;
     QPointF lastPos;
     qreal dragMargin;
     qreal deceleration;

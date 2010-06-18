@@ -703,21 +703,19 @@ If you are using pre-built binaries, follow the instructions given in the
 \ingroup qtsymbian
 \brief How to install Qt on the Symbian platform using Linux.
 
-\note Qt for the Symbian platform has some requirements that are given in more detail
-in the \l{Qt for the Symbian platform Requirements} document. TODO list requirements like SDK here.
-
 \note \bold {This document describes how to install and configure Qt for
 the Symbian platform from scratch, using Linux as the build host.
-Qt does not come with a binary package for Linux yet, but if you want to avoid
-the full build of Qt and start developing applications right away, you can
-download drop-in binaries from here: TODO}
+Qt for Symbian binaries can be downloaded directly so development of
+applications using Qt for Symbian can start right away.}
 
 \list 1
 
     \o  Setup the development environment
 
-        TODO Make sure your Symbian development environment is correctly installed and
-        patched as explained in the \l{Qt for the Symbian platform Requirements} document.
+        \note Qt for the Symbian platform has some requirements on the development
+        platform. The Symbian SDK for Linux as well as a cross compiler for the ARM
+        processor used on Symbian devices should be present on the development machine.
+        See {http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
 
     \o  Install Qt
 
@@ -770,7 +768,7 @@ download drop-in binaries from here: TODO}
 
             The Qt libraries are built with "All -Tcb" capability, so that
             they can support all types of applications. However, these
-            capabilities are automatically lowered if you make a selfsigned
+            capabilities are automatically lowered if you make a self-signed
             package.
 
         \o Building a Qt package with a Symbian developer certificate
@@ -826,7 +824,7 @@ download drop-in binaries from here: TODO}
 
                Note the identifier on the line where your Symbian device
                appears. Then execute the following, using the first and
-               second part of the identifier in place of \c XXXX,
+               second part of the identifier in place of \c XXX,
                respectively.
 
                \snippet doc/src/snippets/code/doc_src_installation.qdoc 44
@@ -961,7 +959,7 @@ download drop-in binaries from here: TODO}
         \l{http://www.microsoft.com/downloads/details.aspx?FamilyID=0baf2b35-c656-4969-ace8-e4c0c0716adb&amp;DisplayLang=en}{here}.
     \endlist
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -971,7 +969,7 @@ download drop-in binaries from here: TODO}
     \brief Setting up the Mac OS X environment for Qt.
     \previouspage General Qt Requirements
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1110,7 +1108,7 @@ download drop-in binaries from here: TODO}
     distributions; try searching for \c gstreamer or \c libgstreamer in your
     distribution's package repository to find suitable packages.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1164,7 +1162,7 @@ download drop-in binaries from here: TODO}
     information on Windows CE Customization can be found
     \l{Windows CE - Working with Custom SDKs}{here}.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */
 
 /*!
@@ -1174,7 +1172,7 @@ download drop-in binaries from here: TODO}
     \brief Setting up the Embedded Linux environment for Qt.
     \previouspage General Qt Requirements
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 
     \section1 Building Qt for Embedded Linux with uclibc
 
@@ -1274,5 +1272,5 @@ download drop-in binaries from here: TODO}
     We recommend you to take a look at \l{http://developer.symbian.org/wiki/index.php/Qt_Quick_Start}{Symbian Foundation - Qt Quick Start}
     to get more information about how to setup the development environment.
 
-    \sa {Known Issues in %VERSION%}
+    \sa {Known Issues}
 */

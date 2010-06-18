@@ -46,11 +46,10 @@
 
 /*!
     \page graphicsview.html
-    \title The Graphics View Framework
+    \title Graphics View Framework
+    \ingroup qt-graphics
     \brief An overview of the Graphics View framework for interactive 2D
     graphics.
-
-    \ingroup frameworks-technologies
 
     \keyword Graphics View
     \keyword GraphicsView
@@ -221,9 +220,10 @@
       allow you to map between the three coordinate systems.
 
       When rendering, Graphics View's scene coordinates correspond to
-      QPainter's \e logical coordinates, and view coordinates are the same as
-      \e device coordinates.  In \l{The Coordinate System}, you can read about
-      the relationship between logical coordinates and device coordinates.
+      QPainter's \e logical coordinates, and view coordinates are the
+      same as \e device coordinates.  In the \l{Coordinate System}
+      documentation, you can read about the relationship between
+      logical coordinates and device coordinates.
 
       \img graphicsview-parentchild.png
 
@@ -436,11 +436,12 @@
 
       \section2 Animation
 
-        Graphics View supports animation at several levels. You can easily
-        assemble animation by using the Animation Framework. For that you'll
-		need your items to inherit from QGraphicsObject and associate 
-		QPropertyAnimation with them. QPropertyAnimation allows to animate any 
-		QObject property.
+        Graphics View supports animation at several levels. You can
+        easily assemble animation by using the Animation Framework.
+        For that you'll need your items to inherit from
+        QGraphicsObject and associate QPropertyAnimation with
+        them. QPropertyAnimation allows to animate any QObject
+        property.
 
         Another option is to create a custom item that inherits from QObject
         and QGraphicsItem. The item can the set up its own timers, and control

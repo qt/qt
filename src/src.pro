@@ -19,7 +19,6 @@ contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
-contains(QT_CONFIG, mediaservices): SRC_SUBDIRS += src_mediaservices
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
     exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
@@ -69,10 +68,8 @@ src_qt3support.subdir = $$QT_SOURCE_TREE/src/qt3support
 src_qt3support.target = sub-qt3support
 src_phonon.subdir = $$QT_SOURCE_TREE/src/phonon
 src_phonon.target = sub-phonon
-src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia/multimedia
+src_multimedia.subdir = $$QT_SOURCE_TREE/src/multimedia
 src_multimedia.target = sub-multimedia
-src_mediaservices.subdir = $$QT_SOURCE_TREE/src/multimedia/mediaservices
-src_mediaservices.target = sub-mediaservices
 src_activeqt.subdir = $$QT_SOURCE_TREE/src/activeqt
 src_activeqt.target = sub-activeqt
 src_plugins.subdir = $$QT_SOURCE_TREE/src/plugins
@@ -89,14 +86,14 @@ src_declarative.subdir = $$QT_SOURCE_TREE/src/declarative
 src_declarative.target = sub-declarative
 
 #CONFIG += ordered
-!wince*:!ordered {
+!wince*:!ordered:!symbian-abld:!symbian-sbsv2 {
    src_corelib.depends = src_tools_moc src_tools_rcc
    src_gui.depends = src_corelib src_tools_uic
    embedded: src_gui.depends += src_network
    src_xml.depends = src_corelib
    src_xmlpatterns.depends = src_corelib src_network
    src_dbus.depends = src_corelib src_xml
-   src_svg.depends = src_xml src_gui
+   src_svg.depends = src_corelib src_gui
    src_script.depends = src_corelib
    src_scripttools.depends = src_script src_gui src_network
    src_network.depends = src_corelib
@@ -110,17 +107,14 @@ src_declarative.target = sub-declarative
    src_phonon.depends = src_gui
    src_multimedia.depends = src_gui
    contains(QT_CONFIG, opengl):src_multimedia.depends += src_opengl
-   src_mediaservices.depends = src_multimedia
    src_tools_activeqt.depends = src_tools_idc src_gui
-   src_declarative.depends = src_xml src_gui src_script src_network src_svg
+   src_declarative.depends = src_gui src_script src_network
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
-      src_webkit.depends = src_gui src_sql src_network src_xml 
-      contains(QT_CONFIG, mediaservices):src_webkit.depends += src_mediaservices
+      src_webkit.depends = src_gui src_sql src_network
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
-      contains(QT_CONFIG, declarative):src_declarative.depends += src_webkit
       src_imports.depends += src_webkit
       exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
    }
@@ -129,7 +123,18 @@ src_declarative.target = sub-declarative
       src_plugins.depends += src_dbus
       src_phonon.depends +=  src_dbus
    }
-   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
+   contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
+      src_plugins.depends += src_opengl
+      src_declarative.depends += src_opengl
+      src_webkit.depends += src_opengl
+   }
+   contains(QT_CONFIG, xmlpatterns) {
+      src_declarative.depends += src_xmlpatterns
+      src_webkit.depends += src_xmlpatterns
+   }
+   contains(QT_CONFIG, svg) {
+      src_declarative.depends += src_svg
+   }
 }
 
 
@@ -154,24 +159,24 @@ for(subname, SRC_SUBDIRS) {
    SUB_TEMPLATE = $$list($$fromfile($$subpro, TEMPLATE))
    !isEqual(subname, src_tools_bootstrap):if(isEqual($$SUB_TEMPLATE, lib) | isEqual($$SUB_TEMPLATE, subdirs) | isEqual(subname, src_tools_idc) | isEqual(subname, src_tools_uic3)):!separate_debug_info {
        #debug
-       eval(debug-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS)
-       eval(debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug))
+       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
+       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) debug)
        EXTRA_DEBUG_TARGETS += debug-$${subtarget}
        QMAKE_EXTRA_TARGETS += debug-$${subtarget}
        #release
-       eval(release-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS)
-       eval(release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release))
+       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
+       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) release)
        EXTRA_RELEASE_TARGETS += release-$${subtarget}
        QMAKE_EXTRA_TARGETS += release-$${subtarget}
     } else { #do not have a real debug target/release
        #debug
-       eval(debug-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS)
-       eval(debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first))
+       debug-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_DEBUG_TARGETS
+       debug-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
        EXTRA_DEBUG_TARGETS += debug-$${subtarget}
        QMAKE_EXTRA_TARGETS += debug-$${subtarget}
        #release
-       eval(release-$${subtarget}.depends = $${subdir}\$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS)
-       eval(release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first))
+       release-$${subtarget}.depends = $${subdir}$${QMAKE_DIR_SEP}$(MAKEFILE) $$EXTRA_RELEASE_TARGETS
+       release-$${subtarget}.commands = (cd $$subdir && $(MAKE) -f $(MAKEFILE) first)
        EXTRA_RELEASE_TARGETS += release-$${subtarget}
        QMAKE_EXTRA_TARGETS += release-$${subtarget}
    }

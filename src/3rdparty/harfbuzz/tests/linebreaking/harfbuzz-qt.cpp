@@ -79,30 +79,9 @@ void HB_GetGraphemeAndLineBreakClass(HB_UChar32 ch, HB_GraphemeClass *grapheme, 
     *lineBreak = (HB_LineBreakClass) prop->line_break_class;
 }
 
-void *HB_Library_Resolve(const char *library, const char *symbol)
+void *HB_Library_Resolve(const char *library, int version, const char *symbol)
 {
-    return QLibrary::resolve(library, symbol);
-}
-
-void *HB_TextCodecForMib(int mib)
-{
-    return QTextCodec::codecForMib(mib);
-}
-
-char *HB_TextCodec_ConvertFromUnicode(void *codec, const HB_UChar16 *unicode, hb_uint32 length, hb_uint32 *outputLength)
-{
-    QByteArray data = reinterpret_cast<QTextCodec *>(codec)->fromUnicode((const QChar *)unicode, length);
-    // ### suboptimal
-    char *output = (char *)malloc(data.length() + 1);
-    memcpy(output, data.constData(), data.length() + 1);
-    if (outputLength)
-        *outputLength = data.length();
-    return output;
-}
-
-void HB_TextCodec_FreeResult(char *string)
-{
-    free(string);
+    return QLibrary::resolve(library, version, symbol);
 }
 
 }

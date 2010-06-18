@@ -43,6 +43,7 @@
     \page guibooks.html
     \title Books about GUI Design
     \ingroup best-practices
+    \brief Some recommended books about GUI design.
 
     This is not a comprehensive list -- there are many other books worth
     buying. Here we mention just a few user interface books that don't
@@ -96,8 +97,6 @@
     Microsoft Windows User Experience}}, ISBN 1-55615-679-0,
     is Microsoft's look and feel bible. Indispensable for everyone who
     has customers that worship Microsoft, and it's quite good, too.
-    It is also available
-    \link http://msdn.microsoft.com/library/en-us/dnwue/html/welcome.asp online\endlink.
 
     \bold{\l{http://www.amazon.com/exec/obidos/ASIN/047159900X/trolltech/t}{The Icon Book}}
     by William Horton, ISBN 0-471-59900-X, is perhaps the only thorough

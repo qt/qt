@@ -48,6 +48,7 @@
 #include "qline.h"
 #include "qdebug.h"
 #include <QtCore/qcoreapplication.h>
+#include "private/qstylehelper_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -96,9 +97,11 @@ const uchar *qt_patternForBrush(int brushStyle, bool invert)
 
 QPixmap qt_pixmapForBrush(int brushStyle, bool invert)
 {
+
     QPixmap pm;
-    QString key = QLatin1String("$qt-brush$") + QString::number(brushStyle)
-                  + QString::number((int)invert);
+    QString key = QLatin1Literal("$qt-brush$")
+                  % HexString<uint>(brushStyle)
+                  % QLatin1Char(invert ? '1' : '0');
     if (!QPixmapCache::find(key, pm)) {
         pm = QBitmap::fromData(QSize(8, 8), qt_patternForBrush(brushStyle, invert),
                                QImage::Format_MonoLSB);
@@ -329,8 +332,8 @@ struct QBrushDataPointerDeleter
 
     \endtable
 
-    For more information about painting in general, see \l{The Paint
-    System} documentation.
+    For more information about painting in general, see the \l{Paint
+    System}.
 
     \sa Qt::BrushStyle, QPainter, QColor
 */
@@ -1013,7 +1016,7 @@ QDebug operator<<(QDebug dbg, const QBrush &b)
     Writes the given \a brush to the given \a stream and returns a
     reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator<<(QDataStream &s, const QBrush &b)
@@ -1081,7 +1084,7 @@ QDataStream &operator<<(QDataStream &s, const QBrush &b)
     Reads the given \a brush from the given \a stream and returns a
     reference to the \a stream.
 
-    \sa {Format of the QDataStream Operators}
+    \sa {Serializing Qt Data Types}
 */
 
 QDataStream &operator>>(QDataStream &s, QBrush &b)

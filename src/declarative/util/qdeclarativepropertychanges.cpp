@@ -51,6 +51,7 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeproperty_p.h>
+#include <qdeclarativecontext_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -61,11 +62,11 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass PropertyChanges QDeclarativePropertyChanges
     \since 4.7
-    \brief The PropertyChanges element describes new property values for a state.
+    \brief The PropertyChanges element describes new property bindings or values for a state.
 
     PropertyChanges provides a state change that modifies the properties of an item.
 
-    Here is a property change that modifies the text and color of a Text element
+    Here is a property change that modifies the text and color of a \l Text element
     when it is clicked:
     
     \qml
@@ -88,6 +89,21 @@ QT_BEGIN_NAMESPACE
         MouseArea { anchors.fill: parent; onClicked: myText.state = 'myState' }
     }
     \endqml
+
+    By default, PropertyChanges will establish new bindings where appropriate.
+    For example, the following creates a new binding for myItem's \c height property.
+
+    \qml
+    PropertyChanges {
+        target: myItem
+        height: parent.height
+    }
+    \endqml
+
+    If you don't want a binding to be established (and instead just want to assign
+    the value of the binding at the time the state is entered),
+    you should set the PropertyChange's \l{PropertyChanges::explicit}{explicit}
+    property to \c true.
     
     State-specific script for signal handlers can also be specified:
 
@@ -162,11 +178,15 @@ public:
 
     virtual void execute(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
+        if (ownedExpression == expression)
+            ownedExpression = 0;
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse(Reason) {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
+        if (ownedExpression == reverseExpression)
+            ownedExpression = 0;
     }
 
     virtual void saveOriginals() {
@@ -174,11 +194,26 @@ public:
         reverseExpression = rewindExpression;
     }
 
+    /*virtual void copyOriginals(QDeclarativeActionEvent *other)
+    {
+        QDeclarativeReplaceSignalHandler *rsh = static_cast<QDeclarativeReplaceSignalHandler*>(other);
+        saveCurrentValues();
+        if (rsh == this)
+            return;
+        reverseExpression = rsh->reverseExpression;
+        if (rsh->ownedExpression == reverseExpression) {
+            ownedExpression = rsh->ownedExpression;
+            rsh->ownedExpression = 0;
+        }
+    }*/
+
     virtual void rewind() {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);
+        if (ownedExpression == rewindExpression)
+            ownedExpression = 0;
     }
     virtual void saveCurrentValues() { 
-        rewindExpression = QDeclarativePropertyPrivate::signalExpression(property); 
+        rewindExpression = QDeclarativePropertyPrivate::signalExpression(property);
     }
 
     virtual bool override(QDeclarativeActionEvent*other) {
@@ -301,13 +336,19 @@ void QDeclarativePropertyChangesPrivate::decode()
 
         QDeclarativeProperty prop = property(name);      //### better way to check for signal property?
         if (prop.type() & QDeclarativeProperty::SignalProperty) {
-            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), object, data.toString());
+            QDeclarativeData *ddata = QDeclarativeData::get(q);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
             QDeclarativeReplaceSignalHandler *handler = new QDeclarativeReplaceSignalHandler;
             handler->property = prop;
             handler->expression = expression;
             signalReplacements << handler;
         } else if (isScript) {
-            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), object, data.toString());
+            QDeclarativeData *ddata = QDeclarativeData::get(q);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
             expressions << qMakePair(name, expression);
         } else {
             properties << qMakePair(name, data);
@@ -437,9 +478,11 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->evaluate();
             } else {
+                QDeclarativeExpression *e = d->expressions.at(ii).second;
                 QDeclarativeBinding *newBinding = 
-                    new QDeclarativeBinding(d->expressions.at(ii).second->expression(), object(), qmlContext(this));
+                    new QDeclarativeBinding(e->expression(), object(), qmlContext(this));
                 newBinding->setTarget(prop);
+                newBinding->setSourceLocation(e->sourceFile(), e->lineNumber());
                 a.toBinding = newBinding;
                 a.deletableToBinding = true;
             }
@@ -457,8 +500,8 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
     If explicit is set to true, any potential bindings will be interpreted as
     once-off assignments that occur when the state is entered.
 
-    In the following example, the addition of explicit prevents myItem.width from
-    being bound to parent.width. Instead, it is assigned the value of parent.width
+    In the following example, the addition of explicit prevents \c myItem.width from
+    being bound to \c parent.width. Instead, it is assigned the value of \c parent.width
     at the time of the state change.
     \qml
     PropertyChanges {

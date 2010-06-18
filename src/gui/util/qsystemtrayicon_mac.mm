@@ -75,8 +75,6 @@
 
 #define QT_MAC_SYSTEMTRAY_USE_GROWL
 
-@class QNSMenu;
-
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qsystemtrayicon_p.h>
 #include <qtemporaryfile.h>
@@ -98,13 +96,14 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
-@class QNSImageView;
+@class QT_MANGLE_NAMESPACE(QNSMenu);
+@class QT_MANGLE_NAMESPACE(QNSImageView);
 
-@interface QNSStatusItem : NSObject {
+@interface QT_MANGLE_NAMESPACE(QNSStatusItem) : NSObject {
     NSStatusItem *item;
     QSystemTrayIcon *icon;
     QSystemTrayIconPrivate *iconPrivate;
-    QNSImageView *imageCell;
+    QT_MANGLE_NAMESPACE(QNSImageView) *imageCell;
 }
 -(id)initWithIcon:(QSystemTrayIcon*)icon iconPrivate:(QSystemTrayIconPrivate *)iprivate;
 -(void)dealloc;
@@ -115,11 +114,11 @@ QT_USE_NAMESPACE
 - (void)doubleClickSelector:(id)sender;
 @end
 
-@interface QNSImageView : NSImageView {
+@interface QT_MANGLE_NAMESPACE(QNSImageView) : NSImageView {
     BOOL down;
-    QNSStatusItem *parent;
+    QT_MANGLE_NAMESPACE(QNSStatusItem) *parent;
 }
--(id)initWithParent:(QNSStatusItem*)myParent;
+-(id)initWithParent:(QT_MANGLE_NAMESPACE(QNSStatusItem)*)myParent;
 -(QSystemTrayIcon*)icon;
 -(void)menuTrackingDone:(NSNotification*)notification;
 -(void)mousePressed:(NSEvent *)mouseEvent button:(Qt::MouseButton)mouseButton;
@@ -134,7 +133,7 @@ QT_USE_NAMESPACE
 #endif
 
 
-@interface QNSMenu : NSMenu <NSMenuDelegate> {
+@interface QT_MANGLE_NAMESPACE(QNSMenu) : NSMenu <NSMenuDelegate> {
     QMenu *qmenu;
 }
 -(QMenu*)menu;
@@ -148,14 +147,14 @@ class QSystemTrayIconSys
 public:
     QSystemTrayIconSys(QSystemTrayIcon *icon, QSystemTrayIconPrivate *d) {
         QMacCocoaAutoReleasePool pool;
-        item = [[QNSStatusItem alloc] initWithIcon:icon iconPrivate:d];
+        item = [[QT_MANGLE_NAMESPACE(QNSStatusItem) alloc] initWithIcon:icon iconPrivate:d];
     }
     ~QSystemTrayIconSys() {
         QMacCocoaAutoReleasePool pool;
         [[[item item] view] setHidden: YES];
         [item release];
     }
-    QNSStatusItem *item;
+    QT_MANGLE_NAMESPACE(QNSStatusItem) *item;
 };
 
 void QSystemTrayIconPrivate::install_sys()
@@ -223,6 +222,11 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
 }
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
+{
+    return true;
+}
+
+bool QSystemTrayIconPrivate::supportsMessages_sys()
 {
     return true;
 }
@@ -299,8 +303,8 @@ QT_END_NAMESPACE
 @implementation NSStatusItem (Qt)
 @end
 
-@implementation QNSImageView
--(id)initWithParent:(QNSStatusItem*)myParent {
+@implementation QT_MANGLE_NAMESPACE(QNSImageView)
+-(id)initWithParent:(QT_MANGLE_NAMESPACE(QNSStatusItem)*)myParent {
     self = [super init];
     parent = myParent;
     down = NO;
@@ -400,7 +404,7 @@ QT_END_NAMESPACE
 }
 @end
 
-@implementation QNSStatusItem
+@implementation QT_MANGLE_NAMESPACE(QNSStatusItem)
 
 -(id)initWithIcon:(QSystemTrayIcon*)i iconPrivate:(QSystemTrayIconPrivate *)iPrivate
 {
@@ -409,7 +413,7 @@ QT_END_NAMESPACE
         icon = i;
         iconPrivate = iPrivate;
         item = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength] retain];
-        imageCell = [[QNSImageView alloc] initWithParent:self];
+        imageCell = [[QT_MANGLE_NAMESPACE(QNSImageView) alloc] initWithParent:self];
         [item setView: imageCell];
     }
     return self;
@@ -453,7 +457,7 @@ QT_END_NAMESPACE
         [[[self item] view] removeAllToolTips];
         iconPrivate->updateToolTip_sys();
 #endif
-        NSMenu *m = [[QNSMenu alloc] initWithQMenu:icon->contextMenu()];
+        NSMenu *m = [[QT_MANGLE_NAMESPACE(QNSMenu) alloc] initWithQMenu:icon->contextMenu()];
         [m setAutoenablesItems: NO];
         [[NSNotificationCenter defaultCenter] addObserver:imageCell
          selector:@selector(menuTrackingDone:)
@@ -481,7 +485,7 @@ private:
     QSystemTrayIconQMenu();
 };
 
-@implementation QNSMenu
+@implementation QT_MANGLE_NAMESPACE(QNSMenu)
 -(id)initWithQMenu:(QMenu*)qm {
     self = [super init];
     if(self) {
@@ -494,7 +498,7 @@ private:
     return qmenu;
 }
 -(void)menuNeedsUpdate:(NSMenu*)nsmenu {
-    QNSMenu *menu = static_cast<QNSMenu *>(nsmenu);
+    QT_MANGLE_NAMESPACE(QNSMenu) *menu = static_cast<QT_MANGLE_NAMESPACE(QNSMenu) *>(nsmenu);
     emit static_cast<QSystemTrayIconQMenu*>(menu->qmenu)->doAboutToShow();
     for(int i = [menu numberOfItems]-1; i >= 0; --i)
         [menu removeItemAtIndex:i];
@@ -539,7 +543,7 @@ private:
                 [nsimage release];
             }
             if(action->menu()) {
-                QNSMenu *sub = [[QNSMenu alloc] initWithQMenu:action->menu()];
+                QT_MANGLE_NAMESPACE(QNSMenu) *sub = [[QT_MANGLE_NAMESPACE(QNSMenu) alloc] initWithQMenu:action->menu()];
                 [item setSubmenu:sub];
             } else {
                 [item setAction:@selector(selectedAction:)];

@@ -41,15 +41,15 @@
 
 /*!
     \page known-issues.html
-    \title Known Issues in %VERSION%
+    \title Known Issues
     \ingroup platform-specific
-    \brief A summary of known issues in Qt %VERSION% at the time of release.
+    \brief A summary of known issues in this Qt version at the time of release.
 
-    An up-to-date list of known issues with Qt %VERSION% can be found via the
+    An up-to-date list of known issues can be found at
     \l{http://bugreports.qt.nokia.com/}{Qt Bug Tracker}.
 
-    For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
-    on the Qt website.
+    For a list list of known bugs, see the \l{Task Tracker} at the Qt
+    website.
 
     An overview of known issues may also be found at:
     \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}

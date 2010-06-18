@@ -81,8 +81,9 @@ class QPixmapCacheEntry : public QPixmap
 public:
     QPixmapCacheEntry(const QPixmapCache::Key &key, const QPixmap &pix) : QPixmap(pix), key(key)
     {
-        if (data && data->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data.data());
+        QPixmapData *pd = pixmapData();
+        if (pd && pd->classId() == QPixmapData::RasterClass) {
+            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(pd);
             if (!d->image.isNull() && d->image.d->paintEngine
                 && !d->image.d->paintEngine->isActive())
             {
@@ -94,6 +95,8 @@ public:
     ~QPixmapCacheEntry();
     QPixmapCache::Key key;
 };
+
+inline bool qIsDetached(QPixmapCacheEntry &t) { return t.isDetached(); }
 
 QT_END_NAMESPACE
 

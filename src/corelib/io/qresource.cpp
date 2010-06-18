@@ -580,7 +580,7 @@ QResource::addSearchPath(const QString &path)
   \obsolete
 
   Use QDir::searchPaths() instead.
-  
+
   Returns the current search path list. This list is consulted when
   creating a relative resource.
 
@@ -928,7 +928,7 @@ public:
     }
 };
 
-#if defined(Q_OS_UNIX) && ! defined (Q_OS_NACL)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && ! defined (Q_OS_NACL)
 #define QT_USE_MMAP
 #endif
 

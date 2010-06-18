@@ -67,6 +67,7 @@
 #include "qdeclarativeextensioninterface.h"
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativeinclude_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -82,6 +83,7 @@
 #include <QStack>
 #include <QMap>
 #include <QPluginLoader>
+#include <QtGui/qfontdatabase.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
@@ -91,7 +93,6 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
-#include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
 #include <private/qobject_p.h>
@@ -110,9 +111,6 @@
 Q_DECLARE_METATYPE(QDeclarativeProperty)
 
 QT_BEGIN_NAMESPACE
-
-DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
-DEFINE_BOOL_CONFIG_OPTION(qmlCheckTypes, QML_CHECK_TYPES)
 
 /*!
   \qmlclass QtObject QObject
@@ -152,13 +150,80 @@ void QDeclarativeEnginePrivate::defineModule()
     qmlRegisterType<QDeclarativeBinding>();
 }
 
+/*!
+\qmlclass Qt QDeclarativeEnginePrivate
+\brief The QML global Qt object provides useful enums and functions from Qt.
+
+The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+
+The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
+with enums and functions.  To use it, call the members of the global \c Qt object directly. 
+For example:
+
+\qml
+import Qt 4.7
+
+Text {
+    color: Qt.rgba(255, 0, 0, 1)
+    text: Qt.md5("hello, world")
+}
+\endqml
+
+
+\section1 Enums
+
+The Qt object contains all enums in the Qt namespace. For example, you can
+access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+
+For a full list of enums, see the \l{Qt Namespace} documentation.
+
+\section1 Types
+The Qt object also contains helper functions for creating objects of specific
+data types. This is primarily useful when setting the properties of an item
+when the property has one of the following types:
+
+\list
+\o \c color - use \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()}, \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()}
+\o \c rect - use \l{Qt::rect()}{Qt.rect()}
+\o \c point - use \l{Qt::point()}{Qt.point()}
+\o \c size - use \l{Qt::size()}{Qt.size()}
+\o \c vector3d - use \l{Qt::vector3d()}{Qt.vector3d()}
+\endlist
+
+There are also string based constructors for these types. See \l{qdeclarativebasictypes.html}{QML Basic Types} for more information.
+
+\section1 Date/Time Formatters
+
+The Qt object contains several functions for formatting dates and times.
+
+\list
+    \o \l{Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
+    \o \l{Qt::formatDate}{string Qt.formatDate(datetime date, variant format)}
+    \o \l{Qt::formatTime}{string Qt.formatTime(datetime date, variant format)}
+\endlist
+
+The format specification is described at \l{Qt::formatDateTime}{Qt.formatDateTime}.
+
+
+\section1 Dynamic Object Creation
+The following functions on the global object allow you to dynamically create QML
+items from files or strings. See \l{Dynamic Object Management} for an overview
+of their use.
+
+\list
+    \o \l{Qt::createComponent()}{object Qt.createComponent(url)}
+    \o \l{Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
+\endlist
+*/
+
+
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false),
   outputWarningsToStdErr(true), contextClass(0), sharedContext(0), sharedScope(0),
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
   inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
-  typeManager(e), uniqueId(1)
+  typeManager(e), importDatabase(e), uniqueId(1)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -168,29 +233,12 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
-
-    // env import paths
-    QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
-    if (!envImportPath.isEmpty()) {
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-        QLatin1Char pathSep(';');
-#else
-        QLatin1Char pathSep(':');
-#endif
-        foreach (const QString &path, QString::fromLatin1(envImportPath).split(pathSep, QString::SkipEmptyParts)) {
-            QString canonicalPath = QDir(path).canonicalPath();
-            if (!canonicalPath.isEmpty() && !fileImportPath.contains(canonicalPath))
-                fileImportPath.append(canonicalPath);
-        }
-    }
-    QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
-    if (!builtinPath.isEmpty())
-        fileImportPath += builtinPath;
-
-    filePluginPath += QLatin1String(".");
-
 }
 
+/*!
+\qmlmethod url Qt::resolvedUrl(url)
+Returns \c url resolved relative to the URL of the caller.
+*/
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
     if (p) {
@@ -227,13 +275,18 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
     // XXX used to add Qt.Sound class.
 
     //types
+    if (mainthread)
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::include, 2));
+    else
+        qtObject.setProperty(QLatin1String("include"), newFunction(QDeclarativeInclude::worker_include, 2));
+
     qtObject.setProperty(QLatin1String("isQtObject"), newFunction(QDeclarativeEnginePrivate::isQtObject, 1));
     qtObject.setProperty(QLatin1String("rgba"), newFunction(QDeclarativeEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), newFunction(QDeclarativeEnginePrivate::hsla, 4));
     qtObject.setProperty(QLatin1String("rect"), newFunction(QDeclarativeEnginePrivate::rect, 4));
     qtObject.setProperty(QLatin1String("point"), newFunction(QDeclarativeEnginePrivate::point, 2));
     qtObject.setProperty(QLatin1String("size"), newFunction(QDeclarativeEnginePrivate::size, 2));
-    qtObject.setProperty(QLatin1String("vector3d"), newFunction(QDeclarativeEnginePrivate::vector, 3));
+    qtObject.setProperty(QLatin1String("vector3d"), newFunction(QDeclarativeEnginePrivate::vector3d, 3));
 
     if (mainthread) {
         //color helpers
@@ -242,13 +295,16 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
+#ifndef QT_NO_TEXTDATE
     //date/time formatting
     qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
     qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
     qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
+#endif
 
     //misc methods
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("fontFamilies"),newFunction(QDeclarativeEnginePrivate::fontFamilies, 0));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
     qtObject.setProperty(QLatin1String("atob"),newFunction(QDeclarativeEnginePrivate::atob, 1));
@@ -345,17 +401,17 @@ void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeParserStatus> &pss)
 }
 
 Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
-typedef QMap<QString, QString> StringStringMap;
-Q_GLOBAL_STATIC(StringStringMap, qmlEnginePluginsWithRegisteredTypes); // stores the uri
-
 
 void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
 {
     QObjectPrivate *p = QObjectPrivate::get(o);
-    Q_ASSERT(p->declarativeData);
-    QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
-    if (d->ownContext)
-        d->context->destroy();
+    if (p->declarativeData) {
+        QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
+        if (d->ownContext && d->context) {
+            d->context->destroy();
+            d->context = 0;
+        }
+    }
 }
 
 void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
@@ -374,6 +430,7 @@ void QDeclarativeEnginePrivate::init()
     qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QDeclarativeScriptString>("QDeclarativeScriptString");
     qRegisterMetaType<QScriptValue>("QScriptValue");
+    qRegisterMetaType<QDeclarativeComponent::Status>("QDeclarativeComponent::Status");
 
     QDeclarativeData::init();
 
@@ -456,7 +513,11 @@ QDeclarativeEngine::~QDeclarativeEngine()
 }
 
 /*! \fn void QDeclarativeEngine::quit()
-  This signal is emitted when the QDeclarativeEngine quits.
+    This signal is emitted when the QDeclarativeEngine quits.
+ */
+
+/*! \fn void QDeclarativeEngine::warnings(const QList<QDeclarativeError> &warnings)
+    This signal is emitted when \a warnings messages are generated by QML.
  */
 
 /*!
@@ -573,9 +634,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 
   This example creates a provider with id \e colors:
 
-  \snippet examples/declarative/imageprovider/imageprovider.cpp 0
+  \snippet examples/declarative/cppextensions/imageprovider/imageprovider.cpp 0
 
-  \snippet examples/declarative/imageprovider/imageprovider-example.qml 0
+  \snippet examples/declarative/cppextensions/imageprovider/imageprovider-example.qml 0
 
   \sa removeImageProvider()
 */
@@ -892,14 +953,10 @@ void QDeclarativeData::destroyed(QObject *object)
     if (ownContext && context)
         context->destroy();
 
-    QDeclarativeGuard<QObject> *guard = guards;
-    while (guard) {
-        QDeclarativeGuard<QObject> *g = guard;
-        guard = guard->next;
-        g->o = 0;
-        g->prev = 0;
-        g->next = 0;
-        g->objectDestroyed(object);
+    while (guards) {
+        QDeclarativeGuard<QObject> *guard = guards;
+        *guard = (QObject *)0;
+        guard->objectDestroyed(object);
     }
 
     if (scriptValue)
@@ -976,6 +1033,42 @@ QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *c
     return contextClass->contextFromValue(scopeNode);
 }
 
+
+QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
+{
+    if (url.scheme().compare(QLatin1String("qrc"), Qt::CaseInsensitive) == 0) {
+        if (url.authority().isEmpty())
+            return QLatin1Char(':') + url.path();
+        return QString();
+    }
+    return url.toLocalFile();
+}
+
+/*!
+\qmlmethod object Qt::createComponent(url)
+
+Returns a \l Component object created using the QML file at the specified \a url,
+or \c null if there was an error in creating the component.
+
+Call \l {Component::createObject()}{Component.createObject()} on the returned
+component to create an object instance of the component.
+
+Here is an example. Notice it checks whether the component \l{Component::status}{status} is
+\c Component.Ready before calling \l {Component::createObject()}{createObject()}
+in case the QML file is loaded over a network and thus is not ready immediately.
+
+\snippet doc/src/snippets/declarative/componentCreation.js 0
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js 1
+
+If you are certain the files will be local, you could simplify to:
+
+\snippet doc/src/snippets/declarative/componentCreation.js 2
+
+To create a QML object from an arbitrary string of QML (instead of a file),
+use \l{Qt::createQmlObject()}{Qt.createQmlObject()}.
+*/
+
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QDeclarativeEnginePrivate *activeEnginePriv =
@@ -986,7 +1079,7 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
     Q_ASSERT(context);
 
     if(ctxt->argumentCount() != 1) {
-        return ctxt->throwError("Qt.createComponent(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.createComponent(): Invalid arguments"));
     }else{
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
@@ -999,6 +1092,27 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
     }
 }
 
+/*!
+\qmlmethod object Qt::createQmlObject(string qml, object parent, string filepath)
+
+Returns a new object created from the given \a string of QML which will have the specified \a parent,
+or \c null if there was an error in creating the object.
+
+If \a filepath is specified, it will be used for error reporting for the created object.
+
+Example (where \c parentItem is the id of an existing QML item):
+
+\snippet doc/src/snippets/declarative/createQmlObject.qml 0
+
+In the case of an error, a QtScript Error object is thrown. This object has an additional property,
+\c qmlErrors, which is an array of the errors encountered.
+Each object in this array has the members \c lineNumber, \c columnNumber, \c fileName and \c message.
+
+Note that this function returns immediately, and therefore may not work if
+the \a qml string loads new components (that is, external QML files that have not yet been loaded).
+If this is the case, consider using \l{Qt::createComponent()}{Qt.createComponent()} instead.
+*/
+
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QDeclarativeEnginePrivate *activeEnginePriv =
@@ -1006,7 +1120,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     QDeclarativeEngine* activeEngine = activeEnginePriv->q_func();
 
     if(ctxt->argumentCount() < 2 || ctxt->argumentCount() > 3)
-        return ctxt->throwError("Qt.createQmlObject(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.createQmlObject(): Invalid arguments"));
 
     QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
     Q_ASSERT(context);
@@ -1026,7 +1140,7 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
 
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     if(!parentArg)
-        return ctxt->throwError("Qt.createQmlObject(): Missing parent object");
+        return ctxt->throwError(QLatin1String("Qt.createQmlObject(): Missing parent object"));
 
     QDeclarativeComponent component(activeEngine);
     component.setData(qml.toUtf8(), url);
@@ -1039,21 +1153,24 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
             QScriptValue qmlErrObject = ctxt->engine()->newObject();
-            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
-            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
-            qmlErrObject.setProperty("fileName", QScriptValue(error.url().toString()));
-            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            qmlErrObject.setProperty(QLatin1String("lineNumber"), QScriptValue(error.line()));
+            qmlErrObject.setProperty(QLatin1String("columnNumber"), QScriptValue(error.column()));
+            qmlErrObject.setProperty(QLatin1String("fileName"), QScriptValue(error.url().toString()));
+            qmlErrObject.setProperty(QLatin1String("message"), QScriptValue(error.description()));
             arr.setProperty(i++, qmlErrObject);
         }
         QScriptValue err = ctxt->throwError(errstr);
-        err.setProperty("qmlErrors",arr);
+        err.setProperty(QLatin1String("qmlErrors"),arr);
         return err;
     }
 
     if (!component.isReady())
-        return ctxt->throwError("Qt.createQmlObject(): Component is not ready");
+        return ctxt->throwError(QLatin1String("Qt.createQmlObject(): Component is not ready"));
 
-    QObject *obj = component.create(context->asQDeclarativeContext());
+    QObject *obj = component.beginCreate(context->asQDeclarativeContext());
+    if(obj)
+        QDeclarativeData::get(obj, true)->setImplicitDestructible();
+    component.completeCreate();
 
     if(component.isError()) {
         QList<QDeclarativeError> errors = component.errors();
@@ -1063,29 +1180,35 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
         foreach (const QDeclarativeError &error, errors){
             errstr += QLatin1String("    ") + error.toString() + QLatin1String("\n");
             QScriptValue qmlErrObject = ctxt->engine()->newObject();
-            qmlErrObject.setProperty("lineNumber", QScriptValue(error.line()));
-            qmlErrObject.setProperty("columnNumber", QScriptValue(error.column()));
-            qmlErrObject.setProperty("fileName", QScriptValue(error.url().toString()));
-            qmlErrObject.setProperty("message", QScriptValue(error.description()));
+            qmlErrObject.setProperty(QLatin1String("lineNumber"), QScriptValue(error.line()));
+            qmlErrObject.setProperty(QLatin1String("columnNumber"), QScriptValue(error.column()));
+            qmlErrObject.setProperty(QLatin1String("fileName"), QScriptValue(error.url().toString()));
+            qmlErrObject.setProperty(QLatin1String("message"), QScriptValue(error.description()));
             arr.setProperty(i++, qmlErrObject);
         }
         QScriptValue err = ctxt->throwError(errstr);
-        err.setProperty("qmlErrors",arr);
+        err.setProperty(QLatin1String("qmlErrors"),arr);
         return err;
     }
 
     Q_ASSERT(obj);
 
     obj->setParent(parentArg);
-    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
-    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
-    if(gobj && gparent)
-        gobj->setParentItem(gparent);
+
+    QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
+    for (int ii = 0; ii < functions.count(); ++ii) {
+        if (QDeclarativePrivate::Parented == functions.at(ii)(obj, parentArg))
+            break;
+    }
 
     QDeclarativeData::get(obj, true)->setImplicitDestructible();
     return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);
 }
 
+/*!
+\qmlmethod bool Qt::isQtObject(object)
+Returns true if \c object is a valid reference to a Qt or QML object, otherwise false.
+*/
 QScriptValue QDeclarativeEnginePrivate::isQtObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if (ctxt->argumentCount() == 0)
@@ -1094,21 +1217,30 @@ QScriptValue QDeclarativeEnginePrivate::isQtObject(QScriptContext *ctxt, QScript
     return QScriptValue(engine, 0 != ctxt->argument(0).toQObject());
 }
 
-QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
+/*!
+\qmlmethod Qt::vector3d(real x, real y, real z)
+Returns a Vector3D with the specified \c x, \c y and \c z.
+*/
+QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 3)
-        return ctxt->throwError("Qt.vector(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.vector(): Invalid arguments"));
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
-    return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QVector3D(x, y, z)));
 }
 
+/*!
+\qmlmethod string Qt::formatDate(datetime date, variant format)
+Returns the string representation of \c date, formatted according to \c format.
+*/
+#ifndef QT_NO_TEXTDATE
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError("Qt.formatDate(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid arguments"));
 
     QDate date = ctxt->argument(0).toDateTime().date();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1119,17 +1251,23 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else {
-            return ctxt->throwError("Qt.formatDate(): Invalid date format");
+            return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid date format"));
         }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
 
+/*!
+\qmlmethod string Qt::formatTime(datetime time, variant format)
+Returns the string representation of \c time, formatted according to \c format.
+
+See Qt::formatDateTime for how to define \c format.
+*/
 QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError("Qt.formatTime(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid arguments"));
 
     QTime date = ctxt->argument(0).toDateTime().time();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1140,17 +1278,86 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else {
-            return ctxt->throwError("Qt.formatTime(): Invalid time format");
+            return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
 
+/*!
+\qmlmethod string Qt::formatDateTime(datetime dateTime, variant format)
+Returns the string representation of \c dateTime, formatted according to \c format.
+
+\c format for the date/time formatting functions is be specified as follows.
+
+    These expressions may be used for the date:
+
+    \table
+    \header \i Expression \i Output
+    \row \i d \i the day as number without a leading zero (1 to 31)
+    \row \i dd \i the day as number with a leading zero (01 to 31)
+    \row \i ddd
+            \i the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+            Uses QDate::shortDayName().
+    \row \i dddd
+            \i the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
+            Uses QDate::longDayName().
+    \row \i M \i the month as number without a leading zero (1-12)
+    \row \i MM \i the month as number with a leading zero (01-12)
+    \row \i MMM
+            \i the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+            Uses QDate::shortMonthName().
+    \row \i MMMM
+            \i the long localized month name (e.g. 'January' to 'December').
+            Uses QDate::longMonthName().
+    \row \i yy \i the year as two digit number (00-99)
+    \row \i yyyy \i the year as four digit number
+    \endtable
+
+    These expressions may be used for the time:
+
+    \table
+    \header \i Expression \i Output
+    \row \i h
+         \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \i hh
+         \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \i m \i the minute without a leading zero (0 to 59)
+    \row \i mm \i the minute with a leading zero (00 to 59)
+    \row \i s \i the second without a leading zero (0 to 59)
+    \row \i ss \i the second with a leading zero (00 to 59)
+    \row \i z \i the milliseconds without leading zeroes (0 to 999)
+    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
+    \row \i AP
+            \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+    \row \i ap
+            \i use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \endtable
+
+    All other input characters will be ignored. Any sequence of characters that
+    are enclosed in singlequotes will be treated as text and not be used as an
+    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    in the output.
+
+    Example format strings (assumed that the date and time is 21 May 2001
+    14:13:09):
+
+    \table
+    \header \i Format       \i Result
+    \row \i dd.MM.yyyy      \i 21.05.2001
+    \row \i ddd MMMM d yy   \i Tue May 21 01
+    \row \i hh:mm:ss.zzz    \i 14:13:09.042
+    \row \i h:m:s ap        \i 2:13:9 pm
+    \endtable
+
+If no format is specified the locale's short format is used. Alternatively, you can specify
+\c Qt.DefaultLocaleLongDate to get the locale's long format.
+*/
 QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
     if(argCount == 0 || argCount > 2)
-        return ctxt->throwError("Qt.formatDateTime(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid arguments"));
 
     QDateTime date = ctxt->argument(0).toDateTime();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
@@ -1161,17 +1368,24 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
         } else if (ctxt->argument(1).isNumber()) {
             enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else { 
-            return ctxt->throwError("Qt.formatDateTime(): Invalid datetime format");
+            return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
+#endif // QT_NO_TEXTDATE
 
+/*!
+\qmlmethod color Qt::rgba(real red, real green, real blue, real alpha)
+
+Returns a color with the specified \c red, \c green, \c blue and \c alpha components.
+All components should be in the range 0-1 inclusive.
+*/
 QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
     if(argCount < 3 || argCount > 4)
-        return ctxt->throwError("Qt.rgba(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.rgba(): Invalid arguments"));
     qsreal r = ctxt->argument(0).toNumber();
     qsreal g = ctxt->argument(1).toNumber();
     qsreal b = ctxt->argument(2).toNumber();
@@ -1189,11 +1403,17 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
     return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromRgbF(r, g, b, a)));
 }
 
+/*!
+\qmlmethod color Qt::hsla(real hue, real saturation, real lightness, real alpha)
+
+Returns a color with the specified \c hue, \c saturation, \c lightness and \c alpha components.
+All components should be in the range 0-1 inclusive.
+*/
 QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
     if(argCount < 3 || argCount > 4)
-        return ctxt->throwError("Qt.hsla(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.hsla(): Invalid arguments"));
     qsreal h = ctxt->argument(0).toNumber();
     qsreal s = ctxt->argument(1).toNumber();
     qsreal l = ctxt->argument(2).toNumber();
@@ -1211,10 +1431,17 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
     return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromHslF(h, s, l, a)));
 }
 
+/*!
+\qmlmethod rect Qt::rect(int x, int y, int width, int height) 
+
+Returns a \c rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
+
+The returned object has \c x, \c y, \c width and \c height attributes with the given values.
+*/
 QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 4)
-        return ctxt->throwError("Qt.rect(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.rect(): Invalid arguments"));
 
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
@@ -1224,31 +1451,53 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     if (w < 0 || h < 0)
         return engine->nullValue();
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QRectF(x, y, w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QRectF(x, y, w, h)));
 }
 
+/*!
+\qmlmethod point Qt::point(int x, int y)
+Returns a Point with the specified \c x and \c y coordinates.
+*/
 QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError("Qt.point(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.point(): Invalid arguments"));
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
-    return qScriptValueFromValue(engine, qVariantFromValue(QPointF(x, y)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QPointF(x, y)));
 }
 
+/*!
+\qmlmethod Qt::size(int width, int height)
+Returns a Size with the specified \c width and \c height.
+*/
 QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError("Qt.size(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.size(): Invalid arguments"));
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
-    return qScriptValueFromValue(engine, qVariantFromValue(QSizeF(w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QSizeF(w, h)));
 }
 
+/*!
+\qmlmethod color Qt::lighter(color baseColor, real factor)
+Returns a color lighter than \c baseColor by the \c factor provided.
+
+If the factor is greater than 1.0, this functions returns a lighter color.
+Setting factor to 1.5 returns a color that is 50% brighter. If the factor is less than 1.0,
+the return color is darker, but we recommend using the Qt.darker() function for this purpose.
+If the factor is 0 or negative, the return value is unspecified.
+
+The function converts the current RGB color to HSV, multiplies the value (V) component
+by factor and converts the color back to RGB.
+
+If \c factor is not supplied, returns a color 50% lighter than \c baseColor (factor 1.5).
+*/
 QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() != 1)
-        return ctxt->throwError("Qt.lighter(): Invalid arguments");
+    if(ctxt->argumentCount() != 1 && ctxt->argumentCount() != 2)
+        return ctxt->throwError(QLatin1String("Qt.lighter(): Invalid arguments"));
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
     if (v.userType() == QVariant::Color)
@@ -1260,14 +1509,32 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
             return engine->nullValue();
     } else
         return engine->nullValue();
-    color = color.lighter();
+    qsreal factor = 1.5;
+    if (ctxt->argumentCount() == 2)
+        factor = ctxt->argument(1).toNumber();
+    color = color.lighter(int(qRound(factor*100.)));
     return qScriptValueFromValue(engine, qVariantFromValue(color));
 }
 
+/*!
+\qmlmethod color Qt::darker(color baseColor, real factor)
+Returns a color darker than \c baseColor by the \c factor provided.
+
+If the factor is greater than 1.0, this function returns a darker color.
+Setting factor to 3.0 returns a color that has one-third the brightness.
+If the factor is less than 1.0, the return color is lighter, but we recommend using
+the Qt.lighter() function for this purpose. If the factor is 0 or negative, the return
+value is unspecified.
+
+The function converts the current RGB color to HSV, divides the value (V) component
+by factor and converts the color back to RGB.
+
+If \c factor is not supplied, returns a color 50% darker than \c baseColor (factor 2.0).
+*/
 QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() != 1)
-        return ctxt->throwError("Qt.darker(): Invalid arguments");
+    if(ctxt->argumentCount() != 1 && ctxt->argumentCount() != 2)
+        return ctxt->throwError(QLatin1String("Qt.darker(): Invalid arguments"));
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
     if (v.userType() == QVariant::Color)
@@ -1279,10 +1546,17 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
             return engine->nullValue();
     } else
         return engine->nullValue();
-    color = color.darker();
+    qsreal factor = 2.0;
+    if (ctxt->argumentCount() == 2)
+        factor = ctxt->argument(1).toNumber();
+    color = color.darker(int(qRound(factor*100.)));
     return qScriptValueFromValue(engine, qVariantFromValue(color));
 }
 
+/*!
+\qmlmethod bool Qt::openUrlExternally(url target)
+Attempts to open the specified \c target url in an external application, based on the user's desktop preferences. Returns true if it succeeds, and false otherwise.
+*/
 QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
 {
     if(ctxt->argumentCount() < 1)
@@ -1294,10 +1568,29 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
     return QScriptValue(e, ret);
 }
 
+/*!
+\qmlmethod list<string> Qt::fontFamilies()
+Returns a list of the font families available to the application.
+*/
+
+QScriptValue QDeclarativeEnginePrivate::fontFamilies(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() != 0)
+        return ctxt->throwError(QLatin1String("Qt.fontFamilies(): Invalid arguments"));
+
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(e);
+    QFontDatabase database;
+    return p->scriptValueFromVariant(database.families());
+}
+
+/*!
+\qmlmethod string Qt::md5(data)
+Returns a hex string of the md5 hash of \c data.
+*/
 QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *)
 {
     if (ctxt->argumentCount() != 1)
-        return ctxt->throwError("Qt.md5(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.md5(): Invalid arguments"));
 
     QByteArray data = ctxt->argument(0).toString().toUtf8();
     QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
@@ -1305,20 +1598,29 @@ QScriptValue QDeclarativeEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine 
     return QScriptValue(QLatin1String(result.toHex()));
 }
 
+/*!
+\qmlmethod string Qt::btoa(data)
+Binary to ASCII - this function returns a base64 encoding of \c data.
+*/
 QScriptValue QDeclarativeEnginePrivate::btoa(QScriptContext *ctxt, QScriptEngine *)
 {
     if (ctxt->argumentCount() != 1) 
-        return ctxt->throwError("Qt.btoa(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.btoa(): Invalid arguments"));
 
     QByteArray data = ctxt->argument(0).toString().toUtf8();
 
     return QScriptValue(QLatin1String(data.toBase64()));
 }
 
+/*!
+\qmlmethod string Qt::atob(data)
+ASCII to binary - this function returns a base64 decoding of \c data.
+*/
+
 QScriptValue QDeclarativeEnginePrivate::atob(QScriptContext *ctxt, QScriptEngine *)
 {
     if (ctxt->argumentCount() != 1) 
-        return ctxt->throwError("Qt.atob(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.atob(): Invalid arguments"));
 
     QByteArray data = ctxt->argument(0).toString().toUtf8();
 
@@ -1409,6 +1711,13 @@ void QDeclarativeEnginePrivate::warning(QDeclarativeEnginePrivate *engine, const
         dumpwarning(error);
 }
 
+/*!
+\qmlmethod Qt::quit()
+This function causes the QDeclarativeEngine::quit() signal to be emitted.
+Within the \l {Qt Declarative UI Runtime}{qml} application this causes the 
+launcher application to exit.
+*/
+
 QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)
 {
     QDeclarativeEnginePrivate *qe = get (e);
@@ -1416,10 +1725,24 @@ QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptE
     return QScriptValue();
 }
 
+/*!
+\qmlmethod color Qt::tint(color baseColor, color tintColor)
+    This function allows tinting one color with another.
+
+    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+
+    \qml
+    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
+    \endqml
+    \image declarative-rect_tint.png
+
+    Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
+*/
 QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() != 2)
-        return ctxt->throwError("Qt.tint(): Invalid arguments");
+        return ctxt->throwError(QLatin1String("Qt.tint(): Invalid arguments"));
     //get color
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
@@ -1522,516 +1845,6 @@ QVariant QDeclarativeEnginePrivate::scriptValueToVariant(const QScriptValue &val
     return val.toVariant();
 }
 
-// XXX this beyonds in QUrl::toLocalFile()
-// WARNING, there is a copy of this function in qdeclarativecompositetypemanager.cpp
-static QString toLocalFileOrQrc(const QUrl& url)
-{
-    if (url.scheme() == QLatin1String("qrc")) {
-        if (url.authority().isEmpty())
-            return QLatin1Char(':') + url.path();
-        return QString();
-    }
-    return url.toLocalFile();
-}
-
-/////////////////////////////////////////////////////////////
-struct QDeclarativeEnginePrivate::ImportedNamespace {
-    QStringList uris;
-    QStringList urls;
-    QList<int> majversions;
-    QList<int> minversions;
-    QList<bool> isLibrary;
-    QList<QDeclarativeDirComponents> qmlDirComponents;
-
-
-    bool find_helper(int i, const QByteArray& type, int *vmajor, int *vminor,
-                                 QDeclarativeType** type_return, QUrl* url_return,
-                                 QUrl *base = 0, bool *typeRecursionDetected = 0)
-    {
-        int vmaj = majversions.at(i);
-        int vmin = minversions.at(i);
-
-        QByteArray qt = uris.at(i).toUtf8();
-        qt += '/';
-        qt += type;
-
-        QDeclarativeType *t = QDeclarativeMetaType::qmlType(qt,vmaj,vmin);
-        if (t) {
-            if (vmajor) *vmajor = vmaj;
-            if (vminor) *vminor = vmin;
-            if (type_return)
-                *type_return = t;
-            return true;
-        }
-
-        QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
-        QDeclarativeDirComponents qmldircomponents = qmlDirComponents.at(i);
-
-        bool typeWasDeclaredInQmldir = false;
-        if (!qmldircomponents.isEmpty()) {
-            const QString typeName = QString::fromUtf8(type);
-            foreach (const QDeclarativeDirParser::Component &c, qmldircomponents) {
-                if (c.typeName == typeName) {
-                    typeWasDeclaredInQmldir = true;
-
-                    // importing version -1 means import ALL versions
-                    if ((vmaj == -1) || (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion))) {
-                        QUrl candidate = url.resolved(QUrl(c.fileName));
-                        if (c.internal && base) {
-                            if (base->resolved(QUrl(c.fileName)) != candidate)
-                                continue; // failed attempt to access an internal type
-                        }
-                        if (base && *base == candidate) {
-                            if (typeRecursionDetected)
-                                *typeRecursionDetected = true;
-                            continue; // no recursion
-                        }
-                        if (url_return)
-                            *url_return = candidate;
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (!typeWasDeclaredInQmldir  && !isLibrary.at(i)) {
-            // XXX search non-files too! (eg. zip files, see QT-524)
-            QFileInfo f(toLocalFileOrQrc(url));
-            if (f.exists()) {
-                if (base && *base == url) { // no recursion
-                    if (typeRecursionDetected)
-                        *typeRecursionDetected = true;
-                } else {
-                    if (url_return)
-                        *url_return = url;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
-              QUrl* url_return, QUrl *base = 0, QString *errorString = 0)
-    {
-        bool typeRecursionDetected = false;
-        for (int i=0; i<urls.count(); ++i) {
-            if (find_helper(i, type, vmajor, vminor, type_return, url_return, base, &typeRecursionDetected)) {
-                if (qmlCheckTypes()) {
-                    // check for type clashes
-                    for (int j = i+1; j<urls.count(); ++j) {
-                        if (find_helper(j, type, vmajor, vminor, 0, 0, base)) {
-                            if (errorString) {
-                                QString u1 = urls.at(i);
-                                QString u2 = urls.at(j);
-                                if (base) {
-                                    QString b = base->toString();
-                                    int slash = b.lastIndexOf(QLatin1Char('/'));
-                                    if (slash >= 0) {
-                                        b = b.left(slash+1);
-                                        QString l = b.left(slash);
-                                        if (u1.startsWith(b))
-                                            u1 = u1.mid(b.count());
-                                        else if (u1 == l)
-                                            u1 = QDeclarativeEngine::tr("local directory");
-                                        if (u2.startsWith(b))
-                                            u2 = u2.mid(b.count());
-                                        else if (u2 == l)
-                                            u2 = QDeclarativeEngine::tr("local directory");
-                                    }
-                                }
-
-                                if (u1 != u2)
-                                    *errorString
-                                            = QDeclarativeEngine::tr("is ambiguous. Found in %1 and in %2")
-                                    .arg(u1).arg(u2);
-                                else
-                                    *errorString
-                                            = QDeclarativeEngine::tr("is ambiguous. Found in %1 in version %2.%3 and %4.%5")
-                                              .arg(u1)
-                                              .arg(majversions.at(i)).arg(minversions.at(i))
-                                              .arg(majversions.at(j)).arg(minversions.at(j));
-                            }
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-        }
-        if (errorString) {
-            if (typeRecursionDetected)
-                *errorString = QDeclarativeEngine::tr("is instantiated recursively");
-            else
-                *errorString = QDeclarativeEngine::tr("is not a type");
-        }
-        return false;
-    }
-};
-
-static bool greaterThan(const QString &s1, const QString &s2)
-{
-    return s1 > s2;
-}
-
-class QDeclarativeImportsPrivate {
-public:
-    QDeclarativeImportsPrivate() : ref(1)
-    {
-    }
-
-    ~QDeclarativeImportsPrivate()
-    {
-        foreach (QDeclarativeEnginePrivate::ImportedNamespace* s, set.values())
-            delete s;
-    }
-
-    QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
-
-    bool importExtension(const QString &absoluteFilePath, const QString &uri, QDeclarativeEngine *engine, QDeclarativeDirComponents* components, QString *errorString) {
-        QFile file(absoluteFilePath);
-        QString filecontent;
-        if (file.open(QFile::ReadOnly)) {
-            filecontent = QString::fromUtf8(file.readAll());
-            if (qmlImportTrace())
-                qDebug() << "QDeclarativeEngine::add: loaded" << absoluteFilePath;
-        } else {
-            if (errorString)
-                *errorString = QDeclarativeEngine::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
-            return false;
-        }
-        QDir dir = QFileInfo(file).dir();
-
-        QDeclarativeDirParser qmldirParser;
-        qmldirParser.setSource(filecontent);
-        qmldirParser.parse();
-
-        if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
-            qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
-
-
-            foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-
-                QString resolvedFilePath =
-                        QDeclarativeEnginePrivate::get(engine)
-                        ->resolvePlugin(dir, plugin.path,
-                                        plugin.name);
-
-                if (!resolvedFilePath.isEmpty()) {
-                    if (!engine->importPlugin(resolvedFilePath, uri, errorString)) {
-                        if (errorString)
-                            *errorString = QDeclarativeEngine::tr("plugin cannot be loaded for module \"%1\": %2").arg(uri).arg(*errorString);
-                        return false;
-                    }
-                } else {
-                    if (errorString)
-                        *errorString = QDeclarativeEngine::tr("module \"%1\" plugin \"%2\" not found").arg(uri).arg(plugin.name);
-                    return false;
-                }
-            }
-        }
-
-        if (components)
-            *components = qmldirParser.components();
-
-        return true;
-    }
-
-    QString resolvedUri(const QString &dir_arg, QDeclarativeEngine *engine)
-    {
-        QString dir = dir_arg;
-        if (dir.endsWith(QLatin1Char('/')) || dir.endsWith(QLatin1Char('\\')))
-            dir.chop(1);
-
-        QStringList paths = QDeclarativeEnginePrivate::get(engine)->fileImportPath;
-        qSort(paths.begin(), paths.end(), greaterThan); // Ensure subdirs preceed their parents.
-
-        QString stableRelativePath = dir;
-        foreach( QString path, paths) {
-            if (dir.startsWith(path)) {
-                stableRelativePath = dir.mid(path.length()+1);
-                break;
-            }
-        }
-        stableRelativePath.replace(QLatin1Char('/'), QLatin1Char('.'));
-        stableRelativePath.replace(QLatin1Char('\\'), QLatin1Char('.'));
-        return stableRelativePath;
-    }
-
-
-
-
-    bool add(const QUrl& base, const QDeclarativeDirComponents &qmldircomponentsnetwork, const QString& uri_arg, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, QDeclarativeEngine *engine, QString *errorString)
-    {
-        QDeclarativeDirComponents qmldircomponents = qmldircomponentsnetwork;
-        QString uri = uri_arg;
-        QDeclarativeEnginePrivate::ImportedNamespace *s;
-        if (prefix.isEmpty()) {
-            s = &unqualifiedset;
-        } else {
-            s = set.value(prefix);
-            if (!s)
-                set.insert(prefix,(s=new QDeclarativeEnginePrivate::ImportedNamespace));
-        }
-
-
-
-        QString url = uri;
-        if (importType == QDeclarativeScriptParser::Import::Library) {
-            url.replace(QLatin1Char('.'), QLatin1Char('/'));
-            bool found = false;
-            QString dir;
-
-
-            foreach (const QString &p,
-                     QDeclarativeEnginePrivate::get(engine)->fileImportPath) {
-                dir = p+QLatin1Char('/')+url;
-
-                QFileInfo fi(dir+QLatin1String("/qmldir"));
-                const QString absoluteFilePath = fi.absoluteFilePath();
-
-                if (fi.isFile()) {
-                    found = true;
-
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
-                    uri = resolvedUri(dir, engine);
-                    if (!importExtension(absoluteFilePath, uri, engine, &qmldircomponents, errorString))
-                        return false;
-                    break;
-                }
-            }
-
-            if (!found) {
-                found = QDeclarativeMetaType::isModule(uri.toUtf8(), vmaj, vmin);
-                if (!found) {
-                    if (errorString) {
-                        bool anyversion = QDeclarativeMetaType::isModule(uri.toUtf8(), -1, -1);
-                        if (anyversion)
-                            *errorString = QDeclarativeEngine::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
-                        else
-                            *errorString = QDeclarativeEngine::tr("module \"%1\" is not installed").arg(uri_arg);
-                    }
-                    return false;
-                }
-            }
-        } else {
-
-            if (importType == QDeclarativeScriptParser::Import::File && qmldircomponents.isEmpty()) {
-                QUrl importUrl = base.resolved(QUrl(uri + QLatin1String("/qmldir")));
-                QString localFileOrQrc = toLocalFileOrQrc(importUrl);
-                if (!localFileOrQrc.isEmpty()) {
-                    QString dir = toLocalFileOrQrc(base.resolved(QUrl(uri)));
-                    if (dir.isEmpty() || !QDir().exists(dir)) {
-                        if (errorString)
-                            *errorString = QDeclarativeEngine::tr("\"%1\": no such directory").arg(uri_arg);
-                        return false; // local import dirs must exist
-                    }
-                    uri = resolvedUri(toLocalFileOrQrc(base.resolved(QUrl(uri))), engine);
-                    if (uri.endsWith(QLatin1Char('/')))
-                        uri.chop(1);
-                    if (QFile::exists(localFileOrQrc)) {
-                        if (!importExtension(localFileOrQrc,uri,engine,&qmldircomponents,errorString))
-                            return false;
-                    }
-                } else {
-                    if (prefix.isEmpty()) {
-                        // directory must at least exist for valid import
-                        QString localFileOrQrc = toLocalFileOrQrc(base.resolved(QUrl(uri)));
-                        if (localFileOrQrc.isEmpty() || !QDir().exists(localFileOrQrc)) {
-                            if (errorString) {
-                                if (localFileOrQrc.isEmpty())
-                                    *errorString = QDeclarativeEngine::tr("import \"%1\" has no qmldir and no namespace").arg(uri);
-                                else
-                                    *errorString = QDeclarativeEngine::tr("\"%1\": no such directory").arg(uri);
-                            }
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            url = base.resolved(QUrl(url)).toString();
-            if (url.endsWith(QLatin1Char('/')))
-                url.chop(1);
-        }
-
-        if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
-            QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
-            for (; it != qmldircomponents.end(); ++it) {
-                if (it->majorVersion > vmaj || (it->majorVersion == vmaj && it->minorVersion >= vmin))
-                    break;
-            }
-            if (it == qmldircomponents.end()) {
-                *errorString = QDeclarativeEngine::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
-                return false;
-            }
-        }
-
-        s->uris.prepend(uri);
-        s->urls.prepend(url);
-        s->majversions.prepend(vmaj);
-        s->minversions.prepend(vmin);
-        s->isLibrary.prepend(importType == QDeclarativeScriptParser::Import::Library);
-        s->qmlDirComponents.prepend(qmldircomponents);
-        return true;
-    }
-
-    bool find(const QByteArray& type, int *vmajor, int *vminor, QDeclarativeType** type_return,
-              QUrl* url_return, QString *errorString)
-    {
-        QDeclarativeEnginePrivate::ImportedNamespace *s = 0;
-        int slash = type.indexOf('/');
-        if (slash >= 0) {
-            QString namespaceName = QString::fromUtf8(type.left(slash));
-            s = set.value(namespaceName);
-            if (!s) {
-                if (errorString)
-                    *errorString = QDeclarativeEngine::tr("- %1 is not a namespace").arg(namespaceName);
-                return false;
-            }
-            int nslash = type.indexOf('/',slash+1);
-            if (nslash > 0) {
-                if (errorString)
-                    *errorString = QDeclarativeEngine::tr("- nested namespaces not allowed");
-                return false;
-            }
-        } else {
-            s = &unqualifiedset;
-        }
-        QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
-        if (s) {
-            if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return, &base, errorString))
-                return true;
-            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return && s != &unqualifiedset) {
-                // qualified, and only 1 url
-                *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    QDeclarativeEnginePrivate::ImportedNamespace *findNamespace(const QString& type)
-    {
-        return set.value(type);
-    }
-
-    QUrl base;
-    int ref;
-
-private:
-    friend struct QDeclarativeEnginePrivate::Imports;
-    QDeclarativeEnginePrivate::ImportedNamespace unqualifiedset;
-    QHash<QString,QDeclarativeEnginePrivate::ImportedNamespace* > set;
-};
-
-QDeclarativeEnginePrivate::Imports::Imports(const Imports &copy) :
-    d(copy.d)
-{
-    ++d->ref;
-}
-
-QDeclarativeEnginePrivate::Imports &QDeclarativeEnginePrivate::Imports::operator =(const Imports &copy)
-{
-    ++copy.d->ref;
-    if (--d->ref == 0)
-        delete d;
-    d = copy.d;
-    return *this;
-}
-
-QDeclarativeEnginePrivate::Imports::Imports() :
-    d(new QDeclarativeImportsPrivate)
-{
-}
-
-QDeclarativeEnginePrivate::Imports::~Imports()
-{
-    if (--d->ref == 0)
-        delete d;
-}
-
-static QDeclarativeTypeNameCache *cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeEnginePrivate::ImportedNamespace &set, QDeclarativeTypeNameCache *cache)
-{
-    if (!cache)
-        cache = new QDeclarativeTypeNameCache(engine);
-
-    QList<QDeclarativeType *> types = QDeclarativeMetaType::qmlTypes();
-
-    for (int ii = 0; ii < set.uris.count(); ++ii) {
-        QByteArray base = set.uris.at(ii).toUtf8() + '/';
-        int major = set.majversions.at(ii);
-        int minor = set.minversions.at(ii);
-
-        foreach (QDeclarativeType *type, types) {
-            if (type->qmlTypeName().startsWith(base) &&
-                type->qmlTypeName().lastIndexOf('/') == (base.length() - 1) &&
-                type->availableInVersion(major,minor))
-            {
-                QString name = QString::fromUtf8(type->qmlTypeName().mid(base.length()));
-
-                cache->add(name, type);
-            }
-        }
-    }
-
-    return cache;
-}
-
-void QDeclarativeEnginePrivate::Imports::cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *engine) const
-{
-    const QDeclarativeEnginePrivate::ImportedNamespace &set = d->unqualifiedset;
-
-    for (QHash<QString,QDeclarativeEnginePrivate::ImportedNamespace* >::ConstIterator iter = d->set.begin();
-         iter != d->set.end(); ++iter) {
-
-        QDeclarativeTypeNameCache::Data *d = cache->data(iter.key());
-        if (d) {
-            if (!d->typeNamespace)
-                cacheForNamespace(engine, *(*iter), d->typeNamespace);
-        } else {
-            QDeclarativeTypeNameCache *nc = cacheForNamespace(engine, *(*iter), 0);
-            cache->add(iter.key(), nc);
-            nc->release();
-        }
-    }
-
-    cacheForNamespace(engine, set, cache);
-}
-
-/*
-QStringList QDeclarativeEnginePrivate::Imports::unqualifiedSet() const
-{
-    QStringList rv;
-
-    const QDeclarativeEnginePrivate::ImportedNamespace &set = d->unqualifiedset;
-
-    for (int ii = 0; ii < set.urls.count(); ++ii) {
-        if (set.isBuiltin.at(ii))
-            rv << set.urls.at(ii);
-    }
-
-    return rv;
-}
-*/
-
-/*!
-  Sets the base URL to be used for all relative file imports added.
-*/
-void QDeclarativeEnginePrivate::Imports::setBaseUrl(const QUrl& url)
-{
-    d->base = url;
-}
-
-/*!
-  Returns the base URL to be used for all relative file imports added.
-*/
-QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
-{
-    return d->base;
-}
-
 /*!
   Adds \a path as a directory where the engine searches for
   installed modules in a URL-based directory structure.
@@ -2042,18 +1855,9 @@ QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {
-    if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::addImportPath" << path;
     Q_D(QDeclarativeEngine);
-    QUrl url = QUrl(path);
-    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
-        QDir dir = QDir(path);
-        d->fileImportPath.prepend(dir.canonicalPath());
-    } else {
-        d->fileImportPath.prepend(path);
-    }
+    d->importDatabase.addImportPath(path);
 }
-
 
 /*!
   Returns the list of directories where the engine searches for
@@ -2065,30 +1869,32 @@ void QDeclarativeEngine::addImportPath(const QString& path)
   provided by that module. A \c qmldir file is required for defining the
   type version mapping and possibly declarative extensions plugins.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa addImportPath() setImportPathList()
 */
 QStringList QDeclarativeEngine::importPathList() const
 {
     Q_D(const QDeclarativeEngine);
-    return d->fileImportPath;
+    return d->importDatabase.importPathList();
 }
 
 /*!
-  Sets the list of directories where the engine searches for
+  Sets \a paths as the list of directories where the engine searches for
   installed modules in a URL-based directory structure.
 
-  By default, the list contains the paths specified in the \c QML_IMPORT_PATH environment
-  variable, then the builtin \c ImportsPath from QLibraryInfo.
+  By default, the list contains the directory of the application executable,
+  paths specified in the \c QML_IMPORT_PATH environment variable,
+  and the builtin \c ImportsPath from QLibraryInfo.
 
   \sa importPathList() addImportPath()
   */
 void QDeclarativeEngine::setImportPathList(const QStringList &paths)
 {
     Q_D(QDeclarativeEngine);
-    d->fileImportPath = paths;
+    d->importDatabase.setImportPathList(paths);
 }
 
 
@@ -2105,16 +1911,8 @@ void QDeclarativeEngine::setImportPathList(const QStringList &paths)
 */
 void QDeclarativeEngine::addPluginPath(const QString& path)
 {
-    if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::addPluginPath" << path;
     Q_D(QDeclarativeEngine);
-    QUrl url = QUrl(path);
-    if (url.isRelative() || url.scheme() == QString::fromLocal8Bit("file")) {
-        QDir dir = QDir(path);
-        d->filePluginPath.prepend(dir.canonicalPath());
-    } else {
-        d->filePluginPath.prepend(path);
-    }
+    d->importDatabase.addPluginPath(path);
 }
 
 
@@ -2130,7 +1928,7 @@ void QDeclarativeEngine::addPluginPath(const QString& path)
 QStringList QDeclarativeEngine::pluginPathList() const
 {
     Q_D(const QDeclarativeEngine);
-    return d->filePluginPath;
+    return d->importDatabase.pluginPathList();
 }
 
 /*!
@@ -2146,7 +1944,7 @@ QStringList QDeclarativeEngine::pluginPathList() const
 void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 {
     Q_D(QDeclarativeEngine);
-    d->filePluginPath = paths;
+    d->importDatabase.setPluginPathList(paths);
 }
 
 
@@ -2160,55 +1958,8 @@ void QDeclarativeEngine::setPluginPathList(const QStringList &paths)
 */
 bool QDeclarativeEngine::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
-    if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::importPlugin" << uri << "from" << filePath;
-    QFileInfo fileInfo(filePath);
-    const QString absoluteFilePath = fileInfo.absoluteFilePath();
-
-    QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
-    bool engineInitialized = d->initializedPlugins.contains(absoluteFilePath);
-    bool typesRegistered = qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath);
-
-    if (typesRegistered) {
-        Q_ASSERT_X(qmlEnginePluginsWithRegisteredTypes()->value(absoluteFilePath) == uri,
-                   "QDeclarativeEngine::importExtension",
-                   "Internal error: Plugin imported previously with different uri");
-    }
-
-    if (!engineInitialized || !typesRegistered) {
-        QPluginLoader loader(absoluteFilePath);
-
-        if (!loader.load()) {
-            if (errorString)
-                *errorString = loader.errorString();
-            return false;
-        }
-
-        if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
-
-            const QByteArray bytes = uri.toUtf8();
-            const char *moduleId = bytes.constData();
-            if (!typesRegistered) {
-
-                // ### this code should probably be protected with a mutex.
-                qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath, uri);
-                iface->registerTypes(moduleId);
-            }
-            if (!engineInitialized) {
-                // things on the engine (eg. adding new global objects) have to be done for every engine.
-
-                // protect against double initialization
-                d->initializedPlugins.insert(absoluteFilePath);
-                iface->initializeEngine(this, moduleId);
-            }
-        } else {
-            if (errorString)
-                *errorString = loader.errorString();
-            return false;
-        }
-    }
-
-    return true;
+    Q_D(QDeclarativeEngine);
+    return d->importDatabase.importPlugin(filePath, uri, errorString);
 }
 
 /*!
@@ -2238,208 +1989,6 @@ QString QDeclarativeEngine::offlineStoragePath() const
 {
     Q_D(const QDeclarativeEngine);
     return d->scriptEngine.offlineStoragePath;
-}
-
-/*!
-  \internal
-
-  Returns the result of the merge of \a baseName with \a path, \a suffixes, and \a prefix.
-  The \a prefix must contain the dot.
-
-  \a qmldirPath is the location of the qmldir file.
- */
-QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName,
-                                        const QStringList &suffixes,
-                                        const QString &prefix)
-{
-    QStringList searchPaths = filePluginPath;
-    bool qmldirPluginPathIsRelative = QDir::isRelativePath(qmldirPluginPath);
-    if (!qmldirPluginPathIsRelative)
-        searchPaths.prepend(qmldirPluginPath);
-
-    foreach (const QString &pluginPath, searchPaths) {
-
-        QString resolvedPath;
-
-        if (pluginPath == QLatin1String(".")) {
-            if (qmldirPluginPathIsRelative)
-                resolvedPath = qmldirPath.absoluteFilePath(qmldirPluginPath);
-            else
-                resolvedPath = qmldirPath.absolutePath();
-        } else {
-            resolvedPath = pluginPath;
-        }
-
-        // hack for resources, should probably go away
-        if (resolvedPath.startsWith(QLatin1Char(':')))
-            resolvedPath = QCoreApplication::applicationDirPath();
-
-        QDir dir(resolvedPath);
-        foreach (const QString &suffix, suffixes) {
-            QString pluginFileName = prefix;
-
-            pluginFileName += baseName;
-            pluginFileName += suffix;
-
-            QFileInfo fileInfo(dir, pluginFileName);
-
-            if (fileInfo.exists())
-                return fileInfo.absoluteFilePath();
-        }
-    }
-
-    if (qmlImportTrace())
-        qDebug() << "QDeclarativeEngine::resolvePlugin: Could not resolve plugin" << baseName << "in" << qmldirPath.absolutePath();
-    return QString();
-}
-
-/*!
-  \internal
-
-  Returns the result of the merge of \a baseName with \a dir and the platform suffix.
-
-  \table
-  \header \i Platform \i Valid suffixes
-  \row \i Windows     \i \c .dll
-  \row \i Unix/Linux  \i \c .so
-  \row \i AIX  \i \c .a
-  \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
-  \row \i Mac OS X    \i \c .dylib, \c .bundle, \c .so
-  \row \i Symbian     \i \c .dll
-  \endtable
-
-  Version number on unix are ignored.
-*/
-QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &qmldirPath, const QString &qmldirPluginPath, const QString &baseName)
-{
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
-                         QStringList()
-# ifdef QT_DEBUG
-                         << QLatin1String("d.dll") // try a qmake-style debug build first
-# endif
-                         << QLatin1String(".dll"));
-#elif defined(Q_OS_SYMBIAN)
-    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
-                         QStringList()
-                         << QLatin1String(".dll")
-                         << QLatin1String(".qtplugin"));
-#else
-
-# if defined(Q_OS_DARWIN)
-
-    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName,
-                         QStringList()
-# ifdef QT_DEBUG
-                         << QLatin1String("_debug.dylib") // try a qmake-style debug build first
-                         << QLatin1String(".dylib")
-# else
-                         << QLatin1String(".dylib")
-                         << QLatin1String("_debug.dylib") // try a qmake-style debug build after
-# endif
-                         << QLatin1String(".so")
-                         << QLatin1String(".bundle"),
-                         QLatin1String("lib"));
-# else  // Generic Unix
-    QStringList validSuffixList;
-
-#  if defined(Q_OS_HPUX)
-/*
-    See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
-    "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
-    the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
- */
-    validSuffixList << QLatin1String(".sl");
-#   if defined __ia64
-    validSuffixList << QLatin1String(".so");
-#   endif
-#  elif defined(Q_OS_AIX)
-    validSuffixList << QLatin1String(".a") << QLatin1String(".so");
-#  elif defined(Q_OS_UNIX)
-    validSuffixList << QLatin1String(".so");
-#  endif
-
-    // Examples of valid library names:
-    //  libfoo.so
-
-    return resolvePlugin(qmldirPath, qmldirPluginPath, baseName, validSuffixList, QLatin1String("lib"));
-# endif
-
-#endif
-}
-
-/*!
-  \internal
-
-  Adds information to \a imports such that subsequent calls to resolveType()
-  will resolve types qualified by \a prefix by considering types found at the given \a uri.
-
-  The uri is either a directory (if importType is FileImport), or a URI resolved using paths
-  added via addImportPath() (if importType is LibraryImport).
-
-  The \a prefix may be empty, in which case the import location is considered for
-  unqualified types.
-
-  The base URL must already have been set with Import::setBaseUrl().
-*/
-bool QDeclarativeEnginePrivate::addToImport(Imports* imports, const QDeclarativeDirComponents &qmldircomponentsnetwork, const QString& uri, const QString& prefix, int vmaj, int vmin, QDeclarativeScriptParser::Import::Type importType, QString *errorString) const
-{
-    QDeclarativeEngine *engine = QDeclarativeEnginePrivate::get(const_cast<QDeclarativeEnginePrivate *>(this));
-    if (qmlImportTrace())
-        qDebug().nospace() << "QDeclarativeEngine::addToImport " << imports << " " << uri << " " << vmaj << '.' << vmin << " " << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File") << " as " << prefix;
-    bool ok = imports->d->add(imports->d->base,qmldircomponentsnetwork, uri,prefix,vmaj,vmin,importType, engine, errorString);
-    return ok;
-}
-
-/*!
-  \internal
-
-  Using the given \a imports, the given (namespace qualified) \a type is resolved to either
-  an ImportedNamespace stored at \a ns_return,
-  a QDeclarativeType stored at \a type_return, or
-  a component located at \a url_return.
-
-  If any return pointer is 0, the corresponding search is not done.
-
-  \sa addToImport()
-*/
-bool QDeclarativeEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin, ImportedNamespace** ns_return, QString *errorString) const
-{
-    ImportedNamespace* ns = imports.d->findNamespace(QString::fromUtf8(type));
-    if (ns) {
-        if (ns_return)
-            *ns_return = ns;
-        return true;
-    }
-    if (type_return || url_return) {
-        if (imports.d->find(type,vmaj,vmin,type_return,url_return, errorString)) {
-            if (qmlImportTrace()) {
-                if (type_return && *type_return && url_return && !url_return->isEmpty())
-                    qDebug() << "QDeclarativeEngine::resolveType" << type << '=' << (*type_return)->typeName() << *url_return;
-                if (type_return && *type_return)
-                    qDebug() << "QDeclarativeEngine::resolveType" << type << '=' << (*type_return)->typeName();
-                if (url_return && !url_return->isEmpty())
-                    qDebug() << "QDeclarativeEngine::resolveType" << type << '=' << *url_return;
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-/*!
-  \internal
-
-  Searching \e only in the namespace \a ns (previously returned in a call to
-  resolveType(), \a type is found and returned to either
-  a QDeclarativeType stored at \a type_return, or
-  a component located at \a url_return.
-
-  If either return pointer is 0, the corresponding search is not done.
-*/
-void QDeclarativeEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin ) const
-{
-    ns->find(type,vmaj,vmin,type_return,url_return);
 }
 
 static void voidptr_destructor(void *v)

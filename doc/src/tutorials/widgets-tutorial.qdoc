@@ -45,84 +45,97 @@
     \brief This tutorial covers basic usage of widgets and layouts, showing how
     they are used to build GUI applications.
 
-    \startpage {index.html}{Qt Reference Documentation}
-    \contentspage Tutorials
-    \nextpage {tutorials/widgets/toplevel}{Creating a Window}
-
-
     \section1 Introduction
 
-    Widgets are the basic building blocks of graphical user interface (GUI)
-    applications made with Qt. Each GUI component, such as a button, label or
-    text editor, is a widget and can be placed within an existing user
-    interface or displayed as an independent window. Each type of component
-    is provided by a particular subclass of QWidget, which is itself a
-    subclass of QObject.
+    Widgets are the basic building blocks for graphical user interface
+    (GUI) applications built with Qt. Each GUI component (e.g.
+    buttons, labels, text editor) is a \l{QWidget}{widget} that is
+    placed somewhere within a user interface window, or is displayed
+    as an independent window. Each type of widge is provided by a
+    subclass of QWidget, which is itself a subclass of QObject.
 
-    QWidget is not an abstract class; it can be used as a container for other
-    widgets, and can be subclassed with minimal effort to create custom
-    widgets. It is most often used to create windows in which other widgets
-    are placed.
+    QWidget is not an abstract class. It can be used as a container
+    for other widgets, and it can be subclassed with minimal effort to
+    create new, custom widgets. QWidget is often used to create a
+    window inside which other \l{QWidget}s are placed.
 
-    As with \l{QObject}s, widgets can be created with parent objects to
-    indicate ownership, ensuring that objects are deleted when they are no
-    longer used. With widgets, these parent-child relationships have an
-    additional meaning: each child is displayed within the screen area
-    occupied by its parent. This means that, when a window is deleted, all
-    the widgets it contains are automatically deleted.
+    As with \l{QObject}s, \l{QWidget}s can be created with parent
+    objects to indicate ownership, ensuring that objects are deleted
+    when they are no longer used. With widgets, these parent-child
+    relationships have an additional meaning: Each child widget is
+    displayed within the screen area occupied by its parent widget.
+    This means that when you delete a window widget, all the child
+    widgets it contains are also deleted.
 
     \section1 Writing a main Function
 
-    Many of the GUI examples in Qt follow the pattern of having a \c{main.cpp}
-    file containing code to initialize the application, and a number of other
-    source and header files containing the application logic and custom GUI
-    components.
+    Many of the GUI examples provided with Qt follow the pattern of
+    having a \c{main.cpp} file, which contains the standard code to
+    initialize the application, plus any number of other source/header
+    files that contain the application logic and custom GUI components.
 
-    A typical \c main() function, written in \c{main.cpp}, looks like this:
+    A typical \c main() function in \c{main.cpp} looks like this:
 
     \snippet doc/src/snippets/widgets-tutorial/template.cpp main.cpp body
 
-    We first construct a QApplication object which is configured using any
-    arguments passed in from the command line. After any widgets have been
-    created and shown, we call QApplication::exec() to start Qt's event loop.
-    Control passes to Qt until this function returns, at which point we return
-    the value we obtain from this function.
+    First, a QApplication object is constructed, which can be
+    configured with arguments passed in from the command line. After
+    the widgets have been created and shown, QApplication::exec() is
+    called to start Qt's event loop.  Control passes to Qt until this
+    function returns. Finally, \c{main()} returns the value returned
+    by QApplication::exec().
 
-    In each part of this tutorial, we provide an example that is written
-    entirely within a \c main() function. In more sophisticated examples, the
-    code to set up widgets and layouts is written in other parts of the
-    example. For example, the GUI for a main window may be set up in the
-    constructor of a QMainWindow subclass.
+    \section1 Simple widget examples
 
-    The \l{Widgets examples} are a good place to look for
-    more complex and complete examples and applications.
+    Each of theses simple widget examples is written entirely within
+    the \c main() function.
 
-    \section1 Building Examples and Tutorials
+    \list
+    \o \l {tutorials/widgets/toplevel} {Creating a window}
 
-    If you obtained a binary package of Qt or compiled it yourself, the
-    examples described in this tutorial should already be ready to run.
-    However, if you may wish to modify them and recompile them, you need to
-    perform the following steps:
+    \o \l {tutorials/widgets/childwidget} {Creating child widgets}
 
-    \list 1
-    \o At the command line, enter the directory containing the example you
-       wish to recompile.
-    \o Type \c qmake and press \key{Return}. If this doesn't work, make sure
-       that the executable is on your path, or enter its full location.
-    \o On Linux/Unix and Mac OS X, type \c make and press \key{Return};
-       on Windows with Visual Studio, type \c nmake and press \key{Return}.
+    \o \l {tutorials/widgets/windowlayout} {Using layouts}
+
+    \o \l {tutorials/widgets/nestedlayouts} {Nested layouts}
     \endlist
 
-    An executable file should have been created within the current directory.
-    On Windows, this file may be located within a \c debug or \c release
-    subdirectory. You can run this file to see the example code at work.
+    \section1 Real world widget examples
+
+    In these \l{Widget examples} {more advanced examples}, the code
+    that creates the widgets and layouts is stored in other files. For
+    example, the GUI for a main window may be created in the
+    constructor of a QMainWindow subclass.
+
+    \section1 Building The Examples
+
+    If you installed a binary package to get Qt, or if you compiled Qt
+    yourself, the examples described in this tutorial should already
+    be built and ready to run. If you wish to modify and recompile
+    them, follow these steps:
+
+    \list 1
+
+    \o From a command prompt, enter the directory containing the
+       example you have modified.
+
+    \o Type \c qmake and press \key{Return}. If this doesn't work,
+       make sure that the executable is on your path, or enter its
+       full location.
+
+    \o On Linux/Unix and Mac OS X, type \c make and press
+       \key{Return}; on Windows with Visual Studio, type \c nmake and
+       press \key{Return}.
+
+    \endlist
+
+    An executable file is created in the current directory.  On
+    Windows, this file may be located in a \c debug or \c release
+    subdirectory. You can run this executable to see the example code
+    at work.
 */
 
 /*!
-    \page widgets-tutorial-toplevel.html
-    \contentspage {Widgets Tutorial}{Contents}
-    \previouspage {Widgets Tutorial}
-    \nextpage {Widgets Tutorial - Child Widgets}
     \example tutorials/widgets/toplevel
     \title Widgets Tutorial - Creating a Window
 
@@ -151,13 +164,10 @@
     To create a real GUI, we need to place widgets inside the window. To do
     this, we pass a QWidget instance to a widget's constructor, as we will
     demonstrate in the next part of this tutorial.
+
 */
 
 /*!
-    \page widgets-tutorial-childwidget.html
-    \contentspage {Widgets Tutorial}{Contents}
-    \previouspage {Widgets Tutorial - Creating a Window}
-    \nextpage {Widgets Tutorial - Using Layouts}
     \example tutorials/widgets/childwidget
     \title Widgets Tutorial - Child Widgets
 
@@ -185,10 +195,6 @@
 */
 
 /*!
-    \page widgets-tutorial-windowlayout.html
-    \contentspage {Widgets Tutorial}{Contents}
-    \previouspage {Widgets Tutorial - Child Widgets}
-    \nextpage {Widgets Tutorial - Nested Layouts}
     \example tutorials/widgets/windowlayout
     \title Widgets Tutorial - Using Layouts
 
@@ -228,9 +234,6 @@
 */
 
 /*!
-    \page widgets-tutorial-nestedlayouts.html
-    \contentspage {Widgets Tutorial}{Contents}
-    \previouspage {Widgets Tutorial - Using Layouts}
     \example tutorials/widgets/nestedlayouts
     \title Widgets Tutorial - Nested Layouts
 

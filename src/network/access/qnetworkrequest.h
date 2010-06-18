@@ -79,6 +79,9 @@ public:
         HttpPipeliningAllowedAttribute,
         HttpPipeliningWasUsedAttribute,
         CustomVerbAttribute,
+        CookieLoadControlAttribute,
+        AuthenticationReuseAttribute,
+        CookieSaveControlAttribute,
 
         User = 1000,
         UserMax = 32767
@@ -88,6 +91,10 @@ public:
         PreferNetwork,
         PreferCache,
         AlwaysCache
+    };
+    enum LoadControl {
+        Automatic = 0,
+        Manual
     };
 
     enum Priority {

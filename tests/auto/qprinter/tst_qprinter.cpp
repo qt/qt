@@ -64,10 +64,12 @@
 
 Q_DECLARE_METATYPE(QRect)
 
-
+QT_FORWARD_DECLARE_CLASS(QPrinter)
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#ifndef QT_NO_PRINTER
 
 class tst_QPrinter : public QObject
 {
@@ -110,6 +112,7 @@ private slots:
     void testCurrentPage();
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
+    void testPdfTitle();
 
 private:
 };
@@ -216,7 +219,6 @@ tst_QPrinter::tst_QPrinter()
 
 tst_QPrinter::~tst_QPrinter()
 {
-
 }
 
 // initTestCase will be executed once before the first testfunction is executed.
@@ -417,7 +419,7 @@ void tst_QPrinter::testMargins()
     printer.setFullPage(fullpage);
     printer.setPageSize((QPrinter::PageSize)pagesize);
     if (withPainter)
-	painter = new QPainter(&printer);
+        painter = new QPainter(&printer);
 
 #ifdef QT3_SUPPORT
     Q3PaintDeviceMetrics metrics(&printer);
@@ -1028,5 +1030,36 @@ void tst_QPrinter::testCurrentPage()
 
 }
 
+void tst_QPrinter::testPdfTitle()
+{
+    // Check the document name is represented correctly in produced pdf
+    {
+        QPainter painter;
+        QPrinter printer;
+        // This string is just the UTF-8 encoding of the string: \()f &oslash; hiragana o
+        const char title[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
+        printer.setOutputFileName("file.pdf");
+        printer.setDocName(QString::fromUtf8(title));
+        painter.begin(&printer);
+        painter.end();
+    }
+    QFile file("file.pdf");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    // The we expect the title to appear in the PDF as:
+    // ASCII('\title (') UTF16(\\\(\)f &oslash; hiragana o) ASCII(')').
+    // which has the following binary representation
+    const char expected[] = {
+        0x2f, 0x54, 0x69, 0x74, 0x6c, 0x65, 0x20, 0x28, 0xfe,
+        0xff, 0x00, 0x5c, 0x5c, 0x00, 0x5c, 0x28, 0x00, 0x5c,
+        0x29, 0x00, 0x66, 0x00, 0xf8, 0x30, 0x4a, 0x29};
+    QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
+}
+
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
+
+#else //QT_NO_PRINTER
+
+QTEST_NOOP_MAIN
+
+#endif //QT_NO_PRINTER

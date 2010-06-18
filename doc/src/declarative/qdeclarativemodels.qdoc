@@ -99,7 +99,8 @@ There are a number of QML elements that operate using data models:
 \endlist
 
 QML supports several types of data model, which may be provided by QML
-or C++ (via QDeclarativeContext::setContextProperty(), for example).
+or C++ (via QDeclarativeContext::setContextProperty() or as plugin types,
+for example).
 
 \section1 QML Data Models
 
@@ -142,6 +143,28 @@ ListView {
     delegate: fruitDelegate
 }
 \endcode
+
+It is also possible to manipulate the ListModel directly via JavaScript.
+In this case, the first item inserted will determine the roles available
+to any views using the model.  For example, if an empty ListModel is
+created and populated via JavaScript the roles provided by the first
+insertion are the only roles that will be shown in the view:
+
+\code
+Item {
+    ListModel {
+        id: fruitModel
+    }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: fruitModel.append({"cost": 5.95, "name":"Pizza"})
+    }
+}
+\endcode
+
+When the MouseArea is clicked fruitModel will have two roles, "cost" and "name".
+Even if subsequent roles are added, only the first two will be handled by views
+using the model.
 
 
 \section2 XmlListModel
@@ -188,7 +211,12 @@ will be positioned by the view.
 
 \section1 C++ Data Models
 
+Models defined in C++ can be made available to QML either from a C++ application or from a
+\l{QDeclarativeExtensionPlugin}{QML C++ plugin}.
+
 \section2 QAbstractItemModel
+
+A model can be defined by subclassing QAbstractItemModel.
 
 QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNames() method.
 The default role names set by Qt are:
@@ -205,7 +233,18 @@ The default role names set by Qt are:
 \o decoration
 \endtable
 
-QAbstractItemModel presents a heirachy of tables.  Views currently provided by QML
+The model could be made available to QML either directly:
+
+\code
+QDeclarativeContext *ctxt = view.rootContext();
+MyModel *model = new MyModel; // subclass of QAbstractItemModel
+ctxt->setContextProperty("myModel", model);
+\endcode
+
+or by registering the subclass as a new QML type in 
+a \l{QDeclarativeExtensionPlugin}{QML C++ plugin}.
+
+QAbstractItemModel presents a heirachy of tables, but views currently provided by QML
 can only display list data.  
 In order to display child lists of a heirachical model
 the VisualDataModel element provides several properties and functions for use
@@ -220,7 +259,7 @@ with models of type QAbstractItemModel:
 
 \section2 QStringList
 
-QStringList provides the contents of the list via the \e modelData role:
+A model may be a simple QStringList, which provides the contents of the list via the \e modelData role:
 
 \table
 \row
@@ -283,7 +322,9 @@ QDeclarativeContext *ctxt = view.rootContext();
 ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 \endcode
 
-The properties of the object may then be accessed in the delegate:
+The QObject* is available as the \c modelData property.  As a convenience,
+the properties of the object are also made available directly in the
+delegate's context:
 
 \code
 ListView {
@@ -295,12 +336,17 @@ ListView {
        Rectangle {
             height: 25
             width: 100
-            color: model.color
+            color: model.modelData.color
             Text { text: name }
        }
    }
 }
 \endcode
+
+Note the use of the fully qualified access to the \c color property.  
+The properties of the object are not replicated in the \c model
+object, since they are easily available via the modelData
+object.
 
 Note: There is no way for the view to know that the contents of a QList
 have changed.  If the QList is changed, it will be necessary to reset

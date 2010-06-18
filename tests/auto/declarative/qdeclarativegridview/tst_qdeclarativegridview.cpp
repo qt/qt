@@ -52,6 +52,11 @@
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeGridView : public QObject
 {
     Q_OBJECT
@@ -75,6 +80,7 @@ private slots:
     void resetModel();
     void enforceRange();
     void QTBUG_8456();
+    void manualHighlight();
 
 private:
     QDeclarativeView *createView();
@@ -832,21 +838,34 @@ void tst_QDeclarativeGridView::componentChanges()
 
     QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
+    QSignalSpy headerSpy(gridView, SIGNAL(headerChanged()));
+    QSignalSpy footerSpy(gridView, SIGNAL(footerChanged()));
 
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
+    gridView->setHeader(&component);
+    gridView->setFooter(&component);
 
     QTRY_COMPARE(gridView->highlight(), &component);
     QTRY_COMPARE(gridView->delegate(), &delegateComponent);
+    QTRY_COMPARE(gridView->header(), &component);
+    QTRY_COMPARE(gridView->footer(), &component);
 
     QTRY_COMPARE(highlightSpy.count(),1);
     QTRY_COMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(headerSpy.count(),1);
+    QTRY_COMPARE(footerSpy.count(),1);
 
     gridView->setHighlight(&component);
     gridView->setDelegate(&delegateComponent);
+    gridView->setHeader(&component);
+    gridView->setFooter(&component);
 
     QTRY_COMPARE(highlightSpy.count(),1);
     QTRY_COMPARE(delegateSpy.count(),1);
+    QTRY_COMPARE(headerSpy.count(),1);
+    QTRY_COMPARE(footerSpy.count(),1);
+
     delete canvas;
 }
 
@@ -1091,6 +1110,13 @@ void tst_QDeclarativeGridView::enforceRange()
     gridview->setCurrentIndex(5);
     QTRY_COMPARE(gridview->contentY(), 100.);
 
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+    QCOMPARE(gridview->count(), 5);
+
     delete canvas;
 }
 
@@ -1106,6 +1132,35 @@ void tst_QDeclarativeGridView::QTBUG_8456()
 
     QTRY_COMPARE(gridview->currentIndex(), 0);
 }
+
+void tst_QDeclarativeGridView::manualHighlight()
+{
+    QDeclarativeView *canvas = createView();
+
+    QString filename(SRCDIR "/data/manual-highlight.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *viewport = gridview->viewport();
+    QTRY_VERIFY(viewport != 0);
+
+    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 0));
+    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+
+    gridview->setCurrentIndex(2);
+
+    QTRY_COMPARE(gridview->currentIndex(), 2);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 2));
+    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+}
+
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()
 {
