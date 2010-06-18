@@ -3277,7 +3277,8 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
+    if (hasFocus())
+        d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
 }
 
 /*!

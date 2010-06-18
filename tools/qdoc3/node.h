@@ -55,6 +55,7 @@
 #include "doc.h"
 #include "location.h"
 #include "text.h"
+#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
@@ -190,6 +191,8 @@ class Node
     void clearRelated() { rel = 0; }
 
     virtual QString fileBase() const;
+    QUuid guid() const { return uuid; }
+    QString ditaXmlHref();
 
  protected:
     Node(Type type, InnerNode *parent, const QString& name);
@@ -219,6 +222,7 @@ class Node
     QString u;
     QString sinc;
     QString tpl;
+    QUuid   uuid;
 };
 
 class FunctionNode;
@@ -261,6 +265,8 @@ class InnerNode : public Node
     QStringList secondaryKeys();
     const QStringList& pageKeywords() const { return pageKeywds; }
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
+    virtual bool isAbstract() const { return false; }
+    virtual void setAbstract(bool ) { }
 
  protected:
     InnerNode(Type type, InnerNode *parent, const QString& name);
@@ -341,11 +347,14 @@ class ClassNode : public InnerNode
     void setServiceName(const QString& value) { sname = value; }
     QString qmlElement() const { return qmlelement; }
     void setQmlElement(const QString& value) { qmlelement = value; }
+    virtual bool isAbstract() const { return abstract; }
+    virtual void setAbstract(bool b) { abstract = b; }
 
  private:
     QList<RelatedClass> bas;
     QList<RelatedClass> der;
     bool hidden;
+    bool abstract;
     QString sname;
     QString qmlelement;
 };
@@ -582,7 +591,7 @@ class FunctionNode : public LeafNode
     void setReturnType(const QString& returnType) { rt = returnType; }
     void setParentPath(const QStringList& parentPath) { pp = parentPath; }
     void setMetaness(Metaness metaness) { met = metaness; }
-    void setVirtualness(Virtualness virtualness) { vir = virtualness; }
+    void setVirtualness(Virtualness virtualness);
     void setConst(bool conste) { con = conste; }
     void setStatic(bool statique) { sta = statique; }
     void setOverload(bool overlode);
