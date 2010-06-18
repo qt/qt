@@ -38,6 +38,11 @@ HB_BEGIN_HEADER
 
 /* shared tables */
 
+#define VR_X_PLACEMENT_DEVICE 0
+#define VR_Y_PLACEMENT_DEVICE 1
+#define VR_X_ADVANCE_DEVICE   2
+#define VR_Y_ADVANCE_DEVICE   3
+
 struct  HB_ValueRecord_
 {
   HB_Short    XPlacement;             /* horizontal adjustment for
@@ -48,14 +53,10 @@ struct  HB_ValueRecord_
 					 advance                        */
   HB_Short    YAdvance;               /* vertical adjustment for
 					 advance                        */
-  HB_Device*  XPlacementDevice;       /* device table for horizontal
-					 placement                      */
-  HB_Device*  YPlacementDevice;       /* device table for vertical
-					 placement                      */
-  HB_Device*  XAdvanceDevice;         /* device table for horizontal
-					 advance                        */
-  HB_Device*  YAdvanceDevice;         /* device table for vertical
-					 advance                        */
+
+  HB_Device** DeviceTables;           /* device tables for placement
+					 and advance                    */
+
 #ifdef HB_SUPPORT_MULTIPLE_MASTER
   HB_UShort   XIdPlacement;           /* horizontal placement metric ID */
   HB_UShort   YIdPlacement;           /* vertical placement metric ID   */
@@ -69,6 +70,8 @@ typedef struct HB_ValueRecord_  HB_ValueRecord;
 
 /* Mask values to scan the value format of the ValueRecord structure.
  We always expand compressed ValueRecords of the font.              */
+
+#define HB_GPOS_FORMAT_HAVE_DEVICE_TABLES       0x00F0
 
 #define HB_GPOS_FORMAT_HAVE_X_PLACEMENT         0x0001
 #define HB_GPOS_FORMAT_HAVE_Y_PLACEMENT         0x0002
