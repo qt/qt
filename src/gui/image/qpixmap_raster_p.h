@@ -72,6 +72,7 @@ public:
 
     void resize(int width, int height);
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
+    bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
 
     bool scroll(int dx, int dy, const QRect &rect);
@@ -85,6 +86,8 @@ public:
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    void createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace);
+    void setImage(const QImage &image);
     QImage image;
 
 private:
