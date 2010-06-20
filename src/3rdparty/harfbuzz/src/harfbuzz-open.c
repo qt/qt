@@ -1399,21 +1399,11 @@ _HB_OPEN_Free_Device( HB_Device** d )
      mask = 0x00FF                                    */
 
 HB_INTERNAL HB_Error
-_HB_OPEN_Get_Device( HB_Device** device,
+_HB_OPEN_Get_Device( HB_Device* d,
 		      HB_UShort    size,
 		      HB_Short*    value )
 {
-  HB_Device* d;
   HB_UShort  byte, bits, mask, f, s;
-  HB_Error   error;
-
-  if ( ALLOC( *device, sizeof(HB_Device)) )
-  {
-    *device = 0;
-    return error;
-  }
-
-  d = *device;
 
   f = d->DeltaFormat;
 
@@ -1436,8 +1426,6 @@ _HB_OPEN_Get_Device( HB_Device** device,
   else
   {
     *value = 0;
-    FREE( *device );
-    *device = 0;
     return HB_Err_Not_Covered;
   }
 }
