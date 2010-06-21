@@ -3705,4 +3705,6 @@ EXPORTS
 	_ZlsR11QDataStreamRK12QEasingCurve @ 3704 NONAME
 	_ZltRK13QElapsedTimerS1_ @ 3705 NONAME
 	_ZrsR11QDataStreamR12QEasingCurve @ 3706 NONAME
+	_ZNK7QLocale13textDirectionEv @ 3707 NONAME
+	_ZNK7QString13isRightToLeftEv @ 3708 NONAME
 
