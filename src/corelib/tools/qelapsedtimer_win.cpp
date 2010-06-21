@@ -42,6 +42,9 @@
 #include "qelapsedtimer.h"
 #include <windows.h>
 
+// Result of QueryPerformanceFrequency, 0 indicates that the high resolution timer is unavailable
+static quint64 counterFrequency = 0;
+
 typedef ULONGLONG (WINAPI *PtrGetTickCount64)(void);
 static PtrGetTickCount64 ptrGetTickCount64 = 0;
 
@@ -65,12 +68,44 @@ static void resolveLibs()
     ptrGetTickCount64 = (PtrGetTickCount64)GetProcAddress(kernel32, "GetTickCount64");
 #endif
 
+    // Retrieve the number of high-resolution performance counter ticks per second
+    LARGE_INTEGER frequency;
+    if (!QueryPerformanceFrequency(&frequency)) {
+        counterFrequency = 0;
+    } else {
+        counterFrequency = frequency.QuadPart;
+    }
+
     done = true;
+}
+
+static inline qint64 ticksToMilliseconds(qint64 ticks)
+{
+    if (counterFrequency > 0) {
+        // QueryPerformanceCounter uses an arbitrary frequency
+        return ticks * 1000 / counterFrequency;
+    } else {
+        // GetTickCount(64) return milliseconds
+        return ticks;
+    }
 }
 
 static quint64 getTickCount()
 {
     resolveLibs();
+
+    // This avoids a division by zero and disables the high performance counter if it's not available
+    if (counterFrequency > 0) {
+        LARGE_INTEGER counter;
+
+        if (QueryPerformanceCounter(&counter)) {
+            return counter.QuadPart;
+        } else {
+            qWarning("QueryPerformanceCounter failed, although QueryPerformanceFrequency succeeded.");
+            return 0;
+        }
+    }
+
     if (ptrGetTickCount64)
         return ptrGetTickCount64();
 
@@ -85,7 +120,12 @@ static quint64 getTickCount()
 
 QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
-    return TickCounter;
+    resolveLibs();
+
+    if (counterFrequency > 0)
+        return PerformanceCounter;
+    else
+        return TickCounter;
 }
 
 bool QElapsedTimer::isMonotonic()
@@ -104,22 +144,24 @@ qint64 QElapsedTimer::restart()
     qint64 oldt1 = t1;
     t1 = getTickCount();
     t2 = 0;
-    return t1 - oldt1;
+    return ticksToMilliseconds(t1 - oldt1);
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    return getTickCount() - t1;
+    qint64 elapsed = getTickCount() - t1;
+    return ticksToMilliseconds(elapsed);
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const
 {
-    return t1;
+    return ticksToMilliseconds(t1);
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
-    return other.t1 - t1;
+    qint64 difference = other.t1 - t1;
+    return ticksToMilliseconds(difference);
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
