@@ -93,7 +93,7 @@ _HB_OPEN_Get_Class( HB_ClassDefinition* cd,
 		    HB_UShort*          klass,
 		     HB_UShort*            index );
 HB_INTERNAL HB_Error
-_HB_OPEN_Get_Device( HB_Device** d,
+_HB_OPEN_Get_Device( HB_Device* d,
 		      HB_UShort    size,
 		      HB_Short*    value );
 

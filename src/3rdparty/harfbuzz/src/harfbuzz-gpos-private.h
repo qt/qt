@@ -105,13 +105,14 @@ struct  HB_AnchorFormat2_
 
 typedef struct HB_AnchorFormat2_  HB_AnchorFormat2;
 
+#define AF3_X_DEVICE_TABLE 0
+#define AF3_Y_DEVICE_TABLE 1
 
 struct  HB_AnchorFormat3_
 {
   HB_Short    XCoordinate;            /* horizontal value              */
   HB_Short    YCoordinate;            /* vertical value                */
-  HB_Device*  XDeviceTable;           /* device table for X coordinate */
-  HB_Device*  YDeviceTable;           /* device table for Y coordinate */
+  HB_Device** DeviceTables;           /* device tables for coordinates */
 };
 
 typedef struct HB_AnchorFormat3_  HB_AnchorFormat3;
