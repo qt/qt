@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -17,28 +17,27 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef qtscriptglobal_h
-#define qtscriptglobal_h
+#include "qdeclarativewebview_p.h"
 
-#include <QtCore/qglobal.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/qdeclarativeextensionplugin.h>
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-#  if defined(QT_NODLL)
-#  elif defined(QT_MAKEDLL)        /* create a Qt DLL library */
-#    if defined(QT_BUILD_JAVASCRIPT_LIB)
-#      define Q_JAVASCRIPT_EXPORT Q_DECL_EXPORT
-#    else
-#      define Q_JAVASCRIPT_EXPORT Q_DECL_IMPORT
-#    endif
-#  elif defined(QT_DLL) /* use a Qt DLL library */
-#    define Q_JAVASCRIPT_EXPORT
-#  endif
-#endif
+QT_BEGIN_NAMESPACE
 
-#if defined(QT_SHARED)
-#  define Q_JAVASCRIPT_EXPORT Q_DECL_EXPORT
-#else
-#  define Q_JAVASCRIPT_EXPORT
-#endif
+class WebKitQmlPlugin : public QDeclarativeExtensionPlugin {
+    Q_OBJECT
+public:
+    virtual void registerTypes(const char* uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebKit"));
+        qmlRegisterType<QDeclarativeWebSettings>();
+        qmlRegisterType<QDeclarativeWebView>(uri, 1, 0, "WebView");
+    }
+};
 
-#endif
+QT_END_NAMESPACE
+
+#include "plugin.moc"
+
+Q_EXPORT_PLUGIN2(qmlwebkitplugin, QT_PREPEND_NAMESPACE(WebKitQmlPlugin));
+
