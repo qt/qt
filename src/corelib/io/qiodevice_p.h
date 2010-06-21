@@ -231,7 +231,9 @@ public:
             accessMode = q_func()->isSequential() ? Sequential : RandomAccess;
         return accessMode == Sequential;
     }
-    
+
+    virtual qint64 peek(char *data, qint64 maxSize);
+    virtual QByteArray peek(qint64 maxSize);
 
 #ifdef QT_NO_QOBJECT
     QIODevice *q_ptr;

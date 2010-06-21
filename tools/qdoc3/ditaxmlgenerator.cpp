@@ -1423,7 +1423,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         generateHeader(inner);
 
         writer.writeStartElement(CXXCLASS);
-        writeGuidAttribute(fullTitle);
+        writer.writeAttribute("id",cn->guid());
         writer.writeStartElement(APINAME);
         writer.writeCharacters(fullTitle);
         writer.writeEndElement(); // </apiName>
@@ -4540,10 +4540,8 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
             writer.writeAttribute("value",(*r).accessString());
             writer.writeEndElement(); // </cxxClassDerivationAccessSpecifier>
             writer.writeStartElement(CXXCLASSBASECLASS);
-            QString fullTitle = marker->plainFullName((*r).node);
-            QString guid = lookupGuid(fullTitle);
-            writer.writeAttribute("href",guid);
-            writer.writeCharacters(fullTitle);
+            writer.writeAttribute("href",(*r).node->ditaXmlHref());
+            writer.writeCharacters(marker->plainFullName((*r).node));
             writer.writeEndElement(); // </cxxClassBaseClass>
             writer.writeEndElement(); // </cxxClassDerivation>
              ++r;
@@ -4663,6 +4661,11 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             writer.writeStartElement(CXXFUNCTIONNAMELOOKUP);
             writer.writeCharacters(fnl);
             writer.writeEndElement(); // <cxxFunctionNameLookup>
+
+            //writer.writeStartElement(CXXFUNCTIONREIMPLEMENTED);
+            //writer.writeAttribute("href", zzz);
+            //writer.writeCharacters();
+            //writer.writeEndElement(); // </cxxFunctionReimplemented>
             
             writeLocation(fn, marker);
             writer.writeEndElement(); // <cxxFunctionDefinition>

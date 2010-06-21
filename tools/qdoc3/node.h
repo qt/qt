@@ -55,6 +55,7 @@
 #include "doc.h"
 #include "location.h"
 #include "text.h"
+#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
@@ -190,6 +191,8 @@ class Node
     void clearRelated() { rel = 0; }
 
     virtual QString fileBase() const;
+    QUuid guid() const { return uuid; }
+    QString ditaXmlHref();
 
  protected:
     Node(Type type, InnerNode *parent, const QString& name);
@@ -219,6 +222,7 @@ class Node
     QString u;
     QString sinc;
     QString tpl;
+    QUuid   uuid;
 };
 
 class FunctionNode;
