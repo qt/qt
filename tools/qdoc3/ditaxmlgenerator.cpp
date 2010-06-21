@@ -1402,20 +1402,20 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    const ClassNode* cn = 0;
-    const NamespaceNode *namespasse = 0;
+    ClassNode* cn = 0;
+    NamespaceNode* namespasse = 0;
 
     QString title;
     QString rawTitle;
     QString fullTitle;
     if (inner->type() == Node::Namespace) {
-        namespasse = static_cast<const NamespaceNode *>(inner);
+        namespasse = static_cast<const NamespaceNode*>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
-        cn = static_cast<const ClassNode *>(inner);
+        cn = static_cast<const ClassNode*>(inner);
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Class Reference";
@@ -4583,12 +4583,11 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     NodeList::ConstIterator m = s.members.begin();
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Function) {
-            const FunctionNode* fn = reinterpret_cast<const FunctionNode*>(*m);
-            QString name = fn->name();
+            FunctionNode* fn = static_cast<const FunctionNode*>(*m);
             writer.writeStartElement(CXXFUNCTION);
-            writeGuidAttribute(name);
+            writer.writeAttribute("id",fn->guid());
             writer.writeStartElement(APINAME);
-            writer.writeCharacters(name);
+            writer.writeCharacters(fn->name());
             writer.writeEndElement(); // </apiName>
             generateBrief(fn,marker);
             writer.writeStartElement(CXXFUNCTIONDETAIL);
@@ -4662,11 +4661,14 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             writer.writeCharacters(fnl);
             writer.writeEndElement(); // <cxxFunctionNameLookup>
 
-            //writer.writeStartElement(CXXFUNCTIONREIMPLEMENTED);
-            //writer.writeAttribute("href", zzz);
-            //writer.writeCharacters();
-            //writer.writeEndElement(); // </cxxFunctionReimplemented>
-            
+            if (fn->isReimp() && fn->reimplementedFrom() != 0) {
+                FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
+                writer.writeStartElement(CXXFUNCTIONREIMPLEMENTED);
+                writer.writeAttribute("href",rfn->ditaXmlHref());
+                writer.writeCharacters(marker->plainFullName(rfn));
+                writer.writeEndElement(); // </cxxFunctionReimplemented>
+            }
+            writeParameters(fn,marker);
             writeLocation(fn, marker);
             writer.writeEndElement(); // <cxxFunctionDefinition>
             writer.writeStartElement(APIDESC);
@@ -4686,6 +4688,32 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             }
         }
         ++m;
+    }
+}
+
+void DitaXmlGenerator::writeParameters(FunctionNode* fn, CodeMarker* marker)
+{
+    const QList<Parameter>& parameters = fn->parameters();
+    if (!parameters.isEmpty()) {
+        writer.writeStartElement(CXXFUNCTIONPARAMETERS);
+        QList<Parameter>::ConstIterator p = parameters.begin();
+        while (p != parameters.end()) {
+            writer.writeStartElement(CXXFUNCTIONPARAMETER);
+            writer.writeStartElement(CXXFUNCTIONPARAMETERDECLAREDTYPE);
+            writer.writeCharacters((*p).leftType());
+            writer.writeEndElement(); // <cxxFunctionParameterDeclaredType>
+            writer.writeStartElement(CXXFUNCTIONPARAMETERDECLARATIONNAME);
+            writer.writeCharacters((*p).name());
+            writer.writeEndElement(); // <cxxFunctionParameterDeclarationName>
+            if (!(*p).defaultValue().isEmpty()) {
+                writer.writeStartElement(CXXFUNCTIONPARAMETERDEFAULTVALUE);
+                writer.writeCharacters((*p).defaultValue());
+                writer.writeEndElement(); // <cxxFunctionParameterDefaultValue>
+            }
+            writer.writeEndElement(); // <cxxFunctionParameter>
+            ++p;
+        }
+        writer.writeEndElement(); // <cxxFunctionParameters>
     }
 }
 
