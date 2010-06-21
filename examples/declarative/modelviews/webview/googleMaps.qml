@@ -46,7 +46,7 @@
 // order to create a Map.
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 import "content/Mapping"
 
 Map {

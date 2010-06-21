@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 
 // The WebView background is transparent
 // if the HTML does not specify a background
