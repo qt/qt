@@ -81,6 +81,7 @@ Item {
                     loader.item.width = 640;
                 if(loader.item.height > 480)
                     loader.item.height = 480;
+                loader.item.inAnotherDemo = true;
             }}
 
         }
