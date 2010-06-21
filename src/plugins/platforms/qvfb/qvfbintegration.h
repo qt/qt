@@ -53,7 +53,7 @@ class QVFbScreenPrivate;
 class QVFbScreen : public QPlatformScreen
 {
 public:
-    QVFbScreen();
+    QVFbScreen(int id);
     ~QVFbScreen();
 
     QRect geometry() const;
@@ -76,7 +76,7 @@ class QVFbIntegrationPrivate;
 class QVFbIntegration : public QPlatformIntegration
 {
 public:
-    QVFbIntegration();
+    QVFbIntegration(const QStringList &paramList);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;

@@ -69,7 +69,7 @@ class QVFbScreenKeyboardHandler : public QObject
 {
     Q_OBJECT
 public:
-    QVFbScreenKeyboardHandler();
+    QVFbScreenKeyboardHandler(int displayId);
     ~QVFbScreenKeyboardHandler();
 
 private slots:
@@ -83,9 +83,8 @@ private:
     QSocketNotifier *keyNotifier;
 };
 
-QVFbScreenKeyboardHandler::QVFbScreenKeyboardHandler()
+QVFbScreenKeyboardHandler::QVFbScreenKeyboardHandler(int displayId)
 {
-    int displayId = 0; //TODO displayId
     const QString keyboardDev = QT_VFB_KEYBOARD_PIPE(displayId);
 
 
@@ -165,7 +164,7 @@ class QVFbScreenMouseHandler : public QObject
 {
     Q_OBJECT
 public:
-    QVFbScreenMouseHandler();
+    QVFbScreenMouseHandler(int displayId);
     ~QVFbScreenMouseHandler();
 
 private slots:
@@ -181,9 +180,8 @@ private:
     int oldButtonState;
 };
 
-QVFbScreenMouseHandler::QVFbScreenMouseHandler()
+QVFbScreenMouseHandler::QVFbScreenMouseHandler(int displayId)
 {
-    int displayId = 0; //TODO: displayId
     QString mouseDev = QT_VFB_MOUSE_PIPE(displayId);
 
     mouseFD = QT_OPEN(mouseDev.toLatin1().constData(), O_RDWR | O_NDELAY);
@@ -257,10 +255,11 @@ void QVFbScreenMouseHandler::readMouseData()
 class QVFbScreenPrivate
 {
 public:
-    QVFbScreenPrivate(QVFbScreen *)
+    QVFbScreenPrivate(int id)
         : shmrgn(0), hdr(0), data(0), mouseHandler(0), keyboardHandler(0)
         {
-            connect(0); //for now we only handle one screen
+            displayId = id;
+            connect(displayId);
         }
 
     ~QVFbScreenPrivate() { disconnect(); }
@@ -281,7 +280,7 @@ private:
     uchar *data;
     QVFbScreenMouseHandler *mouseHandler;
     QVFbScreenKeyboardHandler *keyboardHandler;
-
+    int displayId;
 
     QImage img;
 };
@@ -296,7 +295,7 @@ void QVFbScreenPrivate::setDirty(const QRect &r)
 
 bool QVFbScreenPrivate::connect(int displayId)
 {
-
+    qDebug() << "QVFbScreenPrivate::connect" << displayId;
     key_t key = ftok(QT_VFB_MOUSE_PIPE(displayId).toLatin1(), 'b');
 
     if (key == -1)
@@ -339,8 +338,8 @@ bool QVFbScreenPrivate::connect(int displayId)
     qDebug("connected %dx%d %d bpp", w, h, d);
 
 
-    mouseHandler = new QVFbScreenMouseHandler;
-    keyboardHandler = new QVFbScreenKeyboardHandler;
+    mouseHandler = new QVFbScreenMouseHandler(displayId);
+    keyboardHandler = new QVFbScreenKeyboardHandler(displayId);
     return true;
 }
 
@@ -357,9 +356,9 @@ void QVFbScreenPrivate::disconnect()
 }
 
 
-QVFbScreen::QVFbScreen()
+QVFbScreen::QVFbScreen(int id)
 {
-    d_ptr = new QVFbScreenPrivate(this);
+    d_ptr = new QVFbScreenPrivate(id);
 }
 
 
@@ -409,9 +408,13 @@ QImage *QVFbScreen::screenImage()
     return d_ptr->screenImage();
 }
 
-QVFbIntegration::QVFbIntegration()
+QVFbIntegration::QVFbIntegration(const QStringList &paramList)
 {
-    mPrimaryScreen = new QVFbScreen();
+    int displayId = 0;
+    if (paramList.length() > 0)
+        displayId = paramList.at(0).toInt();
+
+    mPrimaryScreen = new QVFbScreen(displayId);
 
     mScreens.append(mPrimaryScreen);
 }

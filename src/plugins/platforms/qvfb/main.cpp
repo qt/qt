@@ -63,7 +63,7 @@ QPlatformIntegration* QVFbIntegrationPlugin::create(const QString& system, const
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "qvfb")
-        return new QVFbIntegration;
+        return new QVFbIntegration(paramList);
 
     return 0;
 }
