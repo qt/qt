@@ -143,7 +143,7 @@ Item {
     MouseArea{
         z: 8
         enabled: main.show
-        hoverEnabled: true //To steal focus from the buttons
+        hoverEnabled: main.show //To steal focus from the buttons
         anchors.fill: parent
         onClicked: main.show=false;
     }
