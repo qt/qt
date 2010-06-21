@@ -213,15 +213,12 @@ void QDeclarativeAnchorsPrivate::centerInChanged()
 
     if (updatingCenterIn < 2) {
         ++updatingCenterIn;
-        QGraphicsItemPrivate *itemPrivate = QGraphicsItemPrivate::get(item);
         if (centerIn == item->parentItem()) {
-            QGraphicsItemPrivate *parentPrivate = QGraphicsItemPrivate::get(item->parentItem());
             QPointF p(hcenter(item->parentItem()) - hcenter(item) + hCenterOffset,
                       vcenter(item->parentItem()) - vcenter(item) + vCenterOffset);
             setItemPos(p);
 
         } else if (centerIn->parentItem() == item->parentItem()) {
-            QGraphicsItemPrivate *centerPrivate = QGraphicsItemPrivate::get(centerIn);
             QPointF p(centerIn->x() + hcenter(centerIn) - hcenter(item) + hCenterOffset,
                       centerIn->y() + vcenter(centerIn) - vcenter(item) + vCenterOffset);
             setItemPos(p);
