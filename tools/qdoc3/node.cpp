@@ -101,7 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
-    uuid = QUuid::createUuid();
+    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -241,20 +241,32 @@ QString Node::fileBase() const
     return base.toLower();
 }
 
-/*! \fnQUuid Node::guid() const
+/*!
   Returns this node's Universally Unique IDentifier.
   If its UUID has not yet been created, it is created
   first.
  */
+QUuid Node::guid()
+{
+    if (uuid.isNull())
+        uuid = QUuid::createUuid();
+    return uuid;
+}
 
 /*!
   Composes a string to be used as an href attribute in DITA
   XML. It is composed of the file name and the UUID separated
-  by a '#'
+  by a '#'. If this node is a class node, the file name is
+  taken from this node; if this node is a function node, the
+  file name is taken from the parent node of this node.
  */
 QString Node::ditaXmlHref()
 {
-    QString href = fileBase();
+    QString href;
+    if (type() == Function)
+        href = parent()->fileBase();
+    else
+        href = fileBase();
     if (!href.endsWith(".xml"))
         href += ".xml";
     return href + "#" + guid();

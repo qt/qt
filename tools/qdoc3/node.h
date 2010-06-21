@@ -191,7 +191,8 @@ class Node
     void clearRelated() { rel = 0; }
 
     virtual QString fileBase() const;
-    QUuid guid() const { return uuid; }
+    //QUuid guid() const { return uuid; }
+    QUuid guid();
     QString ditaXmlHref();
 
  protected:
