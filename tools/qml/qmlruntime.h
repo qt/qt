@@ -43,7 +43,6 @@
 #define QDECLARATIVEVIEWER_H
 
 #include <QMainWindow>
-#include <QMenuBar>
 #include <private/qdeclarativetimer_p.h>
 #include <QTime>
 #include <QList>
@@ -62,17 +61,17 @@ class QNetworkReply;
 class QNetworkCookieJar;
 class NetworkAccessManagerFactory;
 class QTranslator;
+class QActionGroup;
 
 class QDeclarativeViewer
-#if defined(Q_OS_SYMBIAN)
     : public QMainWindow
-#else
-    : public QWidget
-#endif
 {
-Q_OBJECT
+    Q_OBJECT
+    QDeclarativeViewer(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    static QDeclarativeViewer *inst;
+
 public:
-    QDeclarativeViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
+    static QDeclarativeViewer *instance(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~QDeclarativeViewer();
 
     static void registerTypes();
@@ -106,8 +105,6 @@ public:
     void updateSizeHints();
     void setSizeToView(bool sizeToView);
 
-    QMenuBar *menuBar() const;
-
     QDeclarativeView *view() const;
     LoggerWidget *warningsWidget() const;
 
@@ -132,7 +129,7 @@ public slots:
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual bool event(QEvent *);
-    void createMenu(QMenuBar *menu, QMenu *flatmenu);
+    void createMenu();
 
 private slots:
     void autoStartRecording();
@@ -150,7 +147,6 @@ private slots:
 
 private:
     QString getVideoFileName();
-    int menuBarHeight() const;
 
     LoggerWidget *loggerWindow;
     QDeclarativeView *canvas;
@@ -173,7 +169,6 @@ private:
     QAction *recordAction;
     QString currentSkin;
     bool scaleSkin;
-    mutable QMenuBar *mb;
     RecordingDialog *recdlg;
 
     void senseImageMagick();
