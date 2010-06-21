@@ -1463,6 +1463,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     cache->setPaintEnginePrivate(this);
     cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
                     staticTextItem->glyphPositions);
+    cache->fillInPendingGlyphs();
 
     if (cache->width() == 0 || cache->height() == 0)
         return;

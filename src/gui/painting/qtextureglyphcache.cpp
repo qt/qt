@@ -126,8 +126,9 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         return;
 
     rowHeight += margin * 2 + paddingDoubled;
-    if (isNull())
-        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, qt_next_power_of_two(rowHeight));
+
+    if (m_w == 0)
+        m_w = QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH;
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();
@@ -142,26 +143,50 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             m_cy += m_currentRowHeight + paddingDoubled;
             m_currentRowHeight = 0; // New row
         }
-        if (m_cy + c.h > m_h) {
-            int new_height = m_h*2;
-            while (new_height < m_cy + c.h)
-                new_height *= 2;
-            // if no room in the current texture - realloc a larger texture
-            resizeTextureData(m_w, new_height);
-            m_h = new_height;
-        }
 
         c.x = m_cx;
         c.y = m_cy;
 
-        fillTexture(c, iter.key());
         coords.insert(iter.key(), c);
+        m_pendingGlyphs.insert(iter.key(), c);
 
         m_cx += c.w + paddingDoubled;
         ++iter;
     }
+}
 
+void QTextureGlyphCache::fillInPendingGlyphs()
+{
+    if (m_pendingGlyphs.isEmpty())
+        return;
 
+    int requiredHeight = 0;
+    {
+        QHash<glyph_t, Coord>::iterator iter = m_pendingGlyphs.begin();
+        while (iter != m_pendingGlyphs.end()) {
+            Coord c = iter.value();
+            requiredHeight = qMax(requiredHeight, c.y + c.h);
+            ++iter;
+        }
+    }
+
+    if (requiredHeight > m_h) {
+        if (isNull())
+            createCache(m_w, qt_next_power_of_two(requiredHeight));
+        else
+            resizeCache(m_w, qt_next_power_of_two(requiredHeight));
+    }
+
+    {
+        QHash<glyph_t, Coord>::iterator iter = m_pendingGlyphs.begin();
+        while (iter != m_pendingGlyphs.end()) {
+            fillTexture(iter.value(), iter.key());
+
+            ++iter;
+        }
+    }
+
+    m_pendingGlyphs.clear();
 }
 
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
