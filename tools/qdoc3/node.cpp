@@ -789,6 +789,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
+    abstract = false;
     setPageType(ApiPage);
 }
 
@@ -1075,6 +1076,19 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
       ap(0)
 {
     // nothing.
+}
+
+/*!
+  Sets the \a virtualness of this function. If the \a virtualness
+  is PureVirtual, and if the parent() is a ClassNode, set the parent's
+  \e abstract flag to true.
+ */
+void FunctionNode::setVirtualness(Virtualness virtualness)
+{
+    vir = virtualness;
+    if ((virtualness == PureVirtual) && parent() &&
+        (parent()->type() == Node::Class))
+        parent()->setAbstract(true);
 }
 
 /*!

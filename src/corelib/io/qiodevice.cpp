@@ -1476,10 +1476,13 @@ bool QIODevice::getChar(char *c)
 */
 qint64 QIODevice::peek(char *data, qint64 maxSize)
 {
+    Q_D(QIODevice);
     qint64 readBytes = read(data, maxSize);
-    int i = readBytes;
-    while (i > 0)
-        ungetChar(data[i-- - 1]);
+    if (readBytes <= 0)
+        return readBytes;
+
+    d->buffer.ungetBlock(data, readBytes);
+    d->pos -= readBytes;
     return readBytes;
 }
 
@@ -1502,11 +1505,15 @@ qint64 QIODevice::peek(char *data, qint64 maxSize)
 */
 QByteArray QIODevice::peek(qint64 maxSize)
 {
+    Q_D(QIODevice);
     QByteArray result = read(maxSize);
-    int i = result.size();
-    const char *data = result.constData();
-    while (i > 0)
-        ungetChar(data[i-- - 1]);
+
+    if (result.isEmpty())
+        return result;
+
+    d->buffer.ungetBlock(result.constData(), result.size());
+    d->pos -= result.size();
+
     return result;
 }
 

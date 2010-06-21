@@ -1215,8 +1215,8 @@ qsreal QScriptValue::toInteger() const
     \row    \o QObject Object \o A QVariant containing a pointer to the QObject.
     \row    \o Date Object \o A QVariant containing the date value (toDateTime()).
     \row    \o RegExp Object \o A QVariant containing the regular expression value (toRegExp()).
-    \row    \o Array Object \o The array is converted to a QVariantList.
-    \row    \o Object     \o If the value is primitive, then the result is converted to a QVariant according to the above rules; otherwise, an invalid QVariant is returned.
+    \row    \o Array Object \o The array is converted to a QVariantList. Each element is converted to a QVariant, recursively; cyclic references are not followed.
+    \row    \o Object     \o The object is converted to a QVariantMap. Each property is converted to a QVariant, recursively; cyclic references are not followed.
     \endtable
 
   \sa isVariant()
