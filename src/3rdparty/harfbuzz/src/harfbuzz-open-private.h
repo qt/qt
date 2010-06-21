@@ -79,7 +79,7 @@ HB_INTERNAL void  _HB_OPEN_Free_LookupList( HB_LookupList*  ll,
 
 HB_INTERNAL void  _HB_OPEN_Free_Coverage( HB_Coverage*  c );
 HB_INTERNAL void  _HB_OPEN_Free_ClassDefinition( HB_ClassDefinition*  cd );
-HB_INTERNAL void  _HB_OPEN_Free_Device( HB_Device**  d );
+HB_INTERNAL void  _HB_OPEN_Free_Device( HB_Device*  d );
 
 
 
