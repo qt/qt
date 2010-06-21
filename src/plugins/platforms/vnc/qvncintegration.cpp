@@ -92,6 +92,11 @@ static void usage()
     qWarning() << "         defaults to" << defaultWidth() << "x" << defaultHeight();
     qWarning() << "    display=<ID> - set the VNC display port to ID + 5900";
     qWarning() << "         defaults to" << defaultDisplay();
+    qWarning() << "    offset=<X>x<Y> - set the current screens offset";
+    qWarning() << "    vnc - start configuration of a new screen";
+    qWarning() << "         size and offset are inherited from the previous screen if not set";
+    qWarning() << "         display id is incremented from the previous screen if not set";
+    qWarning() << "    virtual - manage the set of screens as a virtual desktop";
 }
 
 QVNCIntegration::QVNCIntegration(const QStringList& paramList)
