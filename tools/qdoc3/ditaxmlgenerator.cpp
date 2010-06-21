@@ -4563,6 +4563,11 @@ void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
         s2 = CXXFUNCTIONDECLARATIONFILE;
         s3 = CXXFUNCTIONDECLARATIONFILELINE;
     }
+    else if (n->type() == Node::Enum) {
+        s1 = CXXENUMERATIONAPIITEMLOCATION;
+        s2 = CXXENUMERATIONDECLARATIONFILE;
+        s3 = CXXENUMERATIONDECLARATIONFILELINE;
+    }
     writer.writeStartElement(s1);
     writer.writeStartElement(s2);
     writer.writeAttribute("name","filePath");
@@ -4727,6 +4732,67 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
                                          const ClassNode* cn, 
                                          CodeMarker* marker)
 {
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Enum) {
+            EnumNode* en = static_cast<const EnumNode*>(*m);
+            writer.writeStartElement(CXXENUMERATION);
+            writer.writeAttribute("id",en->guid());
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(en->name());
+            writer.writeEndElement(); // </apiName>
+            generateBrief(en,marker);
+            writer.writeStartElement(CXXENUMERATIONDETAIL);
+            writer.writeStartElement(CXXENUMERATIONDEFINITION);
+            writer.writeStartElement(CXXENUMERATIONACCESSSPECIFIER);
+            writer.writeAttribute("value",en->accessString());
+            writer.writeEndElement(); // <cxxEnumerationAccessSpecifier>
+
+            QString fq = fullQualification(en);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXENUMERATIONSCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxEnumerationScopedName>
+            }
+            const QList<EnumItem>& items = en->items();
+            if (!items.isEmpty()) {
+                writer.writeStartElement(CXXENUMERATIONPROTOTYPE);
+                writer.writeCharacters(en->name());
+                writer.writeCharacters(" = { ");
+                QList<EnumItem>::ConstIterator i = items.begin();
+                while (i != items.end()) {
+                    writer.writeCharacters((*i).name());
+                    if (!(*i).value().isEmpty()) {
+                        writer.writeCharacters(" = ");
+                        writer.writeCharacters((*i).value());
+                    }
+                    ++i;
+                    if (i != items.end())
+                        writer.writeCharacters(", ");
+                }
+                writer.writeCharacters(" }");
+                writer.writeEndElement(); // <cxxEnumerationPrototype>
+            }
+
+            writer.writeStartElement(CXXENUMERATIONNAMELOOKUP);
+            writer.writeCharacters(en->parent()->name() + "::" + en->name());
+            writer.writeEndElement(); // <cxxEnumerationNameLookup>
+
+            writeLocation(en, marker);
+            writer.writeEndElement(); // <cxxEnumerationDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!en->doc().isEmpty()) {
+                generateBody(en, marker);
+                //        generateAlsoList(inner, marker);
+            }
+
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxEnumerationDetail>
+            writer.writeEndElement(); // </cxxEnumeration>
+        }
+        ++m;
+    }
 }
 
 void DitaXmlGenerator::writeTypedefs(const Section& s, 

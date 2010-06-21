@@ -968,6 +968,8 @@ QString FakeNode::subTitle() const
  */
 
 /*!
+  The constructor for the node representing an enum type
+  has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
@@ -975,6 +977,7 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
 }
 
 /*!
+  Add \a item to the enum type's item list.
  */
 void EnumNode::addItem(const EnumItem& item)
 {
@@ -983,15 +986,15 @@ void EnumNode::addItem(const EnumItem& item)
 }
 
 /*!
+  Returns the access level of the enumeration item named \a name.
+  Apparently it is private if it has been omitted by qdoc's
+  omitvalue command. Otherwise it is public.
  */
 Node::Access EnumNode::itemAccess(const QString &name) const
 {
-    if (doc().omitEnumItemNames().contains(name)) {
+    if (doc().omitEnumItemNames().contains(name))
         return Private;
-    }
-    else {
-        return Public;
-    }
+    return Public;
 }
 
 /*!
