@@ -6100,8 +6100,15 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                     if (ev.isAccepted() || ev.isAccepted(g)) {
                         conflictedGestures.remove(g);
                         // mark the item as a gesture target
-                        if (item)
+                        if (item) {
                             gestureTargets.insert(g, item.data());
+                            QHash<QGraphicsObject *, QSet<QGesture *> >::iterator it, e;
+                            it = cachedItemGestures.begin();
+                            e = cachedItemGestures.end();
+                            for(; it != e; ++it)
+                                it.value().remove(g);
+                            cachedItemGestures[item.data()].insert(g);
+                        }
                         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                                 << "override was accepted:"
                                 << g << item.data();
@@ -6270,7 +6277,8 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
 {
     Q_ASSERT(original);
     QGraphicsItem *originalItem = gestureTargets.value(original);
-    Q_ASSERT(originalItem);
+    if (originalItem == 0) // we only act on accepted gestures, which implies it has a target.
+        return;
 
     // iterate over all active gestures and for each find the owner
     // if the owner is part of our sub-hierarchy, cancel it.

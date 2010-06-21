@@ -34,6 +34,10 @@
 
 HB_BEGIN_HEADER
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
 /*
    using anything else than signed or unsigned for bitfields in C is non standard,
    but accepted by almost all compilers. And it gives a significant reduction in
@@ -280,6 +284,10 @@ struct HB_ShaperItem_ {
 };
 
 HB_Bool HB_ShapeItem(HB_ShaperItem *item);
+
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 

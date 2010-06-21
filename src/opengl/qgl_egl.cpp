@@ -190,7 +190,7 @@ void QGLContext::makeCurrent()
         if (!d->workaroundsCached) {
             d->workaroundsCached = true;
             const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
-            if (strstr(renderer, "SGX") || strstr(renderer, "MBX")) {
+            if (renderer && (strstr(renderer, "SGX") || strstr(renderer, "MBX"))) {
                 // PowerVR MBX/SGX chips needs to clear all buffers when starting to render
                 // a new frame, otherwise there will be a performance penalty to pay for
                 // each frame.
@@ -200,7 +200,8 @@ void QGLContext::makeCurrent()
                 // bug which prevents glCopyTexSubImage2D() to work with a POT
                 // or GL_ALPHA texture bound to an FBO. The only way to
                 // identify that driver is to check the EGL version number for it.
-                if (strstr(eglQueryString(d->eglContext->display(), EGL_VERSION), "1.3"))
+                const char *egl_version = eglQueryString(d->eglContext->display(), EGL_VERSION);
+                if (egl_version && strstr(egl_version, "1.3"))
                     d->workaround_brokenFBOReadBack = true;
             }
         }

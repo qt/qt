@@ -884,7 +884,7 @@ void QCleanlooksStyle::drawPrimitive(PrimitiveElement elem,
         }
         painter->restore();
         break;
-#ifndef QT_NO_LINEDIT
+#ifndef QT_NO_LINEEDIT
     case PE_FrameLineEdit:
         // fall through
 #endif // QT_NO_LINEEDIT

@@ -90,17 +90,33 @@ Rectangle {
             enabled: initialWidth != 0
         }
 
+        onOpened: nameInputText.focus = true;
+        onClosed: {
+            nameInputText.focus = false;
+            if (nameInputText.text != "")
+                Logic.saveHighScore(nameInputText.text);
+        }
         Text {
             id: dialogText
             anchors { left: nameInputDialog.left; leftMargin: 20; verticalCenter: parent.verticalCenter }
             text: "You won! Please enter your name: "
         }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (nameInputText.text == "")
+                    nameInputText.openSoftwareInputPanel();
+                else
+                    nameInputDialog.forceClose();
+            }
+        }
 
         TextInput {
             id: nameInputText
             anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
-            focus: true
-
+            focus: false
+            autoScroll: false
+            maximumLength: 24
             onTextChanged: {
                 var newWidth = nameInputText.width + dialogText.width + 40;
                 if ( (newWidth > nameInputDialog.width && newWidth < screen.width) 
@@ -108,8 +124,6 @@ Rectangle {
                     nameInputDialog.width = newWidth;
             }
             onAccepted: {
-                if (nameInputDialog.opacity == 1 && nameInputText.text != "")
-                    Logic.saveHighScore(nameInputText.text);
                 nameInputDialog.forceClose();
             }
         }

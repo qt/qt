@@ -121,6 +121,9 @@ Rectangle {
                     onClicked: {
                         if (editor.state == "") {
                             edit.cursorPosition = edit.positionAt(mouse.x+x,mouse.y+y);
+                            if (!edit.focus)
+                                edit.focus = true;
+                            edit.openSoftwareInputPanel();
                         }
                     }
                     function hitHandle(h,x,y) { return x>=h.x+flick.contentX && x<h.x+flick.contentX+h.width && y>=h.y+flick.contentY && y<h.y+flick.contentY+h.height }

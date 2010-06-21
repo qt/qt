@@ -1329,8 +1329,8 @@ void QSslSocket::setDefaultCaCertificates(const QList<QSslCertificate> &certific
 /*!
     Returns the current default CA certificate database. This database
     is originally set to your system's default CA certificate database.
-    If no system default database is found, Qt will provide its own
-    default database. You can override the default CA certificate database
+    If no system default database is found, an empty database will be
+    returned. You can override the default CA certificate database
     with your own CA certificate database using setDefaultCaCertificates().
 
     Each SSL socket's CA certificate database is initialized to the
@@ -1344,8 +1344,8 @@ QList<QSslCertificate> QSslSocket::defaultCaCertificates()
 }
 
 /*!
-    This function provides a default CA certificate database
-    shipped together with Qt. The CA certificate database
+    This function provides the CA certificate database
+    provided by the operating system. The CA certificate database
     returned by this function is used to initialize the database
     returned by defaultCaCertificates(). You can replace that database
     with your own with setDefaultCaCertificates().

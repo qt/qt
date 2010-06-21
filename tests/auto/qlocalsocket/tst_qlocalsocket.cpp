@@ -115,7 +115,8 @@ private slots:
     void writeToClientAndDisconnect();
     void debug();
     void bytesWrittenSignal();
-
+    void syncDisconnectNotify();
+    void asyncDisconnectNotify();
 
 #ifdef Q_OS_SYMBIAN
 private:
@@ -683,25 +684,11 @@ public:
         QString testLine = "test";
         LocalSocket socket;
         QSignalSpy spyReadyRead(&socket, SIGNAL(readyRead()));
-        int tries = 0;
-        do {
-            socket.connectToServer("qlocalsocket_threadtest");
-            if (socket.error() != QLocalSocket::ServerNotFoundError
-                && socket.error() != QLocalSocket::ConnectionRefusedError)
-                break;
-            QTest::qWait(100);
-            ++tries;
-        } while ((socket.error() == QLocalSocket::ServerNotFoundError
-                  || socket.error() == QLocalSocket::ConnectionRefusedError)
-             && tries < 1000);
-        if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
-            QVERIFY(socket.waitForConnected(7000));
-            QVERIFY(socket.state() == QLocalSocket::ConnectedState);
-        }
+        socket.connectToServer("qlocalsocket_threadtest");
+        QVERIFY(socket.waitForConnected(1000));
 
         // We should *not* have this signal yet!
-        if (tries == 0)
-            QCOMPARE(spyReadyRead.count(), 0);
+        QCOMPARE(spyReadyRead.count(), 0);
         socket.waitForReadyRead();
         QCOMPARE(spyReadyRead.count(), 1);
         QTextStream in(&socket);
@@ -715,6 +702,8 @@ class Server : public QThread
 
 public:
     int clients;
+    QMutex mutex;
+    QWaitCondition wc;
     void run()
     {
         QString testLine = "test";
@@ -722,6 +711,9 @@ public:
         server.setMaxPendingConnections(10);
         QVERIFY2(server.listen("qlocalsocket_threadtest"),
                  server.errorString().toLatin1().constData());
+        mutex.lock();
+        wc.wakeAll();
+        mutex.unlock();
         int done = clients;
         while (done > 0) {
             bool timedOut = true;
@@ -746,14 +738,9 @@ void tst_QLocalSocket::threadedConnection_data()
     QTest::addColumn<int>("threads");
     QTest::newRow("1 client") << 1;
     QTest::newRow("2 clients") << 2;
-#ifdef Q_OS_WINCE
-    QTest::newRow("4 clients") << 4;
-#endif
-#ifndef Q_OS_WIN
     QTest::newRow("5 clients") << 5;
-    QTest::newRow("10 clients") << 10;
-#endif
 #ifndef Q_OS_WINCE
+    QTest::newRow("10 clients") << 10;
     QTest::newRow("20 clients") << 20;
 #endif
 }
@@ -770,7 +757,9 @@ void tst_QLocalSocket::threadedConnection()
     server.setStackSize(0x14000);
 #endif
     server.clients = threads;
+    server.mutex.lock();
     server.start();
+    server.wc.wait(&server.mutex);
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
@@ -784,9 +773,7 @@ void tst_QLocalSocket::threadedConnection()
     server.wait();
     while (!clients.isEmpty()) {
         QVERIFY(clients.first()->wait(3000));
-        Client *client =clients.takeFirst();
-        client->terminate();
-        delete client;
+        delete clients.takeFirst();
     }
 }
 
@@ -994,6 +981,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
 
     QLocalServer server;
     QLocalSocket client;
+    QSignalSpy readChannelFinishedSpy(&client, SIGNAL(readChannelFinished()));
 
     QVERIFY(server.listen("writeAndDisconnectServer"));
     client.connectToServer("writeAndDisconnectServer");
@@ -1006,10 +994,12 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     memset(buffer, 0, sizeof(buffer));
     QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     clientSocket->waitForBytesWritten();
-    clientSocket->disconnectFromServer();
-    QVERIFY(client.waitForReadyRead());
+    clientSocket->close();
+    server.close();
+
+    QTRY_COMPARE(readChannelFinishedSpy.count(), 1);
     QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
-    QVERIFY(client.waitForDisconnected());
+    client.waitForDisconnected();
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
@@ -1063,6 +1053,41 @@ void tst_QLocalSocket::bytesWrittenSignal()
     QVERIFY(!timedOut);
     QTest::qWait(2000);
     QVERIFY(writeThread.wait(2000));
+}
+
+void tst_QLocalSocket::syncDisconnectNotify()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("syncDisconnectNotify");
+#endif
+
+    QLocalServer server;
+    QVERIFY(server.listen("syncDisconnectNotify"));
+    QLocalSocket client;
+    client.connectToServer("syncDisconnectNotify");
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    delete serverSocket;
+    QCOMPARE(client.waitForReadyRead(), false);
+}
+
+void tst_QLocalSocket::asyncDisconnectNotify()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("asyncDisconnectNotify");
+#endif
+
+    QLocalServer server;
+    QVERIFY(server.listen("asyncDisconnectNotify"));
+    QLocalSocket client;
+    QSignalSpy disconnectedSpy(&client, SIGNAL(disconnected()));
+    client.connectToServer("asyncDisconnectNotify");
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+    delete serverSocket;
+    QTRY_VERIFY(!disconnectedSpy.isEmpty());
 }
 
 #ifdef Q_OS_SYMBIAN

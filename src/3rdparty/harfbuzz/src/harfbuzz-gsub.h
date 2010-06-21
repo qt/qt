@@ -32,6 +32,10 @@
 HB_BEGIN_HEADER
 
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(push, 1)
+#endif
+
 /* Lookup types for glyph substitution */
 
 #define HB_GSUB_LOOKUP_SINGLE        1
@@ -60,6 +64,14 @@ typedef HB_UShort  (*HB_AltFunction)(HB_UInt    pos,
 
 struct  HB_GSUBHeader_
 {
+  HB_GDEFHeader*  gdef;
+
+  /* the next two fields are used for an alternate substitution callback
+     function to select the proper alternate glyph.                      */
+
+  void*            data;
+  HB_AltFunction  altfunc;
+
   HB_UInt         offset;
 
   HB_16Dot16         Version;
@@ -67,14 +79,6 @@ struct  HB_GSUBHeader_
   HB_ScriptList   ScriptList;
   HB_FeatureList  FeatureList;
   HB_LookupList   LookupList;
-
-  HB_GDEFHeader*  gdef;
-
-  /* the next two fields are used for an alternate substitution callback
-     function to select the proper alternate glyph.                      */
-
-  HB_AltFunction  altfunc;
-  void*            data;
 };
 
 typedef struct HB_GSUBHeader_   HB_GSUBHeader;
@@ -135,6 +139,9 @@ HB_Error  HB_GSUB_Register_Alternate_Function( HB_GSUBHeader*  gsub,
 HB_Error  HB_GSUB_Apply_String( HB_GSUBHeader*   gsub,
 				HB_Buffer        buffer );
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
 
 HB_END_HEADER
 

@@ -36,7 +36,7 @@ building-libs {
             win32-*|wince* {
                 CONFIG(debug, debug|release):build_pass: QTWEBKITLIBNAME = $${QTWEBKITLIBNAME}d
                 QTWEBKITLIBNAME = $${QTWEBKITLIBNAME}$${QT_MAJOR_VERSION}
-                win32-g++: LIBS += -l$$QTWEBKITLIBNAME
+                win32-g++*: LIBS += -l$$QTWEBKITLIBNAME
                 else: LIBS += $${QTWEBKITLIBNAME}.lib
             } else {
                 LIBS += -lQtWebKit

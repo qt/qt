@@ -409,13 +409,15 @@ bool QPpmHandler::readHeader()
 
 bool QPpmHandler::canRead() const
 {
-    if (state == Ready) {
-        if (!canRead(device(), &subType))
-            return false;
+    if (state == Ready && !canRead(device(), &subType))
+        return false;
+
+    if (state != Error) {
         setFormat(subType);
         return true;
     }
-    return state != Error;
+
+    return false;
 }
 
 bool QPpmHandler::canRead(QIODevice *device, QByteArray *subType)

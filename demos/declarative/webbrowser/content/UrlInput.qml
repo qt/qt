@@ -48,6 +48,7 @@ Item {
     property alias url: urlText.text
 
     signal urlEntered(string url)
+    signal urlChanged
 
     width: parent.height; height: parent.height
 
@@ -69,14 +70,24 @@ Item {
         id: urlText
         horizontalAlignment: TextEdit.AlignLeft
         font.pixelSize: 14; focusOnPress: true
+
+        onTextChanged: container.urlChanged()
+
         Keys.onEscapePressed: {
             urlText.text = webView.url
             webView.focus = true
         }
+
+        Keys.onEnterPressed: {
+            container.urlEntered(urlText.text)
+            webView.focus = true
+        }
+
         Keys.onReturnPressed: {
             container.urlEntered(urlText.text)
             webView.focus = true
         }
+
         anchors {
             left: parent.left; right: parent.right; leftMargin: 18; rightMargin: 18
             verticalCenter: parent.verticalCenter

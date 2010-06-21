@@ -225,6 +225,8 @@ private slots:
     void engineDeleted();
     void valueOfWithClosure();
     void objectId();
+    void nestedObjectToVariant_data();
+    void nestedObjectToVariant();
 
 private:
     typedef void (tst_QScriptValue::*InitDataFunction)();

@@ -138,7 +138,8 @@ contains(QT_CONFIG, freetype) {
 	../3rdparty/freetype/src/base/ftinit.c \
 	../3rdparty/freetype/src/base/ftmm.c \
 	../3rdparty/freetype/src/base/fttype1.c \
-          ../3rdparty/freetype/src/base/ftbitmap.c\
+	../3rdparty/freetype/src/base/ftsynth.c \
+	../3rdparty/freetype/src/base/ftbitmap.c \
 	../3rdparty/freetype/src/bdf/bdf.c \
 	../3rdparty/freetype/src/cache/ftcache.c \
 	../3rdparty/freetype/src/cff/cff.c \

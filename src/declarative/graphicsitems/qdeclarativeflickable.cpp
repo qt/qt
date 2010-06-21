@@ -351,6 +351,8 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     Flickable places its children on a surface that can be dragged and flicked.
 
     \code
+    import Qt 4.7
+
     Flickable {
         width: 200; height: 200
         contentWidth: image.width; contentHeight: image.height
@@ -1039,11 +1041,11 @@ QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildr
     The \c boundsBehavior can be one of:
 
     \list
-    \o \e Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
+    \o Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
     of the flickable, and flicks will not overshoot.
-    \o \e Flickable.DragOverBounds - the contents can be dragged beyond the boundary
+    \o Flickable.DragOverBounds - the contents can be dragged beyond the boundary
     of the Flickable, but flicks will not overshoot.
-    \o \e Flickable.DragAndOvershootBounds (default) - the contents can be dragged
+    \o Flickable.DragAndOvershootBounds (default) - the contents can be dragged
     beyond the boundary of the Flickable, and can overshoot the
     boundary when flicked.
     \endlist
@@ -1212,6 +1214,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         default:
             break;
         }
+        stealThisEvent = d->stealMouse;   // Update stealThisEvent and grabber in case changed by function calls above
         grabber = qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem());
         if (grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this) {
             d->clearDelayedPress();

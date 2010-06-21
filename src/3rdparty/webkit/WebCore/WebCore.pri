@@ -101,17 +101,18 @@ greaterThan(QT_MINOR_VERSION, 5) {
     DEFINES += ENABLE_XSLT=0
 }
 
-!CONFIG(QTDIR_build):!contains(DEFINES, ENABLE_QT_BEARER=.) {
-    symbian: {
-        exists($${EPOCROOT}epoc32/release/winscw/udeb/QtBearer.lib)| \
-        exists($${EPOCROOT}epoc32/release/armv5/lib/QtBearer.lib) {
+# Bearer management is part of Qt 4.7
+# for older version, check for mobility with bearer 
+!contains(DEFINES, ENABLE_QT_BEARER=.) {
+     !lessThan(QT_MINOR_VERSION, 7) {
+        DEFINES += ENABLE_QT_BEARER=1
+     } else {
+        load(mobilityconfig, true)
+        contains(MOBILITY_CONFIG, bearer) {
             DEFINES += ENABLE_QT_BEARER=1
         }
     }
 }
-
-# Bearer management is part of Qt 4.7
-!lessThan(QT_MINOR_VERSION, 7):!contains(DEFINES, ENABLE_QT_BEARER=.):DEFINES += ENABLE_QT_BEARER=1
 
 # Enable touch event support with Qt 4.6
 !lessThan(QT_MINOR_VERSION, 6): DEFINES += ENABLE_TOUCH_EVENTS=1
@@ -593,6 +594,7 @@ contains(DEFINES, ENABLE_SVG=1) {
     # GENERATOR 5-C:
     svgnames.output = $${WC_GENERATED_SOURCES_DIR}/SVGNames.cpp
     svgnames.input = SVG_NAMES
+    svgnames.depends = $$PWD/svg/svgattrs.in
     svgnames.wkScript = $$PWD/dom/make_names.pl
     svgnames.commands = perl -I$$PWD/bindings/scripts $$svgnames.wkScript --tags $$PWD/svg/svgtags.in --attrs $$PWD/svg/svgattrs.in --extraDefines \"$${DEFINES}\" --preprocessor \"$${QMAKE_MOC} -E\" --factory --wrapperFactory --outputDir $$WC_GENERATED_SOURCES_DIR
     svgnames.wkExtraSources = $${WC_GENERATED_SOURCES_DIR}/SVGElementFactory.cpp $${WC_GENERATED_SOURCES_DIR}/JSSVGElementWrapperFactory.cpp

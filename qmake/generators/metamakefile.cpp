@@ -529,8 +529,17 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
         *host_mode = Option::HOST_UNIX_MODE;
         *target_mode = Option::TARG_UNIX_MODE;
 #endif
-    } else if (gen == "MSVC.NET" || gen == "MINGW" || gen == "BMAKE" || gen == "MSBUILD") {
+    } else if (gen == "MSVC.NET" || gen == "BMAKE" || gen == "MSBUILD") {
         *host_mode = Option::HOST_WIN_MODE;
+        *target_mode = Option::TARG_WIN_MODE;
+    } else if (gen == "MINGW") {
+#if defined(Q_OS_MAC)
+        *host_mode = Option::HOST_MACX_MODE;
+#elif defined(Q_OS_UNIX)
+        *host_mode = Option::HOST_UNIX_MODE;
+#else
+        *host_mode = Option::HOST_WIN_MODE;
+#endif
         *target_mode = Option::TARG_WIN_MODE;
     } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
         *host_mode = Option::HOST_MACX_MODE;
