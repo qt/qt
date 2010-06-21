@@ -55,8 +55,8 @@ Rectangle {
             source: "pics/startHandle.sci"
             opacity: 0.0
             width: 10
-            x: edit.positionToRectangle(edit.selectionStart).x-flick.contentX-width
-            y: edit.positionToRectangle(edit.selectionStart).y-flick.contentY
+            x: edit.positionToRectangle(edit.selectionStart).x - flick.contentX-width
+            y: edit.positionToRectangle(edit.selectionStart).y - flick.contentY
             height: edit.positionToRectangle(edit.selectionStart).height
         }
 
@@ -65,8 +65,8 @@ Rectangle {
             source: "pics/endHandle.sci"
             opacity: 0.0
             width: 10
-            x: edit.positionToRectangle(edit.selectionEnd).x-flick.contentX
-            y: edit.positionToRectangle(edit.selectionEnd).y-flick.contentY
+            x: edit.positionToRectangle(edit.selectionEnd).x - flick.contentX
+            y: edit.positionToRectangle(edit.selectionEnd).y - flick.contentY
             height: edit.positionToRectangle(edit.selectionEnd).height
         }
 
@@ -79,8 +79,7 @@ Rectangle {
             interactive: true
             clip: true
 
-            function ensureVisible(r)
-            {
+            function ensureVisible(r) {
                 if (contentX >= r.x)
                     contentX = r.x;
                 else if (contentX+width <= r.x+r.width)
@@ -97,20 +96,25 @@ Rectangle {
                 height: flick.height
                 focus: true
                 wrapMode: TextEdit.Wrap
+
                 onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+
                 text: "<h1>Text Selection</h1>"
                     +"<p>This example is a whacky text selection mechanisms, showing how these can be implemented in the TextEdit element, to cater for whatever style is appropriate for the target platform."
                     +"<p><b>Press-and-hold</b> to select a word, then drag the selection handles."
                     +"<p><b>Drag outside the selection</b> to scroll the text."
                     +"<p><b>Click inside the selection</b> to cut/copy/paste/cancel selection."
                     +"<p>It's too whacky to let you paste if there is no current selection."
+
                 MouseArea {
+                    property string drag: ""
+                    property int pressPos
+
                     x: -startHandle.width
                     y: 0
                     width: parent.width+startHandle.width+endHandle.width
                     height: parent.height
-                    property string drag: "";
-                    property int pressPos;
+
                     onPressAndHold: {
                         if (editor.state == "") {
                             edit.cursorPosition = edit.positionAt(mouse.x+x,mouse.y+y);
@@ -118,6 +122,7 @@ Rectangle {
                             editor.state = "selection"
                         }
                     }
+
                     onClicked: {
                         if (editor.state == "") {
                             edit.cursorPosition = edit.positionAt(mouse.x+x,mouse.y+y);
@@ -126,7 +131,11 @@ Rectangle {
                             edit.openSoftwareInputPanel();
                         }
                     }
-                    function hitHandle(h,x,y) { return x>=h.x+flick.contentX && x<h.x+flick.contentX+h.width && y>=h.y+flick.contentY && y<h.y+flick.contentY+h.height }
+
+                    function hitHandle(h,x,y) { 
+                        return x>=h.x+flick.contentX && x<h.x+flick.contentX+h.width && y>=h.y+flick.contentY && y<h.y+flick.contentY+h.height 
+                    }
+
                     onPressed: {
                         if (editor.state == "selection") {
                             if (hitHandle(startHandle,mouse.x+x,mouse.y+y)) {
@@ -147,6 +156,7 @@ Rectangle {
                             }
                         }
                     }
+
                     onReleased: {
                         if (editor.state == "selection") {
                             if (drag == "selection") {
@@ -156,6 +166,7 @@ Rectangle {
                         }
                         flick.interactive = true
                     }
+
                     onPositionChanged: {
                         if (editor.state == "selection" && drag != "") {
                             if (drag == "start") {
@@ -183,6 +194,7 @@ Rectangle {
             width: 100
             height: 120
             anchors.centerIn: parent
+
             Rectangle {
                 border.width: 1
                 border.color: "darkBlue"
@@ -190,48 +202,73 @@ Rectangle {
                 color: "#806080FF"
                 anchors.fill: parent
             }
+
             Column {
                 anchors.centerIn: parent
                 spacing: 8
+
                 Rectangle {
                     border.width: 1
                     border.color: "darkBlue"
                     color: "#ff7090FF"
                     width: 60
                     height: 16
+
                     Text { anchors.centerIn: parent; text: "Cut" }
-                    MouseArea { anchors.fill: parent;
-                        onClicked: { edit.cut(); editor.state = "" } }
+
+                    MouseArea { 
+                        anchors.fill: parent
+                        onClicked: { edit.cut(); editor.state = "" } 
+                    }
                 }
+
                 Rectangle {
                     border.width: 1
                     border.color: "darkBlue"
                     color: "#ff7090FF"
                     width: 60
                     height: 16
+
                     Text { anchors.centerIn: parent; text: "Copy" }
-                    MouseArea { anchors.fill: parent;
-                        onClicked: { edit.copy(); editor.state = "selection" } }
+
+                    MouseArea { 
+                        anchors.fill: parent
+                        onClicked: { edit.copy(); editor.state = "selection" } 
+                    }
                 }
+
                 Rectangle {
                     border.width: 1
                     border.color: "darkBlue"
                     color: "#ff7090FF"
                     width: 60
                     height: 16
+
                     Text { anchors.centerIn: parent; text: "Paste" }
-                    MouseArea { anchors.fill: parent;
-                        onClicked: { edit.paste(); edit.cursorPosition = edit.selectionEnd; editor.state = "" } }
+
+                    MouseArea { 
+                        anchors.fill: parent
+                        onClicked: { edit.paste(); edit.cursorPosition = edit.selectionEnd; editor.state = "" } 
+                    }
                 }
+
                 Rectangle {
                     border.width: 1
                     border.color: "darkBlue"
                     color: "#ff7090FF"
                     width: 60
                     height: 16
+
                     Text { anchors.centerIn: parent; text: "Deselect" }
-                    MouseArea { anchors.fill: parent;
-                        onClicked: { edit.cursorPosition = edit.selectionEnd; edit.select(edit.cursorPosition,edit.cursorPosition); editor.state = "" } }
+
+                    MouseArea { 
+                        anchors.fill: parent
+                        onClicked: { 
+                            edit.cursorPosition = edit.selectionEnd;
+                            edit.select(edit.cursorPosition, edit.cursorPosition);
+                            editor.state = "" 
+                        } 
+                    }
                 }
             }
         }

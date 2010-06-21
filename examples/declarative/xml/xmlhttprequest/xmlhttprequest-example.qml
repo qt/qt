@@ -41,36 +41,55 @@
 import Qt 4.7
 
 Rectangle {
-    width: 800; height: 600
+    width: 350; height: 400
 
-    MouseArea {
-        anchors.fill: parent
+    function showRequestInfo(text) {
+        log.text = log.text + "\n" + text
+        console.log(text)
+    }
 
-        onClicked: { 
-            var doc = new XMLHttpRequest();
-            doc.onreadystatechange = function() {
-                if (doc.readyState == XMLHttpRequest.HEADERS_RECEIVED) {
-                    console.log("Headers -->");
-                    console.log(doc.getAllResponseHeaders ());
-                    console.log("Last modified -->");
-                    console.log(doc.getResponseHeader ("Last-Modified"));
-                }
-                else if (doc.readyState == XMLHttpRequest.DONE) {
+    Text { id: log; anchors.fill: parent; anchors.margins: 10 }
 
-                    var a = doc.responseXML.documentElement;
-                    for (var ii = 0; ii < a.childNodes.length; ++ii) {
-                        console.log(a.childNodes[ii].nodeName);
+    Rectangle {
+        id: button
+        anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.margins: 10
+        width: buttonText.width + 10; height: buttonText.height + 10
+        border.width: mouseArea.pressed ? 2 : 1
+        radius : 5; smooth: true
+
+        Text { id: buttonText; anchors.centerIn: parent; text: "Request data.xml" }
+
+        MouseArea {
+            id: mouseArea
+            anchors.fill: parent
+            onClicked: {
+                log.text = ""
+                console.log("\n")
+
+                var doc = new XMLHttpRequest();
+                doc.onreadystatechange = function() {
+                    if (doc.readyState == XMLHttpRequest.HEADERS_RECEIVED) {
+                        showRequestInfo("Headers -->");
+                        showRequestInfo(doc.getAllResponseHeaders ());
+                        showRequestInfo("Last modified -->");
+                        showRequestInfo(doc.getResponseHeader ("Last-Modified"));
+
+                    } else if (doc.readyState == XMLHttpRequest.DONE) {
+                        var a = doc.responseXML.documentElement;
+                        for (var ii = 0; ii < a.childNodes.length; ++ii) {
+                            showRequestInfo(a.childNodes[ii].nodeName);
+                        }
+                        showRequestInfo("Headers -->");
+                        showRequestInfo(doc.getAllResponseHeaders ());
+                        showRequestInfo("Last modified -->");
+                        showRequestInfo(doc.getResponseHeader ("Last-Modified"));
                     }
-                    console.log("Headers -->");
-                    console.log(doc.getAllResponseHeaders ());
-                    console.log("Last modified -->");
-                    console.log(doc.getResponseHeader ("Last-Modified"));
-
                 }
-            }
 
-            doc.open("GET", "test.xml");
-            doc.send();
+                doc.open("GET", "data.xml");
+                doc.send();
+            }
         }
     }
 }
+
