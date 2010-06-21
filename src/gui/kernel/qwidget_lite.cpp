@@ -728,8 +728,8 @@ QPaintEngine *QWidget::paintEngine() const
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
-    qFatal("CreateDefaultWindowSurface_sys should not be used on lighthouse");
-    return 0;
+    Q_Q(QWidget);
+    return QApplicationPrivate::platformIntegration()->createWindowSurface(q,0);
 }
 
 void QWidgetPrivate::setModal_sys()

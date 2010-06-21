@@ -57,7 +57,6 @@
 #include <qdesktopwidget.h>
 
 #include <qinputcontext.h>
-#include <QtGui/private/qgraphicssystem_lite_p.h>
 #include <QGraphicsSystemCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
@@ -425,7 +424,6 @@ void QApplication::alert(QWidget *, int)
 static void init_platform(const QString &name)
 {
     QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name);
-    QApplicationPrivate::graphics_system = new QLiteGraphicsSystem;
     if (!QApplicationPrivate::platform_integration) {
         QStringList keys = QPlatformIntegrationFactory::keys();
         QString fatalMessage =
@@ -444,8 +442,6 @@ static void cleanup_platform()
 {
     delete QApplicationPrivate::platform_integration;
     QApplicationPrivate::platform_integration = 0;
-    delete QApplicationPrivate::graphics_system;
-    QApplicationPrivate::graphics_system = 0;
 }
 
 static void init_plugins(const QList<QByteArray> pluginList)
