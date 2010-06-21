@@ -43,14 +43,12 @@ namespace Phonon
         {
             //normally we should use IID_IMFGetService but this introduces another dependency
             //so here we simply define our own IId with the same value
+            ComPointer<T> ret;
             ComPointer<IMFGetService> getService(filter, IID_IMFGetService);
-            Q_ASSERT(getService);
-            T *ptr = 0;
-            HRESULT hr = getService->GetService(guidService, riid, reinterpret_cast<void **>(&ptr));
-            if (!SUCCEEDED(hr) || ptr == 0)
-                Q_ASSERT(!SUCCEEDED(hr) && ptr != 0);
-            ComPointer<T> service(ptr);
-            return service;
+            if (getService) {
+                getService->GetService(guidService, riid, reinterpret_cast<void**>(ret.pparam()));
+            }
+            return ret;
         }
 
         VideoRendererEVR::~VideoRendererEVR()
@@ -70,6 +68,10 @@ namespace Phonon
             }
 
             ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            if (!filterControl) {
+                m_filter = Filter(); //will release the interface
+                return;
+            }
 
             filterControl->SetVideoWindow(reinterpret_cast<HWND>(target->winId()));
             filterControl->SetAspectRatioMode(MFVideoARMode_None); // We're in control of the size

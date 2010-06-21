@@ -1808,7 +1808,7 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
 
         painter->setClipRegion(rgn);
 
-        CGContextRef cg = qt_mac_cg_context(target);
+        QCFType<CGContextRef> cg = qt_mac_cg_context(target);
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 

@@ -101,7 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
-    uuid = QUuid::createUuid();
+    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -241,20 +241,32 @@ QString Node::fileBase() const
     return base.toLower();
 }
 
-/*! \fnQUuid Node::guid() const
+/*!
   Returns this node's Universally Unique IDentifier.
   If its UUID has not yet been created, it is created
   first.
  */
+QUuid Node::guid()
+{
+    if (uuid.isNull())
+        uuid = QUuid::createUuid();
+    return uuid;
+}
 
 /*!
   Composes a string to be used as an href attribute in DITA
   XML. It is composed of the file name and the UUID separated
-  by a '#'
+  by a '#'. If this node is a class node, the file name is
+  taken from this node; if this node is a function node, the
+  file name is taken from the parent node of this node.
  */
 QString Node::ditaXmlHref()
 {
-    QString href = fileBase();
+    QString href;
+    if (type() == Function)
+        href = parent()->fileBase();
+    else
+        href = fileBase();
     if (!href.endsWith(".xml"))
         href += ".xml";
     return href + "#" + guid();
@@ -956,6 +968,8 @@ QString FakeNode::subTitle() const
  */
 
 /*!
+  The constructor for the node representing an enum type
+  has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
@@ -963,6 +977,7 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
 }
 
 /*!
+  Add \a item to the enum type's item list.
  */
 void EnumNode::addItem(const EnumItem& item)
 {
@@ -971,15 +986,15 @@ void EnumNode::addItem(const EnumItem& item)
 }
 
 /*!
+  Returns the access level of the enumeration item named \a name.
+  Apparently it is private if it has been omitted by qdoc's
+  omitvalue command. Otherwise it is public.
  */
 Node::Access EnumNode::itemAccess(const QString &name) const
 {
-    if (doc().omitEnumItemNames().contains(name)) {
+    if (doc().omitEnumItemNames().contains(name))
         return Private;
-    }
-    else {
-        return Public;
-    }
+    return Public;
 }
 
 /*!

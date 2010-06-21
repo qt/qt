@@ -421,7 +421,7 @@ namespace {
     class DrawTextItemRecorder: public QPaintEngine
     {
     public:
-        DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations, int numChars)
+        DrawTextItemRecorder(bool untransformedCoordinates, bool useBackendOptimizations)
                 : m_dirtyPen(false), m_useBackendOptimizations(useBackendOptimizations),
                   m_untransformedCoordinates(untransformedCoordinates)
         {
@@ -518,11 +518,10 @@ namespace {
     class DrawTextItemDevice: public QPaintDevice
     {
     public:
-        DrawTextItemDevice(bool untransformedCoordinates, bool useBackendOptimizations,
-                           int numChars)
+        DrawTextItemDevice(bool untransformedCoordinates, bool useBackendOptimizations)
         {
             m_paintEngine = new DrawTextItemRecorder(untransformedCoordinates,
-                                                     useBackendOptimizations, numChars);
+                                                     useBackendOptimizations);
         }
 
         ~DrawTextItemDevice()
@@ -664,7 +663,7 @@ void QStaticTextPrivate::init()
 
     position = QPointF(0, 0);
 
-    DrawTextItemDevice device(untransformedCoordinates, useBackendOptimizations, text.size());
+    DrawTextItemDevice device(untransformedCoordinates, useBackendOptimizations);
     {
         QPainter painter(&device);
         painter.setFont(font);
