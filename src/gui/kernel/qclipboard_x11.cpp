@@ -1518,7 +1518,7 @@ bool qt_xfixes_selection_changed(Window selectionOwner, Time timestamp)
           (unsigned int)(d ? d->timestamp : 0), (unsigned int)timestamp);
 #endif
     if (!owner || (selectionOwner && selectionOwner != owner->internalWinId()) ||
-        (!selectionOwner && d->timestamp != CurrentTime && d->timestamp < timestamp))
+        (!selectionOwner && (d->timestamp == CurrentTime || d->timestamp < timestamp)))
         return qt_check_selection_sentinel();
     return false;
 }
@@ -1532,7 +1532,7 @@ bool qt_xfixes_clipboard_changed(Window clipboardOwner, Time timestamp)
           (unsigned int)(d ? d->timestamp : 0), (unsigned int)timestamp);
 #endif
     if (!owner || (clipboardOwner && clipboardOwner != owner->internalWinId()) ||
-        (!clipboardOwner && d->timestamp != CurrentTime && d->timestamp < timestamp))
+        (!clipboardOwner && (d->timestamp == CurrentTime || d->timestamp < timestamp)))
         return qt_check_clipboard_sentinel();
     return false;
 }
