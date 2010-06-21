@@ -79,7 +79,7 @@ static void resolveLibs()
     done = true;
 }
 
-static qint64 ticksToMilliseconds(qint64 ticks)
+static inline qint64 ticksToMilliseconds(qint64 ticks)
 {
     if (counterFrequency > 0) {
         // QueryPerformanceCounter uses an arbitrary frequency
@@ -122,11 +122,10 @@ QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
     resolveLibs();
 
-    if (counterFrequency > 0) {
+    if (counterFrequency > 0)
         return PerformanceCounter;
-    } else {
+    else
         return TickCounter;
-    }
 }
 
 bool QElapsedTimer::isMonotonic()
