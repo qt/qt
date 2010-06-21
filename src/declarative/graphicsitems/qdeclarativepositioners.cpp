@@ -358,6 +358,8 @@ Column {
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Column.
 
+  Items with a width or height of 0 will not be positioned.
+
   \sa Row, {declarative/positioners}{Positioners example}
 */
 /*!
@@ -501,6 +503,8 @@ Row {
   width of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Row.
+
+  Items with a width or height of 0 will not be positioned.
 
   \sa Column, {declarative/positioners}{Positioners example}
 */
@@ -656,6 +660,8 @@ Grid {
   width or height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour. If you need to perform any of these
   actions, consider positioning the items without the use of a Grid.
+
+  Items with a width or height of 0 will not be positioned.
 
   \sa Flow, {declarative/positioners}{Positioners example}
 */
@@ -912,6 +918,8 @@ void QDeclarativeGrid::reportConflictingAnchors()
   width or height of a child depend on the position of a child, then the
   positioner may exhibit strange behaviour.  If you need to perform any of these
   actions, consider positioning the items without the use of a Flow.
+
+  Items with a width or height of 0 will not be positioned.
 
     \sa Grid, {declarative/positioners}{Positioners example}
 */

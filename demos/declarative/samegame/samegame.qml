@@ -46,6 +46,7 @@ import "SamegameCore/samegame.js" as Logic
 Rectangle {
     id: screen
     width: 490; height: 720
+    property bool inAnotherDemo: false //Samegame often is just plonked straight into other demos
 
     SystemPalette { id: activePalette }
 
@@ -115,6 +116,8 @@ Rectangle {
             id: nameInputText
             anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
             focus: false
+            autoScroll: false
+            maximumLength: 24
             onTextChanged: {
                 var newWidth = nameInputText.width + dialogText.width + 40;
                 if ( (newWidth > nameInputDialog.width && newWidth < screen.width) 
@@ -141,6 +144,7 @@ Rectangle {
         }
 
         Button {
+            visible: !inAnotherDemo
             text: "Quit"
             anchors { left: newGameButton.right; leftMargin: 3; verticalCenter: parent.verticalCenter }
             onClicked: Qt.quit();

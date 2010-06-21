@@ -269,5 +269,10 @@ For example:
 \c [project/main.qml]
 \snippet doc/src/snippets/declarative/qtbinding/resources/main.qml 0
 
+Note that the resource system cannot be accessed from QML directly. If the main QML file is
+loaded as a resource, all files specifed as relative paths in QML will also be loaded from
+the resource system. Using the resource system is completely transparent to the QML layer.
+This also means that if the main QML file is not loaded as a resource then files in the resource
+system cannot be accessed from QML.
 */
 

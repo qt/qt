@@ -117,4 +117,16 @@ a Loader as needed.
 \o Fast data access - ensure the data model is as fast as possible.
 \endlist
 
+\section1 Image resources over composition
+
+If possible, provide a single image resource, rather than using composition
+of a number of elements.  For example, a frame with a shadow could be created using
+a Rectangle placed over an Image providing the shadow.  It is more efficient to
+provide an image that includes the frame and the shadow.
+
+\section1 Limit JavaScript
+
+Avoid running JavaScript during animation.  For example, running a complex
+JavaScript expression for each frame of an x property animation.
+
 */

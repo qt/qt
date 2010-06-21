@@ -60,7 +60,6 @@
 #include <QFileInfo>
 #include <QtCore/qdebug.h>
 #include <QApplication>
-#include <QGraphicsObject>
 
 QT_BEGIN_NAMESPACE
 
@@ -579,20 +578,26 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
     if (!ret)
         return QScriptValue(QScriptValue::NullValue);
 
-    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(ret);
-    bool needParent = (gobj != 0);
-    if(parent){
+
+    if (parent) {
         ret->setParent(parent);
-        if (gobj) {
-            QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parent);
-            if(gparent){
-                gobj->setParentItem(gparent);
+        QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
+
+        bool needParent = false;
+
+        for (int ii = 0; ii < functions.count(); ++ii) {
+            QDeclarativePrivate::AutoParentResult res = functions.at(ii)(ret, parent);
+            if (res == QDeclarativePrivate::Parented) {
                 needParent = false;
+                break;
+            } else if (res == QDeclarativePrivate::IncompatibleParent) {
+                needParent = true;
             }
         }
+
+        if (needParent) 
+            qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
     }
-    if(needParent)
-        qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
 
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();
