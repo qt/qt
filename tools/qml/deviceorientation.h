@@ -54,10 +54,10 @@ class DeviceOrientation : public QObject
 public:
     enum Orientation { 
         UnknownOrientation, 
-        TopUp,
-        TopDown,
-        LeftUp,
-        RightUp
+        Portrait,
+        Landscape,
+        PortraitInverted,
+        LandscapeInverted
     };
 
     virtual Orientation orientation() const = 0;

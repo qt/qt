@@ -37,39 +37,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-Item {
-    property variant text
-    signal clicked
+ListModel {
+    id: fruitModel
 
-    id: container
-    Image {
-        id: normal
-        source: "pics/button.png"
+    ListElement {
+        name: "Apple"
+        cost: 2.45
     }
-    Image {
-        id: pressed
-        source: "pics/button-pressed.png"
-        opacity: 0
+    ListElement {
+        name: "Orange"
+        cost: 3.25
     }
-    MouseArea {
-        id: clickRegion
-        anchors.fill: normal
-        onClicked: { container.clicked(); }
-    }
-    Text {
-        font.bold: true
-        color: "white"
-        anchors.centerIn: normal
-        text: container.text
-    }
-    width: normal.width
-
-    states: State {
-        name: "Pressed"
-        when: clickRegion.pressed == true
-        PropertyChanges { target: pressed; opacity: 1 }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
     }
 }
+//![0]

@@ -83,6 +83,8 @@ QT_BEGIN_NAMESPACE
     that images which do not form part of the user interface have their
     size bounded via the \l sourceSize property. This is especially important for content
     that is loaded from external sources or provided by the user.
+
+    \sa {declarative/imageelements/image}{Image example}
 */
 
 /*!
@@ -95,7 +97,7 @@ QT_BEGIN_NAMESPACE
     Image { source: "pics/star.png" }
     \endqml
 
-    A QDeclarativeImage object can be instantiated in Qml using the tag \l Image.
+    A QDeclarativeImage object can be instantiated in QML using the tag \l Image.
 */
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)

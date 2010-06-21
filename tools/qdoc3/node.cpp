@@ -101,6 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
+    uuid = QUuid::createUuid();
 }
 
 /*!
@@ -154,6 +155,41 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
+  Returns a string representing the access specifier.
+ */
+QString Node::accessString() const
+{
+    switch (acc) {
+    case Protected:
+        return "protected";
+    case Private:
+        return "private";
+    case Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+
+/*!
+  Returns a string representing the access specifier.
+ */
+QString RelatedClass::accessString() const
+{
+    switch (access) {
+    case Node::Protected:
+        return "protected";
+    case Node::Private:
+        return "private";
+    case Node::Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+/*!
  */
 Node::Status Node::inheritedStatus() const
 {
@@ -164,6 +200,11 @@ Node::Status Node::inheritedStatus() const
 }
 
 /*!
+  Returns the thread safeness value for whatever this node
+  represents. But if this node has a parent and the thread
+  safeness value of the parent is the same as the thread
+  safeness value of this node, what is returned is the
+  value \c{UnspecifiedSafeness}. Why?
  */
 Node::ThreadSafeness Node::threadSafeness() const
 {
@@ -173,6 +214,9 @@ Node::ThreadSafeness Node::threadSafeness() const
 }
 
 /*!
+  If this node has a parent, the parent's thread safeness
+  value is returned. Otherwise, this node's thread safeness
+  value is returned. Why?
  */
 Node::ThreadSafeness Node::inheritedThreadSafeness() const
 {
@@ -182,6 +226,9 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
 }
 
 /*!
+  Returns the sanitized file name without the path.
+  If the the file is an html file, the html suffix
+  is removed. Why?
  */
 QString Node::fileBase() const
 {
@@ -194,11 +241,32 @@ QString Node::fileBase() const
     return base.toLower();
 }
 
+/*! \fnQUuid Node::guid() const
+  Returns this node's Universally Unique IDentifier.
+  If its UUID has not yet been created, it is created
+  first.
+ */
+
+/*!
+  Composes a string to be used as an href attribute in DITA
+  XML. It is composed of the file name and the UUID separated
+  by a '#'
+ */
+QString Node::ditaXmlHref()
+{
+    QString href = fileBase();
+    if (!href.endsWith(".xml"))
+        href += ".xml";
+    return href + "#" + guid();
+}
+
 /*!
   \class InnerNode
  */
 
 /*!
+  The inner node destructor deletes the children and removes
+  this node from its related nodes.
  */
 InnerNode::~InnerNode()
 {
@@ -542,6 +610,7 @@ InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
 }
 
 /*!
+  Appends an \a include file to the list of include files.
  */
 void InnerNode::addInclude(const QString& include)
 {
@@ -549,6 +618,7 @@ void InnerNode::addInclude(const QString& include)
 }
 
 /*!
+  Sets the list of include files to \a includes.
  */
 void InnerNode::setIncludes(const QStringList& includes)
 {
@@ -624,7 +694,7 @@ void InnerNode::removeChild(Node *child)
 	QMap<QString, Node *>::Iterator prim =
 		primaryFunctionMap.find(child->name());
 	NodeList& secs = secondaryFunctionMap[child->name()];
-	if (*prim == child) {
+	if (prim != primaryFunctionMap.end() && *prim == child) {
 	    if (secs.isEmpty()) {
 		primaryFunctionMap.remove(child->name());
 	    }
@@ -636,12 +706,12 @@ void InnerNode::removeChild(Node *child)
 	    secs.removeAll(child);
 	}
         QMap<QString, Node *>::Iterator ent = childMap.find( child->name() );
-        if ( *ent == child )
+        if (ent != childMap.end() && *ent == child)
             childMap.erase( ent );
     }
     else {
 	QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
-	if (*ent == child)
+	if (ent != childMap.end() && *ent == child)
 	    childMap.erase(ent);
     }
 }
@@ -754,6 +824,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
+    abstract = false;
     setPageType(ApiPage);
 }
 
@@ -1040,6 +1111,19 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
       ap(0)
 {
     // nothing.
+}
+
+/*!
+  Sets the \a virtualness of this function. If the \a virtualness
+  is PureVirtual, and if the parent() is a ClassNode, set the parent's
+  \e abstract flag to true.
+ */
+void FunctionNode::setVirtualness(Virtualness virtualness)
+{
+    vir = virtualness;
+    if ((virtualness == PureVirtual) && parent() &&
+        (parent()->type() == Node::Class))
+        parent()->setAbstract(true);
 }
 
 /*!

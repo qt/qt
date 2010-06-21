@@ -72,7 +72,9 @@ public:
 /*!
     \qmlclass Connections QDeclarativeConnections
   \since 4.7
-    \brief A Connections object describes generalized connections to signals.
+    \brief A Connections element describes generalized connections to signals.
+
+    A Connections object creates a connection to a QML signal.
 
     When connecting to signals in QML, the usual way is to create an
     "on<Signal>" handler that reacts when a signal is received, like this:
@@ -83,16 +85,16 @@ public:
     }
     \endqml
 
-    However, in some cases, it is not possible to connect to a signal in this
-    way, such as:
+    However, it is not possible to connect to a signal in this way in some 
+    cases, such as when:
 
     \list
-        \i multiple connections to the same signal
-        \i connections outside the scope of the signal sender
-        \i connections to targets not defined in QML
+        \i Multiple connections to the same signal are required
+        \i Creating connections outside the scope of the signal sender
+        \i Connecting to targets not defined in QML
     \endlist
 
-    When any of these are needed, the Connections object can be used instead.
+    When any of these are needed, the Connections element can be used instead.
 
     For example, the above code can be changed to use a Connections object,
     like this:
@@ -105,7 +107,7 @@ public:
     }
     \endqml
 
-    More generally, the Connections object can be a child of some other object than
+    More generally, the Connections object can be a child of some object other than
     the sender of the signal:
 
     \qml
@@ -141,7 +143,7 @@ QDeclarativeConnections::~QDeclarativeConnections()
     \qmlproperty Object Connections::target
     This property holds the object that sends the signal.
 
-    If not set at all, the target defaults to be the parent of the Connections.
+    If this property is not set, the \c target defaults to the parent of the Connection.
 
     If set to null, no connection is made and any signal handlers are ignored
     until the target is not null.
@@ -175,12 +177,11 @@ void QDeclarativeConnections::setTarget(QObject *obj)
 /*!
     \qmlproperty bool Connections::ignoreUnknownSignals
 
-    Normally, you will get a runtime error if you try to connect
-    to signals on an object which the object does not have.
+    Normally, a connection to a non-existent signal produces runtime errors.
 
-    By setting this flag to true, such errors are ignored. This is
-    useful if you intend to connect to different types of object, handling
-    a different set of signals for each.
+    If this property is set to \c true, such errors are ignored.
+    This is useful if you intend to connect to different types of objects, handling
+    a different set of signals for each object.
 */
 bool QDeclarativeConnections::ignoreUnknownSignals() const
 {

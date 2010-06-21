@@ -425,6 +425,9 @@ value will not be accessible from script.
 \l {Extending QML - Signal Support Example} shows the complete code used to
 implement the onPartyStarted signal property.
 
+If you want to use signals from items not created in QML, you can access their
+signals with the \l {Connections} element.
+
 \section1 Property Value Sources
 
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
@@ -896,9 +899,13 @@ in other projects without the use of C++.  Components can also help to reduce
 duplication inside one project by limiting the need for large numbers of
 copy-and-pasted blocks.
 
-Any snippet of QML code can become a component, just by placing it in the file
-"<Name>.qml" where <Name> is the new element name, and begins with an uppercase
-letter.  These QML files automatically become available as new QML element types
+Any snippet of QML code can become a component, just by placing it in the file "<Name>.qml" 
+where <Name> is the new element name, and begins with an uppercase letter.  Note that
+the case of all characters in the <Name> are significant on some filesystems, notably
+UNIX filesystems.  It is recommended that the case of the filename matches the case of
+the component name in QML exactly, regardless of the platform the QML will be deployed to.
+
+These QML files automatically become available as new QML element types
 to other QML components and applications in the same directory.
 
 For example, here we show how a component named "Box" is defined and used

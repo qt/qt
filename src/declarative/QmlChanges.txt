@@ -1,6 +1,8 @@
 =============================================================================
 The changes below are pre Qt 4.7.0 RC
 
+QDeclarativeView
+   - initialSize() function added
 TextInput and TextEdit: 
    - openSoftwareInputPanel() and closeSoftwareInputPanel() functions added
 Flickable:

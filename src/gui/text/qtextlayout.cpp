@@ -69,7 +69,7 @@ static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line
     if (!line.hasTrailingSpaces
         || (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
         || !(eng->option.alignment() & Qt::AlignRight)
-        || (eng->option.textDirection() != Qt::RightToLeft))
+        || !eng->isRightToLeft())
         return QFixed();
 
     int pos = line.length;
@@ -86,7 +86,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
     // if width is QFIXED_MAX that means we used setNumColumns() and that implicitly makes this line left aligned.
     if (!line.justified && line.width != QFIXED_MAX) {
         int align = eng->option.alignment();
-        if (align & Qt::AlignJustify && eng->option.textDirection() == Qt::RightToLeft)
+        if (align & Qt::AlignJustify && eng->isRightToLeft())
             align = Qt::AlignRight;
         if (align & Qt::AlignRight)
             x = line.width - (line.textAdvance + leadingSpaceWidth(eng, line));
@@ -282,12 +282,11 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     \class QTextLayout
     \reentrant
 
-    \brief The QTextLayout class is used to lay out and paint a single
-    paragraph of text.
+    \brief The QTextLayout class is used to lay out and render text.
 
     \ingroup richtext-processing
 
-    It offers most features expected from a modern text layout
+    It offers many features expected from a modern text layout
     engine, including Unicode compliant rendering, line breaking and
     handling of cursor positioning. It can also produce and render
     device independent layout, something that is important for WYSIWYG
@@ -297,29 +296,33 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     implement your own text rendering for some specialized widget, you
     probably won't need to use it directly.
 
-    QTextLayout can currently deal with plain text and rich text
-    paragraphs that are part of a QTextDocument.
+    QTextLayout can be used with both plain and rich text.
 
-    QTextLayout can be used to create a sequence of QTextLine's with
-    given widths and can position them independently on the screen.
-    Once the layout is done, these lines can be drawn on a paint
-    device.
+    QTextLayout can be used to create a sequence of QTextLine
+    instances with given widths and can position them independently
+    on the screen. Once the layout is done, these lines can be drawn
+    on a paint device.
 
-    Here's some code snippet that presents the layout phase:
+    The text to be laid out can be provided in the constructor or set with
+    setText().
+
+    The layout can be seen as a sequence of QTextLine objects; use createLine()
+    to create a QTextLine instance, and lineAt() or lineForTextPosition() to retrieve
+    created lines.
+
+    Here is a code snippet that demonstrates the layout phase:
     \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 0
 
-    The text can be drawn by calling the layout's draw() function:
+    The text can then be rendered by calling the layout's draw() function:
     \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 1
 
-    The text layout's text is set in the constructor or with
-    setText(). The layout can be seen as a sequence of QTextLine
-    objects; use lineAt() or lineForTextPosition() to get a QTextLine,
-    createLine() to create one. For a given position in the text you
-    can find a valid cursor position with isValidCursorPosition(),
-    nextCursorPosition(), and previousCursorPosition(). The layout
-    itself can be positioned with setPosition(); it has a
-    boundingRect(), and a minimumWidth() and a maximumWidth(). A text
-    layout can be drawn on a painter device using draw().
+    For a given position in the text you can find a valid cursor position with
+    isValidCursorPosition(), nextCursorPosition(), and previousCursorPosition().
+
+    The QTextLayout itself can be positioned with setPosition(); it has a
+    boundingRect(), and a minimumWidth() and a maximumWidth().
+
+    \sa QStaticText
 
 */
 
@@ -1337,7 +1340,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     int itm = d->findItem(cursorPosition - 1);
     QFixed base = sl.base();
     QFixed descent = sl.descent;
-    bool rightToLeft = (d->option.textDirection() == Qt::RightToLeft);
+    bool rightToLeft = d->isRightToLeft();
     if (itm >= 0) {
         const QScriptItem &si = d->layoutData->items.at(itm);
         if (si.ascent > 0)

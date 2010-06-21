@@ -48,7 +48,7 @@
 
 #include <QtGui/qtransform.h>
 #include <QtGui/qfont.h>
-
+#include <QtGui/qtextoption.h>
 
 QT_BEGIN_HEADER
 
@@ -78,6 +78,9 @@ public:
 
     void setTextWidth(qreal textWidth);
     qreal textWidth() const;
+
+    void setTextOption(const QTextOption &textOption);
+    QTextOption textOption() const;
 
     QSizeF size() const;
 

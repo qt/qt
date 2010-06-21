@@ -548,8 +548,13 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     // chop off the first two characters from the glob'ed paths.
     int startIndex = 0;
     if (pathPrefix.trimmed().isEmpty()) {
-        startIndex = 2;
-        pathPrefix = QLatin1String(".");
+        if(path.startsWith(QLatin1Char('/'))) {
+            pathPrefix = path.left(path.indexOf(QRegExp(QLatin1String("[\\*\\?\\[]"))));
+            pathPrefix = path.left(path.lastIndexOf(QLatin1Char('/')));
+        } else {
+            startIndex = 2;
+            pathPrefix = QLatin1String(".");
+        }
     }
 
     // The path is a file.

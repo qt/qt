@@ -96,7 +96,20 @@ VideoPlayer::~VideoPlayer()
 
 void VideoPlayer::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Movie"));
+    QStringList supportedFormats;
+    foreach (QString fmt, QMovie::supportedFormats())
+        supportedFormats << fmt;
+    foreach (QString fmt, QImageReader::supportedImageFormats())
+        supportedFormats << fmt;
+
+    QString filter = "Images (";
+    foreach ( QString fmt, supportedFormats) {
+        filter.append(QString("*.%1 ").arg(fmt));
+    }
+    filter.append(")");
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open Movie"),
+            QDir::homePath(), filter);
 
     if (!fileName.isEmpty()) {
         surface->stop();

@@ -1,2 +1,4 @@
-# The version information comes from our copy of
-include($$PWD/../../src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri)
+QT_WEBKIT_VERSION = 4.7.0
+QT_WEBKIT_MAJOR_VERSION = 4
+QT_WEBKIT_MINOR_VERSION = 7
+QT_WEBKIT_PATCH_VERSION = 0

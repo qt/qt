@@ -40,32 +40,40 @@
 
 import Qt 4.7
 
-Item {
-    id: page
-    property int repeatdelay: 300
-    property int repeatperiod: 75
-    property bool isPressed: false
+Image {
+    id: container
 
-    signal pressed
-    signal released
+    property int repeatDelay: 300
+    property int repeatDuration: 75
+    property bool pressed: false
+
     signal clicked
 
-    SequentialAnimation on isPressed {
+    scale: pressed ? 0.9 : 1
+
+    SequentialAnimation on pressed {
+        id: autoRepeatClicks
         running: false
-        id: autoRepeat
-        PropertyAction { target: page; property: "isPressed"; value: true }
-        ScriptAction { script: page.pressed() }
-        ScriptAction { script: page.clicked() }
-        PauseAnimation { duration: repeatdelay }
+
+        PropertyAction { target: container; property: "pressed"; value: true }
+        ScriptAction { script: container.clicked() }
+        PauseAnimation { duration: repeatDelay }
+
         SequentialAnimation {
             loops: Animation.Infinite
-            ScriptAction { script: page.clicked() }
-            PauseAnimation { duration: repeatperiod }
+            ScriptAction { script: container.clicked() }
+            PauseAnimation { duration: repeatDuration }
         }
     }
+
     MouseArea {
         anchors.fill: parent
-        onPressed: autoRepeat.start()
-        onReleased: { autoRepeat.stop(); parent.isPressed = false; page.released() }
+
+        onPressed: autoRepeatClicks.start()
+        onReleased: { 
+            autoRepeatClicks.stop()
+            container.pressed = false
+        }
     }
 }
+
