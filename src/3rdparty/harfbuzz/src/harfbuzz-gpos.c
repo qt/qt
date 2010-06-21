@@ -500,34 +500,24 @@ static HB_Error  Get_ValueRecord( GPOS_Instance*    gpi,
   {
     /* pixel -> fractional pixel */
 
-    if ( format & HB_GPOS_FORMAT_HAVE_DEVICE_TABLES )
-    {
-      if ( ALLOC_ARRAY( vr->DeviceTables, 4, HB_Device ) )
-        return error;
-      vr->DeviceTables[VR_X_ADVANCE_DEVICE] = 0;
-      vr->DeviceTables[VR_Y_ADVANCE_DEVICE] = 0;
-      vr->DeviceTables[VR_X_PLACEMENT_DEVICE] = 0;
-      vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] = 0;
-    }
-
     if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->DeviceTables[VR_X_PLACEMENT_DEVICE], x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_X_PLACEMENT_DEVICE], x_ppem, &pixel_value );
       gd->x_pos += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->DeviceTables[VR_Y_PLACEMENT_DEVICE], y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE], y_ppem, &pixel_value );
       gd->y_pos += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->DeviceTables[VR_X_ADVANCE_DEVICE], x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE], x_ppem, &pixel_value );
       gd->x_advance += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->DeviceTables[VR_Y_ADVANCE_DEVICE], y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE], y_ppem, &pixel_value );
       gd->y_advance += pixel_value << 6;
     }
   }
@@ -779,12 +769,9 @@ static HB_Error  Get_Anchor( GPOS_Instance*   gpi,
   case 3:
     if ( !gpi->dvi )
     {
-      if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
-        return error;
-
-      _HB_OPEN_Get_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE], x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE], x_ppem, &pixel_value );
       *x_value = pixel_value << 6;
-      _HB_OPEN_Get_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE], y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE], y_ppem, &pixel_value );
       *y_value = pixel_value << 6;
     }
     else
