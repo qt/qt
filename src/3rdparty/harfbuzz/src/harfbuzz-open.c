@@ -1353,12 +1353,12 @@ _HB_OPEN_Load_Device( HB_Device** device,
 
 
 HB_INTERNAL void
-_HB_OPEN_Free_Device( HB_Device** d )
+_HB_OPEN_Free_Device( HB_Device* d )
 {
-  if ( *d )
+  if ( d )
   {
-    FREE( (*d)->DeltaValue );
-    FREE( *d );
+    FREE( d->DeltaValue );
+    FREE( d );
   }
 }
 

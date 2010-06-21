@@ -433,13 +433,16 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
   return HB_Err_Ok;
 
 Fail1:
-  _HB_OPEN_Free_Device( &vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
 
 Fail2:
-  _HB_OPEN_Free_Device( &vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
 
 Fail3:
-  _HB_OPEN_Free_Device( &vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
 
   FREE( vr->DeviceTables );
   return error;
@@ -450,13 +453,13 @@ static void  Free_ValueRecord( HB_ValueRecord*  vr,
 			       HB_UShort         format )
 {
   if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE )
-    _HB_OPEN_Free_Device( &vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE )
-    _HB_OPEN_Free_Device( &vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE )
-    _HB_OPEN_Free_Device( &vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
-    _HB_OPEN_Free_Device( &vr->DeviceTables[VR_X_PLACEMENT_DEVICE] );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_PLACEMENT_DEVICE] );
   FREE( vr->DeviceTables );
 }
 
@@ -688,7 +691,8 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
   return HB_Err_Ok;
 
 Fail:
-  _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+  if ( an->af.af3.DeviceTables )
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
 
   FREE( an->af.af3.DeviceTables );
   return error;
@@ -697,10 +701,10 @@ Fail:
 
 static void  Free_Anchor( HB_Anchor*  an)
 {
-  if ( an->PosFormat == 3 )
+  if ( an->PosFormat == 3 && an->af.af3.DeviceTables )
   {
-    _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
-    _HB_OPEN_Free_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] );
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] );
     FREE( an->af.af3.DeviceTables );
   }
 }
