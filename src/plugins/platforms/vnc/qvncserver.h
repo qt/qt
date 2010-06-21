@@ -488,7 +488,6 @@ private slots:
     void readClient();
     void checkUpdate();
     void discardClient();
-    void sendInputEvents();
 
 private:
     void init(uint port);
