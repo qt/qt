@@ -138,7 +138,8 @@ Rectangle {
                     id: flick
                     width: parent.width
                     anchors { top: methodTitle.bottom; bottom: parent.bottom }
-                    contentHeight: methodText.height; clip: true
+                    contentHeight: methodText.height
+                    clip: true
 
                     Text { id: methodText; text: method; wrapMode: Text.WordWrap; width: details.width }
                 }
@@ -197,6 +198,5 @@ Rectangle {
         anchors.fill: parent
         model: RecipesModel {}
         delegate: recipeDelegate
-        clip: true
     }
 }

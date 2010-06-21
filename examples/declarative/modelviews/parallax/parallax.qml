@@ -73,6 +73,7 @@ Rectangle {
                 width: 300; height: 400
                 clip: true; 
                 source: "../../../../demos/declarative/samegame/samegame.qml"
+                Component.onCompleted: item.inAnotherDemo = true;
             }
         }
 

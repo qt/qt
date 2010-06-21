@@ -40,10 +40,7 @@
 
 import Qt 4.7
 
-// ListModel allows free form list models to be defined and populated.
-
 ListModel {
-    id: petsModel
     ListElement {
         name: "Polly"
         type: "Parrot"
