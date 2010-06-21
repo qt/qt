@@ -182,6 +182,8 @@ private: // data
     TUint32 iOldRoamingIap;
     TUint32 iNewRoamingIap;
 
+    bool isOpening;
+
     friend class ConnectionProgressNotifier;
 };
 

@@ -57,7 +57,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
     iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
-    iConnectInBackground(false)
+    iConnectInBackground(false), isOpening(false)
 {
     CActiveScheduler::Add(this);
 
@@ -84,6 +84,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
 QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
 {
     isOpen = false;
+    isOpening = false;
 
     // Cancel Connection Progress Notifications first.
     // Note: ConnectionNotifier must be destroyed before Canceling RConnection::Start()
@@ -311,12 +312,14 @@ void QNetworkSessionPrivateImpl::open()
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
         qDebug() << "QNS this : " << QString::number((uint)this) << " - "
                 << "open() called, session state is: " << state << " and isOpen is: "
-                << isOpen;
+                << isOpen << isOpening;
 #endif
-    if (isOpen || (state == QNetworkSession::Connecting)) {
+
+    if (isOpen || isOpening)
         return;
-    }
-    
+
+    isOpening = true;
+
     // Stop handling IAP state change signals from QNetworkConfigurationManagerPrivate
     // => RConnection::ProgressNotification will be used for IAP/SNAP monitoring
     iHandleStateNotificationsFromManager = false;
@@ -444,6 +447,7 @@ void QNetworkSessionPrivateImpl::open()
  
     if (error != KErrNone) {
         isOpen = false;
+        isOpening = false;
         iError = QNetworkSession::UnknownSessionError;
         emit QNetworkSessionPrivate::error(iError);
         if (ipConnectionNotifier) {
@@ -496,6 +500,7 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     // when reporting.
     iClosedByUser = true;
     isOpen = false;
+    isOpening = false;
 
     serviceConfig = QNetworkConfiguration();
     
@@ -599,6 +604,7 @@ void QNetworkSessionPrivateImpl::stop()
 #endif
         // Since we are open, use RConnection to stop the interface
         isOpen = false;
+        isOpening = false;
         iStoppedByUser = true;
         newState(QNetworkSession::Closing);
         if (ipConnectionNotifier) {
@@ -608,6 +614,7 @@ void QNetworkSessionPrivateImpl::stop()
         }
         iConnection.Stop(RConnection::EStopAuthoritative);
         isOpen = true;
+        isOpening = false;
         close(false);
         emit closed();
     }
@@ -742,6 +749,7 @@ void QNetworkSessionPrivateImpl::Error(TInt /*aError*/)
 #endif
     if (isOpen) {
         isOpen = false;
+        isOpening = false;
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::RoamingError;
@@ -1048,6 +1056,7 @@ void QNetworkSessionPrivateImpl::RunL()
             
             if (error != KErrNone) {
                 isOpen = false;
+                isOpening = false;
                 iError = QNetworkSession::UnknownSessionError;
                 QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
                 Cancel();
@@ -1066,6 +1075,7 @@ void QNetworkSessionPrivateImpl::RunL()
 #endif
 
             isOpen = true;
+            isOpening = false;
             activeConfig = newActiveConfig;
 
             SymbianNetworkConfigurationPrivate *symbianConfig =
@@ -1089,6 +1099,7 @@ void QNetworkSessionPrivateImpl::RunL()
             break;
         case KErrNotFound: // Connection failed
             isOpen = false;
+            isOpening = false;
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
@@ -1103,6 +1114,7 @@ void QNetworkSessionPrivateImpl::RunL()
         case KErrAlreadyExists: // Connection already exists
         default:
             isOpen = false;
+            isOpening = false;
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
             if (publicConfig.state() == QNetworkConfiguration::Undefined ||
@@ -1202,6 +1214,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         // application or session stops connection or when network drops
         // unexpectedly).
         isOpen = false;
+        isOpening = false;
         activeConfig = QNetworkConfiguration();
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::SessionAbortedError;
