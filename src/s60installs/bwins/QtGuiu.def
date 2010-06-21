@@ -12813,4 +12813,11 @@ EXPORTS
 	?setVerticalMovementX@QTextCursor@@QAEXH@Z @ 12812 NONAME ; void QTextCursor::setVerticalMovementX(int)
 	?invertedAppearance@QProgressBar@@QBE_NXZ @ 12813 NONAME ; bool QProgressBar::invertedAppearance(void) const
 	?width@QFontMetrics@@QBEHABVQString@@HH@Z @ 12814 NONAME ; int QFontMetrics::width(class QString const &, int, int) const
+	?aboutToDestroy@QWidgetPrivate@@UAEXXZ @ 12815 NONAME ; void QWidgetPrivate::aboutToDestroy(void)
+	?setTextOption@QStaticText@@QAEXABVQTextOption@@@Z @ 12816 NONAME ; void QStaticText::setTextOption(class QTextOption const &)
+	?pointInsideRectAndMask@QWidgetPrivate@@QBE_NABVQPoint@@@Z @ 12817 NONAME ; bool QWidgetPrivate::pointInsideRectAndMask(class QPoint const &) const
+	?childAtRecursiveHelper@QWidgetPrivate@@QBEPAVQWidget@@ABVQPoint@@_N1@Z @ 12818 NONAME ; class QWidget * QWidgetPrivate::childAtRecursiveHelper(class QPoint const &, bool, bool) const
+	?textOption@QStaticText@@QBE?AVQTextOption@@XZ @ 12819 NONAME ; class QTextOption QStaticText::textOption(void) const
+	?isRightToLeft@QTextEngine@@QBE_NXZ @ 12820 NONAME ; bool QTextEngine::isRightToLeft(void) const
+	?textDirection@QTextBlock@@QBE?AW4LayoutDirection@Qt@@XZ @ 12821 NONAME ; enum Qt::LayoutDirection QTextBlock::textDirection(void) const
 
