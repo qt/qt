@@ -1053,7 +1053,7 @@ void QVNCServer::clientCutText()
 {
     QRfbClientCutText ev;
 
-    if (ev.read(client)) {
+    if (cutTextPending == 0 && ev.read(client)) {
         cutTextPending = ev.length;
         if (!cutTextPending)
             handleMsg = false;
