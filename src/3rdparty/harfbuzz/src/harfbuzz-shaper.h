@@ -258,6 +258,10 @@ typedef struct HB_Font_ {
     void *userData;
 } HB_FontRec;
 
+#ifdef HB_USE_PACKED_STRUCTS
+#pragma pack(pop)
+#endif
+
 typedef struct HB_ShaperItem_ HB_ShaperItem;
 
 struct HB_ShaperItem_ {
@@ -284,10 +288,6 @@ struct HB_ShaperItem_ {
 };
 
 HB_Bool HB_ShapeItem(HB_ShaperItem *item);
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 HB_END_HEADER
 
