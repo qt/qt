@@ -113,7 +113,7 @@ class DitaXmlGenerator : public PageGenerator
     QString fullQualification(const Node* n);
 
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
-    void writeLocation(const Node* n, CodeMarker* marker);
+    void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
                         const ClassNode* cn, 
                         CodeMarker* marker);

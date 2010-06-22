@@ -1442,7 +1442,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             writer.writeEndElement(); // </cxxClassAbstract>
         }
         writeDerivations(cn, marker);
-        writeLocation(cn, marker);
+        writeLocation(cn);
         writer.writeEndElement(); // <cxxClassDefinition>
         writer.writeStartElement(APIDESC);
 
@@ -4550,7 +4550,7 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
      }
 }
 
-void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
+void DitaXmlGenerator::writeLocation(const Node* n)
 {
     QString s1, s2, s3;
     if (n->type() == Node::Class) {
@@ -4572,6 +4572,11 @@ void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
         s1 = CXXTYPEDEFAPIITEMLOCATION;
         s2 = CXXTYPEDEFDECLARATIONFILE;
         s3 = CXXTYPEDEFDECLARATIONFILELINE;
+    }
+    else if (n->type() == Node::Property) {
+        s1 = CXXVARIABLEAPIITEMLOCATION;
+        s2 = CXXVARIABLEDECLARATIONFILE;
+        s3 = CXXVARIABLEDECLARATIONFILELINE;
     }
     writer.writeStartElement(s1);
     writer.writeStartElement(s2);
@@ -4679,7 +4684,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 writer.writeEndElement(); // </cxxFunctionReimplemented>
             }
             writeParameters(fn,marker);
-            writeLocation(fn, marker);
+            writeLocation(fn);
             writer.writeEndElement(); // <cxxFunctionDefinition>
             writer.writeStartElement(APIDESC);
 
@@ -4821,7 +4826,7 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
                 writer.writeEndElement(); // <cxxEnumerators>
             }
             
-            writeLocation(en, marker);
+            writeLocation(en);
             writer.writeEndElement(); // <cxxEnumerationDefinition>
             writer.writeStartElement(APIDESC);
 
@@ -4867,7 +4872,7 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
             writer.writeCharacters(tn->parent()->name() + "::" + tn->name());
             writer.writeEndElement(); // <cxxTypedefNameLookup>
             
-            writeLocation(tn, marker);
+            writeLocation(tn);
             writer.writeEndElement(); // <cxxTypedefDefinition>
             writer.writeStartElement(APIDESC);
 
@@ -4893,6 +4898,60 @@ void DitaXmlGenerator::writeProperties(const Section& s,
                                        const ClassNode* cn, 
                                        CodeMarker* marker)
 {
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Property) {
+            const PropertyNode* pn = static_cast<const PropertyNode*>(*m);
+            writer.writeStartElement(CXXVARIABLE);
+            writer.writeAttribute("id",pn->guid());
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(pn->name());
+            writer.writeEndElement(); // </apiName>
+            generateBrief(pn,marker);
+            writer.writeStartElement(CXXVARIABLEDETAIL);
+            writer.writeStartElement(CXXVARIABLEDEFINITION);
+            writer.writeStartElement(CXXVARIABLEACCESSSPECIFIER);
+            writer.writeAttribute("value",pn->accessString());
+            writer.writeEndElement(); // <cxxVariableAccessSpecifier>
+
+            if (!pn->dataType().isEmpty()) {
+                writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
+                writer.writeCharacters(pn->dataType());
+                writer.writeEndElement(); // <cxxVariableDeclaredType>
+            }
+            QString fq = fullQualification(pn);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXVARIABLESCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxVariableScopedName>
+            }
+            writer.writeStartElement(CXXVARIABLENAMELOOKUP);
+            writer.writeCharacters(pn->parent()->name() + "::" + pn->name());
+            writer.writeEndElement(); // <cxxVariableNameLookup>
+
+
+            if (pn->overriddenFrom() != 0) {
+                PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
+                writer.writeStartElement(CXXVARIABLEREIMPLEMENTED);
+                writer.writeAttribute("href",opn->ditaXmlHref());
+                writer.writeCharacters(marker->plainFullName(opn));
+                writer.writeEndElement(); // </cxxVariableReimplemented>
+            }
+
+            writeLocation(pn);
+            writer.writeEndElement(); // <cxxVariableDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!pn->doc().isEmpty()) {
+                generateBody(pn, marker);
+            }
+
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxVariableDetail>
+            writer.writeEndElement(); // </cxxVariable>
+        }
+        ++m;
+    }
 }
 
 QT_END_NAMESPACE

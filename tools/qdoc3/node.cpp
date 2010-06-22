@@ -263,10 +263,14 @@ QUuid Node::guid() const
 QString Node::ditaXmlHref()
 {
     QString href;
-    if (type() == Function)
+    if ((type() == Function) ||
+        (type() == Property) ||
+        (type() == Variable)) {
         href = parent()->fileBase();
-    else
+    }
+    else {
         href = fileBase();
+    }
     if (!href.endsWith(".xml"))
         href += ".xml";
     return href + "#" + guid();
