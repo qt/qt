@@ -57,6 +57,7 @@
 #include <private/qgl_p.h>
 #include <qglshaderprogram.h>
 
+// #define QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
@@ -87,7 +88,9 @@ public:
     }
 
     void freeResource(void *) {
-        qDebug() << "QGLTextureGlyphCache::freeResource():" << this << "ctx:" << ctx;
+#ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
+        qDebug("Freeing glyph cache resource %p for context %p.", this, ctx);
+#endif
 
         // At this point, the context group is made current, so it's safe to
         // release resources without a makeCurrent() call

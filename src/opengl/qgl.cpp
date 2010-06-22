@@ -94,6 +94,8 @@
 #include <qmutex.h>
 
 
+// #define QT_GL_CONTEXT_RESOURCE_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
@@ -2028,7 +2030,6 @@ QGLContext::~QGLContext()
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
 
-    qDebug() << "~QGLContext(): about to clean up" << hex << this;
     // clean up resources specific to this context
     d_ptr->cleanup();
     // clean up resources belonging to this context's group
@@ -5292,14 +5293,18 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
 QGLContextGroupResourceBase::QGLContextGroupResourceBase()
     : active(0)
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Creating context group resource object %p.", this);
+#endif
 }
 
 QGLContextGroupResourceBase::~QGLContextGroupResourceBase()
 {
-    qDebug() << "~QGLContextGroupResourceBase()" << hex << this << "group size:" << m_groups.size();
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
+#endif
     for (int i = 0; i < m_groups.size(); ++i) {
         m_groups.at(i)->m_resources.remove(this);
-        qDebug() << "  ->removing from group resource list:" << hex << this;
         active.deref();
     }
 #ifndef QT_NO_DEBUG
@@ -5313,6 +5318,9 @@ QGLContextGroupResourceBase::~QGLContextGroupResourceBase()
 
 void QGLContextGroupResourceBase::insert(const QGLContext *context, void *value)
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
+#endif
     QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     Q_ASSERT(!group->m_resources.contains(this));
     group->m_resources.insert(this, value);
@@ -5328,7 +5336,9 @@ void *QGLContextGroupResourceBase::value(const QGLContext *context)
 
 void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 {
-    qDebug() << "QGLContextGroupResourceBase::cleanup() this:" << hex << this << "ctx:" << ctx << "thread:" << (void *)QThread::currentThread();
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
+#endif
     QGLShareContextScope scope(ctx);
     freeResource(value);
     active.deref();
@@ -5339,8 +5349,6 @@ void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 
 void QGLContextGroup::cleanupResources(const QGLContext *context)
 {
-    qDebug() << "QGLContextGroup::cleanupResources() for ctx:" << hex << context
-             << "shares:" << m_shares.size() << "res:" << m_resources.size();
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;

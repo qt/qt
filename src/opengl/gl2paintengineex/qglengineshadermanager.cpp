@@ -46,6 +46,8 @@
 #include <QMetaEnum>
 #endif
 
+// #define QT_GL_SHARED_SHADER_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 class QGLShaderStorage
@@ -53,10 +55,8 @@ class QGLShaderStorage
 public:
     QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
         QGLContextGroupResource<QGLEngineSharedShaders> *&shaders = m_storage.localData();
-        if (!shaders) {
-            qDebug() << "New thread storage for:" << hex << QThread::currentThread();
+        if (!shaders)
             shaders = new QGLContextGroupResource<QGLEngineSharedShaders>();
-        }
         return shaders->value(context);
     }
 
@@ -229,11 +229,16 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
                     << simpleShaderProg->log();
     }
 
+#ifdef QT_GL_SHARED_SHADER_DEBUG
+    qDebug(" -> QGLEngineSharedShaders() %p for thread %p.", this, QThread::currentThread());
+#endif
 }
 
 QGLEngineSharedShaders::~QGLEngineSharedShaders()
 {
-    qDebug() << "####### ~QGLEngineSharedShaders() ##########";
+#ifdef QT_GL_SHARED_SHADER_DEBUG
+    qDebug(" -> ~QGLEngineSharedShaders() %p for thread %p.", this, QThread::currentThread());
+#endif
     qDeleteAll(shaders);
     shaders.clear();
 

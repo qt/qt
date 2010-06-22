@@ -66,12 +66,16 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngin
     if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
         glGenFramebuffers(1, &m_fbo);
 
-    fprintf(stderr, "## QGLTextureGlyphCache(): ctx: %p - this: %p\n", ctx, this);
+#ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
+    qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
+#endif
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
-    fprintf(stderr, "## ~QGLTextureGlyphCache(): context: %p - this: %p\n", ctx, this);
+#ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
+    qDebug(" -> ~QGLTextureGlyphCache() %p.", this);
+#endif
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
