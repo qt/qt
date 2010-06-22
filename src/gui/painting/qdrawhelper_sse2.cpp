@@ -297,7 +297,7 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
     }
 }
 
-void comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
+void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
 {
     Q_ASSERT(const_alpha > 0); // if const_alpha == 0, this should never be called
     Q_ASSERT(const_alpha < 256);
@@ -359,6 +359,34 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
         case 2: dest[count - 2] = value;
         case 1: dest[count - 1] = value;
         }
+    }
+}
+
+void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
+{
+    if ((const_alpha & qAlpha(color)) == 255) {
+        qt_memfill32_sse2(destPixels, length, color);
+    } else {
+        if (const_alpha != 255)
+            color = BYTE_MUL(color, const_alpha);
+
+        const quint32 minusAlphaOfColor = qAlpha(~color);
+        int x = 0;
+
+        quint32 *dst = (uint *) destPixels;
+        const __m128i colorVector = _mm_set1_epi32(color);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
+
+        for (; x < length-3; x += 4) {
+            __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+            BYTE_MUL_SSE2(dstVector, dstVector, minusAlphaOfColorVector, colorMask, half);
+            dstVector = _mm_add_epi8(colorVector, dstVector);
+            _mm_storeu_si128((__m128i *)&dst[x], dstVector);
+        }
+        for (;x < length; ++x)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }
 
