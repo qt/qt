@@ -4568,6 +4568,11 @@ void DitaXmlGenerator::writeLocation(const Node* n, CodeMarker* marker)
         s2 = CXXENUMERATIONDECLARATIONFILE;
         s3 = CXXENUMERATIONDECLARATIONFILELINE;
     }
+    else if (n->type() == Node::Typedef) {
+        s1 = CXXTYPEDEFAPIITEMLOCATION;
+        s2 = CXXTYPEDEFDECLARATIONFILE;
+        s3 = CXXTYPEDEFDECLARATIONFILELINE;
+    }
     writer.writeStartElement(s1);
     writer.writeStartElement(s2);
     writer.writeAttribute("name","filePath");
@@ -4822,7 +4827,6 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
 
             if (!en->doc().isEmpty()) {
                 generateBody(en, marker);
-                //        generateAlsoList(inner, marker);
             }
 
             writer.writeEndElement(); // </apiDesc>
@@ -4837,6 +4841,46 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
                                      const ClassNode* cn, 
                                      CodeMarker* marker)
 {
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Typedef) {
+            const TypedefNode* tn = static_cast<const TypedefNode*>(*m);
+            writer.writeStartElement(CXXTYPEDEF);
+            writer.writeAttribute("id",tn->guid());
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(tn->name());
+            writer.writeEndElement(); // </apiName>
+            generateBrief(tn,marker);
+            writer.writeStartElement(CXXTYPEDEFDETAIL);
+            writer.writeStartElement(CXXTYPEDEFDEFINITION);
+            writer.writeStartElement(CXXTYPEDEFACCESSSPECIFIER);
+            writer.writeAttribute("value",tn->accessString());
+            writer.writeEndElement(); // <cxxTypedefAccessSpecifier>
+
+            QString fq = fullQualification(tn);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXTYPEDEFSCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxTypedefScopedName>
+            }
+            writer.writeStartElement(CXXTYPEDEFNAMELOOKUP);
+            writer.writeCharacters(tn->parent()->name() + "::" + tn->name());
+            writer.writeEndElement(); // <cxxTypedefNameLookup>
+            
+            writeLocation(tn, marker);
+            writer.writeEndElement(); // <cxxTypedefDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!tn->doc().isEmpty()) {
+                generateBody(tn, marker);
+            }
+
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxTypedefDetail>
+            writer.writeEndElement(); // </cxxTypedef>
+        }
+        ++m;
+    }
 }
 
 void DitaXmlGenerator::writeDataMembers(const Section& s, 
