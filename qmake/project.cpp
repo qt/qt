@@ -1710,7 +1710,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             fprintf(stderr, "Cannot find directory: %s\n", file.left(di).toLatin1().constData());
             return IncludeFailure;
         }
-        file = file.right(file.length() - di - 1);
     }
     bool parsed = false;
     parser_info pi = parser;
