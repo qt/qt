@@ -187,12 +187,12 @@ void tst_QWidgetAction::visibilityUpdate()
     action->setDefaultWidget(combo);
 
     tb.addAction(action);
-    qApp->processEvents(); //the call to show is delayed by the toolbar layout
-    QVERIFY(combo->isVisible());
+    //the call to show is delayed by the toolbar layout
+    QTRY_VERIFY(combo->isVisible());
     QVERIFY(action->isVisible());
 
     action->setVisible(false);
-    qApp->processEvents(); //the call to hide is delayed by the toolbar layout
+    //the call to hide is delayed by the toolbar layout
     QTRY_VERIFY(!combo->isVisible());
 
     delete action;

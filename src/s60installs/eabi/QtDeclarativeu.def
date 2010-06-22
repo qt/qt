@@ -3605,7 +3605,7 @@ EXPORTS
 	_ZN16QDeclarativeText18paintedSizeChangedEv @ 3604 NONAME
 	_ZN20QDeclarativePathView5eventEP6QEvent @ 3605 NONAME
 	_ZN20QDeclarativeTextEdit12focusInEventEP11QFocusEvent @ 3606 NONAME
-	_ZN20QDeclarativeTextEdit13focusOutEventEP11QFocusEvent @ 3607 NONAME
+	_ZN20QDeclarativeTextEdit13focusOutEventEP11QFocusEvent @ 3607 NONAME ABSENT
 	_ZN20QDeclarativeTextEdit16setSelectByMouseEb @ 3608 NONAME
 	_ZN20QDeclarativeTextEdit18paintedSizeChangedEv @ 3609 NONAME
 	_ZN20QDeclarativeTextEdit20selectByMouseChangedEb @ 3610 NONAME
@@ -3615,7 +3615,7 @@ EXPORTS
 	_ZN20QDeclarativeTextEdit24setShowInputPanelOnFocusEb @ 3614 NONAME ABSENT
 	_ZN20QDeclarativeTextEdit28showInputPanelOnFocusChangedEb @ 3615 NONAME ABSENT
 	_ZN21QDeclarativeTextInput12focusInEventEP11QFocusEvent @ 3616 NONAME
-	_ZN21QDeclarativeTextInput13focusOutEventEP11QFocusEvent @ 3617 NONAME
+	_ZN21QDeclarativeTextInput13focusOutEventEP11QFocusEvent @ 3617 NONAME ABSENT
 	_ZN21QDeclarativeTextInput16setSelectByMouseEb @ 3618 NONAME
 	_ZN21QDeclarativeTextInput20selectByMouseChangedEb @ 3619 NONAME
 	_ZN21QDeclarativeTextInput22openSoftwareInputPanelEv @ 3620 NONAME
@@ -3653,9 +3653,9 @@ EXPORTS
 	_ZNK24QDeclarativeXmlListModel11errorStringEv @ 3652 NONAME
 	_ZNK24QDeclarativeXmlListModel3getEi @ 3653 NONAME
 	_ZThn8_N20QDeclarativeTextEdit12focusInEventEP11QFocusEvent @ 3654 NONAME
-	_ZThn8_N20QDeclarativeTextEdit13focusOutEventEP11QFocusEvent @ 3655 NONAME
+	_ZThn8_N20QDeclarativeTextEdit13focusOutEventEP11QFocusEvent @ 3655 NONAME ABSENT
 	_ZThn8_N21QDeclarativeTextInput12focusInEventEP11QFocusEvent @ 3656 NONAME
-	_ZThn8_N21QDeclarativeTextInput13focusOutEventEP11QFocusEvent @ 3657 NONAME
+	_ZThn8_N21QDeclarativeTextInput13focusOutEventEP11QFocusEvent @ 3657 NONAME ABSENT
 	_ZThn8_NK23QDeclarativePaintedItem12boundingRectEv @ 3658 NONAME
 	_ZN20QDeclarativeTextEdit10selectWordEv @ 3659 NONAME
 	_ZN20QDeclarativeTextEdit19moveCursorSelectionEi @ 3660 NONAME
@@ -3672,4 +3672,13 @@ EXPORTS
 	_ZNK21QDeclarativeTextInput15cursorRectangleEv @ 3671 NONAME
 	_ZNK21QDeclarativeTextInput19positionToRectangleEi @ 3672 NONAME
 	_ZThn8_N21QDeclarativeTextInput21mouseDoubleClickEventEP24QGraphicsSceneMouseEvent @ 3673 NONAME
+	_ZN20QDeclarativeGridView13footerChangedEv @ 3674 NONAME
+	_ZN20QDeclarativeGridView13headerChangedEv @ 3675 NONAME
+	_ZN20QDeclarativeGridView9setFooterEP21QDeclarativeComponent @ 3676 NONAME
+	_ZN20QDeclarativeGridView9setHeaderEP21QDeclarativeComponent @ 3677 NONAME
+	_ZNK16QDeclarativeItem7childAtEff @ 3678 NONAME
+	_ZNK16QDeclarativeView11initialSizeEv @ 3679 NONAME
+	_ZNK17QDeclarativeState7isNamedEv @ 3680 NONAME
+	_ZNK20QDeclarativeGridView6footerEv @ 3681 NONAME
+	_ZNK20QDeclarativeGridView6headerEv @ 3682 NONAME
 
