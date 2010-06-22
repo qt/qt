@@ -637,7 +637,7 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
       if ( FILE_Seek( new_offset ) ||
 	   ( error = _HB_OPEN_Load_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE],
 				  stream ) ) != HB_Err_Ok )
-	return error;
+	goto Fail2;
       (void)FILE_Seek( cur_offset );
     }
 
@@ -695,6 +695,7 @@ Fail:
   if ( an->af.af3.DeviceTables )
     _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
 
+Fail2:
   FREE( an->af.af3.DeviceTables );
   return error;
 }
