@@ -913,6 +913,22 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
         QDeclarativePaintedItem::keyPressEvent(ev);
 }
 
+void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
+{
+    Q_D(QDeclarativeTextInput);
+    inputMethodPreHandler(ev);
+    if (ev->isAccepted())
+        return;
+    if (d->control->isReadOnly()) {
+        ev->ignore();
+    } else {
+        d->control->processInputMethodEvent(ev);
+        updateSize();
+    }
+    if (!ev->isAccepted())
+        QDeclarativePaintedItem::inputMethodEvent(ev);
+}
+
 /*!
 \overload
 Handles the given mouse \a event.
@@ -993,6 +1009,7 @@ bool QDeclarativeTextInput::event(QEvent* ev)
     switch(ev->type()){
         case QEvent::KeyPress:
         case QEvent::KeyRelease://###Should the control be doing anything with release?
+        case QEvent::InputMethod:
         case QEvent::GraphicsSceneMousePress:
         case QEvent::GraphicsSceneMouseMove:
         case QEvent::GraphicsSceneMouseRelease:
@@ -1000,8 +1017,6 @@ bool QDeclarativeTextInput::event(QEvent* ev)
             break;
         default:
             handled = d->control->processEvent(ev);
-            if (ev->type() == QEvent::InputMethod)
-                updateSize();
     }
     if(!handled)
         handled = QDeclarativePaintedItem::event(ev);
