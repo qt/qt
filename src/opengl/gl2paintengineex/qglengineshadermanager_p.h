@@ -364,10 +364,6 @@ public:
     // full.
     void cleanupCustomStage(QGLCustomShaderStage* stage);
 
-    // this is needed so that threads can get a foot in and have a chance to
-    // clean up the shaders they've created before the thread exits
-    void cleanupBeforeDestruction();
-
 private:
     QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;

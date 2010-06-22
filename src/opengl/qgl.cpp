@@ -2028,6 +2028,7 @@ QGLContext::~QGLContext()
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
 
+    qDebug() << "~QGLContext(): about to clean up" << hex << this;
     d_ptr->group->cleanupResources(this);
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
@@ -2533,7 +2534,6 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     }
 #endif
 
-    printf("  -> bindTexture key: %llx\n", key);
     if (!texture) {
         QImage image = pixmap.toImage();
         // If the system depth is 16 and the pixmap doesn't have an alpha channel
@@ -5029,41 +5029,12 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if !defined(QT_OPENGL_ES_1)
-class QtGL2EngineStorage
-{
-public:
-    QPaintEngine *engine() {
-        QPaintEngine *localEngine = storage.localData();
-        if (!localEngine) {
-            localEngine = new QGL2PaintEngineEx;
-            storage.setLocalData(localEngine);
-        }
-        return localEngine;
-    }
-
-private:
-    QThreadStorage<QPaintEngine *> storage;
-};
-Q_GLOBAL_STATIC(QtGL2EngineStorage, qt_gl_2_engine)
+#ifndef QT_OPENGL_ES_1
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_gl_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-class QtGL1EngineStorage
-{
-public:
-    QPaintEngine *engine() {
-        QPaintEngine *localEngine = storage.localData();
-        if (!localEngine) {
-            localEngine = new QOpenGLPaintEngine;
-            storage.setLocalData(localEngine);
-        }
-        return localEngine;
-    }
-private:
-    QThreadStorage<QPaintEngine *> storage;
-};
-Q_GLOBAL_STATIC(QtGL1EngineStorage, qt_gl_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_gl_engine)
 #endif
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
@@ -5339,13 +5310,17 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
         group->m_shares.clear();
 }
 
-QGLContextResource::QGLContextResource(FreeFunc f)
-    : free(f), active(0)
+QGLContextResource::QGLContextResource()
+    : active(0)
 {
 }
 
 QGLContextResource::~QGLContextResource()
 {
+    for (int i = 0; i < m_groups.size(); ++i) {
+        m_groups.at(i)->m_resources.remove(this);
+        active.deref();
+    }
 #ifndef QT_NO_DEBUG
     if (active != 0) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
@@ -5360,6 +5335,7 @@ void QGLContextResource::insert(const QGLContext *key, void *value)
     QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
     Q_ASSERT(!group->m_resources.contains(this));
     group->m_resources.insert(this, value);
+    m_groups.append(group);
     active.ref();
 }
 
@@ -5371,23 +5347,18 @@ void *QGLContextResource::value(const QGLContext *key)
 
 void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
 {
-    qDebug() << "QGLContextResource::cleanup() this:" << hex << this << "thread:" << QThread::currentThread();
+    qDebug() << "QGLContextResource::cleanup() this:" << hex << this << "ctx:" << ctx << "thread:" << (void *)QThread::currentThread();
     QGLShareContextScope scope(ctx);
-    free(value);
+    freeResource(value);
     active.deref();
-}
 
-void QGLContextResource::remove(const QGLContext *ctx)
-{
-    if (ctx) {
-        QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
-        group->m_resources.remove(this);
-        active.deref();
-    }
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+    m_groups.removeOne(group);
 }
 
 void QGLContextGroup::cleanupResources(const QGLContext *ctx)
 {
+    qDebug() << "QGLContextGroup::cleanupResources() for ctx:" << hex << ctx << "shares:" << m_shares.size() << "res:" << m_resources.size();
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;

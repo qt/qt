@@ -337,12 +337,16 @@ private:
 
 QList<QGLBlurTextureCache *> QGLBlurTextureCache::blurTextureCaches;
 
-static void QGLBlurTextureCache_free(void *ptr)
+class QGLBlurCacheResource : public QGLContextResource
 {
-    delete reinterpret_cast<QGLBlurTextureCache *>(ptr);
-}
+public:
+    void freeResource(void *value)
+    {
+        delete reinterpret_cast<QGLBlurTextureCache *>(value);
+    }
+};
 
-Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_blur_texture_caches, (QGLBlurTextureCache_free))
+Q_GLOBAL_STATIC(QGLBlurCacheResource, qt_blur_texture_caches)
 
 QGLBlurTextureCache::QGLBlurTextureCache()
     : timerId(0)

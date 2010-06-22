@@ -984,11 +984,11 @@ QImage QGLFramebufferObject::toImage() const
 }
 
 #if !defined(QT_OPENGL_ES_1)
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_buffer_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_buffer_engine)
 #endif
 
 /*! \reimp */
@@ -1002,7 +1002,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 #if !defined (QT_OPENGL_ES_2)
     if (qt_gl_preferGL2Engine()) {
 #endif
-        QPaintEngine *engine = qt_buffer_2_engine();
+        QPaintEngine *engine = qt_buffer_2_engine()->engine();
         if (engine->isActive() && engine->paintDevice() != this) {
             d->engine = new QGL2PaintEngineEx;
             return d->engine;
@@ -1014,7 +1014,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 #endif
 
 #if !defined(QT_OPENGL_ES_2)
-    QPaintEngine *engine = qt_buffer_engine();
+    QPaintEngine *engine = qt_buffer_engine()->engine();
     if (engine->isActive() && engine->paintDevice() != this) {
         d->engine = new QOpenGLPaintEngine;
         return d->engine;

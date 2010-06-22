@@ -229,6 +229,7 @@ public:
 
     static void addShare(const QGLContext *context, const QGLContext *share);
     static void removeShare(const QGLContext *context);
+
 private:
     QGLContextGroup(const QGLContext *context);
 
@@ -491,7 +492,6 @@ public:
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
-            qDebug()<< "~QGLTexture: thread:" << hex <<QThread::currentThread() << "(main thread:" << QApplication::instance()->thread() << ")" << "context:" << context << "current context:" << QGLContext::currentContext();
             QGLShareContextScope scope(context);
 #if defined(Q_WS_X11)
             // Although glXReleaseTexImage is a glX call, it must be called while there
@@ -615,19 +615,17 @@ inline GLenum qt_gl_preferredTextureTarget()
 class Q_OPENGL_EXPORT QGLContextResource
 {
 public:
-    typedef void (*FreeFunc)(void *);
-    QGLContextResource(FreeFunc f);
-    ~QGLContextResource();
+    QGLContextResource();
+    virtual ~QGLContextResource();
     // Set resource 'value' for 'key' and all its shared contexts.
     void insert(const QGLContext *key, void *value);
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
     // Cleanup 'value' in response to a context group being destroyed.
     void cleanup(const QGLContext *ctx, void *value);
-    // Remove this resource from the group's resource list.
-    void remove(const QGLContext *ctx);
+    virtual void freeResource(void *value) = 0;
 private:
-    FreeFunc free;
+    QList<QGLContextGroup *> m_groups;
     QAtomicInt active;
 };
 
@@ -720,6 +718,26 @@ private:
     int gl_extensions_length;
 };
 
+
+// this is a class that wraps a QThreadStorage object for storing
+// thread local instances of the GL 1 and GL 2 paint engines
+
+template <class T>
+class QGLEngineThreadStorage
+{
+public:
+    QPaintEngine *engine() {
+        QPaintEngine *localEngine = storage.localData();
+        if (!localEngine) {
+            localEngine = new T;
+            storage.setLocalData(localEngine);
+        }
+        return localEngine;
+    }
+
+private:
+    QThreadStorage<QPaintEngine *> storage;
+};
 QT_END_NAMESPACE
 
 #endif // QGL_P_H

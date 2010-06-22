@@ -54,45 +54,10 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(0)
-    , pex(0)
+    , ctx(context)
     , m_width(0)
     , m_height(0)
 {
-    if (context != 0)
-        setContext(context);
-}
-
-QGLTextureGlyphCache::~QGLTextureGlyphCache()
-{
-    cleanUpContext();
-}
-
-void QGLTextureGlyphCache::cleanUpContext()
-{
-    if (ctx) {
-        QGLShareContextScope scope(ctx);
-
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
-            glDeleteFramebuffers(1, &m_fbo);
-
-        if (m_width || m_height) {
-            glDeleteTextures(1, &m_texture);
-            m_width = 0;
-            m_height = 0;
-            m_h = 0;
-        }
-
-        ctx = 0;
-    }
-}
-
-void QGLTextureGlyphCache::setContext(const QGLContext *context)
-{
-    cleanUpContext();
-
-    ctx = context;
-
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
     // workaround is to use a system-memory copy of the glyph cache for this device.
@@ -101,8 +66,12 @@ void QGLTextureGlyphCache::setContext(const QGLContext *context)
     if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
         glGenFramebuffers(1, &m_fbo);
 
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
-            SLOT(contextDestroyed(const QGLContext*)));
+    fprintf(stderr, "## QGLTextureGlyphCache(): ctx: %p - this: %p\n", ctx, this);
+}
+
+QGLTextureGlyphCache::~QGLTextureGlyphCache()
+{
+    fprintf(stderr, "## ~QGLTextureGlyphCache(): context: %p - this: %p\n", ctx, this);
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
@@ -161,7 +130,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     GLuint oldTexture = m_texture;
     createTextureData(width, height);
-    
+
     if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
