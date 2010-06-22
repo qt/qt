@@ -1403,12 +1403,11 @@ _HB_OPEN_Get_Device( HB_Device* d,
 		      HB_UShort    size,
 		      HB_Short*    value )
 {
-  HB_UShort  byte, bits, mask, f, s;
+  HB_UShort  byte, bits, mask, s;
 
-  f = d->DeltaFormat;
-
-  if ( d->DeltaValue && size >= d->StartSize && size <= d->EndSize )
+  if ( d && d->DeltaValue && size >= d->StartSize && size <= d->EndSize )
   {
+    HB_UShort f = d->DeltaFormat;
     s    = size - d->StartSize;
     byte = d->DeltaValue[s >> ( 4 - f )];
     bits = byte >> ( 16 - ( ( s % ( 1 << ( 4 - f ) ) + 1 ) << f ) );
