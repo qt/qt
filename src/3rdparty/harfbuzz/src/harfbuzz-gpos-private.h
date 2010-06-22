@@ -38,6 +38,11 @@ HB_BEGIN_HEADER
 
 /* shared tables */
 
+#define VR_X_PLACEMENT_DEVICE 0
+#define VR_Y_PLACEMENT_DEVICE 1
+#define VR_X_ADVANCE_DEVICE   2
+#define VR_Y_ADVANCE_DEVICE   3
+
 struct  HB_ValueRecord_
 {
   HB_Short    XPlacement;             /* horizontal adjustment for
@@ -48,14 +53,10 @@ struct  HB_ValueRecord_
 					 advance                        */
   HB_Short    YAdvance;               /* vertical adjustment for
 					 advance                        */
-  HB_Device*  XPlacementDevice;       /* device table for horizontal
-					 placement                      */
-  HB_Device*  YPlacementDevice;       /* device table for vertical
-					 placement                      */
-  HB_Device*  XAdvanceDevice;         /* device table for horizontal
-					 advance                        */
-  HB_Device*  YAdvanceDevice;         /* device table for vertical
-					 advance                        */
+
+  HB_Device** DeviceTables;           /* device tables for placement
+					 and advance                    */
+
 #ifdef HB_SUPPORT_MULTIPLE_MASTER
   HB_UShort   XIdPlacement;           /* horizontal placement metric ID */
   HB_UShort   YIdPlacement;           /* vertical placement metric ID   */
@@ -69,6 +70,8 @@ typedef struct HB_ValueRecord_  HB_ValueRecord;
 
 /* Mask values to scan the value format of the ValueRecord structure.
  We always expand compressed ValueRecords of the font.              */
+
+#define HB_GPOS_FORMAT_HAVE_DEVICE_TABLES       0x00F0
 
 #define HB_GPOS_FORMAT_HAVE_X_PLACEMENT         0x0001
 #define HB_GPOS_FORMAT_HAVE_Y_PLACEMENT         0x0002
@@ -102,13 +105,14 @@ struct  HB_AnchorFormat2_
 
 typedef struct HB_AnchorFormat2_  HB_AnchorFormat2;
 
+#define AF3_X_DEVICE_TABLE 0
+#define AF3_Y_DEVICE_TABLE 1
 
 struct  HB_AnchorFormat3_
 {
   HB_Short    XCoordinate;            /* horizontal value              */
   HB_Short    YCoordinate;            /* vertical value                */
-  HB_Device*  XDeviceTable;           /* device table for X coordinate */
-  HB_Device*  YDeviceTable;           /* device table for Y coordinate */
+  HB_Device** DeviceTables;           /* device tables for coordinates */
 };
 
 typedef struct HB_AnchorFormat3_  HB_AnchorFormat3;
@@ -533,18 +537,18 @@ typedef struct HB_ContextPos_  HB_ContextPos;
 
 struct  HB_ChainPosRule_
 {
-  HB_UShort             BacktrackGlyphCount;
-				      /* total number of backtrack glyphs */
   HB_UShort*            Backtrack;    /* array of backtrack glyph IDs     */
-  HB_UShort             InputGlyphCount;
-				      /* total number of input glyphs     */
   HB_UShort*            Input;        /* array of input glyph IDs         */
-  HB_UShort             LookaheadGlyphCount;
-				      /* total number of lookahead glyphs */
   HB_UShort*            Lookahead;    /* array of lookahead glyph IDs     */
-  HB_UShort             PosCount;     /* number of PosLookupRecords       */
   HB_PosLookupRecord*  PosLookupRecord;
 				      /* array of PosLookupRecords       */
+  HB_UShort             BacktrackGlyphCount;
+				      /* total number of backtrack glyphs */
+  HB_UShort             InputGlyphCount;
+				      /* total number of input glyphs     */
+  HB_UShort             LookaheadGlyphCount;
+				      /* total number of lookahead glyphs */
+  HB_UShort             PosCount;     /* number of PosLookupRecords       */
 };
 
 typedef struct HB_ChainPosRule_  HB_ChainPosRule;
@@ -574,20 +578,20 @@ typedef struct HB_ChainContextPosFormat1_  HB_ChainContextPosFormat1;
 
 struct  HB_ChainPosClassRule_
 {
+  HB_UShort*            Backtrack;    /* array of backtrack classes      */
+  HB_UShort*            Input;        /* array of context classes        */
+  HB_UShort*            Lookahead;    /* array of lookahead classes      */
+  HB_PosLookupRecord*  PosLookupRecord;
+				      /* array of substitution lookups   */
   HB_UShort             BacktrackGlyphCount;
 				      /* total number of backtrack
 					 classes                         */
-  HB_UShort*            Backtrack;    /* array of backtrack classes      */
   HB_UShort             InputGlyphCount;
 				      /* total number of context classes */
-  HB_UShort*            Input;        /* array of context classes        */
   HB_UShort             LookaheadGlyphCount;
 				      /* total number of lookahead
 					 classes                         */
-  HB_UShort*            Lookahead;    /* array of lookahead classes      */
   HB_UShort             PosCount;     /* number of PosLookupRecords      */
-  HB_PosLookupRecord*  PosLookupRecord;
-				      /* array of substitution lookups   */
 };
 
 typedef struct HB_ChainPosClassRule_  HB_ChainPosClassRule;
