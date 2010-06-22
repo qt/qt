@@ -1972,7 +1972,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
        
     \snippet examples/declarative/modelviews/listview/sections.qml 0
 
-    \image ListViewSections.png
+    \image qml-listview-sections-example.png
 
     \sa {declarative/modelviews/listview}{ListView examples}
 */

@@ -41,34 +41,42 @@
 import Qt 4.7
 
 Rectangle {
-    width: 200; height: 200
+    id: box
+    width: 350; height: 250
+
+    function showInfo(text) {
+        statusText.text = text
+    }
 
     Rectangle {
-        width: 50; height: 50
+        width: 80; height: 80
         color: "red"
 
-        Text { text: "Click"; anchors.centerIn: parent }
+        Text { text: "Click"; font.pixelSize: 16; anchors.centerIn: parent }
 
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            onPressed: console.log('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') 
-            onReleased: console.log('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') 
-            onClicked: console.log('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')')
-            onDoubleClicked: console.log('double click (x: ' + mouse.x + ' y: ' + mouse.y + ')')
-            onPressAndHold: console.log('press and hold')
-            onEntered: console.log('entered ' + pressed)
-            onExited: console.log('exited ' + pressed)
+            onPressed: box.showInfo('Pressed (x=' + mouse.x + ' y=' + mouse.y + ' button=' 
+                    + (mouse.button == Qt.RightButton ? 'right' : 'left') 
+                    + ' Shift=' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') 
+            onReleased: box.showInfo('Released (x=' + mouse.x + ' y=' + mouse.y 
+                    + ' isClick=' + mouse.isClick + ' wasHeld=' + mouse.wasHeld + ')') 
+            onClicked: box.showInfo('Clicked (x=' + mouse.x + ' y=' + mouse.y + ' wasHeld=' + mouse.wasHeld + ')')
+            onDoubleClicked: box.showInfo('Double clicked (x=' + mouse.x + ' y=' + mouse.y + ')')
+            onPressAndHold: box.showInfo('Press and hold')
+            onEntered: box.showInfo('Entered (pressed=' + pressed + ')')
+            onExited: box.showInfo('Exited (pressed=' + pressed + ')')
         }
     }
 
     Rectangle {
-        y: 100; width: 50; height: 50
+        width: 80; height: 80; anchors.right: parent.right
         color: "blue"
 
-        Text { text: "Drag"; anchors.centerIn: parent }
+        Text { text: "Drag"; font.pixelSize: 16; color: "white"; anchors.centerIn: parent }
 
         MouseArea {
             anchors.fill: parent
@@ -77,11 +85,18 @@ Rectangle {
             drag.minimumX: 0
             drag.maximumX: 150
 
-            onPressed: console.log('press')
-            onReleased: console.log('release (isClick: ' + mouse.isClick + ') (wasHeld: ' + mouse.wasHeld + ')')
-            onClicked: console.log('click' + '(wasHeld: ' + mouse.wasHeld + ')')
-            onDoubleClicked: console.log('double click')
-            onPressAndHold: console.log('press and hold')
+            onPressed: box.showInfo('Pressed')
+            onReleased: box.showInfo('Released (isClick=' + mouse.isClick + ' wasHeld=' + mouse.wasHeld + ')')
+            onClicked: box.showInfo('Clicked' + ' (wasHeld=' + mouse.wasHeld + ')')
+            onDoubleClicked: box.showInfo('Double clicked')
+            onPressAndHold: box.showInfo('Press and hold')
         }
+    }
+
+    Text {
+        id: statusText
+        anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; anchors.margins: 30
+
+        onTextChanged: console.log(text)
     }
 }
