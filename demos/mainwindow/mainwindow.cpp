@@ -81,6 +81,8 @@ static const char * const message =
 #endif
     ;
 
+Q_DECLARE_METATYPE(QDockWidget::DockWidgetFeatures)
+
 MainWindow::MainWindow(const QMap<QString, QSize> &customSizeHints,
                         QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
@@ -274,6 +276,8 @@ QAction *addAction(QMenu *menu, const QString &text, QActionGroup *group, QSigna
 
 void MainWindow::setupDockWidgets(const QMap<QString, QSize> &customSizeHints)
 {
+    qRegisterMetaType<QDockWidget::DockWidgetFeatures>();
+
     mapper = new QSignalMapper(this);
     connect(mapper, SIGNAL(mapped(int)), this, SLOT(setCorner(int)));
 

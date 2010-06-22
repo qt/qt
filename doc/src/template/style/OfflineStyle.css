@@ -337,9 +337,10 @@
     }
     .wrap .content li
     {
-        padding-left: 12px;
+        /*padding-left: 12px;*/
         background: url(../images/bullet_sq.png) no-repeat 0 5px;
         font: normal 400 10pt/1 Verdana;
+       /* color: #44a51c;*/
         margin-bottom: 10px; 
     }
 
@@ -794,6 +795,18 @@ ul.sf-menu li li li.sfHover ul {
 	left:			10em; /* match ul width */
 	top:			0;
 }
+	.wrap .content ol li {
+	background:none;
+	font:400 10pt/1 Verdana;
+	margin-bottom:10px;
+	margin-left:12px;
+	}
+	.wrap .content ol li {
+	list-style-type:decimal;
+
+	}
+
+
 
 }
 /* end of screen media */

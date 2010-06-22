@@ -122,7 +122,6 @@ public:
         }
     };
 
-private:
 #ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     RHeap* m_heap;
     CFontStore *m_store;
@@ -159,20 +158,30 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
 #endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 }
 
-QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
+void qt_cleanup_symbianFontDatabaseExtras()
 {
+    const QSymbianFontDatabaseExtrasImplementation *dbExtras =
+            static_cast<const QSymbianFontDatabaseExtrasImplementation*>(privateDb()->symbianExtras);
 #ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-    qDeleteAll(m_extrasHash);
+    qDeleteAll(dbExtras->m_extrasHash);
 #else // Q_SYMBIAN_HAS_FONTTABLE_API
     typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
-    for (iterator p = m_extras.begin(); p != m_extras.end(); ++p) {
-        m_store->ReleaseFont((*p)->fontOwner());
+    for (iterator p = dbExtras->m_extras.begin(); p != dbExtras->m_extras.end(); ++p) {
+        dbExtras->m_store->ReleaseFont((*p)->fontOwner());
         delete *p;
     }
+    dbExtras->m_extras.clear();
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+    dbExtras->m_extrasHash.clear();
+}
 
+QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
+{
+    qt_cleanup_symbianFontDatabaseExtras();
+#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     delete m_store;
     m_heap->Close();
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 }
 
 #ifndef FNTSTORE_H_INLINES_SUPPORT_FMM

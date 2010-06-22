@@ -177,9 +177,9 @@ symbian: {
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
 
         contains(QT_CONFIG, webkit): {
-            webkitImport.sources = $$QT_BUILD_TREE/imports/org/webkit/qmlwebkitplugin$${QT_LIBINFIX}.dll
-            webkitImport.sources += $$QT_SOURCE_TREE/src/imports/webkit/qmldir
-            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/org/webkit
+            webkitImport.sources = $$QT_BUILD_TREE/imports/QtWebKit/qmlwebkitplugin$${QT_LIBINFIX}.dll
+            webkitImport.sources += $$QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/declarative/qmldir
+            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/QtWebKit
             DEPLOYMENT += webkitImport
         }
     }
