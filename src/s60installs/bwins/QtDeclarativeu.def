@@ -4025,7 +4025,7 @@ EXPORTS
 	?get@QDeclarativeXmlListModel@@QBE?AVQScriptValue@@H@Z @ 4024 NONAME ; class QScriptValue QDeclarativeXmlListModel::get(int) const
 	?setScale@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4025 NONAME ; void QDeclarativeParentChange::setScale(class QDeclarativeScriptString)
 	?showInputPanelOnFocusChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4026 NONAME ABSENT ; void QDeclarativeTextEdit::showInputPanelOnFocusChanged(bool)
-	?focusOutEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4027 NONAME ; void QDeclarativeTextInput::focusOutEvent(class QFocusEvent *)
+	?focusOutEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4027 NONAME ABSENT ; void QDeclarativeTextInput::focusOutEvent(class QFocusEvent *)
 	?height@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4028 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::height(void) const
 	?showInputPanelOnFocus@QDeclarativeTextEdit@@QBE_NXZ @ 4029 NONAME ABSENT ; bool QDeclarativeTextEdit::showInputPanelOnFocus(void) const
 	?errorString@QDeclarativeComponent@@QBE?AVQString@@XZ @ 4030 NONAME ; class QString QDeclarativeComponent::errorString(void) const
@@ -4035,7 +4035,7 @@ EXPORTS
 	?rotation@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4034 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::rotation(void) const
 	?paintedHeight@QDeclarativeTextEdit@@QBEMXZ @ 4035 NONAME ; float QDeclarativeTextEdit::paintedHeight(void) const
 	?paintedWidth@QDeclarativeTextEdit@@QBEMXZ @ 4036 NONAME ; float QDeclarativeTextEdit::paintedWidth(void) const
-	?focusOutEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4037 NONAME ; void QDeclarativeTextEdit::focusOutEvent(class QFocusEvent *)
+	?focusOutEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4037 NONAME ABSENT ; void QDeclarativeTextEdit::focusOutEvent(class QFocusEvent *)
 	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@PAVQObject@@ABVQString@@AAVQDeclarativeExpressionPrivate@@@Z @ 4038 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QObject *, class QString const &, class QDeclarativeExpressionPrivate &)
 	??0QDeclarativeExpression@@QAE@PAVQDeclarativeContext@@PAVQObject@@ABVQString@@1@Z @ 4039 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QObject *, class QString const &, class QObject *)
 	?queryError@QDeclarativeXmlListModel@@AAEXPAXABVQString@@@Z @ 4040 NONAME ; void QDeclarativeXmlListModel::queryError(void *, class QString const &)
@@ -4088,4 +4088,13 @@ EXPORTS
 	?positionToRectangle@QDeclarativeTextInput@@QBE?AVQRectF@@H@Z @ 4087 NONAME ; class QRectF QDeclarativeTextInput::positionToRectangle(int) const
 	?positionAt@QDeclarativeTextInput@@QBEHH@Z @ 4088 NONAME ; int QDeclarativeTextInput::positionAt(int) const
 	?selectWord@QDeclarativeTextEdit@@QAEXXZ @ 4089 NONAME ; void QDeclarativeTextEdit::selectWord(void)
+	?setFooter@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 4090 NONAME ; void QDeclarativeGridView::setFooter(class QDeclarativeComponent *)
+	?isNamed@QDeclarativeState@@QBE_NXZ @ 4091 NONAME ; bool QDeclarativeState::isNamed(void) const
+	?initialSize@QDeclarativeView@@QBE?AVQSize@@XZ @ 4092 NONAME ; class QSize QDeclarativeView::initialSize(void) const
+	?childAt@QDeclarativeItem@@QBEPAV1@MM@Z @ 4093 NONAME ; class QDeclarativeItem * QDeclarativeItem::childAt(float, float) const
+	?footer@QDeclarativeGridView@@QBEPAVQDeclarativeComponent@@XZ @ 4094 NONAME ; class QDeclarativeComponent * QDeclarativeGridView::footer(void) const
+	?headerChanged@QDeclarativeGridView@@IAEXXZ @ 4095 NONAME ; void QDeclarativeGridView::headerChanged(void)
+	?setHeader@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 4096 NONAME ; void QDeclarativeGridView::setHeader(class QDeclarativeComponent *)
+	?header@QDeclarativeGridView@@QBEPAVQDeclarativeComponent@@XZ @ 4097 NONAME ; class QDeclarativeComponent * QDeclarativeGridView::header(void) const
+	?footerChanged@QDeclarativeGridView@@IAEXXZ @ 4098 NONAME ; void QDeclarativeGridView::footerChanged(void)
 

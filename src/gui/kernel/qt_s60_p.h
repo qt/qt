@@ -253,8 +253,35 @@ private:
 };
 
 inline QS60Data::QS60Data()
+: uid(TUid::Null()),
+  screenDepth(0),
+  screenWidthInPixels(0),
+  screenHeightInPixels(0),
+  screenWidthInTwips(0),
+  screenHeightInTwips(0),
+  defaultDpiX(0),
+  defaultDpiY(0),
+  curWin(0),
+  virtualMousePressedKeys(0),
+  virtualMouseAccelDX(0),
+  virtualMouseAccelDY(0),
+  virtualMouseMaxAccel(0),
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+  brokenPointerCursors(0),
+#endif
+  hasTouchscreen(0),
+  mouseInteractionEnabled(0),
+  virtualMouseRequired(0),
+  qtOwnsS60Environment(0),
+  supportsPremultipliedAlpha(0),
+  avkonComponentsSupportTransparency(0),
+  menuBeingConstructed(0),
+  memoryLimitForHwRendering(0),
+  s60ApplicationFactory(0),
+#ifdef Q_WS_S60
+  s60InstalledTrapHandler(0)
+#endif
 {
-    memclr(this, sizeof(QS60Data)); //zero init data
 }
 
 inline void QS60Data::updateScreenSize()

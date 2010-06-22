@@ -39,63 +39,17 @@
 ****************************************************************************/
 
 import Qt 4.7
+import org.webkit 1.0
 
-// ListModel allows free form list models to be defined and populated.
-
-ListModel {
-    id: petsModel
-    ListElement {
-        name: "Polly"
-        type: "Parrot"
-        age: 12
-        size: "Small"
-    }
-    ListElement {
-        name: "Penny"
-        type: "Turtle"
-        age: 4
-        size: "Small"
-    }
-    ListElement {
-        name: "Warren"
-        type: "Rabbit"
-        age: 2
-        size: "Small"
-    }
-    ListElement {
-        name: "Spot"
-        type: "Dog"
-        age: 9
-        size: "Medium"
-    }
-    ListElement {
-        name: "Schrödinger"
-        type: "Cat"
-        age: 2
-        size: "Medium"
-    }
-    ListElement {
-        name: "Joey"
-        type: "Kangaroo"
-        age: 1
-        size: "Medium"
-    }
-    ListElement {
-        name: "Kimba"
-        type: "Bunny"
-        age: 65
-        size: "Large"
-    }
-    ListElement {
-        name: "Rover"
-        type: "Dog"
-        age: 5
-        size: "Large"
-    }
-    ListElement {
-        name: "Tiny"
-        type: "Elephant"
-        age: 15
-        size: "Large"
-    }
+// Inline HTML with loose formatting can be
+// set on the html property.
+WebView {
+    html:"\
+        <body>
+        <table border=1>
+            <tr><th><th>One<th>Two<th>Three
+            <tr><th>1<td>X<td>1<td>X
+            <tr><th>2<td>0<td>X<td>0
+            <tr><th>3<td>X<td>1<td>X
+        </table>"
 }

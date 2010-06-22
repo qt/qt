@@ -38,7 +38,12 @@
 **
 ****************************************************************************/
 
+// This example shows how to create your own highlight delegate for a ListView
+// that uses a SpringFollow animation to provide custom movement when the
+// highlight bar is moved between items.
+
 import Qt 4.7
+import "content"
 
 Rectangle {
     width: 200; height: 300

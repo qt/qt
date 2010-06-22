@@ -1402,8 +1402,8 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    ClassNode* cn = 0;
-    NamespaceNode* namespasse = 0;
+    const ClassNode* cn = 0;
+    const NamespaceNode* namespasse = 0;
 
     QString title;
     QString rawTitle;
@@ -4696,7 +4696,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     }
 }
 
-void DitaXmlGenerator::writeParameters(FunctionNode* fn, CodeMarker* marker)
+void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marker)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
@@ -4735,7 +4735,7 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
     NodeList::ConstIterator m = s.members.begin();
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Enum) {
-            EnumNode* en = static_cast<const EnumNode*>(*m);
+            const EnumNode* en = static_cast<const EnumNode*>(*m);
             writer.writeStartElement(CXXENUMERATION);
             writer.writeAttribute("id",en->guid());
             writer.writeStartElement(APINAME);
