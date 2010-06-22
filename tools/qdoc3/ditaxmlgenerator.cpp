@@ -1402,8 +1402,8 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    ClassNode* cn = 0;
-    NamespaceNode* namespasse = 0;
+    const ClassNode* cn = 0;
+    const NamespaceNode* namespasse = 0;
 
     QString title;
     QString rawTitle;

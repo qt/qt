@@ -246,7 +246,7 @@ QString Node::fileBase() const
   If its UUID has not yet been created, it is created
   first.
  */
-QUuid Node::guid()
+QUuid Node::guid() const
 {
     if (uuid.isNull())
         uuid = QUuid::createUuid();
