@@ -219,7 +219,7 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
                                     int const_alpha)
 {
     const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (uint *) destPixels;
+    quint32 *dst = (quint32 *) destPixels;
     if (const_alpha == 256) {
         const __m128i alphaMask = _mm_set1_epi32(0xff000000);
         const __m128i nullVector = _mm_set1_epi32(0);
@@ -261,7 +261,7 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                  int const_alpha)
 {
     const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (uint *) destPixels;
+    quint32 *dst = (quint32 *) destPixels;
     if (const_alpha != 256) {
         if (const_alpha != 0) {
             const __m128i nullVector = _mm_set1_epi32(0);
@@ -303,7 +303,7 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
     Q_ASSERT(const_alpha < 256);
 
     const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (uint *) destPixels;
+    quint32 *dst = (quint32 *) destPixels;
 
     const __m128i nullVector = _mm_set1_epi32(0);
     const __m128i half = _mm_set1_epi16(0x80);
@@ -373,7 +373,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
         const quint32 minusAlphaOfColor = qAlpha(~color);
         int x = 0;
 
-        quint32 *dst = (uint *) destPixels;
+        quint32 *dst = (quint32 *) destPixels;
         const __m128i colorVector = _mm_set1_epi32(color);
         const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
         const __m128i half = _mm_set1_epi16(0x80);
