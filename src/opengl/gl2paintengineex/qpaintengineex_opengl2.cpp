@@ -1453,12 +1453,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     QOpenGL2PaintEngineState *s = q->state();
 
+    void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType, QTransform());
+            (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         cache->insert(ctx, cache);
-        staticTextItem->fontEngine->setGlyphCache(ctx, cache);
+        staticTextItem->fontEngine->setGlyphCache(cacheKey, cache);
     }
 
     cache->setPaintEnginePrivate(this);
