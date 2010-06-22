@@ -1730,9 +1730,9 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
                 if(proj.doProjectInclude("default_pre", IncludeFlagFeature, proj.variables()) == IncludeNoExist)
                     proj.doProjectInclude("default", IncludeFlagFeature, proj.variables());
 #endif
-                parsed = proj.read(file, proj.variables());
+                parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
             } else {
-                parsed = proj.read(file);
+                parsed = proj.read(file); // parse all aux files (load/include into)
             }
             place = proj.variables();
         } else {
