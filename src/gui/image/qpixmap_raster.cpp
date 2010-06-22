@@ -289,6 +289,20 @@ QImage QRasterPixmapData::toImage() const
     return image;
 }
 
+QImage QRasterPixmapData::toImage(const QRect &rect) const
+{
+    if (rect.isNull())
+        return image;
+
+    QRect clipped = rect.intersected(QRect(0, 0, w, h));
+    if (d % 8 == 0)
+        return QImage(image.scanLine(clipped.y()) + clipped.x() * (d / 8),
+                      clipped.width(), clipped.height(),
+                      image.bytesPerLine(), image.format());
+    else
+        return image.copy(clipped);
+}
+
 void QRasterPixmapData::setAlphaChannel(const QPixmap &alphaChannel)
 {
     image.setAlphaChannel(alphaChannel.toImage());
