@@ -14,7 +14,6 @@ qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 symbian:{
-    load(data_caging_paths)
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
     importFiles.sources = qmlgesturesplugin.dll qmldir
