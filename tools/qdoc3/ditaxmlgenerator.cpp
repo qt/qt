@@ -1409,13 +1409,13 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
     QString rawTitle;
     QString fullTitle;
     if (inner->type() == Node::Namespace) {
-        namespasse = static_cast<const NamespaceNode*>(inner);
+        namespasse = const_cast<NamespaceNode*>(static_cast<const NamespaceNode*>(inner));
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
-        cn = static_cast<const ClassNode*>(inner);
+        cn = const_cast<ClassNode*>(static_cast<const ClassNode*>(inner));
         rawTitle = marker->plainName(inner);
         fullTitle = marker->plainFullName(inner);
         title = rawTitle + " Class Reference";
@@ -4588,7 +4588,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
     NodeList::ConstIterator m = s.members.begin();
     while (m != s.members.end()) {
         if ((*m)->type() == Node::Function) {
-            FunctionNode* fn = static_cast<const FunctionNode*>(*m);
+            FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(*m));
             writer.writeStartElement(CXXFUNCTION);
             writer.writeAttribute("id",fn->guid());
             writer.writeStartElement(APINAME);
@@ -4778,6 +4778,44 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
             writer.writeCharacters(en->parent()->name() + "::" + en->name());
             writer.writeEndElement(); // <cxxEnumerationNameLookup>
 
+            if (!items.isEmpty()) {
+                writer.writeStartElement(CXXENUMERATORS);
+                QList<EnumItem>::ConstIterator i = items.begin();
+                while (i != items.end()) {
+                    writer.writeStartElement(CXXENUMERATOR);
+                    writer.writeStartElement(APINAME);
+                    writer.writeCharacters((*i).name());
+                    writer.writeEndElement(); // </apiName>
+
+                    QString fq = fullQualification(en->parent());
+                    if (!fq.isEmpty()) {
+                        writer.writeStartElement(CXXENUMERATORSCOPEDNAME);
+                        writer.writeCharacters(fq + "::" + (*i).name());
+                        writer.writeEndElement(); // <cxxEnumeratorScopedName>
+                    }
+                    writer.writeStartElement(CXXENUMERATORPROTOTYPE);
+                    writer.writeCharacters((*i).name());
+                    writer.writeEndElement(); // <cxxEnumeratorPrototype>
+                    writer.writeStartElement(CXXENUMERATORNAMELOOKUP);
+                    writer.writeCharacters(en->parent()->name() + "::" + (*i).name());
+                    writer.writeEndElement(); // <cxxEnumeratorNameLookup>
+
+                    if (!(*i).value().isEmpty()) {
+                        writer.writeStartElement(CXXENUMERATORINITIALISER);
+                        writer.writeAttribute("value", (*i).value());
+                        writer.writeEndElement(); // <cxxEnumeratorInitialiser>
+                    }
+                    if (!(*i).text().isEmpty()) {
+                        writer.writeStartElement(APIDESC);
+                        generateText((*i).text(), en, marker);
+                        writer.writeEndElement(); // </apiDesc>
+                    }
+                    writer.writeEndElement(); // <cxxEnumerator>
+                    ++i;
+                }
+                writer.writeEndElement(); // <cxxEnumerators>
+            }
+            
             writeLocation(en, marker);
             writer.writeEndElement(); // <cxxEnumerationDefinition>
             writer.writeStartElement(APIDESC);
