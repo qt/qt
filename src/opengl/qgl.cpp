@@ -2235,7 +2235,7 @@ QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_prem
 QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                            QGLContext::BindOptions options)
 {
-    const qint64 key = image.cacheKey() | (qint64) group;
+    const qint64 key = image.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
         glBindTexture(target, texture->id);
@@ -2508,7 +2508,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     Q_UNUSED(q);
 #endif
 
-    const qint64 key = pixmap.cacheKey() | (qint64) group;
+    const qint64 key = pixmap.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
         glBindTexture(target, texture->id);
