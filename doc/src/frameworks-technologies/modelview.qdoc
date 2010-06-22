@@ -69,59 +69,16 @@ Below are 7 very simple and independent applications that show different sides o
 We start with an application that uses a \l QTableView to show data. We will add editing capabilities later. 
 
 -------------------------------------------------------------main.cpp---------------------
-\code
-#include <QtGui/QApplication>
-#include "modelview.h"
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    ModelView w;
-    w.show();
-    return a.exec();
-}
-\endcode
+    \snippet examples/tutorials/modelview/1_readonly/main.cpp
 
 We have the usual main() function;
 -------------------------------------------------------------modelview.h---------------------
-\code
-#ifndef MODELVIEW_H
-#define MODELVIEW_H
-
-#include <QtGui/QMainWindow>
-
-class QTableView; //forward declaration
-
-class ModelView : public QMainWindow
-{
-    Q_OBJECT
-private:
-    QTableView *tableView;
-public:
-    ModelView(QWidget *parent = 0);
-
-};
-
-#endif // MODELVIEW_H
-\endcode
+    \snippet examples/tutorials/modelview/1_readonly/modelview.h
 
 The application is a \l QMainWindow that holds a \l QTableView.  
 
 -------------------------------------------------------------modelview.cpp---------------------
-\code
-#include <QTableView>
-#include "modelview.h"
-#include "mymodel.h"
-
-ModelView::ModelView(QWidget *parent)
-    : QMainWindow(parent)
-{
-    tableView = new QTableView(this);
-    setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this) );
-}
-
-\endcode
+    \snippet examples/tutorials/modelview/1_readonly/modelview.cpp
 
 Here is the interesting part: We use \c tableView->setModel(new MyModel(this) ); to instantiate the Model and pass its pointer to \l {QTableView::}{tableView()} OR \l QTableView::tableView() OR \l QTableView::tableView .  \l {QTableView::}{tableView} will invoke the methods of the pointer it has received to find out two things: 
     \list
@@ -133,32 +90,13 @@ The model needs some code to respond to this.
 
 We have a table data set, so let's start with QAbstractTableModel since it is easier to use.
 -------------------------------------------------------------mymodel.h---------------------
-\code
-#ifndef MYMODEL_H
-#define MYMODEL_H
-
-#include <QAbstractTableModel>
-
-class MyModel : public QAbstractTableModel
-{
-    Q_OBJECT
-public:
-    MyModel(QObject *parent);
-    int rowCount(const QModelIndex &parent = QModelIndex()) const ;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-};
-
-#endif // MYMODEL_H
-\endcode
+    \snippet examples/tutorials/modelview/1_readonly/mymodel.h
 
 QAbstractTableModel requires the implementation of three abstract methods.
 
 
 -------------------------------------------------------------mymodel.cpp---------------------
-\code
-HIER FEHLT mymodel.cpp !!!
-\endcode
+    \snippet examples/tutorials/modelview/1_readonly/mymodel.cpp
 
 The number of rows and columns is set by \c MyModel::rowCount() and \c MyModel::columnCount(). 
 When the view has to know what the cell 's text is, it calls the \l{QAbstractItemModel::data()}{data()} method. Row and column information is specified with parameter \c index and the role is set to Qt::Display Role.  Other roles are covered in the next section. In our example, the data that should be displayed is generated. In a real application, \c MyModel would have a member called \c MyData, which serves as the target for all reading and writing operations. 
@@ -173,9 +111,8 @@ In addition to controlling what text the view displays, the model also controls 
 
 In fact, nothing except for the \l{QAbstractItemModel::data()}{data()} method needs to be changed to set fonts, background colour, alignment and a checkbox. Here is the \l{QAbstractItemModel::data()}{data()} method that produces the result shown above:
 
-\code
-HIER FEHLT WAS !!!
-\endcode
+-------------------------------------------------------------mymodel.cpp---------------------
+    \snippet examples/tutorials/modelview/2_formatting/mymodel.cpp
 
 Each formatting property will be requested from the model with a separate call to the \l{QAbstractItemModel::data()}{data()} method. The \c role parameter is used to let the model know which property is being requested:
 
@@ -216,6 +153,8 @@ Now we need to determine how using a seperated model impacts the application's p
 \image clock.png
 
 We still have a read only table, but this time the content changes every second because we are showing the current time.
+
+!!!!!I CAN'T FIND THIS FILE!!!!!
 \code
 QVariant MyModel::data(const QModelIndex &index, int role ) const
 {
@@ -236,6 +175,8 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
 \endcode
 
 Something is missing to make the clock tick. We need to tell the view every second that the time has changed and that it needs to be read again. We do this with a timer. In the constructor, we set its interval to 1 second and it connect its timeout signal.
+
+?????(include section from 3_changingmodel/mymodel.cpp)?????
 \code
 MyModel::MyModel(QObject *parent)
     :QAbstractTableModel(parent)
@@ -249,6 +190,8 @@ MyModel::MyModel(QObject *parent)
 \endcode
 
 Here is the corresponding slot:
+
+?????(include section from 3_changingmodel/mymodel.cpp)?????
 \code
 
 void MyModel::timerHit()
@@ -269,6 +212,9 @@ Headers can be hidden via a view method.
 
 
 The header content, however , is set via the model, so we reimplement the \l{QAbstractItemModel::headerData()}{headerData()} method:
+
+
+?????(include section from 4_headers/mymodel.cpp)?????
 \code
 QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -295,34 +241,12 @@ QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role)
 In this example, we are going to build an application that automatically populates a window title with content by repeating values entered into table cells.
 
 The model decides whether editing capabilities are available . We only have to modify the model in order for the available editing capabilities to be enabled. This is done by reimplementing the following virtual methods:  \l{QAbstractItemModel::setData()}{setData()} and \l{QAbstractItemModel::flags()}{flags()}. 
-\code
-#ifndef MYMODEL_H
-#define MYMODEL_H
-
-#include <QAbstractTableModel>
-#include <QStringList>
-
-class MyModel : public QAbstractTableModel
-{
-    Q_OBJECT
-public:
-    MyModel(QObject *parent);
-    int rowCount(const QModelIndex &parent = QModelIndex()) const ;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
-    Qt::ItemFlags flags ( const QModelIndex & index ) const ;
-private:
-    QStringList m_gridData;  //holds text entered into QTableView
-    int modelIndexToOffset(const QModelIndex & index) const;
-signals:
-    void editCompleted(const QString &);
-};
-
-#endif // MYMODEL_H
-\endcode
+-------------------------------------------------------------mymodel.h---------------------
+    \snippet examples/tutorials/modelview/5_edit/mymodel.h
 
 We use \c QStringList m_gridData to store our data. This makes \c m_gridData the core of MyModel.  The rest of \c MyModel acts like a wrapper and adapts \c m_gridData to the  QAbstractItemModel interface. We have also introduced the \l{QAbstractItemModel::editCompleted()}{editCompleted()} signal, which makes it possible to transfer the modified text to the window title. 
+
+?????(include section from 5_edit/mymodel.cpp)?????
 \code
 #include "mymodel.h"
 
@@ -338,11 +262,13 @@ MyModel::MyModel(QObject *parent)
 \endcode
 
 In the constructor, we fill \c QStringList gridData with 6 items. (one item for every field in the table)
+?????(include section from 5_edit/mymodel.cpp)?????
 \code
 HIER FEHLT WAS!!!
 \endcode
 
 \l{QAbstractItemModel::setData()}{setData()} will be called each time the user edits a cell. The \c index parameter tells us which field has been edited and \c value  provides the result of the editing process. The role will always be set to \c Qt::EditRole because our cells only contain text. If a checkbox were present and user permissions are set to allow the checkbox to be selected, calls would also be made with the role set to \c Qt::CheckStateRole. 
+?????(include section from 5_edit/mymodel.cpp)?????
 \code
 HIER FEHLT WAS!!!
 \endcode
@@ -363,49 +289,8 @@ This is how our example model looks so far:
 
 
 We want to, however, present a real tree. We have wrapped our data in the examples above in order to make a model. This time we use QStandardItemModel, which is a container for hierarchical data that also implements QAbstractItemModel. To show a tree, QStandardItemModel must be populated with QStandardItems, which are able to hold all the standard properties of items like text, fonts, checkboxes or brushes. \image tree_2_with_algorithm.png
-\code
-#include <QTreeView>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include "modelview.h"
-
-
-const int ROWS = 2;
-const int COLUMNS = 3;
-
-ModelView::ModelView(QWidget *parent)
-    : QMainWindow(parent)
-{
-    treeView = new QTreeView(this);
-    setCentralWidget(treeView);
-    standardModel = new QStandardItemModel ;
-
-    QList<QStandardItem *> preparedColumn =prepareColumn("first", "second", "third");
-    QStandardItem *item = standardModel->invisibleRootItem();
-    // adding a row to the invisible root item produces a root element
-    item->appendRow(preparedColumn);
-
-    QList<QStandardItem *> secondRow =prepareColumn("111", "222", "333");
-    // adding a row to an item starts a subtree
-    preparedColumn.first()->appendRow(secondRow);
-
-    treeView->setModel( standardModel );
-    treeView->expandAll();
-}
-
-//---------------------------------------------------------------------------
-QList<QStandardItem *> ModelView::prepareColumn(const QString &first,
-                                                const QString &second,
-                                                const QString &third )
-{
-    QList<QStandardItem *> colItems;
-    colItems << new QStandardItem(first);
-    colItems << new QStandardItem(second);
-    colItems << new QStandardItem(third);
-    return colItems;
-}
-
-\endcode
+-------------------------------------------------------------modelview.cpp---------------------
+    \snippet examples/tutorials/modelview/6_treeview/modelview.cpp
 
 We simply instantiate a QStandardItemModel and add a couple of QStandardItems to the constructor. We can then make a hierarchical data structure because a QStandardItem can hold other QStandardItems. Nodes are collapsed and expanded within the view.
 
@@ -415,6 +300,7 @@ We want to access a selected item's content in order to output it into the windo
 
 
 So let's create a couple of items:
+?????(include section from 7_selections/modelview.cpp)?????
 \code
 #include <QTreeView>
 #include <QStandardItemModel>
@@ -462,6 +348,8 @@ ModelView::ModelView(QWidget *parent)
 \endcode
 
 Views manage selections within a separate selection model, which can be retrieved with the \l{QAbstractItemModel::selectionModel()}{selectionModel()} method. We retrieve the selection Model in order to connect a slot to its \l{QAbstractItemModel::selectionChanged()}{selectionChanged()} signal.
+
+?????(include section from 7_selections/modelview.cpp)?????
 \code
 HIER FEHLT WAS!!!
 \endcode
@@ -503,6 +391,8 @@ QDirModel (deprecated)
 In all examples so far, data is presented as text or a checkbox in a cell and is edited as text or a checkbox. The component that provides these presentation and editing services is called a “delegate.” We are only just beginning to work with the delegate because the view uses a default delegate.  But imagine that we want to have a different editor.(e.g. a slider or a drop down list) Or imagine that we want to present data as graphics. Let's take a look at an example called Stardelegate, (  \l{http://qt.nokia.com/doc/4.6/itemviews-stardelegate.html}{http://qt.nokia.com/doc/4.6/itemviews-stardelegate.html} ) in which stars are used to show a rating: \image stardelegate.png
 
 The view has a method that replaces the default delegate and installs a custom delegate. This method is called \l{QAbstractItemModel::setItemDelegate()}{setItemDelegate()}. A new delegate can be written by creating a class that inherits from QStyledItemDelegate. In order to write a delegate that displays stars and has no input capabilities, we only need to overwrite 2 methods.
+
+!!!!!I CAN'T FIND THIS FILE!!!!!
 \code
  class StarDelegate : public QStyledItemDelegate
  {
