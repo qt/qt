@@ -2385,7 +2385,7 @@ uint QDateTime::toTime_t() const
 /*!
     \since 4.7
 
-    Sets the date and time given the number of \a mulliseconds that have
+    Sets the date and time given the number of milliseconds,\a msecs, that have
     passed since 1970-01-01T00:00:00.000, Coordinated Universal Time
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
@@ -3188,7 +3188,7 @@ QDateTime QDateTime::fromTime_t(uint seconds)
 /*!
   \since 4.7
 
-  Returns a datetime whose date and time are the number of milliseconds \a msec
+  Returns a datetime whose date and time are the number of milliseconds, \a msecs,
   that have passed since 1970-01-01T00:00:00.000, Coordinated Universal
   Time (Qt::UTC). On systems that do not support time zones, the time
   will be set as if local time were Qt::UTC.
