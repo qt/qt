@@ -1,7 +1,9 @@
 /*!
 
-    \contentspage{modelview.html}{Crash Course in Model/View Programming}
     \page modelview.html
+    \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
+    \contentspage{modelview.html}{Crash Course in Model/View Programming}
 
 \title Crash Course in Model/View Programming
 Contents:
