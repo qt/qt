@@ -273,7 +273,7 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
   if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
   {
     if ( ACCESS_Frame( 2L ) )
-      return error;
+      goto Fail4;
 
     new_offset = GET_UShort();
 
@@ -287,7 +287,7 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
       if ( FILE_Seek( new_offset ) ||
 	   ( error = _HB_OPEN_Load_Device( &vr->DeviceTables[VR_X_PLACEMENT_DEVICE],
 				  stream ) ) != HB_Err_Ok )
-	return error;
+       goto Fail4;
       (void)FILE_Seek( cur_offset );
     }
   }
@@ -444,6 +444,7 @@ Fail3:
   if ( vr->DeviceTables )
     _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
 
+Fail4:
   FREE( vr->DeviceTables );
   return error;
 }
