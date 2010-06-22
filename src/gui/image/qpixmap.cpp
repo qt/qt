@@ -94,6 +94,7 @@ Q_GUI_EXPORT qint64 qt_pixmap_id(const QPixmap &pixmap)
 
 static bool qt_pixmap_thread_test()
 {
+    return true;
     if (!qApp) {
         qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
         return false;

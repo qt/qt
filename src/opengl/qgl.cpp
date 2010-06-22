@@ -2236,7 +2236,7 @@ QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_prem
 QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                            QGLContext::BindOptions options)
 {
-    const qint64 key = image.cacheKey();
+    const qint64 key = image.cacheKey() | (qint64) group;
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
         glBindTexture(target, texture->id);
@@ -2509,7 +2509,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     Q_UNUSED(q);
 #endif
 
-    const qint64 key = pixmap.cacheKey();
+    const qint64 key = pixmap.cacheKey() | (qint64) group;
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
         glBindTexture(target, texture->id);
@@ -2532,6 +2532,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     }
 #endif
 
+    printf("  -> bindTexture key: %llx\n", key);
     if (!texture) {
         QImage image = pixmap.toImage();
         // If the system depth is 16 and the pixmap doesn't have an alpha channel
@@ -4061,11 +4062,7 @@ bool QGLWidget::event(QEvent *e)
 #if defined(Q_WS_X11)
     // prevents X errors on some systems, where we get a flush to a
     // hidden widget
-    if (e->type() == QEvent::Hide) {
-        makeCurrent();
-        glFinish();
-        doneCurrent();
-    } else if (e->type() == QEvent::ParentChange) {
+    if (e->type() == QEvent::ParentChange) {
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
@@ -5373,6 +5370,7 @@ void *QGLContextResource::value(const QGLContext *key)
 
 void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
 {
+    qDebug() << "QGLContextResource::cleanup() this:" << hex << this << "thread:" << QThread::currentThread();
     QGLShareContextScope scope(ctx);
     free(value);
     active.deref();

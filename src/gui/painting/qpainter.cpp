@@ -5252,7 +5252,8 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    if (d->engine->type() != QPaintEngine::OpenGL2)
+        qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
 
     if (d->extended) {
@@ -5322,7 +5323,8 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     if (!d->engine || pm.isNull())
         return;
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    if (d->engine->type() != QPaintEngine::OpenGL2)
+        qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
 
     qreal x = r.x();
@@ -5926,7 +5928,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     // Recreate the layout of the static text because the matrix or font has changed
     if (staticTextNeedsReinit)
-        staticText_d->init();    
+        staticText_d->init();
 
     if (transformedPosition != staticText_d->position) { // Translate to actual position
         QFixed fx = QFixed::fromReal(transformedPosition.x());
@@ -6666,7 +6668,8 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
+    if (d->engine->type() != QPaintEngine::OpenGL2)
+        qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
 #endif
 
     qreal sw = pixmap.width();

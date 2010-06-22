@@ -473,6 +473,8 @@ private:
     QGLContext *m_ctx;
 };
 
+#include <qdebug.h>
+#include <qthread.h>
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -489,6 +491,7 @@ public:
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
+            qDebug()<< "~QGLTexture: thread:" << hex <<QThread::currentThread() << "(main thread:" << QApplication::instance()->thread() << ")" << "context:" << context << "current context:" << QGLContext::currentContext();
             QGLShareContextScope scope(context);
 #if defined(Q_WS_X11)
             // Although glXReleaseTexImage is a glX call, it must be called while there
