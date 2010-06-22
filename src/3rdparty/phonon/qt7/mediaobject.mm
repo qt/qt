@@ -405,20 +405,22 @@ void MediaObject::restartAudioVideoTimers()
     if (m_audioTimer)
         killTimer(m_audioTimer);
 
+    if (hasVideo()) {
 #if QT_ALLOW_QUICKTIME
     // We prefer to use a display link as timer if available, since
     // it is more steady, and results in better and smoother frame drawing:
-    startDisplayLink();
-    if (!m_displayLink){
+        startDisplayLink();
+        if (!m_displayLink){
+            float fps = m_videoPlayer->staticFps();
+            long videoUpdateFrequency = fps ? long(1000.0f / fps) : 0.001;
+            m_videoTimer = startTimer(videoUpdateFrequency);
+        }
+#else
         float fps = m_videoPlayer->staticFps();
         long videoUpdateFrequency = fps ? long(1000.0f / fps) : 0.001;
         m_videoTimer = startTimer(videoUpdateFrequency);
-    }
-#else
-    float fps = m_videoPlayer->staticFps();
-    long videoUpdateFrequency = fps ? long(1000.0f / fps) : 0.001;
-    m_videoTimer = startTimer(videoUpdateFrequency);
 #endif
+    }
 
     long audioUpdateFrequency = m_audioPlayer->regularTaskFrequency();
     m_audioTimer = startTimer(audioUpdateFrequency);
