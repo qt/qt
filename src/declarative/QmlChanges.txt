@@ -50,7 +50,7 @@ Removed Qt.playSound (replaced by SoundEffect element)
 Removed Qt.closestAngle (use RotationAnimation instead)
 Removed NumberFormatter
 Removed DateTimeFormatter (use Qt.formatDateTime() instead)
-Using WebView now requires "import org.webkit 1.0"
+Using WebView now requires "import QtWebKit 1.0"
 Using Particles now requires "import Qt.labs.particles 1.0"
 AnchorAnimation must now be used to animate anchor changes (and not NumberAnimation)
 Removed ParentAction (use ParentAnimation instead)

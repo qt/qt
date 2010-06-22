@@ -453,6 +453,9 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     WebCore::InitializeLoggingChannelsIfNecessary();
     JSC::initializeThreading();
     WebCore::SecurityOrigin::setLocalLoadPolicy(WebCore::SecurityOrigin::AllowLocalLoadsForLocalAndSubstituteData);
+#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
+    WebCore::Font::setCodePath(WebCore::Font::Complex);
+#endif
 
     chromeClient = new ChromeClientQt(q);
     contextMenuClient = new ContextMenuClientQt();
@@ -766,7 +769,7 @@ void QWebPagePrivate::timerEvent(QTimerEvent *ev)
     if (timerId == tripleClickTimer.timerId())
         tripleClickTimer.stop();
     else
-        q->QObject::timerEvent(ev);
+        q->timerEvent(ev);
 }
 
 void QWebPagePrivate::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
