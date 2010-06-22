@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 
 // Inline HTML with loose formatting can be
 // set on the html property.
