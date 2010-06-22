@@ -72,7 +72,7 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/animation/basics}{Basics}
 \o \l{declarative/animation/behaviors}{Behaviors}
-\o \l{declarative/animation/easing}{Easing types}
+\o \l{declarative/animation/easing}{Easing}
 \o \l{declarative/animation/states}{States}
 \endlist
 
@@ -80,6 +80,12 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/imageelements/borderimage}{BorderImage}
 \o \l{declarative/imageelements/image}{Image}
+\endlist
+
+\section2 Text
+\list
+\o \l{declarative/text/fonts}{Fonts}
+\o \l{declarative/text/textselection}{Text Selection}
 \endlist
 
 \section2 Positioners
@@ -122,6 +128,15 @@ For example, from your build directory, run:
 \o \l{declarative/modelviews/webview}{WebView}
 \endlist
 
+\section2 Toys
+\list
+\o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/corkboards}{Corkboards}
+\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
+\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
+\o \l{declarative/toys/tvtennis}{TV Tennis}
+\endlist
+
 \section2 XML
 \list
 \o \l{declarative/xml/xmlhttprequest}{XmlHttpRequest}
@@ -153,15 +168,6 @@ For example, from your build directory, run:
 \o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
 \endlist
 
-\section2 Toys
-\list
-\o \l{declarative/toys/clocks}{Clocks}
-\o \l{declarative/toys/corkboards}{Corkboards}
-\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
-\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
-\o \l{declarative/toys/tvtennis}{TV Tennis}
-\endlist
-
 
 \section1 Demos
 
@@ -173,6 +179,8 @@ For example, from your build directory, run:
 \o \l{demos/declarative/rssnews}{RSS News Reader}
 \o \l{demos/declarative/samegame}{Same Game}
 \o \l{demos/declarative/snake}{Snake}
+\o \l{demos/declarative/twitter}{Twitter}
+\o \l{demos/declarative/webbrowser}{Web Browser}
 \endlist
 
 \section1 Labs

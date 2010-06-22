@@ -43,6 +43,7 @@
 // highlight bar is moved between items.
 
 import Qt 4.7
+import "content"
 
 Rectangle {
     width: 200; height: 300
