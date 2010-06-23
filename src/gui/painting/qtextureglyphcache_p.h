@@ -94,6 +94,7 @@ public:
 
     void populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                   const QFixedPoint *positions);
+    void fillInPendingGlyphs();
 
     virtual void createTextureData(int width, int height) = 0;
     virtual void resizeTextureData(int width, int height) = 0;
@@ -108,7 +109,14 @@ public:
         createTextureData(width, height);
     }
 
-    inline bool isNull() const { return m_w <= 0 || m_h <= 0; }
+    inline void resizeCache(int width, int height)
+    {
+        resizeTextureData(width, height);
+        m_w = width;
+        m_h = height;
+    }
+
+    inline bool isNull() const { return m_h == 0; }
 
     QHash<glyph_t, Coord> coords;
 
@@ -116,6 +124,8 @@ public:
 
 protected:
     QFontEngine *m_current_fontengine;
+
+    QHash<glyph_t, Coord> m_pendingGlyphs;
 
     int m_w; // image width
     int m_h; // image height

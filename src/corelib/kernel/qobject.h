@@ -207,6 +207,21 @@ public:
 #endif
 #endif
         );
+        
+    static bool connect(const QObject *sender, const QMetaMethod &signal,
+                        const QObject *receiver, const QMetaMethod &method,
+                        Qt::ConnectionType type = 
+#ifdef qdoc
+                        Qt::AutoConnection
+#else
+#ifdef QT3_SUPPORT
+                        Qt::AutoCompatConnection
+#else
+                        Qt::AutoConnection
+#endif
+#endif
+        );
+
     inline bool connect(const QObject *sender, const char *signal,
                         const char *member, Qt::ConnectionType type =
 #ifdef qdoc
@@ -222,6 +237,8 @@ public:
 
     static bool disconnect(const QObject *sender, const char *signal,
                            const QObject *receiver, const char *member);
+    static bool disconnect(const QObject *sender, const QMetaMethod &signal,
+                           const QObject *receiver, const QMetaMethod &member);
     inline bool disconnect(const char *signal = 0,
                            const QObject *receiver = 0, const char *member = 0)
         { return disconnect(this, signal, receiver, member); }

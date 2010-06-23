@@ -52,12 +52,46 @@ QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
-QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
+QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(context)
+    , ctx(0)
     , m_width(0)
     , m_height(0)
 {
+    if (context != 0)
+        setContext(context);
+}
+
+QGLTextureGlyphCache::~QGLTextureGlyphCache()
+{
+    cleanUpContext();
+}
+
+void QGLTextureGlyphCache::cleanUpContext()
+{
+    if (ctx) {
+        QGLShareContextScope scope(ctx);
+
+        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+            glDeleteFramebuffers(1, &m_fbo);
+
+        if (m_width || m_height) {
+            glDeleteTextures(1, &m_texture);
+            m_width = 0;
+            m_height = 0;
+            m_h = 0;
+        }
+
+        ctx = 0;
+    }
+}
+
+void QGLTextureGlyphCache::setContext(const QGLContext *context)
+{
+    cleanUpContext();
+
+    ctx = context;
+
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
     // workaround is to use a system-memory copy of the glyph cache for this device.
@@ -70,21 +104,13 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
             SLOT(contextDestroyed(const QGLContext*)));
 }
 
-QGLTextureGlyphCache::~QGLTextureGlyphCache()
-{
-    if (ctx) {
-        QGLShareContextScope scope(ctx);
-
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
-            glDeleteFramebuffers(1, &m_fbo);
-
-        if (m_width || m_height)
-            glDeleteTextures(1, &m_texture);
-    }
-}
-
 void QGLTextureGlyphCache::createTextureData(int width, int height)
 {
+    if (ctx == 0) {
+        qWarning("QGLTextureGlyphCache::createTextureData: Called with no context");
+        return;
+    }
+
     // create in QImageTextureGlyphCache baseclass is meant to be called
     // only to create the initial image and does not preserve the content,
     // so we don't call when this function is called from resize.
@@ -118,6 +144,11 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 {
+    if (ctx == 0) {
+        qWarning("QGLTextureGlyphCache::resizeTextureData: Called with no context");
+        return;
+    }
+
     int oldWidth = m_width;
     int oldHeight = m_height;
 
@@ -213,6 +244,11 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
 {
+    if (ctx == 0) {
+        qWarning("QGLTextureGlyphCache::fillTexture: Called with no context");
+        return;
+    }
+
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph);
 
