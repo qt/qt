@@ -973,34 +973,36 @@ void tst_QDeclarativeListView::currentIndex()
     QDeclarativeItem *viewport = listview->viewport();
     QTRY_VERIFY(viewport != 0);
 
-    // current item should be third item
-    QTRY_COMPARE(listview->currentIndex(), 3);
-    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 3));
-    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+    // current item should be 20th item at startup
+    // and current item should be in view
+    QCOMPARE(listview->currentIndex(), 20);
+    QCOMPARE(listview->contentY(), 99.0);
+    QCOMPARE(listview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 20));
+    QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
     // no wrap
     listview->setCurrentIndex(0);
-    QTRY_COMPARE(listview->currentIndex(), 0);
+    QCOMPARE(listview->currentIndex(), 0);
 
     listview->incrementCurrentIndex();
-    QTRY_COMPARE(listview->currentIndex(), 1);
+    QCOMPARE(listview->currentIndex(), 1);
     listview->decrementCurrentIndex();
-    QTRY_COMPARE(listview->currentIndex(), 0);
+    QCOMPARE(listview->currentIndex(), 0);
 
     listview->decrementCurrentIndex();
-    QTRY_COMPARE(listview->currentIndex(), 0);
+    QCOMPARE(listview->currentIndex(), 0);
 
     // with wrap
     ctxt->setContextProperty("testWrap", QVariant(true));
-    QTRY_VERIFY(listview->isWrapEnabled());
+    QVERIFY(listview->isWrapEnabled());
 
     listview->decrementCurrentIndex();
-    QTRY_COMPARE(listview->currentIndex(), model.count()-1);
+    QCOMPARE(listview->currentIndex(), model.count()-1);
 
     QTRY_COMPARE(listview->contentY(), 279.0);
 
     listview->incrementCurrentIndex();
-    QTRY_COMPARE(listview->currentIndex(), 0);
+    QCOMPARE(listview->currentIndex(), 0);
 
     QTRY_COMPARE(listview->contentY(), 0.0);
 
@@ -1016,16 +1018,16 @@ void tst_QDeclarativeListView::currentIndex()
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QTRY_COMPARE(listview->currentIndex(), 1);
+    QCOMPARE(listview->currentIndex(), 1);
 
     QTest::keyClick(canvas, Qt::Key_Up);
-    QTRY_COMPARE(listview->currentIndex(), 0);
+    QCOMPARE(listview->currentIndex(), 0);
 
     // turn off auto highlight
     listview->setHighlightFollowsCurrentItem(false);
-    QTRY_VERIFY(listview->highlightFollowsCurrentItem() == false);
+    QVERIFY(listview->highlightFollowsCurrentItem() == false);
 
-    QTRY_VERIFY(listview->highlightItem());
+    QVERIFY(listview->highlightItem());
     qreal hlPos = listview->highlightItem()->y();
 
     listview->setCurrentIndex(4);

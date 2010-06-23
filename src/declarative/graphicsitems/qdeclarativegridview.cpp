@@ -2037,6 +2037,8 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
     if (mode < Beginning || mode > Contain)
         return;
 
+    if (d->layoutScheduled)
+        d->layout();
     qreal pos = d->position();
     FxGridItem *item = d->visibleItem(index);
     if (!item) {
@@ -2079,6 +2081,8 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
         pos = qMin(pos, maxExtent);
         qreal minExtent = d->flow == QDeclarativeGridView::LeftToRight ? -minYExtent() : -minXExtent();
         pos = qMax(pos, minExtent);
+        d->moveReason = QDeclarativeGridViewPrivate::Other;
+        cancelFlick();
         d->setPosition(pos);
     }
     d->fixupPosition();
@@ -2113,10 +2117,15 @@ void QDeclarativeGridView::componentComplete()
     d->updateGrid();
     if (d->isValid()) {
         refill();
+        d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         if (d->currentIndex < 0)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
+        if (d->highlight) {
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            d->updateTrackedItem();
+        }
         d->fixupPosition();
     }
 }
