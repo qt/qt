@@ -212,7 +212,7 @@ QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) 
 
 QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId wid) const
 {
-    return new QGLWindowSurface(widget);
+    return new QOpenKODEWindowSurface(widget, wid);
 }
 
 bool QOpenKODEIntegration::hasOpenGL() const
@@ -222,10 +222,6 @@ bool QOpenKODEIntegration::hasOpenGL() const
 QPlatformGLContext *QOpenKODEIntegration::createGLContext()
 {
     return new QEGLPlatformContext;
-}
-QPlatformGLWidgetSurface *QOpenKODEIntegration::createGLWidgetSurface()
-{
-    return new QEGLPlatformWidgetSurface;
 }
 
 GLuint QOpenKODEIntegration::blitterProgram()

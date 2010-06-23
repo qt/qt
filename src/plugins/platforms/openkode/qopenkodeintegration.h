@@ -47,6 +47,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 #include <QtGui/private/qeglcontext_p.h>
+#include <QtGui/qplatformglcontext_lite.h>
 
 # include <GLES2/gl2.h>
 
@@ -83,7 +84,6 @@ public:
 
     bool hasOpenGL() const;
     QPlatformGLContext * createGLContext();
-    QPlatformGLWidgetSurface * createGLWidgetSurface();
 
     virtual QList<QPlatformScreen *> screens() const { return mScreens; }
 

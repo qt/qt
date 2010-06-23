@@ -147,28 +147,6 @@ void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
     eglGetError();
 }
 
-QEGLPlatformWidgetSurface::QEGLPlatformWidgetSurface()
-    :QPlatformGLWidgetSurface()
-{
-
-}
-QEGLPlatformWidgetSurface::~QEGLPlatformWidgetSurface()
-{
-}
-
-bool QEGLPlatformWidgetSurface::create(QGLWidget* widget, QGLFormat& format)
-{
-    return true;
-}
-void QEGLPlatformWidgetSurface::setGeometry(const QRect& rect)
-{
-    Q_UNUSED(rect);
-}
-bool QEGLPlatformWidgetSurface::filterEvent(QEvent *event)
-{
-    return QPlatformGLWidgetSurface::filterEvent(event);
-}
-
 QEGLPlatformContext::QEGLPlatformContext()
 {
 }

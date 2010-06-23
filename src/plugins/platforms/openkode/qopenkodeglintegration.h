@@ -42,24 +42,13 @@
 #ifndef QOPENKODEGLINTEGRATION_H
 #define QOPENKODEGLINTEGRATION_H
 
-#include <QtOpenGL/qglplatformintegration_lite.h>
+#include <QtGui/qplatformglcontext_lite.h>
 #include <QtGui/private/qeglproperties_p.h>
 #include <EGL/egl.h>
 
 void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat);
 // Updates "format" with the parameters of the selected configuration.
 void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config);
-
-class QEGLPlatformWidgetSurface : public QPlatformGLWidgetSurface
-{
-public:
-    QEGLPlatformWidgetSurface();
-    virtual ~QEGLPlatformWidgetSurface();
-
-    bool create(QGLWidget*, QGLFormat&);
-    void setGeometry(const QRect&);
-    bool filterEvent(QEvent *);
-};
 
 class QEGLPlatformContext : public QPlatformGLContext
 {
