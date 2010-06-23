@@ -63,7 +63,7 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
     setWindowTitle(tr("Warnings"));
 
     m_plainTextEdit = new QPlainTextEdit();
-    
+
 #ifdef Q_WS_MAEMO_5
     new TextEditAutoResizer(m_plainTextEdit);
     setAttribute(Qt::WA_Maemo5StackedWindow);
@@ -71,7 +71,7 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
     area->setWidget(m_plainTextEdit);
     area->setWidgetResizable(true);
     setCentralWidget(area);
-#else    
+#else
     setCentralWidget(m_plainTextEdit);
 #endif
     readSettings();

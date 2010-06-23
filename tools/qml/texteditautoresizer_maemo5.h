@@ -61,7 +61,7 @@ public:
 
         connect(parent, SIGNAL(textChanged()), this, SLOT(textEditChanged()));
         connect(parent, SIGNAL(cursorPositionChanged()), this, SLOT(textEditChanged()));
-        
+
         textEditChanged();
     }
 
@@ -87,36 +87,27 @@ void TextEditAutoResizer::textEditChanged()
     const QRect cr = edit->contentsRect();
 
     edit->setMinimumHeight(qMax(70, s.height() + (fr.height() - cr.height() - 1)));
-    
-//    QString s1;
-//    QDebug ts(&s1);
-//    ts << "DOC: " << s << "  CURSOR: " << cursor << "  MINH: " << edit->minimumHeight();
-//    fprintf(stderr, "%s\n", qPrintable(s1));
 
     // make sure the cursor is visible in case we have a QAbstractScrollArea parent
     QPoint pos = edit->pos();
     QWidget *pw = edit->parentWidget();
-    while (pw) {        
+    while (pw) {
         if (qobject_cast<QScrollArea *>(pw))
             break;
         pw = pw->parentWidget();
     }
-    
+
     if (pw) {
         QScrollArea *area = static_cast<QScrollArea *>(pw);
         QPoint scrollto = area->widget()->mapFrom(edit, cursor.center());
         QPoint margin(10 + cursor.width(), 2 * cursor.height());
-        
+
         if (QAbstractKineticScroller *scroller = area->property("kineticScroller").value<QAbstractKineticScroller *>()) {
             scroller->ensureVisible(scrollto, margin.x(), margin.y());
         } else {
             area->ensureVisible(scrollto.x(), scrollto.y(), margin.x(), margin.y());
         }
     }
-//    QDebug ts(&s2);
-//    ts << "ENSURE VIS: " << pos << " + " << cursor.center() << "(pos + cursor.center())" << scroller->isEnabled() << area;
-//    ts << "PW: " << pw << "  PPW: " << (pw ? pw->parentWidget() : 0); //ENSURE VIS: " << pos << " + " << cursor.center() << "(pos + cursor.center())" << scroller->isEnabled() << area;
-//    fprintf(stderr, "%s\n", qPrintable(s2));
 }
 
 #endif

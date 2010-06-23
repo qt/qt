@@ -254,9 +254,9 @@ public:
             sizeWidth->setValue(s.width());
             sizeHeight->setValue(s.height());
         }
-#endif    
+#endif
     }
-    
+
     void showffmpegOptions(bool b)
     {
 #ifdef Q_WS_MAEMO_5
@@ -268,7 +268,7 @@ public:
         ffmpegOptions->setVisible(b);
 #endif
     }
-    
+
     void showRateOptions(bool b)
     {
 #ifdef Q_WS_MAEMO_5
@@ -297,7 +297,7 @@ public:
             idx = 6;
         else
             idx = 7;
-        rateCombo->setCurrentIndex(idx);            
+        rateCombo->setCurrentIndex(idx);
 #else
         if (rate == 24)
             hz24->setChecked(true);
