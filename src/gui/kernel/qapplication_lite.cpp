@@ -479,6 +479,7 @@ void qt_init(QApplicationPrivate *priv, int type)
 {
     Q_UNUSED(type);
 
+    qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     char *p;
     char **argv = priv->argv;
     int argc = priv->argc;
@@ -787,6 +788,11 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterface::KeyEvent *e)
 
 void QApplicationPrivate::processGeometryChange(QWidget *tlw, const QRect &newRect)
 {
+    if (!tlw->isWindow())
+        return; //geo of native child widgets is controlled by lighthouse
+                //so we already have sent the events; besides this new rect
+                //is not mapped to parent
+
     QRect cr(tlw->geometry());
 
     bool isResize = cr.size() != newRect.size();

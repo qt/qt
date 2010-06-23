@@ -1342,6 +1342,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         flags |= Qt::Window;
     }
 
+#ifndef Q_WS_LITE
     if (QWidget *parent = parentWidget()) {
 #ifdef Q_WS_MAC
         if (testAttribute(Qt::WA_NativeWindow) == false)
@@ -1362,6 +1363,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
             return;
         }
     }
+#endif //Q_WS_LITE
 
 #ifdef QT3_SUPPORT
     if (flags & Qt::WStaticContents)
@@ -2424,6 +2426,7 @@ void QWidgetPrivate::createWinId(WId winid)
 #endif
     const bool forceNativeWindow = q->testAttribute(Qt::WA_NativeWindow);
     if (!q->testAttribute(Qt::WA_WState_Created) || (forceNativeWindow && !q->internalWinId())) {
+#ifndef Q_WS_LITE
         if (!q->isWindow()) {
             QWidget *parent = q->parentWidget();
             QWidgetPrivate *pd = parent->d_func();
@@ -2451,6 +2454,10 @@ void QWidgetPrivate::createWinId(WId winid)
         } else {
             q->create();
         }
+#else
+        q->create();
+#endif //Q_WS_LITE
+
     }
 }
 
@@ -10453,12 +10460,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     Q_ASSERT_X(sizeof(d->high_attributes)*8 >= (Qt::WA_AttributeCount - sizeof(uint)*8),
                "QWidget::setAttribute(WidgetAttribute, bool)",
                "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
-#ifdef Q_WS_LITE
-    //### we don't have native child widgets, and WinId isn't really there yet
-    if (attribute == Qt::WA_NativeWindow)
-        return;
-#endif
-
 #ifdef Q_WS_WIN
     // ### Don't use PaintOnScreen+paintEngine() to do native painting in 5.0
     if (attribute == Qt::WA_PaintOnScreen && on && !inherits("QGLWidget")) {
@@ -11945,11 +11946,6 @@ QWindowSurface *QWidget::windowSurface() const
 */
 void QWidget::setPlatformWindow(QPlatformWindow *window)
 {
-#ifndef Q_BACKINGSTORE_SUBSURFACES
-    if (!isTopLevel())
-        return;
-#endif
-
     Q_D(QWidget);
 
     QTLWExtra *topData = d->topData();

@@ -54,6 +54,23 @@
 QT_BEGIN_NAMESPACE
 static QPlatformScreen *qt_screenForWidget(const QWidget *w);
 
+void setParentForChildrenOfWidget(QPlatformWindow *window, const QWidget *widget)
+{
+    QObjectList children = widget->children();
+    for (int i = 0; i < children.size(); i++) {
+        if (children.at(i)->isWidgetType()) {
+            const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
+            if (childWidget) { // should not be nessesary
+                if (childWidget->platformWindow()) {
+                    childWidget->platformWindow()->setParent(window);
+                } else {
+                    setParentForChildrenOfWidget(window,childWidget);
+                }
+            }
+        }
+    }
+}
+
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
 {
     Q_Q(QWidget);
@@ -65,7 +82,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     Qt::WindowFlags flags = data.window_flags;
 
-    if (!(flags & Qt::Window) || q->windowType() == Qt::Desktop)
+    if ((!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow()) || q->windowType() == Qt::Desktop )
         return; // we only care about real toplevels
 
     QWindowSurface *surface = q->windowSurface();
@@ -76,8 +93,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
     Q_ASSERT(platformWindow);
 
-    // QGLWidget does not need/work with a windowsurface
-    if (!surface) {// && !q->inherits("QGLWidget")) {
+    if (!surface) {
         surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
     }
 
@@ -85,14 +101,11 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     setWinId(q->platformWindow()->winId());
 
-    QObjectList children = q->children();
-    for (int i = 0; i < children.size(); i++) {
-        if (children.at(i)->isWidgetType()) {
-            const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
-            QPlatformWindow *childWindow = childWidget->platformWindow();
-            if (childWindow) {
-                childWindow->setParent(platformWindow);
-            }
+    //first check children. then find who for parent.
+    setParentForChildrenOfWidget(platformWindow,q);
+    if (QWidget *nativeParent = q->nativeParentWidget()) {
+        if (nativeParent->platformWindow()) {
+            platformWindow->setParent(nativeParent->platformWindow());
         }
     }
 
@@ -131,7 +144,6 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-
 
     //    QWidget *oldParent = q->parentWidget();
     Qt::WindowFlags oldFlags = data.window_flags;
@@ -560,9 +572,13 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     data.crect = r;
 
     if (q->isVisible()) {
-
         if (q->platformWindow()) {
-            q->platformWindow()->setGeometry(q->frameGeometry());
+            if (q->isWindow()) {
+                q->platformWindow()->setGeometry(q->frameGeometry());
+            } else {
+                QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
+                q->platformWindow()->setGeometry(QRect(posInNativeParent,r.size()));
+            }
             const QWidgetBackingStore *bs = maybeBackingStore();
             if (bs->windowSurface) {
                 if (isResize)

@@ -640,18 +640,8 @@ WId QTestLiteWindow::winId() const
 
 void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
-    /******** Cleaning up **********/
-    Window parentXWindow, rootXWindow;
-    Window *children;
-    unsigned int nChildren;
-    if (XQueryTree(xd->display, x_window, &rootXWindow, &parentXWindow, &children, &nChildren)) {
-        if (parentXWindow) {
-            XUnmapWindow(xd->display, x_window);
-            XReparentWindow(xd->display, x_window, rootXWindow, 0, 0);
-        }
-    }
-    /******* Done cleaning up ********/
-    XReparentWindow(xd->display,x_window,window->winId(),geometry().x(),geometry().y());
+    QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
+    XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
     XMapWindow(xd->display, x_window);
 }
 
@@ -701,7 +691,6 @@ void QTestLiteWindow::paintEvent()
 
 void QTestLiteWindow::resizeEvent(XConfigureEvent *e)
 {
-
     if ((e->width != width || e->height != height) && e->x == 0 && e->y == 0) {
         //qDebug() << "resize with bogus pos" << e->x << e->y << e->width << e->height << "window"<< hex << window;
     } else {
@@ -844,7 +833,7 @@ static inline bool isTransient(const QWidget *w)
 
 Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    Q_ASSERT(flags & Qt::Window);
+//    Q_ASSERT(flags & Qt::Window);
     window_flags = flags;
 
     if (mwm_hint_atom == XNone) {

@@ -290,7 +290,7 @@ QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
     : QWindowSurface(window), d_ptr(new QGLWindowSurfacePrivate)
 {
-    Q_ASSERT(window->isTopLevel());
+//    Q_ASSERT(window->isTopLevel());
     d_ptr->pb = 0;
     d_ptr->fbo = 0;
     d_ptr->ctx = 0;
