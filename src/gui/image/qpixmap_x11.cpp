@@ -1525,6 +1525,16 @@ QImage QX11PixmapData::takeQImageFromXImage(const QXImageWrapper &xiWrapper) con
         }
     }
 
+    // fix-up alpha channel
+    if (format == QImage::Format_RGB32) {
+        QRgb *p = (QRgb *)image.bits();
+        for (int y = 0; y < xi->height; ++y) {
+            for (int x = 0; x < xi->width; ++x)
+                p[x] |= 0xff000000;
+            p += xi->bytes_per_line / 4;
+        }
+    }
+
     XDestroyImage(xi);
     return image;
 }
