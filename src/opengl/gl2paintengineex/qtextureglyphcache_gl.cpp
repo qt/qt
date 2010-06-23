@@ -54,21 +54,12 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(context)
-    , m_width(0)
-    , m_height(0)
+    , ctx(0)
 {
-    // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
-    // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
-    // workaround is to use a system-memory copy of the glyph cache for this device.
-    // Switching to NPOT and GL_RGBA would both cost a lot more graphics memory and
-    // be slower, so that is not desireable.
-    if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
-        glGenFramebuffers(1, &m_fbo);
-
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
 #endif
+    setContext(context);
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
@@ -76,6 +67,12 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> ~QGLTextureGlyphCache() %p.", this);
 #endif
+}
+
+void QGLTextureGlyphCache::setContext(const QGLContext *context)
+{
+    ctx = context;
+    m_h = 0;
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
@@ -97,11 +94,12 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    glGenTextures(1, &m_texture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
+    glGenTextures(1, &glyphTexture->m_texture);
+    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
 
-    m_width = width;
-    m_height = height;
+    glyphTexture->m_width = width;
+    glyphTexture->m_height = height;
 
     QVarLengthArray<uchar> data(width * height);
     for (int i = 0; i < data.size(); ++i)
@@ -122,9 +120,10 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
         qWarning("QGLTextureGlyphCache::resizeTextureData: Called with no context");
         return;
     }
+    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
 
-    int oldWidth = m_width;
-    int oldHeight = m_height;
+    int oldWidth = glyphTexture->m_width;
+    int oldHeight = glyphTexture->m_height;
 
     // Make the lower glyph texture size 16 x 16.
     if (width < 16)
@@ -132,7 +131,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (height < 16)
         height = 16;
 
-    GLuint oldTexture = m_texture;
+    GLuint oldTexture = glyphTexture->m_texture;
     createTextureData(width, height);
 
     if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
@@ -146,7 +145,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     // ### the QTextureGlyphCache API needs to be reworked to allow
     // ### resizeTextureData to fail
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, glyphTexture->m_fbo);
 
     GLuint tmp_texture;
     glGenTextures(1, &tmp_texture);
@@ -201,7 +200,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
 
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
 
@@ -223,10 +222,11 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         return;
     }
 
+    QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
     if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph);
 
-        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
         const QImage &texture = image();
         const uchar *bits = texture.constBits();
         bits += c.y * texture.bytesPerLine() + c.x;
@@ -234,7 +234,6 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
             glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, c.w, 1, GL_ALPHA, GL_UNSIGNED_BYTE, bits);
             bits += texture.bytesPerLine();
         }
-
         return;
     }
 
@@ -264,7 +263,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         }
     }
 
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
