@@ -1072,7 +1072,7 @@ void QLabel::paintEvent(QPaintEvent *)
     else
 #endif
     if (d->isTextLabel) {
-        QRectF lr = d->layoutRect();
+        QRectF lr = d->layoutRect().toAlignedRect();
         QStyleOption opt;
         opt.initFrom(this);
 #ifndef QT_NO_STYLE_STYLESHEET
