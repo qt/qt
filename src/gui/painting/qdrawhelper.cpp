@@ -7817,6 +7817,15 @@ void qInitDrawhelperAsm()
 
 #ifdef QT_HAVE_SSE2
         if (features & SSE2) {
+            extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels,
+                                                  const uint *srcPixels,
+                                                  int length,
+                                                  uint const_alpha);
+            extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
+
+            functionForModeAsm[0] = comp_func_SourceOver_sse2;
+            functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
+
             extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                                      const uchar *srcPixels, int sbpl,
                                                      int w, int h,
@@ -7825,7 +7834,6 @@ void qInitDrawhelperAsm()
                                                        const uchar *srcPixels, int sbpl,
                                                        int w, int h,
                                                        int const_alpha);
-
 
             qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
