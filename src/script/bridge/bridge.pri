@@ -6,6 +6,7 @@ SOURCES += \
     $$PWD/qscriptqobject.cpp \
     $$PWD/qscriptglobalobject.cpp \
     $$PWD/qscriptactivationobject.cpp \
+    $$PWD/qscriptstaticscopeobject.cpp \
     $$PWD/qscriptdeclarativeobject.cpp \
     $$PWD/qscriptdeclarativeclass.cpp 
 
@@ -17,5 +18,6 @@ HEADERS += \
     $$PWD/qscriptqobject_p.h \
     $$PWD/qscriptglobalobject_p.h \
     $$PWD/qscriptactivationobject_p.h \
+    $$PWD/qscriptstaticscopeobject_p.h \
     $$PWD/qscriptdeclarativeobject_p.h \
     $$PWD/qscriptdeclarativeclass_p.h

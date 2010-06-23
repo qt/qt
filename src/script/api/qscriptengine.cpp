@@ -64,6 +64,7 @@
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptglobalobject_p.h"
 #include "bridge/qscriptactivationobject_p.h"
+#include "bridge/qscriptstaticscopeobject_p.h"
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreapplication.h>
@@ -905,6 +906,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::ExecState* exec = globalObject->globalExec();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
+    staticScopeObjectStructure = QScriptStaticScopeObject::createStructure(JSC::jsNull());
 
     qobjectPrototype = new (exec) QScript::QObjectPrototype(exec, QScript::QObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qobjectWrapperObjectStructure = QScriptObject::createStructure(qobjectPrototype);
@@ -1770,15 +1772,7 @@ void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue object
         } else if (flags != QScriptValue::KeepExistingFlags) {
             if (thisObject->hasOwnProperty(exec, id))
                 thisObject->deleteProperty(exec, id); // ### hmmm - can't we just update the attributes?
-            unsigned attribs = 0;
-            if (flags & QScriptValue::ReadOnly)
-                attribs |= JSC::ReadOnly;
-            if (flags & QScriptValue::SkipInEnumeration)
-                attribs |= JSC::DontEnum;
-            if (flags & QScriptValue::Undeletable)
-                attribs |= JSC::DontDelete;
-            attribs |= flags & QScriptValue::UserRange;
-            thisObject->putWithAttributes(exec, id, value, attribs);
+            thisObject->putWithAttributes(exec, id, value, propertyFlagsToJSCAttributes(flags));
         } else {
             JSC::PutPropertySlot slot;
             thisObject->put(exec, id, value, slot);
