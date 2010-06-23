@@ -18,13 +18,13 @@ contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
+contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
+contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 contains(QT_CONFIG, webkit)  {
     exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
     SRC_SUBDIRS += src_webkit
 }
-contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
-contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 SRC_SUBDIRS += src_plugins
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_imports
 contains(QT_CONFIG, declarative):contains(QT_CONFIG, webkit): SRC_SUBDIRS += src_webkit_declarative
