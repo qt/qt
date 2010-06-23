@@ -75,6 +75,7 @@ public:
     bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
 
+    void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
     void setMask(const QBitmap &mask);
