@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #ifndef MYMODEL_H
 #define MYMODEL_H
 
@@ -22,3 +23,4 @@ signals:
 };
 
 #endif // MYMODEL_H
+//! [Quoting ModelView Tutorial]

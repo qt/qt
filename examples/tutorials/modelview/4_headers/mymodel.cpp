@@ -29,7 +29,7 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
     return QVariant();
 }
 
-
+//! [quoting mymodel_c]
 QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole)
@@ -48,3 +48,4 @@ QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role)
     }
     return QVariant();
 }
+//! [quoting mymodel_c]

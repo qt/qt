@@ -3,7 +3,7 @@
 #include <QBrush>
 #include "mymodel.h"
 
-
+//! [quoting mymodel_a]
 MyModel::MyModel(QObject *parent)
     :QAbstractTableModel(parent)
 {
@@ -13,7 +13,7 @@ MyModel::MyModel(QObject *parent)
     connect(timer, SIGNAL(timeout()) , this, SLOT(timerHit()) );
     timer->start();
 }
-
+//! [quoting mymodel_a]
 //-------------------------------------------------------
 int MyModel::rowCount(const QModelIndex  & /*parent */ ) const
 {
@@ -43,6 +43,7 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
 }
 
 //-------------------------------------------------------
+//! [quoting mymodel_b ]
 void MyModel::timerHit()
 {
     //we identify the top left cell
@@ -50,4 +51,4 @@ void MyModel::timerHit()
     //emit a signal to make the view reread identified data
     emit dataChanged ( topLeft, topLeft );
 }
-
+//! [quoting mymodel_b ]

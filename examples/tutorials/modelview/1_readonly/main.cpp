@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #include <QtGui/QApplication>
 #include "modelview.h"
 
@@ -8,3 +9,4 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+//! [Quoting ModelView Tutorial]

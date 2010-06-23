@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #include "mymodel.h"
 
 MyModel::MyModel(QObject *parent)
@@ -28,3 +29,4 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
     }
     return QVariant();
 }
+//! [Quoting ModelView Tutorial]

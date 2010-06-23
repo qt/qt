@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QStandardItem>
@@ -38,3 +39,4 @@ QList<QStandardItem *> ModelView::prepareColumn(const QString &first,
     colItems << new QStandardItem(third);
     return colItems;
 }
+//! [Quoting ModelView Tutorial]

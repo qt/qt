@@ -1,9 +1,7 @@
 /*!
 
-    \page modelview.html
-    \startpage {index.html}{Qt Reference Documentation}
-    \contentspage Tutorials
     \contentspage{modelview.html}{Crash Course in Model/View Programming}
+    \page modelview.html
 
 \title Crash Course in Model/View Programming
 Contents:
@@ -71,16 +69,16 @@ Below are 7 very simple and independent applications that show different sides o
 We start with an application that uses a \l QTableView to show data. We will add editing capabilities later. 
 
 -------------------------------------------------------------main.cpp---------------------
-    \snippet examples/tutorials/modelview/1_readonly/main.cpp
+    \snippet examples/tutorials/modelview/1_readonly/main.cpp Quoting ModelView Tutorial
 
 We have the usual main() function;
 -------------------------------------------------------------modelview.h---------------------
-    \snippet examples/tutorials/modelview/1_readonly/modelview.h
+    \snippet examples/tutorials/modelview/1_readonly/modelview.h Quoting ModelView Tutorial
 
 The application is a \l QMainWindow that holds a \l QTableView.  
 
 -------------------------------------------------------------modelview.cpp---------------------
-    \snippet examples/tutorials/modelview/1_readonly/modelview.cpp
+    \snippet examples/tutorials/modelview/1_readonly/modelview.cpp Quoting ModelView Tutorial
 
 Here is the interesting part: We use \c tableView->setModel(new MyModel(this) ); to instantiate the Model and pass its pointer to \l {QTableView::}{tableView()} OR \l QTableView::tableView() OR \l QTableView::tableView .  \l {QTableView::}{tableView} will invoke the methods of the pointer it has received to find out two things: 
     \list
@@ -92,13 +90,13 @@ The model needs some code to respond to this.
 
 We have a table data set, so let's start with QAbstractTableModel since it is easier to use.
 -------------------------------------------------------------mymodel.h---------------------
-    \snippet examples/tutorials/modelview/1_readonly/mymodel.h
+    \snippet examples/tutorials/modelview/1_readonly/mymodel.h Quoting ModelView Tutorial
 
 QAbstractTableModel requires the implementation of three abstract methods.
 
 
 -------------------------------------------------------------mymodel.cpp---------------------
-    \snippet examples/tutorials/modelview/1_readonly/mymodel.cpp
+    \snippet examples/tutorials/modelview/1_readonly/mymodel.cpp Quoting ModelView Tutorial
 
 The number of rows and columns is set by \c MyModel::rowCount() and \c MyModel::columnCount(). 
 When the view has to know what the cell 's text is, it calls the \l{QAbstractItemModel::data()}{data()} method. Row and column information is specified with parameter \c index and the role is set to Qt::Display Role.  Other roles are covered in the next section. In our example, the data that should be displayed is generated. In a real application, \c MyModel would have a member called \c MyData, which serves as the target for all reading and writing operations. 
@@ -114,7 +112,7 @@ In addition to controlling what text the view displays, the model also controls 
 In fact, nothing except for the \l{QAbstractItemModel::data()}{data()} method needs to be changed to set fonts, background colour, alignment and a checkbox. Here is the \l{QAbstractItemModel::data()}{data()} method that produces the result shown above:
 
 -------------------------------------------------------------mymodel.cpp---------------------
-    \snippet examples/tutorials/modelview/2_formatting/mymodel.cpp
+    \snippet examples/tutorials/modelview/2_formatting/mymodel.cpp Quoting ModelView Tutorial
 
 Each formatting property will be requested from the model with a separate call to the \l{QAbstractItemModel::data()}{data()} method. The \c role parameter is used to let the model know which property is being requested:
 
@@ -178,7 +176,6 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
 
 Something is missing to make the clock tick. We need to tell the view every second that the time has changed and that it needs to be read again. We do this with a timer. In the constructor, we set its interval to 1 second and it connect its timeout signal.
 
-?????(include section from 3_changingmodel/mymodel.cpp)?????
 \code
 MyModel::MyModel(QObject *parent)
     :QAbstractTableModel(parent)
@@ -193,7 +190,6 @@ MyModel::MyModel(QObject *parent)
 
 Here is the corresponding slot:
 
-?????(include section from 3_changingmodel/mymodel.cpp)?????
 \code
 
 void MyModel::timerHit()
@@ -215,8 +211,6 @@ Headers can be hidden via a view method.
 
 The header content, however , is set via the model, so we reimplement the \l{QAbstractItemModel::headerData()}{headerData()} method:
 
-
-?????(include section from 4_headers/mymodel.cpp)?????
 \code
 QVariant MyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -244,11 +238,10 @@ In this example, we are going to build an application that automatically populat
 
 The model decides whether editing capabilities are available . We only have to modify the model in order for the available editing capabilities to be enabled. This is done by reimplementing the following virtual methods:  \l{QAbstractItemModel::setData()}{setData()} and \l{QAbstractItemModel::flags()}{flags()}. 
 -------------------------------------------------------------mymodel.h---------------------
-    \snippet examples/tutorials/modelview/5_edit/mymodel.h
+    \snippet examples/tutorials/modelview/5_edit/mymodel.h Quoting ModelView Tutorial
 
 We use \c QStringList m_gridData to store our data. This makes \c m_gridData the core of MyModel.  The rest of \c MyModel acts like a wrapper and adapts \c m_gridData to the  QAbstractItemModel interface. We have also introduced the \l{QAbstractItemModel::editCompleted()}{editCompleted()} signal, which makes it possible to transfer the modified text to the window title. 
 
-?????(include section from 5_edit/mymodel.cpp)?????
 \code
 #include "mymodel.h"
 
@@ -264,16 +257,10 @@ MyModel::MyModel(QObject *parent)
 \endcode
 
 In the constructor, we fill \c QStringList gridData with 6 items. (one item for every field in the table)
-?????(include section from 5_edit/mymodel.cpp)?????
-\code
-HIER FEHLT WAS!!!
-\endcode
+    \snippet examples/tutorials/modelview/5_edit/mymodel.cpp quoting mymodel_e
 
 \l{QAbstractItemModel::setData()}{setData()} will be called each time the user edits a cell. The \c index parameter tells us which field has been edited and \c value  provides the result of the editing process. The role will always be set to \c Qt::EditRole because our cells only contain text. If a checkbox were present and user permissions are set to allow the checkbox to be selected, calls would also be made with the role set to \c Qt::CheckStateRole. 
-?????(include section from 5_edit/mymodel.cpp)?????
-\code
-HIER FEHLT WAS!!!
-\endcode
+    \snippet examples/tutorials/modelview/5_edit/mymodel.cpp quoting mymodel_f
 
 Various properties of a cell can be adjusted with \l{QAbstractItemModel::flags()}{flags()}. Returning \c Qt::ItemIsEditable | Qt::ItemIsEnabled is enough to show an editor that a cell has been selected. If editing one cell modifies more data than the data in that particular cell, the model must emit a \l{QAbstractItemModel::dataChanged()}{dataChanged()}  signal in order for the data that has been changed to be read.
 
@@ -292,7 +279,7 @@ This is how our example model looks so far:
 
 We want to, however, present a real tree. We have wrapped our data in the examples above in order to make a model. This time we use QStandardItemModel, which is a container for hierarchical data that also implements QAbstractItemModel. To show a tree, QStandardItemModel must be populated with QStandardItems, which are able to hold all the standard properties of items like text, fonts, checkboxes or brushes. \image tree_2_with_algorithm.png
 -------------------------------------------------------------modelview.cpp---------------------
-    \snippet examples/tutorials/modelview/6_treeview/modelview.cpp
+    \snippet examples/tutorials/modelview/6_treeview/modelview.cpp Quoting ModelView Tutorial
 
 We simply instantiate a QStandardItemModel and add a couple of QStandardItems to the constructor. We can then make a hierarchical data structure because a QStandardItem can hold other QStandardItems. Nodes are collapsed and expanded within the view.
 
@@ -302,7 +289,6 @@ We want to access a selected item's content in order to output it into the windo
 
 
 So let's create a couple of items:
-?????(include section from 7_selections/modelview.cpp)?????
 \code
 #include <QTreeView>
 #include <QStandardItemModel>
@@ -351,10 +337,7 @@ ModelView::ModelView(QWidget *parent)
 
 Views manage selections within a separate selection model, which can be retrieved with the \l{QAbstractItemModel::selectionModel()}{selectionModel()} method. We retrieve the selection Model in order to connect a slot to its \l{QAbstractItemModel::selectionChanged()}{selectionChanged()} signal.
 
-?????(include section from 7_selections/modelview.cpp)?????
-\code
-HIER FEHLT WAS!!!
-\endcode
+    \snippet examples/tutorials/modelview/7_selections/modelview.cpp quoting modelview_b
 
 We get the model index that corresponds to the selection by calling 
 \c treeView->selectionModel()->currentIndex() and we get the the field's string by using the model index. Then we just calculate the item's \c hierarchyLevel.  Top level items do not have parents and the \l{QAbstractItemModel::parent()}{parent()} method will return a default constructed QModelIndex(). This is why we use the \l{QAbstractItemModel::parent()}{parent()} method to iterate to the top level while counting the steps performed during iteration.

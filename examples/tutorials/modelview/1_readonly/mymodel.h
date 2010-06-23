@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #ifndef MYMODEL_H
 #define MYMODEL_H
 
@@ -14,3 +15,4 @@ public:
 };
 
 #endif // MYMODEL_H
+//! [Quoting ModelView Tutorial]

@@ -3,6 +3,7 @@
 #include "mymodel.h"
 #include <QDebug>
 
+//! [Quoting ModelView Tutorial]
 MyModel::MyModel(QObject *parent)
     :QAbstractTableModel(parent)
 {
@@ -70,4 +71,4 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
     }
     return QVariant();
 }
-
+//! [Quoting ModelView Tutorial]

@@ -1,3 +1,4 @@
+//! [Quoting ModelView Tutorial]
 #include <QTableView>
 #include "modelview.h"
 #include "mymodel.h"
@@ -9,4 +10,4 @@ ModelView::ModelView(QWidget *parent)
     setCentralWidget(tableView);
     tableView->setModel(new MyModel(this) );
 }
-
+//! [Quoting ModelView Tutorial]

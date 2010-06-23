@@ -1,5 +1,7 @@
+//! [Quoting ModelView Tutorial]
 #ifndef MODELVIEW_H
 #define MODELVIEW_H
+
 
 #include <QtGui/QMainWindow>
 
@@ -16,3 +18,4 @@ public:
 };
 
 #endif // MODELVIEW_H
+//! [Quoting ModelView Tutorial]

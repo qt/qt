@@ -1,3 +1,4 @@
+//! [quoting modelview_a]
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
@@ -41,8 +42,11 @@ ModelView::ModelView(QWidget *parent)
     connect(selectionModel, SIGNAL(selectionChanged ( const QItemSelection & , const QItemSelection & )),
             this, SLOT(selectionChangedSlot(const QItemSelection & , const QItemSelection & )));
 }
+//! [quoting modelview_a]
 
 //------------------------------------------------------------------------------------
+
+//! [quoting modelview_b]
 void ModelView::selectionChangedSlot(const QItemSelection & /*newSelection*/, const QItemSelection & /*oldSelection*/)
 {
     const QModelIndex index = treeView->selectionModel()->currentIndex();
@@ -58,6 +62,6 @@ void ModelView::selectionChangedSlot(const QItemSelection & /*newSelection*/, co
                          .arg(hierarchyLevel);
     setWindowTitle(showString);
 }
-
+//! [quoting modelview_b]
 
 
