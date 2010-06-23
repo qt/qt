@@ -67,13 +67,10 @@ public:
                                      const QScriptString &name,
                                      QueryFlags flags, uint *id);
 
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, uint id);
-
     virtual void setProperty(QScriptValue &object, const QScriptString &name,
                              uint id, const QScriptValue &value);
 
-    void explicitSetProperty(const QString &, const QScriptValue &);
+    void explicitSetProperty(const QStringList &, const QList<QScriptValue> &);
 
     const QScriptValue &globalObject() const { return m_globalObject; }
 

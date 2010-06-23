@@ -2448,6 +2448,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
     if (mode < Beginning || mode > Contain)
         return;
 
+    if (d->layoutScheduled)
+        d->layout();
     qreal pos = d->position();
     FxListItem *item = d->visibleItem(index);
     if (!item) {
@@ -2491,6 +2493,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         pos = qMin(pos, maxExtent);
         qreal minExtent = d->orient == QDeclarativeListView::Vertical ? -minYExtent() : -minXExtent();
         pos = qMax(pos, minExtent);
+        d->moveReason = QDeclarativeListViewPrivate::Other;
+        cancelFlick();
         d->setPosition(pos);
     }
     d->fixupPosition();
@@ -2529,6 +2533,10 @@ void QDeclarativeListView::componentComplete()
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
+        if (d->highlight) {
+            d->highlight->setPosition(d->currentItem->position());
+            d->updateTrackedItem();
+        }
         d->fixupPosition();
     }
 }

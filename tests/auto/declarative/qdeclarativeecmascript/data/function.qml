@@ -14,6 +14,10 @@ QtObject {
 
         test1 = (func1(4) == 11);
         test2 = (func2("Hello World!") == Qt.atob("Hello World!"));
-        test3 = (func3() == undefined);
+        try {
+            func3();
+        } catch(e) {
+            test3 = true;
+        }
     }
 }
