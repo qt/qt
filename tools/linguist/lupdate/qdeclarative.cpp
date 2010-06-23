@@ -102,12 +102,8 @@ protected:
                         comment = literal->value->asString();
 
                         AST::ArgumentList *nNode = commentNode->next;
-                        if (nNode) {
-                            AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                            if (numLiteral) {
-                                plural = true;
-                            }
-                        }
+                        if (nNode)
+                            plural = true;
                     }
 
                     TranslatorMessage msg(m_component, source,
@@ -135,12 +131,8 @@ protected:
                             comment = literal->value->asString();
 
                             AST::ArgumentList *nNode = commentNode->next;
-                            if (nNode) {
-                                AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                                if (numLiteral) {
-                                    plural = true;
-                                }
-                            }
+                            if (nNode)
+                                plural = true;
                         }
                     }
 
