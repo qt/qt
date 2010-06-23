@@ -1344,24 +1344,14 @@ void QDeclarativeRotationAnimation::setTo(qreal t)
 
     Possible values are:
 
-    \table
-    \row
-        \o RotationAnimation.Numerical
-        \o Rotate by linearly interpolating between the two numbers.
+    \list
+    \o RotationAnimation.Numerical (default) - Rotate by linearly interpolating between the two numbers.
            A rotation from 10 to 350 will rotate 340 degrees clockwise.
-    \row
-        \o RotationAnimation.Clockwise
-        \o Rotate clockwise between the two values
-    \row
-        \o RotationAnimation.Counterclockwise
-        \o Rotate counterclockwise between the two values
-    \row
-        \o RotationAnimation.Shortest
-        \o Rotate in the direction that produces the shortest animation path.
+    \o RotationAnimation.Clockwise - Rotate clockwise between the two values
+    \o RotationAnimation.Counterclockwise - Rotate counterclockwise between the two values
+    \o RotationAnimation.Shortest - Rotate in the direction that produces the shortest animation path.
            A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
-    \endtable
-
-    The default direction is RotationAnimation.Numerical.
+    \endlist
 */
 QDeclarativeRotationAnimation::RotationDirection QDeclarativeRotationAnimation::direction() const
 {
@@ -1747,7 +1737,7 @@ void QDeclarativePropertyAnimation::setFrom(const QVariant &f)
 /*!
     \qmlproperty real PropertyAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition or Behavior.
+    If not set, then the value defined in the end state of the transition or \l Behavior.
 */
 QVariant QDeclarativePropertyAnimation::to() const
 {

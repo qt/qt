@@ -28,7 +28,6 @@ wince*|symbian: {
 wince*: {
     DEFINES += SRCDIR=\\\"\\\"
 }else:symbian {
-    load(data_caging_paths)
     # Symbian can't define SRCDIR meaningfully here
     qt_not_deployed {
         codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
