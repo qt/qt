@@ -151,9 +151,9 @@ public:
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeGridView);
         if (flow == QDeclarativeGridView::LeftToRight)
-            q->setContentY(pos);
+            q->QDeclarativeFlickable::setContentY(pos);
         else
-            q->setContentX(pos);
+            q->QDeclarativeFlickable::setContentX(pos);
     }
     int size() const {
         Q_Q(const QDeclarativeGridView);
@@ -1742,6 +1742,22 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
     }
 }
 
+void QDeclarativeGridView::setContentX(qreal pos)
+{
+    Q_D(QDeclarativeGridView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeGridViewPrivate::Other;
+    QDeclarativeFlickable::setContentX(pos);
+}
+
+void QDeclarativeGridView::setContentY(qreal pos)
+{
+    Q_D(QDeclarativeGridView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeGridViewPrivate::Other;
+    QDeclarativeFlickable::setContentY(pos);
+}
+
 bool QDeclarativeGridView::event(QEvent *event)
 {
     Q_D(QDeclarativeGridView);
@@ -2144,6 +2160,7 @@ void QDeclarativeGridView::componentComplete()
             d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
+        d->moveReason = QDeclarativeGridViewPrivate::Other;
         d->fixupPosition();
     }
 }

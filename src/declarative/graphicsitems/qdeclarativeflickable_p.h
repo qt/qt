@@ -112,10 +112,10 @@ public:
     void setContentHeight(qreal);
 
     qreal contentX() const;
-    void setContentX(qreal pos);
+    virtual void setContentX(qreal pos);
 
     qreal contentY() const;
-    void setContentY(qreal pos);
+    virtual void setContentY(qreal pos);
 
     bool isMoving() const;
     bool isMovingHorizontally() const;

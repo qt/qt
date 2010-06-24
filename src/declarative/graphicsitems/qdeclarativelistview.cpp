@@ -216,9 +216,9 @@ public:
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeListView);
         if (orient == QDeclarativeListView::Vertical)
-            q->setContentY(pos);
+            q->QDeclarativeFlickable::setContentY(pos);
         else
-            q->setContentX(pos);
+            q->QDeclarativeFlickable::setContentX(pos);
     }
     qreal size() const {
         Q_Q(const QDeclarativeListView);
@@ -2182,6 +2182,22 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
     }
 }
 
+void QDeclarativeListView::setContentX(qreal pos)
+{
+    Q_D(QDeclarativeListView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeListViewPrivate::Other;
+    QDeclarativeFlickable::setContentX(pos);
+}
+
+void QDeclarativeListView::setContentY(qreal pos)
+{
+    Q_D(QDeclarativeListView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeListViewPrivate::Other;
+    QDeclarativeFlickable::setContentY(pos);
+}
+
 bool QDeclarativeListView::event(QEvent *event)
 {
     Q_D(QDeclarativeListView);
@@ -2551,6 +2567,7 @@ void QDeclarativeListView::componentComplete()
             d->highlight->setPosition(d->currentItem->position());
             d->updateTrackedItem();
         }
+        d->moveReason = QDeclarativeListViewPrivate::Other;
         d->fixupPosition();
     }
 }
