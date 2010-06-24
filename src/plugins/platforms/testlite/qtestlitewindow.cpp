@@ -41,6 +41,7 @@
 
 #include "qtestliteintegration.h"
 #include <QWindowSystemInterface>
+#include <private/qwindowsurface_p.h>
 
 #include "qtestlitewindow.h"
 

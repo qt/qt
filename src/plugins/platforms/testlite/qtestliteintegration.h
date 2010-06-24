@@ -45,6 +45,9 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
+//make sure textstream is included before any X11 headers
+#include <QtCore/QTextStream>
+
 QT_BEGIN_NAMESPACE
 
 class MyDisplay;
