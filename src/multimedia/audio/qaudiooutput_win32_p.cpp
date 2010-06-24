@@ -52,7 +52,48 @@
 
 #include "qaudiooutput_win32_p.h"
 
-#include <audiodefs.h>
+#ifndef SPEAKER_FRONT_LEFT
+    #define SPEAKER_FRONT_LEFT            0x00000001
+    #define SPEAKER_FRONT_RIGHT           0x00000002
+    #define SPEAKER_FRONT_CENTER          0x00000004
+    #define SPEAKER_LOW_FREQUENCY         0x00000008
+    #define SPEAKER_BACK_LEFT             0x00000010
+    #define SPEAKER_BACK_RIGHT            0x00000020
+    #define SPEAKER_FRONT_LEFT_OF_CENTER  0x00000040
+    #define SPEAKER_FRONT_RIGHT_OF_CENTER 0x00000080
+    #define SPEAKER_BACK_CENTER           0x00000100
+    #define SPEAKER_SIDE_LEFT             0x00000200
+    #define SPEAKER_SIDE_RIGHT            0x00000400
+    #define SPEAKER_TOP_CENTER            0x00000800
+    #define SPEAKER_TOP_FRONT_LEFT        0x00001000
+    #define SPEAKER_TOP_FRONT_CENTER      0x00002000
+    #define SPEAKER_TOP_FRONT_RIGHT       0x00004000
+    #define SPEAKER_TOP_BACK_LEFT         0x00008000
+    #define SPEAKER_TOP_BACK_CENTER       0x00010000
+    #define SPEAKER_TOP_BACK_RIGHT        0x00020000
+    #define SPEAKER_RESERVED              0x7FFC0000
+    #define SPEAKER_ALL                   0x80000000
+#endif
+
+#ifndef _WAVEFORMATEXTENSIBLE_
+
+    #define _WAVEFORMATEXTENSIBLE_
+    typedef struct
+    {
+        WAVEFORMATEX Format;          // Base WAVEFORMATEX data
+        union
+        {
+            WORD wValidBitsPerSample; // Valid bits in each sample container
+            WORD wSamplesPerBlock;    // Samples per block of audio data; valid
+                                      // if wBitsPerSample=0 (but rarely used).
+            WORD wReserved;           // Zero if neither case above applies.
+        } Samples;
+        DWORD dwChannelMask;          // Positions of the audio channels
+        GUID SubFormat;               // Format identifier GUID
+    } WAVEFORMATEXTENSIBLE, *PWAVEFORMATEXTENSIBLE, *LPPWAVEFORMATEXTENSIBLE;
+    typedef const WAVEFORMATEXTENSIBLE* LPCWAVEFORMATEXTENSIBLE;
+
+#endif
 
 #define _KSDATAFORMAT_SUBTYPE_PCM (GUID) {0x00000001,0x0000,0x0010,{0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71}}
 
