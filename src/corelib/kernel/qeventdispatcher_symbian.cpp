@@ -100,40 +100,25 @@ static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, 
 class QSelectMutexGrabber
 {
 public:
-    QSelectMutexGrabber(int fd, QMutex *threadMutex, QMutex *selectCallMutex)
-        : m_threadMutex(threadMutex), m_selectCallMutex(selectCallMutex), bHasThreadLock(false)
+    QSelectMutexGrabber(int fd, QMutex *mutex)
+        : m_mutex(mutex)
     {
-        // see if selectThread is waiting m_waitCond
-        // if yes ... dont write to pipe
-        if (m_threadMutex->tryLock()) {
-            bHasThreadLock = true;
+        if (m_mutex->tryLock())
             return;
-        }
-
-        // still check that SelectThread
-        // is in select call
-        if (m_selectCallMutex->tryLock()) {
-            m_selectCallMutex->unlock();
-            return;
-        }
 
         char dummy = 0;
         qt_pipe_write(fd, &dummy, 1);
 
-        m_threadMutex->lock();
-        bHasThreadLock = true;
+        m_mutex->lock();
     }
 
     ~QSelectMutexGrabber()
     {
-        if(bHasThreadLock)
-            m_threadMutex->unlock();
+        m_mutex->unlock();
     }
 
 private:
-    QMutex *m_threadMutex;
-    QMutex *m_selectCallMutex;
-    bool bHasThreadLock;
+    QMutex *m_mutex;
 };
 
 /*
@@ -415,12 +400,7 @@ void QSelectThread::run()
 
         int ret;
         int savedSelectErrno;
-        {
-            // helps fighting the race condition between
-            // selctthread and new socket requests (cancel, restart ...)
-            QMutexLocker locker(&m_selectCallMutex);
-            ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
-        }
+        ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
         savedSelectErrno = errno;
 
         char buffer;
@@ -515,9 +495,7 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
-    QMutexLocker locker(&m_grabberMutex);
-
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     Q_ASSERT(!m_AOStatuses.contains(notifier));
 
@@ -528,9 +506,7 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
 
 void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 {
-    QMutexLocker locker(&m_grabberMutex);
-
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     m_AOStatuses.remove(notifier);
 
@@ -539,9 +515,7 @@ void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 
 void QSelectThread::restart()
 {
-    QMutexLocker locker(&m_grabberMutex);
-
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
+    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     m_waitCond.wakeAll();
 }
