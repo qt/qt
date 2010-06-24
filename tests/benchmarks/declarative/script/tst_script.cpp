@@ -96,6 +96,8 @@ private slots:
     void global_property_js();
     void global_property_qml();
     void global_property_qml_js();
+
+    void scriptfile_property();
 };
 
 inline QUrl TEST_FILE(const QString &filename)
@@ -678,6 +680,23 @@ void tst_script::global_property_qml_js()
     delete rect;
 }
 
+void tst_script::scriptfile_property()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("global_prop.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle *>(component.create());
+    QVERIFY(rect != 0);
+
+    int index = rect->metaObject()->indexOfMethod("incrementTriggered()");
+    QVERIFY(index != -1);
+    QMetaMethod method = rect->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(rect, Qt::DirectConnection);
+    }
+
+    delete rect;
+}
 
 QTEST_MAIN(tst_script)
 
