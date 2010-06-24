@@ -45,7 +45,7 @@
 #include <QMainWindow>
 #include <QMetaType>
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 class QPlainTextEdit;
 class QMenu;
@@ -91,6 +91,8 @@ private:
     ConfigOrigin m_visibilityOrigin;
     Visibility m_visibility;
 };
+
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(LoggerWidget::Visibility)
 
