@@ -162,6 +162,8 @@ void qt_cleanup_symbianFontDatabaseExtras()
 {
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(privateDb()->symbianExtras);
+    if (!dbExtras)
+        return; // initializeDb() has never been called
 #ifdef Q_SYMBIAN_HAS_FONTTABLE_API
     qDeleteAll(dbExtras->m_extrasHash);
 #else // Q_SYMBIAN_HAS_FONTTABLE_API
