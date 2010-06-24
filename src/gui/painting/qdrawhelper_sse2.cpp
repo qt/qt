@@ -365,7 +365,7 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
 {
     if ((const_alpha & qAlpha(color)) == 255) {
-        qt_memfill32_sse2(destPixels, length, color);
+        qt_memfill32_sse2(destPixels, color, length);
     } else {
         if (const_alpha != 255)
             color = BYTE_MUL(color, const_alpha);
