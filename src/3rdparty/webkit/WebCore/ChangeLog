@@ -1,3 +1,61 @@
+2010-06-16  Dawit Alemayehu  <adawit@kde.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QtWebKit crashes while initializing flash plugin 10.1.53.64.
+        https://bugs.webkit.org/show_bug.cgi?id=40567
+
+        Avoid preventable crashes by ensuring gtk_init() is called in the
+        flash viewer plugins before calling NP_Initialize.
+
+        * plugins/qt/PluginPackageQt.cpp:
+        (WebCore::PluginPackage::load):
+
+2010-06-10  Raine Makelainen  <raine.makelainen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Impossible to set input method hints based HTML5 input types
+        https://bugs.webkit.org/show_bug.cgi?id=40107
+
+        Helper methods for checking "tel", "number", "email",
+        and "url" input element types.
+
+        * html/HTMLInputElement.h:
+        (WebCore::HTMLInputElement::isTelephoneField):
+        (WebCore::HTMLInputElement::isNumberField):
+        (WebCore::HTMLInputElement::isEmailField):
+        (WebCore::HTMLInputElement::isUrlField):
+
+2010-04-22  Ray Rischpater  <Raymond.Rischpater@Nokia.com>
+
+        Reviewed by Darin Adler.
+
+        In HTMLInputElement.cpp, shouldUseInputMethod does not return true for
+        some text input types (TELEPHONE, NUMBER, URL, and EMAIL). Addressed
+        this by changing shouldUseInputMethod to use internal methods to 
+        check that the field is a text field that isn't a password field. 
+
+        No new tests.
+
+        Fixes <https://bugs.webkit.org/show_bug.cgi?id=37719>
+
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::shouldUseInputMethod):
+
+2010-04-06  Abhinav Mithal <abhinav.mithal@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] npapi header leaves XP_WIN flag defined even when __SYMBIAN32__ flag is found
+        https://bugs.webkit.org/show_bug.cgi?id=34614
+
+        Do not define XP_WIN if WebKit is compiled for Symbian.
+
+        No new tests as there is no new functionality.
+
+        * bridge/npapi.h:
+
 2010-05-28  Peter Kasting  <pkasting@google.com>
 
         Reviewed by Darin Adler.

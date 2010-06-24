@@ -256,10 +256,24 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
   else
     vr->YAdvance = 0;
 
+  if ( format & HB_GPOS_FORMAT_HAVE_DEVICE_TABLES )
+  {
+    if ( ALLOC_ARRAY( vr->DeviceTables, 4, HB_Device ) )
+      return error;
+    vr->DeviceTables[VR_X_ADVANCE_DEVICE] = 0;
+    vr->DeviceTables[VR_Y_ADVANCE_DEVICE] = 0;
+    vr->DeviceTables[VR_X_PLACEMENT_DEVICE] = 0;
+    vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] = 0;
+  }
+  else
+  {
+    vr->DeviceTables = 0;
+  }
+
   if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
   {
     if ( ACCESS_Frame( 2L ) )
-      return error;
+      goto Fail4;
 
     new_offset = GET_UShort();
 
@@ -271,18 +285,11 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &vr->XPlacementDevice,
+	   ( error = _HB_OPEN_Load_Device( &vr->DeviceTables[VR_X_PLACEMENT_DEVICE],
 				  stream ) ) != HB_Err_Ok )
-	return error;
+       goto Fail4;
       (void)FILE_Seek( cur_offset );
     }
-    else
-      goto empty1;
-  }
-  else
-  {
-  empty1:
-    vr->XPlacementDevice = 0;
   }
 
   if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE )
@@ -300,18 +307,11 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &vr->YPlacementDevice,
+	   ( error = _HB_OPEN_Load_Device( &vr->DeviceTables[VR_Y_PLACEMENT_DEVICE],
 				  stream ) ) != HB_Err_Ok )
 	goto Fail3;
       (void)FILE_Seek( cur_offset );
     }
-    else
-      goto empty2;
-  }
-  else
-  {
-  empty2:
-    vr->YPlacementDevice = 0;
   }
 
   if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE )
@@ -329,18 +329,11 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &vr->XAdvanceDevice,
+	   ( error = _HB_OPEN_Load_Device( &vr->DeviceTables[VR_X_ADVANCE_DEVICE],
 				  stream ) ) != HB_Err_Ok )
 	goto Fail2;
       (void)FILE_Seek( cur_offset );
     }
-    else
-      goto empty3;
-  }
-  else
-  {
-  empty3:
-    vr->XAdvanceDevice = 0;
   }
 
   if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE )
@@ -358,18 +351,11 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &vr->YAdvanceDevice,
+	   ( error = _HB_OPEN_Load_Device( &vr->DeviceTables[VR_Y_ADVANCE_DEVICE],
 				  stream ) ) != HB_Err_Ok )
 	goto Fail1;
       (void)FILE_Seek( cur_offset );
     }
-    else
-      goto empty4;
-  }
-  else
-  {
-  empty4:
-    vr->YAdvanceDevice = 0;
   }
 
   if ( format & HB_GPOS_FORMAT_HAVE_X_ID_PLACEMENT )
@@ -447,13 +433,19 @@ static HB_Error  Load_ValueRecord( HB_ValueRecord*  vr,
   return HB_Err_Ok;
 
 Fail1:
-  _HB_OPEN_Free_Device( &vr->YAdvanceDevice );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
 
 Fail2:
-  _HB_OPEN_Free_Device( &vr->XAdvanceDevice );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
 
 Fail3:
-  _HB_OPEN_Free_Device( &vr->YPlacementDevice );
+  if ( vr->DeviceTables )
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
+
+Fail4:
+  FREE( vr->DeviceTables );
   return error;
 }
 
@@ -462,13 +454,14 @@ static void  Free_ValueRecord( HB_ValueRecord*  vr,
 			       HB_UShort         format )
 {
   if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE )
-    _HB_OPEN_Free_Device( &vr->YAdvanceDevice );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE )
-    _HB_OPEN_Free_Device( &vr->XAdvanceDevice );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE )
-    _HB_OPEN_Free_Device( &vr->YPlacementDevice );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE] );
   if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
-    _HB_OPEN_Free_Device( &vr->XPlacementDevice );
+    _HB_OPEN_Free_Device( vr->DeviceTables[VR_X_PLACEMENT_DEVICE] );
+  FREE( vr->DeviceTables );
 }
 
 
@@ -513,22 +506,22 @@ static HB_Error  Get_ValueRecord( GPOS_Instance*    gpi,
 
     if ( format & HB_GPOS_FORMAT_HAVE_X_PLACEMENT_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->XPlacementDevice, x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_X_PLACEMENT_DEVICE], x_ppem, &pixel_value );
       gd->x_pos += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_Y_PLACEMENT_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->YPlacementDevice, y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_Y_PLACEMENT_DEVICE], y_ppem, &pixel_value );
       gd->y_pos += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_X_ADVANCE_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->XAdvanceDevice, x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_X_ADVANCE_DEVICE], x_ppem, &pixel_value );
       gd->x_advance += pixel_value << 6;
     }
     if ( format & HB_GPOS_FORMAT_HAVE_Y_ADVANCE_DEVICE )
     {
-      _HB_OPEN_Get_Device( &vr->YAdvanceDevice, y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( vr->DeviceTables[VR_Y_ADVANCE_DEVICE], y_ppem, &pixel_value );
       gd->y_advance += pixel_value << 6;
     }
   }
@@ -632,18 +625,20 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
 
     if ( new_offset )
     {
+      if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
+        return error;
+
+      an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] = 0;
+      an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] = 0;
+
       new_offset += base_offset;
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &an->af.af3.XDeviceTable,
+	   ( error = _HB_OPEN_Load_Device( &an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE],
 				  stream ) ) != HB_Err_Ok )
-	return error;
+	goto Fail2;
       (void)FILE_Seek( cur_offset );
-    }
-    else
-    {
-      an->af.af3.XDeviceTable = 0;
     }
 
     if ( ACCESS_Frame( 2L ) )
@@ -655,18 +650,23 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
 
     if ( new_offset )
     {
+      if ( !an->af.af3.DeviceTables )
+      {
+        if ( ALLOC_ARRAY( an->af.af3.DeviceTables, 2, HB_Device ) )
+          return error;
+
+        an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] = 0;
+        an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] = 0;
+      }
+
       new_offset += base_offset;
 
       cur_offset = FILE_Pos();
       if ( FILE_Seek( new_offset ) ||
-	   ( error = _HB_OPEN_Load_Device( &an->af.af3.YDeviceTable,
+	   ( error = _HB_OPEN_Load_Device( &an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE],
 				  stream ) ) != HB_Err_Ok )
 	goto Fail;
       (void)FILE_Seek( cur_offset );
-    }
-    else
-    {
-      an->af.af3.YDeviceTable = 0;
     }
     break;
 
@@ -692,17 +692,22 @@ static HB_Error  Load_Anchor( HB_Anchor*  an,
   return HB_Err_Ok;
 
 Fail:
-  _HB_OPEN_Free_Device( &an->af.af3.XDeviceTable );
+  if ( an->af.af3.DeviceTables )
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+
+Fail2:
+  FREE( an->af.af3.DeviceTables );
   return error;
 }
 
 
 static void  Free_Anchor( HB_Anchor*  an)
 {
-  if ( an->PosFormat == 3 )
+  if ( an->PosFormat == 3 && an->af.af3.DeviceTables )
   {
-    _HB_OPEN_Free_Device( &an->af.af3.YDeviceTable );
-    _HB_OPEN_Free_Device( &an->af.af3.XDeviceTable );
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE] );
+    _HB_OPEN_Free_Device( an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE] );
+    FREE( an->af.af3.DeviceTables );
   }
 }
 
@@ -770,9 +775,9 @@ static HB_Error  Get_Anchor( GPOS_Instance*   gpi,
   case 3:
     if ( !gpi->dvi )
     {
-      _HB_OPEN_Get_Device( &an->af.af3.XDeviceTable, x_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( an->af.af3.DeviceTables[AF3_X_DEVICE_TABLE], x_ppem, &pixel_value );
       *x_value = pixel_value << 6;
-      _HB_OPEN_Get_Device( &an->af.af3.YDeviceTable, y_ppem, &pixel_value );
+      _HB_OPEN_Get_Device( an->af.af3.DeviceTables[AF3_Y_DEVICE_TABLE], y_ppem, &pixel_value );
       *y_value = pixel_value << 6;
     }
     else

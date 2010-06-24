@@ -110,6 +110,7 @@ private slots:
     void longText();
     void widthOfTabs();
     void columnWrapWithTabs();
+    void glyphLessItems();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -1319,6 +1320,24 @@ void tst_QTextLayout::lineWidthFromBOM()
     // Don't spin into an infinite loop
  }
 
+void tst_QTextLayout::glyphLessItems()
+{
+    {
+        QTextLayout layout;
+        layout.setText("\t\t");
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+    }
+
+    {
+        QTextLayout layout;
+        layout.setText(QString::fromLatin1("AA") + QChar(QChar::LineSeparator));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+    }
+}
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"
