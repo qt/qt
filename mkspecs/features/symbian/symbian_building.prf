@@ -8,6 +8,9 @@
     QMAKE_LFLAGS += -Ttext 0x80000 -Tdata 0x400000
 }
 
+isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
+isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+
 symbianObjdir=$$OBJECTS_DIR
 isEmpty(symbianObjdir) {
     symbianObjdir = .
@@ -114,6 +117,8 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       --dso=$$symbianObjdir/$${TARGET}.dso \
                       --defoutput=$$symbianObjdir/$${TARGET}.def \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+                      --heap=$$join(TARGET.EPOCHEAPSIZE, ",") \
+                      --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
@@ -163,6 +168,8 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       --elfinput=$${symbianDestdir}/$${TARGET}.sym \
                       --output=$${symbianDestdir}/$${TARGET}.exe \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+                      --heap=$$join(TARGET.EPOCHEAPSIZE, ",") \
+                      --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
