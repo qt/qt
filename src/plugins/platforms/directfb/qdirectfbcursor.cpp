@@ -3,10 +3,10 @@
 
 
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen* screen) :
-        QGraphicsSystemCursor(screen), surface(0)
+        QPlatformCursor(screen), surface(0)
 {
     QDirectFbConvenience::dfbInterface()->GetDisplayLayer(QDirectFbConvenience::dfbInterface(),DLID_PRIMARY, &m_layer);
-    image = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
+    image = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 }
 
 void QDirectFBCursor::changeCursor(QCursor * cursor, QWidget * widget)

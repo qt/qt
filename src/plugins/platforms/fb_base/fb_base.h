@@ -5,7 +5,7 @@
 #include <qimage.h>
 #include <qtimer.h>
 #include <qpainter.h>
-#include <QGraphicsSystemCursor>
+#include <QPlatformCursor>
 #include <QPlatformScreen>
 #include <QPlatformWindow>
 #include <QtGui/private/qwindowsurface_p.h>
@@ -16,10 +16,10 @@ class QPainter;
 
 class QFbScreen;
 
-class QGraphicsSystemSoftwareCursor : public QGraphicsSystemCursor
+class QPlatformSoftwareCursor : public QPlatformCursor
 {
 public:
-    QGraphicsSystemSoftwareCursor(QPlatformScreen * scr);
+    QPlatformSoftwareCursor(QPlatformScreen * scr);
 
     // output methods
     QRect dirtyRect();
@@ -35,7 +35,7 @@ public:
     virtual QRect lastPainted() { return prevRect; }
 
 protected:
-    QGraphicsSystemCursorImage * graphic;
+    QPlatformCursorImage * graphic;
 
 private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
@@ -142,7 +142,7 @@ public:
 protected:
     QList<QFbWindow *> windowStack;
     QRegion repaintRegion;
-    QGraphicsSystemSoftwareCursor * cursor;
+    QPlatformSoftwareCursor * cursor;
     QTimer redrawTimer;
 
 protected slots:

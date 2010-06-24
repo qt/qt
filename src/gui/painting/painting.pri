@@ -191,9 +191,9 @@ qpa {
         SOURCES += \
                 painting/qcolormap_qpa.cpp \
                 painting/qpaintdevice_qpa.cpp \
-                painting/qgraphicssystemcursor_qpa.cpp
+                painting/qplatformcursor_qpa.cpp
         HEADERS += \
-                painting/qgraphicssystemcursor_qpa.h
+                painting/qplatformcursor_qpa.h
 }
 
 symbian {

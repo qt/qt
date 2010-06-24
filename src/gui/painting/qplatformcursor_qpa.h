@@ -52,9 +52,9 @@
 QT_BEGIN_NAMESPACE
 
 // Cursor graphics management
-class Q_GUI_EXPORT QGraphicsSystemCursorImage {
+class Q_GUI_EXPORT QPlatformCursorImage {
 public:
-    QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
+    QPlatformCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
     { set(data, mask, width, height, hotX, hotY); }
     QImage * image() { return &cursorImage; }
     QPoint hotspot() { return hot; }
@@ -67,17 +67,17 @@ private:
     QPoint hot;
 };
 
-class QGraphicsSystemCursor;
+class QPlatformCursor;
 
-class QGraphicsSystemCursorPrivate {
+class QPlatformCursorPrivate {
 public:
-    static QList<QWeakPointer<QGraphicsSystemCursor> > getInstances() { return instances; }
-    static QList<QWeakPointer<QGraphicsSystemCursor> > instances;
+    static QList<QWeakPointer<QPlatformCursor> > getInstances() { return instances; }
+    static QList<QWeakPointer<QPlatformCursor> > instances;
 };
 
-class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
+class Q_GUI_EXPORT QPlatformCursor : public QObject {
 public:
-    QGraphicsSystemCursor(QPlatformScreen *);
+    QPlatformCursor(QPlatformScreen *);
 
     // input methods
     virtual void pointerEvent(const QMouseEvent & event) { Q_UNUSED(event); }
@@ -87,7 +87,7 @@ protected:
     QPlatformScreen* screen;  // Where to request an update
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsSystemCursor);
+    Q_DECLARE_PRIVATE(QPlatformCursor);
     friend void qt_lite_set_cursor(QWidget * w, bool force);
     friend class QApplicationPrivate;
 };

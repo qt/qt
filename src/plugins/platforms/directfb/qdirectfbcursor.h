@@ -1,12 +1,12 @@
 #ifndef QDIRECTFBCURSOR_H
 #define QDIRECTFBCURSOR_H
 
-#include <QGraphicsSystemCursor>
+#include <QPlatformCursor>
 #include <directfb.h>
 class QDirectFbScreen;
 class QDirectFbBlitter;
 
-class QDirectFBCursor : public QGraphicsSystemCursor
+class QDirectFBCursor : public QPlatformCursor
 {
 public:
     QDirectFBCursor(QPlatformScreen *screem);
@@ -15,7 +15,7 @@ public:
 private:
     IDirectFBDisplayLayer * m_layer;
     IDirectFBSurface * surface;
-    QGraphicsSystemCursorImage * image;
+    QPlatformCursorImage * image;
     QDirectFbBlitter *blitter;
 };
 

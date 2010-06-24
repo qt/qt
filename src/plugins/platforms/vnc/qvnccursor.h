@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QVNCScreen;
 class QVNCServer;
 
-class QVNCCursor : public QGraphicsSystemSoftwareCursor {
+class QVNCCursor : public QPlatformSoftwareCursor {
 public:
     QVNCCursor(QVNCServer *, QVNCScreen *);
 

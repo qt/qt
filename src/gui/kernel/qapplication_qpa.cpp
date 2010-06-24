@@ -57,7 +57,7 @@
 #include <qdesktopwidget.h>
 
 #include <qinputcontext.h>
-#include <QGraphicsSystemCursor>
+#include <QPlatformCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
 #include <QPlatformIntegration>
@@ -705,8 +705,8 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterface::MouseEvent *
 
     QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
 
-    QList<QWeakPointer<QGraphicsSystemCursor> > cursors = QGraphicsSystemCursorPrivate::getInstances();
-    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, cursors) {
+    QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
+    foreach (QWeakPointer<QPlatformCursor> cursor, cursors) {
         if (cursor)
             cursor.data()->pointerEvent(ev);
     }

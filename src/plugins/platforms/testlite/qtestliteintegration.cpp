@@ -46,7 +46,7 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
-#include <QGraphicsSystemCursor>
+#include <QPlatformCursor>
 
 #include "qtestlitewindow.h"
 
@@ -59,10 +59,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class MyCursor : QGraphicsSystemCursor
+class MyCursor : QPlatformCursor
 {
 public:
-    MyCursor(QPlatformScreen *screen) : QGraphicsSystemCursor(screen) {}
+    MyCursor(QPlatformScreen *screen) : QPlatformCursor(screen) {}
 
     void changeCursor(QCursor * cursor, QWidget * widget) {
         QTestLiteWindow *w = 0;

@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qgraphicssystemcursor_qpa.h"
+#include "qplatformcursor_qpa.h"
 
 #include <QWidget>
 #include <QPainter>
@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QList <QWeakPointer<QGraphicsSystemCursor> > QGraphicsSystemCursorPrivate::instances;
+QList <QWeakPointer<QPlatformCursor> > QPlatformCursorPrivate::instances;
 
 /*!
     \class QGraphicsSystemCursor
@@ -95,10 +95,10 @@ QList <QWeakPointer<QGraphicsSystemCursor> > QGraphicsSystemCursorPrivate::insta
 
     \brief Constructs a QGraphicsSystemCursor
 */
-QGraphicsSystemCursor::QGraphicsSystemCursor(QPlatformScreen *scr )
+QPlatformCursor::QPlatformCursor(QPlatformScreen *scr )
         : screen(scr)
 {
-    QGraphicsSystemCursorPrivate::instances.append(this);
+    QPlatformCursorPrivate::instances.append(this);
 }
 
 // End of display and pointer event handling code
@@ -114,7 +114,7 @@ QGraphicsSystemCursor::QGraphicsSystemCursor(QPlatformScreen *scr )
     \sa QGraphicsSystemCursor
 */
 
-static QGraphicsSystemCursorImage *systemCursorTable[Qt::LastCursor+1];
+static QPlatformCursorImage *systemCursorTable[Qt::LastCursor+1];
 static bool systemCursorTableInit = false;
 
 // 16 x 16
@@ -397,7 +397,7 @@ static const uchar closedhandm_bits[] = {
     0xf0,0x7f,0xf8,0x7f,0xfc,0x7f,0xfc,0x3f,0xf8,0x3f,0xf0,0x1f,
     0xe0,0x1f,0xe0,0x1f,0x00,0x00,0x00,0x00};
 
-void QGraphicsSystemCursorImage::createSystemCursor(int id)
+void QPlatformCursorImage::createSystemCursor(int id)
 {
     if (!systemCursorTableInit) {
         for (int i = 0; i <= Qt::LastCursor; i++)
@@ -408,97 +408,97 @@ void QGraphicsSystemCursorImage::createSystemCursor(int id)
         // 16x16 cursors
         case Qt::ArrowCursor:
             systemCursorTable[Qt::ArrowCursor] =
-                new QGraphicsSystemCursorImage(cur_arrow_bits, mcur_arrow_bits, 16, 16, 0, 0);
+                new QPlatformCursorImage(cur_arrow_bits, mcur_arrow_bits, 16, 16, 0, 0);
             break;
 
         case Qt::UpArrowCursor:
             systemCursorTable[Qt::UpArrowCursor] =
-                new QGraphicsSystemCursorImage(cur_up_arrow_bits, mcur_up_arrow_bits, 16, 16, 7, 0);
+                new QPlatformCursorImage(cur_up_arrow_bits, mcur_up_arrow_bits, 16, 16, 7, 0);
             break;
 
         case Qt::CrossCursor:
             systemCursorTable[Qt::CrossCursor] =
-                new QGraphicsSystemCursorImage(cur_cross_bits, mcur_cross_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_cross_bits, mcur_cross_bits, 16, 16, 7, 7);
             break;
 
         case Qt::IBeamCursor:
             systemCursorTable[Qt::IBeamCursor] =
-                new QGraphicsSystemCursorImage(cur_ibeam_bits, mcur_ibeam_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_ibeam_bits, mcur_ibeam_bits, 16, 16, 7, 7);
             break;
 
         case Qt::SizeVerCursor:
             systemCursorTable[Qt::SizeVerCursor] =
-                new QGraphicsSystemCursorImage(cur_ver_bits, mcur_ver_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_ver_bits, mcur_ver_bits, 16, 16, 7, 7);
             break;
 
         case Qt::SizeHorCursor:
             systemCursorTable[Qt::SizeHorCursor] =
-                new QGraphicsSystemCursorImage(cur_hor_bits, mcur_hor_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_hor_bits, mcur_hor_bits, 16, 16, 7, 7);
             break;
 
         case Qt::SizeBDiagCursor:
             systemCursorTable[Qt::SizeBDiagCursor] =
-                new QGraphicsSystemCursorImage(cur_bdiag_bits, mcur_bdiag_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_bdiag_bits, mcur_bdiag_bits, 16, 16, 7, 7);
             break;
 
         case Qt::SizeFDiagCursor:
             systemCursorTable[Qt::SizeFDiagCursor] =
-                new QGraphicsSystemCursorImage(cur_fdiag_bits, mcur_fdiag_bits, 16, 16, 7, 7);
+                new QPlatformCursorImage(cur_fdiag_bits, mcur_fdiag_bits, 16, 16, 7, 7);
             break;
 
         case Qt::BlankCursor:
             systemCursorTable[Qt::BlankCursor] =
-                new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
+                new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
             break;
 
         // 20x20 cursors
         case Qt::ForbiddenCursor:
             systemCursorTable[Qt::ForbiddenCursor] =
-                new QGraphicsSystemCursorImage(forbidden_bits, forbiddenm_bits, 20, 20, 10, 10);
+                new QPlatformCursorImage(forbidden_bits, forbiddenm_bits, 20, 20, 10, 10);
             break;
 
         // 32x32 cursors
         case Qt::WaitCursor:
             systemCursorTable[Qt::WaitCursor] =
-                new QGraphicsSystemCursorImage(wait_data_bits, wait_mask_bits, 32, 32, 15, 15);
+                new QPlatformCursorImage(wait_data_bits, wait_mask_bits, 32, 32, 15, 15);
             break;
 
         case Qt::SplitVCursor:
             systemCursorTable[Qt::SplitVCursor] =
-                new QGraphicsSystemCursorImage(vsplit_bits, vsplitm_bits, 32, 32, 15, 15);
+                new QPlatformCursorImage(vsplit_bits, vsplitm_bits, 32, 32, 15, 15);
             break;
 
         case Qt::SplitHCursor:
             systemCursorTable[Qt::SplitHCursor] =
-                new QGraphicsSystemCursorImage(hsplit_bits, hsplitm_bits, 32, 32, 15, 15);
+                new QPlatformCursorImage(hsplit_bits, hsplitm_bits, 32, 32, 15, 15);
             break;
 
         case Qt::SizeAllCursor:
             systemCursorTable[Qt::SizeAllCursor] =
-                new QGraphicsSystemCursorImage(size_all_data_bits, size_all_mask_bits, 32, 32, 15, 15);
+                new QPlatformCursorImage(size_all_data_bits, size_all_mask_bits, 32, 32, 15, 15);
             break;
 
         case Qt::PointingHandCursor:
             systemCursorTable[Qt::PointingHandCursor] =
-                new QGraphicsSystemCursorImage(phand_bits, phandm_bits, 32, 32, 0, 0);
+                new QPlatformCursorImage(phand_bits, phandm_bits, 32, 32, 0, 0);
             break;
 
         case Qt::WhatsThisCursor:
             systemCursorTable[Qt::WhatsThisCursor] =
-                new QGraphicsSystemCursorImage(whatsthis_bits, whatsthism_bits, 32, 32, 0, 0);
+                new QPlatformCursorImage(whatsthis_bits, whatsthism_bits, 32, 32, 0, 0);
             break;
         case Qt::BusyCursor:
             systemCursorTable[Qt::BusyCursor] =
-                new QGraphicsSystemCursorImage(busy_bits, busym_bits, 32, 32, 0, 0);
+                new QPlatformCursorImage(busy_bits, busym_bits, 32, 32, 0, 0);
             break;
 
         case Qt::OpenHandCursor:
             systemCursorTable[Qt::OpenHandCursor] =
-                new QGraphicsSystemCursorImage(openhand_bits, openhandm_bits, 16, 16, 8, 8);
+                new QPlatformCursorImage(openhand_bits, openhandm_bits, 16, 16, 8, 8);
             break;
         case Qt::ClosedHandCursor:
             systemCursorTable[Qt::ClosedHandCursor] =
-                new QGraphicsSystemCursorImage(closedhand_bits, closedhandm_bits, 16, 16, 8, 8);
+                new QPlatformCursorImage(closedhand_bits, closedhandm_bits, 16, 16, 8, 8);
             break;
         default:
             qWarning("Unknown system cursor %d", id);
@@ -516,9 +516,9 @@ void QGraphicsSystemCursorImage::createSystemCursor(int id)
     Qt::ArrowCursor is used instead.
 */
 
-void QGraphicsSystemCursorImage::set(Qt::CursorShape id)
+void QPlatformCursorImage::set(Qt::CursorShape id)
 {
-    QGraphicsSystemCursorImage *cursor = 0;
+    QPlatformCursorImage *cursor = 0;
     if (id >= 0 && id <= Qt::LastCursor) {
         if (!systemCursorTable[id])
             createSystemCursor(id);
@@ -546,7 +546,7 @@ void QGraphicsSystemCursorImage::set(Qt::CursorShape id)
     \a hy the y coordinate of the cursor's hotspot
 */
 
-void QGraphicsSystemCursorImage::set(const QImage * image, int hx, int hy)
+void QPlatformCursorImage::set(const QImage * image, int hx, int hy)
 {
     hot.setX(hx);
     hot.setY(hy);
@@ -571,7 +571,7 @@ void QGraphicsSystemCursorImage::set(const QImage * image, int hx, int hy)
 
     \a hy The Y hotspot of the cursor graphic
 */
-void QGraphicsSystemCursorImage::set(const uchar *data, const uchar *mask,
+void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
                     int width, int height, int hx, int hy)
 {
     hot.setX(hx);

@@ -49,7 +49,7 @@
 #include "QtGui/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
 
-#include <QtGui/QGraphicsSystemCursor>
+#include <QtGui/QPlatformCursor>
 
 QT_BEGIN_NAMESPACE
 static QPlatformScreen *qt_screenForWidget(const QWidget *w);
@@ -800,7 +800,7 @@ void qt_lite_set_cursor(QWidget * w, bool force)
         cursorCursor = w->cursor();
         cursorWidget = w;
     } while (0);
-    foreach (QWeakPointer<QGraphicsSystemCursor> cursor, QGraphicsSystemCursorPrivate::getInstances())
+    foreach (QWeakPointer<QPlatformCursor> cursor, QPlatformCursorPrivate::getInstances())
         if (cursor)
             cursor.data()->changeCursor(&cursorCursor, cursorWidget);
 }

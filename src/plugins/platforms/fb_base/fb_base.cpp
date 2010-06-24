@@ -3,17 +3,17 @@
 #include <qpainter.h>
 #include <qdebug.h>
 #include <qbitmap.h>
-#include <QGraphicsSystemCursor>
+#include <QPlatformCursor>
 #include <QWindowSystemInterface>
 
-QGraphicsSystemSoftwareCursor::QGraphicsSystemSoftwareCursor(QPlatformScreen *scr)
-        : QGraphicsSystemCursor(scr), currentRect(QRect()), prevRect(QRect())
+QPlatformSoftwareCursor::QPlatformSoftwareCursor(QPlatformScreen *scr)
+        : QPlatformCursor(scr), currentRect(QRect()), prevRect(QRect())
 {
-    graphic = new QGraphicsSystemCursorImage(0, 0, 0, 0, 0, 0);
+    graphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
     setCursor(Qt::ArrowCursor);
 }
 
-QRect QGraphicsSystemSoftwareCursor::getCurrentRect()
+QRect QPlatformSoftwareCursor::getCurrentRect()
 {
     QRect rect = graphic->image()->rect().translated(-graphic->hotspot().x(),
                                                      -graphic->hotspot().y());
@@ -24,7 +24,7 @@ QRect QGraphicsSystemSoftwareCursor::getCurrentRect()
 }
 
 
-void QGraphicsSystemSoftwareCursor::pointerEvent(const QMouseEvent & e)
+void QPlatformSoftwareCursor::pointerEvent(const QMouseEvent & e)
 {
     Q_UNUSED(e);
     QPoint screenOffset = screen->geometry().topLeft();
@@ -35,7 +35,7 @@ void QGraphicsSystemSoftwareCursor::pointerEvent(const QMouseEvent & e)
     }
 }
 
-QRect QGraphicsSystemSoftwareCursor::drawCursor(QPainter & painter)
+QRect QPlatformSoftwareCursor::drawCursor(QPainter & painter)
 {
     dirty = false;
     if (currentRect.isNull())
@@ -53,7 +53,7 @@ QRect QGraphicsSystemSoftwareCursor::drawCursor(QPainter & painter)
     return prevRect;
 }
 
-QRect QGraphicsSystemSoftwareCursor::dirtyRect()
+QRect QPlatformSoftwareCursor::dirtyRect()
 {
     if (onScreen) {
         onScreen = false;
@@ -62,22 +62,22 @@ QRect QGraphicsSystemSoftwareCursor::dirtyRect()
     return QRect();
 }
 
-void QGraphicsSystemSoftwareCursor::setCursor(Qt::CursorShape shape)
+void QPlatformSoftwareCursor::setCursor(Qt::CursorShape shape)
 {
     graphic->set(shape);
 }
 
-void QGraphicsSystemSoftwareCursor::setCursor(const QImage * image, int hotx, int hoty)
+void QPlatformSoftwareCursor::setCursor(const QImage * image, int hotx, int hoty)
 {
     graphic->set(image, hotx, hoty);
 }
 
-void QGraphicsSystemSoftwareCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
+void QPlatformSoftwareCursor::setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
 {
     graphic->set(data, mask, width, height, hotX, hotY);
 }
 
-void QGraphicsSystemSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
+void QPlatformSoftwareCursor::changeCursor(QCursor * widgetCursor, QWidget * widget)
 {
     Q_UNUSED(widget);
     Qt::CursorShape shape = widgetCursor->shape();
