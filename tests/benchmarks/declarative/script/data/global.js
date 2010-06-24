@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,16 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+var incVar = 1;
+var total;
 
-Rectangle {
-    width: 200; height: 200
-    CustomObject { id: theObject }
-    function doSomethingDirect() {
-        theObject.prop1 = 0;
+function doSomething() {
+    for (var i = 0; i < 10000; ++i)
+        Math.sin(90);
+}
 
-        for (var i = 0; i < 1000; ++i)
-            theObject.prop1 += theObject.prop2;
-
-        theObject.prop3 = theObject.prop1;
-    }
-
-    function doSomethingLocalObj() {
-        theObject.prop1 = 0;
-
-        var incrementObj = theObject;
-        for (var i = 0; i < 1000; ++i)
-            incrementObj.prop1 += incrementObj.prop2;
-
-        incrementObj.prop3 = incrementObj.prop1;
-    }
-
-    function doSomethingLocal() {
-        theObject.prop1 = 0;
-
-        var increment = theObject.prop2;
-        for (var i = 0; i < 1000; ++i)
-            theObject.prop1 += increment;
-
-        theObject.prop3 = theObject.prop1;
-    }
+function doIncrement() {
+    total = 0;
+    for (var i = 0; i < 100000; ++i)
+        total += incVar;
 }
