@@ -10,6 +10,8 @@
 
 isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
 isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+epoc_heap_size = $$split(TARGET.EPOCHEAPSIZE, " ")
+epoc_heap_size = $$join(epoc_heap_size, ",")
 
 symbianObjdir=$$OBJECTS_DIR
 isEmpty(symbianObjdir) {
@@ -118,7 +120,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       --dso=$${symbianDestdir}/$${TARGET}.dso \
                       --defoutput=$$symbianObjdir/$${TARGET}.def \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
-                      --heap=$$join(TARGET.EPOCHEAPSIZE, ",") \
+                      --heap=$$epoc_heap_size \
                       --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
@@ -164,7 +166,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       --elfinput=$${symbianDestdir}/$${TARGET}.sym \
                       --output=$${symbianDestdir}/$${TARGET}.exe \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
-                      --heap=$$join(TARGET.EPOCHEAPSIZE, ",") \
+                      --heap=$$epoc_heap_size \
                       --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
