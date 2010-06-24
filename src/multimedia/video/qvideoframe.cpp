@@ -665,6 +665,7 @@ QVideoFrame::PixelFormat QVideoFrame::pixelFormatFromImageFormat(QImage::Format 
     case QImage::Format_RGB16:
         return Format_RGB565;
     case QImage::Format_ARGB8565_Premultiplied:
+        return Format_ARGB8565_Premultiplied;
     case QImage::Format_RGB666:
     case QImage::Format_ARGB6666_Premultiplied:
         return Format_Invalid;

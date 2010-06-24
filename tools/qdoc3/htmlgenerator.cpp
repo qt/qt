@@ -1831,13 +1831,13 @@ void HtmlGenerator::generateHeader(const QString& title,
 		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />";
 		
 		// syntax highlighter js and css
-		//	out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shCore.css\"/>\n";
-		//	out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shThemeDefault.css\"/>\n";
-		//	out() << " <script type=\"text/javascript\" src=\"scripts/shCore.js\"></script>\n";
-		//	out() << " <script type=\"text/javascript\" src=\"scripts/shBrushCpp.js\"></script>\n";
-		// out() << " <script type=\"text/javascript\">\n";
-		// out() << " 	SyntaxHighlighter.all();\n";
-		// out() << " </script>\n";
+	//		out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shCore.css\"/>\n";
+	//		out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shThemeDefault.css\"/>\n";
+	//		out() << " <script type=\"text/javascript\" src=\"scripts/shCore.js\"></script>\n";
+	//		out() << " <script type=\"text/javascript\" src=\"scripts/shBrushCpp.js\"></script>\n";
+	//	 out() << " <script type=\"text/javascript\">\n";
+	//	 out() << " 	SyntaxHighlighter.all();\n";
+	//	 out() << " </script>\n";
 		
 		out() << "</head>\n";
 		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";

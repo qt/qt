@@ -1002,10 +1002,10 @@ void tst_qdeclarativeecmascript::scriptErrors()
     QString url = component.url().toString();
 
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
-    QString warning2 = url + ":5: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning2 = url + ":5: ReferenceError: Can't find variable: a";
     QString warning3 = url.left(url.length() - 3) + "js:4: Error: Invalid write to global property \"a\"";
-    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
-    QString warning5 = url + ":8: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning4 = url + ":10: ReferenceError: Can't find variable: a";
+    QString warning5 = url + ":8: ReferenceError: Can't find variable: a";
     QString warning6 = url + ":7: Unable to assign [undefined] to int x";
     QString warning7 = url + ":12: Error: Cannot assign to read-only property \"trueProperty\"";
     QString warning8 = url + ":13: Error: Cannot assign to non-existent property \"fakeProperty\"";
@@ -1322,7 +1322,12 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QDeclarativeEngine qmlengine;
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(&qmlengine);
     QScriptEngine *engine = &ep->scriptEngine;
-    ep->globalClass->explicitSetProperty("object", ep->objectClass->newQObject(&o));
+
+    QStringList names; QList<QScriptValue> values;
+    names << QLatin1String("object"); values << ep->objectClass->newQObject(&o);
+    names << QLatin1String("undefined"); values << engine->undefinedValue();
+
+    ep->globalClass->explicitSetProperty(names, values);
 
     // Non-existent methods
     o.reset();

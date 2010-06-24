@@ -147,6 +147,10 @@ void tst_qdeclarativeflickable::properties()
     QCOMPARE(obj->pressDelay(), 200);
     QCOMPARE(obj->maximumFlickVelocity(), 2000.);
 
+    QVERIFY(obj->property("ok").toBool() == false);
+    QMetaObject::invokeMethod(obj, "check");
+    QVERIFY(obj->property("ok").toBool() == true);
+
     delete obj;
 }
 

@@ -421,7 +421,7 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(QDeclarativeListView);
         QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
-        if (item != viewport && (!highlight || item != highlight->item)) {
+        if (item != contentItem && (!highlight || item != highlight->item)) {
             if ((orient == QDeclarativeListView::Vertical && newGeometry.height() != oldGeometry.height())
                 || (orient == QDeclarativeListView::Horizontal && newGeometry.width() != oldGeometry.width())) {
                 scheduleLayout();
@@ -580,10 +580,10 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
         if (model->completePending()) {
             // complete
             listItem->item->setZValue(1);
-            listItem->item->setParentItem(q->viewport());
+            listItem->item->setParentItem(q->contentItem());
             model->completeItem();
         } else {
-            listItem->item->setParentItem(q->viewport());
+            listItem->item->setParentItem(q->contentItem());
         }
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
@@ -840,8 +840,8 @@ void QDeclarativeListViewPrivate::createHighlight()
             item = new QDeclarativeItem;
         }
         if (item) {
-            QDeclarative_setParent_noEvent(item, q->viewport());
-            item->setParentItem(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->contentItem());
+            item->setParentItem(q->contentItem());
             highlight = new FxListItem(item, q);
             if (currentItem && autoHighlight) {
                 if (orient == QDeclarativeListView::Vertical) {
@@ -921,8 +921,8 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                         delete nobj;
                     } else {
                         listItem->section->setZValue(1);
-                        QDeclarative_setParent_noEvent(listItem->section, q->viewport());
-                        listItem->section->setParentItem(q->viewport());
+                        QDeclarative_setParent_noEvent(listItem->section, q->contentItem());
+                        listItem->section->setParentItem(q->contentItem());
                     }
                 } else {
                     delete context;
@@ -1046,8 +1046,8 @@ void QDeclarativeListViewPrivate::updateFooter()
             delete context;
         }
         if (item) {
-            QDeclarative_setParent_noEvent(item, q->viewport());
-            item->setParentItem(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->contentItem());
+            item->setParentItem(q->contentItem());
             item->setZValue(1);
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
@@ -1086,8 +1086,8 @@ void QDeclarativeListViewPrivate::updateHeader()
             delete context;
         }
         if (item) {
-            QDeclarative_setParent_noEvent(item, q->viewport());
-            item->setParentItem(q->viewport());
+            QDeclarative_setParent_noEvent(item, q->contentItem());
+            item->setParentItem(q->contentItem());
             item->setZValue(1);
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
@@ -2386,6 +2386,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::incrementCurrentIndex()
 {
@@ -2403,6 +2405,8 @@ void QDeclarativeListView::incrementCurrentIndex()
 
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::decrementCurrentIndex()
 {
@@ -2439,6 +2443,14 @@ void QDeclarativeListView::decrementCurrentIndex()
     of the list does not cause all other items to be repositioned, and because
     the actual start of the view can vary based on the size of the delegates.
     The correct way to bring an item into view is with \c positionViewAtIndex.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end:
+
+    \code
+    Component.onCompleted: positionViewAtIndex(count - 1, ListView.Beginning)
+    \endcode
 */
 void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 {
@@ -2448,6 +2460,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
     if (mode < Beginning || mode > Contain)
         return;
 
+    if (d->layoutScheduled)
+        d->layout();
     qreal pos = d->position();
     FxListItem *item = d->visibleItem(index);
     if (!item) {
@@ -2491,6 +2505,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         pos = qMin(pos, maxExtent);
         qreal minExtent = d->orient == QDeclarativeListView::Vertical ? -minYExtent() : -minXExtent();
         pos = qMax(pos, minExtent);
+        d->moveReason = QDeclarativeListViewPrivate::Other;
+        cancelFlick();
         d->setPosition(pos);
     }
     d->fixupPosition();
@@ -2505,6 +2521,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 
     If the item is outside the visible area, -1 is returned, regardless of
     whether an item will exist at that point when scrolled into view.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 int QDeclarativeListView::indexAt(int x, int y) const
 {
@@ -2529,6 +2547,10 @@ void QDeclarativeListView::componentComplete()
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
+        if (d->highlight) {
+            d->highlight->setPosition(d->currentItem->position());
+            d->updateTrackedItem();
+        }
         d->fixupPosition();
     }
 }
@@ -2961,7 +2983,7 @@ void QDeclarativeListView::createdItem(int index, QDeclarativeItem *item)
 {
     Q_D(QDeclarativeListView);
     if (d->requestedIndex != index) {
-        item->setParentItem(viewport());
+        item->setParentItem(contentItem());
         d->unrequestedItems.insert(item, index);
         if (d->orient == QDeclarativeListView::Vertical)
             item->setY(d->positionAt(index));

@@ -261,7 +261,7 @@ void tst_QDeclarativeViewer::resizing()
 
     QCOMPARE(rootItem->width(), 150.0);
     QCOMPARE(rootItem->height(), 200.0);
-    QCOMPARE(viewer->view()->size(), QSize(150, 200));
+    QTRY_COMPARE(viewer->view()->size(), QSize(150, 200));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(150, 200));
     QCOMPARE(viewer->size(), QSize(150, 200+viewer->menuBar()->height()));
@@ -279,7 +279,7 @@ void tst_QDeclarativeViewer::resizing()
 
     QTRY_COMPARE(rootItem->width(), 250.0);
     QTRY_COMPARE(rootItem->height(), 350.0-viewer->menuBar()->height());
-    QCOMPARE(viewer->view()->size(), QSize(250, 350-viewer->menuBar()->height()));
+    QTRY_COMPARE(viewer->view()->size(), QSize(250, 350-viewer->menuBar()->height()));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350-viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), QSize(250, 350));

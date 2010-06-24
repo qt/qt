@@ -1,3 +1,359 @@
+2010-06-23  Alessandro Portale  <alessandro.portale@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Provide the Webkit Qml plugin with a UID3 on Symbian
+
+        ...otherwise we cannot Symbian sign it.
+
+        * declarative/declarative.pro:
+
+2010-06-23  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt package build fix.
+
+        When building without build-webkit, set OUTPUT_DIR if necessary, like
+        in the other .pro files.
+
+        * declarative/declarative.pro:
+
+2010-06-22  Tasuku Suzuki  <tasuku.suzuki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix compilation with QT_NO_COMBOBOX.
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::createSelectPopup):
+
+2010-06-11  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by nobody, build fix.
+
+        [Qt] Second fix attempt for the build break introduced by r61002.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+
+2010-06-11  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by nobody, build fix.
+
+        [Qt] Fix build break introduced by r61002.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+
+2010-05-31  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Implement the simple text code path.
+        https://bugs.webkit.org/show_bug.cgi?id=40077
+
+        Remove the FONT_FAST_PATH macro and use the Qt's
+        fast text implementation instead of the one of WebKit.
+
+        The Qt::TextBypassShaping flag is used to tell Qt to
+        only use the glyph advances.
+
+        Qt 4.7 is needed to get this flag thus the complex path is always
+        used if QtWebKit is compiled against an earlier version.
+
+        Contrary to the WebKit's implementation, the complex code path
+        is taken if the text is RightToLeft, justified or is formatted
+        with non-zero letter or word spacing.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+
+2010-06-21  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed build fix.
+
+        [Qt] Fix package builds
+
+        Don't use rpath unless we're building inside the trunk.
+
+        * declarative/declarative.pro:
+
+2010-06-19  Mirko Damiani  <mirko@develer.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Avoid truncation of zoom factor in QWebFrame's print function.
+        https://bugs.webkit.org/show_bug.cgi?id=40662
+
+        The zoom factor is a qreal number but its value is truncated to an
+        integer. So a cast to qreal is needed to avoid this issue.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::print):
+
+2010-06-19  No'am Rosenthal  <noam.rosenthal@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Bridge documentation: some snippets have the wrong indentation
+        https://bugs.webkit.org/show_bug.cgi?id=40717
+
+        Fixed code snippets
+
+        * docs/webkitsnippets/qtwebkit_bridge_snippets.cpp:
+        (wrapInFunction):
+
+2010-06-19  Olivier Goffart  <olivier.goffart@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Compilation in QWebPagePrivate::timerEvent with clang
+        https://bugs.webkit.org/show_bug.cgi?id=40714
+
+        QObject::timerEvent is protected and cannot be accessed by QWebPagePrivate
+        with clang
+
+        QWebPagePrivate is a friend of QWebPage and then should have access to
+        all protected members of parents of QWebPage, including QObject.
+        But the clang team do not want to conform to this aspect of the specification
+        because "It is either a drafting error or a horrible mistake."
+        See http://llvm.org/bugs/show_bug.cgi?id=6840
+
+        This change is better because QWebPage does not reimplement the timerEvent
+        (QWebPagePrivate::timerEvent is called from QWebPage::event)
+        So customers that would reimplement their own timerEvent
+        for their own timer now get a chance to catch them.
+
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::timerEvent):
+
+2010-06-18  Alexis Menard  <alexis.menard@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix documentation for the declarative module import.
+
+        * declarative/qdeclarativewebview.cpp:
+
+2010-06-18  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Antti Koivisto.
+
+        REGRESSION(r60958) [Qt] qwebpage::inputMethods auto-test fails
+        https://bugs.webkit.org/show_bug.cgi?id=40830
+
+        When activating a regular input method field, always set or unset the ImhHiddenText
+        input method hint.
+
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::setInputMethodState):
+
+2010-06-10  Raine Makelainen  <raine.makelainen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Impossible to set input method hints based HTML5 input types
+        https://bugs.webkit.org/show_bug.cgi?id=40107
+
+        EditorClientQt to set input method hints for "number", "tel",
+        "email", and "url" HTML input elements.
+
+        Tests for HTML input elements and input method hints added for
+        QGraphicsWebView and QWebView.
+
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::setInputMethodState):
+        * tests/qgraphicswebview/resources/input_types.html: Added.
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (GraphicsWebView::GraphicsWebView):
+        (GraphicsWebView::fireMouseClick):
+        (tst_QGraphicsWebView::focusInputTypes):
+        * tests/qgraphicswebview/tst_qgraphicswebview.qrc: Added.
+        * tests/qwebview/resources/input_types.html: Added.
+        * tests/qwebview/tst_qwebview.cpp:
+        (WebView::fireMouseClick):
+        (tst_QWebView::focusInputTypes):
+        * tests/qwebview/tst_qwebview.qrc:
+
+2010-06-18  Alexis Menard  <alexis.menard@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix documentation issue on the onAlert handler.
+        Fix compilation issue with QT_NO_ACTION.
+
+        * declarative/qdeclarativewebview.cpp:
+        * declarative/qdeclarativewebview_p.h:
+
+2010-06-18  Alexis Menard  <alexis.menard@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Change the target path to QtWebKit.
+
+        * declarative/declarative.pro:
+
+2010-06-17  Robert Hogan  <robert@webkit.org>
+
+        [Qt] Build fix
+
+        Unreviewed.
+
+        Remove includes in qdeclarativewebview*.* that rely on an installation
+        of QtWebKit.
+
+        * declarative/qdeclarativewebview.cpp:
+        * declarative/qdeclarativewebview_p.h:
+
+2010-06-17  Alexis Menard  <alexis.menard@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Upstream the WebKit QML integration plugin
+        https://bugs.webkit.org/show_bug.cgi?id=40050
+
+        Add to the Qt port the QML WebKit integration plugin.
+        QDeclarativeWebView is creating the item and expose
+        properties. The C++ API is not public, only the
+        properties are.
+
+        * declarative/declarative.pro: Added.
+        * declarative/plugin.cpp: Added.
+        (WebKitQmlPlugin::registerTypes):
+        * declarative/qdeclarativewebview.cpp: Added.
+        (QDeclarativeWebViewPrivate::QDeclarativeWebViewPrivate):
+        (QDeclarativeWebViewPrivate::):
+        (QDeclarativeWebViewPrivate::windowObjectsAppend):
+        (GraphicsWebView::GraphicsWebView):
+        (GraphicsWebView::mousePressEvent):
+        (GraphicsWebView::mouseReleaseEvent):
+        (GraphicsWebView::mouseDoubleClickEvent):
+        (GraphicsWebView::timerEvent):
+        (GraphicsWebView::mouseMoveEvent):
+        (QDeclarativeWebView::QDeclarativeWebView):
+        (QDeclarativeWebView::~QDeclarativeWebView):
+        (QDeclarativeWebView::init):
+        (QDeclarativeWebView::componentComplete):
+        (QDeclarativeWebView::status):
+        (QDeclarativeWebView::progress):
+        (QDeclarativeWebView::doLoadStarted):
+        (QDeclarativeWebView::doLoadProgress):
+        (QDeclarativeWebView::pageUrlChanged):
+        (QDeclarativeWebView::doLoadFinished):
+        (QDeclarativeWebView::url):
+        (QDeclarativeWebView::setUrl):
+        (QDeclarativeWebView::preferredWidth):
+        (QDeclarativeWebView::setPreferredWidth):
+        (QDeclarativeWebView::preferredHeight):
+        (QDeclarativeWebView::setPreferredHeight):
+        (QDeclarativeWebView::evaluateJavaScript):
+        (QDeclarativeWebView::updateDeclarativeWebViewSize):
+        (QDeclarativeWebView::initialLayout):
+        (QDeclarativeWebView::updateContentsSize):
+        (QDeclarativeWebView::geometryChanged):
+        (QDeclarativeWebView::javaScriptWindowObjects):
+        (QDeclarativeWebView::qmlAttachedProperties):
+        (QDeclarativeWebViewPrivate::updateWindowObjects):
+        (QDeclarativeWebView::renderingEnabled):
+        (QDeclarativeWebView::setRenderingEnabled):
+        (QDeclarativeWebView::heuristicZoom):
+        (QDeclarativeWebView::pressGrabTime):
+        (QDeclarativeWebView::setPressGrabTime):
+        (QDeclarativeWebView::backAction):
+        (QDeclarativeWebView::forwardAction):
+        (QDeclarativeWebView::reloadAction):
+        (QDeclarativeWebView::stopAction):
+        (QDeclarativeWebView::title):
+        (QDeclarativeWebView::icon):
+        (QDeclarativeWebView::setStatusText):
+        (QDeclarativeWebView::windowObjectCleared):
+        (QDeclarativeWebView::statusText):
+        (QDeclarativeWebView::page):
+        (QDeclarativeWebView::settingsObject):
+        (QDeclarativeWebView::setPage):
+        (QDeclarativeWebView::load):
+        (QDeclarativeWebView::html):
+        (QDeclarativeWebView::setHtml):
+        (QDeclarativeWebView::setContent):
+        (QDeclarativeWebView::history):
+        (QDeclarativeWebView::settings):
+        (QDeclarativeWebView::createWindow):
+        (QDeclarativeWebView::newWindowComponent):
+        (QDeclarativeWebView::setNewWindowComponent):
+        (QDeclarativeWebView::newWindowParent):
+        (QDeclarativeWebView::setNewWindowParent):
+        (QDeclarativeWebView::contentsSize):
+        (QDeclarativeWebView::contentsScale):
+        (QDeclarativeWebView::setContentsScale):
+        (QDeclarativeWebView::elementAreaAt):
+        (QDeclarativeWebPage::QDeclarativeWebPage):
+        (QDeclarativeWebPage::~QDeclarativeWebPage):
+        (QDeclarativeWebPage::chooseFile):
+        (QDeclarativeWebPage::javaScriptAlert):
+        (QDeclarativeWebPage::javaScriptConfirm):
+        (QDeclarativeWebPage::javaScriptPrompt):
+        (QDeclarativeWebPage::viewItem):
+        (QDeclarativeWebPage::createWindow):
+        * declarative/qdeclarativewebview_p.h: Added.
+        (QDeclarativeWebView::):
+        (QDeclarativeWebView::isComponentCompletePublic):
+        (QDeclarativeWebViewAttached::QDeclarativeWebViewAttached):
+        (QDeclarativeWebViewAttached::windowObjectName):
+        (QDeclarativeWebViewAttached::setWindowObjectName):
+        (QDeclarativeWebSettings::QDeclarativeWebSettings):
+        (QDeclarativeWebSettings::standardFontFamily):
+        (QDeclarativeWebSettings::setStandardFontFamily):
+        (QDeclarativeWebSettings::fixedFontFamily):
+        (QDeclarativeWebSettings::setFixedFontFamily):
+        (QDeclarativeWebSettings::serifFontFamily):
+        (QDeclarativeWebSettings::setSerifFontFamily):
+        (QDeclarativeWebSettings::sansSerifFontFamily):
+        (QDeclarativeWebSettings::setSansSerifFontFamily):
+        (QDeclarativeWebSettings::cursiveFontFamily):
+        (QDeclarativeWebSettings::setCursiveFontFamily):
+        (QDeclarativeWebSettings::fantasyFontFamily):
+        (QDeclarativeWebSettings::setFantasyFontFamily):
+        (QDeclarativeWebSettings::minimumFontSize):
+        (QDeclarativeWebSettings::setMinimumFontSize):
+        (QDeclarativeWebSettings::minimumLogicalFontSize):
+        (QDeclarativeWebSettings::setMinimumLogicalFontSize):
+        (QDeclarativeWebSettings::defaultFontSize):
+        (QDeclarativeWebSettings::setDefaultFontSize):
+        (QDeclarativeWebSettings::defaultFixedFontSize):
+        (QDeclarativeWebSettings::setDefaultFixedFontSize):
+        (QDeclarativeWebSettings::autoLoadImages):
+        (QDeclarativeWebSettings::setAutoLoadImages):
+        (QDeclarativeWebSettings::javascriptEnabled):
+        (QDeclarativeWebSettings::setJavascriptEnabled):
+        (QDeclarativeWebSettings::javaEnabled):
+        (QDeclarativeWebSettings::setJavaEnabled):
+        (QDeclarativeWebSettings::pluginsEnabled):
+        (QDeclarativeWebSettings::setPluginsEnabled):
+        (QDeclarativeWebSettings::privateBrowsingEnabled):
+        (QDeclarativeWebSettings::setPrivateBrowsingEnabled):
+        (QDeclarativeWebSettings::javascriptCanOpenWindows):
+        (QDeclarativeWebSettings::setJavascriptCanOpenWindows):
+        (QDeclarativeWebSettings::javascriptCanAccessClipboard):
+        (QDeclarativeWebSettings::setJavascriptCanAccessClipboard):
+        (QDeclarativeWebSettings::developerExtrasEnabled):
+        (QDeclarativeWebSettings::setDeveloperExtrasEnabled):
+        (QDeclarativeWebSettings::linksIncludedInFocusChain):
+        (QDeclarativeWebSettings::setLinksIncludedInFocusChain):
+        (QDeclarativeWebSettings::zoomTextOnly):
+        (QDeclarativeWebSettings::setZoomTextOnly):
+        (QDeclarativeWebSettings::printElementBackgrounds):
+        (QDeclarativeWebSettings::setPrintElementBackgrounds):
+        (QDeclarativeWebSettings::offlineStorageDatabaseEnabled):
+        (QDeclarativeWebSettings::setOfflineStorageDatabaseEnabled):
+        (QDeclarativeWebSettings::offlineWebApplicationCacheEnabled):
+        (QDeclarativeWebSettings::setOfflineWebApplicationCacheEnabled):
+        (QDeclarativeWebSettings::localStorageDatabaseEnabled):
+        (QDeclarativeWebSettings::setLocalStorageDatabaseEnabled):
+        (QDeclarativeWebSettings::localContentCanAccessRemoteUrls):
+        (QDeclarativeWebSettings::setLocalContentCanAccessRemoteUrls):
+        * declarative/qmldir: Added.
+        * docs/qtwebkit.qdocconf:
+
 2010-06-17  Mark Brand  <mabrand@mabrand.nl>
 
         Reviewed by Simon Hausmann.

@@ -446,6 +446,7 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
             p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
             QPen pn(QColor(d->pen->color()), d->pen->width());
+            pn.setJoinStyle(Qt::MiterJoin);
             p.setPen(pn);
         } else {
             p.setPen(Qt::NoPen);

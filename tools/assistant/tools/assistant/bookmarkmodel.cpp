@@ -261,6 +261,14 @@ BookmarkModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+void BookmarkModel::setData(const QModelIndex &index, const DataVector &data)
+{
+    if (BookmarkItem *item = itemFromIndex(index)) {
+        item->setData(data);
+        emit dataChanged(index, index);
+    }
+}
+
 bool
 BookmarkModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
