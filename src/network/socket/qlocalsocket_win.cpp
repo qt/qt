@@ -280,6 +280,12 @@ void QLocalSocketPrivate::startAsyncRead()
                 case ERROR_IO_PENDING:
                     // This is not an error. We're getting notified, when data arrives.
                     return;
+                case ERROR_MORE_DATA:
+                    // This is not an error. The synchronous read succeeded.
+                    // We're connected to a message mode pipe and the message
+                    // didn't fit into the pipe's system buffer.
+                    completeAsyncRead();
+                    break;
                 case ERROR_PIPE_NOT_CONNECTED:
                     {
                         // It may happen, that the other side closes the connection directly
@@ -309,9 +315,18 @@ bool QLocalSocketPrivate::completeAsyncRead()
 
     DWORD bytesRead;
     if (!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE)) {
-        if (GetLastError() != ERROR_PIPE_NOT_CONNECTED)
+        switch (GetLastError()) {
+        case ERROR_MORE_DATA:
+            // This is not an error. We're connected to a message mode
+            // pipe and the message didn't fit into the pipe's system
+            // buffer. We will read the remaining data in the next call.
+            break;
+        case ERROR_PIPE_NOT_CONNECTED:
             setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
-        return false;
+            // fall through
+        default:
+            return false;
+        }
     }
 
     actualReadBufferSize += bytesRead;

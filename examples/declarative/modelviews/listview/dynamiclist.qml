@@ -45,7 +45,7 @@ import "content"
 
 Rectangle {
     id: container
-    width: 640; height: 480
+    width: 500; height: 400
     color: "#343434"
 
     // The model:
@@ -96,11 +96,11 @@ Rectangle {
 
                 Column {
                     Image {
-                        source: "content/pics/go-up.png"
-                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
+                        source: "content/pics/arrow-up.png"
+                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index, index-1, 1) }
                     }
-                    Image { source: "content/pics/go-down.png"
-                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
+                    Image { source: "content/pics/arrow-down.png"
+                        MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index, index+1, 1) }
                     }
                 }
 
@@ -129,7 +129,7 @@ Rectangle {
 
                 PressAndHoldButton {
                     anchors.verticalCenter: parent.verticalCenter
-                    source: "content/pics/list-add.png"
+                    source: "content/pics/plus-sign.png"
                     onClicked: fruitModel.setProperty(index, "cost", cost + 0.25)
                 }
 
@@ -144,12 +144,12 @@ Rectangle {
 
                 PressAndHoldButton {
                     anchors.verticalCenter: parent.verticalCenter
-                    source: "content/pics/list-remove.png"
+                    source: "content/pics/minus-sign.png"
                     onClicked: fruitModel.setProperty(index, "cost", Math.max(0,cost-0.25))
                 }
 
                 Image {
-                    source: "content/pics/archive-remove.png"
+                    source: "content/pics/list-delete.png"
                     MouseArea { anchors.fill:parent; onClicked: fruitModel.remove(index) }
                 }
             }

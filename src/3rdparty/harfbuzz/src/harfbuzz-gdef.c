@@ -462,7 +462,7 @@ static HB_Error  Load_CaretValue( HB_CaretValue*  cv,
 static void  Free_CaretValue( HB_CaretValue*  cv)
 {
   if ( cv->CaretValueFormat == 3 )
-    _HB_OPEN_Free_Device( &cv->cvf.cvf3.Device );
+    _HB_OPEN_Free_Device( cv->cvf.cvf3.Device );
 }
 
 

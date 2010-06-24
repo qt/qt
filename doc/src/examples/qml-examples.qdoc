@@ -6,35 +6,21 @@
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
 **
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
-**
-**
-**
-**
-**
-**
-**
-**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +29,21 @@
     \title Animation: Basics
     \example declarative/animation/basics
 
-    This example shows how to create \l{QML Animation}{animations} in QML.
+    This example shows how to create and combine \l{QML Animation}{animations} in QML.
+
+    \table
+    \row
+    \o \image qml-coloranim-example.png
+    \row
+    \o color-animation.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-propertyanim-example.png
+    \row
+    \o property-animation.qml
+    \endtable
 */
 
 /*!
@@ -51,34 +51,69 @@
     \example declarative/animation/behaviors
 
     This example shows how to use QML behaviors. 
+
+    \image qml-behaviors-example.png
 */
 
 /*!
-    \title Animation: Easing types
+    \title Animation: Easing 
     \example declarative/animation/easing
 
     This example shows the different easing modes available for \l{QML Animation}{animations}.
+
+    \image qml-easing-example.png
 */
 
 /*!
     \title Animation: States
     \example declarative/animation/states
 
-    This example shows how to use \l{States}{states} and \l{Transitions}{transitions}.
+    These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
+
+    The \c states.qml example shows how an item can change between states, and \c transitions.qml
+    shows how these state changes can be animated.
+
+    \table
+    \row
+    \o \image qml-states-example.png
+    \row
+    \o states.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-transitions-example.png
+    \row
+    \o transitions.qml
+    \endtable
 */
 
 /*!
     \title Image Elements: Border Image
     \example declarative/imageelements/borderimage
 
-    This example shows how to use the BorderImage element.
+    These examples show how to use the BorderImage element.
+
+    \table
+    \row
+    \o \image qml-borderimage-example.png
+    \row
+    \o borderimage.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-borderimage-shadows-example.png
+    \row
+    \o shadows.qml
+    \endtable
 */
 
 /*!
     \title Image Elements: Image
     \example declarative/imageelements/image
 
-    This example shows how to use the Image element and its \l{Image::fillMode}{fillModes}.
+    This example shows how to use the \l Image element and its \l{Image::fillMode}{fillModes}.
 
     \image qml-image-example.png
 */
@@ -116,6 +151,8 @@
     \example declarative/cppextensions/plugins
 
     This example shows how to create a C++ plugin extension by subclassing QDeclarativeExtensionPlugin.
+
+    \image qml-plugins-example.png
 */
 
 /*!
@@ -124,6 +161,8 @@
 
     This example show how to use the LayoutItem element to integrate QML items into an existing 
     \l{Graphics View Framework}{Graphics View}-based application.
+
+    \image qml-layoutitem-example.png
 */
 /*!
     \title QGraphicsGridLayout
@@ -132,6 +171,8 @@
     This example shows how to use QGraphicsGridLayout to lay out QML items. This is 
     useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
     QML.
+
+    \image qml-qgraphicsgridlayout-example.png
 */
 /*!
     \title QGraphicsLinearLayout
@@ -140,6 +181,8 @@
     This example shows how to use QGraphicsLinearLayout to lay out QML items. This is 
     useful if you need to integrate Qt \l{Graphics View Framework}{Graphics View} layouts with
     QML.
+    
+    \image qml-qgraphicslinearlayout-example.png
 */
 /*!
     \page declarative-cppextensions-qgraphicslayouts.html
@@ -160,6 +203,8 @@
     \example declarative/cppextensions/qwidgets
 
     This example shows how to embed QWidget-based objects into QML using QGraphicsProxyWidget.
+
+    \image qml-qwidgets-example.png
 */
 
 /*!
@@ -171,7 +216,7 @@
 */
 
 /*!
-    \title C++ Extensions: Network access manager
+    \title C++ Extensions: Network access manager factory
     \example declarative/cppextensions/networkaccessmanagerfactory
 
     This example shows how to use QDeclarativeNetworkAccessManagerFactory to create a QNetworkAccessManager
@@ -183,21 +228,25 @@
     \example declarative/i18n
 
     This example shows how to enable text translation in QML.
+
+    \image qml-i18n-example.png
 */
 
 /*!
     \title Positioners
     \example declarative/positioners
 
-    This example shows how to use positioner elements such as Row, Column,
-    Grid and Flow.
+    This example shows how to use positioner elements such as \l Row, \l Column,
+    \l Grid and \l Flow.
+
+    \image qml-positioners-example.png
 */
 
 /*!
     \title Key Interaction: Focus
     \example declarative/keyinteraction/focus
 
-    This example shows how to handle keys and focus in QML.
+    This example shows how to handle keyboard input and focus in QML.
 
     \image qml-focus-example.png
 */
@@ -207,13 +256,50 @@
     \example declarative/modelviews/gridview
 
     This example shows how to use the GridView element.
+
+    \image qml-gridview-example.png
 */
 
 /*!
     \title Models and Views: ListView
     \example declarative/modelviews/listview
 
-    This example shows how to use the ListView element.
+    These examples show how to use the ListView element.
+
+    \table
+    \row
+    \o \image qml-listview-dynamiclist-example.png
+    \row
+    \o dynamiclist.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-listview-expandingdelegates-example.png
+    \row
+    \o expandingdelegates.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-listview-highlight-example.png
+    \row
+    \o highlight.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-listview-highlightranges-example.png
+    \row
+    \o highlightranges.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-listview-sections-example.png
+    \row
+    \o sections.qml
+    \endtable
 */
 
 /*!
@@ -222,13 +308,17 @@
 
     This example shows how to create a C++ extension that exposes a
     QList<QObject*> as a model in QML.
+
+    \image qml-objectlistmodel-example.png
 */
 
 /*!
     \title Models and Views: Package
     \example declarative/modelviews/package
 
-    This example shows how to use the Package element.
+    This example shows how to use the \l Package element.
+
+    \image qml-package-example.png
 */
 
 /*!
@@ -236,6 +326,8 @@
     \example declarative/modelviews/parallax
 
     This example shows how to combine and switch between views.
+
+    \image qml-parallax-example.png
 */
 
 /*!
@@ -244,6 +336,8 @@
 
     This example shows how to create a C++ extension that exposes a
     QStringList as a model in QML.
+
+    \image qml-stringlistmodel-example.png
 */
 
 /*!
@@ -251,13 +345,50 @@
     \example declarative/modelviews/visualitemmodel
 
     This example shows how to use the VisualItemModel element.
+
+    \image qml-visualitemmodel-example.png
 */
 
 /*!
     \title Models and Views: WebView
     \example declarative/modelviews/webview
 
-    This example shows how to use the WebView element.
+    These examples shows how to use the WebView element.
+
+    \table
+    \row
+    \o \image qml-webview-alert-example.png
+    \row
+    \o alert.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-webview-autosize-example.png
+    \row
+    \o autosize.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-webview-googlemaps-example.png
+    \row
+    \o googlemaps.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-webview-inlinehtml-example.png
+    \row
+    \o inlinehtml.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-webview-newwindows-example.png
+    \row
+    \o newwindows.qml
+    \endtable
 */
 
 /*!
@@ -271,8 +402,46 @@
     \title Text: Fonts
     \example declarative/text/fonts
 
-    This example shows how to discover available fonts from QML and use
-    fonts in different ways.
+    These examples show how to discover available fonts from QML and manipulate
+    text in various ways.
+
+    \table
+    \row
+    \o \image qml-fonts-availableFonts-example.png
+    \row
+    \o availableFonts.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-fonts-banner-example.png
+    \row
+    \o banner.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-fonts-fonts-example.png
+    \row
+    \o fonts.qml
+    \endtable
+
+    \table
+    \row
+    \o \image qml-fonts-hello-example.png
+    \row
+    \o hello.qml
+    \endtable
+*/
+
+/*!
+    \title Text: Text Selection
+    \example declarative/text/textselection
+
+    This example shows how text selection, copy and paste operations
+    can be implemented on top of the TextEdit element.
+
+    \image qml-textselection-example.png
 */
 
 /*!
@@ -350,18 +519,22 @@
 */
 
 /*!
-    \title Touch Interaction: Mouse Area
+    \title Touch Interaction: MouseArea
     \example declarative/touchinteraction/mousearea
 
-    This example shows how to use the MouseArea element.
+    This example shows how to use the MouseArea element to access information
+    about mouse input.
+
+    \image qml-mousearea-example.png
 */
 
 /*!
     \title UI Components: Dial
     \example declarative/ui-components/dialcontrol
 
-    This example presents an interactive speedometer-type dial by combining
-    \l Image elements with \l Rotation transforms and \l SpringFollow animations.
+    This example shows how to create a dial-type control. It combines
+    \l Image elements with \l Rotation transforms and \l SpringFollow animations
+    to produce an interactive speedometer-type dial.
 
     \image qml-dialcontrol-example.png
 */
@@ -371,7 +544,7 @@
     \title UI Components: Flipable
     \example declarative/ui-components/flipable
 
-    This example shows how to use the Flipable element.
+    This example shows how to use the \l Flipable element.
 
     \image qml-flipable-example.png
 */
@@ -389,7 +562,7 @@
     \title UI Components: Scroll Bar
     \example declarative/ui-components/scrollbar
 
-    This example shows how to create scroll bars for a Flickable element
+    This example shows how to create scroll bars for a \l Flickable element
     using the \l {Flickable::visibleArea.xPosition}{Flickable::visibleArea}
     properties.
 
@@ -400,7 +573,8 @@
     \title UI Components: Search Box
     \example declarative/ui-components/searchbox
 
-    This example shows how to create a search box.
+    This example shows how to combine TextInput, FocusScope and BorderImage
+    elements to display multiple text input fields.
 
     \image qml-searchbox-example.png
 */
@@ -409,7 +583,7 @@
     \title UI Components: Slide Switch
     \example declarative/ui-components/slideswitch
 
-    This example shows how to create a slide switch.
+    This example shows how to create a slide switch control.
 
     \image qml-slideswitch-example.png
 */
@@ -418,7 +592,7 @@
     \title UI Components: Spinner
     \example declarative/ui-components/spinner
 
-    This example shows how to create a spinner-type component.
+    This example shows how to create a spinner-type component using the PathView element.
 
     \image qml-spinner-example.png
 */
@@ -436,5 +610,7 @@
     \title XML: XMLHttpRequest
     \example declarative/xml/xmlhttprequest
 
-    This example shows how to use \l XmlHttpRequest in QML.
+    This example shows how to use the \l XmlHttpRequest API in QML.
+
+    \image qml-xmlhttprequest-example.png
 */

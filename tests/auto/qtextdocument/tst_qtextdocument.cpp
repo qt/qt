@@ -98,6 +98,7 @@ private slots:
     void noundo_isModified2();
     void noundo_isModified3();
     void mightBeRichText();
+    void mightBeRichText_data();
 
     void task240325();
 
@@ -679,13 +680,32 @@ void tst_QTextDocument::noundo_isModified3()
     QVERIFY(doc->isModified());
 }
 
-void tst_QTextDocument::mightBeRichText()
+void tst_QTextDocument::mightBeRichText_data()
 {
     const char qtDocuHeader[] = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n"
                                 "<!DOCTYPE html\n"
                                 "    PUBLIC ""-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n"
                                 "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">";
     QVERIFY(Qt::mightBeRichText(QString::fromLatin1(qtDocuHeader)));
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("documentation-header") << QString("<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n"
+                                                     "<!DOCTYPE html\n"
+                                                     "    PUBLIC ""-//W3C//DTD XHTML 1.0 Strict//EN\" \"DTD/xhtml1-strict.dtd\">\n"
+                                                     "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">")
+                                          << true;
+    QTest::newRow("br-nospace") << QString("Test <br/> new line") << true;
+    QTest::newRow("br-space") << QString("Test <br /> new line") << true;
+    QTest::newRow("br-invalidspace") << QString("Test <br/ > new line") << false;
+    QTest::newRow("invalid closing tag") << QString("Test <br/ line") << false;
+}
+
+void tst_QTextDocument::mightBeRichText()
+{
+    QFETCH(QString, input);
+    QFETCH(bool, result);
+    QVERIFY(result == Qt::mightBeRichText(input));
 }
 
 Q_DECLARE_METATYPE(QTextDocumentFragment)

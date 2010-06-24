@@ -71,13 +71,13 @@ symbian: {
         "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSEIF package(0x1028315F)" \
         "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
-        "   \"$$bearerPluginLocation/qsymbianbearer_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_2.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSEIF package(0x102752AE)" \
         "   \"$$pluginLocations/qts60plugin_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_2$${QT_LIBINFIX}.dll\"" \
-        "   \"$$bearerPluginLocation/qsymbianbearer_3_2$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_2.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSEIF package(0x102032BE)" \
         "   \"$$pluginLocations/qts60plugin_3_1$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_3_1$${QT_LIBINFIX}.dll\"" \
-        "   \"$$bearerPluginLocation/qsymbianbearer_3_1$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
+        "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}_3_1.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
         "ELSE" \
         "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\"" \
         "   \"$$bearerPluginLocation/qsymbianbearer$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qsymbianbearer$${QT_LIBINFIX}.dll\"" \
@@ -177,9 +177,9 @@ symbian: {
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
 
         contains(QT_CONFIG, webkit): {
-            webkitImport.sources = $$QT_BUILD_TREE/imports/org/webkit/qmlwebkitplugin$${QT_LIBINFIX}.dll
-            webkitImport.sources += $$QT_SOURCE_TREE/src/imports/webkit/qmldir
-            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/org/webkit
+            webkitImport.sources = $$QT_BUILD_TREE/imports/QtWebKit/qmlwebkitplugin$${QT_LIBINFIX}.dll
+            webkitImport.sources += $$QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/declarative/qmldir
+            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/QtWebKit
             DEPLOYMENT += webkitImport
         }
     }
