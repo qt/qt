@@ -170,6 +170,12 @@ equals(GENERATE_SIS_TARGETS, true) {
     sis_target.commands =
     sis_target.target = sis
     QMAKE_EXTRA_TARGETS += sis_target
+
+    symbian-abld {
+        # Create dummy store_build target to avoid errors from .mk callbacks during build
+        store_build_target.target = store_build
+        QMAKE_EXTRA_TARGETS += store_build_target
+    }
 }
 
 QMAKE_DISTCLEAN += $${sis_destdir}$${TARGET}.sis

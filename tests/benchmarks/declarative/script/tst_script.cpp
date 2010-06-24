@@ -92,7 +92,10 @@ private slots:
 
     void block_data();
     void block();
-private:
+
+    void global_property_js();
+    void global_property_qml();
+    void global_property_qml_js();
 };
 
 inline QUrl TEST_FILE(const QString &filename)
@@ -624,6 +627,57 @@ void tst_script::block()
 
     delete rect;
 }
+
+#define GLOBALPROPERTY_PROGRAM \
+    "(function() { " \
+    "    for (var ii = 0; ii < 10000; ++ii) { " \
+    "        Math.sin(90); " \
+    "    } " \
+    "})"
+
+void tst_script::global_property_js()
+{
+    QScriptEngine engine;
+
+    QScriptValue prog = engine.evaluate(GLOBALPROPERTY_PROGRAM);
+    prog.call();
+
+    QBENCHMARK {
+        prog.call();
+    }
+}
+
+void tst_script::global_property_qml()
+{
+    QDeclarativeEngine qmlengine;
+
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(&qmlengine);
+    QScriptValue prog = engine->evaluate(GLOBALPROPERTY_PROGRAM);
+    prog.call();
+
+    QBENCHMARK {
+        prog.call();
+    }
+}
+
+void tst_script::global_property_qml_js()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("global_prop.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle *>(component.create());
+    QVERIFY(rect != 0);
+
+    int index = rect->metaObject()->indexOfMethod("triggered()");
+    QVERIFY(index != -1);
+    QMetaMethod method = rect->metaObject()->method(index);
+
+    QBENCHMARK {
+        method.invoke(rect, Qt::DirectConnection);
+    }
+
+    delete rect;
+}
+
 
 QTEST_MAIN(tst_script)
 

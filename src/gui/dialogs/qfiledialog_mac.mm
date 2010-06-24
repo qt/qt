@@ -284,6 +284,15 @@ QT_USE_NAMESPACE
     if ([filename length] == 0)
         return NO;
 
+    // Always accept directories regardless of their names (unless it is a bundle):
+    BOOL isDir;
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filename isDirectory:&isDir] && isDir) {
+        if ([mSavePanel treatsFilePackagesAsDirectories] == NO) {
+            if ([[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename] == NO)
+                return YES;
+        }
+    }
+
     QString qtFileName = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename);
     QFileInfo info(qtFileName.normalized(QT_PREPEND_NAMESPACE(QString::NormalizationForm_C)));
     QString path = info.absolutePath();
@@ -294,15 +303,6 @@ QT_USE_NAMESPACE
     // Check if the QDir filter accepts the file:
     if (!mQDirFilterEntryList->contains(info.fileName()))
         return NO;
-
-    // Always accept directories regardless of their names (unless it is a bundle):
-    BOOL isDir;
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filename isDirectory:&isDir] && isDir) {
-        if ([mSavePanel treatsFilePackagesAsDirectories] == NO) {
-            if ([[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename] == NO)
-                return YES;
-        }
-    }
 
     // No filter means accept everything
     if (mSelectedNameFilter->isEmpty())
