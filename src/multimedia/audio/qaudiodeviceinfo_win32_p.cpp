@@ -374,6 +374,11 @@ void QAudioDeviceInfoInternal::updateLists()
 #endif
 	channelz.append(1);
 	channelz.append(2);
+        if (mode == QAudio::AudioOutput) {
+            channelz.append(4);
+            channelz.append(6);
+            channelz.append(8);
+        }
 
 	byteOrderz.append(QAudioFormat::LittleEndian);
 
