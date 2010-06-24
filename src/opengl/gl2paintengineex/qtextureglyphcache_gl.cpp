@@ -55,6 +55,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
     , ctx(0)
+    , pex(0)
     , m_width(0)
     , m_height(0)
 {
@@ -72,7 +73,7 @@ void QGLTextureGlyphCache::cleanUpContext()
     if (ctx) {
         QGLShareContextScope scope(ctx);
 
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+        if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
             glDeleteFramebuffers(1, &m_fbo);
 
         if (m_width || m_height) {
@@ -97,7 +98,7 @@ void QGLTextureGlyphCache::setContext(const QGLContext *context)
     // workaround is to use a system-memory copy of the glyph cache for this device.
     // Switching to NPOT and GL_RGBA would both cost a lot more graphics memory and
     // be slower, so that is not desireable.
-    if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+    if (!ctx->d_ptr->workaround_brokenFBOReadBack && pex != 0)
         glGenFramebuffers(1, &m_fbo);
 
     connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext*)),
@@ -114,7 +115,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     // create in QImageTextureGlyphCache baseclass is meant to be called
     // only to create the initial image and does not preserve the content,
     // so we don't call when this function is called from resize.
-    if (ctx->d_ptr->workaround_brokenFBOReadBack && image().isNull())
+    if ((pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) && image().isNull())
         QImageTextureGlyphCache::createTextureData(width, height);
 
     // Make the lower glyph texture size 16 x 16.
@@ -161,7 +162,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     GLuint oldTexture = m_texture;
     createTextureData(width, height);
     
-    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
@@ -249,7 +250,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         return;
     }
 
-    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph);
 
         glBindTexture(GL_TEXTURE_2D, m_texture);
