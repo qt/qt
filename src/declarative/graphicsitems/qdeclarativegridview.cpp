@@ -1919,6 +1919,8 @@ void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
     Move the currentIndex up one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexUp()
 {
@@ -1942,6 +1944,8 @@ void QDeclarativeGridView::moveCurrentIndexUp()
     Move the currentIndex down one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexDown()
 {
@@ -1965,6 +1969,8 @@ void QDeclarativeGridView::moveCurrentIndexDown()
     Move the currentIndex left one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexLeft()
 {
@@ -1988,6 +1994,8 @@ void QDeclarativeGridView::moveCurrentIndexLeft()
     Move the currentIndex right one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexRight()
 {
@@ -2028,6 +2036,14 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     at a particular index.  This is unreliable since removing items from the start
     of the view does not cause all other items to be repositioned.
     The correct way to bring an item into view is with \c positionViewAtIndex.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end:
+
+    \code
+    Component.onCompleted: positionViewAtIndex(count - 1, GridView.Beginning)
+    \endcode
 */
 void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 {
@@ -2037,6 +2053,8 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
     if (mode < Beginning || mode > Contain)
         return;
 
+    if (d->layoutScheduled)
+        d->layout();
     qreal pos = d->position();
     FxGridItem *item = d->visibleItem(index);
     if (!item) {
@@ -2079,6 +2097,8 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
         pos = qMin(pos, maxExtent);
         qreal minExtent = d->flow == QDeclarativeGridView::LeftToRight ? -minYExtent() : -minXExtent();
         pos = qMax(pos, minExtent);
+        d->moveReason = QDeclarativeGridViewPrivate::Other;
+        cancelFlick();
         d->setPosition(pos);
     }
     d->fixupPosition();
@@ -2093,6 +2113,8 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
 
     If the item is outside the visible area, -1 is returned, regardless of
     whether an item will exist at that point when scrolled into view.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 int QDeclarativeGridView::indexAt(int x, int y) const
 {
@@ -2113,10 +2135,15 @@ void QDeclarativeGridView::componentComplete()
     d->updateGrid();
     if (d->isValid()) {
         refill();
+        d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         if (d->currentIndex < 0)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
+        if (d->highlight) {
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            d->updateTrackedItem();
+        }
         d->fixupPosition();
     }
 }

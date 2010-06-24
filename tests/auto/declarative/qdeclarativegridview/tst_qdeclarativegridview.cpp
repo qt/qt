@@ -557,7 +557,7 @@ void tst_QDeclarativeGridView::moved()
 void tst_QDeclarativeGridView::currentIndex()
 {
     TestModel model;
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 60; i++)
         model.addItem("Item" + QString::number(i), QString::number(i));
 
     QDeclarativeView *canvas = new QDeclarativeView(0);
@@ -572,57 +572,58 @@ void tst_QDeclarativeGridView::currentIndex()
     qApp->processEvents();
 
     QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
-    QTRY_VERIFY(gridview != 0);
+    QVERIFY(gridview != 0);
 
     QDeclarativeItem *viewport = gridview->viewport();
-    QTRY_VERIFY(viewport != 0);
+    QVERIFY(viewport != 0);
 
     // current item should be third item
-    QTRY_COMPARE(gridview->currentIndex(), 5);
-    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 5));
-    QTRY_COMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
+    QCOMPARE(gridview->currentIndex(), 35);
+    QCOMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(viewport, "wrapper", 35));
+    QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
+    QCOMPARE(gridview->contentY(), 399.0);
 
     gridview->moveCurrentIndexRight();
-    QTRY_COMPARE(gridview->currentIndex(), 6);
+    QCOMPARE(gridview->currentIndex(), 36);
     gridview->moveCurrentIndexDown();
-    QTRY_COMPARE(gridview->currentIndex(), 9);
+    QCOMPARE(gridview->currentIndex(), 39);
     gridview->moveCurrentIndexUp();
-    QTRY_COMPARE(gridview->currentIndex(), 6);
+    QCOMPARE(gridview->currentIndex(), 36);
     gridview->moveCurrentIndexLeft();
-    QTRY_COMPARE(gridview->currentIndex(), 5);
+    QCOMPARE(gridview->currentIndex(), 35);
 
     // no wrap
     gridview->setCurrentIndex(0);
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexUp();
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexLeft();
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->setCurrentIndex(model.count()-1);
-    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
 
     gridview->moveCurrentIndexRight();
-    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
 
     gridview->moveCurrentIndexDown();
-    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
 
     // with wrap
     gridview->setWrapEnabled(true);
 
     gridview->setCurrentIndex(0);
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->moveCurrentIndexLeft();
-    QTRY_COMPARE(gridview->currentIndex(), model.count()-1);
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(gridview->contentY(), 279.0);
+    QTRY_COMPARE(gridview->contentY(), 879.0);
 
     gridview->moveCurrentIndexRight();
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     QTRY_COMPARE(gridview->contentY(), 0.0);
 
@@ -638,30 +639,30 @@ void tst_QDeclarativeGridView::currentIndex()
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QTRY_COMPARE(gridview->currentIndex(), 3);
+    QCOMPARE(gridview->currentIndex(), 3);
 
     QTest::keyClick(canvas, Qt::Key_Up);
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
 
     QTest::keyClick(canvas, Qt::Key_Right);
-    QTRY_COMPARE(gridview->currentIndex(), 5);
+    QCOMPARE(gridview->currentIndex(), 5);
 
     QTest::keyClick(canvas, Qt::Key_Left);
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
     QTest::keyClick(canvas, Qt::Key_Down);
-    QTRY_COMPARE(gridview->currentIndex(), 1);
+    QCOMPARE(gridview->currentIndex(), 1);
 
     QTest::keyClick(canvas, Qt::Key_Up);
-    QTRY_COMPARE(gridview->currentIndex(), 0);
+    QCOMPARE(gridview->currentIndex(), 0);
 
 
     // turn off auto highlight
     gridview->setHighlightFollowsCurrentItem(false);
-    QTRY_VERIFY(gridview->highlightFollowsCurrentItem() == false);
-    QTRY_VERIFY(gridview->highlightItem());
+    QVERIFY(gridview->highlightFollowsCurrentItem() == false);
+    QVERIFY(gridview->highlightItem());
     qreal hlPosX = gridview->highlightItem()->x();
     qreal hlPosY = gridview->highlightItem()->y();
 
