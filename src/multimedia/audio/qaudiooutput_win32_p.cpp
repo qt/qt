@@ -52,6 +52,10 @@
 
 #include "qaudiooutput_win32_p.h"
 
+#include <audiodefs.h>
+
+#define _KSDATAFORMAT_SUBTYPE_PCM (GUID) {0x00000001,0x0000,0x0010,{0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71}}
+
 //#define DEBUG_AUDIO 1
 
 QT_BEGIN_NAMESPACE
@@ -258,15 +262,47 @@ bool QAudioOutputPrivate::open()
 	}
     }
 
-    if(waveOutOpen(&hWaveOut, devId, &wfx,
-                (DWORD_PTR)&waveOutProc,
-                (DWORD_PTR) this,
-                CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
-        errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
-        emit stateChanged(deviceState);
-        qWarning("QAudioOutput: open error");
-        return false;
+    if ( settings.channels() <= 2) {
+        if(waveOutOpen(&hWaveOut, devId, &wfx,
+                    (DWORD_PTR)&waveOutProc,
+                    (DWORD_PTR) this,
+                    CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+            errorState = QAudio::OpenError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            qWarning("QAudioOutput: open error");
+            return false;
+        }
+    } else {
+        WAVEFORMATEXTENSIBLE wfex;
+        wfex.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+        wfex.Format.nChannels = settings.channels();
+        wfex.Format.wBitsPerSample = settings.sampleSize();
+        wfex.Format.nSamplesPerSec = settings.frequency();
+        wfex.Format.nBlockAlign = wfex.Format.nChannels*wfex.Format.wBitsPerSample/8;
+        wfex.Format.nAvgBytesPerSec=wfex.Format.nSamplesPerSec*wfex.Format.nBlockAlign;
+        wfex.Samples.wValidBitsPerSample=wfex.Format.wBitsPerSample;
+        wfex.SubFormat=_KSDATAFORMAT_SUBTYPE_PCM;
+        wfex.Format.cbSize=22;
+
+        wfex.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT;
+        if (settings.channels() >= 4)
+            wfex.dwChannelMask |= SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+        if (settings.channels() >= 6)
+            wfex.dwChannelMask |= SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY;
+        if (settings.channels() == 8)
+            wfex.dwChannelMask |= SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT;
+
+        if(waveOutOpen(&hWaveOut, devId, &wfex.Format,
+                    (DWORD_PTR)&waveOutProc,
+                    (DWORD_PTR) this,
+                    CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+            errorState = QAudio::OpenError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            qWarning("QAudioOutput: open error");
+            return false;
+        }
     }
 
     totalTimeValue = 0;
