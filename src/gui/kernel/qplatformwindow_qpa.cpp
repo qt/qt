@@ -1,4 +1,4 @@
-#include "qplatformwindow_lite.h"
+#include "qplatformwindow_qpa.h"
 
 #include <QtGui/qwidget.h>
 

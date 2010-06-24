@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qeventdispatcher_glib_lite_p.h"
+#include "qeventdispatcher_glib_qpa_p.h"
 
 #include "qapplication.h"
 

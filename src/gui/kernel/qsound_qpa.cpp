@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,28 +39,36 @@
 **
 ****************************************************************************/
 
-#include "qplatformscreen_lite.h"
-#include <QtGui/qapplication.h>
-#include <QtGui/qdesktopwidget.h>
+#include "qapplication.h"
 
-QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
+#ifndef QT_NO_SOUND
+
+#include "qsound.h"
+#include "qsound_p.h"
+
+class QAuServerLite : public QAuServer
 {
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = list.size()-1; i >= 0; --i) {
-        QWidget *w = list[i];
-        //### mask is ignored
-        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
-            return w;
-    }
+    Q_OBJECT
+public:
+    QAuServerLite( QObject* parent );
 
-    return 0;
+    void play( QSound* s ) {}
+    void stop( QSound* s ) {}
+    bool okay() { return false; }
+};
+
+QAuServerLite::QAuServerLite(QObject* parent) :
+    QAuServer(parent)
+{
 }
 
-QSize QPlatformScreen::physicalSize() const
+QAuServer* qt_new_audio_server()
 {
-    static const int dpi = 100;
-    int width = geometry().width() / dpi * qreal(25.4) ;
-    int height = geometry().height() / dpi * qreal(25.4) ;
-    return QSize(width,height);
+    return new QAuServerLite(qApp);
 }
 
+#include "qsound_qpa.moc"
+
+#endif // QT_NO_SOUND
+
+QT_END_NAMESPACE

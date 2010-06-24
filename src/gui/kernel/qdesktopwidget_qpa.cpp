@@ -44,7 +44,7 @@
 #include "private/qgraphicssystem_p.h"
 #include <QWidget>
 #include "private/qwidget_p.h"
-#include "private/qdesktopwidget_lite_p.h"
+#include "private/qdesktopwidget_qpa_p.h"
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE

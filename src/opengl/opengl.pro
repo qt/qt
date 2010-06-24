@@ -80,7 +80,7 @@ SOURCES	+= qgl.cpp \
 embedded_lite {
     DEFINES += QT_NO_EGL
 
-    SOURCES +=  qgl_lite.cpp \
+    SOURCES +=  qgl_qpa.cpp \
                 qglpixelbuffer_stub.cpp
 }
 

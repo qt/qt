@@ -47,7 +47,7 @@
 #include "QtGui/private/qgraphicssystem_p.h"
 #include "QtGui/private/qapplication_p.h"
 #include "QtGui/qdesktopwidget.h"
-#include "QtGui/qplatformwindow_lite.h"
+#include "QtGui/qplatformwindow_qpa.h"
 
 #include <QtGui/QGraphicsSystemCursor>
 

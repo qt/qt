@@ -76,7 +76,7 @@
 #include <private/qt_s60_p.h>
 #endif
 #ifdef Q_WS_QPA
-#include <QtGui/qplatformscreen_lite.h>
+#include <QtGui/qplatformscreen_qpa.h>
 #include <QtGui/private/qapplication_p.h>
 #endif
 

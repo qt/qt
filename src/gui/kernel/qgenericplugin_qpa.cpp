@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgenericplugin_lite.h"
+#include "qgenericplugin_qpa.h"
 
 #ifndef QT_NO_LIBRARY
 

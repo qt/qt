@@ -76,7 +76,7 @@
 # include "private/qwindowsurface_qws_p.h"
 #endif
 #if defined(Q_WS_QPA)
-#include "qplatformwindow_lite.h"
+#include "qplatformwindow_qpa.h"
 #endif
 #include "qpainter.h"
 #include "qtooltip.h"

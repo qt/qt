@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qgraphicssystemcursor_lite.h"
+#include "qgraphicssystemcursor_qpa.h"
 
 #include <QWidget>
 #include <QPainter>

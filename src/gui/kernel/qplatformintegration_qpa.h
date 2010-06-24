@@ -39,17 +39,40 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegrationplugin_lite.h"
+#ifndef QPLATFORMINTEGRATION_H
+#define QPLATFORMINTEGRATION_H
+
+#include <QtGui/private/qgraphicssystem_p.h>
+#include <QtGui/qplatformscreen_qpa.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QPlatformIntegrationPlugin::QPlatformIntegrationPlugin(QObject *parent)
-    : QObject(parent)
-{
-}
+QT_MODULE(Gui)
 
-QPlatformIntegrationPlugin::~QPlatformIntegrationPlugin()
+class Q_GUI_EXPORT QPlatformIntegration
 {
-}
+public:
+    virtual ~QPlatformIntegration() { };
+
+// GraphicsSystem functions
+    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
+    virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
+    virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
+    virtual QBlittable *createBlittable(const QSize &size) const;
+    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
+
+// Window System functions
+    virtual QList<QPlatformScreen *> screens() const = 0;
+    virtual bool isVirtualDesktop() { return false; }
+    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+
+    virtual bool hasOpenGL() const;
+};
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QPLATFORMINTEGRATION_H

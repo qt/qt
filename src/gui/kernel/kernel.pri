@@ -51,7 +51,7 @@ HEADERS += \
 	kernel/qsoftkeymanager_p.h \
     kernel/qsoftkeymanager_common_p.h \
 	kernel/qguiplatformplugin_p.h \
-        kernel/qdesktopwidget_lite_p.h
+        kernel/qdesktopwidget_qpa_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -200,41 +200,41 @@ embedded {
 
 embedded_lite {
 	HEADERS += \
-		kernel/qgenericpluginfactory_lite.h \
-                kernel/qgenericplugin_lite.h \
-                kernel/qeventdispatcher_lite_p.h \
+		kernel/qgenericpluginfactory_qpa.h \
+                kernel/qgenericplugin_qpa.h \
+                kernel/qeventdispatcher_qpa_p.h \
                 kernel/qwindowsysteminterface.h \
-                kernel/qplatformintegration_lite.h \
-                kernel/qplatformscreen_lite.h \
-                kernel/qplatformintegrationfactory_lite_p.h \
-                kernel/qplatformintegrationplugin_lite.h \
-                kernel/qplatformwindow_lite.h \
-                kernel/qplatformglcontext_lite.h
+                kernel/qplatformintegration_qpa.h \
+                kernel/qplatformscreen_qpa.h \
+                kernel/qplatformintegrationfactory_qpa_p.h \
+                kernel/qplatformintegrationplugin_qpa.h \
+                kernel/qplatformwindow_qpa.h \
+                kernel/qplatformglcontext_qpa.h
 		
 	SOURCES += \
-		kernel/qapplication_lite.cpp \
-		kernel/qclipboard_lite.cpp \
-		kernel/qcursor_lite.cpp \
+		kernel/qapplication_qpa.cpp \
+		kernel/qclipboard_qpa.cpp \
+		kernel/qcursor_qpa.cpp \
 		kernel/qdnd_qws.cpp \
-		kernel/qdesktopwidget_lite.cpp \
-		kernel/qgenericpluginfactory_lite.cpp \
-		kernel/qgenericplugin_lite.cpp \
+		kernel/qdesktopwidget_qpa.cpp \
+		kernel/qgenericpluginfactory_qpa.cpp \
+		kernel/qgenericplugin_qpa.cpp \
 		kernel/qkeymapper_qws.cpp \
-		kernel/qsound_lite.cpp \
-                kernel/qwidget_lite.cpp \
-                kernel/qeventdispatcher_lite.cpp \
+		kernel/qsound_qpa.cpp \
+                kernel/qwidget_qpa.cpp \
+                kernel/qeventdispatcher_qpa.cpp \
                 kernel/qwindowsysteminterface.cpp \
-                kernel/qplatformintegration_lite.cpp \
-                kernel/qplatformscreen_lite.cpp \
-                kernel/qplatformintegrationfactory_lite.cpp \
-                kernel/qplatformintegrationplugin_lite.cpp \
-                kernel/qplatformwindow_lite.cpp
+                kernel/qplatformintegration_qpa.cpp \
+                kernel/qplatformscreen_qpa.cpp \
+                kernel/qplatformintegrationfactory_qpa.cpp \
+                kernel/qplatformintegrationplugin_qpa.cpp \
+                kernel/qplatformwindow_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \
-		kernel/qeventdispatcher_glib_lite.cpp
+		kernel/qeventdispatcher_glib_qpa.cpp
             HEADERS += \
-                kernel/qeventdispatcher_glib_lite_p.h
+                kernel/qeventdispatcher_glib_qpa_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
             LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}

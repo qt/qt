@@ -41,7 +41,7 @@
 
 #include "qplatformdefs.h"
 #include "qapplication.h"
-#include "qeventdispatcher_lite_p.h"
+#include "qeventdispatcher_qpa_p.h"
 #include "private/qeventdispatcher_unix_p.h"
 #include "qapplication_p.h"
 #ifndef QT_NO_THREAD

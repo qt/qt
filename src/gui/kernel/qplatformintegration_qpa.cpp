@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,36 +39,26 @@
 **
 ****************************************************************************/
 
-#include "qapplication.h"
+#include "qplatformintegration_qpa.h"
 
-#ifndef QT_NO_SOUND
+QT_BEGIN_NAMESPACE
 
-#include "qsound.h"
-#include "qsound_p.h"
+QBlittable *QPlatformIntegration::createBlittable(const QSize &) const
+{ return 0; }
 
-class QAuServerLite : public QAuServer
+QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    Q_OBJECT
-public:
-    QAuServerLite( QObject* parent );
-
-    void play( QSound* s ) {}
-    void stop( QSound* s ) {}
-    bool okay() { return false; }
-};
-
-QAuServerLite::QAuServerLite(QObject* parent) :
-    QAuServer(parent)
-{
+    Q_UNUSED(window);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+    return QPixmap();
 }
 
-QAuServer* qt_new_audio_server()
+bool QPlatformIntegration::hasOpenGL() const
 {
-    return new QAuServerLite(qApp);
+    return false;
 }
-
-#include "qsound_lite.moc"
-
-#endif // QT_NO_SOUND
 
 QT_END_NAMESPACE

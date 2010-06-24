@@ -78,7 +78,7 @@
 #endif
 #ifdef Q_WS_QPA
 #include <QWindowSystemInterface>
-#include "QtGui/qplatformintegration_lite.h"
+#include "QtGui/qplatformintegration_qpa.h"
 #endif
 
 QT_BEGIN_NAMESPACE

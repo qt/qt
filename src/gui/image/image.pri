@@ -64,7 +64,7 @@ embedded {
     SOURCES += image/qpixmap_qws.cpp
 }
 embedded_lite {
-    SOURCES += image/qpixmap_lite.cpp
+    SOURCES += image/qpixmap_qpa.cpp
 }
 x11 {
     HEADERS += image/qpixmap_x11_p.h

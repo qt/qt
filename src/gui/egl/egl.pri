@@ -29,7 +29,7 @@ contains(QT_CONFIG, egl): {
 	        SOURCES += egl/qegl_qws.cpp
 	    } else {
 	        embedded_lite {
-	            SOURCES += egl/qegl_lite.cpp
+	            SOURCES += egl/qegl_qpa.cpp
 	        } else {
 	            symbian {
 	                SOURCES += egl/qegl_symbian.cpp

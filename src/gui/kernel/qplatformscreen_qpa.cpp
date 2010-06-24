@@ -39,40 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_H
-#define QPLATFORMINTEGRATION_H
+#include "qplatformscreen_qpa.h"
+#include <QtGui/qapplication.h>
+#include <QtGui/qdesktopwidget.h>
 
-#include <QtGui/private/qgraphicssystem_p.h>
-#include <QtGui/qplatformscreen_lite.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class Q_GUI_EXPORT QPlatformIntegration
+QWidget *QPlatformScreen::topLevelAt(const QPoint & pos) const
 {
-public:
-    virtual ~QPlatformIntegration() { };
+    QWidgetList list = QApplication::topLevelWidgets();
+    for (int i = list.size()-1; i >= 0; --i) {
+        QWidget *w = list[i];
+        //### mask is ignored
+        if (w != QApplication::desktop() && w->isVisible() && w->geometry().contains(pos))
+            return w;
+    }
 
-// GraphicsSystem functions
-    virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
-    virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
-    virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
-    virtual QBlittable *createBlittable(const QSize &size) const;
-    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
+    return 0;
+}
 
-// Window System functions
-    virtual QList<QPlatformScreen *> screens() const = 0;
-    virtual bool isVirtualDesktop() { return false; }
-    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+QSize QPlatformScreen::physicalSize() const
+{
+    static const int dpi = 100;
+    int width = geometry().width() / dpi * qreal(25.4) ;
+    int height = geometry().height() / dpi * qreal(25.4) ;
+    return QSize(width,height);
+}
 
-    virtual bool hasOpenGL() const;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QPLATFORMINTEGRATION_H

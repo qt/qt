@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,77 +39,51 @@
 **
 ****************************************************************************/
 
-#include "qgenericpluginfactory_lite.h"
+#include "qplatformintegrationfactory_qpa_p.h"
+#include <QPlatformIntegrationPlugin>
+#include "private/qfactoryloader_p.h"
+#include "qmutex.h"
 
 #include "qapplication.h"
-#include "private/qfactoryloader_p.h"
-#include "qgenericplugin_lite.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
-#ifndef QT_NO_LIBRARY
-
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QGenericPluginFactoryInterface_iid,
-     QLatin1String("/generic"), Qt::CaseInsensitive))
+    (QPlatformIntegrationFactoryInterface_iid, QLatin1String("/platforms"), Qt::CaseInsensitive))
+#endif
 
-#endif //QT_NO_LIBRARY
-#endif //QT_MAKEDLL
-
-/*!
-    \class QGenericPluginFactory
-    \ingroup qws
-
-    \brief The QGenericPluginFactory class creates window-system
-    related plugin drivers in Qt for Embedded Linux LITE.
-
-    Note that this class is only available in \l{Qt for Embedded Linux LITE}.
-
-
-    \sa QGenericPlugin
-*/
-
-/*!
-    Creates the driver specified by \a key, using the given \a specification.
-
-    Note that the keys are case-insensitive.
-
-    \sa keys()
-*/
-QObject *QGenericPluginFactory::create(const QString& key, const QString &specification)
+QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
 {
-    QString driver = key.toLower();
+    QPlatformIntegration *ret = 0;
+    QStringList paramList = key.split(QLatin1Char(':'));
+    QString platform = paramList.takeFirst().toLower();
 
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
-#ifndef QT_NO_LIBRARY
-    if (QGenericPluginFactoryInterface *factory = qobject_cast<QGenericPluginFactoryInterface*>(loader()->instance(driver)))
-        return factory->create(driver, specification);
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    qDebug() << loader()->keys();
+    if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
+        ret = factory->create(platform, paramList);
 #endif
-#endif
-    return 0;
+
+    return ret;
 }
 
 /*!
-    Returns the list of valid keys, i.e. the available mouse drivers.
+    Returns the list of valid keys, i.e. the keys this factory can
+    create styles for.
 
     \sa create()
 */
-QStringList QGenericPluginFactory::keys()
+QStringList QPlatformIntegrationFactory::keys()
 {
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    QStringList list = loader()->keys();
+#else
     QStringList list;
-
-#if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
-#ifndef QT_NO_LIBRARY
-    QStringList plugins = loader()->keys();
-    for (int i = 0; i < plugins.size(); ++i) {
-        if (!list.contains(plugins.at(i)))
-            list += plugins.at(i);
-    }
-#endif //QT_NO_LIBRARY
-#endif //QT_MAKEDLL
+#endif
     return list;
 }
 
 QT_END_NAMESPACE
+
