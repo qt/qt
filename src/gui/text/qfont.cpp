@@ -75,7 +75,7 @@
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
 #endif
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
 #include <QtGui/qplatformscreen_lite.h>
 #include <QtGui/private/qapplication_p.h>
 #endif
@@ -176,7 +176,7 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
     if (pi) {
         QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);
@@ -215,7 +215,7 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     QPlatformIntegration *pi = QApplicationPrivate::platformIntegration();
     if (pi) {
         QPlatformScreen *screen = QApplicationPrivate::platformIntegration()->screens().at(0);

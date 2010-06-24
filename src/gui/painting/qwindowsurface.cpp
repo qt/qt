@@ -58,11 +58,11 @@ public:
     }
 
     QWidget *window;
-#if !defined(Q_WS_LITE)
+#if !defined(Q_WS_QPA)
     QRect geometry;
 #else
     QSize size;
-#endif //Q_WS_LITE
+#endif //Q_WS_QPA
     QRegion staticContents;
     QList<QImage*> bufferImages;
     uint staticContentsSupport : 1;
@@ -157,7 +157,7 @@ void QWindowSurface::endPaint(const QRegion &)
     d_ptr->bufferImages.clear();
 }
 
-#if !defined(Q_WS_LITE)
+#if !defined(Q_WS_QPA)
 /*!
     Sets the currently allocated area to be the given \a rect.
 
@@ -188,7 +188,7 @@ QSize QWindowSurface::size() const
 {
     return d_ptr->size;
 }
-#endif //Q_WS_LITE
+#endif //Q_WS_QPA
 
 /*!
     Scrolls the given \a area \a dx pixels to the right and \a dy
@@ -345,7 +345,7 @@ void QWindowSurface::setPartialUpdateSupport(bool enable)
     d_ptr->partialUpdateSupport = enable;
 }
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
 #define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
 #else
 #define Q_EXPORT_SCROLLRECT

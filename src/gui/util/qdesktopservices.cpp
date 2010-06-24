@@ -45,7 +45,7 @@
 
 #include <qdebug.h>
 
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 #include "qdesktopservices_qws.cpp"
 #elif defined(Q_WS_X11)
 #include "qdesktopservices_x11.cpp"

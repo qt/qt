@@ -807,7 +807,7 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
 #elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
+#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_MAC
 #    define Q_WS_MACX
 #    if defined(Q_OS_MAC64)
@@ -819,7 +819,7 @@ namespace QT_NAMESPACE {}
 #    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
-#  elif !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
+#  elif !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_X11
 #  endif
 #endif
@@ -1078,7 +1078,7 @@ redefine to built-in booleans to make autotests work properly */
 
 typedef int QNoImplicitBoolCast;
 
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_LITE) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
 #define QT_NO_FPU
 #endif
 

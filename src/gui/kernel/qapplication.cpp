@@ -447,7 +447,7 @@ QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
 QPlatformIntegration *QApplicationPrivate::platform_integration = 0;
 #endif
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
@@ -508,7 +508,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -923,7 +923,7 @@ void QApplicationPrivate::initialize()
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
     // initialize the graphics system - on X11 this is initialized inside
     // qt_init() in qapplication_x11.cpp because of several reasons.
     // On QWS, the graphics system is set by the QScreen plugin.
@@ -1590,7 +1590,7 @@ QStyle* QApplication::setStyle(const QString& style)
 
 void QApplication::setGraphicsSystem(const QString &system)
 {
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
         Q_UNUSED(system);
 #else
 # ifdef QT_GRAPHICSSYSTEM_RUNTIME
@@ -2735,7 +2735,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     // Update cursor for alien/graphics widgets.
 
     const bool enterOnAlien = (enter && (isAlien(enter) || enter->testAttribute(Qt::WA_DontShowOnScreen)));
-#if defined(Q_WS_X11) || defined(Q_WS_LITE)
+#if defined(Q_WS_X11) || defined(Q_WS_QPA)
     //Whenever we leave an alien widget on X11, we need to reset its nativeParentWidget()'s cursor.
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = 0;
@@ -2761,7 +2761,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         {
 #if defined(Q_WS_X11)
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
             if (enter == QApplication::desktop()) {
                 qt_lite_set_cursor(enter, true);
             } else {
@@ -2791,7 +2791,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_x11_enforce_cursor(cursorWidget, true);
 #elif defined(Q_WS_S60)
             qt_symbian_set_cursor(cursorWidget, true);
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
             qt_lite_set_cursor(cursorWidget, true);
 #endif
         }
@@ -3097,7 +3097,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_LITE)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3109,7 +3109,7 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     if (!widget || widget->isWindow())
         return;
 #else

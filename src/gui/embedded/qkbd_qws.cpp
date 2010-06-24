@@ -53,7 +53,7 @@
 #include "qscreen_qws.h"
 #endif
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
 #include <QWindowSystemInterface>
 #include <QKeyEvent>
 #endif
@@ -362,7 +362,7 @@ void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardM
 {
 #if defined(Q_WS_QWS)
     qwsServer->processKeyEvent(unicode, keycode, modifiers, isPress, autoRepeat);
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     QEvent::Type type = isPress ? QEvent::KeyPress : QEvent::KeyRelease;
     QString str;
     if (unicode != 0xffff)

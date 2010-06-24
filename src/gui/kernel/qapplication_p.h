@@ -76,7 +76,7 @@
 #ifdef Q_OS_SYMBIAN
 #include <w32std.h>
 #endif
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
 #include <QWindowSystemInterface>
 #include "QtGui/qplatformintegration_lite.h"
 #endif
@@ -324,7 +324,7 @@ public:
     { return graphics_system; }
 #endif
 
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
     static QPlatformIntegration *platformIntegration()
     { return platform_integration; }
 
@@ -489,7 +489,7 @@ public:
     static bool qt_mac_apply_settings();
 #endif
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     static void processMouseEvent(QWindowSystemInterface::MouseEvent *e);
     static void processKeyEvent(QWindowSystemInterface::KeyEvent *e);
     static void processWheelEvent(QWindowSystemInterface::WheelEvent *e);
@@ -552,7 +552,7 @@ public:
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_LITE)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -660,7 +660,7 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
   extern void qt_x11_enforce_cursor(QWidget *);
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
-#elif defined (Q_WS_LITE)
+#elif defined (Q_WS_QPA)
   extern void qt_lite_set_cursor(QWidget *, bool);
 #endif
 

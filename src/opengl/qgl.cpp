@@ -96,7 +96,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
@@ -1393,7 +1393,7 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         }
     }
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     hasOpenGL(); // ### I have no idea why this is needed here, but it makes things work for testlite
 #endif
 
@@ -1642,7 +1642,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #  endif
     vi = 0;
 #endif
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
     platformContext = 0;
 #endif
 #if !defined(QT_NO_EGL)
@@ -4049,7 +4049,7 @@ void QGLWidget::resizeOverlayGL(int, int)
 /*! \fn bool QGLWidget::event(QEvent *e)
   \reimp
 */
-#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS) && !defined(Q_WS_LITE)
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

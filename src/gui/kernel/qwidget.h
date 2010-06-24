@@ -628,7 +628,7 @@ public:
     void setWindowSurface(QWindowSurface *surface);
     QWindowSurface *windowSurface() const;
 
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
     void setPlatformWindow(QPlatformWindow *window);
     QPlatformWindow *platformWindow() const;
     friend class QDesktopScreenWidget;

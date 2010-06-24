@@ -1620,7 +1620,7 @@ QT_END_INCLUDE_NAMESPACE
 QT_BEGIN_INCLUDE_NAMESPACE
 # include "qregion_win.cpp"
 QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
 static QRegionPrivate qrp;
 QRegion::QRegionData QRegion::shared_empty = {Q_BASIC_ATOMIC_INITIALIZER(1), &qrp};
 #endif
@@ -4231,7 +4231,7 @@ QRect QRegion::boundingRect() const
     Returns true if \a rect is guaranteed to be fully contained in \a region.
     A false return value does not guarantee the opposite.
 */
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GUI_EXPORT
 #endif
 bool qt_region_strictContains(const QRegion &region, const QRect &rect)

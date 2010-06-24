@@ -286,7 +286,7 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
 void QWidgetBackingStore::releaseBuffer()
 {
     if (windowSurface)
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
         windowSurface->resize(QSize());
 #else
         windowSurface->setGeometry(QRect());
@@ -420,7 +420,7 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 {
     const bool widgetDirty = widget && widget != tlw;
     const QRect tlwRect(topLevelRect());
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
     const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
 #else
     const QRect surfaceGeometry(windowSurface->geometry());
@@ -475,7 +475,7 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 QRegion QWidgetBackingStore::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
         const QSize surfaceGeometry(windowSurface->size());
 #else
         const QRect surfaceGeometry(windowSurface->geometry());
@@ -1183,7 +1183,7 @@ void QWidgetBackingStore::sync()
 
     const bool inTopLevelResize = tlwExtra->inTopLevelResize;
     const QRect tlwRect(topLevelRect());
-#ifdef  Q_WS_LITE
+#ifdef  Q_WS_QPA
     const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
 #else
     const QRect surfaceGeometry(windowSurface->geometry());
@@ -1207,7 +1207,7 @@ void QWidgetBackingStore::sync()
         }
     }
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     if (inTopLevelResize || surfaceGeometry.size() != tlwRect.size())
         windowSurface->resize(tlwRect.size());
 #else

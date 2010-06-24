@@ -1934,7 +1934,7 @@ int QPixmap::defaultDepth()
     return 32;
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     return 32; //LITE: use graphicssystem (we should do that in general)
 #endif
 }

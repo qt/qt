@@ -419,7 +419,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
-#if !defined(Q_WS_LITE)
+#if !defined(Q_WS_QPA)
     if (!geometry().isValid())
         return;
 #else
@@ -648,7 +648,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 }
 
 
-#if !defined(Q_WS_LITE)
+#if !defined(Q_WS_QPA)
 void QGLWindowSurface::setGeometry(const QRect &rect)
 {
     QWindowSurface::setGeometry(rect);
@@ -667,7 +667,7 @@ void QGLWindowSurface::updateGeometry() {
         return;
     d_ptr->geometry_updated = false;
 
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     QSize surfSize = size();
 #else
     QSize surfSize = geometry().size();

@@ -102,7 +102,7 @@ class QWSManager;
 #if defined(Q_WS_MAC)
 class QCoreGraphicsPaintEnginePrivate;
 #endif
-#if defined(Q_WS_LITE)
+#if defined(Q_WS_QPA)
 class QPlatformWindow;
 #endif
 class QPaintEngine;
@@ -227,7 +227,7 @@ struct QTLWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN)
     uint inExpose : 1; // Prevents drawing recursion
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
 #endif
 };
@@ -870,7 +870,7 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
 

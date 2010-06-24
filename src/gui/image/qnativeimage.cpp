@@ -287,7 +287,7 @@ QNativeImage::~QNativeImage()
 
 QImage::Format QNativeImage::systemFormat()
 {
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     return QApplicationPrivate::platformIntegration()->screens().at(0)->format();
 #else
     return QImage::Format_RGB32;

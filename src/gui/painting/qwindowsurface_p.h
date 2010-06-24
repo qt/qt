@@ -80,7 +80,7 @@ public:
     // can be larger than just the offset from the top-level widget as there may also be window
     // decorations which are painted into the window surface.
     virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset) = 0;
-#if !defined(Q_WS_LITE)
+#if !defined(Q_WS_QPA)
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
 #else

@@ -53,7 +53,7 @@
 #ifdef Q_WS_MAC
 # include <private/qpixmap_mac_p.h>
 #endif
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
 # include <private/qpixmap_raster_p.h>
 #endif
 #ifdef Q_WS_S60
@@ -85,7 +85,7 @@ QPixmapData* QSimplePixmapDataFactory::create(QPixmapData::PixelType type)
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
-#elif defined(Q_WS_LITE)
+#elif defined(Q_WS_QPA)
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_S60)
     return new QS60PixmapData(type);

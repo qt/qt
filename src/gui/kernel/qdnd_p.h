@@ -261,7 +261,7 @@ public:
 #endif
 
 private:
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     Qt::DropAction currentActionForOverrideCursor;
 #endif
 #ifdef Q_OS_SYMBIAN

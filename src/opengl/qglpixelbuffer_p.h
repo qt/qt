@@ -197,10 +197,10 @@ public:
     EGLSurface pbuf;
     QEglContext *ctx;
     int textureFormat;
-#elif defined(Q_WS_LITE)
-    // Stubs
-    int pbuf;
-    int ctx;
+#elif defined(Q_WS_QPA)
+    //stubs
+    void *pbuf;
+    void *ctx;
 #endif
 };
 

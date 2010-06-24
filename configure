@@ -7691,7 +7691,7 @@ fi # QWS
 
 if [ "$PLATFORM_EMBLITE" = "yes" ]; then
     # Add LITE to config.h
-    QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_LITE QT_NO_QWS_QPF QT_NO_QWS_QPF2"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS Q_WS_QPA QT_NO_QWS_QPF QT_NO_QWS_QPF2"
 fi
 
 if [ "${CFG_USE_FLOATMATH}" = "yes" ]; then

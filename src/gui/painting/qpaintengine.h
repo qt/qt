@@ -271,7 +271,7 @@ private:
     friend class QtopiaPrintEnginePrivate;
     friend class QProxyFontEngine;
 #endif
-#ifdef Q_WS_LITE
+#ifdef Q_WS_QPA
     friend class QProxyFontEngine;
 #endif
     friend class QPainter;

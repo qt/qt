@@ -46,7 +46,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qsharedpointer.h>
 
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 typedef struct FT_FaceRec_* FT_Face;
 #endif
 
@@ -233,7 +233,7 @@ public:
 #ifdef Q_WS_MAC
     quint32 macFontID() const;
 #endif
-#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     FT_Face freetypeFace() const;
 #endif
 

@@ -742,7 +742,7 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, QFontEngineGlyphCache:
     return 0;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_LITE) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
 static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *pairs, int numPairs)
 {
     uint left_right = (left << 16) + right;
@@ -1157,7 +1157,7 @@ glyph_metrics_t QFontEngineBox::boundingBox(const QGlyphLayout &glyphs)
     return overall;
 }
 
-#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 void QFontEngineBox::draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &ti)
 {
     if (!ti.glyphs.numGlyphs)
