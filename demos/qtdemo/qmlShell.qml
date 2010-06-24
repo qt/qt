@@ -145,6 +145,7 @@ Item {
         z: 8
         enabled: main.show
         hoverEnabled: main.show //To steal focus from the buttons
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         anchors.fill: parent
         onClicked: main.show=false;
     }
