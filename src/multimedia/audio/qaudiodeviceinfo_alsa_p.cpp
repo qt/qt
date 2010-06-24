@@ -62,6 +62,8 @@ QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode 
 
     device = QLatin1String(dev);
     this->mode = mode;
+
+    checkSurround();
 }
 
 QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
@@ -389,6 +391,9 @@ void QAudioDeviceInfoInternal::updateLists()
     }
     channelz.append(1);
     channelz.append(2);
+    if (surround40) channelz.append(4);
+    if (surround51) channelz.append(6);
+    if (surround71) channelz.append(8);
     sizez.append(8);
     sizez.append(16);
     sizez.append(32);
@@ -481,6 +486,47 @@ QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
         return QByteArray();
 
     return devices.first();
+}
+
+void QAudioDeviceInfoInternal::checkSurround()
+{
+    QList<QByteArray> devices;
+    surround40 = false;
+    surround51 = false;
+    surround71 = false;
+
+    void **hints, **n;
+    char *name, *descr, *io;
+
+    if(snd_device_name_hint(-1, "pcm", &hints) < 0)
+        return;
+
+    n = hints;
+
+    while (*n != NULL) {
+        name = snd_device_name_get_hint(*n, "NAME");
+        descr = snd_device_name_get_hint(*n, "DESC");
+        io = snd_device_name_get_hint(*n, "IOID");
+        if((name != NULL) && (descr != NULL)) {
+            QString deviceName = QLatin1String(name);
+            if (mode == QAudio::AudioOutput) {
+                if(deviceName.contains(QLatin1String("surround40")))
+                    surround40 = true;
+                if(deviceName.contains(QLatin1String("surround51")))
+                    surround51 = true;
+                if(deviceName.contains(QLatin1String("surround71")))
+                    surround71 = true;
+            }
+        }
+        if(name != NULL)
+            free(name);
+        if(descr != NULL)
+            free(descr);
+        if(io != NULL)
+            free(io);
+        ++n;
+    }
+    snd_device_name_free_hint(hints);
 }
 
 QT_END_NAMESPACE
