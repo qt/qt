@@ -8,6 +8,11 @@
     QMAKE_LFLAGS += -Ttext 0x80000 -Tdata 0x400000
 }
 
+isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
+isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+epoc_heap_size = $$split(TARGET.EPOCHEAPSIZE, " ")
+epoc_heap_size = $$join(epoc_heap_size, ",")
+
 symbianObjdir=$$OBJECTS_DIR
 isEmpty(symbianObjdir) {
     symbianObjdir = .
@@ -103,7 +108,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     # The comparison of dso files is to avoid extra building of modules that depend on this dso, in
     # case it has not changed.
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET}.dll $$symbianDestdir/$${TARGET}.sym \
-                      && elf2e32  --version=$$decVersion \
+                      && elf2e32_qtwrapper  --version=$$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x10000079 \
                       --uid2=$$TARGET.UID2 \
@@ -111,17 +116,15 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       --targettype=DLL \
                       --elfinput=$${symbianDestdir}/$${TARGET}.sym \
                       --output=$${symbianDestdir}/$${TARGET}.dll \
-                      --dso=$$symbianObjdir/$${TARGET}.dso \
+                      --tmpdso=$${symbianObjdir}/$${TARGET}.dso \
+                      --dso=$${symbianDestdir}/$${TARGET}.dso \
                       --defoutput=$$symbianObjdir/$${TARGET}.def \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+                      --heap=$$epoc_heap_size \
+                      --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
-                      | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
-                      && if ! diff -q $${symbianObjdir}/$${TARGET}.dso $${symbianDestdir}/$${TARGET}.dso \
-                      > /dev/null 2>&1; then \
-                          $$QMAKE_COPY $${symbianObjdir}/$${TARGET}.dso $${symbianDestdir}/$${TARGET}.dso; \
-                      fi \
                       $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
@@ -154,7 +157,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     }
     # the tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym \
-                      && elf2e32  --version $$decVersion \
+                      && elf2e32_qtwrapper  --version $$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x1000007a \
                       --uid2=$$TARGET.UID2 \
@@ -163,10 +166,11 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       --elfinput=$${symbianDestdir}/$${TARGET}.sym \
                       --output=$${symbianDestdir}/$${TARGET}.exe \
                       --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+                      --heap=$$epoc_heap_size \
+                      --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
-                      | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
                       && ln "$${symbianDestdir}/$${TARGET}.exe" "$${symbianDestdir}/$$TARGET" \
                       $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
