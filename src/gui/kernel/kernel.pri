@@ -32,8 +32,6 @@ HEADERS += \
 	kernel/qshortcutmap_p.h \
 	kernel/qsizepolicy.h \
 	kernel/qpalette.h \
-	kernel/qsound.h \
-	kernel/qsound_p.h \
 	kernel/qstackedlayout.h \
 	kernel/qtooltip.h \
 	kernel/qwhatsthis.h \
@@ -73,7 +71,6 @@ SOURCES += \
 	kernel/qpalette.cpp \
 	kernel/qshortcut.cpp \
 	kernel/qshortcutmap.cpp \
-	kernel/qsound.cpp \
 	kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
 	kernel/qguivariant.cpp \
@@ -198,6 +195,15 @@ embedded {
 	}
 }
 
+!qpa {
+        HEADERS += \
+                kernel/qsound.h \
+                kernel/qsound_p.h
+
+        SOURCES += \
+                kernel/qsound.cpp
+}
+
 qpa {
 	HEADERS += \
 		kernel/qgenericpluginfactory_qpa.h \
@@ -220,7 +226,6 @@ qpa {
 		kernel/qgenericpluginfactory_qpa.cpp \
 		kernel/qgenericplugin_qpa.cpp \
 		kernel/qkeymapper_qws.cpp \
-		kernel/qsound_qpa.cpp \
                 kernel/qwidget_qpa.cpp \
                 kernel/qeventdispatcher_qpa.cpp \
                 kernel/qwindowsysteminterface.cpp \
