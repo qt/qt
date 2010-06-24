@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICPLUGINFACTORY_LITE_H
-#define QGENERICPLUGINFACTORY_LITE_H
+#ifndef QGENERICPLUGINFACTORY_QPA_H
+#define QGENERICPLUGINFACTORY_QPA_H
 
 #include <QtCore/qstringlist.h>
 
@@ -64,4 +64,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QGENERICPLUGINFACTORY_QWS_H
+#endif // QGENERICPLUGINFACTORY_QPA_H

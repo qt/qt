@@ -48,12 +48,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QGenericPlugin
     \ingroup plugins
-    \ingroup lite
+    \ingroup qpa
 
     \brief The QGenericPlugin class is an abstract base class for
-    window-system related plugins in Qt for Embedded Linux LITE.
+    window-system related plugins in Qt QPA.
 
-    Note that this class is only available in \l{Qt for Embedded Linux LITE}.
+    Note that this class is only available in \l{Qt QPA}.
 
     A mouse plugin can be created by subclassing
     QGenericPlugin and reimplementing the pure virtual keys() and

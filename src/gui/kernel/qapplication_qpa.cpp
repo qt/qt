@@ -123,10 +123,10 @@ void QApplicationPrivate::createEventDispatcher()
     Q_Q(QApplication);
 #if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QLiteEventDispatcherGlib(q);
+        eventDispatcher = new QPAEventDispatcherGlib(q);
     else
 #endif
-    eventDispatcher = new QEventDispatcherLite(q);
+    eventDispatcher = new QEventDispatcherQPA(q);
 }
 
 static bool qt_try_modal(QWidget *widget, QEvent::Type type)
@@ -378,7 +378,7 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
-    qt_lite_set_cursor(0, false);
+    qt_qpa_set_cursor(0, false);
 }
 
 void QApplication::restoreOverrideCursor()
@@ -386,7 +386,7 @@ void QApplication::restoreOverrideCursor()
     if (qApp->d_func()->cursor_list.isEmpty())
         return;
     qApp->d_func()->cursor_list.removeFirst();
-    qt_lite_set_cursor(0, false);
+    qt_qpa_set_cursor(0, false);
 }
 
 #endif// QT_NO_CURSOR
@@ -490,7 +490,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
-    QString platformName = qgetenv("QT_LITE_PLATFORM");
+    QString platformName = qgetenv("QT_QPA_PLATFORM");
 
     // Get command line params
 
@@ -521,7 +521,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
 #if 0
-    QByteArray pluginEnv = qgetenv("QT_LITE_PLUGINS");
+    QByteArray pluginEnv = qgetenv("QT_QPA_PLUGINS");
     if (!pluginEnv.isEmpty()) {
         pluginList.append(pluginEnv.split(';'));
     }

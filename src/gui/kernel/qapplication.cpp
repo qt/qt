@@ -927,8 +927,7 @@ void QApplicationPrivate::initialize()
     // initialize the graphics system - on X11 this is initialized inside
     // qt_init() in qapplication_x11.cpp because of several reasons.
     // On QWS, the graphics system is set by the QScreen plugin.
-    // For lighthouse it will be initialized to QLiteGraphicsSystem
-    // when the platformIntegration plugin is instansiated in qt_init(
+    // We don't use graphics systems in Qt QPA
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 
@@ -2763,9 +2762,9 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
 #elif defined(Q_WS_QPA)
             if (enter == QApplication::desktop()) {
-                qt_lite_set_cursor(enter, true);
+                qt_qpa_set_cursor(enter, true);
             } else {
-                qt_lite_set_cursor(parentOfLeavingCursor, true);
+                qt_qpa_set_cursor(parentOfLeavingCursor, true);
             }
 #endif
         }
@@ -2792,7 +2791,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
 #elif defined(Q_WS_S60)
             qt_symbian_set_cursor(cursorWidget, true);
 #elif defined(Q_WS_QPA)
-            qt_lite_set_cursor(cursorWidget, true);
+            qt_qpa_set_cursor(cursorWidget, true);
 #endif
         }
     }

@@ -88,7 +88,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QPlatformCursor);
-    friend void qt_lite_set_cursor(QWidget * w, bool force);
+    friend void qt_qpa_set_cursor(QWidget * w, bool force);
     friend class QApplicationPrivate;
 };
 

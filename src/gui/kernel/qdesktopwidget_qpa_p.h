@@ -50,8 +50,8 @@
 // We mean it.
 //
 
-#ifndef QDESKTOPWIDGET_LITE_P_H
-#define QDESKTOPWIDGET_LITE_P_H
+#ifndef QDESKTOPWIDGET_QPA_P_H
+#define QDESKTOPWIDGET_QPA_P_H
 
 #include "QDesktopWidget"
 #include "private/qwidget_p.h"
@@ -73,4 +73,4 @@ public:
     QDesktopScreenWidget virtualScreen;
 };
 
-#endif // QDESKTOPWIDGET_LITE_P_H
+#endif // QDESKTOPWIDGET_QPA_P_H

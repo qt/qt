@@ -328,7 +328,7 @@ public:
     static QPlatformIntegration *platformIntegration()
     { return platform_integration; }
 
-    static QAbstractEventDispatcher *qt_lite_core_dispatcher()
+    static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 #endif
 
@@ -661,7 +661,7 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
 #elif defined (Q_WS_QPA)
-  extern void qt_lite_set_cursor(QWidget *, bool);
+  extern void qt_qpa_set_cursor(QWidget *, bool);
 #endif
 
 QT_END_NAMESPACE

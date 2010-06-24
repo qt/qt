@@ -54,29 +54,29 @@ QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
 
-class QEventDispatcherLitePrivate : public QEventDispatcherUNIXPrivate
+class QEventDispatcherQPAPrivate : public QEventDispatcherUNIXPrivate
 {
-    Q_DECLARE_PUBLIC(QEventDispatcherLite)
+    Q_DECLARE_PUBLIC(QEventDispatcherQPA)
 public:
-    inline QEventDispatcherLitePrivate()
+    inline QEventDispatcherQPAPrivate()
     { }
 };
 
 
-QEventDispatcherLite::QEventDispatcherLite(QObject *parent)
-    : QEventDispatcherUNIX(*new QEventDispatcherLitePrivate, parent)
+QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
+    : QEventDispatcherUNIX(*new QEventDispatcherQPAPrivate, parent)
 { }
 
-QEventDispatcherLite::~QEventDispatcherLite()
+QEventDispatcherQPA::~QEventDispatcherQPA()
 { }
 
 
 
 //#define ZERO_FOR_THE_MOMENT
 
-bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
+bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_D(QEventDispatcherLite);
+    Q_D(QEventDispatcherQPA);
     int nevents = 0;
 
     // handle gui and posted events
@@ -112,30 +112,30 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
     return (nevents > 0);
 }
 
-bool QEventDispatcherLite::hasPendingEvents()
+bool QEventDispatcherQPA::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
     return qGlobalPostedEventsCount() || QWindowSystemInterfacePrivate::userEventsQueued();;
 }
 
-void QEventDispatcherLite::startingUp()
+void QEventDispatcherQPA::startingUp()
 {
 
 }
 
-void QEventDispatcherLite::closingDown()
+void QEventDispatcherQPA::closingDown()
 {
 
 }
 
-void QEventDispatcherLite::flush()
+void QEventDispatcherQPA::flush()
 {
     if(qApp)
         qApp->sendPostedEvents();
 }
 
 
-int QEventDispatcherLite::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                 timeval *timeout)
 {
     return QEventDispatcherUNIX::select(nfds, readfds, writefds, exceptfds, timeout);

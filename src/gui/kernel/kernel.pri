@@ -48,8 +48,7 @@ HEADERS += \
 	kernel/qgesturemanager_p.h \
 	kernel/qsoftkeymanager_p.h \
     kernel/qsoftkeymanager_common_p.h \
-	kernel/qguiplatformplugin_p.h \
-        kernel/qdesktopwidget_qpa_p.h
+	kernel/qguiplatformplugin_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -215,7 +214,8 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
-                kernel/qplatformglcontext_qpa.h
+                kernel/qplatformglcontext_qpa.h \
+                kernel/qdesktopwidget_qpa_p.h
 		
 	SOURCES += \
 		kernel/qapplication_qpa.cpp \

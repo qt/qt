@@ -246,14 +246,14 @@ void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
     Q_UNUSED(cursor);
     Q_Q(QWidget);
     if (q->isVisible())
-        qt_lite_set_cursor(q, false);
+        qt_qpa_set_cursor(q, false);
 }
 
 void QWidgetPrivate::unsetCursor_sys()
 {
     Q_Q(QWidget);
     if (q->isVisible())
-        qt_lite_set_cursor(q, false);
+        qt_qpa_set_cursor(q, false);
 }
 
 void QWidgetPrivate::updateCursor() const
@@ -753,7 +753,7 @@ void QWidgetPrivate::setModal_sys()
 }
 
 #ifndef QT_NO_CURSOR
-void qt_lite_set_cursor(QWidget * w, bool force)
+void qt_qpa_set_cursor(QWidget * w, bool force)
 {
     static QCursor arrowCursor(Qt::ArrowCursor);
     static QPointer<QWidget> lastUnderMouse = 0;

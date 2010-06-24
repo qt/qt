@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QLITEEVENTDISPATCHER_GLIB_P_H
-#define QLITEEVENTDISPATCHER_GLIB_P_H
+#ifndef QEVENTDISPATCHER_GLIB_QPA_P_H
+#define QEVENTDISPATCHER_GLIB_QPA_P_H
 
 //
 //  W A R N I N G
@@ -58,31 +58,31 @@
 typedef struct _GMainContext GMainContext;
 
 QT_BEGIN_NAMESPACE
-class QLiteEventDispatcherGlibPrivate;
+class QPAEventDispatcherGlibPrivate;
 
-class QLiteEventDispatcherGlib : public QEventDispatcherGlib
+class QPAEventDispatcherGlib : public QEventDispatcherGlib
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QLiteEventDispatcherGlib)
+    Q_DECLARE_PRIVATE(QPAEventDispatcherGlib)
 
 public:
-    explicit QLiteEventDispatcherGlib(QObject *parent = 0);
-    ~QLiteEventDispatcherGlib();
+    explicit QPAEventDispatcherGlib(QObject *parent = 0);
+    ~QPAEventDispatcherGlib();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
 };
 
 struct GUserEventSource;
 
-class QLiteEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
+class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
 {
-    Q_DECLARE_PUBLIC(QLiteEventDispatcherGlib)
+    Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
 public:
-    QLiteEventDispatcherGlibPrivate(GMainContext *context = 0);
+    QPAEventDispatcherGlibPrivate(GMainContext *context = 0);
     GUserEventSource *userEventSource;
 };
 
 
 QT_END_NAMESPACE
 
-#endif // QLITEEVENTDISPATCHER_GLIB_P_H
+#endif // QEVENTDISPATCHER_GLIB_QPA_P_H

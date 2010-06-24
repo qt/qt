@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 struct GUserEventSource
 {
     GSource source;
-    QLiteEventDispatcherGlib *q;
+    QPAEventDispatcherGlib *q;
 };
 
 static gboolean userEventSourcePrepare(GSource *s, gint *timeout)
@@ -104,7 +104,7 @@ static GSourceFuncs userEventSourceFuncs = {
     NULL
 };
 
-QLiteEventDispatcherGlibPrivate::QLiteEventDispatcherGlibPrivate(GMainContext *context)
+QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *context)
     : QEventDispatcherGlibPrivate(context)
 {
     userEventSource = reinterpret_cast<GUserEventSource *>(g_source_new(&userEventSourceFuncs,
@@ -115,23 +115,23 @@ QLiteEventDispatcherGlibPrivate::QLiteEventDispatcherGlibPrivate(GMainContext *c
 }
 
 
-QLiteEventDispatcherGlib::QLiteEventDispatcherGlib(QObject *parent)
-    : QEventDispatcherGlib(*new QLiteEventDispatcherGlibPrivate, parent)
+QPAEventDispatcherGlib::QPAEventDispatcherGlib(QObject *parent)
+    : QEventDispatcherGlib(*new QPAEventDispatcherGlibPrivate, parent)
 {
-    Q_D(QLiteEventDispatcherGlib);
+    Q_D(QPAEventDispatcherGlib);
     d->userEventSource->q = this;
 }
 
-QLiteEventDispatcherGlib::~QLiteEventDispatcherGlib()
+QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
 {
-    Q_D(QLiteEventDispatcherGlib);
+    Q_D(QPAEventDispatcherGlib);
 
     g_source_destroy(&d->userEventSource->source);
     g_source_unref(&d->userEventSource->source);
     d->userEventSource = 0;
 }
 
-bool QLiteEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
+bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     return QEventDispatcherGlib::processEvents(flags);
 }

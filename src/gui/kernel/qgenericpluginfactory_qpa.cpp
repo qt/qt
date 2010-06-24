@@ -60,12 +60,12 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 /*!
     \class QGenericPluginFactory
-    \ingroup qws
+    \ingroup qpa
 
     \brief The QGenericPluginFactory class creates window-system
-    related plugin drivers in Qt for Embedded Linux LITE.
+    related plugin drivers in Qt QPA.
 
-    Note that this class is only available in \l{Qt for Embedded Linux LITE}.
+    Note that this class is only available in \l{Qt QPA}.
 
 
     \sa QGenericPlugin

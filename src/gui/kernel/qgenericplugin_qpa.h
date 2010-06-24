@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICPLUGIN_LITE_H
-#define QGENERICPLUGIN_LITE_H
+#ifndef QGENERICPLUGIN_QPA_H
+#define QGENERICPLUGIN_QPA_H
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
@@ -81,4 +81,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMOUSEDRIVERPLUGIN_QWS_H
+#endif // QGENERICPLUGIN_QPA_H

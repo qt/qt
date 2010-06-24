@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTDISPATCHER_LITE_P_H
-#define QEVENTDISPATCHER_LITE_P_H
+#ifndef QEVENTDISPATCHER_QPA_P_H
+#define QEVENTDISPATCHER_QPA_P_H
 
 //
 //  W A R N I N G
@@ -57,16 +57,16 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEventDispatcherLitePrivate;
+class QEventDispatcherQPAPrivate;
 
-class QEventDispatcherLite : public QEventDispatcherUNIX
+class QEventDispatcherQPA : public QEventDispatcherUNIX
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QEventDispatcherLite)
+    Q_DECLARE_PRIVATE(QEventDispatcherQPA)
 
 public:
-    explicit QEventDispatcherLite(QObject *parent = 0);
-    ~QEventDispatcherLite();
+    explicit QEventDispatcherQPA(QObject *parent = 0);
+    ~QEventDispatcherQPA();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
@@ -83,4 +83,4 @@ protected:
 
 QT_END_NAMESPACE
 
-#endif // QEVENTDISPATCHER_LITE_P_H
+#endif // QEVENTDISPATCHER_QPA_P_H
