@@ -2386,6 +2386,8 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
 
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::incrementCurrentIndex()
 {
@@ -2403,6 +2405,8 @@ void QDeclarativeListView::incrementCurrentIndex()
 
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::decrementCurrentIndex()
 {
@@ -2439,6 +2443,14 @@ void QDeclarativeListView::decrementCurrentIndex()
     of the list does not cause all other items to be repositioned, and because
     the actual start of the view can vary based on the size of the delegates.
     The correct way to bring an item into view is with \c positionViewAtIndex.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end:
+
+    \code
+    Component.onCompleted: positionViewAtIndex(count - 1, ListView.Beginning)
+    \endcode
 */
 void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 {
@@ -2509,6 +2521,8 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
 
     If the item is outside the visible area, -1 is returned, regardless of
     whether an item will exist at that point when scrolled into view.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 int QDeclarativeListView::indexAt(int x, int y) const
 {
