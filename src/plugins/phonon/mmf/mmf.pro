@@ -97,33 +97,3 @@ symbian {
                $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
     }
 }
-
-LIBS += -lcone
-LIBS += -lws32
-
-# This is only needed for debug builds, but is always linked against.
-LIBS += -lhal
-
-TARGET.CAPABILITY = all -tcb
-
-LIBS += -lmediaclientvideo        # For CVideoPlayerUtility
-LIBS += -lcone                    # For CCoeEnv
-LIBS += -lws32                    # For RWindow
-LIBS += -lefsrv                   # For file server
-LIBS += -lapgrfx -lapmime         # For recognizer
-LIBS += -lmmfcontrollerframework  # For CMMFMetaDataEntry
-LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
-
-# These are for effects.
-LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
-
-# This is needed for having the .qtplugin file properly created on Symbian.
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
-
-target.path = $$[QT_INSTALL_PLUGINS]/phonon_backend
-INSTALLS += target
-
-include(../../qpluginbase.pri)
-
-TARGET.UID3=0x2001E629
-
