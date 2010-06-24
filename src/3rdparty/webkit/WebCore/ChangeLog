@@ -1,3 +1,362 @@
+2010-06-22  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt/Symbian build fix.
+
+        Fix "make clean" to not try to execute clean commands for
+        the extra targets we use to simulate "make install".
+
+        * WebCore.pro: Use no_clean in CONFIG of extra compilers.
+
+2010-06-21  Balazs Kelemen  <kb@inf.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Avoid unnecessary image conversion in RGBA32Buffer::zeroFill()
+        https://bugs.webkit.org/show_bug.cgi?id=40910
+
+        * platform/image-decoders/qt/RGBA32BufferQt.cpp:
+        (WebCore::RGBA32Buffer::zeroFill):
+
+2010-05-31  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Implement the simple text code path.
+        https://bugs.webkit.org/show_bug.cgi?id=40077
+
+        Remove the FONT_FAST_PATH macro and use the Qt's
+        fast text implementation instead of the one of WebKit.
+
+        The Qt::TextBypassShaping flag is used to tell Qt to
+        only use the glyph advances.
+
+        Qt 4.7 is needed to get this flag thus the complex path is always
+        used if QtWebKit is compiled against an earlier version.
+
+        Contrary to the WebKit's implementation, the complex code path
+        is taken if the text is RightToLeft, justified or is formatted
+        with non-zero letter or word spacing.
+
+        * platform/graphics/Font.cpp:
+        (WebCore::Font::drawText):
+        (WebCore::Font::floatWidth):
+        (WebCore::Font::selectionRectForText):
+        (WebCore::Font::offsetForPosition):
+        * platform/graphics/Font.h:
+        (WebCore::Font::isRoundingHackCharacter):
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::fromRawDataWithoutRef):
+        (WebCore::needComplexCodePath):
+        (WebCore::setupPlatformContext):
+        (WebCore::Font::canReturnFallbackFontsForComplexText):
+        (WebCore::Font::drawSimpleText):
+        (WebCore::Font::drawComplexText):
+        (WebCore::Font::floatWidthForSimpleText):
+        (WebCore::Font::offsetForPositionForSimpleText):
+        (WebCore::Font::selectionRectForSimpleText):
+
+2010-06-03  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Move the text code path detection code from FontFastPath.cpp to Font.cpp.
+        https://bugs.webkit.org/show_bug.cgi?id=40077
+
+        This is a patch preliminary to the implementation of the
+        simple font code path for the Qt port.
+
+        * platform/graphics/Font.cpp:
+        (WebCore::Font::setCodePath):
+        (WebCore::Font::codePath):
+        * platform/graphics/Font.h:
+        * platform/graphics/FontFastPath.cpp:
+
+2010-04-30  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Adele Peterson.
+
+        Part of <rdar://problem/6649734> Text repainting does not account for glyphs which draw outside the typographic bounds of the font
+        https://bugs.webkit.org/show_bug.cgi?id=6274
+
+        Account for glyph overflow of characters in the range U+1E00..U+2000, but without sending them
+        through the complex text code path. Instead, introduce a variant of the fast path that tracks
+        glyph overflow.
+
+        * platform/graphics/Font.cpp:
+        (WebCore::Font::drawText): Use codePath().
+        (WebCore::Font::floatWidth): Use codePath(). Pass the GlyphOverflow pointer through to
+        floatWidthForSimpleText() if the code path is SimpleWithGlyphOverflow.
+        (WebCore::Font::selectionRectForText): Use codePath().
+        (WebCore::Font::offsetForPosition): Ditto.
+        * platform/graphics/Font.h: Replaced canUseGlyphCache() with codePath(). Added a GlyphOverflow
+        parameter to floatWidthForSimpleText().
+        * platform/graphics/FontFastPath.cpp:
+        Removed ROMAN_AND_GREEK_DIACRITICS_CAN_USE_GLYPH_CACHE.
+        (WebCore::Font::codePath): Renamed canUseGlyphCache() to this. Where it used to return false,
+        it now returns Complex. Where it used to return true, it now returns Simple, except for
+        the range U+1E00..U+2000, where it now returns SimpleWithGlyphOverflow.
+        (WebCore::Font::floatWidthForSimpleText): Added a GlyphOverflow parameter. If not 0, have the
+        width iterator account for glyph bounds, then update the GlyphOverflow accordingly.
+        * platform/graphics/WidthIterator.cpp:
+        (WebCore::WidthIterator::WidthIterator): Added boolean parameter telling the width iterator
+        whether to account for glyph bounds. Initialize m_accountForGlyphBounds accordingly. Initialize
+        m_maxGlyphBoundingBoxY, m_minGlyphBoundingBoxY, m_firstGlyphOverflow and m_lastGlyphOverflow.
+        (WebCore::WidthIterator::advance): If accounting for glyph bounds, update the above member variables.
+        * platform/graphics/WidthIterator.h:
+        (WebCore::WidthIterator::maxGlyphBoundingBoxY): Added this accessor.
+        (WebCore::WidthIterator::minGlyphBoundingBoxY): Ditto.
+        (WebCore::WidthIterator::firstGlyphOverflow): Ditto.
+        (WebCore::WidthIterator::lastGlyphOverflow): Ditto.
+
+2010-04-21  Ojan Vafai  <ojan@chromium.org>
+
+        Reviewed by Adele Peterson.
+
+        http://trac.webkit.org/changeset/57215 caused perf/memory regressions
+        https://bugs.webkit.org/show_bug.cgi?id=37292
+
+        #if out the canUseGlyphCache Changes from r57215 as they caused a 
+        8% perf regression on Chromium's international page load tests so that
+        the perf regression can be fixed properly without being left in the tree.
+
+        * platform/graphics/FontFastPath.cpp:
+        (WebCore::Font::canUseGlyphCache):
+
+2010-04-07  Enrica Casucci  <enrica@apple.com>
+
+        Reviewed by Dave Hyatt.
+
+        Text repainting does not account for glyphs which draw outside the typographic bounds of the font (6274).
+        <rdar://problem/6649734>
+        <https://bugs.webkit.org/show_bug.cgi?id=6274>
+        
+        In order to be able to handle successfully this case, it is necessary to change the glyph width cache to store
+        the bounding box for the glyph instead of the simply caching the glyph width.
+        Retrieving the bounding box for the glyph is expensive, therefore we do it only
+        when we are rendering text using the complex text path to minimize the performance impact.
+        To support characters with stacked diacritics, the method canUseGlyphCache has been modified to
+        return false for the range of characters with stacked diacritics.
+        The glyph cache has been also updated to allow storing the glyph bounding box together with the
+        horizontal width. The bounding box is populated only for complex text.
+        
+        The original version of this patch has been written by Dan Bernstein.
+
+        Test: fast/repaint/stacked-diacritics.html
+
+        * Android.mk: File name change.
+        * GNUmakefile.am: File name change.
+        * WebCore.base.exp: Added parameter in exported function.
+        * WebCore.gypi: File name change.
+        * WebCore.vcproj/WebCore.vcproj: File name change.
+        * WebCore.xcodeproj/project.pbxproj: File name change.
+        * platform/graphics/Font.cpp:
+        (WebCore::Font::floatWidth): Added glyphOverflow parameter.
+        * platform/graphics/Font.h:
+        (WebCore::GlyphOverflow::GlyphOverflow): Added.
+        (WebCore::Font::width): Added glyphOverflow parameter.
+        * platform/graphics/FontFastPath.cpp:
+        (WebCore::Font::canUseGlyphCache): Modified to render characters with stacked diacritics with complex text path.
+        * platform/graphics/GlyphMetricsMap.cpp: Copied from WebCore/platform/graphics/GlyphWidthMap.cpp.
+        (WebCore::GlyphMetricsMap::locatePageSlowCase): Class name changed to reflect new semantics.
+        * platform/graphics/GlyphMetricsMap.h: Copied from WebCore/platform/graphics/GlyphWidthMap.h.
+        (WebCore::GlyphMetricsMap::GlyphMetricsMap):
+        (WebCore::GlyphMetricsMap::~GlyphMetricsMap):
+        (WebCore::GlyphMetricsMap::metricsForGlyph):
+        (WebCore::GlyphMetricsMap::widthForGlyph):
+        (WebCore::GlyphMetricsMap::setMetricsForGlyph):
+        (WebCore::GlyphMetricsMap::GlyphMetricsPage::metricsForGlyph):
+        (WebCore::GlyphMetricsMap::GlyphMetricsPage::setMetricsForGlyph):
+        (WebCore::GlyphMetricsMap::GlyphMetricsPage::setMetricsForIndex):
+        (WebCore::GlyphMetricsMap::locatePage):
+        * platform/graphics/GlyphWidthMap.cpp: Removed.
+        * platform/graphics/GlyphWidthMap.h: Removed.
+        * platform/graphics/SimpleFontData.cpp:
+        (WebCore::SimpleFontData::platformGlyphInit):
+        * platform/graphics/SimpleFontData.h:
+        (WebCore::):
+        (WebCore::SimpleFontData::widthForGlyph):
+        (WebCore::SimpleFontData::metricsForGlyph):
+        * platform/graphics/cairo/SimpleFontDataCairo.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/chromium/FontChromiumWin.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/chromium/FontLinux.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/chromium/SimpleFontDataChromiumWin.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/chromium/SimpleFontDataLinux.cpp:
+        (WebCore::SimpleFontData::platformWidthForGlyph): Name and signature vachange
+        * platform/graphics/efl/FontEfl.cpp:
+        (WebCore::Font::floatWidthForComplexText): Name and signature change.
+        * platform/graphics/gtk/SimpleFontDataPango.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/haiku/FontHaiku.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/haiku/SimpleFontDataHaiku.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/mac/ComplexTextController.cpp:
+        (WebCore::ComplexTextController::ComplexTextController):
+        (WebCore::ComplexTextController::adjustGlyphsAndAdvances):
+        * platform/graphics/mac/ComplexTextController.h:
+        (WebCore::ComplexTextController::minGlyphBoundingBoxX):
+        (WebCore::ComplexTextController::maxGlyphBoundingBoxX):
+        (WebCore::ComplexTextController::minGlyphBoundingBoxY):
+        (WebCore::ComplexTextController::maxGlyphBoundingBoxY):
+        * platform/graphics/mac/FontComplexTextMac.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added paramter.
+        * platform/graphics/mac/SimpleFontDataMac.mm:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added paramter.
+        * platform/graphics/win/FontWin.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/win/SimpleFontDataCGWin.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * platform/graphics/win/SimpleFontDataWin.cpp:
+        (WebCore::SimpleFontData::metricsForGDIGlyph):
+        * platform/graphics/win/UniscribeController.cpp:
+        (WebCore::UniscribeController::UniscribeController):
+        (WebCore::UniscribeController::shapeAndPlaceItem):
+        * platform/graphics/win/UniscribeController.h:
+        (WebCore::UniscribeController::minGlyphBoundingBoxX):
+        (WebCore::UniscribeController::maxGlyphBoundingBoxX):
+        (WebCore::UniscribeController::minGlyphBoundingBoxY):
+        (WebCore::UniscribeController::maxGlyphBoundingBoxY):
+        * platform/graphics/wince/FontWince.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/wx/FontWx.cpp:
+        (WebCore::Font::floatWidthForComplexText): Added parameter.
+        * platform/graphics/wx/SimpleFontDataWx.cpp:
+        (WebCore::SimpleFontData::platformMetricsForGlyph): Name and signature change.
+        * rendering/InlineFlowBox.cpp:
+        (WebCore::InlineFlowBox::placeBoxesHorizontally):
+        (WebCore::InlineFlowBox::computeLogicalBoxHeights):
+        (WebCore::InlineFlowBox::computeVerticalOverflow):
+        * rendering/InlineTextBox.cpp:
+        (WebCore::InlineTextBox::setFallbackFonts):
+        (WebCore::InlineTextBox::fallbackFonts):
+        (WebCore::InlineTextBox::setGlyphOverflow):
+        (WebCore::InlineTextBox::glyphOverflow):
+        * rendering/InlineTextBox.h:
+        (WebCore::InlineTextBox::clearGlyphOverflowAndFallbackFontMap): Added.
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlock::computeHorizontalPositionsForLine):
+        (WebCore::RenderBlock::layoutInlineChildren):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::RenderText):
+        (WebCore::RenderText::styleDidChange):
+        (WebCore::RenderText::widthFromCache):
+        (WebCore::RenderText::trimmedPrefWidths):
+        (WebCore::RenderText::calcPrefWidths):
+        (WebCore::RenderText::setText):
+        (WebCore::RenderText::width):
+        * rendering/RenderText.h:
+
+2010-03-23  Evan Martin  <evan@chromium.org>
+
+        Reviewed by Dmitry Titov.
+
+        [chromium] use integral glyph widths
+        https://bugs.webkit.org/show_bug.cgi?id=36510
+
+        Despite WebKit (and Skia, to an extent) supporting non-integral
+        glyph widths, the font code path we hit in Skia only supports
+        integral glyph positions.  This means that we would accumulate
+        offsets when drawing a sequence up non-integer-width glyphs
+        which would cause gaps when snapped to the pixel grid when drawing.
+
+        * platform/graphics/chromium/SimpleFontDataLinux.cpp:
+        (WebCore::SimpleFontData::platformWidthForGlyph):
+        round glyph widths to integers.
+
+2010-06-21  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Decode images directly to QPixmap
+        https://bugs.webkit.org/show_bug.cgi?id=40797
+
+        Decode images to QPixmap directly instead of QImage when possible.
+        RGBA32Buffer transforms the pixmap back to image if
+        necessary.
+
+        This improve the performance with certain graphic system, and
+        can reduce memory usage.
+
+        * platform/graphics/qt/ImageDecoderQt.cpp:
+        (WebCore::ImageDecoderQt::setData):
+        (WebCore::ImageDecoderQt::internalHandleCurrentImage):
+        * platform/image-decoders/ImageDecoder.h:
+        (WebCore::RGBA32Buffer::getAddr):
+        * platform/image-decoders/qt/RGBA32BufferQt.cpp:
+        (WebCore::RGBA32Buffer::clear):
+        (WebCore::RGBA32Buffer::zeroFill):
+        (WebCore::RGBA32Buffer::copyBitmapData):
+        (WebCore::RGBA32Buffer::setSize):
+        (WebCore::RGBA32Buffer::asNewNativeImage):
+        (WebCore::RGBA32Buffer::setPixmap):
+
+2010-06-17  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Get rid of the the unused imageSize of ImageDecoderQt::internalHandleCurrentImage()
+        https://bugs.webkit.org/show_bug.cgi?id=40620
+
+        Remove an unused variable.
+
+        * platform/graphics/qt/ImageDecoderQt.cpp:
+        (WebCore::ImageDecoderQt::internalHandleCurrentImage):
+
+2010-06-18  Ananth Jasty  <ext-ananth.jasty@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Text spacing miscalculation when using wordSpacing.
+        https://bugs.webkit.org/show_bug.cgi?id=40483
+
+        Removed wordSpacing compensation in FontQt whitespace width
+        calculation. The QFontMetrics::width() overload that takes
+        a character does not take QFont's word spacing into account.
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::floatWidthForComplexText):
+
+2010-06-13  Robert Hogan  <robert@webkit.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        WebCore EventHandler needs to take account of onLoad events 
+        fired before layout() complete
+
+        https://bugs.webkit.org/show_bug.cgi?id=40102
+
+        WebCore 'cheats' by firing onLoad events before the frame's layout
+        has been performed. This can result in event listeners performing
+        operations that depend on the document's final layout, such as
+        scrolling operations.
+
+        When scrolling a frameview in eventhandler ensure the layout is complete.
+
+        * page/EventHandler.cpp:
+        (WebCore::EventHandler::scrollRecursively):
+
+2010-06-10  Raine Makelainen  <raine.makelainen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Impossible to set input method hints based HTML5 input types
+        https://bugs.webkit.org/show_bug.cgi?id=40107
+
+        Helper methods for checking "tel", "number", "email",
+        and "url" input element types.
+
+        * html/HTMLInputElement.h:
+        (WebCore::HTMLInputElement::isTelephoneField):
+        (WebCore::HTMLInputElement::isNumberField):
+        (WebCore::HTMLInputElement::isEmailField):
+        (WebCore::HTMLInputElement::isUrlField):
+
 2010-06-17  Mark Brand  <mabrand@mabrand.nl>
 
         Reviewed by Simon Hausmann.

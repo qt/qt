@@ -151,16 +151,6 @@ bool macHasAccessToWindowsServer()
 #undef Bool
 #endif
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 2 seconds.
-#define WAIT_FOR_CONDITION(expr, expected) \
-    do { \
-        const int step = 100; \
-        for (int i = 0; i < 2000 && expr != expected; i+=step) { \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -1665,13 +1655,11 @@ void tst_QWidget::focusChainOnHide()
     child->setFocus();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(child->hasFocus(), true);
-    QCOMPARE(child->hasFocus(), true);
+    QTRY_COMPARE(child->hasFocus(), true);
     child->hide();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(parent->hasFocus(), true);
-    QCOMPARE(parent->hasFocus(), true);
+    QTRY_COMPARE(parent->hasFocus(), true);
     QCOMPARE(parent, qApp->focusWidget());
 
     delete parent;
@@ -9244,7 +9232,8 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(grandChild->numLeaveEvents, 0);
     QCOMPARE(child1->numLeaveEvents, 0);
 
-    QCOMPARE(window.numEnterEvents, 1);
+    // This event arrives asynchronously
+    QTRY_COMPARE(window.numEnterEvents, 1);
     QCOMPARE(child2->numEnterEvents, 1);
     QCOMPARE(grandChild->numEnterEvents, 1);
     QCOMPARE(child1->numEnterEvents, 0);
@@ -9335,7 +9324,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      child.show();
 
      // Make sure the child gets enter event and no mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 0);
 
      child.hide();
@@ -9346,7 +9335,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      // Make sure the child gets enter event and mouse move event.
      // Note that we verify event->button() and event->buttons()
      // in SELChild::mouseMoveEvent().
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 1);
 
      // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
@@ -9357,7 +9346,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      QTest::mouseClick(&parent, Qt::LeftButton);
 
      // Make sure the child gets enter event and one mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 1);
 
      child.hide();
@@ -9366,7 +9355,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      QTest::mouseClick(&parent, Qt::LeftButton);
 
      // Make sure the child gets enter event and no mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 0);
  }
 #endif

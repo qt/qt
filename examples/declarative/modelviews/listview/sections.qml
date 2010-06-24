@@ -38,6 +38,9 @@
 **
 ****************************************************************************/
 
+// This example shows how a ListView can be separated into sections using
+// the ListView.section attached property.
+
 import Qt 4.7
 
 //! [0]

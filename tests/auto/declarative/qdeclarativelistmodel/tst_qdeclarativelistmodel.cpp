@@ -48,6 +48,7 @@
 
 #include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qtranslator.h>
 
 #include "../../../shared/util.h"
 
@@ -124,14 +125,17 @@ void tst_qdeclarativelistmodel::waitForWorker(QDeclarativeItem *item)
 void tst_qdeclarativelistmodel::static_i18n()
 {
     QString expect = QString::fromUtf8("na\303\257ve");
-    QString componentStr = "import Qt 4.7\nListModel { ListElement { prop1: \""+expect+"\" } }";
+
+    QString componentStr = "import Qt 4.7\nListModel { ListElement { prop1: \""+expect+"\"; prop2: QT_TR_NOOP(\""+expect+"\") } }";
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
     QDeclarativeListModel *obj = qobject_cast<QDeclarativeListModel*>(component.create());
     QVERIFY(obj != 0);
-    QString prop = obj->get(0).property(QLatin1String("prop1")).toString();
-    QCOMPARE(prop,expect);
+    QString prop1 = obj->get(0).property(QLatin1String("prop1")).toString();
+    QCOMPARE(prop1,expect);
+    QString prop2 = obj->get(0).property(QLatin1String("prop2")).toString();
+    QCOMPARE(prop2,expect); // (no, not translated, QT_TR_NOOP is a no-op)
     delete obj;
 }
 

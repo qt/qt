@@ -39,35 +39,36 @@
 ****************************************************************************/
 
 import Qt 4.7
+import "content"
 
 Rectangle {
     width: 600; height: 300
 
-    // Show the model in three lists, with different highlight ranges.
-    // preferredHighlightBegin and preferredHighlightEnd set the
-    // range in which to attempt to maintain the highlight.
+    // This example shows the same model in three different ListView items, 
+    // with different highlight ranges. The highlight ranges are set by the 
+    // preferredHighlightBegin and preferredHighlightEnd properties in ListView.
     //
-    // The second and third ListView set their currentIndex to be the
-    // same as the first, and the first ListView is given keyboard focus.
+    // The second and third ListViews set their currentIndex to be the
+    // same as the first. The first ListView is given keyboard focus.
     //
-    // The first list does not set a highlight range, so its currentItem
+    // The first ListView does not set a highlight range, so its currentItem
     // can move freely within the visible area. If it moves outside the
     // visible area, the view is automatically scrolled to keep the current
     // item visible.
     //
-    // The second list sets a highlight range which attempts to keep the
+    // The second ListView sets a highlight range which attempts to keep the
     // current item within the the bounds of the range. However,
     // items will not scroll beyond the beginning or end of the view,
     // forcing the highlight to move outside the range at the ends.
     //
-    // The third list sets the highlightRangeMode to StrictlyEnforceRange
+    // The third ListView sets the highlightRangeMode to StrictlyEnforceRange
     // and sets a range smaller than the height of an item.  This
     // forces the current item to change when the view is flicked,
     // since the highlight is unable to move.
     //
     // Note that the first ListView sets its currentIndex to be equal to
-    // the third ListView's currentIndex.  By flicking List3 with
-    // the mouse, the current index of List1 will be changed.
+    // the third ListView's currentIndex.  By flicking the third ListView with
+    // the mouse, the current index of the first ListView will be changed.
 
     ListView {
         id: list1

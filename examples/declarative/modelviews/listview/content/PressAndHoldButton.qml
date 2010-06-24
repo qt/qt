@@ -51,6 +51,11 @@ Image {
 
     scale: pressed ? 0.9 : 1
 
+    function release() {
+        autoRepeatClicks.stop()
+        container.pressed = false
+    }
+
     SequentialAnimation on pressed {
         id: autoRepeatClicks
         running: false
@@ -70,10 +75,8 @@ Image {
         anchors.fill: parent
 
         onPressed: autoRepeatClicks.start()
-        onReleased: { 
-            autoRepeatClicks.stop()
-            container.pressed = false
-        }
+        onReleased: container.release()
+        onCanceled: container.release()
     }
 }
 

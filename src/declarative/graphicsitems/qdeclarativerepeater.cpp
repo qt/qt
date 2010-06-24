@@ -83,17 +83,10 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \image repeater-simple.png
 
-    The \l model of a Repeater can be specified as a model object, a number, a string list 
-    or an object list. If a model object is used, the
-    \l delegate can access the model roles as named properties, just as for view elements like
-    ListView and GridView. 
+    The \l model of a Repeater can be any of the supported \l {qmlmodels}{Data Models}.
 
-    The \l delegate can also access two additional properties:
-
-    \list
-    \o \c index - the index of the delegate's item
-    \o \c modelData - the data element for the delegate, which is useful where the \l model is a string or object list
-    \endlist
+    The index of a delegate is exposed as an accessible \c index property in the delegate.
+    Properties of the model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
     Here is a Repeater that uses the \c index property inside the instantiated items:
 

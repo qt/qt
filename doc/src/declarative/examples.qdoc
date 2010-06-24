@@ -6,35 +6,21 @@
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
 **
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
-**
-**
-**
-**
-**
-**
-**
-**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,34 +31,87 @@
   \brief Building UI's with QML
   \ingroup all-examples
 
-\section1 Running the examples
 
-You can find many simple examples in the \c examples/declarative
-sub-directory that show how to use various aspects of QML. In addition, the
-\c demos/declarative sub-directory contains more sophisticated demos of large
-applications. These demos are intended to show integrated functionality
-rather than being instructive on specific elements.
+Qt includes a set of examples and demos that show how to use various aspects
+of QML. The examples are small demonstrations of particular QML components, 
+while the demos contain more complete and functional applications.
 
 To run the examples and demos, you can use Qt Creator or the included \l {Qt Declarative UI Runtime}{qmlviewer}
-command-line application. It has some useful options, revealed by:
-
-\code
-    bin/qmlviewer -help
-\endcode
-
-For example, from your build directory, run:
+command-line application. For example, from your build directory, run:
 
 \code
     bin/qmlviewer $QTDIR/demos/declarative/samegame/samegame.qml
 \endcode
 
+
+\section1 Demos
+
+The QML demos integrate a variety of features to demonstrate how QML
+can be used to produce sophisticated interfaces and applications:
+
+
+\table
+\row
+
+\o 
+\l{demos/declarative/calculator}{Calculator}
+\image qml-calculator-example-small.png
+
+\o 
+\l{demos/declarative/flickr}{Flickr Mobile}
+\image qml-flickr-demo-small.png
+
+\o 
+\l{demos/declarative/minehunt}{Minehunt}
+\image qml-minehunt-demo-small.png
+
+\row
+
+\o 
+\l{demos/declarative/photoviewer}{Photo Viewer}
+\image qml-photoviewer-demo-small.png
+
+\o 
+\l{demos/declarative/rssnews}{RSS News Reader}
+\image qml-rssnews-demo-small.png
+
+\o 
+\l{demos/declarative/samegame}{Same Game}
+\image qml-samegame-demo-small.png
+
+\row
+
+\o 
+\l{demos/declarative/snake}{Snake}
+\image qml-snake-demo-small.png
+
+\o 
+\l{demos/declarative/twitter}{Twitter}
+\image qml-twitter-demo-small.png
+
+\o 
+\l{demos/declarative/webbrowser}{Web Browser}
+\image qml-webbrowser-demo-small.png
+
+\endtable
+
+The demos can be found in Qt's \c demos/declarative directory.
+
+
 \section1 Examples
+
+The QML examples are small, simple applications that show how to use a particular
+QML component or feature. If you are new
+to QML, you may also find the \l{QML Tutorial}{Hello World} and 
+\l {QML Advanced Tutorial}{Same Game} tutorials useful.
+
+The examples can be found in Qt's \c examples/declarative directory.
 
 \section2 Animation
 \list
 \o \l{declarative/animation/basics}{Basics}
 \o \l{declarative/animation/behaviors}{Behaviors}
-\o \l{declarative/animation/easing}{Easing types}
+\o \l{declarative/animation/easing}{Easing}
 \o \l{declarative/animation/states}{States}
 \endlist
 
@@ -80,6 +119,12 @@ For example, from your build directory, run:
 \list
 \o \l{declarative/imageelements/borderimage}{BorderImage}
 \o \l{declarative/imageelements/image}{Image}
+\endlist
+
+\section2 Text
+\list
+\o \l{declarative/text/fonts}{Fonts}
+\o \l{declarative/text/textselection}{Text Selection}
 \endlist
 
 \section2 Positioners
@@ -108,6 +153,15 @@ For example, from your build directory, run:
 \o \l{declarative/ui-components/slideswitch}{Slide switch}
 \o \l{declarative/ui-components/spinner}{Spinner}
 \o \l{declarative/ui-components/tabwidget}{Tab widget}
+\endlist
+
+\section2 Toys
+\list
+\o \l{declarative/toys/clocks}{Clocks}
+\o \l{declarative/toys/corkboards}{Corkboards}
+\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
+\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
+\o \l{declarative/toys/tvtennis}{TV Tennis}
 \endlist
 
 \section2 Models and Views
@@ -153,27 +207,6 @@ For example, from your build directory, run:
 \o \l{declarative/cppextensions/networkaccessmanagerfactory}{Network access manager factory}
 \endlist
 
-\section2 Toys
-\list
-\o \l{declarative/toys/clocks}{Clocks}
-\o \l{declarative/toys/corkboards}{Corkboards}
-\o \l{declarative/toys/dynamicscene}{Dynamic Scene}
-\o \l{declarative/toys/tic-tac-toe}{Tic Tac Toe}
-\o \l{declarative/toys/tvtennis}{TV Tennis}
-\endlist
-
-
-\section1 Demos
-
-\list
-\o \l{demos/declarative/calculator}{Calculator}
-\o \l{demos/declarative/flickr}{Flickr Mobile}
-\o \l{demos/declarative/minehunt}{Minehunt}
-\o \l{demos/declarative/photoviewer}{Photo Viewer}
-\o \l{demos/declarative/rssnews}{RSS News Reader}
-\o \l{demos/declarative/samegame}{Same Game}
-\o \l{demos/declarative/snake}{Snake}
-\endlist
 
 \section1 Labs
 

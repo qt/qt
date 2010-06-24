@@ -101,6 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
+    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -199,6 +200,11 @@ Node::Status Node::inheritedStatus() const
 }
 
 /*!
+  Returns the thread safeness value for whatever this node
+  represents. But if this node has a parent and the thread
+  safeness value of the parent is the same as the thread
+  safeness value of this node, what is returned is the
+  value \c{UnspecifiedSafeness}. Why?
  */
 Node::ThreadSafeness Node::threadSafeness() const
 {
@@ -208,6 +214,9 @@ Node::ThreadSafeness Node::threadSafeness() const
 }
 
 /*!
+  If this node has a parent, the parent's thread safeness
+  value is returned. Otherwise, this node's thread safeness
+  value is returned. Why?
  */
 Node::ThreadSafeness Node::inheritedThreadSafeness() const
 {
@@ -217,6 +226,9 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
 }
 
 /*!
+  Returns the sanitized file name without the path.
+  If the the file is an html file, the html suffix
+  is removed. Why?
  */
 QString Node::fileBase() const
 {
@@ -230,10 +242,47 @@ QString Node::fileBase() const
 }
 
 /*!
+  Returns this node's Universally Unique IDentifier.
+  If its UUID has not yet been created, it is created
+  first.
+ */
+QUuid Node::guid() const
+{
+    if (uuid.isNull())
+        uuid = QUuid::createUuid();
+    return uuid;
+}
+
+/*!
+  Composes a string to be used as an href attribute in DITA
+  XML. It is composed of the file name and the UUID separated
+  by a '#'. If this node is a class node, the file name is
+  taken from this node; if this node is a function node, the
+  file name is taken from the parent node of this node.
+ */
+QString Node::ditaXmlHref()
+{
+    QString href;
+    if ((type() == Function) ||
+        (type() == Property) ||
+        (type() == Variable)) {
+        href = parent()->fileBase();
+    }
+    else {
+        href = fileBase();
+    }
+    if (!href.endsWith(".xml"))
+        href += ".xml";
+    return href + "#" + guid();
+}
+
+/*!
   \class InnerNode
  */
 
 /*!
+  The inner node destructor deletes the children and removes
+  this node from its related nodes.
  */
 InnerNode::~InnerNode()
 {
@@ -577,6 +626,7 @@ InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
 }
 
 /*!
+  Appends an \a include file to the list of include files.
  */
 void InnerNode::addInclude(const QString& include)
 {
@@ -584,6 +634,7 @@ void InnerNode::addInclude(const QString& include)
 }
 
 /*!
+  Sets the list of include files to \a includes.
  */
 void InnerNode::setIncludes(const QStringList& includes)
 {
@@ -921,6 +972,8 @@ QString FakeNode::subTitle() const
  */
 
 /*!
+  The constructor for the node representing an enum type
+  has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
@@ -928,6 +981,7 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
 }
 
 /*!
+  Add \a item to the enum type's item list.
  */
 void EnumNode::addItem(const EnumItem& item)
 {
@@ -936,15 +990,15 @@ void EnumNode::addItem(const EnumItem& item)
 }
 
 /*!
+  Returns the access level of the enumeration item named \a name.
+  Apparently it is private if it has been omitted by qdoc's
+  omitvalue command. Otherwise it is public.
  */
 Node::Access EnumNode::itemAccess(const QString &name) const
 {
-    if (doc().omitEnumItemNames().contains(name)) {
+    if (doc().omitEnumItemNames().contains(name))
         return Private;
-    }
-    else {
-        return Public;
-    }
+    return Public;
 }
 
 /*!

@@ -315,6 +315,11 @@ void InputTest::readMore()
 void InputTest::toggleMode()
 {
     // Change bewteen pull and push modes
+    if (m_input != 0) {
+        disconnect(m_input, 0, this, 0);
+        m_input = 0;
+    }
+
     m_audioInput->stop();
 
     if (m_pullMode) {
