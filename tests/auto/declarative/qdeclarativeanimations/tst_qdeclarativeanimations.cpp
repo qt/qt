@@ -81,6 +81,7 @@ private slots:
     void dontStart();
     void easingProperties();
     void rotation();
+    void runningTrueBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -731,6 +732,20 @@ void tst_qdeclarativeanimations::rotation()
 
     QTest::qWait(800);
     QTIMED_COMPARE(rr->rotation() + rr2->rotation() + rr3->rotation() + rr4->rotation(), qreal(370*4));
+}
+
+void tst_qdeclarativeanimations::runningTrueBug()
+{
+    //ensure we start correctly when "running: true" is explicitly set
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/runningTrueBug.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *cloud = rect->findChild<QDeclarativeRectangle*>("cloud");
+    QVERIFY(cloud);
+    QTest::qWait(1000);
+    QVERIFY(cloud->x() > qreal(0));
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

@@ -164,7 +164,7 @@ protected:
 
 private:
     bool createString(AST::BinaryExpression *b) {
-        if (!b or b->op != 0)
+        if (!b || b->op != 0)
             return false;
         AST::BinaryExpression *l = AST::cast<AST::BinaryExpression *>(b->left);
         AST::BinaryExpression *r = AST::cast<AST::BinaryExpression *>(b->right);

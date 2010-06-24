@@ -46,9 +46,8 @@ Rectangle {
     width: 200; height: 200
 
     signal triggered
-    onTriggered: Program.doSomething();
+    signal incrementTriggered
 
-    function doSomething() {
-        Program.doSomething();
-    }
+    onTriggered: Program.doSomething();
+    onIncrementTriggered: Program.doIncrement();
 }
