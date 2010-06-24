@@ -102,7 +102,6 @@ public:
     void addPluginPath(const QString& plugin);
     void setUseGL(bool use);
     void setUseNativeFileBrowser(bool);
-    void updateSizeHints();
     void setSizeToView(bool sizeToView);
 
     QDeclarativeView *view() const;
@@ -144,6 +143,8 @@ private slots:
     void showWarnings(bool show);
     void warningsWidgetOpened();
     void warningsWidgetClosed();
+
+    void updateSizeHints();
 
 private:
     QString getVideoFileName();
