@@ -41,6 +41,7 @@
 
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
+#include <QtCore/qstringlist.h>
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptvalueiterator.h>
@@ -87,18 +88,7 @@ QDeclarativeGlobalScriptClass::queryProperty(const QScriptValue &object,
     Q_UNUSED(name);
     Q_UNUSED(flags);
     Q_UNUSED(id);
-    return HandlesReadAccess | HandlesWriteAccess;
-}
-
-QScriptValue 
-QDeclarativeGlobalScriptClass::property(const QScriptValue &object,
-                               const QScriptString &name, 
-                               uint id)
-{
-    Q_UNUSED(object);
-    Q_UNUSED(name);
-    Q_UNUSED(id);
-    return engine()->undefinedValue();
+    return HandlesWriteAccess;
 }
 
 void QDeclarativeGlobalScriptClass::setProperty(QScriptValue &object, 
@@ -114,8 +104,9 @@ void QDeclarativeGlobalScriptClass::setProperty(QScriptValue &object,
 }
 
 /* This method is for the use of tst_qdeclarativeecmascript::callQtInvokables() only */
-void QDeclarativeGlobalScriptClass::explicitSetProperty(const QString &name, const QScriptValue &value)
+void QDeclarativeGlobalScriptClass::explicitSetProperty(const QStringList &names, const QList<QScriptValue> &values)
 {
+    Q_ASSERT(names.count() == values.count());
     QScriptValue globalObject = engine()->globalObject();
 
     QScriptValue v = engine()->newObject();
@@ -126,7 +117,12 @@ void QDeclarativeGlobalScriptClass::explicitSetProperty(const QString &name, con
         v.setProperty(iter.scriptName(), iter.value());
     }
 
-    v.setProperty(name, value);
+    for (int ii = 0; ii < names.count(); ++ii) {
+        const QString &name = names.at(ii);
+        const QScriptValue &value = values.at(ii);
+        v.setProperty(name, value);
+    }
+
     v.setScriptClass(this);
 
     engine()->setGlobalObject(v);
