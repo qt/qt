@@ -49,7 +49,7 @@ TEMPLATE = lib
 TARGET = QtWebKit
 
 contains(QT_CONFIG, embedded):CONFIG += embedded
-contains(QT_CONFIG, embedded_lite):CONFIG += embedded
+contains(QT_CONFIG, qpa):CONFIG += embedded
 
 CONFIG(standalone_package) {
     isEmpty(WC_GENERATED_SOURCES_DIR):WC_GENERATED_SOURCES_DIR = $$PWD/generated

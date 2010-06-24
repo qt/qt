@@ -89,7 +89,7 @@ unix:x11 {
 		text/qfontengine_ft.cpp
 }
 
-!embedded:!embedded_lite:!x11:mac {
+!embedded:!qpa:!x11:mac {
 	SOURCES += \
 		text/qfont_mac.cpp
         OBJECTIVE_SOURCES += text/qfontengine_mac.mm
@@ -110,7 +110,7 @@ embedded {
 	DEFINES += QT_NO_FONTCONFIG
 }
 
-embedded_lite {
+qpa {
 	SOURCES += \
 		text/qfont_qws.cpp \
 		text/qfontengine_ft.cpp \

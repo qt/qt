@@ -2,11 +2,7 @@ TEMPLATE = subdirs
 SUBDIRS += trace
 !wince*:contains(QT_CONFIG, opengl):SUBDIRS += opengl
 contains(QT_CONFIG, openvg):contains(QT_CONFIG, egl) {
-    embedded_lite {
-        SUBDIRS += openvglite
-    } else {
-        SUBDIRS += openvg
-    }
+    SUBDIRS += openvg
 }
 
 contains(QT_CONFIG, shivavg) {

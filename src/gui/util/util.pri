@@ -33,12 +33,12 @@ unix:x11 {
 				util/qsystemtrayicon_x11.cpp
 }
 
-embedded|embedded_lite {
+embedded|qpa {
 		SOURCES += \
 				util/qsystemtrayicon_qws.cpp
 }
 
-!embedded:!embedded_lite:!x11:mac {
+!embedded:!qpa:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
 

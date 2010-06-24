@@ -11,7 +11,7 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
-!win32:!embedded:!mac:!embedded_lite:CONFIG	   += x11
+!win32:!embedded:!mac:!qpa:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
@@ -77,7 +77,7 @@ SOURCES	+= qgl.cpp \
 
 }
 
-embedded_lite {
+qpa {
     DEFINES += QT_NO_EGL
 
     SOURCES +=  qgl_qpa.cpp \

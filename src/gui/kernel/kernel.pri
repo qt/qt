@@ -198,7 +198,7 @@ embedded {
 	}
 }
 
-embedded_lite {
+qpa {
 	HEADERS += \
 		kernel/qgenericpluginfactory_qpa.h \
                 kernel/qgenericplugin_qpa.h \
@@ -240,7 +240,7 @@ embedded_lite {
 	}
 }
 
-!embedded:!embedded_lite:!x11:mac {
+!embedded:!qpa:!x11:mac {
 	SOURCES += \
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \
