@@ -42,19 +42,24 @@
 #ifndef QPLATFORMINTEGRATION_H
 #define QPLATFORMINTEGRATION_H
 
-#include <QtGui/private/qgraphicssystem_p.h>
+#include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/qwindowdefs.h>
 #include <QtGui/qplatformscreen_qpa.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+//QT_MODULE(Gui)
+class QPlatformWindow;
+class QWindowSurface;
+class QBlittable;
+class QWidget;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
 public:
-    virtual ~QPlatformIntegration() { };
+    virtual ~QPlatformIntegration() { }
 
 // GraphicsSystem functions
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
@@ -69,6 +74,7 @@ public:
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     virtual bool hasOpenGL() const;
+
 };
 
 QT_END_NAMESPACE
