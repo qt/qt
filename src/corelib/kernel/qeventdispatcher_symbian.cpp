@@ -114,12 +114,8 @@ public:
         // is in select call
         if (m_selectCallMutex->tryLock()) {
             m_selectCallMutex->unlock();
-
-            //m_threadMutex->lock();
-            //bHasThreadLock = true;
             return;
         }
-
 
         char dummy = 0;
         qt_pipe_write(fd, &dummy, 1);
@@ -409,14 +405,11 @@ void QSelectThread::run()
         FD_ZERO(&exceptionfds);
 
         int maxfd = 0;
-        {
-            QMutexLocker asoLocker(&m_AOStatusesMutex);
-            maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Read, &readfds));
-            maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Write, &writefds));
-            maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Exception, &exceptionfds));
-            maxfd = qMax(maxfd, m_pipeEnds[0]);
-            maxfd++;
-        }
+        maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Read, &readfds));
+        maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Write, &writefds));
+        maxfd = qMax(maxfd, updateSocketSet(QSocketNotifier::Exception, &exceptionfds));
+        maxfd = qMax(maxfd, m_pipeEnds[0]);
+        maxfd++;
 
         FD_SET(m_pipeEnds[0], &readfds);
 
@@ -461,42 +454,40 @@ void QSelectThread::run()
                 FD_ZERO(&readfds);
                 FD_ZERO(&writefds);
                 FD_ZERO(&exceptionfds);
-                {
-                    QMutexLocker asoLocker(&m_AOStatusesMutex);
-                    for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
-                            i != m_AOStatuses.end(); ++i) {
+                for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
+                        i != m_AOStatuses.end(); ++i) {
 
-                       fd_set onefds;
-                       FD_ZERO(&onefds);
-                       FD_SET(i.key()->socket(), &onefds);
+                    fd_set onefds;
+                    FD_ZERO(&onefds);
+                    FD_SET(i.key()->socket(), &onefds);
 
-                       fd_set excfds;
-                       FD_ZERO(&excfds);
-                       FD_SET(i.key()->socket(), &excfds);
+                    fd_set excfds;
+                    FD_ZERO(&excfds);
+                    FD_SET(i.key()->socket(), &excfds);
 
-                        maxfd = i.key()->socket() + 1;
+                    maxfd = i.key()->socket() + 1;
 
-                        struct timeval timeout;
-                        timeout.tv_sec = 0;
-                        timeout.tv_usec = 0;
+                    struct timeval timeout;
+                    timeout.tv_sec = 0;
+                    timeout.tv_usec = 0;
 
-                        ret = 0;
+                    ret = 0;
 
-                        if(i.key()->type() == QSocketNotifier::Read) {
-                            ret = ::select(maxfd, &onefds, 0, &excfds, &timeout);
-                            if(ret != 0) FD_SET(i.key()->socket(), &readfds);
-                        } else if(i.key()->type() == QSocketNotifier::Write) {
-                            ret = ::select(maxfd, 0, &onefds, &excfds, &timeout);
-                            if(ret != 0) FD_SET(i.key()->socket(), &writefds);
-                        }
+                    if(i.key()->type() == QSocketNotifier::Read) {
+                        ret = ::select(maxfd, &onefds, 0, &excfds, &timeout);
+                        if(ret != 0) FD_SET(i.key()->socket(), &readfds);
+                    } else if(i.key()->type() == QSocketNotifier::Write) {
+                        ret = ::select(maxfd, 0, &onefds, &excfds, &timeout);
+                        if(ret != 0) FD_SET(i.key()->socket(), &writefds);
+                    }
 
-                    } // end for
+                } // end for
 
-                    // traversed all, so update
-                    updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
-                    updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
-                    updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-                }
+                // traversed all, so update
+                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
+                updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
+                updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
+
                 break;
             case EINTR: // Should never occur on Symbian, but this is future proof!
             default:
@@ -505,12 +496,9 @@ void QSelectThread::run()
                 break;
             }
         } else {
-            {
-                QMutexLocker asoLocker(&m_AOStatusesMutex);
-                updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
-                updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
-                updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
-            }
+            updateActivatedNotifiers(QSocketNotifier::Exception, &exceptionfds);
+            updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
+            updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
         }
 
         m_waitCond.wait(&m_mutex);
@@ -529,15 +517,11 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
 
     QMutexLocker locker(&m_grabberMutex);
 
-    {
-        // first do the thing
-        QMutexLocker aosLocker(&m_AOStatusesMutex); 
-        Q_ASSERT(!m_AOStatuses.contains(notifier));
-        m_AOStatuses.insert(notifier, status);
-    }
-
-    // and now tell it to the others
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
+
+    Q_ASSERT(!m_AOStatuses.contains(notifier));
+
+    m_AOStatuses.insert(notifier, status);
 
     m_waitCond.wakeAll();
 }
@@ -546,14 +530,9 @@ void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 {
     QMutexLocker locker(&m_grabberMutex);
 
-    {
-        // first do the thing
-        QMutexLocker aosLocker(&m_AOStatusesMutex);
-        m_AOStatuses.remove(notifier);
-    }
-
-    // and now tell it to the others
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex, &m_selectCallMutex);
+
+    m_AOStatuses.remove(notifier);
 
     m_waitCond.wakeAll();
 }

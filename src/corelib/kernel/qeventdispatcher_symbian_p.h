@@ -231,11 +231,6 @@ private:
     // causes later in locking
     // of the thread in waitcond
     QMutex m_selectCallMutex;
-
-    // Argh ... not again
-    // one more unprotected
-    // resource is m_AOStatuses
-    QMutex m_AOStatusesMutex;
 };
 
 class Q_CORE_EXPORT CQtActiveScheduler : public CActiveScheduler
