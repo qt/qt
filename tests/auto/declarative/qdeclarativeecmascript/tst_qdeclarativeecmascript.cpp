@@ -156,6 +156,7 @@ private slots:
     void function();
     void qtbug_10696();
     void qtbug_11606();
+    void qtbug_11600();
 
     void include();
 
@@ -2512,6 +2513,16 @@ void tst_qdeclarativeecmascript::qtbug_11606()
     QCOMPARE(o->property("test").toBool(), true);
     delete o;
 }
+
+void tst_qdeclarativeecmascript::qtbug_11600()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_11600.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 
