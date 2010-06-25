@@ -13,7 +13,7 @@ wince*: {
 }
 
 
-symbian*: {
+symbian: {
    addFiles.sources = animations\\*
    addFiles.path = animations
    DEPLOYMENT += addFiles

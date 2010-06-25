@@ -101,3 +101,10 @@ SUBDIRS=\
    selftests \
    utf8 \
 
+symbian:SUBDIRS -= \
+   qtconcurrentfilter \
+   qtconcurrentiteratekernel \
+   qtconcurrentmap \
+   qtconcurrentrun \
+   qtconcurrentthreadengine \
+

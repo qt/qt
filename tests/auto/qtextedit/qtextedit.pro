@@ -5,7 +5,7 @@ INCLUDEPATH += ../
 HEADERS +=  
 SOURCES += tst_qtextedit.cpp 
 
-wince*|symbian*: {
+wince*|symbian: {
     addImages.sources = fullWidthSelection/*
     addImages.path = fullWidthSelection
     DEPLOYMENT += addImages

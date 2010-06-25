@@ -24,7 +24,7 @@ addFiles.sources = $$OUT_PWD/../../lackey/lackey.exe ../../lackey/scripts
 addFiles.path = .
 DEPLOYMENT += addFiles
 DEFINES += SRCDIR=\\\".\\\"
-}else:symbian*{
+}else:symbian{
 requires(contains(QT_CONFIG,script))
 QT += gui script
 addFiles.sources = ../../lackey/scripts

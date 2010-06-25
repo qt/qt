@@ -11,7 +11,7 @@ wince* {
   DEPLOYMENT = additional deploy someTest
 }
 
-symbian*: {
+symbian: {
   additional.sources = ../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
   someTest.sources = test.pro

@@ -20,7 +20,7 @@ QMAKE_EXTRA_TARGETS = runtime_resource
 PRE_TARGETDEPS += $${runtime_resource.target}
 
 QT = core
-wince*|symbian*:{
+wince*|symbian:{
     deploy.sources += runtime_resource.rcc parentdir.txt
     test.sources = testqrc/*
     test.path = testqrc

@@ -16,7 +16,7 @@ wince*: {
    addFiles.path = .
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\"\\\"
-}else:symbian* {
+}else:symbian {
    binDep.sources = \
         mylib.dll \
         system.trolltech.test.mylib.dll
