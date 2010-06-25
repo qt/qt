@@ -900,6 +900,7 @@ void VcprojGenerator::initCompilerTool()
     conf.compiler.AssemblerListingLocation = placement ;
     conf.compiler.ProgramDataBaseFileName = ".\\" ;
     conf.compiler.ObjectFile = placement ;
+    conf.compiler.ExceptionHandling = ehNone;
     // PCH
     if (usePCH) {
         conf.compiler.UsePrecompiledHeader     = pchUseUsingSpecific;

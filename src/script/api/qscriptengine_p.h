@@ -205,6 +205,7 @@ public:
 
     inline QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     inline JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
+    static inline unsigned propertyFlagsToJSCAttributes(const QScriptValue::PropertyFlags &flags);
 
     static inline JSC::JSValue jscValueFromVariant(JSC::ExecState*, const QVariant &value);
     static QVariant jscValueToVariant(JSC::ExecState*, JSC::JSValue value, int targetType);
@@ -346,6 +347,7 @@ public:
     JSC::ExecState *currentFrame;
 
     WTF::RefPtr<JSC::Structure> scriptObjectStructure;
+    WTF::RefPtr<JSC::Structure> staticScopeObjectStructure;
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;
@@ -637,6 +639,19 @@ inline JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptVal
         }
     }
     return vv->jscValue;
+}
+
+inline unsigned QScriptEnginePrivate::propertyFlagsToJSCAttributes(const QScriptValue::PropertyFlags &flags)
+{
+    unsigned attribs = 0;
+    if (flags & QScriptValue::ReadOnly)
+        attribs |= JSC::ReadOnly;
+    if (flags & QScriptValue::SkipInEnumeration)
+        attribs |= JSC::DontEnum;
+    if (flags & QScriptValue::Undeletable)
+        attribs |= JSC::DontDelete;
+    attribs |= flags & QScriptValue::UserRange;
+    return attribs;
 }
 
 inline QScriptValuePrivate::~QScriptValuePrivate()
