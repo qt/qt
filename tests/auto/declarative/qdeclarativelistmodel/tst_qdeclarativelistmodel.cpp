@@ -559,6 +559,18 @@ void tst_qdeclarativelistmodel::error_data()
     QTest::newRow("QML elements not allowed in ListElement")
         << "import Qt 4.7\nListModel { ListElement { a: Item { } } }"
         << "ListElement: cannot contain nested elements";
+
+    QTest::newRow("qualified ListElement supported")
+        << "import Qt 4.7 as Foo\nFoo.ListModel { Foo.ListElement { a: 123 } }"
+        << "";
+
+    QTest::newRow("qualified ListElement required")
+        << "import Qt 4.7 as Foo\nFoo.ListModel { ListElement { a: 123 } }"
+        << "ListElement is not a type";
+
+    QTest::newRow("unknown qualified ListElement not allowed")
+        << "import Qt 4.7\nListModel { Foo.ListElement { a: 123 } }"
+        << "Foo.ListElement - Foo is not a namespace";
 }
 
 void tst_qdeclarativelistmodel::error()
