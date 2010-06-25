@@ -4914,9 +4914,9 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writer.writeAttribute("value",pn->accessString());
             writer.writeEndElement(); // <cxxVariableAccessSpecifier>
 
-            if (!pn->dataType().isEmpty()) {
+            if (!pn->qualifiedDataType().isEmpty()) {
                 writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
-                writer.writeCharacters(pn->dataType());
+                writer.writeCharacters(pn->qualifiedDataType());
                 writer.writeEndElement(); // <cxxVariableDeclaredType>
             }
             QString fq = fullQualification(pn);
@@ -4925,10 +4925,48 @@ void DitaXmlGenerator::writeProperties(const Section& s,
                 writer.writeCharacters(fq);
                 writer.writeEndElement(); // <cxxVariableScopedName>
             }
+            
+            writer.writeStartElement(CXXVARIABLEPROTOTYPE);
+            writer.writeCharacters("Q_PROPERTY(");
+            writer.writeCharacters(pn->qualifiedDataType());
+            writer.writeCharacters(" ");
+            writer.writeCharacters(pn->name());
+            writerFunctions("READ",pn->getters());
+            writerFunctions("WRITE",pn->setters());
+            writerFunctions("RESET",pn->resetters());
+            writerFunctions("NOTIFY",pn->notifiers());
+            if (pn->isDesignable() != pn->designableDefault()) {
+                writer.writeCharacters(" DESIGNABLE ");
+                if (!pn->runtimeDesignabilityFunction().isEmpty())
+                    writer.writeCharacters(pn->runtimeDesignabilityFunction());
+                else
+                    writer.writeCharacters(pn->isDesignable() ? "true" : "false");
+            }
+            if (pn->isScriptable() != pn->scriptableDefault()) {
+                writer.writeCharacters(" SCRIPTABLE ");
+                if (!pn->runtimeScriptabilityFunction().isEmpty())
+                    writer.writeCharacters(pn->runtimeScriptabilityFunction());
+                else
+                    writer.writeCharacters(pn->isScriptable() ? "true" : "false");
+            }
+            if (pn->isWritable() != pn->writableDefault()) {
+                writer.writeCharacters(" STORED ");
+                writer.writeCharacters(pn->isStored() ? "true" : "false");
+            }
+            if (pn->isUser() != pn->userDefault()) {
+                writer.writeCharacters(" USER ");
+                writer.writeCharacters(pn->isUser() ? "true" : "false");
+            }
+            if (pn->isConstant())
+                writer.writeCharacters(" CONSTANT");
+            if (pn->isFinal())
+                writer.writeCharacters(" FINAL");
+            writer.writeCharacters(")");
+            writer.writeEndElement(); // <cxxVariablePrototype>
+
             writer.writeStartElement(CXXVARIABLENAMELOOKUP);
             writer.writeCharacters(pn->parent()->name() + "::" + pn->name());
             writer.writeEndElement(); // <cxxVariableNameLookup>
-
 
             if (pn->overriddenFrom() != 0) {
                 PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
@@ -4951,6 +4989,18 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writer.writeEndElement(); // </cxxVariable>
         }
         ++m;
+    }
+}
+
+void DitaXmlGenerator::writerFunctions(const QString& tag, const NodeList& nlist)
+{
+    NodeList::const_iterator n = nlist.begin();
+    while (n != nlist.end()) {
+        writer.writeCharacters(" ");
+        writer.writeCharacters(tag);
+        writer.writeCharacters(" ");
+        writer.writeCharacters((*n)->name());
+        ++n;
     }
 }
 
