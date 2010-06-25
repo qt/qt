@@ -557,7 +557,9 @@ Q_DECLARE_METATYPE(QScriptValue);
 class MyInvokableObject : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(TestEnum)
 public:
+    enum TestEnum { EnumValue1, EnumValue2 };
     MyInvokableObject() { reset(); }
 
     int invoked() const { return m_invoked; }
@@ -588,6 +590,8 @@ public:
     
     Q_INVOKABLE void method_overload(int a) { invoke(16); m_actuals << a; }
     Q_INVOKABLE void method_overload(int a, int b) { invoke(17); m_actuals << a << b; }
+
+    Q_INVOKABLE void method_with_enum(TestEnum e) { invoke(18); m_actuals << (int)e; }
 
 private:
     void invoke(int idx) { if (m_invoked != -1) m_invokedError = true; m_invoked = idx;}
