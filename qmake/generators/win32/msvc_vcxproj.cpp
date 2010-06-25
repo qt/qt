@@ -274,6 +274,7 @@ void VcxprojGenerator::initCompilerTool()
     conf.compiler.AssemblerListingLocation = placement ;
     conf.compiler.ProgramDataBaseFileName = ".\\" ;
     conf.compiler.ObjectFileName = placement ;
+    conf.compiler.ExceptionHandling = "false";
     // PCH
     if (usePCH) {
         conf.compiler.PrecompiledHeader             = "Use";
