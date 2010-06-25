@@ -415,7 +415,10 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
 
         // At this point, the widget's window should be created and have the correct visual. Now we
         // just need to create the EGL surface for it:
-        return eglCreateWindowSurface(QEgl::display(), config, (EGLNativeWindowType)widget->winId(), 0);
+        EGLSurface surf = eglCreateWindowSurface(QEgl::display(), config, (EGLNativeWindowType)widget->winId(), 0);
+        if (surf == EGL_NO_SURFACE)
+            qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
+        return surf;
     }
 
     if (x11PixmapData) {
