@@ -1033,6 +1033,17 @@ QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *c
     return contextClass->contextFromValue(scopeNode);
 }
 
+/*!
+    Returns the QUrl associated with the script \a ctxt for the case that there is
+    no QDeclarativeContext.
+*/
+QUrl QDeclarativeEnginePrivate::getUrl(QScriptContext *ctxt)
+{
+    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    Q_ASSERT(scopeNode.isValid());
+    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
+    return contextClass->urlFromValue(scopeNode);
+}
 
 QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 {
@@ -1075,16 +1086,19 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         static_cast<QDeclarativeScriptEngine*>(engine)->p;
     QDeclarativeEngine* activeEngine = activeEnginePriv->q_func();
 
-    QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
-    Q_ASSERT(context);
-
     if(ctxt->argumentCount() != 1) {
         return ctxt->throwError(QLatin1String("Qt.createComponent(): Invalid arguments"));
-    }else{
+    } else {
+
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
+        QUrl url;
+        QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
+        if (context)
+            url = QUrl(context->resolvedUrl(QUrl(arg)));
+        else
+            url = activeEnginePriv->getUrl(ctxt).resolved(QUrl(arg));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeData::get(c, true)->setImplicitDestructible();
