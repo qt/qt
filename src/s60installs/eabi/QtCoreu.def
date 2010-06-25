@@ -3707,4 +3707,6 @@ EXPORTS
 	_ZrsR11QDataStreamR12QEasingCurve @ 3706 NONAME
 	_ZNK7QLocale13textDirectionEv @ 3707 NONAME
 	_ZNK7QString13isRightToLeftEv @ 3708 NONAME
+	_ZN16QIODevicePrivate4peekEPcx @ 3709 NONAME
+	_ZN16QIODevicePrivate4peekEx @ 3710 NONAME
 

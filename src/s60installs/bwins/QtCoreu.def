@@ -4480,4 +4480,6 @@ EXPORTS
 	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4479 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *, int)
 	?staticMetaObject@QEventDispatcherSymbian@@2UQMetaObject@@B @ 4480 NONAME ; struct QMetaObject const QEventDispatcherSymbian::staticMetaObject
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
+	?peek@QIODevicePrivate@@UAE_JPAD_J@Z @ 4482 NONAME ; long long QIODevicePrivate::peek(char *, long long)
+	?peek@QIODevicePrivate@@UAE?AVQByteArray@@_J@Z @ 4483 NONAME ; class QByteArray QIODevicePrivate::peek(long long)
 
