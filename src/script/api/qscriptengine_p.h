@@ -50,7 +50,6 @@
 #include "bridge/qscriptobject_p.h"
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptvariant_p.h"
-#include "utils/qscriptdate_p.h"
 
 #include "DateConstructor.h"
 #include "DateInstance.h"
@@ -118,6 +117,9 @@ namespace QScript
     inline qsreal ToNumber(const QString &);
     inline QString ToString(qsreal);
 #endif
+
+    QDateTime MsToDateTime(JSC::ExecState *, qsreal);
+    qsreal DateTimeToMs(JSC::ExecState *, const QDateTime &);
 
     //some conversion helper functions
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
@@ -861,7 +863,7 @@ inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, qsreal v
 
 inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, const QDateTime &value)
 {
-    return newDate(exec, QScript::FromDateTime(value));
+    return newDate(exec, QScript::DateTimeToMs(exec, value));
 }
 
 inline JSC::JSValue QScriptEnginePrivate::newObject()
@@ -994,12 +996,12 @@ inline JSC::UString QScriptEnginePrivate::toString(JSC::ExecState *exec, JSC::JS
     return str;
 }
 
-inline QDateTime QScriptEnginePrivate::toDateTime(JSC::ExecState *, JSC::JSValue value)
+inline QDateTime QScriptEnginePrivate::toDateTime(JSC::ExecState *exec, JSC::JSValue value)
 {
     if (!isDate(value))
         return QDateTime();
     qsreal t = static_cast<JSC::DateInstance*>(JSC::asObject(value))->internalNumber();
-    return QScript::ToDateTime(t, Qt::LocalTime);
+    return QScript::MsToDateTime(exec, t);
 }
 
 inline QObject *QScriptEnginePrivate::toQObject(JSC::ExecState *exec, JSC::JSValue value)

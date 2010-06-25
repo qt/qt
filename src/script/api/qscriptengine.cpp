@@ -438,6 +438,53 @@ qsreal ToNumber(const QString &value)
 
 #endif
 
+static const qsreal MsPerSecond = 1000.0;
+
+static inline int MsFromTime(qsreal t)
+{
+    int r = int(::fmod(t, MsPerSecond));
+    return (r >= 0) ? r : r + int(MsPerSecond);
+}
+
+/*!
+  \internal
+  Converts a JS date value (milliseconds) to a QDateTime (local time).
+*/
+QDateTime MsToDateTime(JSC::ExecState *exec, qsreal t)
+{
+    if (qIsNaN(t))
+        return QDateTime();
+    JSC::GregorianDateTime tm;
+    JSC::msToGregorianDateTime(exec, t, /*output UTC=*/true, tm);
+    int ms = MsFromTime(t);
+    QDateTime convertedUTC = QDateTime(QDate(tm.year + 1900, tm.month + 1, tm.monthDay),
+                                       QTime(tm.hour, tm.minute, tm.second, ms), Qt::UTC);
+    return convertedUTC.toLocalTime();
+}
+
+/*!
+  \internal
+  Converts a QDateTime to a JS date value (milliseconds).
+*/
+qsreal DateTimeToMs(JSC::ExecState *exec, const QDateTime &dt)
+{
+    if (!dt.isValid())
+        return qSNaN();
+    QDateTime utc = dt.toUTC();
+    QDate date = utc.date();
+    QTime time = utc.time();
+    JSC::GregorianDateTime tm;
+    tm.year = date.year() - 1900;
+    tm.month = date.month() - 1;
+    tm.monthDay = date.day();
+    tm.weekDay = date.dayOfWeek();
+    tm.yearDay = date.dayOfYear();
+    tm.hour = time.hour();
+    tm.minute = time.minute();
+    tm.second = time.second();
+    return JSC::gregorianDateTimeToMS(exec, tm, time.msec(), /*inputIsUTC=*/true);
+}
+
 void GlobalClientData::mark(JSC::MarkStack& markStack)
 {
     engine->mark(markStack);
