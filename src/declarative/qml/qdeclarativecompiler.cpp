@@ -2176,6 +2176,18 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
     return -1;
 }
 
+const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) const
+{
+    QDeclarativeType *qmltype = 0;
+    if (!enginePrivate->importDatabase.resolveType(unit->imports, name, &qmltype, 
+                                                   0, 0, 0, 0)) 
+        return 0;
+    if (!qmltype)
+        return 0;
+    return qmltype->metaObject();
+}
+
+
 // Ensures that the dynamic meta specification on obj is valid
 bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
 {

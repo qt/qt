@@ -130,6 +130,8 @@ protected:
 
     int evaluateEnum(const QByteArray&) const;
 
+    const QMetaObject *resolveType(const QByteArray&) const;
+
 private:
     QList<QDeclarativeError> exceptions;
     QDeclarativeCompiler *compiler;
