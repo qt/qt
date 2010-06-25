@@ -797,6 +797,26 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
     }
 }
 
+int QDeclarativeObjectMethodScriptClass::enumType(const QMetaObject *meta, const QString &strname)
+{
+    QByteArray str = strname.toUtf8();
+    QByteArray scope;
+    QByteArray name;
+    int scopeIdx = str.lastIndexOf("::");
+    if (scopeIdx != -1) {
+        scope = str.left(scopeIdx);
+        name = str.mid(scopeIdx + 2);
+    } else { 
+        name = str;
+    }
+    for (int i = meta->enumeratorCount() - 1; i >= 0; --i) {
+        QMetaEnum m = meta->enumerator(i);
+        if ((m.name() == name) && (scope.isEmpty() || (m.scope() == scope)))
+            return QVariant::Int;
+    }
+    return QVariant::Invalid;
+}
+
 QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::call(Object *o, QScriptContext *ctxt)
 {
     MethodData *method = static_cast<MethodData *>(o);
@@ -810,7 +830,9 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         // ### Cache
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
-            if (argTypes[ii] == QVariant::Invalid)
+            if (argTypes[ii] == QVariant::Invalid) 
+                argTypes[ii] = enumType(method->object->metaObject(), argTypeNames.at(ii));
+            if (argTypes[ii] == QVariant::Invalid) 
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
 
