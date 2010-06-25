@@ -815,6 +815,10 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         }
     }
 
+    QDeclarativeCustomParser *cp = 0;
+    if (isCustomParser)
+        cp = output->types.at(obj->type).type->customParser();
+
     // Build all explicit properties specified
     foreach(Property *prop, obj->properties) {
 
@@ -825,7 +829,9 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
         bool canDefer = false;
         if (isCustomParser) {
-            if (doesPropertyExist(prop, obj)) {
+            if (doesPropertyExist(prop, obj) && 
+                (!(cp->flags() & QDeclarativeCustomParser::AcceptsAttachedProperties) ||
+                 !isAttachedPropertyName(prop->name))) {
                 int ids = compileState.ids.count();
                 COMPILE_CHECK(buildProperty(prop, obj, objCtxt));
                 canDefer = ids == compileState.ids.count();
@@ -876,8 +882,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         defaultProperty->release();
 
     // Compile custom parser parts
-    if (isCustomParser/* && !customProps.isEmpty()*/) {
-        QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
+    if (isCustomParser && !customProps.isEmpty()) {
         cp->clearErrors();
         cp->compiler = this;
         cp->object = obj;
@@ -1356,7 +1361,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     Returns true if (value) property \a prop exists on obj, false otherwise.
 */
 bool QDeclarativeCompiler::doesPropertyExist(QDeclarativeParser::Property *prop,
-                                    QDeclarativeParser::Object *obj)
+                                             QDeclarativeParser::Object *obj)
 {
     if(isAttachedPropertyName(prop->name) || prop->name == "id")
         return true;
