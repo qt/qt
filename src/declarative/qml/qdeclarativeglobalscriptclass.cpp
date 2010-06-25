@@ -55,6 +55,7 @@ QDeclarativeGlobalScriptClass::QDeclarativeGlobalScriptClass(QScriptEngine *engi
 : QScriptClass(engine)
 {
     QString eval = QLatin1String("eval");
+    QString version = QLatin1String("version");
 
     QScriptValue globalObject = engine->globalObject();
 
@@ -67,6 +68,9 @@ QDeclarativeGlobalScriptClass::QDeclarativeGlobalScriptClass(QScriptEngine *engi
         iter.next();
 
         QString name = iter.name();
+
+        if (name == version)
+            continue;
 
         if (name != eval)
             m_globalObject.setProperty(iter.scriptName(), iter.value());
