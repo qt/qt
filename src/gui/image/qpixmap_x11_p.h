@@ -62,6 +62,8 @@ QT_BEGIN_NAMESPACE
 
 class QX11PaintEngine;
 
+struct QXImageWrapper;
+
 class Q_GUI_EXPORT QX11PixmapData : public QPixmapData
 {
 public:
@@ -87,6 +89,7 @@ public:
     QPixmap transformed(const QTransform &transform,
                         Qt::TransformationMode mode) const;
     QImage toImage() const;
+    QImage toImage(const QRect &rect) const;
     QPaintEngine* paintEngine() const;
 
     Qt::HANDLE handle() const { return hd; }
@@ -116,9 +119,14 @@ private:
 
     void release();
 
+    QImage toImage(const QXImageWrapper &xi, const QRect &rect) const;
+
     QBitmap mask_to_bitmap(int screen) const;
     static Qt::HANDLE bitmap_to_mask(const QBitmap &, int screen);
     void bitmapFromImage(const QImage &image);
+
+    bool canTakeQImageFromXImage(const QXImageWrapper &xi) const;
+    QImage takeQImageFromXImage(const QXImageWrapper &xi) const;
 
     Qt::HANDLE hd;
 

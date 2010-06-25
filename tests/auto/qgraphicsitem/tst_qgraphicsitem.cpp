@@ -442,6 +442,7 @@ private slots:
     void updateMicroFocus();
     void textItem_shortcuts();
     void scroll();
+    void stopClickFocusPropagation();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -10266,6 +10267,59 @@ void tst_QGraphicsItem::scroll()
     // NB! Adjusted by 2 pixels for antialiasing
     expectedItem2Expose &= item1->mapRectToItem(item2, QRectF(50, 50, 100, 100).adjusted(-2, -2, 2, 2));
     QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
+}
+
+void tst_QGraphicsItem::stopClickFocusPropagation()
+{
+    class MyItem : public QGraphicsRectItem
+    {
+    public:
+        MyItem() : QGraphicsRectItem(0, 0, 100, 100) {}
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        {
+            painter->fillRect(boundingRect(), hasFocus() ? QBrush(Qt::red) : brush());
+        }
+    };
+
+    QGraphicsScene scene(-50, -50, 400, 400);
+    scene.setStickyFocus(true);
+
+    QGraphicsRectItem *noFocusOnTop = new MyItem;
+    noFocusOnTop->setBrush(Qt::yellow);
+    noFocusOnTop->setFlag(QGraphicsItem::ItemStopsClickFocusPropagation);
+
+    QGraphicsRectItem *focusableUnder = new MyItem;
+    focusableUnder->setBrush(Qt::blue);
+    focusableUnder->setFlag(QGraphicsItem::ItemIsFocusable);
+    focusableUnder->setPos(50, 50);
+
+    QGraphicsRectItem *itemWithFocus = new MyItem;
+    itemWithFocus->setBrush(Qt::black);
+    itemWithFocus->setFlag(QGraphicsItem::ItemIsFocusable);
+    itemWithFocus->setPos(250, 10);
+
+    scene.addItem(noFocusOnTop);
+    scene.addItem(focusableUnder);
+    scene.addItem(itemWithFocus);
+    focusableUnder->stackBefore(noFocusOnTop);
+    itemWithFocus->setFocus();
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QApplication::setActiveWindow(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QVERIFY(itemWithFocus->hasFocus());
+
+    QPointF mousePressPoint = noFocusOnTop->mapToScene(QPointF());
+    mousePressPoint.rx() += 60;
+    mousePressPoint.ry() += 60;
+    const QList<QGraphicsItem *> itemsAtMousePressPosition = scene.items(mousePressPoint);
+    QVERIFY(itemsAtMousePressPosition.contains(focusableUnder));
+
+    sendMousePress(&scene, mousePressPoint);
+    QVERIFY(itemWithFocus->hasFocus());
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
