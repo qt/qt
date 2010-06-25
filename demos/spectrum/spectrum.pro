@@ -14,8 +14,6 @@ SUBDIRS += app
 TARGET = spectrum
 
 symbian {
-    load(data_caging_paths)
-
     # Create a 'make sis' rule which can be run from the top-level
 
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

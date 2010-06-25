@@ -76,6 +76,7 @@ private slots:
     void openUrlExternally();
     void md5();
     void createComponent();
+    void createComponent_pragmaLibrary();
     void createQmlObject();
     void consoleLog();
     void formatting();
@@ -359,6 +360,19 @@ void tst_qdeclarativeqt::createComponent()
     QCOMPARE(object->property("relativeUrl").toString(), TEST_FILE("createComponentData.qml").toString());
 
     delete object;
+}
+
+void tst_qdeclarativeqt::createComponent_pragmaLibrary()
+{
+    // Currently, just loading createComponent_lib.qml causes crash on some platforms
+    /*
+    QDeclarativeComponent component(&engine, TEST_FILE("createComponent_lib.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QEXPECT_FAIL("", "QTBUG-11507", Continue);
+    QCOMPARE(object->property("status").toInt(), int(QDeclarativeComponent::Ready));
+    */
 }
 
 void tst_qdeclarativeqt::createQmlObject()

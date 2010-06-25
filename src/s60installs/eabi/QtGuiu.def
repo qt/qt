@@ -12012,4 +12012,9 @@ EXPORTS
 	_ZNK11QTextCursor17verticalMovementXEv @ 12011 NONAME
 	_ZNK11QTextCursor20keepPositionOnInsertEv @ 12012 NONAME
 	_ZNK12QFontMetrics5widthERK7QStringii @ 12013 NONAME
+	_ZN11QStaticText13setTextOptionERK11QTextOption @ 12014 NONAME
+	_ZNK10QTextBlock13textDirectionEv @ 12015 NONAME
+	_ZNK11QStaticText10textOptionEv @ 12016 NONAME
+	_ZNK11QTextEngine13isRightToLeftEv @ 12017 NONAME
+	_ZNK14QWidgetPrivate22childAtRecursiveHelperERK6QPointbb @ 12018 NONAME
 

@@ -955,6 +955,9 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     if (qt_widget_private(w)->isGLWidget) {
         cname = QLatin1String("QGLWidget");
         style = CS_DBLCLKS;
+#ifndef Q_WS_WINCE
+        style |= CS_OWNDC;
+#endif
         icon  = true;
     } else if (flags & Qt::MSWindowsOwnDC) {
         cname = QLatin1String("QWidgetOwnDC");

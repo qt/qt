@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 
 Flickable {
     property alias title: webView.title
@@ -90,7 +90,6 @@ Flickable {
         url: fixUrl(webBrowser.urlString)
         smooth: false // We don't want smooth scaling, since we only scale during (fast) transitions
         focus: true
-        zoomFactor: 1
 
         onAlert: console.log(message)
 
@@ -114,7 +113,7 @@ Flickable {
 
         preferredWidth: flickable.width
         preferredHeight: flickable.height
-        contentsScale: 1/zoomFactor
+        contentsScale: 1
         onContentsSizeChanged: {
             // zoom out
             contentsScale = Math.min(1,flickable.width / contentsSize.width)

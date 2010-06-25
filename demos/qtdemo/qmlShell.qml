@@ -73,12 +73,17 @@ Item {
             clip: true
             source: qmlFile
             anchors.centerIn: parent
-            onStatusChanged: if(status == Loader.Ready) {
+            onStatusChanged:{
+            if(status == Loader.Null) {
+                loader.focus = false;//fixes QTBUG11411, probably because the focusScope needs to gain focus to focus the right child
+            }else if(status == Loader.Ready) {
                 if(loader.item.width > 640)
                     loader.item.width = 640;
                 if(loader.item.height > 480)
                     loader.item.height = 480;
-            }
+                if(loader.item.inAnotherDemo != undefined)
+                    loader.item.inAnotherDemo = true;
+            }}
 
         }
         Rectangle{ id: frame
@@ -139,7 +144,7 @@ Item {
     MouseArea{
         z: 8
         enabled: main.show
-        hoverEnabled: true //To steal focus from the buttons
+        hoverEnabled: main.show //To steal focus from the buttons
         anchors.fill: parent
         onClicked: main.show=false;
     }

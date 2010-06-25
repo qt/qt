@@ -1379,7 +1379,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
 
-    \sa ListModel, GridView
+    \sa ListModel, GridView, {declarative/modelviews/listview}{ListView examples}
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
@@ -1663,7 +1663,7 @@ int QDeclarativeListView::count() const
     so as to stay with the current item, unless the highlightFollowsCurrentItem
     property is false.
 
-    \sa highlightItem, highlightFollowsCurrentItem
+    \sa highlightItem, highlightFollowsCurrentItem, {declarative/modelviews/listview}{ListView examples}
 */
 QDeclarativeComponent *QDeclarativeListView::highlight() const
 {
@@ -1940,28 +1940,41 @@ void QDeclarativeListView::setCacheBuffer(int b)
 
     These properties hold the expression to be evaluated for the \l section attached property.
 
-    \c section.property hold the name of the property to use to determine
-    the section that holds the item.
+    The \l section attached property enables a ListView to be visually
+    separated into different parts. These properties determine how sections
+    are created.
+    
+    \c section.property holds the name of the property that is the basis
+    of each section.
 
-    \c section.criteria holds the criteria to use to access the section. It
-    can be either:
+    \c section.criteria holds the criteria for forming each section based on
+    \c section.property. This value can be one of:
 
     \list
-    \o ViewSection.FullString (default) - section is the value of the property.
-    \o ViewSection.FirstCharacter - section is the first character of the property value.
+    \o ViewSection.FullString (default) - sections are created based on the 
+    \c section.property value.
+    \o ViewSection.FirstCharacter - sections are created based on the first
+    character of the \c section.property value (for example, 'A', 'B', 'C' 
+    sections, etc. for an address book)
     \endlist
 
     \c section.delegate holds the delegate component for each section.
 
     Each item in the list has attached properties named \c ListView.section and
     \c ListView.prevSection.  These may be used to place a section header for
-    related items.  The example below assumes that the model is sorted by size of
-    pet.  The section expression is the size property.  If \c ListView.section and
-    \c ListView.prevSection differ, the item will display a section header.
+    related items.  
 
+    For example, here is a ListView that displays a list of animals, separated 
+    into sections. Each item in the ListView is placed in a different section 
+    depending on the "size" property of the model item. The \c sectionHeading
+    delegate component provides the light blue bar that marks the beginning of
+    each section.
+       
     \snippet examples/declarative/modelviews/listview/sections.qml 0
 
-    \image ListViewSections.png
+    \image qml-listview-sections-example.png
+
+    \sa {declarative/modelviews/listview}{ListView examples}
 */
 QDeclarativeViewSection *QDeclarativeListView::sectionCriteria()
 {
