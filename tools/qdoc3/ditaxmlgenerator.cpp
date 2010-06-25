@@ -4573,7 +4573,8 @@ void DitaXmlGenerator::writeLocation(const Node* n)
         s2 = CXXTYPEDEFDECLARATIONFILE;
         s3 = CXXTYPEDEFDECLARATIONFILELINE;
     }
-    else if (n->type() == Node::Property) {
+    else if ((n->type() == Node::Property) ||
+             (n->type() == Node::Variable)) {
         s1 = CXXVARIABLEAPIITEMLOCATION;
         s2 = CXXVARIABLEDECLARATIONFILE;
         s3 = CXXVARIABLEDECLARATIONFILELINE;
@@ -4716,6 +4717,8 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
             writer.writeStartElement(CXXFUNCTIONPARAMETER);
             writer.writeStartElement(CXXFUNCTIONPARAMETERDECLAREDTYPE);
             writer.writeCharacters((*p).leftType());
+            if (!(*p).rightType().isEmpty())
+                writer.writeCharacters((*p).rightType());
             writer.writeEndElement(); // <cxxFunctionParameterDeclaredType>
             writer.writeStartElement(CXXFUNCTIONPARAMETERDECLARATIONNAME);
             writer.writeCharacters((*p).name());
@@ -4888,12 +4891,6 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
     }
 }
 
-void DitaXmlGenerator::writeDataMembers(const Section& s, 
-                                        const ClassNode* cn, 
-                                        CodeMarker* marker)
-{
-}
-
 void DitaXmlGenerator::writeProperties(const Section& s, 
                                        const ClassNode* cn, 
                                        CodeMarker* marker)
@@ -4982,6 +4979,67 @@ void DitaXmlGenerator::writeProperties(const Section& s,
 
             if (!pn->doc().isEmpty()) {
                 generateBody(pn, marker);
+            }
+
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxVariableDetail>
+            writer.writeEndElement(); // </cxxVariable>
+        }
+        ++m;
+    }
+}
+
+void DitaXmlGenerator::writeDataMembers(const Section& s, 
+                                        const ClassNode* cn, 
+                                        CodeMarker* marker)
+{
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Variable) {
+            const VariableNode* vn = static_cast<const VariableNode*>(*m);
+            writer.writeStartElement(CXXVARIABLE);
+            writer.writeAttribute("id",vn->guid());
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(vn->name());
+            writer.writeEndElement(); // </apiName>
+            generateBrief(vn,marker);
+            writer.writeStartElement(CXXVARIABLEDETAIL);
+            writer.writeStartElement(CXXVARIABLEDEFINITION);
+            writer.writeStartElement(CXXVARIABLEACCESSSPECIFIER);
+            writer.writeAttribute("value",vn->accessString());
+            writer.writeEndElement(); // <cxxVariableAccessSpecifier>
+
+            writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
+            writer.writeCharacters(vn->leftType());
+            if (!vn->rightType().isEmpty())
+                writer.writeCharacters(vn->rightType());
+            writer.writeEndElement(); // <cxxVariableDeclaredType>
+
+            QString fq = fullQualification(vn);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXVARIABLESCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxVariableScopedName>
+            }
+            
+            writer.writeStartElement(CXXVARIABLEPROTOTYPE);
+            writer.writeCharacters(vn->leftType() + " ");
+            //writer.writeCharacters(vn->parent()->name() + "::" + vn->name()); 
+            writer.writeCharacters(vn->name()); 
+            if (!vn->rightType().isEmpty())
+                writer.writeCharacters(vn->rightType());
+            writer.writeEndElement(); // <cxxVariablePrototype>
+
+            writer.writeStartElement(CXXVARIABLENAMELOOKUP);
+            writer.writeCharacters(vn->parent()->name() + "::" + vn->name());
+            writer.writeEndElement(); // <cxxVariableNameLookup>
+
+            writeLocation(vn);
+            writer.writeEndElement(); // <cxxVariableDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!vn->doc().isEmpty()) {
+                generateBody(vn, marker);
             }
 
             writer.writeEndElement(); // </apiDesc>
