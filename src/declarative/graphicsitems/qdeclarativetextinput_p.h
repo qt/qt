@@ -222,6 +222,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent* ev);
+    void inputMethodEvent(QInputMethodEvent *);
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
 

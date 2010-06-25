@@ -2125,6 +2125,11 @@ bool Configure::checkAvailability(const QString &part)
         available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-msvc2010") || (dictionary.value("QMAKESPEC") == "win32-g++");
+        if( dictionary[ "SHARED" ] == "no" ) {
+            cout << endl << "WARNING: Using static linking will disable the WebKit module." << endl
+                 << endl;
+            available = false;
+        }
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {

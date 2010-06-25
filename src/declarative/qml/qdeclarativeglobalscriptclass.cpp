@@ -41,9 +41,12 @@
 
 #include "private/qdeclarativeglobalscriptclass_p.h"
 
+#include <QtCore/qvector.h>
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptvalueiterator.h>
+
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,23 +58,31 @@ QDeclarativeGlobalScriptClass::QDeclarativeGlobalScriptClass(QScriptEngine *engi
 {
     QString eval = QLatin1String("eval");
 
-    QScriptValue globalObject = engine->globalObject();
+    QScriptValue originalGlobalObject = engine->globalObject();
 
-    m_globalObject = engine->newObject();
     QScriptValue newGlobalObject = engine->newObject();
 
-    QScriptValueIterator iter(globalObject);
+    {
+        QScriptValueIterator iter(originalGlobalObject);
+        QVector<QString> names;
+        QVector<QScriptValue> values;
+        QVector<QScriptValue::PropertyFlags> flags;
+        while (iter.hasNext()) {
+            iter.next();
 
-    while (iter.hasNext()) {
-        iter.next();
+            QString name = iter.name();
 
-        QString name = iter.name();
+            if (name != eval) {
+                names.append(name);
+                values.append(iter.value());
+                flags.append(iter.flags() | QScriptValue::Undeletable);
+            }
+            newGlobalObject.setProperty(iter.scriptName(), iter.value());
 
-        if (name != eval)
-            m_globalObject.setProperty(iter.scriptName(), iter.value());
-        newGlobalObject.setProperty(iter.scriptName(), iter.value());
-
-        m_illegalNames.insert(name);
+            m_illegalNames.insert(name);
+        }
+        m_staticGlobalObject = QScriptDeclarativeClass::newStaticScopeObject(
+            engine, names.size(), names.constData(), values.constData(), flags.constData());
     }
 
     newGlobalObject.setScriptClass(this);

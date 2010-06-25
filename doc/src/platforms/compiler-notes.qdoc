@@ -52,7 +52,7 @@
 
     \table
     \header \o Compiler \o{5,1} Features
-    \header \o                  \o Concurrent \o XmlPatterns \o WebKit   \o CLucene  \o Phonon
+    \header \o                  \o Concurrent \o XmlPatterns \o WebKit(*)   \o CLucene  \o Phonon
     \row    \o g++ 3.3          \o            \o \bold{X}    \o          \o \bold{X} \o \bold{X}
     \row    \o g++ 3.4 and up   \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
     \row
@@ -66,6 +66,8 @@
     \row    \o MSVC 2003        \o \bold{X}   \o \bold{X}    \o          \o \bold{X} \o \bold{X}
     \row    \o MSVC 2005 and up \o \bold{X}   \o \bold{X}    \o \bold{X} \o \bold{X} \o \bold{X}
     \endtable
+
+    * WebKit is only supported as a dynamically built library. Static linkage is not supported.
 
     \target GCC
     \section1 GCC

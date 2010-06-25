@@ -175,13 +175,6 @@ symbian: {
         particlesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/particles
 
         DEPLOYMENT += folderlistmodelImport gesturesImport particlesImport
-
-        contains(QT_CONFIG, webkit): {
-            webkitImport.sources = $$QT_BUILD_TREE/imports/org/webkit/qmlwebkitplugin$${QT_LIBINFIX}.dll
-            webkitImport.sources += $$QT_SOURCE_TREE/src/imports/webkit/qmldir
-            webkitImport.path = c:$$QT_IMPORTS_BASE_DIR/org/webkit
-            DEPLOYMENT += webkitImport
-        }
     }
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
