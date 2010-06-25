@@ -325,6 +325,13 @@ void tst_qdeclarativetextedit::alignments()
     QFETCH(int, vAlign);
     QFETCH(QString, expectfile);
 
+#ifdef Q_WS_X11
+    // Font-specific, but not likely platform-specific, so only test on one platform
+    QFont fn;
+    fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
+    QApplication::setFont(fn);
+#endif
+
     QDeclarativeView *canvas = createView(SRCDIR "/data/alignments.qml");
 
     canvas->show();
@@ -344,7 +351,7 @@ void tst_qdeclarativetextedit::alignments()
 
     QImage expect(expectfile);
 
-#ifdef Q_OS_LINUX
+#ifdef Q_WS_X11
     // Font-specific, but not likely platform-specific, so only test on one platform
     QCOMPARE(actual,expect);
 #endif

@@ -1452,7 +1452,7 @@ qint64 QIODevicePrivate::peek(char *data, qint64 maxSize)
         return readBytes;
 
     buffer.ungetBlock(data, readBytes);
-    pos -= readBytes;
+    *pPos -= readBytes;
     return readBytes;
 }
 
@@ -1467,7 +1467,7 @@ QByteArray QIODevicePrivate::peek(qint64 maxSize)
         return result;
 
     buffer.ungetBlock(result.constData(), result.size());
-    pos -= result.size();
+    *pPos -= result.size();
     return result;
 }
 
