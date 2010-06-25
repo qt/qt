@@ -63,6 +63,7 @@ private slots:
     void tryAcquire();
     void tryAcquireWithTimeout_data();
     void tryAcquireWithTimeout();
+    void tryAcquireWithTimeoutStarvation();
     void release();
     void available();
     void producerConsumer();
@@ -232,8 +233,8 @@ void tst_QSemaphore::tryAcquireWithTimeout_data()
 {
     QTest::addColumn<int>("timeout");
 
-    QTest::newRow("") << 1000;
-    QTest::newRow("") << 10000;
+    QTest::newRow("1s") << 1000;
+    QTest::newRow("10s") << 10000;
 }
 
 void tst_QSemaphore::tryAcquireWithTimeout()
@@ -314,6 +315,50 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     QVERIFY(!semaphore.tryAcquire(10, timeout));
     QVERIFY(time.elapsed() >= timeout);
     QCOMPARE(semaphore.available(), 0);
+}
+
+void tst_QSemaphore::tryAcquireWithTimeoutStarvation()
+{
+    class Thread : public QThread
+    {
+    public:
+        QSemaphore startup;
+        QSemaphore *semaphore;
+        int amountToConsume, timeout;
+
+        void run()
+        {
+            startup.release();
+            forever {
+                if (!semaphore->tryAcquire(amountToConsume, timeout))
+                    break;
+                semaphore->release(amountToConsume);
+            }
+        }
+    };
+
+    QSemaphore semaphore;
+    semaphore.release(1);
+
+    Thread consumer;
+    consumer.semaphore = &semaphore;
+    consumer.amountToConsume = 1;
+    consumer.timeout = 1000;
+
+    // start the thread and wait for it to start consuming
+    consumer.start();
+    consumer.startup.acquire();
+
+    // try to consume more than the thread we started is, and provide a longer
+    // timeout... we should timeout, not wait indefinitely
+    QVERIFY(!semaphore.tryAcquire(consumer.amountToConsume * 2, consumer.timeout * 2));
+
+    // the consumer should still be running
+    QVERIFY(consumer.isRunning() && !consumer.isFinished());
+
+    // acquire, and wait for smallConsumer to timeout
+    semaphore.acquire();
+    QVERIFY(consumer.wait());
 }
 
 void tst_QSemaphore::release()
