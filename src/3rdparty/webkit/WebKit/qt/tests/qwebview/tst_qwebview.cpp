@@ -29,7 +29,31 @@
 #include <qdiriterator.h>
 #include <qwebkitversion.h>
 #include <qwebframe.h>
+#include <qtimer.h>
+#include <qsignalspy.h>
 
+/**
+ * Starts an event loop that runs until the given signal is received.
+ Optionally the event loop
+ * can return earlier on a timeout.
+ *
+ * \return \p true if the requested signal was received
+ *         \p false on timeout
+ */
+static bool waitForSignal(QObject* obj, const char* signal, int timeout = 0)
+{
+    QEventLoop loop;
+    QObject::connect(obj, signal, &loop, SLOT(quit()));
+    QTimer timer;
+    QSignalSpy timeoutSpy(&timer, SIGNAL(timeout()));
+    if (timeout > 0) {
+        QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timer.setSingleShot(true);
+        timer.start(timeout);
+    }
+    loop.exec();
+    return timeoutSpy.isEmpty();
+}
 class tst_QWebView : public QObject
 {
     Q_OBJECT
