@@ -259,6 +259,7 @@ void ScrollView::valueChanged(Scrollbar* scrollbar)
     if (scrollbarsSuppressed())
         return;
 
+    scrollPositionChanged();
     scrollContents(scrollDelta);
 }
 
@@ -509,7 +510,8 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
 
     if (canBlitOnScroll()) { // The main frame can just blit the WebView window
        // FIXME: Find a way to blit subframes without blitting overlapping content
-       scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect);
+       if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
+           hostWindow()->repaint(updateRect, true, false, true);
     } else { 
        // We need to go ahead and repaint the entire backing store.  Do it now before moving the
        // windowed plugins.
@@ -524,9 +526,10 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     hostWindow()->paint();
 }
 
-void ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
+bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
 {
     hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
+    return true;
 }
 
 IntPoint ScrollView::windowToContents(const IntPoint& windowPoint) const

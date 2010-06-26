@@ -246,7 +246,7 @@ protected:
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
 
     // Scroll the content by blitting the pixels
-    virtual void scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
     
 private:
     RefPtr<Scrollbar> m_horizontalScrollbar;
@@ -280,6 +280,9 @@ private:
 
     // Called to update the scrollbars to accurately reflect the state of the view.
     void updateScrollbars(const IntSize& desiredOffset);
+
+    // Called when the scroll position within this view changes.  FrameView overrides this to generate repaint invalidations.
+    virtual void scrollPositionChanged() {}
 
     void platformInit();
     void platformDestroy();

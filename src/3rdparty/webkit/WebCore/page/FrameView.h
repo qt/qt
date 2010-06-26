@@ -131,7 +131,7 @@ public:
 
     virtual void scrollRectIntoViewRecursively(const IntRect&);
     virtual void setScrollPosition(const IntPoint&);
-    void scrollPositionChanged();
+    virtual void scrollPositionChanged();
 
     String mediaType() const;
     void setMediaType(const String&);
@@ -200,7 +200,7 @@ public:
     void invalidateScrollCorner();
 
 protected:
-    virtual void scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);
 
 private:
     FrameView(Frame*);
@@ -213,6 +213,8 @@ private:
     friend class RenderWidget;
     bool useSlowRepaints() const;
     bool useSlowRepaintsIfNotOverlapped() const;
+
+    bool hasFixedObjects() const { return m_fixedObjectCount > 0; }
 
     void applyOverflowToViewport(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
 

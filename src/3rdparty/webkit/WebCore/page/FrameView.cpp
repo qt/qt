@@ -780,7 +780,7 @@ void FrameView::removeFixedObject()
         setCanBlitOnScroll(!useSlowRepaints());
 }
 
-void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
+bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect)
 {
     const size_t fixedObjectThreshold = 5;
 
@@ -790,7 +790,7 @@ void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
     if (!positionedObjects || positionedObjects->isEmpty()) {
         hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
-        return;
+        return true;
     }
 
     // Get the rects of the fixed objects visible in the rectToScroll
@@ -801,9 +801,9 @@ void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         RenderBox* renderBox = *it;
         if (renderBox->style()->position() != FixedPosition)
             continue;
-        IntRect topLevelRect;
-        IntRect updateRect = renderBox->paintingRootRect(topLevelRect);
-        updateRect.move(-scrollX(), -scrollY());
+        IntRect updateRect = renderBox->layer()->repaintRectIncludingDescendants();
+        updateRect = contentsToWindow(updateRect);
+
         updateRect.intersect(rectToScroll);
         if (!updateRect.isEmpty()) {
             if (subRectToUpdate.size() >= fixedObjectThreshold) {
@@ -819,7 +819,7 @@ void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
         // 1) scroll
         hostWindow()->scroll(scrollDelta, rectToScroll, clipRect);
 
-        // 2) update the area of fixed objets that has been invalidated
+        // 2) update the area of fixed objects that has been invalidated
         size_t fixObjectsCount = subRectToUpdate.size();
         for (size_t i = 0; i < fixObjectsCount; ++i) {
             IntRect updateRect = subRectToUpdate[i];
@@ -829,12 +829,11 @@ void FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
             updateRect.intersect(rectToScroll);
             hostWindow()->repaint(updateRect, true, false, true);
         }
-    } else {
-        // the number of fixed objects exceed the threshold, so we repaint everything.
-        IntRect updateRect = clipRect;
-        updateRect.intersect(rectToScroll);
-        hostWindow()->repaint(updateRect, true, false, true);
+        return true;
     }
+
+    // the number of fixed objects exceed the threshold, we cannot use the fast path
+    return false;
 }
 
 void FrameView::setIsOverlapped(bool isOverlapped)
@@ -963,6 +962,15 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
 void FrameView::scrollPositionChanged()
 {
     frame()->eventHandler()->sendScrollEvent();
+
+    // For fixed position elements, update widget positions and compositing layers after scrolling,
+    // but only if we're not inside of layout.
+    if (!m_nestedLayoutCount && hasFixedObjects()) {
+        if (RenderView* root = m_frame->contentRenderer()) {
+            root->updateWidgetPositions();
+            root->layer()->updateRepaintRectsAfterScroll();
+        }
+    }
 
 #if USE(ACCELERATED_COMPOSITING)
     // We need to update layer positions after scrolling to account for position:fixed layers.
