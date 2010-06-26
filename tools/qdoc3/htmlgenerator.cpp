@@ -1890,7 +1890,7 @@ void HtmlGenerator::generateFooter(const Node *node)
 		}
 		else
 		{
-			out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";\n";
+			out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
 			out() << "  <!-- <script type=\"text/javascript\">\n";
 			out() << "  var _gaq = _gaq || [];\n";
 			out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
