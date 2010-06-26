@@ -353,7 +353,9 @@ void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QWindowS
     dirtyOnScreen += toClean;
 
 #ifdef Q_WS_QWS
+#ifndef Q_BACKINGSTORE_SUBSURFACES
     toClean.translate(tlwOffset);
+#endif
 #endif
 
 #ifdef QT_NO_PAINT_DEBUG
@@ -1294,7 +1296,12 @@ void QWidgetBackingStore::sync()
 #ifdef Q_BACKINGSTORE_SUBSURFACES
         QWindowSurface *subSurface = w->windowSurface();
         BeginPaintInfo beginPaintInfo;
-        beginPaint(toBePainted, w, subSurface, &beginPaintInfo, false);
+
+        QPoint off = w->mapTo(tlw, QPoint());
+        toBePainted.translate(off);
+        beginPaint(toBePainted, w, subSurface, &beginPaintInfo, true);
+        toBePainted.translate(-off);
+
         if (beginPaintInfo.nothingToPaint)
             continue;
 
