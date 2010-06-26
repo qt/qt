@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 /*
   The CodeChunk class represents a tiny piece of C++ code.
 
-  The class provides convertion between a list of lexemes and a string.  It adds
+  The class provides conversion between a list of lexemes and a string.  It adds
   spaces at the right place for consistent style.  The tiny pieces of code it
   represents are data types, enum values, and default parameter values.
 

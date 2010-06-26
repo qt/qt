@@ -133,6 +133,7 @@ class DitaXmlGenerator : public PageGenerator
     void writeProperties(const Section& s, 
                          const ClassNode* cn, 
                          CodeMarker* marker);
+    void writerFunctions(const QString& tag, const NodeList& nlist);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
