@@ -81,8 +81,8 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     Roles (properties) must begin with a lower-case letter. The above example defines a
     ListModel containing three elements, with the roles "name" and "cost".
 
-    Values must be simple constants - either strings (quoted), bools (true, false), numbers,
-    or enum values (like Text.AlignHCenter).
+    Values must be simple constants - either strings (quoted and optionally within a call to QT_TR_NOOP),
+    bools (true, false), numbers, or enum values (like Text.AlignHCenter).
 
     The defined model can be used in views such as ListView:
 
@@ -620,8 +620,13 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
                     QByteArray script = variant.asScript().toUtf8();
                     int v = evaluateEnum(script);
                     if (v<0) {
-                        error(prop, QDeclarativeListModel::tr("ListElement: cannot use script for property value"));
-                        return false;
+                        if (script.startsWith("QT_TR_NOOP(\"") && script.endsWith("\")")) {
+                            d[0] = char(QDeclarativeParser::Variant::String);
+                            d += script.mid(12,script.length()-14);
+                        } else {
+                            error(prop, QDeclarativeListModel::tr("ListElement: cannot use script for property value"));
+                            return false;
+                        }
                     } else {
                         d[0] = char(QDeclarativeParser::Variant::Number);
                         d += QByteArray::number(v);

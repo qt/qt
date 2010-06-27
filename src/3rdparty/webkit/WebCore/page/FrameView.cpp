@@ -884,7 +884,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 {
     const size_t fixedObjectThreshold = 5;
 
-    ListHashSet<RenderBox*>* positionedObjects = 0;
+    RenderBlock::PositionedObjectsListHashSet* positionedObjects = 0;
     if (RenderView* root = m_frame->contentRenderer())
         positionedObjects = root->positionedObjects();
 
@@ -896,14 +896,14 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
     // Get the rects of the fixed objects visible in the rectToScroll
     Vector<IntRect, fixedObjectThreshold> subRectToUpdate;
     bool updateInvalidatedSubRect = true;
-    ListHashSet<RenderBox*>::const_iterator end = positionedObjects->end();
-    for (ListHashSet<RenderBox*>::const_iterator it = positionedObjects->begin(); it != end; ++it) {
+    RenderBlock::PositionedObjectsListHashSet::const_iterator end = positionedObjects->end();
+    for (RenderBlock::PositionedObjectsListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         RenderBox* renderBox = *it;
         if (renderBox->style()->position() != FixedPosition)
             continue;
-        IntRect topLevelRect;
-        IntRect updateRect = renderBox->paintingRootRect(topLevelRect);
-        updateRect.move(-scrollX(), -scrollY());
+        IntRect updateRect = renderBox->layer()->repaintRectIncludingDescendants();
+        updateRect = contentsToWindow(updateRect);
+
         updateRect.intersect(rectToScroll);
         if (!updateRect.isEmpty()) {
             if (subRectToUpdate.size() >= fixedObjectThreshold) {

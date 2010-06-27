@@ -516,8 +516,12 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         if (q) {
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
+#ifdef Q_OS_WINCE
+            MSG dummyMsg;
+            if (HIWORD(GetQueueStatus(QS_INPUT)) == 0
+                && PeekMessage(&dummyMsg, 0, WM_TIMER, WM_TIMER, PM_NOREMOVE) == 0
+#else
             if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0
-#ifndef Q_OS_WINCE
                 || GetMessageTime() - d->lastMessageTime >= 10
 #endif
                 ) {

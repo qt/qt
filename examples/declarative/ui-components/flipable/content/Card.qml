@@ -49,10 +49,12 @@ Flipable {
     property int yAxis: 0
     property int angle: 0
 
-    width: front.width; height: front.height; state: "back"
+    width: front.width; height: front.height 
 
     front: Image { id: frontImage; smooth: true }
     back: Image { source: "back.png"; smooth: true }
+
+    state: "back"
 
     MouseArea { anchors.fill: parent; onClicked: container.flipped = !container.flipped }
 

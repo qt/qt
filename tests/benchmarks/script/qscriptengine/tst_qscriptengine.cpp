@@ -42,6 +42,8 @@
 #include <qtest.h>
 #include <QtScript>
 
+#include <QtScript/private/qscriptdeclarativeclass_p.h>
+
 //TESTED_FILES=
 
 class tst_QScriptEngine : public QObject
@@ -74,6 +76,8 @@ private slots:
     void nativeCall();
     void translation_data();
     void translation();
+    void readScopeProperty_data();
+    void readScopeProperty();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -285,6 +289,54 @@ void tst_QScriptEngine::translation()
 
     QBENCHMARK {
         (void)engine.evaluate(text, fileName);
+    }
+}
+
+void tst_QScriptEngine::readScopeProperty_data()
+{
+    QTest::addColumn<bool>("staticScope");
+    QTest::addColumn<bool>("nestedScope");
+    QTest::newRow("single dynamic scope") << false << false;
+    QTest::newRow("single static scope") << true << false;
+    QTest::newRow("double dynamic scope") << false << true;
+    QTest::newRow("double static scope") << true << true;
+}
+
+void tst_QScriptEngine::readScopeProperty()
+{
+    QFETCH(bool, staticScope);
+    QFETCH(bool, nestedScope);
+
+    QScriptEngine engine;
+    QScriptContext *ctx = engine.pushContext();
+
+    QScriptValue scope;
+    if (staticScope)
+        scope = QScriptDeclarativeClass::newStaticScopeObject(&engine);
+    else
+        scope = engine.newObject();
+    scope.setProperty("foo", 123);
+    ctx->pushScope(scope);
+
+    if (nestedScope) {
+        QScriptValue scope2;
+        if (staticScope)
+            scope2 = QScriptDeclarativeClass::newStaticScopeObject(&engine);
+        else
+            scope2 = engine.newObject();
+        scope2.setProperty("bar", 456); // ensure a miss in inner scope
+        ctx->pushScope(scope2);
+    }
+
+    QScriptValue fun = engine.evaluate("(function() {\n"
+                                       "  for (var i = 0; i < 10000; ++i) {\n"
+                                       "    foo; foo; foo; foo; foo; foo; foo; foo;\n"
+                                       "  }\n"
+                                       "})");
+    engine.popContext();
+    QVERIFY(fun.isFunction());
+    QBENCHMARK {
+        fun.call();
     }
 }
 

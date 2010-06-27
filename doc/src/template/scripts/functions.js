@@ -104,9 +104,9 @@ function processNokiaData(response){
 
 	}	
 	 
-	if(lookupCount == 0){$('#ul001').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');}
-    if(articleCount == 0){$('#ul002').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
-	if(exampleCount == 0){$('#ul003').prepend('<li class=\"liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
+	if(lookupCount == 0){$('#ul001').prepend('<li class=\"menuAlert liveResult noMatch\">Found no result</li>');$('#ul001 li').css('display','block');$('.sidebar .search form input').removeClass('loading');}
+    if(articleCount == 0){$('#ul002').prepend('<li class=\"menuAlert liveResult noMatch\">Found no result</li>');$('#ul002 li').css('display','block');}
+	if(exampleCount == 0){$('#ul003').prepend('<li class=\"menuAlert liveResult noMatch\">Found no result</li>');$('#ul003 li').css('display','block');}
 	// reset count variables;
 	 lookupCount=0;
 	 articleCount = 0;
@@ -160,7 +160,8 @@ else
           var searchString = $('#pageType').val() ;
           if ((searchString == null) || (searchString.length < 3)) {
 				$('#pageType').removeClass('loading');
-				 $('.liveResult').remove(); // replaces removeResults();
+				 $('.liveResult').remove(); 
+				 $('.searching').remove(); 
       	   		CheckEmptyAndLoadList();
 				$('.report').remove();
 				// debug$('.content').prepend('<li>too short or blank</li>'); // debug
@@ -169,9 +170,7 @@ else
             if (this.timer) clearTimeout(this.timer);
             this.timer = setTimeout(function () {
 				$('#pageType').addClass('loading');
-				// debug$('.content').prepend('<li>new search started </li>');// debug
-				// debug$('.content').prepend('<p class=\"report\">Search string ' +searchString +'</p>'); // debug
-
+				$('.list ul').prepend('<li class="menuAlert searching">Searching...</li>');
                $.ajax({
                 contentType: "application/x-www-form-urlencoded",
                 url: 'http://' + location.host + '/nokiasearch/GetDataServlet',
@@ -180,9 +179,9 @@ else
 				type: 'post',	 
                 success: function (response, textStatus) {
 
-				$('.liveResult').remove(); // replaces removeResults();
+				$('.liveResult').remove(); 
 								$('#pageType').removeClass('loading');
-
+				$('.list ul').prepend('<li class="menuAlert searching">Searching...</li>');
                 processNokiaData(response);
 
  }     

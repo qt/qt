@@ -39,12 +39,10 @@
 ****************************************************************************/
 
 import Qt 4.7
-import "../../toys/clocks/content"
+import "../../toys/clocks/content"  // for loading the Clock element
 import "qml"
 
 Rectangle {
-    id: root
-
     width: 320; height: 480
 
     ParallaxView {
@@ -76,7 +74,5 @@ Rectangle {
                 Component.onCompleted: item.inAnotherDemo = true;
             }
         }
-
-        currentIndex: root.currentIndex
     }
 }

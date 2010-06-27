@@ -25,6 +25,13 @@ symbian: {
     webkitbackup.sources = ../WebKit/qt/symbian/backup_registration.xml
     webkitbackup.path = /private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
 
+    contains(QT_CONFIG, declarative) {
+         declarativeImport.sources = qmlwebkitplugin$${QT_LIBINFIX}.dll
+         declarativeImport.sources += ../WebKit/qt/declarative/qmldir
+         declarativeImport.path = c:$$QT_IMPORTS_BASE_DIR/QtWebKit
+         DEPLOYMENT += declarativeImport
+    }
+
     DEPLOYMENT += webkitlibs webkitbackup
 
     # Need to guarantee that these come before system includes of /epoc32/include
@@ -2866,6 +2873,7 @@ HEADERS += $$WEBKIT_API_HEADERS
         # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
         inst_headers.input = WEBKIT_INSTALL_HEADERS
+        inst_headers.CONFIG = no_clean
 
         !isEmpty(INSTALL_HEADERS): inst_headers.output = $$INSTALL_HEADERS/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
         else: inst_headers.output = $$[QT_INSTALL_HEADERS]/QtWebKit/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
@@ -2875,6 +2883,7 @@ HEADERS += $$WEBKIT_API_HEADERS
         inst_modfile.commands = $$inst_headers.commands
         inst_modfile.input = moduleFile
         inst_modfile.output = $$[QMAKE_MKSPECS]/modules
+        inst_modfile.CONFIG = no_clean
 
         QMAKE_EXTRA_COMPILERS += inst_modfile
 

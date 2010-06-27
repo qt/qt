@@ -574,17 +574,17 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
         }
     }
 #elif defined(Q_OS_AIX)
-    systemCerts.append(QSslCertificate::fromPath("/var/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/var/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard));
 #elif defined(Q_OS_SOLARIS)
-    systemCerts.append(QSslCertificate::fromPath("/usr/local/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard));
 #elif defined(Q_OS_HPUX)
-    systemCerts.append(QSslCertificate::fromPath("/opt/openssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard));
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/opt/openssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard));
 #elif defined(Q_OS_LINUX)
-    systemCerts.append(QSslCertificate::fromPath("/etc/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard)); // (K)ubuntu, OpenSUSE, Mandriva, ...
-    systemCerts.append(QSslCertificate::fromPath("/etc/pki/tls/certs/ca-bundle.crt", QSsl::Pem)); // Fedora
-    systemCerts.append(QSslCertificate::fromPath("/usr/lib/ssl/certs/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Gentoo, Mandrake
-    systemCerts.append(QSslCertificate::fromPath("/usr/share/ssl/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
-    systemCerts.append(QSslCertificate::fromPath("/usr/local/ssl/*.pem", QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // (K)ubuntu, OpenSUSE, Mandriva, ...
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/lib/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Gentoo, Mandrake
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/share/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
 #endif
     return systemCerts;
 }

@@ -1,6 +1,6 @@
 qmlcalculator_src = $$PWD/../../declarative/calculator
 symbian {
-    qmlcalculator_uid3 = EA8EBD98
+    qmlcalculator_uid3 = A000E3FB
     qmlcalculator_files.path = ../$$qmlcalculator_uid3
 }
 qmlcalculator_files.sources = $$qmlcalculator_src/calculator.qml $$qmlcalculator_src/Core

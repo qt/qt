@@ -113,10 +113,11 @@ class DitaXmlGenerator : public PageGenerator
     QString fullQualification(const Node* n);
 
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
-    void writeLocation(const Node* n, CodeMarker* marker);
+    void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
                         const ClassNode* cn, 
                         CodeMarker* marker);
+    void writeParameters(const FunctionNode* fn, CodeMarker* marker);
     void writeNestedClasses(const Section& s, 
                             const ClassNode* cn, 
                             CodeMarker* marker);
@@ -132,6 +133,7 @@ class DitaXmlGenerator : public PageGenerator
     void writeProperties(const Section& s, 
                          const ClassNode* cn, 
                          CodeMarker* marker);
+    void writerFunctions(const QString& tag, const NodeList& nlist);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };

@@ -1053,7 +1053,7 @@ void QVNCServer::clientCutText()
 {
     QRfbClientCutText ev;
 
-    if (ev.read(client)) {
+    if (cutTextPending == 0 && ev.read(client)) {
         cutTextPending = ev.length;
         if (!cutTextPending)
             handleMsg = false;
@@ -1481,7 +1481,7 @@ void QVNCServer::convertPixels(char *dst, const char *src, int count) const
             }
             if (count & 0x1) {
                 const quint16 *src16 = reinterpret_cast<const quint16*>(src);
-                dst32[count - 1] = qt_conv16ToRgb(src16[count - 1]);
+                *dst32 = qt_conv16ToRgb(src16[count - 1]);
             }
             return;
 #endif
@@ -2038,7 +2038,7 @@ void QVNCServer::discardClient()
     delete qvnc_cursor;
     qvnc_cursor = 0;
 #endif
-    if (!qvnc_screen->screen() && !qvnc_screen->d_ptr->noDisablePainting)
+    if (!qvnc_screen->screen() && !qvnc_screen->d_ptr->noDisablePainting && QWSServer::instance())
         QWSServer::instance()->enablePainting(false);
 }
 

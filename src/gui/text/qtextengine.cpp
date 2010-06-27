@@ -2670,7 +2670,7 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
 
 QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe)
     : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
-      num_chars(0), chars(0), logClusters(0), f(font), fontEngine(fe), glyphs(g)
+      num_chars(0), chars(0), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
 {
 }
 
