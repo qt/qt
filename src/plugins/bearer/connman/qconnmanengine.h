@@ -120,7 +120,6 @@ private:
     void getNetworkListing();
 
     QString getServiceForNetwork(const QString &network);
-    QString getNetworkForService(const QString &network);
 
     QString serviceFromId(const QString &id);
     QString networkFromId(const QString &id);
@@ -134,11 +133,12 @@ private:
     QDateTime activeTime;
 
 
-    QMap<QString,QConnmanTechnologyInterface *> technologies;
- //   QStringList knownNetworks;
+    QMap<QString,QConnmanTechnologyInterface *> technologies; // techpath, tech interface
+    QMap<QString,QString> configInterfaces; // id, interface name
+    QMap<QString,QStringList> knownNetworks; //device path, net paths list
+    QMap<QString,QStringList> deviceMap; //tech path,  device path
+    QMap<QString, QString> serviceNetworks; //service, network
 
-   QMap<QString,QStringList> knownNetworks;
-   QMap<QString,QStringList> deviceMap;
 
 protected:
     bool requiresPolling() const;
