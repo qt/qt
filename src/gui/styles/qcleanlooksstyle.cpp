@@ -3763,6 +3763,7 @@ int QCleanlooksStyle::pixelMetric(PixelMetric metric, const QStyleOption *option
         break;
     case PM_MenuBarItemSpacing:
         ret = 6;
+        break;
     case PM_MenuBarHMargin:
         ret = 0;
         break;

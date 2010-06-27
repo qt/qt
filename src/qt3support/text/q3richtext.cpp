@@ -8079,9 +8079,9 @@ bool Q3TextTable::down(Q3TextCursor *c, Q3TextDocument *&doc, Q3TextParagraph *&
             break;
         }
     }
-    doc = cell->richText();
     if (!cell)
         return false;
+    doc = cell->richText();
     parag = doc->firstParagraph();
     idx = 0;
     ox += cell->geometry().x() + cell->horizontalAlignmentOffset() + outerborder + parent->x();
@@ -8117,9 +8117,9 @@ bool Q3TextTable::up(Q3TextCursor *c, Q3TextDocument *&doc, Q3TextParagraph *&pa
             break;
         }
     }
-    doc = cell->richText();
     if (!cell)
         return false;
+    doc = cell->richText();
     parag = doc->lastParagraph();
     idx = parag->length() - 1;
     ox += cell->geometry().x() + cell->horizontalAlignmentOffset() + outerborder + parent->x();
