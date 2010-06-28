@@ -1952,9 +1952,13 @@ QString Tree::fullDocumentLocation(const Node *node) const
     else if (node->type() == Node::Fake) {
 #ifdef QDOC_QML
         if ((node->subType() == Node::QmlClass) ||
-            (node->subType() == Node::QmlBasicType))
-            return "qml-" + node->fileBase() + ".html";
-        else
+            (node->subType() == Node::QmlBasicType)) {
+            QString fb = node->fileBase();
+            if (fb.startsWith(QLatin1String("QML:")))
+                return node->fileBase() + ".html";
+            else
+                return "qml-" + node->fileBase() + ".html";
+        } else
 #endif
         parentName = node->fileBase() + ".html";
     }
