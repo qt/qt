@@ -623,6 +623,8 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
     recordTimer.setRepeating(true);
+
+    QObject::connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(appAboutToQuit()));
 }
 
 QDeclarativeViewer::~QDeclarativeViewer()
@@ -1275,6 +1277,16 @@ void QDeclarativeViewer::setRecording(bool on)
 void QDeclarativeViewer::ffmpegFinished(int code)
 {
     qDebug() << "ffmpeg returned" << code << frame_stream->readAllStandardError();
+}
+
+void QDeclarativeViewer::appAboutToQuit()
+{
+    // avoid QGLContext errors about invalid contexts on exit
+    canvas->setViewport(0);
+
+    // avoid crashes if messages are received after app has closed
+    delete loggerWindow;
+    loggerWindow = 0;
 }
 
 void QDeclarativeViewer::autoStartRecording()

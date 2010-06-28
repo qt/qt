@@ -131,6 +131,8 @@ protected:
     void createMenu();
 
 private slots:
+    void appAboutToQuit();
+
     void autoStartRecording();
     void autoStopRecording();
     void recordFrame();
