@@ -138,7 +138,7 @@ void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
     format.setDepthBufferSize(depthSize);
     format.setStencilBufferSize(stencilSize);
     format.setSamples(sampleCount);
-    format.setPlane(level + 1);      // EGL calls level 0 "normal" whereas Qt calls 1 "normal"
+    format.setPlane(level);
     format.setDirectRendering(true); // All EGL contexts are direct-rendered
     format.setRgba(true);            // EGL doesn't support colour index rendering
     format.setStereo(false);         // EGL doesn't support stereo buffers

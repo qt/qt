@@ -86,9 +86,11 @@ static qreal dot(const QPointF &a, const QPointF &b)
     return a.x() * b.x() + a.y() * b.y();
 }
 
-static QPointF normalize(const QPointF &p)
+static void normalize(double &x, double &y)
 {
-    return p / qSqrt(p.x() * p.x() + p.y() * p.y());
+    double reciprocal = 1 / qSqrt(x * x + y * y);
+    x *= reciprocal;
+    y *= reciprocal;
 }
 
 struct QIntersection
@@ -1017,8 +1019,8 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
     const QPathEdge *ap = edge(a);
     const QPathEdge *bp = edge(b);
 
-    qreal a_angle = ap->angle;
-    qreal b_angle = bp->angle;
+    double a_angle = ap->angle;
+    double b_angle = bp->angle;
 
     if (vertex == ap->second)
         a_angle = ap->invAngle;
@@ -1026,7 +1028,7 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
     if (vertex == bp->second)
         b_angle = bp->invAngle;
 
-    qreal result = b_angle - a_angle;
+    double result = b_angle - a_angle;
 
     if (result >= 128.)
         return result - 128.;
@@ -1034,26 +1036,6 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
         return result + 128.;
     else
         return result;
-}
-
-static inline QPointF tangentAt(const QWingedEdge &list, int vi, int ei)
-{
-    const QPathEdge *ep = list.edge(ei);
-    Q_ASSERT(ep);
-
-    qreal sign;
-
-    if (ep->first == vi) {
-        sign = 1;
-    } else {
-        sign = -1;
-    }
-
-    const QPointF a = *list.vertex(ep->first);
-    const QPointF b = *list.vertex(ep->second);
-    QPointF normal = b - a;
-
-    return normalize(sign * normal);
 }
 
 static inline QPointF midPoint(const QWingedEdge &list, int ei)
@@ -1191,7 +1173,7 @@ static int commonEdge(const QWingedEdge &list, int a, int b)
     return -1;
 }
 
-static qreal computeAngle(const QPointF &v)
+static double computeAngle(const QPointF &v)
 {
 #if 1
     if (v.x() == 0) {
@@ -1200,15 +1182,17 @@ static qreal computeAngle(const QPointF &v)
         return v.x() <= 0 ? 32. : 96.;
     }
 
-    QPointF nv = normalize(v);
-    if (nv.y() < 0) {
-        if (nv.x() < 0) { // 0 - 32
-            return -32. * nv.x();
+    double vx = v.x();
+    double vy = v.y();
+    normalize(vx, vy);
+    if (vy < 0) {
+        if (vx < 0) { // 0 - 32
+            return -32. * vx;
         } else { // 96 - 128
-            return 128. - 32. * nv.x();
+            return 128. - 32. * vx;
         }
     } else { // 32 - 96
-        return 64. + 32 * nv.x();
+        return 64. + 32. * vx;
     }
 #else
     // doesn't seem to be robust enough
