@@ -98,6 +98,11 @@
 #define WTF_COMPILER_WINSCW 1
 #endif
 
+/* COMPILER(INTEL) - Intel C++ Compiler */
+#if defined(__INTEL_COMPILER)
+#define WTF_COMPILER_INTEL 1
+#endif
+
 /* COMPILER(ACC) - HP aCC */
 #if defined(__HP_aCC)
 #define WTF_COMPILER_ACC 1
@@ -703,11 +708,11 @@
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIMEB_H 1
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+#if !defined(TARGETING_TIGER) && !defined(TARGETING_LEOPARD)
 
 #define HAVE_DISPATCH_H 1
 
-#if !PLATFORM(IPHONE) && !PLATFORM(QT)
+#if !PLATFORM(IPHONE)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
