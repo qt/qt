@@ -11,9 +11,13 @@ else:!equals(DEPLOYMENT, default_deployment) {
 }
 
 equals(GENERATE_RUN_TARGETS, true) {
-    sis_destdir = $$DESTDIR
-    !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
-    contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
+    symbian-abld|symbian-sbsv2 {
+        sis_destdir =
+    } else {
+        sis_destdir = $$DESTDIR
+        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
+        contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
+    }
 
     contains(SYMBIAN_PLATFORMS, "WINSCW"):contains(TEMPLATE, "app") {
         run_target.target = run

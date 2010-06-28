@@ -4097,4 +4097,8 @@ EXPORTS
 	?setHeader@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 4096 NONAME ; void QDeclarativeGridView::setHeader(class QDeclarativeComponent *)
 	?header@QDeclarativeGridView@@QBEPAVQDeclarativeComponent@@XZ @ 4097 NONAME ; class QDeclarativeComponent * QDeclarativeGridView::header(void) const
 	?footerChanged@QDeclarativeGridView@@IAEXXZ @ 4098 NONAME ; void QDeclarativeGridView::footerChanged(void)
+	?registerAutoParentFunction@QDeclarativePrivate@@YAHP6A?AW4AutoParentResult@1@PAVQObject@@0@Z@Z @ 4099 NONAME ; int QDeclarativePrivate::registerAutoParentFunction(enum QDeclarativePrivate::AutoParentResult (*)(class QObject *, class QObject *))
+	?parentFunctions@QDeclarativeMetaType@@SA?AV?$QList@P6A?AW4AutoParentResult@QDeclarativePrivate@@PAVQObject@@0@Z@@XZ @ 4100 NONAME ; class QList<enum QDeclarativePrivate::AutoParentResult (*)(class QObject *, class QObject *)> QDeclarativeMetaType::parentFunctions(void)
+	?inputMethodEvent@QDeclarativeTextInput@@MAEXPAVQInputMethodEvent@@@Z @ 4101 NONAME ; void QDeclarativeTextInput::inputMethodEvent(class QInputMethodEvent *)
+	?doUpdate@QDeclarativeBorderImage@@AAEXXZ @ 4102 NONAME ; void QDeclarativeBorderImage::doUpdate(void)
 

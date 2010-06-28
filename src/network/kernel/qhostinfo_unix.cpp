@@ -210,12 +210,23 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #ifdef Q_ADDRCONFIG
     hints.ai_flags = Q_ADDRCONFIG;
 #endif
+#ifdef Q_OS_SYMBIAN
+#   ifdef QHOSTINFO_DEBUG
+        qDebug() << "Setting flags: 'hints.ai_flags &= AI_V4MAPPED | AI_ALL'";
+#   endif
+#endif
 
     int result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
 # ifdef Q_ADDRCONFIG
     if (result == EAI_BADFLAGS) {
         // if the lookup failed with AI_ADDRCONFIG set, try again without it
         hints.ai_flags = 0;
+#ifdef Q_OS_SYMBIAN
+#   ifdef QHOSTINFO_DEBUG
+        qDebug() << "Setting flags: 'hints.ai_flags &= AI_V4MAPPED | AI_ALL'";
+#   endif
+        hints.ai_flags &= AI_V4MAPPED | AI_ALL;
+#endif
         result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
     }
 # endif
@@ -224,6 +235,9 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         addrinfo *node = res;
         QList<QHostAddress> addresses;
         while (node) {
+#ifdef QHOSTINFO_DEBUG
+                qDebug() << "getaddrinfo node: flags:" << node->ai_flags << "family:" << node->ai_family << "ai_socktype:" << node->ai_socktype << "ai_protocol:" << node->ai_protocol << "ai_addrlen:" << node->ai_addrlen;
+#endif
             if (node->ai_family == AF_INET) {
                 QHostAddress addr;
                 addr.setAddress(ntohl(((sockaddr_in *) node->ai_addr)->sin_addr.s_addr));

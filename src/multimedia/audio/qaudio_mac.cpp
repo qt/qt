@@ -68,11 +68,11 @@ QAudioFormat toQAudioFormat(AudioStreamBasicDescription const& sf)
     audioFormat.setChannels(sf.mChannelsPerFrame);
     audioFormat.setSampleSize(sf.mBitsPerChannel);
     audioFormat.setCodec(QString::fromLatin1("audio/pcm"));
-    audioFormat.setByteOrder(sf.mFormatFlags & kLinearPCMFormatFlagIsBigEndian != 0 ? QAudioFormat::BigEndian : QAudioFormat::LittleEndian);
+    audioFormat.setByteOrder((sf.mFormatFlags & kAudioFormatFlagIsBigEndian) != 0 ? QAudioFormat::BigEndian : QAudioFormat::LittleEndian);
     QAudioFormat::SampleType type = QAudioFormat::UnSignedInt;
-    if ((sf.mFormatFlags & kLinearPCMFormatFlagIsSignedInteger) != 0)
+    if ((sf.mFormatFlags & kAudioFormatFlagIsSignedInteger) != 0)
         type = QAudioFormat::SignedInt;
-    else if ((sf.mFormatFlags & kLinearPCMFormatFlagIsFloat) != 0)
+    else if ((sf.mFormatFlags & kAudioFormatFlagIsFloat) != 0)
         type = QAudioFormat::Float;
     audioFormat.setSampleType(type);
 
@@ -98,6 +98,9 @@ AudioStreamBasicDescription toAudioStreamBasicDescription(QAudioFormat const& au
     case QAudioFormat::Float: sf.mFormatFlags |= kAudioFormatFlagIsFloat; break;
     case QAudioFormat::Unknown:  default: break;
     }
+
+    if (audioFormat.byteOrder() == QAudioFormat::BigEndian)
+        sf.mFormatFlags |= kAudioFormatFlagIsBigEndian;
 
     return sf;
 }
