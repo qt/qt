@@ -39,7 +39,7 @@
 #define HB_END_HEADER  /* nothing */
 #endif
 
-#if defined(__GNUC__) || defined(__ARMCC__) || defined(__CC_ARM) || defined(_MSC_VER)
+#if defined(__GNUC__) || defined(_MSC_VER)
 #define HB_USE_PACKED_STRUCTS
 #endif
 
