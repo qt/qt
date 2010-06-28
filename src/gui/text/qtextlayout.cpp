@@ -1769,7 +1769,8 @@ static inline void addNextCluster(int &pos, int end, QScriptLine &line, int &gly
         ++line.length;
     } while (pos < end && logClusters[pos] == glyphPosition);
     do { // calculate the textWidth for the rest of the current cluster.
-        line.textWidth += glyphs.advances_x[glyphPosition] * !glyphs.attributes[glyphPosition].dontPrint;
+        if (!glyphs.attributes[glyphPosition].dontPrint)
+            line.textWidth += glyphs.advances_x[glyphPosition];
         ++glyphPosition;
     } while (glyphPosition < current.num_glyphs && !glyphs.attributes[glyphPosition].clusterStart);
 
@@ -1999,9 +2000,10 @@ found:
         eng->maxWidth += lbh.spaceData.textWidth;
     if (eng->option.flags() & QTextOption::IncludeTrailingSpaces)
         line.textWidth += lbh.spaceData.textWidth;
-    line.length += lbh.spaceData.length;
-    if (lbh.spaceData.length)
+    if (lbh.spaceData.length) {
+        line.length += lbh.spaceData.length;
         line.hasTrailingSpaces = true;
+    }
 
     line.justified = false;
     line.gridfitted = false;
