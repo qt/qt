@@ -30,8 +30,9 @@
     \title ECMAScript Reference
     \brief A list of objects, functions and properties supported by QtScript.
 
-    This reference contains a list of objects, functions and
-    properties supported by QtScript.
+    This reference contains a list of built-in objects, functions and
+    properties supported by QtScript. For a detailed description, see
+    the \l{ECMA-262} specification.
 
     \tableofcontents
 
@@ -43,7 +44,6 @@
     \o NaN
     \o Infinity
     \o undefined
-    \o Math
     \endlist
 
     \section2 Function Properties
@@ -80,9 +80,32 @@
     \o URIError
     \endlist
 
+    \section2 Other Properties
+
+    \list
+    \o Math
+    \o JSON
+    \endlist
+
     \section1 Object Objects
 
+    \section2 Object Constructor
+
+    \section3 Function Properties
+
+    \list
+    \o getPrototypeOf(O)
+    \o getOwnPropertyDescriptor(O, P)
+    \o getOwnPropertyNames(O)
+    \o create(O [, Properties])
+    \o defineProperty(O, P, Attributes)
+    \o defineProperties(O, Properties)
+    \o keys(O)
+    \endlist
+
     \section2 Object Prototype Object
+
+    \section3 Function Properties
 
     \list
     \o toString()
@@ -124,6 +147,15 @@
     \o sort(comparefn)
     \o splice(start, deleteCount[, item1 [, item2 [, ...]]])
     \o unshift([item1 [, item2 [, ...]]])
+    \o indexOf(searchElement [, fromIndex])
+    \o lastIndexOf(searchElement [, fromIndex])
+    \o every(callbackfn [, thisArg])
+    \o some(callbackfn [, thisArg])
+    \o forEach(callbackfn [, thisArg])
+    \o map(callbackfn [, thisArg])
+    \o filter(callbackfn [, thisArg])
+    \o reduce(callbackfn [, initialValue])
+    \o reduceRight(callbackfn [, initialValue])
     \endlist
 
     \section1 String Objects
@@ -151,6 +183,7 @@
     \o toLocaleLowerCase()
     \o toUpperCase()
     \o toLocaleUpperCase()
+    \o trim()
     \endlist
 
     \section1 Boolean Objects
@@ -264,6 +297,8 @@
     \o setFullYear(year [, month [, date]])
     \o setUTCFullYear(year [, month [, date]])
     \o toUTCString()
+    \o toISOString()
+    \o toJSON()
     \endlist
 
     \section1 RegExp Objects
@@ -293,6 +328,15 @@
 
     \list
     \o toString()
+    \endlist
+
+    \section1 The JSON Object
+
+    \section2 Function Properties
+
+    \list
+    \o parse(text [, reviver])
+    \o stringify(value [, replacer [, space]])
     \endlist
 
 */

@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -5008,6 +5009,13 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
             writer.writeStartElement(CXXVARIABLEACCESSSPECIFIER);
             writer.writeAttribute("value",vn->accessString());
             writer.writeEndElement(); // <cxxVariableAccessSpecifier>
+
+            if (vn->isStatic()) {
+                writer.writeStartElement(CXXVARIABLESTORAGECLASSSPECIFIERSTATIC);
+                writer.writeAttribute("name","static");
+                writer.writeAttribute("value","static");
+                writer.writeEndElement(); // <cxxVariableStorageClassSpecifierStatic>
+            }
 
             writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
             writer.writeCharacters(vn->leftType());
