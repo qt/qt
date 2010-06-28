@@ -14,6 +14,7 @@ qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 symbian:{
+    TARGET.UID3 = 0x2002131F
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
     importFiles.sources = qmlgesturesplugin.dll qmldir

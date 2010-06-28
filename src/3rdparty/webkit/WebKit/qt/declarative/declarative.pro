@@ -6,6 +6,8 @@ CONFIG += qt plugin
 
 win32|mac:!wince*:!win32-msvc:!macx-xcode:CONFIG += debug_and_release
 
+isEmpty(OUTPUT_DIR): OUTPUT_DIR = ../../..
+
 QMLDIRFILE = $${_PRO_FILE_PWD_}/qmldir
 copy2build.input = QMLDIRFILE
 CONFIG(QTDIR_build) {
@@ -64,13 +66,7 @@ qmldir.files += $$PWD/qmldir
 qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 symbian:{
-    load(data_caging_paths)
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-
-    importFiles.sources = qmlwebkitplugin.dll qmldir
-    importFiles.path = $$QT_IMPORTS_BASE_DIR/$$TARGETPATH
-
-    DEPLOYMENT = importFiles
+    TARGET.UID3 = 0x20021321
 }
 
 INSTALLS += target qmldir

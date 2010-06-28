@@ -64,6 +64,7 @@
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptglobalobject_p.h"
 #include "bridge/qscriptactivationobject_p.h"
+#include "bridge/qscriptstaticscopeobject_p.h"
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qcoreapplication.h>
@@ -436,6 +437,53 @@ qsreal ToNumber(const QString &value)
 }
 
 #endif
+
+static const qsreal MsPerSecond = 1000.0;
+
+static inline int MsFromTime(qsreal t)
+{
+    int r = int(::fmod(t, MsPerSecond));
+    return (r >= 0) ? r : r + int(MsPerSecond);
+}
+
+/*!
+  \internal
+  Converts a JS date value (milliseconds) to a QDateTime (local time).
+*/
+QDateTime MsToDateTime(JSC::ExecState *exec, qsreal t)
+{
+    if (qIsNaN(t))
+        return QDateTime();
+    JSC::GregorianDateTime tm;
+    JSC::msToGregorianDateTime(exec, t, /*output UTC=*/true, tm);
+    int ms = MsFromTime(t);
+    QDateTime convertedUTC = QDateTime(QDate(tm.year + 1900, tm.month + 1, tm.monthDay),
+                                       QTime(tm.hour, tm.minute, tm.second, ms), Qt::UTC);
+    return convertedUTC.toLocalTime();
+}
+
+/*!
+  \internal
+  Converts a QDateTime to a JS date value (milliseconds).
+*/
+qsreal DateTimeToMs(JSC::ExecState *exec, const QDateTime &dt)
+{
+    if (!dt.isValid())
+        return qSNaN();
+    QDateTime utc = dt.toUTC();
+    QDate date = utc.date();
+    QTime time = utc.time();
+    JSC::GregorianDateTime tm;
+    tm.year = date.year() - 1900;
+    tm.month = date.month() - 1;
+    tm.monthDay = date.day();
+    tm.weekDay = date.dayOfWeek();
+    tm.yearDay = date.dayOfYear();
+    tm.hour = time.hour();
+    tm.minute = time.minute();
+    tm.second = time.second();
+    return JSC::gregorianDateTimeToMS(exec, tm, time.msec(), /*inputIsUTC=*/true);
+}
 
 void GlobalClientData::mark(JSC::MarkStack& markStack)
 {
@@ -905,6 +953,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::ExecState* exec = globalObject->globalExec();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
+    staticScopeObjectStructure = QScriptStaticScopeObject::createStructure(JSC::jsNull());
 
     qobjectPrototype = new (exec) QScript::QObjectPrototype(exec, QScript::QObjectPrototype::createStructure(globalObject->objectPrototype()), globalObject->prototypeFunctionStructure());
     qobjectWrapperObjectStructure = QScriptObject::createStructure(qobjectPrototype);
@@ -1770,15 +1819,7 @@ void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue object
         } else if (flags != QScriptValue::KeepExistingFlags) {
             if (thisObject->hasOwnProperty(exec, id))
                 thisObject->deleteProperty(exec, id); // ### hmmm - can't we just update the attributes?
-            unsigned attribs = 0;
-            if (flags & QScriptValue::ReadOnly)
-                attribs |= JSC::ReadOnly;
-            if (flags & QScriptValue::SkipInEnumeration)
-                attribs |= JSC::DontEnum;
-            if (flags & QScriptValue::Undeletable)
-                attribs |= JSC::DontDelete;
-            attribs |= flags & QScriptValue::UserRange;
-            thisObject->putWithAttributes(exec, id, value, attribs);
+            thisObject->putWithAttributes(exec, id, value, propertyFlagsToJSCAttributes(flags));
         } else {
             JSC::PutPropertySlot slot;
             thisObject->put(exec, id, value, slot);
