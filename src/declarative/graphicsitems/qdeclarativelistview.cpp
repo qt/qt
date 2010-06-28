@@ -105,7 +105,7 @@ public:
         else
             return (view->orientation() == QDeclarativeListView::Vertical ? item->y() : item->x());
     }
-    int size() const {
+    qreal size() const {
         if (section)
             return (view->orientation() == QDeclarativeListView::Vertical ? item->height()+section->height() : item->width()+section->height());
         else
@@ -476,7 +476,7 @@ public:
     QHash<QDeclarativeItem*,int> unrequestedItems;
     FxListItem *currentItem;
     QDeclarativeListView::Orientation orient;
-    int visiblePos;
+    qreal visiblePos;
     int visibleIndex;
     qreal averageSize;
     int currentIndex;
@@ -655,7 +655,7 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
 
     bool changed = false;
     FxListItem *item = 0;
-    int pos = itemEnd + 1;
+    qreal pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= fillTo) {
 //        qDebug() << "refill: append item" << modelIndex << "pos" << pos;
         if (!(item = createItem(modelIndex)))
@@ -744,8 +744,8 @@ void QDeclarativeListViewPrivate::layout()
     }
     updateSections();
     if (!visibleItems.isEmpty()) {
-        int oldEnd = visibleItems.last()->endPosition();
-        int pos = visibleItems.first()->endPosition() + spacing + 1;
+        qreal oldEnd = visibleItems.last()->endPosition();
+        qreal pos = visibleItems.first()->endPosition() + spacing + 1;
         for (int i=1; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             item->setPosition(pos);
@@ -1027,7 +1027,7 @@ void QDeclarativeListViewPrivate::updateAverage()
     qreal sum = 0.0;
     for (int i = 0; i < visibleItems.count(); ++i)
         sum += visibleItems.at(i)->size();
-    averageSize = sum / visibleItems.count();
+    averageSize = qRound(sum / visibleItems.count());
 }
 
 void QDeclarativeListViewPrivate::updateFooter()
@@ -1547,8 +1547,11 @@ void QDeclarativeListView::setModel(const QVariant &model)
     that is not needed for the normal display of the delegate in a \l Loader which
     can load additional elements when needed.
 
-    Tthe ListView will lay out the items based on the size of the root item
+    The ListView will lay out the items based on the size of the root item
     in the delegate.
+
+    It is recommended that the delagate's size be a whole number to avoid sub-pixel
+    alignment of items.
 
     \note Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
