@@ -369,10 +369,10 @@ void MenuManager::launchQmlExample(const QString &name)
         dir = QDir(QLibraryInfo::location(QLibraryInfo::DemosPath));
     else
         dir = QDir(QLibraryInfo::location(QLibraryInfo::ExamplesPath));
-    QFile file(dir.path() + "/" + dirName + "/" + fileName + "/" + fileName.split('/').last() + ".qml");
+    QFile file(dir.path() + "/" + dirName + "/" + fileName + "/" + "main.qml");
     if(!file.exists()){
-        //try main.qml as well
-        file.setFileName(dir.path() + "/" + dirName + "/" + fileName + "/" + "main.qml");
+        //try dirname.qml as well
+        file.setFileName(dir.path() + "/" + dirName + "/" + fileName + "/" + fileName.split('/').last() + ".qml");
         if(!file.exists()){
             exampleError(QProcess::UnknownError);
             return;

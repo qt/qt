@@ -99,6 +99,7 @@ Item {
             }
             MouseArea{
                 anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 onClicked: loader.focus=true;/* and don't propogate to the 'exit' area*/
             }
 
@@ -130,7 +131,7 @@ Item {
             textFormat: Text.RichText
             //Note that if loader is Error, it is because the file was found but there was an error creating the component
             //This means either we have a bug in our demos, or the required modules (which ship with Qt) did not deploy correctly
-            text: "The example has failed to load.<br />If you installed Qt's QML modules this is a bug!<br />"
+            text: "The example has failed to load.<br />If you installed all Qt's C++ and QML modules then this is a bug!<br />"
                 + 'Report it at <a href="http://bugreports.qt.nokia.com">http://bugreports.qt.nokia.com</a>';
             onLinkActivated: Qt.openUrlExternally(link);
         }
@@ -145,6 +146,7 @@ Item {
         z: 8
         enabled: main.show
         hoverEnabled: main.show //To steal focus from the buttons
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         anchors.fill: parent
         onClicked: main.show=false;
     }

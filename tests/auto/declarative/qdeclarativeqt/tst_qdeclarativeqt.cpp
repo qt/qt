@@ -365,14 +365,12 @@ void tst_qdeclarativeqt::createComponent()
 void tst_qdeclarativeqt::createComponent_pragmaLibrary()
 {
     // Currently, just loading createComponent_lib.qml causes crash on some platforms
-    /*
     QDeclarativeComponent component(&engine, TEST_FILE("createComponent_lib.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
-
-    QEXPECT_FAIL("", "QTBUG-11507", Continue);
     QCOMPARE(object->property("status").toInt(), int(QDeclarativeComponent::Ready));
-    */
+    QCOMPARE(object->property("readValue").toInt(), int(1913));
+    delete object;
 }
 
 void tst_qdeclarativeqt::createQmlObject()
