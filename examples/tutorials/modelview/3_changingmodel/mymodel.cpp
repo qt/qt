@@ -27,6 +27,7 @@ int MyModel::columnCount(const QModelIndex  & /*parent */ ) const
 }
 
 //-------------------------------------------------------
+//! [quoting mymodel_QVariant ]
 QVariant MyModel::data(const QModelIndex &index, int role ) const
 {
     int row = index.row();
@@ -41,7 +42,7 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
     }
     return QVariant();
 }
-
+//! [quoting mymodel_QVariant ]
 //-------------------------------------------------------
 //! [quoting mymodel_b ]
 void MyModel::timerHit()
