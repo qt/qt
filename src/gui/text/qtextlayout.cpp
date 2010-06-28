@@ -645,21 +645,19 @@ void QTextLayout::clearLayout()
 /*!
     Returns the next valid cursor position after \a oldPos that
     respects the given cursor \a mode.
+    Returns value of \a oldPos, if \a oldPos is not a valid cursor position.
 
     \sa isValidCursorPosition() previousCursorPosition()
 */
 int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
 {
-//      qDebug("looking for next cursor pos for %d", oldPos);
     const HB_CharAttributes *attributes = d->attributes();
-    if (!attributes)
-        return 0;
-    int len = d->block.isValid() ?
-              (d->block.length() - 1)
-              : d->layoutData->string.length();
-
-    if (oldPos >= len)
+    int len = d->block.isValid() ? d->block.length() - 1
+                                 : d->layoutData->string.length();
+    Q_ASSERT(len <= d->layoutData->string.length());
+    if (!attributes || oldPos < 0 || oldPos >= len)
         return oldPos;
+
     if (mode == SkipCharacters) {
         oldPos++;
         while (oldPos < len && !attributes[oldPos].charStop)
@@ -676,22 +674,23 @@ int QTextLayout::nextCursorPosition(int oldPos, CursorMode mode) const
         while (oldPos < len && d->atSpace(oldPos))
             oldPos++;
     }
-//      qDebug("  -> %d", oldPos);
+
     return oldPos;
 }
 
 /*!
     Returns the first valid cursor position before \a oldPos that
     respects the given cursor \a mode.
+    Returns value of \a oldPos, if \a oldPos is not a valid cursor position.
 
     \sa isValidCursorPosition() nextCursorPosition()
 */
 int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
 {
-//     qDebug("looking for previous cursor pos for %d", oldPos);
     const HB_CharAttributes *attributes = d->attributes();
-    if (!attributes || oldPos <= 0)
-        return 0;
+    if (!attributes || oldPos <= 0 || oldPos > d->layoutData->string.length())
+        return oldPos;
+
     if (mode == SkipCharacters) {
         oldPos--;
         while (oldPos && !attributes[oldPos].charStop)
@@ -709,7 +708,7 @@ int QTextLayout::previousCursorPosition(int oldPos, CursorMode mode) const
                 oldPos--;
         }
     }
-//     qDebug("  -> %d", oldPos);
+
     return oldPos;
 }
 
