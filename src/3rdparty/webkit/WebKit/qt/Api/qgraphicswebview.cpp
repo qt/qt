@@ -442,6 +442,8 @@ QRectF QGraphicsWebViewPrivate::graphicsItemVisibleRect() const
 #if ENABLE(TILED_BACKING_STORE)
 void QGraphicsWebViewPrivate::updateTiledBackingStoreScale()
 {
+    if (!page)
+        return;
     WebCore::TiledBackingStore* backingStore = QWebFramePrivate::core(page->mainFrame())->tiledBackingStore();
     if (!backingStore)
         return;
