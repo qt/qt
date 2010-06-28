@@ -160,7 +160,7 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
+			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit your feedback...</textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
