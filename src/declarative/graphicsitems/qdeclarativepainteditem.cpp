@@ -151,6 +151,7 @@ void QDeclarativePaintedItem::setContentsSize(const QSize &size)
 {
     Q_D(QDeclarativePaintedItem);
     if (d->contentsSize == size) return;
+    prepareGeometryChange();
     d->contentsSize = size;
     clearCache();
     update();
@@ -247,8 +248,7 @@ QRectF QDeclarativePaintedItem::boundingRect() const
 void QDeclarativePaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativePaintedItem);
-    const QRect content(0,0,qCeil(d->contentsSize.width()*d->contentsScale),
-                            qCeil(d->contentsSize.height()*d->contentsScale));
+    const QRect content = boundingRect().toRect();
     if (content.width() <= 0 || content.height() <= 0)
         return;
 

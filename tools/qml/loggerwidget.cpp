@@ -39,29 +39,48 @@
 **
 ****************************************************************************/
 
-#include "loggerwidget.h"
 #include <qglobal.h>
 #include <QDebug>
 #include <QSettings>
 #include <QActionGroup>
 #include <QMenu>
+#include <QPlainTextEdit>
+#ifdef Q_WS_MAEMO_5
+#  include <QScrollArea>
+#  include <QVBoxLayout>
+#  include "texteditautoresizer_maemo5.h"
+#endif
+
+#include "loggerwidget.h"
 
 QT_BEGIN_NAMESPACE
 
 LoggerWidget::LoggerWidget(QWidget *parent) :
-    QPlainTextEdit(parent),
+    QMainWindow(parent),
     m_visibilityOrigin(SettingsOrigin)
 {
     setAttribute(Qt::WA_QuitOnClose, false);
     setWindowTitle(tr("Warnings"));
 
+    m_plainTextEdit = new QPlainTextEdit();
+
+#ifdef Q_WS_MAEMO_5
+    new TextEditAutoResizer(m_plainTextEdit);
+    setAttribute(Qt::WA_Maemo5StackedWindow);
+    QScrollArea *area = new QScrollArea();
+    area->setWidget(m_plainTextEdit);
+    area->setWidgetResizable(true);
+    setCentralWidget(area);
+#else
+    setCentralWidget(m_plainTextEdit);
+#endif
     readSettings();
     setupPreferencesMenu();
 }
 
 void LoggerWidget::append(const QString &msg)
 {
-    appendPlainText(msg);
+    m_plainTextEdit->appendPlainText(msg);
 
     if (!isVisible() && (defaultVisibility() == AutoShowWarnings))
         setVisible(true);

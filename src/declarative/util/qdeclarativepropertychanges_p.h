@@ -79,6 +79,9 @@ public:
 class QDeclarativePropertyChangesParser : public QDeclarativeCustomParser
 {
 public:
+    QDeclarativePropertyChangesParser()
+    : QDeclarativeCustomParser(AcceptsAttachedProperties) {}
+
     void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QDeclarativeCustomParserProperty &prop);
 
     virtual QByteArray compile(const QList<QDeclarativeCustomParserProperty> &);
