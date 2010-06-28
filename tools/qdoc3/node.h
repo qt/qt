@@ -371,9 +371,9 @@ class FakeNode : public InnerNode
     void addGroupMember(Node* node) { gr.append(node); }
 
     SubType subType() const { return sub; }
-    QString title() const { return tle; }
-    QString fullTitle() const;
-    QString subTitle() const;
+    virtual QString title() const;
+    virtual QString fullTitle() const;
+    virtual QString subTitle() const;
     const NodeList &groupMembers() const { return gr; }
     virtual QString nameForLists() const { return title(); }
 
