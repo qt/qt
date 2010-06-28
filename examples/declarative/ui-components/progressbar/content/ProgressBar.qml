@@ -66,7 +66,7 @@ Item {
         width: highlight.widthDest
         Behavior on width { SmoothedAnimation { velocity: 1200 } }
 
-        anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 3; topMargin: 3; bottomMargin: 3 }
+        anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: 3 }
         radius: 1
         gradient: Gradient {
             GradientStop { id: gradient1; position: 0.0 }

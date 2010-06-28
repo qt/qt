@@ -68,7 +68,8 @@ Rectangle {
 
         Rectangle { 
             id: shade
-            color: "black"; opacity: 0; anchors.fill: parent
+            anchors.fill: parent
+            color: "black"; opacity: 0 
         }
 
         states: State {
@@ -88,7 +89,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
 
         MouseArea {
-            anchors { fill: parent; leftMargin: -10; topMargin: -10; rightMargin: -10; bottomMargin: -10 }
+            anchors.fill: parent; anchors.margins: -10
             onClicked: window.state = "contextMenuOpen"
         }
     }
