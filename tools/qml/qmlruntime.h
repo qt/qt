@@ -62,16 +62,15 @@ class QNetworkCookieJar;
 class NetworkAccessManagerFactory;
 class QTranslator;
 class QActionGroup;
+class QMenuBar;
 
 class QDeclarativeViewer
     : public QMainWindow
 {
     Q_OBJECT
-    QDeclarativeViewer(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    static QDeclarativeViewer *inst;
 
 public:
-    static QDeclarativeViewer *instance(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    QDeclarativeViewer(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~QDeclarativeViewer();
 
     static void registerTypes();

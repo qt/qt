@@ -534,17 +534,6 @@ QString QDeclarativeViewer::getVideoFileName()
     return QFileDialog::getSaveFileName(this, title, "", types.join(";; "));
 }
 
-QDeclarativeViewer *QDeclarativeViewer::inst = 0;
-
-QDeclarativeViewer *QDeclarativeViewer::instance(QWidget *parent, Qt::WindowFlags flags)
-{
-    if (!inst) {
-        inst = new QDeclarativeViewer(parent, flags);
-        inst->setAttribute(Qt::WA_DeleteOnClose);
-    }
-    return inst;
-}
-
 QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
       , loggerWindow(new LoggerWidget(this))
@@ -1400,6 +1389,7 @@ void QDeclarativeViewer::updateSizeHints()
             canvas->setMinimumSize(newWindowSize);
             canvas->resize(newWindowSize);
             resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
+            canvas->setMinimumSize(QSize(0, 0));
         }
     } else { // QDeclarativeView::SizeRootObjectToView
         canvas->setMinimumSize(QSize(0,0));

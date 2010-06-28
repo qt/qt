@@ -346,7 +346,7 @@ int main(int argc, char ** argv)
     if (stayOnTop)
         wflags |= Qt::WindowStaysOnTopHint;
 
-    QDeclarativeViewer *viewer = QDeclarativeViewer::instance(0, wflags);
+    QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     viewer->setAttribute(Qt::WA_DeleteOnClose, true);
     if (!scriptopts.isEmpty()) {
         QStringList options =
