@@ -1805,6 +1805,11 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
 /*! \fn QByteArray &QByteArray::replace(int pos, int len, const char *after)
 
     \overload
+
+    Replaces \a len bytes from index position \a pos with the zero terminated
+    string \a after.
+
+    Notice: this can change the lenght of the byte array.
 */
 QByteArray &QByteArray::replace(int pos, int len, const char *after)
 {
