@@ -102,6 +102,7 @@ public:
     virtual void setAlphaChannel(const QPixmap &alphaChannel);
     virtual QPixmap alphaChannel() const;
     virtual QImage toImage() const = 0;
+    virtual QImage toImage(const QRect &rect) const;
     virtual QPaintEngine* paintEngine() const = 0;
 
     inline int serialNumber() const { return ser_no; }

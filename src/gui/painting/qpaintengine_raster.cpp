@@ -2419,7 +2419,9 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
             drawImage(r, image, sr);
         }
     } else {
-        const QImage image = pixmap.toImage();
+        QRect clippedSource = sr.toAlignedRect().intersected(pixmap.rect());
+        const QImage image = pd->toImage(clippedSource);
+        QRectF translatedSource = sr.translated(-clippedSource.topLeft());
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2430,10 +2432,10 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
                 drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
                 return;
             } else {
-                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), sr);
+                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), translatedSource);
             }
         } else {
-            drawImage(r, image, sr);
+            drawImage(r, image, translatedSource);
         }
     }
 }
@@ -2688,7 +2690,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
-        if (s->flags.fast_images) {
+        QRectF targetBounds = s->matrix.mapRect(r);
+        bool exceedsPrecision = targetBounds.width() > 0xffff
+                                || targetBounds.height() > 0xffff;
+
+        if (s->flags.fast_images && !exceedsPrecision) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {

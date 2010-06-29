@@ -1336,6 +1336,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
                 break;
             }
         }
+        if (item->d_ptr->flags & QGraphicsItem::ItemStopsClickFocusPropagation)
+            break;
         if (item->isPanel())
             break;
     }

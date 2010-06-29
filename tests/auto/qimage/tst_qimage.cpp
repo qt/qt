@@ -945,11 +945,11 @@ void tst_QImage::rotate()
         const int n = original.colorTable().size();
         for (int x = 0; x < w; ++x) {
             original.setPixel(x, 0, x % n);
-            original.setPixel(x,h - 1, n - (x % n));
+            original.setPixel(x, h - 1, n - (x % n) - 1);
         }
         for (int y = 0; y < h; ++y) {
             original.setPixel(0, y, y % n);
-            original.setPixel(w - 1, y, n - (y % n));
+            original.setPixel(w - 1, y, n - (y % n) - 1);
         }
     }
 

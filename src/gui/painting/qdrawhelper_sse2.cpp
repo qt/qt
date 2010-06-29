@@ -126,13 +126,100 @@ QT_BEGIN_NAMESPACE
     result = _mm_or_si128(finalAG, finalRB); \
 }
 
+// Basically blend src over dst with the const alpha defined as constAlphaVector.
+// nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
+//const __m128i nullVector = _mm_set1_epi32(0);
+//const __m128i half = _mm_set1_epi16(0x80);
+//const __m128i one = _mm_set1_epi16(0xff);
+//const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+//const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+//
+// The computation being done is:
+// result = s + d * (1-alpha)
+// with shortcuts if fully opaque or fully transparent.
+#define BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
+    int x = 0; \
+    for (; x < length-3; x += 4) { \
+        const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
+        const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask); \
+        if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) { \
+            /* all opaque */ \
+            _mm_storeu_si128((__m128i *)&dst[x], srcVector); \
+        } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) { \
+            /* not fully transparent */ \
+            /* extract the alpha channel on 2 x 16 bits */ \
+            /* so we have room for the multiplication */ \
+            /* each 32 bits will be in the form 0x00AA00AA */ \
+            /* with A being the 1 - alpha */ \
+            __m128i alphaChannel = _mm_srli_epi32(srcVector, 24); \
+            alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16)); \
+            alphaChannel = _mm_sub_epi16(one, alphaChannel); \
+ \
+            const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]); \
+            __m128i destMultipliedByOneMinusAlpha; \
+            BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
+ \
+            /* result = s + d * (1-alpha) */\
+            const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
+            _mm_storeu_si128((__m128i *)&dst[x], result); \
+        } \
+    } \
+    for (; x < length; ++x) { \
+        uint s = src[x]; \
+        if (s >= 0xff000000) \
+            dst[x] = s; \
+        else if (s != 0) \
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+    } \
+}
+
+// Basically blend src over dst with the const alpha defined as constAlphaVector.
+// nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
+//const __m128i nullVector = _mm_set1_epi32(0);
+//const __m128i half = _mm_set1_epi16(0x80);
+//const __m128i one = _mm_set1_epi16(0xff);
+//const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+//
+// The computation being done is:
+// dest = (s + d * sia) * ca + d * cia
+//      = s * ca + d * (sia * ca + cia)
+//      = s * ca + d * (1 - sa*ca)
+#define BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector) \
+{ \
+    int x = 0; \
+    for (; x < length-3; x += 4) { \
+        __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
+        if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) { \
+            BYTE_MUL_SSE2(srcVector, srcVector, constAlphaVector, colorMask, half); \
+\
+            __m128i alphaChannel = _mm_srli_epi32(srcVector, 24); \
+            alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16)); \
+            alphaChannel = _mm_sub_epi16(one, alphaChannel); \
+ \
+            const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]); \
+            __m128i destMultipliedByOneMinusAlpha; \
+            BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
+ \
+            const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
+            _mm_storeu_si128((__m128i *)&dst[x], result); \
+        } \
+    } \
+    for (; x < length; ++x) { \
+        quint32 s = src[x]; \
+        if (s != 0) { \
+            s = BYTE_MUL(s, const_alpha); \
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+        } \
+    } \
+}
+
 void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
                                     const uchar *srcPixels, int sbpl,
                                     int w, int h,
                                     int const_alpha)
 {
     const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (uint *) destPixels;
+    quint32 *dst = (quint32 *) destPixels;
     if (const_alpha == 256) {
         const __m128i alphaMask = _mm_set1_epi32(0xff000000);
         const __m128i nullVector = _mm_set1_epi32(0);
@@ -140,41 +227,7 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         const __m128i one = _mm_set1_epi16(0xff);
         const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
         for (int y = 0; y < h; ++y) {
-            int x = 0;
-            for (; x < w-3; x += 4) {
-                const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
-                const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask);
-                if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) {
-                    // all opaque
-                    _mm_storeu_si128((__m128i *)&dst[x], srcVector);
-                } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) {
-                    // not fully transparent
-                    // result = s + d * (1-alpha)
-
-                    // extract the alpha channel on 2 x 16 bits
-                    // so we have room for the multiplication
-                    // each 32 bits will be in the form 0x00AA00AA
-                    // with A being the 1 - alpha
-                    __m128i alphaChannel = _mm_srli_epi32(srcVector, 24);
-                    alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16));
-                    alphaChannel = _mm_sub_epi16(one, alphaChannel);
-
-                    const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
-                    __m128i destMultipliedByOneMinusAlpha;
-                    BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half);
-
-                    // result = s + d * (1-alpha)
-                    const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha);
-                    _mm_storeu_si128((__m128i *)&dst[x], result);
-                }
-            }
-            for (; x<w; ++x) {
-                uint s = src[x];
-                if (s >= 0xff000000)
-                    dst[x] = s;
-                else if (s != 0)
-                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
-            }
+            BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, w, nullVector, half, one, colorMask, alphaMask);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
         }
@@ -189,31 +242,7 @@ void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
         const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
         const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
         for (int y = 0; y < h; ++y) {
-            int x = 0;
-            for (; x < w-3; x += 4) {
-                __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
-                if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
-                    BYTE_MUL_SSE2(srcVector, srcVector, constAlphaVector, colorMask, half);
-
-                    __m128i alphaChannel = _mm_srli_epi32(srcVector, 24);
-                    alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16));
-                    alphaChannel = _mm_sub_epi16(one, alphaChannel);
-
-                    const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
-                    __m128i destMultipliedByOneMinusAlpha;
-                    BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half);
-
-                    const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha);
-                    _mm_storeu_si128((__m128i *)&dst[x], result);
-                }
-            }
-            for (; x<w; ++x) {
-                quint32 s = src[x];
-                if (s != 0) {
-                    s = BYTE_MUL(s, const_alpha);
-                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
-                }
-            }
+            BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, w, nullVector, half, one, colorMask, constAlphaVector)
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
         }
@@ -232,7 +261,7 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                  int const_alpha)
 {
     const quint32 *src = (const quint32 *) srcPixels;
-    quint32 *dst = (uint *) destPixels;
+    quint32 *dst = (quint32 *) destPixels;
     if (const_alpha != 256) {
         if (const_alpha != 0) {
             const __m128i nullVector = _mm_set1_epi32(0);
@@ -265,6 +294,27 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
         }
     } else {
         qt_blend_rgb32_on_rgb32(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
+    }
+}
+
+void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
+{
+    Q_ASSERT(const_alpha >= 0);
+    Q_ASSERT(const_alpha < 256);
+
+    const quint32 *src = (const quint32 *) srcPixels;
+    quint32 *dst = (quint32 *) destPixels;
+
+    const __m128i nullVector = _mm_set1_epi32(0);
+    const __m128i half = _mm_set1_epi16(0x80);
+    const __m128i one = _mm_set1_epi16(0xff);
+    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+    if (const_alpha == 255) {
+        const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+        BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, length, nullVector, half, one, colorMask, alphaMask);
+    } else {
+        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector);
     }
 }
 
@@ -309,6 +359,34 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
         case 2: dest[count - 2] = value;
         case 1: dest[count - 1] = value;
         }
+    }
+}
+
+void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha)
+{
+    if ((const_alpha & qAlpha(color)) == 255) {
+        qt_memfill32_sse2(destPixels, color, length);
+    } else {
+        if (const_alpha != 255)
+            color = BYTE_MUL(color, const_alpha);
+
+        const quint32 minusAlphaOfColor = qAlpha(~color);
+        int x = 0;
+
+        quint32 *dst = (quint32 *) destPixels;
+        const __m128i colorVector = _mm_set1_epi32(color);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
+
+        for (; x < length-3; x += 4) {
+            __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+            BYTE_MUL_SSE2(dstVector, dstVector, minusAlphaOfColorVector, colorMask, half);
+            dstVector = _mm_add_epi8(colorVector, dstVector);
+            _mm_storeu_si128((__m128i *)&dst[x], dstVector);
+        }
+        for (;x < length; ++x)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }
 

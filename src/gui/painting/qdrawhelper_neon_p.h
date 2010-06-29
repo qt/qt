@@ -127,6 +127,8 @@ uint * QT_FASTCALL qt_destFetchRGB16_neon(uint *buffer,
 void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer,
                                         int x, int y, const uint *buffer, int length);
 
+void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha);
+
 #endif // QT_HAVE_NEON
 
 QT_END_NAMESPACE
