@@ -4,3 +4,4 @@
 .*/lupdate/testdata/good/parsecpp2/main.cpp:65: Excess closing brace .*
 .*/lupdate/testdata/good/parsecpp2/main.cpp:120: //% cannot be used with tr\(\) / QT_TR_NOOP\(\)\. Ignoring
 .*/lupdate/testdata/good/parsecpp2/main.cpp:123: //% cannot be used with translate\(\) / QT_TRANSLATE_NOOP\(\)\. Ignoring
+.*/lupdate/testdata/good/parsecpp2/main.cpp:126: Discarding unconsumed meta data

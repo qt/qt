@@ -2081,10 +2081,13 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_Semicolon:
             prospectiveContext.clear();
             prefix.clear();
-            sourcetext.clear();
-            extracomment.clear();
-            msgid.clear();
-            extra.clear();
+            if (!sourcetext.isEmpty() || !extracomment.isEmpty() || !msgid.isEmpty() || !extra.isEmpty()) {
+                yyMsg() << "Discarding unconsumed meta data\n";
+                sourcetext.clear();
+                extracomment.clear();
+                msgid.clear();
+                extra.clear();
+            }
             yyTokColonSeen = false;
             yyTok = getToken();
             break;
