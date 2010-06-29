@@ -162,6 +162,7 @@ private slots:
     void translateWithInvalidArgs();
     void translationContext_data();
     void translationContext();
+    void translateScriptIdBased();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4386,6 +4387,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
     QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
     QVERIFY(!global.property("qsTr").isValid());
     QVERIFY(!global.property("QT_TR_NOOP").isValid());
+    QVERIFY(!global.property("qsTrId").isValid());
+    QVERIFY(!global.property("QT_TRID_NOOP").isValid());
     QVERIFY(!globalOrig.property("String").property("prototype").property("arg").isValid());
 
     eng.installTranslatorFunctions();
@@ -4393,6 +4396,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
     QVERIFY(global.property("QT_TRANSLATE_NOOP").isFunction());
     QVERIFY(global.property("qsTr").isFunction());
     QVERIFY(global.property("QT_TR_NOOP").isFunction());
+    QVERIFY(global.property("qsTrId").isFunction());
+    QVERIFY(global.property("QT_TRID_NOOP").isFunction());
     QVERIFY(globalOrig.property("String").property("prototype").property("arg").isFunction());
 
     if (useCustomGlobalObject) {
@@ -4400,6 +4405,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QVERIFY(!globalOrig.property("QT_TRANSLATE_NOOP").isValid());
         QVERIFY(!globalOrig.property("qsTr").isValid());
         QVERIFY(!globalOrig.property("QT_TR_NOOP").isValid());
+        QVERIFY(!globalOrig.property("qsTrId").isValid());
+        QVERIFY(!globalOrig.property("QT_TRID_NOOP").isValid());
     }
 
     {
@@ -4426,6 +4433,17 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
+    }
+
+    {
+        QScriptValue ret = eng.evaluate("qsTrId('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TRID_NOOP('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
     }
 }
 
@@ -4537,6 +4555,10 @@ void tst_QScriptEngine::translateWithInvalidArgs_data()
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 123)")  << "qsTranslate('foo', 'bar', 'baz', 123)" << "Error: qsTranslate(): fourth argument (encoding) must be a string";
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')" << "Error: qsTranslate(): fifth argument (n) must be a number";
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 123)")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 123)" << "Error: qsTranslate(): invalid encoding 'zab'";
+
+    QTest::newRow("qsTrId()")  << "qsTrId()" << "Error: qsTrId() requires at least one argument";
+    QTest::newRow("qsTrId(123)")  << "qsTrId(123)" << "TypeError: qsTrId(): first argument (id) must be a string";
+    QTest::newRow("qsTrId('foo', 'bar')")  << "qsTrId('foo', 'bar')" << "TypeError: qsTrId(): second argument (n) must be a number";
 }
 
 void tst_QScriptEngine::translateWithInvalidArgs()
@@ -4596,6 +4618,53 @@ void tst_QScriptEngine::translationContext()
     QCOMPARE(ret.toString(), expectedTranslation);
 
     QCoreApplication::instance()->removeTranslator(&translator);
+}
+
+void tst_QScriptEngine::translateScriptIdBased()
+{
+    QScriptEngine engine;
+
+    QTranslator translator;
+    translator.load(":/translations/idtranslatable_la");
+    QCoreApplication::instance()->installTranslator(&translator);
+    engine.installTranslatorFunctions();
+
+    QString fileName = QString::fromLatin1("idtranslatable.js");
+
+    QHash<QString, QString> expectedTranslations;
+    expectedTranslations["qtn_foo_bar"] = "First string";
+    expectedTranslations["qtn_needle"] = "Second string";
+    expectedTranslations["qtn_haystack"] = "Third string";
+    expectedTranslations["qtn_bar_baz"] = "Fourth string";
+
+    QHash<QString, QString>::const_iterator it;
+    for (it = expectedTranslations.constBegin(); it != expectedTranslations.constEnd(); ++it) {
+        for (int x = 0; x < 2; ++x) {
+            QString fn;
+            if (x)
+                fn = fileName;
+            // Top-level
+            QCOMPARE(engine.evaluate(QString::fromLatin1("qsTrId('%0')")
+                                     .arg(it.key()), fn).toString(),
+                     it.value());
+            QCOMPARE(engine.evaluate(QString::fromLatin1("QT_TRID_NOOP('%0')")
+                                     .arg(it.key()), fn).toString(),
+                     it.key());
+            // From function
+            QCOMPARE(engine.evaluate(QString::fromLatin1("(function() { return qsTrId('%0'); })()")
+                                     .arg(it.key()), fn).toString(),
+                     it.value());
+            QCOMPARE(engine.evaluate(QString::fromLatin1("(function() { return QT_TRID_NOOP('%0'); })()")
+                                     .arg(it.key()), fn).toString(),
+                     it.key());
+        }
+    }
+
+    // Plural form
+    QCOMPARE(engine.evaluate("qsTrId('qtn_bar_baz', 10)").toString(),
+             QString::fromLatin1("10 fooish bar(s) found"));
+    QCOMPARE(engine.evaluate("qsTrId('qtn_foo_bar', 10)").toString(),
+             QString::fromLatin1("qtn_foo_bar")); // Doesn't have plural
 }
 
 void tst_QScriptEngine::functionScopes()
