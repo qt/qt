@@ -1858,6 +1858,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
               gotctx:
                 recordMessage(line, context, text, comment, extracomment, msgid, extra, utf8, plural);
             }
+            sourcetext.clear(); // Will have warned about that already
             extracomment.clear();
             msgid.clear();
             extra.clear();
@@ -1913,6 +1914,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 recordMessage(line, context, text, comment, extracomment, msgid, extra, utf8, plural);
             }
+            sourcetext.clear(); // Will have warned about that already
             extracomment.clear();
             msgid.clear();
             extra.clear();
@@ -2079,6 +2081,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_Semicolon:
             prospectiveContext.clear();
             prefix.clear();
+            sourcetext.clear();
             extracomment.clear();
             msgid.clear();
             extra.clear();
