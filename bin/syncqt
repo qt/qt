@@ -834,12 +834,12 @@ foreach (@modules_to_sync) {
                             # write forwarding headers to include/Qt
                             if ("$lib" ne "phonon" && "$subdir" =~ /^$basedir\/src/) {
                                 my $file_name = "$out_basedir/include/Qt/$header";
+                                my $file_op = '>';
                                 my $header_content = '';
                                 if (exists $colliding_headers{$file_name}) {
-                                    $file_name = ">>$file_name";
+                                    $file_op = '>>';
                                 } else {
                                     $colliding_headers{$file_name} = 1;
-                                    $file_name = ">$file_name";
                                     my $warning_msg = 'Inclusion of header files from include/Qt is deprecated.';
                                     $header_content = "#ifndef QT_NO_QT_INCLUDE_WARN\n" .
                                                       "    #if defined(__GNUC__)\n" .
@@ -850,7 +850,7 @@ foreach (@modules_to_sync) {
                                                       "#endif\n\n";
                                 }
                                 $header_content .= '#include "' . "../$lib/$header" . "\"\n";
-                                open HEADERFILE, $file_name;
+                                open HEADERFILE, $file_op, $file_name or die "unable to open '$file_name' : $!\n";
                                 print HEADERFILE $header_content;
                                 close HEADERFILE;
                             }
