@@ -109,6 +109,7 @@ private slots:
     bool deviceReady();
 
 private:
+    int checkBytesReady();
     int xrun_recovery(int err);
     int setFormat();
     bool open();

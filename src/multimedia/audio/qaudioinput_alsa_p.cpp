@@ -120,7 +120,7 @@ int QAudioInputPrivate::xrun_recovery(int err)
         if(err < 0)
             reset = true;
         else {
-            bytesAvailable = bytesReady();
+            bytesAvailable = checkBytesReady();
             if (bytesAvailable <= 0)
                 reset = true;
         }
@@ -408,7 +408,7 @@ bool QAudioInputPrivate::open()
     snd_pcm_start(handle);
 
     // Step 5: Setup timer
-    bytesAvailable = bytesReady();
+    bytesAvailable = checkBytesReady();
 
     if(pullMode)
         connect(audioSource,SIGNAL(readyRead()),this,SLOT(userFeed()));
@@ -437,19 +437,29 @@ void QAudioInputPrivate::close()
     }
 }
 
-int QAudioInputPrivate::bytesReady() const
+int QAudioInputPrivate::checkBytesReady()
 {
     if(resuming)
-        return period_size;
+        bytesAvailable = period_size;
+    else if(deviceState != QAudio::ActiveState
+            && deviceState != QAudio::IdleState)
+        bytesAvailable = 0;
+    else {
+        int frames = snd_pcm_avail_update(handle);
+        if (frames < 0) {
+            bytesAvailable = frames;
+        } else {
+            if((int)frames > (int)buffer_frames)
+                frames = buffer_frames;
+            bytesAvailable = snd_pcm_frames_to_bytes(handle, frames);
+        }
+    }
+    return bytesAvailable;
+}
 
-    if(deviceState != QAudio::ActiveState && deviceState != QAudio::IdleState)
-        return 0;
-    int frames = snd_pcm_avail_update(handle);
-    if (frames < 0) return frames;
-    if((int)frames > (int)buffer_frames)
-        frames = buffer_frames;
-
-    return snd_pcm_frames_to_bytes(handle, frames);
+int QAudioInputPrivate::bytesReady() const
+{
+    return qMax(bytesAvailable, 0);
 }
 
 qint64 QAudioInputPrivate::read(char* data, qint64 len)
@@ -460,12 +470,12 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
     if ( !handle )
         return 0;
 
-    bytesAvailable = bytesReady();
+    bytesAvailable = checkBytesReady();
 
     if (bytesAvailable < 0) {
         // bytesAvailable as negative is error code, try to recover from it.
         xrun_recovery(bytesAvailable);
-        bytesAvailable = bytesReady();
+        bytesAvailable = checkBytesReady();
         if (bytesAvailable < 0) {
             // recovery failed must stop and set error.
             close();
@@ -639,10 +649,24 @@ bool QAudioInputPrivate::deviceReady()
         InputPrivate* a = qobject_cast<InputPrivate*>(audioSource);
         a->trigger();
     }
-    bytesAvailable = bytesReady();
+    bytesAvailable = checkBytesReady();
 
     if(deviceState != QAudio::ActiveState)
         return true;
+
+    if (bytesAvailable < 0) {
+        // bytesAvailable as negative is error code, try to recover from it.
+        xrun_recovery(bytesAvailable);
+        bytesAvailable = checkBytesReady();
+        if (bytesAvailable < 0) {
+            // recovery failed must stop and set error.
+            close();
+            errorState = QAudio::IOError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            return 0;
+        }
+    }
 
     if(intervalTime && (timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
