@@ -552,6 +552,8 @@ void QDeclarativePathView::setCurrentIndex(int idx)
     \qmlmethod PathView::incrementCurrentIndex()
 
     Increments the current index.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativePathView::incrementCurrentIndex()
 {
@@ -563,6 +565,8 @@ void QDeclarativePathView::incrementCurrentIndex()
     \qmlmethod PathView::decrementCurrentIndex()
 
     Decrements the current index.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativePathView::decrementCurrentIndex()
 {

@@ -1,6 +1,12 @@
 import Qt 4.7
 
 Flickable {
+    property bool ok: false
+    function check() {
+        if (column.parent == contentItem)
+            ok = true;
+    }
+
     width: 100; height: 100
     contentWidth: column.width; contentHeight: column.height
     pressDelay: 200; boundsBehavior: Flickable.StopAtBounds; interactive: false
