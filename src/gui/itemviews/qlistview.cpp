@@ -1036,16 +1036,7 @@ void QListView::paintEvent(QPaintEvent *e)
             previousRow = row;
         }
 
-        if (const QWidget *widget = d->editorForIndex(*it).editor) {
-            QRegion itemGeometry(option.rect);
-            QRegion widgetGeometry(widget->geometry());
-            painter.save();
-            painter.setClipRegion(itemGeometry.subtracted(widgetGeometry));
-            d->delegateForIndex(*it)->paint(&painter, option, *it);
-            painter.restore();
-        } else {
-            d->delegateForIndex(*it)->paint(&painter, option, *it);
-        }
+        d->delegateForIndex(*it)->paint(&painter, option, *it);
     }
 
 #ifndef QT_NO_DRAGANDDROP

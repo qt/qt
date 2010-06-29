@@ -1669,14 +1669,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             opt.state = oldState;
         }
 
-        if (const QWidget *widget = d->editorForIndex(modelIndex).editor) {
-            painter->save();
-            painter->setClipRect(widget->geometry());
-            d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
-            painter->restore();
-        } else {
-            d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
-        }
+        d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
     }
 
     if (currentRowHasFocus) {
