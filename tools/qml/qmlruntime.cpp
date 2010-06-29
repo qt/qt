@@ -1331,6 +1331,7 @@ void QDeclarativeViewer::orientationChanged()
             if (size() != rootObjectSize.toSize()) {
                 canvas->setMinimumSize(rootObjectSize.toSize());
                 canvas->resize(rootObjectSize.toSize());
+                resize(rootObjectSize.toSize());
                 resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
             }
         }
