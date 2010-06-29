@@ -106,7 +106,8 @@ public:
         ItemNegativeZStacksBehindParent = 0x2000,
         ItemIsPanel = 0x4000,
         ItemIsFocusScope = 0x8000, // internal
-        ItemSendsScenePositionChanges = 0x10000
+        ItemSendsScenePositionChanges = 0x10000,
+        ItemStopsClickFocusPropagation = 0x20000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)

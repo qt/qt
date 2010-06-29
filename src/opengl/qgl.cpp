@@ -2246,6 +2246,13 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
+{
+    return qt_extensionFuncs;
+}
+#endif
+
 QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_premul,
                                             GLenum texture_format)
 {
