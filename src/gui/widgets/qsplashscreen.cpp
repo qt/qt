@@ -267,7 +267,7 @@ void QSplashScreen::drawContents(QPainter *painter)
 {
     Q_D(QSplashScreen);
     painter->setPen(d->currColor);
-    QRect r = rect().adjusted(5, 5, -10, -10);
+    QRect r = rect().adjusted(5, 5, -5, -5);
     if (Qt::mightBeRichText(d->currStatus)) {
         QTextDocument doc;
 #ifdef QT_NO_TEXTHTMLPARSER
