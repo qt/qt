@@ -1761,7 +1761,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             if (!tor)
                 goto case_default;
             if (!sourcetext.isEmpty())
-                yyMsg() << "//%% cannot be used with tr() / QT_TR_NOOP(). Ignoring\n";
+                yyMsg() << "//% cannot be used with tr() / QT_TR_NOOP(). Ignoring\n";
             utf8 = (yyTok == Tok_trUtf8);
             line = yyLineNo;
             yyTok = getToken();
@@ -1867,7 +1867,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             if (!tor)
                 goto case_default;
             if (!sourcetext.isEmpty())
-                yyMsg() << "//%% cannot be used with translate() / QT_TRANSLATE_NOOP(). Ignoring\n";
+                yyMsg() << "//% cannot be used with translate() / QT_TRANSLATE_NOOP(). Ignoring\n";
             utf8 = (yyTok == Tok_translateUtf8);
             line = yyLineNo;
             yyTok = getToken();
