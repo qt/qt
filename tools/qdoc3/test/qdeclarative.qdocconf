@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qml
 description             = Qml Reference Documentation
-url                     = http://qt.nokia.com/doc/4.6/
+url                     = http://qt.nokia.com/doc/4.7/
 qmlonly                 = true
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
@@ -21,7 +21,7 @@ edition.DesktopLight.groups       = -graphicsview-api
 qhp.projects            = Qml
 
 qhp.Qml.file                = qml.qhp
-qhp.Qml.namespace           = com.trolltech.qml.460
+qhp.Qml.namespace           = com.trolltech.qml.470
 qhp.Qml.virtualFolder       = qdoc
 qhp.Qml.indexTitle          = Qml Reference
 
