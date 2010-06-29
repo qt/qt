@@ -2155,7 +2155,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->fc_scale = fc_scale;
         for (int s = 0; s < ScreenCount(X11->display); ++s) {
             int subpixel = FC_RGBA_UNKNOWN;
-#if RENDER_MAJOR > 0 || RENDER_MINOR >= 6
+#if !defined(QT_NO_XRENDER) && (RENDER_MAJOR > 0 || RENDER_MINOR >= 6)
             if (X11->use_xrender) {
                 int rsp = XRenderQuerySubpixelOrder(X11->display, s);
                 switch (rsp) {

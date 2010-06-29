@@ -5958,7 +5958,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
                 Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
         }
 
-        QTextItemInt gf(glyphs, &d->state->font, fontEngine);
+        QTextItemInt gf(glyphs, &d->state->font, str.data(), len, fontEngine);
         drawTextItem(p, gf);
         return;
     }
