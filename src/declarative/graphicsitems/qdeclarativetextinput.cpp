@@ -1403,9 +1403,6 @@ void QDeclarativeTextInputPrivate::init()
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
-    q->connect(control, SIGNAL(selectionChanged()),
-               q, SLOT(updateRect()));//TODO: Only update rect in selection
-    //Note that above TODOs probably aren't that big a savings
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1437,6 +1434,7 @@ void QDeclarativeTextInput::cursorPosChanged()
 void QDeclarativeTextInput::selectionChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect in selection
     emit selectedTextChanged();
 
     if(d->lastSelectionStart != d->control->selectionStart()){
