@@ -1665,8 +1665,11 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     }
 #endif
     d->control->processKeyEvent(event);
-    if (event->isAccepted())
+    if (event->isAccepted()) {
+        if (layoutDirection() != d->control->layoutDirection())
+            setLayoutDirection(d->control->layoutDirection());
         d->control->setCursorBlinkPeriod(0);
+    }
 }
 
 /*!
