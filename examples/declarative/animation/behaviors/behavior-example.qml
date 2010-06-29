@@ -82,7 +82,7 @@ Rectangle {
 
             property string text
 
-            x: 62.5; y: 75; width: 75; height: 50
+            x: 62; y: 75; width: 75; height: 50
             radius: 6
             border.width: 4; border.color: "white"
             color: "firebrick"

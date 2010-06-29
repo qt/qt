@@ -176,6 +176,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 {
     Q_D(QDeclarativeAbstractAnimation);
     if (!d->componentComplete) {
+        if (d->running && r == d->running)    //don't re-register
+            return;
         d->running = r;
         if (r == false)
             d->avoidPropertyValueSourceStart = true;
