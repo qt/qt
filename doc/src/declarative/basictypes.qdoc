@@ -157,8 +157,8 @@
     Rectangle { color: "#800000FF" }
     \endqml
 
-    Or with the \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()},
-    \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()} functions:
+    Or with the \l{QML:Qt::rgba()}{Qt.rgba()}, \l{QML:Qt::hsla()}{Qt.hsla()}, \l{QML:Qt::darker()}{Qt.darker()},
+    \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()} functions:
 
     \qml
     Rectangle { color: Qt.rgba(255, 0, 0, 1) }
@@ -181,7 +181,7 @@
     CustomObject { myPointProperty: "0,20" }
     \endqml
 
-    Or use the \l{Qt::point()}{Qt.point()} function:
+    Or use the \l{QML:Qt::point()}{Qt.point()} function:
 
     \qml
     CustomObject { myPointProperty: Qt.point(0, 20) }
@@ -213,7 +213,7 @@
     LayoutItem { preferredSize: "150x50" }
     \endqml
 
-    Or use the \l{Qt::size()}{Qt.size()} function:
+    Or use the \l{QML:Qt::size()}{Qt.size()} function:
 
     \qml
     LayoutItem { preferredSize: Qt.size(150, 50) }
@@ -246,7 +246,7 @@
     CustomObject { myRectProperty: "50,50,100x100" }
     \endqml
 
-    Or use the \l{Qt::rect()}{Qt.rect()} function:
+    Or use the \l{QML:Qt::rect()}{Qt.rect()} function:
 
     \qml
     CustomObject { myRectProperty: Qt.rect(50, 50, 100, 100) }
@@ -269,7 +269,7 @@
     \endqml
 
     To read a date value returned from a C++ extension class, use 
-    \l{Qt::formatDate()}{Qt.formatDate()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
+    \l{QML:Qt::formatDate()}{Qt.formatDate()} and \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
 
     \sa {QML Basic Types}
 */
@@ -288,7 +288,7 @@
     \endqml
 
     To read a time value returned from a C++ extension class, use 
-    \l{Qt::formatTime()}{Qt.formatTime()} and \l{Qt::formatDateTime()}{Qt.formatDateTime()}.
+    \l{QML:Qt::formatTime()}{Qt.formatTime()} and \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
 
     \sa {QML Basic Types}
  */
@@ -386,7 +386,7 @@
     Rotation { angle: 60; axis: "0,1,0" }
     \endqml
 
-    or with the \l{Qt::vector3d()}{Qt.vector3d()} function:
+    or with the \l{QML:Qt::vector3d()}{Qt.vector3d()} function:
 
     \qml
     Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }

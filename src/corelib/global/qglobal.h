@@ -412,14 +412,12 @@ namespace QT_NAMESPACE {}
 #  if defined(__INTEL_COMPILER)
 #    define Q_CC_INTEL
 #  endif
-/* x64 does not support mmx intrinsics on windows */
-#  if (defined(Q_OS_WIN64) && defined(_M_X64))
+/* MSVC does not support SSE/MMX on x64 */
+#  if (defined(Q_CC_MSVC) && defined(_M_X64))
 #    undef QT_HAVE_SSE
-#    undef QT_HAVE_SSE2
 #    undef QT_HAVE_MMX
 #    undef QT_HAVE_3DNOW
 #  endif
-
 
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR

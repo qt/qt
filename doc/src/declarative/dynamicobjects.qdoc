@@ -42,15 +42,15 @@ application, and there are no C++ components involved.
 
 \section1 Creating Objects Dynamically
 There are two ways to create objects dynamically from JavaScript. You can either call 
-\l {Qt::createComponent()}{Qt.createComponent()} to create
-a component which instantiates items, or use \l{Qt::createQmlObject()}{Qt.createQmlObject()}
+\l {QML:Qt::createComponent()}{Qt.createComponent()} to create
+a component which instantiates items, or use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
 to create an item from a string of QML.
 Creating a component is better if you have a predefined
 item, and you want to create dynamic instances of that item; creating an item from
 a string of QML is useful when the item QML itself is generated at runtime.
 
 If you have a component specified in a QML file, you can dynamically load it with
-the \l {Qt::createComponent()}{Qt.createComponent()} function on the \l{QML Global Object}. 
+the \l {QML:Qt::createComponent()}{Qt.createComponent()} function on the \l{QML Global Object}. 
 This function takes the URL of the QML file as its only argument and returns
 a component object which can be used to create and load that QML file.
 
@@ -84,10 +84,10 @@ in \c main.qml). After creating an item, you must set its parent to an item with
 Otherwise your dynamically created item will not appear in the scene.
 
 When using files with relative paths, the path should
-be relative to the file where \l {Qt::createComponent()}{Qt.createComponent()} is executed.
+be relative to the file where \l {QML:Qt::createComponent()}{Qt.createComponent()} is executed.
 
 If the QML component does not exist until runtime, you can create a QML item from
-a string of QML using the \l{Qt::createQmlObject()}{Qt.createQmlObject()} function, as in the following example:
+a string of QML using the \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()} function, as in the following example:
 
 \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
@@ -107,9 +107,9 @@ the bindings in the dynamic item will no longer work.
 The actual creation context depends on how an item is created:
 
 \list
-\o If \l {Qt::createComponent()}{Qt.createComponent()} is used, the creation context
+\o If \l {QML:Qt::createComponent()}{Qt.createComponent()} is used, the creation context
    is the QDeclarativeContext in which this method is called
-\o If \l{Qt::createQmlObject()}{Qt.createQmlObject()}
+\o If \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
    if called, it is the context of the item used as the second argument to this method
 \o If a \c {Component{}} item is defined and \l {Component::createObject()}{createObject()}
    is called on that item, it is the context in which the \c Component is defined
