@@ -4,7 +4,7 @@ SOURCES += tst_qaudiooutput.cpp
 
 QT = core multimedia
 
-wince*|symbian*: {
+wince*|symbian: {
     deploy.sources += 4.wav
     DEPLOYMENT = deploy
     !symbian {

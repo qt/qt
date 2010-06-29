@@ -220,3 +220,11 @@ win32:SUBDIRS -= qtextpiecetable
            qstylesheetstyle \
            qtextpiecetable \
 
+symbian:SUBDIRS -= \
+    qhelpcontentmodel \
+    qhelpenginecore \
+    qhelpgenerator \
+    qhelpindexmodel \
+    qhelpprojectdata \
+    qsystemtrayicon \
+

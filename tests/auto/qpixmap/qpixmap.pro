@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES  += tst_qpixmap.cpp
 contains(QT_CONFIG, qt3support): QT += qt3support
-wince*|symbian*: {
+wince*|symbian: {
 
    task31722_0.sources = convertFromImage/task31722_0/*.png
    task31722_0.path    = convertFromImage/task31722_0
@@ -18,7 +18,7 @@ wince*|symbian*: {
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"
-} else:symbian* {
+} else:symbian {
    DEPLOYMENT_PLUGIN += qmng
    LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
    contains(QT_CONFIG, openvg) {

@@ -27,7 +27,7 @@ wince*: {
     DEFINES += SRCDIR=\\\".\\\"
 }
 
-symbian*: {
+symbian: {
     images.sources = images
     images.path = .
 

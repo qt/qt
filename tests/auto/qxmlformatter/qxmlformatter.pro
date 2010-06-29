@@ -3,7 +3,7 @@ SOURCES += tst_qxmlformatter.cpp
 
 include (../xmlpatterns.pri)
 
-wince*|symbian*:{
+wince*|symbian:{
    addFiles.sources = baselines input
    addFiles.path = .
    DEPLOYMENT += addFiles

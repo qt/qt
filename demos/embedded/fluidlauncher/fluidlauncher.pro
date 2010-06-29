@@ -118,7 +118,7 @@ symbian {
     }
 
     contains(QT_CONFIG, multimedia) {
-        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/spectrum_reg.rsc
+        reg_resource.sources += $$regResourceDir(demos/spectrum/app/spectrum_reg.rsc)
     }
 
 
@@ -202,10 +202,11 @@ symbian {
     }
 
     contains(QT_CONFIG, multimedia) {
-        executables.sources += spectrum.exe fftreal.dll
-        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.rsc
+        executables.sources += $$QT_BUILD_TREE/demos/spectrum/app/spectrum.exe
+        executables.sources += $$QT_BUILD_TREE/demos/spectrum/3rdparty/fftreal/fftreal.dll
+        resource.sources += $$appResourceDir(demos/spectrum/app/spectrum.rsc)
         mifs.sources += \
-            $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/spectrum.mif
+            $$appResourceDir(demos/spectrum/app/spectrum.mif)
     }
 
     contains(QT_CONFIG, script) {

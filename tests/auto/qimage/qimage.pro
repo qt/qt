@@ -6,7 +6,7 @@ wince*: {
    addImages.path = images
    DEPLOYMENT += addImages
    DEFINES += SRCDIR=\\\".\\\"
-} else:symbian* {
+} else:symbian {
    TARGET.EPOCHEAPSIZE = 0x200000 0x800000
    addImages.sources = images/*
    addImages.path = images

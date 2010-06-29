@@ -10,7 +10,7 @@ wince*: {
    addFiles.path = images
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\".\\\"
-} else:symbian* {
+} else:symbian {
    addFiles.sources = images\\*.*
    addFiles.path = images
    DEPLOYMENT += addFiles

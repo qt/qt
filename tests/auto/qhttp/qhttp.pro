@@ -13,7 +13,7 @@ wince*: {
     addFiles.path = .
     DEPLOYMENT = addFiles webFiles cgi
     DEFINES += SRCDIR=\\\"\\\"
-} else:symbian* {
+} else:symbian {
     webFiles.sources = webserver/*
     webFiles.path = webserver
     cgi.sources = webserver/cgi-bin/*

@@ -12,7 +12,7 @@ wince*: {
    }
    addPlugins.path = imageformats
    DEPLOYMENT += addFiles addPlugins
-} else:symbian* {
+} else:symbian {
    addFiles.sources = icons
    addFiles.path = .
    DEPLOYMENT += addFiles
