@@ -44,6 +44,7 @@
 #include <qpixmap.h>
 #include <qbitmap.h>
 #include <qimage.h>
+#include <qimagereader.h>
 #include <qmatrix.h>
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
@@ -174,6 +175,11 @@ private slots:
 
     void loadFromDataImage_data();
     void loadFromDataImage();
+
+    void fromImageReader_data();
+    void fromImageReader();
+
+    void fromImageReaderAnimatedGif();
 
     void preserveDepth();
     void splash_crash();
@@ -1575,6 +1581,61 @@ void tst_QPixmap::loadFromDataImage()
     directLoadingPixmap.loadFromData(rawData);
 
     QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
+}
+
+void tst_QPixmap::fromImageReader_data()
+{
+    QTest::addColumn<QString>("imagePath");
+#ifdef Q_OS_SYMBIAN
+    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
+#else
+    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+#endif
+    QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
+    QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
+    QTest::newRow("designer_indexed8_with_alpha.png") << prefix + "/designer_indexed8_with_alpha.png";
+    QTest::newRow("designer_rgb32.png") << prefix + "/designer_rgb32.png";
+    QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
+    QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
+    QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+}
+
+void tst_QPixmap::fromImageReader()
+{
+    QFETCH(QString, imagePath);
+
+    QImage imageRef(imagePath);
+    QPixmap pixmapWithCopy = QPixmap::fromImage(imageRef);
+
+    QImageReader imageReader(imagePath);
+
+    QPixmap directLoadingPixmap = QPixmap::fromImageReader(&imageReader);
+
+    QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
+}
+
+void tst_QPixmap::fromImageReaderAnimatedGif()
+{
+#ifdef Q_OS_SYMBIAN
+    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
+#else
+    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+#endif
+    const QString path = prefix + QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+
+    QImageReader referenceReader(path);
+    QImageReader pixmapReader(path);
+
+    Q_ASSERT(referenceReader.canRead());
+    Q_ASSERT(referenceReader.imageCount() > 1);
+
+    for (int i = 0; i < referenceReader.imageCount(); ++i) {
+        QImage refImage = referenceReader.read();
+        QPixmap refPixmap = QPixmap::fromImage(refImage);
+
+        QPixmap directLoadingPixmap = QPixmap::fromImageReader(&pixmapReader);
+        QVERIFY(pixmapsAreEqual(&refPixmap, &directLoadingPixmap));
+    }
 }
 
 void tst_QPixmap::task_246446()
