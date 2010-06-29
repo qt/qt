@@ -82,6 +82,18 @@ tst_QDeclarativeViewer::tst_QDeclarativeViewer()
 {
 }
 
+#define TEST_INITIAL_SIZES(viewer) { \
+    QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject()); \
+    QVERIFY(rootItem); \
+\
+    QCOMPARE(rootItem->width(), 200.0); \
+    QCOMPARE(rootItem->height(), 300.0); \
+    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300)); \
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300)); \
+    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer))); \
+    QCOMPARE(viewer->size(), viewer->sizeHint()); \
+}
+
 void tst_QDeclarativeViewer::orientation()
 {
     QDeclarativeViewer *viewer = new QDeclarativeViewer();
@@ -97,12 +109,7 @@ void tst_QDeclarativeViewer::orientation()
     QTest::qWaitForWindowShown(viewer);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
-    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->rotateOrientation();
     qApp->processEvents();
@@ -143,13 +150,7 @@ void tst_QDeclarativeViewer::loading()
     QTest::qWaitForWindowShown(viewer);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    // initial size
-    QTRY_COMPARE(rootItem->width(), 200.0);
-    QTRY_COMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->resize(QSize(400, 500));
     qApp->processEvents();
@@ -251,14 +252,7 @@ void tst_QDeclarativeViewer::resizing()
     QTest::qWaitForWindowShown(viewer);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    // initial size
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->setSizeToView(false);
 
