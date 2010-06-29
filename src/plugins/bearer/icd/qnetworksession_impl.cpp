@@ -879,9 +879,28 @@ void QNetworkSessionPrivateImpl::close()
         lastError = QNetworkSession::OperationNotSupportedError;
         emit QNetworkSessionPrivate::error(lastError);
     } else if (isOpen) {
-        opened = false;
-        isOpen = false;
-        emit closed();
+        if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+	    // We will not wait any disconnect from icd as it might never come
+	    Maemo::Icd icd;
+#ifdef BEARER_MANAGEMENT_DEBUG
+	    qDebug() << "closing session" << publicConfig.identifier();
+#endif
+	    state = QNetworkSession::Closing;
+	    emit stateChanged(state);
+
+	    opened = false;
+	    isOpen = false;
+
+	    // we fake a disconnection, session error is not sent
+	    updateState(QNetworkSession::Disconnected);
+
+	    icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
+	    startTime = QDateTime();
+        } else {
+	    opened = false;
+	    isOpen = false;
+	    emit closed();
+	}
     }
 }
 
@@ -896,33 +915,25 @@ void QNetworkSessionPrivateImpl::stop()
         emit QNetworkSessionPrivate::error(lastError);
     } else {
         if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-            if (!m_stopTimer.isActive()) {
-                Maemo::Icd icd;
+	    Maemo::Icd icd;
 #ifdef BEARER_MANAGEMENT_DEBUG
-                qDebug() << "stopping session" << publicConfig.identifier();
+	    qDebug() << "stopping session" << publicConfig.identifier();
 #endif
-                state = QNetworkSession::Closing;
-                emit stateChanged(state);
+	    state = QNetworkSession::Closing;
+	    emit stateChanged(state);
 
-                opened = false;
-                isOpen = false;
+	    // we fake a disconnection, a session error is sent also
+	    updateState(QNetworkSession::Disconnected);
 
-                icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
-                startTime = QDateTime();
+	    opened = false;
+	    isOpen = false;
 
-                /* Note: Session state will change to disconnected
-                 *       as soon as QNetworkConfigurationManager sends
-                 *       corresponding iapStateChanged signal.
-                 */
-
-                // Make sure that this Session will send closed signal
-                // even though ICD connection will not ever get closed
-                m_stopTimer.start(ICD_SHORT_CONNECT_TIMEOUT); // 10 seconds wait
-            }
+	    icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
+	    startTime = QDateTime();
         } else {
 	    opened = false;
 	    isOpen = false;
-        emit closed();
+	    emit closed();
 	}
     }
 }
