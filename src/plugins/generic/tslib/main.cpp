@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <qgenericplugin_lite.h>
+#include <qgenericplugin_qpa.h>
 #include "qtslib.h"
 
 QT_BEGIN_NAMESPACE
