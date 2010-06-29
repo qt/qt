@@ -2310,6 +2310,26 @@ case 66: {
         extracomment.clear();
         msgid.clear();
         extra.clear();
+    } else if ((name == QLatin1String("qsTrId")) || (name == QLatin1String("QT_TRID_NOOP"))) {
+        if (!msgid.isEmpty())
+            yyMsg(identLineNo) << "//= cannot be used with " << qPrintable(name) << "(). Ignoring\n";
+        QVariantList args = sym(2).toList();
+        if (args.size() < 1) {
+            yyMsg(identLineNo) << qPrintable(name) << "() requires at least one argument.\n";
+        } else {
+            if (args.at(0).type() != QVariant::String) {
+                yyMsg(identLineNo) << qPrintable(name) << "(): identifier must be a literal string.\n";
+            } else {
+                msgid = args.at(0).toString();
+                bool plural = (args.size() > 1);
+                recordMessage(translator, QString(), sourcetext, QString(), extracomment,
+                              msgid, extra, plural, fileName(), identLineNo);
+            }
+        }
+        sourcetext.clear();
+        extracomment.clear();
+        msgid.clear();
+        extra.clear();
     }
 } break;
 

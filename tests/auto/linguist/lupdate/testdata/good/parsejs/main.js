@@ -81,3 +81,11 @@ qsTr("This string has disambiguation", "Disambiguation");
 qsTranslate("BarContext", "This string also has disambiguation", "Another disambiguation");
 
 qsTr("This string contains plurals", "", 10);
+
+qsTrId("qtn_foo_bar");
+
+var more_greeting_strings = [ QT_TRID_NOOP("qtn_needle"), QT_TRID_NOOP("qtn_haystack") ];
+
+//: qsTrId() with comment, meta-data and plurals.
+//~ well-tested True
+qsTrId("qtn_bar_baz", 10);
