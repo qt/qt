@@ -47,6 +47,7 @@
 #include <QFontMetrics>
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
+#include <QDeclarativeView>
 
 #include "../../../shared/util.h"
 #include "testhttpserver.h"
@@ -69,6 +70,9 @@ private slots:
     void wrap();
     void elide();
     void textFormat();
+
+    void alignments_data();
+    void alignments();
 
     void embeddedImages_data();
     void embeddedImages();
@@ -108,6 +112,8 @@ private:
     QStringList colorStrings;
 
     QDeclarativeEngine engine;
+
+    QDeclarativeView *createView(const QString &filename);
 };
 
 tst_qdeclarativetext::tst_qdeclarativetext()
@@ -161,6 +167,14 @@ tst_qdeclarativetext::tst_qdeclarativetext()
     // << "#AA0011DD"
     // << "#00F16B11";
     //
+}
+
+QDeclarativeView *tst_qdeclarativetext::createView(const QString &filename)
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+
+    canvas->setSource(QUrl::fromLocalFile(filename));
+    return canvas;
 }
 
 void tst_qdeclarativetext::text()
@@ -381,6 +395,65 @@ void tst_qdeclarativetext::textFormat()
         QVERIFY(textObject != 0);
         QVERIFY(textObject->textFormat() == QDeclarativeText::PlainText);
     }
+}
+
+
+void tst_qdeclarativetext::alignments_data()
+{
+    QTest::addColumn<int>("hAlign");
+    QTest::addColumn<int>("vAlign");
+    QTest::addColumn<QString>("expectfile");
+
+    QTest::newRow("LT") << int(Qt::AlignLeft) << int(Qt::AlignTop) << SRCDIR "/data/alignments_lt.png";
+    QTest::newRow("RT") << int(Qt::AlignRight) << int(Qt::AlignTop) << SRCDIR "/data/alignments_rt.png";
+    QTest::newRow("CT") << int(Qt::AlignHCenter) << int(Qt::AlignTop) << SRCDIR "/data/alignments_ct.png";
+
+    QTest::newRow("LB") << int(Qt::AlignLeft) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_lb.png";
+    QTest::newRow("RB") << int(Qt::AlignRight) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_rb.png";
+    QTest::newRow("CB") << int(Qt::AlignHCenter) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_cb.png";
+
+    QTest::newRow("LC") << int(Qt::AlignLeft) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_lc.png";
+    QTest::newRow("RC") << int(Qt::AlignRight) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_rc.png";
+    QTest::newRow("CC") << int(Qt::AlignHCenter) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_cc.png";
+}
+
+
+void tst_qdeclarativetext::alignments()
+{
+    QFETCH(int, hAlign);
+    QFETCH(int, vAlign);
+    QFETCH(QString, expectfile);
+
+#ifdef Q_WS_X11
+    // Font-specific, but not likely platform-specific, so only test on one platform
+    QFont fn;
+    fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
+    QApplication::setFont(fn);
+#endif
+
+    QDeclarativeView *canvas = createView(SRCDIR "/data/alignments.qml");
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QObject *ob = canvas->rootObject();
+    QVERIFY(ob != 0);
+    ob->setProperty("horizontalAlignment",hAlign);
+    ob->setProperty("verticalAlignment",vAlign);
+    QTRY_COMPARE(ob->property("running").toBool(),false);
+    QImage actual(canvas->width(), canvas->height(), QImage::Format_RGB32);
+    actual.fill(qRgb(255,255,255));
+    QPainter p(&actual);
+    canvas->render(&p);
+
+    QImage expect(expectfile);
+
+#ifdef Q_WS_X11
+    // Font-specific, but not likely platform-specific, so only test on one platform
+    QCOMPARE(actual,expect);
+#endif
 }
 
 //the alignment tests may be trivial o.oa

@@ -151,6 +151,9 @@ public:
     QDeclarativeComponent *header() const;
     void setHeader(QDeclarativeComponent *);
 
+    virtual void setContentX(qreal pos);
+    virtual void setContentY(qreal pos);
+
     enum PositionMode { Beginning, Center, End, Visible, Contain };
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);

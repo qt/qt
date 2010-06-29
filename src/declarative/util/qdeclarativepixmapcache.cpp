@@ -510,6 +510,12 @@ bool QDeclarativePixmapReply::event(QEvent *event)
             else
                 d->errorString =  de->errorString;
             QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
+            if (d->forced_width > 0 || d->forced_height > 0) {
+                key += ':';
+                key += QByteArray::number(d->forced_width);
+                key += 'x';
+                key += QByteArray::number(d->forced_height);
+            }
             QString strKey = QString::fromLatin1(key.constData(), key.count());
             QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
             emit finished();

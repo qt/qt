@@ -7312,10 +7312,13 @@ void QGraphicsItem::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     if (QWidget *fw = QApplication::focusWidget()) {
-        for (int i = 0 ; i < scene()->views().count() ; ++i)
-            if (scene()->views().at(i) == fw)
-                if (QInputContext *inputContext = fw->inputContext())
-                    inputContext->update();
+        if (scene()) {
+            for (int i = 0 ; i < scene()->views().count() ; ++i) {
+                if (scene()->views().at(i) == fw)
+                    if (QInputContext *inputContext = fw->inputContext())
+                        inputContext->update();
+            }
+        }
 #ifndef QT_NO_ACCESSIBILITY
         // ##### is this correct
         QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);

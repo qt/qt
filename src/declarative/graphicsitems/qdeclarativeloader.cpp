@@ -174,7 +174,7 @@ void QDeclarativeLoaderPrivate::initResize()
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
-    Q_D(QDeclarativeItem);
+    Q_D(QDeclarativeLoader);
     d->flags |= QGraphicsItem::ItemIsFocusScope;
 }
 
@@ -183,6 +183,14 @@ QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
  */
 QDeclarativeLoader::~QDeclarativeLoader()
 {
+    Q_D(QDeclarativeLoader);
+    if (d->item) {
+        if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(d->item)) {
+            QDeclarativeItemPrivate *p =
+                    static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
+            p->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        }
+    }
 }
 
 /*!

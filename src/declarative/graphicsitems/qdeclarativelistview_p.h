@@ -198,6 +198,9 @@ public:
     QDeclarativeComponent *header() const;
     void setHeader(QDeclarativeComponent *);
 
+    virtual void setContentX(qreal pos);
+    virtual void setContentY(qreal pos);
+
     static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };

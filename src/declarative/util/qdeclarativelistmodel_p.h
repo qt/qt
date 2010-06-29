@@ -135,6 +135,8 @@ private:
     bool compileProperty(const QDeclarativeCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
 
     bool definesEmptyList(const QString &);
+
+    QByteArray listElementTypeName;
 };
 
 

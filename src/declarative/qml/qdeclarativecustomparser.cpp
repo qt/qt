@@ -295,4 +295,14 @@ int QDeclarativeCustomParser::evaluateEnum(const QByteArray& script) const
     return compiler->evaluateEnum(script);
 }
 
+/*!
+    Resolves \a name to a type, or 0 if it is not a type. This can be used
+    to type-check object nodes.
+*/
+const QMetaObject *QDeclarativeCustomParser::resolveType(const QByteArray& name) const
+{
+    return compiler->resolveType(name);
+}
+
+
 QT_END_NAMESPACE

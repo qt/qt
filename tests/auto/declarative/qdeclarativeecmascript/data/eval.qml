@@ -16,7 +16,11 @@ QtObject {
 
         test1 = (eval("a") == 7);
         test2 = (eval("b") == 9);
-        test3 = (eval("c") == undefined);
+        try {
+            eval("c");
+        } catch(e) {
+            test3 = true;
+        }
         test4 = (eval("console") == console);
         test5 = (eval("Qt") == Qt);
     }

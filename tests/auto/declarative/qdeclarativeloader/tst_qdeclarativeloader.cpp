@@ -47,6 +47,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeloader_p.h>
 #include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 #define SERVER_PORT 14450
 
@@ -176,9 +177,7 @@ void tst_QDeclarativeLoader::clear()
         QCOMPARE(loader->progress(), 1.0);
         QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
-        QTest::qWait(500);
-
-        QVERIFY(loader->item() == 0);
+        QTRY_VERIFY(loader->item() == 0);
         QCOMPARE(loader->progress(), 0.0);
         QCOMPARE(loader->status(), QDeclarativeLoader::Null);
         QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
@@ -239,8 +238,8 @@ void tst_QDeclarativeLoader::urlToComponent()
                 "}" )
             , TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
-    QTest::qWait(500);
-    QVERIFY(loader != 0);
+    QTest::qWait(200);
+    QTRY_VERIFY(loader != 0);
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);

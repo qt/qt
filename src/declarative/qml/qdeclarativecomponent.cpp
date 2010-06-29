@@ -572,7 +572,9 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 {
     Q_D(QDeclarativeComponent);
     QDeclarativeContext* ctxt = creationContext();
-    if(!ctxt)
+    if(!ctxt && d->engine)
+        ctxt = d->engine->rootContext();
+    if (!ctxt)
         return QScriptValue(QScriptValue::NullValue);
     QObject* ret = create(ctxt);
     if (!ret)
