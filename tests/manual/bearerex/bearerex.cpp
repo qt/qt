@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "bearerex.h"
+#include "datatransferer.h"
 
 #include <QtNetwork>
 
@@ -261,8 +262,8 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
                        QListWidget* eventListWidget,
                        int index,
                        BearerEx * parent)
-    : QWidget(parent), m_http(0), m_eventListWidget(eventListWidget),
-     m_index(index), m_httpRequestOngoing(false), m_alrEnabled (false)
+    : QWidget(parent), m_dataTransferer(0), m_eventListWidget(eventListWidget),
+     m_index(index), m_alrEnabled (false)
 {
     setupUi(this);
 
@@ -300,41 +301,46 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
 
 SessionTab::~SessionTab()
 {
-    // Need to be nulled, because modal dialogs may return after destruction of this object and
-    // use already released resources.
-    delete m_NetworkSession;
-    m_NetworkSession = NULL;
-    delete m_http;
-    m_http = NULL;
+    delete m_NetworkSession; m_NetworkSession = 0;
+    delete m_dataTransferer; m_dataTransferer = 0;
 }
 
-void SessionTab::on_createQHttpButton_clicked()
+void SessionTab::on_createQNetworkAccessManagerButton_clicked()
 {
-    if (m_httpRequestOngoing) {
+    if (m_dataTransferer) {
+        disconnect(m_dataTransferer, 0, 0, 0);
+        delete m_dataTransferer;
+        m_dataTransferer = 0;
+    }
+    // Create new object according to current selection
+    QString type(comboBox->currentText());
+    if (type == "QNAM") {
+        m_dataTransferer = new DataTransfererQNam(this);
+    } else if (type == "QTcpSocket") {
+        m_dataTransferer = new DataTransfererQTcp(this);
+    } else if (type == "QHttp") {
+        m_dataTransferer = new DataTransfererQHttp(this);
+    } else {
+        qDebug("BearerEx Warning, unknown data transfer object requested, not creating anything.");
         return;
     }
-
-    if (m_http) {
-        disconnect(m_http, 0, 0, 0);
-        delete m_http;
-    }
-    m_http = new QHttp(this);
-    createQHttpButton->setText("Recreate QHttp");
-    connect(m_http, SIGNAL(done(bool)), this, SLOT(done(bool)));    
+    createQNetworkAccessManagerButton->setText("Recreate");
+    connect(m_dataTransferer, SIGNAL(finished(quint32, qint64, QString)), this, SLOT(finished(quint32, qint64, QString)));
 }
 
 void SessionTab::on_sendRequestButton_clicked()
 {
-    if (m_http) {
-        QString urlstring("http://www.google.com");
-        QUrl url(urlstring);
-        m_http->setHost(url.host(), QHttp::ConnectionModeHttp, url.port() == -1 ? 0 : url.port());
-        m_http->get(urlstring);
-        m_httpRequestOngoing = true;
+    if (m_dataTransferer) {
+        if (!m_dataTransferer->transferData()) {
+            QMessageBox msgBox;
+            msgBox.setStandardButtons(QMessageBox::Close);
+            msgBox.setText("Data transfer not started. \nVery likely data transfer ongoing.");
+            msgBox.exec();
+        }
     } else {
         QMessageBox msgBox;
         msgBox.setStandardButtons(QMessageBox::Close);
-        msgBox.setText("QHttp not created.\nCreate QHttp First.");
+        msgBox.setText("Data object not created.\nCreate data object first.");
         msgBox.exec();
     }
 }
@@ -419,7 +425,7 @@ void SessionTab::opened()
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Opened"));
     m_eventListWidget->addItem(listItem);
     
-    QVariant identifier = m_NetworkSession->property("ActiveConfiguration");
+    QVariant identifier = m_NetworkSession->sessionProperty("ActiveConfiguration");
     if (!identifier.isNull()) {
         QString configId = identifier.toString();
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
@@ -429,7 +435,7 @@ void SessionTab::opened()
     }
 
     if (m_NetworkSession->configuration().type() == QNetworkConfiguration::UserChoice) {
-        QVariant identifier = m_NetworkSession->property("UserChoiceConfiguration");
+        QVariant identifier = m_NetworkSession->sessionProperty("UserChoiceConfiguration");
         if (!identifier.isNull()) {
             QString configId = identifier.toString();
             QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
@@ -480,6 +486,18 @@ QString SessionTab::stateString(QNetworkSession::State state)
     return stateString;
 }
 
+void SessionTab::on_dataObjectChanged(const QString &newObjectType)
+{
+    qDebug() << "BearerEx SessionTab dataObjectChanged to: " << newObjectType;
+    if (m_dataTransferer) {
+        disconnect(m_dataTransferer, 0, 0, 0);
+        delete m_dataTransferer; m_dataTransferer = 0;
+        qDebug() << "BearerEx SessionTab, previous data object deleted.";
+    }
+    createQNetworkAccessManagerButton->setText("Create");
+}
+
+
 void SessionTab::stateChanged(QNetworkSession::State state)    
 {
     newState(state);
@@ -491,7 +509,7 @@ void SessionTab::stateChanged(QNetworkSession::State state)
 
 void SessionTab::newState(QNetworkSession::State state)
 {
-    QVariant identifier = m_NetworkSession->property("ActiveConfiguration");
+    QVariant identifier = m_NetworkSession->sessionProperty("ActiveConfiguration");
     if (state == QNetworkSession::Connected && !identifier.isNull()) {
         QString configId = identifier.toString();
         QNetworkConfiguration config = m_ConfigManager->configurationFromIdentifier(configId);
@@ -542,18 +560,15 @@ void SessionTab::error(QNetworkSession::SessionError error)
     msgBox.exec();
 }
 
-void SessionTab::done(bool error)
+void SessionTab::finished(quint32 errorCode, qint64 dataReceived, QString errorType)
 {
-    m_httpRequestOngoing = false;
-
     QMessageBox msgBox;
     msgBox.setStandardButtons(QMessageBox::Close);
-    if (error) {
-        msgBox.setText("HTTP request failed.");
-    } else {
-        QString result(m_http->readAll());
-        msgBox.setText(QString("HTTP request finished successfully.\nReceived ")+QString::number(result.length())+QString(" bytes."));
-    }
+    msgBox.setText(QString("Data transfer completed. \nError code: ") +
+                   QString::number(int(errorCode)) +
+                   "\nError type: " + errorType +
+                   "\nBytes received: " +
+                   QString::number(dataReceived));
     msgBox.exec();
     // Check if the networksession still exists - it may have gone after returning from
     // the modal dialog (in the case that app has been closed, and deleting QHttp will

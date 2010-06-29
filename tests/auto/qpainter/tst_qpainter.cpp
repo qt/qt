@@ -2648,12 +2648,16 @@ void tst_QPainter::setOpacity()
     p.drawImage(imageRect, src, imageRect);
     p.end();
 
-    QImage expected(imageSize, destFormat);
-    p.begin(&expected);
-    p.fillRect(imageRect, QColor(127, 127, 127));
-    p.end();
+    QImage actual = dest.convertToFormat(QImage::Format_RGB32);
 
-    QCOMPARE(dest, expected);
+    for (int y = 0; y < actual.height(); ++y) {
+        QRgb *p = (QRgb *)actual.scanLine(y);
+        for (int x = 0; x < actual.width(); ++x) {
+            QVERIFY(qAbs(qRed(p[x]) - 127) <= 0xf);
+            QVERIFY(qAbs(qGreen(p[x]) - 127) <= 0xf);
+            QVERIFY(qAbs(qBlue(p[x]) - 127) <= 0xf);
+        }
+    }
 }
 
 void tst_QPainter::drawhelper_blend_untransformed_data()

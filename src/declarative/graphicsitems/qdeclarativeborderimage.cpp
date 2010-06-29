@@ -449,6 +449,11 @@ void QDeclarativeBorderImage::sciRequestFinished()
     }
 }
 
+void QDeclarativeBorderImage::doUpdate()
+{
+    update();
+}
+
 void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeBorderImage);

@@ -145,18 +145,18 @@ struct QtFontEncoding
 
 struct QtFontSize
 {
-    unsigned short pixelSize;
-
 #ifdef Q_WS_X11
-    int count;
     QtFontEncoding *encodings;
     QtFontEncoding *encodingID(int id, uint xpoint = 0, uint xres = 0,
                                 uint yres = 0, uint avgwidth = 0, bool add = false);
+    unsigned short count : 16;
 #endif // Q_WS_X11
 #if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QByteArray fileName;
     int fileIndex;
 #endif // defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+
+    unsigned short pixelSize : 16;
 };
 
 
@@ -284,7 +284,12 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
     if (!add)
         return 0;
 
-    if (!(count % 8)) {
+    if (!pixelSizes) {
+        // Most style have only one font size, we avoid waisting memory
+        QtFontSize *newPixelSizes = (QtFontSize *)malloc(sizeof(QtFontSize));
+        Q_CHECK_PTR(newPixelSizes);
+        pixelSizes = newPixelSizes;
+    } else if (!(count % 8) || count == 1) {
         QtFontSize *newPixelSizes = (QtFontSize *)
                      realloc(pixelSizes,
                               (((count+8) >> 3) << 3) * sizeof(QtFontSize));
@@ -408,7 +413,7 @@ struct QtFontFamily
     bool fixedPitchComputed : 1;
 #endif
 #ifdef Q_WS_X11
-    bool symbol_checked;
+    bool symbol_checked : 1;
 #endif
 
     QString name;

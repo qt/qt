@@ -95,8 +95,8 @@ public:
         m_tags(0),
         m_contours(0),
         m_polygon_dev(0),
-        m_round_coords(false),
-        m_in_clip_elements(false)
+        m_in_clip_elements(false),
+        m_round_coords(false)
     {
     }
 

@@ -693,6 +693,10 @@ bool QDesignerPropertySheet::dynamicPropertiesAllowed() const
 
 bool QDesignerPropertySheet::canAddDynamicProperty(const QString &propName) const
 {
+    // used internally
+    if (propName == QLatin1String("database") ||
+        propName == QLatin1String("buttonGroupId"))
+        return false;
     const int index = d->m_meta->indexOfProperty(propName);
     if (index != -1)
         return false; // property already exists and is not a dynamic one

@@ -86,7 +86,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 # ifdef old_qDebug
 #   undef qDebug
-#   define qDebug QT_QDEBUG_MACRO
+#   define qDebug QT_NO_QDEBUG_MACRO
 #   undef old_qDebug
 # endif
 class QMacWindowChangeEvent;
@@ -415,7 +415,7 @@ public:
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
-    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
+    static QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif
 
     static void setCurrentContext(QGLContext *context);

@@ -172,6 +172,29 @@ void QDeclarativeInclude::callback(QScriptEngine *engine, QScriptValue &callback
     }
 }
 
+/*!
+\qmlmethod object Qt::include(url, callback)
+
+Include another JavaScript file.  This method can only be used from within JavaScript files, 
+and not regular QML files.
+
+Qt.include() returns an object that describes the status of the operation.  The object has
+a single property, \c {status} that is set to one of the following values:
+
+\table
+\header \o Symbol \o Value \o Description
+\row \o result.OK \o 0 \o The include completed successfully.
+\row \o result.LOADING \o 1 \o Data is being loaded from the network.
+\row \o result.NETWORK_ERROR \o 2 \o A network error occurred while fetching the url.
+\row \o result.EXCEPTION \o 3 \o A JavaScript exception occurred while executing the included code.
+An additional \c exception property will be set in this case.
+\endtable
+
+The return object's properties will be updated as the operation progresses.
+
+If provided, \a callback is invoked when the operation completes.  The callback is passed
+the same object as is returned from the Qt.include() call.
+*/
 QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if (ctxt->argumentCount() == 0)
@@ -184,7 +207,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
         return ctxt->throwError(QLatin1String("Qt.include(): Can only be called from JavaScript files"));
 
     QString urlString = ctxt->argument(0).toString();
-    QUrl url(ctxt->argument(0).toString());
+    QUrl url(urlString);
     if (url.isRelative()) {
         url = QUrl(contextUrl).resolved(url);
         urlString = url.toString();
@@ -217,7 +240,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
 
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(engine);
             scriptContext->pushScope(ep->contextClass->newUrlContext(context, 0, urlString));
-            scriptContext->pushScope(ep->globalClass->globalObject());
+            scriptContext->pushScope(ep->globalClass->staticGlobalObject());
             QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);

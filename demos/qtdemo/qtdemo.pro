@@ -1,4 +1,4 @@
-CONFIG += assistant help x11inc
+CONFIG += help x11inc
 TARGET = qtdemo
 DEMO_DESTDIR = $$QT_BUILD_TREE
 isEmpty(DEMO_DESTDIR):DEMO_DESTDIR=../..

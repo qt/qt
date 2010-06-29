@@ -210,6 +210,11 @@ public:
         return true;
     }
 
+    bool empty() const
+    {
+        return position == totalPackets;
+    }
+
 private:
     UInt32 totalPackets;
     UInt32 position;
@@ -259,7 +264,7 @@ public:
                              UInt32 inBusNumber,
                              UInt32 inNumberFrames)
     {
-        const bool  wasEmpty = m_buffer->used() == 0;
+        const bool  pullMode = m_device == 0;
 
         OSStatus    err;
         qint64      framesRendered = 0;
@@ -275,36 +280,32 @@ public:
         if (m_audioConverter != 0) {
             QAudioPacketFeeder  feeder(m_inputBufferList);
 
-            bool    wecan = true;
             int     copied = 0;
-
             const int available = m_buffer->free();
 
-            while (err == noErr && wecan) {
+            while (err == noErr && !feeder.empty()) {
                 QAudioRingBuffer::Region region = m_buffer->acquireWriteRegion(available);
 
-                if (region.second > 0) {
-                    AudioBufferList     output;
-                    output.mNumberBuffers = 1;
-                    output.mBuffers[0].mNumberChannels = 1;
-                    output.mBuffers[0].mDataByteSize = region.second;
-                    output.mBuffers[0].mData = region.first;
+                if (region.second == 0)
+                    break;
 
-                    UInt32  packetSize = region.second / m_outputFormat.mBytesPerPacket;
-                    err = AudioConverterFillComplexBuffer(m_audioConverter,
-                                                          converterCallback,
-                                                          &feeder,
-                                                          &packetSize,
-                                                          &output,
-                                                          0);
+                AudioBufferList     output;
+                output.mNumberBuffers = 1;
+                output.mBuffers[0].mNumberChannels = 1;
+                output.mBuffers[0].mDataByteSize = region.second;
+                output.mBuffers[0].mData = region.first;
 
-                    region.second = output.mBuffers[0].mDataByteSize;
-                    copied += region.second;
+                UInt32  packetSize = region.second / m_outputFormat.mBytesPerPacket;
+                err = AudioConverterFillComplexBuffer(m_audioConverter,
+                                                      converterCallback,
+                                                      &feeder,
+                                                      &packetSize,
+                                                      &output,
+                                                      0);
+                region.second = output.mBuffers[0].mDataByteSize;
+                copied += region.second;
 
-                    m_buffer->releaseWriteRegion(region);
-                }
-                else
-                    wecan = false;
+                m_buffer->releaseWriteRegion(region);
             }
 
             framesRendered += copied / m_outputFormat.mBytesPerFrame;
@@ -330,7 +331,7 @@ public:
             framesRendered = copied / m_outputFormat.mBytesPerFrame;
         }
 
-        if (wasEmpty && framesRendered > 0)
+        if (pullMode && framesRendered > 0)
             emit readyRead();
 
         return framesRendered;

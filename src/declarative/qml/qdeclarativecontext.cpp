@@ -660,10 +660,9 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
             scriptContext->pushScope(enginePriv->contextClass->newUrlContext(url));
-            scriptContext->pushScope(enginePriv->globalClass->globalObject());
+            scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
         
-            QScriptValue scope = scriptEngine->newObject();
-            scriptContext->setActivationObject(scope);
+            QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
             scriptContext->pushScope(scope);
 
             scriptEngine->evaluate(code, url, 1);
@@ -686,10 +685,9 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
         scriptContext->pushScope(enginePriv->contextClass->newUrlContext(this, 0, url));
-        scriptContext->pushScope(enginePriv->globalClass->globalObject());
-        
-        QScriptValue scope = scriptEngine->newObject();
-        scriptContext->setActivationObject(scope);
+        scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
+
+        QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
         scriptContext->pushScope(scope);
 
         scriptEngine->evaluate(code, url, 1);

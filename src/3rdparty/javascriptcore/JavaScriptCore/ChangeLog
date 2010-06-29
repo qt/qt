@@ -1,3 +1,49 @@
+2010-06-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Don't use __attribute__((may_alias)) with the Intel compiler,
+        as it doesn't understand it.
+
+        * wtf/Vector.h:
+
+2010-06-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Fix compilation with the Intel C++ compiler (11.1.072).
+
+        Like RVCT, label pointers must be void*, not const void*.
+
+        * bytecode/Opcode.h:
+
+2010-06-19  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Add the WTF_COMPILER_INTEL for when the Intel compiler is used
+        for building. Usually, the Intel compiler masquerades as
+        another compiler in the system and gets away with it, but some
+        times specific fixes are required (such as when using language
+        extensions).
+
+        * wtf/Platform.h:
+
+2010-06-07  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Crash when compiling on Snow Leopard and running on Leopard
+        https://bugs.webkit.org/show_bug.cgi?id=31403
+
+        Disable the use of pthread_setname_np and other symbols
+        when targetting Leopard.
+
+        Use the defines TARGETING_XX instead of BUILDING_ON_XX 
+        for features that cannot be used before Snow Leopard.
+
+        * wtf/Platform.h:
+
 2010-05-10  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
 
         Reviewed by Darin Adler.
@@ -11,6 +57,23 @@
         Thanks for Vanboxem Rruben for the investigation.
 
         * wtf/Platform.h:
+
+2010-04-28  Simon Hausmann  <simon.hausmann@nokia.com>, Kent Hansen <kent.hansen@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        JSC's currentThreadStackBase is not reentrant on some platforms
+        https://bugs.webkit.org/show_bug.cgi?id=37195
+
+        This function needs to be reentrant to avoid memory corruption on platforms where
+        the implementation uses global variables.
+
+        This patch adds a mutex lock where necessary and makes the Symbian implementation
+        reentrant.
+
+        * runtime/Collector.cpp:
+        (JSC::currentThreadStackBaseMutex):
+        (JSC::currentThreadStackBase):
 
 2010-04-14  Kent Hansen  <kent.hansen@nokia.com>
 
