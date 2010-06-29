@@ -77,3 +77,4 @@ exists($${EPOCROOT}epoc32/include/data_caging_paths.prf) {
 isEmpty(HW_ZDIR): HW_ZDIR = epoc32/data/z
 isEmpty(REG_RESOURCE_DIR): REG_RESOURCE_DIR = /private/10003a3f/apps
 isEmpty(REG_RESOURCE_IMPORT_DIR): REG_RESOURCE_IMPORT_DIR = /private/10003a3f/import/apps
+isEmpty(APP_PRIVATE_DIR_BASE): APP_PRIVATE_DIR_BASE = /private
