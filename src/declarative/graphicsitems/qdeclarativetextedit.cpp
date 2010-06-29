@@ -1289,6 +1289,7 @@ void QDeclarativeTextEditPrivate::init()
 void QDeclarativeTextEdit::q_textChanged()
 {
     updateSize();
+    updateMicroFocus();
     emit textChanged(text());
 }
 
@@ -1330,6 +1331,7 @@ void QDeclarativeTextEdit::updateSelectionMarkers()
         d->lastSelectionEnd = d->control->textCursor().selectionEnd();
         emit selectionEndChanged();
     }
+    updateMicroFocus();
 }
 
 QRectF QDeclarativeTextEdit::boundingRect() const

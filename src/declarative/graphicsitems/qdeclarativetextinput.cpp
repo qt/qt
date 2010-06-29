@@ -1398,15 +1398,11 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(selectionChanged()));
     q->connect(control, SIGNAL(textChanged(const QString &)),
-               q, SIGNAL(displayTextChanged(const QString &)));
-    q->connect(control, SIGNAL(textChanged(const QString &)),
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
-    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(updateRect()));//TODO: Only update rect between pos's
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(updateRect()));//TODO: Only update rect in selection
     //Note that above TODOs probably aren't that big a savings
@@ -1422,6 +1418,8 @@ void QDeclarativeTextInputPrivate::init()
 void QDeclarativeTextInput::cursorPosChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect between pos's
+    updateMicroFocus();
     emit cursorPositionChanged();
 
     if(!d->control->hasSelectedText()){
@@ -1460,7 +1458,9 @@ void QDeclarativeTextInput::q_textChanged()
     Q_D(QDeclarativeTextInput);
     d->updateHorizontalScroll();
     updateSize();
+    updateMicroFocus();
     emit textChanged();
+    emit displayTextChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
         emit acceptableInputChanged();
