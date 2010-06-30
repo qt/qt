@@ -75,6 +75,10 @@ private slots:
     void gradients_data();
     void gradients();
 
+    void textureUpload_data();
+    void textureUpload();
+
+
 private:
     QGLPixelBuffer *pb;
 };
@@ -372,6 +376,53 @@ void OpenGLBench::gradients()
         p.fillRect(0, 0, pb->width(), pb->height(), gradient);
         glFinish();
     }
+}
+
+void OpenGLBench::textureUpload_data()
+{
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("flags");
+    QTest::addColumn<int>("format");
+
+    int sizes[] = { 8, 10, 16, 20, 32, 50, 64, 100, 128, 200, 256, 500, 512, 1000, 1024, 2000, 2048, -1 };
+    int flags[] = { QGLContext::InternalBindOption,
+                  QGLContext::DefaultBindOption,
+                  -1 };
+    int formats[] = { GL_RGB, GL_RGBA, -1 };
+
+    for (int s = 0; sizes[s] != -1; ++s) {
+        for (int f = 0; flags[f] != -1; ++f) {
+            for (int a = 0; formats[a] != -1; ++a) {
+                QByteArray name;
+                name.append("size=").append(QByteArray::number(sizes[s]));
+                name.append(", flags=").append(f == 0 ? "internal" : "default");
+                name.append(", format=").append(a == 0 ? "RGB" : "RGBA");
+                QTest::newRow(name.constData()) << sizes[s] << flags[f] << formats[a];
+            }
+        }
+    }
+}
+
+void OpenGLBench::textureUpload()
+{
+    QFETCH(int, size);
+    QFETCH(int, flags);
+    QFETCH(int, format);
+
+    QPixmap pixmap(size, size);
+
+    if (format == GL_RGB)
+        pixmap.fill(Qt::red);
+    else
+        pixmap.fill(Qt::transparent);
+
+    pb->makeCurrent();
+    QGLContext *context = const_cast<QGLContext *>(QGLContext::currentContext());
+    QTime time;
+
+    time.start();
+    context->bindTexture(pixmap, GL_TEXTURE_2D, format, (QGLContext::BindOptions) flags);
+    QTest::setBenchmarkResult(time.elapsed(), QTest::WalltimeMilliseconds);
 }
 
 QTEST_MAIN(OpenGLBench)

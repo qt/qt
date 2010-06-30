@@ -12020,4 +12020,9 @@ EXPORTS
 	_ZN10QImageData14convertInPlaceEN6QImage6FormatE6QFlagsIN2Qt19ImageConversionFlagEE @ 12019 NONAME
 	_ZN17QRasterPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 12020 NONAME
 	_ZN17QRasterPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12021 NONAME
+	_ZN15QGraphicsSystem16createPixmapDataEP11QPixmapData @ 12022 NONAME
+	_ZN17QRasterPixmapData4copyEPK11QPixmapDataRK5QRect @ 12023 NONAME
+	_ZNK11QPixmapData7toImageERK5QRect @ 12024 NONAME
+	_ZNK17QRasterPixmapData7toImageERK5QRect @ 12025 NONAME
+	_ZTV15QGraphicsSystem @ 12026 NONAME
 
