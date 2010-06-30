@@ -2,59 +2,18 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="fr">
 <context>
-    <name>MAC_APPLICATION_MENU</name>
-    <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2316"/>
-        <source>Services</source>
-        <translation>Services</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hide %1</source>
-        <translation>Masquer %1</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hide Others</source>
-        <translation>Masquer les autres</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show All</source>
-        <translation>Tout afficher</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Preferences...</source>
-        <translation>Préférences…</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Quit %1</source>
-        <translation>Quitter %1</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>About %1</source>
-        <translation>À propos de %1</translation>
-    </message>
-</context>
-<context>
     <name>AudioOutput</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+375"/>
         <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
-        <translation>&lt;html&gt;Le périphérique audio &lt;b&gt;%1&lt;/b&gt; ne fonctionne pas.&lt;br/&gt;Utilisation de &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;Le périphérique audio &lt;b&gt;%1&lt;/b&gt; ne fonctionne pas.&lt;br/&gt;Utilisation de &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
-        <translation>&lt;html&gt;Utilisation de &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;qui vient de devenir disponible et a une plus grande priorité.&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;Utilisation de &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;qui vient de devenir disponible et a une plus grande priorité.&lt;/html&gt;</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Revert back to device &apos;%1&apos;</source>
-        <translation>Utilisation de &apos;%1&apos;</translation>
+        <translation type="obsolete">Utilisation de &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
@@ -104,6 +63,48 @@
     <message>
         <source>Close Tab</source>
         <translation>Fermer l&apos;onglet</translation>
+    </message>
+</context>
+<context>
+    <name>FakeReply</name>
+    <message>
+        <source>Fake error !</source>
+        <translation>Fausse erreur!</translation>
+    </message>
+    <message>
+        <source>Invalid URL</source>
+        <translation>URL non valide</translation>
+    </message>
+</context>
+<context>
+    <name>MAC_APPLICATION_MENU</name>
+    <message>
+        <source>Services</source>
+        <translation>Services</translation>
+    </message>
+    <message>
+        <source>Hide %1</source>
+        <translation>Masquer %1</translation>
+    </message>
+    <message>
+        <source>Hide Others</source>
+        <translation>Masquer les autres</translation>
+    </message>
+    <message>
+        <source>Show All</source>
+        <translation>Tout afficher</translation>
+    </message>
+    <message>
+        <source>Preferences...</source>
+        <translation>Préférences…</translation>
+    </message>
+    <message>
+        <source>Quit %1</source>
+        <translation>Quitter %1</translation>
+    </message>
+    <message>
+        <source>About %1</source>
+        <translation>À propos de %1</translation>
     </message>
 </context>
 <context>
@@ -200,6 +201,25 @@ so on.</source>
     </message>
 </context>
 <context>
+    <name>Phonon::AudioOutput</name>
+    <message>
+        <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;Le périphérique audio &lt;b&gt;%1&lt;/b&gt; ne fonctionne pas.&lt;br/&gt;Repli sur &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;Basculement vers le périphérique audio &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;qui vient juste d&apos;être disponible et dont le niveau de préférence est plus élevé.&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Revert back to device &apos;%1&apos;</source>
+        <translation>Revenir au périphérique &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which has higher preference or is specifically configured for this stream.&lt;/html&gt;</source>
+        <translation>&lt;html&gt;Basculement vers le périphérique audio &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;dont le niveau de préférence est plus élevé ou qui est spécifiquement configuré pour ce flux.&lt;/html&gt;</translation>
+    </message>
+</context>
+<context>
     <name>Phonon::Gstreamer::Backend</name>
     <message>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
@@ -217,12 +237,11 @@ Le support audio et vidéo est désactivé</translation>
 <context>
     <name>Phonon::Gstreamer::MediaObject</name>
     <message>
-        <location filename="../src/3rdparty/phonon/gstreamer/mediaobject.cpp" line="+90"/>
         <source>Cannot start playback. 
 
 Check your Gstreamer installation and make sure you 
 have libgstreamer-plugins-base installed.</source>
-        <translation>Impossible de démarrer la lecture. Verifiez votre installation de Gstreamer et assurez-vous d&apos;avoir installé libgstreamer-plugins-base.</translation>
+        <translation type="obsolete">Impossible de démarrer la lecture. Verifiez votre installation de Gstreamer et assurez-vous d&apos;avoir installé libgstreamer-plugins-base.</translation>
     </message>
     <message>
         <source>Unknown media format: %1</source>
@@ -257,6 +276,15 @@ have libgstreamer-plugins-base installed.</source>
         <translation type="obsolete">Impossible de charger la source</translation>
     </message>
     <message>
+        <source>Missing codec helper script assistant.</source>
+        <translatorcomment>???</translatorcomment>
+        <translation>Assistant de script d&apos;aide au codec manquant.</translation>
+    </message>
+    <message>
+        <source>Plugin codec installation failed for codec: %0</source>
+        <translation>Échec de l&apos;installation du plugin pour le codec : %0</translation>
+    </message>
+    <message>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
         <translation>Un codec requis est manquant. Vous devez installer le codec suivant pour jouer le contenu: %0</translation>
     </message>
@@ -289,6 +317,320 @@ have libgstreamer-plugins-base installed.</source>
 
 Vérifiez votre installation de GStreamer et assurez-vous 
 d&apos;avoir installé libgstreamer-plugins-base.</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF</name>
+    <message>
+        <source>Audio Output</source>
+        <translation>Sortie audio</translation>
+    </message>
+    <message>
+        <source>The audio output device</source>
+        <translation>Périphérique audio de sortie</translation>
+    </message>
+    <message>
+        <source>No error</source>
+        <translation>Aucune erreur</translation>
+    </message>
+    <message>
+        <source>Not found</source>
+        <translation>Introuvable</translation>
+    </message>
+    <message>
+        <source>Out of memory</source>
+        <translation>Mémoire insuffisante</translation>
+    </message>
+    <message>
+        <source>Not supported</source>
+        <translation>Non supporté</translation>
+    </message>
+    <message>
+        <source>Overflow</source>
+        <translation>Dépassement</translation>
+    </message>
+    <message>
+        <source>Underflow</source>
+        <translation>Soupassement</translation>
+    </message>
+    <message>
+        <source>Already exists</source>
+        <translation>Existe déjà</translation>
+    </message>
+    <message>
+        <source>Path not found</source>
+        <translation>Chemin introuvable</translation>
+    </message>
+    <message>
+        <source>In use</source>
+        <translation>Utilisé</translation>
+    </message>
+    <message>
+        <source>Not ready</source>
+        <translation>Pas prêt</translation>
+    </message>
+    <message>
+        <source>Access denied</source>
+        <translation>Accès refusé</translation>
+    </message>
+    <message>
+        <source>Could not connect</source>
+        <translation>Connexion impossible</translation>
+    </message>
+    <message>
+        <source>Disconnected</source>
+        <translation>Déconnecté</translation>
+    </message>
+    <message>
+        <source>Permission denied</source>
+        <translation>Autorisation refusée</translation>
+    </message>
+    <message>
+        <source>Insufficient bandwidth</source>
+        <translation>Bande passante insuffisante</translation>
+    </message>
+    <message>
+        <source>Network unavailable</source>
+        <translation>Réseau non disponible</translation>
+    </message>
+    <message>
+        <source>Network communication error</source>
+        <translation>Erreur de communication réseau</translation>
+    </message>
+    <message>
+        <source>Streaming not supported</source>
+        <translation>Streaming non supporté</translation>
+    </message>
+    <message>
+        <source>Server alert</source>
+        <translation>Alerte serveur</translation>
+    </message>
+    <message>
+        <source>Invalid protocol</source>
+        <translation>Protocole non valide</translation>
+    </message>
+    <message>
+        <source>Invalid URL</source>
+        <translation>URL non valide</translation>
+    </message>
+    <message>
+        <source>Multicast error</source>
+        <translation>Erreur multicast</translation>
+    </message>
+    <message>
+        <source>Proxy server error</source>
+        <translation>Erreur du serveur proxy</translation>
+    </message>
+    <message>
+        <source>Proxy server not supported</source>
+        <translation>Serveur proxy non supporté</translation>
+    </message>
+    <message>
+        <source>Audio output error</source>
+        <translation>Erreur de sortie audio</translation>
+    </message>
+    <message>
+        <source>Video output error</source>
+        <translation>Erreur de sortie vidéo</translation>
+    </message>
+    <message>
+        <source>Decoder error</source>
+        <translation>Erreur du décodeur</translation>
+    </message>
+    <message>
+        <source>Audio or video components could not be played</source>
+        <translation>Les composants audio ou vidéo n&apos;ont pas pu être lus</translation>
+    </message>
+    <message>
+        <source>DRM error</source>
+        <translation>Erreur GDN</translation>
+    </message>
+    <message>
+        <source>Unknown error (%1)</source>
+        <translation>Erreur inconnue (%1)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractMediaPlayer</name>
+    <message>
+        <source>Not ready to play</source>
+        <translation>Pas prêt pour lecture</translation>
+    </message>
+    <message>
+        <source>Error opening file</source>
+        <translation>Erreur lors de l&apos;ouverture du fichier</translation>
+    </message>
+    <message>
+        <source>Error opening URL</source>
+        <translation>Erreur lors de l&apos;ouverture de l&apos;URL</translation>
+    </message>
+    <message>
+        <source>Setting volume failed</source>
+        <translation>Le réglage du volume a échoué</translation>
+    </message>
+    <message>
+        <source>Loading clip failed</source>
+        <translation>Échec de l&apos;ouverture du clip</translation>
+    </message>
+    <message>
+        <source>Playback complete</source>
+        <translation>Lecture terminée</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractVideoPlayer</name>
+    <message>
+        <source>Pause failed</source>
+        <translation>La mise en pause a échoué</translation>
+    </message>
+    <message>
+        <source>Seek failed</source>
+        <translation>La recherche a échoué</translation>
+    </message>
+    <message>
+        <source>Getting position failed</source>
+        <translation>L&apos;obtention de la position a échoué</translation>
+    </message>
+    <message>
+        <source>Opening clip failed</source>
+        <translation>L&apos;ouverture du clip a échoué</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AudioEqualizer</name>
+    <message>
+        <source>%1 Hz</source>
+        <translation>%1 Hz</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AudioPlayer</name>
+    <message>
+        <source>Getting position failed</source>
+        <translation>L&apos;obtention de la position a échoué</translation>
+    </message>
+    <message>
+        <source>Opening clip failed</source>
+        <translation type="obsolete">L&apos;ouverture du clip a échoué</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::DsaVideoPlayer</name>
+    <message>
+        <source>Video display error</source>
+        <translation>Erreur de l&apos;affichage vidéo</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EffectFactory</name>
+    <message>
+        <source>Enabled</source>
+        <translation>Activé</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EnvironmentalReverb</name>
+    <message>
+        <source>Decay HF ratio (%)</source>
+        <extracomment>DecayHFRatio: Ratio of high-frequency decay time to the value specified by DecayTime.</extracomment>
+        <translation>Ratio HF du déclin (%)</translation>
+    </message>
+    <message>
+        <source>Decay time (ms)</source>
+        <extracomment>DecayTime: Time over which reverberation is diminished.</extracomment>
+        <translation>Temps de déclin (ms)</translation>
+    </message>
+    <message>
+        <source>Density (%)</source>
+        <extracomment>Density Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Diffusion value.</extracomment>
+        <translation>Densité (%)</translation>
+    </message>
+    <message>
+        <source>Diffusion (%)</source>
+        <extracomment>Diffusion: Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Density value.</extracomment>
+        <translation>Diffusion (%)</translation>
+    </message>
+    <message>
+        <source>Reflections delay (ms)</source>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <translation>Délai réflexions (ms)</translation>
+    </message>
+    <message>
+        <source>Reflections level (mB)</source>
+        <extracomment>ReflectionsLevel: Amplitude of reflections. This value is corrected by the RoomLevel to give the final reflection amplitude.</extracomment>
+        <translation>Niveau réflexions (mB)</translation>
+    </message>
+    <message>
+        <source>Reverb delay (ms)</source>
+        <extracomment>ReverbDelay: Amount of time between arrival of the first reflection and start of the late reverberation.</extracomment>
+        <translation>Délai de réverbération (ms)</translation>
+    </message>
+    <message>
+        <source>Reverb level (mB)</source>
+        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <translation>Niveau de réverbération (mB)</translation>
+    </message>
+    <message>
+        <source>Room HF level</source>
+        <extracomment>RoomHFLevel: Amplitude of low-pass filter used to attenuate the high frequency component of reflected sound.</extracomment>
+        <translation>Niveau HF pièce</translation>
+    </message>
+    <message>
+        <source>Room level (mB)</source>
+        <extracomment>RoomLevel: Master volume control for all reflected sound.</extracomment>
+        <translation>Niveau pièce (mB)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::MediaObject</name>
+    <message>
+        <source>Error opening source: type not supported</source>
+        <translation>Erreur lors de l&apos;ouverture de la source: type non supporté</translation>
+    </message>
+    <message>
+        <source>Error opening source: media type could not be determined</source>
+        <translation>Erreur lors de l&apos;ouverture de la source: type de média non déterminé</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::StereoWidening</name>
+    <message>
+        <source>Level (%)</source>
+        <translation>Niveau (%)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::SurfaceVideoPlayer</name>
+    <message>
+        <source>Video display error</source>
+        <translation>Erreur de l&apos;affichage vidéo</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::VideoPlayer</name>
+    <message>
+        <source>Pause failed</source>
+        <translation type="obsolete">La mise en pause a échoué</translation>
+    </message>
+    <message>
+        <source>Seek failed</source>
+        <translation type="obsolete">La recherche a échoué</translation>
+    </message>
+    <message>
+        <source>Getting position failed</source>
+        <translation type="obsolete">L&apos;obtention de la position a échoué</translation>
+    </message>
+    <message>
+        <source>Opening clip failed</source>
+        <translation type="obsolete">L&apos;ouverture du clip a échoué</translation>
+    </message>
+    <message>
+        <source>Buffering clip failed</source>
+        <translation type="obsolete">La mise en mémoire tampon du clip a échoué</translation>
+    </message>
+    <message>
+        <source>Video display error</source>
+        <translation type="obsolete">Erreur de l&apos;affichage vidéo</translation>
     </message>
 </context>
 <context>
@@ -748,9 +1090,8 @@ en
         <translation>Contient des commandes pour manipuler la fenêtre</translation>
     </message>
     <message>
-        <location filename="../src/plugins/accessible/compat/q3complexwidgets.cpp" line="+277"/>
         <source>Puts a minimized back to normal</source>
-        <translation>Rend à une fenêtre minimisée son aspect normal</translation>
+        <translation type="obsolete">Rend à une fenêtre minimisée son aspect normal</translation>
     </message>
     <message>
         <source>Moves the window out of the way</source>
@@ -893,9 +1234,15 @@ en
     </message>
 </context>
 <context>
+    <name>QAccessibleButton</name>
+    <message>
+        <source>Press</source>
+        <translation>Appuyer</translation>
+    </message>
+</context>
+<context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2248"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -918,7 +1265,7 @@ en
     </message>
     <message>
         <source>QT_LAYOUT_DIRECTION</source>
-        <translation>LTR</translation>
+        <translation type="obsolete">LTR</translation>
     </message>
 </context>
 <context>
@@ -1047,7 +1394,7 @@ en
     <message>
         <source>%1: already exists</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="obsolete">%1: existe déjà</translation>
+        <translation>%1 : existe déjà</translation>
     </message>
     <message>
         <source>%1: doesn&apos;t exists</source>
@@ -1055,60 +1402,62 @@ en
         <translation type="obsolete">%1: n&apos;existe pas</translation>
     </message>
     <message>
+        <source>%1: does not exist</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1 : n&apos;existe pas</translation>
+    </message>
+    <message>
         <source>%1: out of resources</source>
         <comment>QSystemSemaphore</comment>
+        <translation>%1 : plus de ressources disponibles</translation>
+    </message>
+    <message>
+        <source>%1: unknown error %2</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1 : erreur inconnue %2</translation>
+    </message>
+    <message>
+        <source>%1: key is empty</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1 : clé vide</translation>
+    </message>
+    <message>
+        <source>%1: unable to make key</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1 : impossible de créer la clé</translation>
+    </message>
+    <message>
+        <source>%1: ftok failed</source>
+        <comment>QSystemSemaphore</comment>
+        <translation>%1 : ftok a échoué</translation>
+    </message>
+    <message>
+        <source>%1: key is empty</source>
+        <translation type="obsolete">%1: clé vide</translation>
+    </message>
+    <message>
+        <source>%1: unable to make key</source>
+        <translation type="obsolete">%1: impossible de créer la clé</translation>
+    </message>
+    <message>
+        <source>%1: ftok failed</source>
+        <translation type="obsolete">%1: ftok a échoué</translation>
+    </message>
+    <message>
+        <source>%1: already exists</source>
+        <translation type="obsolete">%1: existe déjà</translation>
+    </message>
+    <message>
+        <source>%1: does not exist</source>
+        <translation type="obsolete">%1: n&apos;existe pas</translation>
+    </message>
+    <message>
+        <source>%1: out of resources</source>
         <translation type="obsolete">%1: plus de ressources disponibles</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
-        <comment>QSystemSemaphore</comment>
         <translation type="obsolete">%1: erreur inconnue %2</translation>
-    </message>
-    <message>
-        <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="+119"/>
-        <source>%1: key is empty</source>
-        <comment>QSystemSemaphore</comment>
-        <translation>%1: clé vide</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>%1: unable to make key</source>
-        <comment>QSystemSemaphore</comment>
-        <translation>%1: impossible de créer la clé</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>%1: ftok failed</source>
-        <comment>QSystemSemaphore</comment>
-        <translation>%1: ftok a échoué</translation>
-    </message>
-    <message>
-        <source>%1: key is empty</source>
-        <translation>%1: clé vide</translation>
-    </message>
-    <message>
-        <source>%1: unable to make key</source>
-        <translation>%1: impossible de créer la clé</translation>
-    </message>
-    <message>
-        <source>%1: ftok failed</source>
-        <translation>%1: ftok a échoué</translation>
-    </message>
-    <message>
-        <source>%1: already exists</source>
-        <translation>%1: existe déjà</translation>
-    </message>
-    <message>
-        <source>%1: does not exist</source>
-        <translation>%1: n&apos;existe pas</translation>
-    </message>
-    <message>
-        <source>%1: out of resources</source>
-        <translation>%1: plus de ressources disponibles</translation>
-    </message>
-    <message>
-        <source>%1: unknown error %2</source>
-        <translation>%1: erreur inconnue %2</translation>
     </message>
 </context>
 <context>
@@ -1174,6 +1523,879 @@ en
     <message>
         <source>pm</source>
         <translation>pm</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAbstractAnimation</name>
+    <message>
+        <source>Cannot animate non-existent property &quot;%1&quot;</source>
+        <translation>Impossible d&apos;animer la propriété inexistante &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Cannot animate read-only property &quot;%1&quot;</source>
+        <translation>Impossible d&apos;animer la propriété en lecture seule &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Animation is an abstract class</source>
+        <translation>L&apos;animation est une classe abstraite</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchorAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation>Impossible de sélectionner une durée négative</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnchors</name>
+    <message>
+        <source>Possible anchor loop detected on fill.</source>
+        <translation>Boucle potentielle dans les ancres détectée pour le remplissage.</translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on centerIn.</source>
+        <translation>Boucle potentielle dans les ancres détectée pour le centrage.</translation>
+    </message>
+    <message>
+        <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
+        <translation>Impossible d&apos;ancrer à un élément qui n&apos;est pas un parent ou partage le même parent.</translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on vertical anchor.</source>
+        <translation>Boucle potentielle dans les ancres détectée pour l&apos;ancre verticale.</translation>
+    </message>
+    <message>
+        <source>Possible anchor loop detected on horizontal anchor.</source>
+        <translation>Boucle potentielle dans les ancres détectée pour l&apos;ancre horizontale.</translation>
+    </message>
+    <message>
+        <source>Cannot specify left, right, and hcenter anchors.</source>
+        <translation>Impossible de spécifier à la fois une ancre gauche, droite et hcenter.</translation>
+    </message>
+    <message>
+        <source>Cannot anchor to a null item.</source>
+        <translation>impossible d&apos;ancrer à un élément nul.</translation>
+    </message>
+    <message>
+        <source>Cannot anchor a horizontal edge to a vertical edge.</source>
+        <translation>Impossible d&apos;ancrer un bord horizontal à un bord vertical.</translation>
+    </message>
+    <message>
+        <source>Cannot anchor item to self.</source>
+        <translation>Impossible d&apos;ancrer l&apos;élément à lui même.</translation>
+    </message>
+    <message>
+        <source>Cannot specify top, bottom, and vcenter anchors.</source>
+        <translation>Impossible de spécifier à la fois une ancre haut, bas et vcenter.</translation>
+    </message>
+    <message>
+        <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
+        <translation>L&apos;ancre baseline ne peut pas etre combinée à l&apos;usage des ancres haut, bas ou vcenter.</translation>
+    </message>
+    <message>
+        <source>Cannot anchor a vertical edge to a horizontal edge.</source>
+        <translation>Impossible d&apos;ancrer un bord vertical à un bord horizontal.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeAnimatedImage</name>
+    <message>
+        <source>Qt was built without support for QMovie</source>
+        <translation>Qt a été compilé sans support de QMovie</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBehavior</name>
+    <message>
+        <source>Cannot change the animation assigned to a Behavior.</source>
+        <translation>Impossible de changer l&apos;animation affectée à un comportement.</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeBinding</name>
+    <message>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation>Boucle détectée dans l&apos;affectation pour la propriété &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompiledBindings</name>
+    <message>
+        <source>Binding loop detected for property &quot;%1&quot;</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompiler</name>
+    <message>
+        <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
+        <translation>Affectation de propriété invalide : &quot;%1&quot;est une propriété en lecture seule</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unknown enumeration</source>
+        <translation>Affectation de propriété invalide : énumération inconnue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: string expected</source>
+        <translation>Affectation de propriété invalide : chaîne attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: url expected</source>
+        <translation>Affectation de propriété invalide : url attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unsigned int expected</source>
+        <translation>Affectation de propriété invalide : unsigned int attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: int expected</source>
+        <translation>Affectation de propriété invalide : int attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: float expected</source>
+        <translation>Affectation de propriété invalide : float attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: double expected</source>
+        <translation>Affectation de propriété invalide : double attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: color expected</source>
+        <translation>Affectation de propriété invalide : couleur attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: date expected</source>
+        <translation>Affectation de propriété invalide : date attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: time expected</source>
+        <translation>Affectation de propriété invalide : heure attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: datetime expected</source>
+        <translation>Affectation de propriété invalide : date et heure attendues</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: point expected</source>
+        <translation>Affectation de propriété invalide : point attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: size expected</source>
+        <translation>Affectation de propriété invalide : taille attendue</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: rect expected</source>
+        <translation>Affectation de propriété invalide : rectangle attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: boolean expected</source>
+        <translation>Affectation de propriété invalide : booléen attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: 3D vector expected</source>
+        <translation>Affectation de propriété invalide : vecteur 3D attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
+        <translation>Affectation de propriété invalide : type &quot;%1&quot; non supporté</translation>
+    </message>
+    <message>
+        <source>Element is not creatable.</source>
+        <translation>Impossible de créer l&apos;élément.</translation>
+    </message>
+    <message>
+        <source>Component elements may not contain properties other than id</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid component id specification</source>
+        <translation type="unfinished">L&apos;ID de composant spécifiée n&apos;est pas valide</translation>
+    </message>
+    <message>
+        <source>id is not unique</source>
+        <translation type="unfinished">l&apos;ID n&apos;est pas unique</translation>
+    </message>
+    <message>
+        <source>Invalid component body specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new properties.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new signals.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component objects cannot declare new functions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot create empty component specification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Incorrectly specified signal assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign a value to a signal (expecting a script to be run)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty signal assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Empty property assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attached properties cannot be used here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Non-existent attached object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid attached object assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent default property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid use of namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not an attached property name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid use of id property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property has already been assigned a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid grouped property access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign a value directly to a grouped property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property use</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property assignment expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single property assignment expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected object assignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Can only assign one binding to lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign primitives to lists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign multiple values to a script property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: script expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate default property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate property name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate signal name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signal names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate method name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Method names cannot begin with an upper case letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property value set multiple times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property nesting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot override FINAL property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property type</source>
+        <translation type="unfinished">Type de propriété invalide</translation>
+    </message>
+    <message>
+        <source>Invalid empty ID</source>
+        <translation>ID vide non valide</translation>
+    </message>
+    <message>
+        <source>IDs cannot start with an uppercase letter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IDs must start with a letter or underscore</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>IDs must contain only letters, numbers, and underscores</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID illegally masks global JavaScript property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No property alias location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeComponent</name>
+    <message>
+        <source>Invalid empty URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeCompositeTypeManager</name>
+    <message>
+        <source>Resource %1 unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="unfinished">%1% {1 %2?}</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeConnections</name>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections: nested objects not allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections: syntax error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connections: script expected</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeEngine</name>
+    <message>
+        <source>executeSql called outside transaction()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read-only Transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version mismatch: expected %1, found %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SQL transaction failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>transaction: missing callback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SQL: database version mismatch</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeFlipable</name>
+    <message>
+        <source>front is a write-once property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>back is a write-once property</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeImportDatabase</name>
+    <message>
+        <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; version %2.%3 is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>module &quot;%1&quot; is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot;: no such directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>import &quot;%1&quot; has no qmldir and no namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>- %1 is not a namespace</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>- nested namespaces not allowed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>local directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is ambiguous. Found in %1 and in %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is instantiated recursively</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>is not a type</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeyNavigationAttached</name>
+    <message>
+        <source>KeyNavigation is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeKeysAttached</name>
+    <message>
+        <source>Keys is only available via attached properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeListModel</name>
+    <message>
+        <source>remove: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>insert: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>insert: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>move: out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>append: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>set: value is not an object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>set: index %1 out of range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot contain nested elements</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot use reserved &quot;id&quot; property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListElement: cannot use script for property value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ListModel: undefined property &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeLoader</name>
+    <message>
+        <source>Loader does not support loading non-visual elements.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentAnimation</name>
+    <message>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParentChange</name>
+    <message>
+        <source>Unable to preserve appearance under complex transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under non-uniform scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to preserve appearance under scale of 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeParser</name>
+    <message>
+        <source>Illegal unicode escape sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal character</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unclosed string at end of line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal escape squence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unclosed comment at end of file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Illegal syntax for exponential number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Identifier cannot start with numeric literal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression literal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid regular expression flag &apos;%0&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression backslash sequence</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Syntax error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected token `%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected token `%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Property value set multiple times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected type name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid import qualifier ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Script import qualifiers must be unique.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Script import requires a qualifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Library import requires a version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected parameter type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid property type modifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unexpected property type modifier</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expected property type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Readonly not yet supported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>JavaScript declaration outside Script element</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePauseAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePixmapCache</name>
+    <message>
+        <source>Error decoding: %1: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to get image from provider: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown Error loading %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyAnimation</name>
+    <message>
+        <source>Cannot set a duration of &lt; 0</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePropertyChanges</name>
+    <message>
+        <source>PropertyChanges does not support creating state-specific objects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to non-existent property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign to read-only property &quot;%1&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTextInput</name>
+    <message>
+        <source>Could not load cursor delegate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not instantiate cursor delegate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVME</name>
+    <message>
+        <source>Unable to create object of type %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign value %1 to property %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object type %1 with no default method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign an object to signal property %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot assign object to interface property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to create attached object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot set properties on %1 as it is null</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeVisualDataModel</name>
+    <message>
+        <source>Delegate component must be Item type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModel</name>
+    <message>
+        <source>Qt was built without support for xmlpatterns</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlListModelRole</name>
+    <message>
+        <source>An XmlRole query must not start with &apos;/&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeXmlRoleList</name>
+    <message>
+        <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1312,13 +2534,11 @@ en
         <translation>Taille</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+457"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
         <translation>Type</translation>
@@ -1329,11 +2549,11 @@ en
     </message>
     <message>
         <source>Kind</source>
-        <translation>Type</translation>
+        <translation type="obsolete">Type</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="obsolete">Type</translation>
     </message>
 </context>
 <context>
@@ -1542,6 +2762,26 @@ Voulez-vous quand même le supprimer ?</translation>
         <translation>Fichier</translation>
     </message>
     <message>
+        <source>File Folder</source>
+        <comment>Match Windows Explorer</comment>
+        <translation>Fichier Dossier</translation>
+    </message>
+    <message>
+        <source>Folder</source>
+        <comment>All other platforms</comment>
+        <translation>Dossier</translation>
+    </message>
+    <message>
+        <source>Alias</source>
+        <comment>Mac OS X Finder</comment>
+        <translation>Alias</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <comment>All other platforms</comment>
+        <translation>Raccourci</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <translation>Inconnu</translation>
     </message>
@@ -1551,7 +2791,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Show </source>
-        <translation>Montrer </translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>Forward</source>
@@ -1587,19 +2827,43 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>File Folder</source>
-        <translation>Fichier Dossier</translation>
+        <translation type="obsolete">Fichier Dossier</translation>
     </message>
     <message>
         <source>Folder</source>
-        <translation>Dossier</translation>
+        <translation type="obsolete">Dossier</translation>
     </message>
     <message>
         <source>Alias</source>
-        <translation>Alias</translation>
+        <translation type="obsolete">Alias</translation>
     </message>
     <message>
         <source>Shortcut</source>
-        <translation>Raccourci</translation>
+        <translation type="obsolete">Raccourci</translation>
+    </message>
+    <message>
+        <source>Go back</source>
+        <translation>Précédent</translation>
+    </message>
+    <message>
+        <source>Go forward</source>
+        <translation>Suivant</translation>
+    </message>
+    <message>
+        <source>Go to the parent directory</source>
+        <translation>Dossier parent</translation>
+    </message>
+    <message>
+        <source>Create a New Folder</source>
+        <translation>Créer un nouveau dossier</translation>
+    </message>
+    <message>
+        <source>Change to list view mode</source>
+        <translation>Affichage liste</translation>
+    </message>
+    <message>
+        <source>Change to detail view mode</source>
+        <translation>Affichage détaillé</translation>
     </message>
 </context>
 <context>
@@ -1641,13 +2905,11 @@ Voulez-vous quand même le supprimer ?</translation>
         <translation>Taille</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+898"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
         <translation>Type</translation>
@@ -1658,7 +2920,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>My Computer</source>
-        <translation>Mon ordinateur</translation>
+        <translation>Poste de travail</translation>
     </message>
     <message>
         <source>Computer</source>
@@ -1666,11 +2928,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Kind</source>
-        <translation>Type</translation>
+        <translation type="obsolete">Type</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="obsolete">Type</translation>
     </message>
     <message>
         <source>%1 byte(s)</source>
@@ -1995,10 +3257,21 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
 </context>
 <context>
+    <name>QGstreamerPlayerSession</name>
+    <message>
+        <source>Unable to play %1</source>
+        <translation>Impossible de lire %1</translation>
+    </message>
+</context>
+<context>
     <name>QHostInfo</name>
     <message>
         <source>Unknown error</source>
         <translation>Erreur inconnue</translation>
+    </message>
+    <message>
+        <source>No host name given</source>
+        <translation>Aucun nom d&apos;hôte n&apos;a été donné</translation>
     </message>
 </context>
 <context>
@@ -2634,6 +3907,32 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
 </context>
 <context>
+    <name>QMediaPlayer</name>
+    <message>
+        <source>The QMediaPlayer object does not have a valid service</source>
+        <translation>Pas de service valide pour l&apos;objet QMediaPlayer</translation>
+    </message>
+</context>
+<context>
+    <name>QMediaPlaylist</name>
+    <message>
+        <source>Could not add items to read only playlist.</source>
+        <translation>Impossible d&apos;ajouter des éléments à une liste de lecture en lecture seule.</translation>
+    </message>
+    <message>
+        <source>Playlist format is not supported</source>
+        <translation>Le format de liste de lecture n&apos;est pas supporté</translation>
+    </message>
+    <message>
+        <source>The file could not be accessed.</source>
+        <translation>Impossible d&apos;accéder au fichier.</translation>
+    </message>
+    <message>
+        <source>Playlist format is not supported.</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>QMenu</name>
     <message>
         <source>Close</source>
@@ -2734,9 +4033,8 @@ Voulez-vous quand même le supprimer ?</translation>
         <translation>Cacher les détails...</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1693"/>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;À propos de Qt&lt;/h3&gt;&lt;p&gt;Ce programme utilise Qt version %1.&lt;/p&gt;&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés tels que Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;&lt;p&gt;Ce programme utilise Qt version %1.&lt;/p&gt;&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés tels que Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
@@ -2892,6 +4190,32 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
 </context>
 <context>
+    <name>QNetworkAccessDataBackend</name>
+    <message>
+        <source>Operation not supported on %1</source>
+        <translation>Opération non supportée sur %1</translation>
+    </message>
+    <message>
+        <source>Invalid URI: %1</source>
+        <translation>URI invalide : %1</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkAccessDebugPipeBackend</name>
+    <message>
+        <source>Write error writing to %1: %2</source>
+        <translation>Erreur lors de l&apos;écriture dans %1: %2</translation>
+    </message>
+    <message>
+        <source>Socket error on %1: %2</source>
+        <translation>Erreur de socket sur %1 : %2</translation>
+    </message>
+    <message>
+        <source>Remote host closed the connection prematurely on %1</source>
+        <translation>L&apos;hôte distant a fermé sa connexion de façon prématurée sur %1</translation>
+    </message>
+</context>
+<context>
     <name>QNetworkAccessFileBackend</name>
     <message>
         <source>Request for opening non-local file %1</source>
@@ -2945,6 +4269,13 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
 </context>
 <context>
+    <name>QNetworkAccessManager</name>
+    <message>
+        <source>Network access is disabled.</source>
+        <translation>L&apos;accès au réseau est désactivé.</translation>
+    </message>
+</context>
+<context>
     <name>QNetworkReply</name>
     <message>
         <source>Error downloading %1 - server replied: %2</source>
@@ -2953,6 +4284,14 @@ Voulez-vous quand même le supprimer ?</translation>
     <message>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Le protocole &quot;%1&quot; est inconnu</translation>
+    </message>
+    <message>
+        <source>Network session error.</source>
+        <translation>Erreur de session réseau.</translation>
+    </message>
+    <message>
+        <source>Temporary network failure.</source>
+        <translation>Erreur réseau temporaire.</translation>
     </message>
 </context>
 <context>
@@ -2963,13 +4302,54 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
 </context>
 <context>
+    <name>QNetworkSession</name>
+    <message>
+        <source>Invalid configuration.</source>
+        <translation>Configuration invalide.</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkSessionPrivateImpl</name>
+    <message>
+        <source>Roaming error</source>
+        <translation>Erreur de roaming</translation>
+    </message>
+    <message>
+        <source>Session aborted by user or system</source>
+        <translation>Session annulée par l&apos;utilisateur ou le système</translation>
+    </message>
+    <message>
+        <source>Unidentified Error</source>
+        <translation>Erreur inconnue</translation>
+    </message>
+    <message>
+        <source>Unknown session error.</source>
+        <translation>Erreur de session inconnue.</translation>
+    </message>
+    <message>
+        <source>The session was aborted by the user or system.</source>
+        <translation>la session a été annulée par l&apos;utilisateur ou le système.</translation>
+    </message>
+    <message>
+        <source>The requested operation is not supported by the system.</source>
+        <translation>L&apos;opération requise n&apos;est pas suportée par le système.</translation>
+    </message>
+    <message>
+        <source>The specified configuration cannot be used.</source>
+        <translation>La configuration spécifiée ne peut être utilisée.</translation>
+    </message>
+    <message>
+        <source>Roaming was aborted or is not possible.</source>
+        <translation>Le roaming a été annulé ou est impossible.</translation>
+    </message>
+</context>
+<context>
     <name>QOCIDriver</name>
     <message>
         <source>Unable to logon</source>
         <translation>Impossible d&apos;ouvrir une session</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+1925"/>
         <source>Unable to initialize</source>
         <comment>QOCIDriver</comment>
         <translation>L&apos;initialisation a échoué</translation>
@@ -2988,7 +4368,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Unable to initialize</source>
-        <translation>L&apos;initialisation a échoué</translation>
+        <translation type="obsolete">L&apos;initialisation a échoué</translation>
     </message>
 </context>
 <context>
@@ -3037,9 +4417,8 @@ Voulez-vous quand même le supprimer ?</translation>
         <translation>Incapable d&apos;établir une connexion</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1791"/>
         <source>Unable to connect - Driver doesn&apos;t support all needed functionality</source>
-        <translation>Impossible de se connecter - Le pilote ne supporte pas toutes les fonctionnalités nécessaires</translation>
+        <translation type="obsolete">Impossible de se connecter - Le pilote ne supporte pas toutes les fonctionnalités nécessaires</translation>
     </message>
     <message>
         <source>Unable to disable autocommit</source>
@@ -3104,48 +4483,56 @@ Voulez-vous quand même le supprimer ?</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/gui/util/qdesktopservices_mac.cpp" line="+165"/>
         <source>Home</source>
-        <translation>Début</translation>
+        <translation type="obsolete">Début</translation>
     </message>
     <message>
         <source>Operation not supported on %1</source>
-        <translation>Opération non supportée sur %1</translation>
+        <translation type="obsolete">Opération non supportée sur %1</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
-        <translation>URI invalide : %1</translation>
+        <translation type="obsolete">URI invalide : %1</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+175"/>
         <source>Write error writing to %1: %2</source>
-        <translation>Erreur d&apos;écriture sur %1 : %2</translation>
+        <translation type="obsolete">Erreur d&apos;écriture sur %1 : %2</translation>
     </message>
     <message>
-        <location line="+57"/>
         <source>Read error reading from %1: %2</source>
-        <translation>Erreur de lecture sur %1 : %2</translation>
+        <translation type="obsolete">Erreur de lecture sur %1 : %2</translation>
     </message>
     <message>
         <source>Socket error on %1: %2</source>
-        <translation>Erreur de socket sur %1 : %2</translation>
+        <translation type="obsolete">Erreur de socket sur %1 : %2</translation>
     </message>
     <message>
         <source>Remote host closed the connection prematurely on %1</source>
-        <translation>L&apos;hôte distant a fermé sa connexion de façon prématurée sur %1</translation>
+        <translation type="obsolete">L&apos;hôte distant a fermé sa connexion de façon prématurée sur %1</translation>
     </message>
     <message>
-        <location line="+99"/>
         <source>Protocol error: packet of size 0 received</source>
-        <translation>Erreur de protocole: paquet de taille 0 reçu</translation>
+        <translation type="obsolete">Erreur de protocole: paquet de taille 0 reçu</translation>
     </message>
     <message>
         <source>No host name given</source>
-        <translation>Nom d&apos;hôte manquant</translation>
+        <translation type="obsolete">Nom d&apos;hôte manquant</translation>
     </message>
     <message>
         <source>Invalid hostname</source>
-        <translation>Nom d&apos;hôte non valide</translation>
+        <translation type="obsolete">Nom d&apos;hôte non valide</translation>
+    </message>
+    <message>
+        <source>PulseAudio Sound Server</source>
+        <translation>Serveur de son PulseAudio</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
+        <translation>&quot;%1&quot; est un doublon d&apos;un nom de role existant et sera désactivé.</translation>
+    </message>
+    <message>
+        <source>invalid query: &quot;%1&quot;</source>
+        <translation>Requête invalide : &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -3442,6 +4829,10 @@ Voulez-vous quand même le supprimer ?</translation>
         <translation>US Common #10 Envelope (105 x 241 mm)</translation>
     </message>
     <message>
+        <source>Print current page</source>
+        <translation>Imprimer la page courante</translation>
+    </message>
+    <message>
         <source>Aliases: %1</source>
         <translation>Alias : %1</translation>
     </message>
@@ -3483,7 +4874,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Print</source>
-        <translation>Impr écran</translation>
+        <translation>Imprimer</translation>
     </message>
     <message>
         <source>File</source>
@@ -3796,11 +5187,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Print</source>
-        <translation>Impr écran</translation>
+        <translation>Imprimer</translation>
     </message>
     <message>
         <source>Page setup</source>
-        <translation>Configuration de la page</translation>
+        <translation>Mise en page</translation>
     </message>
     <message>
         <source>Close</source>
@@ -3816,7 +5207,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Page Setup</source>
-        <translation>Configuration de la page</translation>
+        <translation>Mise en page</translation>
     </message>
 </context>
 <context>
@@ -3927,6 +5318,10 @@ Veuillez choisir un nom de fichier différent.</translation>
         <source>Short side</source>
         <translation>Côté court</translation>
     </message>
+    <message>
+        <source>Current Page</source>
+        <translation>Page courante</translation>
+    </message>
 </context>
 <context>
     <name>QPrintWidget</name>
@@ -4002,9 +5397,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Aucun programme défini</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+464"/>
         <source>Process failed to start</source>
-        <translation>Le processus n&apos;a pas démarré</translation>
+        <translation type="obsolete">Le processus n&apos;a pas démarré</translation>
     </message>
     <message>
         <source>Process failed to start: %1</source>
@@ -4082,9 +5476,8 @@ Veuillez choisir un nom de fichier différent.</translation>
 <context>
     <name>QSQLite2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+396"/>
         <source>Error to open database</source>
-        <translation>Erreur à l&apos;ouverture de la base de données</translation>
+        <translation type="obsolete">Erreur à l&apos;ouverture de la base de données</translation>
     </message>
     <message>
         <source>Unable to begin transaction</source>
@@ -4095,9 +5488,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Impossible de soumettre la transaction</translation>
     </message>
     <message>
-        <location line="+75"/>
         <source>Unable to rollback Transaction</source>
-        <translation>Impossible d&apos;annuler la transaction</translation>
+        <translation type="obsolete">Impossible d&apos;annuler la transaction</translation>
     </message>
     <message>
         <source>Error opening database</source>
@@ -4171,6 +5563,281 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>No query</source>
         <translation>Pas de requête</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptBreakpointsModel</name>
+    <message>
+        <source>ID</source>
+        <translation>Identifiant</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Lieu</translation>
+    </message>
+    <message>
+        <source>Condition</source>
+        <translation>Condition</translation>
+    </message>
+    <message>
+        <source>Ignore-count</source>
+        <translation>Comptes d&apos;ignorés</translation>
+    </message>
+    <message>
+        <source>Single-shot</source>
+        <translation>Un seul tir</translation>
+    </message>
+    <message>
+        <source>Hit-count</source>
+        <translation>Compte de coups</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptBreakpointsWidget</name>
+    <message>
+        <source>New</source>
+        <translation>Créer</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebugger</name>
+    <message>
+        <source>Go to Line</source>
+        <translation>Aller à la ligne</translation>
+    </message>
+    <message>
+        <source>Line:</source>
+        <translation>Ligne:</translation>
+    </message>
+    <message>
+        <source>Interrupt</source>
+        <translation>Interrompre</translation>
+    </message>
+    <message>
+        <source>Shift+F5</source>
+        <translation>Shift+F5</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>Continuer</translation>
+    </message>
+    <message>
+        <source>F5</source>
+        <translation>F5</translation>
+    </message>
+    <message>
+        <source>Step Into</source>
+        <translation>Pas à pas détaillé</translation>
+    </message>
+    <message>
+        <source>F11</source>
+        <translation>F11</translation>
+    </message>
+    <message>
+        <source>Step Over</source>
+        <translation>Pas à pas principal</translation>
+    </message>
+    <message>
+        <source>F10</source>
+        <translation>F10</translation>
+    </message>
+    <message>
+        <source>Step Out</source>
+        <translation>Pas à pas sortant</translation>
+    </message>
+    <message>
+        <source>Shift+F11</source>
+        <translation>Shift+F11</translation>
+    </message>
+    <message>
+        <source>Run to Cursor</source>
+        <translation>Exécuter au curseur</translation>
+    </message>
+    <message>
+        <source>Ctrl+F10</source>
+        <translation>Ctrl+F10</translation>
+    </message>
+    <message>
+        <source>Run to New Script</source>
+        <translation>Exécuter au nouveau script</translation>
+    </message>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>Basculer le point d&apos;arrêt</translation>
+    </message>
+    <message>
+        <source>F9</source>
+        <translation>F9</translation>
+    </message>
+    <message>
+        <source>Clear Debug Output</source>
+        <translation>Effacer les résultats du débogage</translation>
+    </message>
+    <message>
+        <source>Clear Error Log</source>
+        <translation>Effacer le journal d&apos;erreurs</translation>
+    </message>
+    <message>
+        <source>Clear Console</source>
+        <translation>Effacer la console</translation>
+    </message>
+    <message>
+        <source>&amp;Find in Script...</source>
+        <translation>&amp;Chercher dans le script...</translation>
+    </message>
+    <message>
+        <source>Ctrl+F</source>
+        <translation>Ctrl+F</translation>
+    </message>
+    <message>
+        <source>Find &amp;Next</source>
+        <translation>Résultat &amp;suivant</translation>
+    </message>
+    <message>
+        <source>F3</source>
+        <translation>F3</translation>
+    </message>
+    <message>
+        <source>Find &amp;Previous</source>
+        <translation>Chercher &amp;précédent</translation>
+    </message>
+    <message>
+        <source>Shift+F3</source>
+        <translation>Shift+F3</translation>
+    </message>
+    <message>
+        <source>Ctrl+G</source>
+        <translation>Ctrl+G</translation>
+    </message>
+    <message>
+        <source>Debug</source>
+        <translation>Déboguer</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerCodeFinderWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Précédent</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Suivant</translation>
+    </message>
+    <message>
+        <source>Case Sensitive</source>
+        <translation>Sensible à la casse</translation>
+    </message>
+    <message>
+        <source>Whole words</source>
+        <translation>Mots complets</translation>
+    </message>
+    <message>
+        <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
+        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;La recherche est revenue au début</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerLocalsModel</name>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Valeur</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptDebuggerStackModel</name>
+    <message>
+        <source>Level</source>
+        <translation>Niveau</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Lieu</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptEdit</name>
+    <message>
+        <source>Toggle Breakpoint</source>
+        <translation>Basculer le point d&apos;arrêt</translation>
+    </message>
+    <message>
+        <source>Disable Breakpoint</source>
+        <translation>Désactiver le point d&apos;arrêt</translation>
+    </message>
+    <message>
+        <source>Enable Breakpoint</source>
+        <translation>Activer le point d&apos;arrêt</translation>
+    </message>
+    <message>
+        <source>Breakpoint Condition:</source>
+        <translation>Condition du point d&apos;arrêt:</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptEngineDebugger</name>
+    <message>
+        <source>Loaded Scripts</source>
+        <translation>Scripts chargés</translation>
+    </message>
+    <message>
+        <source>Breakpoints</source>
+        <translation>Points d&apos;arrêt</translation>
+    </message>
+    <message>
+        <source>Stack</source>
+        <translation>Empiler</translation>
+    </message>
+    <message>
+        <source>Locals</source>
+        <translation>Locaux</translation>
+    </message>
+    <message>
+        <source>Console</source>
+        <translation>Console</translation>
+    </message>
+    <message>
+        <source>Debug Output</source>
+        <translation>Résultats du débogage</translation>
+    </message>
+    <message>
+        <source>Error Log</source>
+        <translation>Journal d&apos;erreurs</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Chercher</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>Affichage</translation>
+    </message>
+    <message>
+        <source>Qt Script Debugger</source>
+        <translation>Débogueur de script Qt</translation>
+    </message>
+</context>
+<context>
+    <name>QScriptNewBreakpointWidget</name>
+    <message>
+        <source>Close</source>
+        <translation>Fermer</translation>
     </message>
 </context>
 <context>
@@ -4283,9 +5950,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>%1 : clé vide</translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+125"/>
         <source>%1: unix key file doesn&apos;t exists</source>
-        <translation>%1 : le fichier de clé unix n&apos;existe pas</translation>
+        <translation type="obsolete">%1 : le fichier de clé unix n&apos;existe pas</translation>
     </message>
     <message>
         <source>%1: ftok failed</source>
@@ -4328,6 +5994,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     <name>QShortcut</name>
     <message>
         <source>Space</source>
+        <extracomment>This and all following &quot;incomprehensible&quot; strings in QShortcut context are key names. Please use the localized names appearing on actual keyboards or whatever is commonly used.</extracomment>
         <translation>Espace</translation>
     </message>
     <message>
@@ -4368,7 +6035,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Print</source>
-        <translation>Impr écran</translation>
+        <translation>Imprimer</translation>
     </message>
     <message>
         <source>SysReq</source>
@@ -4436,7 +6103,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation>Stop</translation>
+        <translation>Arrêter</translation>
     </message>
     <message>
         <source>Refresh</source>
@@ -4657,15 +6324,162 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Call</source>
+        <extracomment>Button to start a call (note: a separate button is used to end the call)</extracomment>
         <translation>Appeler</translation>
     </message>
     <message>
         <source>Hangup</source>
+        <extracomment>Button to end a call (note: a separate button is used to start the call)</extracomment>
         <translation>Raccrocher</translation>
+    </message>
+    <message>
+        <source>Toggle Call/Hangup</source>
+        <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
+        <translation>Décrocher/Raccrocher</translation>
     </message>
     <message>
         <source>Flip</source>
         <translation>Retourner</translation>
+    </message>
+    <message>
+        <source>Voice Dial</source>
+        <extracomment>Button to trigger voice dialling</extracomment>
+        <translation>Commande vocale</translation>
+    </message>
+    <message>
+        <source>Last Number Redial</source>
+        <extracomment>Button to redial the last number called</extracomment>
+        <translation>Bis</translation>
+    </message>
+    <message>
+        <source>Camera Shutter</source>
+        <extracomment>Button to trigger the camera shutter (take a picture)</extracomment>
+        <translation>Déclencheur appareil photo</translation>
+    </message>
+    <message>
+        <source>Camera Focus</source>
+        <extracomment>Button to focus the camera</extracomment>
+        <translation>Focus appareil photo</translation>
+    </message>
+    <message>
+        <source>Kanji</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Muhenkan</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Henkan</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Romaji</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hiragana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Katakana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hiragana Katakana</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Zenkaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hankaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Zenkaku Hankaku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Touroku</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Massyo</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Kana Lock</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Kana Shift</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Eisu Shift</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Eisu toggle</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Code input</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Multiple Candidate</source>
+        <translation>Candidat multiple</translation>
+    </message>
+    <message>
+        <source>Previous Candidate</source>
+        <translation>Candidat précédent</translation>
+    </message>
+    <message>
+        <source>Hangul</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Start</source>
+        <translation>Hangul début</translation>
+    </message>
+    <message>
+        <source>Hangul End</source>
+        <translation>Hangul Fin</translation>
+    </message>
+    <message>
+        <source>Hangul Hanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Jamo</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Romaja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Jeonja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Banja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul PreHanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul PostHanja</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Hangul Special</source>
+        <translation></translation>
     </message>
     <message>
         <source>Ctrl</source>
@@ -4694,6 +6508,16 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>Home Page</source>
         <translation>Page d&apos;accueil</translation>
+    </message>
+    <message>
+        <source>Media Pause</source>
+        <extracomment>Media player pause button</extracomment>
+        <translation>Média pause</translation>
+    </message>
+    <message>
+        <source>Toggle Media Play/Pause</source>
+        <extracomment>Media player button to toggle between playing and paused</extracomment>
+        <translation>Média Lecture/Pause</translation>
     </message>
     <message>
         <source>Monitor Brightness Up</source>
@@ -5037,7 +6861,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>View</source>
-        <translation>Afficher</translation>
+        <translation>Affichage</translation>
     </message>
     <message>
         <source>Top Menu</source>
@@ -5136,6 +6960,33 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>Network operation timed out</source>
         <translation>L&apos;opération réseau a expiré</translation>
+    </message>
+</context>
+<context>
+    <name>QSoftKeyManager</name>
+    <message>
+        <source>Ok</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Sélectionner</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <translation>Terminer</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation>Options</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation>Quitter</translation>
     </message>
 </context>
 <context>
@@ -5239,9 +7090,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation type="obsolete">La clé privée ne certifie pas la clé publique, %1</translation>
     </message>
     <message>
-        <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+327"/>
         <source>Private key does not certificate public key, %1</source>
-        <translation>La clé privée ne certifie pas la clé publique, %1</translation>
+        <translation type="obsolete">La clé privée ne certifie pas la clé publique, %1</translation>
     </message>
     <message>
         <source>Unable to decrypt data: %1</source>
@@ -5345,6 +7195,25 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
 </context>
 <context>
+    <name>QStateMachine</name>
+    <message>
+        <source>Missing initial state in compound state &apos;%1&apos;</source>
+        <translation>État initial manquant dans l&apos;état composé &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <source>Missing default state in history state &apos;%1&apos;</source>
+        <translation>État par défaut manquant dans l&apos;état de l&apos;historique &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <source>No common ancestor for targets and source of transition from state &apos;%1&apos;</source>
+        <translation>Aucun ancêtre commun pour les cibles et la source de transition de l&apos;état &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <source>Unknown error</source>
+        <translation>Erreur inconnue</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: out of resources</source>
@@ -5408,7 +7277,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>&amp;Redo</source>
-        <translation>&amp;Répéter</translation>
+        <translation>&amp;Rétablir</translation>
     </message>
     <message>
         <source>Cu&amp;t</source>
@@ -5439,7 +7308,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     <name>QToolButton</name>
     <message>
         <source>Press</source>
-        <translation>Presser</translation>
+        <translation>Appuyer</translation>
     </message>
     <message>
         <source>Open</source>
@@ -5461,7 +7330,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Redo</source>
-        <translation>Répéter</translation>
+        <translation>Rétablir</translation>
     </message>
 </context>
 <context>
@@ -5479,7 +7348,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Redo</source>
-        <translation>Répéter</translation>
+        <translation>Rétablir</translation>
     </message>
 </context>
 <context>
@@ -5544,9 +7413,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Impossible d&apos;afficher l&apos;URL</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+722"/>
         <source>Frame load interruped by policy change</source>
-        <translation>Chargement de la frame interrompu par un changement de configuration</translation>
+        <translation type="obsolete">Chargement de la frame interrompu par un changement de configuration</translation>
     </message>
     <message>
         <source>Cannot show mimetype</source>
@@ -5564,19 +7432,16 @@ Veuillez choisir un nom de fichier différent.</translation>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
         <translation>Soumettre</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Submit</source>
         <comment>Submit (input element) alt text for &lt;input&gt; elements with no alt, title, or value</comment>
         <translation>Soumettre</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Reset</source>
         <comment>default label for Reset buttons in forms on web pages</comment>
         <translation>Réinitialiser</translation>
@@ -5587,271 +7452,436 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation type="obsolete">Index recherchable</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Choose File</source>
         <comment>title for file button used in HTML forms</comment>
         <translation>Choisir le fichier</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>No file selected</source>
         <comment>text to display in file button used in HTML forms when no file is selected</comment>
         <translation>Pas de fichier sélectionné</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
         <translation>Ouvrir dans une Nouvelle Fenêtre</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Save Link...</source>
         <comment>Download Linked File context menu item</comment>
         <translation>Enregistrer le lien...</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy Link</source>
         <comment>Copy Link context menu item</comment>
         <translation>Copier le lien</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open Image</source>
         <comment>Open Image in New Window context menu item</comment>
         <translation>Ouvrir l&apos;image</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Save Image</source>
         <comment>Download Image context menu item</comment>
         <translation>Enregistrer l&apos;image</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
         <translation>Copier l&apos;image</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open Frame</source>
         <comment>Open Frame in New Window context menu item</comment>
         <translation>Ouvrir le cadre</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Copy</source>
         <comment>Copy context menu item</comment>
         <translation>Copier</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Go Back</source>
         <comment>Back context menu item</comment>
         <translation>Précédent</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Go Forward</source>
         <comment>Forward context menu item</comment>
         <translation>Suivant</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Stop</source>
         <comment>Stop context menu item</comment>
-        <translation>Stop</translation>
+        <translation>Arrêter</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Reload</source>
         <comment>Reload context menu item</comment>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cut</source>
         <comment>Cut context menu item</comment>
         <translation>Couper</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
         <translation>Coller</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>No Guesses Found</source>
         <comment>No Guesses Found context menu item</comment>
         <translation>Pas de candidat trouvés</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Spelling context menu item</comment>
         <translation>Ignorer</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Add To Dictionary</source>
         <comment>Learn Spelling context menu item</comment>
         <translation>Ajouter au dictionnaire</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Search The Web</source>
         <comment>Search The Web context menu item</comment>
         <translation>Chercher sur le Web</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Look Up In Dictionary</source>
         <comment>Look Up in Dictionary context menu item</comment>
         <translation>Chercher dans le dictionnaire</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open Link</source>
         <comment>Open Link context menu item</comment>
         <translation>Ouvrir le lien</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Grammar context menu item</comment>
         <translation>Ignorer</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Spelling</source>
         <comment>Spelling and Grammar context sub-menu item</comment>
         <translation>Orthographe</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Show Spelling and Grammar</source>
         <comment>menu item title</comment>
         <translation>Afficher Orthographe et Grammaire</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Hide Spelling and Grammar</source>
         <comment>menu item title</comment>
         <translation>Cacher Orthographe et Grammaire</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Spelling</source>
         <comment>Check spelling context menu item</comment>
         <translation>Vérifier l&apos;orthographe</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Spelling While Typing</source>
         <comment>Check spelling while typing context menu item</comment>
         <translation>Vérifier l&apos;orthographe pendant la saisie</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Check Grammar With Spelling</source>
         <comment>Check grammar with spelling context menu item</comment>
         <translation>Vérifier la grammaire en même temps que l&apos;orthographe</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Fonts</source>
         <comment>Font context sub-menu item</comment>
         <translation>Polices</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Bold</source>
         <comment>Bold context menu item</comment>
         <translation>Gras</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Italic</source>
         <comment>Italic context menu item</comment>
         <translation>Italique</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Underline</source>
         <comment>Underline context menu item</comment>
         <translation>Souligné</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Outline</source>
         <comment>Outline context menu item</comment>
         <translation>Contour</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Direction</source>
         <comment>Writing direction context sub-menu item</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Text Direction</source>
         <comment>Text direction context sub-menu item</comment>
         <translation>Orientation du texte</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Default</source>
         <comment>Default writing direction context menu item</comment>
-        <translation>Défaut</translation>
+        <translation>Par défaut</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Left to Right</source>
+        <comment>Left to Right context menu item</comment>
+        <translation>Gauche à droite</translation>
+    </message>
+    <message>
+        <source>Right to Left</source>
+        <comment>Right to Left context menu item</comment>
+        <translation>Droite à gauche</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <comment>Media controller status message when the media is loading</comment>
+        <translation>Chargement...</translation>
+    </message>
+    <message>
+        <source>Live Broadcast</source>
+        <comment>Media controller status message when watching a live broadcast</comment>
+        <translation>Diffusion en direct</translation>
+    </message>
+    <message>
+        <source>Audio Element</source>
+        <comment>Media controller element</comment>
+        <translation>Élément audio</translation>
+    </message>
+    <message>
+        <source>Video Element</source>
+        <comment>Media controller element</comment>
+        <translation>Élément vidéo</translation>
+    </message>
+    <message>
+        <source>Mute Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de désactivation du son</translation>
+    </message>
+    <message>
+        <source>Unmute Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de réactivation du son</translation>
+    </message>
+    <message>
+        <source>Play Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de lecture</translation>
+    </message>
+    <message>
+        <source>Pause Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de pause</translation>
+    </message>
+    <message>
+        <source>Slider</source>
+        <comment>Media controller element</comment>
+        <translation>Barre de défilement</translation>
+    </message>
+    <message>
+        <source>Slider Thumb</source>
+        <comment>Media controller element</comment>
+        <translation>Curseur de la barre de défilement</translation>
+    </message>
+    <message>
+        <source>Rewind Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de retour en arrière</translation>
+    </message>
+    <message>
+        <source>Return to Real-time Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de retour au temps réel</translation>
+    </message>
+    <message>
+        <source>Elapsed Time</source>
+        <comment>Media controller element</comment>
+        <translation>Temps écoulé</translation>
+    </message>
+    <message>
+        <source>Remaining Time</source>
+        <comment>Media controller element</comment>
+        <translation>Durée restante</translation>
+    </message>
+    <message>
+        <source>Status Display</source>
+        <comment>Media controller element</comment>
+        <translation>Affichage de l&apos;état</translation>
+    </message>
+    <message>
+        <source>Fullscreen Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de plein écran</translation>
+    </message>
+    <message>
+        <source>Seek Forward Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de recherche avant</translation>
+    </message>
+    <message>
+        <source>Seek Back Button</source>
+        <comment>Media controller element</comment>
+        <translation>Bouton de recherche arrière</translation>
+    </message>
+    <message>
+        <source>Audio element playback controls and status display</source>
+        <comment>Media controller element</comment>
+        <translation>Commandes de lecture et affichage de l&apos;état de l&apos;élément audio</translation>
+    </message>
+    <message>
+        <source>Video element playback controls and status display</source>
+        <comment>Media controller element</comment>
+        <translation>Commandes de lecture et affichage de l&apos;état de l&apos;élément vidéo</translation>
+    </message>
+    <message>
+        <source>Mute audio tracks</source>
+        <comment>Media controller element</comment>
+        <translation>Couper le son des pistes audio</translation>
+    </message>
+    <message>
+        <source>Unmute audio tracks</source>
+        <comment>Media controller element</comment>
+        <translation>Réactiver le son des pistes audio</translation>
+    </message>
+    <message>
+        <source>Begin playback</source>
+        <comment>Media controller element</comment>
+        <translation>Commencer la lecture</translation>
+    </message>
+    <message>
+        <source>Pause playback</source>
+        <comment>Media controller element</comment>
+        <translation>Pause lecture</translation>
+    </message>
+    <message>
+        <source>Movie time scrubber</source>
+        <comment>Media controller element</comment>
+        <translation>Balayeur de durée du film</translation>
+    </message>
+    <message>
+        <source>Movie time scrubber thumb</source>
+        <comment>Media controller element</comment>
+        <translation>Case de défilement du balayeur de la durée du film</translation>
+    </message>
+    <message>
+        <source>Rewind movie</source>
+        <comment>Media controller element</comment>
+        <translation>Rembobiner le film</translation>
+    </message>
+    <message>
+        <source>Return streaming movie to real-time</source>
+        <comment>Media controller element</comment>
+        <translation>Ramener le film en streaming en temps réel</translation>
+    </message>
+    <message>
+        <source>Current movie time</source>
+        <comment>Media controller element</comment>
+        <translation>Durée du film en cours</translation>
+    </message>
+    <message>
+        <source>Remaining movie time</source>
+        <comment>Media controller element</comment>
+        <translation>Durée de film restante</translation>
+    </message>
+    <message>
+        <source>Current movie status</source>
+        <comment>Media controller element</comment>
+        <translation>État du film actuel</translation>
+    </message>
+    <message>
+        <source>Play movie in full-screen mode</source>
+        <comment>Media controller element</comment>
+        <translation>Regarder le film en mode plein écran</translation>
+    </message>
+    <message>
+        <source>Seek quickly back</source>
+        <comment>Media controller element</comment>
+        <translation>Recherche rapide arrière</translation>
+    </message>
+    <message>
+        <source>Seek quickly forward</source>
+        <comment>Media controller element</comment>
+        <translation>Recherche rapide avant</translation>
+    </message>
+    <message>
+        <source>Indefinite time</source>
+        <comment>Media time description</comment>
+        <translation>Durée indéfinie</translation>
+    </message>
+    <message>
+        <source>%1 days %2 hours %3 minutes %4 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 jours %2 heures %3 minutes %4 secondes</translation>
+    </message>
+    <message>
+        <source>%1 hours %2 minutes %3 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 heures %2 minutes %3 secondes</translation>
+    </message>
+    <message>
+        <source>%1 minutes %2 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 minutes %2 secondes</translation>
+    </message>
+    <message>
+        <source>%1 seconds</source>
+        <comment>Media time description</comment>
+        <translation>%1 secondes</translation>
+    </message>
+    <message>
         <source>LTR</source>
         <comment>Left to Right context menu item</comment>
-        <translation>De la gauche vers la droite</translation>
+        <translation type="obsolete">De la gauche vers la droite</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>RTL</source>
         <comment>Right to Left context menu item</comment>
-        <translation>De la droite vers la gauche</translation>
+        <translation type="obsolete">De la droite vers la gauche</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Inspect</source>
         <comment>Inspect Element context menu item</comment>
         <translation>Inspecter</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>No recent searches</source>
         <comment>Label for only item in menu that appears when clicking on the search field image, when no searches have been performed</comment>
         <translation>Pas de recherche récente</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Recent searches</source>
         <comment>label for first item in the menu that appears when clicking on the search field image, used as embedded menu title</comment>
         <translation>Recherches récentes</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Clear recent searches</source>
         <comment>menu item in Recent Searches menu that empties menu&apos;s contents</comment>
         <translation>Effacer les recherches récentes</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <source>Missing Plug-in</source>
+        <comment>Label text to be used when a plug-in is missing</comment>
+        <translation>Plug-in manquant</translation>
+    </message>
+    <message>
         <source>Unknown</source>
         <comment>Unknown filesize FTP directory listing item</comment>
         <translation>Inconnu</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>%1 (%2x%3 pixels)</source>
         <comment>Title string for images</comment>
         <translation>%1 (%2x%3 pixels)</translation>
@@ -5861,11 +7891,14 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Inspecteur Web - %2</translation>
     </message>
     <message>
+        <source>Redirection limit reached</source>
+        <translation>Limite de redirection atteinte</translation>
+    </message>
+    <message>
         <source>Bad HTTP request</source>
         <translation>Requête HTTP erronée</translation>
     </message>
     <message>
-        <location line="-291"/>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
         <translation>Ceci est un index. Veuillez saisir les mots-clé :</translation>
@@ -5923,7 +7956,6 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Défiler vers le bas</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/FileChooserQt.cpp" line="+45"/>
         <source>%n file(s)</source>
         <comment>number of chosen file</comment>
         <translation>
@@ -6061,353 +8093,347 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Submit</source>
-        <translation>Soumettre</translation>
+        <translation type="obsolete">Soumettre</translation>
     </message>
     <message>
         <source>Reset</source>
-        <translation>Réinitialiser</translation>
+        <translation type="obsolete">Réinitialiser</translation>
     </message>
     <message>
         <source>Choose File</source>
-        <translation>Choisir le fichier</translation>
+        <translation type="obsolete">Choisir le fichier</translation>
     </message>
     <message>
         <source>No file selected</source>
-        <translation>Pas de fichier sélectionné</translation>
+        <translation type="obsolete">Pas de fichier sélectionné</translation>
     </message>
     <message>
         <source>Open in New Window</source>
-        <translation>Ouvrir dans une Nouvelle Fenêtre</translation>
+        <translation type="obsolete">Ouvrir dans une Nouvelle Fenêtre</translation>
     </message>
     <message>
         <source>Save Link...</source>
-        <translation>Enregistrer la cible du lien...</translation>
+        <translation type="obsolete">Enregistrer la cible du lien...</translation>
     </message>
     <message>
         <source>Copy Link</source>
-        <translation>Copier le lien</translation>
+        <translation type="obsolete">Copier le lien</translation>
     </message>
     <message>
         <source>Open Image</source>
-        <translation>Ouvrir l&apos;image</translation>
+        <translation type="obsolete">Ouvrir l&apos;image</translation>
     </message>
     <message>
         <source>Save Image</source>
-        <translation>Enregistrer l&apos;image</translation>
+        <translation type="obsolete">Enregistrer l&apos;image</translation>
     </message>
     <message>
         <source>Copy Image</source>
-        <translation>Copier l&apos;image</translation>
+        <translation type="obsolete">Copier l&apos;image</translation>
     </message>
     <message>
         <source>Open Frame</source>
-        <translation>Ouvrir le cadre</translation>
+        <translation type="obsolete">Ouvrir le cadre</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation>Copier</translation>
+        <translation type="obsolete">Copier</translation>
     </message>
     <message>
         <source>Go Back</source>
-        <translation>Précédent</translation>
+        <translation type="obsolete">Précédent</translation>
     </message>
     <message>
         <source>Go Forward</source>
-        <translation>Suivant</translation>
+        <translation type="obsolete">Suivant</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation>Stop</translation>
+        <translation type="obsolete">Stop</translation>
     </message>
     <message>
         <source>Reload</source>
-        <translation>Recharger</translation>
+        <translation type="obsolete">Recharger</translation>
     </message>
     <message>
         <source>Cut</source>
-        <translation>Couper</translation>
+        <translation type="obsolete">Couper</translation>
     </message>
     <message>
         <source>Paste</source>
-        <translation>Coller</translation>
+        <translation type="obsolete">Coller</translation>
     </message>
     <message>
         <source>No Guesses Found</source>
-        <translation>Pas de candidat trouvés</translation>
+        <translation type="obsolete">Pas de candidat trouvés</translation>
     </message>
     <message>
         <source>Ignore</source>
-        <translation>Ignorer</translation>
+        <translation type="obsolete">Ignorer</translation>
     </message>
     <message>
         <source>Add To Dictionary</source>
-        <translation>Ajouter au dictionnaire</translation>
+        <translation type="obsolete">Ajouter au dictionnaire</translation>
     </message>
     <message>
         <source>Search The Web</source>
-        <translation>Chercher sur le Web</translation>
+        <translation type="obsolete">Chercher sur le Web</translation>
     </message>
     <message>
         <source>Look Up In Dictionary</source>
-        <translation>Chercher dans le dictionnaire</translation>
+        <translation type="obsolete">Chercher dans le dictionnaire</translation>
     </message>
     <message>
         <source>Open Link</source>
-        <translation>Ouvrir le lien</translation>
+        <translation type="obsolete">Ouvrir le lien</translation>
     </message>
     <message>
         <source>Spelling</source>
-        <translation>Orthographe</translation>
+        <translation type="obsolete">Orthographe</translation>
     </message>
     <message>
         <source>Show Spelling and Grammar</source>
-        <translation>Afficher Orthographe et Grammaire</translation>
+        <translation type="obsolete">Afficher Orthographe et Grammaire</translation>
     </message>
     <message>
         <source>Hide Spelling and Grammar</source>
-        <translation>Cacher Orthographe et Grammaire</translation>
+        <translation type="obsolete">Cacher Orthographe et Grammaire</translation>
     </message>
     <message>
         <source>Check Spelling</source>
-        <translation>Vérifier l&apos;orthographe</translation>
+        <translation type="obsolete">Vérifier l&apos;orthographe</translation>
     </message>
     <message>
         <source>Check Spelling While Typing</source>
-        <translation>Vérifier l&apos;orthographe pendant la saisie</translation>
+        <translation type="obsolete">Vérifier l&apos;orthographe pendant la saisie</translation>
     </message>
     <message>
         <source>Check Grammar With Spelling</source>
-        <translation>Vérifier la grammaire en même temps que l&apos;orthographe</translation>
+        <translation type="obsolete">Vérifier la grammaire en même temps que l&apos;orthographe</translation>
     </message>
     <message>
         <source>Fonts</source>
-        <translation>Polices</translation>
+        <translation type="obsolete">Polices</translation>
     </message>
     <message>
         <source>Bold</source>
-        <translation>Gras</translation>
+        <translation type="obsolete">Gras</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation>Italique</translation>
+        <translation type="obsolete">Italique</translation>
     </message>
     <message>
         <source>Underline</source>
-        <translation>Souligné</translation>
+        <translation type="obsolete">Souligné</translation>
     </message>
     <message>
         <source>Outline</source>
-        <translation>Contour</translation>
+        <translation type="obsolete">Contour</translation>
     </message>
     <message>
         <source>Direction</source>
-        <translation>Direction</translation>
+        <translation type="obsolete">Direction</translation>
     </message>
     <message>
         <source>Text Direction</source>
-        <translation>Orientation du texte</translation>
+        <translation type="obsolete">Orientation du texte</translation>
     </message>
     <message>
         <source>Default</source>
-        <translation>Défaut</translation>
+        <translation type="obsolete">Défaut</translation>
     </message>
     <message>
         <source>Left to Right</source>
-        <translation>Gauche à droite</translation>
+        <translation type="obsolete">Gauche à droite</translation>
     </message>
     <message>
         <source>Right to Left</source>
-        <translation>Droite à gauche</translation>
+        <translation type="obsolete">Droite à gauche</translation>
     </message>
     <message>
         <source>Loading...</source>
-        <translation>Chargement...</translation>
+        <translation type="obsolete">Chargement...</translation>
     </message>
     <message>
         <source>Live Broadcast</source>
-        <translation>Diffusion en direct</translation>
+        <translation type="obsolete">Diffusion en direct</translation>
     </message>
     <message>
         <source>Audio Element</source>
-        <translation>Élément audio</translation>
+        <translation type="obsolete">Élément audio</translation>
     </message>
     <message>
         <source>Video Element</source>
-        <translation>Élément vidéo</translation>
+        <translation type="obsolete">Élément vidéo</translation>
     </message>
     <message>
         <source>Mute Button</source>
-        <translation>Bouton de désactivation du son</translation>
+        <translation type="obsolete">Bouton de désactivation du son</translation>
     </message>
     <message>
         <source>Unmute Button</source>
-        <translation>Bouton de réactivation du son</translation>
+        <translation type="obsolete">Bouton de réactivation du son</translation>
     </message>
     <message>
         <source>Play Button</source>
-        <translation>Bouton de lecture</translation>
+        <translation type="obsolete">Bouton de lecture</translation>
     </message>
     <message>
         <source>Pause Button</source>
-        <translation>Bouton de pause</translation>
+        <translation type="obsolete">Bouton de pause</translation>
     </message>
     <message>
         <source>Slider</source>
-        <translation>Barre de défilement</translation>
+        <translation type="obsolete">Barre de défilement</translation>
     </message>
     <message>
         <source>Slider Thumb</source>
-        <translation>Curseur de la barre de défilement</translation>
+        <translation type="obsolete">Curseur de la barre de défilement</translation>
     </message>
     <message>
         <source>Rewind Button</source>
-        <translation>Bouton de retour en arrière</translation>
+        <translation type="obsolete">Bouton de retour en arrière</translation>
     </message>
     <message>
         <source>Return to Real-time Button</source>
-        <translation>Bouton de retour au temps réel</translation>
+        <translation type="obsolete">Bouton de retour au temps réel</translation>
     </message>
     <message>
         <source>Elapsed Time</source>
-        <translation>Temps écoulé</translation>
+        <translation type="obsolete">Temps écoulé</translation>
     </message>
     <message>
         <source>Remaining Time</source>
-        <translation>Durée restante</translation>
+        <translation type="obsolete">Durée restante</translation>
     </message>
     <message>
         <source>Status Display</source>
-        <translation>Affichage de l&apos;état</translation>
+        <translation type="obsolete">Affichage de l&apos;état</translation>
     </message>
     <message>
         <source>Fullscreen Button</source>
-        <translation>Bouton de plein écran</translation>
+        <translation type="obsolete">Bouton de plein écran</translation>
     </message>
     <message>
         <source>Seek Forward Button</source>
-        <translation>Bouton de recherche avant</translation>
+        <translation type="obsolete">Bouton de recherche avant</translation>
     </message>
     <message>
         <source>Seek Back Button</source>
-        <translation>Bouton de recherche arrière</translation>
+        <translation type="obsolete">Bouton de recherche arrière</translation>
     </message>
     <message>
         <source>Audio element playback controls and status display</source>
-        <translation>Commandes de lecture et affichage de l&apos;état de l&apos;élément audio</translation>
+        <translation type="obsolete">Commandes de lecture et affichage de l&apos;état de l&apos;élément audio</translation>
     </message>
     <message>
         <source>Video element playback controls and status display</source>
-        <translation>Commandes de lecture et affichage de l&apos;état de l&apos;élément vidéo</translation>
+        <translation type="obsolete">Commandes de lecture et affichage de l&apos;état de l&apos;élément vidéo</translation>
     </message>
     <message>
         <source>Mute audio tracks</source>
-        <translation>Couper le son des pistes audio</translation>
+        <translation type="obsolete">Couper le son des pistes audio</translation>
     </message>
     <message>
         <source>Unmute audio tracks</source>
-        <translation>Réactiver le son des pistes audio</translation>
+        <translation type="obsolete">Réactiver le son des pistes audio</translation>
     </message>
     <message>
         <source>Begin playback</source>
-        <translation>Commencer la lecture</translation>
+        <translation type="obsolete">Commencer la lecture</translation>
     </message>
     <message>
         <source>Pause playback</source>
-        <translation>Pause lecture</translation>
+        <translation type="obsolete">Pause lecture</translation>
     </message>
     <message>
         <source>Movie time scrubber</source>
-        <translation>Épurateur de la durée du film</translation>
+        <translation type="obsolete">Épurateur de la durée du film</translation>
     </message>
     <message>
         <source>Movie time scrubber thumb</source>
-        <translation>Case de défilement de l&apos;épurateur de la durée du film</translation>
+        <translation type="obsolete">Case de défilement de l&apos;épurateur de la durée du film</translation>
     </message>
     <message>
         <source>Rewind movie</source>
-        <translation>Rembobiner le film</translation>
+        <translation type="obsolete">Rembobiner le film</translation>
     </message>
     <message>
         <source>Return streaming movie to real-time</source>
-        <translation>Ramener le film en streaming en temps réel</translation>
+        <translation type="obsolete">Ramener le film en streaming en temps réel</translation>
     </message>
     <message>
         <source>Current movie time</source>
-        <translation>Durée du film actuel</translation>
+        <translation type="obsolete">Durée du film actuel</translation>
     </message>
     <message>
         <source>Remaining movie time</source>
-        <translation>Durée de film restante</translation>
+        <translation type="obsolete">Durée de film restante</translation>
     </message>
     <message>
         <source>Current movie status</source>
-        <translation>État du film actuel</translation>
+        <translation type="obsolete">État du film actuel</translation>
     </message>
     <message>
         <source>Play movie in full-screen mode</source>
-        <translation>Regarder le film en mode plein écran</translation>
+        <translation type="obsolete">Regarder le film en mode plein écran</translation>
     </message>
     <message>
         <source>Seek quickly back</source>
-        <translation>Recherche rapide arrière</translation>
+        <translation type="obsolete">Recherche rapide arrière</translation>
     </message>
     <message>
         <source>Seek quickly forward</source>
-        <translation>Recherche rapide avant</translation>
+        <translation type="obsolete">Recherche rapide avant</translation>
     </message>
     <message>
         <source>Indefinite time</source>
-        <translation>Durée indéfinie</translation>
+        <translation type="obsolete">Durée indéfinie</translation>
     </message>
     <message>
         <source>%1 days %2 hours %3 minutes %4 seconds</source>
-        <translation>%1 jours %2 heures %3 minutes %4 secondes</translation>
+        <translation type="obsolete">%1 jours %2 heures %3 minutes %4 secondes</translation>
     </message>
     <message>
         <source>%1 hours %2 minutes %3 seconds</source>
-        <translation>%1 heures %2 minutes %3 secondes</translation>
+        <translation type="obsolete">%1 heures %2 minutes %3 secondes</translation>
     </message>
     <message>
         <source>%1 minutes %2 seconds</source>
-        <translation>%1 minutes %2 secondes</translation>
+        <translation type="obsolete">%1 minutes %2 secondes</translation>
     </message>
     <message>
         <source>%1 seconds</source>
-        <translation>%1 secondes</translation>
+        <translation type="obsolete">%1 secondes</translation>
     </message>
     <message>
         <source>Inspect</source>
-        <translation>Inspecter</translation>
+        <translation type="obsolete">Inspecter</translation>
     </message>
     <message>
         <source>No recent searches</source>
-        <translation>Pas de recherche récente</translation>
+        <translation type="obsolete">Pas de recherche récente</translation>
     </message>
     <message>
         <source>Recent searches</source>
-        <translation>Recherches récentes</translation>
+        <translation type="obsolete">Recherches récentes</translation>
     </message>
     <message>
         <source>Clear recent searches</source>
-        <translation>Effacer les recherches récentes</translation>
+        <translation type="obsolete">Effacer les recherches récentes</translation>
     </message>
     <message>
         <source>Unknown</source>
-        <translation>Inconnu</translation>
+        <translation type="obsolete">Inconnu</translation>
     </message>
     <message>
         <source>%1 (%2x%3 pixels)</source>
-        <translation>%1 (%2x%3 pixels)</translation>
+        <translation type="obsolete">%1 (%2x%3 pixels)</translation>
     </message>
     <message>
         <source>This is a searchable index. Enter search keywords: </source>
-        <translation>Ceci est un index. Veuillez saisir les mots-clé :</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n file(s)</source>
-        <translation>
-            <numerusform></numerusform>
-        </translation>
+        <translation type="obsolete">Ceci est un index. Veuillez saisir les mots-clé :</translation>
     </message>
     <message>
         <source>JavaScript Problem - %1</source>
@@ -6599,59 +8625,59 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>error triggered by consumer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur déclenchée par le consommateur</translation>
     </message>
     <message>
         <source>unexpected end of file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fin de fichier inattendue</translation>
     </message>
     <message>
         <source>more than one document type definition</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">plus d&apos;une définition de type de docuement</translation>
     </message>
     <message>
         <source>error occurred while parsing element</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique de l&apos;élement</translation>
     </message>
     <message>
         <source>tag mismatch</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">tag incongru</translation>
     </message>
     <message>
         <source>error occurred while parsing content</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique du contenu</translation>
     </message>
     <message>
         <source>unexpected character</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">caractère inattendu</translation>
     </message>
     <message>
         <source>invalid name for processing instruction</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">nom d&apos;instruction invalide</translation>
     </message>
     <message>
         <source>version expected while reading the XML declaration</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Une version est attendue dans la déclaration XML</translation>
     </message>
     <message>
         <source>wrong value for standalone declaration</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valeur incorrecte pour une déclaration autonome</translation>
     </message>
     <message>
         <source>error occurred while parsing document type definition</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique de la définition du type de document</translation>
     </message>
     <message>
         <source>letter is expected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une lettre est attendue</translation>
     </message>
     <message>
         <source>error occurred while parsing comment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique du commentaire</translation>
     </message>
     <message>
         <source>error occurred while parsing reference</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique d&apos;une référence</translation>
     </message>
     <message>
         <source>internal general entity reference not allowed in DTD</source>
@@ -6684,6 +8710,29 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>standalone declaration expected while reading the XML declaration</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QXmlPatternistCLI</name>
+    <message>
+        <source>Warning in %1, at line %2, column %3: %4</source>
+        <translation>Avertissement dans %1, à la ligne %2, colonne %3: %4</translation>
+    </message>
+    <message>
+        <source>Warning in %1: %2</source>
+        <translation>Avertissement dans %1: %2</translation>
+    </message>
+    <message>
+        <source>Unknown location</source>
+        <translation>Lieu inconnu</translation>
+    </message>
+    <message>
+        <source>Error %1 in %2, at line %3, column %4: %5</source>
+        <translation>Erreur %1 dans %2, à la ligne %3, colonne %4: %5</translation>
+    </message>
+    <message>
+        <source>Error %1 in %2: %3</source>
+        <translation>Erreur %1 dans %2: %3</translation>
     </message>
 </context>
 <context>
@@ -6836,14 +8885,12 @@ Veuillez choisir un nom de fichier différent.</translation>
 <context>
     <name>QtXmlPatterns</name>
     <message>
-        <location filename="../src/xmlpatterns/acceltree/qacceltreebuilder.cpp" line="+205"/>
         <source>An %1-attribute with value %2 has already been declared.</source>
-        <translation>Un attribute %1 avec la valeur %2 est déjà déclaré.</translation>
+        <translation type="obsolete">Un attribute %1 avec la valeur %2 est déjà déclaré.</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>An %1-attribute must have a valid %2 as value, which %3 isn&apos;t.</source>
-        <translation>Un attribute %1 doit avoir un %2 valide, %3 ne l&apos;a pas.</translation>
+        <translation type="obsolete">Un attribute %1 doit avoir un %2 valide, %3 ne l&apos;a pas.</translation>
     </message>
     <message>
         <source>Network timeout.</source>
@@ -6898,19 +8945,16 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Au moins un composant doit apparaître après le délimiteur %1.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/data/qabstractfloatmathematician.cpp" line="+64"/>
         <source>No operand in an integer division, %1, can be %2.</source>
-        <translation>Pas d&apos;opérande dans une division entière, %1, peut être %2.</translation>
+        <translation type="obsolete">Pas d&apos;opérande dans une division entière, %1, peut être %2.</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>The first operand in an integer division, %1, cannot be infinity (%2).</source>
-        <translation>Le premier opérande dans une division entière, %1, ne peut être infini (%2).</translation>
+        <translation type="obsolete">Le premier opérande dans une division entière, %1, ne peut être infini (%2).</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>The second operand in a division, %1, cannot be zero (%2).</source>
-        <translation>Le second opérande dans une division, %1, ne peut être nul (%2).</translation>
+        <translation type="obsolete">Le second opérande dans une division, %1, ne peut être nul (%2).</translation>
     </message>
     <message>
         <source>%1 is not a valid value of type %2.</source>
@@ -6946,7 +8990,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>A value of type %1 cannot have an Effective Boolean Value.</source>
-        <translation>Une valeur de type %1 ne peut pas avoir une Effective Boolean Value.</translation>
+        <translation>Une valeur de type %1 ne peut pas avoir une valeur booléene effective.</translation>
     </message>
     <message>
         <source>Effective Boolean Value cannot be calculated for a sequence containing two or more atomic values.</source>
@@ -6993,29 +9037,24 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>En castant vers %1 ou des types dérivés, la valeur source doit être du même type ou une chaîne. Le type %2 n&apos;est pas autorisé.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcastingplatform.cpp" line="+134"/>
         <source>No casting is possible with %1 as the target type.</source>
-        <translation>Aucun cast n&apos;est possible avec %1 comme type de destination.</translation>
+        <translation type="obsolete">Aucun cast n&apos;est possible avec %1 comme type de destination.</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>It is not possible to cast from %1 to %2.</source>
-        <translation>Il est impossible de caster de %1 en %2.</translation>
+        <translation type="obsolete">Il est impossible de caster de %1 en %2.</translation>
     </message>
     <message>
-        <location line="+27"/>
         <source>Casting to %1 is not possible because it is an abstract type, and can therefore never be instantiated.</source>
-        <translation>Caster vers %1 est impossible parce que c&apos;est un type abstrait qui ne peut donc être instancié.</translation>
+        <translation type="obsolete">Caster vers %1 est impossible parce que c&apos;est un type abstrait qui ne peut donc être instancié.</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>It&apos;s not possible to cast the value %1 of type %2 to %3</source>
-        <translation>I lest impossible de caster la valeur %1 de type %2 en %3</translation>
+        <translation type="obsolete">I lest impossible de caster la valeur %1 de type %2 en %3</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Failure when casting from %1 to %2: %3</source>
-        <translation>Echec en castant de %1 ver %2 : %3</translation>
+        <translation type="obsolete">Echec en castant de %1 ver %2 : %3</translation>
     </message>
     <message>
         <source>A comment cannot contain %1</source>
@@ -7026,14 +9065,12 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Un commentaire ne peut pas finir par %1.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qcomparisonplatform.cpp" line="+167"/>
         <source>No comparisons can be done involving the type %1.</source>
-        <translation>Aucune comparaison ne peut être faite avec le type %1.</translation>
+        <translation type="obsolete">Aucune comparaison ne peut être faite avec le type %1.</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Operator %1 is not available between atomic values of type %2 and %3.</source>
-        <translation>L&apos;opérateur %1 n&apos;est pas disponible entre valeurs atomiques de type %2 et %3.</translation>
+        <translation type="obsolete">L&apos;opérateur %1 n&apos;est pas disponible entre valeurs atomiques de type %2 et %3.</translation>
     </message>
     <message>
         <source>An attribute node cannot be a child of a document node. Therefore, the attribute %1 is out of place.</source>
@@ -7056,9 +9093,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Un prédicat de position doit être évalué en une unique valeur numérique.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qncnameconstructor_p.h" line="+113"/>
         <source>The target name in a processing instruction cannot be %1 in any combination of upper and lower case. Therefore, is %2 invalid.</source>
-        <translation>Le nom de destination dans une instruction de traitement ne peut être %1. %2 est invalide.</translation>
+        <translation type="obsolete">Le nom de destination dans une instruction de traitement ne peut être %1. %2 est invalide.</translation>
     </message>
     <message>
         <source>%1 is not a valid target name in a processing instruction. It must be a %2 value, e.g. %3.</source>
@@ -7115,9 +9151,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>%1 n&apos;est pas un caractère XML 1.0 valide.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qcomparingaggregator.cpp" line="+197"/>
         <source>The first argument to %1 cannot be of type %2.</source>
-        <translation>Le premier argument de %1 ne peut être du type %2.</translation>
+        <translation type="obsolete">Le premier argument de %1 ne peut être du type %2.</translation>
     </message>
     <message>
         <source>If both values have zone offsets, they must have the same zone offset. %1 and %2 are not the same.</source>
@@ -7216,9 +9251,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>L&apos;initialisation de la variable %1 dépend d&apos;elle-même</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="+912"/>
         <source>No variable by name %1 exists</source>
-        <translation>Aucun variable nommée %1 existe</translation>
+        <translation type="obsolete">Aucun variable nommée %1 existe</translation>
     </message>
     <message>
         <source>The variable %1 is unused</source>
@@ -7281,42 +9315,36 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation type="obsolete">Une variable du nom %1 a déjà été déclarée dans le prologue.</translation>
     </message>
     <message>
-        <location line="+3572"/>
         <source>No value is available for the external variable by name %1.</source>
-        <translation>Aucune valeur n&apos;est disponible pour la variable externe %1.</translation>
+        <translation type="obsolete">Aucune valeur n&apos;est disponible pour la variable externe %1.</translation>
     </message>
     <message>
         <source>The namespace for a user defined function cannot be empty(try the predefined prefix %1 which exists for cases like this)</source>
         <translation type="obsolete">Le namespace d&apos;une fonction définie par l&apos;utilisateur ne peut être vide (essayez le préfixe prédéfini %1 qui existe pour ce genre de cas)</translation>
     </message>
     <message>
-        <location line="-4154"/>
         <source>A construct was encountered which only is allowed in XQuery.</source>
-        <translation>Construct n&apos;est autorisé que dans XQuery.</translation>
+        <translation type="obsolete">Construct n&apos;est autorisé que dans XQuery.</translation>
     </message>
     <message>
-        <location line="+118"/>
         <source>A template by name %1 has already been declared.</source>
-        <translation>Un template nommé %1 a déjà été déclaré.</translation>
+        <translation type="obsolete">Un template nommé %1 a déjà été déclaré.</translation>
     </message>
     <message>
         <source>The keyword %1 cannot occur with any other mode name.</source>
         <translation>Le mot-clé %1 ne peut pas apparaître avec un autre nom de mode.</translation>
     </message>
     <message>
-        <location line="+3610"/>
         <source>The value of attribute %1 must of type %2, which %3 isn&apos;t.</source>
-        <translation>La valeur de l&apos;attribut %1 doit être du type %2, %3 n&apos;en est pas.</translation>
+        <translation type="obsolete">La valeur de l&apos;attribut %1 doit être du type %2, %3 n&apos;en est pas.</translation>
     </message>
     <message>
-        <location line="+75"/>
         <source>The prefix %1 can not be bound. By default, it is already bound to the namespace %2.</source>
-        <translation>Le préfixe %1 ne peut être lié. Par défault, il est déjà lié au namespace %2.</translation>
+        <translation type="obsolete">Le préfixe %1 ne peut être lié. Par défault, il est déjà lié au namespace %2.</translation>
     </message>
     <message>
-        <location line="+312"/>
         <source>A variable by name %1 has already been declared.</source>
-        <translation>Une variable nommée %1 a déjà été déclarée.</translation>
+        <translation type="obsolete">Une variable nommée %1 a déjà été déclarée.</translation>
     </message>
     <message>
         <source>A stylesheet function must have a prefixed name.</source>
@@ -7343,9 +9371,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Les fonctions externes ne sont pas supportées. Toutes les fonctions supportées peuvent êter utilisées directement sans les déclarer préalablement comme externes</translation>
     </message>
     <message>
-        <location line="+259"/>
         <source>An argument by name %1 has already been declared. Every argument name must be unique.</source>
-        <translation>Un argument nommé %1 a déjà été déclaré. Chaque nom d&apos;argument doit être unique.</translation>
+        <translation type="obsolete">Un argument nommé %1 a déjà été déclaré. Chaque nom d&apos;argument doit être unique.</translation>
     </message>
     <message>
         <source>When function %1 is used for matching inside a pattern, the argument must be a variable reference or a string literal.</source>
@@ -7404,9 +9431,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>%1 n&apos;est pas une valeur numérique valide.</translation>
     </message>
     <message>
-        <location line="+1935"/>
         <source>No function by name %1 is available.</source>
-        <translation>La fonction %1 n&apos;est pas disponible.</translation>
+        <translation type="obsolete">La fonction %1 n&apos;est pas disponible.</translation>
     </message>
     <message>
         <source>The namespace URI cannot be the empty string when binding to a prefix, %1.</source>
@@ -7437,9 +9463,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>L&apos;URI de namespace doit être une constante et ne peut contenir d&apos;expressions.</translation>
     </message>
     <message>
-        <location line="+250"/>
         <source>An attribute by name %1 has already appeared on this element.</source>
-        <translation>Un attribute nommé %1 existe déjà pour cet élément.</translation>
+        <translation type="obsolete">Un attribute nommé %1 existe déjà pour cet élément.</translation>
     </message>
     <message>
         <source>A direct element constructor is not well-formed. %1 is ended with %2.</source>
@@ -7558,9 +9583,8 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Seul le préfixe %1 peut être lié à %2, et vice versa.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/expr/qevaluationcache.cpp" line="+117"/>
         <source>Circularity detected</source>
-        <translation>Circularité détectée</translation>
+        <translation type="obsolete">Circularité détectée</translation>
     </message>
     <message>
         <source>The parameter %1 is required, but no corresponding %2 is supplied.</source>
@@ -7619,39 +9643,32 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>Au moins un mode doit être spécifié dans l&apos;attribut %1 sur l&apos;élément %2.</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/parser/qmaintainingreader.cpp" line="+183"/>
         <source>Attribute %1 cannot appear on the element %2. Only the standard attributes can appear.</source>
-        <translation>L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seuls les attributs standard le peuvent.</translation>
+        <translation type="obsolete">L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seuls les attributs standard le peuvent.</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Attribute %1 cannot appear on the element %2. Only %3 is allowed, and the standard attributes.</source>
-        <translation>L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seul %3 est autorisé, ainsi que les attributs standard.</translation>
+        <translation type="obsolete">L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seul %3 est autorisé, ainsi que les attributs standard.</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Attribute %1 cannot appear on the element %2. Allowed is %3, %4, and the standard attributes.</source>
-        <translation>L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seuls %3, %4 et les attributs standard le sont.</translation>
+        <translation type="obsolete">L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seuls %3, %4 et les attributs standard le sont.</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Attribute %1 cannot appear on the element %2. Allowed is %3, and the standard attributes.</source>
-        <translation>L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seul %3 et les attributs standard le sont.</translation>
+        <translation type="obsolete">L&apos;attribut %1 ne peut pas apparaître sur l&apos;élément %2. Seul %3 et les attributs standard le sont.</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>XSL-T attributes on XSL-T elements must be in the null namespace, not in the XSL-T namespace which %1 is.</source>
-        <translation>Les attributs XSL-T sur des éléments XSL-T doivent être dans le namespace null, et pas dans %1.</translation>
+        <translation type="obsolete">Les attributs XSL-T sur des éléments XSL-T doivent être dans le namespace null, et pas dans %1.</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>The attribute %1 must appear on element %2.</source>
-        <translation>L&apos;attribut %1 doit apparaître sur l&apos;élément %2.</translation>
+        <translation type="obsolete">L&apos;attribut %1 doit apparaître sur l&apos;élément %2.</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>The element with local name %1 does not exist in XSL-T.</source>
-        <translation>L&apos;élément avec le nom local %1 n&apos;existe pas dans XSL-T.</translation>
+        <translation type="obsolete">L&apos;élément avec le nom local %1 n&apos;existe pas dans XSL-T.</translation>
     </message>
     <message>
         <source>Element %1 must come last.</source>
@@ -8849,15 +10866,12 @@ Veuillez choisir un nom de fichier différent.</translation>
 <context>
     <name>VolumeSlider</name>
     <message>
-        <location filename="../src/3rdparty/phonon/phonon/volumeslider.cpp" line="+184"/>
         <source>Muted</source>
-        <translation>Muet</translation>
+        <translation type="obsolete">Muet</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+15"/>
         <source>Volume: %1%</source>
-        <translation>Volume : %1%</translation>
+        <translation type="obsolete">Volume : %1%</translation>
     </message>
 </context>
 <context>
@@ -8913,657 +10927,6 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>Scroll down</source>
         <translation type="obsolete">Défiler vers le bas</translation>
-    </message>
-</context>
-<context>
-    <name>FakeReply</name>
-    <message>
-        <source>Fake error !</source>
-        <translation>Fausse erreur!</translation>
-    </message>
-    <message>
-        <source>Invalid URL</source>
-        <translation>URL non valide</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::AudioOutput</name>
-    <message>
-        <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
-        <translation>&lt;html&gt;Le périphérique audio &lt;b&gt;%1&lt;/b&gt; ne fonctionne pas.&lt;br/&gt;Repli sur &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
-        <translation>&lt;html&gt;Basculement vers le périphérique audio &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;qui vient juste d&apos;être disponible et dont le niveau de préférence est plus élevé.&lt;/html&gt;</translation>
-    </message>
-    <message>
-        <source>Revert back to device &apos;%1&apos;</source>
-        <translation>Revenir au périphérique &apos;%1&apos;</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF</name>
-    <message>
-        <source>Audio Output</source>
-        <translation>Sortie audio</translation>
-    </message>
-    <message>
-        <source>The audio output device</source>
-        <translation>Périphérique audio de sortie</translation>
-    </message>
-    <message>
-        <source>No error</source>
-        <translation>Aucune erreur</translation>
-    </message>
-    <message>
-        <source>Not found</source>
-        <translation>Introuvable</translation>
-    </message>
-    <message>
-        <source>Out of memory</source>
-        <translation>Mémoire insuffisante</translation>
-    </message>
-    <message>
-        <source>Not supported</source>
-        <translation>Non supporté</translation>
-    </message>
-    <message>
-        <source>Overflow</source>
-        <translation>Dépassement</translation>
-    </message>
-    <message>
-        <source>Underflow</source>
-        <translation>Soupassement</translation>
-    </message>
-    <message>
-        <source>Already exists</source>
-        <translation>Existe déjà</translation>
-    </message>
-    <message>
-        <source>Path not found</source>
-        <translation>Chemin introuvable</translation>
-    </message>
-    <message>
-        <source>In use</source>
-        <translation>Utilisé</translation>
-    </message>
-    <message>
-        <source>Not ready</source>
-        <translation>Pas prêt</translation>
-    </message>
-    <message>
-        <source>Access denied</source>
-        <translation>Accès refusé</translation>
-    </message>
-    <message>
-        <source>Could not connect</source>
-        <translation>Connexion impossible</translation>
-    </message>
-    <message>
-        <source>Disconnected</source>
-        <translation>Déconnecté</translation>
-    </message>
-    <message>
-        <source>Permission denied</source>
-        <translation>Autorisation refusée</translation>
-    </message>
-    <message>
-        <source>Insufficient bandwidth</source>
-        <translation>Bande passante insuffisante</translation>
-    </message>
-    <message>
-        <source>Network unavailable</source>
-        <translation>Réseau non disponible</translation>
-    </message>
-    <message>
-        <source>Network communication error</source>
-        <translation>Erreur de communication réseau</translation>
-    </message>
-    <message>
-        <source>Streaming not supported</source>
-        <translation>Streaming non supporté</translation>
-    </message>
-    <message>
-        <source>Server alert</source>
-        <translation>Alerte serveur</translation>
-    </message>
-    <message>
-        <source>Invalid protocol</source>
-        <translation>Protocole non valide</translation>
-    </message>
-    <message>
-        <source>Invalid URL</source>
-        <translation>URL non valide</translation>
-    </message>
-    <message>
-        <source>Multicast error</source>
-        <translation>Erreur multicast</translation>
-    </message>
-    <message>
-        <source>Proxy server error</source>
-        <translation>Erreur du serveur proxy</translation>
-    </message>
-    <message>
-        <source>Proxy server not supported</source>
-        <translation>Serveur proxy non supporté</translation>
-    </message>
-    <message>
-        <source>Audio output error</source>
-        <translation>Erreur de sortie audio</translation>
-    </message>
-    <message>
-        <source>Video output error</source>
-        <translation>Erreur de sortie vidéo</translation>
-    </message>
-    <message>
-        <source>Decoder error</source>
-        <translation>Erreur du décodeur</translation>
-    </message>
-    <message>
-        <source>Audio or video components could not be played</source>
-        <translation>Les composants audio ou vidéo n&apos;ont pas pu être lus</translation>
-    </message>
-    <message>
-        <source>DRM error</source>
-        <translation>Erreur GDN</translation>
-    </message>
-    <message>
-        <source>Unknown error (%1)</source>
-        <translation>Erreur inconnue (%1)</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::AbstractMediaPlayer</name>
-    <message>
-        <source>Not ready to play</source>
-        <translation>Pas prêt pour lecture</translation>
-    </message>
-    <message>
-        <source>Error opening file</source>
-        <translation>Erreur lors de l&apos;ouverture du fichier</translation>
-    </message>
-    <message>
-        <source>Error opening URL</source>
-        <translation>Erreur lors de l&apos;ouverture de l&apos;URL</translation>
-    </message>
-    <message>
-        <source>Setting volume failed</source>
-        <translation>Le réglage du volume a échoué</translation>
-    </message>
-    <message>
-        <source>Playback complete</source>
-        <translation>Lecture terminée</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::AudioEqualizer</name>
-    <message>
-        <source>%1 Hz</source>
-        <translation>%1 Hz</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::AudioPlayer</name>
-    <message>
-        <source>Getting position failed</source>
-        <translation>L&apos;obtention de la position a échoué</translation>
-    </message>
-    <message>
-        <source>Opening clip failed</source>
-        <translation>L&apos;ouverture du clip a échoué</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::EffectFactory</name>
-    <message>
-        <source>Enabled</source>
-        <translation>Activé</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::EnvironmentalReverb</name>
-    <message>
-        <source>Decay HF ratio (%)</source>
-        <translation>Ratio HF du déclin (%)</translation>
-    </message>
-    <message>
-        <source>Decay time (ms)</source>
-        <translation>Temps de déclin (ms)</translation>
-    </message>
-    <message>
-        <source>Density (%)</source>
-        <translation>Densité (%)</translation>
-    </message>
-    <message>
-        <source>Diffusion (%)</source>
-        <translation>Diffusion (%)</translation>
-    </message>
-    <message>
-        <source>Reflections delay (ms)</source>
-        <translation>Délai réflexions (ms)</translation>
-    </message>
-    <message>
-        <source>Reflections level (mB)</source>
-        <translation>Niveau réflexions (mB)</translation>
-    </message>
-    <message>
-        <source>Reverb delay (ms)</source>
-        <translation>Délai de réverbération (ms)</translation>
-    </message>
-    <message>
-        <source>Reverb level (mB)</source>
-        <translation>Niveau de réverbération (mB)</translation>
-    </message>
-    <message>
-        <source>Room HF level</source>
-        <translation>Niveau HF pièce</translation>
-    </message>
-    <message>
-        <source>Room level (mB)</source>
-        <translation>Niveau pièce (mB)</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::MediaObject</name>
-    <message>
-        <source>Error opening source: type not supported</source>
-        <translation>Erreur lors de l&apos;ouverture de la source: type non supporté</translation>
-    </message>
-    <message>
-        <source>Error opening source: media type could not be determined</source>
-        <translation>Erreur lors de l&apos;ouverture de la source: type de média non déterminé</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::StereoWidening</name>
-    <message>
-        <source>Level (%)</source>
-        <translation>Niveau (%)</translation>
-    </message>
-</context>
-<context>
-    <name>Phonon::MMF::VideoPlayer</name>
-    <message>
-        <source>Pause failed</source>
-        <translation>La mise en pause a échoué</translation>
-    </message>
-    <message>
-        <source>Seek failed</source>
-        <translation>La recherche a échoué</translation>
-    </message>
-    <message>
-        <source>Getting position failed</source>
-        <translation>L&apos;obtention de la position a échoué</translation>
-    </message>
-    <message>
-        <source>Opening clip failed</source>
-        <translation>L&apos;ouverture du clip a échoué</translation>
-    </message>
-    <message>
-        <source>Buffering clip failed</source>
-        <translation>La mise en mémoire tampon du clip a échoué</translation>
-    </message>
-    <message>
-        <source>Video display error</source>
-        <translation>Erreur de l&apos;affichage vidéo</translation>
-    </message>
-</context>
-<context>
-    <name>QAccessibleButton</name>
-    <message>
-        <source>Press</source>
-        <translation>Appuyer</translation>
-    </message>
-</context>
-<context>
-    <name>QNetworkAccessDebugPipeBackend</name>
-    <message>
-        <source>Write error writing to %1: %2</source>
-        <translation>Erreur lors de l&apos;écriture dans %1: %2</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptBreakpointsModel</name>
-    <message>
-        <source>ID</source>
-        <translation>Identifiant</translation>
-    </message>
-    <message>
-        <source>Location</source>
-        <translation>Lieu</translation>
-    </message>
-    <message>
-        <source>Condition</source>
-        <translation>Condition</translation>
-    </message>
-    <message>
-        <source>Ignore-count</source>
-        <translation>Comptes d&apos;ignorés</translation>
-    </message>
-    <message>
-        <source>Single-shot</source>
-        <translation>Un seul tir</translation>
-    </message>
-    <message>
-        <source>Hit-count</source>
-        <translation>Compte de coups</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptBreakpointsWidget</name>
-    <message>
-        <source>New</source>
-        <translation>Créer</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation>Supprimer</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptDebugger</name>
-    <message>
-        <source>Go to Line</source>
-        <translation>Aller à la ligne</translation>
-    </message>
-    <message>
-        <source>Line:</source>
-        <translation>Ligne:</translation>
-    </message>
-    <message>
-        <source>Interrupt</source>
-        <translation>Interrompre</translation>
-    </message>
-    <message>
-        <source>Shift+F5</source>
-        <translation>Shift+F5</translation>
-    </message>
-    <message>
-        <source>Continue</source>
-        <translation>Continuer</translation>
-    </message>
-    <message>
-        <source>F5</source>
-        <translation>F5</translation>
-    </message>
-    <message>
-        <source>Step Into</source>
-        <translation>Pas à pas détaillé</translation>
-    </message>
-    <message>
-        <source>F11</source>
-        <translation>F11</translation>
-    </message>
-    <message>
-        <source>Step Over</source>
-        <translation>Pas à pas principal</translation>
-    </message>
-    <message>
-        <source>F10</source>
-        <translation>F10</translation>
-    </message>
-    <message>
-        <source>Step Out</source>
-        <translation>Pas à pas sortant</translation>
-    </message>
-    <message>
-        <source>Shift+F11</source>
-        <translation>Shift+F11</translation>
-    </message>
-    <message>
-        <source>Run to Cursor</source>
-        <translation>Exécuter au curseur</translation>
-    </message>
-    <message>
-        <source>Ctrl+F10</source>
-        <translation>Ctrl+F10</translation>
-    </message>
-    <message>
-        <source>Run to New Script</source>
-        <translation>Exécuter au nouveau script</translation>
-    </message>
-    <message>
-        <source>Toggle Breakpoint</source>
-        <translation>Basculer le point d&apos;arrêt</translation>
-    </message>
-    <message>
-        <source>F9</source>
-        <translation>F9</translation>
-    </message>
-    <message>
-        <source>Clear Debug Output</source>
-        <translation>Effacer les résultats du débogage</translation>
-    </message>
-    <message>
-        <source>Clear Error Log</source>
-        <translation>Effacer le journal d&apos;erreurs</translation>
-    </message>
-    <message>
-        <source>Clear Console</source>
-        <translation>Effacer la console</translation>
-    </message>
-    <message>
-        <source>&amp;Find in Script...</source>
-        <translation>&amp;Chercher dans le script...</translation>
-    </message>
-    <message>
-        <source>Ctrl+F</source>
-        <translation>Ctrl+F</translation>
-    </message>
-    <message>
-        <source>Find &amp;Next</source>
-        <translation>Résultat &amp;suivant</translation>
-    </message>
-    <message>
-        <source>F3</source>
-        <translation>F3</translation>
-    </message>
-    <message>
-        <source>Find &amp;Previous</source>
-        <translation>Chercher &amp;précédent</translation>
-    </message>
-    <message>
-        <source>Shift+F3</source>
-        <translation>Shift+F3</translation>
-    </message>
-    <message>
-        <source>Ctrl+G</source>
-        <translation>Ctrl+G</translation>
-    </message>
-    <message>
-        <source>Debug</source>
-        <translation>Déboguer</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptDebuggerCodeFinderWidget</name>
-    <message>
-        <source>Close</source>
-        <translation>Fermer</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <translation>Précédent</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Suivant</translation>
-    </message>
-    <message>
-        <source>Case Sensitive</source>
-        <translation>Sensible à la casse</translation>
-    </message>
-    <message>
-        <source>Whole words</source>
-        <translation>Mots entiers</translation>
-    </message>
-    <message>
-        <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;La recherche est revenue au début</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptDebuggerLocalsModel</name>
-    <message>
-        <source>Name</source>
-        <translation>Nom</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation>Valeur</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptDebuggerStackModel</name>
-    <message>
-        <source>Level</source>
-        <translation>Niveau</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation>Nom</translation>
-    </message>
-    <message>
-        <source>Location</source>
-        <translation>Lieu</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptEdit</name>
-    <message>
-        <source>Toggle Breakpoint</source>
-        <translation>Basculer le point d&apos;arrêt</translation>
-    </message>
-    <message>
-        <source>Disable Breakpoint</source>
-        <translation>Désactiver le point d&apos;arrêt</translation>
-    </message>
-    <message>
-        <source>Enable Breakpoint</source>
-        <translation>Activer le point d&apos;arrêt</translation>
-    </message>
-    <message>
-        <source>Breakpoint Condition:</source>
-        <translation>Condition du point d&apos;arrêt:</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptEngineDebugger</name>
-    <message>
-        <source>Loaded Scripts</source>
-        <translation>Scripts chargés</translation>
-    </message>
-    <message>
-        <source>Breakpoints</source>
-        <translation>Points d&apos;arrêt</translation>
-    </message>
-    <message>
-        <source>Stack</source>
-        <translation>Empiler</translation>
-    </message>
-    <message>
-        <source>Locals</source>
-        <translation>Locaux</translation>
-    </message>
-    <message>
-        <source>Console</source>
-        <translation>Console</translation>
-    </message>
-    <message>
-        <source>Debug Output</source>
-        <translation>Résultats du débogage</translation>
-    </message>
-    <message>
-        <source>Error Log</source>
-        <translation>Journal d&apos;erreurs</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <translation>Chercher</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation>Afficher</translation>
-    </message>
-    <message>
-        <source>Qt Script Debugger</source>
-        <translation>Débogueur de script Qt</translation>
-    </message>
-</context>
-<context>
-    <name>QScriptNewBreakpointWidget</name>
-    <message>
-        <source>Close</source>
-        <translation>Fermer</translation>
-    </message>
-</context>
-<context>
-    <name>QSoftKeyManager</name>
-    <message>
-        <source>Ok</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Select</source>
-        <translation>Sélectionner</translation>
-    </message>
-    <message>
-        <source>Done</source>
-        <translation>Terminer</translation>
-    </message>
-    <message>
-        <source>Options</source>
-        <translation>Options</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Annuler</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation>Quitter</translation>
-    </message>
-</context>
-<context>
-    <name>QStateMachine</name>
-    <message>
-        <source>Missing initial state in compound state &apos;%1&apos;</source>
-        <translation>État initial manquant dans l&apos;état composé &apos;%1&apos;</translation>
-    </message>
-    <message>
-        <source>Missing default state in history state &apos;%1&apos;</source>
-        <translation>État par défaut manquant dans l&apos;état de l&apos;historique &apos;%1&apos;</translation>
-    </message>
-    <message>
-        <source>No common ancestor for targets and source of transition from state &apos;%1&apos;</source>
-        <translation>Aucun ancêtre commun pour les cibles et la source de transition de l&apos;état &apos;%1&apos;</translation>
-    </message>
-    <message>
-        <source>Unknown error</source>
-        <translation>Erreur inconnue</translation>
-    </message>
-</context>
-<context>
-    <name>QXmlPatternistCLI</name>
-    <message>
-        <source>Warning in %1, at line %2, column %3: %4</source>
-        <translation>Avertissement dans %1, à la ligne %2, colonne %3: %4</translation>
-    </message>
-    <message>
-        <source>Warning in %1: %2</source>
-        <translation>Avertissement dans %1: %2</translation>
-    </message>
-    <message>
-        <source>Unknown location</source>
-        <translation>Lieu inconnu</translation>
-    </message>
-    <message>
-        <source>Error %1 in %2, at line %3, column %4: %5</source>
-        <translation>Erreur %1 dans %2, à la ligne %3, colonne %4: %5</translation>
-    </message>
-    <message>
-        <source>Error %1 in %2: %3</source>
-        <translation>Erreur %1 dans %2: %3</translation>
     </message>
 </context>
 </TS>
