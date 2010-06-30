@@ -1303,7 +1303,8 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
 #ifdef OCC_FUNCTIONALITY_AVAILABLE
             // If the retVal is not true here, it means that the status update may apply to an IAP outside of
             // SNAP (session is based on SNAP but follows IAP outside of it), which may occur on Symbian^3 EasyWlan.
-            if (retVal == false && activeConfig.d.data() && activeConfig.d.data()->numericId == accessPointId) {
+            if (retVal == false && activeConfig.isValid() &&
+                toSymbianConfig(privateConfiguration(activeConfig))->numericIdentifier() == accessPointId) {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
                 qDebug() << "QNS this : " << QString::number((uint)this) << " - " << "===> EMIT State changed G  to: " << state;
 #endif
@@ -1311,7 +1312,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
                     activeConfig = QNetworkConfiguration();
                 }
                 state = newState;
-                emit q->stateChanged(state);
+                emit stateChanged(state);
                 retVal = true;
             }
 #endif
