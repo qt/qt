@@ -3,11 +3,12 @@
 ######################################################################
 
 TEMPLATE = app
-!symbian*: {
+!symbian: {
 DEPENDPATH += .
 INCLUDEPATH += .
 }
-wince*|symbian*:TARGET = ../desktopsettingsaware
+wince*:TARGET = ../desktopsettingsaware
+symbian:TARGET = desktopsettingsaware
 
 # Input
 SOURCES += main.cpp
