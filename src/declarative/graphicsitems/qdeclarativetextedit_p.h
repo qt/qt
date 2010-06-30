@@ -195,6 +195,8 @@ public:
     Q_INVOKABLE int positionAt(int x, int y) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
 
+    QRectF boundingRect() const;
+
 Q_SIGNALS:
     void textChanged(const QString &);
     void paintedSizeChanged();

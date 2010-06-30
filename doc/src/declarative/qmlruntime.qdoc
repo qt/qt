@@ -26,172 +26,117 @@
 ****************************************************************************/
 
 /*!
-    \page qmlruntime.html
-    \title Qt Declarative UI Runtime
-    \keyword QML Viewer
-    \ingroup qttools
+\page qmlruntime.html
+\title Qt Declarative UI Runtime
 
-    This page documents the \e{Declarative UI Runtime} for the Qt GUI
-    toolkit, and the \QQV which can be used to run apps
-    written for the runtime. The \QQV reads a declarative
-    user interface definition (\c .qml) file and displays the user interface it describes.
+QML documents are loaded and executed by the QML runtime. This includes the 
+Declarative UI engine along with the built-in QML elements and plugin modules,
+and it also provides access to third-party QML elements and modules.
 
-    QML is a runtime, as you can run plain QML files which pull in their required modules.
-    To run apps with the QML runtime, you can either start the runtime
-    from your own application (using a QDeclarativeView) or with the simple \QQV.
-    The launcher can be installed in a production environment, assuming that it is not already
-    present in the system. It is generally packaged alongside Qt.
+Applications that use QML need to invoke the QML runtime in order to 
+execute QML documents. This can be done by creating a QDeclarativeView 
+or a QDeclarativeEngine, as described below. In addition, the Declarative UI 
+package includes the \QQV tool, which loads \c .qml files. This tool is
+useful for developing and testing QML code without the need to write
+a C++ application to load the QML runtime.
 
-    To deploy an application using the QML runtime, you have two options:
 
-    \list
-    \o Write your own Qt application including a QDeclarative view and deploy it the same as
-    any other Qt application (not discussed further on this page), or
-    \o Write a main QML file for your application, and run your application using the included \QQV.
-    \endlist
 
-    To run an application with the \QQV, pass the filename as an argument:
+\section1 Deploying QML-based applications
 
-    \code
-    qmlviewer myQmlFile.qml
-    \endcode
+To deploy an application that uses QML, the QML runtime must be invoked by 
+the application. This is done by writing a Qt C++ application that loads the
+QDeclarativeEngine by either:
 
-    Deploying a QML application via the \QQV allows for QML only deployments, but can also
-    include custom C++ modules just as easily. Below is an example of how you might structure
-    a complex application deployed via the QML runtime, it is a listing of the files that would
-    be included in the deployment package.
+\list
+\o Loading the QML file through a QDeclarativeView instance, or
+\o Creating a QDeclarativeEngine instance and loading QML files with QDeclarativeComponent
+\endlist
 
-    \code
-    MyApp.qml
-    MyAppCore/qmldir
-    MyAppCore/libMyAppCore.so
-    MyAppCore/MyAppCore.dll
-    MyAppCore/AnAppElement.qml
-    MyAppCore/AnotherElement.qml
-    MyAppCore/images/Logo.png
-    OtherModule/qmldir
-    OtherModule/OtherElement.qml
-    \endcode
 
-    Note that this example is for deploying the example to both windows and linux. You will still need to compile the C++
-    modules for each target platform, but you can deploy multiple versions of the modules across platforms with different naming conventions,
-    as the appropriate module file is chosen based on platform naming conventions. The C++ 
-    modules must contain a QDeclarativeExtentionPlugin subclass.
+\section2 Deploying with QDeclarativeView
 
-    The application would be executed either with your own application, the command 'qmlviewer MyApp.qml' or by
-    opening the file if your system has the \QQV registered as the handler for QML files. The MyApp.qml file would have access
-    to all of the deployed types using the import statements such as the following:
+QDeclarativeView is a QWidget-based class that is able to load QML files.
+For example, if there is a QML file, \c application.qml, like this:
 
-    \code
-    import "MyAppCore"
-    import "OtherModule" 1.0 as Other
-    \endcode
+\qml
+    import Qt 4.7
+    
+    Rectangle { width: 100; height: 100; color: "red" }
+\endqml
 
-    \section1 Qt QML Viewer functionality
-    The \QQV implements some additional functionality to help it supporting
-    myriad applications. If you implement your own application, you may also wish to reimplement
-    some or all of this functionality. However, much of this functionality is intended to aid the prototyping of
-    QML applications and may not be necessary for a deployed application.
+It can be loaded in a Qt application's \c main.cpp file like this:
+ 
+\code
+    #include <QApplication>
+    #include <QDeclarativeView>
 
-    \section2 Options
+    int main(int argc, char *argv[])
+    {
+        QApplication app(argc, argv);
 
-    When run with the \c -help option, \c qmlviewer shows available options.
+        QDeclarativeView view;
+        view.setSource(QUrl::fromLocalFile("application.qml"));
+        view.show();
 
-    \section2 Translations
-
-    When the launcher loads an initial QML file, it will install a translation file from
-    a "i18n" subdirectory relative to that initial QML file. The actual translation file
-    loaded will be according to the system locale and have the form
-    "qml_<language>.qm", where <language> is a two-letter ISO 639 language,
-    such as "qml_fr.qm", optionally followed by an underscore and an uppercase two-letter ISO 3166 country
-    code, such as "qml_fr_FR.qm" or "qml_fr_CA.qm".
-
-    Such files can be created using \l{Qt Linguist}.
-
-    See the \l{scripting.html#internationalization}{Qt Internationalization} documentation for information about how to make
-    the JavaScript in QML files use translatable strings.
-
-    Additionally, the launcher will load translation files specified on the
-    command line via the \c -translation option.
-
-    \section2 Dummy Data
-
-    The secondary use of the launcher is to allow QML files to be viewed with
-    dummy data. This is useful when prototyping the UI, as the dummy data can
-    be later replaced with actual data and bindings from a C++ plugin. 
-    To provide dummy data: create a directory called "dummydata" in the same directory as
-    the target QML file and create files there with the "qml" extension.
-    All such files will be loaded as QML objects and bound to the root
-    context as a property with the name of the file (without ".qml").
-
-    To replace this with real data, you simply bind the real object to 
-    the root context in C++.
-
-    For example, if the Qt application has a "clock.time" property
-    that is a qreal from 0 to 86400 representing the number of seconds since
-    midnight, dummy data for this could be provided by \c dummydata/clock.qml:
-    \code
-    QtObject { property real time: 12345 }
-    \endcode
-    Any QML can be used in the dummy data files. You could even animate the
-    fictional data!
-
-    \section2 Runtime Object
-
-    All applications using the launcher will have access to the \c runtime
-    property on the root context. This property contains several pieces of
-    information about the runtime environment of the application.
-
-    \section3 Screen Orientation
-
-    A special piece of dummy data which is integrated into the launcher is
-    a simple orientation property. The orientation can be set via the
-    settings menu in the application, or by pressing Ctrl+T to rotate it.
-
-    To use this from within your QML file, access \c runtime.orientation,
-    which can be one of the following values:
-
-    \list
-    \o \c Orientation.Portrait
-    \o \c Orientation.Landscape
-    \o \c Orientation.PortraitInverted (Portrait orientation, upside-down)
-    \o \c Orientation.LandscapeInverted (Landscape orientation, upside-down)
-    \endlist
-
-    These values can be bound to in your application. For example:
-
-    \code
-    Item {
-        state: (runtime.orientation == Orientation.Landscape) ? 'landscape' : ''
+        return app.exec();
     }
-    \endcode
+\endcode
+       
+This creates a QWidget-based view that displays the contents of 
+\c application.qml.
+ 
+The application's \c .pro \l{qmake Project Files}{project file} must specify
+the \c declarative module for the \c QT variable. For example:
 
-    This allows your application to respond to changes in the screen's orientation. The launcher
-    will automatically update this on some platforms (currently the N900 only) to match the physical
-    screen's orientation. On other plaforms orientation changes will only happen when explictly asked for.
+\code
+    TEMPLATE += app
+    QT += gui declarative
+    SOURCES += main.cpp
+\endcode
 
-    \section3 Window Active
 
-    The \c runtime.isActiveWindow property tells whether the main window of the launcher is currently active
-    or not. This is especially useful for embedded devices when you want to pause parts of your application,
-    including animations, when your application loses focus or goes to the background.
+\section2 Creating a QDeclarativeEngine directly
+     
+If \c application.qml does not have any graphical components, or if it is 
+preferred to avoid QDeclarativeView for other reasons, the QDeclarativeEngine
+can be constructed directly instead. In this case, \c application.qml is
+loaded as a QDeclarativeComponent instance rather than placed into a view:
 
-    The example below, stops the animation when the application's window is deactivated and resumes on activation:
+\code
+    #include <QCoreApplication>
+    #include <QDeclarativeEngine>    
 
-    \code
-    Item {
-        width: 300; height: 200
-        Rectangle {
-            width: 100; height: 100
-            color: "green"
-            SequentialAnimation on x {
-                running: runtime.isActiveWindow
-                loops: Animation.Infinite
-                NumberAnimation {to: 200}
-                NumberAnimation {to: 0}
-            }
-        }
+    int main(int argc, char *argv[])
+    {
+        QCoreApplication app(argc, argv);
+    
+        QDeclarativeEngine engine;
+        QDeclarativeContext *windowContext = new QDeclarativeContext(engine.rootContext());
+    
+        QDeclarativeComponent component(&engine, "application.qml");
+        QObject *window = component.create(windowContext);
+         
+        // ... delete window and windowContext when necessary
+    
+        return app.exec();
     }
-    \endcode
+\endcode
+
+See \l {Using QML in C++ Applications} for more information about using 
+QDeclarativeEngine, QDeclarativeContext and QDeclarativeComponent, as well 
+as details on including QML files through \l{The Qt Resource System}{Qt's Resource system}.
+
+
+
+\section1 Developing and prototyping with QML Viewer
+
+The Declarative UI package includes a QML runtime tool, the \QQV, which loads
+and displays QML documents. This is useful during the application development
+phase for prototyping QML-based applications without writing your own C++ 
+applications to invoke the QML runtime. 
+
+See the \l{QML Viewer} documentation for more details.
 
 */
+

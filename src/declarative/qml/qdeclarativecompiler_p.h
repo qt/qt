@@ -161,6 +161,7 @@ public:
     static bool isSignalPropertyName(const QByteArray &);
 
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
+    const QMetaObject *resolveType(const QByteArray& name) const; // for QDeclarativeCustomParser::resolveType
 
 private:
     static void reset(QDeclarativeCompiledData *);
