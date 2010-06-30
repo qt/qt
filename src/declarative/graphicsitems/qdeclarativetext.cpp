@@ -136,6 +136,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
+
+    \sa {declarative/text/fonts}{Fonts example}
 */
 
 /*!
