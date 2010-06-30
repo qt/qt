@@ -801,7 +801,7 @@
 </phrase>
 <phrase>
     <source>Redo</source>
-    <target>Annuler Annuler</target>
+    <target>Rétablir</target>
 </phrase>
 <phrase>
     <source>region selection</source>
@@ -1109,10 +1109,6 @@
 <phrase>
     <source>&amp;Edit</source>
     <target>&amp;Édition</target>
-</phrase>
-<phrase>
-    <source>&amp;Redo</source>
-    <target>Re&amp;faire</target>
 </phrase>
 <phrase>
     <source>debugger</source>
@@ -1437,5 +1433,21 @@
 <phrase>
     <source>&amp;Debug</source>
     <target>&amp;Déboguer</target>
+</phrase>
+<phrase>
+    <source>Slider</source>
+    <target>Barre de défilement</target>
+</phrase>
+<phrase>
+    <source>&amp;Restore</source>
+    <target>&amp;Restaurer</target>
+</phrase>
+<phrase>
+    <source>&amp;Move</source>
+    <target>&amp;Déplacer</target>
+</phrase>
+<phrase>
+    <source>New</source>
+    <target>Créer</target>
 </phrase>
 </QPH>
