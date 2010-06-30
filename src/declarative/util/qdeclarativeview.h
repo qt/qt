@@ -90,6 +90,7 @@ public:
     QList<QDeclarativeError> errors() const;
 
     QSize sizeHint() const;
+    QSize initialSize() const;
 
 Q_SIGNALS:
     void sceneResized(QSize size); // ???

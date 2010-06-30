@@ -112,6 +112,7 @@ private slots:
     void columnWrapWithTabs();
     void boundingRectForUnsetLineWidth();
     void boundingRectForSetLineWidth();
+    void glyphLessItems();
 
     // QTextLine stuff
     void setNumColumnsWrapAtWordBoundaryOrAnywhere();
@@ -980,9 +981,7 @@ void tst_QTextLayout::testCenteredTab()
     // test if centering the tab works.  We expect the center of 'Bar.' to be at the tab point.
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
-    QTextOption::Tab tab;
-    tab.type = QTextOption::CenterTab;
-    tab.position = 150;
+    QTextOption::Tab tab(150, QTextOption::CenterTab);
     tabs.append(tab);
     option.setTabs(tabs);
     layout.setTextOption(option);
@@ -1002,10 +1001,7 @@ void tst_QTextLayout::testDelimiterTab()
     // try the different delimiter characters to see if the alignment works there.
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
-    QTextOption::Tab tab;
-    tab.type = QTextOption::DelimiterTab;
-    tab.delimiter = QChar('.');
-    tab.position = 100;
+    QTextOption::Tab tab(100, QTextOption::DelimiterTab, QChar('.'));
     tabs.append(tab);
     option.setTabs(tabs);
     layout.setTextOption(option);
@@ -1344,6 +1340,24 @@ void tst_QTextLayout::lineWidthFromBOM()
     // Don't spin into an infinite loop
  }
 
+void tst_QTextLayout::glyphLessItems()
+{
+    {
+        QTextLayout layout;
+        layout.setText("\t\t");
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+    }
+
+    {
+        QTextLayout layout;
+        layout.setText(QString::fromLatin1("AA") + QChar(QChar::LineSeparator));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+    }
+}
 
 QTEST_MAIN(tst_QTextLayout)
 #include "tst_qtextlayout.moc"

@@ -6,6 +6,7 @@ examples/*/*/*
 !examples/*/*/README
 examples/*/*/*[.]app
 !examples/declarative/*
+!examples/ja_JP/*/*
 demos/*/*
 !demos/spectrum/*
 demos/spectrum/bin
@@ -133,6 +134,7 @@ qrc_*.cpp
 *.ncb
 *.vcxproj
 *.vcxproj.filters
+*.vcxproj.user
 
 # MinGW generated files
 *.Debug

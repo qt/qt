@@ -282,12 +282,11 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     \class QTextLayout
     \reentrant
 
-    \brief The QTextLayout class is used to lay out and paint a single
-    paragraph of text.
+    \brief The QTextLayout class is used to lay out and render text.
 
     \ingroup richtext-processing
 
-    It offers most features expected from a modern text layout
+    It offers many features expected from a modern text layout
     engine, including Unicode compliant rendering, line breaking and
     handling of cursor positioning. It can also produce and render
     device independent layout, something that is important for WYSIWYG
@@ -297,29 +296,33 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     implement your own text rendering for some specialized widget, you
     probably won't need to use it directly.
 
-    QTextLayout can currently deal with plain text and rich text
-    paragraphs that are part of a QTextDocument.
+    QTextLayout can be used with both plain and rich text.
 
-    QTextLayout can be used to create a sequence of QTextLine's with
-    given widths and can position them independently on the screen.
-    Once the layout is done, these lines can be drawn on a paint
-    device.
+    QTextLayout can be used to create a sequence of QTextLine
+    instances with given widths and can position them independently
+    on the screen. Once the layout is done, these lines can be drawn
+    on a paint device.
 
-    Here's some code snippet that presents the layout phase:
+    The text to be laid out can be provided in the constructor or set with
+    setText().
+
+    The layout can be seen as a sequence of QTextLine objects; use createLine()
+    to create a QTextLine instance, and lineAt() or lineForTextPosition() to retrieve
+    created lines.
+
+    Here is a code snippet that demonstrates the layout phase:
     \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 0
 
-    The text can be drawn by calling the layout's draw() function:
+    The text can then be rendered by calling the layout's draw() function:
     \snippet doc/src/snippets/code/src_gui_text_qtextlayout.cpp 1
 
-    The text layout's text is set in the constructor or with
-    setText(). The layout can be seen as a sequence of QTextLine
-    objects; use lineAt() or lineForTextPosition() to get a QTextLine,
-    createLine() to create one. For a given position in the text you
-    can find a valid cursor position with isValidCursorPosition(),
-    nextCursorPosition(), and previousCursorPosition(). The layout
-    itself can be positioned with setPosition(); it has a
-    boundingRect(), and a minimumWidth() and a maximumWidth(). A text
-    layout can be drawn on a painter device using draw().
+    For a given position in the text you can find a valid cursor position with
+    isValidCursorPosition(), nextCursorPosition(), and previousCursorPosition().
+
+    The QTextLayout itself can be positioned with setPosition(); it has a
+    boundingRect(), and a minimumWidth() and a maximumWidth().
+
+    \sa QStaticText
 
 */
 
@@ -1661,7 +1664,7 @@ namespace {
     {
         LineBreakHelper()
             : glyphCount(0), maxGlyphs(0), currentPosition(0), fontEngine(0), logClusters(0),
-              manualWrap(false)
+              manualWrap(false), whiteSpaceOrObject(true)
         {
         }
 
@@ -1684,6 +1687,7 @@ namespace {
         const unsigned short *logClusters;
 
         bool manualWrap;
+        bool whiteSpaceOrObject;
 
         bool checkFullOtherwiseExtend(QScriptLine &line);
 
@@ -1693,8 +1697,10 @@ namespace {
         }
 
         inline glyph_t currentGlyph() const
-        {
+        {            
             Q_ASSERT(currentPosition > 0);
+            Q_ASSERT(logClusters[currentPosition - 1] < glyphs.numGlyphs);
+
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
@@ -1829,6 +1835,7 @@ void QTextLine::layout_helper(int maxGlyphs)
         lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
 
         if (current.analysis.flags == QScriptAnalysis::Tab && (alignment & (Qt::AlignLeft | Qt::AlignRight | Qt::AlignCenter | Qt::AlignJustify))) {
+            lbh.whiteSpaceOrObject = true;
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
 
@@ -1845,6 +1852,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
         } else if (current.analysis.flags == QScriptAnalysis::LineOrParagraphSeparator) {
+            lbh.whiteSpaceOrObject = true;
             // if the line consists only of the line separator make sure
             // we have a sane height
             if (!line.length && !lbh.tmpData.length)
@@ -1858,6 +1866,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             line += lbh.tmpData;
             goto found;
         } else if (current.analysis.flags == QScriptAnalysis::Object) {
+            lbh.whiteSpaceOrObject = true;
             lbh.tmpData.length++;
 
             QTextFormat format = eng->formats()->format(eng->formatIndex(&eng->layoutData->items[item]));
@@ -1871,6 +1880,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             if (lbh.checkFullOtherwiseExtend(line))
                 goto found;
         } else if (attributes[lbh.currentPosition].whiteSpace) {
+            lbh.whiteSpaceOrObject = true;
             while (lbh.currentPosition < end && attributes[lbh.currentPosition].whiteSpace)
                 addNextCluster(lbh.currentPosition, end, lbh.spaceData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
@@ -1880,6 +1890,7 @@ void QTextLine::layout_helper(int maxGlyphs)
                 goto found;
             }
         } else {
+            lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
@@ -1941,7 +1952,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     LB_DEBUG("reached end of line");
     lbh.checkFullOtherwiseExtend(line);
 found:       
-    if (lbh.rightBearing > 0) // If right bearing has not yet been adjusted
+    if (lbh.rightBearing > 0 && !lbh.whiteSpaceOrObject) // If right bearing has not yet been adjusted
         lbh.adjustRightBearing();
     line.textAdvance = line.textWidth;
     line.textWidth -= qMin(QFixed(), lbh.rightBearing);

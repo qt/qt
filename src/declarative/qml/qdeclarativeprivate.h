@@ -214,6 +214,10 @@ namespace QDeclarativePrivate
         const char *iid;
     };
 
+    enum AutoParentResult { Parented, IncompatibleObject, IncompatibleParent };
+    typedef AutoParentResult (*AutoParentFunction)(QObject *object, QObject *parent);
+
+    int Q_DECLARATIVE_EXPORT registerAutoParentFunction(AutoParentFunction);
     int Q_DECLARATIVE_EXPORT registerType(const RegisterType &);
     int Q_DECLARATIVE_EXPORT registerType(const RegisterInterface &);
 

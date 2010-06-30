@@ -1162,7 +1162,15 @@ bool QFSFileEnginePrivate::doStat() const
         if (filePath.isEmpty())
             return could_stat;
 
-        QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+        QString fname;
+        if(filePath.endsWith(QLatin1String(".lnk"))) {
+            fname = readLink(filePath);
+            if(fname.isEmpty())
+                return could_stat;
+        }
+        else
+            fname = filePath;
+
         fname = fixIfRelativeUncPath(fname);
 
         UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);

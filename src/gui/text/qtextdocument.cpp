@@ -127,6 +127,8 @@ bool Qt::mightBeRichText(const QString& text)
                     tag += text[i];
                 else if (!tag.isEmpty() && text[i].isSpace())
                     break;
+                else if (!tag.isEmpty() && text[i] == QLatin1Char('/') && i + 1 == close)
+                    break;
                 else if (!text[i].isSpace() && (!tag.isEmpty() || text[i] != QLatin1Char('!')))
                     return false; // that's not a tag
             }

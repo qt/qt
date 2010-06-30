@@ -241,11 +241,13 @@ void QDeclarativeParticleMotionGravity::setAcceleration(qreal accel)
 
 void QDeclarativeParticleMotionGravity::advance(QDeclarativeParticle &p, int interval)
 {
-    qreal xdiff = p.x - _xAttr;
-    qreal ydiff = p.y - _yAttr;
+    qreal xdiff = _xAttr - p.x;
+    qreal ydiff = _yAttr - p.y;
+    qreal absXdiff = qAbs(xdiff);
+    qreal absYdiff = qAbs(ydiff);
 
-    qreal xcomp = xdiff / (xdiff + ydiff);
-    qreal ycomp = ydiff / (xdiff + ydiff);
+    qreal xcomp = xdiff / (absXdiff + absYdiff);
+    qreal ycomp = ydiff / (absXdiff + absYdiff);
 
     p.x_velocity += xcomp * _accel * interval;
     p.y_velocity += ycomp * _accel * interval;
@@ -1284,11 +1286,7 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     QVarLengthArray<QPainter::PixmapFragment, 256> pixmapData;
-#else
-    QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
-#endif
     pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
@@ -1296,32 +1294,20 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     qreal halfPHeight = sourceRect.height()/2.;
     for (int i = 0; i < d->particles.count(); ++i) {
         const QDeclarativeParticle &particle = d->particles.at(i);
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].x = particle.x - myX + halfPWidth;
         pixmapData[i].y = particle.y - myY + halfPHeight;
-#else
-         pixmapData[i].point = QPointF(particle.x - myX + halfPWidth, particle.y - myY + halfPHeight);
-#endif
         pixmapData[i].opacity = particle.opacity;
 
         //these never change
         pixmapData[i].rotation = 0;
         pixmapData[i].scaleX = 1;
         pixmapData[i].scaleY = 1;
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].sourceLeft = sourceRect.left();
         pixmapData[i].sourceTop = sourceRect.top();
         pixmapData[i].width = sourceRect.width();
         pixmapData[i].height = sourceRect.height();
-#else
-        pixmapData[i].source = sourceRect;
-#endif
     }
-#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     p->drawPixmapFragments(pixmapData.data(), d->particles.count(), d->image);
-#else
-    qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
-#endif
 }
 
 void QDeclarativeParticles::componentComplete()

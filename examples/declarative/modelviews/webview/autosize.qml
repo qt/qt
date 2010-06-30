@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 
 // The WebView size is determined by the width, height,
 // preferredWidth, and preferredHeight properties.
@@ -51,6 +51,7 @@ Rectangle {
     Column {
         id: layout
         spacing: 2
+
         WebView {
             html: "No width defined."
             Rectangle {
@@ -58,6 +59,7 @@ Rectangle {
                 anchors.fill: parent
             }
         }
+
         WebView {
             width: rect.width
             html: "The width is full."
@@ -66,6 +68,7 @@ Rectangle {
                 anchors.fill: parent
             }
         }
+
         WebView {
             width: rect.width/2
             html: "The width is half."
@@ -74,6 +77,15 @@ Rectangle {
                 anchors.fill: parent
             }
         }
+        WebView {
+            width: rect.width/2
+            html: "The_width_is_half."  // not wrapped
+            Rectangle {
+                color: "#10000000"
+                anchors.fill: parent
+            }
+        }
+
         WebView {
             preferredWidth: rect.width/2
             html: "The preferredWidth is half."
@@ -84,15 +96,7 @@ Rectangle {
         }
         WebView {
             preferredWidth: rect.width/2
-            html: "The_preferredWidth_is_half."
-            Rectangle {
-                color: "#10000000"
-                anchors.fill: parent
-            }
-        }
-        WebView {
-            width: rect.width/2
-            html: "The_width_is_half."
+            html: "The_preferredWidth_is_half." // not wrapped
             Rectangle {
                 color: "#10000000"
                 anchors.fill: parent

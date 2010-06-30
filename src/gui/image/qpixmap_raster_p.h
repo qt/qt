@@ -72,19 +72,25 @@ public:
 
     void resize(int width, int height);
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
+    bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags);
 
+    void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
     void setMask(const QBitmap &mask);
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QPixmap &alphaChannel);
     QImage toImage() const;
+    QImage toImage(const QRect &rect) const;
     QPaintEngine* paintEngine() const;
     QImage* buffer();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    void createPixmapForImage(QImage &sourceImage, Qt::ImageConversionFlags flags, bool inPlace);
+    void setImage(const QImage &image);
     QImage image;
 
 private:

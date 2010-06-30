@@ -308,10 +308,7 @@ void tst_QTextFormat::getSetTabs()
     format.setTabPositions(tabs);
     Comparator c2(tabs, format.tabPositions());
 
-    QTextOption::Tab tab2;
-    tab2.position = 3456;
-    tab2.type = QTextOption::RightTab;
-    tab2.delimiter = QChar('x');
+    QTextOption::Tab tab2(3456, QTextOption::RightTab, QChar('x'));
     tabs.append(tab2);
     format.setTabPositions(tabs);
     Comparator c3(tabs, format.tabPositions());

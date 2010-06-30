@@ -1,0 +1,243 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page widgets-tutorial.html
+    \title ウィジェットのチュートリアル
+    \brief 本チュートリアルではウィジェットとレイアウトの基本的な使い方を説明し、それらが GUI アプリケーションの開発でどのように使われるかを説明します。
+
+    \section1 はじめに
+
+    ウィジェットは Qt によるグラフィカルユーザインターフェース(GUI)アプリケーションの基本構成要素です。
+    ボタン、ラベル、テキストエディターなどの各 GUI コンポーネントはウィジェットであり、
+    既存のウィンドウのユーザーインタフェース内に配置したり、独立したウィンドウとして表示することができます。
+    それぞれのコンポーネントは QWidget の派生クラスとして実装されます。
+    QWidget 自体は QObject の派生クラスです。
+
+    QWidget は抽象クラスではなく、
+    他のウィジェット用のコンテナとして使用されたり、
+    カスタムウィジェットを作る場合の基底クラスとして使用されます。
+    他のウィジェットを配置するウィンドウとしてもよく使われます。
+
+    \l{QObject} と同様に QWidget は所有権を示すために親オブジェクトを指定して生成できるため、
+    親オブジェクトが使用されなくなった場合には破棄されます。
+    ウィジェットではこの親子関係が他の意味も持ちます。
+    子ウィジェットは親ウィジェットが使用する領域内に表示されます。
+    これは、ウィンドウを削除するとそのウィンドウに含まれる全てのウィジェットが自動的に破棄されることを意味します。
+
+    \section1 main 関数の記述
+
+    Qt の GUI サンプルの多くは標準的なアプリケーションの初期化コードを含む
+    \c{main.cpp} ファイルと、アプリケーションのロジックやカスタム
+    GUI コンポーネントを含むいくつかのソース/ヘッダファイルから構成されています。
+
+    \c{main.cpp} 内の典型的な \c main() 関数は以下のようになります:
+
+    \snippet doc/src/snippets/widgets-tutorial/template.cpp main.cpp body
+
+    最初に、コマンドラインから渡される引数を渡して QApplication のオブジェクトを生成します。
+    ウィジェットを生成して表示した後、 QApplication::exec() を呼び出して Qt のイベントループを開始します。
+    この関数から戻ってくるまでアプリケーションの制御は Qt 側にて行われます。最後に、\c{main()} は QApplication::exec() から取得された値を返します。
+
+    \section1 簡単なウィジェットのサンプル
+
+    以下の簡単なウィジェットのサンプルでは \c main() 関数の中にコードを記述しています。
+
+    \list
+    \o \l {tutorials/widgets/toplevel}{ウィンドウの作成}
+
+    \o \l {tutorials/widgets/childwidget}{子ウィジェット}
+
+    \o \l {tutorials/widgets/windowlayout}{レイアウトの利用}
+
+    \o \l {tutorials/widgets/nestedlayouts}{複雑なレイアウト}
+    \endlist
+
+    \section1 複雑なウィジェットのサンプル
+
+    \l{Widgets examples}{より高度なサンプル} の場合、ウィジェットやレイアウトのためのコードは他のファイルに記述されています。
+    例えば、メインウインドウ用の GUI は、 QMainWindow 派生クラスのコンストラクタで作成されるでしょう。
+
+    \section1 サンプルのビルド
+
+    Qt のバイナリパッケージを取得してインストールするか、Qt を自分でコンパイルした場合には既にこのチュートリアルで説明されているサンプルはビルドされ、実行する準備ができています。
+    これらを変更し再コンパイルをしたい場合は、次の手順に従う必要があります:
+
+    \list 1
+    \o コマンドラインで、再コンパイルしたいサンプルを含むディレクトリに移動します。
+    \o \c qmake と入力し、\key{Return} キーを押します。
+       うまくいかない場合は、現在のパス内にこの実行ファイルが存在することを確認するか、
+       フルパスを指定して実行してください。
+    \o Linux/Unix および Mac OS X の場合、\c make と入力し、\key{Return} キーを押します。
+       Windows 上の Visual Studio の場合、\c nmake と入力し、\key{Return} キーを押します。
+    \endlist
+
+    現在のディレクトリに実行ファイルが生成されます。
+    Windows では、このファイルは \c debug または \c release
+    ディレクトリに配置されているかもしれません。
+    このファイルを実行すると、作業中のサンプルコードの動作を確認できます。
+*/
+
+/*!
+    \example tutorials/widgets/toplevel
+    \title ウィジェットのチュートリアル - ウィンドウの作成
+
+    親を持たないウィジェットを作成した場合、そのウィジェットは表示時にウィンドウ(\e{トップレベルウィジェット})として扱われます。
+    このウィジェットが必要なくなった場合にそれを破棄してくれる親ウィジェットがないため、トップレベルウィジェットの管理は開発者が行ってください。
+
+    以下のサンプルでは QWidget を使用してウィンドウを作成し、サイズを指定して表示します:
+
+    \raw HTML
+    <table align="left" width="100%">
+    <tr class="qt-code"><td>
+    \endraw
+    \snippet tutorials/widgets/toplevel/main.cpp main program
+    \raw HTML
+    </td><td align="right">
+    \endraw
+    \inlineimage widgets-tutorial-toplevel.png
+    \raw HTML
+    </td></tr>
+    </table>
+    \endraw
+
+    実際の GUI を作成するには、ウィンドウ内にウィジェットを配置する必要があります。
+    これは、ウィジェットのコンストラクタに QWidget のインスタンスを渡すことで実現します。
+    詳細は本チュートリアルの次の章で示します。
+*/
+
+/*!
+    \example tutorials/widgets/childwidget
+    \title ウィジェットのチュートリアル - 子ウィジェット
+
+    前のサンプルで作成したウィンドウに子ウィジェットを追加するために、
+    親として \c window を子ウィジェットのコンストラクタに渡します。
+    ここでは、ウィンドウにボタンを追加し特定の場所に配置します:
+
+    \raw HTML
+    <table align="left" width="100%">
+    <tr class="qt-code"><td>
+    \endraw
+    \snippet tutorials/widgets/childwidget/main.cpp main program
+    \raw HTML
+    </td><td align="right">
+    \endraw
+    \inlineimage widgets-tutorial-childwidget.png
+    \raw HTML
+    </td></tr>
+    </table>
+    \endraw
+
+    このボタンはウィンドウの子になり、
+    ウィンドウが破棄された場合にはボタンも破棄されるでしょう。
+    ウィンドウを非表示化したり閉じた際には、自動的に破棄はされません。
+    サンプルが終了する場合には破棄されるでしょう。
+*/
+
+/*!
+    \example tutorials/widgets/windowlayout
+    \title ウィジェットのチュートリアル - レイアウトの利用
+
+    一般的に子ウィジェットは、位置とサイズを明確に指定するのではなく、
+    レイアウトオブジェクトを使用してウィンドウ内に配置します。
+    ここでは、ラベルとラインエディットを生成し、横に並べて配置します。
+
+    \raw HTML
+    <table align="left" width="100%">
+    <tr class="qt-code"><td>
+    \endraw
+    \snippet tutorials/widgets/windowlayout/main.cpp main program
+    \raw HTML
+    </td><td align="right">
+    \endraw
+    \inlineimage widgets-tutorial-windowlayout.png
+    \raw HTML
+    </td></tr>
+    </table>
+    \endraw
+
+    生成する \c layout オブジェクトは、 \l{QHBoxLayout::}{addWidget()} 関数を使って設定されたウィジェットの位置とサイズを管理します。
+    また、\l{QWidget::}{setLayout()} を使用してレイアウトをウィンドウに設定します。
+    レイアウトはそれ自体は目には見えない存在です。
+    レイアウトの管理対象となっているウィジェット(や他のレイアウト)に対しての効果としてのみ、その存在を確認できます。
+
+    上記サンプルにおいて、各ウィジェットの所有権はあまり明確ではありません。
+    親オブジェクトのない３つのウィジェットと１つのレイアウトを作成するため、
+    空のウィンドウと、ラベルとラインエディットをそれぞれ含む別々のウィンドウが表示されるように見えるかもしれません。
+    しかし、レイアウトにラベルとラインエディットを管理するように指定すると、
+    ウィンドウにそのレイアウトを設定した際に「親の再指定」が行われるため、
+    ウィジェットおよびレイアウト自体がそのウィンドウの子になります。
+*/
+
+/*!
+    \example tutorials/widgets/nestedlayouts
+    \title ウィジェットのチュートリアル - 複雑なレイアウト
+
+    ウィジェットの中に他のウィジェットを含めることができるように、
+    レイアウトは異なるレベルでのウィジェットのグループ化にも使用されます。
+    ここではウィンドウ上部にラベルとラインエディットを隣り合わせに配置し、
+    その下に検索結果が表示されるテーブルビューを表示します。
+
+    これは、レイアウトを２つ作成して行います。\c{queryLayout} は、QLabel と QLineEdit を左右に並べて表示する QHBoxLayout です。
+    \c{mainLayout} は、\c{queryLayout} と QTableView を上下に並べて表示する QVBoxLayout です。
+
+    \raw HTML
+    <table align="left" width="100%">
+    <tr class="qt-code"><td>
+    \endraw
+    \snippet tutorials/widgets/nestedlayouts/main.cpp first part
+    \snippet tutorials/widgets/nestedlayouts/main.cpp last part
+    \raw HTML
+    </td><td align="right">
+    \endraw
+    \inlineimage widgets-tutorial-nestedlayouts.png
+    \raw HTML
+    </td></tr>
+    </table>
+    \endraw
+
+    \c{mainLayout} の \l{QBoxLayout::}{addLayout()} 関数にて追加された
+    \c{queryLayout} と \c{resultView} は追加された順番で上から並べられます。
+
+    ここでは QTableView ウィジェット \c resultView に表示されるデータを含むモデルの設定のコードは省略していますが、
+    後ほど示します。
+
+    QHBoxLayout や QVBoxLayout と共に Qt から提供される QGridLayout および QFormLayout を使用することにより、
+    より複雑なユーザインターフェースの構築が可能になります。
+    これらのレイアウトの効果は、\l{Qt Designer} を実行して確認できます。
+
+    \section1 モデルを設定する
+
+    上記のコードでは、レイアウトの有効利用に重点を置いていたため、
+    テーブルのデータについては示していませんでした。
+    以下のコードで、モデルには行に対応する項目が含まれ、それぞれの行には２つの列のデータが設定されていることがわかるでしょう。
+
+    \snippet tutorials/widgets/nestedlayouts/main.cpp set up the model
+
+    モデルとビューの有効利用については、\l{Item Views Examples} および
+    \l{Model/View Programming} の概要に含まれています。
+*/

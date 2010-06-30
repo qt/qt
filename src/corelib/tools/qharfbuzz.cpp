@@ -102,43 +102,13 @@ HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
     return QChar::mirroredChar(ch);
 }
 
-void *HB_Library_Resolve(const char *library, const char *symbol)
+void *HB_Library_Resolve(const char *library, int version, const char *symbol)
 {
 #ifdef QT_NO_LIBRARY
     return 0;
 #else
-    return QLibrary::resolve(QLatin1String(library), symbol);
+    return QLibrary::resolve(QLatin1String(library), version, symbol);
 #endif
-}
-
-void *HB_TextCodecForMib(int mib)
-{
-#ifndef QT_NO_TEXTCODEC
-    return QTextCodec::codecForMib(mib);
-#else
-    return 0;
-#endif
-}
-
-char *HB_TextCodec_ConvertFromUnicode(void *codec, const HB_UChar16 *unicode, hb_uint32 length, hb_uint32 *outputLength)
-{
-#ifndef QT_NO_TEXTCODEC
-    QByteArray data = reinterpret_cast<QTextCodec *>(codec)->fromUnicode((const QChar *)unicode, length);
-    // ### suboptimal
-    char *output = (char *)malloc(data.length() + 1);
-    Q_CHECK_PTR(output);
-    memcpy(output, data.constData(), data.length() + 1);
-    if (outputLength)
-        *outputLength = data.length();
-    return output;
-#else
-    return 0;
-#endif
-}
-
-void HB_TextCodec_FreeResult(char *string)
-{
-    free(string);
 }
 
 } // extern "C"

@@ -28,7 +28,7 @@ SUBDIRS         = brush \
 #                  modelview-subclasses \   # broken
                   painterpath \
                   persistentindexes \
-                  picture \
+#                  picture \                # broken
                   plaintextlayout \
 #                  pointer \
                   polygon \

@@ -4,10 +4,7 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativesystempalette.cpp
 
-# Define SRCDIR equal to test's source directory
-symbian: {
-    DEFINES += SRCDIR=\".\"
-} else {
+!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

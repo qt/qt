@@ -125,6 +125,7 @@ void AddressBook::submitContact()
     if (name == "" || address == "") {
         QMessageBox::information(this, tr("Empty Field"),
             tr("Please enter a name and address."));
+        return;
     }
 
     if (!contacts.contains(name)) {

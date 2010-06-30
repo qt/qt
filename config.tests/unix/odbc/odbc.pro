@@ -1,4 +1,5 @@
 SOURCES = odbc.cpp
 CONFIG -= qt dylib
 mac:CONFIG -= app_bundle
-LIBS += -lodbc
+win32-g++*:LIBS += -lodbc32
+else:LIBS += -lodbc

@@ -96,7 +96,7 @@ private:
 };
 
 //performs an action of type QAbstractAnimationAction
-class QActionAnimation : public QAbstractAnimation
+class Q_AUTOTEST_EXPORT QActionAnimation : public QAbstractAnimation
 {
     Q_OBJECT
 public:
@@ -143,7 +143,7 @@ public:
 };
 
 //animates QDeclarativeBulkValueUpdater (assumes start and end values will be reals or compatible)
-class QDeclarativeBulkValueAnimator : public QVariantAnimation
+class Q_AUTOTEST_EXPORT QDeclarativeBulkValueAnimator : public QVariantAnimation
 {
     Q_OBJECT
 public:
@@ -376,6 +376,22 @@ public:
     QDeclarativeBulkValueAnimator *va;
     QVariantAnimation::Interpolator interpolator;
     QList<QDeclarativeItem*> targets;
+};
+
+class Q_AUTOTEST_EXPORT QDeclarativeAnimationPropertyUpdater : public QDeclarativeBulkValueUpdater
+{
+public:
+    QDeclarativeStateActions actions;
+    int interpolatorType;       //for Number/ColorAnimation
+    int prevInterpolatorType;   //for generic
+    QVariantAnimation::Interpolator interpolator;
+    bool reverse;
+    bool fromSourced;
+    bool fromDefined;
+    bool *wasDeleted;
+    QDeclarativeAnimationPropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
+    ~QDeclarativeAnimationPropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
+    void setValue(qreal v);
 };
 
 QT_END_NAMESPACE

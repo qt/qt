@@ -56,7 +56,7 @@ symbian-abld|symbian-sbsv2 {
     } else {
         elf2e32FileToAdd = $$_PRO_FILE_PWD_/$$defFile
     }
-    QMAKE_ELF2E32_FLAGS += "`test -e $$elf2e32FileToAdd && echo --definput=$$elf2e32FileToAdd`"
+    QMAKE_ELF2E32_FLAGS += "--definput=$$elf2e32FileToAdd"
 
     symbianObjdir = $$OBJECTS_DIR
     isEmpty(symbianObjdir):symbianObjdir = .
@@ -64,7 +64,7 @@ symbian-abld|symbian-sbsv2 {
     freeze_target.target = freeze
     freeze_target.depends = first
     # The perl part is to convert to unix line endings and remove comments, which the s60 tools refuse to do.
-    freeze_target.commands = perl -n -e \'next if (/; NEW/); s/\\r//g; if (/MISSING:(.*)/x) { print(\"\$\$1 ABSENT\\n\"); } else { print; }\' < $$symbianObjdir/$${TARGET}.def >  $$elf2e32FileToAdd
+    freeze_target.commands = $$QMAKE_COPY $$symbianObjdir/$${TARGET}.def $$elf2e32FileToAdd
     QMAKE_EXTRA_TARGETS += freeze_target
 } else:contains(TEMPLATE, subdirs) {
     freeze_target.target = freeze

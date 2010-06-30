@@ -779,6 +779,7 @@ RPATH_FLAGS=
 l_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "symbian/linux-gcce"
+XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -1326,7 +1327,9 @@ while [ "$#" -gt 0 ]; do
         fi
 	;;
     arch)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        # if this is a Mac then "windows" probably means
+        # we are cross-compiling for MinGW
+        if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" != "windows" ]; then
             CFG_MAC_ARCHS="$CFG_MAC_ARCHS $VAL"
         else
             CFG_ARCH=$VAL
@@ -1444,6 +1447,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     xplatform)
         XPLATFORM="$VAL"
+        case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
         ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2336,7 +2340,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         chmod 755 "$outpath/bin/syncqt"
     fi
 
-    for i in createpackage patch_capabilities; do
+    for i in elf2e32_qtwrapper createpackage patch_capabilities; do
         rm -f "$outpath/bin/$i"
         if [ -x "$relpath/bin/$i" ]; then
             mkdir -p "$outpath/bin"
@@ -2578,9 +2582,13 @@ if [ -z "$PLATFORM" ]; then
         "
         ;;
      SunOS:5*)
-        #PLATFORM=solaris-g++
-        PLATFORM=solaris-cc
-        #PLATFORM=solaris-cc64
+        if [ "$XPLATFORM_MINGW" = "yes" ]; then
+            PLATFORM="solaris-g++"
+        else
+            #PLATFORM=solaris-g++
+            PLATFORM=solaris-cc
+            #PLATFORM=solaris-cc64
+        fi
         PLATFORM_NOTES="
             - Also available for Solaris: solaris-g++ solaris-cc-64
         "
@@ -2650,6 +2658,9 @@ else
 fi
 
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
+
+case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
+
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
 else
@@ -2922,6 +2933,8 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
         CFG_ARCH="$CFG_EMBEDDED"
         ;;
     esac
+elif [ "$XPLATFORM_MINGW" = "yes" ]; then
+    [ -z "$CFG_ARCH" ] && CFG_ARCH="windows"
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
 fi
@@ -4087,6 +4100,8 @@ elif [ "$PLATFORM_MAC" = "yes" ]; then
     Platform="Qt for Mac OS X"
 elif echo "$XPLATFORM" | grep "symbian" > /dev/null ; then
     Platform="Qt for Symbian"
+elif [ "$XPLATFORM_MINGW" = "yes" ]; then
+    Platform="Qt for Windows"
 elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
     PLATFORM_X11=yes
     Platform="Qt for Linux/X11"
@@ -4668,7 +4683,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ([ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]) && [ "${CFG_NEON}" = "auto" ]; then
+if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -4697,6 +4712,8 @@ if [ "$CFG_ZLIB" = "auto" ]; then
        CFG_ZLIB=yes
     fi
 fi
+
+[ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
 
 case "$XPLATFORM" in *symbian*)
     QMakeVar set styles "windows s60"   #overwrite previous default
@@ -4897,12 +4914,15 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         psql)
             if [ "$CFG_SQL_psql" != "no" ]; then
-                if "$WHICH" pg_config >/dev/null 2>&1; then
+                # Be careful not to use native pg_config when cross building.
+                if [ "$XPLATFORM_MINGW" != "yes" ] && "$WHICH" pg_config >/dev/null 2>&1; then
                     QT_CFLAGS_PSQL=`pg_config --includedir 2>/dev/null`
                     QT_LFLAGS_PSQL=`pg_config --libdir 2>/dev/null`
                 fi
                 [ -z "$QT_CFLAGS_PSQL" ] || QT_CFLAGS_PSQL="-I$QT_CFLAGS_PSQL"
                 [ -z "$QT_LFLAGS_PSQL" ] || QT_LFLAGS_PSQL="-L$QT_LFLAGS_PSQL"
+                # But, respect PSQL_LIBS if set
+                [ -z "$PSQL_LIBS" ] || QT_LFLAGS_PSQL="$PSQL_LIBS"
                 if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/psql "PostgreSQL" $QT_LFLAGS_PSQL $L_FLAGS $QT_CFLAGS_PSQL $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_psql" = "auto" ]; then
                         CFG_SQL_psql=plugin
@@ -4924,7 +4944,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if [ "$PLATFORM_MAC" != "yes" ] && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                if ( [ "$PLATFORM_MAC" != "yes" ] || [ "$XPLATFORM_MINGW" = "yes" ] ) && "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/odbc "ODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
@@ -5190,6 +5210,7 @@ if [ "$PLATFORM_MAC" = "yes" -a ! -z "$QT_NAMESPACE" ]; then
     QT_NAMESPACE_MAC_CRC=`"$mactests/crc.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/crc $QT_NAMESPACE $L_FLAGS $I_FLAGS $l_FLAGS`
 fi
 
+# X11/QWS
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
 
     # auto-detect Glib support
@@ -5354,7 +5375,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     fi
 fi # X11/QWS
 
-# x11
+# X11
 if [ "$PLATFORM_X11" = "yes" ]; then
     x11tests="$relpath/config.tests/x11"
     X11TESTS_FLAGS=
@@ -5375,7 +5396,10 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         echo " QMAKE_INCDIR_X11 and QMAKE_LIBDIR_X11 in ${XQMAKESPEC}."
         exit 1
     fi
+fi
 
+# X11/MINGW OpenGL
+if [ "$PLATFORM_X11" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
     # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_GUI" = "no" ]; then
         if [ "$CFG_OPENGL" = "auto" ]; then
@@ -5471,7 +5495,10 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	echo "OpenGL Graphics System is disabled due to missing OpenGL support..."
 	CFG_GRAPHICS_SYSTEM=default
     fi
+fi # X11/MINGW OpenGL
 
+# X11
+if [ "$PLATFORM_X11" = "yes" ]; then
     # auto-detect Xcursor support
     if [ "$CFG_XCURSOR" != "no" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xcursor "Xcursor" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -5834,14 +5861,12 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
        fi
 
        if [ "${screen}" = "directfb" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if [ -n "$PKG_CONFIG" ]; then
-               if $PKG_CONFIG --exists directfb 2>/dev/null; then
-                   QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
-               elif directfb-config --version >/dev/null 2>&1; then
-                   QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
-                   QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
-               fi
+           if test -n "$PKG_CONFIG" && "$PKG_CONFIG" --exists directfb 2>/dev/null; then
+               QT_CFLAGS_DIRECTFB=`$PKG_CONFIG --cflags directfb 2>/dev/null`
+               QT_LIBS_DIRECTFB=`$PKG_CONFIG --libs directfb 2>/dev/null`
+           elif directfb-config --version >/dev/null 2>&1; then
+               QT_CFLAGS_DIRECTFB=`directfb-config --cflags 2>/dev/null`
+               QT_LIBS_DIRECTFB=`directfb-config --libs 2>/dev/null`
            fi
 
            # QMake variables set here override those in the mkspec. Therefore we only set the variables here if they are not zero.
@@ -5919,9 +5944,12 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     fi
 fi
 
+[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_PHONON" != "no" ] && CFG_PHONON="yes"
+
 # freetype support
 [ "x$CFG_EMBEDDED" != "xno" ] && CFG_LIBFREETYPE="$CFG_QWS_FREETYPE"
 [ "x$PLATFORM_MAC" = "xyes" ] && CFG_LIBFREETYPE=no
+[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_LIBFREETYPE" = "auto" ] && CFG_LIBFREETYPE=no
 if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/freetype "FreeType" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_LIBFREETYPE=system
@@ -5931,7 +5959,9 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
 fi
 
 if [ "$CFG_ENDIAN" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "$XPLATFORM_MINGW" = "yes" ]; then
+        CFG_ENDIAN="Q_LITTLE_ENDIAN"
+    elif [ "$PLATFORM_MAC" = "yes" ]; then
 	true #leave as auto
     elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
         CFG_ENDIAN="Q_LITTLE_ENDIAN"
@@ -6257,6 +6287,11 @@ if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_LARGEFILE" != "yes" ] && [ "$XPLATFORM_MINGW" = "yes" ]; then
+    echo "Warning: largefile support cannot be disabled for win32."
+    CFG_LARGEFILE="yes"
+fi
+
 #-------------------------------------------------------------------------------
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
@@ -6358,6 +6393,9 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
         CFG_MAC_CARBON="yes";
     fi
 fi
+
+# but disable Cocoa if cross-building for mingw
+[ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
 
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
@@ -6497,7 +6535,7 @@ QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
 QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
 QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
 QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
-if [ "$CFG_LARGEFILE" = "yes" ]; then
+if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
 fi
 if [ "$CFG_STL" = "no" ]; then
@@ -6613,7 +6651,7 @@ else
 fi
 
 
-if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM" != "win32-g++" ]; then
+if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
     [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
@@ -6750,6 +6788,12 @@ fi
 
 if [ "$CFG_EXCEPTIONS" != "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG exceptions"
+fi
+
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    # mkspecs/features/win32/default_pre.prf sets "no-rtti".
+    # Follow default behavior of configure.exe by overriding with "rtti".
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG rtti"
 fi
 
 if [ "$CFG_ALSA" = "yes" ]; then
@@ -6893,6 +6937,12 @@ if [ "$CFG_GUI" = "no" ]; then
     canBuildWebKit="no"
 fi
 
+if [ "$CFG_SHARED" = "no" ]; then
+    echo
+    echo "WARNING: Using static linking will disable the WebKit module."
+    echo
+    canBuildWebKit="no"
+fi
 
 CFG_CONCURRENT="yes"
 if [ "$canBuildQtConcurrent" = "no" ]; then
@@ -7345,7 +7395,7 @@ EOF
 echo '/* Compile time features */' >>"$outpath/src/corelib/global/qconfig.h.new"
 [ '!' -z "$LicenseKeyExt" ] && echo "#define QT_PRODUCT_LICENSEKEY \"$LicenseKeyExt\"" >>"$outpath/src/corelib/global/qconfig.h.new"
 
-if [ "$CFG_LARGEFILE" = "yes" ]; then
+if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     echo "#define QT_LARGEFILE_SUPPORT 64" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
@@ -7690,7 +7740,7 @@ QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 EOF
 
 # Ensure we can link to uninistalled libraries
-if linkerSupportsFlag -rpath-link "$outpath/lib"; then
+if [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
     echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
 fi
 
@@ -8228,7 +8278,9 @@ for file in .projects .projects.3; do
         [ "$IN_ROOT" = "no" ] && continue
 
         case $a in
-        *winmain/winmain.pro) continue ;;
+        *winmain/winmain.pro)
+            [ "$XPLATFORM_MINGW" = "yes" ] || continue
+            SPEC=$XQMAKESPEC ;;
         *s60main/s60main.pro) continue ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;

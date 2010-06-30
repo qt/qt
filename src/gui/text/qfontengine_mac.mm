@@ -237,7 +237,8 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
         *nglyphs = len;
         for (int i = 0; i < len; ++i) {
             outGlyphs[i] = 0;
-            logClusters[i] = i;
+            if (logClusters)
+                logClusters[i] = i;
             outAdvances_x[i] = QFixed();
             outAdvances_y[i] = QFixed();
             outAttributes[i].clusterStart = true;
@@ -347,7 +348,29 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
 bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
                                             int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
-    return stringToCMap(str, len, glyphs, nglyphs, flags, 0, 0);
+    *nglyphs = len;
+    QVarLengthArray<CGGlyph> cgGlyphs(len);
+    CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
+
+    for (int i = 0; i < len; ++i)
+        glyphs->glyphs[i] = cgGlyphs[i];
+
+    if (flags & QTextEngine::GlyphIndicesOnly)
+        return true;
+
+    QVarLengthArray<CGSize> advances(len);
+    CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, cgGlyphs.data(), advances.data(), len);
+
+    for (int i = 0; i < len; ++i) {
+        glyphs->advances_x[i] = QFixed::fromReal(advances[i].width);
+        glyphs->advances_y[i] = QFixed::fromReal(advances[i].height);
+        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+            glyphs->advances_x[i] = glyphs->advances_x[i].round();
+            glyphs->advances_y[i] = glyphs->advances_y[i].round();
+        }
+    }
+
+    return true;
 }
 
 void QCoreTextFontEngineMulti::recalcAdvances(int , QGlyphLayout *, QTextEngine::ShaperFlags) const

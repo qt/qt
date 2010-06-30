@@ -1766,6 +1766,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     function returns the actual matrix used for transforming the
     pixmap.
 
+    \note When using the native X11 graphics system, the pixmap
+    becomes invalid when the QApplication instance is destroyed.
+
     \sa QBitmap, QImage, QImageReader, QImageWriter
 */
 
@@ -2015,7 +2018,7 @@ void QPixmap::detach()
     the color table. If this is too expensive an operation, you can
     use QBitmap::fromImage() instead.
 
-    \sa toImage(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+    \sa fromImageReader(), toImage(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
 QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 {
@@ -2026,6 +2029,27 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
             : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
     data->fromImage(image, flags);
+    return QPixmap(data.take());
+}
+
+/*!
+    \fn QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
+
+    Create a QPixmap from an image read directly from an \a imageReader.
+    The \a flags argument is a bitwise-OR of the \l{Qt::ImageConversionFlags}.
+    Passing 0 for \a flags sets all the default options.
+
+    On some systems, reading an image directly to QPixmap can use less memory than
+    reading a QImage to convert it to QPixmap.
+
+    \sa fromImage(), toImage(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
+{
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
+            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
+    data->fromImageReader(imageReader, flags);
     return QPixmap(data.take());
 }
 

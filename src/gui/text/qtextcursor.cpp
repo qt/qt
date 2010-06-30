@@ -2437,6 +2437,9 @@ void QTextCursor::beginEditBlock()
     if (!d || !d->priv)
         return;
 
+    if (d->priv->editBlock == 0) // we are the initial edit block, store current cursor position for undo
+        d->priv->editBlockCursorPosition = d->position;
+
     d->priv->beginEditBlock();
 }
 

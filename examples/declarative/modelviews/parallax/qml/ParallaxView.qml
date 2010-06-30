@@ -44,8 +44,8 @@ Item {
     id: root
 
     property alias background: background.source
-    default property alias content: visualModel.children
     property int currentIndex: 0
+    default property alias content: visualModel.children
 
     Image {
         id: background
@@ -56,13 +56,13 @@ Item {
 
     ListView {
         id: list
+        anchors.fill: parent
 
         currentIndex: root.currentIndex
         onCurrentIndexChanged: root.currentIndex = currentIndex
 
         orientation: Qt.Horizontal
         boundsBehavior: Flickable.DragOverBounds
-        anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 
         highlightRangeMode: ListView.StrictlyEnforceRange
@@ -72,14 +72,6 @@ Item {
     ListView {
         id: selector
 
-        Rectangle {
-            color: "#60FFFFFF"
-            x: -10; y: -10; radius: 10; z: -1
-            width: parent.width + 20; height: parent.height + 20
-        }
-        currentIndex: root.currentIndex
-        onCurrentIndexChanged: root.currentIndex = currentIndex
-
         height: 50
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
@@ -87,6 +79,10 @@ Item {
         interactive: width == parent.width - 20
         orientation: Qt.Horizontal
 
+        currentIndex: root.currentIndex
+        onCurrentIndexChanged: root.currentIndex = currentIndex
+
+        model: visualModel.children
         delegate: Item {
             width: 50; height: 50
             id: delegateRoot
@@ -113,11 +109,15 @@ Item {
                 }
             }
             transitions: Transition {
-                NumberAnimation {
-                    properties: "scale,y"
-                }
-             }
+                NumberAnimation { properties: "scale,y" }
+            }
         }
-        model: visualModel.children
+
+        Rectangle {
+            color: "#60FFFFFF"
+            x: -10; y: -10; z: -1
+            width: parent.width + 20; height: parent.height + 20
+            radius: 10
+        }
     }
 }

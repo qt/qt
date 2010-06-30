@@ -68,6 +68,7 @@
 #include "qscodeparser.h"
 #include "sgmlgenerator.h"
 #include "webxmlgenerator.h"
+#include "ditaxmlgenerator.h"
 #include "tokenizer.h"
 #include "tree.h"
 #include <qdebug.h>
@@ -427,6 +428,7 @@ int main(int argc, char **argv)
     ManGenerator manGenerator;
     SgmlGenerator smglGenerator;
     WebXMLGenerator webxmlGenerator;
+    DitaXmlGenerator ditaxmlGenerator;
 
     QStringList qdocFiles;
     QString opt;

@@ -4,11 +4,9 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativepathview.cpp
 
-# Define SRCDIR equal to test's source directory
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"

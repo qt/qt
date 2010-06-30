@@ -287,6 +287,8 @@ public:
         { m_qtFunctionInvoked = 15; m_actuals << v; return v; }
     Q_INVOKABLE QVariantMap myInvokableWithVariantMapArg(const QVariantMap &vm)
         { m_qtFunctionInvoked = 16; m_actuals << vm; return vm; }
+    Q_INVOKABLE QVariantList myInvokableWithVariantListArg(const QVariantList &lst)
+        { m_qtFunctionInvoked = 62; m_actuals.append(QVariant(lst)); return lst; }
     Q_INVOKABLE QList<int> myInvokableWithListOfIntArg(const QList<int> &lst)
         { m_qtFunctionInvoked = 17; m_actuals << qVariantFromValue(lst); return lst; }
     Q_INVOKABLE QObject* myInvokableWithQObjectStarArg(QObject *obj)
@@ -535,6 +537,10 @@ private slots:
     void emitAfterReceiverDeleted();
     void inheritedSlots();
     void enumerateMetaObject();
+    void nestedArrayAsSlotArgument_data();
+    void nestedArrayAsSlotArgument();
+    void nestedObjectAsSlotArgument_data();
+    void nestedObjectAsSlotArgument();
 
 private:
     QScriptEngine *m_engine;
@@ -3161,6 +3167,140 @@ void tst_QScriptExtQObject::enumerateMetaObject()
         QCOMPARE(actualNames.size(), expectedNames.size());
         for (int i = 0; i < expectedNames.size(); ++i)
             QVERIFY(actualNames.contains(expectedNames.at(i)));
+    }
+}
+
+void tst_QScriptExtQObject::nestedArrayAsSlotArgument_data()
+{
+    QTest::addColumn<QString>("program");
+    QTest::addColumn<QVariantList>("expected");
+
+    QTest::newRow("[[]]")
+        << QString::fromLatin1("[[]]")
+        << (QVariantList() << (QVariant(QVariantList())));
+    QTest::newRow("[[123]]")
+        << QString::fromLatin1("[[123]]")
+        << (QVariantList() << (QVariant(QVariantList() << 123)));
+    QTest::newRow("[[], 123]")
+        << QString::fromLatin1("[[], 123]")
+        << (QVariantList() << QVariant(QVariantList()) << 123);
+
+    // Cyclic
+    QTest::newRow("var a=[]; a.push(a)")
+        << QString::fromLatin1("var a=[]; a.push(a); a")
+        << (QVariantList() << QVariant(QVariantList()));
+    QTest::newRow("var a=[]; a.push(123, a)")
+        << QString::fromLatin1("var a=[]; a.push(123, a); a")
+        << (QVariantList() << 123 << QVariant(QVariantList()));
+    QTest::newRow("var a=[]; var b=[]; a.push(b); b.push(a)")
+        << QString::fromLatin1("var a=[]; var b=[]; a.push(b); b.push(a); a")
+        << (QVariantList() << QVariant(QVariantList() << QVariant(QVariantList())));
+    QTest::newRow("var a=[]; var b=[]; a.push(123, b); b.push(456, a)")
+        << QString::fromLatin1("var a=[]; var b=[]; a.push(123, b); b.push(456, a); a")
+        << (QVariantList() << 123 << QVariant(QVariantList() << 456 << QVariant(QVariantList())));
+}
+
+void tst_QScriptExtQObject::nestedArrayAsSlotArgument()
+{
+    QFETCH(QString, program);
+    QFETCH(QVariantList, expected);
+    QScriptValue a = m_engine->evaluate(program);
+    QVERIFY(!a.isError());
+    QVERIFY(a.isArray());
+    // Slot that takes QVariantList
+    {
+        QVERIFY(!m_engine->evaluate("myObject.myInvokableWithVariantListArg")
+                .call(QScriptValue(), QScriptValueList() << a).isError());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 62);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).type(), QVariant::List);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toList(), expected);
+    }
+    // Slot that takes QVariant
+    {
+        m_myObject->resetQtFunctionInvoked();
+        QVERIFY(!m_engine->evaluate("myObject.myInvokableWithVariantArg")
+                .call(QScriptValue(), QScriptValueList() << a).isError());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 15);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).type(), QVariant::List);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toList(), expected);
+    }
+}
+
+void tst_QScriptExtQObject::nestedObjectAsSlotArgument_data()
+{
+    QTest::addColumn<QString>("program");
+    QTest::addColumn<QVariantMap>("expected");
+
+    {
+        QVariantMap m;
+        m["a"] = QVariantMap();
+        QTest::newRow("{ a:{} }")
+            << QString::fromLatin1("({ a:{} })")
+            << m;
+    }
+    {
+        QVariantMap m, m2;
+        m2["b"] = 10;
+        m2["c"] = 20;
+        m["a"] = m2;
+        QTest::newRow("{ a:{b:10, c:20} }")
+            << QString::fromLatin1("({ a:{b:10, c:20} })")
+            << m;
+    }
+    {
+        QVariantMap m;
+        m["a"] = 10;
+        m["b"] = QVariantList() << 20 << 30;
+        QTest::newRow("{ a:10, b:[20, 30]}")
+            << QString::fromLatin1("({ a:10, b:[20,30]})")
+            << m;
+    }
+
+    // Cyclic
+    {
+        QVariantMap m;
+        m["p"] = QVariantMap();
+        QTest::newRow("var o={}; o.p=o")
+            << QString::fromLatin1("var o={}; o.p=o; o")
+            << m;
+    }
+    {
+        QVariantMap m;
+        m["p"] = 123;
+        m["q"] = QVariantMap();
+        QTest::newRow("var o={}; o.p=123; o.q=o")
+            << QString::fromLatin1("var o={}; o.p=123; o.q=o; o")
+            << m;
+    }
+}
+
+void tst_QScriptExtQObject::nestedObjectAsSlotArgument()
+{
+    QFETCH(QString, program);
+    QFETCH(QVariantMap, expected);
+    QScriptValue o = m_engine->evaluate(program);
+    QVERIFY(!o.isError());
+    QVERIFY(o.isObject());
+    // Slot that takes QVariantMap
+    {
+        QVERIFY(!m_engine->evaluate("myObject.myInvokableWithVariantMapArg")
+                .call(QScriptValue(), QScriptValueList() << o).isError());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 16);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).type(), QVariant::Map);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toMap(), expected);
+    }
+    // Slot that takes QVariant
+    {
+        m_myObject->resetQtFunctionInvoked();
+        QVERIFY(!m_engine->evaluate("myObject.myInvokableWithVariantArg")
+                .call(QScriptValue(), QScriptValueList() << o).isError());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 15);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).type(), QVariant::Map);
+        QCOMPARE(m_myObject->qtFunctionActuals().at(0).toMap(), expected);
     }
 }
 

@@ -49,6 +49,11 @@ Component {
 
         Image { source: "cork.jpg" }
 
+        MouseArea {
+            anchors.fill: parent
+            onClicked: page.focus = false;
+        }
+
         Text {
             text: name; x: 15; y: 8; height: 40; width: 370
             font.pixelSize: 18; font.bold: true; color: "white"
@@ -106,7 +111,7 @@ Component {
                             drag.maximumY: page.height - 80
                             drag.minimumX: 100
                             drag.maximumX: page.width - 140
-                            onClicked: { myText.focus = true }
+                            onClicked: { myText.focus = true; myText.openSoftwareInputPanel(); }
                         }
                     }
                 }

@@ -109,6 +109,10 @@ contains(QT_CONFIG, zlib)|cross_compile {
         ../3rdparty/zlib/trees.c \
         ../3rdparty/zlib/uncompr.c \
         ../3rdparty/zlib/zutil.c
+} else:!contains(QT_CONFIG, no-zlib) {
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
 
 lib.CONFIG = dummy_install

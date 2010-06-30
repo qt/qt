@@ -5,9 +5,7 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativecomponent.cpp 
 
-symbian: {
-    DEFINES += SRCDIR=\".\"
-} else {
+!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

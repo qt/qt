@@ -1,0 +1,186 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example linguist/hellotr
+    \title サンプル: こんにちは tr()
+
+    これは、小さな Hello World プログラムを日本語に翻訳する例です。
+    以下のスクリーンショットは英語版です。
+
+    \image linguist-hellotr_en.png
+
+    Qt アプリケーションの翻訳に関する詳細は、\l{Qt Linguist manual}
+    をご覧ください。
+
+    \section1 各行の簡単な解説
+
+    \snippet examples/ja_JP/linguist/hellotr/main.cpp 0
+
+    この行では、 QTranslator クラスの宣言を読み込みます。
+    QTranslator クラスのオブジェクトは、
+    ユーザに表示する文字列を翻訳します。
+
+    \snippet examples/ja_JP/linguist/hellotr/main.cpp 5
+
+    親をもたない QTranslator オブジェクトを作成します。
+
+    \snippet examples/ja_JP/linguist/hellotr/main.cpp 6
+
+    プログラムで使用するソーステキストの日本語の翻訳を含む、
+    \c hellotr_ja.qm ( \c .qm というファイル拡張子は省略します)
+    と呼ばれるファイルを読み込みます。
+    ファイルが見つからなくてもエラーは発生しません。
+
+    \snippet examples/ja_JP/linguist/hellotr/main.cpp 7
+
+    \c hellotr_ja.qm の翻訳を、プログラムで使用する翻訳プールに追加します。
+
+    \snippet examples/ja_JP/linguist/hellotr/main.cpp 8
+
+    "Hello world!" を表示するプッシュボタンを作成します。
+    検索した \c hellotr_ja.qm に "Hello world!" の翻訳が含まれている場合、
+    その翻訳が表示されます。
+    含まれていない場合、翻訳前のテキストがそのまま表示されます。
+
+    QObject を継承するすべてのクラスには、\c tr() 関数が含まれます。
+    QObject クラスのメンバ関数内では、\c QPushButton::tr("Hello world!")
+    や \c QObject::tr("Hello world!") の代わりに、シンプルに
+    \c tr("Hello world!") を使います。
+
+    \section1 英語版のアプリケーションを実行する
+
+    翻訳ファイル \c hellotr_ja.qm の作成が終わっていないため、
+    以下のアプリケーションを起動したときに元の文字列が表示されます。
+
+    \image linguist-hellotr_en.png
+
+    \section1 日本語のメッセージファイルを作成する
+
+    最初のステップは、プロジェクトのすべてのソースファイルを列挙する
+    \c hellotr.pro を作成することです。
+    プロジェクトファイルは、qmake プロジェクトファイルまたは、通常の
+    makefile である可能性があります。
+    以下の記述を含むプロジェクトファイルを作成してください。
+
+    \snippet examples/ja_JP/linguist/hellotr/hellotr.pro 0
+    \snippet examples/ja_JP/linguist/hellotr/hellotr.pro 1
+
+    \c TRANSLATIONS は、管理するメッセージファイルを指します。
+    この例では、日本語の翻訳のみ管理します。
+
+    ファイル拡張子は、\c .qm ではなく、\c .ts であることにご注意ください。
+    \c .ts は翻訳のソースファイルのフォーマットであり、
+    アプリケーションの開発時に使用します。
+    プログラマーまたはリリースマネージャーは \c lupdate プログラムを実行し、
+    ソースコードから抽出したソーステキストを使用して
+    TS ファイルの生成と更新を行います。
+    翻訳者は、 \e {Qt Linguist} を使用して TS ファイルの読み取りと更新を行い、
+    翻訳の追加と編集を行います。
+
+    TS の形式は、ユーザが直接閲覧可能な XML 形式であるため、
+    直接Eメールで送信したり、簡単にバージョン管理の対象にすることが出来ます。
+    このファイルを手動で編集する場合、XML の既定のエンコードは UTF-8 で、
+    Latin1(ISO 8859-1)ではないことに気をつけてください。
+    '\oslash'(ノルウェー語の o にスラッシュが付いたもの)などの
+    Latin1 文字を入力する1つの方法は、XML エンティティ "&#xf8;"
+    を使用することです。
+    これはすべての Unicode 4.0 文字に対して有効です。
+
+    翻訳が完了したら、\c lrelease プログラムを使用して、
+    TS ファイルを QM ファイル(Qt Message ファイル)形式に変換します。
+    QM 形式は、極めて高速な検索性能を実現するようにデザインされた
+    コンパクトなライブラリ形式です。
+    \c lupdate と \c lrelease はどちらも、
+    プロジェクト全体のソースファイルとヘッダーファイル
+    (プロジェクトファイルの HEADERS および SOURCES 行で指定されている)
+    を読み取り、\c tr() 関数呼び出しの際に表示される文字列を抽出します。
+
+    \c lupdate は、メッセージファイル(この場合は \c hellotr_ja.ts)
+    の作成と更新を行い、これらをソースコードと同期させるために使用します。
+    \c lupdate にはデータの削除機能がないため、
+    \c lupdate はいつでも安全に実行できます。
+    例えば、ソースが変更されるたびに TS ファイルが更新されるよう、
+    makefile に記述できます。
+
+    それでは、以下のように \c lupdate を実行してみましょう:
+
+    \snippet doc/src/ja_JP/snippets/code/doc_src_examples_hellotr.qdoc 0
+
+    (\c -verbose オプションは、操作を説明するメッセージを表示するよう
+    \c lupdate に指示します。)
+    現在のディレクトリに、以下の内容で
+    \c hellotr_ja.ts ファイルが作成されていると思います:
+
+    \snippet doc/src/ja_JP/snippets/code/doc_src_examples_hellotr.qdoc 1
+
+    ツール (\c lupdate、 \e {Qt Linguist}、\c lrelease)
+    を使用して読み取りと更新を行うため、
+    ファイル形式を理解する必要はありません。
+
+    \section1 Qt Linguist を使用して日本語に翻訳する
+
+    XML やテキストエディタを使用して、TS ファイルを翻訳することも出来ますが、
+    ここでは \e {Qt Linguist} を使用して翻訳を行います。
+
+    \e {Qt Linguist} を起動するには、以下を入力します。
+
+    \snippet doc/src/ja_JP/snippets/code/doc_src_examples_hellotr.qdoc 2
+
+    左上のペインに "QPushButton" が表示されるはずです。
+    これをダブルクリックし、次に "Hello world!" をクリックして、
+    \gui Translation ペイン (ウィンドウ右中央)に
+    "こんにちは、世界!" と入力します。
+    感嘆符(!)を忘れないように付けてください!
+
+    \gui{完了} チェックボックスをオンにして、
+    メニューバーから \gui{ファイル|保存} を選択します。
+    TS ファイルから、以下の記述がなくなります。
+
+    \snippet doc/src/ja_JP/snippets/code/doc_src_examples_hellotr.qdoc 3
+
+    その代わりに以下が含まれます。
+
+    \snippet doc/src/ja_JP/snippets/code/doc_src_examples_hellotr.qdoc 4
+
+    \section1 日本語版のアプリケーションを実行する
+
+    日本語版のアプリケーションを実行する前に、
+    TS ファイルから QM ファイルを生成する必要があります。
+    QM ファイルは、\e {Qt Linguist}(単一の TS ファイルの場合)のメニューから、
+    もしくは、コマンドラインプログラム \c lrelease を使用して生成できます。
+    \c lrelease を使用する場合、
+    プロジェクトファイルに列挙されている TS ファイルごとに
+    1 つの QM ファイルを作成することが出来ます。
+    \e {Qt Linguist} のメニューバーから \gui{ファイル|リリース} を選択し、
+    ポップアップ表示される \gui{ファイルの保存} ダイアログで\gui{保存}を選択し、
+    \c hellotr_ja.ts から \c hellotr_ja.qm を生成します。
+    今すぐ \c hellotr プログラムを再実行してみましょう。
+    これで、ボタンに "こんにちは、世界!" と表示されます。
+
+    \image linguist-hellotr_ja.png
+*/

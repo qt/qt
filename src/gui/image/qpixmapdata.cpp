@@ -124,6 +124,13 @@ static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Q
     return image;
 }
 
+void QPixmapData::fromImageReader(QImageReader *imageReader,
+                                  Qt::ImageConversionFlags flags)
+{
+    const QImage image = imageReader->read();
+    fromImage(image, flags);
+}
+
 bool QPixmapData::fromFile(const QString &fileName, const char *format,
                            Qt::ImageConversionFlags flags)
 {
@@ -146,7 +153,7 @@ bool QPixmapData::fromData(const uchar *buf, uint len, const char *format, Qt::I
 
 void QPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-    fromImage(data->toImage().copy(rect), Qt::AutoColor);
+    fromImage(data->toImage(rect), Qt::NoOpaqueDetection);
 }
 
 bool QPixmapData::scroll(int dx, int dy, const QRect &rect)
@@ -253,6 +260,14 @@ QPixmap QPixmapData::alphaChannel() const
 void QPixmapData::setSerialNumber(int serNo)
 {
     ser_no = serNo;
+}
+
+QImage QPixmapData::toImage(const QRect &rect) const
+{
+    if (rect.contains(QRect(0, 0, w, h)))
+        return toImage();
+    else
+        return toImage().copy(rect);
 }
 
 QImage* QPixmapData::buffer()

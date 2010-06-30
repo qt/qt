@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
     \endqml
 
     By default, PropertyChanges will establish new bindings where appropriate.
-    For example, the following creates a new binding for myItem's height property.
+    For example, the following creates a new binding for myItem's \c height property.
 
     \qml
     PropertyChanges {
@@ -500,8 +500,8 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
     If explicit is set to true, any potential bindings will be interpreted as
     once-off assignments that occur when the state is entered.
 
-    In the following example, the addition of explicit prevents myItem.width from
-    being bound to parent.width. Instead, it is assigned the value of parent.width
+    In the following example, the addition of explicit prevents \c myItem.width from
+    being bound to \c parent.width. Instead, it is assigned the value of \c parent.width
     at the time of the state change.
     \qml
     PropertyChanges {

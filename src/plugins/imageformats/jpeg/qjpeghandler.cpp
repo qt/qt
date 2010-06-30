@@ -802,13 +802,15 @@ QJpegHandler::~QJpegHandler()
 
 bool QJpegHandler::canRead() const
 {
-    if(d->state == QJpegHandlerPrivate::Ready) {
-        if (!canRead(device()))
-            return false;
+    if(d->state == QJpegHandlerPrivate::Ready && !canRead(device()))
+        return false;
+
+    if (d->state != QJpegHandlerPrivate::Error) {
         setFormat("jpeg");
         return true;
     }
-    return d->state != QJpegHandlerPrivate::Error;
+
+    return false;
 }
 
 bool QJpegHandler::canRead(QIODevice *device)

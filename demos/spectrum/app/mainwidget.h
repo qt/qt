@@ -59,7 +59,6 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QMenu)
 QT_FORWARD_DECLARE_CLASS(QAction)
-QT_END_NAMESPACE
 
 /**
  * Main application widget, responsible for connecting the various UI

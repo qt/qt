@@ -38,7 +38,6 @@ using namespace Unicode;
 
 namespace WebCore {
 
-#if USE(FONT_FAST_PATH)
 const uint8_t Font::gRoundingHackCharacterTable[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 1 /*\t*/, 1 /*\n*/, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1 /*space*/, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 /*-*/, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 /*?*/,
@@ -51,7 +50,6 @@ const uint8_t Font::gRoundingHackCharacterTable[256] = {
 };
 
 Font::CodePath Font::s_codePath = Auto;
-#endif
 
 // ============================================================================================
 // Font Implementation (Cross-Platform Portion)
@@ -174,31 +172,28 @@ void Font::drawText(GraphicsContext* context, const TextRun& run, const FloatPoi
     }
 #endif
 
-#if USE(FONT_FAST_PATH)
-    if (canUseGlyphCache(run))
+    if (codePath(run) != Complex)
         return drawSimpleText(context, run, point, from, to);
-#endif
 
     return drawComplexText(context, run, point, from, to);
 }
 
-float Font::floatWidth(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts) const
+float Font::floatWidth(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
 #if ENABLE(SVG_FONTS)
     if (primaryFont()->isSVGFont())
         return floatWidthUsingSVGFont(run);
 #endif
 
-#if USE(FONT_FAST_PATH)
-    if (canUseGlyphCache(run)) {
+    CodePath codePathToUse = codePath(run);
+    if (codePathToUse != Complex) {
         // If the complex text implementation cannot return fallback fonts, avoid
         // returning them for simple text as well.
         static bool returnFallbackFonts = canReturnFallbackFontsForComplexText();
-        return floatWidthForSimpleText(run, 0, returnFallbackFonts ? fallbackFonts : 0);
+        return floatWidthForSimpleText(run, 0, returnFallbackFonts ? fallbackFonts : 0, codePathToUse == SimpleWithGlyphOverflow ? glyphOverflow : 0);
     }
-#endif
 
-    return floatWidthForComplexText(run, fallbackFonts);
+    return floatWidthForComplexText(run, fallbackFonts, glyphOverflow);
 }
 
 float Font::floatWidth(const TextRun& run, int extraCharsAvailable, int& charsConsumed, String& glyphName) const
@@ -213,10 +208,8 @@ float Font::floatWidth(const TextRun& run, int extraCharsAvailable, int& charsCo
     charsConsumed = run.length();
     glyphName = "";
 
-#if USE(FONT_FAST_PATH)
-    if (canUseGlyphCache(run))
+    if (codePath(run) != Complex)
         return floatWidthForSimpleText(run, 0);
-#endif
 
     return floatWidthForComplexText(run);
 }
@@ -230,10 +223,8 @@ FloatRect Font::selectionRectForText(const TextRun& run, const IntPoint& point, 
 
     to = (to == -1 ? run.length() : to);
 
-#if USE(FONT_FAST_PATH)
-    if (canUseGlyphCache(run))
+    if (codePath(run) != Complex)
         return selectionRectForSimpleText(run, point, h, from, to);
-#endif
 
     return selectionRectForComplexText(run, point, h, from, to);
 }
@@ -245,10 +236,8 @@ int Font::offsetForPosition(const TextRun& run, int x, bool includePartialGlyphs
         return offsetForPositionForTextUsingSVGFont(run, x, includePartialGlyphs);
 #endif
 
-#if USE(FONT_FAST_PATH)
-    if (canUseGlyphCache(run))
+    if (codePath(run) != Complex)
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
-#endif
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
 }
@@ -293,6 +282,81 @@ void Font::setShouldUseSmoothing(bool shouldUseSmoothing)
 bool Font::shouldUseSmoothing()
 {
     return shouldUseFontSmoothing;
+}
+
+void Font::setCodePath(CodePath p)
+{
+    s_codePath = p;
+}
+
+Font::CodePath Font::codePath()
+{
+    return s_codePath;
+}
+
+Font::CodePath Font::codePath(const TextRun& run) const
+{
+    if (s_codePath != Auto)
+        return s_codePath;
+
+#if PLATFORM(QT)
+    if (run.padding() || run.rtl() || isSmallCaps() || wordSpacing() || letterSpacing())
+        return Complex;
+#endif
+
+    // Start from 0 since drawing and highlighting also measure the characters before run->from
+    for (int i = 0; i < run.length(); i++) {
+        const UChar c = run[i];
+        if (c < 0x300) // U+0300 through U+036F Combining diacritical marks
+            continue;
+        if (c <= 0x36F)
+            return Complex;
+
+        if (c < 0x0591 || c == 0x05BE) // U+0591 through U+05CF excluding U+05BE Hebrew combining marks, Hebrew punctuation Paseq, Sof Pasuq and Nun Hafukha
+            continue;
+        if (c <= 0x05CF)
+            return Complex;
+
+        if (c < 0x0600) // U+0600 through U+1059 Arabic, Syriac, Thaana, Devanagari, Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala, Thai, Lao, Tibetan, Myanmar
+            continue;
+        if (c <= 0x1059)
+            return Complex;
+
+        if (c < 0x1100) // U+1100 through U+11FF Hangul Jamo (only Ancient Korean should be left here if you precompose; Modern Korean will be precomposed as a result of step A)
+            continue;
+        if (c <= 0x11FF)
+            return Complex;
+
+        if (c < 0x1780) // U+1780 through U+18AF Khmer, Mongolian
+            continue;
+        if (c <= 0x18AF)
+            return Complex;
+
+        if (c < 0x1900) // U+1900 through U+194F Limbu (Unicode 4.0)
+            continue;
+        if (c <= 0x194F)
+            return Complex;
+
+        if (c < 0x1E00) // U+1E00 through U+2000 characters with diacritics and stacked diacritics
+            continue;
+        if (c <= 0x2000)
+            return SimpleWithGlyphOverflow;
+
+        if (c < 0x20D0) // U+20D0 through U+20FF Combining marks for symbols
+            continue;
+        if (c <= 0x20FF)
+            return Complex;
+
+        if (c < 0xFE20) // U+FE20 through U+FE2F Combining half marks
+            continue;
+        if (c <= 0xFE2F)
+            return Complex;
+    }
+
+    if (typesettingFeatures())
+        return Complex;
+
+    return Simple;
 }
 
 }

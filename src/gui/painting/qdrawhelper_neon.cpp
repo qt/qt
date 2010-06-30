@@ -579,6 +579,49 @@ void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer, int x, int 
     }
 }
 
+void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha)
+{
+    if ((const_alpha & qAlpha(color)) == 255) {
+        QT_MEMFILL_UINT(destPixels, length, color);
+    } else {
+        if (const_alpha != 255)
+            color = BYTE_MUL(color, const_alpha);
+
+        const quint32 minusAlphaOfColor = qAlpha(~color);
+        int x = 0;
+
+        uint32_t *dst = (uint32_t *) destPixels;
+        const uint32x4_t colorVector = vdupq_n_u32(color);
+        uint16x8_t half = vdupq_n_u16(0x80);
+        const uint16x8_t minusAlphaOfColorVector = vdupq_n_u16(minusAlphaOfColor);
+
+        for (; x < length-3; x += 4) {
+            uint32x4_t dstVector = vld1q_u32(&dst[x]);
+
+            const uint8x16_t dst8 = vreinterpretq_u8_u32(dstVector);
+
+            const uint8x8_t dst8_low = vget_low_u8(dst8);
+            const uint8x8_t dst8_high = vget_high_u8(dst8);
+
+            const uint16x8_t dst16_low = vmovl_u8(dst8_low);
+            const uint16x8_t dst16_high = vmovl_u8(dst8_high);
+
+            const uint16x8_t result16_low = qvbyte_mul_u16(dst16_low, minusAlphaOfColorVector, half);
+            const uint16x8_t result16_high = qvbyte_mul_u16(dst16_high, minusAlphaOfColorVector, half);
+
+            const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
+            const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
+
+            uint32x4_t blendedPixels = vcombine_u32(result32_low, result32_high);
+            uint32x4_t colorPlusBlendedPixels = vaddq_u32(colorVector, blendedPixels);
+            vst1q_u32(&dst[x], colorPlusBlendedPixels);
+        }
+
+        for (;x < length; ++x)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+    }
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_HAVE_NEON

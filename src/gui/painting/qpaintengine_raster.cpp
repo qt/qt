@@ -345,7 +345,7 @@ void QRasterPaintEngine::init()
     // The antialiasing raster.
     d->grayRaster.reset(new QT_FT_Raster);
     Q_CHECK_PTR(d->grayRaster.data());
-    if (qt_ft_grays_raster.raster_new(0, d->grayRaster.data()))
+    if (qt_ft_grays_raster.raster_new(d->grayRaster.data()))
         QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
 
@@ -459,13 +459,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     QRasterPaintEngineState *s = state();
     ensureOutlineMapper();
-    d->outlineMapper->m_clip_rect = d->deviceRect.adjusted(-10, -10, 10, 10);
+    d->outlineMapper->m_clip_rect = d->deviceRect;
 
-    // This is the upp
-    QRect bounds(-QT_RASTER_COORD_LIMIT, -QT_RASTER_COORD_LIMIT,
-                 QT_RASTER_COORD_LIMIT*2 - 1, QT_RASTER_COORD_LIMIT * 2 - 1);
-    d->outlineMapper->m_clip_rect = bounds.intersected(d->outlineMapper->m_clip_rect);
-
+    if (d->outlineMapper->m_clip_rect.width() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setWidth(QT_RASTER_COORD_LIMIT);
+    if (d->outlineMapper->m_clip_rect.height() > QT_RASTER_COORD_LIMIT)
+        d->outlineMapper->m_clip_rect.setHeight(QT_RASTER_COORD_LIMIT);
 
     d->rasterizer->setClipRect(d->deviceRect);
 
@@ -2420,7 +2419,9 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
             drawImage(r, image, sr);
         }
     } else {
-        const QImage image = pixmap.toImage();
+        QRect clippedSource = sr.toAlignedRect().intersected(pixmap.rect());
+        const QImage image = pd->toImage(clippedSource);
+        QRectF translatedSource = sr.translated(-clippedSource.topLeft());
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2431,10 +2432,10 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
                 drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
                 return;
             } else {
-                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), sr);
+                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), translatedSource);
             }
         } else {
-            drawImage(r, image, sr);
+            drawImage(r, image, translatedSource);
         }
     }
 }
@@ -2689,7 +2690,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
-        if (s->flags.fast_images) {
+        QRectF targetBounds = s->matrix.mapRect(r);
+        bool exceedsPrecision = targetBounds.width() > 0xffff
+                                || targetBounds.height() > 0xffff;
+
+        if (s->flags.fast_images && !exceedsPrecision) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {
@@ -3789,6 +3794,7 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
          || (qpen_style(s->lastPen) == Qt::NoPen && !s->flags.antialiased))
         && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
+        && !rect.isEmpty()
         && s->matrix.type() <= QTransform::TxScale) // no shear
     {
         ensureBrush();
@@ -4185,7 +4191,11 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         return;
     }
 
-    const int rasterPoolInitialSize = 8192;
+    // Initial size for raster pool is MINIMUM_POOL_SIZE so as to
+    // minimize memory reallocations. However if initial size for
+    // raster pool is changed for lower value, reallocations will
+    // occur normally.
+    const int rasterPoolInitialSize = MINIMUM_POOL_SIZE;
     int rasterPoolSize = rasterPoolInitialSize;
     unsigned char *rasterPoolBase;
 #if defined(Q_WS_WIN64)
@@ -4229,7 +4239,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
         error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
-        if (error == -6) { // -6 is Result_err_OutOfMemory
+        if (error == -6) { // ErrRaster_OutOfMemory from qgrayraster.c
             int new_size = rasterPoolSize * 2;
             if (new_size > 1024 * 1024) {
                 qWarning("QPainter: Rasterization of primitive failed");
@@ -4255,7 +4265,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
             Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
             qt_ft_grays_raster.raster_done(*grayRaster.data());
-            qt_ft_grays_raster.raster_new(0, grayRaster.data());
+            qt_ft_grays_raster.raster_new(grayRaster.data());
             qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
         } else {
             done = true;

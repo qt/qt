@@ -4768,6 +4768,10 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
     CFRelease(thisString);
     CFRelease(otherString);
     return result;
+#elif defined(Q_OS_SYMBIAN)
+    TPtrC p1 = TPtrC16(reinterpret_cast<const TUint16 *>(data1), length1);
+    TPtrC p2 = TPtrC16(reinterpret_cast<const TUint16 *>(data2), length2);
+    return p1.CompareC(p2);
 #elif defined(Q_OS_UNIX)
     // declared in <string.h>
     int delta = strcoll(toLocal8Bit_helper(data1, length1), toLocal8Bit_helper(data2, length2));

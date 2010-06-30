@@ -105,10 +105,6 @@ static void fixEpocRoot(QString &path)
 {
     path.replace("\\", "/");
 
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
     if (!path.size() || path[path.size()-1] != QChar('/')) {
         path += QChar('/');
     }

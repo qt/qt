@@ -170,7 +170,7 @@ public:
 
     int windowSurfaceDestroyPolicy() const { return m_windowSurfaceDestroyPolicy; }
 
-    int memoryUsage() const { return m_memoryUsage; }
+    uint memoryUsage() const { return m_memoryUsage; }
 
 private:
 

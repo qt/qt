@@ -24,6 +24,7 @@
 #include "qscriptdeclarativeclass_p.h"
 #include "qscriptdeclarativeobject_p.h"
 #include "qscriptobject_p.h"
+#include "qscriptstaticscopeobject_p.h"
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptengineagent.h>
@@ -547,6 +548,41 @@ QVariant QScriptDeclarativeClass::toVariant(Object *, bool *ok)
 QScriptContext *QScriptDeclarativeClass::context() const
 {
     return d_ptr->context;
+}
+
+/*!
+  Creates a scope object with a fixed set of undeletable properties.
+*/
+QScriptValue QScriptDeclarativeClass::newStaticScopeObject(
+    QScriptEngine *engine, int propertyCount, const QString *names,
+    const QScriptValue *values, const QScriptValue::PropertyFlags *flags)
+{
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
+    QScript::APIShim shim(eng_p);
+    JSC::ExecState *exec = eng_p->currentFrame;
+    QScriptStaticScopeObject::PropertyInfo *props = new QScriptStaticScopeObject::PropertyInfo[propertyCount];
+    for (int i = 0; i < propertyCount; ++i) {
+        unsigned attribs = QScriptEnginePrivate::propertyFlagsToJSCAttributes(flags[i]);
+        Q_ASSERT_X(attribs & JSC::DontDelete, Q_FUNC_INFO, "All properties must be undeletable");
+        JSC::Identifier id = JSC::Identifier(exec, names[i]);
+        JSC::JSValue jsval = eng_p->scriptValueToJSCValue(values[i]);
+        props[i] = QScriptStaticScopeObject::PropertyInfo(id, jsval, attribs);
+    }
+    QScriptValue result = eng_p->scriptValueFromJSCValue(new (exec)QScriptStaticScopeObject(eng_p->staticScopeObjectStructure,
+                                                                                            propertyCount, props));
+    delete[] props;
+    return result;
+}
+
+/*!
+  Creates a static scope object that's initially empty, but to which new
+  properties can be added.
+*/
+QScriptValue QScriptDeclarativeClass::newStaticScopeObject(QScriptEngine *engine)
+{
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
+    QScript::APIShim shim(eng_p);
+    return eng_p->scriptValueFromJSCValue(new (eng_p->currentFrame)QScriptStaticScopeObject(eng_p->staticScopeObjectStructure));
 }
 
 QT_END_NAMESPACE

@@ -359,11 +359,10 @@ int runMoc(int _argc, char **_argv)
 
 
     if (autoInclude) {
+        int spos = filename.lastIndexOf(QDir::separator().toLatin1());
         int ppos = filename.lastIndexOf('.');
-        moc.noInclude = (ppos >= 0
-                         && tolower(filename[ppos + 1]) != 'h'
-                         && tolower(filename[ppos + 1]) != QDir::separator().toLatin1()
-                        );
+        // spos >= -1 && ppos > spos => ppos >= 0
+        moc.noInclude = (ppos > spos && tolower(filename[ppos + 1]) != 'h');
     }
     if (moc.includeFiles.isEmpty()) {
         if (moc.includePath.isEmpty()) {

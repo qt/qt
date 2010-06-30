@@ -63,6 +63,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QMenu>
+#include <QtGui/QSortFilterProxyModel>
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QComboBox>
 #include <QtGui/QApplication>
@@ -712,9 +713,12 @@ SignalSlotEditorWindow::SignalSlotEditorWindow(QDesignerFormEditorInterface *cor
     m_remove_button(new QToolButton),
     m_core(core),
     m_model(new ConnectionModel(this)),
+    m_proxy_model(new QSortFilterProxyModel(this)),
     m_handling_selection_change(false)
 {
-    m_view->setModel(m_model);
+    m_proxy_model->setSourceModel(m_model);
+    m_view->setModel(m_proxy_model);
+    m_view->setSortingEnabled(true);
     m_view->setItemDelegate(new ConnectionDelegate(this));
     m_view->setEditTriggers(QAbstractItemView::DoubleClicked
                                 | QAbstractItemView::EditKeyPressed);
@@ -790,7 +794,7 @@ void SignalSlotEditorWindow::updateDialogSelection(Connection *con)
     if (m_handling_selection_change || m_editor == 0)
         return;
 
-    QModelIndex index = m_model->connectionToIndex(con);
+    QModelIndex index = m_proxy_model->mapFromSource(m_model->connectionToIndex(con));
     if (index == m_view->currentIndex())
         return;
     m_handling_selection_change = true;
@@ -808,7 +812,7 @@ void SignalSlotEditorWindow::updateEditorSelection(const QModelIndex &index)
     if (m_editor == 0)
         return;
 
-    Connection *con = m_model->indexToConnection(index);
+    Connection *con = m_model->indexToConnection(m_proxy_model->mapToSource(index));
     if (m_editor->selected(con))
         return;
     m_handling_selection_change = true;

@@ -288,7 +288,7 @@ void tst_lupdate::good()
     proc.setWorkingDirectory(workDir);
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.start(m_cmdLupdate + ' ' + lupdatecmd, QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(proc.waitForFinished(5000), qPrintable(lupdatecmd));
+    QVERIFY2(proc.waitForFinished(30000), qPrintable(lupdatecmd));
     QByteArray output = proc.readAll();
     QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
              "\"lupdate " + lupdatecmd.toLatin1() + "\" crashed\n" + output);

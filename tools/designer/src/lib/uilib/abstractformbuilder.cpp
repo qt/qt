@@ -2125,6 +2125,21 @@ void QAbstractFormBuilder::saveComboBoxExtraInfo(QComboBox *comboBox, DomWidget 
     ui_widget->setElementItem(ui_items);
 }
 
+// Return the buttongroups assigned to a button except the internal one
+// (with empty object name) used by Q3ButtonGroup.
+static inline const QButtonGroup *formButtonGroup(const QAbstractButton *widget)
+{
+    const QButtonGroup *buttonGroup = widget->group();
+    if (!buttonGroup)
+        return 0;
+    if (buttonGroup->objectName().isEmpty()) {
+        if (const QWidget *parent = widget->parentWidget())
+            if (!qstrcmp(parent->metaObject()->className(), "Q3ButtonGroup"))
+                return 0;
+    }
+    return buttonGroup;
+}
+
 /*!
     \internal
     \since 4.5
@@ -2133,7 +2148,7 @@ void QAbstractFormBuilder::saveComboBoxExtraInfo(QComboBox *comboBox, DomWidget 
 void QAbstractFormBuilder::saveButtonExtraInfo(const QAbstractButton *widget, DomWidget *ui_widget, DomWidget *)
 {
     typedef QList<DomProperty*> DomPropertyList;
-    if (const QButtonGroup *buttonGroup = widget->group()) {
+    if (const QButtonGroup *buttonGroup = formButtonGroup(widget)) {
         DomPropertyList attributes = ui_widget->elementAttribute();
         DomString *domString = new DomString();
         domString->setText(buttonGroup->objectName());

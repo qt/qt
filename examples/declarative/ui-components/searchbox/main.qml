@@ -41,9 +41,14 @@
 import Qt 4.7
 
 Rectangle {
+    id: page
     width: 500; height: 250
     color: "#edecec"
 
+    MouseArea {
+        anchors.fill: parent
+        onClicked: page.focus = false;
+    }
     Column {
         anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
         spacing: 10

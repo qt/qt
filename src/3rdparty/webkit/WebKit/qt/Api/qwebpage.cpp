@@ -453,6 +453,9 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     WebCore::InitializeLoggingChannelsIfNecessary();
     JSC::initializeThreading();
     WebCore::SecurityOrigin::setLocalLoadPolicy(WebCore::SecurityOrigin::AllowLocalLoadsForLocalAndSubstituteData);
+#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
+    WebCore::Font::setCodePath(WebCore::Font::Complex);
+#endif
 
     chromeClient = new ChromeClientQt(q);
     contextMenuClient = new ContextMenuClientQt();
@@ -766,7 +769,7 @@ void QWebPagePrivate::timerEvent(QTimerEvent *ev)
     if (timerId == tripleClickTimer.timerId())
         tripleClickTimer.stop();
     else
-        q->QObject::timerEvent(ev);
+        q->timerEvent(ev);
 }
 
 void QWebPagePrivate::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
@@ -1175,7 +1178,7 @@ void QWebPagePrivate::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
     Qt::DropAction action = dragOpToDropAction(page->dragController()->dragEntered(&dragData));
     ev->setDropAction(action);
     if (action != Qt::IgnoreAction)
-        ev->accept();
+        ev->acceptProposedAction();
 #endif
 }
 
@@ -1188,7 +1191,7 @@ void QWebPagePrivate::dragEnterEvent(QDragEnterEvent* ev)
     ev->setDropAction(action);
     // We must accept this event in order to receive the drag move events that are sent
     // while the drag and drop action is in progress.
-    ev->accept();
+    ev->acceptProposedAction();
 #endif
 }
 
@@ -1218,7 +1221,7 @@ void QWebPagePrivate::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
     Qt::DropAction action = dragOpToDropAction(page->dragController()->dragUpdated(&dragData));
     ev->setDropAction(action);
     if (action != Qt::IgnoreAction)
-        ev->accept();
+        ev->acceptProposedAction();
 #endif
 }
 
@@ -1232,7 +1235,7 @@ void QWebPagePrivate::dragMoveEvent(QDragMoveEvent* ev)
     ev->setDropAction(action);
     // We must accept this event in order to receive the drag move events that are sent
     // while the drag and drop action is in progress.
-    ev->accept();
+    ev->acceptProposedAction();
 #endif
 }
 
@@ -1242,7 +1245,7 @@ void QWebPagePrivate::dropEvent(QGraphicsSceneDragDropEvent* ev)
     DragData dragData(ev->mimeData(), ev->pos().toPoint(),
             QCursor::pos(), dropActionToDragOp(ev->possibleActions()));
     if (page->dragController()->performDrag(&dragData))
-        ev->accept();
+        ev->acceptProposedAction();
 #endif
 }
 
@@ -1254,7 +1257,7 @@ void QWebPagePrivate::dropEvent(QDropEvent* ev)
     DragData dragData(ev->mimeData(), ev->pos(), QCursor::pos(),
                       dropActionToDragOp(Qt::DropAction(ev->dropAction())));
     if (page->dragController()->performDrag(&dragData))
-        ev->accept();
+        ev->acceptProposedAction();
 #endif
 }
 
@@ -1371,6 +1374,14 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
 }
 
 #ifndef QT_NO_PROPERTIES
+typedef struct {
+    const char* name;
+    double deferredRepaintDelay;
+    double initialDeferredRepaintDelayDuringLoading;
+    double maxDeferredRepaintDelayDuringLoading;
+    double deferredRepaintDelayIncrementDuringLoading;
+} QRepaintThrottlingPreset;
+
 void QWebPagePrivate::dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent* event)
 {
     if (event->propertyName() == "_q_viewMode") {
@@ -1388,7 +1399,42 @@ void QWebPagePrivate::dynamicPropertyChangeEvent(QDynamicPropertyChangeEvent* ev
     } else if (event->propertyName() == "_q_HTMLTokenizerTimeDelay") {
         double timeDelay = q->property("_q_HTMLTokenizerTimeDelay").toDouble();
         q->handle()->page->setCustomHTMLTokenizerTimeDelay(timeDelay);
-    } 
+    } else if (event->propertyName() == "_q_RepaintThrottlingDeferredRepaintDelay") {
+        double p = q->property("_q_RepaintThrottlingDeferredRepaintDelay").toDouble();
+        FrameView::setRepaintThrottlingDeferredRepaintDelay(p);
+    } else if (event->propertyName() == "_q_RepaintThrottlingnInitialDeferredRepaintDelayDuringLoading") {
+        double p = q->property("_q_RepaintThrottlingnInitialDeferredRepaintDelayDuringLoading").toDouble();
+        FrameView::setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(p);
+    } else if (event->propertyName() == "_q_RepaintThrottlingMaxDeferredRepaintDelayDuringLoading") {
+        double p = q->property("_q_RepaintThrottlingMaxDeferredRepaintDelayDuringLoading").toDouble();
+        FrameView::setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(p);
+    } else if (event->propertyName() == "_q_RepaintThrottlingDeferredRepaintDelayIncrementDuringLoading") {
+        double p = q->property("_q_RepaintThrottlingDeferredRepaintDelayIncrementDuringLoading").toDouble();
+        FrameView::setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(p);
+    } else if (event->propertyName() == "_q_RepaintThrottlingPreset") {
+        static const QRepaintThrottlingPreset presets[] = {
+            {   "NoThrottling",     0,      0,      0,      0 },
+            {   "Legacy",       0.025,      0,    2.5,    0.5 },
+            {   "Minimal",       0.01,      0,      1,    0.2 },
+            {   "Medium",       0.025,      1,      5,    0.5 },
+            {   "Heavy",          0.1,      2,     10,      1 }
+        };
+
+        QString p = q->property("_q_RepaintThrottlingPreset").toString();
+        for(int i = 0; i < sizeof(presets) / sizeof(presets[0]); i++) {
+            if(p == presets[i].name) {
+                FrameView::setRepaintThrottlingDeferredRepaintDelay(
+                        presets[i].deferredRepaintDelay);
+                FrameView::setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(
+                        presets[i].initialDeferredRepaintDelayDuringLoading);
+                FrameView::setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(
+                        presets[i].maxDeferredRepaintDelayDuringLoading);
+                FrameView::setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(
+                        presets[i].deferredRepaintDelayIncrementDuringLoading);
+                break;
+            }
+        }
+    }
 #if ENABLE(TILED_BACKING_STORE)
     else if (event->propertyName() == "_q_TiledBackingStoreTileSize") {
         WebCore::Frame* frame = QWebFramePrivate::core(q->mainFrame());
@@ -3267,6 +3313,14 @@ bool QWebPage::findText(const QString &subString, FindFlags options)
         } else
             return d->page->markAllMatchesForText(subString, caseSensitivity, true, 0);
     } else {
+        if (subString.isEmpty()) {
+            d->page->mainFrame()->selection()->clear();
+            Frame* frame = d->page->mainFrame()->tree()->firstChild();
+            while (frame) {
+                frame->selection()->clear();
+                frame = frame->tree()->traverseNextWithWrap(false);
+            }
+        }
         ::FindDirection direction = ::FindDirectionForward;
         if (options & FindBackward)
             direction = ::FindDirectionBackward;

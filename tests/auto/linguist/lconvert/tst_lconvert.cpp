@@ -153,7 +153,7 @@ void tst_lconvert::verifyReadFail(const QString &fn)
 {
     QProcess cvt;
     cvt.start(binDir + "/lconvert", QStringList() << (dataDir + fn));
-    QVERIFY(cvt.waitForFinished(1000));
+    QVERIFY(cvt.waitForFinished(10000));
     QVERIFY(cvt.exitStatus() == QProcess::NormalExit);
     QVERIFY2(cvt.exitCode() == 2, "Accepted invalid input");
 }

@@ -138,6 +138,9 @@ private slots:
     void sizeBeforeRead_data();
     void sizeBeforeRead();
 
+    void sizeBeforeFormat_data();
+    void sizeBeforeFormat();
+
     void imageFormatBeforeRead_data();
     void imageFormatBeforeRead();
 
@@ -704,6 +707,31 @@ void tst_QImageReader::sizeBeforeRead()
     QImage image = reader.read();
     QVERIFY(!image.isNull());
     QCOMPARE(size, image.size());
+}
+
+void tst_QImageReader::sizeBeforeFormat_data()
+{
+    imageFormat_data();
+}
+
+void tst_QImageReader::sizeBeforeFormat()
+{
+    QFETCH(QString, fileName);
+
+    QByteArray formatA, formatB;
+
+    {
+        QImageReader reader(prefix + fileName);
+        formatA = reader.format();
+    }
+
+    {
+        QImageReader reader(prefix + fileName);
+        QSize size = reader.size();
+        formatB = reader.format();
+    }
+
+    QCOMPARE(formatA, formatB);
 }
 
 void tst_QImageReader::imageFormatBeforeRead_data()
@@ -1884,14 +1912,14 @@ void tst_QImageReader::testIgnoresFormatAndExtension()
     QFETCH(QString, expected);
 
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
-    QString fileNameBase = "images/" + name + ".";
+    QString fileNameBase = prefix + name + ".";
 
     foreach (const QByteArray &f, formats) {
         if (f == extension)
             continue;
         QFile tmp(QDir::tempPath() + "/" + name + "_" + expected + "." + f);
 
-        QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath());
+        QVERIFY(QFile::copy(fileNameBase + extension, QFileInfo(tmp).absoluteFilePath()));
 
         QString format;
         QImage image;

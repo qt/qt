@@ -1,0 +1,87 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page tutorials.html
+    \title チュートリアル
+
+    \contentspage How to Learn Qt
+    \nextpage Qt Examples
+
+    \brief Qt の学習を助けるチュートリアルやガイドの概要
+
+    \nextpage Qt Examples
+
+    Qt で提供されているこれらのチュートリアルやガイドは
+    新たに Qt の開発を始めるユーザの良い助けとなります。
+    これらのドキュメントでは ウィジェットの基本的な使い方から始まり
+    ステップバイステップでアプリケーションの使い方を学ぶことが出来ます。
+
+    \table
+    \row
+    \o{2,1} \l{ウィジェットのチュートリアル}{\bold ウィジェット}
+    \o{2,1} \l{チュートリアル: アドレス帳}{\bold {アドレス帳}}
+    \row
+    \o \image widget-examples.png Widgets
+    \o
+    ウィジェットとレイアウトを使って GUI アプリケーションを作成する
+    初心者向けのガイドです。
+
+    \o \image addressbook-tutorial.png AddressBook
+    \o
+    完全な機能を持つアドレス帳アプリケーションを作成する 7 章で構成されたガイドです。
+
+    \row
+    \o{2,1} \l{Qt Designer クイックガイド}{\bold{Qt Designer}}
+    \o{2,1} \l{Qt Linguist Manual: Programmers#Tutorials}{\bold {Qt Linguist}}
+    \row
+    \o \image designer-examples.png QtDesigner
+    \o
+    \QD を使ってフォームを生成する基本的な手順を説明するクイックガイドです。
+
+    \o \image linguist-examples.png QtLinguist
+    \o
+    \l{サンプル: こんにちは tr()}{こんにちは tr()}、
+    \l{サンプル: アローパッド}{アローパッド}、
+    \l{サンプル: トロールプリント}{トロールプリント}
+    の三例を通じて翻訳の方法を説明します。
+
+    \row
+    \o{2,1} \l{QTestLib チュートリアル}{\bold QTestLib}
+    \o{2,1} \l{qmake チュートリアル}{\bold qmake}
+    \row
+    \o{2,1}
+    Qt のユニットテストフレームワークである QTestLib の機能の初歩的な使い方を説明するチュートリアルです。
+    このチュートリアルは4章で構成されています。
+
+    \o{2,1}
+    \c qmake の使い方を説明するチュートリアルです。
+    このチュートリアルを卒業した後は \l{qmake Manual}{qmake user guide}(英語)
+    を読むことをお勧めします。
+
+    \endtable
+*/

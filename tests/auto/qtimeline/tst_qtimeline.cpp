@@ -247,11 +247,7 @@ void tst_QTimeLine::frameRate()
 
 void tst_QTimeLine::value()
 {
-#ifdef Q_OS_WINCE //On WinCE timer resolution is bad - use longer times
     QTimeLine timeLine(2000);
-#else
-    QTimeLine timeLine(200);
-#endif
     QVERIFY(timeLine.currentValue() == 0.0);
 
     // Default speed
@@ -270,19 +266,11 @@ void tst_QTimeLine::value()
     timeLine.setCurrentTime(100);
     timeLine.start();
     // Let it update on its own
-#ifdef Q_OS_WINCE
     QTest::qWait(500);
-#else
-    QTest::qWait(50);
-#endif
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     qreal value = timeLine.currentValue();
     timeLine.setDirection(QTimeLine::Backward);
-#ifdef Q_OS_WINCE
     QTest::qWait(1000);
-#else
-    QTest::qWait(100);
-#endif
     QVERIFY(timeLine.currentValue() < value);
     timeLine.stop();
 }

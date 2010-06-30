@@ -65,8 +65,10 @@ test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 cd "$OUTDIR/$TEST"
 
 test -r Makefile && $MAKE distclean >/dev/null 2>&1
+# Make sure output from possible previous tests is gone
+rm -f "$EXE" "${EXE}.exe"
 
-"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
+"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "CONFIG-=debug_and_release" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 
 if [ "$VERBOSE" = "yes" ]; then
     $MAKE
@@ -74,7 +76,7 @@ else
     $MAKE >/dev/null 2>&1
 fi
 
-[ -x "$EXE" ] && SUCCESS=yes
+( [ -x "$EXE" ] || [ -x "${EXE}.exe" ] ) && SUCCESS=yes
 
 # done
 if [ "$SUCCESS" != "yes" ]; then

@@ -358,17 +358,7 @@ bool QAudioOutputPrivate::open()
     // Set stream format
     streamFormat = toAudioStreamBasicDescription(audioFormat);
 
-    UInt32 size = sizeof(deviceFormat);
-    if (AudioUnitGetProperty(audioUnit,
-                                kAudioUnitProperty_StreamFormat,
-                                kAudioUnitScope_Input,
-                                0,
-                                &deviceFormat,
-                                &size) != noErr) {
-        qWarning() << "QAudioOutput: Unable to retrieve device format";
-        return false;
-    }
-
+    UInt32 size = sizeof(streamFormat);
     if (AudioUnitSetProperty(audioUnit,
                                 kAudioUnitProperty_StreamFormat,
                                 kAudioUnitScope_Input,
@@ -392,8 +382,7 @@ bool QAudioOutputPrivate::open()
         return false;
     }
 
-    periodSizeBytes = (numberOfFrames * streamFormat.mSampleRate / deviceFormat.mSampleRate) * 
-                        streamFormat.mBytesPerFrame;
+    periodSizeBytes = numberOfFrames * streamFormat.mBytesPerFrame;
     if (internalBufferSize < periodSizeBytes * 2)
         internalBufferSize = periodSizeBytes * 2;
     else

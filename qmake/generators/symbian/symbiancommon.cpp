@@ -433,9 +433,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
                 if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
                     from = from.mid(2);
                 from.prepend(zDir);
-            } else {
-                if (from.size() > 1 && from.at(1) == QLatin1Char(':'))
-                    from = from.mid(2);
             }
         }
 

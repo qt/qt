@@ -183,18 +183,15 @@ static void calcLineBreaks(const HB_UChar16 *uc, hb_uint32 len, HB_CharAttribute
         if (ncls >= HB_LineBreak_CR)
             goto next;
 
-        // two complex chars (thai or lao), thai_attributes might override, but here we do a best guess
-	if (cls == HB_LineBreak_SA && ncls == HB_LineBreak_SA) {
-            lineBreakType = HB_Break;
-            goto next;
-        }
-
         {
             int tcls = ncls;
+            // for south east asian chars that require a complex (dictionary analysis), the unicode
+            // standard recommends to treat them as AL. thai_attributes and other attribute methods that
+            // do dictionary analysis can override
             if (tcls >= HB_LineBreak_SA)
-                tcls = HB_LineBreak_ID;
+                tcls = HB_LineBreak_AL;
             if (cls >= HB_LineBreak_SA)
-                cls = HB_LineBreak_ID;
+                cls = HB_LineBreak_AL;
 
             int brk = breakTable[cls][tcls];
             switch (brk) {

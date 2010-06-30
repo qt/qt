@@ -50,6 +50,11 @@
 
 #define SERVER_PORT 14450
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 inline QUrl TEST_FILE(const QString &filename)
 {
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);

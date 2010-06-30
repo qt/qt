@@ -271,7 +271,6 @@ bool QMngHandlerPrivate::getNextImage(QImage *result)
     }
     if ((MNG_NOERROR == ret) || (MNG_NEEDTIMERWAIT == ret)) {
         *result = image;
-        image.fill(0);
         frameIndex = nextIndex++;
         if (haveReadAll && (frameCount == 0))
             frameCount = nextIndex;
@@ -381,10 +380,10 @@ QMngHandler::~QMngHandler()
 bool QMngHandler::canRead() const
 {
     Q_D(const QMngHandler);
-    if (!d->haveReadNone)
-	return (!d->haveReadAll || (d->haveReadAll && (d->nextIndex < d->frameCount)));
-
-    if (canRead(device())) {
+    if ((!d->haveReadNone
+         && (!d->haveReadAll || (d->haveReadAll && (d->nextIndex < d->frameCount))))
+        || canRead(device()))
+    {
         setFormat("mng");
         return true;
     }

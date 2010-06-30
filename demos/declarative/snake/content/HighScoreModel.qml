@@ -106,7 +106,7 @@ ListModel {
                     }
                     if (rs.rows.length > maxScores)
                         tx.executeSql("DELETE FROM HighScores WHERE game=? AND score <= ?",
-                                            [rs.rows.item(maxScores).score]);
+                                            [game, rs.rows.item(maxScores).score]);
                 }
             }
         )

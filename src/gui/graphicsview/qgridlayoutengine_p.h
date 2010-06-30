@@ -363,8 +363,8 @@ public:
     QGridLayoutItem *itemAt(int row, int column, Qt::Orientation orientation = Qt::Vertical) const;
     inline void insertRow(int row, Qt::Orientation orientation = Qt::Vertical)
         { insertOrRemoveRows(row, +1, orientation); }
-    inline void removeRow(int row, Qt::Orientation orientation = Qt::Vertical)
-        { insertOrRemoveRows(row, -1, orientation); }
+    inline void removeRows(int row, int count, Qt::Orientation orientation)
+        { insertOrRemoveRows(row, -count, orientation); }
 
     void invalidate();
     void setGeometries(const QLayoutStyleInfo &styleInfo, const QRectF &contentsGeometry);

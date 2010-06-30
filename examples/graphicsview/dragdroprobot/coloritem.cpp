@@ -76,7 +76,7 @@ void ColorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 //! [2]
 
 //! [3]
-void ColorItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void ColorItem::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
     setCursor(Qt::ClosedHandCursor);
 }

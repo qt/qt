@@ -81,7 +81,6 @@
 
 QT_FT_BEGIN_HEADER
 
-
   /*************************************************************************/
   /*                                                                       */
   /* <Section>                                                             */
@@ -837,7 +836,7 @@ QT_FT_BEGIN_HEADER
   /*    A handle (pointer) to a raster object.  Each object can be used    */
   /*    independently to convert an outline into a bitmap or pixmap.       */
   /*                                                                       */
-  typedef struct QT_FT_RasterRec_*  QT_FT_Raster;
+  typedef struct TRaster_ *QT_FT_Raster;
 
 
   /*************************************************************************/
@@ -1118,8 +1117,7 @@ QT_FT_BEGIN_HEADER
   /*    ignored by a given raster implementation.                          */
   /*                                                                       */
   typedef int
-  (*QT_FT_Raster_NewFunc)( void*       memory,
-                        QT_FT_Raster*  raster );
+  (*QT_FT_Raster_NewFunc)( QT_FT_Raster*  raster );
 
 #define  QT_FT_Raster_New_Func    QT_FT_Raster_NewFunc
 

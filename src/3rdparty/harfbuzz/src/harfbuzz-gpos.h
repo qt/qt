@@ -44,6 +44,7 @@ HB_BEGIN_HEADER
 #define HB_GPOS_LOOKUP_CHAIN      8
 #define HB_GPOS_LOOKUP_EXTENSION  9
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
 /* A pointer to a function which accesses the PostScript interpreter.
    Multiple Master fonts need this interface to convert a metric ID
    (as stored in an OpenType font version 1.2 or higher) `metric_id'
@@ -59,6 +60,7 @@ typedef HB_Error  (*HB_MMFunction)(HB_Font       font,
 				    HB_UShort    metric_id,
 				    HB_Fixed*      metric_value,
 				    void*        data );
+#endif
 
 
 struct  HB_GPOSHeader_
@@ -71,12 +73,14 @@ struct  HB_GPOSHeader_
 
   HB_GDEFHeader*    gdef;
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
   /* this is OpenType 1.2 -- Multiple Master fonts need this
      callback function to get various metric values from the
      PostScript interpreter.                                 */
 
   HB_MMFunction     mmfunc;
   void*              data;
+#endif
 };
 
 typedef struct HB_GPOSHeader_  HB_GPOSHeader;
@@ -129,9 +133,11 @@ HB_Error  HB_GPOS_Add_Feature( HB_GPOSHeader*  gpos,
 HB_Error  HB_GPOS_Clear_Features( HB_GPOSHeader*  gpos );
 
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
 HB_Error  HB_GPOS_Register_MM_Function( HB_GPOSHeader*  gpos,
 					HB_MMFunction   mmfunc,
 					void*            data );
+#endif
 
 /* If `dvi' is TRUE, glyph contour points for anchor points and device
    tables are ignored -- you will get device independent values.         */

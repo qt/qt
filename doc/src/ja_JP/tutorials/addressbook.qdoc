@@ -1,0 +1,1056 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page tutorials-addressbook.html
+
+    \title チュートリアル: アドレス帳
+    \brief シンプルだが、完全な機能を持つアプリケーションの作成を通じた
+    GUI プログラミングへの導入。
+
+    このチュートリアルでは、Qt クロスプラットフォームフレームワークを使用した
+    GUI プログラミングの概要について説明しています。
+
+    \image addressbook-tutorial-screenshot.png
+
+    \omit
+    It doesn't cover everything; the emphasis is on teaching the programming
+    philosophy of GUI programming, and Qt's features are introduced as needed.
+    Some commonly used features are never used in this tutorial.
+    \endomit
+
+    このチュートリアルでは以下に示す Qt の基本的な機能を学ぶことが出来ます:
+
+    \list
+    \o ウィジェットとレイアウトマネージャ
+    \o コンテナクラス
+    \o シグナル/スロット
+    \o 入力デバイスと出力デバイス
+    \endlist
+
+    Qt を初めて利用する方は、最初に \l{How to Learn Qt} をご覧ください。
+
+    チュートリアルの目次:
+
+    \list 1
+    \o \l{tutorials/addressbook/part1}{ユーザインターフェースの設計}
+    \o \l{tutorials/addressbook/part2}{アドレスの追加}
+    \o \l{tutorials/addressbook/part3}{項目間のナビゲーション}
+    \o \l{tutorials/addressbook/part4}{アドレスの編集と削除}
+    \o \l{tutorials/addressbook/part5}{検索機能の追加}
+    \o \l{tutorials/addressbook/part6}{読み込みと保存}
+    \o \l{tutorials/addressbook/part7}{その他の機能}
+    \endlist
+
+    このチュートリアルのソースコードは、Qt の 
+    \c examples/tutorials/addressbook ディレクトリに置かれています。
+
+    この小さなアプリケーションは本格的な最新の GUI
+    アプリケーションのようには見えませんが、
+    複雑なアプリケーションで使用される多くの基本的な技術が採用されています。
+    このチュートリアルが終わったら、
+    メニューやツールバー、ステータスバーなどを表示する
+    小さな GUI アプリケーションである
+    \l{mainwindows/application}{Application}
+    のサンプルをチェックすることをお勧めします。
+
+*/
+
+/*!
+    \page tutorials-addressbook-part1.html
+
+    \example tutorials/addressbook/part1
+    \title 第1章 - ユーザインターフェースのデザイン
+
+    本チュートリアルの第1章では
+    アドレス帳アプリケーションで使用する基本的なインターフェース
+    (GUI) の設計について説明します。
+
+    GUI プログラム作成の最初のステップは、
+    ユーザインターフェースを設計することです。
+    本章の目標は、基本的なアドレス帳アプリケーションを実装するのに必要な
+    ラベルと入力フィールドを設定することです。
+    下図は、ここで作成しようとしているアドレス帳のスクリーンショットです。
+
+    \image addressbook-tutorial-part1-screenshot.png
+
+    ユーザがアドレス帳に名前や住所を入力できるようにするには、
+    2つの QLabel のオブジェクトである \c nameLabel 及び \c addressLabel と、
+    入力フィールドとして QLineEdit オブジェクトの \c nameLine と
+    QTextEdit オブジェクトの \c addressText が必要です。
+    使用するウィジェットとその配置は下図に示してあります。
+
+    \image addressbook-tutorial-part1-labeled-screenshot.png
+
+    以下の3つのファイルを使用してこのアドレス帳を実装します:
+
+    \list
+	\o \c{addressbook.h} - \c AddressBook クラスを宣言するファイル、
+	\o \c{addressbook.cpp} - \c AddressBook クラスを実装するファイル、
+	\o \c{main.cpp} - \c AddressBook クラスのインスタンスを持つ
+	   \c main() 関数を含むファイル。
+    \endlist
+
+    \section1 Qt プログラミング - 派生クラスの作成
+
+    Qt プログラムを作成する際は、
+    通常 Qt オブジェクトの派生クラスを作成して機能を追加します。
+    これは、カスタムウィジットや標準的なウィジェットの集合体を作成する場合の
+    重要なコンセプトの1つです。
+    ウィジェットの挙動の拡張や変更のために派生クラスを作成することには
+    以下のような利点があります:
+
+    \list
+    \o 仮想関数または純粋仮想関数の実装を行って要求される機能を実装できます。
+       必要によっては基底クラスの実装にフォールバックして利用できます。
+
+    \o これにより、アプリケーションのその他の部分が
+       ユーザインターフェースの個々のウィジェットを指定する必要がないよう、
+       ユーザインターフェースの一部をクラス内にカプセル化できます。
+
+    \o 派生クラスは、同一のアプリケーションまたはライブラリに
+       複数のカスタムウィジットを作成するために使用できます。
+       また、派生クラスのコードは、他のプロジェクトで再利用可能です。
+
+    \endlist
+
+    Qt ではアドレス帳ウィジェットを提供していないため、
+    標準的な Qt ウィジェットクラスを継承して機能を追加します。
+    本チュートリアルで作成する \c AddressBook クラスは、
+    基本的なアドレス帳ウィジェットが必要な場合に再利用できます。
+
+    \section1 AddressBook クラスの宣言
+
+    \l{tutorials/addressbook/part1/addressbook.h}{\c addressbook.h}
+    ファイルは、 \c AddressBook クラスを宣言するために使用します。
+
+    ここでは \c AddressBook を QWidget の派生クラスとし、
+    コンストラクタを宣言することから始めます。
+    また、 Q_OBJECT マクロを使用して、クラスで多言語化機能及び、
+    Qt のシグナル/スロット機能が使われていることを示します。
+    ただし、現段階ではこれらの機能の全てを使わない場合もあります。
+
+    \snippet tutorials/addressbook/part1/addressbook.h class definition
+
+    クラスは、 前述した QLineEdit と QTextEdit のプライベートなインスタンス
+    \c nameLine と \c addressText の宣言を保有します。
+    後述の章で、 \c nameLine 及び \c addressText に保存したデータが、
+    多くのアドレス帳の機能で必要になることがわかるでしょう。
+
+    我々が使用する QLabel オブジェクトは、
+    一旦作成すると後で参照する必要がないため、宣言する必要はありません。
+    Qt でオブジェクトの所有権を追跡する方法については、次節で説明します。
+
+    Q_OBJECT マクロ自体は、Qt のより高度な機能を実装します。
+    ここでは、 Q_OBJECT マクロを、 \l{QObject::}{tr()} 及び
+    \l{QObject::}{connect()} 関数を使用可能にする
+    ショートカットとみなしたほうが良いでしょう。
+
+    これで、 \c addressbook.h ファイルが完成しました。
+    次は対応する \c addressbook.cpp ファイルの実装を行います。
+
+    \section1 AddressBook クラスの実装
+
+    \c AddressBook のコンストラクタは、 \a{parent} パラメータとして
+    QWidget を受け取ります。
+    慣例により、このパラメータを基底クラスのコンストラクタに渡します。
+    親が複数の子を所有できるというこの所有概念は、
+    Qt でウィジェットのグループ化を行う場合に有用です。
+    例えば、親を削除すると、親に属する子も全て削除されます。
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp constructor and input fields
+
+    このコンストラクタ内で、 \c nameLine と \c addressText のインスタンスを生成し、
+    2つのローカル QLabel オブジェクトの \c nameLabel と \c addressLabel
+    を宣言し、そのインスタンスを生成します。
+    \l{QObject::tr()}{tr()} 関数は、
+    翻訳した文字列が存在する場合にそれを返します。
+    そうでない場合は、引数の文字列自体を返します。
+    この関数は文字列が他の言語に翻訳されるようにマークする役目を持ちます。
+    翻訳可能な文字列を使用するたびに、マークしてください。
+
+    Qt を使用してプログラミングを行う場合、
+    レイアウトが機能する仕組みを理解していると便利です。
+    Qt は主に、以下の3つのレイアウトクラスを提供します。
+    ウィジェットの配置を処理するための QHBoxLayout 、 QVBoxLayout 及び
+    QGridLayout です。
+
+    \image addressbook-tutorial-part1-labeled-layout.png
+
+    ここでは、 QGridLayout を使って、
+    ラベルと入力フィールドを配置します。
+    QGridLayout は、有効なスペースを格子状に分割し、
+    行/列番号により指定するセルに、ウィジェットを配置します。
+    上図は、レイアウトセルとウィジェットの位置を示しており、
+    以下のコードを使用して、この配置を指定します:
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp layout
+
+    \c addressLabel は、追加引数として Qt::AlignTop を用いて配置されていることに注意してください。
+    これは、セル(1,0) で縦方向の中央に配置されないようにするためです。
+    Qt のレイアウトにおける基本概念については、
+    \l{Layout Management} のドキュメントをご覧ください。
+
+    ウィジェットにレイアウトオブジェクトをインストールするには、
+    ウィジェットの \l{QWidget::setLayout()}{setLayout()}
+    関数を呼び出す必要があります。
+
+    \snippet tutorials/addressbook/part1/addressbook.cpp setting the layout
+
+    最後に、ウィジェットのタイトルを "Simple Address Book" とします。
+
+    \section1 アプリケーションを実行する
+
+    別のファイル \c main.cpp に、 \c main() 関数に実装します。
+    この関数内で、QApplication である \c app のインスタンスを生成します。
+    QApplication は、既定のフォントやカーソルなど
+    アプリケーションに共通な複数のリソース及び、
+    イベントループの実行に関与しています。
+    従って、Qt を使用する全ての GUI アプリケーションでは、
+    必ず QApplication が存在します。
+
+    \snippet tutorials/addressbook/part1/main.cpp main function
+
+    スタックに新しい \c AddressBook ウィジェットを生成し、
+    \l{QWidget::show()}{show()} 関数を呼び出して表示します。
+    ただし、ウィジェットはアプリケーションのイベントループが
+    開始されるまで表示されません。
+    アプリケーションの \l{QApplication::}{exec()} 関数を呼び出して、
+    イベントループを開始します。
+    この関数により返された結果は、 \c main() 関数の戻り値として使用されます。
+    この時点で、スタックで \c AddressBook
+    をインスタンス化した理由が明らかになります。
+    イベントループが終了すると \c main() 関数のスコープの外に移動します。
+    それに伴って \c AddressBook 及び、
+    これに属する全ての子ウィジェットが削除されるため、
+    メモリリークを防ぐことができます。
+*/
+
+/*!
+    \page tutorials-addressbook-part2.html
+
+    \example tutorials/addressbook/part2
+    \title 第2章 - アドレスの追加
+
+    基本的なアドレス帳アプリケーションを作成するための次の手順は、
+    ユーザからの操作を可能にすることです。
+
+    \image addressbook-tutorial-part2-add-contact.png
+
+    新しい連絡先を追加するために、
+    ユーザがクリックするプッシュボタンを作成します。
+    また、これらの連絡先を整理して保存するために、
+    何らかのデータ構造が必要になります。
+
+    \section1 AddressBook クラスの宣言
+
+    ラベルと入力フィールドの設定が完了しているため、
+    連絡先を追加する際に必要なプッシュボタンを追加します。
+    \c addressbook.h ファイルに、
+    3つの QPushButton オブジェクトを宣言し、
+    対応する3つの public slot を作成します。
+
+    \snippet tutorials/addressbook/part2/addressbook.h slots
+
+    スロットとは特定のシグナルに応答して呼び出される関数をいいます。
+    このコンセプトについては、 \c AddressBook
+    クラスを実装する際にさらに詳細に取り上げます。
+    なお、Qt のシグナル/スロットのコンセプトの概要については、
+    \l{Signals and Slots} のドキュメントを参照してください。 
+
+    3つの QPushButton オブジェクト \c addButton 、 \c submitButton 、
+    \c cancelButton は、前章の \c nameLine と \c addressText とともに、
+    プライベート変数宣言に含まれています。
+
+    \snippet tutorials/addressbook/part2/addressbook.h pushbutton declaration
+
+    アドレス帳の連絡先を横断して表示するには、
+    連絡先保持用のコンテナが必要です。
+    QMap のオブジェクトである \c contacts をこの目的に使用します。
+    \c contacts にはキーとして連絡先の名前 \e key
+    とそれに対応する値として連絡先の住所 \e value を格納します。
+
+    \snippet tutorials/addressbook/part2/addressbook.h remaining private variables
+
+    QString の2つのプライベートオブジェクトとして \c oldName と \c oldAddress
+    も宣言します。
+    これらのオブジェクトは、ユーザが \gui Add
+    をクリックする前に最後に表示した連絡先の名前と住所が含まれている必要があります。
+    ユーザが \gui Cancel
+    をクリックすると、最後に表示した連絡先の詳細に戻って表示することが出来ます。
+
+    \section1 AddressBook クラスの実装
+
+    \c AddressBook のコンストラクタ内で、連絡先の詳細を編集することなく
+    表示のみを行えるよう、 \c nameLine と \c addressText
+    を読み取り専用に設定します。
+
+    \dots
+    \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 1
+    \dots
+    \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 2
+
+    次に、プッシュボタン \c addButton 、 \c submitButton 、 \c cancelButton
+    のインスタンスを生成します。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp pushbutton declaration
+
+    \c addButton を、 \l{QPushButton::show()} 関数を呼び出して表示します。
+    \c submitButton と \c cancelButton は、
+    \l{QPushButton::hide()}{hide()} を呼び出して非表示にします。
+    これら2つのプッシュボタンはユーザが \gui Add 
+    をクリックした場合にのみ表示され、後に説明する
+    \c addContact() によって処理されます。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
+
+    各プッシュボタンの \l{QPushButton::clicked()}{clicked()} を、
+    それぞれのスロットに接続します。
+    下図はこれを説明したものです。
+
+    \image addressbook-tutorial-part2-signals-and-slots.png
+
+    次に、 QVBoxLayout を使用して、
+    アドレス帳ウィジェットの右側にプッシュボタンを
+    上下一列に配置します。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp vertical layout
+
+    \l{QBoxLayout::addStretch()}{addStretch()} 関数は、
+    プッシュボタンを等間隔に並べるのではなく、
+    ウィジェット上部に近づけて配置するために使用します。
+    下図は、\l{QBoxLayout::addStretch()}{addStretch()} を使用した場合と、
+    使用しない場合の違いを示しています。
+
+    \image addressbook-tutorial-part2-stretch-effects.png
+
+    次に、\l{QGridLayout::addLayout()}{addLayout()} を使用して、
+    \c buttonLayout1 を \c mainLayout に追加します。
+    \c buttonLayout1 は \c mainLayout の子となり、
+    レイアウトが入れ子になりました。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp grid layout
+
+    レイアウトの配置は以下のようになります:
+
+    \image addressbook-tutorial-part2-labeled-layout.png
+
+    \c addContact() では、最後に表示した連絡先の詳細を、
+    \c oldName と \c oldAddress に保存します。
+    次に、これらの入力フィールドをクリアし、読み取り専用モードを解除します。
+    \c nameLine にフォーカスをセットして、 \c submitButton と \c cancelButton を表示します。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp addContact
+
+    \c submitContact() 関数は、以下の次の3つの要素から成ります:
+
+    \list 1
+
+    \o \c nameLine 及び \c addressText から連絡先の詳細を抽出し、
+    QString オブジェクトに保存します。
+    また、ユーザが入力フィールドに何も入力せずに 
+    \gui Submit をクリックしないよう確認します。
+    どちらかのフィールドが空であれば、ユーザに名前と住所の入力を求める
+    QMessageBox が表示されます。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
+
+    \o 続けて、連絡先が既に存在するかどうか確認します。
+    存在しない場合は \c contacts に連絡先を追加して QMessageBox を表示し、
+    連絡先が追加されたことをユーザに知らせます。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part2
+
+    連絡先が既に存在する場合、 QMessageBox を表示し、
+    連絡先が重複して追加されないように
+    連絡先が存在することをユーザに知らせます。
+    \c contacts オブジェクトは、名前と住所のキー値のペアで構成されているため、
+    \e key が一意であることを確認します。
+
+    \o 上記の両方の事例に対処したら、
+    以下のコードを使ってプッシュボタンを通常の状態に戻します:
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part3
+
+    \endlist
+
+    以下のスクリーンショットは、ユーザに情報メッセージを表示するために使用する
+    QMessageBox オブジェクトです。
+
+    \image addressbook-tutorial-part2-add-successful.png
+
+    \c cancel() 関数は、最後に表示した連絡先の詳細を復元して
+    \c addButton を有効にし、 \c submitButton と \c cancelButton
+    を非表示にします。
+
+    \snippet tutorials/addressbook/part2/addressbook.cpp cancel
+
+    連絡先を追加する際の概念は、ユーザがいつでも自由に
+    \gui{送信} または \gui{キャンセル} をクリックできるようにすることです。
+    以下のフローチャートは、この概念を詳細に説明しています:
+
+    \image addressbook-tutorial-part2-add-flowchart.png
+*/
+
+/*!
+    \page tutorials-addressbook-part3.html
+
+    \example tutorials/addressbook/part3
+    \title 第3章 - 項目間のナビゲーション
+
+    アドレス帳アプリケーションは、半分完成しました。
+    次に表示する連絡先を変更するために、いくつかの関数を追加します。
+    しかし、最初に、これらの連絡先を保存するために使用するデータ構造の種類を決める必要があります。
+
+    第2章では、連絡先の名前 \e key 及び、連絡先の住所 \e value
+    の鍵と値のペアで QMap を使用しました。
+    これは、この事例で使用するのに適した構造です。
+    ただし、各項目間を移動して表示するには、多少の機能拡張が必要です。
+
+    QMap を、最初の要素と最後の要素を含むすべての要素が接続された
+    循環リストに似たデータ構造に、機能拡張します。
+    下図はこのデータ構造を説明したものです。
+
+    \image addressbook-tutorial-part3-linkedlist.png
+
+    \section1 AddressBook クラスの宣言
+
+    アドレス帳アプリケーションにナビゲーション機能を追加するには、
+    \c AddressBook クラスに2つのスロットを追加する必要があります。
+    next() 及び \c previous() を
+    \c addressbook.h ファイルに追加します。
+
+    \snippet tutorials/addressbook/part3/addressbook.h navigation functions
+
+    また、新たに2つの QPushButton オブジェクトが必要になります。
+    プライベート変数として
+    \c nextButton と \c previousButton を宣言します。
+
+    \snippet tutorials/addressbook/part3/addressbook.h navigation pushbuttons
+
+    \section1 AddressBook クラスの実装
+
+    \c addressbook.cpp の \c AddressBook コンストラクタでは、
+    \c nextButton と \c previousButton のインスタンスを生成し
+    初期設定で無効にします。
+    これは、アドレス帳に複数の連絡先が存在しない場合、
+    ナビゲーションを有効にしないためです。
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp navigation pushbuttons
+
+    これらのプッシュボタンを、それぞれスロットに接続します:
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
+
+    以下の画像は、ここで作成しようとしている
+    グラフィカルユーザインターフェースです。
+    最終アプリケーションが完成間近であることがわかるでしょう。
+
+    \image addressbook-tutorial-part3-screenshot.png
+
+    \c next() と \c previous() では基本的な規約に従って、
+    \c nextButton を右側に、 \c previousButton を左側に配置します。
+    直感的でわかりやすいレイアウトに仕上げるために、
+    QHBoxLayout を使用してウィジェットを横に並べて配置します:
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp navigation layout
+
+    次に、 \c mainLayout に、QHBoxLayout のオブジェクトである
+    \c buttonLayout2 を追加します。
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp adding navigation layout
+
+    下図は、 \c mainLayout のウィジェットの配置を示します。
+    \image addressbook-tutorial-part3-labeled-layout.png
+
+    \c addContact() 関数内部では、
+    ユーザが連絡先を追加しているときに移動しないよう、
+    これらのボタンを無効にする必要があります。
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp disabling navigation
+
+    また、 \c submitContact() 関数では、 \c contacts のサイズに応じて、
+    ナビゲーションボタン \c nextButton 及び \c previousButton を有効にします。
+    前述のように、アドレス帳に複数の連絡先が存在しない場合は、
+    ナビゲーションを有効にできません。
+    以下のコードは、その処理方法を示しています。
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp enabling navigation
+
+    \c cancel() 関数にも、これらの処理を含めます。
+
+    ここで、QMap のオブジェクト \c contacts を使って、
+    循環リストをエミュレートしましょう。
+    \c next() 関数で、 \c contacts のイテレータを作成し、次に:
+
+    \list
+	\o イテレータが \c contacts の末尾にない場合は、次の項目に移動します。
+
+	\o イテレータが \c contacts の末尾にある場合は、
+	\c contacts の先頭に移動します。
+	これによって、QMap が循環リストのように機能するという印象を与えます。
+    \endlist
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp next() function
+
+    \c contacts 内の正しいオブジェクトに移動したら、
+    \c nameLine と \c addressText に内容を表示します。
+
+    同様に、 \c previous() 関数で、 \c contacts のイテレータを作成し、次に:
+    \list
+	\o イテレータが \c contacts の末尾にある場合は、
+	表示をクリアして戻ります。
+ 
+	\o イテレータが \c contacts の先頭にある場合は、末尾に移動します。
+ 
+	\o イテレータを直前の項目に移動します。
+    \endlist
+
+    \snippet tutorials/addressbook/part3/addressbook.cpp previous() function
+
+    もう一度、 \c contacts に現在のオブジェクトの内容を表示します。
+*/
+
+/*!
+    \page tutorials-addressbook-part4.html
+
+    \example tutorials/addressbook/part4
+    \title 第4章 - アドレスの編集と削除
+
+    本章では、アドレス帳アプリケーションに保存されている
+    連絡先の内容を変更する方法について説明します。
+
+    \image addressbook-tutorial-screenshot.png
+
+    ここでは、連絡先を整理して保存するだけでなく、
+    ナビゲーションが可能なアドレス帳を作成します。
+    必要に応じて連絡先の詳細を変更できるよう、
+    編集・削除機能を追加すると便利です。
+    ただし、列挙型書式の若干の改善が必要になります。
+    前章では、次の2つのモードを扱いました:
+    \c AddingMode 及び \c NavigationMode -
+    ただし、これらは列挙型として定義しませんでした。
+    代わりに、対応するボタンを手動で有効または無効にし、
+    複数行のコードを繰り返します。
+
+    本章では、以下のような2つの異なる値を持つ \c Mode 列挙型を定義します:
+
+    \list
+    \o \c{NavigationMode}
+    \o \c{AddingMode}
+    \o \c{EditingMode}
+    \endlist
+
+    \section1 AddressBook クラスの宣言
+
+    \c addressbook.h ファイルをアップデートし、 \c Mode 列挙型を追加します:
+
+    \snippet tutorials/addressbook/part4/addressbook.h Mode enum
+
+    また、public slot として2つの新しいスロット
+    \c editContact() 及び \c removeContact() を追加します。
+
+    \snippet tutorials/addressbook/part4/addressbook.h edit and remove slots
+
+    モードを切り替えるために、すべての QPushButton オブジェクトの
+    有効化/無効化を制御する \c updateInterface() 関数を導入します。
+    また、前述の編集と削除を行うスロット用に、2つの新しいボタン
+    \c editButton 及び \c removeButton を追加します。
+
+    \snippet tutorials/addressbook/part4/addressbook.h updateInterface() declaration
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.h buttons declaration
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.h mode declaration
+
+    最後に、現在のモードを保持する列挙型の \c currentMode を宣言します。
+
+    \section1 AddressBook クラスの実装
+
+    ここで、アドレス帳アプリケーションのモード変更機能を実装する必要があります。
+    アドレス帳をはじめて起動するときは、
+    メモリに連絡先が保存されていないため、
+    コンストラクタでは、 \c editButton 及び \c removeButton
+    のインスタンスの生成と無効化を行います。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp edit and remove buttons
+
+    また、ボタンをそれぞれのスロット \c editContact() 及び \c removeContact()
+    に接続し、 \c buttonLayout1 に追加します。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp connecting edit and remove
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.cpp adding edit and remove to the layout
+
+    \c editContact() は、モードを \c EditingMode に切り替える前に、
+    連絡先の古い詳細情報を、 \c oldName と \c oldAddress に保存します。
+    このモードでは、 \c submitButton と \c cancelButton
+    の両方が有効になるため、ユーザは連絡先の詳細を変更し、
+    どちらか一方のボタンをクリックできます。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp editContact() function
+
+    \c submitContact() 関数は、 \c{if-else} ステートメントにより、
+    2つの処理に分割しています。
+    \c currentMode が \c AddingMode であるかどうかを確認します。
+    その場合、連絡先追加の処理を行います。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function beginning
+    \dots
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function part1
+
+    \c AddingMode でない場合、 \c currentMode が \c EditingMode
+    であるかどうか確認します。
+    その場合、 \c oldName を \c name と比較します。
+    名前を変更した場合、 \c contacts から古い連絡先を削除し、
+    新たに更新した連絡先を挿入します。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp submitContact() function part2
+
+    住所のみを変更した場合 (たとえば、 \c oldAddress は \c address と異なる)、
+    連絡先の住所を更新します。
+    最後に、 \c currentMode を \c NavigationMode に設定します。
+    これは、無効にしたプッシュボタンをすべて再び有効にするための重要なステップです。
+
+    アドレス帳から連絡先の削除を行う
+    \c removeContact() 関数を実装します。
+    この関数では、まず連絡先が \c contacts に存在するかどうか確認します。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp removeContact() function
+
+    存在する場合、ユーザに削除を確認するために、QMessageBox を表示します。
+    ユーザが確認したら、 \c previous() を呼び出して、
+    ユーザインターフェースで他の連絡先を表示できることを確認し、
+    QMap の \l{QMap::remove()}{remove()} 関数を使用して連絡先を削除します。
+    念のため、QMessageBox を表示してユーザに知らせます。
+    この関数で使用するメッセージボックスを以下に示します:
+
+    \image addressbook-tutorial-part4-remove.png
+
+    \section2 ユーザインターフェースを更新する
+
+    既に、 \c updateInterface() 関数が
+    現在のモードに応じてプッシュボタンの有効化と無効化を行うための
+    手段であることを説明しました。
+    この関数は、渡される \c mode 引数に応じて現在のモードを更新します。
+    なお、引数の値を確認する前に \c currentMode に代入しています。
+
+    このとき、それぞれのプッシュボタンは、
+    現在のモードに応じて有効または無効になります。
+     \c AddingMode 及び \c EditingMode でのコードを以下に示します:
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
+
+    \c NavigationMode の場合、 QPushButton::setEnabled()
+    関数のパラメータに条件を含めます。
+    これは、アドレス帳に少なくとも1つ以上の連絡先が存在する場合に、
+    \c editButton と \c removeButton が有効であることを確認するためのものです。
+    \c nextButton と \c previousButton は、
+    アドレス帳に少なくとも2つ以上の連絡先が存在する場合にのみ有効になります。
+
+    \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
+
+    モードの設定及び、同一関数内でのユーザインターフェースの更新を行うタスクを実行することにより、
+    アプリケーションの内部状態により
+    ユーザインターフェースが「非同期」になる可能性を防ぎます。
+*/
+
+/*!
+    \page tutorials-addressbook-part5.html
+
+    \example tutorials/addressbook/part5
+    \title 第5章 - 検索機能の追加
+
+    本章では、アドレス帳アプリケーションの連絡先と住所を
+    検索する方法について説明します。
+
+    \image addressbook-tutorial-part5-screenshot.png
+
+    アドレス帳アプリケーションへ連絡先の追加を繰り返すと、
+    \e Next 及び \e Previous ボタンによる連絡先のナビゲートが面倒になります。
+    この場合、\e{検索(Find)}機能を使うと、
+    連絡先の検索をより効率的に行うことができます。
+    上記スクリーンショットは、\e Find ボタン及び、
+    パネル上のボタンの位置を示します。
+
+    ユーザーが \e Find ボタンをクリックすると、
+    連絡先の名前の入力を求めるダイアログを表示します。
+    Qt が提供する QDialog クラスを継承して \c FindDialog クラスを導入します。
+
+    \section1 FindDialog クラスの宣言
+
+    \image addressbook-tutorial-part5-finddialog.png
+
+    QDialog を継承するには、最初に、QDialog のヘッダーを
+    \c finddialog.h ファイルで include する必要があります。
+    また、これらのウィジェットをダイアログクラスで使用するため、
+    前方宣言を使用して QLineEdit と QPushButton を宣言します。
+
+    \c AddressBook クラスと同様に、 \c FindDialog クラスには Q_OBJECT
+    マクロが含まれ、ダイアログが別のウィンドウとして開かれる場合でも、
+    コンストラクタは親 QWidget を取るように定義されます。
+
+    \snippet tutorials/addressbook/part5/finddialog.h FindDialog header
+
+    \c FindDialog のインスタンスを保持するクラスにより使用される
+    パブリック関数 \c getFindText() を定義します。
+    この関数を経由してユーザが入力した検索文字列を取得します。
+    また、ユーザが \gui Find ボタンをクリックしたときに検索文字列を処理するために、
+    public slot として \c findClicked() を定義します。
+
+    最後に、\gui Find ボタンに対応するプライベート変数として \c findButton 、
+    ユーザが検索文字列を入力するラインエディット \c lineEdit 及び、
+    後の作業で使用する検索文字列を保存するために使用する内部文字列として
+    \c findText の定義を行います。
+
+    \section1 FindDialog クラスの実装
+
+    \c FindDialog のコンストラクタ内で、プライベート変数の
+    \c lineEdit 、 \c findButton 及び \c findText を設定します。
+    QHBoxLayout を用いてウィジェットを配置します。
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp constructor
+
+    シグナルをそれぞれのスロットに接続し、
+    レイアウトとウィンドウのタイトルを設定します。
+    \c findButton の \l{QPushButton::clicked()} シグナルは、
+    \c findClicked() と \l{QDialog::accept()}{accept()}
+    に接続されていることがわかります。
+    QDialog により提供される \l{QDialog::accept()}{accept()} スロットは
+    ダイアログを非表示にして、結果コードを \l{QDialog::}{Accepted}
+    に設定します。
+    この関数を使用して、 \c AddressBook の \c findContact() 関数に、
+    \c FindDialog オブジェクトが閉じていることを知らせます。
+    この論理については、 \c findContact() 関数について取り上げる際に、
+    さらに詳細に説明します。
+
+    \image addressbook-tutorial-part5-signals-and-slots.png
+
+    \c findClicked() で、ユーザが連絡先の名前を入力せずに
+    \gui Find ボタンをクリックしたかどうか確認するために
+    \c lineEdit を検証します。
+    次に、 \c lineEdit から抽出した検索文字列を \c findText に設定します。
+    その後、 \c lineEdit のコンテンツをクリアし、ダイアログを非表示にします。
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp findClicked() function
+
+    \c findText 変数用のパブリックな取得関数
+    \c getFindText() を実装します。
+    コンストラクタ及び \c findClicked() 関数でのみ
+    \c findText を直接設定するため、
+    \c getFindText() に対応する設定関数は作成しません。
+    \c getFindText() はパブリックであるため、インスタンスを生成し
+    \c FindDialog を使用するクラスは、
+    ユーザが入力して確定した検索文字列にいつでもアクセスできます。
+
+    \snippet tutorials/addressbook/part5/finddialog.cpp getFindText() function
+
+    \section1 AddressBook クラスの宣言
+
+    \c AddressBook クラス内部から \c FindDialog を使用できるよう、
+    \c addressbook.h ファイルに \c finddialog.h を含めます。
+
+    \snippet tutorials/addressbook/part5/addressbook.h include finddialog's header
+
+    これまでのところ、アドレス帳の全機能に、
+    QPushButton とそのボタンに対応するスロットが含まれています。
+    同様に、\gui{検索(Find)}機能には、
+    \c findButton 及び \c findContact() が含まれています。
+
+    \c findButton はプライベート変数として宣言され、
+    \c findContact() 関数は public slot として宣言されます。
+
+    \snippet tutorials/addressbook/part5/addressbook.h findContact() declaration
+    \dots
+    \snippet tutorials/addressbook/part5/addressbook.h findButton declaration
+
+    最後に、 \c FindDialog のインスタンスを参照するためのプライベート変数
+    \c dialog を宣言します。
+
+    \snippet tutorials/addressbook/part5/addressbook.h FindDialog declaration
+
+    インスタンス化されたダイアログは複数回使用します。
+    プライベート変数を使用すると、
+    クラスの複数の場所から参照できるようになります。
+
+    \section1 AddressBook クラスの実装
+
+    \c AddressBook クラスのコンストラクタ内で、
+    プライベートオブジェクトの \c findButton と \c findDialog
+    のインスタンスを生成します:
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp instantiating findButton
+    \dots
+    \snippet tutorials/addressbook/part5/addressbook.cpp instantiating FindDialog
+
+    次に、 \c findButton の \l{QPushButton::clicked()}{clicked()} シグナルを、
+    \c findContact() に接続します。
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp signals and slots for find
+
+    後は、 \c findContact() 関数のコードだけです:
+
+    \snippet tutorials/addressbook/part5/addressbook.cpp findContact() function
+
+    \c FindDialog インスタンスの \c dialog を表示することから始めます。
+    これは、ユーザが検索用に連絡先の名前を入力するためのものです。
+    ユーザがダイアログの \c findButton をクリックすると
+    ダイアログが非表示になり、結果コードが QDialog::Accepted に設定されます。
+    これにより、 \c if ステートメントが常に真になります。
+
+    続けて、検索文字列の抽出を行います。
+    この場合、検索文字列は \c contactName で、
+    \c FindDialog の \c getFindText() 関数を使用して取得します。
+    アドレス帳に連絡先が存在する場合、直ちに表示します。
+    存在しない場合、検索が失敗したことを示す以下の QMessageBox が表示されます。
+
+    \image addressbook-tutorial-part5-notfound.png
+*/
+
+/*!
+    \page tutorials-addressbook-part6.html
+
+    \example tutorials/addressbook/part6
+    \title 第6章 - 読み込みと保存
+
+    本章では、アドレス帳アプリケーションの読み込みと保存処理で使用する、
+    Qt のファイル処理機能について説明します。
+
+    \image addressbook-tutorial-part6-screenshot.png
+
+    連絡先の参照及び検索機能は便利な機能ですが、
+    連絡先の保存と読み込みが可能になるまではアドレス帳は完成しません。
+
+    Qt は  \l{Input/Output and Networking}{入出力}
+    用のクラスを様々提供していますが、
+    今回は簡単に組み合わせて使用できる QFile と QDataStream の2つのクラスを選択しました。
+
+    QFile のオブジェクトは、
+    読み込みと書き込みが可能なディスク上のファイルを表します。
+    QFile は、さまざまなデバイスを表すより一般的な QIODevice クラスの派生クラスです。
+
+    QDataStream オブジェクトは、バイナリデータを QIODevice に保存して、
+    後でもう一度取得できるようシリアライズするために使用します。
+    パラメータとしてそれぞれのデバイスを使用すると、
+    ストリームを開くのと同じくらい簡単に、 QIODevice
+    からの読み込みと書き込みを行うことができます。
+
+    \section1 AddressBook クラスの宣言
+
+    2つの QPushButton オブジェクトの \c loadButton と \c saveButton
+    に加えて、2つの public slot の \c saveToFile() と \c loadFromFile()
+    を宣言します。
+
+    \snippet tutorials/addressbook/part6/addressbook.h save and load functions declaration
+    \dots
+    \snippet tutorials/addressbook/part6/addressbook.h save and load buttons declaration
+
+    \section1 AddressBook クラスの実装
+
+    コンストラクタで、 \c loadButton と \c saveButton のインスタンスを生成します。
+    理想的には、プッシュボタンのラベルを、
+    "Load contacts from a file"(「ファイルから連絡先を読み込む」)及び、
+    "Save contacts to a file"(「連絡先をファイルに保存する」)
+    に設定するほうがよりユーザーフレンドリーです。
+    ただし、他のプッシュボタンのサイズを考慮して、
+    \gui{Load...}及び\gui{Save...}に設定します。
+    Qt は、 \l{QWidget::setToolTip()}{setToolTip()} を使用して
+    ツールチップを簡単に設定する方法を提供していますので、
+    以下のコードでプッシュボタンにツールチップを設定します:
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 1
+    \dots
+    \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 2
+
+    ここには記載していませんが、
+    これまで実装した他の機能のように右側のレイアウトパネル
+    \c button1Layout にプッシュボタンを追加し、
+    プッシュボタンの \l{QPushButton::clicked()}{clicked()}
+    シグナルをそれぞれのスロットに接続します。
+
+    保存機能の場合、最初に QFileDialog::getSaveFileName() を使用して、
+    \c fileName を取得します。
+    これは、QFileDialog により提供される簡易関数で、
+    モーダルなファイルダイアログをポップアップ表示させ、
+    ユーザはファイル名を入力したり、既存の \c{.abk} ファイルを選択することが出来ます。
+    \c{.abk} ファイルは、
+    連絡先を保存したときに作成されるアドレス帳の拡張子です。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part1
+
+    以下のスクリーンショットのようなネイティブのファイルダイアログが表示されます:
+
+    \image addressbook-tutorial-part6-save.png
+
+    \c fileName が空ではない場合、 \c fileName を用いて
+    QFile のオブジェクト \c file を作成します。
+    QFile は QIODevice の派生クラスであるため、
+    QDataStream から使用できます。
+
+    次に、ファイルを \l{QIODevice::}{WriteOnly} モードでオープンします。
+    オープンに失敗した場合、 QMessageBox を表示してユーザに知らせます。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part2
+
+    オープンに成功した場合、 QDataStream のインスタンス \c out を生成して、
+    開いているファイルに書き込みます。
+    QDataStream では、同じバージョンのストリームを使用して、
+    読み込みと書き込みを行う必要があります。
+    \c file にシリアライズする前に、
+    \l{QDataStream::Qt_4_5}{Qt 4.5で導入されたバージョン}
+    を今回使用するバージョンとして設定します。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp saveToFile() function part3
+
+    読み込み機能の場合も QFileDialog::getOpenFileName() を使用して
+    \c fileName を取得します。
+    この関数は QFileDialog::getSaveFileName() に対応するものであり、
+    モーダルなファイルダイアログをポップアップ表示させ、
+    ユーザはファイル名を入力したり、既存の \c{.abk}
+    ファイルを選択してアドレス帳に読み込ことができます。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part1
+
+    たとえば、 Windows では、この関数は、以下のスクリーンショットのような
+    ネイティブのファイルダイアログをポップアップ表示させます。
+
+    \image addressbook-tutorial-part6-load.png
+
+    \c fileName が空ではない場合、　QFile のオブジェクト
+    \c file を使用して、 \l{QIODevice::}{ReadOnly} モードでオープンします。
+    \c saveToFile() の実装の場合と同様に、オープンに失敗した場合は
+    QMessageBox を表示して、ユーザに知らせます。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part2
+
+    オープンに成功した場合、
+    QDataStream のインスタンス \c in を生成して前記のようにバージョン設定を行い、
+    シリアライズしたデータを \c contacts のデータ構造に読み込みます。
+    \c contacts オブジェクトはデータが読み込まれる前に空にするので、
+    ファイルの読み込みプロセスは簡素化されます。
+    より高度な方法では、一時オブジェクトの QMap に読み込んで、
+    重複していない連絡先を \c contacts にコピーします。
+
+    \snippet tutorials/addressbook/part6/addressbook.cpp loadFromFile() function part3
+
+    ファイルから読み込んだ連絡先を表示するには、
+    最初に取得したデータを検証し、
+    読み込んだファイルにアドレス帳の連絡先が実際に含まれているか確認します。
+    含まれている場合、最初の連絡先を表示します。
+    含まれていない場合、QMessageBox を表示して、
+    問題があることをユーザに知らせます。
+    最後にインターフェースを更新し、適宜
+    プッシュボタンの有効化と無効化を行います。
+*/
+
+/*!
+    \page tutorials-addressbook-part7.html
+
+    \example tutorials/addressbook/part7
+    \title 第7章 - 追加機能
+
+    本章では、アドレス帳アプリケーションを
+    普段の生活で便利に使用するための追加機能について説明します。
+
+    \image addressbook-tutorial-part7-screenshot.png
+
+    アドレス帳アプリケーションは、それ自体で便利ですが、
+    他のアプリケーションとデータの交換ができればなお便利です。
+    vCard 形式は、この目的で使用可能な一般的なファイル形式です。
+    本章では、連絡先を vCard ファイル(\c{.vcf})
+    にエクスポートできるよう、アドレス帳クライアントを拡張します。
+
+    \section1 AddressBook クラスの宣言
+
+    QPushButton のオブジェクト \c exportButton 及び、
+    対応する public slot の \c exportAsVCard() を
+    \c addressbook.h ファイルの \c AddressBook クラスに追加します。
+
+    \snippet tutorials/addressbook/part7/addressbook.h exportAsVCard() declaration
+    \dots
+    \snippet tutorials/addressbook/part7/addressbook.h exportButton declaration
+
+    \section1 AddressBook クラスの実装
+
+    \c AddressBook のコンストラクタで、 \c exportButton の
+    \l{QPushButton::clicked()}{clicked()} シグナルを
+    \c exportAsVCard() に接続します。
+    このボタンも、右側のボタンのパネルの処理を行うレイアウトである
+    \c buttonLayout1 に追加します。
+
+    \c exportAsVCard() 関数では、
+    連絡先の名前を \c name に抽出することから始めます。
+    \c firstName 、 \c lastName 及び \c nameList を宣言します。
+    次に \c name を検索し、最初の空白のインデックスを取得します。
+    空白が存在する場合、連絡先の名前を \c firstName と
+    \c lastName に分割します。
+    次に、空白をアンダースコア ("_") に置き換えます。
+    空白が存在しない場合は、連絡先にファーストネーム(名)
+    しか保存されていない可能性があります。
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part1
+
+    \c saveToFile() 関数と同様に、ユーザがファイルの場所を選択できるよう
+    ファイルダイアログを開きます。
+    選択したファイル名を使用して、
+    書き込みを行うための QFile のインスタンスを生成します。
+
+    ファイルを \l{QIODevice::}{WriteOnly} モードでオープンします。
+    オープンに失敗した場合、 QMessageBox を表示して、
+    問題があることをユーザに知らせて戻ります。
+    オープンに成功した場合、 QTextStream のオブジェクト \c out へ
+    パラメータファイルを渡します。
+    QDataStream のように、QTextStream クラスは、
+    プレーンテキストファイルの読み込みと書き込みを行う機能を提供します。
+    結果として、生成された \c{.vcf} は
+    テキストエディターで開いて編集することができます。
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part2
+
+    まず \c{BEGIN:VCARD} タグ、次に \c{VERSION:2.1} タグの順に
+    vCard ファイルに書き込みます。
+    連絡先の名前は、 \c{N:} タグを使用して書き込みます。
+    vCard の "File as" プロパティを設定する \c{FN:} タグを書き込む際は、
+    連絡先にラストネーム(姓)が含まれているかどうかを確認する必要があります。
+    含まれている場合、 \c nameList の情報を使用して入力します。
+    含まれていない場合、 \c firstName のみを書き込みます。
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part3
+
+    続けて連絡先の住所の書き込みを行います。
+    住所のセミコロンには、"\\" をエスケープ文字として追加する必要があります。
+    改行はセミコロンに置き換えられ、コンマはスペースに置き換えられます。
+    次に、 \c{ADR;HOME:;} タグ、 \c address 、
+    \c{END:VCARD} タグの順に書き込みます。
+
+    \snippet tutorials/addressbook/part7/addressbook.cpp export function part4
+
+    最後に、vCard のエクスポートに成功したことをユーザに知らせるために、
+    QMessageBox が表示されます。
+
+    \e{vCard は、\l{http://www.imc.org}{Internet Mail Consortium} の登録商標です。}
+*/
