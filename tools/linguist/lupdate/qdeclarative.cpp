@@ -87,27 +87,31 @@ protected:
 
     virtual void endVisit(AST::CallExpression *node)
     {
+        m_bSource.clear();
         if (AST::IdentifierExpression *idExpr = AST::cast<AST::IdentifierExpression *>(node->base)) {
             if (idExpr->name->asString() == QLatin1String("qsTr") ||
                 idExpr->name->asString() == QLatin1String("QT_TR_NOOP")) {
-                if (node->arguments && AST::cast<AST::StringLiteral *>(node->arguments->expression)) {
-                    AST::StringLiteral *literal = AST::cast<AST::StringLiteral *>(node->arguments->expression);
-                    const QString source = literal->value->asString();
+                if (!node->arguments)
+                    return;
+                AST::BinaryExpression *binary = AST::cast<AST::BinaryExpression *>(node->arguments->expression);
+                if (binary) {
+                    if (!createString(binary))
+                        m_bSource.clear();
+                }
+                AST::StringLiteral *literal = AST::cast<AST::StringLiteral *>(node->arguments->expression);
+                if (literal || !m_bSource.isEmpty()) {
+                    const QString source = literal ? literal->value->asString() : m_bSource;
 
                     QString comment;
                     bool plural = false;
                     AST::ArgumentList *commentNode = node->arguments->next;
-                    if (commentNode) {
+                    if (commentNode && AST::cast<AST::StringLiteral *>(commentNode->expression)) {
                         literal = AST::cast<AST::StringLiteral *>(commentNode->expression);
                         comment = literal->value->asString();
 
                         AST::ArgumentList *nNode = commentNode->next;
-                        if (nNode) {
-                            AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                            if (numLiteral) {
-                                plural = true;
-                            }
-                        }
+                        if (nNode)
+                            plural = true;
                     }
 
                     TranslatorMessage msg(m_component, source,
@@ -126,22 +130,25 @@ protected:
                     QString comment;
                     bool plural = false;
                     AST::ArgumentList *sourceNode = node->arguments->next;
-                    if (sourceNode) {
-                        literal = AST::cast<AST::StringLiteral *>(sourceNode->expression);
-                        source = literal->value->asString();
-                        AST::ArgumentList *commentNode = sourceNode->next;
-                        if (commentNode) {
-                            literal = AST::cast<AST::StringLiteral *>(commentNode->expression);
-                            comment = literal->value->asString();
+                    if (!sourceNode)
+                        return;
+                    literal = AST::cast<AST::StringLiteral *>(sourceNode->expression);
+                    AST::BinaryExpression *binary = AST::cast<AST::BinaryExpression *>(sourceNode->expression);
+                    if (binary) {
+                        if (!createString(binary))
+                            m_bSource.clear();
+                    }
+                    if (!literal && m_bSource.isEmpty())
+                        return;
+                    source = literal ? literal->value->asString() : m_bSource;
+                    AST::ArgumentList *commentNode = sourceNode->next;
+                    if (commentNode && AST::cast<AST::StringLiteral *>(commentNode->expression)) {
+                        literal = AST::cast<AST::StringLiteral *>(commentNode->expression);
+                        comment = literal->value->asString();
 
-                            AST::ArgumentList *nNode = commentNode->next;
-                            if (nNode) {
-                                AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                                if (numLiteral) {
-                                    plural = true;
-                                }
-                            }
-                        }
+                        AST::ArgumentList *nNode = commentNode->next;
+                        if (nNode)
+                            plural = true;
                     }
 
                     TranslatorMessage msg(context, source,
@@ -156,9 +163,34 @@ protected:
     }
 
 private:
+    bool createString(AST::BinaryExpression *b) {
+        if (!b || b->op != 0)
+            return false;
+        AST::BinaryExpression *l = AST::cast<AST::BinaryExpression *>(b->left);
+        AST::BinaryExpression *r = AST::cast<AST::BinaryExpression *>(b->right);
+        AST::StringLiteral *ls = AST::cast<AST::StringLiteral *>(b->left);
+        AST::StringLiteral *rs = AST::cast<AST::StringLiteral *>(b->right);
+        if ((!l && !ls) || (!r && !rs))
+            return false;
+        if (l) {
+            if (!createString(l))
+                return false;
+        } else
+            m_bSource.prepend(ls->value->asString());
+
+        if (r) {
+            if (!createString(r))
+                return false;
+        } else
+            m_bSource.append(rs->value->asString());
+
+        return true;
+    }
+
     Translator *m_translator;
     QString m_fileName;
     QString m_component;
+    QString m_bSource;
 };
 
 QString createErrorString(const QString &filename, const QString &code, Parser &parser)

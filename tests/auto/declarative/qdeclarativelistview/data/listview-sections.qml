@@ -10,10 +10,10 @@ Rectangle {
             Item {
                 id: wrapper
                 objectName: "wrapper"
-                height: ListView.prevSection != ListView.section ? 40 : 20;
+                height: ListView.previousSection != ListView.section ? 40 : 20;
                 width: 240
                 Rectangle {
-                    y: wrapper.ListView.prevSection != wrapper.ListView.section ? 20 : 0
+                    y: wrapper.ListView.previousSection != wrapper.ListView.section ? 20 : 0
                     height: 20
                     width: parent.width
                     color: wrapper.ListView.isCurrentItem ? "lightsteelblue" : "white"
@@ -27,10 +27,15 @@ Rectangle {
                         text: name
                     }
                     Text {
-                        x: 120
+                        x: 100
                         id: textNumber
                         objectName: "textNumber"
                         text: number
+                    }
+                    Text {
+                        objectName: "nextSection"
+                        x: 150
+                        text: wrapper.ListView.nextSection
                     }
                     Text {
                         x: 200
@@ -39,9 +44,9 @@ Rectangle {
                 }
                 Rectangle {
                     color: "#99bb99"
-                    height: wrapper.ListView.prevSection != wrapper.ListView.section ? 20 : 0
+                    height: wrapper.ListView.previousSection != wrapper.ListView.section ? 20 : 0
                     width: parent.width
-                    visible: wrapper.ListView.prevSection != wrapper.ListView.section ? true : false
+                    visible: wrapper.ListView.previousSection != wrapper.ListView.section ? true : false
                     Text { text: wrapper.ListView.section }
                 }
             }

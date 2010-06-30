@@ -279,6 +279,8 @@ ListView {
 \endcode
 \endtable
 
+The complete example is available in \l {declarative/modelviews/stringlistmodel}.
+
 \note There is no way for the view to know that the contents of a QStringList
 have changed.  If the QStringList is changed, it will be necessary to reset
 the model by calling QDeclarativeContext::setContextProperty() again.
@@ -328,6 +330,8 @@ ListView {
    }
 }
 \endcode
+
+The complete example is available in \l {declarative/modelviews/objectlistmodel}.
 
 Note the use of the fully qualified access to the \c color property.  
 The properties of the object are not replicated in the \c model

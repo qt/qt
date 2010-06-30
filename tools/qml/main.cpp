@@ -119,7 +119,7 @@ void usage()
     qWarning("  -fullscreen............................... run fullscreen");
     qWarning("  -stayontop................................ keep viewer window on top");
     qWarning("  -sizeviewtorootobject .................... the view resizes to the changes in the content");
-    qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view");
+    qWarning("  -sizerootobjecttoview .................... the content resizes to the changes in the view (default)");
     qWarning("  -qmlbrowser .............................. use a QML-based file browser");
     qWarning("  -warnings [show|hide]..................... show warnings in a separate log window");
     qWarning("  -recordfile <output> ..................... set video recording file");

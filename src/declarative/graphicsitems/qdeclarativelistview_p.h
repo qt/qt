@@ -198,6 +198,9 @@ public:
     QDeclarativeComponent *header() const;
     void setHeader(QDeclarativeComponent *);
 
+    virtual void setContentX(qreal pos);
+    virtual void setContentY(qreal pos);
+
     static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };
@@ -276,12 +279,21 @@ public:
         }
     }
 
-    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged)
+    Q_PROPERTY(QString previousSection READ prevSection NOTIFY prevSectionChanged)
     QString prevSection() const { return m_prevSection; }
     void setPrevSection(const QString &sect) {
         if (m_prevSection != sect) {
             m_prevSection = sect;
             emit prevSectionChanged();
+        }
+    }
+
+    Q_PROPERTY(QString nextSection READ nextSection NOTIFY nextSectionChanged)
+    QString nextSection() const { return m_nextSection; }
+    void setNextSection(const QString &sect) {
+        if (m_nextSection != sect) {
+            m_nextSection = sect;
+            emit nextSectionChanged();
         }
     }
 
@@ -310,6 +322,7 @@ Q_SIGNALS:
     void currentItemChanged();
     void sectionChanged();
     void prevSectionChanged();
+    void nextSectionChanged();
     void delayRemoveChanged();
     void add();
     void remove();
@@ -318,6 +331,7 @@ public:
     QDeclarativeListView *m_view;
     mutable QString m_section;
     QString m_prevSection;
+    QString m_nextSection;
     bool m_isCurrent : 1;
     bool m_delayRemove : 1;
 };
