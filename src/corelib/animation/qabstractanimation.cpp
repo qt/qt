@@ -205,9 +205,10 @@ void QUnifiedTimer::ensureTimerUpdate()
 
 void QUnifiedTimer::updateAnimationsTime()
 {
+    qint64 totalElapsed = time.elapsed();
     // ignore consistentTiming in case the pause timer is active
     int delta = (consistentTiming && !isPauseTimerActive) ?
-                        timingInterval : time.elapsed() - lastTick;
+                        timingInterval : totalElapsed - lastTick;
     if (slowMode) {
         if (slowdownFactor > 0)
             delta = qRound(delta / slowdownFactor);
@@ -215,7 +216,7 @@ void QUnifiedTimer::updateAnimationsTime()
             delta = 0;
     }
 
-    lastTick = time.elapsed();
+    lastTick = totalElapsed;
 
     //we make sure we only call update time if the time has actually changed
     //it might happen in some cases that the time doesn't change because events are delayed

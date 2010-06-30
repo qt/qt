@@ -172,7 +172,7 @@ private:
 
     ElapsedTimer time;
 
-    int lastTick;
+    qint64 lastTick;
     int timingInterval;
     int currentAnimationIdx;
     bool consistentTiming;
