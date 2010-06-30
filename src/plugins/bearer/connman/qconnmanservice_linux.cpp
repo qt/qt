@@ -208,17 +208,29 @@ void QConnmanManagerInterface::unregisterAgent(QDBusObjectPath /*path*/)
 {
 }
 
-void QConnmanManagerInterface::registerCounter(QDBusObjectPath /*path*/, quint32 /*interval*/)
-{
+void QConnmanManagerInterface::registerCounter(const QString &path, quint32 interval)
+{   QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("RegisterCounter"),
+                                                            QVariant::fromValue(path),
+                                                            QVariant::fromValue(interval));
+    bool ok = true;
+    if(reply.error().type() == QDBusError::InvalidArgs) {
+        qWarning() << reply.error().message();
+    }
 }
 
-void QConnmanManagerInterface::unregisterCounter(QDBusObjectPath /*path*/)
-{
+void QConnmanManagerInterface::unregisterCounter(const QString &path)
+{   QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("UnregisterCounter"),
+                                                            QVariant::fromValue(path));
+    bool ok = true;
+    if(reply.error().type() == QDBusError::InvalidArgs) {
+        qWarning() << reply.error().message();
+    }
 }
 
 QString QConnmanManagerInterface::requestSession(const QString &bearerName)
 {
-    QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("RequestSession"), QVariant::fromValue(bearerName));
+    QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("RequestSession"),
+                                                            QVariant::fromValue(bearerName));
     return QString();
 }
 
@@ -863,7 +875,29 @@ void QConnmanAgentInterface::cancel()
 
 
 /////////////////////////////////////////
+QConnmanCounterInterface::QConnmanCounterInterface(const QString &dbusPathName,QObject *parent)
+    : QDBusAbstractInterface(QLatin1String(CONNMAN_SERVICE),
+                             dbusPathName,
+                             CONNMAN_COUNTER_INTERFACE,
+                             QDBusConnection::systemBus(), parent)
+{
+}
 
+QConnmanCounterInterface::~QConnmanCounterInterface()
+{
+}
+
+quint32 QConnmanCounterInterface::getReceivedByteCount()
+{
+return 0;
+}
+
+quint32 QConnmanCounterInterface::getTransmittedByteCount()
+{
+return 0;
+}
+
+/////////////////////////////////////////
 QConnmanDeviceInterface::QConnmanDeviceInterface(const QString &dbusPathName,QObject *parent)
     : QDBusAbstractInterface(QLatin1String(CONNMAN_SERVICE),
                              dbusPathName,

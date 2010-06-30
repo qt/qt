@@ -250,7 +250,7 @@ QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
     QConnmanServiceInterface serv(service);
     QString servState = serv.getState();
 
-    if(serv.isFavorite() && servState == "idle" || servState == "failure") {
+    if(serv.isFavorite() && (servState == "idle" || servState == "failure")) {
         return QNetworkSession::Disconnected;
     }
 
@@ -285,6 +285,7 @@ quint64 QConnmanEngine::bytesWritten(const QString &id)
         in >> result;
         tx.close();
     }
+
     return result;
 }
 
@@ -347,6 +348,9 @@ QString QConnmanEngine::getServiceForNetwork(const QString &netPath)
 
 void QConnmanEngine::propertyChangedContext(const QString &path,const QString &item, const QDBusVariant &value)
 {
+    Q_UNUSED(path);
+//    qDebug() << __FUNCTION__ << path << item << value.variant();
+
     QMutexLocker locker(&mutex);
     if(item == "Services") {
         QDBusArgument arg = qvariant_cast<QDBusArgument>(value.variant());
@@ -421,10 +425,9 @@ void QConnmanEngine::devicePropertyChangedContext(const QString &devpath,const Q
         while(i.hasNext()) {
             i.next();
             if(i.value().contains(devpath)) {
-                devicetype = i.key();
+                devicetype = i.key().section("/",-1);
             }
         }
-
 
         QStringList oldnetworks = knownNetworks[devicetype];
 
@@ -593,14 +596,16 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
     QConnmanNetworkInterface *network;
     network = new QConnmanNetworkInterface(netPath, this);
 
-    serviceNetworks.insert(servicePath,netPath);
 
     const QString id = QString::number(qHash(servicePath));
 
     if (!accessPointConfigurations.contains(id)) {
-
         QConnmanDeviceInterface device(netPath.section("/",0,5),this);
-        knownNetworks[device.getType()]<< netPath;
+
+        serviceNetworks.insert(servicePath,netPath);
+
+        knownNetworks[device.getType()].append(netPath);
+
         connect(serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                 this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
         QNetworkConfigurationPrivate* cpPriv = new QNetworkConfigurationPrivate();
@@ -661,10 +666,13 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
             connect(serv,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                     this,SLOT(servicePropertyChangedContext(QString,QString, QDBusVariant)));
     }
-    knownNetworks[device.getType()]<< networkPath;
-    serviceNetworks.insert(servicePath,networkPath);
 
     if (!accessPointConfigurations.contains(id)) {
+
+        knownNetworks[device.getType()].append(networkPath);
+
+        serviceNetworks.insert(servicePath,networkPath);
+
         connect(network,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                 this,SLOT(networkPropertyChangedContext(QString,QString, QDBusVariant)));
 
