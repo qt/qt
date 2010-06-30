@@ -161,7 +161,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
-        if (q->platformWindow()) {
+        if (q->platformWindow() && newparent) {
             QWidget * parentWithWindow = newparent->platformWindow()? newparent : newparent->nativeParentWidget();
             if (parentWithWindow && parentWithWindow->platformWindow()) {
                 q->platformWindow()->setParent(parentWithWindow->platformWindow());
