@@ -152,6 +152,17 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
     createPixmapForImage(image, flags, /* inplace = */false);
 }
 
+void QRasterPixmapData::fromImageReader(QImageReader *imageReader,
+                                        Qt::ImageConversionFlags flags)
+{
+    Q_UNUSED(flags);
+    QImage image = imageReader->read();
+    if (image.isNull())
+        return;
+
+    createPixmapForImage(image, flags, /* inplace = */true);
+}
+
 // from qwindowsurface.cpp
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 

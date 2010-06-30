@@ -3681,4 +3681,9 @@ EXPORTS
 	_ZNK17QDeclarativeState7isNamedEv @ 3680 NONAME
 	_ZNK20QDeclarativeGridView6footerEv @ 3681 NONAME
 	_ZNK20QDeclarativeGridView6headerEv @ 3682 NONAME
+	_ZN19QDeclarativePrivate26registerAutoParentFunctionEPFNS_16AutoParentResultEP7QObjectS2_E @ 3683 NONAME
+	_ZN20QDeclarativeMetaType15parentFunctionsEv @ 3684 NONAME
+	_ZN21QDeclarativeTextInput16inputMethodEventEP17QInputMethodEvent @ 3685 NONAME
+	_ZN23QDeclarativeBorderImage8doUpdateEv @ 3686 NONAME
+	_ZThn8_N21QDeclarativeTextInput16inputMethodEventEP17QInputMethodEvent @ 3687 NONAME
 

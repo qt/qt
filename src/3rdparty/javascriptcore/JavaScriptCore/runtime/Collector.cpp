@@ -217,9 +217,7 @@ void Heap::destroy()
 
 NEVER_INLINE CollectorBlock* Heap::allocateBlock()
 {
-    // Disable the use of vm_map for the Qt build on Darwin, because when compiled on 10.4
-    // it crashes on 10.5
-#if OS(DARWIN) && !PLATFORM(QT)
+#if OS(DARWIN)
     vm_address_t address = 0;
     vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
 #elif OS(SYMBIAN)
@@ -315,9 +313,7 @@ NEVER_INLINE void Heap::freeBlock(size_t block)
 
 NEVER_INLINE void Heap::freeBlockPtr(CollectorBlock* block)
 {
-    // Disable the use of vm_deallocate for the Qt build on Darwin, because when compiled on 10.4
-    // it crashes on 10.5
-#if OS(DARWIN) && !PLATFORM(QT)
+#if OS(DARWIN)    
     vm_deallocate(current_task(), reinterpret_cast<vm_address_t>(block), BLOCK_SIZE);
 #elif OS(SYMBIAN)
     userChunk->Free(reinterpret_cast<TAny*>(block));

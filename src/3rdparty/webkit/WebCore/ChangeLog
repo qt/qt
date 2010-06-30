@@ -1,3 +1,90 @@
+2010-06-24  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Symbian build fix.
+
+        The QML WebKit integration needs to be part of QtWebKit.sis
+
+        * WebCore.pro: Deploy qmlwebkitplugin.dll.
+
+2010-06-23  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Do not render the full frame when there is some elements with fixed positioning
+        https://bugs.webkit.org/show_bug.cgi?id=33150
+
+        Do not render the full frame when there is some elements with fixed positioning
+        https://bugs.webkit.org/show_bug.cgi?id=33150
+
+        The frame view take into acount the list of fixed object when scrolling
+        the view. If the number of object is lower than a certain threshold, the pixel
+        are blitted, and the invalidated area updated.
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::addFixedObject):
+        (WebCore::FrameView::removeFixedObject):
+        (WebCore::FrameView::scrollContentsFastPath):
+        * page/FrameView.h:
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::scrollContents):
+        (WebCore::ScrollView::scrollContentsFastPath):
+        * platform/ScrollView.h:
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::repaintRectIncludingDescendants):
+        * rendering/RenderLayer.h:
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::styleWillChange):
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Allocate the m_preloads list hash set dynamically and free it when done.
+        https://bugs.webkit.org/show_bug.cgi?id=39309
+        <rdar://problem/7998495>
+
+        This saves about 6000 bytes on a fully loaded document.
+
+        * loader/DocLoader.cpp:
+        (WebCore::DocLoader::requestPreload):
+        (WebCore::DocLoader::clearPreloads):
+        * loader/DocLoader.h:
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Revert unintended indentation and unnecessary nested name specifier.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::clipOutPositionedObjects):
+        (WebCore::RenderBlock::insertPositionedObject):
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Add an inlineCapacity template parameter to ListHashSet and use it to shrink the positioned object list hash set.
+        https://bugs.webkit.org/show_bug.cgi?id=39304
+        <rdar://problem/7998366>
+
+        Set the inlineCapacity for the positionedObjects ListHashSet to 4 instead of 256. Since a RenderBlock usually has 
+        few positioned objects, this saves memory.
+
+        * WebCore.base.exp:
+        * rendering/RenderBlock.cpp:
+        (WebCore::clipOutPositionedObjects):
+        (WebCore::RenderBlock::insertPositionedObject):
+        * rendering/RenderBlock.h:
+        (WebCore::RenderBlock::positionedObjects):
+
+2010-06-22  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Qt/Symbian build fix.
+
+        Fix "make clean" to not try to execute clean commands for
+        the extra targets we use to simulate "make install".
+
+        * WebCore.pro: Use no_clean in CONFIG of extra compilers.
+
 2010-06-21  Balazs Kelemen  <kb@inf.u-szeged.hu>
 
         Reviewed by Simon Hausmann.

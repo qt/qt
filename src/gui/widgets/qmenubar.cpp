@@ -768,7 +768,7 @@ QAction *QMenuBarPrivate::getNextAction(const int _start, const int increment) c
     const int start = (_start == -1 && increment == -1) ? actions.count() : _start;
     const int end =  increment == -1 ? 0 : actions.count() - 1;
 
-    for (int i = start; start != end;) {
+    for (int i = start; i != end;) {
         i += increment;
         QAction *current = actions.at(i);
         if (!actionRects.at(i).isNull() && (allowActiveAndDisabled || current->isEnabled()))

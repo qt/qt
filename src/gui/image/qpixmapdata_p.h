@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QImageReader;
+
 class Q_GUI_EXPORT QPixmapData
 {
 public:
@@ -83,6 +85,8 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags) = 0;
+    virtual void fromImageReader(QImageReader *imageReader,
+                                 Qt::ImageConversionFlags flags);
 
     virtual bool fromFile(const QString &filename, const char *format,
                           Qt::ImageConversionFlags flags);

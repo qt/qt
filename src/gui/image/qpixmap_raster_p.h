@@ -74,6 +74,7 @@ public:
     void fromFile(const QString &filename, Qt::ImageConversionFlags flags);
     bool fromData(const uchar *buffer, uint len, const char *format, Qt::ImageConversionFlags flags);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags);
 
     void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);

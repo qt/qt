@@ -50,17 +50,17 @@
 #include "qapplication.h"
 
 #include <w32std.h>
-#include <aknsconstants.h>
+#include <AknsConstants.h>
 #include <aknconsts.h>
-#include <aknsitemid.h>
-#include <aknsutils.h>
-#include <aknsdrawutils.h>
-#include <aknsskininstance.h>
-#include <aknsbasicbackgroundcontrolcontext.h>
+#include <AknsItemID.h>
+#include <AknsUtils.h>
+#include <AknsDrawUtils.h>
+#include <AknsSkinInstance.h>
+#include <AknsBasicBackgroundControlContext.h>
 #include <avkon.mbg>
 #include <aknfontaccess.h>
 #include <aknlayoutfont.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
 #include <aknbitmapanimation.h>

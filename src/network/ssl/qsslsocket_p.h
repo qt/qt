@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
 #elif defined(Q_OS_WIN)
-#include <Wincrypt.h>
+#include <wincrypt.h>
 #ifndef HCRYPTPROV_LEGACY
 #define HCRYPTPROV_LEGACY HCRYPTPROV
 #endif
@@ -108,7 +108,8 @@ public:
     // that was used for connecting to.
     QString verificationPeerName;
 
-    static bool ensureInitialized();
+    static bool supportsSsl();
+    static void ensureInitialized();
     static void deinitialize();
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> supportedCiphers();
@@ -154,6 +155,13 @@ public:
     virtual void disconnectFromHost() = 0;
     virtual void disconnected() = 0;
     virtual QSslCipher sessionCipher() const = 0;
+
+private:
+    static bool ensureLibraryLoaded();
+    static void ensureCiphersAndCertsLoaded();
+
+    static bool s_libraryLoaded;
+    static bool s_loadedCiphersAndCerts;
 };
 
 QT_END_NAMESPACE

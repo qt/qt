@@ -12820,4 +12820,8 @@ EXPORTS
 	?textOption@QStaticText@@QBE?AVQTextOption@@XZ @ 12819 NONAME ; class QTextOption QStaticText::textOption(void) const
 	?isRightToLeft@QTextEngine@@QBE_NXZ @ 12820 NONAME ; bool QTextEngine::isRightToLeft(void) const
 	?textDirection@QTextBlock@@QBE?AW4LayoutDirection@Qt@@XZ @ 12821 NONAME ; enum Qt::LayoutDirection QTextBlock::textDirection(void) const
+	?convertInPlace@QImageData@@QAE_NW4Format@QImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12822 NONAME ; bool QImageData::convertInPlace(enum QImage::Format, class QFlags<enum Qt::ImageConversionFlag>)
+	?createPixmapForImage@QRasterPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 12823 NONAME ; void QRasterPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
+	??0Tab@QTextOption@@QAE@MW4TabType@1@VQChar@@@Z @ 12824 NONAME ; QTextOption::Tab::Tab(float, enum QTextOption::TabType, class QChar)
+	?fromData@QRasterPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12825 NONAME ; bool QRasterPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
 

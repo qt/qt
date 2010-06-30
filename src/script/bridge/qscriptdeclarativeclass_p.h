@@ -92,6 +92,11 @@ public:
     static QScriptValue scopeChainValue(QScriptContext *, int index);
     static QScriptContext *pushCleanContext(QScriptEngine *);
 
+    static QScriptValue newStaticScopeObject(
+        QScriptEngine *, int propertyCount, const QString *names,
+       const QScriptValue *values, const QScriptValue::PropertyFlags *flags);
+    static QScriptValue newStaticScopeObject(QScriptEngine *);
+
     class Q_SCRIPT_EXPORT PersistentIdentifier 
     {
     public:

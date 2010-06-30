@@ -360,11 +360,8 @@ inline XmlOutput::xml_output xformUsePrecompiledHeaderForNET2005(pchOption whatP
 
 inline XmlOutput::xml_output xformExceptionHandlingNET2005(exceptionHandling eh, DotNET compilerVersion)
 {
-    if (eh == ehDefault) {
-        if (compilerVersion >= NET2005)
-            return attrE(_ExceptionHandling, ehNone);
-        return attrS(_ExceptionHandling, "false");
-    }
+    if (eh == ehDefault)
+        return noxml();
 
     if (compilerVersion >= NET2005)
         return attrE(_ExceptionHandling, eh);

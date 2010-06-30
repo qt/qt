@@ -413,7 +413,7 @@ struct QtFontFamily
     bool fixedPitchComputed : 1;
 #endif
 #ifdef Q_WS_X11
-    bool symbol_checked;
+    bool symbol_checked : 1;
 #endif
 
     QString name;
