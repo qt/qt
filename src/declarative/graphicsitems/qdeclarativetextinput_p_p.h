@@ -100,6 +100,7 @@ public:
     void startCreatingCursor();
     void focusChanged(bool hasFocus);
     void updateHorizontalScroll();
+    int calculateTextWidth();
 
     QLineControl* control;
 
