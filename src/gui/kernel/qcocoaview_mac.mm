@@ -533,13 +533,11 @@ static int qCocoaViewCount = 0;
         return;
 
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (qwidgetprivate->maybeBackingStore()) {
-            // Drawing is handled on the window level
-            // See qcocoasharedwindowmethods_mac_p.h
-            if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
-                return;
-        }
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
+            bs->markDirty(qwidget->rect(), qwidget);
+        qwidgetprivate->syncBackingStore(qwidget->rect());
     }
+
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
     CGContextSaveGState(cg);
