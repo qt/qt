@@ -4413,6 +4413,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         bool twoColumn = false;
         if (section.members.first()->type() == Node::QmlProperty) {
             twoColumn = (count >= 5);
+            twoColumn = false;
         }
         if (twoColumn)
             out() << "<table class=\"qmlsummary\">\n";
