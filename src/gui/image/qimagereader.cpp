@@ -301,7 +301,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     if (!handler && !testFormat.isEmpty()) {
         if (false) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
-	} else if (testFormat == "png") {
+        } else if (testFormat == "png") {
             handler = new QPngHandler;
 #endif
 #ifndef QT_NO_IMAGEFORMAT_BMP
