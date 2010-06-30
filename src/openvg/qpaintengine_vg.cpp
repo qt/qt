@@ -3424,7 +3424,13 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 
     // Set the transformation to use for drawing the current glyphs.
     QTransform glyphTransform(d->pathTransform);
-    glyphTransform.translate(p.x(), p.y());
+    if (d->transform.type() <= QTransform::TxTranslate) {
+        // Prevent blurriness of unscaled, unrotated text by using integer coordinates.
+        // Using ceil(x-0.5) instead of qRound() or int-cast, behave like other paint engines.
+        glyphTransform.translate(ceil(p.x() - 0.5), ceil(p.y() - 0.5));
+    } else {
+        glyphTransform.translate(p.x(), p.y());
+    }
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
 #endif
