@@ -99,7 +99,7 @@ TextEdit {
     You can translate between cursor positions (characters from the start of the document) and pixel
     points using positionAt() and positionToRectangle().
 
-    \sa Text, TextInput
+    \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
 /*!

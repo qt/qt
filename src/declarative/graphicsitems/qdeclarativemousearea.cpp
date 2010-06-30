@@ -192,7 +192,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     MouseArea is an invisible item: it is never painted.
 
-    \sa MouseEvent
+    \sa MouseEvent, {declarative/touchinteraction/mousearea}{MouseArea example}
 */
 
 /*!
