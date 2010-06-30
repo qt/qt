@@ -44,9 +44,15 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 
+#ifdef Q_WS_S60
 #include <aknapp.h>
+typedef CAknApplication QS60MainApplicationBase;
+#else
+#include <eikapp.h>
+typedef CEikApplication QS60MainApplicationBase;
+#endif
 
 QT_BEGIN_HEADER
 
@@ -54,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class Q_GUI_EXPORT QS60MainApplication : public CAknApplication
+class Q_GUI_EXPORT QS60MainApplication : public QS60MainApplicationBase
 {
 public:
     QS60MainApplication();
@@ -65,6 +71,14 @@ public:
 
     virtual TFileName ResourceFileName() const;
 
+public:
+
+    virtual void PreDocConstructL();
+
+    virtual CDictionaryStore *OpenIniFileLC(RFs &aFs) const;
+
+    virtual void NewAppServerL(CApaAppServer *&aAppServer);
+
 protected:
 
     virtual CApaDocument *CreateDocumentL();
@@ -74,6 +88,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // Q_WS_S60
+#endif // Q_OS_SYMBIAN
 
 #endif // QS60MAINAPPLICATION_H
