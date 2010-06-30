@@ -10,6 +10,18 @@
     </message>
 </context>
 <context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="120"/>
+        <location filename="main.cpp" line="121"/>
+        <location filename="main.cpp" line="123"/>
+        <location filename="main.cpp" line="124"/>
+        <location filename="main.cpp" line="127"/>
+        <source>Hello World</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TopLevel</name>
     <message>
         <location filename="main.cpp" line="82"/>

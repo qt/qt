@@ -183,11 +183,11 @@ data types. This is primarily useful when setting the properties of an item
 when the property has one of the following types:
 
 \list
-\o \c color - use \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()}, \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()}
-\o \c rect - use \l{Qt::rect()}{Qt.rect()}
-\o \c point - use \l{Qt::point()}{Qt.point()}
-\o \c size - use \l{Qt::size()}{Qt.size()}
-\o \c vector3d - use \l{Qt::vector3d()}{Qt.vector3d()}
+\o \c color - use \l{QML:Qt::rgba()}{Qt.rgba()}, \l{QML:Qt::hsla()}{Qt.hsla()}, \l{QML:Qt::darker()}{Qt.darker()}, \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()}
+\o \c rect - use \l{QML:Qt::rect()}{Qt.rect()}
+\o \c point - use \l{QML:Qt::point()}{Qt.point()}
+\o \c size - use \l{QML:Qt::size()}{Qt.size()}
+\o \c vector3d - use \l{QML:Qt::vector3d()}{Qt.vector3d()}
 \endlist
 
 There are also string based constructors for these types. See \l{qdeclarativebasictypes.html}{QML Basic Types} for more information.
@@ -197,12 +197,12 @@ There are also string based constructors for these types. See \l{qdeclarativebas
 The Qt object contains several functions for formatting dates and times.
 
 \list
-    \o \l{Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
-    \o \l{Qt::formatDate}{string Qt.formatDate(datetime date, variant format)}
-    \o \l{Qt::formatTime}{string Qt.formatTime(datetime date, variant format)}
+    \o \l{QML:Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
+    \o \l{QML:Qt::formatDate}{string Qt.formatDate(datetime date, variant format)}
+    \o \l{QML:Qt::formatTime}{string Qt.formatTime(datetime date, variant format)}
 \endlist
 
-The format specification is described at \l{Qt::formatDateTime}{Qt.formatDateTime}.
+The format specification is described at \l{QML:Qt::formatDateTime}{Qt.formatDateTime}.
 
 
 \section1 Dynamic Object Creation
@@ -211,8 +211,8 @@ items from files or strings. See \l{Dynamic Object Management} for an overview
 of their use.
 
 \list
-    \o \l{Qt::createComponent()}{object Qt.createComponent(url)}
-    \o \l{Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
+    \o \l{QML:Qt::createComponent()}{object Qt.createComponent(url)}
+    \o \l{QML:Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
 

@@ -5,6 +5,6 @@ SOURCES  += tst_qpathclipper.cpp paths.cpp
 
 requires(contains(QT_CONFIG,private_tests))
 
-unix:!mac:!symbian*:LIBS+=-lm
+unix:!mac:!symbian:LIBS+=-lm
 
 

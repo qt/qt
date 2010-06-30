@@ -1466,7 +1466,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 writeFunctions((*s),cn,marker);
             }
             else if ((*s).name == "Member Type Documentation") {
-                writeNestedClasses((*s),cn,marker);
                 writeEnumerations((*s),cn,marker);
                 writeTypedefs((*s),cn,marker);
             }
@@ -1475,6 +1474,9 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             }
             else if ((*s).name == "Property Documentation") {
                 writeProperties((*s),cn,marker);
+            }
+            else if ((*s).name == "Macro Documentation") {
+                writeMacros((*s),cn,marker);
             }
             ++s;
         }
@@ -4736,12 +4738,6 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
     }
 }
 
-void DitaXmlGenerator::writeNestedClasses(const Section& s, 
-                                          const ClassNode* cn, 
-                                          CodeMarker* marker)
-{
-}
-
 void DitaXmlGenerator::writeEnumerations(const Section& s, 
                                          const ClassNode* cn, 
                                          CodeMarker* marker)
@@ -4929,10 +4925,10 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writer.writeCharacters(pn->qualifiedDataType());
             writer.writeCharacters(" ");
             writer.writeCharacters(pn->name());
-            writerFunctions("READ",pn->getters());
-            writerFunctions("WRITE",pn->setters());
-            writerFunctions("RESET",pn->resetters());
-            writerFunctions("NOTIFY",pn->notifiers());
+            writePropParams("READ",pn->getters());
+            writePropParams("WRITE",pn->setters());
+            writePropParams("RESET",pn->resetters());
+            writePropParams("NOTIFY",pn->notifiers());
             if (pn->isDesignable() != pn->designableDefault()) {
                 writer.writeCharacters(" DESIGNABLE ");
                 if (!pn->runtimeDesignabilityFunction().isEmpty())
@@ -5058,7 +5054,92 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
     }
 }
 
-void DitaXmlGenerator::writerFunctions(const QString& tag, const NodeList& nlist)
+void DitaXmlGenerator::writeMacros(const Section& s, 
+                                   const ClassNode* cn, 
+                                   CodeMarker* marker)
+{
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Function) {
+            const FunctionNode* fn = static_cast<const FunctionNode*>(*m);
+            if (fn->isMacro()) {
+                writer.writeStartElement(CXXDEFINE);
+                writer.writeAttribute("id",fn->guid());
+                writer.writeStartElement(APINAME);
+                writer.writeCharacters(fn->name());
+                writer.writeEndElement(); // </apiName>
+                generateBrief(fn,marker);
+                writer.writeStartElement(CXXDEFINEDETAIL);
+                writer.writeStartElement(CXXDEFINEDEFINITION);
+                writer.writeStartElement(CXXDEFINEACCESSSPECIFIER);
+                writer.writeAttribute("value",fn->accessString());
+                writer.writeEndElement(); // <cxxDefineAccessSpecifier>
+            
+                writer.writeStartElement(CXXDEFINEPROTOTYPE);
+                writer.writeCharacters("#define ");
+                writer.writeCharacters(fn->name());
+                if (fn->metaness() == FunctionNode::MacroWithParams) {
+                    QStringList params = fn->parameterNames();
+                    if (!params.isEmpty()) {
+                        writer.writeCharacters("(");
+                        for (int i = 0; i < params.size(); ++i) {
+                            if (params[i].isEmpty())
+                                writer.writeCharacters("...");
+                            else
+                                writer.writeCharacters(params[i]);
+                            if ((i+1) < params.size()) 
+                                writer.writeCharacters(", ");
+                        }
+                        writer.writeCharacters(")");
+                    }
+                }
+                writer.writeEndElement(); // <cxxDefinePrototype>
+
+                writer.writeStartElement(CXXDEFINENAMELOOKUP);
+                writer.writeCharacters(fn->name());
+                writer.writeEndElement(); // <cxxDefineNameLookup>
+
+                if (fn->reimplementedFrom() != 0) {
+                    FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
+                    writer.writeStartElement(CXXDEFINEREIMPLEMENTED);
+                    writer.writeAttribute("href",rfn->ditaXmlHref());
+                    writer.writeCharacters(marker->plainFullName(rfn));
+                    writer.writeEndElement(); // </cxxDefineReimplemented>
+                }
+
+                if (fn->metaness() == FunctionNode::MacroWithParams) {
+                    QStringList params = fn->parameterNames();
+                    if (!params.isEmpty()) {
+                        writer.writeStartElement(CXXDEFINEPARAMETERS);
+                        for (int i = 0; i < params.size(); ++i) {
+                            writer.writeStartElement(CXXDEFINEPARAMETER);
+                            writer.writeStartElement(CXXDEFINEPARAMETERDECLARATIONNAME);
+                            writer.writeCharacters(params[i]);
+                            writer.writeEndElement(); // <cxxDefineParameterDeclarationName>
+                            writer.writeEndElement(); // <cxxDefineParameter>
+                        }
+                        writer.writeEndElement(); // <cxxDefineParameters>
+                    }
+                }
+
+                writeLocation(fn);
+                writer.writeEndElement(); // <cxxDefineDefinition>
+                writer.writeStartElement(APIDESC);
+
+                if (!fn->doc().isEmpty()) {
+                    generateBody(fn, marker);
+                }
+
+                writer.writeEndElement(); // </apiDesc>
+                writer.writeEndElement(); // </cxxDefineDetail>
+                writer.writeEndElement(); // </cxxDefine>
+            }
+        }
+        ++m;
+    }
+}
+
+void DitaXmlGenerator::writePropParams(const QString& tag, const NodeList& nlist)
 {
     NodeList::const_iterator n = nlist.begin();
     while (n != nlist.end()) {

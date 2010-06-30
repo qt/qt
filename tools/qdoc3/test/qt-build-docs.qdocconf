@@ -22,43 +22,43 @@ qhp.Qt.indexTitle          = Qt Reference Documentation
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = index.html \
- 									images/bg_l.png \
-                             	    images/bg_l_blank.png \
-                             	    images/bg_r.png \
-									images/box_bg.png \
-									images/breadcrumb.png \
-									images/bullet_gt.png \
-                             	    images/bullet_dn.png \
-									images/bullet_sq.png \
-                             	    images/bullet_up.png \
-                             	    images/feedbackground.png \
-                             	    images/horBar.png \
-									images/page.png \
-									images/page_bg.png \
-									images/sprites-combined.png \
-									images/arrow-down.png \
-									images/spinner.gif \
-                             	    images/stylesheet-coffee-plastique.png \
-                             	    images/taskmenuextension-example.png \
-                             	   images/coloreditorfactoryimage.png \
-                             	   images/dynamiclayouts-example.png \
-									scripts/functions.js \
-									scripts/jquery.js \
-									 scripts/shBrushCpp.js \
-									 scripts/shCore.js \
-									 scripts/shLegacy.js \
-									 scripts/narrow.js \
-									 scripts/superfish.js \
-									 style/shCore.css \
-									 style/shThemeDefault.css \
-									 style/narrow.css \
-									 style/superfish.css \
-									 style/superfish_skin.css \
-									style/OfflineStyle.css \
-								    style/style_ie6.css \
-									style/style_ie7.css \
-									style/style_ie8.css \
-                             	    style/style.css
+                             images/bg_l.png \
+                             images/bg_l_blank.png \
+                             images/bg_r.png \
+                             images/box_bg.png \
+                             images/breadcrumb.png \
+                             images/bullet_gt.png \
+                             images/bullet_dn.png \
+                             images/bullet_sq.png \
+                             images/bullet_up.png \
+                             images/feedbackground.png \
+                             images/horBar.png \
+                             images/page.png \
+                             images/page_bg.png \
+                             images/sprites-combined.png \
+                             images/arrow-down.png \
+                             images/spinner.gif \
+                             images/stylesheet-coffee-plastique.png \
+                             images/taskmenuextension-example.png \
+                             images/coloreditorfactoryimage.png \
+                             images/dynamiclayouts-example.png \
+                             scripts/functions.js \
+                             scripts/jquery.js \
+                             scripts/shBrushCpp.js \
+                             scripts/shCore.js \
+                             scripts/shLegacy.js \
+                             scripts/narrow.js \
+                             scripts/superfish.js \
+                             style/shCore.css \
+                             style/shThemeDefault.css \
+                             style/narrow.css \
+                             style/superfish.css \
+                             style/superfish_skin.css \
+                             style/OfflineStyle.css \
+                             style/style_ie6.css \
+                             style/style_ie7.css \
+                             style/style_ie8.css \
+                             style/style.css
 
 
 
@@ -141,7 +141,7 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples \
                           $QT_SOURCE_TREE/doc/src/declarative/pics \
-			  $QT_SOURCE_TREE/doc/src/template/images
+                          $QT_SOURCE_TREE/doc/src/template/images
 outputdir               = $QT_BUILD_TREE/doc/html
 tagfile                 = $QT_BUILD_TREE/doc/html/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html

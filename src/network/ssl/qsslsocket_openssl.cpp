@@ -72,6 +72,9 @@
 
 QT_BEGIN_NAMESPACE
 
+bool QSslSocketPrivate::s_libraryLoaded = false;
+bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
+
 // Useful defines
 #define SSL_ERRORSTR() QString::fromLocal8Bit(q_ERR_error_string(q_ERR_get_error(), NULL))
 
@@ -398,19 +401,24 @@ void QSslSocketPrivate::deinitialize()
 /*!
     \internal
 
-    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
-    been initialized.
+    Does the minimum amount of initialization to determine whether SSL
+    is supported or not.
 */
-bool QSslSocketPrivate::ensureInitialized()
+
+bool QSslSocketPrivate::supportsSsl()
+{
+    return ensureLibraryLoaded();
+}
+
+bool QSslSocketPrivate::ensureLibraryLoaded()
 {
     if (!q_resolveOpenSslSymbols())
         return false;
 
     // Check if the library itself needs to be initialized.
     QMutexLocker locker(openssl_locks()->initLock());
-    static int q_initialized = false;
-    if (!q_initialized) {
-        q_initialized = true;
+    if (!s_libraryLoaded) {
+        s_libraryLoaded = true;
 
         // Initialize OpenSSL.
         q_CRYPTO_set_id_callback(id_function);
@@ -447,10 +455,33 @@ bool QSslSocketPrivate::ensureInitialized()
             if (!attempts)
                 return false;
         }
-
-        resetDefaultCiphers();
-        setDefaultCaCertificates(systemCaCertificates());
     }
+    return true;
+}
+
+void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
+{
+    if (s_loadedCiphersAndCerts)
+        return;
+    s_loadedCiphersAndCerts = true;
+
+    resetDefaultCiphers();
+    setDefaultCaCertificates(systemCaCertificates());
+}
+
+/*!
+    \internal
+
+    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
+    been initialized.
+*/
+
+void QSslSocketPrivate::ensureInitialized()
+{
+    if (!supportsSsl())
+        return;
+
+    ensureCiphersAndCertsLoaded();
 
     //load symbols needed to receive certificates from system store
 #if defined(Q_OS_MAC)
@@ -481,7 +512,6 @@ bool QSslSocketPrivate::ensureInitialized()
         qWarning("could not load crypt32 library"); // should never happen
     }
 #endif
-    return true;
 }
 
 /*!

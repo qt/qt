@@ -923,6 +923,14 @@ FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
 }
 
 /*!
+  Returns the fake node's title. This is used for the page title.
+*/
+QString FakeNode::title() const
+{
+    return tle;
+}
+
+/*!
   Returns the fake node's full title, which is usually
   just title(), but for some SubType values is different
   from title()
@@ -1427,7 +1435,10 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle((qmlOnly ? "" : "QML ") + name + " Element");
+    if (name.startsWith(QLatin1String("QML:")))
+        setTitle((qmlOnly ? QLatin1String("") : QLatin1String("QML ")) + name.mid(4) + QLatin1String(" Element"));
+    else
+        setTitle((qmlOnly ? QLatin1String("") : QLatin1String("QML ")) + name + QLatin1String(" Element"));
 }
 
 /*!
