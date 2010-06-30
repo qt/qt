@@ -527,14 +527,19 @@ int QDialog::exec()
 #endif //QT_NO_MENUBAR
 #endif //Q_WS_WINCE_WM
 
+    bool showSystemDialogFullScreen = false;
 #ifdef Q_OS_SYMBIAN
     if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
-        qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this))
-        showMaximized();
-    else
+        qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this)) {
+        showSystemDialogFullScreen = true;
+    }
 #endif // Q_OS_SYMBIAN
 
-        show();
+    if (showSystemDialogFullScreen) {
+        setWindowFlags(windowFlags() | Qt::WindowSoftkeysVisibleHint);
+        setWindowState(Qt::WindowFullScreen);
+    }
+    show();
 
 #ifdef Q_WS_MAC
     d->mac_nativeDialogModalHelp();
@@ -892,8 +897,6 @@ void QDialog::adjustPosition(QWidget* w)
 bool QDialog::s60AdjustedPosition()
 {
     QPoint p;
-    const QSize mainAreaSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-    const int statusPaneHeight = (S60->screenHeightInPixels - mainAreaSize.height())>>1;
     const bool doS60Positioning = !(isFullScreen()||isMaximized());
     if (doS60Positioning) {
         // naive way to deduce screen orientation
