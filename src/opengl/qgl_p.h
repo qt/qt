@@ -415,7 +415,7 @@ public:
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
-    static QGLExtensionFuncs& extensionFuncs(const QGLContext *);
+    static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif
 
     static void setCurrentContext(QGLContext *context);
