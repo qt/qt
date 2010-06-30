@@ -77,7 +77,7 @@ public:
     QGLWindowSurfacePrivate* d;
 };
 
-class QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
+class Q_OPENGL_EXPORT QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
 {
     Q_OBJECT
 public:
