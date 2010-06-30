@@ -55,7 +55,7 @@ BookmarksView::BookmarksView(QWidget *parent)
 
     m_iconView->addItem("www.google.com");
     m_iconView->addItem("qt.nokia.com/doc/4.5");
-    m_iconView->addItem("news.bbc.co.uk/text_only.stm");
+    m_iconView->addItem("news.bbc.co.uk/2/mobile/default.stm");
     m_iconView->addItem("mobile.wikipedia.org");
     m_iconView->addItem("qt.nokia.com");
     m_iconView->addItem("en.wikipedia.org");
