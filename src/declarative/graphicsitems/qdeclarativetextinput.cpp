@@ -152,12 +152,6 @@ void QDeclarativeTextInput::setText(const QString &s)
 */
 
 /*!
-    \qmlproperty bool TextInput::font.outline
-
-    Sets whether the font has an outline style.
-*/
-
-/*!
     \qmlproperty bool TextInput::font.strikeout
 
     Sets whether the font has a strikeout style.

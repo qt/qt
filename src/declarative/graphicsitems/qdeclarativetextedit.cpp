@@ -186,12 +186,6 @@ QString QDeclarativeTextEdit::text() const
 */
 
 /*!
-    \qmlproperty bool TextEdit::font.outline
-
-    Sets whether the font has an outline style.
-*/
-
-/*!
     \qmlproperty bool TextEdit::font.strikeout
 
     Sets whether the font has a strikeout style.

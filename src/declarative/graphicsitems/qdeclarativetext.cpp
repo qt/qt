@@ -225,12 +225,6 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 */
 
 /*!
-    \qmlproperty bool Text::font.outline
-
-    Sets whether the font has an outline style.
-*/
-
-/*!
     \qmlproperty bool Text::font.strikeout
 
     Sets whether the font has a strikeout style.
@@ -441,6 +435,8 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \qml
     Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
     \endqml
+
+    \sa style
  */
 QColor QDeclarativeText::styleColor() const
 {
