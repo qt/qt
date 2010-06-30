@@ -120,6 +120,9 @@ void qt_transform_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
                                             const QTransform &targetRectTransform,
                                             int const_alpha);
 
+void qt_memrotate90_16_neon(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
+void qt_memrotate270_16_neon(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
+
 uint * QT_FASTCALL qt_destFetchRGB16_neon(uint *buffer,
                                           QRasterBuffer *rasterBuffer,
                                           int x, int y, int length);

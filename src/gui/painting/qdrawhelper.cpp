@@ -7901,6 +7901,9 @@ void qInitDrawhelperAsm()
             functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
             destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
             destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
+
+            qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
+            qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
         }
 #endif
 
