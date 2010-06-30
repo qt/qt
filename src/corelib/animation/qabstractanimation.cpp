@@ -168,7 +168,7 @@ Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 QUnifiedTimer::QUnifiedTimer() :
     QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), consistentTiming(false), slowMode(false),
-    isPauseTimerActive(false), runningLeafAnimations(0)
+    slowdownFactor(5.0f), isPauseTimerActive(false), runningLeafAnimations(0)
 {
     time.invalidate();
 }
@@ -208,8 +208,13 @@ void QUnifiedTimer::updateAnimationsTime()
     // ignore consistentTiming in case the pause timer is active
     int delta = (consistentTiming && !isPauseTimerActive) ?
                         timingInterval : time.elapsed() - lastTick;
-    if (slowMode)
-        delta /= 5;
+    if (slowMode) {
+        if (slowdownFactor > 0)
+            delta = qRound(delta / slowdownFactor);
+        else
+            delta = 0;
+    }
+
     lastTick = time.elapsed();
 
     //we make sure we only call update time if the time has actually changed
