@@ -58,6 +58,9 @@ QT_BEGIN_NAMESPACE
     the QGestureRecognizer object that is registered with the application; see
     QGestureRecognizer::registerRecognizer().
 
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
     \section1 Gesture Properties
 
     The class has a list of properties that can be queried by the user to get
@@ -218,7 +221,10 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 
     \image pangesture.png
 
-    \sa {Gestures Programming}, QPinchGesture, QSwipeGesture
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
+    \sa QPinchGesture, QSwipeGesture
 */
 
 /*!
@@ -313,6 +319,9 @@ void QPanGesture::setAcceleration(qreal value)
     them closer together or further apart to change the scale factor, zoom, or level
     of detail of the user interface.
 
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
     \image pinchgesture.png
 
     Instead of repeatedly applying the same pinching gesture, the user may
@@ -321,7 +330,7 @@ void QPanGesture::setAcceleration(qreal value)
     will continue to be delivered to the target object, containing an instance
     of QPinchGesture in the Qt::GestureUpdated state.
 
-    \sa {Gestures Programming}, QPanGesture, QSwipeGesture
+    \sa QPanGesture, QSwipeGesture
 */
 
 /*!
@@ -571,7 +580,10 @@ void QPinchGesture::setRotationAngle(qreal value)
 
     \image swipegesture.png
 
-    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
+    \sa QPanGesture, QPinchGesture
 */
 
 /*!
@@ -666,7 +678,10 @@ void QSwipeGesture::setSwipeAngle(qreal value)
     \brief The QTapGesture class describes a tap gesture made by the user.
     \ingroup gestures
 
-    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
+    \sa QPanGesture, QPinchGesture
 */
 
 /*!
@@ -699,7 +714,10 @@ void QTapGesture::setPosition(const QPointF &value)
     gesture made by the user.
     \ingroup gestures
 
-    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
+    \sa QPanGesture, QPinchGesture
 */
 
 /*!

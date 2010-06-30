@@ -4281,6 +4281,11 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     QGestureEvent::accept() for each of them, or an event filter consumes the
     event.
 
+    \section1 Further Reading
+
+    For an overview of gesture handling in Qt and information on using gestures
+    in your applications, see the \l{Gestures Programming} document.
+
     \sa QGesture, QGestureRecognizer,
         QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
