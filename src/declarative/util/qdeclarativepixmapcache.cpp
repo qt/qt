@@ -220,18 +220,20 @@ bool QDeclarativeImageRequestHandler::event(QEvent *event)
             if (reader->cancelled.count()) {
                 for (int i = 0; i < reader->cancelled.count(); ++i) {
                     QDeclarativePixmapReply *job = reader->cancelled.at(i);
-                    // cancel any jobs already started
                     QNetworkReply *reply = replies.key(job, 0);
                     if (reply && reply->isRunning()) {
+                        // cancel any jobs already started
                         replies.remove(reply);
                         reply->close();
-                    }
-                    // remove from pending job list
-                    for (int j = 0; j < reader->jobs.count(); ++j) {
-                        if (reader->jobs.at(j) == job) {
-                            reader->jobs.removeAt(j);
-                            job->release(true);
-                            break;
+                        job->release(true);
+                    } else {
+                        // remove from pending job list
+                        for (int j = 0; j < reader->jobs.count(); ++j) {
+                            if (reader->jobs.at(j) == job) {
+                                reader->jobs.removeAt(j);
+                                job->release(true);
+                                break;
+                            }
                         }
                     }
                 }
@@ -306,27 +308,27 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QDeclarativePixmapReply *job = replies.take(reply);
 
-    redirectCount++;
-    if (redirectCount < IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION) {
-        QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-        if (redirect.isValid()) {
-            QUrl url = reply->url().resolved(redirect.toUrl());
-            QNetworkRequest req(url);
-            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-
-            reply->deleteLater();
-            reply = networkAccessManager()->get(req);
-
-            QMetaObject::connect(reply, replyDownloadProgress, job, downloadProgress);
-            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
-
-            replies.insert(reply, job);
-            return;
-        }
-    }
-    redirectCount=0;
-
     if (job) {
+        redirectCount++;
+        if (redirectCount < IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION) {
+            QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+            if (redirect.isValid()) {
+                QUrl url = reply->url().resolved(redirect.toUrl());
+                QNetworkRequest req(url);
+                req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+
+                reply->deleteLater();
+                reply = networkAccessManager()->get(req);
+
+                QMetaObject::connect(reply, replyDownloadProgress, job, downloadProgress);
+                QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+
+                replies.insert(reply, job);
+                return;
+            }
+        }
+        redirectCount=0;
+
         QImage image;
         QDeclarativeImageReaderEvent::ReadError error;
         QString errorString;
