@@ -263,7 +263,6 @@ void tst_qdeclarativestates::attachedPropertyChanges()
     MyAttached *att = qobject_cast<MyAttached*>(attObj);
     QVERIFY(att);
 
-    QEXPECT_FAIL("", "QTBUG-11283", Abort);
     QCOMPARE(att->foo(), 1);
 }
 

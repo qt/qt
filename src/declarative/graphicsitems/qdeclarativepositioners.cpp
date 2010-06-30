@@ -1027,13 +1027,13 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             continue;
 
         if (d->flow == LeftToRight)  {
-            if (hoffset && hoffset + child.item->width() > width()) {
+            if (widthValid() && hoffset && hoffset + child.item->width() > width()) {
                 hoffset = 0;
                 voffset += linemax + spacing();
                 linemax = 0;
             }
         } else {
-            if (voffset && voffset + child.item->height() > height()) {
+            if (heightValid() && voffset && voffset + child.item->height() > height()) {
                 voffset = 0;
                 hoffset += linemax + spacing();
                 linemax = 0;

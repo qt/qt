@@ -199,6 +199,7 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
         fillMode: Image.PreserveAspectCrop
         smooth: true
         source: "qtlogo.png"
+        clip: true
     }
     \endqml
 
@@ -220,6 +221,7 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     Image {
         width: 120; height: 120
         fillMode: Image.TileVertically
+        smooth: true
         source: "qtlogo.png"
     }
     \endqml
@@ -231,11 +233,14 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     Image {
         width: 120; height: 120
         fillMode: Image.TileHorizontally
+        smooth: true
         source: "qtlogo.png"
     }
     \endqml
 
     \endtable
+
+    \sa {declarative/imageelements/image}{Image example}
 */
 QDeclarativeImage::FillMode QDeclarativeImage::fillMode() const
 {
