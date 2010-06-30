@@ -790,9 +790,10 @@ public:
     Lexer();
     ~Lexer();
 
-    void setCode(const QString &c, int lineno);
+    void setCode(const QString &c, const QString &fileName, int lineno);
     int lex();
 
+    QString fileName() const { return yyfilename; }
     int currentLineNo() const { return yylineno; }
     int currentColumnNo() const { return yycolumn; }
 
@@ -872,6 +873,7 @@ public:
         { err = NoError; }
 
 private:
+    QString yyfilename;
     int yylineno;
     bool done;
     char *buffer8;
@@ -1053,9 +1055,10 @@ QScript::Lexer::~Lexer()
     delete [] buffer16;
 }
 
-void QScript::Lexer::setCode(const QString &c, int lineno)
+void QScript::Lexer::setCode(const QString &c, const QString &fileName, int lineno)
 {
     errmsg = QString();
+    yyfilename = fileName;
     yylineno = lineno;
     yycolumn = 1;
     restrKeyword = false;
@@ -2052,10 +2055,12 @@ public:
     QScriptParser();
     ~QScriptParser();
 
-    bool parse(QScript::Lexer *lexer,
-               const QString &fileName,
-               Translator *translator);
+    void setLexer(QScript::Lexer *);
 
+    bool parse(Translator *translator);
+
+    QString fileName() const
+    { return lexer->fileName(); }
     inline QString errorMessage() const
     { return error_message; }
     inline int errorLineNumber() const
@@ -2072,6 +2077,8 @@ protected:
     inline Location &loc(int index)
     { return location_stack [tos + index - 2]; }
 
+    std::ostream &yyMsg(int line = 0);
+
 protected:
     int tos;
     int stack_size;
@@ -2081,6 +2088,9 @@ protected:
     QString error_message;
     int error_lineno;
     int error_column;
+
+private:
+    QScript::Lexer *lexer;
 };
 
 inline void QScriptParser::reallocateStack()
@@ -2107,7 +2117,8 @@ QScriptParser::QScriptParser():
     stack_size(0),
     sym_stack(0),
     state_stack(0),
-    location_stack(0)
+    location_stack(0),
+    lexer(0)
 {
 }
 
@@ -2129,10 +2140,14 @@ static inline QScriptParser::Location location(QScript::Lexer *lexer)
     return loc;
 }
 
-bool QScriptParser::parse(QScript::Lexer *lexer,
-                    const QString &fileName,
-     	            Translator *translator)
+void QScriptParser::setLexer(QScript::Lexer *lex)
 {
+    lexer = lex;
+}
+
+bool QScriptParser::parse(Translator *translator)
+{
+  Q_ASSERT(lexer != 0);
   const int INITIAL_STATE = 0;
 
   int yytoken = -1;
@@ -2216,13 +2231,11 @@ case 66: {
     if ((name == QLatin1String("qsTranslate")) || (name == QLatin1String("QT_TRANSLATE_NOOP"))) {
         QVariantList args = sym(2).toList();
         if (args.size() < 2) {
-            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                      << qPrintable(name) << "() requires at least two arguments.\n";
+            yyMsg(identLineNo) << qPrintable(name) << "() requires at least two arguments.\n";
         } else {
             if ((args.at(0).type() != QVariant::String)
                 || (args.at(1).type() != QVariant::String)) {
-                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                          << qPrintable(name) << "(): both arguments must be literal strings.\n";
+                yyMsg(identLineNo) << qPrintable(name) << "(): both arguments must be literal strings.\n";
             } else {
                 QString context = args.at(0).toString();
                 QString text = args.at(1).toString();
@@ -2230,26 +2243,24 @@ case 66: {
                 QString extracomment;
                 bool plural = (args.size() > 4);
                 recordMessage(translator, context, text, comment, extracomment,
-                              plural, fileName, identLineNo);
+                              plural, fileName(), identLineNo);
             }
         }
     } else if ((name == QLatin1String("qsTr")) || (name == QLatin1String("QT_TR_NOOP"))) {
         QVariantList args = sym(2).toList();
         if (args.size() < 1) {
-            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                      << qPrintable(name) << "() requires at least one argument.\n";
+            yyMsg(identLineNo) << qPrintable(name) << "() requires at least one argument.\n";
         } else {
             if (args.at(0).type() != QVariant::String) {
-                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                          << qPrintable(name) << "(): text to translate must be a literal string.\n";
+                yyMsg(identLineNo) << qPrintable(name) << "(): text to translate must be a literal string.\n";
             } else {
-                QString context = QFileInfo(fileName).baseName();
+                QString context = QFileInfo(fileName()).baseName();
                 QString text = args.at(0).toString();
                 QString comment = args.value(1).toString();
                 QString extracomment;
                 bool plural = (args.size() > 2);
                 recordMessage(translator, context, text, comment, extracomment,
-                              plural, fileName, identLineNo);
+                              plural, fileName(), identLineNo);
             }
         }
     }
@@ -2356,6 +2367,11 @@ case 94: {
     return false;
 }
 
+std::ostream &QScriptParser::yyMsg(int line)
+{
+    return std::cerr << qPrintable(fileName()) << ':' << (line ? line : lexer->startLineNo()) << ": ";
+}
+
 
 bool loadQScript(Translator &translator, const QString &filename, ConversionData &cd)
 {
@@ -2376,9 +2392,10 @@ bool loadQScript(Translator &translator, const QString &filename, ConversionData
 
     QString code = ts.readAll();
     QScript::Lexer lexer;
-    lexer.setCode(code, /*lineNumber=*/1);
+    lexer.setCode(code, filename, /*lineNumber=*/1);
     QScriptParser parser;
-    if (!parser.parse(&lexer, filename, &translator)) {
+    parser.setLexer(&lexer);
+    if (!parser.parse(&translator)) {
         std::cerr << qPrintable(filename) << ':' << parser.errorLineNumber() << ": "
                   << qPrintable(parser.errorMessage()) << std::endl;
         return false;
