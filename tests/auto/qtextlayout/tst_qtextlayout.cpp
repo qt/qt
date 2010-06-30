@@ -85,6 +85,7 @@ private slots:
     void cursorToXForSetColumns();
     void defaultWordSeparators_data();
     void defaultWordSeparators();
+    void cursorMovementFromInvalidPositions();
     void cursorMovementInsideSpaces();
     void charWordStopOnLineSeparator();
     void xToCursorAtEndOfLine();
@@ -542,6 +543,10 @@ void tst_QTextLayout::defaultWordSeparators_data()
     QTest::newRow("lineseparator")
             << QString::fromLatin1("abcd") + QString(QChar::LineSeparator) + QString::fromLatin1("efgh")
             << 0 << 5;
+
+    QTest::newRow("empty")
+            << QString()
+            << 0 << 0;
 }
 
 void tst_QTextLayout::defaultWordSeparators()
@@ -555,12 +560,31 @@ void tst_QTextLayout::defaultWordSeparators()
     QCOMPARE(layout.previousCursorPosition(endPos, QTextLayout::SkipWords), startPos);
 }
 
+void tst_QTextLayout::cursorMovementFromInvalidPositions()
+{
+    int badpos = 10000;
+
+    QTextLayout layout("ABC", testFont);
+
+    QCOMPARE(layout.previousCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
+    QCOMPARE(layout.nextCursorPosition(-badpos, QTextLayout::SkipCharacters), -badpos);
+
+    QCOMPARE(layout.previousCursorPosition(badpos, QTextLayout::SkipCharacters), badpos);
+    QCOMPARE(layout.nextCursorPosition(badpos, QTextLayout::SkipCharacters), badpos);
+}
+
 void tst_QTextLayout::cursorMovementInsideSpaces()
 {
     QTextLayout layout("ABC            DEF", testFont);
 
     QCOMPARE(layout.previousCursorPosition(6, QTextLayout::SkipWords), 0);
     QCOMPARE(layout.nextCursorPosition(6, QTextLayout::SkipWords), 15);
+
+
+    QTextLayout layout2("ABC\t\t\t\t\t\t\t\t\t\t\t\tDEF", testFont);
+
+    QCOMPARE(layout2.previousCursorPosition(6, QTextLayout::SkipWords), 0);
+    QCOMPARE(layout2.nextCursorPosition(6, QTextLayout::SkipWords), 15);
 }
 
 void tst_QTextLayout::charWordStopOnLineSeparator()

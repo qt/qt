@@ -926,14 +926,7 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItemV4
 
     q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, &opt, painter, q);
 
-    if (const QWidget *widget = editorForIndex(index).editor) {
-        painter->save();
-        painter->setClipRect(widget->geometry());
-        q->itemDelegate(index)->paint(painter, opt, index);
-        painter->restore();
-    } else {
-        q->itemDelegate(index)->paint(painter, opt, index);
-    }
+    q->itemDelegate(index)->paint(painter, opt, index);
 }
 
 /*!

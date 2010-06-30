@@ -2293,27 +2293,27 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
     if (flags & Qt::TextShowMnemonic) {
         itemize();
+        HB_CharAttributes *attributes = const_cast<HB_CharAttributes *>(this->attributes());
         for (int i = 0; i < layoutData->items.size(); ++i) {
             QScriptItem &si = layoutData->items[i];
             if (!si.num_glyphs)
                 shape(i);
 
-            HB_CharAttributes *attributes = const_cast<HB_CharAttributes *>(this->attributes());
             unsigned short *logClusters = this->logClusters(&si);
             QGlyphLayout glyphs = shapedGlyphs(&si);
 
             const int end = si.position + length(&si);
-            for (int i = si.position; i < end - 1; ++i)
+            for (int i = si.position; i < end - 1; ++i) {
                 if (layoutData->string.at(i) == QLatin1Char('&')) {
                     const int gp = logClusters[i - si.position];
                     glyphs.attributes[gp].dontPrint = true;
                     attributes[i + 1].charStop = false;
                     attributes[i + 1].whiteSpace = false;
                     attributes[i + 1].lineBreakType = HB_NoBreak;
-                    if (i < end - 1
-                            && layoutData->string.at(i + 1) == QLatin1Char('&'))
+                    if (layoutData->string.at(i + 1) == QLatin1Char('&'))
                         ++i;
                 }
+            }
         }
     }
 
@@ -2373,7 +2373,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
     if (mode == Qt::ElideRight) {
         QFixed currentWidth;
-        int pos = 0;
+        int pos;
         int nextBreak = 0;
 
         do {
@@ -2393,7 +2393,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         return layoutData->string.left(pos) + ellipsisText;
     } else if (mode == Qt::ElideLeft) {
         QFixed currentWidth;
-        int pos = layoutData->string.length();
+        int pos;
         int nextBreak = layoutData->string.length();
 
         do {

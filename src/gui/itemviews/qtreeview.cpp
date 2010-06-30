@@ -1669,14 +1669,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
             opt.state = oldState;
         }
 
-        if (const QWidget *widget = d->editorForIndex(modelIndex).editor) {
-            painter->save();
-            painter->setClipRect(widget->geometry());
-            d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
-            painter->restore();
-        } else {
-            d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
-        }
+        d->delegateForIndex(modelIndex)->paint(painter, opt, modelIndex);
     }
 
     if (currentRowHasFocus) {
@@ -2469,10 +2462,8 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
     }
 
     const int parentItem = d->viewIndex(parent);
-    if (((parentItem != -1) && d->viewItems.at(parentItem).expanded && updatesEnabled())
+    if (((parentItem != -1) && d->viewItems.at(parentItem).expanded)
         || (parent == d->root)) {
-        d->doDelayedItemsLayout();
-    } else if ((parentItem != -1) && d->viewItems.at(parentItem).expanded) {
         d->doDelayedItemsLayout();
     } else if (parentItem != -1 && (d->model->rowCount(parent) == end - start + 1)) {
         // the parent just went from 0 children to more. update to re-paint the decoration
