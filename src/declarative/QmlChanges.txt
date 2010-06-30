@@ -14,6 +14,8 @@ Component:
     - isReady, isLoading, isError and isNull properties removed, use
       status property instead
     - errorsString() renamed to errorString()
+ListView:
+    - ListView.prevSection property changed to ListView.previousSection
 
 TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
 

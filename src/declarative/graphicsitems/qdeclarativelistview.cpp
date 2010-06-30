@@ -575,6 +575,10 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
+                if (FxListItem *item = visibleItem(modelIndex+1))
+                    listItem->attached->m_nextSection = item->attached->section();
+                else
+                    listItem->attached->m_nextSection = sectionAt(modelIndex+1);
             }
         }
         if (model->completePending()) {
@@ -951,13 +955,25 @@ void QDeclarativeListViewPrivate::updateSections()
         QString prevSection;
         if (visibleIndex > 0)
             prevSection = sectionAt(visibleIndex-1);
+        QDeclarativeListViewAttached *prevAtt = 0;
+        int idx = -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
             if (visibleItems.at(i)->index != -1) {
                 QDeclarativeListViewAttached *attached = visibleItems.at(i)->attached;
                 attached->setPrevSection(prevSection);
+                if (prevAtt)
+                    prevAtt->setNextSection(attached->section());
                 createSection(visibleItems.at(i));
                 prevSection = attached->section();
+                prevAtt = attached;
+                idx = visibleItems.at(i)->index;
             }
+        }
+        if (prevAtt) {
+            if (idx > 0 && idx < model->count()-1)
+                prevAtt->setNextSection(sectionAt(idx+1));
+            else
+                prevAtt->setNextSection(QString());
         }
     }
 }
@@ -1418,8 +1434,17 @@ QDeclarativeListView::~QDeclarativeListView()
 */
 
 /*!
-    \qmlattachedproperty string ListView::prevSection
+    \qmlattachedproperty string ListView::previousSection
     This attached property holds the section of the previous element.
+
+    It is attached to each instance of the delegate.
+
+    The section is evaluated using the \l {ListView::section.property}{section} properties.
+*/
+
+/*!
+    \qmlattachedproperty string ListView::nextSection
+    This attached property holds the section of the next element.
 
     It is attached to each instance of the delegate.
 
@@ -1963,9 +1988,9 @@ void QDeclarativeListView::setCacheBuffer(int b)
 
     \c section.delegate holds the delegate component for each section.
 
-    Each item in the list has attached properties named \c ListView.section and
-    \c ListView.prevSection.  These may be used to place a section header for
-    related items.  
+    Each item in the list has attached properties named \c ListView.section,
+    \c ListView.previousSection and \c ListView.nextSection.  These may be
+    used to place a section header for related items.
 
     For example, here is a ListView that displays a list of animals, separated 
     into sections. Each item in the ListView is placed in a different section 
