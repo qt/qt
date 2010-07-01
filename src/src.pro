@@ -187,4 +187,15 @@ debug.depends = $$EXTRA_DEBUG_TARGETS
 release.depends = $$EXTRA_RELEASE_TARGETS
 QMAKE_EXTRA_TARGETS += debug release
 
+# This gives us a top-level runonphone target, which installs Qt and optionally QtWebKit.
+contains(CONFIG, run_on_phone) {
+    src_runonphone_target.target = runonphone
+    src_runonphone_target.commands = $(MAKE) -C $$QT_BUILD_TREE/src/s60installs runonphone
+    src_runonphone_target.depends = first
+    contains(QT_CONFIG, webkit) {
+        src_runonphone_target.commands += && $(MAKE) -C $$QT_BUILD_TREE/src/3rdparty/webkit/WebCore runonphone
+    }
+    QMAKE_EXTRA_TARGETS += src_runonphone_target
+}
+
 SUBDIRS += $$SRC_SUBDIRS
