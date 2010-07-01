@@ -198,6 +198,7 @@ void initProjectDeploySymbian(QMakeProject* project,
             devicePathWithoutDrive.remove(0,2);
         }
         if (!deployBinaries
+                && 0 != platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))
                 && !devicePathWithoutDrive.isEmpty()
                 && (0 == devicePathWithoutDrive.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
                     || 0 == devicePathWithoutDrive.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
@@ -341,6 +342,19 @@ void initProjectDeploySymbian(QMakeProject* project,
                     }
                 }
             }
+        }
+    }
+
+    // Remove deployments that do not actually do anything
+    if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))
+        || 0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+        QMutableListIterator<CopyItem> i(deploymentList);
+        while(i.hasNext()) {
+            CopyItem &item = i.next();
+            QFileInfo fromItem(item.from);
+            QFileInfo toItem(item.to);
+            if (fromItem == toItem)
+                i.remove();
         }
     }
 }

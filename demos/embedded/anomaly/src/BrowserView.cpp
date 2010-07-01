@@ -177,7 +177,6 @@ void BrowserView::resizeEvent(QResizeEvent *event)
 void BrowserView::setDefaultIap()
 {
     qt_SetDefaultIap();
-    m_webView->load(QUrl("http://news.bbc.co.uk/text_only.stm"));
 }
 #endif
 
