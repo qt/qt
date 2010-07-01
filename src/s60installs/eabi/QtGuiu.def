@@ -12058,4 +12058,6 @@ EXPORTS
 	_ZNK18QRuntimePixmapData7toImageEv @ 12057 NONAME
 	_ZTI18QRuntimePixmapData @ 12058 NONAME
 	_ZTV18QRuntimePixmapData @ 12059 NONAME
+	_ZN11QEglContext21swapBuffersRegion2NOKEiPK7QRegion @ 12060 NONAME
+	_ZN4QEgl24eglSwapBuffersRegion2NOKEiiiPKi @ 12061 NONAME
 

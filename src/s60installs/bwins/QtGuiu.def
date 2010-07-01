@@ -12857,4 +12857,6 @@ EXPORTS
 	?runtimeData@QRuntimePixmapData@@UBEPAVQPixmapData@@XZ @ 12856 NONAME ; class QPixmapData * QRuntimePixmapData::runtimeData(void) const
 	?toNativeType@QRuntimePixmapData@@UAEPAXW4NativeType@QPixmapData@@@Z @ 12857 NONAME ; void * QRuntimePixmapData::toNativeType(enum QPixmapData::NativeType)
 	?copy@QRasterPixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12858 NONAME ; void QRasterPixmapData::copy(class QPixmapData const *, class QRect const &)
+	?eglSwapBuffersRegion2NOK@QEgl@@YAHHHHPBH@Z @ 12859 NONAME ; int QEgl::eglSwapBuffersRegion2NOK(int, int, int, int const *)
+	?swapBuffersRegion2NOK@QEglContext@@QAE_NHPBVQRegion@@@Z @ 12860 NONAME ; bool QEglContext::swapBuffersRegion2NOK(int, class QRegion const *)
 
