@@ -299,8 +299,20 @@ init_context:
     }
 
     // Add all our CAs to this store.
-    foreach (const QSslCertificate &caCertificate, q->caCertificates())
+    QList<QSslCertificate> expiredCerts;
+    foreach (const QSslCertificate &caCertificate, q->caCertificates()) {
+        // add expired certs later, so that the
+        // valid ones are used before the expired ones
+        if (! caCertificate.isValid()) {
+            expiredCerts.append(caCertificate);
+        } else {
+            q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+        }
+    }
+    // now add the expired certs
+    foreach (const QSslCertificate &caCertificate, expiredCerts) {
         q_X509_STORE_add_cert(ctx->cert_store, (X509 *)caCertificate.handle());
+    }
 
     // Register a custom callback to get all verification errors.
     X509_STORE_set_verify_cb_func(ctx->cert_store, q_X509Callback);
@@ -597,7 +609,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
                 if(!pc)
                     break;
                 QByteArray der((const char *)(pc->pbCertEncoded), static_cast<int>(pc->cbCertEncoded));
-                QSslCertificate cert(der,QSsl::Der);
+                QSslCertificate cert(der, QSsl::Der);
                 systemCerts.append(cert);
             }
             ptrCertCloseStore(hSystemStore, 0);
