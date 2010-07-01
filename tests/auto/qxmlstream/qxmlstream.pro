@@ -4,7 +4,7 @@ SOURCES += tst_qxmlstream.cpp
 QT = core xml network
 
 
-wince*|symbian*: {
+wince*|symbian: {
    addFiles.sources = data XML-Test-Suite
    addFiles.path = .
    DEPLOYMENT += addFiles

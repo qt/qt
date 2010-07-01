@@ -52,6 +52,17 @@ qhp.Qt.extraFiles          = index.html \
                              images/dynamiclayouts-example.png \
                              scripts/functions.js \
                              scripts/jquery.js \
+                             scripts/shBrushCpp.js \
+                             scripts/shCore.js \
+                             scripts/shLegacy.js \
+                             scripts/narrow.js \
+                             scripts/superfish.js \
+                             style/shCore.css \
+                             style/shThemeDefault.css \
+                             style/narrow.css \
+                             style/superfish.css \
+                             style/superfish_skin.css \
+                             style/OfflineStyle.css \
                              style/style_ie6.css \
                              style/style_ie7.css \
                              style/style_ie8.css \
@@ -99,7 +110,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples \
-			  $QT_SOURCE_TREE/doc/src/template/images
+                          $QT_SOURCE_TREE/doc/src/declarative/pics \
+                          $QT_SOURCE_TREE/doc/src/template/images
 outputdir               = $QT_BUILD_TREE/doc/html_zh_CN
 tagfile                 = $QT_BUILD_TREE/doc/html_zh_CN/qt.tags
 base                    = file:$QT_BUILD_TREE/doc/html_zh_CN

@@ -126,35 +126,38 @@ equals(GENERATE_SIS_TARGETS, true) {
         }
     } else {
         sis_destdir = $$DESTDIR
-        !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
-        contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
+        isEmpty(sis_destdir):sis_destdir = .
+        baseTarget = $$basename(TARGET)
+        !equals(TARGET, "$$baseTarget"):sis_destdir = $$sis_destdir/$$dirname(TARGET)
 
         sis_target.target = sis
-        sis_target.commands = createpackage $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
+        sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                   - $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
         sis_target.depends = first
 
         unsigned_sis_target.target = unsigned_sis
-        unsigned_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg
+        unsigned_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg
         unsigned_sis_target.depends = first
 
-        target_sis_target.target = $${sis_destdir}$${TARGET}.sis
+        target_sis_target.target = $${sis_destdir}/$${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
 
         installer_sis_target.target = installer_sis
-        installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $$basename(TARGET)_installer.pkg - \
+        installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                             $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-        installer_sis_target.depends = $${sis_destdir}$${TARGET}.sis
+        installer_sis_target.depends = $${sis_destdir}/$${baseTarget}.sis
 
-        !isEmpty(DESTDIR) {
-            sis_target.commands += && $$QMAKE_MOVE $$basename(TARGET).sis $$DESTDIR
-            installer_sis_target.commands += && $$QMAKE_MOVE $$basename(TARGET).sis $$DESTDIR
+        !isEmpty(sis_destdir):!equals(sis_destdir, "."):!equals(sis_destdir, "./") {
+            sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir
+            installer_sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir
         }
 
         QMAKE_EXTRA_TARGETS += sis_target \
                                unsigned_sis_target \
                                target_sis_target \
                                installer_sis_target
+
+        QMAKE_DISTCLEAN += $${sis_destdir}/$${baseTarget}.sis
     }
 } else {
     contains(TEMPLATE, subdirs) {
@@ -177,5 +180,3 @@ equals(GENERATE_SIS_TARGETS, true) {
         QMAKE_EXTRA_TARGETS += store_build_target
     }
 }
-
-QMAKE_DISTCLEAN += $${sis_destdir}$${TARGET}.sis

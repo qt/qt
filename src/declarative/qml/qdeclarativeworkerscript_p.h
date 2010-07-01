@@ -87,7 +87,7 @@ private:
     QDeclarativeWorkerScriptEnginePrivate *d;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
+class Q_AUTOTEST_EXPORT QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

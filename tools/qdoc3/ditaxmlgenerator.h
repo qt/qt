@@ -118,9 +118,6 @@ class DitaXmlGenerator : public PageGenerator
                         const ClassNode* cn, 
                         CodeMarker* marker);
     void writeParameters(const FunctionNode* fn, CodeMarker* marker);
-    void writeNestedClasses(const Section& s, 
-                            const ClassNode* cn, 
-                            CodeMarker* marker);
     void writeEnumerations(const Section& s, 
                            const ClassNode* cn, 
                            CodeMarker* marker);
@@ -133,6 +130,10 @@ class DitaXmlGenerator : public PageGenerator
     void writeProperties(const Section& s, 
                          const ClassNode* cn, 
                          CodeMarker* marker);
+    void writeMacros(const Section& s, 
+                     const ClassNode* cn, 
+                     CodeMarker* marker);
+    void writePropParams(const QString& tag, const NodeList& nlist);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };

@@ -151,9 +151,9 @@ public:
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeGridView);
         if (flow == QDeclarativeGridView::LeftToRight)
-            q->setContentY(pos);
+            q->QDeclarativeFlickable::setContentY(pos);
         else
-            q->setContentX(pos);
+            q->QDeclarativeFlickable::setContentX(pos);
     }
     int size() const {
         Q_Q(const QDeclarativeGridView);
@@ -1099,6 +1099,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
+
+    \sa {declarative/modelviews/gridview}{GridView example}
 */
 QDeclarativeGridView::QDeclarativeGridView(QDeclarativeItem *parent)
     : QDeclarativeFlickable(*(new QDeclarativeGridViewPrivate), parent)
@@ -1742,6 +1744,22 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
     }
 }
 
+void QDeclarativeGridView::setContentX(qreal pos)
+{
+    Q_D(QDeclarativeGridView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeGridViewPrivate::Other;
+    QDeclarativeFlickable::setContentX(pos);
+}
+
+void QDeclarativeGridView::setContentY(qreal pos)
+{
+    Q_D(QDeclarativeGridView);
+    // Positioning the view manually should override any current movement state
+    d->moveReason = QDeclarativeGridViewPrivate::Other;
+    QDeclarativeFlickable::setContentY(pos);
+}
+
 bool QDeclarativeGridView::event(QEvent *event)
 {
     Q_D(QDeclarativeGridView);
@@ -2144,6 +2162,7 @@ void QDeclarativeGridView::componentComplete()
             d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
+        d->moveReason = QDeclarativeGridViewPrivate::Other;
         d->fixupPosition();
     }
 }

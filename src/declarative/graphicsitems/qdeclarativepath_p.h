@@ -54,7 +54,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class Q_DECLARATIVE_EXPORT QDeclarativePathElement : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativePathElement : public QObject
 {
     Q_OBJECT
 public:
@@ -63,7 +63,7 @@ Q_SIGNALS:
     void changed();
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathAttribute : public QDeclarativePathElement
+class Q_AUTOTEST_EXPORT QDeclarativePathAttribute : public QDeclarativePathElement
 {
     Q_OBJECT
 
@@ -87,7 +87,7 @@ private:
     qreal _value;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeCurve : public QDeclarativePathElement
+class Q_AUTOTEST_EXPORT QDeclarativeCurve : public QDeclarativePathElement
 {
     Q_OBJECT
 
@@ -109,7 +109,7 @@ private:
     qreal _y;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathLine : public QDeclarativeCurve
+class Q_AUTOTEST_EXPORT QDeclarativePathLine : public QDeclarativeCurve
 {
     Q_OBJECT
 public:
@@ -118,7 +118,7 @@ public:
     void addToPath(QPainterPath &path);
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathQuad : public QDeclarativeCurve
+class Q_AUTOTEST_EXPORT QDeclarativePathQuad : public QDeclarativeCurve
 {
     Q_OBJECT
 
@@ -140,7 +140,7 @@ private:
     qreal _controlY;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathCubic : public QDeclarativeCurve
+class Q_AUTOTEST_EXPORT QDeclarativePathCubic : public QDeclarativeCurve
 {
     Q_OBJECT
 
@@ -172,7 +172,7 @@ private:
     int _control2Y;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathPercent : public QDeclarativePathElement
+class Q_AUTOTEST_EXPORT QDeclarativePathPercent : public QDeclarativePathElement
 {
     Q_OBJECT
     Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY changed)
@@ -187,7 +187,7 @@ private:
 };
 
 class QDeclarativePathPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativePath : public QObject, public QDeclarativeParserStatus
+class Q_AUTOTEST_EXPORT QDeclarativePath : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
 

@@ -168,11 +168,14 @@ The examples can be found in Qt's \c examples/declarative directory.
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
 \o \l{declarative/modelviews/listview}{ListView}
-\o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
-\o \l{declarative/modelviews/stringlistmodel}{String ListModel}
 \o \l{declarative/modelviews/visualitemmodel}{VisualItemModel}
+
+\o \l{declarative/modelviews/stringlistmodel}{String ListModel}
+\o \l{declarative/modelviews/objectlistmodel}{Object ListModel}
+\o \l{declarative/modelviews/abstractitemmodel}{AbstractItemModel}
+
 \o \l{declarative/modelviews/webview}{WebView}
 \endlist
 

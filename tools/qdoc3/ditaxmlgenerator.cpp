@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -1465,7 +1466,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 writeFunctions((*s),cn,marker);
             }
             else if ((*s).name == "Member Type Documentation") {
-                writeNestedClasses((*s),cn,marker);
                 writeEnumerations((*s),cn,marker);
                 writeTypedefs((*s),cn,marker);
             }
@@ -1474,6 +1474,9 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
             }
             else if ((*s).name == "Property Documentation") {
                 writeProperties((*s),cn,marker);
+            }
+            else if ((*s).name == "Macro Documentation") {
+                writeMacros((*s),cn,marker);
             }
             ++s;
         }
@@ -4573,7 +4576,8 @@ void DitaXmlGenerator::writeLocation(const Node* n)
         s2 = CXXTYPEDEFDECLARATIONFILE;
         s3 = CXXTYPEDEFDECLARATIONFILELINE;
     }
-    else if (n->type() == Node::Property) {
+    else if ((n->type() == Node::Property) ||
+             (n->type() == Node::Variable)) {
         s1 = CXXVARIABLEAPIITEMLOCATION;
         s2 = CXXVARIABLEDECLARATIONFILE;
         s3 = CXXVARIABLEDECLARATIONFILELINE;
@@ -4716,6 +4720,8 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
             writer.writeStartElement(CXXFUNCTIONPARAMETER);
             writer.writeStartElement(CXXFUNCTIONPARAMETERDECLAREDTYPE);
             writer.writeCharacters((*p).leftType());
+            if (!(*p).rightType().isEmpty())
+                writer.writeCharacters((*p).rightType());
             writer.writeEndElement(); // <cxxFunctionParameterDeclaredType>
             writer.writeStartElement(CXXFUNCTIONPARAMETERDECLARATIONNAME);
             writer.writeCharacters((*p).name());
@@ -4730,12 +4736,6 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
         }
         writer.writeEndElement(); // <cxxFunctionParameters>
     }
-}
-
-void DitaXmlGenerator::writeNestedClasses(const Section& s, 
-                                          const ClassNode* cn, 
-                                          CodeMarker* marker)
-{
 }
 
 void DitaXmlGenerator::writeEnumerations(const Section& s, 
@@ -4888,12 +4888,6 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
     }
 }
 
-void DitaXmlGenerator::writeDataMembers(const Section& s, 
-                                        const ClassNode* cn, 
-                                        CodeMarker* marker)
-{
-}
-
 void DitaXmlGenerator::writeProperties(const Section& s, 
                                        const ClassNode* cn, 
                                        CodeMarker* marker)
@@ -4914,9 +4908,9 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writer.writeAttribute("value",pn->accessString());
             writer.writeEndElement(); // <cxxVariableAccessSpecifier>
 
-            if (!pn->dataType().isEmpty()) {
+            if (!pn->qualifiedDataType().isEmpty()) {
                 writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
-                writer.writeCharacters(pn->dataType());
+                writer.writeCharacters(pn->qualifiedDataType());
                 writer.writeEndElement(); // <cxxVariableDeclaredType>
             }
             QString fq = fullQualification(pn);
@@ -4925,10 +4919,48 @@ void DitaXmlGenerator::writeProperties(const Section& s,
                 writer.writeCharacters(fq);
                 writer.writeEndElement(); // <cxxVariableScopedName>
             }
+            
+            writer.writeStartElement(CXXVARIABLEPROTOTYPE);
+            writer.writeCharacters("Q_PROPERTY(");
+            writer.writeCharacters(pn->qualifiedDataType());
+            writer.writeCharacters(" ");
+            writer.writeCharacters(pn->name());
+            writePropParams("READ",pn->getters());
+            writePropParams("WRITE",pn->setters());
+            writePropParams("RESET",pn->resetters());
+            writePropParams("NOTIFY",pn->notifiers());
+            if (pn->isDesignable() != pn->designableDefault()) {
+                writer.writeCharacters(" DESIGNABLE ");
+                if (!pn->runtimeDesignabilityFunction().isEmpty())
+                    writer.writeCharacters(pn->runtimeDesignabilityFunction());
+                else
+                    writer.writeCharacters(pn->isDesignable() ? "true" : "false");
+            }
+            if (pn->isScriptable() != pn->scriptableDefault()) {
+                writer.writeCharacters(" SCRIPTABLE ");
+                if (!pn->runtimeScriptabilityFunction().isEmpty())
+                    writer.writeCharacters(pn->runtimeScriptabilityFunction());
+                else
+                    writer.writeCharacters(pn->isScriptable() ? "true" : "false");
+            }
+            if (pn->isWritable() != pn->writableDefault()) {
+                writer.writeCharacters(" STORED ");
+                writer.writeCharacters(pn->isStored() ? "true" : "false");
+            }
+            if (pn->isUser() != pn->userDefault()) {
+                writer.writeCharacters(" USER ");
+                writer.writeCharacters(pn->isUser() ? "true" : "false");
+            }
+            if (pn->isConstant())
+                writer.writeCharacters(" CONSTANT");
+            if (pn->isFinal())
+                writer.writeCharacters(" FINAL");
+            writer.writeCharacters(")");
+            writer.writeEndElement(); // <cxxVariablePrototype>
+
             writer.writeStartElement(CXXVARIABLENAMELOOKUP);
             writer.writeCharacters(pn->parent()->name() + "::" + pn->name());
             writer.writeEndElement(); // <cxxVariableNameLookup>
-
 
             if (pn->overriddenFrom() != 0) {
                 PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
@@ -4951,6 +4983,171 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writer.writeEndElement(); // </cxxVariable>
         }
         ++m;
+    }
+}
+
+void DitaXmlGenerator::writeDataMembers(const Section& s, 
+                                        const ClassNode* cn, 
+                                        CodeMarker* marker)
+{
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Variable) {
+            const VariableNode* vn = static_cast<const VariableNode*>(*m);
+            writer.writeStartElement(CXXVARIABLE);
+            writer.writeAttribute("id",vn->guid());
+            writer.writeStartElement(APINAME);
+            writer.writeCharacters(vn->name());
+            writer.writeEndElement(); // </apiName>
+            generateBrief(vn,marker);
+            writer.writeStartElement(CXXVARIABLEDETAIL);
+            writer.writeStartElement(CXXVARIABLEDEFINITION);
+            writer.writeStartElement(CXXVARIABLEACCESSSPECIFIER);
+            writer.writeAttribute("value",vn->accessString());
+            writer.writeEndElement(); // <cxxVariableAccessSpecifier>
+
+            if (vn->isStatic()) {
+                writer.writeStartElement(CXXVARIABLESTORAGECLASSSPECIFIERSTATIC);
+                writer.writeAttribute("name","static");
+                writer.writeAttribute("value","static");
+                writer.writeEndElement(); // <cxxVariableStorageClassSpecifierStatic>
+            }
+
+            writer.writeStartElement(CXXVARIABLEDECLAREDTYPE);
+            writer.writeCharacters(vn->leftType());
+            if (!vn->rightType().isEmpty())
+                writer.writeCharacters(vn->rightType());
+            writer.writeEndElement(); // <cxxVariableDeclaredType>
+
+            QString fq = fullQualification(vn);
+            if (!fq.isEmpty()) {
+                writer.writeStartElement(CXXVARIABLESCOPEDNAME);
+                writer.writeCharacters(fq);
+                writer.writeEndElement(); // <cxxVariableScopedName>
+            }
+            
+            writer.writeStartElement(CXXVARIABLEPROTOTYPE);
+            writer.writeCharacters(vn->leftType() + " ");
+            //writer.writeCharacters(vn->parent()->name() + "::" + vn->name()); 
+            writer.writeCharacters(vn->name()); 
+            if (!vn->rightType().isEmpty())
+                writer.writeCharacters(vn->rightType());
+            writer.writeEndElement(); // <cxxVariablePrototype>
+
+            writer.writeStartElement(CXXVARIABLENAMELOOKUP);
+            writer.writeCharacters(vn->parent()->name() + "::" + vn->name());
+            writer.writeEndElement(); // <cxxVariableNameLookup>
+
+            writeLocation(vn);
+            writer.writeEndElement(); // <cxxVariableDefinition>
+            writer.writeStartElement(APIDESC);
+
+            if (!vn->doc().isEmpty()) {
+                generateBody(vn, marker);
+            }
+
+            writer.writeEndElement(); // </apiDesc>
+            writer.writeEndElement(); // </cxxVariableDetail>
+            writer.writeEndElement(); // </cxxVariable>
+        }
+        ++m;
+    }
+}
+
+void DitaXmlGenerator::writeMacros(const Section& s, 
+                                   const ClassNode* cn, 
+                                   CodeMarker* marker)
+{
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Function) {
+            const FunctionNode* fn = static_cast<const FunctionNode*>(*m);
+            if (fn->isMacro()) {
+                writer.writeStartElement(CXXDEFINE);
+                writer.writeAttribute("id",fn->guid());
+                writer.writeStartElement(APINAME);
+                writer.writeCharacters(fn->name());
+                writer.writeEndElement(); // </apiName>
+                generateBrief(fn,marker);
+                writer.writeStartElement(CXXDEFINEDETAIL);
+                writer.writeStartElement(CXXDEFINEDEFINITION);
+                writer.writeStartElement(CXXDEFINEACCESSSPECIFIER);
+                writer.writeAttribute("value",fn->accessString());
+                writer.writeEndElement(); // <cxxDefineAccessSpecifier>
+            
+                writer.writeStartElement(CXXDEFINEPROTOTYPE);
+                writer.writeCharacters("#define ");
+                writer.writeCharacters(fn->name());
+                if (fn->metaness() == FunctionNode::MacroWithParams) {
+                    QStringList params = fn->parameterNames();
+                    if (!params.isEmpty()) {
+                        writer.writeCharacters("(");
+                        for (int i = 0; i < params.size(); ++i) {
+                            if (params[i].isEmpty())
+                                writer.writeCharacters("...");
+                            else
+                                writer.writeCharacters(params[i]);
+                            if ((i+1) < params.size()) 
+                                writer.writeCharacters(", ");
+                        }
+                        writer.writeCharacters(")");
+                    }
+                }
+                writer.writeEndElement(); // <cxxDefinePrototype>
+
+                writer.writeStartElement(CXXDEFINENAMELOOKUP);
+                writer.writeCharacters(fn->name());
+                writer.writeEndElement(); // <cxxDefineNameLookup>
+
+                if (fn->reimplementedFrom() != 0) {
+                    FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
+                    writer.writeStartElement(CXXDEFINEREIMPLEMENTED);
+                    writer.writeAttribute("href",rfn->ditaXmlHref());
+                    writer.writeCharacters(marker->plainFullName(rfn));
+                    writer.writeEndElement(); // </cxxDefineReimplemented>
+                }
+
+                if (fn->metaness() == FunctionNode::MacroWithParams) {
+                    QStringList params = fn->parameterNames();
+                    if (!params.isEmpty()) {
+                        writer.writeStartElement(CXXDEFINEPARAMETERS);
+                        for (int i = 0; i < params.size(); ++i) {
+                            writer.writeStartElement(CXXDEFINEPARAMETER);
+                            writer.writeStartElement(CXXDEFINEPARAMETERDECLARATIONNAME);
+                            writer.writeCharacters(params[i]);
+                            writer.writeEndElement(); // <cxxDefineParameterDeclarationName>
+                            writer.writeEndElement(); // <cxxDefineParameter>
+                        }
+                        writer.writeEndElement(); // <cxxDefineParameters>
+                    }
+                }
+
+                writeLocation(fn);
+                writer.writeEndElement(); // <cxxDefineDefinition>
+                writer.writeStartElement(APIDESC);
+
+                if (!fn->doc().isEmpty()) {
+                    generateBody(fn, marker);
+                }
+
+                writer.writeEndElement(); // </apiDesc>
+                writer.writeEndElement(); // </cxxDefineDetail>
+                writer.writeEndElement(); // </cxxDefine>
+            }
+        }
+        ++m;
+    }
+}
+
+void DitaXmlGenerator::writePropParams(const QString& tag, const NodeList& nlist)
+{
+    NodeList::const_iterator n = nlist.begin();
+    while (n != nlist.end()) {
+        writer.writeCharacters(" ");
+        writer.writeCharacters(tag);
+        writer.writeCharacters(" ");
+        writer.writeCharacters((*n)->name());
+        ++n;
     }
 }
 

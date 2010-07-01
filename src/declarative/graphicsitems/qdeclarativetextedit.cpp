@@ -99,7 +99,7 @@ TextEdit {
     You can translate between cursor positions (characters from the start of the document) and pixel
     points using positionAt() and positionToRectangle().
 
-    \sa Text, TextInput
+    \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
 /*!
@@ -183,12 +183,6 @@ QString QDeclarativeTextEdit::text() const
     \qmlproperty bool TextEdit::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool TextEdit::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -1289,6 +1283,7 @@ void QDeclarativeTextEditPrivate::init()
 void QDeclarativeTextEdit::q_textChanged()
 {
     updateSize();
+    updateMicroFocus();
     emit textChanged(text());
 }
 
@@ -1330,6 +1325,7 @@ void QDeclarativeTextEdit::updateSelectionMarkers()
         d->lastSelectionEnd = d->control->textCursor().selectionEnd();
         emit selectionEndChanged();
     }
+    updateMicroFocus();
 }
 
 QRectF QDeclarativeTextEdit::boundingRect() const

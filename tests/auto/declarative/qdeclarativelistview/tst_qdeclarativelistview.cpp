@@ -902,6 +902,8 @@ void tst_QDeclarativeListView::sections()
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
         QTRY_VERIFY(item);
         QTRY_COMPARE(item->y(), qreal(i*20 + ((i+4)/5) * 20));
+        QDeclarativeText *next = findItem<QDeclarativeText>(item, "nextSection");
+        QCOMPARE(next->text().toInt(), (i+1)/5);
     }
 
     // Remove section boundary

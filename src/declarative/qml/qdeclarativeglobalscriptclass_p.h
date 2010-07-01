@@ -72,13 +72,13 @@ public:
 
     void explicitSetProperty(const QStringList &, const QList<QScriptValue> &);
 
-    const QScriptValue &globalObject() const { return m_globalObject; }
+    const QScriptValue &staticGlobalObject() const { return m_staticGlobalObject; }
 
     const QSet<QString> &illegalNames() const { return m_illegalNames; }
 
 private:
     QSet<QString> m_illegalNames;
-    QScriptValue m_globalObject;
+    QScriptValue m_staticGlobalObject;
 };
 
 QT_END_NAMESPACE

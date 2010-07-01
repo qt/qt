@@ -51,6 +51,8 @@
 #include <QtCore/qnumeric.h>
 #include <stdlib.h>
 
+#include <QtScript/private/qscriptdeclarativeclass_p.h>
+
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
 Q_DECLARE_METATYPE(QScriptProgram)
@@ -169,6 +171,8 @@ private slots:
     void qRegExpInport_data();
     void qRegExpInport();
     void reentrency();
+    void newFixedStaticScopeObject();
+    void newGrowingStaticScopeObject();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -4953,6 +4957,244 @@ void tst_QScriptEngine::reentrency()
     QCOMPARE(eng.evaluate("foo").call().toInt32(), 5+6);
     QCOMPARE(eng.evaluate("hello").toInt32(), 9);
     QCOMPARE(eng.evaluate("foo() + hello").toInt32(), 5+6+9);
+}
+
+void tst_QScriptEngine::newFixedStaticScopeObject()
+{
+    QScriptEngine eng;
+    static const int propertyCount = 4;
+    QString names[] = { "foo", "bar", "baz", "Math" };
+    QScriptValue values[] = { 123, "ciao", true, false };
+    QScriptValue::PropertyFlags flags[] = { QScriptValue::Undeletable,
+                                            QScriptValue::ReadOnly | QScriptValue::Undeletable,
+                                            QScriptValue::SkipInEnumeration | QScriptValue::Undeletable,
+                                            QScriptValue::Undeletable };
+    QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(&eng, propertyCount, names, values, flags);
+
+    // Query property.
+    for (int i = 0; i < propertyCount; ++i) {
+        for (int x = 0; x < 2; ++x) {
+            if (x) {
+                // Properties can't be deleted.
+                scope.setProperty(names[i], QScriptValue());
+            }
+            QVERIFY(scope.property(names[i]).equals(values[i]));
+            QCOMPARE(scope.propertyFlags(names[i]), flags[i]);
+        }
+    }
+
+    // Property that doesn't exist.
+    QVERIFY(!scope.property("noSuchProperty").isValid());
+    QCOMPARE(scope.propertyFlags("noSuchProperty"), QScriptValue::PropertyFlags());
+
+    // Write to writable property.
+    {
+        QScriptValue oldValue = scope.property("foo");
+        QVERIFY(oldValue.isNumber());
+        QScriptValue newValue = oldValue.toNumber() * 2;
+        scope.setProperty("foo", newValue);
+        QVERIFY(scope.property("foo").equals(newValue));
+        scope.setProperty("foo", oldValue);
+        QVERIFY(scope.property("foo").equals(oldValue));
+    }
+
+    // Write to read-only property.
+    scope.setProperty("bar", 456);
+    QVERIFY(scope.property("bar").equals("ciao"));
+
+    // Iterate.
+    {
+        QScriptValueIterator it(scope);
+        QSet<QString> iteratedNames;
+        while (it.hasNext()) {
+            it.next();
+            iteratedNames.insert(it.name());
+        }
+        for (int i = 0; i < propertyCount; ++i)
+            QVERIFY(iteratedNames.contains(names[i]));
+    }
+
+    // Push it on the scope chain of a new context.
+    QScriptContext *ctx = eng.pushContext();
+    ctx->pushScope(scope);
+    QCOMPARE(ctx->scopeChain().size(), 3); // Global Object, native activation, custom scope
+    QVERIFY(ctx->activationObject().equals(scope));
+
+    // Read property from JS.
+    for (int i = 0; i < propertyCount; ++i) {
+        for (int x = 0; x < 2; ++x) {
+            if (x) {
+                // Property can't be deleted from JS.
+                QScriptValue ret = eng.evaluate(QString::fromLatin1("delete %0").arg(names[i]));
+                QVERIFY(ret.equals(false));
+            }
+            QVERIFY(eng.evaluate(names[i]).equals(values[i]));
+        }
+    }
+
+    // Property that doesn't exist.
+    QVERIFY(eng.evaluate("noSuchProperty").equals("ReferenceError: Can't find variable: noSuchProperty"));
+
+    // Write property from JS.
+    {
+        QScriptValue oldValue = eng.evaluate("foo");
+        QVERIFY(oldValue.isNumber());
+        QScriptValue newValue = oldValue.toNumber() * 2;
+        QVERIFY(eng.evaluate("foo = foo * 2; foo").equals(newValue));
+        scope.setProperty("foo", oldValue);
+        QVERIFY(eng.evaluate("foo").equals(oldValue));
+    }
+
+    // Write to read-only property.
+    QVERIFY(eng.evaluate("bar = 456; bar").equals("ciao"));
+
+    // Create a closure and return properties from there.
+    {
+        QScriptValue props = eng.evaluate("(function() { var baz = 'shadow'; return [foo, bar, baz, Math, Array]; })()");
+        QVERIFY(props.isArray());
+        // "foo" and "bar" come from scope object.
+        QVERIFY(props.property(0).equals(scope.property("foo")));
+        QVERIFY(props.property(1).equals(scope.property("bar")));
+        // "baz" shadows property in scope object.
+        QVERIFY(props.property(2).equals("shadow"));
+        // "Math" comes from scope object, and shadows Global Object's "Math".
+        QVERIFY(props.property(3).equals(scope.property("Math")));
+        QVERIFY(!props.property(3).equals(eng.globalObject().property("Math")));
+        // "Array" comes from Global Object.
+        QVERIFY(props.property(4).equals(eng.globalObject().property("Array")));
+    }
+
+    // As with normal JS, assigning to an undefined variable will create
+    // the property on the Global Object, not the inner scope.
+    QVERIFY(!eng.globalObject().property("newProperty").isValid());
+    QVERIFY(eng.evaluate("(function() { newProperty = 789; })()").isUndefined());
+    QVERIFY(!scope.property("newProperty").isValid());
+    QVERIFY(eng.globalObject().property("newProperty").isNumber());
+
+    // Nested static scope.
+    {
+        static const int propertyCount2 = 2;
+        QString names2[] = { "foo", "hum" };
+        QScriptValue values2[] = { 321, "hello" };
+        QScriptValue::PropertyFlags flags2[] = { QScriptValue::Undeletable,
+                                                 QScriptValue::ReadOnly | QScriptValue::Undeletable };
+        QScriptValue scope2 = QScriptDeclarativeClass::newStaticScopeObject(&eng, propertyCount2, names2, values2, flags2);
+        ctx->pushScope(scope2);
+
+        // "foo" shadows scope.foo.
+        QVERIFY(eng.evaluate("foo").equals(scope2.property("foo")));
+        QVERIFY(!eng.evaluate("foo").equals(scope.property("foo")));
+        // "hum" comes from scope2.
+        QVERIFY(eng.evaluate("hum").equals(scope2.property("hum")));
+        // "Array" comes from Global Object.
+        QVERIFY(eng.evaluate("Array").equals(eng.globalObject().property("Array")));
+
+        ctx->popScope();
+    }
+
+    QScriptValue fun = eng.evaluate("(function() { return foo; })");
+    QVERIFY(fun.isFunction());
+    eng.popContext();
+    // Function's scope chain persists after popContext().
+    QVERIFY(fun.call().equals(scope.property("foo")));
+}
+
+void tst_QScriptEngine::newGrowingStaticScopeObject()
+{
+    QScriptEngine eng;
+    QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(&eng);
+
+    // Initially empty.
+    QVERIFY(!QScriptValueIterator(scope).hasNext());
+    QVERIFY(!scope.property("foo").isValid());
+
+    // Add a static property.
+    scope.setProperty("foo", 123);
+    QVERIFY(scope.property("foo").equals(123));
+    QCOMPARE(scope.propertyFlags("foo"), QScriptValue::Undeletable);
+
+    // Modify existing property.
+    scope.setProperty("foo", 456);
+    QVERIFY(scope.property("foo").equals(456));
+
+    // Add a read-only property.
+    scope.setProperty("bar", "ciao", QScriptValue::ReadOnly);
+    QVERIFY(scope.property("bar").equals("ciao"));
+    QCOMPARE(scope.propertyFlags("bar"), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+
+    // Attempt to modify read-only property.
+    scope.setProperty("bar", "hello");
+    QVERIFY(scope.property("bar").equals("ciao"));
+
+    // Properties can't be deleted.
+    scope.setProperty("foo", QScriptValue());
+    QVERIFY(scope.property("foo").equals(456));
+    scope.setProperty("bar", QScriptValue());
+    QVERIFY(scope.property("bar").equals("ciao"));
+
+    // Iterate.
+    {
+        QScriptValueIterator it(scope);
+        QSet<QString> iteratedNames;
+        while (it.hasNext()) {
+            it.next();
+            iteratedNames.insert(it.name());
+        }
+        QCOMPARE(iteratedNames.size(), 2);
+        QVERIFY(iteratedNames.contains("foo"));
+        QVERIFY(iteratedNames.contains("bar"));
+    }
+
+    // Push it on the scope chain of a new context.
+    QScriptContext *ctx = eng.pushContext();
+    ctx->pushScope(scope);
+    QCOMPARE(ctx->scopeChain().size(), 3); // Global Object, native activation, custom scope
+    QVERIFY(ctx->activationObject().equals(scope));
+
+    // Read property from JS.
+    QVERIFY(eng.evaluate("foo").equals(scope.property("foo")));
+    QVERIFY(eng.evaluate("bar").equals(scope.property("bar")));
+
+    // Write property from JS.
+    {
+        QScriptValue oldValue = eng.evaluate("foo");
+        QVERIFY(oldValue.isNumber());
+        QScriptValue newValue = oldValue.toNumber() * 2;
+        QVERIFY(eng.evaluate("foo = foo * 2; foo").equals(newValue));
+        scope.setProperty("foo", oldValue);
+        QVERIFY(eng.evaluate("foo").equals(oldValue));
+    }
+
+    // Write to read-only property.
+    QVERIFY(eng.evaluate("bar = 456; bar").equals("ciao"));
+
+    // Shadow property.
+    QVERIFY(eng.evaluate("Math").equals(eng.globalObject().property("Math")));
+    scope.setProperty("Math", "fake Math");
+    QVERIFY(eng.evaluate("Math").equals(scope.property("Math")));
+
+    // Variable declarations will create properties on the scope.
+    eng.evaluate("var baz = 456");
+    QVERIFY(scope.property("baz").equals(456));
+
+    // Function declarations will create properties on the scope.
+    eng.evaluate("function fun() { return baz; }");
+    QVERIFY(scope.property("fun").isFunction());
+    QVERIFY(scope.property("fun").call().equals(scope.property("baz")));
+
+    // Demonstrate the limitation of a growable static scope: Once a function that
+    // uses the scope has been compiled, it won't pick up properties that are added
+    // to the scope later.
+    {
+        QScriptValue fun = eng.evaluate("(function() { return futureProperty; })");
+        QVERIFY(fun.isFunction());
+        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+        scope.setProperty("futureProperty", "added after the function was compiled");
+        // If scope were dynamic, this would return the new property.
+        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+    }
+
+    eng.popContext();
 }
 
 QTEST_MAIN(tst_QScriptEngine)

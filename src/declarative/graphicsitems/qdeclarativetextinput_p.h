@@ -56,7 +56,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTextInputPrivate;
 class QValidator;
-class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -208,7 +208,7 @@ Q_SIGNALS:
     void inputMaskChanged(const QString &inputMask);
     void echoModeChanged(EchoMode echoMode);
     void passwordCharacterChanged();
-    void displayTextChanged(const QString &text);
+    void displayTextChanged();
     void focusOnPressChanged(bool focusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);

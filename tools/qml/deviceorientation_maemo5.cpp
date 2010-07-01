@@ -124,4 +124,4 @@ DeviceOrientation* DeviceOrientation::instance()
     return o;
 }
 
-#include "deviceorientation_maemo.moc"
+#include "deviceorientation_maemo5.moc"

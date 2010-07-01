@@ -11,7 +11,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
 			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
 			  "		<fieldset>\n" \
-              "		<input type=\"text\" value=\"\" id=\"pageType\" name=\"searchstring\">\n" \
+              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\">\n" \
 			  "		 </fieldset>\n" \
 			  "		</form></div>\n" \
 			  "    <div id=\"nav-topright\">\n" \
@@ -160,7 +160,9 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
+			  "      <p>Thank you for giving your feedback. <div class=\"note\">Make sure it is related the page. For more general bugs and \n" \
+			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a></div></p>\n" \
+			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\"></textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \

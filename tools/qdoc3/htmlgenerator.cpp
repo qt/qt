@@ -1891,6 +1891,16 @@ void HtmlGenerator::generateFooter(const Node *node)
 		else
 		{
 			out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+			out() << "  <!-- <script type=\"text/javascript\">\n";
+			out() << "  var _gaq = _gaq || [];\n";
+			out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
+			out() << "  _gaq.push(['_trackPageview']);\n";
+			out() << "  (function() {\n";
+			out() << "  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;\n";
+			out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';\n";
+			out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
+			out() << "  })();\n";
+			out() << "  </script> -->\n";
 			out() << "</body>\n";
 		}
           out() <<   "</html>\n";

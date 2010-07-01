@@ -971,20 +971,19 @@ void QDeclarativeFlickable::viewportMoved()
 {
     Q_D(QDeclarativeFlickable);
 
-    int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
-    if (!elapsed)
-        return;
-
     qreal prevY = d->lastFlickablePosition.x();
     qreal prevX = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
     if (d->pressed) {
-        qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
-        qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / elapsed;
-        d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+        int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
+        if (elapsed > 0) {
+            qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
+            qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / elapsed;
+            d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+        }
     } else {
         if (d->timeline.time() > d->vTime) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / (d->timeline.time() - d->vTime);

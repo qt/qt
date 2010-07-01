@@ -136,6 +136,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
+
+    \sa {declarative/text/fonts}{Fonts example}
 */
 
 /*!
@@ -222,12 +224,6 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     \qmlproperty bool Text::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool Text::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -441,6 +437,8 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \qml
     Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
     \endqml
+
+    \sa style
  */
 QColor QDeclarativeText::styleColor() const
 {

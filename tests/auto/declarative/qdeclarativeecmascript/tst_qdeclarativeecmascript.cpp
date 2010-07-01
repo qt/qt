@@ -155,6 +155,8 @@ private slots:
     void eval();
     void function();
     void qtbug_10696();
+    void qtbug_11606();
+    void qtbug_11600();
 
     void include();
 
@@ -1719,6 +1721,13 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.actuals().count(), 2);
     QCOMPARE(o.actuals().at(0), QVariant(10));
     QCOMPARE(o.actuals().at(1), QVariant(11));
+
+    o.reset();
+    QCOMPARE(engine->evaluate("object.method_with_enum(9)").isUndefined(), true);
+    QCOMPARE(o.error(), false);
+    QCOMPARE(o.invoked(), 18);
+    QCOMPARE(o.actuals().count(), 1);
+    QCOMPARE(o.actuals().at(0), QVariant(9));
 }
 
 // QTBUG-5675
@@ -2502,6 +2511,25 @@ void tst_qdeclarativeecmascript::qtbug_10696()
     QVERIFY(o != 0);
     delete o;
 }
+
+void tst_qdeclarativeecmascript::qtbug_11606()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_11606.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
+void tst_qdeclarativeecmascript::qtbug_11600()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_11600.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 

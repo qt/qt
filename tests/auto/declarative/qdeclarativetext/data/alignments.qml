@@ -20,8 +20,6 @@ Rectangle {
             id: t
 
             anchors.fill: parent
-            font.family: "Misc Fixed"
-            font.pixelSize: 8
             horizontalAlignment: TextEdit.AlignRight
             verticalAlignment: TextEdit.AlignBottom
             wrapMode: TextEdit.WordWrap

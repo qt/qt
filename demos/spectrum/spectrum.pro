@@ -19,7 +19,7 @@ symbian {
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
     # UID for the SIS file
-    TARGET.UID3 = 0xA000E3FA
+    TARGET.UID3 = 0xA000E402
 }
 
 sources.files = README.txt spectrum.pri spectrum.pro TODO.txt

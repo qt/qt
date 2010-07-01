@@ -12017,4 +12017,7 @@ EXPORTS
 	_ZNK11QStaticText10textOptionEv @ 12016 NONAME
 	_ZNK11QTextEngine13isRightToLeftEv @ 12017 NONAME
 	_ZNK14QWidgetPrivate22childAtRecursiveHelperERK6QPointbb @ 12018 NONAME
+	_ZN10QImageData14convertInPlaceEN6QImage6FormatE6QFlagsIN2Qt19ImageConversionFlagEE @ 12019 NONAME
+	_ZN17QRasterPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 12020 NONAME
+	_ZN17QRasterPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12021 NONAME
 
