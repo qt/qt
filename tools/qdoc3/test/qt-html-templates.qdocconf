@@ -11,7 +11,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
 			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
 			  "		<fieldset>\n" \
-              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\">\n" \
+              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\"/>\n" \
 			  "		 </fieldset>\n" \
 			  "		</form></div>\n" \
 			  "    <div id=\"nav-topright\">\n" \
