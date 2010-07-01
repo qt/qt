@@ -274,6 +274,14 @@ EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
     return eglSurface;
 }
 
+void QGLContextPrivate::swapRegion(const QRegion *region)
+{
+    if (!valid || !eglContext)
+        return;
+
+    eglContext->swapBuffersRegion2NOK(eglSurfaceForDevice(), region);
+}
+
 void QGLWidget::setMouseTracking(bool enable)
 {
     QWidget::setMouseTracking(enable);
