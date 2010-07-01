@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,36 +37,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "model.h"
+#include <QDeclarativeContext>
+#include <QDeclarativeView>
 
 #include <QApplication>
-
-#include <qdeclarativeengine.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarative.h>
-#include <qdeclarativeitem.h>
-#include <qdeclarativeview.h>
-
-#include "dataobject.h"
-
-/*
-   This example illustrates exposing a QList<QObject*> as a
-   model in QML
-*/
 
 //![0]
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QList<QObject*> dataList;
-    dataList.append(new DataObject("Item 1", "red"));
-    dataList.append(new DataObject("Item 2", "green"));
-    dataList.append(new DataObject("Item 3", "blue"));
-    dataList.append(new DataObject("Item 4", "yellow"));
+    AnimalModel model;
+    model.addAnimal(Animal("Wolf", "Medium"));
+    model.addAnimal(Animal("Polar bear", "Large"));
+    model.addAnimal(Animal("Quoll", "Small"));
 
     QDeclarativeView view;
     QDeclarativeContext *ctxt = view.rootContext();
-    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+    ctxt->setContextProperty("myModel", &model);
 //![0]
 
     view.setSource(QUrl("qrc:view.qml"));

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,41 +37,47 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QApplication>
-
-#include <qdeclarativeengine.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarative.h>
-#include <qdeclarativeitem.h>
-#include <qdeclarativeview.h>
-
-#include "dataobject.h"
-
-/*
-   This example illustrates exposing a QList<QObject*> as a
-   model in QML
-*/
+#include <QAbstractListModel>
+#include <QStringList>
 
 //![0]
-int main(int argc, char ** argv)
+class Animal 
 {
-    QApplication app(argc, argv);
-
-    QList<QObject*> dataList;
-    dataList.append(new DataObject("Item 1", "red"));
-    dataList.append(new DataObject("Item 2", "green"));
-    dataList.append(new DataObject("Item 3", "blue"));
-    dataList.append(new DataObject("Item 4", "yellow"));
-
-    QDeclarativeView view;
-    QDeclarativeContext *ctxt = view.rootContext();
-    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+public:
+    Animal(const QString &type, const QString &size);
 //![0]
 
-    view.setSource(QUrl("qrc:view.qml"));
-    view.show();
+    QString type() const;
+    QString size() const;
 
-    return app.exec();
-}
+private:
+    QString m_type;
+    QString m_size;
+//![1]
+};
+
+class AnimalModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    enum AnimalRoles {
+        TypeRole = Qt::UserRole + 1,
+        SizeRole
+    };
+
+    AnimalModel(QObject *parent = 0);
+//![1]
+
+    void addAnimal(const Animal &animal);
+
+    int rowCount(const QModelIndex & parent = QModelIndex()) const;
+
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+private:
+    QList<Animal> m_animals;
+//![2]
+};
+//![2]
+
 

@@ -252,6 +252,15 @@
 */
 
 /*!
+    \title Models and Views: AbstractItemModel
+    \example declarative/modelviews/abstractitemmodel
+
+    This example shows how to use a QAbstractItemModel subclass as a model in QML.
+
+    \image qml-abstractitemmodel-example.png
+*/
+
+/*!
     \title Models and Views: GridView
     \example declarative/modelviews/gridview
 
@@ -306,8 +315,7 @@
     \title Models and Views: Object ListModel
     \example declarative/modelviews/objectlistmodel
 
-    This example shows how to create a C++ extension that exposes a
-    QList<QObject*> as a model in QML.
+    This example shows how to use a QList<QObject*> as a model in QML.
 
     \image qml-objectlistmodel-example.png
 */
@@ -334,8 +342,7 @@
     \title Models and Views: String ListModel
     \example declarative/modelviews/stringlistmodel
 
-    This example shows how to create a C++ extension that exposes a
-    QStringList as a model in QML.
+    This example shows how to use a QStringList as a model in QML.
 
     \image qml-stringlistmodel-example.png
 */

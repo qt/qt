@@ -66,10 +66,10 @@ int main(int argc, char ** argv)
     QDeclarativeView view;
     QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+//![0]
 
     view.setSource(QUrl("qrc:view.qml"));
     view.show();
-//![0]
 
     return app.exec();
 }
