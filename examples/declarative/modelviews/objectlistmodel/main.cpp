@@ -53,24 +53,29 @@
    model in QML
 */
 
+//![0]
 int main(int argc, char ** argv)
 {
+//![0]
     QApplication app(argc, argv);
 
-    QDeclarativeView view;
-
+//![1]
     QList<QObject*> dataList;
     dataList.append(new DataObject("Item 1", "red"));
     dataList.append(new DataObject("Item 2", "green"));
     dataList.append(new DataObject("Item 3", "blue"));
     dataList.append(new DataObject("Item 4", "yellow"));
 
+    QDeclarativeView view;
     QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 
     view.setSource(QUrl("qrc:view.qml"));
     view.show();
+//![1]
 
     return app.exec();
+//![2]
 }
+//![2]
 

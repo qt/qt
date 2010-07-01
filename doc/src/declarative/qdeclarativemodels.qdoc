@@ -30,18 +30,46 @@
 \target qmlmodels
 \title Data Models
 
-Some QML Items use Data Models to provide the data to be displayed.
+Some QML items use Data Models to provide the data to be displayed.
 These items typically require a \e delegate component that
 creates an instance for each item in the model.  Models may be static, or
 have items modified, inserted, removed or moved dynamically.
 
 Data is provided to the delegate via named data roles which the
-delegate may bind to.  The roles are exposed as properties of the
-\e model context property, though this property is set as a default property
-of the delegate so, unless there is a naming clash with a
-property in the delegate, the roles are usually accessed unqualified.  The
-example below would  have a clash between the \e color role of the model and
-the \e color property of the Rectangle.  The clash is avoided by referencing
+delegate may bind to. Here is a ListModel with two roles, \e type and \e age,
+and a ListView with a delegate that binds to these roles to display their 
+values:
+
+\qml
+import Qt 4.7
+
+Item {
+    width: 200; height: 250
+
+    ListModel {
+        id: myModel
+        ListElement { type: "Dog"; age: 8 }
+        ListElement { type: "Cat"; age: 5 }
+    }
+
+    Component {
+        id: myDelegate
+        Text { text: type + ", " + age }
+    }
+
+    ListView {
+        anchors.fill: parent
+        model: myModel
+        delegate: myDelegate
+    }
+}
+\endqml
+
+If there is a naming clash between the model's properties and the delegate's
+properties (e.g. if the \l Text delegate above had \e type or \e age properties)
+the roles can be accessed with the qualified \e model name instead.
+For example, the following model has a \e color role which clashes with the 
+delegate \l Rectangle's \e color property. The clash is avoided by referencing
 the \e color property of the model by its full name: \e model.color.
 
 \code
@@ -61,7 +89,7 @@ Component {
 \endcode
 
 A special \e index role containing the index of the item in the model
-is also available.
+is also available to the delegate.
 
 \e Note: the index role will be set to -1 if the item is removed from
 the model.  If you bind to the index role, be sure that the logic
@@ -148,9 +176,9 @@ Item {
 }
 \endcode
 
-When the MouseArea is clicked fruitModel will have two roles, "cost" and "name".
+When the MouseArea is clicked, \c fruitModel will have two roles, "cost" and "name".
 Even if subsequent roles are added, only the first two will be handled by views
-using the model.
+using the model. To reset the roles available in the model, call ListModel::clear().
 
 
 \section2 XmlListModel
@@ -169,6 +197,9 @@ XmlListModel {
      XmlRole { name: "description"; query: "description/string()" }
 }
 \endcode
+
+The \l{declarative/demos/rssnews}{RSS News demo} shows how XmlListModel can
+be used to display an RSS feed.
 
 
 \section2 VisualItemModel
@@ -230,9 +261,9 @@ ctxt->setContextProperty("myModel", model);
 or by registering the subclass as a new QML type in 
 a \l{QDeclarativeExtensionPlugin}{QML C++ plugin}.
 
-QAbstractItemModel presents a heirachy of tables, but views currently provided by QML
+QAbstractItemModel presents a hierarchy of tables, but views currently provided by QML
 can only display list data.  
-In order to display child lists of a heirachical model
+In order to display child lists of a hierarchical model
 the VisualDataModel element provides several properties and functions for use
 with models of type QAbstractItemModel:
 \list
@@ -245,101 +276,60 @@ with models of type QAbstractItemModel:
 
 \section2 QStringList
 
-A model may be a simple QStringList, which provides the contents of the list via the \e modelData role:
+A model may be a simple QStringList, which provides the contents of the list via the \e modelData role.
 
-\table
-\row
-\o
-\code
-// main.cpp
-QStringList dataList;
-dataList.append("Fred");
-dataList.append("Ginger");
-dataList.append("Skipper");
+Here is a ListView with a delegate that references its model item's 
+value using the \c modelData role:
 
-QDeclarativeContext *ctxt = view.rootContext();
-ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
-\endcode
+\snippet examples/declarative/modelviews/stringlistmodel/view.qml 0
 
-\o
-\code
-// main.qml
-ListView {
-   width: 100
-   height: 100
-   anchors.fill: parent
-   model: myModel
-   delegate: Component {
-       Rectangle {
-            height: 25
-            Text { text: modelData }
-       }
-   }
-}
-\endcode
-\endtable
+A Qt application can load this QML document and set the value of \c myModel
+to a QStringList:
 
-The complete example is available in \l {declarative/modelviews/stringlistmodel}.
+\snippet examples/declarative/modelviews/stringlistmodel/main.cpp 0
+
+The complete example is available in Qt's \l {declarative/modelviews/stringlistmodel}{examples/declarative/modelviews/stringlistmodel} directory.
 
 \note There is no way for the view to know that the contents of a QStringList
-have changed.  If the QStringList is changed, it will be necessary to reset
+have changed.  If the QStringList changes, it will be necessary to reset
 the model by calling QDeclarativeContext::setContextProperty() again.
 
 
 \section2 QList<QObject*>
 
-QList<QObject*> provides the properties of the objects in the list as roles.
+A list of QObject* values can also be used as a model. A QList<QObject*> provides 
+the properties of the objects in the list as roles.
 
-\code
-class DataObject : public QObject
-{
-    Q_OBJECT
+The following application creates a \c DataObject class that with
+Q_PROPERTY values that will be accessible as named roles when a
+QList<DataObject*> is exposed to QML:
 
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString color READ color WRITE setColor)
-...
-};
-
-QList<QObject*> dataList;
-dataList.append(new DataObject("Item 1", "red"));
-dataList.append(new DataObject("Item 2", "green"));
-dataList.append(new DataObject("Item 3", "blue"));
-dataList.append(new DataObject("Item 4", "yellow"));
-
-QDeclarativeContext *ctxt = view.rootContext();
-ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
-\endcode
+\snippet examples/declarative/modelviews/objectlistmodel/dataobject.h 0
+\dots 4
+\snippet examples/declarative/modelviews/objectlistmodel/dataobject.h 1
+\codeline
+\snippet examples/declarative/modelviews/objectlistmodel/main.cpp 0
+\dots 4
+\snippet examples/declarative/modelviews/objectlistmodel/main.cpp 1
+\dots 4
+\snippet examples/declarative/modelviews/objectlistmodel/main.cpp 2
 
 The QObject* is available as the \c modelData property.  As a convenience,
 the properties of the object are also made available directly in the
-delegate's context:
+delegate's context. Here, \c view.qml references the \c DataModel properties in
+the ListView delegate:
 
-\code
-ListView {
-   width: 100
-   height: 100
-   anchors.fill: parent
-   model: myModel
-   delegate: Component {
-       Rectangle {
-            height: 25
-            width: 100
-            color: model.modelData.color
-            Text { text: name }
-       }
-   }
-}
-\endcode
-
-The complete example is available in \l {declarative/modelviews/objectlistmodel}.
+\snippet examples/declarative/modelviews/objectlistmodel/view.qml 0
 
 Note the use of the fully qualified access to the \c color property.  
 The properties of the object are not replicated in the \c model
 object, since they are easily available via the modelData
 object.
 
+The complete example is available in Qt's \l {declarative/modelviews/objectlistmodel}{examples/declarative/modelviews/objectlistmodel} directory.
+
 Note: There is no way for the view to know that the contents of a QList
-have changed.  If the QList is changed, it will be necessary to reset
+have changed.  If the QList changes, it will be necessary to reset
 the model by calling QDeclarativeContext::setContextProperty() again.
 
 
@@ -354,8 +344,7 @@ There are no data roles.
 The following example creates a ListView with five elements:
 \code
 Item {
-    width: 200
-    height: 250
+    width: 200; height: 250
 
     Component {
         id: itemDelegate
@@ -374,7 +363,7 @@ Item {
 
 \section2 An Object Instance
 
-An Object Instance specifies a model with a single Object element.  The
+An Object instance specifies a model with a single Object element.  The
 properties of the object are provided as roles.
 
 The example below creates a list with one item, showing the color of the
@@ -383,6 +372,8 @@ to avoid clashing with \e color property of the Text element in the delegate.
 
 \code
 Rectangle {
+    width: 200; height: 250
+
     Text {
         id: myText
         text: "Hello"

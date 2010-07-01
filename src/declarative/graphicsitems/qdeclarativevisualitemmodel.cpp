@@ -818,6 +818,12 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
     \c view.qml:
     \snippet doc/src/snippets/declarative/visualdatamodel_rootindex/view.qml 0
 
+    If the \l model is a QAbstractItemModel subclass, the delegate can also
+    reference a \c hasModelChildren property (optionally qualified by a
+    \e model. prefix) that indicates whether the delegate's model item has 
+    any child nodes.
+
+
     \sa modelIndex(), parentModelIndex()
 */
 QVariant QDeclarativeVisualDataModel::rootIndex() const
