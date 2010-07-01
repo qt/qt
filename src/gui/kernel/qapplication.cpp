@@ -81,7 +81,7 @@
 #include <private/qt_x11_p.h>
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
 #include "qinputcontextfactory.h"
 #endif
 
@@ -5338,7 +5338,7 @@ QInputContext *QApplication::inputContext() const
             qic = QInputContextFactory::create(QLatin1String("xim"), that);
         that->d_func()->inputContext = qic;
     }
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     if (!d->inputContext) {
         QApplication *that = const_cast<QApplication *>(this);
         const QStringList keys = QInputContextFactory::keys();
