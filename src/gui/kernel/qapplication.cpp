@@ -5338,7 +5338,7 @@ QInputContext *QApplication::inputContext() const
             qic = QInputContextFactory::create(QLatin1String("xim"), that);
         that->d_func()->inputContext = qic;
     }
-#elif defined(Q_WS_SYMBIAN)
+#elif defined(Q_WS_S60)
     if (!d->inputContext) {
         QApplication *that = const_cast<QApplication *>(this);
         const QStringList keys = QInputContextFactory::keys();
