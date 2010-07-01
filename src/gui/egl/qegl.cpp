@@ -517,12 +517,12 @@ bool QEglContext::swapBuffers(EGLSurface surface)
 
 bool QEglContext::swapBuffersRegion2NOK(EGLSurface surface, const QRegion *region) {
     QVector<QRect> qrects = region->rects();
-    GLint *gl_rects;
+    EGLint *gl_rects;
     uint count;
     uint i;
 
     count = qrects.size();
-    QVarLengthArray <GLint> arr(4 * count);
+    QVarLengthArray <EGLint> arr(4 * count);
     gl_rects = arr.data();
     for (i = 0; i < count; i++) {
       QRect qrect = qrects[i];
