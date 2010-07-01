@@ -63,7 +63,7 @@ Q_SIGNALS:
     void changed();
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePathAttribute : public QDeclarativePathElement
+class Q_AUTOTEST_EXPORT QDeclarativePathAttribute : public QDeclarativePathElement
 {
     Q_OBJECT
 
