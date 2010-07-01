@@ -3,7 +3,7 @@
     \contentspage{modelview.html}{Crash Course in Model/View Programming}
     \page modelview.html
 
-\title Crash Course in Model/View Programming
+\title An Introduction to Model/View Programming
 Contents:
 \tableofcontents
 
@@ -84,7 +84,7 @@ The application is a \l QMainWindow that holds a \l QTableView.
 -------------------------------------------------------------modelview.cpp---------------------
     \snippet examples/tutorials/modelview/1_readonly/modelview.cpp Quoting ModelView Tutorial
 
-Here is the interesting part: We use \c tableView->setModel(new MyModel(this) ); to instantiate the Model and pass its pointer to \l {QTableView}{tableView()}.  \l {QTableView}{tableView} will invoke the methods of the pointer it has received to find out two things: 
+Here is the interesting part: We use \l{QTableView::setModel()}{tableView->setModel(new MyModel(this) );} to instantiate the Model and pass its pointer to \l {QTableView}{tableView()}.  \l {QTableView}{tableView} will invoke the methods of the pointer it has received to find out two things: 
     \list
        \o   How many rows and columns should be displayed
        \o   What content should be printed into each cell.
@@ -102,8 +102,8 @@ QAbstractTableModel requires the implementation of three abstract methods.
 -------------------------------------------------------------mymodel.cpp---------------------
     \snippet examples/tutorials/modelview/1_readonly/mymodel.cpp Quoting ModelView Tutorial
 
-The number of rows and columns is set by \c MyModel::rowCount() and \c MyModel::columnCount(). 
-When the view has to know what the cell 's text is, it calls the \l{QAbstractItemModel::data()}{data()} method. Row and column information is specified with parameter \c index and the role is set to Qt::Display Role.  Other roles are covered in the next section. In our example, the data that should be displayed is generated. In a real application, \c MyModel would have a member called \c MyData, which serves as the target for all reading and writing operations. 
+The number of rows and columns is set by \l{QAbstractItemModel::rowCount()}{MyModel::rowCount()} and \l{QAbstractItemModel::columnCount()}{MyModel::columnCount()}. 
+When the view has to know what the cell 's text is, it calls the  method. Row and column information is specified with parameter \c index and the role is set to \l{Qt::ItemDataRole}{Qt::DisplayRole}.  Other roles are covered in the next section. In our example, the data that should be displayed is generated. In a real application, \c MyModel would have a member called \c MyData, which serves as the target for all reading and writing operations. 
 
 This small example demonstrates the passive nature of a model. The model does not know when it will be used or which data is needed. It simply provides data each time the view requests it. 
 
@@ -126,7 +126,7 @@ Each formatting property will be requested from the model with a separate call t
             \o  Meaning
             \o  Type 
         \row
-            \o  Qt::DisplayRole
+            \o  \l{Qt::ItemDataRole}{Qt::DisplayRole}
             \o  text
             \o  QString
         \row
@@ -143,15 +143,15 @@ Each formatting property will be requested from the model with a separate call t
             \o  enum Qt::AlignmentFlag
         \row
 	    \o {1, 3} Qt::CheckStateRole
-	    \o {1, 3} suppresses checkboxes with QVariant(), sets checkboxes with Qt::Checked or Qt::Unchecked
-	    \o {1, 3} enum Qt::ItemDataRole
+	    \o {1, 3} suppresses checkboxes with \l{QVariant}{QVariant()}, sets checkboxes with Qt::Checked or Qt::Unchecked
+	    \o {1, 3} \l{Qt::ItemDataRole}{enum Qt::ItemDataRole}
 
     \endtable
 
 Refer to Qt documentation to learn more about  enum Qt::ItemDataRole's capabilities.
 
 
-Now we need to determine how using a seperated model impacts the application's performance, so let's trace how often the view calls the \l{QAbstractItemModel::data()}{data()} method. In order to track how often the view calls the model, we have put a debug statement in the \l{QAbstractItemModel::data()}{data()} method, which logs onto stdio. In our small example, \l{QAbstractItemModel::data()}{data()} will be called 42 times. Each time you hover the cursor over the field, \l{QAbstractItemModel::data()}{data()} will be called again - 7 times for each cell. That's why it is  important to make sure that your data is available when \l{QAbstractItemModel::data()}{data()}) is invoked and expensive lookup operations are cached.
+Now we need to determine how using a seperated model impacts the application's performance, so let's trace how often the view calls the \l{QAbstractItemModel::data()}{data()} method. In order to track how often the view calls the model, we have put a debug statement in the \l{QAbstractItemModel::data()}{data()} method, which logs onto stdio. In our small example, \l{QAbstractItemModel::data()}{data()} will be called 42 times. Each time you hover the cursor over the field, \l{QAbstractItemModel::data()}{data()} will be called again - 7 times for each cell. That's why it is  important to make sure that your data is available when \l{QAbstractItemModel::data()}{data()} is invoked and expensive lookup operations are cached.
 
 \section2 2.3 A clock inside a table cell
 \image clock.png
@@ -168,7 +168,7 @@ Here is the corresponding slot:
 
     \snippet examples/tutorials/modelview/3_changingmodel/mymodel.cpp quoting mymodel_b
 
-We ask the view to read the data in the top left cell again by emitting the \l{QAbstractItemModel::dataChanged()}{dataChanged()} signal.  Note that we did not explicitly connect the \l{QAbstractItemModel::dataChanged()}{dataChanged()} signal to the view. This happened automatically when we called \l{QTableView::setModel}{setModel()} .
+We ask the view to read the data in the top left cell again by emitting the \l{QAbstractItemModel::dataChanged()}{dataChanged()} signal.  Note that we did not explicitly connect the \l{QAbstractItemModel::dataChanged()}{dataChanged()} signal to the view. This happened automatically when we called \l{QTableView::setModel()}{setModel()}.
 
 \section2 2.4 Setting up Headers for Columns and Rows
 Headers can be hidden via a view method. 
@@ -219,7 +219,7 @@ We want to present a real tree. We have wrapped our data in the examples above i
 -------------------------------------------------------------modelview.cpp---------------------
     \snippet examples/tutorials/modelview/6_treeview/modelview.cpp Quoting ModelView Tutorial
 
-We simply instantiate a QStandardItemModel and add a couple of QStandardItems to the constructor. We can then make a hierarchical data structure because a QStandardItem can hold other \l{QStandardItem}{QStandardItems}. Nodes are collapsed and expanded within the view.
+We simply instantiate a QStandardItemModel and add a couple of \l{QStandardItem}{QStandardItems} to the constructor. We can then make a hierarchical data structure because a QStandardItem can hold other \l{QStandardItem}{QStandardItems}. Nodes are collapsed and expanded within the view.
 
 \section2 3.2 Working with selection
 
@@ -229,14 +229,14 @@ We want to access a selected item's content in order to output it into the windo
 
 So let's create a couple of items:
     \snippet examples/tutorials/modelview/7_selections/modelview.cpp quoting modelview_a
-Views manage selections within a separate selection model, which can be retrieved with the \l{QAbstractItemModel::selectionModel()}{selectionModel()} method. We retrieve the selection Model in order to connect a slot to its \l{QAbstractItemModel::selectionChanged()}{selectionChanged()} signal.
+Views manage selections within a separate selection model, which can be retrieved with the \l{QAbstractItemView::selectionModel()}{selectionModel()} method. We retrieve the selection Model in order to connect a slot to its \l{QAbstractItemView::selectionChanged()}{selectionChanged()} signal.
 
     \snippet examples/tutorials/modelview/7_selections/modelview.cpp quoting modelview_b
 
 We get the model index that corresponds to the selection by calling 
 \l{QItemSelectionModel::currentIndex()}{treeView->selectionModel()->currentIndex()} and we get the the field's string by using the model index. Then we just calculate the item's \c hierarchyLevel.  Top level items do not have parents and the \l{QAbstractItemModel::parent()}{parent()} method will return a default constructed \l{QModelIndex}{QModelIndex()}. This is why we use the \l{QAbstractItemModel::parent()}{parent()} method to iterate to the top level while counting the steps performed during iteration.
 
-The selection model (as shown above) can be retrieved, but it can also be set with \l{QAbstractItemView}{QAbstractItemView::setSelectionModel}. This is how it's possible to have 3 view classes with synchronised selections because only one instance of a selection model is used. The instance of a selection model is retrieved from the first view class with \l{QAbstractItemModel::selectionModel()}{selectionModel()} and the result is assigned to the second and third view class with \l{QAbstractItemModel::setSelectionModel()}{setSelectionModel()};
+The selection model (as shown above) can be retrieved, but it can also be set with \l{QAbstractItemView}{QAbstractItemView::setSelectionModel}. This is how it's possible to have 3 view classes with synchronised selections because only one instance of a selection model is used. The instance of a selection model is retrieved from the first view class with \l{QAbstractItemView::selectionModel()}{selectionModel()} and the result is assigned to the second and third view class with \l{QAbstractItemView::setSelectionModel()}{setSelectionModel()};
 \section2 3.3 Predefined Models
 The typical way to use model/view is to wrap specific data to make it usable with view classes. Qt, however, also provides predefined models for common underlying data structures. If one of the available data structures is suitable for your application, a predefined model can be a good choice.
 
@@ -252,7 +252,7 @@ The typical way to use model/view is to wrap specific data to make it usable wit
     \raw HTML
             <br>
     \endraw
-		QDirModel (deprecated)
+		QDirModel
             \o  Encapsulate the local file system
         \row
             \o  QSqlQueryModel
@@ -288,7 +288,7 @@ The view has a method that replaces the default delegate and installs a custom d
 
 \endcode
 
-\l{QStyledItemDelegate::paint()}{paint()} draws stars depending on the content of the underlying data.  The data can be looked up with parameter \l{QModelIndex::data()}{index.data()}. \l{QStyledItemDelegate::SizeHint}{SizeHint} specifies the stars dimensions so the the cell will provide  enough  height and width to accommodate the stars.
+\l{QStyledItemDelegate::paint()}{paint()} draws stars depending on the content of the underlying data.  The data can be looked up with parameter \l{QModelIndex::data()}{index.data()}. \l{QGraphicsLayoutItem::sizeHint()}{sizeHint} specifies the stars dimensions so the the cell will provide  enough  height and width to accommodate the stars.
 
 Writing custom delegates is the right choice if you want to show your data with a custom graphical  representation inside the grid of the view class. If you want to leave the grid, you can write a custom view class.
 
@@ -540,7 +540,7 @@ Qt 4.6 comes with 17 examples and 2 Demonstrations for model/view.  The examples
         \row
             \o  Address Book
             \o  QTableView
-            \o  QTableModel
+            \o  QAbstractTableModel
 QSortFilterProxyModel
             \o  usage of  QSortFilterProxyModel to generate different subsets from one data pool
         \row
