@@ -146,7 +146,7 @@ private:
 };
 
 class QMetaObjectBuilder;
-class Q_DECLARATIVE_EXPORT QDeclarativeCompiler
+class Q_AUTOTEST_EXPORT QDeclarativeCompiler
 {
     Q_DECLARE_TR_FUNCTIONS(QDeclarativeCompiler)
 public:

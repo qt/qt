@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeImagePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeImage : public QDeclarativeImageBase
+class Q_AUTOTEST_EXPORT QDeclarativeImage : public QDeclarativeImageBase
 {
     Q_OBJECT
     Q_ENUMS(FillMode)

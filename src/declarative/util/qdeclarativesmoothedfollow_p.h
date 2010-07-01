@@ -55,7 +55,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeProperty;
 class QDeclarativeSmoothedFollowPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeSmoothedFollow : public QObject,
+class Q_AUTOTEST_EXPORT QDeclarativeSmoothedFollow : public QObject,
                                                         public QDeclarativePropertyValueSource
 {
     Q_OBJECT

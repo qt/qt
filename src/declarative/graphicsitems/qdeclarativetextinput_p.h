@@ -56,7 +56,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTextInputPrivate;
 class QValidator;
-class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)

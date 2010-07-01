@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QDeclarativeViewSection : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativeViewSection : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY changed)
@@ -86,7 +86,7 @@ private:
 class QDeclarativeVisualModel;
 class QDeclarativeListViewAttached;
 class QDeclarativeListViewPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
+class Q_AUTOTEST_EXPORT QDeclarativeListView : public QDeclarativeFlickable
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeListView)
