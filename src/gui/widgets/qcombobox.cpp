@@ -369,6 +369,7 @@ void QComboBoxPrivateContainer::timerEvent(QTimerEvent *timerEvent)
     if (timerEvent->timerId() == adjustSizeTimer.timerId()) {
         adjustSizeTimer.stop();
         if (combo->sizeAdjustPolicy() == QComboBox::AdjustToContents) {
+            combo->updateGeometry();
             combo->adjustSize();
             combo->update();
         }
