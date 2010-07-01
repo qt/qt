@@ -176,6 +176,14 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     return false;
 }
 
+bool QEglContext::swapBuffersRegion2NOK(EGLSurface surface, const QRegion *region)
+{
+    Q_UNUSED(surface)
+    Q_UNUSED(region)
+    NOEGL
+    return false;
+}
+
 int QEglContext::configAttrib(int name) const
 {
     Q_UNUSED(name)
