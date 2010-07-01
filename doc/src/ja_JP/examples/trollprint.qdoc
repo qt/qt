@@ -1,0 +1,272 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example linguist/trollprint
+    \title サンプル: トロールプリント
+
+    トロールプリント(Troll Print)は、
+    ユーザがプリンタの設定をするためのサンプルアプリケーションです。
+    これには、英語とポルトガル語の2つのバージョンが用意されています。
+
+    \image linguist-trollprint_10_en.png
+
+    この例では、いくつかのポルトガル語の翻訳を含む翻訳ファイル
+    \c trollprint_pt.ts を用意しました。
+
+    同じアプリケーションの2つのバージョン、
+    Troll Print 1.0 と 1.1 をリリースすることを想定します。
+    1つのバージョンで作成した翻訳を次のリリースで再利用する方法を習得します。
+    (このチュートリアルでは、いくつかのソースファイルの編集が必要です。
+    新しい一時ディレクトリにすべてのファイルをコピーして、
+    ここで作業を行うのがベストでしょう。)
+
+    Qtアプリケーションの翻訳の詳細については、
+    \l{Qt Linguist manual}{Qt Linguist マニュアル} をご覧ください。
+
+    \section1 各行の簡単な解説
+
+    \c PrintPanel クラスを \c printpanel.h で宣言します。
+
+    \snippet examples/linguist/trollprint/printpanel.h 0
+
+    \c PrintPanel は QWidget の派生クラスです。
+    \c tr() が正しく動作するには、\c Q_OBJECT マクロが必要です。
+
+    実装ファイルは \c printpanel.cpp です。
+
+    \snippet examples/linguist/trollprint/printpanel.cpp 0
+
+    Troll Print 1.0 で一部のコードがコメントアウトされています。
+    Troll Print 1.1 にバージョンアップする際に、
+    コメントから戻してください。
+
+    \snippet examples/linguist/trollprint/printpanel.cpp 1
+    \snippet examples/linguist/trollprint/printpanel.cpp 2
+
+    PrintPanel では、\c tr("Enabled") と \c tr("Disabled")
+    を2回ずつ使用することに注意してください。
+    "Enabled" と "Disabled" はどちらも同じ文脈で表示されるため、
+    \e {Qt Linguist} では、それぞれ1回目の使用に対してのみ表示され、
+    2回目以降の使用に対しては翻訳が流用されるため表示されません。
+    これは便利な時間短縮ツールですが、ポルトガル語などの一部の言語では、
+    2回目の使用に対して異なる翻訳が必要になります。
+    これから、\e {Qt Linguist}で、
+    すべての \c tr() に対して異なる翻訳を表示できるように設定する方法を学習します。
+
+    \c MainWindow, \c mainwindow.h はシンプルなヘッダーファイルです。
+    \c mainwindow.cpp の実装には、翻訳対象としてマークする必要のある
+    ユーザに表示するソーステキストがあります。
+
+    \snippet examples/linguist/trollprint/mainwindow.cpp 0
+
+    ウィンドウのタイトルは翻訳する必要があります。
+
+    \snippet examples/linguist/trollprint/mainwindow.cpp 1
+    \snippet examples/linguist/trollprint/mainwindow.cpp 3
+
+    また、アクションとメニューも翻訳する必要があります。
+    キーボードショートカット "Ctrl+Q" に対して使用している \c tr()
+    の第 2 引数は、このショートカットがどのような機能を有しているかを
+    翻訳者に示す唯一の情報であることに注意してください。
+
+    \snippet examples/linguist/trollprint/main.cpp 0
+
+    \c main.cpp の \c main() 関数は、
+    \l{linguist/arrowpad}{アローパッド} の例の場合と同じになります。
+    具体的には、現在のロケールに基づいて、翻訳ファイルを選択します。
+
+    \section1 英語とポルトガル語で Troll Print 1.0 を実行する
+
+    既存の \c trollprint_pt.ts ファイルの翻訳を使用します。
+
+    \c LANG 環境変数を \c pt に設定して、\c trollprint を実行します。
+    QM ファイルがないため、スクリーンショットは英語版のままです。
+    ここで、\c lrelease (例: \c {lrelease trollprint.pro})を実行し、
+    サンプルを再実行します。
+    これで、ポルトガル語版(Troll Imprimir 1.0)になりました:
+
+    \image linguist-trollprint_10_pt_bad.png
+
+    翻訳は正しく表示されていますが、誤りがあります。
+    文法的に正しいポルトガル語では、
+    "Enabled" が2回目に使用されるときの正しい翻訳は、
+    "Ativado" ではなく "Ativadas" であり、
+    "Disabled" が2回目に翻訳されるときも、
+    語尾を同様に変化させる必要があります。
+
+    \e {Qt Linguist} で \c trollprint_pt.ts を開くと、
+    ソースコードには "Enabled" と "Disabled" が2回ずつ使われていますが、
+    翻訳ソースファイルでは1回ずつしか使われていません。
+    これは、\e {Qt Linguist} では、
+    ソーステキストが重複する場合は翻訳を流用することにより、
+    翻訳者の作業を最小限に抑えようとするためです。
+    このように類似した翻訳に誤りがある場合、
+    プログラマは繰り返し使用する際に翻訳の曖昧さを排除する必要があります。
+    これは、2個の引数を取る\c tr() を使用することにより、
+    容易に実行できます。
+
+    実際には、翻訳者の"文脈"は変更する必要のある文字列が表示されるクラスに対するクラス名であるため、
+    どのファイルを変更すべきか簡単に特定できます。
+    この場合、ファイルは \c printpanel.cpp であり、
+    変更すべき行は4行あります。
+    ラジオボタンの最初のペアの \c tr() 呼び出しに、2つ目の引数 "two-sided"(両面) をに追加します:
+
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 0
+
+    そして、ラジオボタンの2番目のペアの \c tr() 呼び出しに、
+    2つ目の引数 "colors"(色) を追加します。
+
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 1
+
+    ここで、\c lupdate を実行し、\e {Qt Linguist} で
+    \c trollprint_pt.ts を開きます。2 つの変更個所がわかるはずです。
+
+    まず、翻訳ソースファイルには、\e{3組}の "Enabled" と
+    "Disabled" のペアが含まれています。
+    最初のペアは、既に利用されていないテキストであることを意味する灰色になっています。
+    これは、 \c tr() 内の文字列が第二引数を追加した新たな
+    \c tr() の文字列で置き換えられたからです。
+    2番目のペアには、"two-sided"(両面) というコメントが含まれており、
+    3番目のペアには、"colors"(色) というコメントが含まれています。
+    これらのコメントは、\e {Qt Linguist} に
+    \gui {開発者のコメント} として表示されます。
+
+    次に、翻訳者の作業を最小限に抑えるために、
+    新たに使用される "Enabled" と "Disabled" の文字列に対して、
+    訳語 "Ativado" と "Desativado" が自動的に使用されます。
+    これらの訳語は、これらの原語が2回目に使用される場合の正しい翻訳ではありません。
+    ここからが、チュートリアルの出発点です。
+
+    2番目の "Ativado" を "Ativadas" に、
+    2番目の "Desativado" を "Desativadas" に変更し、保存して終了します。
+    \c lrelease を実行して最新のバイナリ \c trollprint_pt.qm ファイルを作成し、
+    Troll Print (または Troll Imprimir) を実行します。
+
+    \image linguist-trollprint_10_pt_good.png
+
+    \e {Qt Linguist} では "comments" と呼ばれる
+    \c tr() 呼び出しの2つ目の引数は、
+    同じ文脈(クラス)で発生する類似したソーステキストを識別します。
+    コメントは、たとえば Ctrl キーによるキーボードショートカットが
+    ショートカットによって実行される機能を伝達する唯一の手段である場合等に、
+    翻訳者に情報を提供するのに便利です。
+
+    翻訳者に情報を提供する他の手段は、
+    翻訳の必要があるソーステキストを含むアプリケーションの
+    特定の部分への移動方法に関する情報を提供することです。
+    これにより、翻訳者は、翻訳が表示される文脈を確認し、
+    翻訳を検索してテストを行うことができます。
+    これは、ソースコードで \c TRANSLATOR
+    コメントを使用して行います:
+
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 2
+
+    一部のソースファイル、特にダイアログクラスのコメントに
+    ダイアログに到達するまでに必要な操作を記述します。
+    また、\c mainwindow.cpp や \c printpanel.cpp など、
+    適切なサンプルファイルにこれらを追加することもできます。
+    \c lupdate を実行して \e {Qt Linguist} を起動し、
+    \c trollprint_pt.ts を読み込みます。
+    ソーステキストの一覧を参照する際に、
+    \gui{ソーステキスト}と\gui{開発者のコメント}
+    の領域に表示されるコメントを確認できます。
+
+    特に大きなプログラムでは、翻訳者が自分の翻訳を探し、
+    それが適切かどうかを確認することが困難な場合があります。
+    コメントは役立つナビゲーション情報を提供するため、
+    翻訳に要する時間を節約できます:
+
+    \snippet doc/src/snippets/code/doc_src_examples_trollprint.qdoc 3
+
+    \section1 Troll Print 1.1
+
+    これから、Troll Print のバージョン 1.1 のリリースの準備を行います。
+    テキストエディターを起動して、次の手順に従って変更を行ってください:
+
+    \list
+    \o \c printpanel.cpp の文字列 "\<b\>TROLL PRINT\</b\>" を引数に
+       QLabel を作成する2つの行のコメントを解除します。 
+    \o ソースの変更: \c printpanel.cpp で、"2-sided" を
+       "Two-sided" に置き換えます。 
+    \o \c mainwindow.cpp で、すべての "1.0" を "1.1" に置き換えます。 
+    \o \c mainwindow.cpp で、著作権表示の年号を 1999-2000 に更新します。 
+    \endlist
+
+    (実際のアプリケーションでは、バージョン番号と著作権表示の年号は
+    const または #define をつかって定義するでしょう。)
+
+    終了したら、\c lupdate を実行し、\e {Qt Linguist} で
+    \c trollprint_pt.ts を開きます。以下の項目は、特別なコンテンツです:
+
+    \list
+    \o \c MainWindow
+         \list
+         \o Troll Print 1.0 - 古いテキストとして灰色でマーク
+         \o About Troll Print 1.0 - 古いテキストとして灰色でマーク
+         \o Troll Print 1.0. Copyright 1999 Software, Inc. -
+       古いテキストとして灰色でマーク
+         \o Troll Print 1.1 - 自動的に "Troll Imprimir 1.1" に翻訳(未完了)
+         \o About Troll Print 1.1 - 自動的に "Troll Imprimir 1.1" に翻訳(未完了)
+         \o Troll Print 1.1. Copyright 1999-2000 Software,
+       Inc. - 自動的に "Troll Imprimir 1.1.
+       Copyright 1999-2000 Software, Inc." に翻訳(未完了)
+         \endlist
+    \o \c PrintPanel
+         \list
+         \o 2-sided - 古いテキストとして灰色でマーク
+         \o \<b\>TROLL PRINT\</b\> - 未翻訳のテキストとして"?"マーク 
+         \o Two-sided - 未翻訳のテキストとして"?"マーク 
+         \endlist
+    \endlist
+
+    \c lupdate は、修正を容易に行い、数字の処理を効率的に行うために、
+    様々な処理を行っています。
+
+    \c MainWindow の翻訳の見直しを行います。
+    "\<b\>TROLL PRINT\</b\>" を "\<b\>TROLL IMPRIMIR\</b\>" と翻訳します。
+    "Two-sided" を翻訳する際には、\gui{フレーズと推測} の欄から
+    "2-lados" をダブルクリックして訳に選択した後に、
+    "2" を "Dois" に変更します。
+
+    保存して終了し、\c lrelease を実行します。
+    ポルトガル語版の表示は以下のようになります:
+
+    \image linguist-trollprint_11_pt.png
+
+    \gui{Ajuda|Sobre} (\gui{Help|About}) を選択し、
+    バージョン情報ボックスを確認します。
+
+    \gui{Ajuda|Sobre Qt} (\gui{Help|About Qt}) を選択した場合、
+    英語版のダイアログが表示されます。
+    Qt の翻訳はまだ終わっていません。
+    詳細については、\l{Internationalization with Qt} を参照してください。
+
+    ここで、\c LANG=en を設定し、元の英語版を実行してみてください:
+
+    \image linguist-trollprint_11_en.png
+*/

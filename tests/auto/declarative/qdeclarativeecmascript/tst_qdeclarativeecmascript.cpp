@@ -53,6 +53,11 @@
 #include "testtypes.h"
 #include "testhttpserver.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 /*
 This test covers evaluation of ECMAScript expressions and bindings from within
 QML.  This does not include static QML language issues.

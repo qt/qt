@@ -855,9 +855,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                     key = QLS("a");
                     GTK_WIDGET_SET_FLAGS(gtkTreeView, GTK_HAS_FOCUS);
                 }
+                bool isEnabled = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled));
                 gtkPainter.paintFlatBox(gtkTreeView, detail, option->rect,
                                         option->state & State_Selected ? GTK_STATE_SELECTED :
-                                        option->state & State_Enabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
+                                        isEnabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
                                         GTK_SHADOW_OUT, gtkTreeView->style, key);
                 if (isActive )
                     GTK_WIDGET_UNSET_FLAGS(gtkTreeView, GTK_HAS_FOCUS);

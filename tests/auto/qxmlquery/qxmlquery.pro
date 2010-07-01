@@ -18,7 +18,7 @@ wince* {
 
 include (../xmlpatterns.pri)
 
-wince*|symbian*: {
+wince*|symbian: {
    addFiles.sources = pushBaselines input.xml
    addFiles.path    = .
 

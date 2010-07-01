@@ -146,7 +146,7 @@ bool QPixmapData::fromData(const uchar *buf, uint len, const char *format, Qt::I
 
 void QPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-    fromImage(data->toImage().copy(rect), Qt::AutoColor);
+    fromImage(data->toImage().copy(rect), Qt::NoOpaqueDetection);
 }
 
 bool QPixmapData::scroll(int dx, int dy, const QRect &rect)

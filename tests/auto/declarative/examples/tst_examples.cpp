@@ -47,6 +47,11 @@
 #include <QDeclarativeView>
 #include <QDeclarativeError>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_examples : public QObject
 {
     Q_OBJECT
@@ -80,6 +85,7 @@ tst_examples::tst_examples()
 
 
     // Add directories you want excluded here
+    excludedDirs << "doc/src/snippets/declarative/visualdatamodel_rootindex";
 
 #ifdef QT_NO_WEBKIT
     excludedDirs << "examples/declarative/modelviews/webview";

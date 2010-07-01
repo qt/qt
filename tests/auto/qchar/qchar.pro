@@ -3,12 +3,12 @@ SOURCES  += tst_qchar.cpp
 
 QT = core
 
-wince*|symbian*: {
+wince*|symbian: {
 deploy.sources += NormalizationTest.txt
 DEPLOYMENT = deploy
 }
 
-symbian*: {
+symbian: {
     DEFINES += SRCDIR=""
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

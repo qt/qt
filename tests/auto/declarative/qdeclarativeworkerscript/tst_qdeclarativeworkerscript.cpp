@@ -53,6 +53,11 @@
 
 Q_DECLARE_METATYPE(QScriptValue)
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeWorkerScript : public QObject
 {
     Q_OBJECT
@@ -165,13 +170,15 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
     QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
     QVERIFY(worker != 0);
 
-    QString jsObject = "{'name': 'zyz', 'spell power': 3101, 'haste': 1125}";
+    // Properties are in alphabetical order to enable string-based comparison after
+    // QVariant roundtrip, since the properties will be stored in a QVariantMap.
+    QString jsObject = "{'haste': 1125, 'name': 'zyz', 'spell power': 3101}";
 
     QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(worker));
     QScriptValue sv = engine->newObject();
+    sv.setProperty("haste", 1125);
     sv.setProperty("name", "zyz");
     sv.setProperty("spell power", 3101);
-    sv.setProperty("haste", 1125);
 
     QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, qVariantFromValue(sv))));
     waitForEchoMessage(worker);

@@ -1,0 +1,161 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page designer-quick-start.html
+
+    \title Qt Designer クイックガイド
+
+    \QD を使うための基本的な手順は、以下の\bold{四つ}です。
+
+    \list 1
+        \o フォームとオブジェクトを選択する
+        \o フォームにオブジェクトを配置する
+        \o スロットにシグナルを接続する
+        \o フォームをプレビューする
+    \endlist
+
+    \image rgbController-screenshot.png
+
+    Red、Green、Blue(RGB)の値を操作するために必要なコントロールを含む
+    小さなウィジェット(上記スクリーンショット参照)を設計する場合を想定します。
+    このウィジェットは、画像処理プログラム内のどこからでも表示できるウィジェットです。
+
+    \table
+    \row
+    \i \inlineimage designer-choosing-form.png
+    \i \bold{フォームを選択する}
+
+    \gui{新しいフォーム} ダイアログから \gui Widget を選択して開始します。
+    \endtable
+
+
+    \table
+    \row
+    \i \inlineimage rgbController-arrangement.png
+    \i \bold{フォームにウィジェットを配置する}
+
+    3つのラベル(Label)、スピンボックス(Spin Box)、垂直方向のスライダ(Vertical Slider)をフォーム上へドラッグします。
+    ラベルの既定の文字列を変更するには、文字列をダブルクリックします。
+    希望するレイアウトに合わせて配置します。
+    \endtable
+
+    画像のようにこれらのウィジェットを配置するには、
+    レイアウトにウィジェットを配置する必要があります。
+    これを3つグループに対して行います。
+    まず "RED" ラベルを選択します。
+    次に、\key Ctrl (Mac OS X では \key Command)キーを押したまま、対応するスピンボックスとスライダを選択します。
+    \gui{フォーム} メニューで、\gui{格子状に並べる}を選択します。
+
+    \table
+        \row
+            \i \inlineimage rgbController-form-gridLayout.png
+            \i \inlineimage rgbController-selectForLayout.png
+    \endtable
+
+    他の2つのラベルに対しても、対応するスピンボックスとスライダごとにこの手順を繰り返します。
+
+    次の手順は、これら3つのレイアウトを組み合わせて、1つの\bold{メインレイアウト}を作成することです。
+    メインレイアウトとは、トップレベルウィジェット(この場合は QWidget)のレイアウトです。
+    トップレベルウィジェットにレイアウトを配置することは重要です。
+    そうでなければ、ウィンドウをサイズ変更したときにウィンドウ上のウィジェットのサイズが変更されません。
+    レイアウトを設定するには、フォーム上の3つのレイアウト以外の任意の場所で\gui{右クリック}し、\gui{水平に並べる}を選択します。
+    または、\gui{格子状に並べる}を選択することもできます。
+    そのどちらでも同じ配置(以下を参照)で表示されます。
+
+    \image rgbController-final-layout.png
+
+    \note メインレイアウトはフォームに表示できません。
+    メインレイアウトがインストールされているかどうかを確認するには、
+    フォームをサイズ変更してみます。
+    インストールされている場合は、各ウィジェットのサイズが適宜変更されます。
+    または、\QD の \gui{Object Inspector} で確認することもできます。
+    トップレベルウィジェットにレイアウトが配置されていない場合、
+    その横に崩れたレイアウトのアイコン \inlineimage rgbController-no-toplevel-layout.png
+    が表示されます。
+
+    スライダをクリックして特定の値までドラッグするときに、
+    スピンボックスにスライダの位置を反映させます。
+    この操作を行うには、スライダの \l{QAbstractSlider::}{valueChanged()}
+    シグナルをスピンボックスの \l{QSpinBox::}{setValue()}
+    スロットに接続する必要があります。
+    また、逆方向、すなわちスピンボックスの \l{QSpinBox::}{valueChanged()}
+    シグナルをスライダの \l{QAbstractSlider::value()}{setValue()} スロットに接続する必要があります。
+
+    この操作を行うには、\key{F4} キーを押すか、\gui{編集|シグナル/スロットの編集} を選択し、
+    \gui{シグナル/スロットの編集}モードに切り替える必要があります。
+
+    \table
+        \row
+            \i \inlineimage rgbController-signalsAndSlots.png
+            \i \bold{シグナルをスロットに接続する}
+
+	スライダをクリックし、カーソルをスピンボックスまでドラッグします。
+	以下のような \gui{シグナルスロットを設定} ダイアログがポップアップ表示されます。
+	適切なシグナルとスロットを選択し、\gui OK をクリックします。
+    \endtable
+
+    \image rgbController-configure-connection1.png
+
+    手順を(逆の順序で)繰り返し、
+    スピンボックスをクリックしてカーソルをスライダまでドラッグし、
+    スピンボックスの \l{QSpinBox::}{valueChanged()} シグナルを、
+    スライダの \l{QAbstractSlider::value()}{setValue()} スロットに接続します。
+
+    以下のスクリーンショットは、適切なシグナルとスロットを選択するためのガイドとして利用できます。
+
+    \image rgbController-configure-connection2.png
+
+    RGBコントローラーの "RED" コンポーネントのオブジェクトが正常に接続されたので、
+    "GREEN" および "BLUE" コンポーネントにも同じ手順を繰り返します。
+
+    RGB値の範囲は 0 ~ 255 であるため、
+    スピンボックスとスライダを特定の範囲に制限する必要があります。
+
+    \table
+        \row
+            \i \inlineimage rgbController-property-editing.png
+            \i \bold{ウィジェットのプロパティを設定する}
+
+	最初のスピンボックスをクリックします。
+	\gui{プロパティエディタ}に \l{QSpinBox} のプロパティが表示されます。
+	\l{QSpinBox::}{maximum} のプロパティに、"255" と入力します。
+	次に、最初の垂直方向のスライダをクリックすると、
+	\l{QAbstractSlider} のプロパティが表示されます。
+	\l{QAbstractSlider::}{maximum} のプロパティにも、"255" と入力します。
+	残りのスピンボックスとスライダに対しても、この処理を繰り返します。
+    \endtable
+
+    ここで、フォームをプレビューし、アプリケーションの外観を確認します。
+    この操作を行うには、\key{Ctrl + R} を押すか、
+    \gui{フォーム}メニューから\gui{プレビュー}を選択します。
+    スライダをドラッグすると、
+    スピンボックスにその値が反映されます(逆の場合も同じ)。
+    またサイズを変更し、子ウィジェットの管理に使用するレイアウトが
+    どのようにウィンドウのさまざまなサイズに対応しているか確認します。
+*/
+

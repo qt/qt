@@ -63,6 +63,7 @@
 #include "qpointer.h"
 #include "qapplication.h"
 #include "qelapsedtimer.h"
+#include "QtCore/qthreadstorage.h"
 #include <w32std.h>
 #include <coecntrl.h>
 #include <eikenv.h>
@@ -86,10 +87,21 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
+class QS60ThreadLocalData
+{
+public:
+    QS60ThreadLocalData();
+    ~QS60ThreadLocalData();
+    bool usingCONEinstances;
+    RWsSession wsSession;
+    CWsScreenDevice *screenDevice;
+};
+
 class QS60Data
 {
 public:
     QS60Data();
+    QThreadStorage<QS60ThreadLocalData *> tls;
     TUid uid;
     int screenDepth;
     QPoint lastCursorPos;
@@ -132,9 +144,9 @@ public:
     int memoryLimitForHwRendering;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
-    static inline RWsSession& wsSession();
+    inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
-    static inline CWsScreenDevice* screenDevice();
+    inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
     static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
@@ -241,8 +253,35 @@ private:
 };
 
 inline QS60Data::QS60Data()
+: uid(TUid::Null()),
+  screenDepth(0),
+  screenWidthInPixels(0),
+  screenHeightInPixels(0),
+  screenWidthInTwips(0),
+  screenHeightInTwips(0),
+  defaultDpiX(0),
+  defaultDpiY(0),
+  curWin(0),
+  virtualMousePressedKeys(0),
+  virtualMouseAccelDX(0),
+  virtualMouseAccelDY(0),
+  virtualMouseMaxAccel(0),
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+  brokenPointerCursors(0),
+#endif
+  hasTouchscreen(0),
+  mouseInteractionEnabled(0),
+  virtualMouseRequired(0),
+  qtOwnsS60Environment(0),
+  supportsPremultipliedAlpha(0),
+  avkonComponentsSupportTransparency(0),
+  menuBeingConstructed(0),
+  memoryLimitForHwRendering(0),
+  s60ApplicationFactory(0),
+#ifdef Q_WS_S60
+  s60InstalledTrapHandler(0)
+#endif
 {
-    memclr(this, sizeof(QS60Data)); //zero init data
 }
 
 inline void QS60Data::updateScreenSize()
@@ -265,7 +304,10 @@ inline void QS60Data::updateScreenSize()
 
 inline RWsSession& QS60Data::wsSession()
 {
-    return CCoeEnv::Static()->WsSession();
+    if(!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->wsSession;
 }
 
 inline RWindowGroup& QS60Data::windowGroup()
@@ -275,7 +317,10 @@ inline RWindowGroup& QS60Data::windowGroup()
 
 inline CWsScreenDevice* QS60Data::screenDevice()
 {
-    return CCoeEnv::Static()->ScreenDevice();
+    if(!tls.hasLocalData()) {
+        tls.setLocalData(new QS60ThreadLocalData);
+    }
+    return tls.localData()->screenDevice;
 }
 
 inline CCoeAppUi* QS60Data::appUi()

@@ -8,7 +8,7 @@ DEFINES  += QT_BOOTSTRAPPED
 
 win32 : LIBS += -lole32 -ladvapi32
 win32-msvc.net | win32-msvc2* : QMAKE_CXXFLAGS += /EHsc
-win32-g++ : LIBS += -luuid
+win32-g++* : LIBS += -luuid
 
 win32-msvc* {
     QMAKE_CFLAGS_RELEASE -= -MD

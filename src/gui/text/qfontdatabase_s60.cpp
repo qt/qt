@@ -118,11 +118,10 @@ public:
         {
             if (!font)
                 return;
-            QS60Data::screenDevice()->ReleaseFont(font);
+            S60->screenDevice()->ReleaseFont(font);
         }
     };
 
-private:
 #ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     RHeap* m_heap;
     CFontStore *m_store;
@@ -159,20 +158,32 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
 #endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 }
 
-QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
+void qt_cleanup_symbianFontDatabaseExtras()
 {
+    const QSymbianFontDatabaseExtrasImplementation *dbExtras =
+            static_cast<const QSymbianFontDatabaseExtrasImplementation*>(privateDb()->symbianExtras);
+    if (!dbExtras)
+        return; // initializeDb() has never been called
 #ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-    qDeleteAll(m_extrasHash);
+    qDeleteAll(dbExtras->m_extrasHash);
 #else // Q_SYMBIAN_HAS_FONTTABLE_API
     typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
-    for (iterator p = m_extras.begin(); p != m_extras.end(); ++p) {
-        m_store->ReleaseFont((*p)->fontOwner());
+    for (iterator p = dbExtras->m_extras.begin(); p != dbExtras->m_extras.end(); ++p) {
+        dbExtras->m_store->ReleaseFont((*p)->fontOwner());
         delete *p;
     }
+    dbExtras->m_extras.clear();
+#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+    dbExtras->m_extrasHash.clear();
+}
 
+QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
+{
+    qt_cleanup_symbianFontDatabaseExtras();
+#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     delete m_store;
     m_heap->Close();
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
+#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 }
 
 #ifndef FNTSTORE_H_INLINES_SUPPORT_FMM
@@ -205,7 +216,7 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
 
         CFont* font = NULL;
 #ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-        const TInt err = QS60Data::screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
+        const TInt err = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
         Q_ASSERT(err == KErrNone && font);
         QScopedPointer<CFont, CFontFromScreenDeviceReleaser> sFont(font);
         QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font);
@@ -260,17 +271,19 @@ QFontEngineFTS60::QFontEngineFTS60(const QFontDef &fd)
 */
 qreal QFontEngineS60::pixelsToPoints(qreal pixels, Qt::Orientation orientation)
 {
+    CWsScreenDevice* device = S60->screenDevice();
     return (orientation == Qt::Horizontal?
-        S60->screenDevice()->HorizontalPixelsToTwips(pixels)
-        :S60->screenDevice()->VerticalPixelsToTwips(pixels)) / KTwipsPerPoint;
+        device->HorizontalPixelsToTwips(pixels)
+        :device->VerticalPixelsToTwips(pixels)) / KTwipsPerPoint;
 }
 
 qreal QFontEngineS60::pointsToPixels(qreal points, Qt::Orientation orientation)
 {
+    CWsScreenDevice* device = S60->screenDevice();
     const int twips = points * KTwipsPerPoint;
     return orientation == Qt::Horizontal?
-        S60->screenDevice()->HorizontalTwipsToPixels(twips)
-        :S60->screenDevice()->VerticalTwipsToPixels(twips);
+        device->HorizontalTwipsToPixels(twips)
+        :device->VerticalTwipsToPixels(twips);
 }
 
 QFontEngineMultiS60::QFontEngineMultiS60(QFontEngine *first, int script, const QStringList &fallbackFamilies)
@@ -309,16 +322,16 @@ static void initializeDb()
 
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
 
-    const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
+    const int numTypeFaces = S60->screenDevice()->NumTypefaces();
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
-        QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
+        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        if (QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+        if (S60->screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
             continue;
         QScopedPointer<CFont, QSymbianFontDatabaseExtrasImplementation::CFontFromScreenDeviceReleaser> sFont(font);
         if (font->TypeUid() == KCFbsFontUid) {

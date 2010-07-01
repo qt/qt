@@ -53,12 +53,13 @@ Item {
     function toggle() {
         if (toggleswitch.state == "on")
             toggleswitch.state = "off";
-        else toggleswitch.state = "on";
+        else 
+            toggleswitch.state = "on";
     }
 //![2]
 
 //![3]
-    function dorelease() {
+    function releaseSwitch() {
         if (knob.x == 1) {
             if (toggleswitch.state == "off") return;
         }
@@ -87,7 +88,7 @@ Item {
             anchors.fill: parent
             drag.target: knob; drag.axis: Drag.XAxis; drag.minimumX: 1; drag.maximumX: 78
             onClicked: toggle()
-            onReleased: dorelease()
+            onReleased: releaseSwitch()
         }
     }
 //![5]

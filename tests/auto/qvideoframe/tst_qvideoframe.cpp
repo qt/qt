@@ -79,6 +79,8 @@ private slots:
     void mapImage_data();
     void mapImage();
     void imageDetach();
+    void formatConversion_data();
+    void formatConversion();
 };
 
 Q_DECLARE_METATYPE(QImage::Format)
@@ -656,6 +658,132 @@ void tst_QVideoFrame::imageDetach()
 
     // Original image has detached and is therefore unchanged.
     QCOMPARE(image.pixel(4, 4), red);
+}
+
+void tst_QVideoFrame::formatConversion_data()
+{
+    QTest::addColumn<QImage::Format>("imageFormat");
+    QTest::addColumn<QVideoFrame::PixelFormat>("pixelFormat");
+
+    QTest::newRow("QImage::Format_RGB32 | QVideoFrame::Format_RGB32")
+            << QImage::Format_RGB32
+            << QVideoFrame::Format_RGB32;
+    QTest::newRow("QImage::Format_ARGB32 | QVideoFrame::Format_ARGB32")
+            << QImage::Format_ARGB32
+            << QVideoFrame::Format_ARGB32;
+    QTest::newRow("QImage::Format_ARGB32_Premultiplied | QVideoFrame::Format_ARGB32_Premultiplied")
+            << QImage::Format_ARGB32_Premultiplied
+            << QVideoFrame::Format_ARGB32_Premultiplied;
+    QTest::newRow("QImage::Format_RGB16 | QVideoFrame::Format_RGB565")
+            << QImage::Format_RGB16
+            << QVideoFrame::Format_RGB565;
+    QTest::newRow("QImage::Format_ARGB8565_Premultiplied | QVideoFrame::Format_ARGB8565_Premultiplied")
+            << QImage::Format_ARGB8565_Premultiplied
+            << QVideoFrame::Format_ARGB8565_Premultiplied;
+    QTest::newRow("QImage::Format_RGB555 | QVideoFrame::Format_RGB555")
+            << QImage::Format_RGB555
+            << QVideoFrame::Format_RGB555;
+    QTest::newRow("QImage::Format_RGB888 | QVideoFrame::Format_RGB24")
+            << QImage::Format_RGB888
+            << QVideoFrame::Format_RGB24;
+
+    QTest::newRow("QImage::Format_MonoLSB")
+            << QImage::Format_MonoLSB
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_Indexed8")
+            << QImage::Format_Indexed8
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_ARGB6666_Premultiplied")
+            << QImage::Format_ARGB6666_Premultiplied
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_ARGB8555_Premultiplied")
+            << QImage::Format_ARGB8555_Premultiplied
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_RGB666")
+            << QImage::Format_RGB666
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_RGB444")
+            << QImage::Format_RGB444
+            << QVideoFrame::Format_Invalid;
+    QTest::newRow("QImage::Format_ARGB4444_Premultiplied")
+            << QImage::Format_ARGB4444_Premultiplied
+            << QVideoFrame::Format_Invalid;
+
+    QTest::newRow("QVideoFrame::Format_BGRA32")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGRA32;
+    QTest::newRow("QVideoFrame::Format_BGRA32_Premultiplied")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGRA32_Premultiplied;
+    QTest::newRow("QVideoFrame::Format_BGR32")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGR32;
+    QTest::newRow("QVideoFrame::Format_BGR24")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGR24;
+    QTest::newRow("QVideoFrame::Format_BGR565")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGR565;
+    QTest::newRow("QVideoFrame::Format_BGR555")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGR555;
+    QTest::newRow("QVideoFrame::Format_BGRA5658_Premultiplied")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_BGRA5658_Premultiplied;
+    QTest::newRow("QVideoFrame::Format_AYUV444")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_AYUV444;
+    QTest::newRow("QVideoFrame::Format_AYUV444_Premultiplied")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_AYUV444_Premultiplied;
+    QTest::newRow("QVideoFrame::Format_YUV444")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_YUV420P;
+    QTest::newRow("QVideoFrame::Format_YV12")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_YV12;
+    QTest::newRow("QVideoFrame::Format_UYVY")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_UYVY;
+    QTest::newRow("QVideoFrame::Format_YUYV")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_YUYV;
+    QTest::newRow("QVideoFrame::Format_NV12")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_NV12;
+    QTest::newRow("QVideoFrame::Format_NV21")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_NV21;
+    QTest::newRow("QVideoFrame::Format_IMC1")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_IMC1;
+    QTest::newRow("QVideoFrame::Format_IMC2")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_IMC2;
+    QTest::newRow("QVideoFrame::Format_IMC3")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_IMC3;
+    QTest::newRow("QVideoFrame::Format_IMC4")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_IMC4;
+    QTest::newRow("QVideoFrame::Format_Y8")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_Y8;
+    QTest::newRow("QVideoFrame::Format_Y16")
+            << QImage::Format_Invalid
+            << QVideoFrame::Format_Y16;
+}
+
+void tst_QVideoFrame::formatConversion()
+{
+    QFETCH(QImage::Format, imageFormat);
+    QFETCH(QVideoFrame::PixelFormat, pixelFormat);
+
+    QCOMPARE(QVideoFrame::pixelFormatFromImageFormat(imageFormat) == pixelFormat,
+              imageFormat != QImage::Format_Invalid);
+
+    QCOMPARE(QVideoFrame::imageFormatFromPixelFormat(pixelFormat) == imageFormat,
+             pixelFormat != QVideoFrame::Format_Invalid);
 }
 
 QTEST_MAIN(tst_QVideoFrame)

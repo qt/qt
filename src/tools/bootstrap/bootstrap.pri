@@ -52,8 +52,9 @@ hpux-acc*|hpuxi-acc* {
     LIBS += -lbootstrap
 }
 !contains(QT_CONFIG, zlib):!contains(QT_CONFIG, no-zlib):!cross_compile {
-   unix:LIBS += -lz
-#  win32:LIBS += libz.lib
+    symbian:LIBS_PRIVATE += -llibz
+    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+    else:LIBS += zdll.lib
 }
 win32:LIBS += -luser32
 

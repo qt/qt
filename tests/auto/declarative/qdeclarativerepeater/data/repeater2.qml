@@ -9,12 +9,13 @@ Rectangle {
         Item {
             objectName: "myDelegate"
             height: 20
+            width: 240
             Text {
-                y: index*20
+                objectName: "myName"
                 text: name
             }
             Text {
-                y: index*20
+                objectName: "myNumber"
                 x: 100
                 text: number
             }

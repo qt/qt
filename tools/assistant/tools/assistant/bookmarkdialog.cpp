@@ -160,8 +160,7 @@ void BookmarkDialog::accepted()
     QModelIndex index = ui.treeView->currentIndex();
     if (index.isValid()) {
         index = bookmarkModel->addItem(bookmarkTreeModel->mapToSource(index));
-        if (BookmarkItem *item = bookmarkModel->itemFromIndex(index))
-            item->setData(DataVector() << m_title << m_url << false);
+        bookmarkModel->setData(index, DataVector() << m_title << m_url << false);
     } else
         rejected();
 

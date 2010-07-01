@@ -1138,6 +1138,20 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
     multiple connections, such as QNetworkAccessManager. When set on
     such object, the factory will be queried for sockets created by
     that framework only.
+
+    \section1 System Proxies
+
+    You can configure a factory to use the system proxy's settings.
+    Call the setUseSystemConfiguration() function with true to enable
+    this behavior, or false to disable it.
+
+    Similarly, you can use a factory to make queries directly to the
+    system proxy by calling its systemProxyForQuery() function.
+
+    \warning Depending on the configuration of the user's system, the
+    use of system proxy features on certain platforms may be subject
+    to limitations. The systemProxyForQuery() documentation contains a
+    list of these limitations for those platforms that are affected.
 */
 
 /*!
@@ -1159,17 +1173,20 @@ QNetworkProxyFactory::~QNetworkProxyFactory()
 
 
 /*!
+    \since 4.6
+
     Enables the use of the platform-specific proxy settings, and only those.
     See systemProxyForQuery() for more information.
 
     Internally, this method (when called with \a enable set to true)
     sets an application-wide proxy factory. For this reason, this method
-    is mutually exclusive with setApplicationProxyFactory: calling
-    setApplicationProxyFactory overrides the use of the system-wide proxy,
-    and calling setUseSystemConfiguration overrides any
+    is mutually exclusive with setApplicationProxyFactory(): calling
+    setApplicationProxyFactory() overrides the use of the system-wide proxy,
+    and calling setUseSystemConfiguration() overrides any
     application proxy or proxy factory that was previously set.
 
-    \since 4.6
+    \note See the systemProxyForQuery() documentation for a list of
+    limitations related to the use of system proxies.
 */
 void QNetworkProxyFactory::setUseSystemConfiguration(bool enable)
 {
@@ -1264,8 +1281,13 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     function. Future versions of Qt may lift some of the limitations
     listed here.
 
-    On MacOS X, this function will ignore the Proxy Auto Configuration
+    \list
+    \o On MacOS X, this function will ignore the Proxy Auto Configuration
     settings, since it cannot execute the associated ECMAScript code.
+
+    \o On Windows platforms, this function may take several seconds to
+    execute depending on the configuration of the user's system.
+    \endlist
 */
 
 /*!

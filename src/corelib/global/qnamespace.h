@@ -1561,7 +1561,8 @@ public:
 
     enum LayoutDirection {
         LeftToRight,
-        RightToLeft
+        RightToLeft,
+        LayoutDirectionAuto
     };
 
     enum AnchorPoint {

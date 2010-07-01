@@ -42,9 +42,16 @@
 /* Sample program for configure to test for getaddrinfo on the unix
      platform. we check for all structures and functions required. */
 
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef __MINGW32__
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#endif
 
 int main()
 {

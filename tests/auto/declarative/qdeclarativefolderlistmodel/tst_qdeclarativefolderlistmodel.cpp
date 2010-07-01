@@ -48,6 +48,11 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QDebug>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 // From qdeclarastivefolderlistmodel.h
 const int FileNameRole = Qt::UserRole+1;
 const int FilePathRole = Qt::UserRole+2;

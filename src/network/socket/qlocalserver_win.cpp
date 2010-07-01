@@ -85,8 +85,10 @@ bool QLocalServerPrivate::addListener()
     if (!ConnectNamedPipe(listener.handle, &listener.overlapped)) {
         switch (GetLastError()) {
         case ERROR_IO_PENDING:
+            listener.connected = false;
             break;
         case ERROR_PIPE_CONNECTED:
+            listener.connected = true;
             SetEvent(eventHandle);
             break;
         default:
@@ -155,7 +157,9 @@ void QLocalServerPrivate::_q_onNewConnection()
     // a client connection first, so there is no way around polling all of them.
     for (int i = 0; i < listeners.size(); ) {
         HANDLE handle = listeners[i].handle;
-        if (GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE)) {
+        if (listeners[i].connected
+            || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE))
+        {
             listeners.removeAt(i);
 
             addListener();

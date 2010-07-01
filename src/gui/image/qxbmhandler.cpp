@@ -261,13 +261,15 @@ bool QXbmHandler::readHeader()
 
 bool QXbmHandler::canRead() const
 {
-    if (state == Ready) {
-        if (!canRead(device()))
-            return false;
+    if (state == Ready && !canRead(device()))
+        return false;
+
+    if (state != Error) {
         setFormat("xbm");
         return true;
     }
-    return state != Error;
+
+    return false;
 }
 
 bool QXbmHandler::canRead(QIODevice *device)

@@ -8,9 +8,8 @@ SOURCES += tst_qdeclarativeloader.cpp \
            ../shared/testhttpserver.cpp
 
 symbian: {
-    DEFINES += SRCDIR=\".\"
     importFiles.sources = data
-    importFiles.path = 
+    importFiles.path = .
     DEPLOYMENT = importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"

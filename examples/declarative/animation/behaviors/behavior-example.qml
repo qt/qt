@@ -87,12 +87,12 @@ Rectangle {
             border.width: 4; border.color: "white"
             color: "firebrick"
 
-            // Setting an 'elastic' behavior on the focusRect's x property.
+            // Set an 'elastic' behavior on the focusRect's x property.
             Behavior on x {
                 NumberAnimation { easing.type: Easing.OutElastic; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
             }
 
-            // Setting an 'elastic' behavior on the focusRect's y property.
+            // Set an 'elastic' behavior on the focusRect's y property.
             Behavior on y {
                 NumberAnimation { easing.type: Easing.OutElastic; easing.amplitude: 3.0; easing.period: 2.0; duration: 300 }
             }
@@ -104,12 +104,11 @@ Rectangle {
                 color: "white"
                 font.pixelSize: 16; font.bold: true
 
-                // Setting a behavior on the focusText's x property:
+                // Set a behavior on the focusText's x property:
                 // Set the opacity to 0, set the new text value, then set the opacity back to 1.
                 Behavior on text {
                     SequentialAnimation {
                         NumberAnimation { target: focusText; property: "opacity"; to: 0; duration: 150 }
-                        PropertyAction { }
                         NumberAnimation { target: focusText; property: "opacity"; to: 1; duration: 150 }
                     }
                 }

@@ -1406,16 +1406,6 @@ QMakeProject::read(uchar cmd)
             return false;
     }
 
-    if(cmd & ReadPostFiles) { // parse post files
-        const QStringList l = vars["QMAKE_POST_INCLUDE_FILES"];
-        for(QStringList::ConstIterator it = l.begin(); it != l.end(); ++it) {
-            if(read((*it), vars)) {
-                if(vars["QMAKE_INTERNAL_INCLUDED_FILES"].indexOf((*it)) == -1)
-                    vars["QMAKE_INTERNAL_INCLUDED_FILES"].append((*it));
-            }
-        }
-    }
-
     if(cmd & ReadCmdLine) {
         parser.file = "(internal)";
         parser.from_file = false;
@@ -1720,7 +1710,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             fprintf(stderr, "Cannot find directory: %s\n", file.left(di).toLatin1().constData());
             return IncludeFailure;
         }
-        file = file.right(file.length() - di - 1);
     }
     bool parsed = false;
     parser_info pi = parser;
@@ -1740,9 +1729,9 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
                 if(proj.doProjectInclude("default_pre", IncludeFlagFeature, proj.variables()) == IncludeNoExist)
                     proj.doProjectInclude("default", IncludeFlagFeature, proj.variables());
 #endif
-                parsed = proj.read(file, proj.variables());
+                parsed = proj.read(file, proj.variables()); // parse just that file (fromfile, infile)
             } else {
-                parsed = proj.read(file);
+                parsed = proj.read(file); // parse all aux files (load/include into)
             }
             place = proj.variables();
         } else {
@@ -2191,7 +2180,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         if(args.count() != 1) {
             fprintf(stderr, "%s:%d prompt(question) requires one argument.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
-        } else if(projectFile() == "-") {
+        } else if(pfile == "-") {
             fprintf(stderr, "%s:%d prompt(question) cannot be used when '-o -' is used.\n",
                     parser.file.toLatin1().constData(), parser.line_no);
         } else {

@@ -18,6 +18,7 @@ SOURCES += $$PWD/qmlruntime.cpp \
 
 RESOURCES = $$PWD/qmlruntime.qrc
 maemo5 {
+    QT += dbus
     SOURCES += $$PWD/deviceorientation_maemo.cpp
 } else {
     SOURCES += $$PWD/deviceorientation.cpp

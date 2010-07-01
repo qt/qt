@@ -148,6 +148,7 @@ public:
     Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
     Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
     Q_INVOKABLE void forceFocus();
+    Q_INVOKABLE QDeclarativeItem *childAt(qreal x, qreal y) const;
 
 Q_SIGNALS:
     void childrenChanged();

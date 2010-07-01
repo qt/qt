@@ -85,6 +85,13 @@ namespace QPatternist
             static bool isUPAConform(const XsdParticle::Ptr &particle, const NamePool::Ptr &namePool);
 
             /**
+             * Checks whether the given @p particle, which must be an xsd:all element,
+             * is valid according the UPA (http://www.w3.org/TR/xmlschema-1/#cos-nonambig) constraint.
+             * For xsd:all elements, we do not want to construct a state machine.
+             */
+            static bool isUPAConformXsdAll(const XsdParticle::Ptr &particle, const NamePool::Ptr &namePool);
+
+            /**
              * Checks whether the given @p particle subsumes the given @p derivedParticle.
              * (http://www.w3.org/TR/xmlschema-1/#cos-particle-restrict)
              */

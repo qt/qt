@@ -1585,6 +1585,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
             }
         }
     }
+    o->setMimeData(0);
+    o->deleteLater();
     return performedAction;
 }
 

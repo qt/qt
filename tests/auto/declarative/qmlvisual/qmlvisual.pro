@@ -5,7 +5,7 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_qmlvisual.cpp
 
 symbian: {
-    importFiles.path =
+    importFiles.path = .
     importFiles.sources = animation \
     fillmode \
     focusscope \
@@ -28,8 +28,6 @@ symbian: {
     selftest_noimages \
     webview
     DEPLOYMENT = importFiles
-    
-    DEFINES += QT_TEST_SOURCE_DIR=\".\"   
 } else {
     DEFINES += QT_TEST_SOURCE_DIR=\"\\\"$$PWD\\\"\"
 }

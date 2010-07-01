@@ -70,6 +70,11 @@ Item {
 
         Image { source: "TwitterCore/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
+        MouseArea {
+            anchors.fill: parent
+            onClicked: screen.focus = false;
+        }
+
         Twitter.RssModel { id: rssModel }
         Twitter.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
         Text {

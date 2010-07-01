@@ -45,6 +45,11 @@
 #include <private/qdeclarativeimage_p.h>
 #include <QImageReader>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 // QDeclarativeImageProvider::request() is run in an idle thread where possible
 // Be generous in our timeout.
 #define TRY_WAIT(expr) \

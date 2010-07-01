@@ -65,7 +65,7 @@ QTextOption::QTextOption()
       tab(-1),
       d(0)
 {
-    direction = QApplication::layoutDirection();
+    direction = Qt::LayoutDirectionAuto;
 }
 
 /*!
@@ -145,7 +145,7 @@ QTextOption &QTextOption::operator=(const QTextOption &o)
 
     \sa tabArray(), setTabStop(), setTabs()
 */
-void QTextOption::setTabArray(QList<qreal> tabStops)
+void QTextOption::setTabArray(QList<qreal> tabStops) // Qt5: const ref
 {
     if (!d)
         d = new QTextOptionPrivate;
@@ -165,7 +165,7 @@ void QTextOption::setTabArray(QList<qreal> tabStops)
 
     \sa tabStops()
 */
-void QTextOption::setTabs(QList<QTextOption::Tab> tabStops)
+void QTextOption::setTabs(QList<QTextOption::Tab> tabStops) // Qt5: const ref
 {
     if (!d)
         d = new QTextOptionPrivate;
@@ -388,6 +388,12 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 /*!
     \fn Tab::Tab()
     Creates a default left tab with position 80.
+*/
+
+/*!
+    \fn Tab::Tab(qreal pos, TabType tabType, QChar delim = QChar())
+    Creates a tab with the given position, tab type, and (for DelimiterTab) delimiter
+    \since 4.7
 */
 
 /*!

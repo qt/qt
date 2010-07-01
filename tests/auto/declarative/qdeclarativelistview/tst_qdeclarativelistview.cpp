@@ -52,6 +52,11 @@
 #include <QtDeclarative/private/qlistmodelinterface_p.h>
 #include "../../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_QDeclarativeListView : public QObject
 {
     Q_OBJECT
@@ -801,6 +806,14 @@ void tst_QDeclarativeListView::enforceRange()
     listview->setContentY(20);
 
     QTRY_COMPARE(listview->currentIndex(), 6);
+
+    // change model
+    TestModel model2;
+    for (int i = 0; i < 5; i++)
+        model2.addItem("Item" + QString::number(i), "");
+
+    ctxt->setContextProperty("testModel", &model2);
+    QCOMPARE(listview->count(), 5);
 
     delete canvas;
 }

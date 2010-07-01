@@ -442,7 +442,11 @@ static HB_Error  Load_CaretValue( HB_CaretValue*  cv,
     if ( ACCESS_Frame( 2L ) )
       return error;
 
+#ifdef HB_SUPPORT_MULTIPLE_MASTER
     cv->cvf.cvf4.IdCaretValue = GET_UShort();
+#else
+    (void) GET_UShort();
+#endif
 
     FORGET_Frame();
     break;
@@ -458,7 +462,7 @@ static HB_Error  Load_CaretValue( HB_CaretValue*  cv,
 static void  Free_CaretValue( HB_CaretValue*  cv)
 {
   if ( cv->CaretValueFormat == 3 )
-    _HB_OPEN_Free_Device( &cv->cvf.cvf3.Device );
+    _HB_OPEN_Free_Device( cv->cvf.cvf3.Device );
 }
 
 

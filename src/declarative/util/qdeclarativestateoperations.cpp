@@ -172,6 +172,14 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
     items involved in the reparenting (i.e. items in the common ancestor tree
     for the original and new parent).
 
+    The example below displays a large red rectangle and a small blue rectangle, side by side. 
+    When the \c blueRect is clicked, it changes to the "reparented" state: its parent is changed to \c redRect and it is 
+    positioned at (10, 10) within the red rectangle, as specified in the ParentChange.
+
+    \snippet doc/src/snippets/declarative/parentchange.qml 0
+
+    \image parentchange.png
+
     You can specify at which point in a transition you want a ParentChange to occur by
     using a ParentAnimation.
 */
@@ -583,9 +591,9 @@ public:
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
 
-    StateChangeScripts are run when entering the state. You can use
-    ScriptAction to specify at which point in the transition
-    you want the StateChangeScript to be run.
+    A StateChangeScript is run upon entering a state. You can optionally use
+    ScriptAction to specify the point in the transition at which
+    the StateChangeScript should to be run.
 
     \qml
     State {
@@ -687,22 +695,18 @@ QString QDeclarativeStateChangeScript::typeName() const
     \qmlclass AnchorChanges QDeclarativeAnchorChanges
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
-    In the following example we change the top and bottom anchors of an item:
-    \qml
-    State {
-        name: "reanchored"
-        AnchorChanges {
-            target: content;
-            anchors.top: window.top;
-            anchors.bottom: window.bottom
-        }
-        PropertyChanges {
-            target: content;
-            anchors.topMargin: 3
-            anchors.bottomMargin: 3;
-        }
-    }
-    \endqml
+    The AnchorChanges element is used to modify the anchors of an item in a \l State.
+
+    AnchorChanges cannot be used to modify the margins on an item. For this, use
+    PropertyChanges intead.
+
+    In the following example we change the top and bottom anchors of an item
+    using AnchorChanges, and the top and bottom anchor margins using
+    PropertyChanges:
+
+    \snippet doc/src/snippets/declarative/anchorchanges.qml 0
+
+    \image anchorchanges.png
 
     AnchorChanges can be animated using AnchorAnimation.
     \qml

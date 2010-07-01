@@ -262,7 +262,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
         default:
             Q_ASSERT(false);
     }
-    if (blockFormat.layoutDirection() == Qt::RightToLeft)
+    if (blockIt.textDirection() == Qt::RightToLeft)
         return result.prepend(QLatin1Char('.'));
     return result + QLatin1Char('.');
 }

@@ -1250,10 +1250,8 @@ void QX11PixmapData::release()
     pengine = 0;
 
     if (!X11) {
-#ifndef QT_NO_DEBUG
-        qWarning("~QX11PixmapData(): QPixmap objects must be destroyed before the QApplication"
-                 " object, otherwise the native pixmap object will be leaked.");
-#endif
+        // At this point, the X server will already have freed our resources,
+        // so there is nothing to do.
         return;
     }
 

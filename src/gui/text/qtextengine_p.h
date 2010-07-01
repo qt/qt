@@ -458,6 +458,7 @@ public:
     void validate() const;
     void itemize() const;
 
+    bool isRightToLeft() const;
     static void bidiReorder(int numRuns, const quint8 *levels, int *visualOrder);
 
     const HB_CharAttributes *attributes() const;

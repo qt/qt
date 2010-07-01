@@ -130,6 +130,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/phonon/mmf \
                           $QTDIR/src/3rdparty/phonon/waveout \
                           $QTDIR/doc/src/snippets \
+                          $QTDIR/doc/src/ja_JP \
                           $QTDIR/doc/src/zh_CN
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"

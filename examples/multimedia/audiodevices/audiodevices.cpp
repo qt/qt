@@ -58,6 +58,8 @@ QString toString(QAudioFormat::SampleType sampleType)
     case QAudioFormat::Float:
         result = "Float";
         break;
+    case QAudioFormat::Unknown:
+        break;
     }
     return result;
 }

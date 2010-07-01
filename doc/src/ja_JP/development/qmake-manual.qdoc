@@ -1,0 +1,198 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qmake-tutorial.html
+    \title qmake チュートリアル
+
+    このチュートリアルでは \c qmake の使い方を説明します。
+    このチュートリアルを読み終わったら \c qmake
+    のユーザガイドを読むことをお勧めします。
+
+    \section1 簡単な例
+
+    アプリケーションの基本的な実装は既に完了していて、
+    次のファイルが作成されていると仮定します。
+
+    \list
+    \o hello.cpp
+    \o hello.h
+    \o main.cpp
+    \endlist
+
+    これらのファイルは Qt ディストリビューションの
+    \c{examples/qmake/tutorial} ディレクトリにあります。
+    アプリケーションの設定について知っておくべきことは、
+    それが Qt で書かれているということだけです。
+    まず、テキストエディタで \c{examples/qmake/tutorial} に
+    \c hello.pro というファイルを作成します。
+    最初にすることは、開発プロジェクトに含まれるソースファイルとヘッダファイルを
+    \c qmake に教える行を追加することです。
+
+    ソースファイルをプロジェクトファイルに追加します。
+    これには \l{qmake Variable Reference#SOURCES}{SOURCES} 変数を使います。
+    新しい行を作り、\c{SOURCES +=}、続いて hello.cpp を入力します。
+    つまり、以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 108
+
+    これを以下のようになるまでプロジェクトの各ソースファイルに対して行います:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 109
+
+    make に似たシンタックスを使いたい場合は、
+    以下のように改行をエスケープしてすべてのファイルを 1 行に書きます:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 110
+
+    ソースファイルの一覧をプロジェクトファイルに追加しました。
+    次にヘッダファイルを追加します。
+    ヘッダファイルはソースファイルと全く同じ方法で追加することができます。
+    ただし変数は \l{qmake Variable Reference#HEADERS}{HEADERS}
+    を使います。
+
+    これを終えると、プロジェクトファイルは以下のようになるでしょう:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 111
+
+    ターゲットの名前は自動的に設定され、
+    プロジェクトファイルと同じ名前になります。
+    ただしプラットフォームに合わせたサフィックスがつけられます。
+    例えば、プロジェクトファイルが \c hello.pro である場合、
+    ターゲットは Windows では \c hello.exe 、Unix では \c hello になります。
+    プロジェクトファイルで別の名前を指定することもできます:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 112
+
+    最後に \l{qmake Variable Reference#CONFIG}{CONFIG} 変数を設定します。
+    このアプリケーションは Qt アプリケーションなので \c CONFIG に
+    \c qt を追加する必要があります。
+    \c qmake は リンクの必要があるライブラリを追加し、
+    \c moc と \c uic の実行コマンドが Makefile に含まれるようにします。
+
+    最終的なプロジェクトファイルは以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 113
+
+    \c qmake を使って、このアプリケーションのための Makefile を生成します。
+    プロジェクトのディレクトリでコマンドラインに次のように入力します:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 114
+
+    そして、使用するコンパイラによって \c make または \c nmake を入力します。
+
+    Visual Studio ユーザの場合、\c qmake は、以下のように
+    \c .dsp ファイルまたは \c .vcproj ファイルも作成できます:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 115
+
+    \section1 アプリケーションをデバッグできるようにする
+
+    アプリケーションのリリースバージョンはデバッグシンボルなどのデバッグ情報を含みません。
+    開発中は、関連情報を含むアプリケーションのデバッグバージョンを作成するのが便利です。
+    これは、プロジェクトファイルの \c CONFIG 変数に \c debug
+    を追加することで簡単に実現できます。
+
+    たとえば:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 116
+
+    直前の例と同様に、Makefile を生成するには \c qmake を使います。
+    アプリケーションをデバッグ環境で実行する際に役に立つ情報を得られるようになります。
+
+    \section1 プラットフォーム固有のソースファイルを追加する
+
+    数時間コーディングをしていると、
+    アプリケーションにプラットフォーム固有な部分が出てきて
+    プラットフォーム固有のコードを別のファイルに分けたい場合があるかもしれません。
+    ここでは 2 つのファイル \c hellowin.cpp と \c hellounix.cpp があるとして、
+    これをプロジェクトファイルに追加します。
+    これらのファイルをそのまま \c SOURCES 変数に追加することはできません。
+    なぜなら、両方のファイルが Makefile に追加されてしまうからです。
+    \c qmake が実行されたプラットフォームにしたがって処理されるスコープを使う必要があります。
+
+    Windows 用のファイルを追加するシンプルなスコープは以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 117
+
+    \c qmake が Windows 上で実行されると、ソースファイルのリストに
+    \c hellowin.cpp が追加されます。
+    \c qmake が他のプラットフォームで実行された場合、この部分は無視されます。
+    次に Unix 用ファイルのスコープを作成します。
+
+    これを終えると、プロジェクトファイルは以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 118
+
+    これまでと同様に、Makefile を生成するには \c qmake を使います。
+
+    \section1 ファイルが存在しない場合に qmake を中止する
+
+    特定のファイルが存在しない場合に Makefile を作成したくない場合、
+    exists() 関数を使ってファイルが存在するかどうかを確認することができます。
+    また error() 関数を使って \c qmake の処理を中止させることができます。
+    これらの関数はスコープとして動作します。
+    使い方はスコープの条件をこれらの関数で置き換えるだけです。
+    \c main.cpp ファイルの確認は以下のようになります :
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 119
+
+    記号 \c{!} はテストを否定します。
+    つまり \c{exists( main.cpp )} はファイルが存在する場合に真になり、
+    \c{!exists( main.cpp )} はファイルが存在しない場合に真になります。
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 120
+
+    前と同様に、\c qmake を実行して Makefile を生成します。
+    仮に \c main.cpp の名前を変更すると、上記のメッセージが表示され、
+    \c qmake は処理を中止します。
+
+    \section1 複数の条件をチェックする
+
+    Windows を使っていて、
+    コマンドラインからこのアプリケーションを実行したときに
+    qDebug() の出力を見ることができるようにしたい場合、
+    アプリケーションをコンソールの設定を追加してビルドする必要があります。
+    Windows で Makefile をこの設定にするには、
+    \c CONFIG に \c console を追加します。
+    Windows で実行されていて、\e{かつ} \c CONFIG にすでに \c debug
+    がある場合にのみ \c CONFIG を追加したい場合があるかもしれません。
+    このような場合、2 つのスコープをネストさせて使います。
+    まず 1 つのスコープを作成し、その中にもう 1 つスコープを作成します。
+    そして 2 つのスコープの中に設定を書きます。例えば:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 121
+
+    ネストされたスコープはコロンを使ってつなぐことができます。
+    最終的なプロジェクトファイルは以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 122
+
+    以上です。\c qmake のチュートリアルが終了しました。
+    それでは、あなたの開発プロジェクトのプロジェクトファイルを作成してみましょう。
+*/
+

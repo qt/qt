@@ -738,9 +738,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
         return;
 
-    if ((data.window_flags & Qt::FramelessWindowHint) == 0)
-        return;
-
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
@@ -1177,6 +1174,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(geometry());
     d->deactivateWidgetCleanup();

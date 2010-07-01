@@ -127,6 +127,13 @@ public:
     inline T *data() { return ptr; }
     inline const T *data() const { return ptr; }
     inline const T * constData() const { return ptr; }
+    typedef int size_type;
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef value_type &reference;
+    typedef const value_type &const_reference;
+    typedef qptrdiff difference_type;
 
 private:
     friend class QPodList<T, Prealloc>;

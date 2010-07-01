@@ -44,6 +44,14 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_LINUX
+# include <features.h>
+#endif
+
+#ifdef __GLIBC__
+#include <byteswap.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -264,6 +272,21 @@ template <> inline qint16 qFromBigEndian<qint16>(const uchar *src)
  * and it is therefore a bit more convenient and in most cases more efficient.
 */
 template <typename T> T qbswap(T source);
+
+#ifdef __GLIBC__
+template <> inline quint64 qbswap<quint64>(quint64 source)
+{
+    return bswap_64(source);
+}
+template <> inline quint32 qbswap<quint32>(quint32 source)
+{
+    return bswap_32(source);
+}
+template <> inline quint16 qbswap<quint16>(quint16 source)
+{
+    return bswap_16(source);
+}
+#else
 template <> inline quint64 qbswap<quint64>(quint64 source)
 {
     return 0
@@ -292,6 +315,7 @@ template <> inline quint16 qbswap<quint16>(quint16 source)
                     | ((source & 0x00ff) << 8)
                     | ((source & 0xff00) >> 8) );
 }
+#endif // __GLIBC__
 
 // signed specializations
 template <> inline qint64 qbswap<qint64>(qint64 source)

@@ -5,5 +5,5 @@ wince*:{
   SUBDIRS = test stdinprocess
 }
 
-!symbian*:SUBDIRS += largefile
+!symbian:SUBDIRS += largefile
 

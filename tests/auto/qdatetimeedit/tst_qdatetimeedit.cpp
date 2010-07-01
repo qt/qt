@@ -3148,8 +3148,8 @@ void tst_QDateTimeEdit::nextPrevSection()
     EditorDateEdit edit;
     edit.setDisplayFormat("hh/mm/bc9ss");
     edit.setTime(QTime(12, 34, 56));
-    edit.setSelectedSection(QDateTimeEdit::MinuteSection);
     edit.show();
+    edit.setSelectedSection(QDateTimeEdit::MinuteSection);
     QCOMPARE(edit.lineEdit()->selectedText(), QString("34")); // selftest
     QTest::keyClick(&edit, key, modifiers);
     QCOMPARE(edit.lineEdit()->selectedText(), selectedText);

@@ -60,6 +60,7 @@ Item {
         color: "white"
         opacity: 0.3
     }
+
     // Size the bar to the required size, depending upon the orientation.
     Rectangle {
         x: orientation == Qt.Vertical ? 1 : (scrollBar.position * (scrollBar.width-2) + 1)

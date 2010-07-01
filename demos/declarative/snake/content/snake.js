@@ -37,6 +37,7 @@ function startNewGame()
         startNewGameTimer.running = true;
         return;
     }
+
     numRows = numRowsAvailable;
     numColumns = numColumnsAvailable;
     board = new Array(numRows * numColumns);

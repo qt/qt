@@ -88,9 +88,9 @@ public:
         lastModifiers = event->modifiers();
     }
 
-    bool isConnected(const char *signal) {
+    bool isPressAndHoldConnected() {
         Q_Q(QDeclarativeMouseArea);
-        int idx = QObjectPrivate::get(q)->signalIndex(signal);
+        static int idx = QObjectPrivate::get(q)->signalIndex("pressAndHold(QDeclarativeMouseEvent*)");
         return QObjectPrivate::get(q)->isSignalConnected(idx);
     }
 

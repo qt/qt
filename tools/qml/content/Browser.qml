@@ -134,7 +134,7 @@ Rectangle {
             MouseArea {
                 id: mouseRegion
                 anchors.fill: parent
-                onClicked: { launch() }
+                onClicked: { if (folders == wrapper.ListView.view.model) launch() }
             }
             states: [
                 State {

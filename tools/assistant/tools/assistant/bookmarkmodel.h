@@ -79,6 +79,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     QVariant data(const QModelIndex &index, int role) const;
+    void setData(const QModelIndex &index, const QVector<QVariant> &data);
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 

@@ -29,7 +29,7 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 CONFIG(exceptions_off) {
     CONFIG -= exceptions_off
     CONFIG += exceptions
-    !win32|win32-g++ {
+    !win32|win32-g++* {
         QMAKE_CFLAGS -= -fno-exceptions
         QMAKE_CXXFLAGS -= -fno-exceptions
         QMAKE_LFLAGS -= -fno-exceptions

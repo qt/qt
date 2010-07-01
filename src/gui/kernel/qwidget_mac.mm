@@ -2688,6 +2688,7 @@ QWidget::macCGHandle() const
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
+    d->aboutToDestroy();
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
@@ -2803,7 +2804,7 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     QList<QWidget *> widgets = q->findChildren<QWidget *>();
     for (int i=0; i<widgets.size(); ++i) {
         QWidget *child = widgets.at(i);
-        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created)) {
+        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created) && child->isVisibleTo(q)) {
             if (set)
                 [qt_mac_window_for(q) addChildWindow:qt_mac_window_for(child) ordered:NSWindowAbove];
             else
@@ -2860,9 +2861,11 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         }
         if (wasWindow) {
             oldToolbar = [oldWindow toolbar];
-            [oldToolbar retain];
-            oldToolbarVisible = [oldToolbar isVisible];
-            [oldWindow setToolbar:nil];
+            if (oldToolbar) {
+                [oldToolbar retain];
+                oldToolbarVisible = [oldToolbar isVisible];
+                [oldWindow setToolbar:nil];
+            }
         }
 #endif
     }
@@ -3994,10 +3997,10 @@ static void qt_mac_update_widget_position(QWidget *q, QRect oldRect, QRect newRe
         (oldRect.isValid() == false || newRect.isValid() == false)  ||
 
         // the position update is a part of a drag-and-drop operation
-        QDragManager::self()->object || 
-        
-        // we are on Panther (no HIViewSetNeedsDisplayInRect) 
-        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4 
+        QDragManager::self()->object ||
+
+        // we are on Panther (no HIViewSetNeedsDisplayInRect)
+        QSysInfo::MacintoshVersion < QSysInfo::MV_10_4
     ){
         HIViewSetFrame(view, &bounds);
         return;

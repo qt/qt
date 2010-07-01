@@ -66,7 +66,10 @@ FocusScope {
         font.italic: true
     }
 
-    MouseArea { anchors.fill: parent; onClicked: focusScope.focus = true }
+    MouseArea { 
+        anchors.fill: parent
+        onClicked: { focusScope.focus = true; textInput.openSoftwareInputPanel(); } 
+    }
 
     TextInput {
         id: textInput
@@ -77,12 +80,12 @@ FocusScope {
     Image {
         id: clear
         anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
-        source: "images/edit-clear-locationbar-rtl.png"
+        source: "images/clear.png"
         opacity: 0
 
         MouseArea { 
             anchors.fill: parent
-            onClicked: { textInput.text = ''; focusScope.focus = true }
+            onClicked: { textInput.text = ''; focusScope.focus = true; textInput.openSoftwareInputPanel(); }
         }
     }
 

@@ -58,10 +58,12 @@ Rectangle {
     function showWithInput(text) {
         show(text);
         textInput.opacity = 1;
+        textInput.focus = true;
         textInput.text = ""
     }
 
     function hide() {
+        textInput.focus = false;
         container.opacity = 0;
         container.closed();
     }
@@ -70,6 +72,7 @@ Rectangle {
     width: dialogText.width + textInput.width + 20
     height: dialogText.height + 20
     opacity: 0
+    visible: opacity > 0
 
     Text {
         id: dialogText
@@ -82,7 +85,6 @@ Rectangle {
         id: textInput
         anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
         width: 80
-        focus: true
         text: ""
 
         onAccepted: container.hide()    // close dialog when Enter is pressed
@@ -91,7 +93,13 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: hide();
+
+        onClicked:  {
+            if (textInput.text == "" && textInput.opacity > 0)
+                textInput.openSoftwareInputPanel();
+            else
+                hide();
+        }
     }
 
 //![3]

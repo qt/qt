@@ -1521,6 +1521,32 @@ bool operator==(const QGLFormat& a, const QGLFormat& b)
         && a.d->profile == b.d->profile);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QGLFormat &f)
+{
+    const QGLFormatPrivate * const d = f.d;
+
+    dbg.nospace() << "QGLFormat("
+                  << "options " << d->opts
+                  << ", plane " << d->pln
+                  << ", depthBufferSize " << d->depthSize
+                  << ", accumBufferSize " << d->accumSize
+                  << ", stencilBufferSize " << d->stencilSize
+                  << ", redBufferSize " << d->redSize
+                  << ", greenBufferSize " << d->greenSize
+                  << ", blueBufferSize " << d->blueSize
+                  << ", alphaBufferSize " << d->alphaSize
+                  << ", samples " << d->numSamples
+                  << ", swapInterval " << d->swapInterval
+                  << ", majorVersion " << d->majorVersion
+                  << ", minorVersion " << d->minorVersion
+                  << ", profile " << d->profile
+                  << ')';
+
+    return dbg.space();
+}
+#endif
+
 
 /*!
     Returns false if all the options of the two QGLFormat objects
@@ -3674,8 +3700,10 @@ QGLWidget::~QGLWidget()
     bool doRelease = (glcx && glcx->windowCreated());
 #endif
     delete d->glcx;
+    d->glcx = 0;
 #if defined(Q_WGL)
     delete d->olcx;
+    d->olcx = 0;
 #endif
 #if defined(GLX_MESA_release_buffers) && defined(QGL_USE_MESA_EXT)
     if (doRelease)

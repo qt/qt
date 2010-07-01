@@ -1225,11 +1225,15 @@ bool QXpmHandler::readImage(QImage *image)
 
 bool QXpmHandler::canRead() const
 {
-    if (state == Ready && canRead(device())) {
+    if (state == Ready && !canRead(device()))
+        return false;
+
+    if (state != Error) {
         setFormat("xpm");
         return true;
     }
-    return state != Error;
+
+    return false;
 }
 
 bool QXpmHandler::canRead(QIODevice *device)

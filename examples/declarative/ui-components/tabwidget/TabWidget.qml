@@ -49,16 +49,17 @@ Item {
     onCurrentChanged: setOpacities()
     Component.onCompleted: setOpacities()
 
-    function setOpacities()
-    {
+    function setOpacities() {
         for (var i = 0; i < stack.children.length; ++i) {
-            stack.children[i].opacity = i == current ? 1 : 0
+            stack.children[i].opacity = (i == current ? 1 : 0)
         }
     }
 
     Row {
         id: header
+
         Repeater {
+            model: stack.children.length
             delegate: Rectangle {
                 width: tabWidget.width / stack.children.length; height: 36
 
@@ -85,7 +86,6 @@ Item {
                     onClicked: tabWidget.current = index
                 }
             }
-            model: stack.children.length
         }
     }
 

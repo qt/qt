@@ -155,10 +155,6 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
 
     case MYWM_NOTIFYICON:
         {
-            RECT r;
-            GetWindowRect(winId(), &r);
-            QEvent *e = 0;
-            Qt::KeyboardModifiers keys = QApplication::keyboardModifiers();
             QPoint gpos = QCursor::pos();
 
             switch (m->lParam) {
@@ -193,13 +189,9 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case WM_MBUTTONUP:
                 emit q->activated(QSystemTrayIcon::MiddleClick);
                 break;
+
             default:
                 break;
-            }
-            if (e) {
-                bool res = QApplication::sendEvent(q, e);
-                delete e;
-                return res;
             }
             break;
         }
@@ -287,6 +279,11 @@ void QSystemTrayIconPrivate::updateToolTip_sys()
 }
 
 bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
+{
+    return true;
+}
+
+bool QSystemTrayIconPrivate::supportsMessages_sys()
 {
     return true;
 }

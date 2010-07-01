@@ -65,6 +65,9 @@ public:
         : handleType(QAbstractVideoBuffer::NoHandle)
     {}
 
+    virtual ~QAbstractVideoBufferPrivate()
+    {}
+
     QAbstractVideoBuffer::HandleType handleType;
 };
 

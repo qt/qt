@@ -80,22 +80,15 @@ QT_BEGIN_NAMESPACE
       (((KeySym)(keysym) >= 0x11000000) && ((KeySym)(keysym) <= 0x1100FFFF))
 #endif
 
-void q_getLocaleAndDirection(QLocale *locale,
-                                  Qt::LayoutDirection *direction,
-                                  const QByteArray &layoutName,
-                                  const QByteArray &variantName)
+QLocale q_getKeyboardLocale(const QByteArray &layoutName, const QByteArray &variantName)
 {
     int i = 0;
     while (xkbLayoutData[i].layout != 0) {
-        if (layoutName == xkbLayoutData[i].layout && variantName == xkbLayoutData[i].variant) {
-            *locale = QLocale(xkbLayoutData[i].language, xkbLayoutData[i].country);
-            *direction = xkbLayoutData[i].direction;
-            return;
-        }
+        if (layoutName == xkbLayoutData[i].layout && variantName == xkbLayoutData[i].variant)
+            return QLocale(xkbLayoutData[i].language, xkbLayoutData[i].country);
         ++i;
     }
-    *locale = QLocale::c();
-    *direction = Qt::LeftToRight;
+    return QLocale::c();
 }
 #endif // QT_NO_XKB
 
@@ -523,10 +516,8 @@ void QKeyMapperPrivate::clearMappings()
         // if (keyboardLayoutName.isEmpty())
         //     qWarning("Qt: unable to determine keyboard layout, please talk to qt-bugs@trolltech.com"); ?
 
-        q_getLocaleAndDirection(&keyboardInputLocale,
-                              &keyboardInputDirection,
-                              layoutName,
-                              variantName);
+        keyboardInputLocale = q_getKeyboardLocale(layoutName, variantName);
+        keyboardInputDirection = keyboardInputLocale.textDirection();
 
 #if 0
         qDebug() << "keyboard input locale ="

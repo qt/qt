@@ -112,7 +112,7 @@ public:
 
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
-    Q_INVOKABLE QRectF positionToRectangle(int x) const;
+    Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
 
     Q_INVOKABLE void openSoftwareInputPanel();
@@ -222,9 +222,9 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent* ev);
+    void inputMethodEvent(QInputMethodEvent *);
     bool event(QEvent *e);
     void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
 
 public Q_SLOTS:
     void selectAll();

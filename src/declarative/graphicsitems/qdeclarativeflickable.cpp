@@ -351,6 +351,8 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     Flickable places its children on a surface that can be dragged and flicked.
 
     \code
+    import Qt 4.7
+
     Flickable {
         width: 200; height: 200
         contentWidth: image.width; contentHeight: image.height
@@ -912,8 +914,14 @@ void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
         d->delayedPressTimer.stop();
         if (d->delayedPressEvent) {
             QDeclarativeItem *grabber = scene() ? qobject_cast<QDeclarativeItem*>(scene()->mouseGrabberItem()) : 0;
-            if (!grabber || grabber != this)
-                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+            if (!grabber || grabber != this) {
+                // We replay the mouse press but the grabber we had might not be interessted by the event (e.g. overlay)
+                // so we reset the grabber
+                if (scene()->mouseGrabberItem() == d->delayedPressTarget)
+                    d->delayedPressTarget->ungrabMouse();
+                //Use the event handler that will take care of finding the proper item to propagate the event
+                QApplication::sendEvent(scene(), d->delayedPressEvent);
+            }
             delete d->delayedPressEvent;
             d->delayedPressEvent = 0;
         }
@@ -1079,11 +1087,11 @@ QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildr
     The \c boundsBehavior can be one of:
 
     \list
-    \o \e Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
+    \o Flickable.StopAtBounds - the contents can not be dragged beyond the boundary
     of the flickable, and flicks will not overshoot.
-    \o \e Flickable.DragOverBounds - the contents can be dragged beyond the boundary
+    \o Flickable.DragOverBounds - the contents can be dragged beyond the boundary
     of the Flickable, but flicks will not overshoot.
-    \o \e Flickable.DragAndOvershootBounds (default) - the contents can be dragged
+    \o Flickable.DragAndOvershootBounds (default) - the contents can be dragged
     beyond the boundary of the Flickable, and can overshoot the
     boundary when flicked.
     \endlist
@@ -1244,14 +1252,24 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             break;
         case QEvent::GraphicsSceneMouseRelease:
             if (d->delayedPressEvent) {
-                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+                // We replay the mouse press but the grabber we had might not be interessted by the event (e.g. overlay)
+                // so we reset the grabber
+                if (s->mouseGrabberItem() == d->delayedPressTarget)
+                    d->delayedPressTarget->ungrabMouse();
+                //Use the event handler that will take care of finding the proper item to propagate the event
+                QApplication::sendEvent(scene(), d->delayedPressEvent);
                 d->clearDelayedPress();
+                // We send the release
+                scene()->sendEvent(s->mouseGrabberItem(), event);
+                // And the event has been consumed
+                return true;
             }
             d->handleMouseReleaseEvent(&mouseEvent);
             break;
         default:
             break;
         }
+        stealThisEvent = d->stealMouse;   // Update stealThisEvent and grabber in case changed by function calls above
         grabber = qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem());
         if (grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this) {
             d->clearDelayedPress();

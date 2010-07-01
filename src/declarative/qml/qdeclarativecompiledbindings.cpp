@@ -64,7 +64,7 @@ DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
 
 Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties);
 
-#ifdef __GNUC__
+#if defined(Q_CC_GNU) && (!defined(Q_CC_INTEL) || __INTEL_COMPILER >= 1200)
 #  define QML_THREADED_INTERPRETER
 #endif
 
