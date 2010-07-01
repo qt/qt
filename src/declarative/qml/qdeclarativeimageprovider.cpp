@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \note the request() method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
 
-    \sa QDeclarativeEngine::addImageProvider()
+    \sa QDeclarativeEngine::addImageProvider(), {declarative/cppextensions/imageprovider}{ImageProvider example}
 */
 
 /*!

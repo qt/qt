@@ -52,7 +52,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeFlickablePrivate;
 class QDeclarativeFlickableVisibleArea;
-class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeFlickable : public QDeclarativeItem
 {
     Q_OBJECT
 
@@ -60,6 +60,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(qreal contentHeight READ contentHeight WRITE setContentHeight NOTIFY contentHeightChanged)
     Q_PROPERTY(qreal contentX READ contentX WRITE setContentX NOTIFY contentXChanged)
     Q_PROPERTY(qreal contentY READ contentY WRITE setContentY NOTIFY contentYChanged)
+    Q_PROPERTY(QDeclarativeItem *contentItem READ contentItem CONSTANT)
 
     Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
     Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
@@ -111,10 +112,10 @@ public:
     void setContentHeight(qreal);
 
     qreal contentX() const;
-    void setContentX(qreal pos);
+    virtual void setContentX(qreal pos);
 
     qreal contentY() const;
-    void setContentY(qreal pos);
+    virtual void setContentY(qreal pos);
 
     bool isMoving() const;
     bool isMovingHorizontally() const;
@@ -143,7 +144,7 @@ public:
     bool isAtYEnd() const;
     bool isAtYBeginning() const;
 
-    QDeclarativeItem *viewport();
+    QDeclarativeItem *contentItem();
 
     enum FlickableDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
     FlickableDirection flickDirection() const; // deprecated

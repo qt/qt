@@ -143,6 +143,8 @@ public:
     qreal paintedWidth() const;
     qreal paintedHeight() const;
 
+    QRectF boundingRect() const;
+
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);

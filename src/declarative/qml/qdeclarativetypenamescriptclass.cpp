@@ -107,8 +107,7 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
             return 0;
         }
 
-    } else {
-        Q_ASSERT(data->type);
+    } else if (data->type) {
 
         QString strName = toString(name);
 
@@ -134,6 +133,7 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
             if (!object) return 0;
             return ep->objectClass->queryProperty(object, name, flags, 0);
         }
+
     }
 
     return 0;

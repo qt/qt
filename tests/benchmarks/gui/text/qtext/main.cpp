@@ -82,6 +82,10 @@ private slots:
     void constructControl();
     void constructDocument();
 
+    void newLineReplacement();
+    void formatManipulation();
+
+    void layout_data();
     void layout();
     void paintLayoutToPixmap();
     void paintLayoutToPixmap_painterFill();
@@ -95,7 +99,7 @@ private slots:
     void paintControlToPixmap_painterFill();
 
 private:
-    QSize setupTextLayout(QTextLayout *layout);
+    QSize setupTextLayout(QTextLayout *layout, bool wrap = true, int wrapWidth = 100);
 
     QString m_lorem;
     QString m_shortLorem;
@@ -227,10 +231,8 @@ void tst_QText::odfWriting_images()
     delete doc;
 }
 
-QSize tst_QText::setupTextLayout(QTextLayout *layout)
+QSize tst_QText::setupTextLayout(QTextLayout *layout, bool wrap, int wrapWidth)
 {
-    bool wrap = true;
-    int wrapWidth = 300;
     layout->setCacheEnabled(true);
 
     int height = 0;
@@ -242,7 +244,6 @@ QSize tst_QText::setupTextLayout(QTextLayout *layout)
         lineWidth = wrapWidth;
 
     layout->beginLayout();
-
     while (1) {
         QTextLine line = layout->createLine();
         if (!line.isValid())
@@ -284,16 +285,59 @@ void tst_QText::constructDocument()
     }
 }
 
+//this step is needed before giving the string to a QTextLayout
+void tst_QText::newLineReplacement()
+{
+    QString text = QString::fromLatin1("H\ne\nl\nl\no\n\nW\no\nr\nl\nd");
+
+    QBENCHMARK {
+        QString tmp = text;
+        tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+    }
+}
+
+void tst_QText::formatManipulation()
+{
+    QFont font;
+
+    QBENCHMARK {
+        QTextCharFormat format;
+        format.setFont(font);
+    }
+}
+
+void tst_QText::layout_data()
+{
+    QTest::addColumn<bool>("wrap");
+    QTest::newRow("wrap") << true;
+    QTest::newRow("nowrap") << false;
+}
+
 void tst_QText::layout()
 {
+    QFETCH(bool,wrap);
     QTextLayout layout(m_shortLorem);
-    setupTextLayout(&layout);
+    setupTextLayout(&layout, wrap);
 
     QBENCHMARK {
         QTextLayout layout(m_shortLorem);
-        setupTextLayout(&layout);
+        setupTextLayout(&layout, wrap);
     }
 }
+
+//### requires tst_QText to be a friend of QTextLayout
+/*void tst_QText::stackTextLayout()
+{
+    QStackTextEngine engine(m_shortLorem, qApp->font());
+    QTextLayout layout(&engine);
+    setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QStackTextEngine engine(m_shortLorem, qApp->font());
+        QTextLayout layout(&engine);
+        setupTextLayout(&layout);
+    }
+}*/
 
 void tst_QText::paintLayoutToPixmap()
 {

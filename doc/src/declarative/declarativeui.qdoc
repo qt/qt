@@ -104,6 +104,7 @@ application or to build completely new applications.  QML is fully \l
 \o \l {QML Security}
 \o \l {QtDeclarative Module}
 \o \l {Debugging QML}
+\o \l {QML Viewer}
 \o \l {QML Performance}
 \o \l {QML Coding Conventions}
 \endlist

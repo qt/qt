@@ -29,6 +29,9 @@ wince* {
         QT += webkit 
     }
 }
+maemo5 {
+    QT += maemo5
+}
 symbian {
     TARGET.UID3 = 0x20021317
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

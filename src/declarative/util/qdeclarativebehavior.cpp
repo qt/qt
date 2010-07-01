@@ -94,7 +94,7 @@ public:
     Currently only a single Behavior may be specified for a property;
     this Behavior can be enabled and disabled via the \l{enabled} property.
 
-    \sa QtDeclarative
+    \sa {declarative/animation/behaviors}{Behavior example}, QtDeclarative
 */
 
 

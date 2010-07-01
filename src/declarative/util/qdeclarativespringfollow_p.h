@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeSpringFollowPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeSpringFollow : public QObject,
+class Q_AUTOTEST_EXPORT QDeclarativeSpringFollow : public QObject,
                                        public QDeclarativePropertyValueSource
 {
     Q_OBJECT

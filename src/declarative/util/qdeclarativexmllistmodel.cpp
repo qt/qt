@@ -588,6 +588,8 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     If multiple key roles are specified, the model only adds and reload items
     with a combined value of all key roles that is not already present in
     the model.
+
+    \sa {declarative/rssnews}{RSS News demo}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)

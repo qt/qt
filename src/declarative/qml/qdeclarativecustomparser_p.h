@@ -113,10 +113,18 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativeCustomParser
 {
 public:
-    QDeclarativeCustomParser() : compiler(0), object(0) {}
+    enum Flag {
+        NoFlag                    = 0x00000000,
+        AcceptsAttachedProperties = 0x00000001
+    };
+    Q_DECLARE_FLAGS(Flags, Flag);
+
+    QDeclarativeCustomParser() : compiler(0), object(0), m_flags(NoFlag) {}
+    QDeclarativeCustomParser(Flags f) : compiler(0), object(0), m_flags(f) {}
     virtual ~QDeclarativeCustomParser() {}
 
     void clearErrors();
+    Flags flags() const { return m_flags; }
 
     virtual QByteArray compile(const QList<QDeclarativeCustomParserProperty> &)=0;
     virtual void setCustomData(QObject *, const QByteArray &)=0;
@@ -130,12 +138,16 @@ protected:
 
     int evaluateEnum(const QByteArray&) const;
 
+    const QMetaObject *resolveType(const QByteArray&) const;
+
 private:
     QList<QDeclarativeError> exceptions;
     QDeclarativeCompiler *compiler;
     QDeclarativeParser::Object *object;
+    Flags m_flags;
     friend class QDeclarativeCompiler;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeCustomParser::Flags);
 
 #if 0
 #define QML_REGISTER_CUSTOM_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, CUSTOMTYPE) \

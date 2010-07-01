@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeSystemPalettePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeSystemPalette : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativeSystemPalette : public QObject
 {
     Q_OBJECT
     Q_ENUMS(ColorGroup)
