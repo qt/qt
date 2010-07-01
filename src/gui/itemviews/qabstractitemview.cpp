@@ -79,6 +79,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         pressedAlreadySelected(false),
         viewportEnteredNeeded(false),
         state(QAbstractItemView::NoState),
+        stateBeforeAnimation(QAbstractItemView::NoState),
         editTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed),
         lastTrigger(QAbstractItemView::NoEditTriggers),
         tabKeyNavigation(false),
