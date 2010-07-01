@@ -158,7 +158,6 @@ void tst_qdeclarativewebview::basicProperties()
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->property("html").toString()));
     QCOMPARE(wv->property("preferredWidth").toInt(), 0);
     QCOMPARE(wv->property("preferredHeight").toInt(), 0);
-    QCOMPARE(wv->property("zoomFactor").toDouble(), 1.0);
     QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
     QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
     QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
@@ -258,7 +257,6 @@ void tst_qdeclarativewebview::historyNav()
         QCOMPARE(wv->property("statusText").toString(),QString("status here"));
         QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->property("html").toString()));
         QCOMPARE(wv->property("preferredWidth").toDouble(), 0.0);
-        QCOMPARE(wv->property("zoomFactor").toDouble(), 1.0);
         QCOMPARE(wv->property("url").toUrl(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
         QCOMPARE(wv->property("status").toInt(), 1 /*QDeclarativeWebView::Ready*/);
         QVERIFY(qvariant_cast<QAction*>(wv->property("reload")));
