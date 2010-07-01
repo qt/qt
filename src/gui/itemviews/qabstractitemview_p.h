@@ -367,6 +367,7 @@ public:
     bool viewportEnteredNeeded;
 
     QAbstractItemView::State state;
+    QAbstractItemView::State stateBeforeAnimation;
     QAbstractItemView::EditTriggers editTriggers;
     QAbstractItemView::EditTrigger lastTrigger;
 
