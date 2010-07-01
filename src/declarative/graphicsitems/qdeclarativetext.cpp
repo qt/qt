@@ -136,6 +136,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
+
+    \sa {declarative/text/fonts}{Fonts example}
 */
 
 /*!
@@ -222,12 +224,6 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     \qmlproperty bool Text::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool Text::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -441,6 +437,8 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \qml
     Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
     \endqml
+
+    \sa style
  */
 QColor QDeclarativeText::styleColor() const
 {
@@ -663,6 +661,71 @@ void QDeclarativeText::setElideMode(QDeclarativeText::TextElideMode mode)
     emit elideModeChanged(d->elideMode);
 }
 
+QRectF QDeclarativeText::boundingRect() const
+{
+    Q_D(const QDeclarativeText);
+
+    int w = width();
+    int h = height();
+
+    int x = 0;
+    int y = 0;
+
+    if (d->cache || d->style != Normal) {
+        switch (d->hAlign) {
+        case AlignLeft:
+            x = 0;
+            break;
+        case AlignRight:
+            x = w - d->imgCache.width();
+            break;
+        case AlignHCenter:
+            x = (w - d->imgCache.width()) / 2;
+            break;
+        }
+
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->imgCache.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->imgCache.height()) / 2;
+            break;
+        }
+
+        return QRectF(x,y,d->imgCache.width(),d->imgCache.height());
+    } else {
+        switch (d->hAlign) {
+        case AlignLeft:
+            x = 0;
+            break;
+        case AlignRight:
+            x = w - d->cachedLayoutSize.width();
+            break;
+        case AlignHCenter:
+            x = (w - d->cachedLayoutSize.width()) / 2;
+            break;
+        }
+
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->cachedLayoutSize.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->cachedLayoutSize.height()) / 2;
+            break;
+        }
+
+        return QRectF(x,y,d->cachedLayoutSize.width(),d->cachedLayoutSize.height());
+    }
+}
+
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
@@ -713,6 +776,7 @@ void QDeclarativeTextPrivate::updateLayout()
     }
 }
 
+
 void QDeclarativeTextPrivate::updateSize()
 {
     Q_Q(QDeclarativeText);
@@ -730,7 +794,10 @@ void QDeclarativeTextPrivate::updateSize()
         //setup instance of QTextLayout for all cases other than richtext
         if (!richText) {
             size = setupTextLayout(&layout);
-            cachedLayoutSize = size;
+            if (cachedLayoutSize != size) {
+                q->prepareGeometryChange();
+                cachedLayoutSize = size;
+            }
             dy -= size.height();
         } else {
             singleline = false; // richtext can't elide or be optimized for single-line case
@@ -744,7 +811,13 @@ void QDeclarativeTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
-            cachedLayoutSize = doc->size().toSize();
+                q->prepareGeometryChange();
+            QSize dsize = doc->size().toSize();
+            if (dsize != cachedLayoutSize) {
+                q->prepareGeometryChange();
+                cachedLayoutSize = dsize;
+            }
+            size = QSize(int(doc->idealWidth()),dsize.height());
         }
         int yoff = 0;
 
@@ -757,8 +830,8 @@ void QDeclarativeTextPrivate::updateSize()
         q->setBaselineOffset(fm.ascent() + yoff);
 
         //### need to comfirm cost of always setting these for richText
-        q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
-        q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
+        q->setImplicitWidth(size.width());
+        q->setImplicitHeight(size.height());
         emit q->paintedSizeChanged();
     } else {
         dirty = true;
@@ -813,6 +886,8 @@ void QDeclarativeTextPrivate::drawOutline()
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
+    if (imgCache.size() != img.size())
+        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -831,6 +906,8 @@ void QDeclarativeTextPrivate::drawOutline(int yOffset)
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
+    if (imgCache.size() != img.size())
+        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -955,18 +1032,21 @@ void QDeclarativeTextPrivate::checkImgCache()
         return;
 
     bool empty = text.isEmpty();
+    QPixmap newImgCache;
     if (empty) {
-        imgCache = QPixmap();
         imgStyleCache = QPixmap();
     } else if (richText) {
-        imgCache = richTextImage(false);
+        newImgCache = richTextImage(false);
         if (style != QDeclarativeText::Normal)
             imgStyleCache = richTextImage(true); //### should use styleColor
     } else {
-        imgCache = wrappedTextImage(false);
+        newImgCache = wrappedTextImage(false);
         if (style != QDeclarativeText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
+    if (imgCache.size() != newImgCache.size())
+        q_func()->prepareGeometryChange();
+    imgCache = newImgCache;
     if (!empty)
         switch (style) {
         case QDeclarativeText::Outline:
@@ -1031,35 +1111,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
         if (d->smooth)
             p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-        int w = width();
-        int h = height();
-
-        int x = 0;
-        int y = 0;
-
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->imgCache.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->imgCache.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->imgCache.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->imgCache.height()) / 2;
-            break;
-        }
+        QRect br = boundingRect().toRect();
 
         bool needClip = clip() && (d->imgCache.width() > width() ||
                                    d->imgCache.height() > height());
@@ -1068,7 +1120,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             p->save();
             p->setClipRect(boundingRect(), Qt::IntersectClip);
         }
-        p->drawPixmap(x, y, d->imgCache);
+        p->drawPixmap(br.x(), br.y(), d->imgCache);
         if (needClip)
             p->restore();
 
@@ -1077,20 +1129,8 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
         }
     } else {
-        int h = height();
-        int y = 0;
+        qreal y = boundingRect().y();
 
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->cachedLayoutSize.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->cachedLayoutSize.height()) / 2;
-            break;
-        }
         bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
                                     d->cachedLayoutSize.height() > height());
 

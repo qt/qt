@@ -94,7 +94,11 @@ public:
     QDeclarativeDebugExpressionQuery *queryExpressionResult(int objectDebugId, 
                                                    const QString &expr,
                                                    QObject *parent = 0);
-
+    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
+                                                          const QString &propertyName,
+                                                          const QVariant &bindingExpression,
+                                                          bool isLiteralValue,
+                                                          QObject *parent = 0);
 private:
     Q_DECLARE_PRIVATE(QDeclarativeEngineDebug)
 };
@@ -198,6 +202,11 @@ public:
 
 private:
     friend class QDeclarativeEngineDebugPrivate;
+    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
+                                                          const QString &propertyName,
+                                                          const QVariant &bindingExpression,
+                                                          bool isLiteralValue,
+                                                          QObject *parent);
     QUrl m_url;
     int m_lineNumber;
     int m_columnNumber;
@@ -215,6 +224,11 @@ public:
     QString name() const;
 
 private:
+    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
+                                                          const QString &propertyName,
+                                                          const QVariant &bindingExpression,
+                                                          bool isLiteralValue,
+                                                          QObject *parent);
     friend class QDeclarativeEngineDebugPrivate;
     int m_debugId;
     QString m_name;
@@ -348,7 +362,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDebugExpressionQuery : public QDeclarativ
 Q_OBJECT
 public:
     virtual ~QDeclarativeDebugExpressionQuery();
-    QString expression() const;
+    QVariant expression() const;
     QVariant result() const;
 private:
     friend class QDeclarativeEngineDebug;
@@ -356,7 +370,7 @@ private:
     QDeclarativeDebugExpressionQuery(QObject *);
     QDeclarativeEngineDebug *m_client;
     int m_queryId;
-    QString m_expr;
+    QVariant m_expr;
     QVariant m_result;
 
 };

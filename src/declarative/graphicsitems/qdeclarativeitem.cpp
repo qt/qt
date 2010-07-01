@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    \sa Rotate, Translate
+    \sa Rotation, Translate
 */
 
 /*!
@@ -196,6 +196,8 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
+
+    \sa {declarative/ui-components/dialcontrol}{Dial Control example}, {declarative/toys/clocks}{Clocks example}
 */
 
 /*!

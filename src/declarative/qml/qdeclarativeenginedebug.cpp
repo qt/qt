@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 QList<QDeclarativeEngine *> QDeclarativeEngineDebugServer::m_engines;
 QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 : QDeclarativeDebugService(QLatin1String("QDeclarativeEngine"), parent),
-  m_watch(new QDeclarativeWatcher(this))
+    m_watch(new QDeclarativeWatcher(this))
 {
     QObject::connect(m_watch, SIGNAL(propertyChanged(int,int,QMetaProperty,QVariant)),
                      this, SLOT(propertyChanged(int,int,QMetaProperty,QVariant)));
@@ -97,6 +97,29 @@ QDataStream &operator>>(QDataStream &ds,
        >> data.binding >> data.hasNotifySignal;
     data.type = (QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Type)type;
     return ds;
+}
+
+static inline bool isSignalPropertyName(const QString &signalName)
+{
+    // see QmlCompiler::isSignalPropertyName
+    return signalName.length() >= 3 && signalName.startsWith(QLatin1String("on")) &&
+           signalName.at(2).isLetter() && signalName.at(2).isUpper();
+}
+
+static bool hasValidSignal(QObject *object, const QString &propertyName)
+{
+    if (!isSignalPropertyName(propertyName))
+        return false;
+
+    QString signalName = propertyName.mid(2);
+    signalName[0] = signalName.at(0).toLower();
+
+    int sigIdx = QDeclarativePropertyPrivate::findSignalByName(object->metaObject(), signalName.toLatin1()).methodIndex();
+
+    if (sigIdx == -1)
+        return false;
+
+    return true;
 }
 
 QDeclarativeEngineDebugServer::QDeclarativeObjectProperty 
@@ -396,7 +419,6 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QByteArray reply;
         QDataStream rs(&reply, QIODevice::WriteOnly);
         rs << QByteArray("WATCH_EXPR_OBJECT_R") << queryId << ok;
-
         sendMessage(reply);
     } else if (type == "NO_WATCH") {
         int queryId;
@@ -430,7 +452,48 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         rs << QByteArray("EVAL_EXPRESSION_R") << queryId << result;
 
         sendMessage(reply);
+    } else if (type == "SET_BINDING") {
+        int queryId;
+        int objectId;
+        QString propertyName;
+        QVariant expr;
+        bool isLiteralValue;
+        ds >> queryId >> objectId >> propertyName >> expr >> isLiteralValue;
+        setBinding(objectId, propertyName, expr, isLiteralValue);
     }
+}
+
+void QDeclarativeEngineDebugServer::setBinding(int objectId,
+                                           const QString &propertyName,
+                                           const QVariant &expression,
+                                           bool isLiteralValue)
+{
+    QObject *object = objectForId(objectId);
+    QDeclarativeContext *context = qmlContext(object);
+
+    if (object && context) {
+
+        if (isLiteralValue) {
+            QDeclarativeProperty literalProperty(object, propertyName, context);
+            literalProperty.write(expression);
+        } else {
+            if (hasValidSignal(object, propertyName)) {
+                QDeclarativeProperty property(object, propertyName);
+                QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
+                QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+            } else {
+                QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
+                QDeclarativeProperty property(object, propertyName);
+                binding->setTarget(property);
+                binding->setNotifyOnValueChanged(true);
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
+                if (oldBinding)
+                    oldBinding->destroy();
+                binding->update();
+            }
+        }
+    }
+
 }
 
 void QDeclarativeEngineDebugServer::propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value)

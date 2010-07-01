@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
     \brief The Transition element defines animated transitions that occur on state changes.
 
-    \sa {qmlstates}{States}, {state-transitions}{Transitions}, {QtDeclarative}
+    \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, {QtDeclarative}
 */
 
 /*!

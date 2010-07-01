@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     On Mac OS X, the Up/Down key bindings for Home/End are explicitly disabled.
     If you want such bindings (on any platform), you will need to construct them in QML.
     
-    \sa TextEdit, Text
+    \sa TextEdit, Text, {declarative/text/textselection}{Text Selection example}
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
     : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
@@ -149,12 +149,6 @@ void QDeclarativeTextInput::setText(const QString &s)
     \qmlproperty bool TextInput::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool TextInput::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -1398,18 +1392,11 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(selectionChanged()));
     q->connect(control, SIGNAL(textChanged(const QString &)),
-               q, SIGNAL(displayTextChanged(const QString &)));
-    q->connect(control, SIGNAL(textChanged(const QString &)),
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
-    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(updateRect()));//TODO: Only update rect between pos's
-    q->connect(control, SIGNAL(selectionChanged()),
-               q, SLOT(updateRect()));//TODO: Only update rect in selection
-    //Note that above TODOs probably aren't that big a savings
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1422,6 +1409,8 @@ void QDeclarativeTextInputPrivate::init()
 void QDeclarativeTextInput::cursorPosChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect between pos's
+    updateMicroFocus();
     emit cursorPositionChanged();
 
     if(!d->control->hasSelectedText()){
@@ -1439,6 +1428,7 @@ void QDeclarativeTextInput::cursorPosChanged()
 void QDeclarativeTextInput::selectionChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect in selection
     emit selectedTextChanged();
 
     if(d->lastSelectionStart != d->control->selectionStart()){
@@ -1460,7 +1450,9 @@ void QDeclarativeTextInput::q_textChanged()
     Q_D(QDeclarativeTextInput);
     d->updateHorizontalScroll();
     updateSize();
+    updateMicroFocus();
     emit textChanged();
+    emit displayTextChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
         emit acceptableInputChanged();

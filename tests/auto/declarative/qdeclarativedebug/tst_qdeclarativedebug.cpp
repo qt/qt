@@ -694,7 +694,7 @@ void tst_QDeclarativeDebug::queryExpressionResult()
     delete q_expr;
 
     q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
-    QCOMPARE(q_expr->expression(), expr);
+    QCOMPARE(q_expr->expression().toString(), expr);
     waitForQuery(q_expr);
 
     QCOMPARE(q_expr->result(), result);

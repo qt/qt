@@ -78,4 +78,7 @@ Finally, we can test the translation:
 \code
 qml -translation hello.qm hello.qml
 \endcode
+
+
+You can see a complete example and source code in the {declarative/i18n}{QML Internationalization example}.
 */

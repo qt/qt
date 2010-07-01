@@ -208,7 +208,7 @@ Q_SIGNALS:
     void inputMaskChanged(const QString &inputMask);
     void echoModeChanged(EchoMode echoMode);
     void passwordCharacterChanged();
-    void displayTextChanged(const QString &text);
+    void displayTextChanged();
     void focusOnPressChanged(bool focusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);

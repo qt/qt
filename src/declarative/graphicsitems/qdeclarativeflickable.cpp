@@ -122,7 +122,7 @@ void QDeclarativeFlickableVisibleArea::updateVisible()
 
 
 QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
-  : viewport(new QDeclarativeItem)
+  : contentItem(new QDeclarativeItem)
     , hData(this, &QDeclarativeFlickablePrivate::setRoundedViewportX)
     , vData(this, &QDeclarativeFlickablePrivate::setRoundedViewportY)
     , flickingHorizontally(false), flickingVertically(false)
@@ -140,8 +140,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
 void QDeclarativeFlickablePrivate::init()
 {
     Q_Q(QDeclarativeFlickable);
-    QDeclarative_setParent_noEvent(viewport, q);
-    viewport->setParentItem(q);
+    QDeclarative_setParent_noEvent(contentItem, q);
+    contentItem->setParentItem(q);
     static int timelineUpdatedIdx = -1;
     static int timelineCompletedIdx = -1;
     static int flickableTickedIdx = -1;
@@ -158,7 +158,7 @@ void QDeclarativeFlickablePrivate::init()
                          q, flickableMovementEndingIdx, Qt::DirectConnection);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFiltersChildEvents(true);
-    QDeclarativeItemPrivate *viewportPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(viewport));
+    QDeclarativeItemPrivate *viewportPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(contentItem));
     viewportPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
     lastPosTime.invalidate();
 }
@@ -182,7 +182,7 @@ qreal QDeclarativeFlickablePrivate::overShootDistance(qreal velocity, qreal size
 void QDeclarativeFlickablePrivate::itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeom, const QRectF &oldGeom)
 {
     Q_Q(QDeclarativeFlickable);
-    if (item == viewport) {
+    if (item == contentItem) {
         if (newGeom.x() != oldGeom.x())
             emit q->contentXChanged();
         if (newGeom.y() != oldGeom.y())
@@ -579,10 +579,28 @@ void QDeclarativeFlickable::ticked()
     viewportMoved();
 }
 
-QDeclarativeItem *QDeclarativeFlickable::viewport()
+/*!
+    \qmlproperty Item Flickable::contentItem
+
+    The internal item that contains the Items to be moved in the Flickable.
+
+    Items declared as children of a Flickable are automatically parented to the Flickable's contentItem.
+
+    Items created dynamically need to be explicitly parented to the \e contentItem:
+    \code
+    Flickable {
+        id: myFlickable
+        function addItem(file) {
+            var component = Qt.createComponent(file)
+            component.createObject(myFlickable.contentItem);
+        }
+    }
+    \endcode
+*/
+QDeclarativeItem *QDeclarativeFlickable::contentItem()
 {
     Q_D(QDeclarativeFlickable);
-    return d->viewport;
+    return d->contentItem;
 }
 
 QDeclarativeFlickableVisibleArea *QDeclarativeFlickable::visibleArea()
@@ -899,12 +917,12 @@ void QDeclarativeFlickablePrivate::clearDelayedPress()
 
 void QDeclarativeFlickablePrivate::setRoundedViewportX(qreal x)
 {
-    viewport->setX(qRound(x));
+    contentItem->setX(qRound(x));
 }
 
 void QDeclarativeFlickablePrivate::setRoundedViewportY(qreal y)
 {
-    viewport->setY(qRound(y));
+    contentItem->setY(qRound(y));
 }
 
 void QDeclarativeFlickable::timerEvent(QTimerEvent *event)
@@ -953,20 +971,19 @@ void QDeclarativeFlickable::viewportMoved()
 {
     Q_D(QDeclarativeFlickable);
 
-    int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
-    if (!elapsed)
-        return;
-
     qreal prevY = d->lastFlickablePosition.x();
     qreal prevX = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
     if (d->pressed) {
-        qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
-        qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / elapsed;
-        d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
-        d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+        int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
+        if (elapsed > 0) {
+            qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
+            qreal verticalVelocity = (prevY - d->vData.move.value()) * 1000 / elapsed;
+            d->velocityTimeline.move(d->hData.smoothVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->hData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->vData.smoothVelocity, verticalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->vData.smoothVelocity, 0, d->reportedVelocitySmoothing);
+        }
     } else {
         if (d->timeline.time() > d->vTime) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / (d->timeline.time() - d->vTime);
@@ -991,13 +1008,13 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
     bool changed = false;
     if (newGeometry.width() != oldGeometry.width()) {
         if (d->hData.viewSize < 0) {
-            d->viewport->setWidth(width());
+            d->contentItem->setWidth(width());
             emit contentWidthChanged();
         }
     }
     if (newGeometry.height() != oldGeometry.height()) {
         if (d->vData.viewSize < 0) {
-            d->viewport->setHeight(height());
+            d->contentItem->setHeight(height());
             emit contentHeightChanged();
         }
     }
@@ -1018,7 +1035,7 @@ void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject>
 {
     QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
     if (i)
-        i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->viewport);
+        i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
     else
         o->setParent(prop->object);
 }
@@ -1032,7 +1049,7 @@ QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
 QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
 {
     Q_D(QDeclarativeFlickable);
-    return QGraphicsItemPrivate::get(d->viewport)->childrenList();
+    return QGraphicsItemPrivate::get(d->contentItem)->childrenList();
 }
 
 /*!
@@ -1102,9 +1119,9 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
         return;
     d->hData.viewSize = w;
     if (w < 0)
-        d->viewport->setWidth(width());
+        d->contentItem->setWidth(width());
     else
-        d->viewport->setWidth(w);
+        d->contentItem->setWidth(w);
     // Make sure that we're entirely in view.
     if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
         int oldDuration = d->fixupDuration;
@@ -1129,9 +1146,9 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
         return;
     d->vData.viewSize = h;
     if (h < 0)
-        d->viewport->setHeight(height());
+        d->contentItem->setHeight(height());
     else
-        d->viewport->setHeight(h);
+        d->contentItem->setHeight(h);
     // Make sure that we're entirely in view.
     if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
         int oldDuration = d->fixupDuration;

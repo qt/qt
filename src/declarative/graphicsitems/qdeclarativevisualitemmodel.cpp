@@ -283,7 +283,7 @@ public:
                 if (m_roles.count() == 1)
                     m_roleNames.insert("modelData", m_roles.at(0));
                 if (m_roles.count())
-                    m_roleNames.insert("hasModelChildren", 0);
+                    m_roleNames.insert("hasModelChildren", -1);
             } else if (m_listAccessor) {
                 m_roleNames.insert("modelData", 0);
                 if (m_listAccessor->type() == QDeclarativeListAccessor::Instance) {
