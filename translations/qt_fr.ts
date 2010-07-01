@@ -1706,7 +1706,7 @@ en
     </message>
     <message>
         <source>Component elements may not contain properties other than id</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les éléments du composant ne peuvent pas contenir des propriétés autres que id</translation>
     </message>
     <message>
         <source>Invalid component id specification</source>
@@ -1718,167 +1718,167 @@ en
     </message>
     <message>
         <source>Invalid component body specification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Le corps de la spécification du composant n&apos;est pas valide</translation>
     </message>
     <message>
         <source>Component objects cannot declare new properties.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouvelles propriétés.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new signals.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouveaux signaux.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new functions.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouvelles fonctions.</translation>
     </message>
     <message>
         <source>Cannot create empty component specification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de créer une spécification du composant vide</translation>
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&apos;affectation du signal est ncorrectement spécifiée</translation>
     </message>
     <message>
         <source>Cannot assign a value to a signal (expecting a script to be run)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner une valeur à un signal (celà exige d&apos;éxécuter un script)</translation>
     </message>
     <message>
         <source>Empty signal assignment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Signal d&apos;affectation vide</translation>
     </message>
     <message>
         <source>Empty property assignment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Propriété d&apos;affectation vide</translation>
     </message>
     <message>
         <source>Attached properties cannot be used here</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La configuration spécifiée ne peut être utilisée.ici</translation>
     </message>
     <message>
         <source>Non-existent attached object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Objet attaché non existant</translation>
     </message>
     <message>
         <source>Invalid attached object assignment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&apos;affectation de l&apos;objet attaché est invalide</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent default property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;attacher à une propriété par défaut non existante</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;attacher à une propriété non existante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Invalid use of namespace</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Utilisation invalide d&apos;espace de noms</translation>
     </message>
     <message>
         <source>Not an attached property name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ce n&apos;est pas un nom de propriété attachée</translation>
     </message>
     <message>
         <source>Invalid use of id property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Utilisation invalide de la propriété id</translation>
     </message>
     <message>
         <source>Property has already been assigned a value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Une valeur a déjà été attribuée à la propriété</translation>
     </message>
     <message>
         <source>Invalid grouped property access</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Accès invalide à une propriété groupée</translation>
     </message>
     <message>
         <source>Cannot assign a value directly to a grouped property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner directement une valeur à une propriété groupée</translation>
     </message>
     <message>
         <source>Invalid property use</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La propriété utilisée est invalide</translation>
     </message>
     <message>
         <source>Property assignment expected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Propriété d&apos;affectation attendue</translation>
     </message>
     <message>
         <source>Single property assignment expected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Une seule propriété d&apos;affectation est attendue</translation>
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Affectation d&apos;objet innatendue</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner un objet à une liste</translation>
     </message>
     <message>
         <source>Can only assign one binding to lists</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Un seul lien peut être assigné à des listes</translation>
     </message>
     <message>
         <source>Cannot assign primitives to lists</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner des primitives à des listes</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a script property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner plusieurs valeurs à une propriété de script</translation>
     </message>
     <message>
         <source>Invalid property assignment: script expected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Propriété d&apos;affectation invalide: script attendu</translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner un objet à une propriété</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&quot;%1&quot; ne peut pas fonctionner sur &quot;%2&quot;</translation>
     </message>
     <message>
         <source>Duplicate default property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Propriété par défaut en double</translation>
     </message>
     <message>
         <source>Duplicate property name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nom de propriété en double</translation>
     </message>
     <message>
         <source>Property names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les noms des propriétés ne peuvent pas commencer par une majuscule</translation>
     </message>
     <message>
         <source>Duplicate signal name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nom de signal en double</translation>
     </message>
     <message>
         <source>Signal names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les noms de signaux ne peuvent pas commencer par une majuscule</translation>
     </message>
     <message>
         <source>Duplicate method name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nom de méthode en double</translation>
     </message>
     <message>
         <source>Method names cannot begin with an upper case letter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les noms des méthodes ne peuvent pas commencer par une majuscule</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Valeur de propriété attribuée plusieurs fois</translation>
     </message>
     <message>
         <source>Invalid property nesting</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Propriété d&apos;emboîtement invalide</translation>
     </message>
     <message>
         <source>Cannot override FINAL property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de remplacer la propriété FINAL</translation>
     </message>
     <message>
         <source>Invalid property type</source>
@@ -1890,177 +1890,178 @@ en
     </message>
     <message>
         <source>IDs cannot start with an uppercase letter</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les IDs ne peuvent pas commencer par une  majuscule</translation>
     </message>
     <message>
         <source>IDs must start with a letter or underscore</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les IDs doivent commencer par une lettre ou un souligné</translation>
     </message>
     <message>
         <source>IDs must contain only letters, numbers, and underscores</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Les IDs ne peuvent contenir que des lettres, des nombres ou des soulignés</translation>
     </message>
     <message>
         <source>ID illegally masks global JavaScript property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ID masque illégalement la propriété JavaScript globale</translation>
     </message>
     <message>
         <source>No property alias location</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??</translatorcomment>
+        <translation type="unfinished">La propriété de l&apos;alias n&apos;a pas d&apos;emplacement</translation>
     </message>
     <message>
         <source>Invalid alias location</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Emplacement d&apos;alias invalide</translation>
     </message>
     <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Référence d&apos;alias  invalide. La référence d&apos;alias doit être spécifiée comme &lt;id&gt; ou &lt;id&gt;.&lt;property&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Référence d&apos;alias invalide. Impossible de trouver l&apos;id &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeComponent</name>
     <message>
         <source>Invalid empty URL</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">URL vide non valide</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La ressource %1 n&apos;est pas disponible</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&apos;espace de noms %1 ne peut pas être utilisé comme un type</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation type="unfinished">%1% {1 %2?}</translation>
+        <translation>%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Le type %1 n&apos;est pas disponible</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Imposible d&apos;assigner à la propriété inexistante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Connexions: les éléments imbriqués ne sont pas autorisés</translation>
     </message>
     <message>
         <source>Connections: syntax error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Connexions: erreur de syntaxe</translation>
     </message>
     <message>
         <source>Connections: script expected</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Connexions: script attendu</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeEngine</name>
     <message>
         <source>executeSql called outside transaction()</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">executeSql a été 1.appelé en dehors de transaction()</translation>
     </message>
     <message>
         <source>Read-only Transaction</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Transaction en lecture seule</translation>
     </message>
     <message>
         <source>Version mismatch: expected %1, found %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Version incompatible:%1 attendue, %2 trouvée</translation>
     </message>
     <message>
         <source>SQL transaction failed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">la transaction SQL a échouée</translation>
     </message>
     <message>
         <source>transaction: missing callback</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">transaction: le rappel est absent</translation>
     </message>
     <message>
         <source>SQL: database version mismatch</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SQL: la version de la base de données est incompatible</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeFlipable</name>
     <message>
         <source>front is a write-once property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">avant est une propriété à écriture unique</translation>
     </message>
     <message>
         <source>back is a write-once property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">arrière est une propriété à écriture unique</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La définition &quot;%2&quot; du module &quot;%1% n&apos;est pas lisible</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de charger le plugin pour le module &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Le plugin &quot;%2&quot; du module &quot;%1&quot; n&apos;a pas été trouvé</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; version %2.%3 is not installed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">la version %2.%3 du module &quot;%1&quot; n&apos;est pas installée</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; is not installed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">le module &quot;%1&quot; n&apos;est pas installé</translation>
     </message>
     <message>
         <source>&quot;%1&quot;: no such directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&quot;%1&quot;: le répertoire n&apos;existe pas</translation>
     </message>
     <message>
         <source>import &quot;%1&quot; has no qmldir and no namespace</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">l&apos;importation &quot;%1&quot; n&apos;a pas de qmldir ni d&apos;espace de noms</translation>
     </message>
     <message>
         <source>- %1 is not a namespace</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">- %1 n&apos;est pas un espace de noms</translation>
     </message>
     <message>
         <source>- nested namespaces not allowed</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">- les espaces de noms imbriqués ne sont pas autorisés</translation>
     </message>
     <message>
         <source>local directory</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">répertoire local</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 and in %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">est ambigu. Trouvé dans %1 et dans %2</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">est ambigu. Trouvé dans %1 dans les versions %2.%3 et %4.%5</translation>
     </message>
     <message>
         <source>is instantiated recursively</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">est instancié récursivement</translation>
     </message>
     <message>
         <source>is not a type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">n&apos;est pas un type</translation>
     </message>
 </context>
 <context>
@@ -2074,328 +2075,332 @@ en
     <name>QDeclarativeKeysAttached</name>
     <message>
         <source>Keys is only available via attached properties</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Keys, a verifier</translatorcomment>
+        <translation type="unfinished">Keys est disponible uniquement via les propriétés attachées</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeListModel</name>
     <message>
         <source>remove: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">supprimer: l&apos;inder %1 est hors de la plage de valeurs admissible</translation>
     </message>
     <message>
         <source>insert: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">insérer: une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>insert: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">insérer: l&apos;inder %1 est hors de la plage de valeurs admissible</translation>
     </message>
     <message>
         <source>move: out of range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Déplacer: hors de la plage de valeurs admissible</translation>
     </message>
     <message>
         <source>append: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ajouter: une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>set: value is not an object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">attribuer: une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>set: index %1 out of range</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">attribuer: l&apos;index %1 est hors de la plage de valeurs admissible</translation>
     </message>
     <message>
         <source>ListElement: cannot contain nested elements</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ListElement: ne peut pas contenir des éléments imbriqués</translation>
     </message>
     <message>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ListElement: ne peut pas utiliser la propriété réservée &quot;id&quot;</translation>
     </message>
     <message>
         <source>ListElement: cannot use script for property value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ListElement: ne peut pas utiliser script comme valeur pour une propriété</translation>
     </message>
     <message>
         <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ListModel: propriété indéfinie &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeLoader</name>
     <message>
         <source>Loader does not support loading non-visual elements.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Le chargeur n&apos;est pas compatible avec le chargement d&apos;éléments non-visuels.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentAnimation</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentChange</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParser</name>
     <message>
         <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">séquence d&apos;échappement unicode illégale</translation>
     </message>
     <message>
         <source>Illegal character</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">caractère illégal</translation>
     </message>
     <message>
         <source>Unclosed string at end of line</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">chaîne de caractères non fermée en fin de ligne</translation>
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">séquence d&apos;échappement illégale</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">commentaire non fermé en fin de ligne</translation>
     </message>
     <message>
         <source>Illegal syntax for exponential number</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">syntaxe illégale pour un nombre exponentiel</translation>
     </message>
     <message>
         <source>Identifier cannot start with numeric literal</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??? </translatorcomment>
+        <translation type="unfinished">impossible de commencer un identifiant par un littéral numérique</translation>
     </message>
     <message>
         <source>Unterminated regular expression literal</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">littéral  non terminé pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Invalid regular expression flag &apos;%0&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">drapeau &apos;%0&apos; invalid pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">séquence antislash non terminée pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">class  non terminé pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Syntax error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur de syntaxe</translation>
     </message>
     <message>
         <source>Unexpected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">jeton inattendu &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Expected token `%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">jeton attendu &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">valeur de propriété attribuée à plusieurs reprises</translation>
     </message>
     <message>
         <source>Expected type name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nom de type attendu</translation>
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">qualificatif ID d&apos;importation invalide</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&quot;Qt&quot; est un nom réservé et ne peut pas être utilisé comme qualificatif</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>??</translatorcomment>
+        <translation type="unfinished">Les qualificatifs d&apos;importation de  script doivent être uniques.</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&apos;importation de  script exige un qualificatif</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">L&apos;importation de  bibliothèque exige une version</translation>
     </message>
     <message>
         <source>Expected parameter type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Type de paramètre attendu</translation>
     </message>
     <message>
         <source>Invalid property type modifier</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Modificateur invalide pour le type de propriété</translation>
     </message>
     <message>
         <source>Unexpected property type modifier</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Modificateur innatendu pour le type de propriété</translation>
     </message>
     <message>
         <source>Expected property type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Type de propriété attendue</translation>
     </message>
     <message>
         <source>Readonly not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">La lecture seule n&apos;est pas encore implémentée</translation>
     </message>
     <message>
         <source>JavaScript declaration outside Script element</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Déclaration JavaScript en edhors de l&apos;élément Script</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePauseAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;attribuer une durée &lt; 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePixmapCache</name>
     <message>
         <source>Error decoding: %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur de décodage: %1: %2</translation>
     </message>
     <message>
         <source>Failed to get image from provider: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;obtenir l&apos;image du fournisseur: %1</translation>
     </message>
     <message>
         <source>Cannot open: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;ouvrir: %1</translation>
     </message>
     <message>
         <source>Unknown Error loading %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Erreur de chargement inconnue: %1</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;attribuer une durée &lt; 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">PropertyChanges n&apos;est pas compatible avec la création d&apos;objets spécifiques à un état.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ne peut pas assigner à la propriété inexistante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ne peut pas assigner à la propriété en lecture seule &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeTextInput</name>
     <message>
         <source>Could not load cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de charger le curseur délégué</translation>
     </message>
     <message>
         <source>Could not instantiate cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;instancier le curseur délégué</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de créer un objet de type %1</translation>
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner la valeur %1 à la propriété %2</translation>
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner un objet de type %1 sans méthode défaut</translation>
     </message>
     <message>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>le vs a confirmer</translatorcomment>
+        <translation type="unfinished">Impossible de connecter le signal/slot %1 %vs. %2 pour cause d&apos;incompatibilité</translation>
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">NImpossible d&apos;assigner un objet à la propriété %1 d&apos;un signal</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner un objet à une liste</translation>
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;assigner un objet à la propriété d&apos;une interface</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible de créer un object attaché</translation>
     </message>
     <message>
         <source>Cannot set properties on %1 as it is null</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Impossible d&apos;attribuer les propriétés à %1 car ce dernier est nul</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Un composant délégué doit être de type Item.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModel</name>
     <message>
         <source>Qt was built without support for xmlpatterns</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Qt a été généré sans support pour xmlpatterns</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModelRole</name>
     <message>
         <source>An XmlRole query must not start with &apos;/&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Une requête  XmlRole ne doit pas commencer par &apos;/&apos;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlRoleList</name>
     <message>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Une requête  XmlListModel doit commencer par &apos;/&apos; ou &quot;//&quot;</translation>
     </message>
 </context>
 <context>
