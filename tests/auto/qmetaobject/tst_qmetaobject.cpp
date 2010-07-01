@@ -740,6 +740,8 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template5") << "QList< ::Foo::Bar>" << "QList< ::Foo::Bar>";
     QTest::newRow("template6") << "QList<::Foo::Bar>" << "QList<::Foo::Bar>";
     QTest::newRow("template7") << "QList<QList<int> >" << "QList<QList<int> >";
+    QTest::newRow("template8") << "QMap<const int, const short*>" << "QMap<const int,const short*>";
+    QTest::newRow("template9") << "QPair<const QPair<int, int const *> , QPair<QHash<int, const char*>  >  >" << "QPair<const QPair<int,const int*>,QPair<QHash<int,const char*> > >";
     QTest::newRow("value1") << "const QString &" << "QString";
     QTest::newRow("value2") << "QString const &" << "QString";
     QTest::newRow("constInName1") << "constconst" << "constconst";

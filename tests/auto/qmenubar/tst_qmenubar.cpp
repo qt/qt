@@ -168,6 +168,7 @@ private slots:
     void task256322_highlight();
     void menubarSizeHint();
     void taskQTBUG4965_escapeEaten();
+    void taskQTBUG11823_crashwithInvisibleActions();
 
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -1689,6 +1690,34 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     QTest::keyClick(0, Qt::Key_Escape); //now the action should be triggered
     QTRY_VERIFY(!menubar.isVisible());
 }
+
+void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
+{
+    QMenuBar menubar;
+    menubar.setNativeMenuBar(false); //we can't check the geometry of native menubars
+
+    QAction * m = menubar.addAction( "&m" );
+    QAction * a = menubar.addAction( "&a" );
+
+    menubar.show();
+    QApplication::setActiveWindow(&menubar);
+    QTest::qWaitForWindowShown(&menubar);
+    menubar.setActiveAction(m);
+    QCOMPARE(menubar.activeAction(), m);
+    QTest::keyClick(0, Qt::Key_Right);
+    QCOMPARE(menubar.activeAction(), a);
+    QTest::keyClick(0, Qt::Key_Right);
+    QCOMPARE(menubar.activeAction(), m);
+    a->setVisible(false);
+
+    menubar.setActiveAction(m);
+    QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
+
+    //it used to crash here because the action is invisible
+    QTest::keyClick(0, Qt::Key_Right);
+    QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
+}
+
 
 #if defined(QT3_SUPPORT)
 void tst_QMenuBar::indexBasedInsertion_data()

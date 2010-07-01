@@ -8,6 +8,8 @@
     QMAKE_LFLAGS += -Ttext 0x80000 -Tdata 0x400000
 }
 
+qtPrepareTool(QMAKE_ELF2E32_WRAPPER, elf2e32_qtwrapper)
+
 isEmpty(TARGET.EPOCSTACKSIZE):TARGET.EPOCSTACKSIZE = 0x14000
 isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
 epoc_heap_size = $$split(TARGET.EPOCHEAPSIZE, " ")
@@ -107,7 +109,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     contains(CONFIG, plugin):QMAKE_ELF2E32_FLAGS += --definput=plugin_commonu.def
 
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget}.dll $$symbianDestdir/$${baseTarget}.sym \
-                      && elf2e32_qtwrapper  --version=$$decVersion \
+                      && $$QMAKE_ELF2E32_WRAPPER --version=$$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x10000079 \
                       --uid2=$$TARGET.UID2 \
@@ -155,7 +157,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
         QMAKE_POST_LINK = && $$QMAKE_POST_LINK
     }
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget} $$symbianDestdir/$${baseTarget}.sym \
-                      && elf2e32_qtwrapper  --version $$decVersion \
+                      && $$QMAKE_ELF2E32_WRAPPER --version $$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x1000007a \
                       --uid2=$$TARGET.UID2 \
