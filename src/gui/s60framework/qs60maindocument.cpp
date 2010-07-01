@@ -57,15 +57,15 @@ QT_BEGIN_NAMESPACE
 
   The QS60MainDocument provides a helper class for use in migrating
   from existing S60 based applications to Qt based applications. It is
-  used in the exact same way as the \c CAknDocument class from
+  used in the exact same way as the \c CEikDocument class from
   Symbian, but internally provides extensions used by Qt.
 
   When modifying old S60 applications that rely on implementing
-  functions in \c CAknDocument, the class should be modified to
-  inherit from this class instead of \c CAknDocument. Then the
+  functions in \c CEikDocument, the class should be modified to
+  inherit from this class instead of \c CEikDocument. Then the
   application can choose to override only certain functions.
 
-  For more information on \c CAknDocument, please see the S60
+  For more information on \c CEikDocument, please see the S60
   documentation.
 
   Unlike other Qt classes, QS60MainDocument behaves like an S60 class,
@@ -79,8 +79,8 @@ QT_BEGIN_NAMESPACE
  *
  * \a mainApplication should contain a pointer to a QS60MainApplication instance.
  */
-QS60MainDocument::QS60MainDocument(CEikApplication& mainApplication)
-    : CAknDocument(mainApplication)
+QS60MainDocument::QS60MainDocument(CEikApplication &mainApplication)
+    : QS60MainDocumentBase(mainApplication)
 {
     // No implementation required
 }
@@ -103,6 +103,16 @@ CEikAppUi *QS60MainDocument::CreateAppUiL()
     // Create the application user interface, and return a pointer to it;
     // the framework takes ownership of this object
     return (static_cast <CEikAppUi*>(new(ELeave)QS60MainAppUi));
+}
+
+CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, RFs &aFs)
+{
+    return QS60MainDocumentBase::OpenFileL(aDoOpen, aFilename, aFs);
+}
+
+void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
+{
+    QS60MainDocumentBase::OpenFileL(aFileStore, aFile);
 }
 
 QT_END_NAMESPACE

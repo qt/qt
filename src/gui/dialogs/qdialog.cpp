@@ -71,8 +71,9 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #   include "qwizard.h"
 #endif
 
-#if defined(Q_WS_S60)
 #include "private/qt_s60_p.h"
+#if defined(Q_WS_S60)
+#include <AknUtils.h>               // AknLayoutUtils
 #endif
 
 #ifndef SPI_GETSNAPTODEFBUTTON
@@ -393,7 +394,7 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#if defined(Q_WS_WINCE) || defined(Q_WS_S60)
+#if defined(Q_WS_WINCE) || defined(Q_OS_SYMBIAN)
 #ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
@@ -413,7 +414,7 @@ bool QDialog::event(QEvent *e)
         accept();
         result = true;
      }
-#else
+#elif defined(Q_WS_S60)
     if ((e->type() == QEvent::StyleChange) || (e->type() == QEvent::Resize )) {
         if (!testAttribute(Qt::WA_Moved)) {
             Qt::WindowStates state = windowState();
@@ -423,6 +424,7 @@ bool QDialog::event(QEvent *e)
                 setWindowState(state);
         }
     }
+    // TODO is Symbian, non-S60 behaviour required?
 #endif
     return result;
 }
@@ -823,8 +825,8 @@ void QDialog::adjustPosition(QWidget* w)
         return;
 #endif
 
-#ifdef Q_WS_S60
-    if (s60AdjustedPosition())
+#ifdef Q_OS_SYMBIAN
+    if (symbianAdjustedPosition())
         //dialog has already been positioned
         return;
 #endif
@@ -892,10 +894,11 @@ void QDialog::adjustPosition(QWidget* w)
     move(p);
 }
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 /*! \internal */
-bool QDialog::s60AdjustedPosition()
+bool QDialog::symbianAdjustedPosition()
 {
+#if defined(Q_WS_S60)
     QPoint p;
     const bool doS60Positioning = !(isFullScreen()||isMaximized());
     if (doS60Positioning) {
@@ -940,6 +943,10 @@ bool QDialog::s60AdjustedPosition()
         move(p);
     }
     return doS60Positioning;
+#else
+    // TODO - check positioning requirement for Symbian, non-s60
+    return false;
+#endif
 }
 #endif
 
