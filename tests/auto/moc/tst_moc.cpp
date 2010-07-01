@@ -1322,6 +1322,25 @@ public slots:
     void foo(struct const_ *) {};
 };
 
+
+template<typename T1, typename T2>
+class TestTemplate2
+{
+};
+
+class QTBUG11647_constInTemplateParameter : public QObject
+{ Q_OBJECT
+public slots:
+    void testSlot(TestTemplate2<const int, const short*>) {}
+    void testSlot2(TestTemplate2<int, short const * const >) {}
+    void testSlot3(TestTemplate2<TestTemplate2 < const int, const short* > const *,
+                                TestTemplate2< TestTemplate2 < void, int > , unsigned char *> > ) {}
+
+signals:
+    void testSignal(TestTemplate2<const int, const short*>);
+};
+
+
 QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
 
