@@ -7627,6 +7627,13 @@ cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 EOF
 fi
 
+if [ -n "$QT_LIBINFIX" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#define QT_LIBINFIX "$QT_LIBINFIX"
+
+EOF
+fi
+
 # avoid unecessary rebuilds by copying only if qconfig.h has changed
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
     rm -f "$outpath/src/corelib/global/qconfig.h.new"
