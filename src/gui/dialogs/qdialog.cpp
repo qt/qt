@@ -69,9 +69,9 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #   include "qfontdialog.h"
 #   include "qcolordialog.h"
 #   include "qwizard.h"
+#   include "private/qt_s60_p.h"
 #endif
 
-#include "private/qt_s60_p.h"
 #if defined(Q_WS_S60)
 #include <AknUtils.h>               // AknLayoutUtils
 #endif
