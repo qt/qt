@@ -5014,7 +5014,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
                 length -= copy_image_width;
                 copy_image_width *= 2;
             }
-            qt_memconvert(dest, src, length);
+            if (length > 0)
+                qt_memconvert(dest, src, length);
         } else {
             while (length) {
                 int l = qMin(image_width - sx, length);
