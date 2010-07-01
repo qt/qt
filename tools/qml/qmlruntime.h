@@ -43,7 +43,7 @@
 #define QDECLARATIVEVIEWER_H
 
 #include <QMainWindow>
-#include <private/qdeclarativetimer_p.h>
+#include <QTimer>
 #include <QTime>
 #include <QList>
 
@@ -93,7 +93,7 @@ public:
     void setRecordFile(const QString&);
     void setRecordArgs(const QStringList&);
     void setRecording(bool on);
-    bool isRecording() const { return recordTimer.isRunning(); }
+    bool isRecording() const { return recordTimer.isActive(); }
     void setAutoRecord(int from, int to);
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
@@ -154,13 +154,13 @@ private:
     QDeclarativeView *canvas;
     QSize initialSize;
     QString currentFileOrUrl;
-    QDeclarativeTimer recordTimer;
+    QTimer recordTimer;
     QString frame_fmt;
     QImage frame;
     QList<QImage*> frames;
     QProcess* frame_stream;
-    QDeclarativeTimer autoStartTimer;
-    QDeclarativeTimer autoStopTimer;
+    QTimer autoStartTimer;
+    QTimer autoStopTimer;
     QString record_dither;
     QString record_file;
     QSize record_outsize;

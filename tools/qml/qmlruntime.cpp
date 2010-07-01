@@ -59,8 +59,8 @@
 #include <qdeclarativeengine.h>
 #include <qdeclarativenetworkaccessmanagerfactory.h>
 #include "qdeclarative.h"
-#include <private/qabstractanimation_p.h>
 #include <QAbstractAnimation>
+#include <private/qabstractanimation_p.h>
 
 #include <QSettings>
 #include <QXmlStreamReader>
@@ -603,15 +603,14 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     namFactory = new NetworkAccessManagerFactory;
     canvas->engine()->setNetworkAccessManagerFactory(namFactory);
 
-    connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
-    connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
-    connect(&recordTimer, SIGNAL(triggered()), this, SLOT(recordFrame()));
+    connect(&autoStartTimer, SIGNAL(timeout()), this, SLOT(autoStartRecording()));
+    connect(&autoStopTimer, SIGNAL(timeout()), this, SLOT(autoStopRecording()));
+    connect(&recordTimer, SIGNAL(timeout()), this, SLOT(recordFrame()));
     connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
             this, SLOT(orientationChanged()), Qt::QueuedConnection);
-    autoStartTimer.setRunning(false);
-    autoStopTimer.setRunning(false);
-    recordTimer.setRunning(false);
-    recordTimer.setRepeating(true);
+    autoStartTimer.setSingleShot(true);
+    autoStopTimer.setSingleShot(true);
+    recordTimer.setSingleShot(false);
 
     QObject::connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(appAboutToQuit()));
 }
@@ -860,7 +859,7 @@ void QDeclarativeViewer::chooseRecordingOptions()
 
 void QDeclarativeViewer::toggleRecordingWithSelection()
 {
-    if (!recordTimer.isRunning()) {
+    if (!recordTimer.isActive()) {
         if (record_file.isEmpty()) {
             QString fileName = getVideoFileName();
             if (fileName.isEmpty())
@@ -879,7 +878,7 @@ void QDeclarativeViewer::toggleRecording()
         toggleRecordingWithSelection();
         return;
     }
-    bool recording = !recordTimer.isRunning();
+    bool recording = !recordTimer.isActive();
     recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
 }
@@ -1038,7 +1037,7 @@ void QDeclarativeViewer::setAutoRecord(int from, int to)
     if (from==0) from=1; // ensure resized
     record_autotime = to-from;
     autoStartTimer.setInterval(from);
-    autoStartTimer.setRunning(true);
+    autoStartTimer.start();
 }
 
 void QDeclarativeViewer::setRecordArgs(const QStringList& a)
@@ -1140,7 +1139,7 @@ void QDeclarativeViewer::senseFfmpeg()
 
 void QDeclarativeViewer::setRecording(bool on)
 {
-    if (on == recordTimer.isRunning())
+    if (on == recordTimer.isActive())
         return;
 
     int period = int(1000/record_rate+0.5);
@@ -1149,7 +1148,7 @@ void QDeclarativeViewer::setRecording(bool on)
     if (on) {
         canvas->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         recordTimer.setInterval(period);
-        recordTimer.setRunning(true);
+        recordTimer.start();
         frame_fmt = record_file.right(4).toLower();
         frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
         if (frame_fmt != ".png" && (!convertAvailable || frame_fmt != ".gif")) {
@@ -1180,7 +1179,7 @@ void QDeclarativeViewer::setRecording(bool on)
         }
     } else {
         canvas->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
-        recordTimer.setRunning(false);
+        recordTimer.stop();
         if (frame_stream) {
             qDebug() << "Saving video...";
             frame_stream->close();
@@ -1260,7 +1259,7 @@ void QDeclarativeViewer::setRecording(bool on)
             frames.clear();
         }
     }
-    qDebug() << "Recording: " << (recordTimer.isRunning()?"ON":"OFF");
+    qDebug() << "Recording: " << (recordTimer.isActive()?"ON":"OFF");
 }
 
 void QDeclarativeViewer::ffmpegFinished(int code)
@@ -1282,7 +1281,7 @@ void QDeclarativeViewer::autoStartRecording()
 {
     setRecording(true);
     autoStopTimer.setInterval(record_autotime);
-    autoStopTimer.setRunning(true);
+    autoStopTimer.start();
 }
 
 void QDeclarativeViewer::autoStopRecording()
