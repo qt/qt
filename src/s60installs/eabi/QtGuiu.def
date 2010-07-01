@@ -5957,7 +5957,7 @@ EXPORTS
 	_ZN7QDialog16staticMetaObjectE @ 5956 NONAME DATA 16
 	_ZN7QDialog18setSizeGripEnabledEb @ 5957 NONAME
 	_ZN7QDialog19getStaticMetaObjectEv @ 5958 NONAME
-	_ZN7QDialog19s60AdjustedPositionEv @ 5959 NONAME
+	_ZN7QDialog23symbianAdjustedPositionEv @ 5959 NONAME
 	_ZN7QDialog4doneEi @ 5960 NONAME
 	_ZN7QDialog4execEv @ 5961 NONAME
 	_ZN7QDialog4openEv @ 5962 NONAME
@@ -12020,4 +12020,28 @@ EXPORTS
 	_ZN10QImageData14convertInPlaceEN6QImage6FormatE6QFlagsIN2Qt19ImageConversionFlagEE @ 12019 NONAME
 	_ZN17QRasterPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 12020 NONAME
 	_ZN17QRasterPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12021 NONAME
+	_ZN13QS60MainAppUi11HandleErrorEiRK14SExtendedErrorR6TDes16S4_ @ 12022 NONAME
+	_ZN13QS60MainAppUi13PrepareToExitEv @ 12023 NONAME
+	_ZN13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12024 NONAME
+	_ZN13QS60MainAppUi15ProcessCommandLEi @ 12025 NONAME
+	_ZN13QS60MainAppUi18HandleSystemEventLERK8TWsEvent @ 12026 NONAME
+	_ZN13QS60MainAppUi19Reserved_MtsmObjectEv @ 12027 NONAME
+	_ZN13QS60MainAppUi21Reserved_MtsmPositionEv @ 12028 NONAME
+	_ZN13QS60MainAppUi22HandleForegroundEventLEi @ 12029 NONAME
+	_ZN13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12030 NONAME
+	_ZN13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12031 NONAME
+	_ZN13QS60MainAppUi26HandleScreenDeviceChangedLEv @ 12032 NONAME
+	_ZN13QS60MainAppUi31HandleApplicationSpecificEventLEiRK8TWsEvent @ 12033 NONAME
+	_ZN13QS60MainAppUi4ExitEv @ 12034 NONAME
+	_ZN13QS60MainAppUi9SetFadedLEi @ 12035 NONAME
+	_ZN16QS60MainDocument9OpenFileLERP10CFileStoreR5RFile @ 12036 NONAME
+	_ZN16QS60MainDocument9OpenFileLEiRK7TDesC16R3RFs @ 12037 NONAME
+	_ZN19QS60MainApplication13NewAppServerLERP13CApaAppServer @ 12038 NONAME
+	_ZN19QS60MainApplication16PreDocConstructLEv @ 12039 NONAME
+	_ZNK13QS60MainAppUi15ApplicationRectEv @ 12040 NONAME
+	_ZNK19QS60MainApplication13OpenIniFileLCER3RFs @ 12041 NONAME
+	_ZThn100_N13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12042 NONAME
+	_ZThn24_N13QS60MainAppUi15ProcessCommandLEi @ 12043 NONAME
+	_ZThn40_N13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12044 NONAME
+	_ZThn92_N13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12045 NONAME
 

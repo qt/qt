@@ -61,7 +61,7 @@
 
 QT_BEGIN_HEADER
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 class CApaApplication;
 #endif
 
@@ -118,7 +118,7 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
 public:
     enum Type { Tty, GuiClient, GuiServer };
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     typedef CApaApplication * (*QS60MainApplicationFactory)();
 #endif
 
@@ -130,7 +130,7 @@ public:
     QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0, int = QT_VERSION);
     QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0, int = QT_VERSION);
 #endif
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
     QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv, int = QT_VERSION);
 #endif
 #endif
@@ -366,7 +366,7 @@ public:
     QApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
     QApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0);
 #endif
-#if defined(Q_WS_S60) || defined(qdoc)
+#if defined(Q_OS_SYMBIAN) || defined(qdoc)
     QApplication(QApplication::QS60MainApplicationFactory factory, int &argc, char **argv);
 #endif
 #endif

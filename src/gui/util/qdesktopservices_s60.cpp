@@ -39,9 +39,6 @@
 **
 ****************************************************************************/
 
-// This flag changes the implementation to use S60 CDcoumentHandler
-// instead of apparch when opening the files
-#define USE_DOCUMENTHANDLER
 
 #include <qcoreapplication.h>
 #include <qdir.h>
@@ -56,10 +53,16 @@
 #include <rsendas.h>                // RSendAs
 #include <rsendasmessage.h>         // RSendAsMessage
 
+#ifdef Q_WS_S60
+// This flag changes the implementation to use S60 CDcoumentHandler
+// instead of apparch when opening the files
+#define USE_DOCUMENTHANDLER
+#endif
+
 // copied from miutset.h, so we don't get a dependency into the app layer
 const TUid KUidMsgTypeSMTP			= {0x10001028};	// 268439592
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 #  include <pathinfo.h>             // PathInfo
 #  ifdef USE_DOCUMENTHANDLER
 #    include <DocumentHandler.h>    // CDocumentHandler
@@ -264,7 +267,7 @@ static TDriveUnit writableExeDrive()
 static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
     switch(drive.operator TInt()){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
@@ -391,19 +394,19 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         break;
     case MusicLocation:
         path.Append(writableDataRoot());
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::SoundsPath());
 #endif
         break;
     case MoviesLocation:
         path.Append(writableDataRoot());
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::VideosPath());
 #endif
         break;
     case PicturesLocation:
         path.Append(writableDataRoot());
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::ImagesPath());
 #endif
         break;

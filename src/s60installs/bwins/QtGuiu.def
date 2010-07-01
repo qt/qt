@@ -8181,7 +8181,7 @@ EXPORTS
 	?rowsInserted@QTreeView@@MAEXABVQModelIndex@@HH@Z @ 8180 NONAME ; void QTreeView::rowsInserted(class QModelIndex const &, int, int)
 	?rowsRemoved@QTreeView@@IAEXABVQModelIndex@@HH@Z @ 8181 NONAME ; void QTreeView::rowsRemoved(class QModelIndex const &, int, int)
 	?rubberBandSelectionMode@QGraphicsView@@QBE?AW4ItemSelectionMode@Qt@@XZ @ 8182 NONAME ; enum Qt::ItemSelectionMode QGraphicsView::rubberBandSelectionMode(void) const
-	?s60AdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::s60AdjustedPosition(void)
+	?symbianAdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::symbianAdjustedPosition(void)
 	?s60UpdateIsOpaque@QWidgetPrivate@@QAEXXZ @ 8184 NONAME ; void QWidgetPrivate::s60UpdateIsOpaque(void)
 	?saturation@QColor@@QBEHXZ @ 8185 NONAME ; int QColor::saturation(void) const
 	?saturationF@QColor@@QBEMXZ @ 8186 NONAME ; float QColor::saturationF(void) const
@@ -12824,4 +12824,24 @@ EXPORTS
 	?createPixmapForImage@QRasterPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 12823 NONAME ; void QRasterPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	??0Tab@QTextOption@@QAE@MW4TabType@1@VQChar@@@Z @ 12824 NONAME ; QTextOption::Tab::Tab(float, enum QTextOption::TabType, class QChar)
 	?fromData@QRasterPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12825 NONAME ; bool QRasterPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?OpenIniFileLC@QS60MainApplication@@UBEPAVCDictionaryStore@@AAVRFs@@@Z @ 12826 NONAME ; class CDictionaryStore * QS60MainApplication::OpenIniFileLC(class RFs &) const
+	?Reserved_MtsmObject@QS60MainAppUi@@MAEXXZ @ 12827 NONAME ; void QS60MainAppUi::Reserved_MtsmObject(void)
+	?HandleForegroundEventL@QS60MainAppUi@@MAEXH@Z @ 12828 NONAME ; void QS60MainAppUi::HandleForegroundEventL(int)
+	?OpenFileL@QS60MainDocument@@UAEPAVCFileStore@@HABVTDesC16@@AAVRFs@@@Z @ 12829 NONAME ; class CFileStore * QS60MainDocument::OpenFileL(int, class TDesC16 const &, class RFs &)
+	?HandleTouchPaneSizeChange@QS60MainAppUi@@UAEXXZ @ 12830 NONAME ; void QS60MainAppUi::HandleTouchPaneSizeChange(void)
+	?Reserved_MtsmPosition@QS60MainAppUi@@MAEXXZ @ 12831 NONAME ; void QS60MainAppUi::Reserved_MtsmPosition(void)
+	?ApplicationRect@QS60MainAppUi@@UBE?AVTRect@@XZ @ 12832 NONAME ; class TRect QS60MainAppUi::ApplicationRect(void) const
+	?HandleSystemEventL@QS60MainAppUi@@MAEXABVTWsEvent@@@Z @ 12833 NONAME ; void QS60MainAppUi::HandleSystemEventL(class TWsEvent const &)
+	?HandleApplicationSpecificEventL@QS60MainAppUi@@MAEXHABVTWsEvent@@@Z @ 12834 NONAME ; void QS60MainAppUi::HandleApplicationSpecificEventL(int, class TWsEvent const &)
+	?HandleError@QS60MainAppUi@@UAE?AW4TErrorHandlerResponse@@HABUSExtendedError@@AAVTDes16@@1@Z @ 12835 NONAME ; enum TErrorHandlerResponse QS60MainAppUi::HandleError(int, struct SExtendedError const &, class TDes16 &, class TDes16 &)
+	?PrepareToExit@QS60MainAppUi@@UAEXXZ @ 12836 NONAME ; void QS60MainAppUi::PrepareToExit(void)
+	?MopSupplyObject@QS60MainAppUi@@MAE?AVPtr@TTypeUid@@V3@@Z @ 12837 NONAME ; class TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(class TTypeUid)
+	?SetFadedL@QS60MainAppUi@@UAEXH@Z @ 12838 NONAME ; void QS60MainAppUi::SetFadedL(int)
+	?Exit@QS60MainAppUi@@UAEXXZ @ 12839 NONAME ; void QS60MainAppUi::Exit(void)
+	?ProcessCommandL@QS60MainAppUi@@UAEXH@Z @ 12840 NONAME ; void QS60MainAppUi::ProcessCommandL(int)
+	?OpenFileL@QS60MainDocument@@UAEXAAPAVCFileStore@@AAVRFile@@@Z @ 12841 NONAME ; void QS60MainDocument::OpenFileL(class CFileStore * &, class RFile &)
+	?HandleScreenDeviceChangedL@QS60MainAppUi@@MAEXXZ @ 12842 NONAME ; void QS60MainAppUi::HandleScreenDeviceChangedL(void)
+	?PreDocConstructL@QS60MainApplication@@UAEXXZ @ 12843 NONAME ; void QS60MainApplication::PreDocConstructL(void)
+	?NewAppServerL@QS60MainApplication@@UAEXAAPAVCApaAppServer@@@Z @ 12844 NONAME ; void QS60MainApplication::NewAppServerL(class CApaAppServer * &)
+	?HandleViewDeactivation@QS60MainAppUi@@UAEXABVTVwsViewId@@0@Z @ 12845 NONAME ; void QS60MainAppUi::HandleViewDeactivation(class TVwsViewId const &, class TVwsViewId const &)
 

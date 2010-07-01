@@ -41,20 +41,25 @@
 
 // INCLUDE FILES
 #include <exception>
+#include <qglobal.h>
+#ifdef Q_WS_S60
 #include <avkon.hrh>
 #include <eikmenub.h>
 #include <eikmenup.h>
+#include <avkon.rsg>
+#endif
 #include <barsread.h>
 #include <qconfig.h>
-#if defined(QT_LIBINFIX_UNQUOTED)
+#ifdef Q_WS_S60
+#  if defined(QT_LIBINFIX_UNQUOTED)
 // Two level macro needed for proper expansion of libinfix
-#  define QT_S60MAIN_RSG_2(x) <s60main##x##.rsg>
-#  define QT_S60MAIN_RSG(x) QT_S60MAIN_RSG_2(x)
-#  include QT_S60MAIN_RSG(QT_LIBINFIX_UNQUOTED)
-#else
-#  include <s60main.rsg>
+#    define QT_S60MAIN_RSG_2(x) <s60main##x##.rsg>
+#    define QT_S60MAIN_RSG(x) QT_S60MAIN_RSG_2(x)
+#    include QT_S60MAIN_RSG(QT_LIBINFIX_UNQUOTED)
+#  else
+#    include <s60main.rsg>
+#  endif
 #endif
-#include <avkon.rsg>
 
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
@@ -115,14 +120,16 @@ void QS60MainAppUi::ConstructL()
     // ENoAppResourceFile and ENonStandardResourceFile makes UI to work without
     // resource files in most SDKs. S60 3rd FP1 public seems to require resource file
     // even these flags are defined
-    TInt flags = CAknAppUi::EAknEnableSkin
-                 | CAknAppUi::ENoScreenFurniture
-                 | CAknAppUi::ENonStandardResourceFile;
+    TInt flags = CEikAppUi::ENoScreenFurniture
+               | CEikAppUi::ENonStandardResourceFile;
+#ifdef Q_WS_S60
+    flags |= CAknAppUi::EAknEnableSkin;
     // After 5th Edition S60, native side supports animated wallpapers.
 	// However, there is no support for that feature on Qt side, so indicate to
 	// native UI framework that this application will not support background animations.
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
         flags |= KAknDisableAnimationBackground;
+#endif
     BaseConstructL(flags);
 }
 
@@ -168,7 +175,7 @@ void QS60MainAppUi::HandleCommandL(TInt command)
  */
 void QS60MainAppUi::HandleResourceChangeL(TInt type)
 {
-    CAknAppUi::HandleResourceChangeL(type);
+    QS60MainAppUiBase::HandleResourceChangeL(type);
 
     if (qApp) {
         QSymbianEvent event(QSymbianEvent::ResourceChangeEvent, type);
@@ -185,7 +192,7 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
  * If you override this function, you should call the base class implementation if you do not
  * handle the event.
  */
-void QS60MainAppUi::HandleWsEventL(const TWsEvent& wsEvent, CCoeControl *destination)
+void QS60MainAppUi::HandleWsEventL(const TWsEvent &wsEvent, CCoeControl *destination)
 {
     int result = 0;
     if (qApp) {
@@ -196,7 +203,7 @@ void QS60MainAppUi::HandleWsEventL(const TWsEvent& wsEvent, CCoeControl *destina
     }
 
     if (result <= 0)
-        CAknAppUi::HandleWsEventL(wsEvent, destination);
+        QS60MainAppUiBase::HandleWsEventL(wsEvent, destination);
 }
 
 
@@ -236,6 +243,7 @@ void QS60MainAppUi::DynInitMenuBarL(TInt /* resourceId */, CEikMenuBar * /* menu
  */
 void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
 {
+#ifdef Q_WS_S60
     if (resourceId == R_QT_WRAPPERAPP_MENU) {
         if (menuPane->NumberOfItemsInPane() <= 1)
             QT_TRYCATCH_LEAVING(qt_symbian_show_toplevel(menuPane));
@@ -245,6 +253,9 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
             && resourceId != R_AVKON_MENUPANE_LANGUAGE_DEFAULT) {
         QT_TRYCATCH_LEAVING(qt_symbian_show_submenu(menuPane, resourceId));
     }
+#else
+    QS60MainAppUiBase::DynInitMenuPaneL(resourceId, menuPane);
+#endif
 }
 
 /*!
@@ -255,16 +266,104 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
  *
  * If you override this function, you should call the base class implementation as well.
  */
-void QS60MainAppUi::RestoreMenuL(CCoeControl* menuWindow, TInt resourceId, TMenuType menuType)
+void QS60MainAppUi::RestoreMenuL(CCoeControl *menuWindow, TInt resourceId, TMenuType menuType)
 {
+#ifdef Q_WS_S60
     if (resourceId >= QT_SYMBIAN_FIRST_MENU_ITEM && resourceId <= QT_SYMBIAN_LAST_MENU_ITEM) {
         if (menuType == EMenuPane)
             DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
         else
             DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
-    } else {
-        CAknAppUi::RestoreMenuL(menuWindow, resourceId, menuType);
+    } else
+#endif
+    {
+        QS60MainAppUiBase::RestoreMenuL(menuWindow, resourceId, menuType);
     }
 }
+
+void QS60MainAppUi::Exit()
+{
+    QS60MainAppUiBase::Exit();
+}
+
+void QS60MainAppUi::SetFadedL(TBool aFaded)
+{
+    QS60MainAppUiBase::SetFadedL(aFaded);
+}
+
+TRect QS60MainAppUi::ApplicationRect() const
+{
+    return QS60MainAppUiBase::ApplicationRect();
+}
+
+void QS60MainAppUi::HandleScreenDeviceChangedL()
+{
+    QS60MainAppUiBase::HandleScreenDeviceChangedL();
+}
+
+void QS60MainAppUi::HandleApplicationSpecificEventL(TInt aType, const TWsEvent &aEvent)
+{
+    QS60MainAppUiBase::HandleApplicationSpecificEventL(aType, aEvent);
+}
+
+TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(TTypeUid aId)
+{
+    return QS60MainAppUiBase::MopSupplyObject(aId);
+}
+
+void QS60MainAppUi::ProcessCommandL(TInt aCommand)
+{
+    QS60MainAppUiBase::ProcessCommandL(aCommand);
+}
+
+TErrorHandlerResponse QS60MainAppUi::HandleError (TInt aError, const SExtendedError &aExtErr, TDes &aErrorText, TDes &aContextText)
+{
+    return QS60MainAppUiBase::HandleError(aError, aExtErr, aErrorText, aContextText);
+}
+
+void QS60MainAppUi::HandleViewDeactivation(const TVwsViewId &aViewIdToBeDeactivated, const TVwsViewId &aNewlyActivatedViewId)
+{
+    QS60MainAppUiBase::HandleViewDeactivation(aViewIdToBeDeactivated, aNewlyActivatedViewId);
+}
+
+void QS60MainAppUi::PrepareToExit()
+{
+    QS60MainAppUiBase::PrepareToExit();
+}
+
+void QS60MainAppUi::HandleTouchPaneSizeChange()
+{
+    QS60MainAppUiBase::HandleTouchPaneSizeChange();
+}
+
+void QS60MainAppUi::HandleSystemEventL(const TWsEvent &aEvent)
+{
+    QS60MainAppUiBase::HandleSystemEventL(aEvent);
+}
+
+void QS60MainAppUi::Reserved_MtsmPosition()
+{
+    QS60MainAppUiBase::Reserved_MtsmPosition();
+}
+
+void QS60MainAppUi::Reserved_MtsmObject()
+{
+    QS60MainAppUiBase::Reserved_MtsmObject();
+}
+
+void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
+{
+    QS60MainAppUiBase::HandleForegroundEventL(aForeground);
+}
+
+#ifndef Q_WS_S60
+
+void QS60StubAknAppUi::HandleViewDeactivation(const TVwsViewId &, const TVwsViewId &) {}
+void QS60StubAknAppUi::HandleTouchPaneSizeChange() {}
+void QS60StubAknAppUi::HandleStatusPaneSizeChange() {}
+void QS60StubAknAppUi::Reserved_MtsmPosition() {}
+void QS60StubAknAppUi::Reserved_MtsmObject() {}
+
+#endif
 
 QT_END_NAMESPACE
