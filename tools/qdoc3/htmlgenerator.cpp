@@ -4464,14 +4464,13 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
-                
-				if (++numTableRows % 2 == 1)
-					out() << "<tr class=\"odd\">";
-				else
-					out() << "<tr class=\"even\">";
+                if (++numTableRows % 2 == 1)
+                    out() << "<tr class=\"odd\">";
+                else
+                    out() << "<tr class=\"even\">";
 				
-				out() << "<td><p>";
-                //out() << "<tr><td>"; // old
+                out() << "<td><p>";
+
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
