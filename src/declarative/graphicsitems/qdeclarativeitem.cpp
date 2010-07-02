@@ -2144,7 +2144,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \property QDeclarativeItem::baselineOffset
   \brief The position of the item's baseline in local coordinates.
 
-  The baseline of a Text item is the imaginary line on which the text
+  The baseline of a \l Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 
