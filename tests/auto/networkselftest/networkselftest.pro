@@ -8,7 +8,7 @@ wince*: {
     addFiles.path = .
     DEPLOYMENT = addFiles
     DEFINES += SRCDIR=\\\"\\\"
-} else:symbian* {
+} else:symbian {
     addFiles.sources = rfc3252.txt
     addFiles.path = .
     DEPLOYMENT = addFiles

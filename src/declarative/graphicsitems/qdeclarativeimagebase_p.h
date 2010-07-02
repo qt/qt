@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeImageBasePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeImageBase : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)

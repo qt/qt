@@ -99,7 +99,7 @@ TextEdit {
     You can translate between cursor positions (characters from the start of the document) and pixel
     points using positionAt() and positionToRectangle().
 
-    \sa Text, TextInput
+    \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
 /*!
@@ -183,12 +183,6 @@ QString QDeclarativeTextEdit::text() const
     \qmlproperty bool TextEdit::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool TextEdit::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -1231,8 +1225,13 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
         r = QRect(0,0,INT_MAX,INT_MAX);
     } else {
         r = rf.toRect();
-        if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+        if (r.height() > INT_MAX/2) {
+            // Take care of overflow when translating "everything"
+            r.setTop(r.y() + d->yoff);
+            r.setBottom(INT_MAX/2);
+        } else {
             r = r.translated(0,d->yoff);
+        }
     }
     dirtyCache(r);
     emit update();
@@ -1284,6 +1283,7 @@ void QDeclarativeTextEditPrivate::init()
 void QDeclarativeTextEdit::q_textChanged()
 {
     updateSize();
+    updateMicroFocus();
     emit textChanged(text());
 }
 
@@ -1325,7 +1325,16 @@ void QDeclarativeTextEdit::updateSelectionMarkers()
         d->lastSelectionEnd = d->control->textCursor().selectionEnd();
         emit selectionEndChanged();
     }
+    updateMicroFocus();
 }
+
+QRectF QDeclarativeTextEdit::boundingRect() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    QRectF r = QDeclarativePaintedItem::boundingRect();
+    return r.translated(0,d->yoff);
+}
+
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
 //    need to do all the calculations each time
@@ -1341,13 +1350,20 @@ void QDeclarativeTextEdit::updateSize()
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
+        int nyoff;
         if (heightValid()) {
             if (d->vAlign == AlignBottom)
-                d->yoff = dy;
+                nyoff = dy;
             else if (d->vAlign == AlignVCenter)
-                d->yoff = dy/2;
+                nyoff = dy/2;
+            else
+                nyoff = 0;
         } else {
-            d->yoff = 0;
+            nyoff = 0;
+        }
+        if (nyoff != d->yoff) {
+            prepareGeometryChange();
+            d->yoff = nyoff;
         }
         setBaselineOffset(fm.ascent() + d->yoff + d->textMargin);
 

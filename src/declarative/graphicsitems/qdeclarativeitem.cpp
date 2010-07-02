@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    \sa Rotate, Translate
+    \sa Rotation, Translate
 */
 
 /*!
@@ -196,6 +196,8 @@ QT_BEGIN_NAMESPACE
     \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
+
+    \sa {declarative/ui-components/dialcontrol}{Dial Control example}, {declarative/toys/clocks}{Clocks example}
 */
 
 /*!
@@ -345,6 +347,7 @@ void QDeclarativeContents::complete()
 
 void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
+    Q_UNUSED(changed)
     //### we can only pass changed if the left edge has moved left, or the right edge has moved right
     if (newGeometry.width() != oldGeometry.width() || newGeometry.x() != oldGeometry.x())
         calcWidth(/*changed*/);

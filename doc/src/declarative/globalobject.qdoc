@@ -114,6 +114,9 @@ browser.  The following objects and properties are supported by the QML implemen
 
 \endtable
 
+The \l{declarative/xml/xmlhttprequest}{XMLHttpRequest example} demonstrates how to
+use the XMLHttpRequest object to make a request and read the response headers.
+
 \section1 Offline Storage API
 
 \section2 Database API
@@ -131,6 +134,9 @@ The API can be used from JavaScript functions in your QML:
 
 The API conforms to the Synchronous API of the HTML5 Web Database API,
 \link http://www.w3.org/TR/2009/WD-webdatabase-20091029/ W3C Working Draft 29 October 2009\endlink.
+
+The \l{declarative/sqllocalstorage}{SQL Local Storage example} demonstrates the basics of
+using the Offline Storage API.
 
 \section3 db = openDatabaseSync(identifier, version, description, estimated_size, callback(db))
 

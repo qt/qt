@@ -80,6 +80,8 @@ protected:
     virtual Value property(Object *, const Identifier &);
 
 private:
+    int enumType(const QMetaObject *, const QString &);
+
     PersistentIdentifier m_connectId;
     PersistentIdentifier m_disconnectId;
     QScriptValue m_connect;

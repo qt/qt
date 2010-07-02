@@ -93,6 +93,7 @@ Item {
                     color: "#151515"; selectionColor: "green"
                     KeyNavigation.tab: login
                     KeyNavigation.backtab: nameIn
+                    onAccepted: login.doLogin();
                 }
             }
         }

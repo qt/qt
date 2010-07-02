@@ -60,7 +60,7 @@ FocusScope {
 
     ListView {
         id: list2
-        y: wantsFocus ? 10 : 40; x: parent.width / 3; width: parent.width / 3; height: parent.height - 20
+        y: wantsFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
         KeyNavigation.up: gridMenu; KeyNavigation.left: list1; KeyNavigation.right: list3
         model: 10; cacheBuffer: 200
         delegate: ListViewDelegate {}
@@ -72,7 +72,7 @@ FocusScope {
 
     ListView {
         id: list3
-        y: wantsFocus ? 10 : 40; x: 2 * parent.width / 3; width: parent.width / 3; height: parent.height - 20
+        y: wantsFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
         KeyNavigation.up: gridMenu; KeyNavigation.left: list2
         model: 10; cacheBuffer: 200
         delegate: ListViewDelegate {}

@@ -105,6 +105,7 @@ void QMdiAreaContainer::positionNewMdiChild(const QWidget *area, QWidget *mdiChi
     const QPoint pos = mdiChild->pos();
     const QSize areaSize = area->size();
     switch (QApplication::layoutDirection()) {
+    case Qt::LayoutDirectionAuto:
     case Qt::LeftToRight: {
         const QSize fullSize = QSize(areaSize.width() - pos.x(), areaSize.height() - pos.y());
         if (fullSize.width() > MinSize && fullSize.height() > MinSize)

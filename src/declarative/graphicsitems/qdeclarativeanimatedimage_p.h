@@ -55,7 +55,7 @@ QT_MODULE(Declarative)
 class QMovie;
 class QDeclarativeAnimatedImagePrivate;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeAnimatedImage : public QDeclarativeImage
+class Q_AUTOTEST_EXPORT QDeclarativeAnimatedImage : public QDeclarativeImage
 {
     Q_OBJECT
 

@@ -63,7 +63,7 @@ embedded {
 }
 x11 {
     HEADERS += image/qpixmap_x11_p.h
-    SOURCES += image/qpixmap_x11.cpp 
+    SOURCES += image/qpixmap_x11.cpp
 }
 mac {
     HEADERS += image/qpixmap_mac_p.h
@@ -96,7 +96,7 @@ SOURCES += \
         unix|win32-g++*:LIBS_PRIVATE  += -lpng
         win32:!win32-g++*:LIBS += libpng.lib
     } else {
-	DEFINES *= QT_USE_BUNDLED_LIBPNG
+        DEFINES *= QT_USE_BUNDLED_LIBPNG
         !isEqual(QT_ARCH, i386):!isEqual(QT_ARCH, x86_64):DEFINES += PNG_NO_ASSEMBLER_CODE
         INCLUDEPATH += ../3rdparty/libpng
         SOURCES += ../3rdparty/libpng/png.c \

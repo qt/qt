@@ -44,15 +44,23 @@
 #ifdef hz
 #undef hz
 #endif
-#include "ui_recopts.h"
+#ifdef Q_WS_MAEMO_5
+#  include <QMaemo5ValueButton>
+#  include <QMaemo5ListPickSelector>
+#  include <QWidgetAction>
+#  include <QStringListModel>
+#  include "ui_recopts_maemo5.h"
+#else
+#  include "ui_recopts.h"
+#endif
 
 #include "qmlruntime.h"
 #include <qdeclarativecontext.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativenetworkaccessmanagerfactory.h>
 #include "qdeclarative.h"
-#include <private/qabstractanimation_p.h>
 #include <QAbstractAnimation>
+#include <private/qabstractanimation_p.h>
 
 #include <QSettings>
 #include <QXmlStreamReader>
@@ -136,23 +144,58 @@ private:
 };
 
 
-class SizedMenuBar : public QMenuBar
-{
+
+#if defined(Q_WS_MAEMO_5)
+
+class Maemo5PickerAction : public QWidgetAction {
     Q_OBJECT
 public:
-    SizedMenuBar(QWidget *parent, QWidget *referenceWidget)
-        : QMenuBar(parent), refWidget(referenceWidget)
+    Maemo5PickerAction(const QString &text, QActionGroup *actions, QObject *parent)
+        : QWidgetAction(parent), m_text(text), m_actions(actions)
+    { }
+
+    QWidget *createWidget(QWidget *parent)
     {
+	QMaemo5ValueButton *button = new QMaemo5ValueButton(m_text, parent);
+	button->setValueLayout(QMaemo5ValueButton::ValueUnderTextCentered);
+        QMaemo5ListPickSelector *pick = new QMaemo5ListPickSelector(button);
+	button->setPickSelector(pick);
+	if (m_actions) {
+	    QStringList sl;
+	    int curIdx = -1, idx = 0;
+	    foreach (QAction *a, m_actions->actions()) {
+		sl << a->text();
+		if (a->isChecked())
+		    curIdx = idx;
+		idx++;
+            }
+	    pick->setModel(new QStringListModel(sl));
+	    pick->setCurrentIndex(curIdx);
+	} else {
+	    button->setEnabled(false);
+	}
+	connect(pick, SIGNAL(selected(QString)), this, SLOT(emitTriggered()));
+	return button;
     }
 
-    virtual QSize sizeHint() const
+private slots:
+    void emitTriggered()
     {
-        return QSize(refWidget->sizeHint().width(), QMenuBar::sizeHint().height());
+	QMaemo5ListPickSelector *pick = qobject_cast<QMaemo5ListPickSelector *>(sender());
+	if (!pick)
+	    return;
+	int idx = pick->currentIndex();
+
+	if (m_actions && idx >= 0 && idx < m_actions->actions().count())
+	    m_actions->actions().at(idx)->trigger();
     }
 
 private:
-    QWidget *refWidget;
+    QString m_text;
+    QPointer<QActionGroup> m_actions;
 };
+
+#endif // Q_WS_MAEMO_5
 
 static struct { const char *name, *args; } ffmpegprofiles[] = {
     {"Maximum Quality", "-sameq"},
@@ -170,7 +213,9 @@ public:
     RecordingDialog(QWidget *parent) : QDialog(parent)
     {
         setupUi(this);
+#ifndef Q_WS_MAEMO_5
         hz->setValidator(new QDoubleValidator(hz));
+#endif
         for (int i=0; ffmpegprofiles[i].name; ++i) {
             profile->addItem(ffmpegprofiles[i].name);
         }
@@ -196,6 +241,132 @@ public:
         int i = profile->currentIndex();
         return ffmpegprofiles[i].args[0] ? QLatin1String(ffmpegprofiles[i].args) : customargs;
     }
+
+    void setOriginalSize(const QSize &s)
+    {
+        QString str = tr("Original (%1x%2)").arg(s.width()).arg(s.height());
+
+#ifdef Q_WS_MAEMO_5
+        sizeCombo->setItemText(0, str);
+#else
+        sizeOriginal->setText(str);
+        if (sizeWidth->value()<=1) {
+            sizeWidth->setValue(s.width());
+            sizeHeight->setValue(s.height());
+        }
+#endif
+    }
+
+    void showffmpegOptions(bool b)
+    {
+#ifdef Q_WS_MAEMO_5
+        profileLabel->setVisible(b);
+        profile->setVisible(b);
+        ffmpegHelp->setVisible(b);
+        args->setVisible(b);
+#else
+        ffmpegOptions->setVisible(b);
+#endif
+    }
+
+    void showRateOptions(bool b)
+    {
+#ifdef Q_WS_MAEMO_5
+        rateLabel->setVisible(b);
+        rateCombo->setVisible(b);
+#else
+        rateOptions->setVisible(b);
+#endif
+    }
+
+    void setVideoRate(int rate)
+    {
+#ifdef Q_WS_MAEMO_5
+        int idx;
+        if (rate >= 60)
+            idx = 0;
+        else if (rate >= 50)
+            idx = 2;
+        else if (rate >= 25)
+            idx = 3;
+        else if (rate >= 24)
+            idx = 4;
+        else if (rate >= 20)
+            idx = 5;
+        else if (rate >= 15)
+            idx = 6;
+        else
+            idx = 7;
+        rateCombo->setCurrentIndex(idx);
+#else
+        if (rate == 24)
+            hz24->setChecked(true);
+        else if (rate == 25)
+            hz25->setChecked(true);
+        else if (rate == 50)
+            hz50->setChecked(true);
+        else if (rate == 60)
+            hz60->setChecked(true);
+        else {
+            hzCustom->setChecked(true);
+            hz->setText(QString::number(rate));
+        }
+#endif
+    }
+
+    int videoRate() const
+    {
+#ifdef Q_WS_MAEMO_5
+        switch (rateCombo->currentIndex()) {
+            case 0: return 60;
+            case 1: return 50;
+            case 2: return 25;
+            case 3: return 24;
+            case 4: return 20;
+            case 5: return 15;
+            case 7: return 10;
+            default: return 60;
+        }
+#else
+        if (hz24->isChecked())
+            return 24;
+        else if (hz25->isChecked())
+            return 25;
+        else if (hz50->isChecked())
+            return 50;
+        else if (hz60->isChecked())
+            return 60;
+        else {
+            return hz->text().toInt();
+        }
+#endif
+    }
+
+    QSize videoSize() const
+    {
+#ifdef Q_WS_MAEMO_5
+        switch (sizeCombo->currentIndex()) {
+            case 0: return QSize();
+            case 1: return QSize(640,480);
+            case 2: return QSize(320,240);
+            case 3: return QSize(1280,720);
+            default: return QSize();
+        }
+#else
+        if (sizeOriginal->isChecked())
+            return QSize();
+        else if (size720p->isChecked())
+            return QSize(1280,720);
+        else if (sizeVGA->isChecked())
+            return QSize(640,480);
+        else if (sizeQVGA->isChecked())
+            return QSize(320,240);
+        else
+            return QSize(sizeWidth->value(), sizeHeight->value());
+#endif
+    }
+
+
 
 private slots:
     void pickProfile(int i)
@@ -363,15 +534,10 @@ QString QDeclarativeViewer::getVideoFileName()
     return QFileDialog::getSaveFileName(this, title, "", types.join(";; "));
 }
 
-
 QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
-#if defined(Q_OS_SYMBIAN)
     : QMainWindow(parent, flags)
-#else
-    : QWidget(parent, flags)
-#endif
-      , loggerWindow(new LoggerWidget())
-      , frame_stream(0), mb(0)
+      , loggerWindow(new LoggerWidget(this))
+      , frame_stream(0)
       , orientation(0)
       , showWarningsWindow(0)
       , m_scriptOptions(0)
@@ -381,6 +547,10 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 {
     QDeclarativeViewer::registerTypes();
     setWindowTitle(tr("Qt QML Viewer"));
+#ifdef Q_WS_MAEMO_5
+    setAttribute(Qt::WA_Maemo5StackedWindow);
+//    setPalette(QApplication::palette("QLabel"));
+#endif
 
     devicemode = false;
     canvas = 0;
@@ -393,9 +563,9 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     senseFfmpeg();
     senseImageMagick();
     if (!ffmpegAvailable)
-        recdlg->ffmpegOptions->hide();
+        recdlg->showffmpegOptions(false);
     if (!ffmpegAvailable && !convertAvailable)
-        recdlg->rateOptions->hide();
+        recdlg->showRateOptions(false);
     QString warn;
     if (!ffmpegAvailable) {
         if (!convertAvailable)
@@ -422,33 +592,27 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     QObject::connect(warningsWidget(), SIGNAL(closed()), this, SLOT(warningsWidgetClosed()));
 
     if (!(flags & Qt::FramelessWindowHint)) {
-        createMenu(menuBar(),0);
+        createMenu();
         changeOrientation(orientation->actions().value(0));
+    } else {
+        setMenuBar(0);
     }
 
-#if !defined(Q_OS_SYMBIAN)
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setMargin(0);
-    layout->setSpacing(0);
-    setLayout(layout);
-    if (mb)
-        layout->addWidget(mb);
-    layout->addWidget(canvas);
-#else
     setCentralWidget(canvas);
-#endif
+
     namFactory = new NetworkAccessManagerFactory;
     canvas->engine()->setNetworkAccessManagerFactory(namFactory);
 
-    connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
-    connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
-    connect(&recordTimer, SIGNAL(triggered()), this, SLOT(recordFrame()));
+    connect(&autoStartTimer, SIGNAL(timeout()), this, SLOT(autoStartRecording()));
+    connect(&autoStopTimer, SIGNAL(timeout()), this, SLOT(autoStopRecording()));
+    connect(&recordTimer, SIGNAL(timeout()), this, SLOT(recordFrame()));
     connect(DeviceOrientation::instance(), SIGNAL(orientationChanged()),
             this, SLOT(orientationChanged()), Qt::QueuedConnection);
-    autoStartTimer.setRunning(false);
-    autoStopTimer.setRunning(false);
-    recordTimer.setRunning(false);
-    recordTimer.setRepeating(true);
+    autoStartTimer.setSingleShot(true);
+    autoStopTimer.setSingleShot(true);
+    recordTimer.setSingleShot(false);
+
+    QObject::connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(appAboutToQuit()));
 }
 
 QDeclarativeViewer::~QDeclarativeViewer()
@@ -468,26 +632,6 @@ void QDeclarativeViewer::enableExperimentalGestures()
     canvas->viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
 }
 
-int QDeclarativeViewer::menuBarHeight() const
-{
-    if (!(windowFlags() & Qt::FramelessWindowHint))
-        return menuBar()->height();
-    else
-        return 0; // don't create menu
-}
-
-QMenuBar *QDeclarativeViewer::menuBar() const
-{
-#if !defined(Q_OS_SYMBIAN)
-    if (!mb)
-        mb = new SizedMenuBar((QWidget*)this, canvas);
-#else
-    mb = QMainWindow::menuBar();
-#endif
-
-    return mb;
-}
-
 QDeclarativeView *QDeclarativeViewer::view() const
 {
     return canvas;
@@ -498,120 +642,128 @@ LoggerWidget *QDeclarativeViewer::warningsWidget() const
     return loggerWindow;
 }
 
-void QDeclarativeViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
+void QDeclarativeViewer::createMenu()
 {
-    QObject *parent = flatmenu ? (QObject*)flatmenu : (QObject*)menu;
-
-    QMenu *fileMenu = flatmenu ? flatmenu : menu->addMenu(tr("&File"));
-
-    QAction *openAction = new QAction(tr("&Open..."), parent);
+    QAction *openAction = new QAction(tr("&Open..."), this);
     openAction->setShortcut(QKeySequence("Ctrl+O"));
     connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
-    fileMenu->addAction(openAction);
 
-    QAction *reloadAction = new QAction(tr("&Reload"), parent);
+    QAction *reloadAction = new QAction(tr("&Reload"), this);
     reloadAction->setShortcut(QKeySequence("Ctrl+R"));
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
-    fileMenu->addAction(reloadAction);
 
-#if !defined(Q_OS_SYMBIAN)
-    if (flatmenu) flatmenu->addSeparator();
-
-    QMenu *recordMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Recording"));
-
-    QAction *snapshotAction = new QAction(tr("&Take Snapshot\tF3"), parent);
+    QAction *snapshotAction = new QAction(tr("&Take Snapshot"), this);
+    snapshotAction->setShortcut(QKeySequence("F3"));
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
-    recordMenu->addAction(snapshotAction);
 
-    recordAction = new QAction(tr("Start Recording &Video\tF9"), parent);
+    recordAction = new QAction(tr("Start Recording &Video"), this);
+    recordAction->setShortcut(QKeySequence("F9"));
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
-    recordMenu->addAction(recordAction);
 
-    QAction *recordOptions = new QAction(tr("Video &Options..."), parent);
+    QAction *recordOptions = new QAction(tr("Video &Options..."), this);
     connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
 
-    if (flatmenu)
-        flatmenu->addAction(recordOptions);
-
-    if (flatmenu) flatmenu->addSeparator();
-
-    QMenu *debugMenu = flatmenu ? flatmenu->addMenu(tr("&Debugging")) : menu->addMenu(tr("&Debugging"));
-
-    QAction *slowAction = new QAction(tr("&Slow Down Animations"), parent);
+    QAction *slowAction = new QAction(tr("&Slow Down Animations"), this);
     slowAction->setShortcut(QKeySequence("Ctrl+."));
     slowAction->setCheckable(true);
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
-    debugMenu->addAction(slowAction);
 
-    showWarningsWindow = new QAction(tr("Show Warnings"), parent);
+    showWarningsWindow = new QAction(tr("Show Warnings"), this);
     showWarningsWindow->setCheckable((true));
     showWarningsWindow->setChecked(loggerWindow->isVisible());
     connect(showWarningsWindow, SIGNAL(triggered(bool)), this, SLOT(showWarnings(bool)));
 
-#if !defined(Q_OS_SYMBIAN)
-    debugMenu->addAction(showWarningsWindow);
-#endif
-
-    if (flatmenu) flatmenu->addSeparator();
-
-#endif // Q_OS_SYMBIAN
-
-    QMenu *settingsMenu = flatmenu ? flatmenu : menu->addMenu(tr("S&ettings"));
-    QAction *proxyAction = new QAction(tr("Http &proxy..."), parent);
+    QAction *proxyAction = new QAction(tr("HTTP &Proxy..."), this);
     connect(proxyAction, SIGNAL(triggered()), this, SLOT(showProxySettings()));
-    settingsMenu->addAction(proxyAction);
-#if !defined(Q_OS_SYMBIAN)
-    if (!flatmenu)
-        settingsMenu->addAction(recordOptions);
 
-    settingsMenu->addMenu(loggerWindow->preferencesMenu());
-#else
-    QAction *fullscreenAction = new QAction(tr("Full Screen"), parent);
+    QAction *fullscreenAction = new QAction(tr("Full Screen"), this);
     fullscreenAction->setCheckable(true);
     connect(fullscreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
-    settingsMenu->addAction(fullscreenAction);
-#endif
 
-    if (flatmenu) flatmenu->addSeparator();
-
-    QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
-
-    orientation = new QActionGroup(parent);
-
-    QAction *rotateOrientation = new QAction(tr("Rotate orientation"), parent);
+    QAction *rotateOrientation = new QAction(tr("Rotate orientation"), this);
     rotateOrientation->setShortcut(QKeySequence("Ctrl+T"));
-    settingsMenu->addAction(rotateOrientation);
     connect(rotateOrientation, SIGNAL(triggered()), this, SLOT(rotateOrientation()));
 
+    orientation = new QActionGroup(this);
     orientation->setExclusive(true);
     connect(orientation, SIGNAL(triggered(QAction*)), this, SLOT(changeOrientation(QAction*)));
 
-    orientation->addAction(tr("orientation: Portrait"));
-    orientation->addAction(tr("orientation: Landscape"));
-    orientation->addAction(tr("orientation: Portrait (Inverted)"));
-    orientation->addAction(tr("orientation: Landscape (Inverted)"));
-    QList<QAction *> actions = orientation->actions();
-    for (int i=0; i<actions.count(); i++) {
-        propertiesMenu->addAction(actions[i]);
-        actions[i]->setCheckable(true);
-    }
+    QAction *portraitAction = new QAction(tr("Portrait"), this);
+    portraitAction->setCheckable(true);
+    QAction *landscapeAction = new QAction(tr("Landscape"), this);
+    landscapeAction->setCheckable(true);
+    QAction *portraitInvAction = new QAction(tr("Portrait (inverted)"), this);
+    portraitInvAction->setCheckable(true);
+    QAction *landscapeInvAction = new QAction(tr("Landscape (inverted)"), this);
+    landscapeInvAction->setCheckable(true);
 
-    if (flatmenu) flatmenu->addSeparator();
-
-    QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
-    QAction *aboutAction = new QAction(tr("&About Qt..."), parent);
+    QAction *aboutAction = new QAction(tr("&About Qt..."), this);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-    helpMenu->addAction(aboutAction);
 
-    QAction *quitAction = new QAction(tr("&Quit"), parent);
+    QAction *quitAction = new QAction(tr("&Quit"), this);
     quitAction->setShortcut(QKeySequence("Ctrl+Q"));
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    QMenuBar *menu = menuBar();
+    if (!menu)
+	return;
+
+#if defined(Q_WS_MAEMO_5)
+    menu->addAction(openAction);
+    menu->addAction(reloadAction);
+
+    menu->addAction(snapshotAction);
+    menu->addAction(recordAction);
+
+    menu->addAction(recordOptions);
+    menu->addAction(proxyAction);
+
+    menu->addAction(slowAction);
+    menu->addAction(showWarningsWindow);
+
+    orientation->addAction(landscapeAction);
+    orientation->addAction(portraitAction);
+    menu->addAction(new Maemo5PickerAction(tr("Set orientation"), orientation, this));
+    menu->addAction(fullscreenAction);
+    return;
+#endif // Q_WS_MAEMO_5
+
+    QMenu *fileMenu = menu->addMenu(tr("&File"));
+    fileMenu->addAction(openAction);
+    fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
-    if (menu) {
-        menu->setFixedHeight(menu->sizeHint().height());
-        menu->setMinimumWidth(10);
-    }
+
+#if !defined(Q_OS_SYMBIAN)
+    QMenu *recordMenu = menu->addMenu(tr("&Recording"));
+    recordMenu->addAction(snapshotAction);
+    recordMenu->addAction(recordAction);
+
+    QMenu *debugMenu = menu->addMenu(tr("&Debugging"));
+    debugMenu->addAction(slowAction);
+    debugMenu->addAction(showWarningsWindow);
+#endif // ! Q_OS_SYMBIAN
+
+    QMenu *settingsMenu = menu->addMenu(tr("S&ettings"));
+    settingsMenu->addAction(proxyAction);
+#if !defined(Q_OS_SYMBIAN)
+    settingsMenu->addAction(recordOptions);
+    settingsMenu->addMenu(loggerWindow->preferencesMenu());
+#else // ! Q_OS_SYMBIAN
+    settingsMenu->addAction(fullscreenAction);
+#endif // Q_OS_SYMBIAN
+    settingsMenu->addAction(rotateOrientation);
+
+    QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
+
+    orientation->addAction(portraitAction);
+    orientation->addAction(landscapeAction);
+    orientation->addAction(portraitInvAction);
+    orientation->addAction(landscapeInvAction);
+    propertiesMenu->addActions(orientation->actions());
+
+    QMenu *helpMenu = menu->addMenu(tr("&Help"));
+    helpMenu->addAction(aboutAction);
 }
 
 void QDeclarativeViewer::showProxySettings()
@@ -685,25 +837,11 @@ void QDeclarativeViewer::chooseRecordingOptions()
     recdlg->file->setText(record_file);
 
     // Size
-    recdlg->sizeOriginal->setText(tr("Original (%1x%2)").arg(canvas->width()).arg(canvas->height()));
-    if (recdlg->sizeWidth->value()<=1) {
-        recdlg->sizeWidth->setValue(canvas->width());
-        recdlg->sizeHeight->setValue(canvas->height());
-    }
+    recdlg->setOriginalSize(canvas->size());
 
     // Rate
-    if (record_rate == 24)
-        recdlg->hz24->setChecked(true);
-    else if (record_rate == 25)
-        recdlg->hz25->setChecked(true);
-    else if (record_rate == 50)
-        recdlg->hz50->setChecked(true);
-    else if (record_rate == 60)
-        recdlg->hz60->setChecked(true);
-    else {
-        recdlg->hzCustom->setChecked(true);
-        recdlg->hz->setText(QString::number(record_rate));
-    }
+    recdlg->setVideoRate(record_rate);
+
 
     // Profile
     recdlg->setArguments(record_args.join(" "));
@@ -711,28 +849,9 @@ void QDeclarativeViewer::chooseRecordingOptions()
         // File
         record_file = recdlg->file->text();
         // Size
-        if (recdlg->sizeOriginal->isChecked())
-            record_outsize = QSize();
-        else if (recdlg->size720p->isChecked())
-            record_outsize = QSize(1280,720);
-        else if (recdlg->sizeVGA->isChecked())
-            record_outsize = QSize(640,480);
-        else if (recdlg->sizeQVGA->isChecked())
-            record_outsize = QSize(320,240);
-        else
-            record_outsize = QSize(recdlg->sizeWidth->value(),recdlg->sizeHeight->value());
+        record_outsize = recdlg->videoSize();
         // Rate
-        if (recdlg->hz24->isChecked())
-            record_rate = 24;
-        else if (recdlg->hz25->isChecked())
-            record_rate = 25;
-        else if (recdlg->hz50->isChecked())
-            record_rate = 50;
-        else if (recdlg->hz60->isChecked())
-            record_rate = 60;
-        else {
-            record_rate = recdlg->hz->text().toDouble();
-        }
+        record_rate = recdlg->videoRate();
         // Profile
         record_args = recdlg->arguments().split(" ",QString::SkipEmptyParts);
     }
@@ -740,7 +859,7 @@ void QDeclarativeViewer::chooseRecordingOptions()
 
 void QDeclarativeViewer::toggleRecordingWithSelection()
 {
-    if (!recordTimer.isRunning()) {
+    if (!recordTimer.isActive()) {
         if (record_file.isEmpty()) {
             QString fileName = getVideoFileName();
             if (fileName.isEmpty())
@@ -759,7 +878,7 @@ void QDeclarativeViewer::toggleRecording()
         toggleRecordingWithSelection();
         return;
     }
-    bool recording = !recordTimer.isRunning();
+    bool recording = !recordTimer.isActive();
     recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
 }
@@ -807,8 +926,9 @@ void QDeclarativeViewer::statusChanged()
         initialSize = canvas->initialSize();
         if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
             if (!isFullScreen() && !isMaximized()) {
-                resize(QSize(initialSize.width(), initialSize.height()+menuBarHeight()));
-                updateSizeHints();
+                canvas->setFixedSize(initialSize);
+                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrink
+                QTimer::singleShot(0, this, SLOT(updateSizeHints()));
             }
         }
     }
@@ -917,7 +1037,7 @@ void QDeclarativeViewer::setAutoRecord(int from, int to)
     if (from==0) from=1; // ensure resized
     record_autotime = to-from;
     autoStartTimer.setInterval(from);
-    autoStartTimer.setRunning(true);
+    autoStartTimer.start();
 }
 
 void QDeclarativeViewer::setRecordArgs(const QStringList& a)
@@ -1019,7 +1139,7 @@ void QDeclarativeViewer::senseFfmpeg()
 
 void QDeclarativeViewer::setRecording(bool on)
 {
-    if (on == recordTimer.isRunning())
+    if (on == recordTimer.isActive())
         return;
 
     int period = int(1000/record_rate+0.5);
@@ -1028,7 +1148,7 @@ void QDeclarativeViewer::setRecording(bool on)
     if (on) {
         canvas->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         recordTimer.setInterval(period);
-        recordTimer.setRunning(true);
+        recordTimer.start();
         frame_fmt = record_file.right(4).toLower();
         frame = QImage(canvas->width(),canvas->height(),QImage::Format_RGB32);
         if (frame_fmt != ".png" && (!convertAvailable || frame_fmt != ".gif")) {
@@ -1059,7 +1179,7 @@ void QDeclarativeViewer::setRecording(bool on)
         }
     } else {
         canvas->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
-        recordTimer.setRunning(false);
+        recordTimer.stop();
         if (frame_stream) {
             qDebug() << "Saving video...";
             frame_stream->close();
@@ -1139,7 +1259,7 @@ void QDeclarativeViewer::setRecording(bool on)
             frames.clear();
         }
     }
-    qDebug() << "Recording: " << (recordTimer.isRunning()?"ON":"OFF");
+    qDebug() << "Recording: " << (recordTimer.isActive()?"ON":"OFF");
 }
 
 void QDeclarativeViewer::ffmpegFinished(int code)
@@ -1147,11 +1267,21 @@ void QDeclarativeViewer::ffmpegFinished(int code)
     qDebug() << "ffmpeg returned" << code << frame_stream->readAllStandardError();
 }
 
+void QDeclarativeViewer::appAboutToQuit()
+{
+    // avoid QGLContext errors about invalid contexts on exit
+    canvas->setViewport(0);
+
+    // avoid crashes if messages are received after app has closed
+    delete loggerWindow;
+    loggerWindow = 0;
+}
+
 void QDeclarativeViewer::autoStartRecording()
 {
     setRecording(true);
     autoStopTimer.setInterval(record_autotime);
-    autoStopTimer.setRunning(true);
+    autoStopTimer.start();
 }
 
 void QDeclarativeViewer::autoStopRecording()
@@ -1181,14 +1311,14 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
         return;
     action->setChecked(true);
 
-    QString o = action->text().split(QLatin1Char(':')).value(1).trimmed();
+    QString o = action->text();
     if (o == QLatin1String("Portrait"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::Portrait);
     else if (o == QLatin1String("Landscape"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::Landscape);
-    else if (o == QLatin1String("Portrait (Inverted)"))
+    else if (o == QLatin1String("Portrait (inverted)"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::PortraitInverted);
-    else if (o == QLatin1String("Landscape (Inverted)"))
+    else if (o == QLatin1String("Landscape (inverted)"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::LandscapeInverted);
 }
 
@@ -1197,9 +1327,11 @@ void QDeclarativeViewer::orientationChanged()
     if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
         if (canvas->rootObject()) {
             QSizeF rootObjectSize = canvas->rootObject()->boundingRect().size();
-            QSize newSize(rootObjectSize.width(), rootObjectSize.height()+menuBarHeight());
-            if (size() != newSize) {
-                resize(newSize);
+            if (size() != rootObjectSize.toSize()) {
+                canvas->setMinimumSize(rootObjectSize.toSize());
+                canvas->resize(rootObjectSize.toSize());
+                resize(rootObjectSize.toSize());
+                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
             }
         }
     }
@@ -1232,6 +1364,8 @@ void QDeclarativeViewer::setUseGL(bool useGL)
 
         canvas->setViewport(glWidget);
     }
+#else
+    Q_UNUSED(useGL)
 #endif
 }
 
@@ -1253,16 +1387,15 @@ void QDeclarativeViewer::updateSizeHints()
 {
     if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
         QSize newWindowSize = canvas->sizeHint();
-        newWindowSize.setHeight(newWindowSize.height()+menuBarHeight());
         if (!isFullScreen() && !isMaximized()) {
-            resize(newWindowSize);
-            setFixedSize(newWindowSize);
+            canvas->setMinimumSize(newWindowSize);
+            canvas->resize(newWindowSize);
+            resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
+            canvas->setMinimumSize(QSize(0, 0));
         }
     } else { // QDeclarativeView::SizeRootObjectToView
         canvas->setMinimumSize(QSize(0,0));
         canvas->setMaximumSize(QSize(16777215,16777215));
-        setMinimumSize(QSize(0,0));
-        setMaximumSize(QSize(16777215,16777215));
     }
 }
 

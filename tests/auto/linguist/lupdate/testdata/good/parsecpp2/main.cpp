@@ -112,3 +112,16 @@ void ToBeUsed::caller()
 {
     tr("NameSpace::ToBeUsed");
 }
+
+
+
+// QTBUG-11818
+//% "Foo"
+QObject::tr("Hello World");
+QObject::tr("Hello World");
+//% "Bar"
+QApplication::translate("QObject", "Hello World");
+QApplication::translate("QObject", "Hello World");
+//% "Baz"
+clear = me;
+QObject::tr("Hello World");

@@ -55,7 +55,7 @@ ListView {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (hasModelChildren) 
+                    if (model.hasModelChildren) 
                         view.model.rootIndex = view.model.modelIndex(index)
                 }
             }

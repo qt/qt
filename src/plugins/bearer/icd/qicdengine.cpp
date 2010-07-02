@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 IcdNetworkConfigurationPrivate::IcdNetworkConfigurationPrivate()
-:   network_attrs(0), service_attrs(0)
+:   service_attrs(0), network_attrs(0)
 {
 }
 
@@ -251,6 +251,11 @@ void QIcdEngine::initialize()
                                          ICD_DBUS_API_INTERFACE,
                                          QDBusConnection::systemBus(),
                                          this);
+
+    // abort if cannot connect to DBus.
+    if (!m_dbusInterface->isValid())
+        return;
+
     connect(&m_scanTimer, SIGNAL(timeout()), this, SLOT(finishAsyncConfigurationUpdate()));
     m_scanTimer.setSingleShot(true);
 

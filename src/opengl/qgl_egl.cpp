@@ -138,7 +138,7 @@ void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config)
     format.setDepthBufferSize(depthSize);
     format.setStencilBufferSize(stencilSize);
     format.setSamples(sampleCount);
-    format.setPlane(level + 1);      // EGL calls level 0 "normal" whereas Qt calls 1 "normal"
+    format.setPlane(level);
     format.setDirectRendering(true); // All EGL contexts are direct-rendered
     format.setRgba(true);            // EGL doesn't support colour index rendering
     format.setStereo(false);         // EGL doesn't support stereo buffers
@@ -232,17 +232,20 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
     if (eglSurface != EGL_NO_SURFACE) {
 #ifdef Q_WS_X11
         // Make sure we don't call eglDestroySurface on a surface which
-        // was created for a different winId:
+        // was created for a different winId. This applies only to QGLWidget
+        // paint device, so make sure this is the one we're operating on
+        // (as opposed to a QGLWindowSurface use case).
         if (paintDevice && paintDevice->devType() == QInternal::Widget) {
-            QGLWidget* w = static_cast<QGLWidget*>(paintDevice);
-
-            if (w->d_func()->eglSurfaceWindowId == w->winId())
-                eglDestroySurface(eglContext->display(), eglSurface);
-            else
-                qWarning("WARNING: Potential EGL surface leak!");
-        } else
+            QWidget *w = static_cast<QWidget *>(paintDevice);
+            if (QGLWidget *wgl = qobject_cast<QGLWidget *>(w)) {
+                if (wgl->d_func()->eglSurfaceWindowId != wgl->winId()) {
+                    qWarning("WARNING: Potential EGL surface leak! Not destroying surface.");
+                    return;
+                }
+            }
+        }
 #endif
-            eglDestroySurface(eglContext->display(), eglSurface);
+        eglDestroySurface(eglContext->display(), eglSurface);
         eglSurface = EGL_NO_SURFACE;
     }
 }
@@ -269,6 +272,14 @@ EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
     }
 
     return eglSurface;
+}
+
+void QGLContextPrivate::swapRegion(const QRegion *region)
+{
+    if (!valid || !eglContext)
+        return;
+
+    eglContext->swapBuffersRegion2NOK(eglSurfaceForDevice(), region);
 }
 
 void QGLWidget::setMouseTracking(bool enable)

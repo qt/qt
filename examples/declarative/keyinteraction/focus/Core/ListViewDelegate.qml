@@ -42,7 +42,7 @@ import Qt 4.7
 
 Item {
     id: container
-    x: 5; width: ListView.view.width - 10; height: 60
+    width: ListView.view.width; height: 60; anchors.leftMargin: 10; anchors.rightMargin: 10
 
     Rectangle {
         id: content
@@ -51,11 +51,15 @@ Item {
         smooth: true
         radius: 10
 
-        Rectangle { color: "#91AA9D"; x: 3; y: 3; width: parent.width - 6; height: parent.height - 6; radius: 8 }
-        Text {
-            text: "List element " + (index + 1); color: "#193441"; font.bold: false; anchors.centerIn: parent
-            font.pixelSize: 14
-        }
+        Rectangle { anchors.fill: parent; anchors.margins: 3; color: "#91AA9D"; smooth: true; radius: 8 }
+    }
+
+    Text {
+        id: label
+        anchors.centerIn: content
+        text: "List element " + (index + 1)
+        color: "#193441"
+        font.pixelSize: 14
     }
 
     MouseArea {
@@ -72,6 +76,7 @@ Item {
     states: State {
         name: "active"; when: container.focus == true
         PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
+        PropertyChanges { target: label; font.pixelSize: 16 }
     }
 
     transitions: Transition {

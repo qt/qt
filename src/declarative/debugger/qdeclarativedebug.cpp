@@ -562,6 +562,33 @@ QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::queryExpressionResult
     return query;
 }
 
+QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::setBindingForObject(int objectDebugId,
+                                                                               const QString &propertyName,
+                                                                               const QVariant &bindingExpression,
+                                                                               bool isLiteralValue,
+                                                                               QObject *parent)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    QDeclarativeDebugExpressionQuery *query = new QDeclarativeDebugExpressionQuery(parent);
+    if (d->client->isConnected() && objectDebugId != -1) {
+        query->m_client = this;
+        query->m_expr = bindingExpression;
+        int queryId = d->getId();
+        query->m_queryId = queryId;
+        d->expressionQuery.insert(queryId, query);
+
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("SET_BINDING") << queryId << objectDebugId << propertyName << bindingExpression << isLiteralValue;
+        d->client->sendMessage(message);
+    } else {
+        query->m_state = QDeclarativeDebugQuery::Error;
+    }
+
+    return query;
+}
+
 QDeclarativeDebugWatch::QDeclarativeDebugWatch(QObject *parent)
 : QObject(parent), m_state(Waiting), m_queryId(-1), m_client(0), m_objectDebugId(-1)
 {
@@ -698,7 +725,7 @@ QDeclarativeDebugExpressionQuery::~QDeclarativeDebugExpressionQuery()
         QDeclarativeEngineDebugPrivate::remove(m_client, this);
 }
 
-QString QDeclarativeDebugExpressionQuery::expression() const
+QVariant QDeclarativeDebugExpressionQuery::expression() const
 {
     return m_expr;
 }

@@ -84,6 +84,7 @@ public:
     bool doneCurrent();
     bool lazyDoneCurrent();
     bool swapBuffers(EGLSurface surface);
+    bool swapBuffersRegion2NOK(EGLSurface surface, const QRegion *region);
 
     int  configAttrib(int name) const;
 

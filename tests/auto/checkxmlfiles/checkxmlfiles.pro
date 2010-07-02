@@ -6,7 +6,7 @@ QT -= gui
 
 include (../xmlpatterns.pri)
 
-wince*|symbian*: {
+wince*|symbian: {
 QT += network
 addFiles.sources = \
 	$$QT_SOURCE_TREE/examples/sql/masterdetail/albumdetails.xml \

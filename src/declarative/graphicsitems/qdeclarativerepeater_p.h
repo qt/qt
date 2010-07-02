@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeRepeaterPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeRepeater : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeRepeater : public QDeclarativeItem
 {
     Q_OBJECT
 

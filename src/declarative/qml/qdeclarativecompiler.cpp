@@ -815,6 +815,10 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         }
     }
 
+    QDeclarativeCustomParser *cp = 0;
+    if (isCustomParser)
+        cp = output->types.at(obj->type).type->customParser();
+
     // Build all explicit properties specified
     foreach(Property *prop, obj->properties) {
 
@@ -825,7 +829,9 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
         bool canDefer = false;
         if (isCustomParser) {
-            if (doesPropertyExist(prop, obj)) {
+            if (doesPropertyExist(prop, obj) && 
+                (!(cp->flags() & QDeclarativeCustomParser::AcceptsAttachedProperties) ||
+                 !isAttachedPropertyName(prop->name))) {
                 int ids = compileState.ids.count();
                 COMPILE_CHECK(buildProperty(prop, obj, objCtxt));
                 canDefer = ids == compileState.ids.count();
@@ -876,8 +882,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         defaultProperty->release();
 
     // Compile custom parser parts
-    if (isCustomParser/* && !customProps.isEmpty()*/) {
-        QDeclarativeCustomParser *cp = output->types.at(obj->type).type->customParser();
+    if (isCustomParser && !customProps.isEmpty()) {
         cp->clearErrors();
         cp->compiler = this;
         cp->object = obj;
@@ -1356,7 +1361,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     Returns true if (value) property \a prop exists on obj, false otherwise.
 */
 bool QDeclarativeCompiler::doesPropertyExist(QDeclarativeParser::Property *prop,
-                                    QDeclarativeParser::Object *obj)
+                                             QDeclarativeParser::Object *obj)
 {
     if(isAttachedPropertyName(prop->name) || prop->name == "id")
         return true;
@@ -2176,6 +2181,18 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
     return -1;
 }
 
+const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) const
+{
+    QDeclarativeType *qmltype = 0;
+    if (!enginePrivate->importDatabase.resolveType(unit->imports, name, &qmltype, 
+                                                   0, 0, 0, 0)) 
+        return 0;
+    if (!qmltype)
+        return 0;
+    return qmltype->metaObject();
+}
+
+
 // Ensures that the dynamic meta specification on obj is valid
 bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
 {
@@ -2199,6 +2216,10 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
 
         if (QString::fromUtf8(prop.name).at(0).isUpper()) 
             COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
+
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(prop.name))
+            COMPILE_EXCEPTION(&prop, tr("Illegal property name"));
+
         propNames.insert(prop.name);
     }
 
@@ -2208,6 +2229,8 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
             COMPILE_EXCEPTION(obj, tr("Duplicate signal name"));
         if (QString::fromUtf8(name).at(0).isUpper()) 
             COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(name))
+            COMPILE_EXCEPTION(obj, tr("Illegal signal name"));
         methodNames.insert(name);
     }
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
@@ -2216,6 +2239,8 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
             COMPILE_EXCEPTION(obj, tr("Duplicate method name"));
         if (QString::fromUtf8(name).at(0).isUpper()) 
             COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(name))
+            COMPILE_EXCEPTION(obj, tr("Illegal method name"));
         methodNames.insert(name);
     }
 

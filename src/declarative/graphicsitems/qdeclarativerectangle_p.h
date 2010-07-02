@@ -68,7 +68,7 @@ public:
     QColor color() const { return _color; }
     void setColor(const QColor &c);
 
-    bool isValid() { return _valid; };
+    bool isValid() { return _valid; }
 
 Q_SIGNALS:
     void penChanged();
@@ -79,7 +79,7 @@ private:
     bool _valid;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeGradientStop : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativeGradientStop : public QObject
 {
     Q_OBJECT
 
@@ -103,7 +103,7 @@ private:
     QColor m_color;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeGradient : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativeGradient : public QObject
 {
     Q_OBJECT
 

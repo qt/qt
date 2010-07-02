@@ -52,7 +52,7 @@ QT_MODULE(Declarative)
 class QDeclarativeVisualModel;
 class QDeclarativeGridViewAttached;
 class QDeclarativeGridViewPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
+class Q_AUTOTEST_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeGridView)
@@ -150,6 +150,9 @@ public:
 
     QDeclarativeComponent *header() const;
     void setHeader(QDeclarativeComponent *);
+
+    virtual void setContentX(qreal pos);
+    virtual void setContentY(qreal pos);
 
     enum PositionMode { Beginning, Center, End, Visible, Contain };
 

@@ -9,7 +9,7 @@ wince* {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 
-wince*|symbian*: {
+wince*|symbian: {
    addFiles.sources = script
    addFiles.path = .
    DEPLOYMENT += addFiles

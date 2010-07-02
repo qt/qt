@@ -145,8 +145,9 @@ public:
     */
     void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
 
-    //this facilitates fine-tuning of complex animations
+    //these facilitate fine-tuning of complex animations
     void setSlowModeEnabled(bool enabled) { slowMode = enabled; }
+    void setSlowdownFactor(qreal factor) { slowdownFactor = factor; }
 
     /*
         this is used for updating the currentTime of all animations in case the pause
@@ -171,11 +172,17 @@ private:
 
     ElapsedTimer time;
 
-    int lastTick;
+    qint64 lastTick;
     int timingInterval;
     int currentAnimationIdx;
     bool consistentTiming;
     bool slowMode;
+
+    // This factor will be used to divide the DEFAULT_TIMER_INTERVAL at each tick
+    // when slowMode is enabled. Setting it to 0 or higher than DEFAULT_TIMER_INTERVAL (16)
+    // stops all animations.
+    qreal slowdownFactor;
+
     // bool to indicate that only pause animations are active
     bool isPauseTimerActive;
 
