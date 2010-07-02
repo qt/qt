@@ -58,18 +58,18 @@ SOURCES += \
 win32 {
     SOURCES += image/qpixmap_win.cpp
 }
-embedded {
+else:embedded {
     SOURCES += image/qpixmap_qws.cpp
 }
-x11 {
+else:x11 {
     HEADERS += image/qpixmap_x11_p.h
     SOURCES += image/qpixmap_x11.cpp
 }
-mac {
+else:mac {
     HEADERS += image/qpixmap_mac_p.h
     SOURCES += image/qpixmap_mac.cpp
 }
-symbian {
+else:symbian {
     HEADERS += image/qpixmap_s60_p.h
     SOURCES += image/qpixmap_s60.cpp
 }
