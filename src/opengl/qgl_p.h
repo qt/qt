@@ -612,7 +612,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 /*
    Base for resources that are shared in a context group.
 */
-class QGLContextGroupResourceBase
+class Q_OPENGL_EXPORT QGLContextGroupResourceBase
 {
 public:
     QGLContextGroupResourceBase();
@@ -673,7 +673,7 @@ protected:
 /*
    Base for resources that are context specific.
 */
-class QGLContextResourceBase
+class Q_OPENGL_EXPORT QGLContextResourceBase
 {
 public:
     virtual ~QGLContextResourceBase() {
