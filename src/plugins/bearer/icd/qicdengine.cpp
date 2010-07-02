@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 IcdNetworkConfigurationPrivate::IcdNetworkConfigurationPrivate()
-:   network_attrs(0), service_attrs(0)
+:   service_attrs(0), network_attrs(0)
 {
 }
 
