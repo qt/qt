@@ -5957,7 +5957,7 @@ EXPORTS
 	_ZN7QDialog16staticMetaObjectE @ 5956 NONAME DATA 16
 	_ZN7QDialog18setSizeGripEnabledEb @ 5957 NONAME
 	_ZN7QDialog19getStaticMetaObjectEv @ 5958 NONAME
-	_ZN7QDialog19s60AdjustedPositionEv @ 5959 NONAME
+	_ZN7QDialog23symbianAdjustedPositionEv @ 5959 NONAME
 	_ZN7QDialog4doneEi @ 5960 NONAME
 	_ZN7QDialog4execEv @ 5961 NONAME
 	_ZN7QDialog4openEv @ 5962 NONAME
@@ -12060,4 +12060,28 @@ EXPORTS
 	_ZTV18QRuntimePixmapData @ 12059 NONAME
 	_ZN11QEglContext21swapBuffersRegion2NOKEiPK7QRegion @ 12060 NONAME
 	_ZN4QEgl24eglSwapBuffersRegion2NOKEiiiPKi @ 12061 NONAME
+	_ZN13QS60MainAppUi11HandleErrorEiRK14SExtendedErrorR6TDes16S4_ @ 12062 NONAME
+	_ZN13QS60MainAppUi13PrepareToExitEv @ 12063 NONAME
+	_ZN13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12064 NONAME
+	_ZN13QS60MainAppUi15ProcessCommandLEi @ 12065 NONAME
+	_ZN13QS60MainAppUi18HandleSystemEventLERK8TWsEvent @ 12066 NONAME
+	_ZN13QS60MainAppUi19Reserved_MtsmObjectEv @ 12067 NONAME
+	_ZN13QS60MainAppUi21Reserved_MtsmPositionEv @ 12068 NONAME
+	_ZN13QS60MainAppUi22HandleForegroundEventLEi @ 12069 NONAME
+	_ZN13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12070 NONAME
+	_ZN13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12071 NONAME
+	_ZN13QS60MainAppUi26HandleScreenDeviceChangedLEv @ 12072 NONAME
+	_ZN13QS60MainAppUi31HandleApplicationSpecificEventLEiRK8TWsEvent @ 12073 NONAME
+	_ZN13QS60MainAppUi4ExitEv @ 12074 NONAME
+	_ZN13QS60MainAppUi9SetFadedLEi @ 12075 NONAME
+	_ZN16QS60MainDocument9OpenFileLERP10CFileStoreR5RFile @ 12076 NONAME
+	_ZN16QS60MainDocument9OpenFileLEiRK7TDesC16R3RFs @ 12077 NONAME
+	_ZN19QS60MainApplication13NewAppServerLERP13CApaAppServer @ 12078 NONAME
+	_ZN19QS60MainApplication16PreDocConstructLEv @ 12079 NONAME
+	_ZNK13QS60MainAppUi15ApplicationRectEv @ 12080 NONAME
+	_ZNK19QS60MainApplication13OpenIniFileLCER3RFs @ 12081 NONAME
+	_ZThn100_N13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12082 NONAME
+	_ZThn24_N13QS60MainAppUi15ProcessCommandLEi @ 12083 NONAME
+	_ZThn40_N13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12084 NONAME
+	_ZThn92_N13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12085 NONAME
 
