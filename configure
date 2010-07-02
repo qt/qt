@@ -3636,7 +3636,7 @@ Third Party Libraries:
 
     -no-gif ............ Do not compile the plugin for GIF reading support.
  *  -qt-gif ............ Compile the plugin for GIF reading support.
-                         See also src/plugins/imageformats/gif/qgifhandler.h
+                         See also src/gui/image/qgifhandler.h
 
     -no-libtiff ........ Do not compile the plugin for TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.

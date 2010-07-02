@@ -1751,7 +1751,7 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile the plugin for GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile the plugin for GIF reading support.\nSee also src/plugins/imageformats/gif/qgifhandler.h\n");
+        desc("GIF", "auto",     "-qt-gif",              "Compile the plugin for GIF reading support.\nSee also src/gui/image/qgifhandler.h\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile in PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
