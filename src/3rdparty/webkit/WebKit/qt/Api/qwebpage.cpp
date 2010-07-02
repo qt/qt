@@ -233,6 +233,8 @@ public:
 
     virtual QStyle* style() const;
 
+    virtual bool viewResizesToContentsEnabled() const { return false; }
+
     QWidget* view;
 };
 
