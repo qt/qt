@@ -152,8 +152,6 @@ void QDeclarativeStyledTextPrivate::parse()
                 QTextCharFormat format;
                 if (formatStack.count())
                     format = formatStack.top();
-                else
-                    format.setFont(baseFont);
                 if (parseTag(ch, text, drawText, format))
                     formatStack.push(format);
             }
