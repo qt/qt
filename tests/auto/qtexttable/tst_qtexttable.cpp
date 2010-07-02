@@ -48,8 +48,13 @@
 #include <qtexttable.h>
 #include <qdebug.h>
 #include <qtextcursor.h>
+#include <qtextdocument.h>
+#include <qtextedit.h>
 
 //TESTED_FILES=
+
+typedef QList<int> IntList;
+Q_DECLARE_METATYPE(IntList)
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
@@ -78,6 +83,7 @@ private slots:
     void insertRows();
     void deleteInTable();
     void mergeCells();
+    void mergeAndInsert();
     void splitCells();
     void blocksForTableShouldHaveEmptyFormat();
     void removeTableByRemoveRows();
@@ -93,6 +99,8 @@ private slots:
     void removeColumns3();
     void removeColumns4();
     void removeColumns5();
+    void QTBUG11282_insertBeforeMergedEnding_data();
+    void QTBUG11282_insertBeforeMergedEnding();
 
 private:
     QTextTable *create2x2Table();
@@ -586,6 +594,16 @@ void tst_QTextTable::mergeCells()
     QVERIFY(table->cellAt(0, 1) == table->cellAt(1, 1));
 }
 
+void tst_QTextTable::mergeAndInsert()
+{
+    QTextTable *table = cursor.insertTable(4,3);
+    table->mergeCells(0,1,3,2);
+    table->mergeCells(3,0,1,3);
+    //Don't crash !
+    table->insertColumns(1,2);
+    QCOMPARE(table->columns(), 5);
+}
+
 void tst_QTextTable::splitCells()
 {
     QTextTable *table = create4x4Table();
@@ -929,6 +947,43 @@ void tst_QTextTable::removeColumns5()
     QCOMPARE(table->cellAt(3, 0).firstPosition(), 7);
     QCOMPARE(table->cellAt(3, 1).firstPosition(), 10);
     QCOMPARE(table->cellAt(3, 2).firstPosition(), 11);
+}
+
+void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding_data()
+{
+    QTest::addColumn<int>("rows");
+    QTest::addColumn<int>("columns");
+    QTest::addColumn<QList<int> >("merge");
+    QTest::addColumn<QList<int> >("insert");
+
+    QTest::newRow("2x3, merge two, insert one") << 2 << 3 << (QList<int>() << 1 << 2 << 2)
+            << (QList<int>() << 1 << 1) ;
+    QTest::newRow("3x4, merge three, insert one") << 3 << 4 << (QList<int>() << 1 << 3 << 3)
+            << (QList<int>() << 1 << 1) ;
+    QTest::newRow("4x3, merge two, insert two") << 4 << 3 << (QList<int>() << 1 << 4 << 2)
+            << (QList<int>() << 1 << 2) ;
+    QTest::newRow("4x4, merge middle two, insert one") << 4 << 4 << (QList<int>() << 1 << 4 << 2)
+            << (QList<int>() << 1 << 1) ;
+}
+
+void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding()
+{
+    QFETCH(int, rows);
+    QFETCH(int, columns);
+    QFETCH(QList<int>, merge);
+    QFETCH(QList<int>, insert);
+    QTextTable *table = cursor.insertTable(rows, columns);
+    QTextEdit *textEdit = new QTextEdit;
+    textEdit->setDocument(doc);
+    textEdit->show();
+    QTest::qWaitForWindowShown(textEdit);
+    table->mergeCells(0,merge.at(0), merge.at(1), merge.at(2));
+    //Don't crash !
+    table->insertColumns(insert.at(0), insert.at(1));
+    //Check that the final size is what we expected
+    QCOMPARE(table->rows(), rows);
+    QCOMPARE(table->columns(), columns + insert.at(1));
+    delete textEdit;
 }
 
 QTEST_MAIN(tst_QTextTable)
