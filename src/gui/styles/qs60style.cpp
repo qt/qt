@@ -3116,6 +3116,11 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_CheckBoxFocusRect:
             ret = opt->rect;
             break;
+        case SE_ProgressBarLabel:
+        case SE_ProgressBarContents:
+        case SE_ProgressBarGroove:
+            ret = opt->rect;
+            break;
         default:
             ret = QCommonStyle::subElementRect(element, opt, widget);
     }
