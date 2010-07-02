@@ -1728,8 +1728,7 @@ void QDeclarativeEnginePrivate::warning(QDeclarativeEnginePrivate *engine, const
 /*!
 \qmlmethod Qt::quit()
 This function causes the QDeclarativeEngine::quit() signal to be emitted.
-Within the \l {Qt Declarative UI Runtime}{qml} application this causes the 
-launcher application to exit.
+Within the \l {QML Viewer}, this causes the launcher application to exit.
 */
 
 QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)
