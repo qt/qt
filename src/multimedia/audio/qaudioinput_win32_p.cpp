@@ -148,7 +148,7 @@ void QAudioInputPrivate::freeBlocks(WAVEHDR* blockArray)
 
     for(int i = 0; i < count; i++) {
         waveInUnprepareHeader(hWaveIn,blocks, sizeof(WAVEHDR));
-        blocks+=sizeof(WAVEHDR);
+        blocks++;
     }
     HeapFree(GetProcessHeap(), 0, blockArray);
 }
