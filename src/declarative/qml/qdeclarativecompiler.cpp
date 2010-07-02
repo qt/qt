@@ -228,10 +228,10 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
             }
             break;
         case QMetaType::Float:
-            if (!v->value.isNumber()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: float expected"));
+            if (!v->value.isNumber()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: number expected"));
             break;
         case QVariant::Double:
-            if (!v->value.isNumber()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: double expected"));
+            if (!v->value.isNumber()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: number expected"));
             break;
         case QVariant::Color:
             {

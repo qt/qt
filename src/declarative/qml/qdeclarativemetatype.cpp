@@ -1152,7 +1152,7 @@ bool QDeclarativeMetaType::copy(int type, void *data, const void *copy)
             *static_cast<float *>(data) = float(0);
             return true;
         case QMetaType::Double:
-            *static_cast<double *>(data) = double();
+            *static_cast<double *>(data) = double(0);
             return true;
         case QMetaType::QChar:
             *static_cast<NS(QChar) *>(data) = NS(QChar)();
