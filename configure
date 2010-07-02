@@ -1526,8 +1526,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     gif)
-        [ "$VAL" = "qt" ] && VAL=yes
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+        [ "$VAL" = "qt" ] && VAL=auto
+        if [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
             CFG_GIF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3634,26 +3634,26 @@ Third Party Libraries:
  +  -system-zlib ....... Use zlib from the operating system.
                          See http://www.gzip.org/zlib
 
-    -no-gif ............ Do not compile the plugin for GIF reading support.
- *  -qt-gif ............ Compile the plugin for GIF reading support.
-                         See also src/plugins/imageformats/gif/qgifhandler.h
+    -no-gif ............ Do not compile GIF reading support.
+ *  -qt-gif ............ Compile GIF reading support.
+                         See also src/gui/image/qgifhandler.h
 
-    -no-libtiff ........ Do not compile the plugin for TIFF support.
+    -no-libtiff ........ Do not compile TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.
  +  -system-libtiff .... Use libtiff from the operating system.
                          See http://www.libtiff.org
 
-    -no-libpng ......... Do not compile in PNG support.
+    -no-libpng ......... Do not compile PNG support.
     -qt-libpng ......... Use the libpng bundled with Qt.
  +  -system-libpng ..... Use libpng from the operating system.
                          See http://www.libpng.org/pub/png
 
-    -no-libmng ......... Do not compile the plugin for MNG support.
+    -no-libmng ......... Do not compile MNG support.
     -qt-libmng ......... Use the libmng bundled with Qt.
  +  -system-libmng ..... Use libmng from the operating system.
                          See http://www.libmng.com
 
-    -no-libjpeg ........ Do not compile the plugin for JPEG support.
+    -no-libjpeg ........ Do not compile JPEG support.
     -qt-libjpeg ........ Use the libjpeg bundled with Qt.
  +  -system-libjpeg .... Use libjpeg from the operating system.
                          See http://www.ijg.org
