@@ -79,5 +79,9 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
     return 0;
 }
 
+QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
+{
+    return createPixmapData(origin->pixelType());
+}
 
 QT_END_NAMESPACE

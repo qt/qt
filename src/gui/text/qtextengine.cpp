@@ -2668,9 +2668,9 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
         flags |= QTextItem::StrikeOut;
 }
 
-QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, QFontEngine *fe)
+QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe)
     : flags(0), justified(false), underlineStyle(QTextCharFormat::NoUnderline),
-      num_chars(0), chars(0), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
+      num_chars(numChars), chars(chars_), logClusters(0), f(font),  glyphs(g), fontEngine(fe)
 {
 }
 

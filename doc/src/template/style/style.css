@@ -490,11 +490,20 @@
     }
     .wrap .content h2
     {
-        font: 600 16px/1.2 Arial;
+    
+	border-bottom:1px solid #DDDDDD;
+	font:600 16px/1.2 Arial;
+	margin-top:15px;
+	width:100%;
+		
     }
     .wrap .content h3
     {
         font: 600 14px/1.2 Arial;
+		/*border-bottom:1px solid #DDDDDD;*/
+		font:600 16px/1.2 Arial;
+		margin-top:15px;
+		width:100%;		
     }
     .wrap .content p
     {
@@ -755,7 +764,7 @@
         font-size: 11px;
         /*min-width: 395px;*/
         margin-bottom: 25px;
-        display: inline-block;
+     /*   display: inline-block;*/
     }
     thead
     {
@@ -1219,7 +1228,15 @@ pre.highlightedCode {
 	list-style-type:decimal;
 
 	}
-
+	.navTop{ 
+	float:right;
+	padding-right:5px;
+	padding-top:15px;
+	}
+	
+	.wrap .content .toc h3{
+	border-bottom:none;
+	}
 /* end of screen media */
 
 /* start of print media */
