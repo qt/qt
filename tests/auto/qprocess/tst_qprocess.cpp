@@ -93,6 +93,7 @@ private slots:
     void getSetCheck();
     void constructing();
     void simpleStart();
+    void execute();
     void startDetached();
     void crashTest();
     void crashTest2();
@@ -283,6 +284,14 @@ void tst_QProcess::simpleStart()
     QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
 }
+//-----------------------------------------------------------------------------
+void tst_QProcess::execute()
+{
+    QCOMPARE(QProcess::execute("testProcessNormal/testProcessNormal",
+                               QStringList() << "arg1" << "arg2"), 0);
+    QCOMPARE(QProcess::execute("nonexistingexe"), -2);
+}
+
 //-----------------------------------------------------------------------------
 void tst_QProcess::startDetached()
 {

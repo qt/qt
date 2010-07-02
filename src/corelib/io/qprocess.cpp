@@ -2082,14 +2082,19 @@ QProcess::ExitStatus QProcess::exitStatus() const
     process.
 
     On Windows, arguments that contain spaces are wrapped in quotes.
+
+    If the process cannot be started, -2 is returned. If the process
+    crashes, -1 is returned. Otherwise, the process' exit code is
+    returned.
 */
 int QProcess::execute(const QString &program, const QStringList &arguments)
 {
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(program, arguments);
-    process.waitForFinished(-1);
-    return process.exitCode();
+    if (!process.waitForFinished(-1))
+        return -2;
+    return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }
 
 /*!
@@ -2104,8 +2109,9 @@ int QProcess::execute(const QString &program)
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(program);
-    process.waitForFinished(-1);
-    return process.exitCode();
+    if (!process.waitForFinished(-1))
+        return -2;
+    return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }
 
 /*!
