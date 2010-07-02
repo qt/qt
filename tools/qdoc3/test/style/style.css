@@ -776,12 +776,14 @@
     }
     .qmlreadonly
     {
+        padding-left: 3px;
         float: right;
         color: #254117;
     }
 
     .qmldefault
     {
+        padding-left: 3px;
         float: right;
         color: red;
     }
