@@ -12824,4 +12824,39 @@ EXPORTS
 	?createPixmapForImage@QRasterPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 12823 NONAME ; void QRasterPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	??0Tab@QTextOption@@QAE@MW4TabType@1@VQChar@@@Z @ 12824 NONAME ; QTextOption::Tab::Tab(float, enum QTextOption::TabType, class QChar)
 	?fromData@QRasterPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12825 NONAME ; bool QRasterPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?transformed@QRuntimePixmapData@@UBE?AVQPixmap@@ABVQTransform@@W4TransformationMode@Qt@@@Z @ 12826 NONAME ; class QPixmap QRuntimePixmapData::transformed(class QTransform const &, enum Qt::TransformationMode) const
+	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12827 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
+	?buffer@QRuntimePixmapData@@UAEPAVQImage@@XZ @ 12828 NONAME ; class QImage * QRuntimePixmapData::buffer(void)
+	?copy@QRuntimePixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12829 NONAME ; void QRuntimePixmapData::copy(class QPixmapData const *, class QRect const &)
+	?fromData@QRuntimePixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12830 NONAME ; bool QRuntimePixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?readBackInfo@QRuntimePixmapData@@QAEXXZ @ 12831 NONAME ; void QRuntimePixmapData::readBackInfo(void)
+	??_EQRuntimePixmapData@@UAE@I@Z @ 12832 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(unsigned int)
+	?paintEngine@QRuntimePixmapData@@UBEPAVQPaintEngine@@XZ @ 12833 NONAME ; class QPaintEngine * QRuntimePixmapData::paintEngine(void) const
+	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ; unsigned int QRuntimePixmapData::memoryUsage(void) const
+	?toImage@QRasterPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12835 NONAME ; class QImage QRasterPixmapData::toImage(class QRect const &) const
+	?fromImageReader@QRasterPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12836 NONAME ; void QRasterPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?fill@QRuntimePixmapData@@UAEXABVQColor@@@Z @ 12837 NONAME ; void QRuntimePixmapData::fill(class QColor const &)
+	?alphaChannel@QRuntimePixmapData@@UBE?AVQPixmap@@XZ @ 12838 NONAME ; class QPixmap QRuntimePixmapData::alphaChannel(void) const
+	?createCompatiblePixmapData@QRuntimePixmapData@@UBEPAVQPixmapData@@XZ @ 12839 NONAME ; class QPixmapData * QRuntimePixmapData::createCompatiblePixmapData(void) const
+	?toImage@QRuntimePixmapData@@UBE?AVQImage@@XZ @ 12840 NONAME ; class QImage QRuntimePixmapData::toImage(void) const
+	?resize@QRuntimePixmapData@@UAEXHH@Z @ 12841 NONAME ; void QRuntimePixmapData::resize(int, int)
+	?fromNativeType@QRuntimePixmapData@@UAEXPAXW4NativeType@QPixmapData@@@Z @ 12842 NONAME ; void QRuntimePixmapData::fromNativeType(void *, enum QPixmapData::NativeType)
+	?fromFile@QRuntimePixmapData@@UAE_NABVQString@@PBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12843 NONAME ; bool QRuntimePixmapData::fromFile(class QString const &, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?setAlphaChannel@QRuntimePixmapData@@UAEXABVQPixmap@@@Z @ 12844 NONAME ; void QRuntimePixmapData::setAlphaChannel(class QPixmap const &)
+	?fromImageReader@QPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12845 NONAME ; void QPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?toImage@QPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12846 NONAME ; class QImage QPixmapData::toImage(class QRect const &) const
+	?fromImageReader@QPixmap@@SA?AV1@PAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12847 NONAME ; class QPixmap QPixmap::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?fromImage@QRuntimePixmapData@@UAEXABVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12848 NONAME ; void QRuntimePixmapData::fromImage(class QImage const &, class QFlags<enum Qt::ImageConversionFlag>)
+	?setMask@QRuntimePixmapData@@UAEXABVQBitmap@@@Z @ 12849 NONAME ; void QRuntimePixmapData::setMask(class QBitmap const &)
+	?mask@QRuntimePixmapData@@UBE?AVQBitmap@@XZ @ 12850 NONAME ; class QBitmap QRuntimePixmapData::mask(void) const
+	?createPixmapData@QGraphicsSystem@@UAEPAVQPixmapData@@PAV2@@Z @ 12851 NONAME ; class QPixmapData * QGraphicsSystem::createPixmapData(class QPixmapData *)
+	?metric@QRuntimePixmapData@@UBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 12852 NONAME ; int QRuntimePixmapData::metric(enum QPaintDevice::PaintDeviceMetric) const
+	??1QRuntimePixmapData@@UAE@XZ @ 12853 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(void)
+	??0QRuntimePixmapData@@QAE@PBVQRuntimeGraphicsSystem@@W4PixelType@QPixmapData@@@Z @ 12854 NONAME ; QRuntimePixmapData::QRuntimePixmapData(class QRuntimeGraphicsSystem const *, enum QPixmapData::PixelType)
+	?hasAlphaChannel@QRuntimePixmapData@@UBE_NXZ @ 12855 NONAME ; bool QRuntimePixmapData::hasAlphaChannel(void) const
+	?runtimeData@QRuntimePixmapData@@UBEPAVQPixmapData@@XZ @ 12856 NONAME ; class QPixmapData * QRuntimePixmapData::runtimeData(void) const
+	?toNativeType@QRuntimePixmapData@@UAEPAXW4NativeType@QPixmapData@@@Z @ 12857 NONAME ; void * QRuntimePixmapData::toNativeType(enum QPixmapData::NativeType)
+	?copy@QRasterPixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12858 NONAME ; void QRasterPixmapData::copy(class QPixmapData const *, class QRect const &)
+	?eglSwapBuffersRegion2NOK@QEgl@@YAHHHHPBH@Z @ 12859 NONAME ; int QEgl::eglSwapBuffersRegion2NOK(int, int, int, int const *)
+	?swapBuffersRegion2NOK@QEglContext@@QAE_NHPBVQRegion@@@Z @ 12860 NONAME ; bool QEglContext::swapBuffersRegion2NOK(int, class QRegion const *)
 

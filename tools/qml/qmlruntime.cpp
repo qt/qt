@@ -1384,6 +1384,8 @@ void QDeclarativeViewer::setUseGL(bool useGL)
 
         canvas->setViewport(glWidget);
     }
+#else
+    Q_UNUSED(useGL)
 #endif
 }
 

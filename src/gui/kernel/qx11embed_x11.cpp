@@ -1070,6 +1070,7 @@ QX11EmbedContainer::QX11EmbedContainer(QWidget *parent)
     d->focusProxy = new QWidget(this);
     d->focusProxy->setAttribute(Qt::WA_NativeWindow);
     d->focusProxy->setAttribute(Qt::WA_DontCreateNativeAncestors);
+    d->focusProxy->createWinId();
     d->focusProxy->setGeometry(-1, -1, 1, 1);
 
     // We need events from the window (activation status) and

@@ -66,6 +66,8 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
+Q_OPENGL_EXPORT QGLWidget* qt_gl_share_widget();
+
 class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
 {
 public:
@@ -77,7 +79,7 @@ public:
     QGLWindowSurfacePrivate* d;
 };
 
-class QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
+class Q_OPENGL_EXPORT QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
 {
     Q_OBJECT
 public:

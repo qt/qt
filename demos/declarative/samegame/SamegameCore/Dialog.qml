@@ -49,6 +49,8 @@ Rectangle {
     signal closed
     signal opened
     function forceClose() {
+        if(page.opacity == 0)
+            return; //already closed
         page.closed();
         page.opacity = 0;
     }

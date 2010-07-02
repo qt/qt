@@ -190,3 +190,108 @@ blend_8_pixels_rgb16_on_rgb16_neon:
     bx          lr
 
     .endfunc
+
+/* void qt_rotate90_16_neon(quint16 *dst, const quint16 *src, int sstride, int dstride, int count) */
+    .func qt_rotate90_16_neon
+    .global qt_rotate90_16_neon
+    /* For ELF format also set function visibility to hidden */
+#ifdef __ELF__
+    .hidden qt_rotate90_16_neon
+    .type qt_rotate90_16_neon, %function
+#endif
+qt_rotate90_16_neon:
+    push { r4-r11, lr }
+    ldr r5, [sp, #(9*4)]
+
+    /* The preloads are the key to getting good performance */
+    pld [r1]
+
+    mov r4, r5, asr #2
+    add r6, r0, r3
+    add r7, r6, r3
+
+    add r8, r7, r3
+    add r9, r8, r3
+
+    pld [r1, r2]
+
+    add r10, r9, r3
+    add r11, r10, r3
+
+    add r3, r3, r11
+    and r5, r5, #3
+
+    pld [r1, r2, lsl #1]
+
+    cmp r4, #0
+    beq .rotate90_16_tail
+
+.rotate90_16_loop:
+    vld1.16 { q8  }, [r1], r2
+
+    pld [r1, r2, lsl #1]
+
+    vld1.16 { q9  }, [r1], r2
+    vld1.16 { q10 }, [r1], r2
+    vld1.16 { q11 }, [r1], r2
+
+    pld [r1]
+
+    /* Could have used four quad-word zips instead,
+       but those take three cycles as opposed to one. */
+    vzip.16 d16, d20
+    vzip.16 d17, d21
+
+    vzip.16 d18, d22
+
+    pld [r1, r2]
+
+    vzip.16 d19, d23
+
+    vzip.16 d16, d18
+    vzip.16 d17, d19
+
+    pld [r1, r2, lsl #1]
+
+    vzip.16 d20, d22
+    vzip.16 d21, d23
+
+    vst1.16 { d23 }, [r0]!
+    vst1.16 { d21 }, [r6]!
+    vst1.16 { d19 }, [r7]!
+    vst1.16 { d17 }, [r8]!
+    vst1.16 { d22 }, [r9]!
+    vst1.16 { d20 }, [r10]!
+    vst1.16 { d18 }, [r11]!
+    vst1.16 { d16 }, [r3]!
+
+    sub r4, r4, #1
+    cmp r4, #0
+    bne .rotate90_16_loop
+    b .rotate90_16_tail
+
+.rotate90_16_tail_loop:
+    sub r5, r5, #2
+
+    vld1.16 { q8 }, [r1], r2
+    vld1.16 { q9 }, [r1], r2
+
+    vzip.16 d16, d18
+    vzip.16 d17, d19
+
+    vst1.32 { d19[1] }, [r0]!
+    vst1.32 { d19[0] }, [r6]!
+    vst1.32 { d17[1] }, [r7]!
+    vst1.32 { d17[0] }, [r8]!
+    vst1.32 { d18[1] }, [r9]!
+    vst1.32 { d18[0] }, [r10]!
+    vst1.32 { d16[1] }, [r11]!
+    vst1.32 { d16[0] }, [r3]!
+
+.rotate90_16_tail:
+    cmp r5, #0
+    bgt .rotate90_16_tail_loop
+
+    pop { r4-r11, pc }
+
+    .endfunc

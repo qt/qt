@@ -4086,7 +4086,12 @@ void QApplicationPrivate::initializeMultitouch_sys()
 {
     if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
         static const int QT_SM_DIGITIZER = 94;
-        QApplicationPrivate::HasTouchSupport = GetSystemMetrics(QT_SM_DIGITIZER);
+        int value = GetSystemMetrics(QT_SM_DIGITIZER);
+        static const int QT_NID_INTEGRATED_TOUCH = 0x01;
+        static const int QT_NID_EXTERNAL_TOUCH   = 0x02;
+        static const int QT_NID_MULTI_INPUT      = 0x40;
+        QApplicationPrivate::HasTouchSupport =
+                value & (QT_NID_INTEGRATED_TOUCH | QT_NID_EXTERNAL_TOUCH | QT_NID_MULTI_INPUT);
     }
 
     QLibrary library(QLatin1String("user32"));

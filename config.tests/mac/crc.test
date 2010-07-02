@@ -53,7 +53,7 @@ test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 cd "$OUTDIR/$TEST"
 
 $MAKE distclean >/dev/null 2>&1
-"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
+"$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 
 if [ "$VERBOSE" = "yes" ]; then
     $MAKE

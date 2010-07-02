@@ -5154,6 +5154,8 @@ if [ "$CFG_ICONV" != "no" ]; then
 	CFG_ICONV=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/sun-libiconv" "SUN libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+        CFG_ICONV=sun
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/gnu-libiconv" "GNU libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=gnu
     else
@@ -6675,6 +6677,7 @@ fi
 [ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
 [ "$CFG_CUPS" = "yes" ] && QT_CONFIG="$QT_CONFIG cups"
 [ "$CFG_ICONV" = "yes" ] && QT_CONFIG="$QT_CONFIG iconv"
+[ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
 [ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"

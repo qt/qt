@@ -443,7 +443,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
 {
     int skipAhead = 0;
     static bool in_para = false;
-
+	
     switch (atom->type()) {
     case Atom::AbstractLeft:
         break;
@@ -1066,11 +1066,11 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 }
                 sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
             }
-            out() << "<a name=\"sec-" << sectionNumber.join("-") << "\"></a>\n";
+            out() << "<a name=\"sec-" << sectionNumber.join("-") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         }
 #else
         out() << "<a name=\"" << Doc::canonicalTitle(Text::sectionHeading(atom).toString())
-              << "\"></a>\n";
+              << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
 #endif
         break;
     case Atom::SectionRight:
@@ -1339,19 +1339,19 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         }
         else {
             if (!s->members.isEmpty()) {
-                out() << "<hr />\n";
+               // out() << "<hr />\n";
                 out() << "<a name=\""
                       << registerRef((*s).name.toLower())
-                      << "\"></a>\n";
+                      << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
                 out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
                 generateSection(s->members, inner, marker, CodeMarker::Summary);
             }
             if (!s->reimpMembers.isEmpty()) {
                 QString name = QString("Reimplemented ") + (*s).name;
-                out() << "<hr />\n";
+              //  out() << "<hr />\n";
                 out() << "<a name=\""
                       << registerRef(name.toLower())
-                      << "\"></a>\n";
+                      << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
                 out() << "<h2>" << protectEnc(name) << "</h2>\n";
                 generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
             }
@@ -1378,11 +1378,11 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         out() << "</ul>\n";
     }
 
-    out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
+    out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
 
     if (!inner->doc().isEmpty()) {
-        out() << "<hr />\n"
-              << "<div class=\"descr\"/>\n" // QTBUG-9504
+        //out() << "<hr />\n"
+        out() << "<div class=\"descr\"/>\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
@@ -1392,7 +1392,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
         if (!(*s).divClass.isEmpty())
             out() << "<div class=\"" << (*s).divClass << "\"/>\n"; // QTBUG-9504
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
@@ -1518,12 +1518,12 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateStatus(fake, marker);
 
         if (moduleNamespaceMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>\n";
+            out() << "<a name=\"" << registerRef("namespaces") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
             out() << "<h2>Namespaces</h2>\n";
             generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
         }
         if (moduleClassMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("classes") << "\"></a>\n";
+            out() << "<a name=\"" << registerRef("classes") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
             out() << "<h2>Classes</h2>\n";
             generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
         }
@@ -1586,19 +1586,19 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
         s = sections.begin();
         while (s != sections.end()) {
-            out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
+            out() << "<a name=\"" << registerRef((*s).name) << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
             generateQmlSummary(*s,fake,marker);
             ++s;
         }
 
-        out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
+        out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(fake, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, fake->name());
         generateAlsoList(fake, marker);
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
 
         sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
         s = sections.begin();
@@ -1622,7 +1622,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     sections = marker->sections(fake, CodeMarker::Summary, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
-        out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
+        out() << "<a name=\"" << registerRef((*s).name) << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
         generateSectionList(*s, fake, marker, CodeMarker::Summary);
         ++s;
@@ -1630,7 +1630,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
-        out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
+        out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
@@ -1655,7 +1655,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     sections = marker->sections(fake, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
         NodeList::ConstIterator m = (*s).members.begin();
@@ -1801,9 +1801,10 @@ void HtmlGenerator::generateHeader(const QString& title,
 
     if (offlineDocs)
 	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/OfflineStyle.css\" />";
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />";
 		out() << "</head>\n";
 		out() << "<body class=\"offline narrow\" >\n"; // narrow mainly for Creator
+		out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
 	}	
     else
 		{
@@ -2039,7 +2040,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     inLink = true;
 
     out() << "<div class=\"toc\">\n";
-    out() << "<h3>Contents</h3>\n";
+    out() << "<h3><a name=\"toc\">Contents</a></h3>\n";
     sectionNumber.append("1");
     out() << "<ul>\n";
 
@@ -2252,7 +2253,7 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
 
     sections = marker->sections(inner, CodeMarker::Detailed, status);
     for (i = 0; i < sections.size(); ++i) {
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
         out() << "<h2>" << protectEnc(sections.at(i).name) << "</h2>\n";
 
         NodeList::ConstIterator m = sections.at(i).members.begin();
@@ -2621,7 +2622,7 @@ void HtmlGenerator::generateLegaleseList(const Node *relative,
     QMap<Text, const Node *>::ConstIterator it = legaleseTexts.begin();
     while (it != legaleseTexts.end()) {
         Text text = it.key();
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
         generateText(text, relative, marker);
         out() << "<ul>\n";
         do {
@@ -3828,7 +3829,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         out() << "<h3 class=\"fn\">";
         out() << "<a name=\"" + refForNode(node) + "\"></a>";
         generateSynopsis(node, relative, marker, CodeMarker::Detailed);
-        out() << "</h3>\n";
+        out() << "</h3><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
     }
 
     generateStatus(node, marker);
@@ -4413,6 +4414,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         bool twoColumn = false;
         if (section.members.first()->type() == Node::QmlProperty) {
             twoColumn = (count >= 5);
+            twoColumn = false;
         }
         if (twoColumn)
             out() << "<table class=\"qmlsummary\">\n";
