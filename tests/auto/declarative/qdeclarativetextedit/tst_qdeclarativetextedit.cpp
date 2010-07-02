@@ -55,6 +55,7 @@
 #include <QDeclarativeView>
 #include <QStyle>
 #include <QInputContext>
+#include <private/qapplication_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -353,7 +354,9 @@ void tst_qdeclarativetextedit::alignments()
 
 #ifdef Q_WS_X11
     // Font-specific, but not likely platform-specific, so only test on one platform
-    QCOMPARE(actual,expect);
+    if (QApplicationPrivate::graphics_system_name == "raster" || QApplicationPrivate::graphics_system_name == "") {
+        QCOMPARE(actual,expect);
+    }
 #endif
 }
 

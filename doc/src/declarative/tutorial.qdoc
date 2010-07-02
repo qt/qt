@@ -101,11 +101,11 @@ The \c font.pointSize and \c font.bold properties are related to fonts and use t
 
 \section2 Viewing the example
 
-To view what you have created, run the \l{Qt Declarative UI Runtime}{qml} tool (located in the \c bin directory) with your filename as the first argument.
+To view what you have created, run the \l{QML Viewer} tool (located in the \c bin directory) with your filename as the first argument.
 For example, to run the provided completed Tutorial 1 example from the install location, you would type:
 
 \code
-bin/qml $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
+bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 \endcode
 */
 

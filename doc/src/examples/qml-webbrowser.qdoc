@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \title Web Browser
+    \title QML Web Browser
     \example demos/declarative/webbrowser
 
     This demo shows how to write a simple web browser in QML by combining the
