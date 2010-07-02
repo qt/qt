@@ -67,7 +67,6 @@ extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_OS_SYMBIAN)
 #   include "qfiledialog.h"
 #   include "qfontdialog.h"
-#   include "qcolordialog.h"
 #   include "qwizard.h"
 #   include "private/qt_s60_p.h"
 #endif
@@ -532,7 +531,7 @@ int QDialog::exec()
     bool showSystemDialogFullScreen = false;
 #ifdef Q_OS_SYMBIAN
     if (qobject_cast<QFileDialog *>(this) || qobject_cast<QFontDialog *>(this) ||
-        qobject_cast<QColorDialog *>(this) || qobject_cast<QWizard *>(this)) {
+        qobject_cast<QWizard *>(this)) {
         showSystemDialogFullScreen = true;
     }
 #endif // Q_OS_SYMBIAN
