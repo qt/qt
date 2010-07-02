@@ -40,14 +40,14 @@ contains(QT_CONFIG, system-mng) {
         ../../../3rdparty/libmng/libmng_trace.c \
         ../../../3rdparty/libmng/libmng_write.c \
         ../../../3rdparty/libmng/libmng_zlib.c
-}
 
-contains(QT_CONFIG, system-zlib) {
-    symbian:LIBS_PRIVATE += -llibz
-    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
-    else:LIBS += zdll.lib
-} else {
-    INCLUDEPATH +=  ../../../3rdparty/zlib
+    contains(QT_CONFIG, system-zlib) {
+        symbian:LIBS_PRIVATE += -llibz
+        else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+        else:LIBS += zdll.lib
+    } else {
+        INCLUDEPATH +=  ../../../3rdparty/zlib
+    }
 }
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats

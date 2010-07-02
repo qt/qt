@@ -10,11 +10,6 @@ SOURCES += main.cpp \
 contains(QT_CONFIG, system-tiff) {
         unix|win32-g++*:LIBS += -ltiff
         win32:!win32-g++*:LIBS += libtiff.lib
-
-        contains(QT_CONFIG, system-jpeg) {
-                unix|win32-g++*:LIBS += -ljpeg
-                win32:!win32-g++*:LIBS += libjpeg.lib
-        }
 } else {
     INCLUDEPATH += ../../../3rdparty/libtiff/libtiff
     SOURCES  += \
@@ -65,14 +60,14 @@ contains(QT_CONFIG, system-tiff) {
         symbian: {
             SOURCES += ../../../3rdparty/libtiff/port/lfind.c
         }
-}
 
-contains(QT_CONFIG, system-zlib) {
-    symbian:LIBS_PRIVATE += -llibz
-    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
-    else:LIBS += zdll.lib
-} else {
-    INCLUDEPATH +=  ../../../3rdparty/zlib
+    contains(QT_CONFIG, system-zlib) {
+        symbian:LIBS_PRIVATE += -llibz
+        else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
+        else:LIBS += zdll.lib
+    } else {
+        INCLUDEPATH +=  ../../../3rdparty/zlib
+    }
 }
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats
