@@ -100,8 +100,6 @@ void QDeclarativeTextInput::setText(const QString &s)
     if(s == text())
         return;
     d->control->setText(s);
-    d->updateHorizontalScroll();
-    //emit textChanged();
 }
 
 /*!
@@ -550,9 +548,9 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
         return;
 
     d->autoScroll = b;
-    d->updateHorizontalScroll();
     //We need to repaint so that the scrolling is taking into account.
     updateSize(true);
+    d->updateHorizontalScroll();
     emit autoScrollChanged(d->autoScroll);
 }
 
@@ -1020,27 +1018,43 @@ bool QDeclarativeTextInput::event(QEvent* ev)
 void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
-    if (newGeometry.width() != oldGeometry.width())
+    Q_D(QDeclarativeTextInput);
+    if (newGeometry.width() != oldGeometry.width()) {
         updateSize();
+        d->updateHorizontalScroll();
+    }
     QDeclarativePaintedItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+int QDeclarativeTextInputPrivate::calculateTextWidth()
+{
+    int cursorWidth = control->cursorWidth();
+    if(cursorItem)
+        cursorWidth = cursorItem->width();
+
+    QFontMetrics fm = QFontMetrics(font);
+    int leftBearing = 0;
+    int rightBearing = 0;
+    if (!control->text().isEmpty()) {
+        leftBearing = qMax(0, -fm.leftBearing(control->text().at(0)));
+        rightBearing = qMax(0, -fm.rightBearing(control->text().at(control->text().count()-1)));
+    }
+
+    return qRound(control->naturalTextWidth()) + qMax(cursorWidth, leftBearing) + rightBearing;
 }
 
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    QFontMetrics fm = QFontMetrics(font);
     int cix = qRound(control->cursorToX());
     QRect br(q->boundingRect().toRect());
-    //###Is this using bearing appropriately?
-    int minLB = qMax(0, -fm.minLeftBearing());
-    int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = qRound(control->naturalTextWidth()) + 1 + minRB;
+    int widthUsed = calculateTextWidth();
     if (autoScroll) {
-        if ((minLB + widthUsed) <=  br.width()) {
+        if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
             switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
-                hscroll = widthUsed - br.width() + 1;
+                hscroll = widthUsed - br.width() - 1;
                 break;
             case Qt::AlignHCenter:
                 hscroll = (widthUsed - br.width()) / 2;
@@ -1050,7 +1064,6 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
                 hscroll = 0;
                 break;
             }
-            hscroll -= minLB;
         } else if (cix - hscroll >= br.width()) {
             // text doesn't fit, cursor is to the right of br (scroll right)
             hscroll = cix - br.width() + 1;
@@ -1070,7 +1083,6 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
         } else {
             hscroll = 0;
         }
-        hscroll -= minLB;
     }
 }
 
@@ -1095,7 +1107,6 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
         offset = QPoint(d->hscroll, 0);
     }
     d->control->draw(p, offset, r, flags);
-
     p->restore();
 }
 
@@ -1448,8 +1459,8 @@ void QDeclarativeTextInput::selectionChanged()
 void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
-    d->updateHorizontalScroll();
     updateSize();
+    d->updateHorizontalScroll();
     updateMicroFocus();
     emit textChanged();
     emit displayTextChanged();
@@ -1475,10 +1486,7 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
     int w = width();
     int h = height();
     setImplicitHeight(d->control->height());
-    int cursorWidth = d->control->cursorWidth();
-    if(d->cursorItem)
-        cursorWidth = d->cursorItem->width();
-    setImplicitWidth(d->control->naturalTextWidth() + cursorWidth);
+    setImplicitWidth(d->calculateTextWidth());
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
         clearCache();
