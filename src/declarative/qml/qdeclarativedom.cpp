@@ -493,7 +493,7 @@ int QDeclarativeDomDynamicProperty::propertyType() const
                 return QMetaType::type("int");
 
             case QDeclarativeParser::Object::DynamicProperty::Real:
-                return QMetaType::type("double");
+                return sizeof(qreal) == sizeof(double) ? QMetaType::type("double") : QMetaType::type("float");
 
             case QDeclarativeParser::Object::DynamicProperty::String:
                 return QMetaType::type("QString");
