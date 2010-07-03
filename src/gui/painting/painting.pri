@@ -402,11 +402,4 @@ neon:*-g++* {
     QMAKE_EXTRA_COMPILERS += neon_compiler
 }
 
-contains(QT_CONFIG, zlib) {
-    INCLUDEPATH += ../3rdparty/zlib
-} else:!contains(QT_CONFIG, no-zlib) {
-    symbian:LIBS_PRIVATE += -llibz
-    else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
-    else:LIBS += zdll.lib
-}
-
+include($$PWD/../../3rdparty/zlib_dependency.pri)
