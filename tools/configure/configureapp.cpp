@@ -3033,10 +3033,10 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_GTK"] != "yes")         qconfigList += "QT_NO_STYLE_GTK";
 
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
-        if (dictionary["PNG"] == "no")               qconfigList += "QT_NO_IMAGEFORMAT_PNG";
-        if (dictionary["MNG"] == "no")               qconfigList += "QT_NO_IMAGEFORMAT_MNG";
-        if (dictionary["JPEG"] == "no")              qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
-        if (dictionary["TIFF"] == "no")              qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
+        if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
+        if (dictionary["MNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_MNG";
+        if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
+        if (dictionary["TIFF"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
         if (dictionary["ZLIB"] == "no") {
             qconfigList += "QT_NO_ZLIB";
             qconfigList += "QT_NO_COMPRESS";
