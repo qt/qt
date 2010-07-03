@@ -1843,7 +1843,7 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
             const QString msec_s(QLatin1String("0.") + s.mid(9, 4));
             const float msec(msec_s.toFloat(&ok));
             if (!ok)
-                return QTime();
+                return QTime(hour, minute, second, 0);
             return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
         }
     }
