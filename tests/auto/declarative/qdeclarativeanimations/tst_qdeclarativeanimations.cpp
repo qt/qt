@@ -310,7 +310,7 @@ void tst_qdeclarativeanimations::badTypes()
         c.create();
 
         QVERIFY(c.errors().count() == 1);
-        QCOMPARE(c.errors().at(0).description(), QLatin1String("Invalid property assignment: double expected"));
+        QCOMPARE(c.errors().at(0).description(), QLatin1String("Invalid property assignment: number expected"));
     }
 
     //make sure we get a compiler error

@@ -35,7 +35,7 @@ Contains all the properties of the JavaScript global object, plus:
 
 \section1 Qt Object
 
-The \l{Qt}{Qt object} provides useful enums and functions from Qt, for use in all QML
+The \l{QmlGlobalQtObject}{Qt object} provides useful enums and functions from Qt, for use in all QML
 files. 
 
 \section1 XMLHttpRequest
