@@ -23,7 +23,8 @@ win32-msvc* {
 
 PRECOMPILED_HEADER = configure_pch.h
 
-INCPATH += $$QT_SOURCE_TREE/src/corelib/arch/generic \
+INCLUDEPATH += \
+           $$QT_SOURCE_TREE/src/corelib/arch/generic \
            $$QT_SOURCE_TREE/src/corelib/global \
            $$QT_BUILD_TREE/include \
            $$QT_BUILD_TREE/include/QtCore \
