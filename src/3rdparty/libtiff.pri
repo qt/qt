@@ -37,7 +37,7 @@ SOURCES += \
 wince*:       SOURCES += $$PWD/../corelib/kernel/qfunctions_wince.cpp \
                          $$PWD/libtiff/libtiff/tif_wince.c
 win32:        SOURCES += $$PWD/libtiff/libtiff/tif_win32.c
-else:unix:    SOURCES += $$PWD/libtiff/libtiff/tif_unix.c
-else:symbian: SOURCES += $$PWD/libtiff/port/lfind.c
+else:         SOURCES += $$PWD/libtiff/libtiff/tif_unix.c
+symbian:      SOURCES += $$PWD/libtiff/port/lfind.c
 
 include($$PWD/zlib_dependency.pri)
