@@ -346,6 +346,7 @@ public:
     int maximumBlockCount;
     uint needsEnsureMaximumBlockCount : 1;
     uint inContentsChange : 1;
+    uint inRemove : 1;
     QSizeF pageSize;
     QString title;
     QString url;

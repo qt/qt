@@ -116,9 +116,9 @@ Now we can build and run the application. Try it yourself with the code in Qt's 
 \example declarative/tutorials/extending/chapter1-basics
 
 At the moment, the \c app.qml is run from within a C++ application.
-This may seem odd if you're used to running QML files with the standard \c qml tool.
+This may seem odd if you're used to running QML files with the \l {QML Viewer}.
 Later on, we'll show how to create a plugin so that you can run \c app.qml using the 
-\c qml tool instead.
+\l {QML Viewer} instead.
 
 */
 
@@ -301,8 +301,8 @@ Try it out with the code in Qt's \c examples/tutorials/extending/chapter4-custom
 Currently the \c Musician and \c Instrument types are used by \c app.qml,
 which is displayed using a QDeclarativeView in a C++ application. An alternative
 way to use our QML extension is to create a plugin library to make it available
-to the QML engine. This means we could load \c app.qml using the standard \c qml tool
-(or some other QML runtime application) instead of writing a \c main.cpp file and
+to the QML engine. This means we could load \c app.qml using the \l {QML Viewer}
+(or some other QML \l{Qt Declarative UI Runtime}{runtime} application) instead of writing a \c main.cpp file and
 loading our own C++ application.
 
 To create a plugin library, we need:
@@ -337,11 +337,13 @@ of the example project) can be found in the "lib" subdirectory:
 \quotefile declarative/tutorials/extending/chapter5-plugins/qmldir
 
 Now we have a plugin, and instead of having a main.cpp and an executable, we can build
-the project and then run the QML file directly using the \c qml tool:
+the project and then load the QML file in the \l {QML Viewer}:
 
 \code
-    qml app.qml
+    qmlviewer app.qml
 \endcode
+
+(On Mac OS X, you can launch the "QMLViewer" application instead.)
 
 Notice the "import Music 1.0" statement has disappeared from \c app.qml. This is
 because the \c qmldir file is in the same directory as \c app.qml: this is equivalent to

@@ -611,7 +611,7 @@ void QDeclarativeView::timerEvent(QTimerEvent* e)
     }
 }
 
-/*! \reimp */
+/*! \internal */
 bool QDeclarativeView::eventFilter(QObject *watched, QEvent *e)
 {
     Q_D(QDeclarativeView);
