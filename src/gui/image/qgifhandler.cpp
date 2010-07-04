@@ -44,7 +44,7 @@
 **
 ****************************************************************************/
 
-#include "qgifhandler.h"
+#include "qgifhandler_p.h"
 
 #include <qimage.h>
 #include <qiodevice.h>

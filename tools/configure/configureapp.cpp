@@ -581,17 +581,13 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
-        else if( configCmdLine.at(i) == "-qt-gif" )
-            dictionary[ "GIF" ] = "auto";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";
             dictionary[ "LIBTIFF" ] = "no";
         } else if (configCmdLine.at(i) == "-qt-libtiff") {
-            dictionary[ "TIFF" ] = "plugin";
             dictionary[ "LIBTIFF" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-libtiff") {
-              dictionary[ "TIFF" ] = "plugin";
             dictionary[ "LIBTIFF" ] = "system";
         }
 
@@ -599,10 +595,8 @@ void Configure::parseCmdLine()
             dictionary[ "JPEG" ] = "no";
             dictionary[ "LIBJPEG" ] = "no";
         } else if (configCmdLine.at(i) == "-qt-libjpeg") {
-            dictionary[ "JPEG" ] = "plugin";
             dictionary[ "LIBJPEG" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-libjpeg") {
-            dictionary[ "JPEG" ] = "plugin";
             dictionary[ "LIBJPEG" ] = "system";
         }
 
@@ -610,10 +604,8 @@ void Configure::parseCmdLine()
             dictionary[ "PNG" ] = "no";
             dictionary[ "LIBPNG" ] = "no";
         } else if (configCmdLine.at(i) == "-qt-libpng") {
-            dictionary[ "PNG" ] = "qt";
             dictionary[ "LIBPNG" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-libpng") {
-            dictionary[ "PNG" ] = "qt";
             dictionary[ "LIBPNG" ] = "system";
         }
 
@@ -621,10 +613,8 @@ void Configure::parseCmdLine()
             dictionary[ "MNG" ] = "no";
             dictionary[ "LIBMNG" ] = "no";
         } else if (configCmdLine.at(i) == "-qt-libmng") {
-            dictionary[ "MNG" ] = "qt";
             dictionary[ "LIBMNG" ] = "qt";
         } else if (configCmdLine.at(i) == "-system-libmng") {
-            dictionary[ "MNG" ] = "qt";
             dictionary[ "LIBMNG" ] = "system";
         }
 
@@ -1750,22 +1740,22 @@ bool Configure::displayHelp()
         desc("ZLIB", "qt",      "-qt-zlib",             "Use the zlib bundled with Qt.");
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
-        desc("GIF", "no",       "-no-gif",              "Do not compile the plugin for GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile the plugin for GIF reading support.\nSee also src/plugins/imageformats/gif/qgifhandler.h\n");
+        desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
+        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler.h\n");
 
-        desc("LIBPNG", "no",    "-no-libpng",           "Do not compile in PNG support.");
+        desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
         desc("LIBPNG", "system","-system-libpng",       "Use libpng from the operating system.\nSee http://www.libpng.org/pub/png\n");
 
-        desc("LIBMNG", "no",    "-no-libmng",           "Do not compile in MNG support.");
+        desc("LIBMNG", "no",    "-no-libmng",           "Do not compile MNG support.");
         desc("LIBMNG", "qt",    "-qt-libmng",           "Use the libmng bundled with Qt.");
         desc("LIBMNG", "system","-system-libmng",       "Use libmng from the operating system.\nSee See http://www.libmng.com\n");
 
-        desc("LIBTIFF", "no",    "-no-libtiff",         "Do not compile the plugin for TIFF support.");
+        desc("LIBTIFF", "no",    "-no-libtiff",         "Do not compile TIFF support.");
         desc("LIBTIFF", "qt",    "-qt-libtiff",         "Use the libtiff bundled with Qt.");
         desc("LIBTIFF", "system","-system-libtiff",     "Use libtiff from the operating system.\nSee http://www.libtiff.org\n");
 
-        desc("LIBJPEG", "no",    "-no-libjpeg",         "Do not compile the plugin for JPEG support.");
+        desc("LIBJPEG", "no",    "-no-libjpeg",         "Do not compile JPEG support.");
         desc("LIBJPEG", "qt",    "-qt-libjpeg",         "Use the libjpeg bundled with Qt.");
         desc("LIBJPEG", "system","-system-libjpeg",     "Use libjpeg from the operating system.\nSee http://www.ijg.org\n");
 
@@ -1957,21 +1947,28 @@ QString Configure::defaultTo(const QString &option)
         || option == "LIBTIFF")
         return "system";
 
-    // We want PNG built-in
+    // PNG is always built-in, never a plugin
     if (option == "PNG")
-        return "qt";
+        return "yes";
 
-    // The JPEG image library can only be a plugin
-    if (option == "JPEG"
-        || option == "MNG" || option == "TIFF")
-        return "plugin";
-
-    // GIF off by default
-    if (option == "GIF") {
-        if (dictionary["SHARED"] == "yes")
+    // These database drivers and image formats can be built-in or plugins.
+    // Prefer plugins when Qt is shared.
+    if (dictionary[ "SHARED" ] == "yes") {
+        if (option == "SQL_MYSQL"
+            || option == "SQL_MYSQL"
+            || option == "SQL_ODBC"
+            || option == "SQL_OCI"
+            || option == "SQL_PSQL"
+            || option == "SQL_TDS"
+            || option == "SQL_DB2"
+            || option == "SQL_SQLITE"
+            || option == "SQL_SQLITE2"
+            || option == "SQL_IBASE"
+            || option == "JPEG"
+            || option == "MNG"
+            || option == "TIFF"
+            || option == "GIF")
             return "plugin";
-        else
-            return "yes";
     }
 
     // By default we do not want to compile OCI driver when compiling with
@@ -1980,18 +1977,6 @@ QString Configure::defaultTo(const QString &option)
     if (dictionary["QMAKESPEC"].endsWith("-g++")
         && option == "SQL_OCI")
         return "no";
-
-    if (option == "SQL_MYSQL"
-        || option == "SQL_MYSQL"
-        || option == "SQL_ODBC"
-        || option == "SQL_OCI"
-        || option == "SQL_PSQL"
-        || option == "SQL_TDS"
-        || option == "SQL_DB2"
-        || option == "SQL_SQLITE"
-        || option == "SQL_SQLITE2"
-        || option == "SQL_IBASE")
-        return "plugin";
 
     if (option == "SYNCQT"
         && (!QFile::exists(sourcePath + "/bin/syncqt") ||
@@ -2469,14 +2454,14 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "PNG" ] == "no")
         qtConfig += "no-png";
-    else if( dictionary[ "PNG" ] == "qt" )
+    else if (dictionary[ "PNG" ] == "yes")
         qtConfig += "png";
     if (dictionary[ "LIBPNG" ] == "system")
         qtConfig += "system-png";
 
     if (dictionary[ "MNG" ] == "no")
         qtConfig += "no-mng";
-    else if( dictionary[ "MNG" ] == "qt" )
+    else if (dictionary[ "MNG" ] == "yes")
         qtConfig += "mng";
     if (dictionary[ "LIBMNG" ] == "system")
         qtConfig += "system-mng";
@@ -3048,10 +3033,10 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_GTK"] != "yes")         qconfigList += "QT_NO_STYLE_GTK";
 
         if (dictionary["GIF"] == "yes")              qconfigList += "QT_BUILTIN_GIF_READER=1";
-        if (dictionary["PNG"] == "no")               qconfigList += "QT_NO_IMAGEFORMAT_PNG";
-        if (dictionary["MNG"] == "no")               qconfigList += "QT_NO_IMAGEFORMAT_MNG";
-        if (dictionary["JPEG"] == "no")              qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
-        if (dictionary["TIFF"] == "no")              qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
+        if (dictionary["PNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_PNG";
+        if (dictionary["MNG"] != "yes")              qconfigList += "QT_NO_IMAGEFORMAT_MNG";
+        if (dictionary["JPEG"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_JPEG";
+        if (dictionary["TIFF"] != "yes")             qconfigList += "QT_NO_IMAGEFORMAT_TIFF";
         if (dictionary["ZLIB"] == "no") {
             qconfigList += "QT_NO_ZLIB";
             qconfigList += "QT_NO_COMPRESS";

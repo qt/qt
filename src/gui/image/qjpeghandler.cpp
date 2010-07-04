@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qjpeghandler.h"
+#include "qjpeghandler_p.h"
 
 #include <qimage.h>
 #include <qvariant.h>

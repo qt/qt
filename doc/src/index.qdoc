@@ -70,15 +70,15 @@
 		  <li><a href="declarativeui.html">Device UI's &amp; Qt Quick</a></li>
 		  <li><a href="qt-gui-concepts.html">Desktop UI components</a></li>
 		  <li><a href="platform-specific.html">Platform-specific info</a></li>
-		  <li><a href="qt-graphics.html">Graphics, Painting  &amp Printing</a></li>
-                  <li><a href="qt-network.html">Input/Output &amp networking</a></li>
+		  <li><a href="qt-graphics.html">Graphics, Painting &amp; Printing</a></li>
+                  <li><a href="qt-network.html">Input/Output &amp; networking</a></li>
                 </ul>
               </div>
               <div class="sectionlist">
                 <ul>
                   <li><a href="model-view-programming.html">Model/View programming</a></li>
                   <li><a href="technology-apis.html">Qt API's for other technologies</a></li>
-                  <li><a href="best-practices.html">Qt How-to's &amp best practices</a></li>
+                  <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
                   <li><a href="developing-with-qt.html">Cross-platform development</a></li>
                 </ul>
               </div>
