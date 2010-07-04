@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmnghandler.h"
+#include "qmnghandler_p.h"
 
 #include "qimage.h"
 #include "qvariant.h"

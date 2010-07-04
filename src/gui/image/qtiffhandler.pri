@@ -1,6 +1,6 @@
 # common to plugin and built-in forms
 INCLUDEPATH *= $$PWD
-HEADERS += $$PWD/qtiffhandler.h
+HEADERS += $$PWD/qtiffhandler_p.h
 SOURCES += $$PWD/qtiffhandler.cpp
 contains(QT_CONFIG, system-tiff) {
         if(unix|win32-g++*):LIBS += -ltiff

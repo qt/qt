@@ -142,16 +142,16 @@
 #include <private/qpnghandler_p.h>
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
-#include <qjpeghandler.h>
+#include <private/qjpeghandler_p.h>
 #endif
 #ifndef QT_NO_IMAGEFORMAT_MNG
-#include <qmnghandler.h>
+#include <private/qmnghandler_p.h>
 #endif
 #ifndef QT_NO_IMAGEFORMAT_TIFF
-#include <qtiffhandler.h>
+#include <private/qtiffhandler_p.h>
 #endif
 #ifdef QT_BUILTIN_GIF_READER
-#include <qgifhandler.h>
+#include <private/qgifhandler_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
