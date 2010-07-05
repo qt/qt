@@ -205,7 +205,8 @@ x11|embedded {
 if(mmx|3dnow|sse|sse2|iwmmxt) {
     HEADERS += painting/qdrawhelper_x86_p.h \
                painting/qdrawhelper_mmx_p.h \
-               painting/qdrawhelper_sse_p.h
+               painting/qdrawhelper_sse_p.h \
+               painting/qdrawingprimitive_sse2_p.h
     MMX_SOURCES += painting/qdrawhelper_mmx.cpp
     MMX3DNOW_SOURCES += painting/qdrawhelper_mmx3dnow.cpp
     SSE3DNOW_SOURCES += painting/qdrawhelper_sse3dnow.cpp
