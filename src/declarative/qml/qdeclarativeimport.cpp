@@ -445,11 +445,23 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
 
     if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
         QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
+        int lowest_maj = INT_MAX;
+        int lowest_min = INT_MAX;
+        int highest_maj = INT_MIN;
+        int highest_min = INT_MIN;
         for (; it != qmldircomponents.end(); ++it) {
-            if (it->majorVersion > vmaj || (it->majorVersion == vmaj && it->minorVersion >= vmin))
-                break;
+            if (it->majorVersion > highest_maj || (it->majorVersion == highest_maj && it->minorVersion > highest_min)) {
+                highest_maj = it->majorVersion;
+                highest_min = it->minorVersion;
+            }
+            if (it->majorVersion < lowest_maj || (it->majorVersion == lowest_maj && it->minorVersion < lowest_min)) {
+                lowest_maj = it->majorVersion;
+                lowest_min = it->minorVersion;
+            }
         }
-        if (it == qmldircomponents.end()) {
+        if (lowest_maj > vmaj || (lowest_maj == vmaj && lowest_min > vmin)
+            || highest_maj < vmaj || (highest_maj == vmaj && highest_min < vmin))
+        {
             *errorString = QDeclarativeImportDatabase::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
             return false;
         }

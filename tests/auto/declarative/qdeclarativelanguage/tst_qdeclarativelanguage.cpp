@@ -1476,12 +1476,12 @@ void tst_qdeclarativelanguage::importsInstalled_data()
 
     // import installed
     QTest::newRow("installed import 0")
-        << "import com.nokia.installedtest 0.0\n"
+        << "import com.nokia.installedtest0 0.0\n"
            "InstalledTestTP {}"
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("installed import 0 as TP")
-        << "import com.nokia.installedtest 0.0 as TP\n"
+        << "import com.nokia.installedtest0 0.0 as TP\n"
            "TP.InstalledTestTP {}"
         << "QDeclarativeRectangle"
         << "";
@@ -1500,6 +1500,11 @@ void tst_qdeclarativelanguage::importsInstalled_data()
            "InstalledTest {}"
         << "QDeclarativeText"
         << "";
+    QTest::newRow("installed import minor version not available") // QTBUG-11936
+        << "import com.nokia.installedtest 0.1\n"
+           "InstalledTest {}"
+        << ""
+        << "module \"com.nokia.installedtest\" version 0.1 is not installed";
     QTest::newRow("installed import minor version not available") // QTBUG-9627
         << "import com.nokia.installedtest 1.10\n"
            "InstalledTest {}"

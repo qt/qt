@@ -103,9 +103,16 @@ the \c qmldir file. Types which you do not wish to export to users of your modul
 may be marked with the \c internal keyword: \c internal <TypeName> <File>.
 
 The same type can be provided by different files in different versions, in which
-case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
+case later versions (eg. 1.2) must precede earlier versions (eg. 1.0),
 since the \e first name-version match is used and a request for a version of a type
-can be fulfilled by one defined in an earlier version of the module.
+can be fulfilled by one defined in an earlier version of the module. If a user attempts
+to import a version earlier than the earliest provided or later than the latest provided,
+an error results, but if the user imports a version within the range of versions provided,
+even if no type is specific to that version, no error results.
+
+A single module, in all versions, may only be provided in a single directory (and a single \c qmldir file).
+If multiple are provided, only the first in the search path will be used (regardless of whether other versions
+are provided by directories later in the search path).
 
 Installed and remote files without a namespace \e must be referred to by version information described above,
 local files \e may have it.
