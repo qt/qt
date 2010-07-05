@@ -171,7 +171,8 @@ const Node *Tree::findNode(const QStringList &path,
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
                     || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams))
-            return node;
+            if (node->subType() != Node::QmlPropertyGroup)
+                return node;
         relative = relative->parent();
     } while (relative);
 

@@ -515,9 +515,15 @@ void QSslSocketPrivate::ensureInitialized()
 #elif defined(Q_OS_WIN)
     HINSTANCE hLib = LoadLibraryW(L"Crypt32");
     if (hLib) {
+#if defined(Q_OS_WINCE)
+        ptrCertOpenSystemStoreW = (PtrCertOpenSystemStoreW)GetProcAddress(hLib, L"CertOpenStore");
+        ptrCertFindCertificateInStore = (PtrCertFindCertificateInStore)GetProcAddress(hLib, L"CertFindCertificateInStore");
+        ptrCertCloseStore = (PtrCertCloseStore)GetProcAddress(hLib, L"CertCloseStore");
+#else
         ptrCertOpenSystemStoreW = (PtrCertOpenSystemStoreW)GetProcAddress(hLib, "CertOpenSystemStoreW");
         ptrCertFindCertificateInStore = (PtrCertFindCertificateInStore)GetProcAddress(hLib, "CertFindCertificateInStore");
         ptrCertCloseStore = (PtrCertCloseStore)GetProcAddress(hLib, "CertCloseStore");
+#endif
         if (!ptrCertOpenSystemStoreW || !ptrCertFindCertificateInStore || !ptrCertCloseStore)
             qWarning("could not resolve symbols in crypt32 library"); // should never happen
     } else {
@@ -601,7 +607,15 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 #elif defined(Q_OS_WIN)
     if (ptrCertOpenSystemStoreW && ptrCertFindCertificateInStore && ptrCertCloseStore) {
         HCERTSTORE hSystemStore;
+#if defined(Q_OS_WINCE)
+        hSystemStore = ptrCertOpenSystemStoreW(CERT_STORE_PROV_SYSTEM_W,
+                                               0,
+                                               0,
+                                               CERT_STORE_NO_CRYPT_RELEASE_FLAG|CERT_SYSTEM_STORE_CURRENT_USER,
+                                               L"ROOT");
+#else
         hSystemStore = ptrCertOpenSystemStoreW(0, L"ROOT");
+#endif
         if(hSystemStore) {
             PCCERT_CONTEXT pc = NULL;
             while(1) {

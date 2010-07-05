@@ -239,7 +239,7 @@
         width: 158px;
         height: 19px;
         padding: 0;
-        border: none;
+        border: 0px;
         outline: none;
         font: 13px/1.2 Verdana;
     }
@@ -328,13 +328,18 @@
     {
         background: url(../images/box_bg.png) repeat-x 0 bottom;
     }
-	 .sidebar .box ul li.menuAlert
+	 .sidebar .box ul li.noMatch
     {
         background: none;
-		color:gray;
+		color:#FF2A00;
 		font-style:italic;
     }
-	
+	 .sidebar .box ul li.hit
+    {
+        background: none;
+		color:#AAD2F0;
+		font-style:italic;
+    }	
 
     .wrap
     {
@@ -857,7 +862,7 @@
         position: fixed;
         top: 100px;
         left: 33%;
-        height: 190px;
+        height: 230px;
         width: 400px;
         padding: 5px;
         background-color: #e6e7e8;
@@ -881,12 +886,25 @@
         height: 120px;
         margin: 0px 25px 10px 15px;
     }
+	#noteHead
+	{
+		font-weight:bold;
+		padding:10px 10px 10px 20px;
+	}
     #feedsubmit
     {
         display: inline;
         float: right;
         margin: 4px 32px 0 0;
     }
+	
+	.note
+	{
+		font-size:7pt;
+		padding-bottom:3px;
+		padding-left:20px;
+	}
+	
     #blurpage
     {
         display: none;
@@ -1233,12 +1251,19 @@ pre.highlightedCode {
 	.navTop{ 
 	float:right;
 	padding-right:5px;
-	padding-top:15px;
+	margin-top:15px;
 	}
 	
 	.wrap .content .toc h3{
-	border-bottom:none;
+	border-bottom:0px;
+	margin-top:0px;
 	}
+	
+	.wrap .content .toc h3  a:hover{
+	color:#00732F;
+	text-decoration:none;
+	}
+	
 /* end of screen media */
 
 /* start of print media */

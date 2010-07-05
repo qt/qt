@@ -65,20 +65,22 @@ template<typename T>
 int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 \endcode
 
-Calling qmlRegisterType() registers the C++ type \a T with the QML system, and makes it available in QML
-under the name \a qmlName in library \a uri version \a versionMajor.versionMinor.
-The \a qmlName can be the same as the C++ type name.
+Calling qmlRegisterType() registers the C++ type \a T with the QML
+system, and makes it available in QML under the name \a qmlName in
+library \a uri version \a versionMajor.versionMinor.  The \a qmlName
+can be the same as the C++ type name.
 
 Type \a T must be a concrete type that inherits QObject and has a default
 constructor.
+
 \endquotation
 
-Types can be registered by libraries (such as Qt does), application code,
-or by plugins (see QDeclarativeExtensionPlugin).
+Types can be registered by libraries, application code, or by plugins
+(see QDeclarativeExtensionPlugin).
 
-Once registered, all of the \l {Qt's Property System}{properties} of a supported
-type are available for use within QML.  QML has intrinsic support for properties
-of these types:
+Once registered, all \l {Qt's Property System}{properties} of the
+supported types are available in QML.  QML has intrinsic support for
+properties of these types:
 
 \list
 \o bool
@@ -94,9 +96,14 @@ of these types:
 \o QVariant
 \endlist
 
-QML is typesafe.  Attempting to assign an invalid value to a property will
-generate an error.  For example, assuming the name property of the \c Person
-element had a type of QString, this would cause an error:
+When a property of a supported type is added to a C++ class, in a QML
+element based on the C++ class, a \e{value-changed} signal handler
+will be available. See \l{Signal Support} below.
+
+QML is typesafe.  Attempting to assign an invalid value to a property
+will generate an error.  For example, assuming the \e{name} property
+of the \c Person element had a type of QString, this would cause an
+error:
 
 \code
 Person {
@@ -412,7 +419,28 @@ value will not be accessible from script.
 implement the onPartyStarted signal property.
 
 If you want to use signals from items not created in QML, you can access their
-signals with the \l {Connections} element.
+signals with the \l {Connections} element.
+
+Additionally, if a property is added to a C++ class, all QML elements
+based on that C++ class will have a \e{value-changed} signal handler
+for that property. The name of the signal handler is \e{on<Property
+name>Changed}, with the first letter of the property name being upper
+cased. 
+
+\note If the NOTIFY signal for the added property is not simply
+\c{<property_name>Changed()}, then you will get two equivalent signal
+handlers, one because of the signal, one because of the property. For
+example, if the property \c{test_property} with NOTIFY signal
+\c{testPropChanged()} is added to a C++ class, then QML elements based
+on that C++ class will have two signal handlers:
+\c{onTest_propertyChanged} because of the property, and
+\c{onTestPropChanged} because of the NOTIFY signal. For clarity, we
+suggest that for properties exposed to QML in this way, the name of
+the NOTIFY signal should be just \c{<property_name>Changed()}, so that
+there will be just one signal handler in QML and one naming
+convention used.  
+
+See also \l {Extending types from QML}.
 
 \section1 Property Value Sources
 
@@ -702,6 +730,24 @@ controls the color of the inner rectangle.
             height: parent.height - 10
             color: innerColor
         }
+    }
+\endcode
+
+Adding a property to an item automatically adds a \e{value-changed}
+signal handler to the item. The signal hander is named
+\c{on<Property_name>Changed}, with the first letter of the property
+name being upper case.
+
+Signal handlers can have arbitrary JavaScript code assigned. The following 
+example shows how to output to a text console a new value of property 
+\c{innerColor} whenever the value of this property changes.
+
+\code
+    Rectangle {
+        id: rect
+        property color innerColor: "black"
+
+        onInnerColorChanged: { console.log(rect.innerColor); }
     }
 \endcode
 
