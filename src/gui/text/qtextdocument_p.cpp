@@ -205,6 +205,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     undoEnabled = true;
     inContentsChange = false;
+    inRemove = false;
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
@@ -669,7 +670,10 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
 {
     if (length == 0)
         return;
+    inRemove = true;
     move(pos, -1, length, op);
+    inRemove = false;
+    adjustDocumentChangesAndCursors(pos, -length, op);
 }
 
 void QTextDocumentPrivate::setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode)
@@ -1263,6 +1267,9 @@ void QTextDocumentPrivate::documentChange(int from, int length)
 */
 void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOrRemoved, QTextUndoCommand::Operation op)
 {
+    if (inRemove) // postpone, will be called again from QTextDocumentPrivate::remove()
+        return;
+
     if (!editBlock)
         ++revision;
 
