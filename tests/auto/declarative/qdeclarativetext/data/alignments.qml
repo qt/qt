@@ -20,9 +20,9 @@ Rectangle {
             id: t
 
             anchors.fill: parent
-            horizontalAlignment: TextEdit.AlignRight
-            verticalAlignment: TextEdit.AlignBottom
-            wrapMode: TextEdit.WordWrap
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignBottom
+            wrapMode: Text.WordWrap
             text: top.txt
         }
         Timer {

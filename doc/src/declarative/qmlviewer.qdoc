@@ -42,7 +42,7 @@ deployment of QML applications. In those cases, the QML runtime should be invoke
 from a Qt application instead; see \l {Qt Declarative UI Runtime} for more
 information.
 
-The viewer is located at QTDIR/bin/qmlviewer. To load a \c .qml file
+The viewer is located at \c QTDIR/bin/qmlviewer. To load a \c .qml file
 with the viewer, run the viewer and select the file to be opened, or provide the 
 file path on the command line:
 
@@ -50,7 +50,7 @@ file path on the command line:
     qmlviewer myqmlfile.qml
 \endcode
     
-On Mac OS X, the QML Viewer application is named \c QMLViewer.app instead. You
+On Mac OS X, the QML Viewer application is named "QMLViewer" instead. You
 can launch the viewer by opening the QMLViewer application from the Finder, or 
 from the command line:
 
