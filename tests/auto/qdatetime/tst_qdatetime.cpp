@@ -1456,6 +1456,12 @@ void tst_QDateTime::fromString()
     dt = QDateTime::fromString("2002-10-01", Qt::ISODate);
     QCOMPARE(dt, QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0)));
 
+    dt = QDateTime::fromString("1987-02-13T13:24:51+01:00", Qt::ISODate);
+    QCOMPARE(dt, QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC));
+
+    dt = QDateTime::fromString("1987-02-13T13:24:51-01:00", Qt::ISODate);
+    QCOMPARE(dt, QDateTime(QDate(1987, 2, 13), QTime(14, 24, 51), Qt::UTC));
+
     dt = QDateTime::fromString("Thu Jan 1 00:12:34 1970 GMT");
     QCOMPARE(dt.toUTC(), QDateTime(QDate(1970, 1, 1), QTime(0, 12, 34), Qt::UTC));
 
