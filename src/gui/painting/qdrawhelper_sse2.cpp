@@ -43,17 +43,9 @@
 
 #ifdef QT_HAVE_SSE2
 
+#include <private/qsimd_p.h>
+#include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
-
-#ifdef QT_LINUXBASE
-// this is an evil hack - the posix_memalign declaration in LSB
-// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
-#  define posix_memalign _lsb_hack_posix_memalign
-#  include <emmintrin.h>
-#  undef posix_memalign
-#else
-#  include <emmintrin.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -42,6 +42,10 @@
 #ifndef QDRAWINGPRIMITIVE_SSE2_P_H
 #define QDRAWINGPRIMITIVE_SSE2_P_H
 
+#include <private/qsimd_p.h>
+
+#ifdef QT_HAVE_SSE2
+
 //
 //  W A R N I N G
 //  -------------
@@ -212,5 +216,7 @@ QT_BEGIN_NAMESPACE
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_HAVE_SSE2
 
 #endif // QDRAWINGPRIMITIVE_SSE2_P_H

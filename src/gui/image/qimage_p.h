@@ -108,6 +108,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     QPaintEngine *paintEngine;
 };
 
+void qInitImageConversions();
+
 QT_END_NAMESPACE
 
 #endif
