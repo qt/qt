@@ -62,8 +62,7 @@ symbian {
             LIBS += -F$${fftreal_dir}
             LIBS += -framework fftreal
         } else {
-            # Link to dynamic library which is written to ../bin
-            LIBS += -L../bin
+            LIBS += -L..
             LIBS += -lfftreal
         }
     }
@@ -109,7 +108,7 @@ symbian {
         }
     } else {
         # Specify directory in which to create spectrum application
-        DESTDIR = ../bin
+        DESTDIR = ..
 
         unix: {
             # Provide relative path from application to fftreal library
