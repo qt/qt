@@ -327,10 +327,10 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
 }
 
 
-static uint32_t getNetworkAttrs(bool is_iap_id,
-                                const QString &iap_id,
-                                const QString &iap_type,
-                                QString security_method)
+static quint32 getNetworkAttrs(bool is_iap_id,
+                               const QString &iap_id,
+                               const QString &iap_type,
+                               QString security_method)
 {
     guint network_attr = 0;
     dbus_uint32_t cap = 0;
@@ -368,7 +368,7 @@ static uint32_t getNetworkAttrs(bool is_iap_id,
     if (is_iap_id)
     network_attr |= ICD_NW_ATTR_IAPNAME;
 
-    return (uint32_t)network_attr;
+    return quint32(network_attr);
 }
 
 
