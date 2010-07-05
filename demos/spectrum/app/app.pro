@@ -63,8 +63,7 @@ symbian {
             LIBS += -F$${fftreal_dir}
             LIBS += -framework fftreal
         } else {
-            # Link to dynamic library which is written to ../bin
-            LIBS += -L../bin
+            LIBS += -L..
             LIBS += -lfftreal
         }
     }
@@ -85,7 +84,7 @@ symbian {
 
     !contains(DEFINES, DISABLE_FFT) {
         # Include FFTReal DLL in the SIS file
-        fftreal.sources = ../3rdparty/fftreal/fftreal.dll
+        fftreal.sources = ../fftreal.dll
         fftreal.path = !:/sys/bin
         DEPLOYMENT += fftreal
     }
@@ -110,7 +109,7 @@ symbian {
         }
     } else {
         # Specify directory in which to create spectrum application
-        DESTDIR = ../bin
+        DESTDIR = ..
 
         unix: {
             # Provide relative path from application to fftreal library
