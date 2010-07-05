@@ -422,3 +422,8 @@
     \externalpage http://www.w3.org/XML/Schema
     \title XML Schema
 */
+
+/*!
+    \externalpage http://www.iso.org/iso/date_and_time_format
+    \title ISO 8601
+*/
