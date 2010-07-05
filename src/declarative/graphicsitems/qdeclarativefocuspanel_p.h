@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QDeclarativeFocusPanel : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeFocusPanel : public QDeclarativeItem
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)

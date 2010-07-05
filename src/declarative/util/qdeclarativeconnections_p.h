@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 class QDeclarativeBoundSignal;
 class QDeclarativeContext;
 class QDeclarativeConnectionsPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeConnections : public QObject, public QDeclarativeParserStatus
+class Q_AUTOTEST_EXPORT QDeclarativeConnections : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeConnections)

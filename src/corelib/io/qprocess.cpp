@@ -1856,7 +1856,7 @@ QByteArray QProcess::readAllStandardError()
 }
 
 /*!
-    Starts the program \a program in a new process, if one is not already
+    Starts the given \a program in a new process, if none is already
     running, passing the command line arguments in \a arguments. The OpenMode
     is set to \a mode.
 
@@ -1866,13 +1866,12 @@ QByteArray QProcess::readAllStandardError()
     process, a warning may be printed at the console, and the existing
     process will continue running.
 
-    \note Arguments that contain spaces are not passed to the
-    process as separate arguments.
-
     \note Processes are started asynchronously, which means the started()
     and error() signals may be delayed. Call waitForStarted() to make
     sure the process has started (or has failed to start) and those signals
     have been emitted.
+
+    \note No further splitting of the arguments is performed.
 
     \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
 
@@ -2079,7 +2078,7 @@ QProcess::ExitStatus QProcess::exitStatus() const
     code of the process. Any data the new process writes to the
     console is forwarded to the calling process.
 
-    The environment and working directory are inherited by the calling
+    The environment and working directory are inherited from the calling
     process.
 
     On Windows, arguments that contain spaces are wrapped in quotes.

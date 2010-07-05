@@ -8075,6 +8075,27 @@
     qhp.Qt.subprojects.examples.indexTitle = Qt Examples
     qhp.Qt.subprojects.examples.selectors = fake:example
     \endcode
+
+    To create a table of contents for a manual, create a subproject with
+    a \c{type} property and set it to \c{manual}. The page in the documentation
+    referred to by the \c{indexTitle} property must contain a list of links
+    that acts as a table of contents for the whole manual. QDoc will take the
+    information in this list and create a table of contents for the subproject.
+
+    For example, the configuration file for Qt Creator defines only one
+    subproject for its documentation, including all the documentation in a
+    single manual:
+
+    \code
+    qhp.QtCreator.subprojects = manual
+    qhp.QtCreator.subprojects.manual.title = Qt Creator Manual
+    qhp.QtCreator.subprojects.manual.indexTitle = Qt Creator Manual
+    qhp.QtCreator.subprojects.manual.type = manual
+    \endcode
+
+    In this example, the page entitled "Qt Creator Manual" contains a nested
+    list of links to pages in the documentation which is duplicated in
+    Qt Assistant's Contents tab.
 */
 
 /*!

@@ -48,6 +48,9 @@
 #include <QImage>
 #include <QUrl>
 #include <qmlruntime.h>
+#include <qdeclarativelist.h>
+#include <qdeclarative.h>
+#include <QAbstractAnimation>
 
 QT_BEGIN_NAMESPACE
 

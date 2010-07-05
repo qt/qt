@@ -53,8 +53,10 @@
 #include <private/qdeclarativetextedit_p_p.h>
 #include <QFontMetrics>
 #include <QDeclarativeView>
+#include <QDir>
 #include <QStyle>
 #include <QInputContext>
+#include <private/qapplication_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -305,17 +307,17 @@ void tst_qdeclarativetextedit::alignments_data()
     QTest::addColumn<int>("vAlign");
     QTest::addColumn<QString>("expectfile");
 
-    QTest::newRow("LT") << int(Qt::AlignLeft) << int(Qt::AlignTop) << SRCDIR "/data/alignments_lt.png";
-    QTest::newRow("RT") << int(Qt::AlignRight) << int(Qt::AlignTop) << SRCDIR "/data/alignments_rt.png";
-    QTest::newRow("CT") << int(Qt::AlignHCenter) << int(Qt::AlignTop) << SRCDIR "/data/alignments_ct.png";
+    QTest::newRow("LT") << int(Qt::AlignLeft) << int(Qt::AlignTop) << "alignments_lt";
+    QTest::newRow("RT") << int(Qt::AlignRight) << int(Qt::AlignTop) << "alignments_rt";
+    QTest::newRow("CT") << int(Qt::AlignHCenter) << int(Qt::AlignTop) << "alignments_ct";
 
-    QTest::newRow("LB") << int(Qt::AlignLeft) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_lb.png";
-    QTest::newRow("RB") << int(Qt::AlignRight) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_rb.png";
-    QTest::newRow("CB") << int(Qt::AlignHCenter) << int(Qt::AlignBottom) << SRCDIR "/data/alignments_cb.png";
+    QTest::newRow("LB") << int(Qt::AlignLeft) << int(Qt::AlignBottom) << "alignments_lb";
+    QTest::newRow("RB") << int(Qt::AlignRight) << int(Qt::AlignBottom) << "alignments_rb";
+    QTest::newRow("CB") << int(Qt::AlignHCenter) << int(Qt::AlignBottom) << "alignments_cb";
 
-    QTest::newRow("LC") << int(Qt::AlignLeft) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_lc.png";
-    QTest::newRow("RC") << int(Qt::AlignRight) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_rc.png";
-    QTest::newRow("CC") << int(Qt::AlignHCenter) << int(Qt::AlignVCenter) << SRCDIR "/data/alignments_cc.png";
+    QTest::newRow("LC") << int(Qt::AlignLeft) << int(Qt::AlignVCenter) << "alignments_lc";
+    QTest::newRow("RC") << int(Qt::AlignRight) << int(Qt::AlignVCenter) << "alignments_rc";
+    QTest::newRow("CC") << int(Qt::AlignHCenter) << int(Qt::AlignVCenter) << "alignments_cc";
 }
 
 
@@ -324,13 +326,6 @@ void tst_qdeclarativetextedit::alignments()
     QFETCH(int, hAlign);
     QFETCH(int, vAlign);
     QFETCH(QString, expectfile);
-
-#ifdef Q_WS_X11
-    // Font-specific, but not likely platform-specific, so only test on one platform
-    QFont fn;
-    fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
-    QApplication::setFont(fn);
-#endif
 
     QDeclarativeView *canvas = createView(SRCDIR "/data/alignments.qml");
 
@@ -349,12 +344,20 @@ void tst_qdeclarativetextedit::alignments()
     QPainter p(&actual);
     canvas->render(&p);
 
+    // XXX This will be replaced by some clever persistent platform image store.
+    QString persistent_dir = SRCDIR "/data";
+    QString arch = "unknown-architecture"; // QTest needs to help with this.
+
+    expectfile = persistent_dir + QDir::separator() + expectfile + "-" + arch + ".png";
+
+    if (!QFile::exists(expectfile)) {
+        actual.save(expectfile);
+        qWarning() << "created" << expectfile;
+    }
+
     QImage expect(expectfile);
 
-#ifdef Q_WS_X11
-    // Font-specific, but not likely platform-specific, so only test on one platform
     QCOMPARE(actual,expect);
-#endif
 }
 
 

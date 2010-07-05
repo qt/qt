@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
     
 class QDeclarativePropertyChangesPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativePropertyChanges : public QDeclarativeStateOperation
+class Q_AUTOTEST_EXPORT QDeclarativePropertyChanges : public QDeclarativeStateOperation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativePropertyChanges)

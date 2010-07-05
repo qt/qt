@@ -52,7 +52,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeFlickablePrivate;
 class QDeclarativeFlickableVisibleArea;
-class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeFlickable : public QDeclarativeItem
 {
     Q_OBJECT
 

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtiffhandler.h"
+#include "qtiffhandler_p.h"
 #include <qvariant.h>
 #include <qdebug.h>
 #include <qimage.h>

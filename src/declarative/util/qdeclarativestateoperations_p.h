@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeParentChangePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeParentChange : public QDeclarativeStateOperation, public QDeclarativeActionEvent
+class Q_AUTOTEST_EXPORT QDeclarativeParentChange : public QDeclarativeStateOperation, public QDeclarativeActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeParentChange)
@@ -118,7 +118,7 @@ public:
 };
 
 class QDeclarativeStateChangeScriptPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeStateChangeScript : public QDeclarativeStateOperation, public QDeclarativeActionEvent
+class Q_AUTOTEST_EXPORT QDeclarativeStateChangeScript : public QDeclarativeStateOperation, public QDeclarativeActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeStateChangeScript)
@@ -251,7 +251,7 @@ private:
 };
 
 class QDeclarativeAnchorChangesPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeAnchorChanges : public QDeclarativeStateOperation, public QDeclarativeActionEvent
+class Q_AUTOTEST_EXPORT QDeclarativeAnchorChanges : public QDeclarativeStateOperation, public QDeclarativeActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeAnchorChanges)

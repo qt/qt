@@ -119,7 +119,7 @@ void QDeclarativeLoaderPrivate::initResize()
     property, or loaded from a URL via the \l source property.
 
     Loader can be used to delay the creation of a component until it is required.
-    For example, this loads "Page1.qml" as a component into the \l Loader element
+    For example, this loads "Page1.qml" as a component into the Loader element
     when the \l MouseArea is clicked:
 
     \code

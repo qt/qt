@@ -134,7 +134,7 @@ void tst_QDeclarativeWorkerScript::messaging_data()
     QTest::newRow("invalid") << QVariant();
     QTest::newRow("bool") << qVariantFromValue(true);
     QTest::newRow("int") << qVariantFromValue(1001);
-    QTest::newRow("real") << qVariantFromValue(10334.323);
+    QTest::newRow("real") << qVariantFromValue(10334.375);
     QTest::newRow("string") << qVariantFromValue(QString("More cheeeese, Gromit!"));
     QTest::newRow("variant list") << qVariantFromValue((QVariantList() << "a" << "b" << "c"));
 }

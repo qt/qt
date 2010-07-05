@@ -152,8 +152,24 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
     createPixmapForImage(image, flags, /* inplace = */false);
 }
 
+void QRasterPixmapData::fromImageReader(QImageReader *imageReader,
+                                        Qt::ImageConversionFlags flags)
+{
+    Q_UNUSED(flags);
+    QImage image = imageReader->read();
+    if (image.isNull())
+        return;
+
+    createPixmapForImage(image, flags, /* inplace = */true);
+}
+
 // from qwindowsurface.cpp
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
+void QRasterPixmapData::copy(const QPixmapData *data, const QRect &rect)
+{
+    fromImage(data->toImage(rect).copy(), Qt::NoOpaqueDetection);
+}
 
 bool QRasterPixmapData::scroll(int dx, int dy, const QRect &rect)
 {
@@ -287,6 +303,20 @@ bool QRasterPixmapData::hasAlphaChannel() const
 QImage QRasterPixmapData::toImage() const
 {
     return image;
+}
+
+QImage QRasterPixmapData::toImage(const QRect &rect) const
+{
+    if (rect.isNull())
+        return image;
+
+    QRect clipped = rect.intersected(QRect(0, 0, w, h));
+    if (d % 8 == 0)
+        return QImage(image.scanLine(clipped.y()) + clipped.x() * (d / 8),
+                      clipped.width(), clipped.height(),
+                      image.bytesPerLine(), image.format());
+    else
+        return image.copy(clipped);
 }
 
 void QRasterPixmapData::setAlphaChannel(const QPixmap &alphaChannel)

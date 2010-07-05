@@ -37,47 +37,60 @@
 **
 ** $QT_END_LICENSE$
 **
+** WARNING:
+**      A separate license from Unisys may be required to use the gif
+**      reader. See http://www.unisys.com/about__unisys/lzw/
+**      for information from Unisys
+**
 ****************************************************************************/
 
-#ifndef QMNGHANDLER_H
-#define QMNGHANDLER_H
+#ifndef QGIFHANDLER_P_H
+#define QGIFHANDLER_P_H
 
-#include <QtCore/qscopedpointer.h>
 #include <QtGui/qimageiohandler.h>
+#include <QtGui/qimage.h>
+#include <QtCore/qbytearray.h>
 
 QT_BEGIN_NAMESPACE
 
-class QImage;
-class QByteArray;
-class QIODevice;
-class QVariant;
-class QMngHandlerPrivate;
-
-class QMngHandler : public QImageIOHandler
+class QGIFFormat;
+class QGifHandler : public QImageIOHandler
 {
-    public:
-    QMngHandler();
-    ~QMngHandler();
-    virtual bool canRead() const;
-    virtual QByteArray name() const;
-    virtual bool read(QImage *image);
-    virtual bool write(const QImage &image);
-    virtual int currentImageNumber() const;
-    virtual int imageCount() const;
-    virtual bool jumpToImage(int imageNumber);
-    virtual bool jumpToNextImage();
-    virtual int loopCount() const;
-    virtual int nextImageDelay() const;
-    static bool canRead(QIODevice *device);
-    virtual QVariant option(ImageOption option) const;
-    virtual void setOption(ImageOption option, const QVariant & value);
-    virtual bool supportsOption(ImageOption option) const;
+public:
+    QGifHandler();
+    ~QGifHandler();
 
-    private:
-    Q_DECLARE_PRIVATE(QMngHandler)
-    QScopedPointer<QMngHandlerPrivate> d_ptr;
+    bool canRead() const;
+    bool read(QImage *image);
+    bool write(const QImage &image);
+
+    QByteArray name() const;
+
+    static bool canRead(QIODevice *device);
+
+    QVariant option(ImageOption option) const;
+    void setOption(ImageOption option, const QVariant &value);
+    bool supportsOption(ImageOption option) const;
+
+    int imageCount() const;
+    int loopCount() const;
+    int nextImageDelay() const;
+    int currentImageNumber() const;
+
+private:
+    bool imageIsComing() const;
+    QGIFFormat *gifFormat;
+    QString fileName;
+    mutable QByteArray buffer;
+    mutable QImage lastImage;
+
+    mutable int nextDelay;
+    mutable int loopCnt;
+    int frameNumber;
+    mutable QVector<QSize> imageSizes;
+    mutable bool scanIsCached;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMNGHANDLER_H
+#endif // QGIFHANDLER_P_H

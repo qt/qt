@@ -39,17 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QTIFFHANDLER_H
-#define QTIFFHANDLER_H
+#ifndef QJPEGHANDLER_P_H
+#define QJPEGHANDLER_P_H
 
 #include <QtGui/qimageiohandler.h>
+#include <QtCore/QSize>
+#include <QtCore/QRect>
 
 QT_BEGIN_NAMESPACE
 
-class QTiffHandler : public QImageIOHandler
+class QJpegHandlerPrivate;
+class QJpegHandler : public QImageIOHandler
 {
 public:
-    QTiffHandler();
+    QJpegHandler();
+    ~QJpegHandler();
 
     bool canRead() const;
     bool read(QImage *image);
@@ -63,16 +67,10 @@ public:
     void setOption(ImageOption option, const QVariant &value);
     bool supportsOption(ImageOption option) const;
 
-    enum Compression {
-        NoCompression = 0,
-        LzwCompression = 1
-    };
 private:
-    void convert32BitOrder(void *buffer, int width);
-    void convert32BitOrderBigEndian(void *buffer, int width);
-    int compression;
+    QJpegHandlerPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-#endif // QTIFFHANDLER_H
+#endif // QJPEGHANDLER_P_H

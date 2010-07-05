@@ -224,6 +224,7 @@ namespace QEgl {
     // Extension functions
     Q_GUI_EXPORT EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list);
     Q_GUI_EXPORT EGLBoolean  eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img);
+    Q_GUI_EXPORT EGLBoolean eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EGLint count, const EGLint *rects);
 
 #ifdef Q_WS_X11
     Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);

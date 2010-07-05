@@ -47,7 +47,7 @@
 #ifdef QT_NO_IMAGEFORMAT_JPEG
 #undef QT_NO_IMAGEFORMAT_JPEG
 #endif
-#include "qjpeghandler.h"
+#include <qjpeghandler_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 
 class QDeclarativeTextEditPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)

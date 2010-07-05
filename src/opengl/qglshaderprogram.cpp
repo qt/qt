@@ -1490,7 +1490,7 @@ void QGLShaderProgram::setAttributeArray
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        glVertexAttribPointer(location, tupleSize, type, GL_FALSE,
+        glVertexAttribPointer(location, tupleSize, type, GL_TRUE,
                               stride, values);
     }
 }
@@ -1634,7 +1634,7 @@ void QGLShaderProgram::setAttributeBuffer
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        glVertexAttribPointer(location, tupleSize, type, GL_FALSE, stride,
+        glVertexAttribPointer(location, tupleSize, type, GL_TRUE, stride,
                               reinterpret_cast<const void *>(offset));
     }
 }

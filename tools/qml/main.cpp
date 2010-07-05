@@ -91,7 +91,7 @@ void showWarnings()
 
 void myMessageOutput(QtMsgType type, const char *msg)
 {
-    if (!logger.isNull()) {
+    if (!logger.isNull() && !QCoreApplication::closingDown()) {
         QString strMsg = QString::fromAscii(msg);
         QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
     } else {

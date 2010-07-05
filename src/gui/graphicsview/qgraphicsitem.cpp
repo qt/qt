@@ -411,6 +411,11 @@
     these notifications are disabled by default. You must enable this flag
     to receive notifications for scene position changes. This flag was
     introduced in Qt 4.6.
+
+    \omitvalue ItemStopsClickFocusPropagation \omit The item stops propagating
+    click focus to items underneath when being clicked on. This flag
+    allows you create a non-focusable item that can be clicked on without
+    changing the focus. \endomit
 */
 
 /*!
@@ -11434,6 +11439,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsScenePositionChanges:
         str = "ItemSendsScenePositionChanges";
+        break;
+    case QGraphicsItem::ItemStopsClickFocusPropagation:
+        str = "ItemStopsClickFocusPropagation";
         break;
     }
     debug << str;

@@ -347,6 +347,7 @@ void QDeclarativeContents::complete()
 
 void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
+    Q_UNUSED(changed)
     //### we can only pass changed if the left edge has moved left, or the right edge has moved right
     if (newGeometry.width() != oldGeometry.width() || newGeometry.x() != oldGeometry.x())
         calcWidth(/*changed*/);
@@ -2144,7 +2145,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \property QDeclarativeItem::baselineOffset
   \brief The position of the item's baseline in local coordinates.
 
-  The baseline of a Text item is the imaginary line on which the text
+  The baseline of a \l Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 

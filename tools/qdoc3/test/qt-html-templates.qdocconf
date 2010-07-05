@@ -11,7 +11,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
 			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
 			  "		<fieldset>\n" \
-              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\">\n" \
+              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\"/>\n" \
 			  "		 </fieldset>\n" \
 			  "		</form></div>\n" \
 			  "    <div id=\"nav-topright\">\n" \
@@ -49,6 +49,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			"			   <li><a href=\"declarativeui.html\">Device UI's &amp; Qt Quick</a></li> \n" \
 			"			   <li><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li> \n" \
 			"			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+			"			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
 			"			 </ul> \n" \
 			"		</li> \n" \
 			"		 <li><a href=\"#\">Examples</a> \n" \
@@ -57,7 +58,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			"				 <li><a href=\"tutorials.html\">Tutorials</a></li> \n" \
 			"				 <li><a href=\"demos.html\">Demos</a></li> \n" \
 			"				 <li><a href=\"qdeclarativeexamples.html\">QML Examples</a></li> \n" \
-			"				 <li><a href=\"qdeclarativeexamples.html#Demos\">QML Demos</a></li> \n" \
 			"			 </ul> \n" \
 			"		 </li> \n" \
 			" </ul> \n" \
