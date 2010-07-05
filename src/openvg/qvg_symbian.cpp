@@ -41,15 +41,16 @@
 
 #include "qpixmapdata_vg_p.h"
 #include "qvgfontglyphcache_p.h"
+#include <private/qt_s60_p.h>
+
+#include <fbs.h>
+#include <bitdev.h>
 
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
-#  include <private/qt_s60_p.h>
-#  include <fbs.h>
-#  include <gdi.h>
 #  include <sgresource/sgimage.h>
-#  ifdef SYMBIAN_GDI_GLYPHDATA // defined in gdi.h
+#  ifdef SYMBIAN_FBSERV_GLYPHDATA // defined in fbs.h
 #    define QT_SYMBIAN_HARDWARE_GLYPH_CACHE
-#    include <graphics/glyphdataiterator.h>
+#    include <graphics/fbsglyphdataiterator.h>
 #    include <private/qfontengine_s60_p.h>
 #  endif
 #endif
@@ -101,6 +102,7 @@ static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
     return copy;
 }
 
+#ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
 static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
 {
     // when "0" used as argument then
@@ -155,6 +157,7 @@ static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
     driver.Close();
     return vgImage;
 }
+#endif
 
 void QVGPixmapData::cleanup()
 {
@@ -329,56 +332,64 @@ void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
                                            const glyph_t *g, int count)
 {
 #ifdef QT_SYMBIAN_HARDWARE_GLYPH_CACHE
-    QFontEngineS60 *fontEngine = static_cast<QFontEngineS60*>(ti.fontEngine);
-    CFont *cfont = fontEngine->m_activeFont;
+    QFontEngineS60 *s60fontEngine = static_cast<QFontEngineS60*>(fontEngine);
+    if (s60fontEngine->m_activeFont->TypeUid() != KCFbsFontUid)
+            return QVGFontGlyphCache::cacheGlyphs(d, fontEngine, g, count);
 
-//    QVarLengthArray<glyph_t, 256> adjustedGlyphs(glyphs);
-//    for (int i = 0; i < glyphs.count(); ++i)
-//        adjustedGlyphs[i] |= 0x80000000;
-
-    RGlyphDataIterator iter;
-    int err = iter.Open(*cfont, (const unsigned int*)glyphs.constData(), glyphs.count());
-
-    if (err == KErrNotSupported || err == KErrInUse) { // Fallback in possibly supported error cases
-        iter.Close();
-        qWarning("Falling back to default QVGFontGlyphCache");
-        return QVGFontGlyphCache::cacheGlyphs(d, ti, glyphs);
-    }
-
-    for (; err == KErrNone; err = iter.Next()) {
+    QVector<glyph_t> uncachedGlyphs;
+    while (count-- > 0) {
         // Skip this glyph if we have already cached it before.
-        const unsigned int glyph = iter.GlyphCode();
+        glyph_t glyph = *g++;
         if (((glyph < 256) && ((cachedGlyphsMask[glyph / 32] & (1 << (glyph % 32))) != 0))
             || cachedGlyphs.contains(glyph))
-                continue;
-
-        const RSgImage& image = iter.Image();
-        const TOpenFontCharMetrics& metrics = iter.Metrics();
-
-        TRect glyphBounds;
-        metrics.GetHorizBounds(glyphBounds);
-        VGImage vgImage = sgImageToVGImage(0, image);
-        VGfloat origin[2];
-        VGfloat escapement[2];
-        origin[0] = -glyphBounds.iTl.iX + 0.5f;
-        origin[1] = glyphBounds.iBr.iY + 0.5f;
-        escapement[0] = metrics.HorizAdvance();
-        escapement[1] = 0;
-        vgSetGlyphToImage(font, iter.GlyphCode(), vgImage, origin, escapement);
-        vgDestroyImage(vgImage);
-
-        // Add to cache
-        if (glyph < 256)
-            cachedGlyphsMask[glyph / 32] |= (1 << (glyph % 32));
-        else
-            cachedGlyphs.insert(glyph);
+            continue;
+        if (!uncachedGlyphs.contains(glyph))
+            uncachedGlyphs.append(glyph);
     }
-    iter.Close();
 
-    if (err == KErrNoMemory || err == KErrNoGraphicsMemory)
-        qWarning("Not enough memory to cache glyph");
-    else if (err != KErrNotFound)
-        qWarning("Received error %d from glyph cache", err);
+    if (!uncachedGlyphs.isEmpty()) {
+        CFbsFont *cfbsFont = static_cast<CFbsFont *>(s60fontEngine->m_activeFont);
+        RFbsGlyphDataIterator iter;
+
+        int err = iter.Open(*cfbsFont, (const unsigned int*)uncachedGlyphs.constData(), uncachedGlyphs.count());
+
+        if (err == KErrNotSupported || err == KErrInUse) { // Fallback in possibly supported error cases
+            iter.Close();
+            qWarning("Falling back to default QVGFontGlyphCache");
+            return QVGFontGlyphCache::cacheGlyphs(d, fontEngine, g, count);
+        }
+
+        for (; err == KErrNone; err = iter.Next()) {
+            const unsigned int glyph = iter.GlyphCode();
+
+            const RSgImage& image = iter.Image();
+            const TOpenFontCharMetrics& metrics = iter.Metrics();
+
+            TRect glyphBounds;
+            metrics.GetHorizBounds(glyphBounds);
+            VGImage vgImage = sgImageToVGImage(0, image);
+            VGfloat origin[2];
+            VGfloat escapement[2];
+            origin[0] = -glyphBounds.iTl.iX;
+            origin[1] = glyphBounds.iBr.iY;
+            escapement[0] = 0;
+            escapement[1] = 0;
+            vgSetGlyphToImage(font, glyph, vgImage, origin, escapement);
+            vgDestroyImage(vgImage);
+
+            // Add to cache
+            if (glyph < 256)
+                cachedGlyphsMask[glyph / 32] |= (1 << (glyph % 32));
+            else
+                cachedGlyphs.insert(glyph);
+        }
+        iter.Close();
+
+        if (err == KErrNoMemory || err == KErrNoGraphicsMemory)
+            qWarning("Not enough memory to cache glyph");
+        else if (err != KErrNotFound)
+            qWarning("Received error %d from glyph cache", err);
+    }
 #else
     QVGFontGlyphCache::cacheGlyphs(d, fontEngine, g, count);
 #endif
