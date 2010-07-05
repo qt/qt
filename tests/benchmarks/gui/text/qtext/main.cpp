@@ -84,9 +84,11 @@ private slots:
 
     void newLineReplacement();
     void formatManipulation();
+    void fontResolution();
 
     void layout_data();
     void layout();
+    void formattedLayout();
     void paintLayoutToPixmap();
     void paintLayoutToPixmap_painterFill();
 
@@ -306,6 +308,18 @@ void tst_QText::formatManipulation()
     }
 }
 
+void tst_QText::fontResolution()
+{
+    QFont font;
+    QFont font2;
+    font.setFamily("DejaVu");
+    font2.setBold(true);
+
+    QBENCHMARK {    
+        QFont res = font.resolve(font2);
+    }
+}
+
 void tst_QText::layout_data()
 {
     QTest::addColumn<bool>("wrap");
@@ -338,6 +352,33 @@ void tst_QText::layout()
         setupTextLayout(&layout);
     }
 }*/
+
+void tst_QText::formattedLayout()
+{
+    //set up formatting
+    QList<QTextLayout::FormatRange> ranges;
+    {
+        QTextCharFormat format;
+        format.setForeground(QColor("steelblue"));
+
+        QTextLayout::FormatRange formatRange;
+        formatRange.format = format;
+        formatRange.start = 0;
+        formatRange.length = 50;
+
+        ranges.append(formatRange);
+    }
+
+    QTextLayout layout(m_shortLorem);
+    layout.setAdditionalFormats(ranges);
+    setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QTextLayout layout(m_shortLorem);
+        layout.setAdditionalFormats(ranges);
+        setupTextLayout(&layout);
+    }
+}
 
 void tst_QText::paintLayoutToPixmap()
 {

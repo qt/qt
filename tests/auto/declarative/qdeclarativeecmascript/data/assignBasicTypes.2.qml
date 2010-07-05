@@ -7,7 +7,7 @@ MyTypeObject {
     uintProperty: if(1) 10
     intProperty: if(1) -19
     realProperty: if(1) 23.2
-    doubleProperty: if(1) -19.7
+    doubleProperty: if(1) -19.75
     floatProperty: if(1) 8.5
     colorProperty: if(1) "red"
     dateProperty: if(1) "1982-11-25"
