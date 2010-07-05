@@ -54,6 +54,7 @@
 //
 
 #include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativepixmapcache_p.h"
 
 #include <QtCore/QPointer>
 
@@ -68,18 +69,16 @@ public:
     QDeclarativeImageBasePrivate()
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
-        pendingPixmapCache(false),
         async(false)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
 
-    QPixmap pix;
+    QDeclarativePixmap pix;
     QDeclarativeImageBase::Status status;
     QUrl url;
     qreal progress;
     QSize sourcesize;
-    bool pendingPixmapCache : 1;
     bool async : 1;
 };
 
