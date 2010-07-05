@@ -54,6 +54,7 @@
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
+#include <QtCore/qmath.h>
 #include <QDebug>
 #include <QSet>
 
