@@ -5256,7 +5256,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
 #endif
 
     if (d->extended) {
@@ -5326,7 +5326,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     if (!d->engine || pm.isNull())
         return;
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
 #endif
 
     qreal x = r.x();
@@ -5733,7 +5733,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
     for (int i=0; i<count; ++i)
-        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));    
+        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));
 
     d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
 
@@ -5742,7 +5742,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
 
 void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
                     int glyphCount)
-{    
+{
     QVarLengthArray<QFixedPoint, 128> positions(glyphCount);
     for (int i=0; i<glyphCount; ++i)
         positions[i] = QFixedPoint::fromPointF(positionArray[i]);
@@ -6670,7 +6670,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()", true);
 #endif
 
     qreal sw = pixmap.width();
