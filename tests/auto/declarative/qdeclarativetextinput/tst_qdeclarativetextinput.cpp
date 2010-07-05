@@ -175,7 +175,8 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+        int delta = abs(int(textinputObject->width()) - metricWidth);
+        QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
     }
