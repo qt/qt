@@ -57,6 +57,7 @@
 #include <QStyle>
 #include <QInputContext>
 #include <private/qapplication_p.h>
+#include <private/qtextcontrol_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -492,6 +493,23 @@ void tst_qdeclarativetextedit::font()
 
 void tst_qdeclarativetextedit::color()
 {
+    //test initial color
+    {
+        QString componentStr = "import Qt 4.7\nTextEdit { text: \"Hello World\" }";
+        QDeclarativeComponent texteditComponent(&engine);
+        texteditComponent.setData(componentStr.toLatin1(), QUrl());
+        QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
+
+        QDeclarativeTextEditPrivate *textEditPrivate = static_cast<QDeclarativeTextEditPrivate*>(QDeclarativeItemPrivate::get(textEditObject));
+
+        QVERIFY(textEditObject);
+        QVERIFY(textEditPrivate);
+        QVERIFY(textEditPrivate->control);
+
+        QPalette pal = textEditPrivate->control->palette();
+        QCOMPARE(textEditPrivate->color, QColor("black"));
+        QCOMPARE(textEditPrivate->color, pal.color(QPalette::Text));
+    }
     //test normal
     for (int i = 0; i < colorStrings.size(); i++)
     { 

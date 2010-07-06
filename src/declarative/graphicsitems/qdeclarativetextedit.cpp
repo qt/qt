@@ -1263,6 +1263,15 @@ void QDeclarativeTextEditPrivate::init()
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
 
+    // QTextControl follows the default text color
+    // defined by the platform, declarative text
+    // should be black by default
+    QPalette pal = control->palette();
+    if (pal.color(QPalette::Text) != color) {
+        pal.setColor(QPalette::Text, color);
+        control->setPalette(pal);
+    }
+
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
