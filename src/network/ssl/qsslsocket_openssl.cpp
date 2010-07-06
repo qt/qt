@@ -68,6 +68,8 @@
     PtrCertOpenSystemStoreW QSslSocketPrivate::ptrCertOpenSystemStoreW = 0;
     PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = 0;
     PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = 0;
+#elif defined(Q_OS_SYMBIAN)
+#include <QtCore/private/qcore_symbian_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -565,6 +567,119 @@ void QSslSocketPrivate::resetDefaultCiphers()
     setDefaultCiphers(ciphers);
 }
 
+#if defined(Q_OS_SYMBIAN)
+
+QCertificateRetriever::QCertificateRetriever(QCertificateConsumer* parent)
+    : CActive(EPriorityStandard)
+    , certStore(0)
+    , certFilter(0)
+    , consumer(parent)
+    , currentCertificateIndex(0)
+    , certDescriptor(0, 0)
+{
+    CActiveScheduler::Add(this);
+    QT_TRAP_THROWING(certStore = CUnifiedCertStore::NewL(qt_s60GetRFs(), EFalse));
+    QT_TRAP_THROWING(certFilter = CCertAttributeFilter::NewL());
+    certFilter->SetFormat(EX509Certificate);
+}
+
+QCertificateRetriever::~QCertificateRetriever()
+{
+    delete certFilter;
+    delete certStore;
+    Cancel();
+}
+
+void QCertificateRetriever::fetch()
+{
+    certStore->Initialize(iStatus);
+    state = Initializing;
+    SetActive();
+}
+
+void QCertificateRetriever::list()
+{
+    certStore->List(certs, *certFilter, iStatus);
+    state = Listing;
+    SetActive();
+}
+
+void QCertificateRetriever::retrieveNextCertificate()
+{
+    CCTCertInfo* cert = certs[currentCertificateIndex];
+    currentCertificate.resize(cert->Size());
+    certDescriptor.Set((TUint8*)currentCertificate.data(), 0, currentCertificate.size());
+    certStore->Retrieve(*cert, certDescriptor, iStatus);
+    state = RetrievingCertificates;
+    SetActive();
+}
+
+void QCertificateRetriever::RunL()
+{
+    switch (state) {
+    case Initializing:
+        list();
+        break;
+    case Listing:
+        currentCertificateIndex = 0;
+        retrieveNextCertificate();
+        break;
+    case RetrievingCertificates:
+        consumer->addEncodedCertificate(currentCertificate);
+        currentCertificate = QByteArray();
+
+        currentCertificateIndex++;
+
+        if (currentCertificateIndex < certs.Count())
+            retrieveNextCertificate();
+        else
+            consumer->finish();
+        break;
+    }
+}
+
+void QCertificateRetriever::DoCancel()
+{
+    switch (state) {
+    case Initializing:
+        certStore->CancelInitialize();
+        break;
+    case Listing:
+        certStore->CancelList();
+        break;
+    case RetrievingCertificates:
+        certStore->CancelRetrieve();
+        break;
+    }
+}
+
+QCertificateConsumer::QCertificateConsumer(QObject* parent)
+    : QObject(parent)
+    , retriever(0)
+{
+}
+
+QCertificateConsumer::~QCertificateConsumer()
+{
+    delete retriever;
+}
+
+void QCertificateConsumer::finish()
+{
+    delete retriever;
+    retriever = 0;
+    emit finished();
+}
+
+void QCertificateConsumer::start()
+{
+    retriever = new QCertificateRetriever(this);
+    Q_CHECK_PTR(retriever);
+    retriever->fetch();
+}
+
+#endif // defined(Q_OS_SYMBIAN)
+
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
     ensureInitialized();
@@ -638,7 +753,26 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/lib/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Gentoo, Mandrake
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/share/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
+#elif defined(Q_OS_SYMBIAN)
+    QThread* certThread = new QThread;
+
+    QCertificateConsumer *consumer = new QCertificateConsumer();
+    consumer->moveToThread(certThread);
+    QObject::connect(certThread, SIGNAL(started()), consumer, SLOT(start()));
+    QObject::connect(consumer, SIGNAL(finished()), certThread, SLOT(quit()), Qt::DirectConnection);
+
+    certThread->start();
+    certThread->wait();
+    foreach (const QByteArray &encodedCert, consumer->encodedCertificates()) {
+        QSslCertificate cert(encodedCert, QSsl::Der);
+        if (!cert.isNull())
+            systemCerts.append(cert);
+    }
+
+    delete consumer;
+    delete certThread;
 #endif
+
     return systemCerts;
 }
 

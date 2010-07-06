@@ -118,6 +118,70 @@ public:
     static QList<QSslCertificate> STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509);
 };
 
+#if defined(Q_OS_SYMBIAN)
+#include <unifiedcertstore.h>     // link against certstore.lib
+#include <ccertattributefilter.h> // link against ctframework.lib
+
+class QCertificateRetriever;
+
+class QCertificateConsumer : public QObject
+{
+    Q_OBJECT
+public:
+    QCertificateConsumer(QObject* parent = 0);
+    ~QCertificateConsumer();
+
+    void finish();
+
+    void addEncodedCertificate(const QByteArray& certificate)
+    { certificates.append(certificate); }
+    QList<QByteArray> encodedCertificates() const { return certificates; }
+
+public slots:
+    void start();
+
+signals:
+    void finished();
+
+private:
+    QList<QByteArray> certificates;
+    QCertificateRetriever *retriever;
+};
+
+
+class QCertificateRetriever : public CActive
+{
+public:
+    QCertificateRetriever(QCertificateConsumer* consumer);
+    ~QCertificateRetriever();
+
+    void fetch();
+
+private:
+    virtual void RunL();
+    virtual void DoCancel();
+
+    void list();
+    void retrieveNextCertificate();
+
+    enum {
+        Initializing,
+        Listing,
+        RetrievingCertificates
+    } state;
+
+    CUnifiedCertStore* certStore;
+    RMPointerArray<CCTCertInfo> certs;
+    CCertAttributeFilter* certFilter;
+    QCertificateConsumer* consumer;
+    int currentCertificateIndex;
+    QByteArray currentCertificate;
+    TPtr8 certDescriptor;
+};
+
+#endif
+
+
 QT_END_NAMESPACE
 
 #endif
