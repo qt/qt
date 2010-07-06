@@ -68,14 +68,14 @@ class QByteArray;
 /*!
     \class QDeclarativeComponent
     \since 4.7
-    \brief The QDeclarativeComponent class encapsulates a QML component description.
+    \brief The QDeclarativeComponent class encapsulates a QML component definition.
     \mainclass
 */
 
 /*!
     \qmlclass Component QDeclarativeComponent
     \since 4.7
-    \brief The Component element encapsulates a QML component description.
+    \brief The Component element encapsulates a QML component definition.
 
     Components are reusable, encapsulated QML elements with well-defined interfaces.
     They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
