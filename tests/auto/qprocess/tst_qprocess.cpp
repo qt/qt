@@ -93,6 +93,7 @@ private slots:
     void getSetCheck();
     void constructing();
     void simpleStart();
+    void execute();
     void startDetached();
     void crashTest();
     void crashTest2();
@@ -131,6 +132,9 @@ private slots:
     void waitForBytesWrittenInABytesWrittenSlot();
     void spaceArgsTest_data();
     void spaceArgsTest();
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    void nativeArguments();
+#endif
     void exitCodeTest();
     void setEnvironment_data();
     void setEnvironment();
@@ -283,6 +287,14 @@ void tst_QProcess::simpleStart()
     QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qVariantValue<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
 }
+//-----------------------------------------------------------------------------
+void tst_QProcess::execute()
+{
+    QCOMPARE(QProcess::execute("testProcessNormal/testProcessNormal",
+                               QStringList() << "arg1" << "arg2"), 0);
+    QCOMPARE(QProcess::execute("nonexistingexe"), -2);
+}
+
 //-----------------------------------------------------------------------------
 void tst_QProcess::startDetached()
 {
@@ -1620,6 +1632,55 @@ void tst_QProcess::spaceArgsTest()
     delete process;
     process = 0;
 }
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::nativeArguments()
+{
+    QProcess proc;
+
+    // This doesn't actually need special quoting, so it is pointless to use
+    // native arguments here, but that's not the point of this test.
+    proc.setNativeArguments("hello kitty, \"*\"!");
+
+    proc.start(QString::fromLatin1("testProcessSpacesArgs/nospace"), QStringList());
+
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    QVERIFY(proc.waitForStarted(5000));
+    QVERIFY(proc.waitForFinished(5000));
+#else
+    QVERIFY(proc.waitForStarted(10000));
+    QVERIFY(proc.waitForFinished(10000));
+#endif
+
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
+    // Symbian test outputs to a file, so check that
+# ifdef Q_OS_SYMBIAN
+    FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","r");
+# else
+    FILE* file = fopen("\\temp\\qprocess_args_test.txt","r");
+# endif
+    char buf[256];
+    fgets(buf, 256, file);
+    fclose(file);
+    QStringList actual = QString::fromLatin1(buf).split("|");
+#else
+    QStringList actual = QString::fromLatin1(proc.readAll()).split("|");
+#endif
+    QVERIFY(!actual.isEmpty());
+    // not interested in the program name, it might be different.
+    actual.removeFirst();
+    QStringList expected;
+#if defined(Q_OS_WINCE)
+    expected << "hello" << "kitty," << "\"*\"!"; // Weird, weird ...
+#else
+    expected << "hello" << "kitty," << "*!";
+#endif
+    QCOMPARE(actual, expected);
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::exitCodeTest()
