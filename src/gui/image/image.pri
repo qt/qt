@@ -28,8 +28,7 @@ HEADERS += \
         image/qpixmapdata_p.h \
         image/qpixmapdatafactory_p.h \
         image/qpixmapfilter_p.h \
-        image/qimagepixmapcleanuphooks_p.h \
-
+        image/qimagepixmapcleanuphooks_p.h
 
 SOURCES += \
         image/qbitmap.cpp \
@@ -52,24 +51,23 @@ SOURCES += \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qnativeimage.cpp \
-        image/qimagepixmapcleanuphooks.cpp \
-
+        image/qimagepixmapcleanuphooks.cpp
 
 win32 {
     SOURCES += image/qpixmap_win.cpp
 }
-embedded {
+else:embedded {
     SOURCES += image/qpixmap_qws.cpp
 }
-x11 {
+else:x11 {
     HEADERS += image/qpixmap_x11_p.h
     SOURCES += image/qpixmap_x11.cpp
 }
-mac {
+else:mac {
     HEADERS += image/qpixmap_mac_p.h
     SOURCES += image/qpixmap_mac.cpp
 }
-symbian {
+else:symbian {
     HEADERS += image/qpixmap_s60_p.h
     SOURCES += image/qpixmap_s60.cpp
 }
@@ -87,42 +85,10 @@ SOURCES += \
         image/qxbmhandler.cpp \
         image/qxpmhandler.cpp
 
-# 3rd party / system PNG support
-!contains(QT_CONFIG, no-png) {
-    HEADERS += image/qpnghandler_p.h
-    SOURCES += image/qpnghandler.cpp
+!contains(QT_CONFIG, no-png):include($$PWD/qpnghandler.pri)
+else:DEFINES *= QT_NO_IMAGEFORMAT_PNG
 
-    contains(QT_CONFIG, system-png) {
-        unix|win32-g++*:LIBS_PRIVATE  += -lpng
-        win32:!win32-g++*:LIBS += libpng.lib
-    } else {
-        DEFINES *= QT_USE_BUNDLED_LIBPNG
-        !isEqual(QT_ARCH, i386):!isEqual(QT_ARCH, x86_64):DEFINES += PNG_NO_ASSEMBLER_CODE
-        INCLUDEPATH += ../3rdparty/libpng
-        SOURCES += ../3rdparty/libpng/png.c \
-          ../3rdparty/libpng/pngerror.c \
-          ../3rdparty/libpng/pngget.c \
-          ../3rdparty/libpng/pngmem.c \
-          ../3rdparty/libpng/pngpread.c \
-          ../3rdparty/libpng/pngread.c \
-          ../3rdparty/libpng/pngrio.c \
-          ../3rdparty/libpng/pngrtran.c \
-          ../3rdparty/libpng/pngrutil.c \
-          ../3rdparty/libpng/pngset.c \
-          ../3rdparty/libpng/pngtrans.c \
-          ../3rdparty/libpng/pngwio.c \
-          ../3rdparty/libpng/pngwrite.c \
-          ../3rdparty/libpng/pngwtran.c \
-          ../3rdparty/libpng/pngwutil.c
-
-        contains(QT_CONFIG, system-zlib) {
-            symbian:LIBS_PRIVATE += -llibz
-            else:if(unix|win32-g++*):LIBS_PRIVATE += -lz
-            else:LIBS += zdll.lib
-        } else {
-            INCLUDEPATH  += ../3rdparty/zlib
-        }
-    }
-} else {
-    DEFINES *= QT_NO_IMAGEFORMAT_PNG
-}
+contains(QT_CONFIG, jpeg):include($$PWD/qjpeghandler.pri)
+contains(QT_CONFIG, mng):include($$PWD/qmnghandler.pri)
+contains(QT_CONFIG, tiff):include($$PWD/qtiffhandler.pri)
+contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)

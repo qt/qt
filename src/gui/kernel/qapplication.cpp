@@ -81,7 +81,7 @@
 #include <private/qt_x11_p.h>
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
 #include "qinputcontextfactory.h"
 #endif
 
@@ -2771,7 +2771,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_win_set_cursor(cursorWidget, true);
 #elif defined(Q_WS_X11)
             qt_x11_enforce_cursor(cursorWidget, true);
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
             qt_symbian_set_cursor(cursorWidget, true);
 #endif
         }

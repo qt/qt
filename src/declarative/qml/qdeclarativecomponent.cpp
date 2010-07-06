@@ -68,7 +68,7 @@ class QByteArray;
 /*!
     \class QDeclarativeComponent
     \since 4.7
-    \brief The QDeclarativeComponent class encapsulates a QML component description.
+    \brief The QDeclarativeComponent class encapsulates a QML component definition.
     \mainclass
 
     Components are reusable, encapsulated QML elements with well-defined interfaces.
@@ -105,7 +105,7 @@ class QByteArray;
 /*!
     \qmlclass Component QDeclarativeComponent
     \since 4.7
-    \brief The Component element encapsulates a QML component description.
+    \brief The Component element encapsulates a QML component definition.
 
     Components are reusable, encapsulated QML elements with well-defined interfaces.
     They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
@@ -478,7 +478,8 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
 
     d->clear();
 
-    if (url.isRelative() && !url.isEmpty())
+    if ((url.isRelative() && !url.isEmpty())
+    || url.scheme() == QLatin1String("file")) // Workaround QTBUG-11929
         d->url = d->engine->baseUrl().resolved(url);
     else
         d->url = url;

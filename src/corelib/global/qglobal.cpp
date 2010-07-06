@@ -1622,7 +1622,7 @@ bool qSharedBuild()
   \macro Q_WS_S60
   \relates <QtGlobal>
 
-  Defined on S60.
+  Defined on S60 with the Avkon UI framework.
 
   \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS
  */
@@ -1813,7 +1813,6 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 #endif
 
 #ifdef Q_OS_SYMBIAN
-# ifdef Q_WS_S60
 static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
 
 QSysInfo::S60Version QSysInfo::s60Version()
@@ -1885,17 +1884,6 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
         return SV_Unknown;
     }
 }
-#else
-QSysInfo::S60Version QSysInfo::s60Version()
-{
-    return SV_S60_None;
-}
-
-QSysInfo::SymbianVersion QSysInfo::symbianVersion()
-{
-    return SV_Unknown;
-}
-# endif // ifdef Q_WS_S60
 #endif // ifdef Q_OS_SYMBIAN
 
 /*!

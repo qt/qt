@@ -47,7 +47,7 @@
 #ifdef QT_NO_IMAGEFORMAT_MNG
 #undef QT_NO_IMAGEFORMAT_MNG
 #endif
-#include "qmnghandler.h"
+#include <qmnghandler_p.h>
 
 #include <qiodevice.h>
 #include <qbytearray.h>

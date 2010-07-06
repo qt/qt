@@ -1843,7 +1843,7 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
             const QString msec_s(QLatin1String("0.") + s.mid(9, 4));
             const float msec(msec_s.toFloat(&ok));
             if (!ok)
-                return QTime();
+                return QTime(hour, minute, second, 0);
             return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
         }
     }
@@ -3304,12 +3304,37 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         if (tmp.size() == 10)
             return QDateTime(date);
 
+        tmp = tmp.mid(11);
+
         // Recognize UTC specifications
         if (tmp.endsWith(QLatin1Char('Z'))) {
             ts = Qt::UTC;
             tmp.chop(1);
         }
-        return QDateTime(date, QTime::fromString(tmp.mid(11), Qt::ISODate), ts);
+
+        // Recognize timezone specifications
+        QRegExp rx(QLatin1String("[+-]"));
+        if (tmp.contains(rx)) {
+            int idx = tmp.indexOf(rx);
+            QString tmp2 = tmp.mid(idx);
+            tmp = tmp.left(idx);
+            bool ok = true;
+            int ntzhour = 1;
+            int ntzminute = 3;
+            if ( tmp2.indexOf(QLatin1Char(':')) == 3 )
+               ntzminute = 4;
+            const int tzhour(tmp2.mid(ntzhour, 2).toInt(&ok));
+            const int tzminute(tmp2.mid(ntzminute, 2).toInt(&ok));
+            QTime tzt(tzhour, tzminute);
+            int utcOffset = (tzt.hour() * 60 + tzt.minute()) * 60;
+            if ( utcOffset != 0 ) {
+                ts = Qt::OffsetFromUTC;
+                QDateTime dt(date, QTime::fromString(tmp, Qt::ISODate), ts);
+                dt.setUtcOffset( utcOffset * (tmp2.startsWith(QLatin1Char('-')) ? -1 : 1) );
+                return dt;
+            }
+        }
+        return QDateTime(date, QTime::fromString(tmp, Qt::ISODate), ts);
     }
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:

@@ -341,6 +341,8 @@ class HtmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
+ public:
+    static bool debugging_on;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"

@@ -418,7 +418,7 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         QRuntimePixmapData *proxy = m_pixmapDatas.at(i);
         QPixmapData *newData = m_graphicsSystem->createPixmapData(proxy->m_data);
         // ### TODO Optimize. Openvg and s60raster graphics systems could switch internal ARGB32_PRE QImage buffers.
-        newData->fromImage(proxy->m_data->toImage(), Qt::AutoColor | Qt::OrderedAlphaDither);
+        newData->fromImage(proxy->m_data->toImage(), Qt::NoOpaqueDetection);
         delete proxy->m_data;
         proxy->m_data = newData;
         proxy->readBackInfo();

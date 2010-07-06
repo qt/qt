@@ -79,7 +79,7 @@ private slots:
     void maxLength();
     void masks();
     void validators();
-    void inputMethodHints();
+    void inputMethods();
 
     void cursorDelegate();
     void navigation();
@@ -175,7 +175,8 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+        int delta = abs(int(textinputObject->width()) - metricWidth);
+        QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
     }
@@ -608,18 +609,31 @@ void tst_qdeclarativetextinput::validators()
     delete canvas;
 }
 
-void tst_qdeclarativetextinput::inputMethodHints()
+void tst_qdeclarativetextinput::inputMethods()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethods.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    // test input method hints
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(input != 0);
+    QVERIFY(input->inputMethodHints() & Qt::ImhNoPredictiveText);
+    input->setInputMethodHints(Qt::ImhUppercaseOnly);
+    QVERIFY(input->inputMethodHints() & Qt::ImhUppercaseOnly);
 
     QVERIFY(canvas->rootObject() != 0);
-    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
-    QVERIFY(textinputObject != 0);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
-    textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    input->setFocus(true);
+    QVERIFY(input->hasFocus() == true);
+    // test that input method event is committed
+    QInputMethodEvent event;
+    event.setCommitString( "My ", -12, 0);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("My Hello world!"));
 
     delete canvas;
 }

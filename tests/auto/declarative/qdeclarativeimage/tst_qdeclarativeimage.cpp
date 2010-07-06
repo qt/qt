@@ -307,11 +307,10 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-mac.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-win32.png"));
+#elif defined(QT_ARCH_ARM)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-arm.png"));
 #else
-    if (sizeof(qreal) == sizeof(double))
-        QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
-    else
-        QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-float.png"));
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 #endif
 
     obj->setSourceSize(QSize(200,200));
@@ -324,11 +323,10 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-mac.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-win32.png"));
+#elif defined(QT_ARCH_ARM)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-arm.png"));
 #else
-    if (sizeof(qreal) == sizeof(double))
-        QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
-    else
-        QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-float.png"));
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
 #endif
     delete obj;
 }

@@ -347,6 +347,7 @@ void QDeclarativeContents::complete()
 
 void QDeclarativeContents::itemGeometryChanged(QDeclarativeItem *changed, const QRectF &newGeometry, const QRectF &oldGeometry)
 {
+    Q_UNUSED(changed)
     //### we can only pass changed if the left edge has moved left, or the right edge has moved right
     if (newGeometry.width() != oldGeometry.width() || newGeometry.x() != oldGeometry.x())
         calcWidth(/*changed*/);

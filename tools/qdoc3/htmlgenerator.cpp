@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 #define COMMAND_VERSION                 Doc::alias("version")
 int HtmlGenerator::id = 0;
+bool HtmlGenerator::debugging_on = false;
 
 QString HtmlGenerator::sinceTitles[] =
     {
@@ -2703,6 +2704,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
         marked.replace("</@type>", "");
     }
     out() << highlightedCode(marked, marker, relative);
+    debugging_on = false;
 }
 #endif
 
@@ -3097,9 +3099,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             for (int k = 0; k != 3; ++k) {
                 if (parseArg(src, typeTags[k], &i, n, &arg, &par1)) {
                     par1 = QStringRef();
-                    QString link = linkForNode(
-                            marker->resolveTarget(arg.toString(), myTree, relative),
-                            relative);
+                    const Node* n = marker->resolveTarget(arg.toString(), myTree, relative);
+                    QString link = linkForNode(n,relative);
                     addLink(link, arg, &html);
                     handled = true;
                     break;
@@ -4464,14 +4465,13 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
-                
-				if (++numTableRows % 2 == 1)
-					out() << "<tr class=\"odd\">";
-				else
-					out() << "<tr class=\"even\">";
+                if (++numTableRows % 2 == 1)
+                    out() << "<tr class=\"odd\">";
+                else
+                    out() << "<tr class=\"even\">";
 				
-				out() << "<td><p>";
-                //out() << "<tr><td>"; // old
+                out() << "<td><p>";
+
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
                     out() << "<span class=\"qmlreadonly\">read-only</span>";

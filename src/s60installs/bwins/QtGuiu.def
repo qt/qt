@@ -8181,7 +8181,7 @@ EXPORTS
 	?rowsInserted@QTreeView@@MAEXABVQModelIndex@@HH@Z @ 8180 NONAME ; void QTreeView::rowsInserted(class QModelIndex const &, int, int)
 	?rowsRemoved@QTreeView@@IAEXABVQModelIndex@@HH@Z @ 8181 NONAME ; void QTreeView::rowsRemoved(class QModelIndex const &, int, int)
 	?rubberBandSelectionMode@QGraphicsView@@QBE?AW4ItemSelectionMode@Qt@@XZ @ 8182 NONAME ; enum Qt::ItemSelectionMode QGraphicsView::rubberBandSelectionMode(void) const
-	?s60AdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::s60AdjustedPosition(void)
+	?symbianAdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::symbianAdjustedPosition(void)
 	?s60UpdateIsOpaque@QWidgetPrivate@@QAEXXZ @ 8184 NONAME ; void QWidgetPrivate::s60UpdateIsOpaque(void)
 	?saturation@QColor@@QBEHXZ @ 8185 NONAME ; int QColor::saturation(void) const
 	?saturationF@QColor@@QBEMXZ @ 8186 NONAME ; float QColor::saturationF(void) const
@@ -12859,4 +12859,24 @@ EXPORTS
 	?copy@QRasterPixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12858 NONAME ; void QRasterPixmapData::copy(class QPixmapData const *, class QRect const &)
 	?eglSwapBuffersRegion2NOK@QEgl@@YAHHHHPBH@Z @ 12859 NONAME ; int QEgl::eglSwapBuffersRegion2NOK(int, int, int, int const *)
 	?swapBuffersRegion2NOK@QEglContext@@QAE_NHPBVQRegion@@@Z @ 12860 NONAME ; bool QEglContext::swapBuffersRegion2NOK(int, class QRegion const *)
+	?OpenIniFileLC@QS60MainApplication@@UBEPAVCDictionaryStore@@AAVRFs@@@Z @ 12861 NONAME ; class CDictionaryStore * QS60MainApplication::OpenIniFileLC(class RFs &) const
+	?Reserved_MtsmObject@QS60MainAppUi@@MAEXXZ @ 12862 NONAME ; void QS60MainAppUi::Reserved_MtsmObject(void)
+	?HandleForegroundEventL@QS60MainAppUi@@MAEXH@Z @ 12863 NONAME ; void QS60MainAppUi::HandleForegroundEventL(int)
+	?OpenFileL@QS60MainDocument@@UAEPAVCFileStore@@HABVTDesC16@@AAVRFs@@@Z @ 12864 NONAME ; class CFileStore * QS60MainDocument::OpenFileL(int, class TDesC16 const &, class RFs &)
+	?HandleTouchPaneSizeChange@QS60MainAppUi@@UAEXXZ @ 12865 NONAME ; void QS60MainAppUi::HandleTouchPaneSizeChange(void)
+	?Reserved_MtsmPosition@QS60MainAppUi@@MAEXXZ @ 12866 NONAME ; void QS60MainAppUi::Reserved_MtsmPosition(void)
+	?ApplicationRect@QS60MainAppUi@@UBE?AVTRect@@XZ @ 12867 NONAME ; class TRect QS60MainAppUi::ApplicationRect(void) const
+	?HandleSystemEventL@QS60MainAppUi@@MAEXABVTWsEvent@@@Z @ 12868 NONAME ; void QS60MainAppUi::HandleSystemEventL(class TWsEvent const &)
+	?HandleApplicationSpecificEventL@QS60MainAppUi@@MAEXHABVTWsEvent@@@Z @ 12869 NONAME ; void QS60MainAppUi::HandleApplicationSpecificEventL(int, class TWsEvent const &)
+	?HandleError@QS60MainAppUi@@UAE?AW4TErrorHandlerResponse@@HABUSExtendedError@@AAVTDes16@@1@Z @ 12870 NONAME ; enum TErrorHandlerResponse QS60MainAppUi::HandleError(int, struct SExtendedError const &, class TDes16 &, class TDes16 &)
+	?PrepareToExit@QS60MainAppUi@@UAEXXZ @ 12871 NONAME ; void QS60MainAppUi::PrepareToExit(void)
+	?MopSupplyObject@QS60MainAppUi@@MAE?AVPtr@TTypeUid@@V3@@Z @ 12872 NONAME ; class TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(class TTypeUid)
+	?SetFadedL@QS60MainAppUi@@UAEXH@Z @ 12873 NONAME ; void QS60MainAppUi::SetFadedL(int)
+	?Exit@QS60MainAppUi@@UAEXXZ @ 12874 NONAME ; void QS60MainAppUi::Exit(void)
+	?ProcessCommandL@QS60MainAppUi@@UAEXH@Z @ 12875 NONAME ; void QS60MainAppUi::ProcessCommandL(int)
+	?OpenFileL@QS60MainDocument@@UAEXAAPAVCFileStore@@AAVRFile@@@Z @ 12876 NONAME ; void QS60MainDocument::OpenFileL(class CFileStore * &, class RFile &)
+	?HandleScreenDeviceChangedL@QS60MainAppUi@@MAEXXZ @ 12877 NONAME ; void QS60MainAppUi::HandleScreenDeviceChangedL(void)
+	?PreDocConstructL@QS60MainApplication@@UAEXXZ @ 12878 NONAME ; void QS60MainApplication::PreDocConstructL(void)
+	?NewAppServerL@QS60MainApplication@@UAEXAAPAVCApaAppServer@@@Z @ 12879 NONAME ; void QS60MainApplication::NewAppServerL(class CApaAppServer * &)
+	?HandleViewDeactivation@QS60MainAppUi@@UAEXABVTVwsViewId@@0@Z @ 12880 NONAME ; void QS60MainAppUi::HandleViewDeactivation(class TVwsViewId const &, class TVwsViewId const &)
 
