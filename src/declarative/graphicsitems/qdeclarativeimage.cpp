@@ -126,7 +126,7 @@ QDeclarativeImage::~QDeclarativeImage()
 QPixmap QDeclarativeImage::pixmap() const
 {
     Q_D(const QDeclarativeImage);
-    return d->pix;
+    return d->pix.pixmap();
 }
 
 void QDeclarativeImage::setPixmap(const QPixmap &pix)
@@ -140,7 +140,7 @@ void QDeclarativeImage::setPixmap(const QPixmap &pix)
 void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
 {
     Q_Q(QDeclarativeImage);
-    pix = pixmap;
+    pix.setPixmap(pixmap);
 
     q->setImplicitWidth(pix.width());
     q->setImplicitHeight(pix.height());

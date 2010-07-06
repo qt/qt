@@ -168,9 +168,6 @@ protected:
 private:
     Q_DISABLE_COPY(QDeclarativeText)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeText)
-
-    friend class QTextDocumentWithImageResources;
-    void reloadWithResources();
 };
 
 QT_END_NAMESPACE

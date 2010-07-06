@@ -1,2 +1,2 @@
 4:5:Unable to create type NestedErrorsType
-4:8:Invalid property assignment: double expected
+4:8:Invalid property assignment: number expected
