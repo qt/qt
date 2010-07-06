@@ -100,6 +100,10 @@ typedef struct {
 #define WINHTTP_NO_PROXY_NAME     NULL
 #define WINHTTP_NO_PROXY_BYPASS   NULL
 
+#define WINHTTP_ERROR_BASE                      12000
+#define ERROR_WINHTTP_LOGIN_FAILURE             (WINHTTP_ERROR_BASE + 15)
+#define ERROR_WINHTTP_AUTODETECTION_FAILED      (WINHTTP_ERROR_BASE + 180)
+
 QT_BEGIN_NAMESPACE
 
 typedef BOOL (WINAPI * PtrWinHttpGetProxyForUrl)(HINTERNET, LPCWSTR, WINHTTP_AUTOPROXY_OPTIONS*, WINHTTP_PROXY_INFO*);
@@ -320,7 +324,7 @@ void QWindowsSystemProxy::init()
 
         isAutoConfig = true;
         memset(&autoProxyOptions, 0, sizeof autoProxyOptions);
-        autoProxyOptions.fAutoLogonIfChallenged = true;
+        autoProxyOptions.fAutoLogonIfChallenged = false;
         if (ieProxyConfig.fAutoDetect) {
             autoProxyOptions.dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT;
             autoProxyOptions.dwAutoDetectFlags = WINHTTP_AUTO_DETECT_TYPE_DHCP |
@@ -377,10 +381,26 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             // change the scheme to https, maybe it'll work
             url.setScheme(QLatin1String("https"));
         }
-        if (ptrWinHttpGetProxyForUrl(sp->hHttpSession,
-                                     (LPCWSTR)url.toString().utf16(),
-                                     &sp->autoProxyOptions,
-                                     &proxyInfo)) {
+
+        bool getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
+                                                (LPCWSTR)url.toString().utf16(),
+                                                &sp->autoProxyOptions,
+                                                &proxyInfo);
+        DWORD getProxyError = GetLastError();
+
+        if (!getProxySucceeded
+            && (ERROR_WINHTTP_LOGIN_FAILURE == getProxyError)) {
+            // We first tried without AutoLogon, because this might prevent caching the result.
+            // But now we've to enable it (http://msdn.microsoft.com/en-us/library/aa383153%28v=VS.85%29.aspx)
+            sp->autoProxyOptions.fAutoLogonIfChallenged = TRUE;
+            getProxySucceeded = ptrWinHttpGetProxyForUrl(sp->hHttpSession,
+                                               (LPCWSTR)url.toString().utf16(),
+                                                &sp->autoProxyOptions,
+                                                &proxyInfo);
+            getProxyError = GetLastError();
+        }
+
+        if (getProxySucceeded) {
             // yes, we got a config for this URL
             QString proxyBypass = QString::fromWCharArray(proxyInfo.lpszProxyBypass);
             QStringList proxyServerList = splitSpaceSemicolon(QString::fromWCharArray(proxyInfo.lpszProxy));
@@ -395,6 +415,13 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         }
 
         // GetProxyForUrl failed
+
+        if (ERROR_WINHTTP_AUTODETECTION_FAILED == getProxyError) {
+            //No config file could be retrieved on the network.
+            //Don't search for it next time again.
+            sp->isAutoConfig = false;
+        }
+
         return sp->defaultResult;
     }
 
