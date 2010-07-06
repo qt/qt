@@ -99,7 +99,7 @@ static bool qt_pixmap_thread_test()
         return false;
     }
 #ifndef Q_WS_WIN
-    if (qApp->thread() != QThread::currentThread()) {
+    if (!QApplication::testAttribute(Qt::AA_X11InitThreads) && qApp->thread() != QThread::currentThread()) {
         qWarning("QPixmap: It is not safe to use pixmaps outside the GUI thread");
         return false;
     }
