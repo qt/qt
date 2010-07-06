@@ -194,45 +194,46 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
   \since 4.7
     \brief The QDeclarativeView class provides a widget for displaying a Qt Declarative user interface.
 
-    Any QGraphicsObject or QDeclarativeItem
-    created via QML can be placed on a standard QGraphicsScene and viewed with a standard
-    QGraphicsView.
+    QDeclarativeItem objects can be placed on a standard QGraphicsScene and 
+    displayed with QGraphicsView. QDeclarativeView is a QGraphicsView subclass 
+    provided as a convenience for displaying QML files, and connecting between 
+    QML and C++ Qt objects.
 
-    QDeclarativeView is a QGraphicsView subclass provided as a convenience for displaying QML
-    files, and connecting between QML and C++ Qt objects.
-
-    QDeclarativeView performs the following functions:
+    QDeclarativeView provides:
 
     \list
-    \o Manages QDeclarativeComponent loading and object creation.
-    \o Initializes QGraphicsView for optimal performance with QML:
+    \o Management of QDeclarativeComponent loading and object creation
+    \o Initialization of QGraphicsView for optimal performance with QML using these settings:
         \list
-        \o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState);
-        \o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-        \o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex);
+        \o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState)
+        \o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate)
+        \o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex)
         \endlist
-    \o Initializes QGraphicsView for QML key handling:
+    \o Initialization of QGraphicsView for QML key handling using these settings:
         \list
-        \o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus);
-        \o QGraphicsView::setFocusPolicy(Qt::StrongFocus);
-        \o QGraphicsScene::setStickyFocus(true);
+        \o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus)
+        \o QGraphicsView::setFocusPolicy(Qt::StrongFocus)
+        \o QGraphicsScene::setStickyFocus(true)
         \endlist
     \endlist
 
     Typical usage:
-    \code
-    ...
-    QDeclarativeView *view = new QDeclarativeView(this);
-    vbox->addWidget(view);
 
-    QUrl url = QUrl::fromLocalFile(fileName);
-    view->setSource(url);
+    \code
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile("myqmlfile.qml"));
     view->show();
     \endcode
+
+    Since QDeclarativeView is a QWidget-based class, it can be used to
+    display QML interfaces within QWidget-based GUI applications that do not
+    use the Graphics View framework.
 
     To receive errors related to loading and executing QML with QDeclarativeView,
     you can connect to the statusChanged() signal and monitor for QDeclarativeView::Error.
     The errors are available via QDeclarativeView::errors().
+
+    \sa {Integrating QML with existing Qt UI code}, {Using QML in C++ Applications}
 */
 
 
