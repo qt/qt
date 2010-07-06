@@ -43,7 +43,7 @@
 
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
-#include "qdatetime.h"
+#include "qelapsedtimer.h"
 
 #include "qobject_p.h"
 #include <private/qthread_p.h>
@@ -247,7 +247,7 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
     if (!d->threadData->eventDispatcher)
         return;
 
-    QTime start;
+    QElapsedTimer start;
     start.start();
     if (flags & DeferredDeletion)
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);

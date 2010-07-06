@@ -198,14 +198,9 @@ void tst_QTextOdfWriter::testWriteStyle2()
 {
     QTextBlockFormat bf; // = cursor.blockFormat();
     QList<QTextOption::Tab> tabs;
-    QTextOption::Tab tab1;
-    tab1.position = 40;
-    tab1.type = QTextOption::RightTab;
+    QTextOption::Tab tab1(40, QTextOption::RightTab);
     tabs << tab1;
-    QTextOption::Tab tab2;
-    tab2.position = 80;
-    tab2.type = QTextOption::DelimiterTab;
-    tab2.delimiter = 'o';
+    QTextOption::Tab tab2(80, QTextOption::DelimiterTab, 'o');
     tabs << tab2;
     bf.setTabPositions(tabs);
 

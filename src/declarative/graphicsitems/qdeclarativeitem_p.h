@@ -83,15 +83,16 @@ class QDeclarativeContents : public QObject, public QDeclarativeItemChangeListen
 {
     Q_OBJECT
 public:
-    QDeclarativeContents();
+    QDeclarativeContents(QDeclarativeItem *item);
     ~QDeclarativeContents();
 
     QRectF rectF() const;
 
-    void setItem(QDeclarativeItem *item);
-
     void childRemoved(QDeclarativeItem *item);
     void childAdded(QDeclarativeItem *item);
+
+    void calcGeometry() { calcWidth(); calcHeight(); }
+    void complete();
 
 Q_SIGNALS:
     void rectChanged(QRectF);

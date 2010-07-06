@@ -148,7 +148,7 @@ Item {
             PropertyChanges { target: tagButton; text: "OK" }
             PropertyChanges { target: tagButton; width: 28 }
             PropertyChanges { target: tagButton; height: 24 }
-            PropertyChanges { target: txtEdit; focus: true }
+            PropertyChanges { target: editor; focus: true }
         }
     ]
     transitions: [

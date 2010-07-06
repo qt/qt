@@ -66,7 +66,6 @@ Rectangle {
         }
 
         transitions: Transition {
-            from: "*"; to: "*"
             NumberAnimation { properties: "opacity"; duration: 400 }
         }
     }

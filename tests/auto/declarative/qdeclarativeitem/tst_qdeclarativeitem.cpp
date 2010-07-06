@@ -44,8 +44,14 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeview.h>
-#include <QtDeclarative/qdeclarativeitem.h>
+#include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativeitem_p.h>
 #include "../../../shared/util.h"
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
 
 class tst_QDeclarativeItem : public QObject
 
@@ -67,6 +73,8 @@ private slots:
     void transforms();
     void transforms_data();
     void childrenRect();
+    void childrenRectBug();
+    void childrenRectBug2();
 
     void childrenProperty();
     void resourcesProperty();
@@ -729,6 +737,45 @@ void tst_QDeclarativeItem::childrenRect()
     QCOMPARE(item->height(), qreal(0));
 
     delete o;
+}
+
+// QTBUG-11383
+void tst_QDeclarativeItem::childrenRectBug()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRectBug.qml"));
+    canvas->show();
+
+    QGraphicsObject *o = canvas->rootObject();
+    QDeclarativeItem *item = o->findChild<QDeclarativeItem*>("theItem");
+    QCOMPARE(item->width(), qreal(200));
+    QCOMPARE(item->height(), qreal(100));
+    QCOMPARE(item->x(), qreal(100));
+
+    delete canvas;
+}
+
+// QTBUG-11465
+void tst_QDeclarativeItem::childrenRectBug2()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRectBug2.qml"));
+    canvas->show();
+
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(canvas->rootObject());
+    QVERIFY(rect);
+    QDeclarativeItem *item = rect->findChild<QDeclarativeItem*>("theItem");
+    QCOMPARE(item->width(), qreal(100));
+    QCOMPARE(item->height(), qreal(110));
+    QCOMPARE(item->x(), qreal(130));
+
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    rectPrivate->setState("row");
+    QCOMPARE(item->width(), qreal(210));
+    QCOMPARE(item->height(), qreal(50));
+    QCOMPARE(item->x(), qreal(75));
+
+    delete canvas;
 }
 
 template<typename T>

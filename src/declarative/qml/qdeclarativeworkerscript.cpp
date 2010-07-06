@@ -523,7 +523,7 @@ void QDeclarativeWorkerScriptEngine::run()
     Messages can be passed between the new thread and the parent thread
     using \l sendMessage() and the \l {WorkerScript::onMessage}{onMessage()} handler.
 
-    Here is an example:
+    An example:
 
     \snippet doc/src/snippets/declarative/workerscript.qml 0
 
@@ -541,6 +541,9 @@ void QDeclarativeWorkerScriptEngine::run()
     called, triggering the \tt WorkerScript.onMessage() handler in
     \tt script.js. This in turn sends a reply message that is then received
     by the \tt onMessage() handler of \tt myWorker.
+
+    \sa {declarative/threading/workerscript}{WorkerScript example},
+        {declarative/threading/threadedlistmodel}{Threaded ListModel example}
 */
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)
 : QObject(parent), m_engine(0), m_scriptId(-1), m_componentComplete(true)

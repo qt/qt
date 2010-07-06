@@ -135,13 +135,13 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
     {SE_ToolTip,                QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
     {SE_ToolBar,                QS60StyleEnums::SP_QsnFrPopupSubCenter},
-    {SE_ToolBarButton,          QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
-    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
+    {SE_ToolBarButton,          QS60StyleEnums::SP_QgnFrSctrlButtonCenter},
+    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QgnFrSctrlButtonCenterPressed},
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
     {SE_Editor,                 QS60StyleEnums::SP_QsnFrInputCenter},
     {SE_TableItemPressed,       QS60StyleEnums::SP_QsnFrGridCenterPressed},
-    {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListPressed},
+    {SE_ListItemPressed,        QS60StyleEnums::SP_QsnFrListCenterPressed},
 };
 
 static const int frameElementsCount =
@@ -1750,45 +1750,77 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             }
             const bool enabled = optionMenuItem.state & State_Enabled;
             const bool checkable = optionMenuItem.checkType != QStyleOptionMenuItem::NotCheckable;
+            bool ignoreCheckMark = false;
+
+#ifndef QT_NO_COMBOBOX
+            if (qobject_cast<const QComboBox*>(widget))
+                ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
+#endif
 
             uint text_flags = Qt::AlignLeading | Qt::TextShowMnemonic | Qt::TextDontClip
                             | Qt::TextSingleLine | Qt::AlignVCenter;
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
                 text_flags |= Qt::TextHideMnemonic;
 
-            const bool selected = (option->state & State_Selected) && (option->state & State_Enabled);
-            if (selected)
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
-
             QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
             //todo: move the vertical spacing stuff into subElementRect
             const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
-            if (checkable){
-                const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
-                QStyleOptionMenuItem optionCheckBox;
-                optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
-                optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
-                optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
-                optionCheckBox.rect.moveCenter(QPoint(
-                        optionCheckBox.rect.center().x(), 
-                        menuItem->rect.center().y()));
-                const int moveByX = optionCheckBox.rect.width() + vSpacing;
-                if (optionMenuItem.direction == Qt::LeftToRight) {
-                    textRect.translate(moveByX, 0);
+            QStyleOptionMenuItem optionCheckBox;
+
+            //Regardless of checkbox visibility, make room for it, this mirrors native implementation,
+            //where text and icon placement is static regardless of content of menu item.
+            const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
+            optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
+            optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
+            optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
+            optionCheckBox.rect.moveCenter(QPoint(
+                    optionCheckBox.rect.center().x(), 
+                    menuItem->rect.center().y()));
+            const int moveByX = optionCheckBox.rect.width() + vSpacing +
+                    pixelMetric(PM_DefaultFrameWidth);
+            if (optionMenuItem.direction == Qt::LeftToRight) {
+                if (iconRect.isValid()) {
                     iconRect.translate(moveByX, 0);
                     iconRect.setWidth(iconRect.width() + vSpacing);
+                }
+                if (textRect.isValid()) {
+                    textRect.translate(moveByX, 0);
                     textRect.setWidth(textRect.width() - moveByX - vSpacing);
-                    optionCheckBox.rect.translate(vSpacing >> 1, hSpacing >> 1);
-                } else {
+                }
+                optionCheckBox.rect.translate(vSpacing + pixelMetric(PM_DefaultFrameWidth), hSpacing >> 1);
+            } else {
+                if (textRect.isValid())
                     textRect.setWidth(textRect.width() - moveByX);
+                if (iconRect.isValid()) {
                     iconRect.setWidth(iconRect.width() + vSpacing);
                     iconRect.translate(-optionCheckBox.rect.width() - vSpacing, 0);
-                    optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
                 }
-                drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
+                optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
             }
+
+            const bool selected = (option->state & State_Selected) && (option->state & State_Enabled);
+            if (selected) {
+                const int spacing = pixelMetric(PM_DefaultFrameWidth) * 2;
+                int start; int end;
+                if (QApplication::layoutDirection() == Qt::LeftToRight) {
+                    start = optionMenuItem.rect.left() + spacing;
+                    end = qMax(textRect.right(), iconRect.right() + spacing);
+                } else {
+                    start = qMax(spacing, qMin(textRect.left(), iconRect.left() - spacing));
+                    end = optionMenuItem.rect.right() - spacing;
+                }
+                //-1 adjustment to avoid highlight being on top of possible separator item
+                const QRect highlightRect = QRect(
+                        QPoint(start, option->rect.top()), 
+                        QPoint(end, option->rect.bottom() - 1));
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
+            }
+            
+            if (checkable && !ignoreCheckMark)
+                drawPrimitive(PE_IndicatorMenuCheckMark, &optionCheckBox, painter, widget);
+
             //draw icon and/or checkState
             QPixmap pix = menuItem->icon.pixmap(pixelMetric(PM_SmallIconSize),
                 enabled ? QIcon::Normal : QIcon::Disabled);
@@ -1799,7 +1831,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     textRect.translate(vSpacing, 0);
                 else
                     textRect.translate(-vSpacing, 0);
-                textRect.setWidth(textRect.width()-vSpacing);
+                textRect.setWidth(textRect.width() - vSpacing);
             }
 
             //draw indicators
@@ -1817,7 +1849,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointSouth;
                 painter->save();
                 painter->setPen(option->palette.windowText().color());
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnIndiSubMenu, painter, arrowOptions.rect,
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnIndiSubmenu, painter, arrowOptions.rect,
                     (flags | QS60StylePrivate::SF_ColorSkinned | arrowDirection));
                 painter->restore();
             }
@@ -1837,6 +1869,24 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QCommonStyle::drawItemText(painter, textRect, text_flags,
                     optionMenuItem.palette, enabled,
                     optionMenuItem.text, QPalette::Text);
+
+            //In Sym^3, native menu items have "lines" between them
+            if (QS60StylePrivate::isSingleClickUi()) {
+                const QColor lineColorAlpha = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 15, 0);
+                const int spacing = QS60StylePrivate::pixelMetric(PM_FrameCornerWidth);
+                //native platform sets each color byte to same value for "line 16" which just defines alpha for
+                //menuitem lines; lets use first byte "red".
+                QColor lineColor = optionMenuItem.palette.text().color();
+                if (lineColorAlpha.isValid())
+                    lineColor.setAlpha(lineColorAlpha.red());
+                painter->save();
+                painter->setPen(lineColor);
+
+                const int lineStartX = optionMenuItem.rect.left() + (QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) - 2) + spacing;
+                const int lineEndX = optionMenuItem.rect.right() - (QS60StylePrivate::pixelMetric(PM_FrameCornerWidth) - 2) - spacing;
+                painter->drawLine(QPoint(lineStartX, optionMenuItem.rect.bottom()), QPoint(lineEndX, optionMenuItem.rect.bottom()));
+                painter->restore();
+            }
             if (!enabled)
                 painter->restore();
         }
@@ -2233,6 +2283,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
                 option->palette.window().texture().cacheKey() ==
                     QS60StylePrivate::m_themePalette->window().texture().cacheKey())
+                //todo: for combobox listviews, the background should include area for menu scrollers,
+                //but this produces drawing issues as we need to turn clipping off.
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
@@ -2548,10 +2600,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 }
             }
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            //native items have small empty areas at the beginning and end of menu item
+            sz.setWidth(sz.width() + 2 * pixelMetric(PM_MenuHMargin) + 2 * QS60StylePrivate::pixelMetric(PM_FrameCornerWidth));
             if (QS60StylePrivate::isTouchSupported())
                 //Make itemview easier to use in touch devices
                 //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
-                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
+                sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin) - 8); //QCommonstyle adds 8 to height that this style handles through PM values
             break;
 #ifndef QT_NO_COMBOBOX
         case CT_ComboBox: {
@@ -2816,16 +2870,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                     }
                 break;
                 case SC_ComboBoxListBoxPopup: {
-                    const QRect desktopContent = QApplication::desktop()->availableGeometry();
-
-                    // take the size of this and position bottom above available area
-                    QRect popupRect;
-                    const int width = desktopContent.width() - pixelMetric(PM_LayoutRightMargin) - pixelMetric(PM_LayoutLeftMargin);
-                    popupRect.setWidth(width);
-                    popupRect.setHeight(desktopContent.height()); //combobox resets height anyway based on content
-                    popupRect.setBottom(desktopContent.bottom());
-                    popupRect.translate(pixelMetric(PM_LayoutLeftMargin), 0);
-                    ret = popupRect;
+                    ret = QApplication::desktop()->availableGeometry();
                     }
                 break;
             default:
@@ -2989,7 +3034,6 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                         ret.setWidth(indicatorWidth);
                     }
                 } else {
-                    ret = menuItem->rect;
                     if (!menuItem->icon.isNull())
                         if (menuItem->direction == Qt::LeftToRight)
                             ret.adjust(indicatorWidth, 0, 0, 0);
@@ -3321,13 +3365,13 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             part = QS60StyleEnums::SP_QgnNoteErased;
             break;
         case SP_ToolBarHorizontalExtensionButton:
-            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            part = QS60StyleEnums::SP_QgnIndiSubmenu;
             if (QApplication::layoutDirection() == Qt::RightToLeft)
                 adjustedFlags |= QS60StylePrivate::SF_PointSouth;
             break;
         case SP_ToolBarVerticalExtensionButton:
             adjustedFlags |= QS60StylePrivate::SF_PointEast;
-            part = QS60StyleEnums::SP_QgnIndiSubMenu;
+            part = QS60StyleEnums::SP_QgnIndiSubmenu;
             break;
 
         default:

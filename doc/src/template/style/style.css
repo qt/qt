@@ -256,9 +256,9 @@
 
     .sidebar .box h2
     {
-        font: normal 18px/1.2 Arial;
+        font: 600 16px/1.2 Arial;
         padding: 0;
-        min-height: 32px;
+/*        min-height: 32px;*/
     }
     .sidebar .box h2 span
     {
@@ -271,10 +271,10 @@
     }
     .sidebar #lookup.box h2 span
     {
-        background: url(../images/sprites-combined.png) no-repeat -6px -311px;
+/*        background: url(../images/sprites-combined.png) no-repeat -6px -311px;
         width: 27px;
         height: 35px;
-        margin-right: 13px;
+        margin-right: 13px;*/
     }
     .sidebar .box#topics h2
     {
@@ -282,10 +282,10 @@
     }
     .sidebar #topics.box h2 span
     {
-        background: url(../images/sprites-combined.png) no-repeat -94px -311px;
+    /*    background: url(../images/sprites-combined.png) no-repeat -94px -311px;
         width: 27px;
         height: 32px;
-        margin-right: 13px;
+        margin-right: 13px;*/
     }
     .sidebar .box#examples h2
     {
@@ -293,32 +293,30 @@
     }
     .sidebar #examples.box h2 span
     {
-        background: url(../images/sprites-combined.png) no-repeat -48px -311px;
+    /*    background: url(../images/sprites-combined.png) no-repeat -48px -311px;
         width: 30px;
         height: 31px;
-        margin-right: 9px;
+        margin-right: 9px;*/
     }
 
     .sidebar .box .list
     {
         display: block;
 		max-height:200px;
+		min-height:120px;
 		overflow-y:auto;
 		overflow-x:none;
     }
-    .sidebar .box .live
-    {
-        display: none;
-        height: 100px;
-        overflow: auto;
-    }
-    .list li a:hover, .live li a:hover
+    .list li a:hover
     {
         text-decoration: underline;
     }
     .sidebar .box ul
     {
-	padding:10px;
+	/*padding:10px;*/
+	padding-bottom:5px;
+	padding-left:10px;
+	padding-top:5px;
     }
     .sidebar .box ul li
     {
@@ -330,6 +328,14 @@
     {
         background: url(../images/box_bg.png) repeat-x 0 bottom;
     }
+	 .sidebar .box ul li.menuAlert
+    {
+        background: none;
+		color:gray;
+		font-style:italic;
+    }
+	
+
     .wrap
     {
         margin: 0 5px 0 208px;
@@ -461,11 +467,12 @@
 
     .wrap .content li
     {
-        padding-left: 12px;
+        /*padding-left: 12px;*/
         background: url(../images/bullet_sq.png) no-repeat 0 5px;
         font: normal 400 10pt/1 Verdana;
        /* color: #44a51c;*/
         margin-bottom: 10px; 
+		padding-left:12px;
     }
     .content li:hover
     {
@@ -493,6 +500,7 @@
     {
         line-height: 20px;
         padding: 5px;
+	/*	text-align:justify;*/
     }
     .wrap .content table p
     {
@@ -776,7 +784,7 @@
 		
 	td.rightAlign
 	{
-        padding: 3px 15px 3px 10px;
+        padding: 3px 5px 3px 10px;
 	}
     table tr.odd
     {
@@ -898,10 +906,14 @@
     }
 
 	.generic{
-		max-width:75%;
+		/*max-width:75%;*/
 	}
 	.generic td{
-		padding:0;
+		padding:5px;
+	}
+	
+	.generic .alphaChar{
+	margin-top:5px;
 	}
 	
 	.generic .odd .alphaChar{
@@ -915,7 +927,9 @@
 	.alignedsummary{}
 	.propsummary{}
 	.memItemLeft{}
-	.memItemRight{}
+	.memItemRight{
+		padding:3px 15px 3px 0;
+	}
 	.bottomAlign{}
 	.highlightedCode
 	{
@@ -923,7 +937,9 @@
 	}
 	.LegaleseLeft{}
 	.valuelist{}
-	.annotated{}
+	.annotated td{
+	        padding: 3px 5px 3px 5px;
+	}
 	.obsolete{}
 	.compat{}
 	.flags{}
@@ -984,6 +1000,7 @@
         border-color: #E6E6E6;
         font-weight: bold;
 		word-spacing:3px;
+		padding:3px 5px;
     }
 
 	.functionIndex {
@@ -1173,8 +1190,36 @@ pre.highlightedCode {
 	display: block;
 	overflow:hidden;
 }
-
+.floatingResult{
+	z-index:1;
+	position:relative;
+	padding-top:0px;
+	background-color:white;
+	border:solid 1px black;
+	height:250px;
+	width:600px;
+	overflow-x:hidden;
+	overflow-y:auto;
 }
+
+	.floatingResult:hover{
+		display:block;
+	}
+	.floatingResult:hover{
+		/*display:none;*/
+	}
+
+	.wrap .content ol li {
+	background:none;
+	font:400 10pt/1 Verdana;
+	margin-bottom:10px;
+	margin-left:12px;
+	}
+	.wrap .content ol li {
+	list-style-type:decimal;
+
+	}
+
 /* end of screen media */
 
 /* start of print media */

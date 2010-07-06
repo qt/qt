@@ -86,7 +86,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 # ifdef old_qDebug
 #   undef qDebug
-#   define qDebug QT_QDEBUG_MACRO
+#   define qDebug QT_NO_QDEBUG_MACRO
 #   undef old_qDebug
 # endif
 class QMacWindowChangeEvent;
@@ -177,6 +177,10 @@ public:
     void initContext(QGLContext *context, const QGLWidget* shareWidget);
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
+    void aboutToDestroy() {
+        if (glcx)
+            glcx->reset();
+    }
 
     QGLContext *glcx;
     QGLWidgetGLPaintDevice glDevice;

@@ -113,16 +113,18 @@ public:
   \since 4.7
     \brief The VisualItemModel allows items to be provided to a view.
 
-    The children of the VisualItemModel are provided in a model which
-    can be used in a view.  Note that no delegate should be
-    provided to a view since the VisualItemModel contains the
-    visual delegate (items).
+    A VisualItemModel contains the visual items to be used in a view.
+    When a VisualItemModel is used in a view, the view does not require
+    a delegate since the VisualItemModel already contains the visual
+    delegate (items).
 
     An item can determine its index within the
-    model via the \c VisualItemModel.index attached property.
+    model via the \l{VisualItemModel::index}{index} attached property.
 
     The example below places three colored rectangles in a ListView.
     \code
+    import Qt 4.7
+
     Rectangle {
         VisualItemModel {
             id: itemModel
@@ -139,11 +141,20 @@ public:
     \endcode
 
     \image visualitemmodel.png
+
+    \sa {declarative/modelviews/visualitemmodel}{VisualItemModel example}
 */
 QDeclarativeVisualItemModel::QDeclarativeVisualItemModel(QObject *parent)
     : QDeclarativeVisualModel(*(new QDeclarativeVisualItemModelPrivate), parent)
 {
 }
+
+/*!
+    \qmlattachedproperty int VisualItemModel::index
+    This attached property holds the index of this delegate's item within the model.
+
+    It is attached to each instance of the delegate.
+*/
 
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeVisualItemModel::children()
 {
@@ -607,30 +618,15 @@ QDeclarativeVisualDataModelData *QDeclarativeVisualDataModelPrivate::data(QObjec
     A VisualDataModel encapsulates a model and the delegate that will
     be instantiated for items in the model.
 
-    It is usually not necessary to create a VisualDataModel directly,
-    since the QML views will create one internally.
+    It is usually not necessary to create VisualDataModel elements.
+    However, it can be useful for manipulating and accessing the \l modelIndex 
+    when a QAbstractItemModel subclass is used as the 
+    model. Also, VisualDataModel is used together with \l Package to 
+    provide delegates to multiple views.
 
     The example below illustrates using a VisualDataModel with a ListView.
 
-    \code
-    VisualDataModel {
-        id: visualModel
-        model: myModel
-        delegate: Component {
-            Rectangle {
-                height: 25
-                width: 100
-                Text { text: "Name:" + name}
-            }
-        }
-    }
-    ListView {
-        width: 100
-        height: 100
-        anchors.fill: parent
-        model: visualModel
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/visualdatamodel.qml 0
 */
 
 QDeclarativeVisualDataModel::QDeclarativeVisualDataModel()
@@ -805,56 +801,22 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
 /*!
     \qmlproperty QModelIndex VisualDataModel::rootIndex
 
-    QAbstractItemModel provides a heirachical tree of data, whereas
+    QAbstractItemModel provides a hierarchical tree of data, whereas
     QML only operates on list data.  \c rootIndex allows the children of
     any node in a QAbstractItemModel to be provided by this model.
 
     This property only affects models of type QAbstractItemModel.
 
-    \code
-    // main.cpp
+    For example, here is a simple interactive file system browser.
+    When a directory name is clicked, the view's \c rootIndex is set to the
+    QModelIndex node of the clicked directory, thus updating the view to show
+    the new directory's contents.
 
-    int main(int argc, char ** argv)
-    {
-        QApplication app(argc, argv);
-
-        QDeclarativeView view;
-
-        QDirModel model;
-        view.rootContext()->setContextProperty("myModel", &model);
-
-        view.setSource(QUrl("qrc:view.qml"));
-        view.show();
-
-        return app.exec();
-    }
-
-    #include "main.moc"
-    \endcode
-
-    \code
-    // view.qml
-    import Qt 4.7
-
-    ListView {
-        id: view
-        width: 200
-        height: 200
-        model: VisualDataModel {
-            model: myModel
-            delegate: Component {
-                Rectangle {
-                    height: 25; width: 200
-                    Text { text: filePath }
-                    MouseArea {
-                        anchors.fill: parent;
-                        onClicked: if (hasModelChildren) view.model.rootIndex = view.model.modelIndex(index)
-                    }
-                }
-            }
-        }
-    }
-    \endcode
+    \c main.cpp:
+    \snippet doc/src/snippets/declarative/visualdatamodel_rootindex/main.cpp 0
+   
+    \c view.qml:
+    \snippet doc/src/snippets/declarative/visualdatamodel_rootindex/view.qml 0
 
     \sa modelIndex(), parentModelIndex()
 */
@@ -886,7 +848,7 @@ void QDeclarativeVisualDataModel::setRootIndex(const QVariant &root)
 /*!
     \qmlmethod QModelIndex VisualDataModel::modelIndex(int index)
 
-    QAbstractItemModel provides a heirachical tree of data, whereas
+    QAbstractItemModel provides a hierarchical tree of data, whereas
     QML only operates on list data.  This function assists in using
     tree models in QML.
 
@@ -906,7 +868,7 @@ QVariant QDeclarativeVisualDataModel::modelIndex(int idx) const
 /*!
     \qmlmethod QModelIndex VisualDataModel::parentModelIndex()
 
-    QAbstractItemModel provides a heirachical tree of data, whereas
+    QAbstractItemModel provides a hierarchical tree of data, whereas
     QML only operates on list data.  This function assists in using
     tree models in QML.
 
@@ -1000,10 +962,10 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
 
     The \a parts property selects a VisualDataModel which creates
     delegates from the part named.  This is used in conjunction with
-    the Package element.
+    the \l Package element.
 
     For example, the code below selects a model which creates
-    delegates named \e list from a Package:
+    delegates named \e list from a \l Package:
 
     \code
     VisualDataModel {

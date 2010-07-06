@@ -62,6 +62,9 @@ public:
     QByteArray defaultBuf;
     int ioIndex;
 
+    virtual qint64 peek(char *data, qint64 maxSize);
+    virtual QByteArray peek(qint64 maxSize);
+
 #ifndef QT_NO_QOBJECT
     // private slots
     void _q_emitSignals();
@@ -82,6 +85,21 @@ void QBufferPrivate::_q_emitSignals()
     signalsEmitted = false;
 }
 #endif
+
+qint64 QBufferPrivate::peek(char *data, qint64 maxSize)
+{
+    qint64 readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
+    memcpy(data, buf->constData() + pos, readBytes);
+    return readBytes;
+}
+
+QByteArray QBufferPrivate::peek(qint64 maxSize)
+{
+    qint64 readBytes = qMin(maxSize, static_cast<qint64>(buf->size()) - pos);
+    if (pos == 0 && maxSize >= buf->size())
+        return *buf;
+    return QByteArray(buf->constData() + pos, readBytes);
+}
 
 /*!
     \class QBuffer

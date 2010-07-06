@@ -5,6 +5,6 @@ CONFIG -= app_bundle
 INSTALLS =
 DESTDIR = ./
 
-symbian*: {
+symbian: {
 TARGET.EPOCSTACKSIZE =0x14000
 }

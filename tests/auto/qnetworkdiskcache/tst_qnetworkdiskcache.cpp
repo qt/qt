@@ -642,7 +642,7 @@ void tst_QNetworkDiskCache::crashWhenParentingCache()
     QNetworkAccessManager *manager = new QNetworkAccessManager();
     QNetworkDiskCache *diskCache = new QNetworkDiskCache(manager); // parent to qnam!
     // we expect the temp dir to be cleaned at some point anyway
-    diskCache->setCacheDirectory(QDir::tempPath() + "/cacheDir_" + QCoreApplication::applicationPid());
+    diskCache->setCacheDirectory(QString("%1/cacheDir_%2").arg(QDir::tempPath()).arg(QCoreApplication::applicationPid()));
     manager->setCache(diskCache);
 
     QUrl url("http://127.0.0.1:" + QString::number(server.serverPort()));

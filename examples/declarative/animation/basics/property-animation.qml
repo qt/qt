@@ -65,7 +65,8 @@ Item {
     // The shadow for the smiley face
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "images/shadow.png"; y: smiley.minHeight + 58
+        y: smiley.minHeight + 58
+        source: "images/shadow.png"
 
         // The scale property depends on the y position of the smiley face.
         scale: smiley.y * 0.5 / (smiley.minHeight - smiley.maxHeight)
@@ -77,7 +78,8 @@ Item {
         property int minHeight: 2 * window.height / 3
 
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "images/face-smile.png"; y: minHeight
+        y: minHeight
+        source: "images/face-smile.png"
 
         // Animate the y property. Setting loops to Animation.Infinite makes the
         // animation repeat indefinitely, otherwise it would only run once.

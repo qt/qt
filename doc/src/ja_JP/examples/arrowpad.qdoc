@@ -1,0 +1,234 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example linguist/arrowpad
+    \title サンプル: アローパッド
+
+    この例では、\e {Qt Linguist} の主なコンセプトである"文脈"について、
+    少し詳しく取り上げて説明します。
+    また、2つ以上の言語を使用する方法についても説明します。
+
+    \image linguist-arrowpad_en.png
+
+    アプリケーションで使用可能な言語の数に制限はありませんが、
+    ここではフランス語とオランダ語の2言語の翻訳を使用します。
+    \c arrowpad.pro の関連する行は以下のとおりです。
+
+    \snippet examples/linguist/arrowpad/arrowpad.pro 0
+    \codeline
+    \snippet examples/linguist/arrowpad/arrowpad.pro 1
+
+    \c lupdate を実行すると、2つの類似したメッセージファイル
+    \c arrowpad_fr.ts と \c arrowpad_nl.ts が作成されます。
+    これらのファイルにはすべてのソーステキストとその文脈が含まれます。
+    それらのテキストは \c tr() の呼び出しを通じて翻訳対象として
+    ソースコード内でマークされているものです。
+
+    Qt アプリケーションの翻訳の詳細については、
+    \l{Qt Linguist manual}{Qt Linguist マニュアル} をご覧ください。
+
+    \section1 各行の簡単な解説
+
+    \c arrowpad.h では、 QWidget の派生クラスである \c ArrowPad
+    クラスを定義します。
+    上記のスクリーンショットで
+    中央の 4 つのボタンを持つウィジェットが \c ArrowPad です。
+
+    \snippet examples/linguist/arrowpad/arrowpad.h 0
+    \snippet examples/linguist/arrowpad/arrowpad.h 1
+    \snippet examples/linguist/arrowpad/arrowpad.h 2
+
+    \c lupdate を実行するとソーステキストの抽出だけでなく、
+    文脈へのグループ化を行うことができます。
+    ソーステキストが表示されるクラスの名前が文脈となります。
+    従って、この例では、"ArrowPad" が
+    \c ArrowPad クラスの文字列の文脈です。
+    \c Q_OBJECT のマクロは、以下の内容で
+    \c ArrowPad に \c tr(x) を定義します:
+
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 0
+
+    各ソーステキストが表示されるクラスを把握しておくと、
+    \e {Qt Linguist} で論理的に関連のある文字列をグループ化することが出来ます。
+    例えば、ダイアログ内のすべての文字列には
+    ダイアログのクラス名の文脈が含まれるため、同時に表示されます。
+    文字列が表示される文脈によって翻訳の内容が影響を受ける場合があるため、
+    翻訳者にとって有用な情報となります。
+    一部の翻訳では、キーボードショートカットを変更する必要があります。
+    また、同じグループにまとめられた特定の文脈(クラス)
+    にすべてのソーステキストを含めることにより、
+    翻訳者はコンフリクトを起こすことなく、
+    より簡単にショートカットを変更できます。
+
+    \c arrowpad.cpp で、\c ArrowPad クラスを実装します。
+
+    \snippet examples/linguist/arrowpad/arrowpad.cpp 0
+    \snippet examples/linguist/arrowpad/arrowpad.cpp 1
+    \snippet examples/linguist/arrowpad/arrowpad.cpp 2
+    \snippet examples/linguist/arrowpad/arrowpad.cpp 3
+
+    ラベルはユーザ表示可能な文字列であるため、
+    ボタンのラベルごとに \c ArrowPad::tr() を呼び出します。
+
+    \image linguist-arrowpad_en.png
+
+    \snippet examples/linguist/arrowpad/mainwindow.h 0
+    \snippet examples/linguist/arrowpad/mainwindow.h 1
+
+    上記のスクリーンショットでは、ウィンドウ全体が \c MainWindow です。
+    これは、\c mainwindow.h ヘッダーファイルで定義します。
+    ここでも、\c MainWindow  が \e {Qt Linguist} の文脈になるよう、
+    \c Q_OBJECT を使用します。
+
+    \snippet examples/linguist/arrowpad/mainwindow.cpp 0
+
+    \c MainWindow と \c mainwindow.cpp を実装する際に、
+    \c ArrowPad クラスのインスタンスを作成します。
+
+    \snippet examples/linguist/arrowpad/mainwindow.cpp 1
+
+    また、\c MainWindow::tr() を、
+    アクションおよびショートカット用に、計 2 回呼び出します。
+
+    \c tr() を使用して、言語によって異なるキーをサポートします。
+    英語の場合、"Ctrl+Q" は Quit (終了) に適していますが、
+    オランダ語の翻訳者は "Ctrl+A" (Afsluiten の場合) を、
+    ドイツ語の翻訳者は "Strg+E" (Beenden の場合) を使うといいでしょう。
+    \key Ctrl キーショートカットを \c tr() で使用する場合は
+    引数を 2 つ使用して、
+    ショートカットが実行する機能を2番目の引数に記述してください。
+
+    \c main.cpp で定義した標準的な \c main() 関数は、以下のようになります。
+
+    \snippet examples/linguist/arrowpad/main.cpp 2
+    \snippet examples/linguist/arrowpad/main.cpp 3
+
+    現在のロケールに基づいて、使用する翻訳を選択します。
+    例えば、QLocale::system() は、
+    \c LANG 環境変数の設定によって影響を受ける場合があります。
+    \c .qm メッセージファイル(および TS ファイル)の命名規則に
+    ロケールを使用すると、
+    簡単にロケールに基づいて翻訳ファイルを選択することが
+    できるようになります。 
+
+    選択したロケールに QM メッセージファイルが存在しない場合、
+    元のソーステキストが使用され、エラーは生成されません。
+
+    \section1 フランス語からオランダ語に翻訳する
+
+    ここでは、サンプルアプリケーションをフランス語に翻訳することから始めます。
+    \e  {Qt Linguist} を起動し、\c arrowpad_fr.ts の作業を行います。
+    2つの文脈 ("ArrowPad" および "MainWindow")
+    にグループ化された7つのソーステキスト ("\&Up", "\&Left" 等)
+    が含まれているはずです。
+
+    次に、以下の翻訳を入力します:
+
+    \list
+    \o \c ArrowPad
+         \list
+         \o \&Up - \&Haut
+         \o \&Left - \&Gauche
+         \o \&Right - \&Droite
+         \o \&Down - \&Bas
+         \endlist
+    \o \c MainWindow
+         \list
+         \o E\&xit - \&Quitter
+         \o Ctrl+Q - Ctrl+Q
+         \o \&File - \&Fichier
+         \endlist
+    \endlist
+
+    翻訳の入力が終わったら、 \key{Ctrl+Return} (もしくは\gui {完了にして次へ}
+    ボタン)を押すと、
+    翻訳が完了とマークされ次のソーステキストに移動するため便利です。
+
+    ファイルを保存して、オランダ語の翻訳でも同じ手順を実行し、
+    \c arrowpad_nl.ts の作業を行います:
+
+    \list
+    \o \c ArrowPad
+         \list
+         \o \&Up - \&Omhoog
+         \o \&Left - \&Links
+         \o \&Right - \&Rechts
+         \o \&Down - Omlaa\&g
+         \endlist
+    \o \c MainWindow
+         \list
+         \o E\&xit - \&Afsluiten
+         \o Ctrl+Q - Ctrl+A
+         \o File - \&Bestand
+         \endlist
+    \endlist
+
+    \c tt1_fr.ts と \c tt1_nl.ts の翻訳ソースファイルは
+    QM ファイルに変換する必要があります。
+    以前と同様の方法で \e {Qt Linguist} を使用して変換できますが、
+    コマンドラインツール \c lrelease を使うと
+    \e {Qt Linguist} から個々の \gui {ファイル|リリース} を読み込まなくても、
+    アプリケーションの\e{すべての} QM ァイルを作成できます。
+
+    以下を入力します:
+
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 1
+
+    これにより、\c arrowpad_fr.qm と \c arrowpad_nl.qm が作成されます。
+    \c LANG 環境変数を \c fr に設定します。
+    Unix では、以下の2つのコマンドのいずれかが機能します。
+
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 2
+
+    Windows では、\c autoexec.bat を修正するか、以下を実行します。
+
+    \snippet doc/src/snippets/code/doc_src_examples_arrowpad.qdoc 3
+
+    プログラムを実行すると、フランス語版が表示されます:
+
+    \image linguist-arrowpad_fr.png
+
+    \c LANG=nl を設定し、オランダ語でも同じ手順を実行します。
+    これで、オランダ語版が表示されます:
+
+    \image linguist-arrowpad_nl.png
+
+    \section1 エクササイズ
+
+    \e {Qt Linguist} で未完了の翻訳を行います。
+    例えば、各テキストのチェックマークをクリックして翻訳を未完了の状態にして保存します。
+    その後、 \c lupdate 、\c lrelease 、サンプルの順に実行します。
+    この変更がどのような影響を及ぼしましたか。
+
+    \c LANG=fr_CA (フランス語(カナダ))に設定し、
+    サンプルプログラムを再実行します。
+    \c LANG=fr の場合と同じ結果になる理由を説明してください。
+
+    オランダ語翻訳のショートカットのいずれかを変更し、
+    \e \&Bestand と \e \&Boven の競合を解消します。
+*/

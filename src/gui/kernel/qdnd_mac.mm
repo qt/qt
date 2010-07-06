@@ -675,6 +675,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
             }
             if (atleastOne){
                 DisposeDrag(dragRef);
+                o->setMimeData(0);
+                o->deleteLater();
                 return action;
             }
         }
@@ -682,6 +684,8 @@ Qt::DropAction QDragManager::drag(QDrag *o)
         DragActions ret = kDragActionNothing;
         GetDragDropAction(dragRef, &ret);
         DisposeDrag(dragRef); //cleanup
+        o->setMimeData(0);
+        o->deleteLater();
         return qt_mac_dnd_map_mac_default_action(ret);
     }
     DisposeDrag(dragRef); //cleanup

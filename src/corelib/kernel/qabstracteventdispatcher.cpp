@@ -393,6 +393,27 @@ void QAbstractEventDispatcher::closingDown()
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qabstracteventdispatcher.cpp 0
 
+    Note that the type of the \a message is platform dependent. The
+    following table shows the \a {message}'s type on Windows, Mac, and
+    X11. You can do a static cast to these types.
+
+    \table
+        \header
+            \o Platform
+            \o type
+        \row
+            \o Windows
+            \o MSG
+        \row
+            \o X11
+            \o XEvent
+        \row
+            \o Mac
+            \o NSEvent
+    \endtable
+
+    
+
     \sa setEventFilter(), filterEvent()
 */
 
@@ -433,6 +454,9 @@ QAbstractEventDispatcher::EventFilter QAbstractEventDispatcher::setEventFilter(E
     for \e all messages received from the system to ensure
     compatibility with any extensions that may be used in the
     application.
+
+    Note that the type of \a message is platform dependent. See 
+    QAbstractEventDispatcher::EventFilter for details.
 
     \sa setEventFilter()
 */

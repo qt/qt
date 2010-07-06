@@ -862,7 +862,7 @@ EXPORTS
 	?cursorPositionChanged@QDeclarativeTextEdit@@IAEXXZ @ 861 NONAME ; void QDeclarativeTextEdit::cursorPositionChanged(void)
 	?cursorPositionChanged@QDeclarativeTextInput@@IAEXXZ @ 862 NONAME ; void QDeclarativeTextInput::cursorPositionChanged(void)
 	?cursorRect@QDeclarativeTextEdit@@QBE?AVQRect@@XZ @ 863 NONAME ABSENT ; class QRect QDeclarativeTextEdit::cursorRect(void) const
-	?cursorRect@QDeclarativeTextInput@@QBE?AVQRect@@XZ @ 864 NONAME ; class QRect QDeclarativeTextInput::cursorRect(void) const
+	?cursorRect@QDeclarativeTextInput@@QBE?AVQRect@@XZ @ 864 NONAME ABSENT ; class QRect QDeclarativeTextInput::cursorRect(void) const
 	?cursorVisibleChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 865 NONAME ; void QDeclarativeTextEdit::cursorVisibleChanged(bool)
 	?cursorVisibleChanged@QDeclarativeTextInput@@IAEX_N@Z @ 866 NONAME ; void QDeclarativeTextInput::cursorVisibleChanged(bool)
 	?customParser@QDeclarativeType@@QBEPAVQDeclarativeCustomParser@@XZ @ 867 NONAME ; class QDeclarativeCustomParser * QDeclarativeType::customParser(void) const
@@ -2568,10 +2568,10 @@ EXPORTS
 	?setSelectedTextColor@QDeclarativeTextInput@@QAEXABVQColor@@@Z @ 2567 NONAME ; void QDeclarativeTextInput::setSelectedTextColor(class QColor const &)
 	?setSelectionColor@QDeclarativeTextEdit@@QAEXABVQColor@@@Z @ 2568 NONAME ; void QDeclarativeTextEdit::setSelectionColor(class QColor const &)
 	?setSelectionColor@QDeclarativeTextInput@@QAEXABVQColor@@@Z @ 2569 NONAME ; void QDeclarativeTextInput::setSelectionColor(class QColor const &)
-	?setSelectionEnd@QDeclarativeTextEdit@@QAEXH@Z @ 2570 NONAME ; void QDeclarativeTextEdit::setSelectionEnd(int)
-	?setSelectionEnd@QDeclarativeTextInput@@QAEXH@Z @ 2571 NONAME ; void QDeclarativeTextInput::setSelectionEnd(int)
-	?setSelectionStart@QDeclarativeTextEdit@@QAEXH@Z @ 2572 NONAME ; void QDeclarativeTextEdit::setSelectionStart(int)
-	?setSelectionStart@QDeclarativeTextInput@@QAEXH@Z @ 2573 NONAME ; void QDeclarativeTextInput::setSelectionStart(int)
+	?setSelectionEnd@QDeclarativeTextEdit@@QAEXH@Z @ 2570 NONAME ABSENT ; void QDeclarativeTextEdit::setSelectionEnd(int)
+	?setSelectionEnd@QDeclarativeTextInput@@QAEXH@Z @ 2571 NONAME ABSENT ; void QDeclarativeTextInput::setSelectionEnd(int)
+	?setSelectionStart@QDeclarativeTextEdit@@QAEXH@Z @ 2572 NONAME ABSENT ; void QDeclarativeTextEdit::setSelectionStart(int)
+	?setSelectionStart@QDeclarativeTextInput@@QAEXH@Z @ 2573 NONAME ABSENT ; void QDeclarativeTextInput::setSelectionStart(int)
 	?setSmooth@QDeclarativeItem@@QAEX_N@Z @ 2574 NONAME ; void QDeclarativeItem::setSmooth(bool)
 	?setSmoothCache@QDeclarativePaintedItem@@QAEX_N@Z @ 2575 NONAME ; void QDeclarativePaintedItem::setSmoothCache(bool)
 	?setSnapMode@QDeclarativeListView@@QAEXW4SnapMode@1@@Z @ 2576 NONAME ; void QDeclarativeListView::setSnapMode(enum QDeclarativeListView::SnapMode)
@@ -3891,7 +3891,7 @@ EXPORTS
 	?wrapMode@QDeclarativeTextEdit@@QBE?AW4WrapMode@1@XZ @ 3890 NONAME ; enum QDeclarativeTextEdit::WrapMode QDeclarativeTextEdit::wrapMode(void) const
 	?wrapModeChanged@QDeclarativeText@@IAEXXZ @ 3891 NONAME ; void QDeclarativeText::wrapModeChanged(void)
 	?wrapModeChanged@QDeclarativeTextEdit@@IAEXXZ @ 3892 NONAME ; void QDeclarativeTextEdit::wrapModeChanged(void)
-	?xToPosition@QDeclarativeTextInput@@QAEHH@Z @ 3893 NONAME ; int QDeclarativeTextInput::xToPosition(int)
+	?xToPosition@QDeclarativeTextInput@@QAEHH@Z @ 3893 NONAME ABSENT ; int QDeclarativeTextInput::xToPosition(int)
 	?staticMetaObject@QDeclarativeSmoothedFollow@@2UQMetaObject@@B @ 3894 NONAME ; struct QMetaObject const QDeclarativeSmoothedFollow::staticMetaObject
 	?trUtf8@QDeclarativeCompiler@@SA?AVQString@@PBD0H@Z @ 3895 NONAME ; class QString QDeclarativeCompiler::trUtf8(char const *, char const *, int)
 	?findSignalByName@QDeclarativePropertyPrivate@@SA?AVQMetaMethod@@PBUQMetaObject@@ABVQByteArray@@@Z @ 3896 NONAME ; class QMetaMethod QDeclarativePropertyPrivate::findSignalByName(struct QMetaObject const *, class QByteArray const &)
@@ -4024,10 +4024,10 @@ EXPORTS
 	?restart@QDeclarativeItemPrivate@@SA_JAAVQElapsedTimer@@@Z @ 4023 NONAME ; long long QDeclarativeItemPrivate::restart(class QElapsedTimer &)
 	?get@QDeclarativeXmlListModel@@QBE?AVQScriptValue@@H@Z @ 4024 NONAME ; class QScriptValue QDeclarativeXmlListModel::get(int) const
 	?setScale@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4025 NONAME ; void QDeclarativeParentChange::setScale(class QDeclarativeScriptString)
-	?showInputPanelOnFocusChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4026 NONAME ; void QDeclarativeTextEdit::showInputPanelOnFocusChanged(bool)
-	?focusOutEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4027 NONAME ; void QDeclarativeTextInput::focusOutEvent(class QFocusEvent *)
+	?showInputPanelOnFocusChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4026 NONAME ABSENT ; void QDeclarativeTextEdit::showInputPanelOnFocusChanged(bool)
+	?focusOutEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4027 NONAME ABSENT ; void QDeclarativeTextInput::focusOutEvent(class QFocusEvent *)
 	?height@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4028 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::height(void) const
-	?showInputPanelOnFocus@QDeclarativeTextEdit@@QBE_NXZ @ 4029 NONAME ; bool QDeclarativeTextEdit::showInputPanelOnFocus(void) const
+	?showInputPanelOnFocus@QDeclarativeTextEdit@@QBE_NXZ @ 4029 NONAME ABSENT ; bool QDeclarativeTextEdit::showInputPanelOnFocus(void) const
 	?errorString@QDeclarativeComponent@@QBE?AVQString@@XZ @ 4030 NONAME ; class QString QDeclarativeComponent::errorString(void) const
 	?elapsed@QDeclarativeItemPrivate@@SA_JAAVQElapsedTimer@@@Z @ 4031 NONAME ; long long QDeclarativeItemPrivate::elapsed(class QElapsedTimer &)
 	?focusInEvent@QDeclarativeTextInput@@MAEXPAVQFocusEvent@@@Z @ 4032 NONAME ; void QDeclarativeTextInput::focusInEvent(class QFocusEvent *)
@@ -4035,22 +4035,22 @@ EXPORTS
 	?rotation@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4034 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::rotation(void) const
 	?paintedHeight@QDeclarativeTextEdit@@QBEMXZ @ 4035 NONAME ; float QDeclarativeTextEdit::paintedHeight(void) const
 	?paintedWidth@QDeclarativeTextEdit@@QBEMXZ @ 4036 NONAME ; float QDeclarativeTextEdit::paintedWidth(void) const
-	?focusOutEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4037 NONAME ; void QDeclarativeTextEdit::focusOutEvent(class QFocusEvent *)
+	?focusOutEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4037 NONAME ABSENT ; void QDeclarativeTextEdit::focusOutEvent(class QFocusEvent *)
 	??0QDeclarativeExpression@@IAE@PAVQDeclarativeContextData@@PAVQObject@@ABVQString@@AAVQDeclarativeExpressionPrivate@@@Z @ 4038 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContextData *, class QObject *, class QString const &, class QDeclarativeExpressionPrivate &)
 	??0QDeclarativeExpression@@QAE@PAVQDeclarativeContext@@PAVQObject@@ABVQString@@1@Z @ 4039 NONAME ; QDeclarativeExpression::QDeclarativeExpression(class QDeclarativeContext *, class QObject *, class QString const &, class QObject *)
 	?queryError@QDeclarativeXmlListModel@@AAEXPAXABVQString@@@Z @ 4040 NONAME ; void QDeclarativeXmlListModel::queryError(void *, class QString const &)
 	?errorString@QDeclarativeXmlListModel@@QBE?AVQString@@XZ @ 4041 NONAME ; class QString QDeclarativeXmlListModel::errorString(void) const
 	?consistentTime@QDeclarativeItemPrivate@@2_JA @ 4042 NONAME ; long long QDeclarativeItemPrivate::consistentTime
 	?scale@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4043 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::scale(void) const
-	?showInputPanelOnFocus@QDeclarativeTextInput@@QBE_NXZ @ 4044 NONAME ; bool QDeclarativeTextInput::showInputPanelOnFocus(void) const
+	?showInputPanelOnFocus@QDeclarativeTextInput@@QBE_NXZ @ 4044 NONAME ABSENT ; bool QDeclarativeTextInput::showInputPanelOnFocus(void) const
 	?focusInEvent@QDeclarativeTextEdit@@MAEXPAVQFocusEvent@@@Z @ 4045 NONAME ; void QDeclarativeTextEdit::focusInEvent(class QFocusEvent *)
 	?y@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4046 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::y(void) const
 	?setY@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4047 NONAME ; void QDeclarativeParentChange::setY(class QDeclarativeScriptString)
-	?setShowInputPanelOnFocus@QDeclarativeTextEdit@@QAEX_N@Z @ 4048 NONAME ; void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool)
+	?setShowInputPanelOnFocus@QDeclarativeTextEdit@@QAEX_N@Z @ 4048 NONAME ABSENT ; void QDeclarativeTextEdit::setShowInputPanelOnFocus(bool)
 	?paintedSizeChanged@QDeclarativeText@@IAEXXZ @ 4049 NONAME ; void QDeclarativeText::paintedSizeChanged(void)
 	?selectByMouseChanged@QDeclarativeTextEdit@@IAEX_N@Z @ 4050 NONAME ; void QDeclarativeTextEdit::selectByMouseChanged(bool)
 	?openSoftwareInputPanel@QDeclarativeTextInput@@QAEXXZ @ 4051 NONAME ; void QDeclarativeTextInput::openSoftwareInputPanel(void)
-	?setShowInputPanelOnFocus@QDeclarativeTextInput@@QAEX_N@Z @ 4052 NONAME ; void QDeclarativeTextInput::setShowInputPanelOnFocus(bool)
+	?setShowInputPanelOnFocus@QDeclarativeTextInput@@QAEX_N@Z @ 4052 NONAME ABSENT ; void QDeclarativeTextInput::setShowInputPanelOnFocus(bool)
 	?boundingRect@QDeclarativePaintedItem@@MBE?AVQRectF@@XZ @ 4053 NONAME ; class QRectF QDeclarativePaintedItem::boundingRect(void) const
 	?closeSoftwareInputPanel@QDeclarativeTextInput@@QAEXXZ @ 4054 NONAME ; void QDeclarativeTextInput::closeSoftwareInputPanel(void)
 	?setWidth@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4055 NONAME ; void QDeclarativeParentChange::setWidth(class QDeclarativeScriptString)
@@ -4067,11 +4067,38 @@ EXPORTS
 	?selectByMouse@QDeclarativeTextEdit@@QBE_NXZ @ 4066 NONAME ; bool QDeclarativeTextEdit::selectByMouse(void) const
 	?setHeight@QDeclarativeParentChange@@QAEXVQDeclarativeScriptString@@@Z @ 4067 NONAME ; void QDeclarativeParentChange::setHeight(class QDeclarativeScriptString)
 	?start@QDeclarativeItemPrivate@@SAXAAVQElapsedTimer@@@Z @ 4068 NONAME ; void QDeclarativeItemPrivate::start(class QElapsedTimer &)
-	?showInputPanelOnFocusChanged@QDeclarativeTextInput@@IAEX_N@Z @ 4069 NONAME ; void QDeclarativeTextInput::showInputPanelOnFocusChanged(bool)
+	?showInputPanelOnFocusChanged@QDeclarativeTextInput@@IAEX_N@Z @ 4069 NONAME ABSENT ; void QDeclarativeTextInput::showInputPanelOnFocusChanged(bool)
 	?x@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4070 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::x(void) const
 	?selectByMouseChanged@QDeclarativeTextInput@@IAEX_N@Z @ 4071 NONAME ; void QDeclarativeTextInput::selectByMouseChanged(bool)
 	?width@QDeclarativeParentChange@@QBE?AVQDeclarativeScriptString@@XZ @ 4072 NONAME ; class QDeclarativeScriptString QDeclarativeParentChange::width(void) const
 	?openSoftwareInputPanel@QDeclarativeTextEdit@@QAEXXZ @ 4073 NONAME ; void QDeclarativeTextEdit::openSoftwareInputPanel(void)
 	?cursorRectangleChanged@QDeclarativeTextEdit@@IAEXXZ @ 4074 NONAME ; void QDeclarativeTextEdit::cursorRectangleChanged(void)
 	?cursorRectangle@QDeclarativeTextEdit@@QBE?AVQRect@@XZ @ 4075 NONAME ; class QRect QDeclarativeTextEdit::cursorRectangle(void) const
+	?selectWord@QDeclarativeTextInput@@QAEXXZ @ 4076 NONAME ; void QDeclarativeTextInput::selectWord(void)
+	?positionToRectangle@QDeclarativeTextEdit@@QBE?AVQRectF@@H@Z @ 4077 NONAME ; class QRectF QDeclarativeTextEdit::positionToRectangle(int) const
+	?cursorRectangle@QDeclarativeTextInput@@QBE?AVQRect@@XZ @ 4078 NONAME ; class QRect QDeclarativeTextInput::cursorRectangle(void) const
+	?mouseDoubleClickEvent@QDeclarativeTextInput@@MAEXPAVQGraphicsSceneMouseEvent@@@Z @ 4079 NONAME ; void QDeclarativeTextInput::mouseDoubleClickEvent(class QGraphicsSceneMouseEvent *)
+	?positionAt@QDeclarativeTextEdit@@QBEHHH@Z @ 4080 NONAME ; int QDeclarativeTextEdit::positionAt(int, int) const
+	?cut@QDeclarativeTextEdit@@QAEXXZ @ 4081 NONAME ; void QDeclarativeTextEdit::cut(void)
+	?copy@QDeclarativeTextEdit@@QAEXXZ @ 4082 NONAME ; void QDeclarativeTextEdit::copy(void)
+	?select@QDeclarativeTextEdit@@QAEXHH@Z @ 4083 NONAME ; void QDeclarativeTextEdit::select(int, int)
+	?moveCursorSelection@QDeclarativeTextEdit@@QAEXH@Z @ 4084 NONAME ; void QDeclarativeTextEdit::moveCursorSelection(int)
+	?select@QDeclarativeTextInput@@QAEXHH@Z @ 4085 NONAME ; void QDeclarativeTextInput::select(int, int)
+	?paste@QDeclarativeTextEdit@@QAEXXZ @ 4086 NONAME ; void QDeclarativeTextEdit::paste(void)
+	?positionToRectangle@QDeclarativeTextInput@@QBE?AVQRectF@@H@Z @ 4087 NONAME ; class QRectF QDeclarativeTextInput::positionToRectangle(int) const
+	?positionAt@QDeclarativeTextInput@@QBEHH@Z @ 4088 NONAME ; int QDeclarativeTextInput::positionAt(int) const
+	?selectWord@QDeclarativeTextEdit@@QAEXXZ @ 4089 NONAME ; void QDeclarativeTextEdit::selectWord(void)
+	?setFooter@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 4090 NONAME ; void QDeclarativeGridView::setFooter(class QDeclarativeComponent *)
+	?isNamed@QDeclarativeState@@QBE_NXZ @ 4091 NONAME ; bool QDeclarativeState::isNamed(void) const
+	?initialSize@QDeclarativeView@@QBE?AVQSize@@XZ @ 4092 NONAME ; class QSize QDeclarativeView::initialSize(void) const
+	?childAt@QDeclarativeItem@@QBEPAV1@MM@Z @ 4093 NONAME ; class QDeclarativeItem * QDeclarativeItem::childAt(float, float) const
+	?footer@QDeclarativeGridView@@QBEPAVQDeclarativeComponent@@XZ @ 4094 NONAME ; class QDeclarativeComponent * QDeclarativeGridView::footer(void) const
+	?headerChanged@QDeclarativeGridView@@IAEXXZ @ 4095 NONAME ; void QDeclarativeGridView::headerChanged(void)
+	?setHeader@QDeclarativeGridView@@QAEXPAVQDeclarativeComponent@@@Z @ 4096 NONAME ; void QDeclarativeGridView::setHeader(class QDeclarativeComponent *)
+	?header@QDeclarativeGridView@@QBEPAVQDeclarativeComponent@@XZ @ 4097 NONAME ; class QDeclarativeComponent * QDeclarativeGridView::header(void) const
+	?footerChanged@QDeclarativeGridView@@IAEXXZ @ 4098 NONAME ; void QDeclarativeGridView::footerChanged(void)
+	?registerAutoParentFunction@QDeclarativePrivate@@YAHP6A?AW4AutoParentResult@1@PAVQObject@@0@Z@Z @ 4099 NONAME ; int QDeclarativePrivate::registerAutoParentFunction(enum QDeclarativePrivate::AutoParentResult (*)(class QObject *, class QObject *))
+	?parentFunctions@QDeclarativeMetaType@@SA?AV?$QList@P6A?AW4AutoParentResult@QDeclarativePrivate@@PAVQObject@@0@Z@@XZ @ 4100 NONAME ; class QList<enum QDeclarativePrivate::AutoParentResult (*)(class QObject *, class QObject *)> QDeclarativeMetaType::parentFunctions(void)
+	?inputMethodEvent@QDeclarativeTextInput@@MAEXPAVQInputMethodEvent@@@Z @ 4101 NONAME ; void QDeclarativeTextInput::inputMethodEvent(class QInputMethodEvent *)
+	?doUpdate@QDeclarativeBorderImage@@AAEXXZ @ 4102 NONAME ; void QDeclarativeBorderImage::doUpdate(void)
 

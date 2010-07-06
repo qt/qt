@@ -151,16 +151,6 @@ bool macHasAccessToWindowsServer()
 #undef Bool
 #endif
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 2 seconds.
-#define WAIT_FOR_CONDITION(expr, expected) \
-    do { \
-        const int step = 100; \
-        for (int i = 0; i < 2000 && expr != expected; i+=step) { \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -404,6 +394,10 @@ private slots:
 
     void taskQTBUG_7532_tabOrderWithFocusProxy();
     void movedAndResizedAttributes();
+    void childAt();
+#ifdef Q_WS_MAC
+    void childAt_unifiedToolBar();
+#endif
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -606,10 +600,14 @@ void tst_QWidget::getSetCheck()
     obj1.setAttribute(Qt::WA_InputMethodEnabled);
     obj1.setInputContext(var13);
     QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
+    // QWidget takes ownership, so check parent
+    QCOMPARE(var13->parent(), static_cast<QObject *>(&obj1));
+    // Check self assignment
+    obj1.setInputContext(obj1.inputContext());
+    QCOMPARE(static_cast<QInputContext *>(var13), obj1.inputContext());
     obj1.setInputContext((QInputContext *)0);
     QCOMPARE(qApp->inputContext(), obj1.inputContext());
     QVERIFY(qApp->inputContext() != var13);
-    //delete var13; // No delete, since QWidget takes ownership
 
     // bool QWidget::autoFillBackground()
     // void QWidget::setAutoFillBackground(bool)
@@ -1657,13 +1655,11 @@ void tst_QWidget::focusChainOnHide()
     child->setFocus();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(child->hasFocus(), true);
-    QCOMPARE(child->hasFocus(), true);
+    QTRY_COMPARE(child->hasFocus(), true);
     child->hide();
     qApp->processEvents();
 
-    WAIT_FOR_CONDITION(parent->hasFocus(), true);
-    QCOMPARE(parent->hasFocus(), true);
+    QTRY_COMPARE(parent->hasFocus(), true);
     QCOMPARE(parent, qApp->focusWidget());
 
     delete parent;
@@ -9233,7 +9229,8 @@ void tst_QWidget::syntheticEnterLeave()
     QCOMPARE(grandChild->numLeaveEvents, 0);
     QCOMPARE(child1->numLeaveEvents, 0);
 
-    QCOMPARE(window.numEnterEvents, 1);
+    // This event arrives asynchronously
+    QTRY_COMPARE(window.numEnterEvents, 1);
     QCOMPARE(child2->numEnterEvents, 1);
     QCOMPARE(grandChild->numEnterEvents, 1);
     QCOMPARE(child1->numEnterEvents, 0);
@@ -9324,7 +9321,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      child.show();
 
      // Make sure the child gets enter event and no mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 0);
 
      child.hide();
@@ -9335,7 +9332,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      // Make sure the child gets enter event and mouse move event.
      // Note that we verify event->button() and event->buttons()
      // in SELChild::mouseMoveEvent().
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 1);
 
      // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
@@ -9346,7 +9343,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      QTest::mouseClick(&parent, Qt::LeftButton);
 
      // Make sure the child gets enter event and one mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 1);
 
      child.hide();
@@ -9355,7 +9352,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      QTest::mouseClick(&parent, Qt::LeftButton);
 
      // Make sure the child gets enter event and no mouse move event.
-     QCOMPARE(child.numEnterEvents, 1);
+     QTRY_COMPARE(child.numEnterEvents, 1);
      QCOMPARE(child.numMouseMoveEvents, 0);
  }
 #endif
@@ -10346,6 +10343,99 @@ void tst_QWidget::movedAndResizedAttributes()
     QVERIFY(w.testAttribute(Qt::WA_Resized));
 #endif
 }
+
+void tst_QWidget::childAt()
+{
+    QWidget parent(0, Qt::FramelessWindowHint);
+    parent.resize(200, 200);
+
+    QWidget *child = new QWidget(&parent);
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setGeometry(20, 20, 160, 160);
+
+    QWidget *grandChild = new QWidget(child);
+    grandChild->setPalette(Qt::blue);
+    grandChild->setAutoFillBackground(true);
+    grandChild->setGeometry(-20, -20, 220, 220);
+
+    QVERIFY(!parent.childAt(19, 19));
+    QVERIFY(!parent.childAt(180, 180));
+    QCOMPARE(parent.childAt(20, 20), grandChild);
+    QCOMPARE(parent.childAt(179, 179), grandChild);
+
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents);
+    QCOMPARE(parent.childAt(20, 20), child);
+    QCOMPARE(parent.childAt(179, 179), child);
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    child->setMask(QRect(50, 50, 60, 60));
+
+    QVERIFY(!parent.childAt(69, 69));
+    QVERIFY(!parent.childAt(130, 130));
+    QCOMPARE(parent.childAt(70, 70), grandChild);
+    QCOMPARE(parent.childAt(129, 129), grandChild);
+
+    child->setAttribute(Qt::WA_MouseNoMask);
+    QCOMPARE(parent.childAt(69, 69), grandChild);
+    QCOMPARE(parent.childAt(130, 130), grandChild);
+    child->setAttribute(Qt::WA_MouseNoMask, false);
+
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents);
+    QCOMPARE(parent.childAt(70, 70), child);
+    QCOMPARE(parent.childAt(129, 129), child);
+    grandChild->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    grandChild->setMask(QRect(80, 80, 40, 40));
+
+    QCOMPARE(parent.childAt(79, 79), child);
+    QCOMPARE(parent.childAt(120, 120), child);
+    QCOMPARE(parent.childAt(80, 80), grandChild);
+    QCOMPARE(parent.childAt(119, 119), grandChild);
+
+    grandChild->setAttribute(Qt::WA_MouseNoMask);
+
+    QCOMPARE(parent.childAt(79, 79), grandChild);
+    QCOMPARE(parent.childAt(120, 120), grandChild);
+}
+
+#ifdef Q_WS_MAC
+void tst_QWidget::childAt_unifiedToolBar()
+{
+    QLabel *label = new QLabel(QLatin1String("foo"));
+    QToolBar *toolBar = new QToolBar;
+    toolBar->addWidget(new QLabel("dummy"));
+    toolBar->addWidget(label);
+
+    QMainWindow mainWindow;
+    mainWindow.addToolBar(toolBar);
+    mainWindow.show();
+
+    // Calculate the top-left corner of the tool bar and the label (in mainWindow's coordinates).
+    QPoint labelTopLeft = label->mapTo(&mainWindow, QPoint());
+    QPoint toolBarTopLeft = toolBar->mapTo(&mainWindow, QPoint());
+
+    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
+    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
+
+    // Enable unified tool bars.
+    mainWindow.setUnifiedTitleAndToolBarOnMac(true);
+    QTest::qWait(50);
+
+    // The tool bar is now in the "non-client" area of QMainWindow, i.e.
+    // outside the mainWindow's rect(), and since mapTo et al. doesn't work
+    // in that case (see commit 35667fd45ada49269a5987c235fdedfc43e92bb8),
+    // we use mapToGlobal/mapFromGlobal to re-calculate the corners.
+    QPoint oldToolBarTopLeft = toolBarTopLeft;
+    toolBarTopLeft = mainWindow.mapFromGlobal(toolBar->mapToGlobal(QPoint()));
+    QVERIFY(toolBarTopLeft != oldToolBarTopLeft);
+    QVERIFY(toolBarTopLeft.y() < 0);
+    labelTopLeft = mainWindow.mapFromGlobal(label->mapToGlobal(QPoint()));
+
+    QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
+    QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
+}
+#endif
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

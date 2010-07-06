@@ -221,6 +221,8 @@ public:
     QTextCharFormat charFormat() const;
     int charFormatIndex() const;
 
+    Qt::LayoutDirection textDirection() const;
+
     QString text() const;
 
     const QTextDocument *document() const;

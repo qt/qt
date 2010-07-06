@@ -151,6 +151,15 @@ public:
         len++;
         *first = c;
     }
+    void ungetBlock(const char* block, int size) {
+        if ((first - buf) < size) {
+            // underflow, the existing valid data needs to move to the end of the (potentially bigger) buffer
+            makeSpace(len + size, freeSpaceAtStart);
+            memcpy(first - size, block, size);
+        }
+        first -= size;
+        len += size;
+    }
 
 private:
     enum FreeSpacePos {freeSpaceAtStart, freeSpaceAtEnd};
@@ -222,7 +231,9 @@ public:
             accessMode = q_func()->isSequential() ? Sequential : RandomAccess;
         return accessMode == Sequential;
     }
-    
+
+    virtual qint64 peek(char *data, qint64 maxSize);
+    virtual QByteArray peek(qint64 maxSize);
 
 #ifdef QT_NO_QOBJECT
     QIODevice *q_ptr;

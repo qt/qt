@@ -885,8 +885,7 @@ void QGraphicsScenePrivate::removePopup(QGraphicsWidget *widget, bool itemIsDyin
             ungrabKeyboard(static_cast<QGraphicsItem *>(widget), itemIsDying);
         }
         if (!itemIsDying && widget->isVisible()) {
-            widget->hide();
-            widget->QGraphicsItem::d_ptr->explicitlyHidden = 0;
+            widget->QGraphicsItem::d_ptr->setVisibleHelper(false, /* explicit = */ false);
         }
     }
 }
@@ -4163,6 +4162,25 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
                                                                 wheelEvent->scenePos(),
                                                                 wheelEvent->widget());
 
+#ifdef Q_WS_MAC
+    // On Mac, ignore the event if the first item under the mouse is not the last opened
+    // popup (or one of its descendant)
+    if (!d->popupWidgets.isEmpty() && !wheelCandidates.isEmpty() && wheelCandidates.first() != d->popupWidgets.back() && !d->popupWidgets.back()->isAncestorOf(wheelCandidates.first())) {
+        wheelEvent->accept();
+        return;
+    }
+#else
+    // Find the first popup under the mouse (including the popup's descendants) starting from the last.
+    // Remove all popups after the one found, or all or them if no popup is under the mouse.
+    // Then continue with the event.
+    QList<QGraphicsWidget *>::const_iterator iter = d->popupWidgets.end();
+    while (--iter >= d->popupWidgets.begin() && !wheelCandidates.isEmpty()) {
+        if (wheelCandidates.first() == *iter || (*iter)->isAncestorOf(wheelCandidates.first()))
+            break;
+        d->removePopup(*iter);
+    }
+#endif
+
     bool hasSetFocus = false;
     foreach (QGraphicsItem *item, wheelCandidates) {
         if (!hasSetFocus && item->isEnabled()
@@ -6100,8 +6118,15 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                     if (ev.isAccepted() || ev.isAccepted(g)) {
                         conflictedGestures.remove(g);
                         // mark the item as a gesture target
-                        if (item)
+                        if (item) {
                             gestureTargets.insert(g, item.data());
+                            QHash<QGraphicsObject *, QSet<QGesture *> >::iterator it, e;
+                            it = cachedItemGestures.begin();
+                            e = cachedItemGestures.end();
+                            for(; it != e; ++it)
+                                it.value().remove(g);
+                            cachedItemGestures[item.data()].insert(g);
+                        }
                         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                                 << "override was accepted:"
                                 << g << item.data();
@@ -6270,7 +6295,8 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
 {
     Q_ASSERT(original);
     QGraphicsItem *originalItem = gestureTargets.value(original);
-    Q_ASSERT(originalItem);
+    if (originalItem == 0) // we only act on accepted gestures, which implies it has a target.
+        return;
 
     // iterate over all active gestures and for each find the owner
     // if the owner is part of our sub-hierarchy, cancel it.

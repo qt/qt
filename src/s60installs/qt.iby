@@ -80,12 +80,12 @@ file=ABI_DIR\BUILD_DIR\qmlfolderlistmodelplugin.dll      SHARED_LIB_DIR\qmlfolde
 file=ABI_DIR\BUILD_DIR\qmlgesturesplugin.dll      SHARED_LIB_DIR\qmlgesturesplugin.dll
 file=ABI_DIR\BUILD_DIR\qmlparticlesplugin.dll      SHARED_LIB_DIR\qmlparticlesplugin.dll
 
-data=\epoc32\data\z\resource\qt\imports\org\webkit\qmlwebkitplugin.qtplugin    resource\qt\imports\org\webkit\qmlwebkitplugin.qtplugin
+data=\epoc32\data\z\resource\qt\imports\QtWebKit\qmlwebkitplugin.qtplugin    resource\qt\imports\QtWebKit\qmlwebkitplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin    resource\qt\imports\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin    resource\qt\imports\Qt\labs\gestures\qmlgesturesplugin.qtplugin
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin    resource\qt\imports\Qt\labs\particles\qmlparticlesplugin.qtplugin
 
-data=\epoc32\data\z\resource\qt\imports\org\webkit\qmldir    resource\qt\imports\org\webkit\qmldir
+data=\epoc32\data\z\resource\qt\imports\QtWebKit\qmldir    resource\qt\imports\QtWebKit\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\folderlistmodel\qmldir    resource\qt\imports\Qt\labs\folderlistmodel\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\gestures\qmldir    resource\qt\imports\Qt\labs\gestures\qmldir
 data=\epoc32\data\z\resource\qt\imports\Qt\labs\particles\qmldir    resource\qt\imports\Qt\labs\particles\qmldir

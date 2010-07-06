@@ -576,7 +576,7 @@ QtAbstractWebPopup* ChromeClientQt::createSelectPopup()
 #elif !defined(QT_NO_COMBOBOX)
     return new QtFallbackWebPopup;
 #else
-    return result;
+    return 0;
 #endif
 }
 

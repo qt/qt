@@ -892,13 +892,15 @@ QPngHandler::~QPngHandler()
 
 bool QPngHandler::canRead() const
 {
-    if (d->state == QPngHandlerPrivate::Ready) {
-        if (!canRead(device()))
-            return false;
+    if (d->state == QPngHandlerPrivate::Ready && !canRead(device()))
+        return false;
+
+    if (d->state != QPngHandlerPrivate::Error) {
         setFormat("png");
         return true;
     }
-    return d->state != QPngHandlerPrivate::Error;
+
+    return false;
 }
 
 bool QPngHandler::canRead(QIODevice *device)

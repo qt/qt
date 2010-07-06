@@ -25,6 +25,10 @@ symbian {
 
     # Workaround for abld toolchain problem to make ARMV6 qtmain.lib link with GCCE apps
     symbian-abld: QMAKE_CXXFLAGS.ARMCC += --dllimport_runtime
+
+    # Having MMP_RULES_DONT_EXPORT_ALL_CLASS_IMPEDIMENTA will cause s60main.lib be unlinkable
+    # against GCCE apps, so remove it
+    MMP_RULES -= $$MMP_RULES_DONT_EXPORT_ALL_CLASS_IMPEDIMENTA
 } else {
     error("$$_FILE_ is intended only for Symbian!")
 }

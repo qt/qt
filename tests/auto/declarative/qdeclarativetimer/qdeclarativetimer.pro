@@ -4,9 +4,7 @@ macx:CONFIG -= app_bundle
 
 SOURCES += tst_qdeclarativetimer.cpp
 
-symbian: {
-    DEFINES += SRCDIR=\".\"
-} else {
+!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

@@ -358,6 +358,13 @@ QDeclarativePathView::~QDeclarativePathView()
 }
 
 /*!
+    \qmlattachedproperty PathView PathView::view
+    This attached property holds the view that manages this delegate instance.
+
+    It is attached to each instance of the delegate.
+*/
+
+/*!
     \qmlattachedproperty bool PathView::onPath
     This attached property holds whether the item is currently on the path.
 

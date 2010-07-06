@@ -31,9 +31,6 @@ symbian {
                ssl/qsslsocket_openssl.cpp \
                ssl/qsslsocket_openssl_symbols.cpp
 
-    # Include Qt's default CA bundle
-    RESOURCES += network.qrc
-
     # Add optional SSL libs
     LIBS_PRIVATE += $$OPENSSL_LIBS
 }

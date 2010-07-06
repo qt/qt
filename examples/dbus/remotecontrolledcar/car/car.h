@@ -41,14 +41,12 @@
 #ifndef CAR_H
 #define CAR_H
 
-#include <QGraphicsItem>
-#include <QObject>
+#include <QGraphicsObject>
 #include <QBrush>
 
-class Car : public QObject, public QGraphicsItem
+class Car : public QGraphicsObject
 {
     Q_OBJECT
-
 public:
     Car();
     QRectF boundingRect() const;

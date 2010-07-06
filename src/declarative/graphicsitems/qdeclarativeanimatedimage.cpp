@@ -63,9 +63,10 @@ QT_BEGIN_NAMESPACE
     \inherits Image
     \since 4.7
 
-    This item provides for playing animations stored as images containing a series of frames,
-    such as GIF files. The full list of supported formats can be determined with
-    QMovie::supportedFormats().
+    The AnimatedImage element provides for playing animations stored as images containing a series of frames,
+    such as GIF files. 
+    
+    The full list of supported formats can be determined with QMovie::supportedFormats().
 
     \table
     \row

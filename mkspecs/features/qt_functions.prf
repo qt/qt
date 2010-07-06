@@ -51,8 +51,9 @@ defineTest(qtAddLibrary) {
             INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
         }
         isEqual(LIB_NAME, QtWebKit) {
-            # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
+            # Needed for because relative inclusion problem in toolchain
             INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtXmlPatterns
+            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
         }
         isEqual(LIB_NAME, QtXmlPatterns) {
             # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain

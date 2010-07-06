@@ -1566,7 +1566,6 @@ void QPainter::initFrom(const QWidget *widget)
         d->engine->setDirty(QPaintEngine::DirtyBrush);
         d->engine->setDirty(QPaintEngine::DirtyFont);
     }
-    d->state->layoutDirection = widget->layoutDirection();
 }
 
 
@@ -1876,7 +1875,7 @@ bool QPainter::begin(QPaintDevice *pd)
         QWidget *widget = static_cast<QWidget *>(d->original_device);
         initFrom(widget);
     } else {
-        d->state->layoutDirection = QApplication::layoutDirection();
+        d->state->layoutDirection = Qt::LayoutDirectionAuto;
         // make sure we have a font compatible with the paintdevice
         d->state->deviceFont = d->state->font = QFont(d->state->deviceFont, device());
     }
@@ -2394,6 +2393,8 @@ void QPainter::setCompositionMode(CompositionMode mode)
         qWarning("QPainter::setCompositionMode: Painter not active");
         return;
     }
+    if (d->state->composition_mode == mode)
+        return;
     if (d->extended) {
         d->state->composition_mode = mode;
         d->extended->compositionModeChanged();
@@ -4241,8 +4242,6 @@ void QPainter::drawEllipse(const QRectF &r)
         return;
 
     QRectF rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);
@@ -4284,8 +4283,6 @@ void QPainter::drawEllipse(const QRect &r)
         return;
 
     QRect rect(r.normalized());
-    if (rect.isEmpty())
-        return;
 
     if (d->extended) {
         d->extended->drawEllipse(rect);
@@ -8087,7 +8084,10 @@ start_lengthVariant:
     Sets the layout direction used by the painter when drawing text,
     to the specified \a direction.
 
-    \sa layoutDirection(), drawText(), {QPainter#Settings}{Settings}
+    The default is Qt::LayoutDirectionAuto, which will implicitly determine the
+    direction from the text drawn.
+
+    \sa QTextOption::setTextDirection(), layoutDirection(), drawText(), {QPainter#Settings}{Settings}
 */
 void QPainter::setLayoutDirection(Qt::LayoutDirection direction)
 {
@@ -8099,12 +8099,12 @@ void QPainter::setLayoutDirection(Qt::LayoutDirection direction)
 /*!
     Returns the layout direction used by the painter when drawing text.
 
-    \sa setLayoutDirection(), drawText(), {QPainter#Settings}{Settings}
+    \sa QTextOption::textDirection(), setLayoutDirection(), drawText(), {QPainter#Settings}{Settings}
 */
 Qt::LayoutDirection QPainter::layoutDirection() const
 {
     Q_D(const QPainter);
-    return d->state ? d->state->layoutDirection : Qt::LeftToRight;
+    return d->state ? d->state->layoutDirection : Qt::LayoutDirectionAuto;
 }
 
 QPainterState::QPainterState(const QPainterState *s)

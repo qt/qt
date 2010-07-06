@@ -147,7 +147,7 @@ void QGraphicsLinearLayoutPrivate::removeGridItem(QGridLayoutItem *gridItem)
 {
     int index = gridItem->firstRow(orientation);
     engine.removeItem(gridItem);
-    engine.removeRow(index, orientation);
+    engine.removeRows(index, 1, orientation);
 }
 
 void QGraphicsLinearLayoutPrivate::fixIndex(int *index) const

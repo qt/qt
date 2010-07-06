@@ -246,6 +246,7 @@ struct GPostEventSource
     GSource source;
     QAtomicInt serialNumber;
     int lastSerialNumber;
+    QEventDispatcherGlibPrivate *d;
 };
 
 static gboolean postEventSourcePrepare(GSource *s, gint *timeout)
@@ -274,6 +275,7 @@ static gboolean postEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
     source->lastSerialNumber = source->serialNumber;
     QCoreApplication::sendPostedEvents();
+    source->d->runTimersOnceWithNormalPriority();
     return true; // i dunno, george...
 }
 
@@ -313,6 +315,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     postEventSource = reinterpret_cast<GPostEventSource *>(g_source_new(&postEventSourceFuncs,
                                                                         sizeof(GPostEventSource)));
     postEventSource->serialNumber = 1;
+    postEventSource->d = this;
     g_source_set_can_recurse(&postEventSource->source, true);
     g_source_attach(&postEventSource->source, mainContext);
 

@@ -77,6 +77,7 @@ private slots:
     void isRegistered_data();
     void isRegistered();
     void unregisterType();
+    void QTBUG11316_registerStreamBuiltin();
 
 };
 
@@ -316,6 +317,13 @@ void tst_QMetaType::unregisterType()
     QCOMPARE(QMetaType::isRegistered(typeId), true);
     QMetaType::unregisterType("RegUnreg");
     QCOMPARE(QMetaType::isRegistered(typeId), false);
+}
+
+void tst_QMetaType::QTBUG11316_registerStreamBuiltin()
+{
+    //should not crash;
+    qRegisterMetaTypeStreamOperators<QString>("QString");
+    qRegisterMetaTypeStreamOperators<QVariant>("QVariant");
 }
 
 QTEST_MAIN(tst_QMetaType)

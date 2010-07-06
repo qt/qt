@@ -672,23 +672,7 @@ QKeyMapperPrivate::updateKeyboard()
 #endif
     if (iso639Code) {
         keyboardInputLocale = QLocale(QCFString::toQString(iso639Code));
-        QString monday = keyboardInputLocale.dayName(1);
-        bool rtl = false;
-        for (int i = 0; i < monday.length(); ++i) {
-            switch (monday.at(i).direction()) {
-            default:
-                break;
-            case QChar::DirR:
-            case QChar::DirAL:
-            case QChar::DirRLE:
-            case QChar::DirRLO:
-                rtl = true;
-                break;
-            }
-            if (rtl)
-                break;
-        }
-        keyboardInputDirection = rtl ? Qt::RightToLeft : Qt::LeftToRight;
+        keyboardInputDirection = keyboardInputLocale.textDirection();
     } else {
         keyboardInputLocale = QLocale::c();
         keyboardInputDirection = Qt::LeftToRight;
@@ -882,14 +866,27 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         UInt32 macModifiers = 0;
         GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, 0,
                           sizeof(macModifiers), 0, &macModifiers);
+#ifdef QT_MAC_USE_COCOA
+        // The unicode characters in the range 0xF700-0xF747 are reserved
+        // by Mac OS X for transient use as keyboard function keys. We
+        // wont send 'text' for such key events. This is done to match
+        // behavior on other platforms.
+        unsigned int *unicodeKey = (unsigned int*)info;
+        if (*unicodeKey >= 0xf700 && *unicodeKey <= 0xf747)
+            text = QString();
+        bool isAccepted;
+#endif
         handled_event = QKeyMapper::sendKeyEvent(widget, grab,
                                                  (ekind == kEventRawKeyUp) ? QEvent::KeyRelease : QEvent::KeyPress,
                                                  qtKey, modifiers, text, ekind == kEventRawKeyRepeat, 0,
                                                  macScanCode, macVirtualKey, macModifiers
 #ifdef QT_MAC_USE_COCOA
-                                                 ,static_cast<bool *>(info)
+                                                 ,&isAccepted
 #endif
                                                  );
+#ifdef QT_MAC_USE_COCOA
+        *unicodeKey = (unsigned int)isAccepted;
+#endif
     }
     return handled_event;
 }

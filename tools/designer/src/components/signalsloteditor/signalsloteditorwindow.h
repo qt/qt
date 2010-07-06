@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 class QDesignerFormWindowInterface;
 class QDesignerFormEditorInterface;
 class QModelIndex;
+class QSortFilterProxyModel;
 class QTreeView;
 class QToolButton;
 
@@ -84,6 +85,7 @@ private:
     QToolButton *m_add_button, *m_remove_button;
     QDesignerFormEditorInterface *m_core;
     ConnectionModel *m_model;
+    QSortFilterProxyModel *m_proxy_model;
     bool m_handling_selection_change;
 };
 

@@ -42,7 +42,10 @@
 import Qt 4.7
 
 Image {
+    id: header
+
     property alias editUrl: urlInput.url
+    property bool urlChanged: false
 
     source: "pics/titlebar-bg.png"; fillMode: Image.TileHorizontally
 
@@ -91,19 +94,34 @@ Image {
                 onUrlEntered: {
                     webBrowser.urlString = url
                     webBrowser.focus = true
+                    header.urlChanged = false
                 }
+                onUrlChanged: header.urlChanged = true
             }
 
             Button {
                 id: reloadButton
                 anchors { right: parent.right; rightMargin: 4 }
-                action: webView.reload; image: "pics/view-refresh.png"; visible: webView.progress == 1.0
+                action: webView.reload; image: "pics/view-refresh.png"
+                visible: webView.progress == 1.0 && !header.urlChanged
             }
 
             Button {
                 id: stopButton
                 anchors { right: parent.right; rightMargin: 4 }
-                action: webView.stop; image: "pics/edit-delete.png"; visible: webView.progress < 1.0
+                action: webView.stop; image: "pics/edit-delete.png"
+                visible: webView.progress < 1.0 && !header.urlChanged
+            }
+
+            Button {
+                id: goButton
+                anchors { right: parent.right; rightMargin: 4 }
+                onClicked: {
+                    webBrowser.urlString = urlInput.url
+                    webBrowser.focus = true
+                    header.urlChanged = false
+                }
+                image: "pics/go-jump-locationbar.png"; visible: header.urlChanged
             }
         }
     }

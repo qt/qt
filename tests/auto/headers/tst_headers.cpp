@@ -79,7 +79,7 @@ private:
 
 tst_Headers::tst_Headers() :
     copyrightPattern("\\*\\* Copyright \\(C\\) 20[0-9][0-9] Nokia Corporation and/or its subsidiary\\(-ies\\)."),
-    licensePattern("\\*\\* \\$QT_BEGIN_LICENSE:(LGPL|BSD|3RDPARTY|LGPL-ONLY)\\$"),
+    licensePattern("\\*\\* \\$QT_BEGIN_LICENSE:(LGPL|BSD|3RDPARTY|LGPL-ONLY|FDL)\\$"),
     moduleTest(QLatin1String("\\*\\* This file is part of the .+ of the Qt Toolkit."))
 {
 }

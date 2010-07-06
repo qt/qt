@@ -172,6 +172,9 @@ private slots:
     void fromData();
     void loadFromDataNullValues();
 
+    void loadFromDataImage_data();
+    void loadFromDataImage();
+
     void preserveDepth();
     void splash_crash();
 
@@ -1538,6 +1541,40 @@ void tst_QPixmap::loadFromDataNullValues()
     pixmap.loadFromData(bla, 0);
     QVERIFY(pixmap.isNull());
     }
+}
+
+void tst_QPixmap::loadFromDataImage_data()
+{
+    QTest::addColumn<QString>("imagePath");
+#ifdef Q_OS_SYMBIAN
+    const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
+#else
+    const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
+#endif
+    QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
+    QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
+    QTest::newRow("designer_indexed8_with_alpha.png") << prefix + "/designer_indexed8_with_alpha.png";
+    QTest::newRow("designer_rgb32.png") << prefix + "/designer_rgb32.png";
+    QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
+    QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
+    QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+}
+
+void tst_QPixmap::loadFromDataImage()
+{
+    QFETCH(QString, imagePath);
+
+    QImage imageRef(imagePath);
+    QPixmap pixmapWithCopy = QPixmap::fromImage(imageRef);
+
+    QFile file(imagePath);
+    file.open(QIODevice::ReadOnly);
+    QByteArray rawData = file.readAll();
+
+    QPixmap directLoadingPixmap;
+    directLoadingPixmap.loadFromData(rawData);
+
+    QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
 }
 
 void tst_QPixmap::task_246446()

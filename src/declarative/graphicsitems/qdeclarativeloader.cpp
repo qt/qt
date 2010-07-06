@@ -112,26 +112,34 @@ void QDeclarativeLoaderPrivate::initResize()
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based
-    subtree from a QML URL or Component.
+    subtree from a URL or Component.
 
-    Loader instantiates an item from a component. The component to
-    instantiate may be specified directly by the \l sourceComponent
+    The Loader element instantiates an item from a component. The component to
+    be instantiated may be specified directly by the \l sourceComponent
     property, or loaded from a URL via the \l source property.
 
-    It is also an effective means of delaying the creation of a component
-    until it is required:
+    Loader can be used to delay the creation of a component until it is required.
+    For example, this loads "Page1.qml" as a component into the \l Loader element
+    when the \l MouseArea is clicked:
+
     \code
     import Qt 4.7
 
-    Loader { id: pageLoader }
+    Item {
+        width: 200; height: 200
 
-    Rectangle {
         MouseArea { 
             anchors.fill: parent
             onClicked: pageLoader.source = "Page1.qml"
         }
+
+        Loader { id: pageLoader }
     }
     \endcode
+
+    Note that Loader is like any other graphical Item and needs to be positioned 
+    and sized accordingly to become visible. When a component is loaded, the 
+    Loader is automatically resized to the size of the component.
 
     If the Loader source is changed, any previous items instantiated
     will be destroyed.  Setting \l source to an empty string, or setting
@@ -225,7 +233,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
 
 /*!
     \qmlproperty Component Loader::sourceComponent
-    The sourceComponent property holds the \l{Component} to instantiate.
+    This property holds the \l{Component} to instantiate.
 
     \qml
     Item {
@@ -238,6 +246,8 @@ void QDeclarativeLoader::setSource(const QUrl &url)
         Loader { sourceComponent: redSquare; x: 10 }
     }
     \endqml
+
+    Note this value must hold a \l Component object; it cannot be a \l Item.
 
     \sa source, progress
 */
@@ -401,7 +411,7 @@ void QDeclarativeLoader::componentComplete()
 /*!
     \qmlsignal Loader::onLoaded()
 
-    This handler is called when the \l status becomes Loader.Ready, or on successful
+    This handler is called when the \l status becomes \c Loader.Ready, or on successful
     initial load.
 */
 

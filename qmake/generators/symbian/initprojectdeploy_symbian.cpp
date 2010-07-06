@@ -50,6 +50,7 @@
 #include <symbian/epocroot.h>
 
 #define SYSBIN_DIR "/sys/bin"
+#define HW_Z_DIR "epoc32/data/z"
 
 #define SUFFIX_DLL "dll"
 #define SUFFIX_EXE "exe"
@@ -65,10 +66,11 @@ static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 {
     // Libraries are plugins if deployment path is something else than
     // SYSBIN_DIR with or without drive letter
-    if (0 == info.suffix().compare(QLatin1String(SUFFIX_DLL), Qt::CaseInsensitive) &&
-            (devicePath.size() < 8 ||
-             (0 != devicePath.compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive) &&
-              0 != devicePath.mid(1).compare(QLatin1String(":" SYSBIN_DIR), Qt::CaseInsensitive)))) {
+    if (0 == info.suffix().compare(QLatin1String(SUFFIX_DLL), Qt::CaseInsensitive)
+            && (devicePath.size() < 8
+             || (0 != devicePath.compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)
+                && 0 != devicePath.mid(1).compare(QLatin1String(":" SYSBIN_DIR), Qt::CaseInsensitive)
+                && 0 != devicePath.compare(epocRoot() + QLatin1String(HW_Z_DIR SYSBIN_DIR))))) {
         return true;
     } else {
         return false;
@@ -172,7 +174,13 @@ void initProjectDeploySymbian(QMakeProject* project,
     if (targetPath.size() > 1) {
         targetPathHasDriveLetter = targetPath.at(1) == QLatin1Char(':');
     }
-    QString deploymentDrive = targetPathHasDriveLetter ? targetPath.left(2) : QLatin1String("c:");
+
+    QString deploymentDrive;
+    if (0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+        deploymentDrive = epocRoot() + HW_Z_DIR;
+    } else {
+        deploymentDrive = targetPathHasDriveLetter ? targetPath.left(2) : QLatin1String("c:");
+    }
 
     foreach(QString item, project->values("DEPLOYMENT")) {
         QString devicePath = project->first(item + ".path");
@@ -190,6 +198,7 @@ void initProjectDeploySymbian(QMakeProject* project,
             devicePathWithoutDrive.remove(0,2);
         }
         if (!deployBinaries
+                && 0 != platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))
                 && !devicePathWithoutDrive.isEmpty()
                 && (0 == devicePathWithoutDrive.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
                     || 0 == devicePathWithoutDrive.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
@@ -209,35 +218,29 @@ void initProjectDeploySymbian(QMakeProject* project,
             // Create output path
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('/') + devicePath));
         } else {
-            if (!platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
+            if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
                     devicePath = epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
                     devicePath = epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
             } else {
-                if (!devicePathHasDriveLetter) {
-                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
-                        //For plugin deployment under ARM no needed drive letter
-                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
-                    } else if (targetPathHasDriveLetter) {
-                        // Drive letter needed if targetpath contains one and it is not already in
-                        devicePath = deploymentDrive + devicePath;
-                    }
-                } else {
-                    //it is necessary to delete drive letter for ARM deployment
-                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
-                        devicePath.remove(0,2);
-                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
-                    }
+                if (devicePathHasDriveLetter
+                    && 0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+                    devicePath.remove(0,2);
+                }
+                if (0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))
+                    || (!devicePathHasDriveLetter && targetPathHasDriveLetter)) {
+                    devicePath = deploymentDrive + devicePath;
                 }
             }
         }
 
         devicePath.replace(QLatin1String("\\"), QLatin1String("/"));
 
-        if (!deployBinaries &&
-                0 == devicePath.right(8).compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)) {
+        if (!deployBinaries
+                && 0 == devicePath.right(8).compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)
+                && 0 != platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
             // Skip deploying to SYSBIN_DIR for anything but binary deployments
             // Note: Deploying pre-built binaries also follow this rule, so emulator builds
             // will not get those deployed. Since there is no way to differentiate currently
@@ -281,7 +284,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                                 deploymentList.append(CopyItem(
                                     Option::fixPathToLocalOS(targetPath.absolutePath() + "/" + info.fileName(),
                                     false, true),
-                                    fixPathToEpocOS(deploymentDrive + QLatin1String(SYSBIN_DIR "/")
+                                    fixPathToEpocOS(deploymentDrive + QLatin1String("/" SYSBIN_DIR "/")
                                     + info.fileName())));
                             }
                         }
@@ -314,7 +317,8 @@ void initProjectDeploySymbian(QMakeProject* project,
                     if (isPlugin(iterator.fileInfo(), devicePath)) {
                         // This deploys pre-built plugins. Other pre-built binaries will deploy normally,
                         // as they have SYSBIN_DIR target path.
-                        if (deployBinaries) {
+                        if (deployBinaries
+                            || (0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM)))) {
                             if (devicePathHasDriveLetter) {
                                 deploymentList.append(CopyItem(
                                     Option::fixPathToLocalOS(absoluteItemPath + "/" + iterator.fileName()),
@@ -323,7 +327,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                             } else {
                                 deploymentList.append(CopyItem(
                                     Option::fixPathToLocalOS(absoluteItemPath + "/" + iterator.fileName()),
-                                    fixPathToEpocOS(deploymentDrive + QLatin1String(SYSBIN_DIR "/")
+                                    fixPathToEpocOS(deploymentDrive + QLatin1String("/" SYSBIN_DIR "/")
                                     + iterator.fileName())));
                             }
                         }
@@ -338,6 +342,19 @@ void initProjectDeploySymbian(QMakeProject* project,
                     }
                 }
             }
+        }
+    }
+
+    // Remove deployments that do not actually do anything
+    if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))
+        || 0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+        QMutableListIterator<CopyItem> i(deploymentList);
+        while(i.hasNext()) {
+            CopyItem &item = i.next();
+            QFileInfo fromItem(item.from);
+            QFileInfo toItem(item.to);
+            if (fromItem == toItem)
+                i.remove();
         }
     }
 }

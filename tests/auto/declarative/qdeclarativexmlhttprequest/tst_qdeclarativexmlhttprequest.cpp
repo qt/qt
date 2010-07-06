@@ -48,6 +48,11 @@
 
 #define SERVER_PORT 14445
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define SRCDIR "."
+#endif
+
 class tst_qdeclarativexmlhttprequest : public QObject
 {
     Q_OBJECT

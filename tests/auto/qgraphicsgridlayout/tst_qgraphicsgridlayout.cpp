@@ -741,31 +741,73 @@ void tst_QGraphicsGridLayout::setColumnFixedWidth()
 // public qreal columnSpacing(int column) const
 void tst_QGraphicsGridLayout::columnSpacing()
 {
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout();
-    scene.addItem(widget);
-    widget->setLayout(layout);
-    populateLayout(layout, 3, 2);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-    QCOMPARE(layout->columnSpacing(0), 0.0);
+    {
+        QGraphicsScene scene;
+        QGraphicsView view(&scene);
+        QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+        QGraphicsGridLayout *layout = new QGraphicsGridLayout();
+        scene.addItem(widget);
+        widget->setLayout(layout);
+        populateLayout(layout, 3, 2);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
+        QCOMPARE(layout->columnSpacing(0), 0.0);
 
-    layout->setColumnSpacing(0, 20);
-    view.show();
-    widget->show();
-    widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
-    QApplication::processEvents();
+        layout->setColumnSpacing(0, 20);
+        view.show();
+        widget->show();
+        widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
+        QApplication::processEvents();
 
-    QCOMPARE(layout->itemAt(0,0)->geometry().left(),   0.0);
-    QCOMPARE(layout->itemAt(0,0)->geometry().right(), 25.0);
-    QCOMPARE(layout->itemAt(0,1)->geometry().left(),  45.0);
-    QCOMPARE(layout->itemAt(0,1)->geometry().right(), 70.0);
-    QCOMPARE(layout->itemAt(0,2)->geometry().left(),  70.0);
-    QCOMPARE(layout->itemAt(0,2)->geometry().right(), 95.0);
+        QCOMPARE(layout->itemAt(0,0)->geometry().left(),   0.0);
+        QCOMPARE(layout->itemAt(0,0)->geometry().right(), 25.0);
+        QCOMPARE(layout->itemAt(0,1)->geometry().left(),  45.0);
+        QCOMPARE(layout->itemAt(0,1)->geometry().right(), 70.0);
+        QCOMPARE(layout->itemAt(0,2)->geometry().left(),  70.0);
+        QCOMPARE(layout->itemAt(0,2)->geometry().right(), 95.0);
 
-    delete widget;
+        delete widget;
+    }
+
+    {
+        // don't include items and spacings that was previously part of the layout
+        // (horizontal)
+        QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        populateLayout(layout, 3, 1);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
+        layout->setColumnSpacing(0, 10);
+        layout->setColumnSpacing(1, 10);
+        layout->setColumnSpacing(2, 10);
+        layout->setColumnSpacing(3, 10);
+        QCOMPARE(layout->preferredSize(), QSizeF(95, 25));
+        layout->removeAt(2);
+        QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
+        layout->removeAt(1);
+        QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
+        delete layout;
+    }
+    {
+        // don't include items and spacings that was previously part of the layout
+        // (vertical)
+        QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+        populateLayout(layout, 2, 2);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
+        layout->setColumnSpacing(0, 10);
+        layout->setColumnSpacing(1, 10);
+        layout->setRowSpacing(0, 10);
+        layout->setRowSpacing(1, 10);
+        QCOMPARE(layout->preferredSize(), QSizeF(60, 60));
+        layout->removeAt(3);
+        QCOMPARE(layout->preferredSize(), QSizeF(60, 60));
+        layout->removeAt(2);
+        QCOMPARE(layout->preferredSize(), QSizeF(60, 25));
+        layout->removeAt(1);
+        QCOMPARE(layout->preferredSize(), QSizeF(25, 25));
+        delete layout;
+    }
+
 }
 
 // public int columnStretchFactor(int column) const

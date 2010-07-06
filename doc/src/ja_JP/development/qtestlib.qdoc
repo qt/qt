@@ -1,0 +1,418 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtestlib-tutorial.html
+    \brief QTestLib を使ったテストの導入ガイド
+    \contentspage QTestLib マニュアル
+    \nextpage {第1章: ユニットテストの作成}{第1章}
+
+    \title QTestLib チュートリアル
+
+    このチュートリアルでは QTestLib フレームワークの機能の初歩的な使い方を説明します。
+    このチュートリアルは全5章で構成されています:
+
+    \list 1
+    \o \l {第1章: ユニットテストの作成}{ユニットテストの作成}
+    \o \l {第2章: データドリブンテスト}{データドリブンテスト}
+    \o \l {第3章: GUI イベントのシミュレート}{GUI イベントのシミュレート}
+    \o \l {第4章: GUI イベントの再現}{GUI イベントの再現}
+    \o \l {第5章: ベンチマークの作成}{ベンチマークの作成}
+    \endlist
+
+*/
+
+
+/*!
+    \example qtestlib/tutorial1
+
+    \contentspage {QTestLib チュートリアル}{目次}
+    \nextpage {第2章: データドリブンテスト}{第2章}
+
+    \title 第1章: ユニットテストの作成
+
+    第1章では、クラスのテストを行うシンプルなユニットテストを作成して実行する方法を説明します。
+
+    \section1 テストを作成する
+
+    QString クラスの挙動をテストすると仮定しましょう。
+    まず、テスト関数を含むクラスが必要です。
+    このクラスは、 QObject を継承する必要があります:
+
+    \snippet examples/qtestlib/tutorial1/testqstring.cpp 0
+
+    QTest ヘッダーを include してください。
+    それから、テストフレームワークがテスト関数を検索して実行できるよう、
+    テスト関数を private slot として宣言する必要があります。
+
+    次に、テスト関数を実装します。実装は以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 8
+
+    \l QVERIFY() マクロは、引数として渡される式を評価します。
+    式が真と評価されるとテスト関数の実行が継続されます。
+    そうでなければ、エラーメッセージがテストログに追加されテスト関数の実行が停止します。
+
+    テストログに詳細情報を追加したい場合は、
+    \l QCOMPARE() マクロを代わりに使用してください:
+
+    \snippet examples/qtestlib/tutorial1/testqstring.cpp 1
+
+    文字列が等しくない場合、両方の文字列の内容がテストログに追加され、
+    比較に失敗した理由を直ちに確認できます。
+
+    最後に、テストケースを実行可能にするために以下の2行が必要となります:
+
+    \snippet examples/qtestlib/tutorial1/testqstring.cpp 2
+
+    \l QTEST_MAIN() マクロは、すべてのテスト関数を実行するシンプルな
+    \c main() 関数に展開されます。
+    テストクラスの宣言と実装が \c .cpp ファイルに存在する場合、
+    Qt のメタオブジェクト機能を動作させるために、
+    生成された moc ファイルを include する必要があります。
+
+    \section1 テストを実行する
+
+    作成したテストを実行してみましょう。
+    テストが \c testqstring.cpp
+    として空のディレクトリに保存されていると仮定して、
+    qmake を使用してプロジェクトを作成し、makefile を生成します。
+
+    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 9
+
+    \bold {注:} Windows をお使いの場合、 \c make を \c nmake または、
+    任意のビルドツールに置き換えてください。
+
+    作成した実行ファイルを実行すると、次の出力が表示されます:
+
+    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 10
+
+    おめでとうございます!
+    QTestLib フレームワークを使用して、
+    最初のユニットテストの作成と実行に成功しました。
+*/
+
+/*!
+    \example qtestlib/tutorial2
+
+    \previouspage {第1章: ユニットテストの作成}{第1章}
+    \contentspage {QTestLib チュートリアル}{目次}
+    \nextpage {第3章: GUI イベントのシミュレート}{第3章}
+
+    \title 第2章: データドリブンテスト
+
+    本章ではテストを複数回、それぞれ異なるテストデータを使用して行う方法について、
+    例を示しながら説明します。
+
+    これまでは、テストデータをテスト関数にハードコードしていました。
+    この場合、テストデータを追加した関数は以下のようになります:
+
+    \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 11
+
+    関数が繰り返しを行うコードによって分散するのを防ぐために、
+    QTestLib はテストデータのテスト関数への追加をサポートします。
+    そのために、別の private slot をテストクラスに追加する必要があります:
+
+    \snippet examples/qtestlib/tutorial2/testqstring.cpp 0
+
+    \section1 データ関数を記述する
+
+    テスト関数に関連するデータ関数では、テスト関数と同じ関数名を使用して、
+    末尾に \c{_data} を追加します。
+    データ関数は以下のようになります:
+
+    \snippet examples/qtestlib/tutorial2/testqstring.cpp 1
+
+    まず、 \l QTest::addColumn() 関数を使用して、
+    テストテーブルの2つの要素(テスト文字列(\c{"string"})および、
+    QString::toUpper() 関数をその文字列に適用するときに予期された結果(\c{"result"}))
+    を定義します。
+
+    次に、 \l QTest::newRow() 関数を使用して、
+    データをテーブルに追加します。
+    それぞれのデータセットは、テストテーブルでは別々の行(Row)になります。
+
+    \l QTest::newRow() は、データセット名をその引数として受け付けます。
+    テストに失敗した場合、テストログでこのデータセット名が使用され、
+    失敗したデータの一覧が表示されます。
+    続いて、最初に任意の文字列(\c{"string"})を、次に
+    QString::toUpper() 関数をその文字列(\c{"string"})に適用するときに予期された結果(\c{"result"})の順に、
+    テーブル行にデータセットをストリーミングします。
+
+    テストデータとは、二次元テーブルを指します。
+    ここでは、\c string および \c result と呼ばれる2つの列と3つの行が含まれます。
+    さらに、インデックスと同様に、各行に名前を関連付けます:
+
+    \table
+    \header
+        \o index
+        \o name
+        \o string
+        \o result
+    \row
+        \o 0
+        \o all lower
+        \o "hello"
+        \o HELLO
+    \row
+        \o 1
+        \o mixed
+        \o "Hello"
+        \o HELLO
+    \row
+        \o 2
+        \o all upper
+        \o "HELLO"
+        \o HELLO
+    \endtable
+
+    \section1 テスト関数を書き換える
+
+    ここで、テスト関数の書き換えを行います:
+
+    \snippet examples/qtestlib/tutorial2/testqstring.cpp 2
+
+    TestQString::toUpper() 関数は 3 回実行されます。
+    すなわち、関連する TestQString::toUpper_data()
+    関数で作成したテストテーブルの各エントリ毎に一度実行されます。
+
+    TestQString::toUpper() 関数では
+    まず、 \l QFETCH() マクロを使用して、データセットの2つの要素を取得します。
+    \l QFETCH() は、要素のデータタイプと要素名の、
+    2 つの引数を取ります。
+    次に \l QCOMPARE() マクロを使用して、テストを実行します。
+
+    このアプローチにより、テストの修正を行うことなく
+    テストに新規データを非常に簡単に追加できます。
+
+    このテストの場合も、テストケースを実行可能にするには、
+    同様に以下の2行が必要です:
+
+    \snippet examples/qtestlib/tutorial2/testqstring.cpp 3
+
+    これまでと同様に、 \l QTEST_MAIN() マクロは
+    すべてのテスト関数を実行するシンプルな
+    \c main() 関数に展開されます。
+    テストクラスの宣言と実装が \c .cpp ファイルに存在する場合、
+    Qt のメタオブジェクト機能を動作させるために、
+    生成された moc ファイルを include する必要があります。
+
+*/
+
+/*!
+    \example qtestlib/tutorial3
+
+    \previouspage {第2章: データドリブンテスト}{第2章}
+    \contentspage {QTestLib チュートリアル}{目次}
+    \nextpage {第4章: GUI イベントの再現}{第4章}
+
+    \title 第3章: GUI イベントのシミュレート 
+
+    QTestLib にはグラフィカルユーザインターフェースをテストするための機能があります。
+    QTestLib は、ネイティブなウィンドウシステムのイベントをシミュレートする代わりに、
+    Qt の内部で使われるイベントを送信します。
+    このため、テストが実行されるコンピュータには
+    副次的な悪影響が発生しません。
+
+    本章では、シンプルな GUI テストを作成する方法を確認します。
+
+    \section1 GUI テストを作成する
+
+    今回は、 QLineEdit クラスの挙動をテストすると仮定しましょう。
+    これまでと同様に、テスト関数を含むクラスが必要です:
+
+    \snippet examples/qtestlib/tutorial3/testgui.cpp 0
+
+    唯一の違いは、 QTest だけでなく、 QtGui クラスの宣言を
+    include する必要があることです。
+
+    \snippet examples/qtestlib/tutorial3/testgui.cpp 1
+
+    テスト関数を実装する際は、最初に QLineEdit を作成します。
+    次に、 \l QTest::keyClicks() 関数を使用して、
+    "hello world" をラインエディットに入力する操作をシミュレートします。
+
+    \note キーボードショートカットを正しくテストするには、
+    ウィジェットの表示も必要になります。
+
+    QTest::keyClicks() は、
+    ウィジェットのキーシーケンスの入力をシミュレートします。
+    必要に応じてキーボード修飾子の指定や、
+    各キー入力後の遅延(ミリ秒単位)を指定することができます。
+    同様に、 QTest::keyClick() 、 QTest::keyPress() 、 QTest::keyRelease() 、
+    QTest::mouseClick() 、 QTest::mouseDClick() 、 QTest::mouseMove() 、
+    QTest::mousePress() 及び QTest::mouseRelease() 関数を使用して、
+    関連付けられた GUI イベントをシミュレートできます。
+
+    最後に、 \l QCOMPARE() マクロを使用して、
+    ラインエディットの文字列が正しいかどうか確認します。
+
+    これまでと同様に、
+    テストケースを実行可能にするには、
+    以下の2行が必要です:
+
+    \snippet examples/qtestlib/tutorial3/testgui.cpp 2
+
+    QTEST_MAIN() マクロは
+    すべてのテスト関数を実行するシンプルな
+    \c main() 関数に展開されます。
+    テストクラスの宣言と実装が \c .cpp ファイルに存在する場合、
+    Qt のメタオブジェクト機能を動作させるために、
+    生成された moc ファイルを include する必要があります。
+*/
+
+/*!
+    \example qtestlib/tutorial4
+
+    \previouspage {第3章: GUI イベントのシミュレート}{第3章}
+    \contentspage {QTestLib チュートリアル}{目次}
+    \nextpage {第5章: ベンチマークの作成}{第5章}
+
+    \title 第4章: GUI イベントの再現
+
+    本章では、GUI イベントをシミュレートしたり、
+    あるウィジェットで一連の GUI イベントを再生したり保存したりする方法について説明します。
+
+    一連のイベントを保存して再生するアプローチは、
+    \l{第2章: データドリブンテスト}{第2章}
+    で説明したアプローチとよく似ています。
+    必要な変更は、テストクラスにデータ関数を追加することです:
+
+    \snippet examples/qtestlib/tutorial4/testgui.cpp 0
+
+    \section1 データ関数を記述する
+
+    これまでと同様にテスト関数に関連するデータ関数では、
+    テスト関数と同じ名前を使用して末尾に \c{_data} を追加します。
+
+    \snippet examples/qtestlib/tutorial4/testgui.cpp 1
+
+    まず、 QTest::addColumn() 関数を使用して、
+    テーブルの2つの要素(GUI イベントのリスト(\c{"events"})および、
+    QWidget のイベントのリストを適用するときに予期された結果(\c{"expected"}))を定義します。
+    最初の要素の型は \l QTestEventList であることに注意してください。
+
+    QTestEventList では、後で使用するテストデータの保存を行うために
+    GUI イベントを読み込んだり、 QWidget ウィジェットで再生したりできます。
+
+    現在のデータ関数で、 \l QTestEventList を2つ作成します。
+    最初のリストには 'a' キーを一度だけ入力します。
+    QTestEventList::addKeyClick() 関数を使用して、
+    リストにイベントを追加します。
+    次に、QTest::newRow() 関数を使用してデータセットに名前を付けて、
+    テーブルにイベントリストおよび予期された結果をストリーミングします。
+
+    2つ目のリストには、2つのキー入力('a' に続いてバックスペース(Qt::Key_Backspace))を設定します。
+    QTestEventList::addKeyClick() を使用してリストにイベントを追加し、
+    QTest::newRow() を使用して名前を関連付けたテーブルにイベントリストおよび予期された結果を挿入します。
+
+    \section1 テスト関数を書き換える
+
+    ここで、テストの書き換えを行います:
+
+    \snippet examples/qtestlib/tutorial4/testgui.cpp 2
+
+    TestGui::testGui() 関数は2回実行されます。
+    関連する TestGui::testGui_data()
+    関数で作成したテストデータの各エントリ毎にそれぞれ実行されます。
+
+    まず、\l QFETCH() マクロを使用して、データセットの2つの要素を取得します。
+    \l QFETCH() は、要素のデータ型と要素名の2つの引数を取ります。
+    次に QLineEdit を作成し、 QTestEventList::simulate() 関数を使用して
+    ウィジェットにイベントのリストを適用します。
+
+    最後に、 QCOMPARE() マクロを使用してラインエディットの文字列が正しいかどうか確認します。
+
+    これまでと同様に、
+    テストケースを実行可能にするには、
+    以下の2行が必要です:
+
+    \snippet examples/qtestlib/tutorial4/testgui.cpp 3
+
+    \l QTEST_MAIN() マクロは
+    すべてのテスト関数を実行するシンプルな
+    \c main() 関数に展開されます。
+    テストクラスの宣言と実装が \c .cpp ファイルに存在する場合、
+    Qt のメタオブジェクト機能を動作させるために、
+    生成された moc ファイルを include する必要があります。
+*/
+
+/*!
+    \example qtestlib/tutorial5
+
+    \previouspage {第4章: GUI イベントの再現}{第4章}
+    \contentspage {QTestLib チュートリアル}{目次}
+
+    \title 第5章: ベンチマークの作成
+
+    最終章となる本章では QTestLib を使ってベンチマークを作成する方法について説明します。
+
+    \section1 ベンチマークの作成
+    ベンチマークを作成するには QBENCHMARK マクロを用いてテスト関数を拡張します。
+    ベンチマークテスト関数には通常、テストの準備コードと測定するコードを含む
+    QBENCHMARK マクロが一つ含まれます。
+    QString::localeAwareCompare() のベンチマークを行う関数は以下のようになります。
+
+    \snippet examples/qtestlib/tutorial5/benchmarking.cpp 0
+
+    測定の準備は関数の最初に行われています。
+    この時点では測定は始まっていません。
+    QBENCHMARK マクロで囲まれたブロックの中身のみが計測されます。
+    このブロックの内部は正確な測定を行うために、何度か繰り返し実行される場合があります。
+
+    \l {testlib-benchmarking-measurement}{ベンチマークの方法}(バックエンド)は何種類か用意されており、
+    コマンドライン引数から選択することが出来ます。
+
+    \section1 データ関数
+
+    データ関数は複数のデータでベンチマークを行うテストを作成するのに有用です。
+    たとえば、ロケール準拠と標準的な比較を行う場合は以下のようになります。
+
+    \snippet examples/qtestlib/tutorial5/benchmarking.cpp 1
+
+    テスト関数ではデータに従ってベンチマークする手法を決定します。
+
+    \snippet examples/qtestlib/tutorial5/benchmarking.cpp 2
+
+    "if (useLocaleCompare)" 文はそのオーバヘッドを測定対象外とするために
+    QBENCHMARK マクロのブロックの外部にあります。
+    ベンチマークの実行時にはそれぞれどちらか一つの QBENCHMARK マクロが実行されます。
+
+    \section1 外部ツール
+
+    テストデータの可視化を行うためのツールが Qt Labs Web サイトの
+    \l{qtestlib-tools} プロジェクトに含まれています。
+    そこには実行したテストの結果からパフォーマンスを比較したり、
+    パフォーマンスのWeb用グラフを作成するツールが含まれています。
+
+    それらのツールの詳細と簡単なグラフの例は
+    \l{qtestlib-tools Announcement} を参照してください。
+
+*/
+
+
+

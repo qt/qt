@@ -24,7 +24,6 @@ MinehuntCore_sources.path = $$[QT_INSTALL_DEMOS]/declarative/minehunt/MinehuntCo
 INSTALLS = sources MinehuntCore_sources target
 
 symbian:{
-    load(data_caging_paths)
     TARGET.EPOCALLOWDLLDATA = 1
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.CAPABILITY = NetworkServices ReadUserData

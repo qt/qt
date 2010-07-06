@@ -40,16 +40,18 @@
 
 import Qt 4.7
 
+// This is taken from the declarative animation/basics/property-animation.qml
+// example
+
 Item {
     id: window
     width: 320; height: 480
 
-    // The shadow for the smiley face
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "../pics/shadow.png"; y: smiley.minHeight + 58
+        y: smiley.minHeight + 58
+        source: "../pics/shadow.png"
 
-        // The scale property depends on the y position of the smiley face.
         scale: smiley.y * 0.5 / (smiley.minHeight - smiley.maxHeight)
     }
 
@@ -59,26 +61,22 @@ Item {
         property int minHeight: 2 * window.height / 3
 
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "../pics/face-smile.png"; y: minHeight
+        y: minHeight
+        source: "../pics/face-smile.png"
 
-        // Animate the y property. Setting repeat to true makes the
-        // animation repeat indefinitely, otherwise it would only run once.
-        SequentialAnimation  on y {
+        SequentialAnimation on y {
             loops: Animation.Infinite
 
-            // Move from minHeight to maxHeight in 300ms, using the OutExpo easing function
             NumberAnimation {
                 from: smiley.minHeight; to: smiley.maxHeight
                 easing.type: Easing.OutExpo; duration: 300
             }
 
-            // Then move back to minHeight in 1 second, using the OutBounce easing function
             NumberAnimation {
                 from: smiley.maxHeight; to: smiley.minHeight
                 easing.type: Easing.OutBounce; duration: 1000
             }
 
-            // Then pause for 500ms
             PauseAnimation { duration: 500 }
         }
     }

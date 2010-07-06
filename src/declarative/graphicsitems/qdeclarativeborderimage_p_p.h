@@ -77,11 +77,20 @@ public:
     {
     }
 
+
     QDeclarativeScaleGrid *getScaleGrid()
     {
         Q_Q(QDeclarativeBorderImage);
-        if (!border)
+        if (!border) {
             border = new QDeclarativeScaleGrid(q);
+            static int borderChangedSignalIdx = -1;
+            static int doUpdateSlotIdx = -1;
+            if (borderChangedSignalIdx < 0)
+                borderChangedSignalIdx = QDeclarativeScaleGrid::staticMetaObject.indexOfSignal("borderChanged()");
+            if (doUpdateSlotIdx < 0)
+                doUpdateSlotIdx = QDeclarativeBorderImage::staticMetaObject.indexOfSlot("doUpdate()");
+            QMetaObject::connect(border, borderChangedSignalIdx, q, doUpdateSlotIdx);
+        }
         return border;
     }
 

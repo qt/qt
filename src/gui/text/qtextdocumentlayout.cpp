@@ -1369,9 +1369,7 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
     QTextLine firstLine = layout->lineAt(0);
     Q_ASSERT(firstLine.isValid());
     QPointF pos = (offset + layout->position()).toPoint();
-    Qt::LayoutDirection dir = docPrivate->defaultTextOption.textDirection();
-    if (blockFormat.hasProperty(QTextFormat::LayoutDirection))
-        dir = blockFormat.layoutDirection();
+    Qt::LayoutDirection dir = bl.textDirection();
     {
         QRectF textRect = firstLine.naturalTextRect();
         pos += textRect.topLeft().toPoint();
@@ -2530,9 +2528,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
     //QTextFrameData *fd = data(layoutStruct->frame);
 
-    Qt::LayoutDirection dir = docPrivate->defaultTextOption.textDirection();
-    if (blockFormat.hasProperty(QTextFormat::LayoutDirection))
-        dir = blockFormat.layoutDirection();
+    Qt::LayoutDirection dir = bl.textDirection();
 
     QFixed extraMargin;
     if (docPrivate->defaultTextOption.flags() & QTextOption::AddSpaceForLineAndParagraphSeparators) {

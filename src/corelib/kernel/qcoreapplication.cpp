@@ -1097,7 +1097,7 @@ void QCoreApplication::exit(int returnCode)
 
     The event must be allocated on the heap since the post event queue
     will take ownership of the event and delete it once it has been
-    posted.  It is \e {not safe} to modify or delete the event after
+    posted.  It is \e {not safe} to access the event after
     it has been posted.
 
     When control returns to the main event loop, all events that are
@@ -1128,7 +1128,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event)
 
     The event must be allocated on the heap since the post event queue
     will take ownership of the event and delete it once it has been
-    posted.  It is \e {not safe} to modify or delete the event after
+    posted.  It is \e {not safe} to access the event after
     it has been posted.
 
     When control returns to the main event loop, all events that are

@@ -39,11 +39,11 @@
 ****************************************************************************/
 
 import Qt 4.7
-import org.webkit 1.0
+import QtWebKit 1.0
 
 WebView {
     id: webView
-    width: 120
+    width: 200
     height: 150
     url: "alerts.html"
 
@@ -58,13 +58,13 @@ WebView {
 
         y: parent.height // off "screen"
         anchors.horizontalCenter: parent.horizontalCenter
-        width: label.width+5
-        height: label.height+5
+        width: label.width + 5
+        height: label.height + 5
 
         opacity: 0
 
-        function show(t) {
-            label.text = t
+        function show(text) {
+            label.text = text
             popup.state = "visible"
             timer.start()
         }
@@ -82,17 +82,20 @@ WebView {
         Timer {
             id: timer
             interval: 1000
+
             onTriggered: popup.state = ""
         }
 
         Text {
             id: label
             anchors.centerIn: parent
+            width: webView.width  *0.75
+
             color: "white"
             font.pixelSize: 20
-            width: webView.width*0.75
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
+            smooth: true
         }
     }
 }

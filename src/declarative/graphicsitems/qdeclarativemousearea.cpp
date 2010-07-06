@@ -294,23 +294,23 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 /*!
     \qmlsignal MouseArea::onCanceled()
 
-    This handler is called when the mouse events are canceled, either because the event was not accepted or
-    another element stole the mouse event handling. This signal is for advanced users, it's useful in case there
-    is more than one mouse areas handling input, or when there is a mouse area inside a flickable. In the latter
-    case, if you do some logic on pressed and then start dragging, the flickable will steal the mouse handling
-    from the mouse area. In these cases, to reset the logic when there is no mouse handling anymore, you should
-    use onCanceled, in addition to onReleased.
+    This handler is called when mouse events have been canceled, either because an event was not accepted, or
+    because another element stole the mouse event handling. This signal is for advanced use: it is useful when
+    there is more than one MouseArea that is handling input, or when there is a MouseArea inside a \l Flickable. In the latter
+    case, if you execute some logic on the pressed signal and then start dragging, the \l Flickable will steal the mouse handling
+    from the MouseArea. In these cases, to reset the logic when the MouseArea has lost the mouse handling to the
+    \l Flickable, \c onCanceled should be used in addition to onReleased.
 */
 
 /*!
     \internal
     \class QDeclarativeMouseArea
-    \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within Qml.
+    \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within QML.
 
     All QDeclarativeItem derived classes can do mouse handling but the QDeclarativeMouseArea class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.
 
-    A QDeclarativeMouseArea object can be instantiated in Qml using the tag \l MouseArea.
+    A QDeclarativeMouseArea object can be instantiated in QML using the tag \l MouseArea.
  */
 QDeclarativeMouseArea::QDeclarativeMouseArea(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeMouseAreaPrivate), parent)
@@ -410,7 +410,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
         setHovered(true);
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
-        if (d->isConnected("pressAndHold(QDeclarativeMouseEvent*)"))
+        if (d->isPressAndHoldConnected())
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
         event->setAccepted(setPressed(true));

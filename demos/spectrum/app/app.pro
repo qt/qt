@@ -48,7 +48,7 @@ symbian {
     TARGET.CAPABILITY = UserEnvironment
 
     # Provide unique ID for the generated binary, required by Symbian OS
-    TARGET.UID3 = 0xA000E3FA
+    TARGET.UID3 = 0xA000E402
 }
 
 

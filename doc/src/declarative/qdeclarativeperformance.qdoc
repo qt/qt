@@ -1,0 +1,118 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qdeclarativeperformance.html
+\title QML Performance
+
+\section1 Opaque Items
+
+Items hidden behind an opaque item incur a cost.  If an item will be enitrely
+obscured by an opaque item, set its opacity to 0.  One common example of
+this is when a "details" page is shown over the main application view.
+
+\section1 Clipping
+
+\e clip is set to false by default.  Enable clipping only when necessary.
+
+\section1 Anchors vs. Binding
+
+It is more efficient to use anchors rather than bindings to position items
+relative to each other.  Consider this use of bindings to position rect2
+relative to rect1:
+
+\code
+Rectangle {
+    id: rect1
+    x: 20
+    width: 200; height: 200
+}
+Rectange {
+    id: rect2
+    x: rect1.x
+    y: rect1.y + rect1.height
+    width: rect1.width - 20
+    height: 200
+}
+\endcode
+
+This is achieved more efficiently using anchors:
+
+\code
+Rectangle {
+    id: rect1
+    x: 20
+    width: 200; height: 200
+}
+Rectange {
+    id: rect2
+    height: 200
+    anchors.left: rect1.left
+    anchors.top: rect1.bottom
+    anchors.right: rect1.right
+    anchors.rightMargin: 20
+}
+\endcode
+
+\section1 Images
+
+Images consume a great deal of memory and may also be costly to load.  In order
+to deal with large images efficiently it is recommended that the Image::sourceSize
+property be set to a size no greater than that necessary to render it.  Beware that
+changing the sourceSize will cause the image to be reloaded.
+
+Images on the local filesystem are usually loaded synchronously.  This is usually
+the desired behavior for user interface elements, however for large images that
+do not necessarily need to be visible immediately, set the Image::asynchronous
+property to true.  This will load the image in a low priority thread.
+
+\section1 View Delegates
+
+Delegates must be created quickly as the view is flicked.  There are two important
+aspects to maintaining a smooth view:
+
+\list
+\o Small delegates - keep the amount of QML to a minimum.  Have just enough
+QML in the delegate to display the necessary information.  Any additional functionality
+that is only needed when the delegate is clicked, for example, should be created by
+a Loader as needed.
+\o Fast data access - ensure the data model is as fast as possible.
+\endlist
+
+\section1 Image resources over composition
+
+If possible, provide a single image resource, rather than using composition
+of a number of elements.  For example, a frame with a shadow could be created using
+a Rectangle placed over an Image providing the shadow.  It is more efficient to
+provide an image that includes the frame and the shadow.
+
+\section1 Limit JavaScript
+
+Avoid running JavaScript during animation.  For example, running a complex
+JavaScript expression for each frame of an x property animation.
+
+*/

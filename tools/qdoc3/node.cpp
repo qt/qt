@@ -101,6 +101,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
+    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -154,6 +155,41 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 }
 
 /*!
+  Returns a string representing the access specifier.
+ */
+QString Node::accessString() const
+{
+    switch (acc) {
+    case Protected:
+        return "protected";
+    case Private:
+        return "private";
+    case Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+
+/*!
+  Returns a string representing the access specifier.
+ */
+QString RelatedClass::accessString() const
+{
+    switch (access) {
+    case Node::Protected:
+        return "protected";
+    case Node::Private:
+        return "private";
+    case Node::Public:
+    default:
+        break;
+    }
+    return "public";
+}
+
+/*!
  */
 Node::Status Node::inheritedStatus() const
 {
@@ -164,6 +200,11 @@ Node::Status Node::inheritedStatus() const
 }
 
 /*!
+  Returns the thread safeness value for whatever this node
+  represents. But if this node has a parent and the thread
+  safeness value of the parent is the same as the thread
+  safeness value of this node, what is returned is the
+  value \c{UnspecifiedSafeness}. Why?
  */
 Node::ThreadSafeness Node::threadSafeness() const
 {
@@ -173,6 +214,9 @@ Node::ThreadSafeness Node::threadSafeness() const
 }
 
 /*!
+  If this node has a parent, the parent's thread safeness
+  value is returned. Otherwise, this node's thread safeness
+  value is returned. Why?
  */
 Node::ThreadSafeness Node::inheritedThreadSafeness() const
 {
@@ -182,6 +226,9 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
 }
 
 /*!
+  Returns the sanitized file name without the path.
+  If the the file is an html file, the html suffix
+  is removed. Why?
  */
 QString Node::fileBase() const
 {
@@ -195,10 +242,47 @@ QString Node::fileBase() const
 }
 
 /*!
+  Returns this node's Universally Unique IDentifier.
+  If its UUID has not yet been created, it is created
+  first.
+ */
+QUuid Node::guid() const
+{
+    if (uuid.isNull())
+        uuid = QUuid::createUuid();
+    return uuid;
+}
+
+/*!
+  Composes a string to be used as an href attribute in DITA
+  XML. It is composed of the file name and the UUID separated
+  by a '#'. If this node is a class node, the file name is
+  taken from this node; if this node is a function node, the
+  file name is taken from the parent node of this node.
+ */
+QString Node::ditaXmlHref()
+{
+    QString href;
+    if ((type() == Function) ||
+        (type() == Property) ||
+        (type() == Variable)) {
+        href = parent()->fileBase();
+    }
+    else {
+        href = fileBase();
+    }
+    if (!href.endsWith(".xml"))
+        href += ".xml";
+    return href + "#" + guid();
+}
+
+/*!
   \class InnerNode
  */
 
 /*!
+  The inner node destructor deletes the children and removes
+  this node from its related nodes.
  */
 InnerNode::~InnerNode()
 {
@@ -542,6 +626,7 @@ InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
 }
 
 /*!
+  Appends an \a include file to the list of include files.
  */
 void InnerNode::addInclude(const QString& include)
 {
@@ -549,6 +634,7 @@ void InnerNode::addInclude(const QString& include)
 }
 
 /*!
+  Sets the list of include files to \a includes.
  */
 void InnerNode::setIncludes(const QStringList& includes)
 {
@@ -624,7 +710,7 @@ void InnerNode::removeChild(Node *child)
 	QMap<QString, Node *>::Iterator prim =
 		primaryFunctionMap.find(child->name());
 	NodeList& secs = secondaryFunctionMap[child->name()];
-	if (*prim == child) {
+	if (prim != primaryFunctionMap.end() && *prim == child) {
 	    if (secs.isEmpty()) {
 		primaryFunctionMap.remove(child->name());
 	    }
@@ -636,12 +722,12 @@ void InnerNode::removeChild(Node *child)
 	    secs.removeAll(child);
 	}
         QMap<QString, Node *>::Iterator ent = childMap.find( child->name() );
-        if ( *ent == child )
+        if (ent != childMap.end() && *ent == child)
             childMap.erase( ent );
     }
     else {
 	QMap<QString, Node *>::Iterator ent = childMap.find(child->name());
-	if (*ent == child)
+	if (ent != childMap.end() && *ent == child)
 	    childMap.erase(ent);
     }
 }
@@ -754,6 +840,7 @@ ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
     hidden = false;
+    abstract = false;
     setPageType(ApiPage);
 }
 
@@ -836,6 +923,14 @@ FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
 }
 
 /*!
+  Returns the fake node's title. This is used for the page title.
+*/
+QString FakeNode::title() const
+{
+    return tle;
+}
+
+/*!
   Returns the fake node's full title, which is usually
   just title(), but for some SubType values is different
   from title()
@@ -885,6 +980,8 @@ QString FakeNode::subTitle() const
  */
 
 /*!
+  The constructor for the node representing an enum type
+  has a \a parent class and an enum type \a name.
  */
 EnumNode::EnumNode(InnerNode *parent, const QString& name)
     : LeafNode(Enum, parent, name), ft(0)
@@ -892,6 +989,7 @@ EnumNode::EnumNode(InnerNode *parent, const QString& name)
 }
 
 /*!
+  Add \a item to the enum type's item list.
  */
 void EnumNode::addItem(const EnumItem& item)
 {
@@ -900,15 +998,15 @@ void EnumNode::addItem(const EnumItem& item)
 }
 
 /*!
+  Returns the access level of the enumeration item named \a name.
+  Apparently it is private if it has been omitted by qdoc's
+  omitvalue command. Otherwise it is public.
  */
 Node::Access EnumNode::itemAccess(const QString &name) const
 {
-    if (doc().omitEnumItemNames().contains(name)) {
+    if (doc().omitEnumItemNames().contains(name))
         return Private;
-    }
-    else {
-        return Public;
-    }
+    return Public;
 }
 
 /*!
@@ -1040,6 +1138,19 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
       ap(0)
 {
     // nothing.
+}
+
+/*!
+  Sets the \a virtualness of this function. If the \a virtualness
+  is PureVirtual, and if the parent() is a ClassNode, set the parent's
+  \e abstract flag to true.
+ */
+void FunctionNode::setVirtualness(Virtualness virtualness)
+{
+    vir = virtualness;
+    if ((virtualness == PureVirtual) && parent() &&
+        (parent()->type() == Node::Class))
+        parent()->setAbstract(true);
 }
 
 /*!
@@ -1184,21 +1295,39 @@ void FunctionNode::debug() const
 
 /*!
   \class PropertyNode
+
+  This class describes one instance of using the Q_PROPERTY macro.
  */
 
 /*!
+  The constructor sets the \a parent and the \a name, but
+  everything else is set to default values.
  */
 PropertyNode::PropertyNode(InnerNode *parent, const QString& name)
     : LeafNode(Property, parent, name),
       sto(Trool_Default),
       des(Trool_Default),
+      scr(Trool_Default),
+      wri(Trool_Default),
+      usr(Trool_Default),
+      cst(false),
+      fnl(false),
       overrides(0)
 {
+    // nothing.
 }
 
 /*!
+  Sets this property's \e {overridden from} property to
+  \a baseProperty, which indicates that this property
+  overrides \a baseProperty. To begin with, all the values
+  in this property are set to the corresponding values in
+  \a baseProperty.
+
+  We probably should ensure that the constant and final
+  attributes are not being overridden improperly.
  */
-void PropertyNode::setOverriddenFrom(const PropertyNode *baseProperty)
+void PropertyNode::setOverriddenFrom(const PropertyNode* baseProperty)
 {
     for (int i = 0; i < NumFunctionRoles; ++i) {
         if (funcs[i].isEmpty())
@@ -1208,6 +1337,12 @@ void PropertyNode::setOverriddenFrom(const PropertyNode *baseProperty)
         sto = baseProperty->sto;
     if (des == Trool_Default)
         des = baseProperty->des;
+    if (scr == Trool_Default)
+        scr = baseProperty->scr;
+    if (wri == Trool_Default)
+        wri = baseProperty->wri;
+    if (usr == Trool_Default)
+        usr = baseProperty->usr;
     overrides = baseProperty;
 }
 
@@ -1233,7 +1368,9 @@ QString PropertyNode::qualifiedDataType() const
     }
 }
 
-/*!
+/*! Converts the \a boolean value to an enum representation
+  of the boolean type, which includes an enum  value for the
+  \e {default value} of the item, i.e. true, false, or default.
  */
 PropertyNode::Trool PropertyNode::toTrool(bool boolean)
 {
@@ -1241,6 +1378,15 @@ PropertyNode::Trool PropertyNode::toTrool(bool boolean)
 }
 
 /*!
+  Converts the enum \a troolean back to a boolean value.
+  If \a troolean is neither the true enum value nor the
+  false enum value, the boolean value returned is
+  \a defaultValue.
+
+  Note that runtimeDesignabilityFunction() should be called
+  first. If that function returns the name of a function, it
+  means the function must be called at runtime to determine
+  whether the property is Designable.
  */
 bool PropertyNode::fromTrool(Trool troolean, bool defaultValue)
 {
@@ -1289,7 +1435,10 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle((qmlOnly ? "" : "QML ") + name + " Element");
+    if (name.startsWith(QLatin1String("QML:")))
+        setTitle((qmlOnly ? QLatin1String("") : QLatin1String("QML ")) + name.mid(4) + QLatin1String(" Element"));
+    else
+        setTitle((qmlOnly ? QLatin1String("") : QLatin1String("QML ")) + name + QLatin1String(" Element"));
 }
 
 /*!

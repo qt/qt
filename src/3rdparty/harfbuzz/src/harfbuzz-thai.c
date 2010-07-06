@@ -27,56 +27,80 @@
 #include "harfbuzz-external.h"
 
 #include <assert.h>
+#include <stdio.h>
+
+typedef int (*th_brk_def)(const char*, int[], int);
+static th_brk_def th_brk = 0;
+static int libthai_resolved = 0;
+
+static void resolve_libthai()
+{
+    if (!th_brk)
+        th_brk = (th_brk_def)HB_Library_Resolve("thai", 0, "th_brk");
+    libthai_resolved = 1;
+}
+
+static void to_tis620(const HB_UChar16 *string, hb_uint32 len, const char *cstr)
+{
+    hb_uint32 i;
+    unsigned char *result = (unsigned char *)cstr;
+
+    for (i = 0; i < len; ++i) {
+        if (string[i] <= 0xa0)
+            result[i] = (unsigned char)string[i];
+        if (string[i] >= 0xe01 && string[i] <= 0xe5b)
+            result[i] = (unsigned char)(string[i] - 0xe00 + 0xa0);
+        else
+            result[i] = '?';
+    }
+
+    result[len] = 0;
+}
 
 static void thaiWordBreaks(const HB_UChar16 *string, hb_uint32 len, HB_CharAttributes *attributes)
 {
-    typedef int (*th_brk_def)(const char*, int[], int);
-    static void *thaiCodec = 0;
-    static th_brk_def th_brk = 0;
-    char *cstr = 0;
+    char s[128];
+    char *cstr = s;
     int brp[128];
     int *break_positions = brp;
     hb_uint32 numbreaks;
     hb_uint32 i;
 
-    if (!thaiCodec)
-        thaiCodec = HB_TextCodecForMib(2259);
-
-    /* load libthai dynamically */
-    if (!th_brk && thaiCodec) {
-        th_brk = (th_brk_def)HB_Library_Resolve("thai", "th_brk");
-        if (!th_brk)
-            thaiCodec = 0;
-    }
+    if (!libthai_resolved)
+        resolve_libthai();
 
     if (!th_brk)
         return;
 
-    cstr = HB_TextCodec_ConvertFromUnicode(thaiCodec, string, len, 0);
-    if (!cstr)
-        return;
+    if (len >= 128)
+        cstr = (char *)malloc(len*sizeof(char) + 1);
 
-    break_positions = brp;
+    to_tis620(string, len, cstr);
+
     numbreaks = th_brk(cstr, break_positions, 128);
     if (numbreaks > 128) {
         break_positions = (int *)malloc(numbreaks * sizeof(int));
         numbreaks = th_brk(cstr, break_positions, numbreaks);
     }
 
-    for (i = 0; i < len; ++i)
+    for (i = 0; i < len; ++i) {
         attributes[i].lineBreakType = HB_NoBreak;
+        attributes[i].wordBoundary = FALSE;
+    }
 
     for (i = 0; i < numbreaks; ++i) {
-        if (break_positions[i] > 0)
+        if (break_positions[i] > 0) {
             attributes[break_positions[i]-1].lineBreakType = HB_Break;
+            attributes[i].wordBoundary = TRUE;
+        }
     }
 
     if (break_positions != brp)
         free(break_positions);
 
-    HB_TextCodec_FreeResult(cstr);
+    if (len >= 128)
+        free(cstr);
 }
-
 
 void HB_ThaiAttributes(HB_Script script, const HB_UChar16 *text, hb_uint32 from, hb_uint32 len, HB_CharAttributes *attributes)
 {

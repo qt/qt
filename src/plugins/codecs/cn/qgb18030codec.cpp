@@ -319,7 +319,7 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
 {
     uchar buf[2];
     int nbuf = 0;
-    QChar replacement = QChar::ReplacementCharacter;
+    ushort replacement = QChar::ReplacementCharacter;
     if (state) {
         if (state->flags & ConvertInvalidToNull)
             replacement = QChar::Null;
@@ -330,6 +330,9 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
     int invalid = 0;
 
     QString result;
+    result.resize(len);
+    int unicodeLen = 0;
+    ushort *const resultData = reinterpret_cast<ushort*>(result.data());
 
     //qDebug("QGbkDecoder::toUnicode(const char* chars = \"%s\", int len = %d)", chars, len);
     for (int i=0; i<len; i++) {
@@ -338,14 +341,16 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
         case 0:
             if (ch < 0x80) {
                 // ASCII
-                result += QLatin1Char(ch);
+                resultData[unicodeLen] = ch;
+                ++unicodeLen;
             } else if (Is1stByte(ch)) {
                 // GBK 1st byte?
                 buf[0] = ch;
                 nbuf = 1;
             } else {
                 // Invalid
-                result += replacement;
+                resultData[unicodeLen] = replacement;
+                ++unicodeLen;
                 ++invalid;
             }
             break;
@@ -356,21 +361,25 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
                 int clen = 2;
                 uint u = qt_Gb18030ToUnicode(buf, clen);
                 if (clen == 2) {
-                    result += qValidChar(u);
+                    resultData[unicodeLen] = qValidChar(static_cast<ushort>(u));
+                    ++unicodeLen;
                 } else {
-                    result += replacement;
+                    resultData[unicodeLen] = replacement;
+                    ++unicodeLen;
                     ++invalid;
                 }
                 nbuf = 0;
             } else {
                 // Error
-                result += replacement;
+                resultData[unicodeLen] = replacement;
+                ++unicodeLen;
                 ++invalid;
                 nbuf = 0;
             }
             break;
         }
     }
+    result.resize(unicodeLen);
 
     if (state) {
         state->remainingChars = nbuf;

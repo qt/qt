@@ -93,7 +93,6 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
-#include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
 #include <private/qobject_p.h>
@@ -184,26 +183,26 @@ data types. This is primarily useful when setting the properties of an item
 when the property has one of the following types:
 
 \list
-\o \c color - use \l{Qt::rgba()}{Qt.rgba()}, \l{Qt::hsla()}{Qt.hsla()}, \l{Qt::darker()}{Qt.darker()}, \l{Qt::lighter()}{Qt.lighter()} or \l{Qt::tint()}{Qt.tint()}
-\o \c rect - use \l{Qt::rect()}{Qt.rect()}
-\o \c point - use \l{Qt::point()}{Qt.point()}
-\o \c size - use \l{Qt::size()}{Qt.size()}
-\o \c vector3d - use \l{Qt::vector3d()}{Qt.vector3d()}
+\o \c color - use \l{QML:Qt::rgba()}{Qt.rgba()}, \l{QML:Qt::hsla()}{Qt.hsla()}, \l{QML:Qt::darker()}{Qt.darker()}, \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()}
+\o \c rect - use \l{QML:Qt::rect()}{Qt.rect()}
+\o \c point - use \l{QML:Qt::point()}{Qt.point()}
+\o \c size - use \l{QML:Qt::size()}{Qt.size()}
+\o \c vector3d - use \l{QML:Qt::vector3d()}{Qt.vector3d()}
 \endlist
 
-There are also string based constructors for these types, see \l{qdeclarativebasictypes.html}{QML Basic Types}.
+There are also string based constructors for these types. See \l{qdeclarativebasictypes.html}{QML Basic Types} for more information.
 
 \section1 Date/Time Formatters
 
 The Qt object contains several functions for formatting dates and times.
 
 \list
-    \o \l{Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
-    \o \l{Qt::formatDate}{string Qt.formatDate(datetime date, variant format)}
-    \o \l{Qt::formatTime}{string Qt.formatTime(datetime date, variant format)}
+    \o \l{QML:Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
+    \o \l{QML:Qt::formatDate}{string Qt.formatDate(datetime date, variant format)}
+    \o \l{QML:Qt::formatTime}{string Qt.formatTime(datetime date, variant format)}
 \endlist
 
-The format specification is described at \l{Qt::formatDateTime}{Qt.formatDateTime}.
+The format specification is described at \l{QML:Qt::formatDateTime}{Qt.formatDateTime}.
 
 
 \section1 Dynamic Object Creation
@@ -212,8 +211,8 @@ items from files or strings. See \l{Dynamic Object Management} for an overview
 of their use.
 
 \list
-    \o \l{Qt::createComponent()}{object Qt.createComponent(url)}
-    \o \l{Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
+    \o \l{QML:Qt::createComponent()}{object Qt.createComponent(url)}
+    \o \l{QML:Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
 
@@ -1054,8 +1053,9 @@ or \c null if there was an error in creating the component.
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Remember that QML files that might be loaded
-over the network cannot be expected to be ready immediately.
+Here is an example. Notice it checks whether the component \l{Component::status}{status} is
+\c Component.Ready before calling \l {Component::createObject()}{createObject()}
+in case the QML file is loaded over a network and thus is not ready immediately.
 
 \snippet doc/src/snippets/declarative/componentCreation.js 0
 \codeline
@@ -1095,12 +1095,12 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
 /*!
 \qmlmethod object Qt::createQmlObject(string qml, object parent, string filepath)
 
-Returns a new object created from the given \a string of QML with the specified \a parent,
+Returns a new object created from the given \a string of QML which will have the specified \a parent,
 or \c null if there was an error in creating the object.
 
 If \a filepath is specified, it will be used for error reporting for the created object.
 
-Example (where \c targetItem is the id of an existing QML item):
+Example (where \c parentItem is the id of an existing QML item):
 
 \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
@@ -1194,10 +1194,12 @@ QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QS
     Q_ASSERT(obj);
 
     obj->setParent(parentArg);
-    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
-    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
-    if(gobj && gparent)
-        gobj->setParentItem(gparent);
+
+    QList<QDeclarativePrivate::AutoParentFunction> functions = QDeclarativeMetaType::parentFunctions();
+    for (int ii = 0; ii < functions.count(); ++ii) {
+        if (QDeclarativePrivate::Parented == functions.at(ii)(obj, parentArg))
+            break;
+    }
 
     QDeclarativeData::get(obj, true)->setImplicitDestructible();
     return activeEnginePriv->objectClass->newQObject(obj, QMetaType::QObjectStar);

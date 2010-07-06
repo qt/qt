@@ -8,6 +8,6 @@ CONFIG -= def_files
     !contains(TEMPLATE, app):!contains(CONFIG, plugin):!contains(CONFIG, staticlib): {
         # with EXPORTUNFROZEN enabled, new exports are included in the dll and dso/lib without
         # needing to run abld/sbs freeze
-        MMP_RULES += EXPORTUNFROZEN
+        MMP_RULES *= EXPORTUNFROZEN
     }
 }

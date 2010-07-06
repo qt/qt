@@ -14,7 +14,7 @@ wince*{
   DEFINES += tst_MediaObject=tst_MediaObject_waveout
 }
 
-symbian*:{
+symbian:{
    addFiles.sources = media/test.sdp
    addFiles.path = media
    DEPLOYMENT += addFiles

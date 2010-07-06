@@ -344,6 +344,19 @@ bool XsdParticleChecker::hasDuplicatedElements(const XsdParticle::Ptr &particle,
 
 bool XsdParticleChecker::isUPAConform(const XsdParticle::Ptr &particle, const NamePool::Ptr &namePool)
 {
+
+    /**
+     * In case we encounter an <xsd:all> element, don't construct a state machine, but use the approach
+     * described at http://www.w3.org/TR/xmlschema-1/#non-ambig
+     * Reason: For n elements inside the <xsd:all>, represented in the NDA, the state machine
+     * constructs n! states in the DFA, which does not scale.
+     */
+    if (particle->term()->isModelGroup()) {
+        const XsdModelGroup::Ptr group(particle->term());
+        if (group->compositor() == XsdModelGroup::AllCompositor)
+            return isUPAConformXsdAll(particle, namePool);
+    }
+
     /**
      * The algorithm is implemented like described in http://www.ltg.ed.ac.uk/~ht/XML_Europe_2003.html#S2.2
      */
@@ -411,6 +424,23 @@ bool XsdParticleChecker::isUPAConform(const XsdParticle::Ptr &particle, const Na
         }
     }
 
+    return true;
+}
+
+bool XsdParticleChecker::isUPAConformXsdAll(const XsdParticle::Ptr &particle, const NamePool::Ptr &namePool)
+{
+    /**
+     * see http://www.w3.org/TR/xmlschema-1/#non-ambig
+     */
+    const XsdModelGroup::Ptr group(particle->term());
+    const XsdParticle::List particles = group->particles();
+    const int count = particles.count();
+    for (int left = 0; left < count; ++left) {
+        for (int right = left+1; right < count; ++right) {
+            if (termMatches(particles.at(left)->term(), particles.at(right)->term(), namePool))
+                return false;
+        }
+    }
     return true;
 }
 

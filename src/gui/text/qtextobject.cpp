@@ -1140,6 +1140,49 @@ int QTextBlock::charFormatIndex() const
 }
 
 /*!
+  \since 4.7
+
+  Returns the resolved text direction.
+
+  If the block has no explicit direction set, it will resolve the
+  direction from the blocks content. Returns either Qt::LeftToRight
+  or Qt::RightToLeft.
+
+  \sa QTextBlock::layoutDirection(), QString::isRightToLeft(), Qt::LayoutDirection
+*/
+Qt::LayoutDirection QTextBlock::textDirection() const
+{
+    Qt::LayoutDirection dir = blockFormat().layoutDirection();
+    if (dir != Qt::LayoutDirectionAuto)
+        return dir;
+
+    const QString buffer = p->buffer();
+
+    const int pos = position();
+    QTextDocumentPrivate::FragmentIterator it = p->find(pos);
+    QTextDocumentPrivate::FragmentIterator end = p->find(pos + length() - 1); // -1 to omit the block separator char
+    for (; it != end; ++it) {
+        const QTextFragmentData * const frag = it.value();
+        const QChar *p = buffer.constData() + frag->stringPosition;
+        const QChar * const end = p + frag->size_array[0];
+        while (p < end) {
+            switch(QChar::direction(p->unicode()))
+            {
+            case QChar::DirL:
+                return Qt::LeftToRight;
+            case QChar::DirR:
+            case QChar::DirAL:
+                return Qt::RightToLeft;
+            default:
+                break;
+            }
+            ++p;
+        }
+    }
+    return Qt::LeftToRight;
+}
+
+/*!
     Returns the block's contents as plain text.
 
     \sa length() charFormat() blockFormat()

@@ -378,6 +378,8 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
 void QMetaType::registerStreamOperators(int idx, SaveOperator saveOp,
                                         LoadOperator loadOp)
 {
+    if (idx < User)
+        return; //builtin types should not be registered;
     QVector<QCustomTypeInfo> *ct = customTypes();
     if (!ct)
         return;

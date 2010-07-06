@@ -91,6 +91,7 @@ private:
     void setGridScaledImage(const QDeclarativeGridScaledImage& sci);
 
 private Q_SLOTS:
+    void doUpdate();
     void requestFinished();
     void sciRequestFinished();
 

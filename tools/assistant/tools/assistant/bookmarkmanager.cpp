@@ -240,6 +240,7 @@ bool BookmarkManager::eventFilter(QObject *object, QEvent *event)
 
             case Qt::Key_Delete: {
                 removeItem(bookmarkTreeView->currentIndex());
+                return true;
             }   break;
 
             case Qt::Key_Up: {    // needs event filter on widget

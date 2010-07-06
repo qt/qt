@@ -78,9 +78,6 @@ void ImageDecoderQt::setData(SharedBuffer* data, bool allDataReceived)
     m_buffer->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
     m_reader.set(new QImageReader(m_buffer.get(), m_format));
 
-    // This will force the JPEG decoder to use JDCT_IFAST
-    m_reader->setQuality(49);
-
     // QImageReader only allows retrieving the format before reading the image
     m_format = m_reader->format();
 }
@@ -115,22 +112,8 @@ size_t ImageDecoderQt::frameCount()
 
 int ImageDecoderQt::repetitionCount() const
 {
-    if (m_reader && m_reader->supportsAnimation()) {
+    if (m_reader && m_reader->supportsAnimation())
         m_repetitionCount = m_reader->loopCount();
-
-        // Qt and WebCore have a incompatible understanding of
-        // the loop count and we can not completely map everything.
-        //  Qt   |   WebCore          | description
-        //  -1   |     0              | infinite animation
-        //   0   | cAnimationLoopOnce | show every frame once
-        //   n   |     n              | no idea if that is supported
-        //  n/a  | cAnimationNone     | show only the first frame
-        if (m_repetitionCount == -1)
-            m_repetitionCount = 0;
-        else if (m_repetitionCount == 0)
-            m_repetitionCount = cAnimationLoopOnce;
-    }
-
     return m_repetitionCount;
 }
 
@@ -202,20 +185,33 @@ void ImageDecoderQt::internalReadImage(size_t frameIndex)
 
 bool ImageDecoderQt::internalHandleCurrentImage(size_t frameIndex)
 {
-    // Now get the QImage from Qt and place it in the RGBA32Buffer
-    QImage img;
-    if (!m_reader->read(&img)) {
+    QPixmap pixmap;
+    bool pixmapLoaded;
+    const int imageCount = m_reader->imageCount();
+    if (imageCount == 0 || imageCount == 1)
+        pixmapLoaded = pixmap.loadFromData((const uchar*)(m_data->data()), m_data->size(), m_format);
+    else {
+        QImage img;
+        const bool imageLoaded = m_reader->read(&img);
+        if (imageLoaded) {
+            pixmap = QPixmap::fromImage(img);
+            pixmapLoaded = true;
+        }
+    }
+
+    if (!pixmapLoaded) {
+        frameCount();
+        repetitionCount();
         clearPointers();
         return false;
     }
 
     // now into the RGBA32Buffer - even if the image is not
-    QSize imageSize = img.size();
     RGBA32Buffer* const buffer = &m_frameBufferCache[frameIndex];
     buffer->setRect(m_reader->currentImageRect());
     buffer->setStatus(RGBA32Buffer::FrameComplete);
     buffer->setDuration(m_reader->nextImageDelay());
-    buffer->setDecodedImage(img);
+    buffer->setPixmap(pixmap);
     return true;
 }
 

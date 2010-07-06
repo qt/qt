@@ -100,16 +100,21 @@ public:
     bool doingPositioning : 1;
     bool anchorConflict : 1;
 
-    virtual void itemSiblingOrderChanged(QDeclarativeItem* other)
+    void schedulePositioning()
     {
         Q_Q(QDeclarativeBasePositioner);
-        Q_UNUSED(other);
         if(!queuedPositioning){
-            //Delay is due to many children often being reordered at once
-            //And we only want to reposition them all once
             QTimer::singleShot(0,q,SLOT(prePositioning()));
             queuedPositioning = true;
         }
+    }
+
+    virtual void itemSiblingOrderChanged(QDeclarativeItem* other)
+    {
+        Q_UNUSED(other);
+        //Delay is due to many children often being reordered at once
+        //And we only want to reposition them all once
+        schedulePositioning();
     }
 
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -120,8 +125,7 @@ public:
     }
     virtual void itemVisibilityChanged(QDeclarativeItem *)
     {
-        Q_Q(QDeclarativeBasePositioner);
-        q->prePositioning();
+        schedulePositioning();
     }
     virtual void itemOpacityChanged(QDeclarativeItem *)
     {

@@ -3277,7 +3277,8 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
+    if (hasFocus())
+        d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
 }
 
 /*!
@@ -3864,7 +3865,7 @@ qreal QGraphicsItem::scale() const
     The scale is combined with the item's rotation(), transform() and
     transformations() to map the item's coordinate system to the parent item.
 
-    \sa scale(), setTransformOriginPoint(), {Transformations}
+    \sa scale(), setTransformOriginPoint(), {Transformations Example}
 */
 void QGraphicsItem::setScale(qreal factor)
 {

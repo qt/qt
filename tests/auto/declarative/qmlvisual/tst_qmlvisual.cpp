@@ -47,6 +47,11 @@
 #include <QProcess>
 #include <QFile>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+#define QT_TEST_SOURCE_DIR "."
+#endif
+
 enum Mode { Record, RecordNoVisuals, RecordSnapshot, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
 
 static QString testdir;
