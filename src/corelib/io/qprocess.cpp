@@ -1377,6 +1377,50 @@ void QProcess::setStandardOutputProcess(QProcess *destination)
     dto->stdinChannel.pipeFrom(dfrom);
 }
 
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+
+/*!
+    \since 4.7
+
+    Returns the additional native command line arguments for the program.
+
+    \note This function is available only on the Windows and Symbian
+    platforms.
+
+    \sa setNativeArguments()
+*/
+QString QProcess::nativeArguments() const
+{
+    Q_D(const QProcess);
+    return d->nativeArguments;
+}
+
+/*!
+    \since 4.7
+    \overload
+
+    Sets additional native command line arguments for the program.
+
+    On operating systems where the system API for passing command line
+    arguments to a subprocess natively uses a single string, one can
+    conceive command lines which cannot be passed via QProcess's portable
+    list-based API. In such cases this function must be used to set a
+    string which is \e appended to the string composed from the usual
+    argument list, with a delimiting space.
+
+    \note This function is available only on the Windows and Symbian
+    platforms.
+
+    \sa nativeArguments()
+*/
+void QProcess::setNativeArguments(const QString &arguments)
+{
+    Q_D(QProcess);
+    d->nativeArguments = arguments;
+}
+
+#endif
+
 /*!
     If QProcess has been assigned a working directory, this function returns
     the working directory that the QProcess will enter before the program has

@@ -181,6 +181,9 @@ public:
 
     QString program;
     QStringList arguments;
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QString nativeArguments;
+#endif
     QProcessEnvironment environment;
 
     QRingBuffer outputReadBuffer;
