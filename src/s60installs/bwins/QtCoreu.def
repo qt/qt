@@ -4482,4 +4482,6 @@ EXPORTS
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
 	?peek@QIODevicePrivate@@UAE_JPAD_J@Z @ 4482 NONAME ; long long QIODevicePrivate::peek(char *, long long)
 	?peek@QIODevicePrivate@@UAE?AVQByteArray@@_J@Z @ 4483 NONAME ; class QByteArray QIODevicePrivate::peek(long long)
+	?nativeArguments@QProcess@@QBE?AVQString@@XZ @ 4484 NONAME ; class QString QProcess::nativeArguments(void) const
+	?setNativeArguments@QProcess@@QAEXABVQString@@@Z @ 4485 NONAME ; void QProcess::setNativeArguments(class QString const &)
 
