@@ -910,6 +910,7 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
+    ev->ignore();
     inputMethodPreHandler(ev);
     if (ev->isAccepted())
         return;
