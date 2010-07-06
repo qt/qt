@@ -385,7 +385,7 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     QFixed textWidth;
     QFixed textAdvance;
     int from;
-    signed int length : 29;
+    signed int length : 28;
     mutable uint justified : 1;
     mutable uint gridfitted : 1;
     uint hasTrailingSpaces : 1;
@@ -430,7 +430,7 @@ public:
         uint hasBidi : 1;
         uint inLayout : 1;
         uint memory_on_stack : 1;
-        bool haveCharAttributes;
+        uint haveCharAttributes : 1;
         QString string;
         void reallocate(int totalGlyphs);
     };
