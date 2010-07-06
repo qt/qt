@@ -915,16 +915,18 @@ the rotation of the needle image. Notice this piece of code in Dial where
 the change in \c value modifies the position of the needle.
 
     \code
-    SpringFollow on angle {
-        spring: 1.4
-        damping: .15
-        to: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+    angle: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+    Behavior on angle {
+        SpringAnimation {
+            spring: 1.4
+            damping: .15
+        }
     }
     \endcode
 
 This is part of the \c needleRotation that rotates the needle and causes the
-rotation of its shadow. \l SpringFollow is an element that modifies the value
-of that rotation angle \e to and mimics the oscillatory behavior of a spring,
+rotation of its shadow. \l SpringAnimation is an element that modifies the value
+of that rotation \e angle and mimics the oscillatory behavior of a spring,
 with the appropriate \e spring constant to control the acceleration and the \e
 damping to control how quickly the effect dies away.
 

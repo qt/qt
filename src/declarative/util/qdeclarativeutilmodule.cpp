@@ -57,6 +57,7 @@
 #include "private/qdeclarativepropertychanges_p.h"
 #include "qdeclarativepropertymap.h"
 #include "private/qdeclarativespringfollow_p.h"
+#include "private/qdeclarativespringanimation_p.h"
 #include "private/qdeclarativestategroup_p.h"
 #include "private/qdeclarativestateoperations_p.h"
 #include "private/qdeclarativestate_p.h"
@@ -98,6 +99,7 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeScriptAction>("Qt",4,7,"ScriptAction");
     qmlRegisterType<QDeclarativeSequentialAnimation>("Qt",4,7,"SequentialAnimation");
     qmlRegisterType<QDeclarativeSpringFollow>("Qt",4,7,"SpringFollow");
+    qmlRegisterType<QDeclarativeSpringAnimation>("Qt",4,7,"SpringAnimation");
     qmlRegisterType<QDeclarativeStateChangeScript>("Qt",4,7,"StateChangeScript");
     qmlRegisterType<QDeclarativeStateGroup>("Qt",4,7,"StateGroup");
     qmlRegisterType<QDeclarativeState>("Qt",4,7,"State");
