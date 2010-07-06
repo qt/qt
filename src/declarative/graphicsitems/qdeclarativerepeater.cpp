@@ -85,6 +85,19 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     The \l model of a Repeater can be any of the supported \l {qmlmodels}{Data Models}.
 
+    Items instantiated by the Repeater are inserted, in order, as
+    children of the Repeater's parent.  The insertion starts immediately after
+    the repeater's position in its parent stacking list.  This allows
+    a Repeater to be used inside a layout. For example, the following Repeater's
+    items are stacked between a red rectangle and a blue rectangle:
+   
+    \snippet doc/src/snippets/declarative/repeater.qml layout
+
+    \image repeater.png
+
+
+    \section2 The \c index and \c modelData properties
+
     The index of a delegate is exposed as an accessible \c index property in the delegate.
     Properties of the model are also available depending upon the type of \l {qmlmodels}{Data Model}.
 
@@ -105,25 +118,22 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     \o \image repeater-modeldata.png
     \endtable
 
-    Items instantiated by the Repeater are inserted, in order, as
-    children of the Repeater's parent.  The insertion starts immediately after
-    the repeater's position in its parent stacking list.  This allows
-    a Repeater to be used inside a layout. For example, the following Repeater's
-    items are stacked between a red rectangle and a blue rectangle:
-   
-    \snippet doc/src/snippets/declarative/repeater.qml layout
-
-    \image repeater.png
 
     A Repeater item owns all items it instantiates. Removing or dynamically destroying
     an item created by a Repeater results in unpredictable behavior.
 
-    Note that if a repeater is
-    required to instantiate a large number of items, it may be more efficient to
-    use other view elements such as ListView.
 
-    \note Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
-    For example, it cannot be used to repeat QtObjects.
+    \section2 Considerations when using Repeater
+
+    The Repeater element creates all of its delegate items when the repeater is first
+    created. This can be inefficient if there are a large number of delegate items and
+    not all of the items are required to be visible at the same time. If this is the case,
+    consider using other view elements like ListView (which only creates delegate items 
+    when they are scrolled into view) or use the \l {Dynamic Object Creation} methods to 
+    create items as they are required.
+
+    Also, note that Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
+    For example, it cannot be used to repeat QtObjects:
     \badcode
     Item {
         //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.

@@ -124,6 +124,10 @@ public:
     QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+    
+    static inline QDeclarativeTextPrivate *get(QDeclarativeText *t) {
+        return t->d_func();
+    }
 };
 
 QT_END_NAMESPACE

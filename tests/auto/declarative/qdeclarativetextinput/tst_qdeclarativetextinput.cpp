@@ -49,6 +49,7 @@
 #include <QDebug>
 #include <QStyle>
 #include <QInputContext>
+#include <private/qapplication_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -63,18 +64,22 @@ public:
     tst_qdeclarativetextinput();
 
 private slots:
+
     void text();
     void width();
     void font();
     void color();
     void selection();
 
+    void horizontalAlignment_data();
+    void horizontalAlignment();
+
     void positionAt();
 
     void maxLength();
     void masks();
     void validators();
-    void inputMethodHints();
+    void inputMethods();
 
     void cursorDelegate();
     void navigation();
@@ -153,7 +158,7 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), 1.);//1 for the cursor
+        QCOMPARE(textinputObject->width(), 1.); // 1 for the cursor
 
         delete textinputObject;
     }
@@ -170,7 +175,8 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+        int delta = abs(int(textinputObject->width()) - metricWidth);
+        QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
     }
@@ -370,6 +376,52 @@ void tst_qdeclarativetextinput::selection()
     delete textinputObject;
 }
 
+void tst_qdeclarativetextinput::horizontalAlignment_data()
+{
+    QTest::addColumn<int>("hAlign");
+    QTest::addColumn<QString>("expectfile");
+
+    QTest::newRow("L") << int(Qt::AlignLeft) << SRCDIR "/data/halign_left.png";
+    QTest::newRow("R") << int(Qt::AlignRight) << SRCDIR "/data/halign_right.png";
+    QTest::newRow("C") << int(Qt::AlignHCenter) << SRCDIR "/data/halign_center.png";
+}
+
+void tst_qdeclarativetextinput::horizontalAlignment()
+{
+    QFETCH(int, hAlign);
+    QFETCH(QString, expectfile);
+
+#ifdef Q_WS_X11
+   // Font-specific, but not likely platform-specific, so only test on one platform
+   QFont fn;
+   fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
+   QApplication::setFont(fn);
+#endif
+
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment.qml");
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QObject *ob = canvas->rootObject();
+    QVERIFY(ob != 0);
+    ob->setProperty("horizontalAlignment",hAlign);
+    QImage actual(canvas->width(), canvas->height(), QImage::Format_RGB32);
+    actual.fill(qRgb(255,255,255));
+    QPainter p(&actual);
+    canvas->render(&p);
+
+    QImage expect(expectfile);
+
+#ifdef Q_WS_X11
+    // Font-specific, but not likely platform-specific, so only test on one platform
+    if (QApplicationPrivate::graphics_system_name == "raster" || QApplicationPrivate::graphics_system_name == "") {
+        QCOMPARE(actual,expect);
+    }
+#endif
+}
+
 void tst_qdeclarativetextinput::positionAt()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
@@ -557,18 +609,31 @@ void tst_qdeclarativetextinput::validators()
     delete canvas;
 }
 
-void tst_qdeclarativetextinput::inputMethodHints()
+void tst_qdeclarativetextinput::inputMethods()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethods.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    // test input method hints
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(input != 0);
+    QVERIFY(input->inputMethodHints() & Qt::ImhNoPredictiveText);
+    input->setInputMethodHints(Qt::ImhUppercaseOnly);
+    QVERIFY(input->inputMethodHints() & Qt::ImhUppercaseOnly);
 
     QVERIFY(canvas->rootObject() != 0);
-    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
-    QVERIFY(textinputObject != 0);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
-    textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    input->setFocus(true);
+    QVERIFY(input->hasFocus() == true);
+    // test that input method event is committed
+    QInputMethodEvent event;
+    event.setCommitString( "My ", -12, 0);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("My Hello world!"));
 
     delete canvas;
 }

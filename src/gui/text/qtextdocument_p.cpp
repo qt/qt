@@ -205,6 +205,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     undoEnabled = true;
     inContentsChange = false;
+    inRemove = false;
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
@@ -234,17 +235,17 @@ void QTextDocumentPrivate::init()
 void QTextDocumentPrivate::clear()
 {
     Q_Q(QTextDocument);
-    for (int i = 0; i < cursors.count(); ++i) {
-        cursors.at(i)->setPosition(0);
-        cursors.at(i)->currentCharFormat = -1;
-        cursors.at(i)->anchor = 0;
-        cursors.at(i)->adjusted_anchor = 0;
+
+    foreach (QTextCursorPrivate *curs, cursors) {
+        curs->setPosition(0);
+        curs->currentCharFormat = -1;
+        curs->anchor = 0;
+        curs->adjusted_anchor = 0;
     }
 
     QList<QTextCursorPrivate *>oldCursors = cursors;
     QT_TRY{
         cursors.clear();
-        changedCursors.clear();
 
         QMap<int, QTextObject *>::Iterator objectIt = objects.begin();
         while (objectIt != objects.end()) {
@@ -287,8 +288,8 @@ void QTextDocumentPrivate::clear()
 
 QTextDocumentPrivate::~QTextDocumentPrivate()
 {
-    for (int i = 0; i < cursors.count(); ++i)
-        cursors.at(i)->priv = 0;
+    foreach (QTextCursorPrivate *curs, cursors)
+        curs->priv = 0;
     cursors.clear();
     undoState = 0;
     undoEnabled = true;
@@ -669,7 +670,10 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
 {
     if (length == 0)
         return;
+    inRemove = true;
     move(pos, -1, length, op);
+    inRemove = false;
+    adjustDocumentChangesAndCursors(pos, -length, op);
 }
 
 void QTextDocumentPrivate::setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode)
@@ -1221,9 +1225,11 @@ void QTextDocumentPrivate::finishEdit()
         }
     }
 
-    while (!changedCursors.isEmpty()) {
-        QTextCursorPrivate *curs = changedCursors.takeFirst();
-        emit q->cursorPositionChanged(QTextCursor(curs));
+    foreach (QTextCursorPrivate *curs, cursors) {
+        if (curs->changed) {
+            curs->changed = false;
+            emit q->cursorPositionChanged(QTextCursor(curs));
+        }
     }
 
     contentsChanged();
@@ -1263,14 +1269,15 @@ void QTextDocumentPrivate::documentChange(int from, int length)
 */
 void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOrRemoved, QTextUndoCommand::Operation op)
 {
+    if (inRemove) // postpone, will be called again from QTextDocumentPrivate::remove()
+        return;
+
     if (!editBlock)
         ++revision;
 
-    for (int i = 0; i < cursors.size(); ++i) {
-        QTextCursorPrivate *curs = cursors.at(i);
+    foreach (QTextCursorPrivate *curs, cursors) {
         if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
-            if (!changedCursors.contains(curs))
-                changedCursors.append(curs);
+            curs->changed = true;
         }
     }
 
@@ -1693,8 +1700,8 @@ bool QTextDocumentPrivate::ensureMaximumBlockCount()
 void QTextDocumentPrivate::aboutToRemoveCell(int from, int to)
 {
     Q_ASSERT(from <= to);
-    for (int i = 0; i < cursors.size(); ++i)
-        cursors.at(i)->aboutToRemoveCell(from, to);
+    foreach (QTextCursorPrivate *curs, cursors)
+        curs->aboutToRemoveCell(from, to);
 }
 
 QT_END_NAMESPACE

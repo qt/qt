@@ -572,7 +572,7 @@ public:
 
     Q_INVOKABLE void method_NoArgs() { invoke(0); }
     Q_INVOKABLE int method_NoArgs_int() { invoke(1); return 6; }
-    Q_INVOKABLE qreal method_NoArgs_real() { invoke(2); return 19.7; }
+    Q_INVOKABLE qreal method_NoArgs_real() { invoke(2); return 19.75; }
     Q_INVOKABLE QPointF method_NoArgs_QPointF() { invoke(3); return QPointF(123, 4.5); }
     Q_INVOKABLE QObject *method_NoArgs_QObject() { invoke(4); return this; }
     Q_INVOKABLE MyInvokableObject *method_NoArgs_unknown() { invoke(5); return this; }
