@@ -46,8 +46,6 @@
 #ifndef HTMLGENERATOR_H
 #define HTMLGENERATOR_H
 
-#define QDOC_NAME_ALIGNMENT
-
 #include <qmap.h>
 #include <qregexp.h>
 #include <QXmlStreamWriter>
@@ -198,7 +196,7 @@ class HtmlGenerator : public PageGenerator
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
-#ifdef QDOC_NAME_ALIGNMENT
+
     void generateSection(const NodeList& nl,
                          const Node *relative,
                          CodeMarker *marker,
@@ -207,28 +205,15 @@ class HtmlGenerator : public PageGenerator
                           const Node *relative, 
                           CodeMarker *marker,
 			  CodeMarker::SynopsisStyle style,
-                          bool nameAlignment = false);
-    void generateSectionInheritedList(const Section& section, 
-                                      const Node *relative,
-                                      CodeMarker *marker,
-                                      bool nameAlignment = false);
-    QString highlightedCode(const QString& markedCode, 
-                            CodeMarker *marker, 
-                            const Node *relative,
-                            CodeMarker::SynopsisStyle style = CodeMarker::Accessors,
-                            bool nameAlignment = false);
-#else
-    void generateSynopsis(const Node *node, 
-                          const Node *relative, 
-                          CodeMarker *marker,
-			  CodeMarker::SynopsisStyle style);
+                          bool alignNames = false);
     void generateSectionInheritedList(const Section& section, 
                                       const Node *relative,
                                       CodeMarker *marker);
     QString highlightedCode(const QString& markedCode, 
                             CodeMarker *marker, 
-                            const Node *relative);
-#endif
+                            const Node *relative,
+                            bool alignNames = false);
+
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
                           CodeMarker *marker,
