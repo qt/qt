@@ -55,6 +55,10 @@ QT_USE_NAMESPACE
 
 QtMsgHandler systemMsgOutput = 0;
 
+#if defined(Q_WS_S60)
+#include <aknappui.h> // For locking app to portrait
+#endif
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>
@@ -200,6 +204,13 @@ int main(int argc, char ** argv)
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
+#if defined(Q_WS_S60)
+    CAknAppUi *appUi = static_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+    if (appUi) {
+        appUi->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait);
+    }
+#endif
+    
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
 
