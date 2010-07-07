@@ -2,7 +2,7 @@ HEADERS += $$PWD/qsql_oci.h
 SOURCES += $$PWD/qsql_oci.cpp
 
 unix {
-    !contains(LIBS, .*clnts.*):LIBS *= -lclntsh
+    !contains(LIBS, .*clnts.*):LIBS += -lclntsh
 } else {
     LIBS *= -loci
 }

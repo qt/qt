@@ -7,7 +7,7 @@ unix|win32-g++* {
         LIBS *= $$QT_LFLAGS_PSQL
         QMAKE_CXXFLAGS *= $$QT_CFLAGS_PSQL
     }
-    !contains(LIBS, .*pq.*):LIBS *= -lpq
+    !contains(LIBS, .*pq.*):LIBS += -lpq
 } else {
-    !contains(LIBS, .*pq.*):LIBS *= -llibpq -lws2_32 -ladvapi32
+    !contains(LIBS, .*pq.*):LIBS += -llibpq -lws2_32 -ladvapi32
 }
