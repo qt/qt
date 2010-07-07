@@ -431,55 +431,58 @@ private:
     mutable QMutex mutex;
 };
 
-class NetworkAccessManagerFactory : public QDeclarativeNetworkAccessManagerFactory
+class SystemProxyFactory : public QNetworkProxyFactory
 {
+public:
+    SystemProxyFactory() : proxyDirty(true), httpProxyInUse(false) {
+    }
+
+    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+    {
+        if (proxyDirty)
+            setupProxy();
+        QString protocolTag = query.protocolTag();
+        if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+            QList<QNetworkProxy> ret;
+            ret << httpProxy;
+            return ret;
+        }
+#ifdef Q_OS_WIN
+        // systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
+        return QNetworkProxyFactory::proxyForQuery(query);
+#else
+        return QNetworkProxyFactory::systemProxyForQuery(query);
+#endif
+    }
+
+    void setupProxy() {
+        // Don't bother locking because we know that the proxy only
+        // changes in response to the settings dialog and that
+        // the view will be reloaded.
+        proxyDirty = false;
+        httpProxyInUse = ProxySettings::httpProxyInUse();
+        if (httpProxyInUse)
+            httpProxy = ProxySettings::httpProxy();
+    }
+
+    void proxyChanged() {
+        proxyDirty = true;
+    }
+
+private:
+    volatile bool proxyDirty;
+    bool httpProxyInUse;
+    QNetworkProxy httpProxy;
+};
+
+class NetworkAccessManagerFactory : public QObject, public QDeclarativeNetworkAccessManagerFactory
+{
+    Q_OBJECT
 public:
     NetworkAccessManagerFactory() : cacheSize(0) {}
     ~NetworkAccessManagerFactory() {}
 
     QNetworkAccessManager *create(QObject *parent);
-
-    void setupProxy(QNetworkAccessManager *nam)
-    {
-        class SystemProxyFactory : public QNetworkProxyFactory
-        {
-        public:
-            virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
-            {
-                QString protocolTag = query.protocolTag();
-                if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
-                    QList<QNetworkProxy> ret;
-                    ret << httpProxy;
-                    return ret;
-                }
-#ifdef Q_OS_WIN
-		// systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
-                return QNetworkProxyFactory::proxyForQuery(query);
-#else
-                return QNetworkProxyFactory::systemProxyForQuery(query);
-#endif
-            }
-            void setHttpProxy (QNetworkProxy proxy)
-            {
-                httpProxy = proxy;
-                httpProxyInUse = true;
-            }
-            void unsetHttpProxy ()
-            {
-                httpProxyInUse = false;
-            }
-        private:
-            bool httpProxyInUse;
-            QNetworkProxy httpProxy;
-        };
-
-        SystemProxyFactory *proxyFactory = new SystemProxyFactory;
-        if (ProxySettings::httpProxyInUse())
-            proxyFactory->setHttpProxy(ProxySettings::httpProxy());
-        else
-            proxyFactory->unsetHttpProxy();
-        nam->setProxyFactory(proxyFactory);
-    }
 
     void setCacheSize(int size) {
         if (size != cacheSize) {
@@ -487,9 +490,23 @@ public:
         }
     }
 
+    void proxyChanged() {
+        foreach (QNetworkAccessManager *nam, namList) {
+            static_cast<SystemProxyFactory*>(nam->proxyFactory())->proxyChanged();
+        }
+    }
+
     static PersistentCookieJar *cookieJar;
+
+private slots:
+    void managerDestroyed(QObject *obj) {
+        namList.removeOne(static_cast<QNetworkAccessManager*>(obj));
+    }
+
+private:
     QMutex mutex;
     int cacheSize;
+    QList<QNetworkAccessManager*> namList;
 };
 
 PersistentCookieJar *NetworkAccessManagerFactory::cookieJar = 0;
@@ -510,7 +527,7 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     }
     manager->setCookieJar(cookieJar);
     cookieJar->setParent(0);
-    setupProxy(manager);
+    manager->setProxyFactory(new SystemProxyFactory);
     if (cacheSize > 0) {
         QNetworkDiskCache *cache = new QNetworkDiskCache;
         cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-viewer-network-cache"));
@@ -519,6 +536,8 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     } else {
         manager->setCache(0);
     }
+    connect(manager, SIGNAL(destroyed(QObject*)), this, SLOT(managerDestroyed(QObject*)));
+    namList.append(manager);
     qDebug() << "created new network access manager for" << parent;
     return manager;
 }
@@ -777,6 +796,7 @@ void QDeclarativeViewer::showProxySettings()
 
 void QDeclarativeViewer::proxySettingsChanged()
 {
+    namFactory->proxyChanged();
     reload ();
 }
 

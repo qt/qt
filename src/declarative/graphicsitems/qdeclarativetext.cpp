@@ -61,52 +61,100 @@ class QTextDocumentWithImageResources : public QTextDocument {
     Q_OBJECT
 
 public:
-    QTextDocumentWithImageResources(QDeclarativeText *parent) :
-        QTextDocument(parent),
-        outstanding(0)
-    {
-    }
+    QTextDocumentWithImageResources(QDeclarativeText *parent);
+    virtual ~QTextDocumentWithImageResources();
 
+    void setText(const QString &);
     int resourcesLoading() const { return outstanding; }
 
 protected:
-    QVariant loadResource(int type, const QUrl &name)
-    {
-        QUrl url = qmlContext(parent())->resolvedUrl(name);
+    QVariant loadResource(int type, const QUrl &name);
 
-        if (type == QTextDocument::ImageResource) {
-            QPixmap pm;
-            QString errorString;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
-            if (status == QDeclarativePixmapReply::Ready)
-                return pm;
-            if (status == QDeclarativePixmapReply::Error) {
-                if (!errors.contains(url)) {
-                    errors.insert(url);
-                    qmlInfo(parent()) << errorString;
-                }
-            } else {
-                QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
-                connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+private slots:
+    void requestFinished();
+
+private:
+    QHash<QUrl, QDeclarativePixmap *> m_resources;
+
+    int outstanding;
+    static QSet<QUrl> errors;
+};
+
+QTextDocumentWithImageResources::QTextDocumentWithImageResources(QDeclarativeText *parent) 
+: QTextDocument(parent), outstanding(0)
+{
+}
+
+QTextDocumentWithImageResources::~QTextDocumentWithImageResources()
+{
+    if (!m_resources.isEmpty()) 
+        qDeleteAll(m_resources);
+}
+
+QVariant QTextDocumentWithImageResources::loadResource(int type, const QUrl &name)
+{
+    QDeclarativeContext *context = qmlContext(parent());
+    QUrl url = context->resolvedUrl(name);
+
+    if (type == QTextDocument::ImageResource) {
+        QHash<QUrl, QDeclarativePixmap *>::Iterator iter = m_resources.find(url);
+
+        if (iter == m_resources.end()) {
+            QDeclarativePixmap *p = new QDeclarativePixmap(context->engine(), url);
+            iter = m_resources.insert(name, p);
+
+            if (p->isLoading()) {
+                p->connectFinished(this, SLOT(requestFinished()));
                 outstanding++;
             }
         }
 
-        return QTextDocument::loadResource(type,url); // The *resolved* URL
+        QDeclarativePixmap *p = *iter;
+        if (p->isReady()) {
+            return p->pixmap();
+        } else if (p->isError()) {
+            if (!errors.contains(url)) {
+                errors.insert(url);
+                qmlInfo(parent()) << p->error();
+            }
+        }
     }
 
-private slots:
-    void requestFinished()
-    {
-        outstanding--;
-        if (outstanding == 0)
-            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+    return QTextDocument::loadResource(type,url); // The *resolved* URL
+}
+
+void QTextDocumentWithImageResources::requestFinished()
+{
+    outstanding--;
+    if (outstanding == 0) {
+        QDeclarativeText *textItem = static_cast<QDeclarativeText*>(parent());
+        QString text = textItem->text();
+#ifndef QT_NO_TEXTHTMLPARSER
+        setHtml(text);
+#else
+        setPlainText(text);
+#endif
+        QDeclarativeTextPrivate *d = QDeclarativeTextPrivate::get(textItem);
+        d->updateLayout();
+        d->markImgDirty();
+    }
+}
+
+void QTextDocumentWithImageResources::setText(const QString &text)
+{
+    if (!m_resources.isEmpty()) {
+        qWarning("CLEAR");
+        qDeleteAll(m_resources);
+        m_resources.clear();
+        outstanding = 0;
     }
 
-private:
-    int outstanding;
-    static QSet<QUrl> errors;
-};
+#ifndef QT_NO_TEXTHTMLPARSER
+    setHtml(text);
+#else
+    setPlainText(text);
+#endif
+}
 
 QSet<QUrl> QTextDocumentWithImageResources::errors;
 
@@ -314,11 +362,7 @@ void QDeclarativeText::setText(const QString &n)
     if (d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(n);
-#else
-            d->doc->setPlainText(n);
-#endif
+            d->doc->setText(n);
         }
     }
 
@@ -607,11 +651,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     } else if (!wasRich && d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(d->text);
-#else
-            d->doc->setPlainText(d->text);
-#endif
+            d->doc->setText(d->text);
         }
         d->updateLayout();
         d->markImgDirty();
@@ -670,6 +710,8 @@ QRectF QDeclarativeText::boundingRect() const
 
     int x = 0;
     int y = 0;
+
+    // Could include font max left/right bearings to either side of rectangle.
 
     if (d->cache || d->style != Normal) {
         switch (d->hAlign) {
@@ -1074,20 +1116,6 @@ void QDeclarativeTextPrivate::ensureDoc()
     }
 }
 
-void QDeclarativeText::reloadWithResources()
-{
-    Q_D(QDeclarativeText);
-    if (!d->richText)
-        return;
-#ifndef QT_NO_TEXTHTMLPARSER
-    d->doc->setHtml(d->text);
-#else
-    d->doc->setPlainText(d->text);
-#endif
-    d->updateLayout();
-    d->markImgDirty();
-}
-
 /*!
     Returns the number of resources (images) that are being loaded asynchronously.
 */
@@ -1173,11 +1201,7 @@ void QDeclarativeText::componentComplete()
     if (d->dirty) {
         if (d->richText) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(d->text);
-#else
-            d->doc->setPlainText(d->text);
-#endif
+            d->doc->setText(d->text);
         }
         d->updateLayout();
         d->dirty = false;

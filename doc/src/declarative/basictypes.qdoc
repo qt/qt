@@ -400,3 +400,26 @@
 
     \sa {QML Basic Types}
 */
+
+/*!
+    \qmlbasictype enumeration
+    \ingroup qmlbasictypes
+
+    \brief An enumeration type consists of a set of named values.
+
+    An enumeration type consists of a set of named values.
+
+    An enumeration value may be specifed as either a string:
+    \qml
+    Text { horizontalAlignment: "AlignRight" }
+    \endqml
+    
+    or as \c {<Element>.<value>}:
+    \qml
+    Text { horizontalAlignment: Text.AlignRight }
+    \endqml
+
+    The second form is preferred.
+
+    \sa {QML Basic Types}
+*/

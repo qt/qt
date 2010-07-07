@@ -114,6 +114,7 @@ public:
     int currentCharFormat;
     uint visualNavigation : 1;
     uint keepPositionOnInsert : 1;
+    uint changed : 1;
 };
 
 QT_END_NAMESPACE
