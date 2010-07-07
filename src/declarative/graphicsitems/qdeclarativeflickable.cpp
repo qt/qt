@@ -641,18 +641,6 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
     }
 }
 
-QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickDirection() const
-{
-    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
-    return flickableDirection();
-}
-
-void QDeclarativeFlickable::setFlickDirection(FlickableDirection direction)
-{
-    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
-    setFlickableDirection(direction);
-}
-
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
