@@ -43,11 +43,13 @@
 #define QWINDOWSURFACE_OPENKODE_H
 
 #include <QtGui/private/qwindowsurface_p.h>
-#include <QtGui/private/qeglcontext_p.h>
+
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenKODEWindow;
+class QPlatformGLContext;
 
 class QOpenKODEWindowSurface : public QWindowSurface
 {
@@ -65,9 +67,7 @@ public:
 
 private:
     QImage mImage;
-    EGLSurface mSurface;
-    QEglContext mContext;
-    EGLNativeWindowType mWin;
+    QPlatformGLContext *m_platformGLContext;
 };
 
 QT_END_NAMESPACE

@@ -43,8 +43,11 @@
 #define QOPENKODEWINDOW_H
 
 #include <QtGui/QPlatformWindow>
+#include <QtCore/QVector>
 
 #include <KD/kd.h>
+
+class QEGLPlatformContext;
 
 class QOpenKODEWindow : public QPlatformWindow
 {
@@ -54,11 +57,16 @@ public:
 
     void setGeometry(const QRect &rect);
     void setVisible(bool visible);
-    WId winId() const { return WId(eglWindow); }
+    WId winId() const { return WId(m_eglWindow); }
+
+    QPlatformGLContext *glContext();
 
 private:
-    struct KDWindow *kdWindow;
-    EGLNativeWindowType eglWindow;
+    struct KDWindow *m_kdWindow;
+    EGLNativeWindowType m_eglWindow;
+    EGLConfig m_eglConfig;
+    QVector<EGLint> m_eglWindowAttrs;
+    QEGLPlatformContext *m_platformGlContext;
 };
 
 #endif //QOPENKODEWINDOW_H

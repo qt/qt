@@ -42,29 +42,25 @@
 #ifndef QOPENKODEGLINTEGRATION_H
 #define QOPENKODEGLINTEGRATION_H
 
-#include <QtGui/qplatformglcontext_lite.h>
-#include <QtGui/private/qeglproperties_p.h>
+#include <QtGui/QPlatformGLContext>
 #include <EGL/egl.h>
-
-void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLFormat& glFormat);
-// Updates "format" with the parameters of the selected configuration.
-void qt_glformat_from_eglconfig(QGLFormat& format, const EGLConfig config);
 
 class QEGLPlatformContext : public QPlatformGLContext
 {
 public:
-    QEGLPlatformContext();
+    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi);
     ~QEGLPlatformContext();
 
-    bool create(QPaintDevice* device, QGLFormat& format, QPlatformGLContext* shareContext);
     void makeCurrent();
     void doneCurrent();
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
 private:
-    EGLContext m_context;
+    EGLContext m_eglContext;
+    EGLDisplay m_eglDisplay;
     EGLSurface m_eglSurface;
+    EGLenum m_eglApi;
 };
 
 #endif //QOPENKODEGLINTEGRATION_H

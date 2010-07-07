@@ -57,6 +57,8 @@
 #include <KD/NV_display.h>
 #include <KD/NV_initialize.h>
 
+#include <EGL/egl.h>
+
 #include "GLES2/gl2ext.h"
 
 #include <nvgl2demo_common.h>
@@ -85,6 +87,19 @@ QOpenKODEScreen::QOpenKODEScreen()
         return;
     }
 
+    KDboolean enabled = KD_TRUE;
+    kdSetDisplayPropertybvNV(kdDisplay,
+                             KD_DISPLAYPROPERTY_ENABLED_NV,
+                             &enabled);
+    KDboolean power = KD_DISPLAY_POWER_ON;
+    kdSetDisplayPropertyivNV(kdDisplay,
+                             KD_DISPLAYPROPERTY_POWER_NV,
+                             &power);
+
+    kdSetDisplayPropertycvNV(kdDisplay,
+                             KD_DISPLAYPROPERTY_DESKTOP_NAME_NV,
+                             KD_DEFAULT_DESKTOP_NV);
+
     KDDisplayModeNV mode;
     if (kdGetDisplayModeNV(kdDisplay, &mode)) {
         qErrnoWarning(kdGetError(), "Could not get display mode");
@@ -95,14 +110,25 @@ QOpenKODEScreen::QOpenKODEScreen()
 
     KDint desktopSize[] = { mode.width, mode.height };
 
-    if (kdSetDesktopPropertyivNV(kdDesktop, KD_DESKTOPPROPERTY_SIZE_NV, desktopSize)) {
-        qErrnoWarning(kdGetError(), "Could not set desktop size");
-        return;
-    }
+//    if (kdSetDesktopPropertyivNV(kdDesktop, KD_DESKTOPPROPERTY_SIZE_NV, desktopSize)) {
+//        qErrnoWarning(kdGetError(), "Could not set desktop size");
+//        return;
+//    }
 
     // Once we've set up the desktop and display we don't need them anymore
     kdReleaseDisplayNV(kdDisplay);
     kdReleaseDesktopNV(kdDesktop);
+
+    mEglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (mEglDisplay == EGL_NO_DISPLAY) {
+        qErrnoWarning("EGL failed to obtain display");
+    }
+
+    /* Initialize EGL display */
+    EGLBoolean rvbool = eglInitialize(mEglDisplay, 0, 0);
+    if (!rvbool) {
+        qErrnoWarning("EGL failed to initialize display");
+    }
 
     const int defaultDpi = 72;
     mGeometry = QRect(0, 0, mode.width, mode.height);
@@ -212,16 +238,13 @@ QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) 
 
 QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId wid) const
 {
-    return new QOpenKODEWindowSurface(widget, wid);
+//    return new QOpenKODEWindowSurface(widget, wid);
+    return new QGLWindowSurface(widget);
 }
 
 bool QOpenKODEIntegration::hasOpenGL() const
 {
     return true;
-}
-QPlatformGLContext *QOpenKODEIntegration::createGLContext()
-{
-    return new QEGLPlatformContext;
 }
 
 GLuint QOpenKODEIntegration::blitterProgram()

@@ -45,21 +45,14 @@
 #include "qopenkodewindow.h"
 
 #include <QtCore/qdebug.h>
+#include <QtGui/QPlatformGLContext>
 
 QT_BEGIN_NAMESPACE
 
 QOpenKODEWindowSurface::QOpenKODEWindowSurface
-        (QWidget *window, WId winId)
-    : QWindowSurface(window),
-      mSurface(EGL_NO_SURFACE),
-      mWin((EGLNativeWindowType) winId)
+        (QWidget *window, WId)
+    : QWindowSurface(window), m_platformGLContext(window->platformWindow()->glContext())
 {
-    EGLConfig config = QEgl::defaultConfig(QInternal::Widget,QEgl::OpenGL,QEgl::Renderable);
-    mContext.setConfig(config);
-    if (!mContext.createContext()) {
-        qWarning("QOpenKODEWindowSurface: Unable to create context");
-        return;
-    }
 }
 
 QOpenKODEWindowSurface::~QOpenKODEWindowSurface()
@@ -72,19 +65,16 @@ QPaintDevice *QOpenKODEWindowSurface::paintDevice()
 }
 
 // ### TODO - this updates the entire toplevel, should only update the region
-void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoint &offset)
+void QOpenKODEWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    mContext.makeCurrent(mSurface);
+    m_platformGLContext->makeCurrent();
 
     if (!offset.isNull()) {
         qWarning("Offset flushing not supported yet");
         return;
     }
 
-    if (!mContext.makeCurrent(mSurface)) {
-        qWarning("EGL couldn't make context/surface current: 0x%x", eglGetError());
-        return;
-    }
+    m_platformGLContext->makeCurrent();
 
     QRect boundingRect = region.boundingRect();
 
@@ -103,7 +93,7 @@ void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoin
         y = boundingRect.y();
     }
 
-//    qDebug() << "flush" << widget << offset << region.boundingRect() << mImage.format() << blitImage.format();
+    qDebug() << "flush" << widget << offset << region.boundingRect() << mImage.format() << blitImage.format();
 
     GLuint shaderProgram = QOpenKODEIntegration::blitterProgram();
 
@@ -159,8 +149,8 @@ void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoin
 
     eglWaitGL();
 
-    mContext.swapBuffers(mSurface);
-    mContext.doneCurrent();
+    m_platformGLContext->swapBuffers();
+    m_platformGLContext->doneCurrent();
 
     eglWaitNative(EGL_CORE_NATIVE_ENGINE);
 }
@@ -168,21 +158,14 @@ void QOpenKODEWindowSurface::flush(QWidget *, const QRegion &region, const QPoin
 void QOpenKODEWindowSurface::resize(const QSize &size)
 {
     QWindowSurface::resize(size);
-    mContext.destroySurface(mSurface);
-    mSurface = EGL_NO_SURFACE;
     mImage = QImage();
 
 }
 void QOpenKODEWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
-    if (mSurface == EGL_NO_SURFACE)  {
-        EGLConfig config = QEgl::defaultConfig(QInternal::Widget,QEgl::OpenGL,QEgl::Renderable);
-        EGLint windowAttrs[] = { EGL_NONE };
-        mSurface = eglCreateWindowSurface(QEgl::display(), config, mWin, windowAttrs);
-        if (mSurface == EGL_NO_SURFACE) {
-            qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        }
+    if (mImage.isNull())  {
+        m_platformGLContext = window()->platformWindow()->glContext();
         mImage = QImage(size(),QImage::Format_RGB32);
     }
 }
