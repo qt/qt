@@ -210,9 +210,10 @@ class HtmlGenerator : public PageGenerator
                                       const Node *relative,
                                       CodeMarker *marker);
     QString highlightedCode(const QString& markedCode, 
-                            CodeMarker *marker, 
-                            const Node *relative,
-                            bool alignNames = false);
+                            CodeMarker* marker, 
+                            const Node* relative,
+                            bool alignNames = false,
+                            const Node* self = 0);
 
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
