@@ -58,10 +58,11 @@ Rectangle {
     property string plusminus : "\u00b1"
 
     function doOp(operation) { CalcEngine.doOperation(operation) }
-
+    
     Item {
         id: main
-        state: (runtime.orientation == Orientation.Portrait) ? '' : 'rotated'
+        state: "orientation " + runtime.orientation
+
         width: parent.width; height: parent.height; anchors.centerIn: parent
 
         Column {
@@ -130,16 +131,28 @@ Rectangle {
             }
         }
 
-        states: State {
-            name: 'rotated'
-            PropertyChanges { target: main; rotation: -90; width: window.height; height: window.width }
-            PropertyChanges { target: rotateButton; operation: rotateRight }
-        }
+        states: [
+            State {
+                name: "orientation " + Orientation.Landscape
+                PropertyChanges { target: main; rotation: -90; width: window.height; height: window.width }
+                PropertyChanges { target: rotateButton; operation: rotateRight }
+            },
+            State {
+                name: "orientation " + Orientation.PortraitInverted
+                PropertyChanges { target: main; rotation: -180; }
+                PropertyChanges { target: rotateButton; operation: rotateLeft }
+            },
+            State {
+                name: "orientation " + Orientation.LandscapeInverted
+                PropertyChanges { target: main; rotation: -270; width: window.height; height: window.width }
+                PropertyChanges { target: rotateButton; operation: rotateRight }
+            }
+        ]
 
         transitions: Transition {
             SequentialAnimation {
                 PropertyAction { target: rotateButton; property: "operation" }
-                NumberAnimation { properties: "rotation"; duration: 300; easing.type: Easing.InOutQuint }
+                RotationAnimation { direction: RotationAnimation.Shortest; duration: 300; easing.type: Easing.InOutQuint  }
                 NumberAnimation { properties: "x,y,width,height"; duration: 300; easing.type: Easing.InOutQuint }
             }
         }
