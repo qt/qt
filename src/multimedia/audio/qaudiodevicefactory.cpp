@@ -67,8 +67,11 @@
 
 QT_BEGIN_NAMESPACE
 
+
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
         (QAudioEngineFactoryInterface_iid, QLatin1String("/audio"), Qt::CaseInsensitive))
+#endif
 
 
 class QNullDeviceInfo : public QAbstractAudioDeviceInfo
@@ -137,6 +140,7 @@ QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
         devices << QAudioDeviceInfo(QLatin1String("builtin"), handle, mode);
 #endif
 #endif
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QFactoryLoader* l = loader();
 
     foreach (QString const& key, l->keys()) {
@@ -148,12 +152,13 @@ QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
 
         delete plugin;
     }
-
+#endif
     return devices;
 }
 
 QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
 {
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
@@ -161,6 +166,7 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioInput);
     }
+#endif
 #ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA) || defined(Q_OS_SYMBIAN))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultInputDevice(), QAudio::AudioInput);
@@ -171,6 +177,7 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
 
 QAudioDeviceInfo QAudioDeviceFactory::defaultOutputDevice()
 {
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
@@ -178,6 +185,7 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultOutputDevice()
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioOutput);
     }
+#endif
 #ifndef QT_NO_AUDIO_BACKEND
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA) || defined(Q_OS_SYMBIAN))
     return QAudioDeviceInfo(QLatin1String("builtin"), QAudioDeviceInfoInternal::defaultOutputDevice(), QAudio::AudioOutput);
@@ -196,12 +204,13 @@ QAbstractAudioDeviceInfo* QAudioDeviceFactory::audioDeviceInfo(const QString &re
         return new QAudioDeviceInfoInternal(handle, mode);
 #endif
 #endif
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(realm));
 
     if (plugin)
         rc = plugin->createDeviceInfo(handle, mode);
-
+#endif
     return rc == 0 ? new QNullDeviceInfo() : rc;
 }
 
@@ -225,12 +234,13 @@ QAbstractAudioInput* QAudioDeviceFactory::createInputDevice(QAudioDeviceInfo con
         return new QAudioInputPrivate(deviceInfo.handle(), format);
 #endif
 #endif
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));
 
     if (plugin)
         return plugin->createInput(deviceInfo.handle(), format);
-
+#endif
     return new QNullInputDevice();
 }
 
@@ -244,12 +254,13 @@ QAbstractAudioOutput* QAudioDeviceFactory::createOutputDevice(QAudioDeviceInfo c
         return new QAudioOutputPrivate(deviceInfo.handle(), format);
 #endif
 #endif
+#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QAudioEngineFactoryInterface* plugin =
         qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(deviceInfo.realm()));
 
     if (plugin)
         return plugin->createOutput(deviceInfo.handle(), format);
-
+#endif
     return new QNullOutputDevice();
 }
 
