@@ -159,7 +159,7 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), 1.); // 1 for the cursor
+        QCOMPARE(textinputObject->width(), 0.0);
 
         delete textinputObject;
     }

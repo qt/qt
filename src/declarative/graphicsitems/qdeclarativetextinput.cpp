@@ -828,7 +828,7 @@ void QDeclarativeTextInput::createCursor()
     QDeclarative_setParent_noEvent(d->cursorItem, this);
     d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
-    d->cursorItem->setHeight(d->control->height());
+    d->cursorItem->setHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
 }
 
 void QDeclarativeTextInput::moveCursor()
@@ -1033,19 +1033,7 @@ void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
 
 int QDeclarativeTextInputPrivate::calculateTextWidth()
 {
-    int cursorWidth = control->cursorWidth();
-    if(cursorItem)
-        cursorWidth = cursorItem->width();
-
-    QFontMetrics fm = QFontMetrics(font);
-    int leftBearing = 0;
-    int rightBearing = 0;
-    if (!control->text().isEmpty()) {
-        leftBearing = qMax(0, -fm.leftBearing(control->text().at(0)));
-        rightBearing = qMax(0, -fm.rightBearing(control->text().at(control->text().count()-1)));
-    }
-
-    return qRound(control->naturalTextWidth()) + qMax(cursorWidth, leftBearing) + rightBearing;
+    return qRound(control->naturalTextWidth());
 }
 
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
@@ -1521,12 +1509,25 @@ void QDeclarativeTextInput::updateRect(const QRect &r)
     update();
 }
 
+QRectF QDeclarativeTextInput::boundingRect() const
+{
+    Q_D(const QDeclarativeTextInput);
+    QRectF r = QDeclarativePaintedItem::boundingRect();
+
+    int cursorWidth = d->cursorItem ? d->cursorItem->width() : d->control->cursorWidth();
+
+    // Could include font max left/right bearings to either side of rectangle.
+
+    r.setRight(r.right() + cursorWidth);
+    return r;
+}
+
 void QDeclarativeTextInput::updateSize(bool needsRedraw)
 {
     Q_D(QDeclarativeTextInput);
     int w = width();
     int h = height();
-    setImplicitHeight(d->control->height());
+    setImplicitHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
     setImplicitWidth(d->calculateTextWidth());
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
