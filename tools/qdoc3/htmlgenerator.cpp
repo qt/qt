@@ -4197,7 +4197,10 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << "[";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
-        text << Atom(Atom::String, qcn->name());
+        QString name = qcn->name();
+        if (name.startsWith(QLatin1String("QML:")))
+            name = name.mid(4); // remove the "QML:" prefix
+        text << Atom(Atom::String, name);
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
         text << " instantiates the C++ class ";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
