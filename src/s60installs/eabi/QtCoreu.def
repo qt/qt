@@ -3709,4 +3709,6 @@ EXPORTS
 	_ZNK7QString13isRightToLeftEv @ 3708 NONAME
 	_ZN16QIODevicePrivate4peekEPcx @ 3709 NONAME
 	_ZN16QIODevicePrivate4peekEx @ 3710 NONAME
+	_ZN8QProcess18setNativeArgumentsERK7QString @ 3711 NONAME
+	_ZNK8QProcess15nativeArgumentsEv @ 3712 NONAME
 

@@ -423,22 +423,14 @@ signals with the \l {Connections} element.
 
 Additionally, if a property is added to a C++ class, all QML elements
 based on that C++ class will have a \e{value-changed} signal handler
-for that property. The name of the signal handler is \e{on<Property
-name>Changed}, with the first letter of the property name being upper
-cased. 
+for that property. The name of the signal handler is
+\e{on<Property-name>Changed}, with the first letter of the property
+name being upper case.
 
-\note If the NOTIFY signal for the added property is not simply
-\c{<property_name>Changed()}, then you will get two equivalent signal
-handlers, one because of the signal, one because of the property. For
-example, if the property \c{test_property} with NOTIFY signal
-\c{testPropChanged()} is added to a C++ class, then QML elements based
-on that C++ class will have two signal handlers:
-\c{onTest_propertyChanged} because of the property, and
-\c{onTestPropChanged} because of the NOTIFY signal. For clarity, we
-suggest that for properties exposed to QML in this way, the name of
-the NOTIFY signal should be just \c{<property_name>Changed()}, so that
-there will be just one signal handler in QML and one naming
-convention used.  
+\note The QML signal handler will always be named
+on<Property-name>Changed, regardless of the name used for the NOTIFY
+signal in C++. We recommend using <property-name>Changed() for the
+NOTIFY signal in C++.
 
 See also \l {Extending types from QML}.
 
