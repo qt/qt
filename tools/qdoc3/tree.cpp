@@ -173,9 +173,11 @@ const Node* Tree::findNode(const QStringList &path,
         }
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
-                    || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams))
-            if ((node != self) && (node->subType() != Node::QmlPropertyGroup))
+                    || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams)) {
+            if ((node != self) && (node->subType() != Node::QmlPropertyGroup)) {
                 return node;
+            }
+        }
         current = current->parent();
     } while (current);
 

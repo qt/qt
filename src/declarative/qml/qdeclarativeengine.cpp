@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
+  \qmlproperty string QML:QtObject::objectName
   This property allows you to give a name to this specific object instance.
 
   See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
@@ -236,8 +236,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
