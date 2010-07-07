@@ -96,10 +96,10 @@ class QByteArray;
 
     QObject *myObject = component.create();
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(myObject);
-    int width = item->width();
+    int width = item->width();  // width = 200
     \endcode
 
-    \sa {Using QML in C++ Applications}
+    \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
 */
 
 /*!

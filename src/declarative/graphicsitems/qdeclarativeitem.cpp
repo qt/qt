@@ -1601,7 +1601,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
     Returns true if construction of the QML component is complete; otherwise
     returns false.
 
-    It is often desireable to delay some processing until the component is
+    It is often desirable to delay some processing until the component is
     completed.
 
     \sa componentComplete()
@@ -2601,7 +2601,7 @@ void QDeclarativeItem::classBegin()
   \internal
 
   componentComplete() is called when all items in the component
-  have been constructed.  It is often desireable to delay some
+  have been constructed.  It is often desirable to delay some
   processing until the component is complete an all bindings in the
   component have been resolved.
 */
