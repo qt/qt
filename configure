@@ -7762,7 +7762,7 @@ EOF
 
 # Ensure we can link to uninistalled libraries
 if [ "$XPLATFORM_MINGW" != "yes" ] && linkerSupportsFlag -rpath-link "$outpath/lib"; then
-    echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+    echo "QMAKE_LFLAGS    = -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib \$\$QMAKE_LFLAGS" >> "$CACHEFILE.tmp"
 fi
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
