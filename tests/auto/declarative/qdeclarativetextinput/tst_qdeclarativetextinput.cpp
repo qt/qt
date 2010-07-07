@@ -47,6 +47,7 @@
 #include <private/qdeclarativetextinput_p.h>
 #include <private/qdeclarativetextinput_p_p.h>
 #include <QDebug>
+#include <QDir>
 #include <QStyle>
 #include <QInputContext>
 #include <private/qapplication_p.h>
@@ -55,6 +56,22 @@
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
+
+QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
+{
+    // XXX This will be replaced by some clever persistent platform image store.
+    QString persistent_dir = SRCDIR "/data";
+    QString arch = "unknown-architecture"; // QTest needs to help with this.
+
+    QString expectfile = persistent_dir + QDir::separator() + filebasename + "-" + arch + ".png";
+
+    if (!QFile::exists(expectfile)) {
+        actual.save(expectfile);
+        qWarning() << "created" << expectfile;
+    }
+
+    return expectfile;
+}
 
 class tst_qdeclarativetextinput : public QObject
 
@@ -381,22 +398,15 @@ void tst_qdeclarativetextinput::horizontalAlignment_data()
     QTest::addColumn<int>("hAlign");
     QTest::addColumn<QString>("expectfile");
 
-    QTest::newRow("L") << int(Qt::AlignLeft) << SRCDIR "/data/halign_left.png";
-    QTest::newRow("R") << int(Qt::AlignRight) << SRCDIR "/data/halign_right.png";
-    QTest::newRow("C") << int(Qt::AlignHCenter) << SRCDIR "/data/halign_center.png";
+    QTest::newRow("L") << int(Qt::AlignLeft) << "halign_left";
+    QTest::newRow("R") << int(Qt::AlignRight) << "halign_right";
+    QTest::newRow("C") << int(Qt::AlignHCenter) << "halign_center";
 }
 
 void tst_qdeclarativetextinput::horizontalAlignment()
 {
     QFETCH(int, hAlign);
     QFETCH(QString, expectfile);
-
-#ifdef Q_WS_X11
-   // Font-specific, but not likely platform-specific, so only test on one platform
-   QFont fn;
-   fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
-   QApplication::setFont(fn);
-#endif
 
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment.qml");
 
@@ -409,17 +419,16 @@ void tst_qdeclarativetextinput::horizontalAlignment()
     ob->setProperty("horizontalAlignment",hAlign);
     QImage actual(canvas->width(), canvas->height(), QImage::Format_RGB32);
     actual.fill(qRgb(255,255,255));
-    QPainter p(&actual);
-    canvas->render(&p);
+    {
+        QPainter p(&actual);
+        canvas->render(&p);
+    }
+
+    expectfile = createExpectedFileIfNotFound(expectfile, actual);
 
     QImage expect(expectfile);
 
-#ifdef Q_WS_X11
-    // Font-specific, but not likely platform-specific, so only test on one platform
-    if (QApplicationPrivate::graphics_system_name == "raster" || QApplicationPrivate::graphics_system_name == "") {
-        QCOMPARE(actual,expect);
-    }
-#endif
+    QCOMPARE(actual,expect);
 }
 
 void tst_qdeclarativetextinput::positionAt()

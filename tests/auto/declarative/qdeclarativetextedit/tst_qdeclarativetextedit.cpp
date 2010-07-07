@@ -64,6 +64,23 @@
 #define SRCDIR "."
 #endif
 
+QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
+{
+    // XXX This will be replaced by some clever persistent platform image store.
+    QString persistent_dir = SRCDIR "/data";
+    QString arch = "unknown-architecture"; // QTest needs to help with this.
+
+    QString expectfile = persistent_dir + QDir::separator() + filebasename + "-" + arch + ".png";
+
+    if (!QFile::exists(expectfile)) {
+        actual.save(expectfile);
+        qWarning() << "created" << expectfile;
+    }
+
+    return expectfile;
+}
+
+
 class tst_qdeclarativetextedit : public QObject
 
 {
@@ -345,16 +362,7 @@ void tst_qdeclarativetextedit::alignments()
     QPainter p(&actual);
     canvas->render(&p);
 
-    // XXX This will be replaced by some clever persistent platform image store.
-    QString persistent_dir = SRCDIR "/data";
-    QString arch = "unknown-architecture"; // QTest needs to help with this.
-
-    expectfile = persistent_dir + QDir::separator() + expectfile + "-" + arch + ".png";
-
-    if (!QFile::exists(expectfile)) {
-        actual.save(expectfile);
-        qWarning() << "created" << expectfile;
-    }
+    expectfile = createExpectedFileIfNotFound(expectfile, actual);
 
     QImage expect(expectfile);
 
