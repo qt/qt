@@ -711,6 +711,8 @@ QRectF QDeclarativeText::boundingRect() const
     int x = 0;
     int y = 0;
 
+    // Could include font max left/right bearings to either side of rectangle.
+
     if (d->cache || d->style != Normal) {
         switch (d->hAlign) {
         case AlignLeft:

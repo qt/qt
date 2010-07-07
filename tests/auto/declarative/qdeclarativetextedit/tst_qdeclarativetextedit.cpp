@@ -226,7 +226,7 @@ void tst_qdeclarativetextedit::width()
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
-        QCOMPARE(textEditObject->width(), 1.);//+1 for cursor
+        QCOMPARE(textEditObject->width(), 0.0);
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -242,7 +242,7 @@ void tst_qdeclarativetextedit::width()
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
-        QCOMPARE(textEditObject->width(), qreal(metricWidth + 1 + 3));//+3 is the current way of accounting for space between cursor and last character.
+        QCOMPARE(textEditObject->width(), qreal(metricWidth));
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -259,7 +259,7 @@ void tst_qdeclarativetextedit::width()
         QDeclarativeTextEdit *textEditObject = qobject_cast<QDeclarativeTextEdit*>(texteditComponent.create());
 
         QVERIFY(textEditObject != 0);
-        QCOMPARE(textEditObject->width(), qreal(documentWidth + 1 + 3));
+        QCOMPARE(textEditObject->width(), qreal(documentWidth));
     }
 }
 

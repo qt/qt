@@ -187,6 +187,8 @@ public:
     void drawContents(QPainter *p,const QRect &r);
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
+    QRectF boundingRect() const;
+
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
