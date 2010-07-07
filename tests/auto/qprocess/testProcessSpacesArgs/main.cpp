@@ -44,9 +44,14 @@
 
 int main(int argc, char ** argv)
 {
-#if defined(__SYMBIAN32__)
+#if defined(__SYMBIAN32__) || defined(WINCE) || defined(_WIN32_WCE)
+# if defined(__SYMBIAN32__)
     // Printing to stdout messes up the out.txt, so open a file and print there.
     FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","w+");
+# else
+    // No pipes on this "OS"
+    FILE* file = fopen("\\temp\\qprocess_args_test.txt","w+");
+# endif
     for (int i = 0; i < argc; ++i) {
         if (i)
             fprintf(file, "|");

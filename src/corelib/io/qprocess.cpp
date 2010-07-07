@@ -1377,6 +1377,50 @@ void QProcess::setStandardOutputProcess(QProcess *destination)
     dto->stdinChannel.pipeFrom(dfrom);
 }
 
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+
+/*!
+    \since 4.7
+
+    Returns the additional native command line arguments for the program.
+
+    \note This function is available only on the Windows and Symbian
+    platforms.
+
+    \sa setNativeArguments()
+*/
+QString QProcess::nativeArguments() const
+{
+    Q_D(const QProcess);
+    return d->nativeArguments;
+}
+
+/*!
+    \since 4.7
+    \overload
+
+    Sets additional native command line arguments for the program.
+
+    On operating systems where the system API for passing command line
+    arguments to a subprocess natively uses a single string, one can
+    conceive command lines which cannot be passed via QProcess's portable
+    list-based API. In such cases this function must be used to set a
+    string which is \e appended to the string composed from the usual
+    argument list, with a delimiting space.
+
+    \note This function is available only on the Windows and Symbian
+    platforms.
+
+    \sa nativeArguments()
+*/
+void QProcess::setNativeArguments(const QString &arguments)
+{
+    Q_D(QProcess);
+    d->nativeArguments = arguments;
+}
+
+#endif
+
 /*!
     If QProcess has been assigned a working directory, this function returns
     the working directory that the QProcess will enter before the program has
@@ -2082,14 +2126,19 @@ QProcess::ExitStatus QProcess::exitStatus() const
     process.
 
     On Windows, arguments that contain spaces are wrapped in quotes.
+
+    If the process cannot be started, -2 is returned. If the process
+    crashes, -1 is returned. Otherwise, the process' exit code is
+    returned.
 */
 int QProcess::execute(const QString &program, const QStringList &arguments)
 {
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(program, arguments);
-    process.waitForFinished(-1);
-    return process.exitCode();
+    if (!process.waitForFinished(-1))
+        return -2;
+    return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }
 
 /*!
@@ -2104,8 +2153,9 @@ int QProcess::execute(const QString &program)
     QProcess process;
     process.setReadChannelMode(ForwardedChannels);
     process.start(program);
-    process.waitForFinished(-1);
-    return process.exitCode();
+    if (!process.waitForFinished(-1))
+        return -2;
+    return process.exitStatus() == QProcess::NormalExit ? process.exitCode() : -1;
 }
 
 /*!

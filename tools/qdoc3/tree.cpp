@@ -134,15 +134,16 @@ Node *Tree::findNode(const QStringList &path, Node *relative, int findFlags)
 
 /*!
  */
-const Node *Tree::findNode(const QStringList &path,
-                           const Node *relative,
+const Node* Tree::findNode(const QStringList &path,
+                           const Node* start,
                            int findFlags) const
 {
-    if (!relative)
-        relative = root();
+    const Node* current = start;
+    if (!current)
+        current = root();
 
     do {
-        const Node *node = relative;
+        const Node *node = current;
         int i;
 
         for (i = 0; i < path.size(); ++i) {
@@ -171,10 +172,10 @@ const Node *Tree::findNode(const QStringList &path,
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
                     || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams))
-            if (node->subType() != Node::QmlPropertyGroup)
+            if ((node != start) && (node->subType() != Node::QmlPropertyGroup))
                 return node;
-        relative = relative->parent();
-    } while (relative);
+        current = current->parent();
+    } while (current);
 
     return 0;
 }

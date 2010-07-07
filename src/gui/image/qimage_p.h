@@ -61,6 +61,8 @@
 #include <QMap>
 #endif
 
+class QImageWriter;
+
 QT_BEGIN_NAMESPACE
 
 struct Q_GUI_EXPORT QImageData {        // internal image data
@@ -107,6 +109,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
 
     QPaintEngine *paintEngine;
 };
+
+void qInitImageConversions();
 
 QT_END_NAMESPACE
 

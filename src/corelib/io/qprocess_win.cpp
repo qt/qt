@@ -366,6 +366,11 @@ void QProcessPrivate::startProcess()
     if (environment.d.constData())
         envlist = qt_create_environment(environment.d.constData()->hash);
 #endif
+    if (!nativeArguments.isEmpty()) {
+        if (!args.isEmpty())
+             args += QLatin1Char(' ');
+        args += nativeArguments;
+    }
 
 #if defined QPROCESS_DEBUG
     qDebug("Creating process");
