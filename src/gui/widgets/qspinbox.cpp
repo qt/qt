@@ -697,6 +697,9 @@ void QDoubleSpinBox::setSuffix(const QString &suffix)
 
     d->suffix = suffix;
     d->updateEdit();
+
+    d->cachedSizeHint = QSize();
+    updateGeometry();
 }
 
 /*!
