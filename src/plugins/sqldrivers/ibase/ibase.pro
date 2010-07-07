@@ -1,4 +1,4 @@
-TARGET	 = qsqlibase
+TARGET = qsqlibase
 
 HEADERS		= ../../../sql/drivers/ibase/qsql_ibase.h
 SOURCES		= main.cpp \

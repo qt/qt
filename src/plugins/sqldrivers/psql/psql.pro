@@ -1,4 +1,4 @@
-TARGET	 = qsqlpsql
+TARGET = qsqlpsql
 
 HEADERS		= ../../../sql/drivers/psql/qsql_psql.h
 SOURCES		= main.cpp \

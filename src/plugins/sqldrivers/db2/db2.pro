@@ -1,4 +1,4 @@
-TARGET	 = qsqldb2
+TARGET = qsqldb2
 
 HEADERS		= ../../../sql/drivers/db2/qsql_db2.h
 SOURCES		= main.cpp \

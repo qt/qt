@@ -1,4 +1,4 @@
-TARGET	 = qsqlodbc
+TARGET = qsqlodbc
 
 HEADERS		= ../../../sql/drivers/odbc/qsql_odbc.h
 SOURCES		= main.cpp \

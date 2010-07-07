@@ -1,4 +1,4 @@
-TARGET	 = qsqlmysql
+TARGET = qsqlmysql
 
 HEADERS		= ../../../sql/drivers/mysql/qsql_mysql.h
 SOURCES		= main.cpp \

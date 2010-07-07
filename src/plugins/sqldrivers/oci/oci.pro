@@ -1,4 +1,4 @@
-TARGET	 = qsqloci
+TARGET = qsqloci
 
 HEADERS		= ../../../sql/drivers/oci/qsql_oci.h
 SOURCES		= main.cpp \

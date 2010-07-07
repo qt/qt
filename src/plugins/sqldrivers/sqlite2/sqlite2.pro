@@ -1,4 +1,4 @@
-TARGET	 = qsqlite2
+TARGET = qsqlite2
 
 HEADERS		= ../../../sql/drivers/sqlite2/qsql_sqlite2.h
 SOURCES		= smain.cpp \

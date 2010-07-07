@@ -1,4 +1,4 @@
-TARGET	 = qsqltds
+TARGET = qsqltds
 
 HEADERS		= ../../../sql/drivers/tds/qsql_tds.h
 
