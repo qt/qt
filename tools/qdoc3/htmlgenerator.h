@@ -237,9 +237,6 @@ class HtmlGenerator : public PageGenerator
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
-#ifdef ZZZ_QDOC_QML    
-    void findAllQmlClasses(const InnerNode *node);
-#endif
     void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
@@ -317,9 +314,6 @@ class HtmlGenerator : public PageGenerator
     NodeMap obsoleteClasses;
     NodeMap namespaceIndex;
     NodeMap serviceClasses;
-#ifdef QDOC_QML    
-    NodeMap qmlClasses;
-#endif
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
     NewSinceMaps newSinceMaps;
