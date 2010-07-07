@@ -6636,6 +6636,11 @@ else
     QT_CONFIG="$QT_CONFIG accessibility"
 fi
 
+# egl stuff does not belong in lighthouse, but rather in plugins
+if [ "$PLATFORM_QPA" = "yes" ]; then
+    CFG_EGL="no"
+fi
+
 # enable egl
 if [ "$CFG_EGL" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"

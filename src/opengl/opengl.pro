@@ -78,8 +78,6 @@ SOURCES	+= qgl.cpp \
 }
 
 qpa {
-    DEFINES += QT_NO_EGL
-
     SOURCES +=  qgl_qpa.cpp \
                 qglpixelbuffer_stub.cpp
 }

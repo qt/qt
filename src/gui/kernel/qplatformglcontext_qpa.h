@@ -51,10 +51,7 @@ QT_BEGIN_NAMESPACE
 class Q_OPENGL_EXPORT QPlatformGLContext
 {
 public:
-    //QPlatformGLContext();
-    //virtual ~QPlatformGLContext();
-
-    //virtual bool create(QPaintDevice* device, QPlatformGLContext* shareContext) = 0;
+    virtual ~QPlatformGLContext() { }
 
     virtual void makeCurrent() = 0;
     virtual void doneCurrent() = 0;
