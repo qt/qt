@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-bool convert_ARGB_to_ARGB_PM_inplace_SSE2(QImageData *data, Qt::ImageConversionFlags)
+bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_ARGB32);
 

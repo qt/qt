@@ -3735,8 +3735,8 @@ void qInitImageConversions()
 
 #ifdef QT_HAVE_SSE2
     if (features & SSE2) {
-        extern bool convert_ARGB_to_ARGB_PM_inplace_SSE2(QImageData *data, Qt::ImageConversionFlags);
-        inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_SSE2;
+        extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
+        inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_sse2;
     }
 #endif
 }
