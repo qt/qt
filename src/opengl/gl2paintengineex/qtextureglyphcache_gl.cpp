@@ -276,11 +276,6 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
     }
 }
 
-int QGLTextureGlyphCache::glyphMargin() const
-{
-    return 1;
-}
-
 int QGLTextureGlyphCache::glyphPadding() const
 {
     return 1;
