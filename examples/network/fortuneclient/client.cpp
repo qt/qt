@@ -43,13 +43,9 @@
 
 #include "client.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "sym_iap_util.h"
-#endif
-
 //! [0]
 Client::Client(QWidget *parent)
-    : QDialog(parent)
+:   QDialog(parent), networkSession(0)
 {
 //! [0]
     hostLabel = new QLabel(tr("&Server name:"));
@@ -121,9 +117,28 @@ Client::Client(QWidget *parent)
     setWindowTitle(tr("Fortune Client"));
     portLineEdit->setFocus();
 
-#ifdef Q_OS_SYMBIAN
-    isDefaultIapSet = false;
-#endif
+    QNetworkConfigurationManager manager;
+    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+        // Get saved network configuration
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+        settings.endGroup();
+
+        // If the saved network configuration is not currently discovered use the system default
+        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+        if ((config.state() & QNetworkConfiguration::Discovered) !=
+            QNetworkConfiguration::Discovered) {
+            config = manager.defaultConfiguration();
+        }
+
+        networkSession = new QNetworkSession(config, this);
+        connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
+
+        getFortuneButton->setEnabled(false);
+        statusLabel->setText(tr("Opening network session."));
+        networkSession->open();
+    }
 //! [5]
 }
 //! [5]
@@ -132,12 +147,6 @@ Client::Client(QWidget *parent)
 void Client::requestNewFortune()
 {
     getFortuneButton->setEnabled(false);
-#ifdef Q_OS_SYMBIAN
-    if(!isDefaultIapSet) {
-        qt_SetDefaultIap();
-        isDefaultIapSet = true;
-    }
-#endif
     blockSize = 0;
     tcpSocket->abort();
 //! [7]
@@ -214,6 +223,30 @@ void Client::displayError(QAbstractSocket::SocketError socketError)
 
 void Client::enableGetFortuneButton()
 {
-    getFortuneButton->setEnabled(!hostLineEdit->text().isEmpty()
-                                 && !portLineEdit->text().isEmpty());
+    getFortuneButton->setEnabled((!networkSession || networkSession->isOpen()) &&
+                                 !hostLineEdit->text().isEmpty() &&
+                                 !portLineEdit->text().isEmpty());
+
 }
+
+void Client::sessionOpened()
+{
+    // Save the used configuration
+    QNetworkConfiguration config = networkSession->configuration();
+    QString id;
+    if (config.type() == QNetworkConfiguration::UserChoice)
+        id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
+    else
+        id = config.identifier();
+
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QtNetwork"));
+    settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
+    settings.endGroup();
+
+    statusLabel->setText(tr("This examples requires that you run the "
+                            "Fortune Server example as well."));
+
+    enableGetFortuneButton();
+}
+

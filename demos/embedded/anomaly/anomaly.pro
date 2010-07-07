@@ -26,8 +26,6 @@ RESOURCES += src/anomaly.qrc
 symbian {
     TARGET.UID3 = 0xA000CF71
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-    INCLUDEPATH += $$QT_SOURCE_TREE/examples/network/qftp/
-    LIBS += -lesock -lcommdb -linsock # For IAP selection
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
