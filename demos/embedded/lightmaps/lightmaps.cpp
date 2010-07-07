@@ -43,10 +43,6 @@
 #include <QtGui>
 #include <QtNetwork>
 
-#if defined (Q_OS_SYMBIAN)
-#include "sym_iap_util.h"
-#endif
-
 #include <math.h>
 
 #ifndef M_PI
@@ -490,6 +486,7 @@ class MapZoom : public QMainWindow
 
 private:
     LightMaps *map;
+    QNetworkSession *networkSession;
 
 public:
     MapZoom(): QMainWindow(0) {
@@ -526,15 +523,49 @@ public:
         menu->addAction(osmAction);
 #endif
 
-        QTimer::singleShot(0, this, SLOT(delayedInit()));
+        QNetworkConfigurationManager manager;
+        if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+            // Get saved network configuration
+            QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+            settings.beginGroup(QLatin1String("QtNetwork"));
+            const QString id =
+                settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+            settings.endGroup();
+
+            // If the saved network configuration is not currently discovered use the system
+            // default
+            QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+            if ((config.state() & QNetworkConfiguration::Discovered) !=
+                QNetworkConfiguration::Discovered) {
+                config = manager.defaultConfiguration();
+            }
+
+            networkSession = new QNetworkSession(config, this);
+            connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
+
+            networkSession->open();
+        } else {
+            networkSession = 0;
+        }
     }
 
 private slots:
 
-    void delayedInit() {
-#if defined(Q_OS_SYMBIAN)
-        qt_SetDefaultIap();
-#endif
+    void sessionOpened() {
+        // Save the used configuration
+        QNetworkConfiguration config = networkSession->configuration();
+        QString id;
+        if (config.type() == QNetworkConfiguration::UserChoice) {
+            id = networkSession->sessionProperty(
+                    QLatin1String("UserChoiceConfiguration")).toString();
+        } else {
+            id = config.identifier();
+        }
+
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
+        settings.endGroup();
     }
 
     void chooseOslo() {

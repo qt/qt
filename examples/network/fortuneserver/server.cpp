@@ -46,11 +46,78 @@
 #include "server.h"
 
 Server::Server(QWidget *parent)
-    : QDialog(parent)
+:   QDialog(parent), tcpServer(0), networkSession(0)
 {
     statusLabel = new QLabel;
     quitButton = new QPushButton(tr("Quit"));
     quitButton->setAutoDefault(false);
+
+    QNetworkConfigurationManager manager;
+    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+        // Get saved network configuration
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+        settings.endGroup();
+
+        // If the saved network configuration is not currently discovered use the system default
+        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+        if ((config.state() & QNetworkConfiguration::Discovered) !=
+            QNetworkConfiguration::Discovered) {
+            config = manager.defaultConfiguration();
+        }
+
+        networkSession = new QNetworkSession(config, this);
+        connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
+
+        statusLabel->setText(tr("Opening network session."));
+        networkSession->open();
+    } else {
+        sessionOpened();
+    }
+
+    //! [2]
+        fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
+                 << tr("You've got to think about tomorrow.")
+                 << tr("You will be surprised by a loud noise.")
+                 << tr("You will feel hungry again in another hour.")
+                 << tr("You might have mail.")
+                 << tr("You cannot kill time without injuring eternity.")
+                 << tr("Computers are not intelligent. They only think they are.");
+    //! [2]
+
+        connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    //! [3]
+        connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendFortune()));
+    //! [3]
+
+        QHBoxLayout *buttonLayout = new QHBoxLayout;
+        buttonLayout->addStretch(1);
+        buttonLayout->addWidget(quitButton);
+        buttonLayout->addStretch(1);
+
+        QVBoxLayout *mainLayout = new QVBoxLayout;
+        mainLayout->addWidget(statusLabel);
+        mainLayout->addLayout(buttonLayout);
+        setLayout(mainLayout);
+
+        setWindowTitle(tr("Fortune Server"));
+}
+
+void Server::sessionOpened()
+{
+    // Save the used configuration
+    QNetworkConfiguration config = networkSession->configuration();
+    QString id;
+    if (config.type() == QNetworkConfiguration::UserChoice)
+        id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
+    else
+        id = config.identifier();
+
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QtNetwork"));
+    settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
+    settings.endGroup();
 
 //! [0] //! [1]
     tcpServer = new QTcpServer(this);
@@ -79,33 +146,6 @@ Server::Server(QWidget *parent)
                             "Run the Fortune Client example now.")
                          .arg(ipAddress).arg(tcpServer->serverPort()));
 //! [1]
-
-//! [2]
-    fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
-             << tr("You've got to think about tomorrow.")
-             << tr("You will be surprised by a loud noise.")
-             << tr("You will feel hungry again in another hour.")
-             << tr("You might have mail.")
-             << tr("You cannot kill time without injuring eternity.")
-             << tr("Computers are not intelligent. They only think they are.");
-//! [2]
-
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-//! [3]
-    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendFortune()));
-//! [3]
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
-    buttonLayout->addStretch(1);
-    buttonLayout->addWidget(quitButton);
-    buttonLayout->addStretch(1);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(statusLabel);
-    mainLayout->addLayout(buttonLayout);
-    setLayout(mainLayout);
-
-    setWindowTitle(tr("Fortune Server"));
 }
 
 //! [4]
