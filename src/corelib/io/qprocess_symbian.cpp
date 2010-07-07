@@ -219,7 +219,8 @@ static bool qt_rprocess_running(RProcess *proc)
     return false;
 }
 
-static void qt_create_symbian_commandline(const QStringList &arguments, QString &commandLine)
+static void qt_create_symbian_commandline(
+    const QStringList &arguments, const QString &nativeArguments, QString &commandLine)
 {
     for (int i = 0; i < arguments.size(); ++i) {
         QString tmp = arguments.at(i);
@@ -243,12 +244,14 @@ static void qt_create_symbian_commandline(const QStringList &arguments, QString 
         }
     }
 
-    // Chop the extra trailing space if any arguments were appended
-    if (arguments.size())
+    if (!nativeArguments.isEmpty())
+        commandLine += nativeArguments;
+    else if (!commandLine.isEmpty()) // Chop the extra trailing space if any arguments were appended
         commandLine.chop(1);
 }
 
-static TInt qt_create_symbian_process(RProcess **proc, const QString &programName, const QStringList &arguments)
+static TInt qt_create_symbian_process(RProcess **proc,
+    const QString &programName, const QStringList &arguments, const QString &nativeArguments)
 {
     RProcess *newProc = NULL;
     newProc = new RProcess();
@@ -257,7 +260,7 @@ static TInt qt_create_symbian_process(RProcess **proc, const QString &programNam
         return KErrNoMemory;
 
     QString commandLine;
-    qt_create_symbian_commandline(arguments, commandLine);
+    qt_create_symbian_commandline(arguments, nativeArguments, commandLine);
 
     TPtrC program_ptr(reinterpret_cast<const TText*>(programName.constData()));
     TPtrC cmdline_ptr(reinterpret_cast<const TText*>(commandLine.constData()));
@@ -794,7 +797,7 @@ void QProcessPrivate::startProcess()
                          q, SLOT(_q_processDied()));
     }
 
-    TInt err = qt_create_symbian_process(&symbianProcess, program, arguments);
+    TInt err = qt_create_symbian_process(&symbianProcess, program, arguments, nativeArguments);
 
     if (err == KErrNone) {
         pid = symbianProcess->Id().Id();
@@ -1030,7 +1033,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
     RProcess *newProc = NULL;
 
-    TInt err = qt_create_symbian_process(&newProc, program, arguments);
+    TInt err = qt_create_symbian_process(&newProc, program, arguments, QString());
 
     if (err == KErrNone) {
         if (pid)
