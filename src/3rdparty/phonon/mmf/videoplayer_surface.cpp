@@ -107,6 +107,9 @@ void MMF::SurfaceVideoPlayer::handleVideoWindowChanged()
 
 void MMF::SurfaceVideoPlayer::handleParametersChanged(VideoParameters parameters)
 {
+    TRACE_CONTEXT(SurfaceVideoPlayer::handleParametersChanged, EVideoApi);
+    TRACE_ENTRY("parameters 0x%x", parameters.operator int());
+
     TRect rect;
     if (m_videoOutput) {
         m_videoOutput->dump();
@@ -137,12 +140,20 @@ void MMF::SurfaceVideoPlayer::handleParametersChanged(VideoParameters parameters
             }
         }
     }
+
+    TRACE_EXIT_0();
 }
 
 void MMF::SurfaceVideoPlayer::addDisplayWindow(const TRect &rect)
 {
+    TRACE_CONTEXT(SurfaceVideoPlayer::addDisplayWindow, EVideoApi);
+    TRACE_ENTRY("rect %d %d - %d %d", rect.iTl.iX, rect.iTl.iY, rect.iBr.iX, rect.iBr.iY);
+
     Q_ASSERT(!m_displayWindow);
     RWindow *window = static_cast<RWindow *>(m_window);
+
+    TRACE("window 0x%08x", window);
+
     if (window) {
         window->SetBackgroundColor(TRgb(0, 0, 0, 255));
         CVideoPlayerUtility2 *player = static_cast<CVideoPlayerUtility2 *>(m_player.data());
@@ -152,11 +163,17 @@ void MMF::SurfaceVideoPlayer::addDisplayWindow(const TRect &rect)
             m_displayWindow = window;
         else
             setError(tr("Video display error"), err);
+	TRACE("err %d", err);
     }
+
+    TRACE_EXIT_0();
 }
 
 void MMF::SurfaceVideoPlayer::removeDisplayWindow()
 {
+    TRACE_CONTEXT(SurfaceVideoPlayer::removeDisplayWindow, EVideoApi);
+    TRACE("player 0x%08x window 0x%08x", m_player.data(), m_displayWindow);
+
     CVideoPlayerUtility2 *player = static_cast<CVideoPlayerUtility2 *>(m_player.data());
     if (player && m_displayWindow) {
         player->RemoveDisplayWindow(*m_displayWindow);
