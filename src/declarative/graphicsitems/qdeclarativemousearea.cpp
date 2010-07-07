@@ -443,7 +443,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         QPointF startLocalPos;
         QPointF curLocalPos;
-        if (drag()->target()->parent()) {
+        if (drag()->target()->parentItem()) {
             startLocalPos = drag()->target()->parentItem()->mapFromScene(d->startScene);
             curLocalPos = drag()->target()->parentItem()->mapFromScene(event->scenePos());
         } else {
@@ -761,7 +761,7 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \c drag provides a convenient way to make an item draggable.
 
     \list
-    \i \c drag.target specifies the item to drag.
+    \i \c drag.target specifies the id of the item to drag.
     \i \c drag.active specifies if the target item is currently being dragged.
     \i \c drag.axis specifies whether dragging can be done horizontally (\c Drag.XAxis), vertically (\c Drag.YAxis), or both (\c Drag.XandYAxis)
     \i \c drag.minimum and \c drag.maximum limit how far the target can be dragged along the corresponding axes.
