@@ -42,18 +42,33 @@
 #include "qglgradientcache_p.h"
 #include <private/qdrawhelper_p.h>
 #include <private/qgl_p.h>
-
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QGLContextGroupResource<QGL2GradientCache>, qt_gradient_caches)
+class QGL2GradientCacheWrapper
+{
+public:
+    QGL2GradientCache *cacheForContext(const QGLContext *context) {
+        QMutexLocker lock(&m_mutex);
+        return m_resource.value(context);
+    }
+
+private:
+    QGLContextGroupResource<QGL2GradientCache> m_resource;
+    QMutex m_mutex;
+};
+
+Q_GLOBAL_STATIC(QGL2GradientCacheWrapper, qt_gradient_caches)
 
 QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
 {
-    return qt_gradient_caches()->value(context);
+    return qt_gradient_caches()->cacheForContext(context);
 }
 
-void QGL2GradientCache::cleanCache() {
+void QGL2GradientCache::cleanCache()
+{
+    QMutexLocker lock(&m_mutex);
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
@@ -64,6 +79,7 @@ void QGL2GradientCache::cleanCache() {
 
 GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
 {
+    QMutexLocker lock(&m_mutex);
     quint64 hash_val = 0;
 
     QGradientStops stops = gradient.stops();
@@ -77,7 +93,9 @@ GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
     else {
         do {
             const CacheInfo &cache_info = it.value();
-            if (cache_info.stops == stops && cache_info.opacity == opacity && cache_info.interpolationMode == gradient.interpolationMode()) {
+            if (cache_info.stops == stops && cache_info.opacity == opacity
+                && cache_info.interpolationMode == gradient.interpolationMode())
+            {
                 return cache_info.texId;
             }
             ++it;
