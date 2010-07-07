@@ -772,7 +772,7 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QDeclarativeText);
-    if (newGeometry.width() != oldGeometry.width()) {
+    if (!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width()) {
         if (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone) {
             //re-elide if needed
             if (d->singleline && d->elideMode != QDeclarativeText::ElideNone &&
@@ -872,7 +872,9 @@ void QDeclarativeTextPrivate::updateSize()
         q->setBaselineOffset(fm.ascent() + yoff);
 
         //### need to comfirm cost of always setting these for richText
+        internalWidthUpdate = true;
         q->setImplicitWidth(size.width());
+        internalWidthUpdate = false;
         q->setImplicitHeight(size.height());
         emit q->paintedSizeChanged();
     } else {
