@@ -27,5 +27,5 @@ QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
 symbian {
    TARGET.UID3=0x2001B2DE
-   LIBS += -lesock -linsock
+   LIBS += -lesock -linsock -lcertstore -lefsrv -lctframework
 }

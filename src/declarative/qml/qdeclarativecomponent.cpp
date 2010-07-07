@@ -70,6 +70,36 @@ class QByteArray;
     \since 4.7
     \brief The QDeclarativeComponent class encapsulates a QML component definition.
     \mainclass
+
+    Components are reusable, encapsulated QML elements with well-defined interfaces.
+    They are often defined in \l {qdeclarativedocuments.html}{Component Files}.
+
+    A QDeclarativeComponent instance can be created from a QML file.
+    For example, if there is a \c main.qml file like this:
+
+    \qml
+    import Qt 4.7
+
+    Item {
+        width: 200
+        height: 200
+    }
+    \endqml
+
+    The following code loads this QML file as a component, creates an instance of
+    this component using create(), and then queries the \l Item's \l {Item::}{width}
+    value:
+
+    \code
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("main.qml"));
+
+    QObject *myObject = component.create();
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(myObject);
+    int width = item->width();
+    \endcode
+
+    \sa {Using QML in C++ Applications}
 */
 
 /*!

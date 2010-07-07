@@ -667,7 +667,7 @@ QString QDeclarativeXmlListModel::toString(int role) const
     \qmlproperty url XmlListModel::source
     The location of the XML data source.
 
-    If both source and xml are set, xml will be used.
+    If both \c source and \l xml are set, \l xml is used.
 */
 QUrl QDeclarativeXmlListModel::source() const
 {
@@ -692,7 +692,7 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
 
     The text is assumed to be UTF-8 encoded.
 
-    If both \l source and \c xml are set, \c xml will be used.
+    If both \l source and \c xml are set, \c xml is used.
 */
 QString QDeclarativeXmlListModel::xml() const
 {

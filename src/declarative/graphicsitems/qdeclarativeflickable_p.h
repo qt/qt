@@ -74,7 +74,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeFlickable : public QDeclarativeItem
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
     Q_PROPERTY(bool flickingHorizontally READ isFlickingHorizontally NOTIFY flickingHorizontallyChanged)
     Q_PROPERTY(bool flickingVertically READ isFlickingVertically NOTIFY flickingVerticallyChanged)
-    Q_PROPERTY(FlickableDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickableDirectionChanged) // deprecated
     Q_PROPERTY(FlickableDirection flickableDirection READ flickableDirection WRITE setFlickableDirection NOTIFY flickableDirectionChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
@@ -147,8 +146,6 @@ public:
     QDeclarativeItem *contentItem();
 
     enum FlickableDirection { AutoFlickDirection=0x00, HorizontalFlick=0x01, VerticalFlick=0x02, HorizontalAndVerticalFlick=0x03 };
-    FlickableDirection flickDirection() const; // deprecated
-    void setFlickDirection(FlickableDirection); // deprecated
     FlickableDirection flickableDirection() const;
     void setFlickableDirection(FlickableDirection);
 
