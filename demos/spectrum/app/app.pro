@@ -3,7 +3,6 @@ include(../spectrum.pri)
 TEMPLATE = app
 
 TARGET = spectrum
-unix: !macx: !symbian: TARGET = spectrum.bin
 
 QT       += multimedia
 
@@ -63,8 +62,7 @@ symbian {
             LIBS += -F$${fftreal_dir}
             LIBS += -framework fftreal
         } else {
-            # Link to dynamic library which is written to ../bin
-            LIBS += -L../bin
+            LIBS += -L..
             LIBS += -lfftreal
         }
     }
@@ -110,17 +108,11 @@ symbian {
         }
     } else {
         # Specify directory in which to create spectrum application
-        DESTDIR = ../bin
+        DESTDIR = ..
 
-        unix: !symbian {
-            # On unices other than Mac OSX, we copy a shell script into the bin directory.
-            # This script takes care of correctly setting the LD_LIBRARY_PATH so that
-            # the dynamic library can be located.
-            copy_launch_script.target = copy_launch_script
-            copy_launch_script.commands = \
-                install -m 0555 $$QT_SOURCE_TREE/demos/spectrum/app/spectrum.sh ../bin/spectrum
-            QMAKE_EXTRA_TARGETS += copy_launch_script
-            POST_TARGETDEPS += copy_launch_script
+        unix: {
+            # Provide relative path from application to fftreal library
+            QMAKE_LFLAGS += -Wl,--rpath=\\\$\$ORIGIN
         }
     }
 }
