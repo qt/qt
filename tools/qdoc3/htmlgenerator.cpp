@@ -2676,7 +2676,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
             }
         }
     }
-    out() << highlightedCode(marked, marker, relative);
+    out() << highlightedCode(marked, marker, relative, false, node);
     debugging_on = false;
 }
 #endif
@@ -2988,7 +2988,8 @@ void HtmlGenerator::generateSynopsis(const Node *node,
 QString HtmlGenerator::highlightedCode(const QString& markedCode,
                                        CodeMarker* marker,
                                        const Node* relative,
-                                       bool alignNames)
+                                       bool alignNames,
+                                       const Node* self)
 {
     QString src = markedCode;
     QString html;
@@ -3067,8 +3068,9 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             bool handled = false;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
-                const Node* n = marker->resolveTarget(arg.toString(), myTree, relative);
+                const Node* n = marker->resolveTarget(arg.toString(), myTree, relative, self);
                 if (HtmlGenerator::debugging_on) {
+                    qDebug() << "arg.toString()" << arg.toString();
                     if (n) {
                         qDebug() << "  " << n->name() << n->type() << n->subType();
                         qDebug() << "  " << relative->name() << relative->type() << relative->subType();
