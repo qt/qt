@@ -2949,7 +2949,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     static const QString headerTag("headerfile");
     static const QString funcTag("func");
     static const QString linkTag("link");
-
+    
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     bool done = false;
     for (int i = 0, srcSize = src.size(); i < srcSize;) {
