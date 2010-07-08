@@ -16,8 +16,11 @@ Component:
     - errorsString() renamed to errorString()
 ListView:
     - ListView.prevSection property changed to ListView.previousSection
-
-TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
+TextInput:
+    - xToPosition -> positionAt (to match TextEdit.positionAt)
+Image:
+    - pixmap property removed, use QDeclarativeImageProvider to serve pixmaps
+      instead
 
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property

@@ -116,15 +116,6 @@ QDeclarativeImage::~QDeclarativeImage()
 {
 }
 
-/*!
-    \qmlproperty QPixmap Image::pixmap
-
-    This property holds the QPixmap image to display.
-
-    This is useful for displaying images provided by a C++ implementation,
-    for example, a model may provide a data role of type QPixmap.
-*/
-
 QPixmap QDeclarativeImage::pixmap() const
 {
     Q_D(const QDeclarativeImage);
@@ -524,7 +515,6 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 void QDeclarativeImage::pixmapChange()
 {
     updatePaintedGeometry();
-    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE
