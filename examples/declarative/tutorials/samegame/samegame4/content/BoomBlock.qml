@@ -49,11 +49,14 @@ Item {
 
     //![1]
     property bool spawned: false
-    property int targetX: 0
-    property int targetY: 0
 
-    SpringFollow on x { to: targetX; spring: 2; damping: 0.2; enabled: spawned }
-    SpringFollow on y { to: targetY; spring: 2; damping: 0.2 }
+    Behavior on x {
+        enabled: spawned;
+        SpringAnimation{ spring: 2; damping: 0.2 }
+    }
+    Behavior on y {
+        SpringAnimation{ spring: 2; damping: 0.2 }
+    }
     //![1]
 
     //![2]

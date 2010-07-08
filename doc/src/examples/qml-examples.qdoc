@@ -474,7 +474,7 @@
 
     This example displays a set of clocks with different times for different cities.
     Each clock is created by combining \l Image elements with \l Rotation transforms 
-    and \l SpringFollow animations.
+    and \l SpringAnimation behaviors.
 
     \image qml-clocks-example.png
 */
@@ -514,7 +514,7 @@
     \title Toys: TV Tennis
     \example declarative/toys/tvtennis
 
-    This example shows how to use animation components such as \l SpringFollow,
+    This example shows how to use animation components such as \l SpringAnimation,
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
 
     \image qml-tvtennis-example.png
@@ -542,7 +542,7 @@
     \example declarative/ui-components/dialcontrol
 
     This example shows how to create a dial-type control. It combines
-    \l Image elements with \l Rotation transforms and \l SpringFollow animations
+    \l Image elements with \l Rotation transforms and \l SpringAnimatino behaviors
     to produce an interactive speedometer-type dial.
 
     \image qml-dialcontrol-example.png

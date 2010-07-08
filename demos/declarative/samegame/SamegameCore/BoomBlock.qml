@@ -47,11 +47,14 @@ Item {
     property bool dying: false
     property bool spawned: false
     property int type: 0
-    property int targetX: 0
-    property int targetY: 0
 
-    SpringFollow on x { enabled: spawned; to: targetX; spring: 2; damping: 0.2 }
-    SpringFollow on y { to: targetY; spring: 2; damping: 0.2 }
+    Behavior on x {
+        enabled: spawned;
+        SpringAnimation{ spring: 2; damping: 0.2 }
+    }
+    Behavior on y {
+        SpringAnimation{ spring: 2; damping: 0.2 }
+    }
 
     Image {
         id: img

@@ -1390,7 +1390,7 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by a \l {SpringFollow} item:
+    Here is a highlight with its motion defined by a \l {SpringAnimation} item:
 
     \snippet doc/src/snippets/declarative/gridview/gridview.qml highlightFollowsCurrentItem
 */

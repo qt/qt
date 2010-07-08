@@ -1732,7 +1732,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by a \l {SpringFollow} item:
+    Here is a highlight with its motion defined by a \l {SpringAniamtion} item:
 
     \snippet doc/src/snippets/declarative/listview/listview.qml highlightFollowsCurrentItem
 

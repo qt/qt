@@ -46,7 +46,6 @@
 #include "private/qdeclarativebind_p.h"
 #include "private/qdeclarativeconnections_p.h"
 #include "private/qdeclarativesmoothedanimation_p.h"
-#include "private/qdeclarativesmoothedfollow_p.h"
 #include "private/qdeclarativefontloader_p.h"
 #include "private/qdeclarativelistaccessor_p.h"
 #include "private/qdeclarativelistmodel_p.h"
@@ -56,7 +55,6 @@
 #include "private/qdeclarativepixmapcache_p.h"
 #include "private/qdeclarativepropertychanges_p.h"
 #include "qdeclarativepropertymap.h"
-#include "private/qdeclarativespringfollow_p.h"
 #include "private/qdeclarativespringanimation_p.h"
 #include "private/qdeclarativestategroup_p.h"
 #include "private/qdeclarativestateoperations_p.h"
@@ -84,7 +82,6 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,7,"ColorAnimation");
     qmlRegisterType<QDeclarativeConnections>("Qt",4,7,"Connections");
     qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,7,"SmoothedAnimation");
-    qmlRegisterType<QDeclarativeSmoothedFollow>("Qt",4,7,"SmoothedFollow");
     qmlRegisterType<QDeclarativeFontLoader>("Qt",4,7,"FontLoader");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,7,"ListElement");
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,7,"NumberAnimation");
@@ -98,7 +95,6 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeRotationAnimation>("Qt",4,7,"RotationAnimation");
     qmlRegisterType<QDeclarativeScriptAction>("Qt",4,7,"ScriptAction");
     qmlRegisterType<QDeclarativeSequentialAnimation>("Qt",4,7,"SequentialAnimation");
-    qmlRegisterType<QDeclarativeSpringFollow>("Qt",4,7,"SpringFollow");
     qmlRegisterType<QDeclarativeSpringAnimation>("Qt",4,7,"SpringAnimation");
     qmlRegisterType<QDeclarativeStateChangeScript>("Qt",4,7,"StateChangeScript");
     qmlRegisterType<QDeclarativeStateGroup>("Qt",4,7,"StateGroup");

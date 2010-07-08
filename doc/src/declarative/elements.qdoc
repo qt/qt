@@ -76,11 +76,10 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \row \o \l {AnchorAnimation} \o Animates anchor changes
 \row \o \l {PauseAnimation} \o Pauses an animation 
 \row \o \l {SmoothedAnimation} \o Allows a property to smoothly track a value
+\row \o \l {SpringAnimation} \o Allows a property to track a value in a spring-like motion
 \row \o \l {PropertyAction} \o Sets immediate property changes during animation
 \row \o \l {ScriptAction} \o Runs scripts during an animation
 \row \o \l {Transition} \o Animates transitions during state changes
-\row \o \l {SpringFollow} \o Allows a property to follow value changes
-\row \o \l {SmoothedFollow} \o Allows animation to smoothly follow value changes
 
 \header \o {2,1} \bold {Working with Data}
 \row \o \l {Binding} \o Binds any value to any property
