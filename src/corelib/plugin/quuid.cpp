@@ -577,22 +577,19 @@ QUuid QUuid::createUuid()
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qdatetime.h"
-#include "stdlib.h" // For srand/rand
+#include <stdlib.h> // for RAND_MAX
 QT_END_INCLUDE_NAMESPACE
-
-extern void qsrand(); // in qglobal.cpp
 
 QUuid QUuid::createUuid()
 {
     static const int intbits = sizeof(int)*8;
     static int randbits = 0;
     if (!randbits) {
+        int r = 0;
         int max = RAND_MAX;
-        do { ++randbits; } while ((max=max>>1));
+        do { ++r; } while ((max=max>>1));
+        randbits = r;
     }
-
-    // reseed, but only if not already seeded
-    qsrand();
 
     QUuid result;
     uint *data = &(result.data1);
@@ -601,7 +598,7 @@ QUuid QUuid::createUuid()
         uint randNumber = 0;
         for (int filled = 0; filled < intbits; filled += randbits)
             randNumber |= qrand()<<filled;
-         *(data+chunks) = randNumber;
+        *(data+chunks) = randNumber;
     }
 
     result.data4[0] = (result.data4[0] & 0x3F) | 0x80;        // UV_DCE
