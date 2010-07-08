@@ -199,7 +199,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
             ciph.d->protocol = QSsl::SslV2;
         else if (protoString == QLatin1String("TLSv1"))
             ciph.d->protocol = QSsl::TlsV1;
-        
+
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
             ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3);
         if (descriptionList.at(3).startsWith(QLatin1String("Au=")))
@@ -367,7 +367,7 @@ init_context:
     // Set verification depth.
     if (configuration.peerVerifyDepth != 0)
         q_SSL_CTX_set_verify_depth(ctx, configuration.peerVerifyDepth);
-    
+
     // Create and initialize SSL session
     if (!(ssl = q_SSL_new(ctx))) {
         // ### Bad error code
@@ -616,6 +616,11 @@ void QCertificateRetriever::retrieveNextCertificate()
 
 void QCertificateRetriever::RunL()
 {
+    QT_TRYCATCH_LEAVING(run());
+}
+
+void QCertificateRetriever::run()
+{
     switch (state) {
     case Initializing:
         list();
@@ -818,7 +823,7 @@ void QSslSocketBackendPrivate::transmit()
     bool transmitting;
     do {
         transmitting = false;
-        
+
         // If the connection is secure, we can transfer data from the write
         // buffer (in plain text) to the write BIO through SSL_write.
         if (connectionEncrypted && !writeBuffer.isEmpty()) {
