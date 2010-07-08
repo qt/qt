@@ -61,6 +61,8 @@ DsaVideoPlayer::~DsaVideoPlayer()
 
 void MMF::DsaVideoPlayer::videoWindowScreenRectChanged()
 {
+    Q_ASSERT(m_videoOutput);
+
     QRect windowRect = static_cast<DsaVideoOutput *>(m_videoOutput)->videoWindowScreenRect();
 
     // Clip to physical window size
@@ -124,12 +126,12 @@ void MMF::DsaVideoPlayer::createPlayer()
 
     // CVideoPlayerUtility::NewL starts DSA
     m_dsaActive = true;
-
-    m_player->RegisterForVideoLoadingNotification(*this);
 }
 
 void MMF::DsaVideoPlayer::initVideoOutput()
 {
+    Q_ASSERT(m_videoOutput);
+
     bool connected = connect(
         m_videoOutput, SIGNAL(videoWindowScreenRectChanged()),
         this, SLOT(videoWindowScreenRectChanged())
@@ -156,7 +158,8 @@ void MMF::DsaVideoPlayer::initVideoOutput()
 
 void MMF::DsaVideoPlayer::prepareCompleted()
 {
-    videoWindowScreenRectChanged();
+    if (m_videoOutput)
+        videoWindowScreenRectChanged();
 }
 
 void MMF::DsaVideoPlayer::handleVideoWindowChanged()

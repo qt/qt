@@ -162,6 +162,7 @@ void QSoftKeyManager::sendKeyEvent()
 
 void QSoftKeyManager::updateSoftKeys()
 {
+    QSoftKeyManager::instance()->d_func()->pendingUpdate = true;
     QEvent *event = new QEvent(QEvent::UpdateSoftKeys);
     QApplication::postEvent(QSoftKeyManager::instance(), event);
 }
@@ -250,6 +251,7 @@ bool QSoftKeyManager::handleUpdateSoftKeys()
     }
 
     d->updateSoftKeys_sys();
+    d->pendingUpdate = false;
     return true;
 }
 
@@ -275,6 +277,9 @@ bool QSoftKeyManager::event(QEvent *e)
 #ifdef Q_WS_S60
 bool QSoftKeyManager::handleCommand(int command)
 {
+    if (QSoftKeyManager::instance()->d_func()->pendingUpdate)
+        (void)QSoftKeyManager::instance()->handleUpdateSoftKeys();
+
     return static_cast<QSoftKeyManagerPrivateS60*>(QSoftKeyManager::instance()->d_func())->handleCommand(command);
 }
 #endif

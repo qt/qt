@@ -71,7 +71,6 @@ protected:
     virtual int openFile(RFile& file) = 0;
     virtual int openUrl(const QString& url) = 0;
     virtual int bufferStatus() const = 0;
-    virtual void close() = 0;
 
     void updateMetaData();
     virtual int numberOfMetaDataEntries() const = 0;
