@@ -358,7 +358,9 @@ void QDeclarativePixmapReader::networkRequestDone()
             }
         }
         // send completion event to the QDeclarativePixmapReply
-        job->postReply(error, errorString, readSize, image);
+        mutex.lock();
+        if (!cancelled.contains(job)) job->postReply(error, errorString, readSize, image);
+        mutex.unlock();
     }
     reply->deleteLater();
 
@@ -438,7 +440,9 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
             errorStr = QDeclarativePixmap::tr("Failed to get image from provider: %1").arg(url.toString());
         }
 
-        runningJob->postReply(errorCode, errorStr, readSize, image);
+        mutex.lock();
+        if (!cancelled.contains(runningJob)) runningJob->postReply(errorCode, errorStr, readSize, image);
+        mutex.unlock();
     } else {
         QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
         if (!lf.isEmpty()) {
@@ -455,7 +459,9 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
                 errorStr = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
                 errorCode = QDeclarativePixmapReply::Loading;
             }
-            runningJob->postReply(errorCode, errorStr, readSize, image);
+            mutex.lock();
+            if (!cancelled.contains(runningJob)) runningJob->postReply(errorCode, errorStr, readSize, image);
+            mutex.unlock();
         } else {
             // Network resource
             QNetworkRequest req(url);
