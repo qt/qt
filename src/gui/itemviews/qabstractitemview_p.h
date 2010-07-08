@@ -135,8 +135,9 @@ public:
     }
     void stopAutoScroll() { autoScrollTimer.stop(); autoScrollCount = 0;}
 
-
+#ifndef QT_NO_DRAGANDDROP
     virtual bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
+#endif
     bool droppingOnItself(QDropEvent *event, const QModelIndex &index);
 
     QWidget *editor(const QModelIndex &index, const QStyleOptionViewItem &options);
