@@ -18,8 +18,6 @@
     fieldset, img
     {
         border: 0;
-		height:100%;
-		width:100%
     }
     address, caption, cite, code, dfn, em, strong, th, var, optgroup
     {
@@ -66,7 +64,7 @@
 	}
     .heading
     {
-        font: normal 600 16px/1.0 Arial;
+        font: normal bold 16px/1.0 Arial;
         padding-bottom: 15px;
     }
     .subtitle
@@ -212,7 +210,7 @@
         font-size: 11px;
     }
 
-    .offline .sidebar, .offline .feedback, .offline .t_button
+    .offline .sidebar, .offline .feedback, .offline .t_button, .offline #narrowsearch, .offline #narrowmenu
     {
         display: none;
     }
@@ -258,7 +256,7 @@
 
     .sidebar .box h2
     {
-        font: 600 16px/1.2 Arial;
+        font: bold 16px/1.2 Arial;
         padding: 0;
 /*        min-height: 32px;*/
     }
@@ -493,7 +491,7 @@
 
     .wrap .content h1
     {
-        font: 600 18px/1.2 Arial;
+        font: bold 18px/1.2 Arial;
     }
     .wrap .content h2
     {
@@ -506,7 +504,7 @@
     }
     .wrap .content h3
     {
-        font: 600 14px/1.2 Arial;
+        font: bold 14px/1.2 Arial;
 		/*border-bottom:1px solid #DDDDDD;*/
 		font:600 16px/1.2 Arial;
 		margin-top:15px;
@@ -934,7 +932,7 @@
 
     .toc h3, .generic a
     {
-        font: 600 12px/1.2 Arial;
+        font: bold 12px/1.2 Arial;
     }
 
 	.generic{
@@ -1141,7 +1139,7 @@
 
     .content .indexboxcont li
     {
-        font: normal 600 13px/1 Verdana;
+        font: normal bold 13px/1 Verdana;
     }
 
     .indexbox a:hover, .indexbox a:visited:hover

@@ -314,7 +314,7 @@ Item {
 
 \section2 Signal Handlers
 
-Signal handlers allow actions to be taken in reponse to an event.  For instance,
+Signal handlers allow actions to be taken in response to an event.  For instance,
 the \l MouseArea element has signal handlers to handle mouse press, release
 and click:
 
