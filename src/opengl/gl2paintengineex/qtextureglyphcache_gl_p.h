@@ -72,7 +72,6 @@ public:
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
     virtual void fillTexture(const Coord &c, glyph_t glyph);
-    virtual int glyphMargin() const;
     virtual int glyphPadding() const;
 
     inline GLuint texture() const { return m_texture; }
