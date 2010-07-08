@@ -530,6 +530,7 @@ public:
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_S60DontConstructApplicationPanes = 8,
+        AA_X11InitThreads = 9,
 
         // Add new attributes before this line
         AA_AttributeCount

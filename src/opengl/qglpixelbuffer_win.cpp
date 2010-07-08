@@ -239,8 +239,7 @@ static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f
 
 bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidget *shareWidget)
 {
-    QGLWidget dmy;
-    dmy.makeCurrent(); // needed for wglGetProcAddress() to succeed
+    QGLTemporaryContext tempContext;
 
     PFNWGLCREATEPBUFFERARBPROC wglCreatePbufferARB =
         (PFNWGLCREATEPBUFFERARBPROC) wglGetProcAddress("wglCreatePbufferARB");
@@ -254,7 +253,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     if (!wglCreatePbufferARB) // assumes that if one can be resolved, all of them can
         return false;
 
-    dc = GetDC(dmy.winId());
+    dc = wglGetCurrentDC();
     Q_ASSERT(dc);
 
     PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
@@ -284,7 +283,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     if (num_formats == 0) {
         qWarning("QGLPixelBuffer: Unable to find a pixel format with pbuffer  - giving up.");
-        ReleaseDC(dmy.winId(), dc);
         return false;
     }
     format = pfiToQGLFormat(dc, pixel_format);
@@ -303,12 +301,10 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
         has_render_texture = false;
         if (!pbuf) {
             qWarning("QGLPixelBuffer: Unable to create pbuffer [w=%d, h=%d] - giving up.", size.width(), size.height());
-            ReleaseDC(dmy.winId(), dc);
             return false;
         }
     }
 
-    ReleaseDC(dmy.winId(), dc);
     dc = wglGetPbufferDCARB(pbuf);
     ctx = wglCreateContext(dc);
 
