@@ -138,10 +138,6 @@ void QDeclarativeBehavior::setAnimation(QDeclarativeAbstractAnimation *animation
                 SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)),
                 this,
                 SLOT(qtAnimationStateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-        connect(this,
-                SIGNAL(qtAnimationRunningChanged(bool)),
-                d->animation,
-                SLOT(behaviorControlRunningChanged(bool)));
     }
 }
 
@@ -150,7 +146,7 @@ void QDeclarativeBehavior::qtAnimationStateChanged(QAbstractAnimation::State new
 {
     Q_D(QDeclarativeBehavior);
     if (!d->blockRunningChanged)
-        emit qtAnimationRunningChanged(newState == QAbstractAnimation::Running);
+        d->animation->notifyRunningChanged(newState == QAbstractAnimation::Running);
 }
 
 
