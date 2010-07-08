@@ -1229,12 +1229,15 @@ void QTextDocumentPrivate::finishEdit()
         }
     }
 
+    QList<QTextCursor> changedCursors;
     foreach (QTextCursorPrivate *curs, cursors) {
         if (curs->changed) {
             curs->changed = false;
-            emit q->cursorPositionChanged(QTextCursor(curs));
+            changedCursors.append(QTextCursor(curs));
         }
     }
+    foreach (const QTextCursor &cursor, changedCursors)
+        emit q->cursorPositionChanged(cursor);
 
     contentsChanged();
 
