@@ -1766,8 +1766,8 @@ void HtmlGenerator::generateHeader(const QString& title,
 	out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
 	// Adding style and js for small windows
 	out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
-	out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
 	out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
+	out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
 	out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />";
 	
 	// Adding syntax highlighter 	// future release
@@ -1775,32 +1775,14 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// Setting assistant configuration
     if (offlineDocs)
 	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Style common to all browsers
-		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/OfflineStyle.css\" />"; // Only for Qt Creator
+		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/CreatorStyle.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
 		out() << "<body class=\"offline narrow\">\n"; // narrow mainly for Creator
-		out() << "</head>\n";
-		out() << "<body class=\"offline narrow\" >\n"; // narrow mainly for Creator
-//		out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
 	}	
 	// Setting online doc configuration
     else
 		{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\"\n />";
-		// out() << "  <!--[if IE]>\n";
-		// out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
-		// out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
-		// out() << "<![endif]-->\n";
-		// out() << "<!--[if lt IE 7]>\n";
-		// out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
-		// out() << "<![endif]-->\n";
-		// out() << "<!--[if IE 7]>\n";
-		// out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
-		// out() << "<![endif]-->\n";
-		// out() << "<!--[if IE 8]>\n";
-		// out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
-		// out() << "<![endif]-->\n";
-		// Custom browser styles
+		// Browser spec styles
 		out() << "  <!--[if IE]>\n";
 		out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
 		out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
@@ -1815,9 +1797,6 @@ void HtmlGenerator::generateHeader(const QString& title,
 		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
 		out() << "<![endif]-->\n";
 		
-		out() << "</head>\n";
-		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n"; // CheckEmptyAndLoadList() activating online search
-				
 		out() << "</head>\n";
 		// CheckEmptyAndLoadList activating search
 		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
