@@ -25,18 +25,16 @@ bool EGLNullWSScreen::initDevice()
     return true;
 }
 
-static const QHash<QString, QImage::Format> & formatDictionary()
+static const QHash<QString, QImage::Format> formatDictionary()
 {
-    static QHash<QString, QImage::Format> dictionary;
-    if (dictionary.isEmpty()) {
-        dictionary["rgb32"]     = QImage::Format_RGB32;
-        dictionary["argb32"]    = QImage::Format_ARGB32;
-        dictionary["rgb16"]     = QImage::Format_RGB16;
-        dictionary["rgb666"]    = QImage::Format_RGB666;
-        dictionary["rgb555"]    = QImage::Format_RGB555;
-        dictionary["rgb888"]    = QImage::Format_RGB888;
-        dictionary["rgb444"]    = QImage::Format_RGB444;
-    }
+    QHash<QString, QImage::Format> dictionary;
+    dictionary["rgb32"]     = QImage::Format_RGB32;
+    dictionary["argb32"]    = QImage::Format_ARGB32;
+    dictionary["rgb16"]     = QImage::Format_RGB16;
+    dictionary["rgb666"]    = QImage::Format_RGB666;
+    dictionary["rgb555"]    = QImage::Format_RGB555;
+    dictionary["rgb888"]    = QImage::Format_RGB888;
+    dictionary["rgb444"]    = QImage::Format_RGB444;
     return dictionary;
 }
 
@@ -56,10 +54,10 @@ static int depthForFormat(QImage::Format format)
     }
 }
 
-static void printHelp()
+static void printHelp(const QHash<QString, QImage::Format> &formatDictionary)
 {
     QByteArray formatsBuf;
-    QTextStream(&formatsBuf) << QStringList(formatDictionary().keys()).join(", ");
+    QTextStream(&formatsBuf) << QStringList(formatDictionary.keys()).join(", ");
     qWarning(
         "%s: Valid options are:\n"
         "size=WIDTHxHEIGHT   Screen size reported by this driver\n"
@@ -72,6 +70,7 @@ static void printHelp()
 bool EGLNullWSScreen::connect(const QString &displaySpec)
 {
     const QStringList args = displaySpec.section(':', 1).split(':', QString::SkipEmptyParts);
+    const QHash<QString, QImage::Format> formatDict = formatDictionary();
     Q_FOREACH(const QString arg, args) {
         const QString optionName = arg.section('=', 0, 0);
         const QString optionArg = arg.section('=', 1);
@@ -79,12 +78,12 @@ bool EGLNullWSScreen::connect(const QString &displaySpec)
             w = optionArg.section('x', 0, 0).toInt();
             h = optionArg.section('x', 1, 1).toInt();
         } else if (optionName == QLatin1String("format")) {
-            if (formatDictionary().contains(optionArg))
-                setPixelFormat(formatDictionary().value(optionArg));
+            if (formatDict.contains(optionArg))
+                setPixelFormat(formatDict.value(optionArg));
             else
-                printHelp();
+                printHelp(formatDict);
         } else {
-            printHelp();
+            printHelp(formatDict);
         }
     }
 
