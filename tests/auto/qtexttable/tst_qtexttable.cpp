@@ -93,6 +93,7 @@ private slots:
     void removeColumns3();
     void removeColumns4();
     void removeColumns5();
+	void removeColumnsInTableWithMergedRows();
 
 private:
     QTextTable *create2x2Table();
@@ -929,6 +930,19 @@ void tst_QTextTable::removeColumns5()
     QCOMPARE(table->cellAt(3, 0).firstPosition(), 7);
     QCOMPARE(table->cellAt(3, 1).firstPosition(), 10);
     QCOMPARE(table->cellAt(3, 2).firstPosition(), 11);
+}
+
+void tst_QTextTable::removeColumnsInTableWithMergedRows()
+{
+    QTextTable *table = cursor.insertTable(3, 4);
+    table->mergeCells(0, 0, 1, 4);
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 4);
+
+    table->removeColumns(0, table->columns() - 1);
+
+    QCOMPARE(table->rows(), 3);
+    QCOMPARE(table->columns(), 1);
 }
 
 QTEST_MAIN(tst_QTextTable)
