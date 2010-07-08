@@ -211,8 +211,10 @@
     \title C++ Extensions: Image Provider
     \example declarative/cppextensions/imageprovider
 
-    This examples shows how to use QDeclarativeImageProvider to serve images asynchronously
-    into a QML item.
+    This examples shows how to use QDeclarativeImageProvider to serve images 
+    to QML image elements.
+
+    \image qml-imageprovider-example.png
 */
 
 /*!

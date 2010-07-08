@@ -620,23 +620,15 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 /*!
 
   Sets the \a provider to use for images requested via the \e
-  image: url scheme, with host \a providerId.
+  image: url scheme, with host \a providerId. The QDeclarativeEngine 
+  takes ownership of \a provider.
 
-  QDeclarativeImageProvider allows images to be provided to QML
-  asynchronously.  The image request will be run in a low priority
-  thread.  This allows potentially costly image loading to be done in
-  the background, without affecting the performance of the UI.
+  Image providers enable support for pixmap and threaded image
+  requests. See the QDeclarativeImageProvider documentation for details on
+  implementing and using image providers.
 
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
-
-  The QDeclarativeEngine assumes ownership of the provider.
-
-  This example creates a provider with id \e colors:
-
-  \snippet examples/declarative/cppextensions/imageprovider/imageprovider.cpp 0
-
-  \snippet examples/declarative/cppextensions/imageprovider/imageprovider-example.qml 0
 
   \sa removeImageProvider()
 */
@@ -671,14 +663,33 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
     delete d->imageProviders.take(providerId);
 }
 
+QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProviderType(const QUrl &url)
+{
+    QMutexLocker locker(&mutex);
+    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        return provider->imageType();
+    return static_cast<QDeclarativeImageProvider::ImageType>(-1);
+}
+
 QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);
     QImage image;
     QDeclarativeImageProvider *provider = imageProviders.value(url.host());
     if (provider)
-        image = provider->request(url.path().mid(1), size, req_size);
+        image = provider->requestImage(url.path().mid(1), size, req_size);
     return image;
+}
+
+QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
+{
+    QMutexLocker locker(&mutex);
+    QPixmap pixmap;
+    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    return pixmap;
 }
 
 /*!

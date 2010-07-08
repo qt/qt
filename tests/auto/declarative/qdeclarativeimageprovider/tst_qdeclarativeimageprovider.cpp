@@ -61,6 +61,8 @@
         QVERIFY((expr)); \
     } while (false)
 
+Q_DECLARE_METATYPE(QDeclarativeImageProvider*);
+
 
 class tst_qdeclarativeimageprovider : public QObject
 {
@@ -71,43 +73,103 @@ public:
     }
 
 private slots:
-    void imageSource();
-    void imageSource_data();
+    void requestImage_sync_data();
+    void requestImage_sync();
+    void requestImage_async_data();
+    void requestImage_async();
+
+    void requestPixmap_sync_data();
+    void requestPixmap_sync();
+    void requestPixmap_async();
+
+    void removeProvider_data();
     void removeProvider();
 
 private:
-    QDeclarativeEngine engine;
+    QString newImageFileName() const;
+    void fillRequestTestsData(const QString &id);
+    void runTest(bool async, QDeclarativeImageProvider *provider);
 };
 
-class TestProvider : public QDeclarativeImageProvider
+
+class TestQImageProvider : public QDeclarativeImageProvider
 {
 public:
-    QImage request(const QString &id, QSize *size, const QSize& requested_size) {
-        QImageReader io(SRCDIR "/data/" + id);
-        if (size) *size = io.size();
-        if (requested_size.isValid())
-            io.setScaledSize(requested_size);
-        return io.read();
+    TestQImageProvider()
+        : QDeclarativeImageProvider(Image)
+    {
+    }
+
+    QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize)
+    {
+        if (id == QLatin1String("no-such-file.png"))
+            return QImage();
+
+        int width = 100; 
+        int height = 100;
+        QImage image(width, height, QImage::Format_RGB32);
+        if (size) 
+            *size = QSize(width, height);
+        if (requestedSize.isValid())
+            image = image.scaled(requestedSize);
+        return image;
     }
 };
+Q_DECLARE_METATYPE(TestQImageProvider*);
 
-void tst_qdeclarativeimageprovider::imageSource_data()
+
+class TestQPixmapProvider : public QDeclarativeImageProvider
+{
+public:
+    TestQPixmapProvider()
+        : QDeclarativeImageProvider(Pixmap)
+    {
+    }
+
+    QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize)
+    {
+        if (id == QLatin1String("no-such-file.png"))
+            return QPixmap();
+
+        int width = 100; 
+        int height = 100;
+        QPixmap image(width, height);
+        if (size) 
+            *size = QSize(width, height);
+        if (requestedSize.isValid())
+            image = image.scaled(requestedSize);
+        return image;
+    }
+};
+Q_DECLARE_METATYPE(TestQPixmapProvider*);
+
+
+QString tst_qdeclarativeimageprovider::newImageFileName() const
+{
+    // need to generate new filenames each time or else images are loaded
+    // from cache and we won't get loading status changes when testing 
+    // async loading
+    static int count = 0;
+    return QString("image://test/image-%1.png").arg(count++);
+}
+
+void tst_qdeclarativeimageprovider::fillRequestTestsData(const QString &id)
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<QString>("properties");
     QTest::addColumn<QSize>("size");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("exists") << "image://test/exists.png" << "" << QSize(100,100) << "";
-    QTest::newRow("scaled") << "image://test/exists.png" << "sourceSize: \"80x30\"" << QSize(80,30) << "";
-    QTest::newRow("missing") << "image://test/no-such-file.png" << "" << QSize()
-        << "file::2:1: QML Image: Failed to get image from provider: image://test/no-such-file.png";
-    QTest::newRow("unknown provider") << "image://bogus/exists.png" << "" << QSize()
-        << "file::2:1: QML Image: Failed to get image from provider: image://bogus/exists.png";
+    QTest::newRow(QTest::toString(id + " exists")) << newImageFileName() << "" << QSize(100,100) << "";
+    QTest::newRow(QTest::toString(id + " scaled")) << newImageFileName() << "sourceSize: \"80x30\"" << QSize(80,30) << "";
 
+    QTest::newRow(QTest::toString(id + " missing")) << "image://test/no-such-file.png" << "" << QSize()
+        << "file::2:1: QML Image: Failed to get image from provider: image://test/no-such-file.png";
+    QTest::newRow(QTest::toString(id + " unknown provider")) << "image://bogus/exists.png" << "" << QSize()
+        << "file::2:1: QML Image: Failed to get image from provider: image://bogus/exists.png";
 }
-    
-void tst_qdeclarativeimageprovider::imageSource()
+
+void tst_qdeclarativeimageprovider::runTest(bool async, QDeclarativeImageProvider *provider)
 {
     QFETCH(QString, source);
     QFETCH(QString, properties);
@@ -117,21 +179,29 @@ void tst_qdeclarativeimageprovider::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    engine.addImageProvider("test", new TestProvider);
+    QDeclarativeEngine engine;
+
+    engine.addImageProvider("test", provider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; " + properties + " }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; " 
+            + (async ? "asynchronous: true; " : "")
+            + properties + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
 
-    TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
+    if (async) 
+        TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
 
     QCOMPARE(obj->source(), QUrl(source));
 
     if (error.isEmpty()) {
-        TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
+        if (async)
+            TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
+        else
+            QVERIFY(obj->status() == QDeclarativeImage::Ready);
         QCOMPARE(obj->width(), 100.0);
         QCOMPARE(obj->height(), 100.0);
         QCOMPARE(obj->pixmap().width(), size.width());
@@ -139,40 +209,100 @@ void tst_qdeclarativeimageprovider::imageSource()
         QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
         QCOMPARE(obj->progress(), 1.0);
     } else {
-        TRY_WAIT(obj->status() == QDeclarativeImage::Error);
+        if (async)
+            TRY_WAIT(obj->status() == QDeclarativeImage::Error);
+        else
+            QVERIFY(obj->status() == QDeclarativeImage::Error);
     }
 
     delete obj;
 }
 
-void tst_qdeclarativeimageprovider::removeProvider()
+void tst_qdeclarativeimageprovider::requestImage_sync_data()
 {
-    engine.addImageProvider("test2", new TestProvider);
-    QVERIFY(engine.imageProvider("test2") != 0);
+    fillRequestTestsData("qimage|sync");
+}
 
-    // add provider, confirm it works
-    QString componentStr = "import Qt 4.7\nImage { source: \"image://test2/exists1.png\" }";
+void tst_qdeclarativeimageprovider::requestImage_sync()
+{
+    runTest(false, new TestQImageProvider);
+}
+
+void tst_qdeclarativeimageprovider::requestImage_async_data()
+{
+    fillRequestTestsData("qimage|async");
+}
+
+void tst_qdeclarativeimageprovider::requestImage_async()
+{
+    runTest(true, new TestQImageProvider);
+}
+
+void tst_qdeclarativeimageprovider::requestPixmap_sync_data()
+{
+    fillRequestTestsData("qpixmap");
+}
+
+void tst_qdeclarativeimageprovider::requestPixmap_sync()
+{
+    runTest(false, new TestQPixmapProvider);
+}
+
+void tst_qdeclarativeimageprovider::requestPixmap_async()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeImageProvider *provider = new TestQPixmapProvider;
+
+    engine.addImageProvider("test", provider);
+    QVERIFY(engine.imageProvider("test") != 0);
+
+    QTest::ignoreMessage(QtWarningMsg,
+        "Pixmaps must be loaded synchronously, ignoring asynchronous property for Image with source: \"image://test/pixmap-async-test.png\"");
+
+    QString componentStr = "import Qt 4.7\nImage { asynchronous: true; source: \"image://test/pixmap-async-test.png\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
 
-    TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
-    TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
+    delete obj;
+}
 
-    QCOMPARE(obj->width(), 100.0);
+void tst_qdeclarativeimageprovider::removeProvider_data()
+{
+    QTest::addColumn<QDeclarativeImageProvider*>("provider");
+
+    QTest::newRow("qimage") << static_cast<QDeclarativeImageProvider*>(new TestQImageProvider);
+    QTest::newRow("qpixmap") << static_cast<QDeclarativeImageProvider*>(new TestQPixmapProvider);
+}
+
+void tst_qdeclarativeimageprovider::removeProvider()
+{
+    QFETCH(QDeclarativeImageProvider*, provider);
+
+    QDeclarativeEngine engine;
+
+    engine.addImageProvider("test", provider);
+    QVERIFY(engine.imageProvider("test") != 0);
+
+    // add provider, confirm it works
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + newImageFileName() + "\" }";
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+
+    QCOMPARE(obj->status(), QDeclarativeImage::Ready);
 
     // remove the provider and confirm
-    QString error("file::2:1: QML Image: Failed to get image from provider: image://test2/exists2.png");
-
+    QString fileName = newImageFileName();
+    QString error("file::2:1: QML Image: Failed to get image from provider: " + fileName);
     QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    engine.removeImageProvider("test2");
+    engine.removeImageProvider("test");
 
-    obj->setSource(QUrl("image://test2/exists2.png"));
-
-    TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
-    TRY_WAIT(obj->status() == QDeclarativeImage::Error);
+    obj->setSource(QUrl(fileName));
+    QCOMPARE(obj->status(), QDeclarativeImage::Error);
 
     delete obj;
 }
