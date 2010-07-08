@@ -952,10 +952,9 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
 
     if (iter == store->m_cache.end()) {
         if (async) {
+            // pixmaps can only be loaded synchronously
             if (url.scheme() == QLatin1String("image") 
                     && QDeclarativeEnginePrivate::get(engine)->getImageProviderType(url) == QDeclarativeImageProvider::Pixmap) {
-                qWarning().nospace() << "Pixmaps must be loaded synchronously, ignoring asynchronous property for Image with source: "
-                        << url.toString();
                 async = false;
             }
         }

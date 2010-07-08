@@ -256,9 +256,7 @@ void tst_qdeclarativeimageprovider::requestPixmap_async()
     engine.addImageProvider("test", provider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QTest::ignoreMessage(QtWarningMsg,
-        "Pixmaps must be loaded synchronously, ignoring asynchronous property for Image with source: \"image://test/pixmap-async-test.png\"");
-
+    // pixmaps are loaded synchronously regardless of 'asynchronous' value
     QString componentStr = "import Qt 4.7\nImage { asynchronous: true; source: \"image://test/pixmap-async-test.png\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
