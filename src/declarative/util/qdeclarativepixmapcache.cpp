@@ -736,6 +736,58 @@ void QDeclarativePixmapData::removeFromCache()
     }
 }
 
+static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, bool *ok)
+{
+    if (url.scheme() == QLatin1String("image")) {
+        QSize readSize;
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+        QDeclarativeImageProvider::ImageType imageType = ep->getImageProviderType(url);
+
+        switch (imageType) {
+            case QDeclarativeImageProvider::Image:
+            {
+                QImage image = ep->getImageFromProvider(url, &readSize, requestSize);
+                if (!image.isNull()) {
+                    *ok = true;
+                    return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
+                }
+            }
+            case QDeclarativeImageProvider::Pixmap:
+            {
+                QPixmap pixmap = ep->getPixmapFromProvider(url, &readSize, requestSize);
+                if (!pixmap.isNull()) {
+                    *ok = true;
+                    return new QDeclarativePixmapData(url, pixmap, readSize, requestSize);
+                }
+            }
+        }
+
+        // no matching provider, or provider has bad image type, or provider returned null image
+        return new QDeclarativePixmapData(url, requestSize,
+            QDeclarativePixmap::tr("Failed to get image from provider: %1").arg(url.toString()));
+    }
+
+    QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+    if (localFile.isEmpty()) 
+        return 0;
+
+    QFile f(localFile);
+    QSize readSize;
+    QString errorString;
+
+    if (f.open(QIODevice::ReadOnly)) {
+        QImage image;
+        if (readImage(url, &f, &image, &errorString, &readSize, requestSize)) {
+            *ok = true;
+            return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
+        }
+    } else {
+        errorString = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
+    }
+    return new QDeclarativePixmapData(url, requestSize, errorString);
+}
+
+
 struct QDeclarativePixmapNull {
     QUrl url;
     QPixmap pixmap;
@@ -893,27 +945,24 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
     QHash<QDeclarativePixmapKey, QDeclarativePixmapData *>::Iterator iter = store->m_cache.find(key);
 
     if (iter == store->m_cache.end()) {
+        if (async) {
+            if (url.scheme() == QLatin1String("image") 
+                    && QDeclarativeEnginePrivate::get(engine)->getImageProviderType(url) == QDeclarativeImageProvider::Pixmap) {
+                qWarning().nospace() << "Pixmaps must be loaded synchronously, ignoring asynchronous property for Image with source: "
+                        << url.toString();
+                async = false;
+            }
+        }
+
         if (!async) {
-            QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
-            if (!localFile.isEmpty()) {
-                QFile f(localFile);
-                QSize readSize;
-                QString errorString;
-
-                if (f.open(QIODevice::ReadOnly)) {
-                    QImage image;
-                    if (readImage(url, &f, &image, &errorString, &readSize, requestSize)) {
-                        d = new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
-                        d->addToCache();
-                        return;
-                    } 
-                } else {
-                    errorString = tr("Cannot open: %1").arg(url.toString());
-                }
-
-                d = new QDeclarativePixmapData(url, requestSize, errorString);
+            bool ok = false;
+            d = createPixmapDataSync(engine, url, requestSize, &ok);
+            if (ok) {
+                d->addToCache();
                 return;
             }
+            if (d)  // loadable, but encountered error while loading
+                return;
         } 
 
         if (!engine)
