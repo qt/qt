@@ -1849,7 +1849,7 @@ QList<QSslCipher> QSslSocketPrivate::defaultCiphers()
 */
 QList<QSslCipher> QSslSocketPrivate::supportedCiphers()
 {
-    QSslSocketPrivate::ensureInitialized();
+    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->supportedCiphers;
 }
@@ -1879,7 +1879,7 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 */
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
-    QSslSocketPrivate::ensureInitialized();
+    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->caCertificates;
 }
@@ -1962,7 +1962,7 @@ void QSslConfigurationPrivate::setDefaultConfiguration(const QSslConfiguration &
 */
 void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPrivate *ptr)
 {
-    QSslSocketPrivate::ensureInitialized();
+    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
     QMutexLocker locker(&globalData()->mutex);
     const QSslConfigurationPrivate *global = globalData()->config.constData();
 
