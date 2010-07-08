@@ -2077,7 +2077,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
             }
         }
     }
-    else if (sections && (node->type() == Node::Class)) {
+    else if (sections && ((node->type() == Node::Class) ||
+                          (node->type() == Node::Namespace))) {
         QList<Section>::ConstIterator s = sections->begin();
         while (s != sections->end()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
