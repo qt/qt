@@ -794,6 +794,7 @@ OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
+CFG_RUNTIME_SYSTEM=
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
@@ -1033,6 +1034,11 @@ while [ "$#" -gt 0 ]; do
         ;;
     -graphicssystem)
 	VAR="graphicssystem"
+	shift
+	VAL=$1
+	;;
+    -runtimegraphicssystem)
+	VAR="runtimegraphicssystem"
 	shift
 	VAL=$1
 	;;
@@ -1280,9 +1286,16 @@ while [ "$#" -gt 0 ]; do
                 CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
+            elif [ "$VAL" = "runtime" ]; then
+                CFG_GRAPHICS_SYSTEM="runtime"
             else
                 UNKNOWN_OPT=yes
             fi
+        fi
+	;;
+    runtimegraphicssystem)
+        if  [ "$VAL" != "runtime" ]; then
+            CFG_RUNTIME_SYSTEM="$VAL"
         fi
 	;;
 
@@ -3677,6 +3690,8 @@ cat << EOF
     -graphicssystem <sys> Sets an alternate graphics system. Available options are:
                            raster - Software rasterizer
                            opengl - Rendering via OpenGL, Experimental!
+                           openvg - Rendering via OpenVG, Experimental!
+
 EOF
 fi
 cat << EOF
@@ -6363,6 +6378,11 @@ if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
     CFG_GRAPHICS_SYSTEM=default
 fi
 
+if [ -n "$CFG_RUNTIME_SYSTEM" -a "$CFG_GRAPHICS_SYSTEM" != "runtime" ] || [ "$CFG_RUNTIME_SYSTEM" = "runtime" ]; then
+    echo "Argument to -runtimegraphicssystem is invalid so ignoring..."
+    CFG_RUNTIME_SYSTEM=
+fi
+
 if [ "$CFG_PTMALLOC" != "no" ]; then
     # build ptmalloc, copy .a file to lib/
     echo "Building ptmalloc. Please wait..."
@@ -7666,6 +7686,7 @@ if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
     [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
+    [ "$CFG_GRAPHICS_SYSTEM" = "runtime" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RUNTIME"
 fi
 
 # X11/Unix/Mac only configs
@@ -7775,6 +7796,13 @@ fi
 if [ -n "$QT_LIBINFIX" ]; then
 cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 #define QT_LIBINFIX "$QT_LIBINFIX"
+
+EOF
+fi
+
+if [ -n "$CFG_RUNTIME_SYSTEM" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#define QT_DEFAULT_RUNTIME_SYSTEM "$CFG_RUNTIME_SYSTEM"
 
 EOF
 fi

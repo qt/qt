@@ -346,11 +346,14 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
     QApplicationPrivate::runtime_graphics_system = true;
 
+#ifdef QT_DEFAULT_RUNTIME_SYSTEM
+    m_graphicsSystemName = QLatin1String(QT_DEFAULT_RUNTIME_SYSTEM);
+    if (m_graphicsSystemName.isNull())
+#endif
+        m_graphicsSystemName = QLatin1String("raster");
+
 #ifdef Q_OS_SYMBIAN
-    m_graphicsSystemName = QLatin1String("openvg");
     m_windowSurfaceDestroyPolicy = DestroyAfterFirstFlush;
-#else
-    m_graphicsSystemName = QLatin1String("raster");
 #endif
 
     m_graphicsSystem = QGraphicsSystemFactory::create(m_graphicsSystemName);
