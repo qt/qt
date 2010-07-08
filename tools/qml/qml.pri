@@ -25,6 +25,8 @@ maemo5 {
             $$PWD/proxysettings_maemo5.ui
 } symbian:!contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
     SOURCES += $$PWD/deviceorientation_symbian.cpp
+    FORMS = $$PWD/recopts.ui \
+            $$PWD/proxysettings.ui
 } else {
     SOURCES += $$PWD/deviceorientation.cpp
     FORMS = $$PWD/recopts.ui \
