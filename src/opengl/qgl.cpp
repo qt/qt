@@ -1655,6 +1655,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #if defined(Q_WS_WIN)
     dc = 0;
     win = 0;
+    threadId = 0;
     pixelFormatId = 0;
     cmap = 0;
     hbitmap = 0;

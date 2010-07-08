@@ -347,6 +347,7 @@ public:
     QGLCmap* cmap;
     HBITMAP hbitmap;
     HDC hbitmap_hdc;
+    Qt::HANDLE threadId;
 #endif
 #ifndef QT_NO_EGL
     uint ownsEglContext : 1;
