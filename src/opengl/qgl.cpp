@@ -3447,7 +3447,7 @@ QGLWidget::~QGLWidget()
     bool doRelease = (glcx && glcx->windowCreated());
 #endif
     delete d->glcx;
-#if defined(Q_WGL)
+#if defined(Q_WS_WIN)
     delete d->olcx;
 #endif
 #if defined(GLX_MESA_release_buffers) && defined(QGL_USE_MESA_EXT)
