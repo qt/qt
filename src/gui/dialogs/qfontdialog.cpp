@@ -332,6 +332,7 @@ void QFontDialogPrivate::init()
 
 #ifdef Q_WS_MAC
     delegate = 0;
+    nativeDialogInUse = false;
 #endif
 }
 
