@@ -86,20 +86,20 @@ defineReplace(imageCollectionCmd) {
     for(image, $$list($$split(1))) {
            EMBEDDED_IMAGES += $$image
            count(EMBEDDED_IMAGES, 5) {
-                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > images.tmp $$escape_expand(\\n\\t)
-                else:         RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
+                isEmpty(RET): RET += echo $$EMBEDDED_IMAGES > $${UI_DIR}/images.tmp $$escape_expand(\\n\\t)
+                else:         RET += echo $$EMBEDDED_IMAGES >> $${UI_DIR}/images.tmp $$escape_expand(\\n\\t)
                 unset(EMBEDDED_IMAGES)
            }
     }
-    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> images.tmp $$escape_expand(\\n\\t)
+    !isEmpty(EMBEDDED_IMAGES):RET += echo $$EMBEDDED_IMAGES >> $${UI_DIR}/images.tmp $$escape_expand(\\n\\t)
     !isEmpty(RET) {
-        RET += $$QMAKE_UIC3 -embed $$TARGET -f images.tmp -o $$2 $$escape_expand(\\n\\t)
+        RET += $$QMAKE_UIC3 -embed $$TARGET -f $${UI_DIR}/images.tmp -o $$2 $$escape_expand(\\n\\t)
         return($$RET)
     }
     return($$QMAKE_UIC3 -embed $$TARGET $$1 -o $$2)
 }
 
-image_collection.output = qmake_image_collection$${first(QMAKE_EXT_CPP)}
+image_collection.output = $${UI_DIR}/qmake_image_collection$${first(QMAKE_EXT_CPP)}
 image_collection.variable_out = SOURCES
 image_collection.input = IMAGES
 image_collection.CONFIG += combine
@@ -109,7 +109,7 @@ image_collection.name = UIC3 Image collection in ${QMAKE_FILE_OUT}
     silent:image_collection.commands = @echo uic3 -embed ${QMAKE_FILE_IN} && $$image_collection.commands
 } else {
     image_collection.commands = ${QMAKE_FUNC_imageCollectionCmd}
-    silent:image_collection.commands = @echo uic3 -embed $$TARGET -f images.tmp && $image_collection.commands
+    silent:image_collection.commands = @echo uic3 -embed $$TARGET -f $${UI_DIR}/images.tmp && $image_collection.commands
 }
 QMAKE_EXTRA_COMPILERS += image_collection
 
