@@ -45,10 +45,10 @@ Item {
     width: 200; height: 230
 
     property alias city: cityLabel.text
-    property variant hours
-    property variant minutes
-    property variant seconds
-    property variant shift : 0
+    property int hours
+    property int minutes
+    property int seconds 
+    property real shift
     property bool night: false
 
     function timeChanged() {
@@ -60,12 +60,13 @@ Item {
     }
 
     Timer {
-        interval: 100; running: true; repeat: true; triggeredOnStart: true
+        interval: 100; running: true; repeat: true;
         onTriggered: clock.timeChanged()
     }
 
     Image { id: background; source: "clock.png"; visible: clock.night == false }
     Image { source: "clock-night.png"; visible: clock.night == true }
+
 
     Image {
         x: 92.5; y: 27
@@ -73,10 +74,10 @@ Item {
         smooth: true
         transform: Rotation {
             id: hourRotation
-            origin.x: 7.5; origin.y: 73; angle: 0
-            SpringFollow on angle {
-                spring: 2; damping: 0.2; modulus: 360
-                to: (clock.hours * 30) + (clock.minutes * 0.5)
+            origin.x: 7.5; origin.y: 73;
+            angle: (clock.hours * 30) + (clock.minutes * 0.5)
+            Behavior on angle {
+                NumberAnimation{}
             }
         }
     }
@@ -87,10 +88,10 @@ Item {
         smooth: true
         transform: Rotation {
             id: minuteRotation
-            origin.x: 6.5; origin.y: 83; angle: 0
-            SpringFollow on angle {
-                spring: 2; damping: 0.2; modulus: 360
-                to: clock.minutes * 6
+            origin.x: 6.5; origin.y: 83;
+            angle: clock.minutes * 6
+            Behavior on angle {
+                NumberAnimation{}
             }
         }
     }
@@ -101,10 +102,10 @@ Item {
         smooth: true
         transform: Rotation {
             id: secondRotation
-            origin.x: 2.5; origin.y: 80; angle: 0
-            SpringFollow on angle {
-                spring: 5; damping: 0.25; modulus: 360
-                to: clock.seconds * 6
+            origin.x: 2.5; origin.y: 80;
+            angle: clock.seconds * 6
+            Behavior on angle {
+                NumberAnimation{}
             }
         }
     }
