@@ -84,7 +84,7 @@ void QGLContext::reset()
     doneCurrent();
 
     if (d->platformContext) {
-        delete d->platformContext;
+        //dont delete. This will be done by the platform
         d->platformContext = 0;
     }
 

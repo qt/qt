@@ -82,7 +82,6 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGL_NONE
     };
 
-    //        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
 //    m_eglWindowAttrs.append(EGL_RENDER_BUFFER);
 //    m_eglWindowAttrs.append(EGL_BACK_BUFFER);
     m_eglWindowAttrs.append(EGL_NONE);
@@ -141,17 +140,11 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         return;
     }
 
-//    KDboolean visibillity(false);
-//    if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
-//        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
-//    }
+    KDboolean visibillity(false);
+    if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
+        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
+    }
 
-//    const KDboolean windowExclusive[] = { false };
-//    if (kdSetWindowPropertybv(kdWindow, KD_WINDOWPROPERTY_DESKTOP_EXCLUSIVE_NV, windowExclusive)) {
-//        qErrnoWarning(kdGetError(), "Could not set exclusive bit");
-//        //return;
-//    }
-//
     const KDint windowPos[2] = { tlw->x(), tlw->y() };
     if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
         qErrnoWarning(kdGetError(), "Could not set native window position");
@@ -169,19 +162,13 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
     EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
 
-    qDebug() << "surface id " << surface;
-
     m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(),m_eglConfig,contextAttrs,surface,eglApi);
-    m_platformGlContext->makeCurrent();
-    glClearColor(0,0,0,0);
-
-
 }
 
 QOpenKODEWindow::~QOpenKODEWindow()
 {
     qDebug() << "destroying window" << m_kdWindow;
-//    delete m_platformGlContext;
+    delete m_platformGlContext;
     kdDestroyWindow(m_kdWindow);
 }
 void QOpenKODEWindow::setGeometry(const QRect &rect)
@@ -189,7 +176,7 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
     qDebug() << "setting geo";
     const QRect geo = geometry();
     if (geo.size() != rect.size()) {
-        const KDint windowSize[2]  = { rect.width(), rect.height() };
+        const KDint windowSize[2]  = { rect.width(), rect.height() -1 };
         if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_SIZE, windowSize)) {
             qErrnoWarning(kdGetError(), "Could not set native window size");
             //return;
@@ -206,16 +193,12 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
 
     delete m_platformGlContext;
 
+    /********####neeeds cleaning up **********/
     QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();
     //XXXX: jl figure out how to pick the correct screen.
 //    Q_ASSERT(screens.size() > tlw->d_func()->screenNumber);
 //    QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(tlw->d_func()->screenNumber));
     QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(0));
-
-//    if (kdRealizeWindow(m_kdWindow, &m_eglWindow)) {
-//        qErrnoWarning(kdGetError(), "Could not realize native window in geo");
-//        return;
-//    }
 
     EGLint contextAttrs[] = {
         EGL_CONTEXT_CLIENT_VERSION, 2, // NOTE: not needed for VG
@@ -229,8 +212,7 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
     qDebug() << "surface id " << surface;
 
     m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(),m_eglConfig,contextAttrs,surface,eglApi);
-    m_platformGlContext->makeCurrent();
-    glClearColor(0,0,0,1);
+    /*******************************************/
 }
 
 void QOpenKODEWindow::setVisible(bool visible)
