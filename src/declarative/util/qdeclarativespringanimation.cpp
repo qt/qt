@@ -183,11 +183,13 @@ void QDeclarativeSpringAnimationPrivate::tick(int time)
         lastTime = time;
     }
 
+    qreal old_to = to;
+
     QDeclarativePropertyPrivate::write(defaultProperty, currentValue,
                                        QDeclarativePropertyPrivate::BypassInterceptor |
                                        QDeclarativePropertyPrivate::DontRemoveBinding);
 
-    if (stop)
+    if (stop && old_to == to) // do not stop if we got restarted
         clock.stop();
 }
 
