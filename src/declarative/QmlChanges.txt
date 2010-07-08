@@ -38,6 +38,10 @@ The QDeclarativeExpression constructor has changed from
 to
     QDeclarativeExpression(context, scope, expression, parent = 0)
 
+QDeclarativeImageProvider::request() has been renamed to
+QDeclarativeImageProvider::image() and the class can now provide
+both qimages and qpixmaps, and qimages can be served synchronously
+
 QML Viewer
 ------------
 The standalone qml executable has been renamed back to Qml Viewer. Runtime warnings
