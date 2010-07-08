@@ -51,7 +51,7 @@ static int depthForFormat(QImage::Format format)
     case QImage::Format_RGB888: return 24;
     case QImage::Format_RGB444: return 16;
     default:
-        Q_ASSERT(!"Unknown format");
+        Q_ASSERT_X(false, "EGLNullWSScreen", "Unknown format");
         return -1;
     }
 }
