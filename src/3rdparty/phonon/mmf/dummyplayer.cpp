@@ -97,6 +97,10 @@ void MMF::DummyPlayer::open(const Phonon::MediaSource &, RFile &)
 
 }
 
+void MMF::DummyPlayer::close()
+{
+
+}
 
 //-----------------------------------------------------------------------------
 // AbstractPlayer

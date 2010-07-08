@@ -58,6 +58,7 @@ public:
 
     // AbstractPlayer
     virtual void open(const Phonon::MediaSource&, RFile&);
+    virtual void close();
     virtual void doSetTickInterval(qint32 interval);
 };
 }
