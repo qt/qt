@@ -88,7 +88,6 @@ private slots:
     void resized();
     void preserveAspectRatio();
     void smooth();
-    void pixmap();
     void svg();
     void big();
     void tiling_QTBUG_6716();
@@ -257,36 +256,6 @@ void tst_qdeclarativeimage::smooth()
     QCOMPARE(obj->height(), 300.);
     QCOMPARE(obj->smooth(), true);
     QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
-
-    delete obj;
-}
-
-void tst_qdeclarativeimage::pixmap()
-{
-    QString componentStr = "import Qt 4.7\nImage { pixmap: testPixmap }";
-
-    QPixmap pixmap;
-    QDeclarativeContext *ctxt = engine.rootContext();
-    ctxt->setContextProperty("testPixmap", pixmap);
-
-    QDeclarativeComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
-
-    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
-    QVERIFY(obj != 0);
-    QCOMPARE(obj->source(), QUrl());
-    QVERIFY(obj->status() == QDeclarativeImage::Null);
-    QCOMPARE(obj->width(), 0.);
-    QCOMPARE(obj->height(), 0.);
-    QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
-    QCOMPARE(obj->progress(), 0.0);
-    QVERIFY(obj->pixmap().isNull());
-
-    pixmap = QPixmap(SRCDIR "/data/colors.png");
-    ctxt->setContextProperty("testPixmap", pixmap);
-    QCOMPARE(obj->width(), 120.);
-    QCOMPARE(obj->height(), 120.);
-    QVERIFY(obj->status() == QDeclarativeImage::Ready);
 
     delete obj;
 }
