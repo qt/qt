@@ -1775,23 +1775,17 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// Setting assistant configuration
     if (offlineDocs)
 	{
-<<<<<<< Updated upstream:tools/qdoc3/htmlgenerator.cpp
 		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Style common to all browsers
 		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/OfflineStyle.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
 		out() << "<body class=\"offline narrow\">\n"; // narrow mainly for Creator
-		out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-		out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-=======
 		out() << "</head>\n";
 		out() << "<body class=\"offline narrow\" >\n"; // narrow mainly for Creator
 //		out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
->>>>>>> Stashed changes:tools/qdoc3/htmlgenerator.cpp
 	}	
 	// Setting online doc configuration
     else
 		{
-<<<<<<< Updated upstream:tools/qdoc3/htmlgenerator.cpp
 		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\"\n />";
 		// out() << "  <!--[if IE]>\n";
 		// out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
@@ -1806,7 +1800,6 @@ void HtmlGenerator::generateHeader(const QString& title,
 		// out() << "<!--[if IE 8]>\n";
 		// out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
 		// out() << "<![endif]-->\n";
-=======
 		// Custom browser styles
 		out() << "  <!--[if IE]>\n";
 		out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
@@ -1821,32 +1814,13 @@ void HtmlGenerator::generateHeader(const QString& title,
 		out() << "<!--[if IE 8]>\n";
 		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
 		out() << "<![endif]-->\n";
->>>>>>> Stashed changes:tools/qdoc3/htmlgenerator.cpp
-		// jquery functions
-		// menus and small docs js and css
-<<<<<<< Updated upstream:tools/qdoc3/htmlgenerator.cpp
-		// out() << " <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
-		// out() << " <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
-		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
-		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />";
-		
-		// syntax highlighter js and css
-	//		out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shCore.css\"/>\n";
-	//		out() << " <link type=\"text/css\" rel=\"stylesheet\" href=\"style/shThemeDefault.css\"/>\n";
-	//		out() << " <script type=\"text/javascript\" src=\"scripts/shCore.js\"></script>\n";
-	//		out() << " <script type=\"text/javascript\" src=\"scripts/shBrushCpp.js\"></script>\n";
-	//	 out() << " <script type=\"text/javascript\">\n";
-	//	 out() << " 	SyntaxHighlighter.all();\n";
-	//	 out() << " </script>\n";
 		
 		out() << "</head>\n";
 		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n"; // CheckEmptyAndLoadList() activating online search
-=======
 				
 		out() << "</head>\n";
 		// CheckEmptyAndLoadList activating search
 		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
->>>>>>> Stashed changes:tools/qdoc3/htmlgenerator.cpp
 		}
 
 #ifdef GENERATE_MAC_REFS    
