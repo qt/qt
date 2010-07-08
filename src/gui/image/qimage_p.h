@@ -61,9 +61,9 @@
 #include <QMap>
 #endif
 
-class QImageWriter;
-
 QT_BEGIN_NAMESPACE
+
+class QImageWriter;
 
 struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
