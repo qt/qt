@@ -48,6 +48,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
 #include <QDeclarativeView>
+#include <private/qapplication_p.h>
 
 #include "../../../shared/util.h"
 #include "testhttpserver.h"
@@ -452,7 +453,9 @@ void tst_qdeclarativetext::alignments()
 
 #ifdef Q_WS_X11
     // Font-specific, but not likely platform-specific, so only test on one platform
-    QCOMPARE(actual,expect);
+    if (QApplicationPrivate::graphics_system_name == "raster" || QApplicationPrivate::graphics_system_name == "") {
+        QCOMPARE(actual,expect);
+    }
 #endif
 }
 

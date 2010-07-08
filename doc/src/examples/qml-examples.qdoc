@@ -196,6 +196,9 @@
     \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout}{QGraphicsGridLayout}
     \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout}{QGraphicsLinearLayout}
     \endlist
+
+    Also see \l {Integrating QML with existing Qt UI code} for information on using QML 
+    in Qt applications that use the Graphics View framework or ordinary QWidget-based views.
 */
 
 /*!
@@ -211,8 +214,10 @@
     \title C++ Extensions: Image Provider
     \example declarative/cppextensions/imageprovider
 
-    This examples shows how to use QDeclarativeImageProvider to serve images asynchronously
-    into a QML item.
+    This examples shows how to use QDeclarativeImageProvider to serve images 
+    to QML image elements.
+
+    \image qml-imageprovider-example.png
 */
 
 /*!
@@ -608,7 +613,9 @@
     \title UI Components: Tab Widget
     \example declarative/ui-components/tabwidget
 
-    This example shows how to create a tab widget.
+    This example shows how to create a tab widget. It also demonstrates how
+    \l {Setting default properties}{default properties} can be used to collect and 
+    assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png
 */

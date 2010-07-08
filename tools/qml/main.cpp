@@ -49,11 +49,16 @@
 #include <QTranslator>
 #include <QDebug>
 #include <QMessageBox>
+#include <QAtomicInt>
 #include "qdeclarativetester.h"
 
 QT_USE_NAMESPACE
 
 QtMsgHandler systemMsgOutput = 0;
+
+#if defined(Q_WS_S60)
+#include <aknappui.h> // For locking app to portrait
+#endif
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -89,19 +94,25 @@ void showWarnings()
     }
 }
 
+static QAtomicInt recursiveLock(0);
+
 void myMessageOutput(QtMsgType type, const char *msg)
 {
-    if (!logger.isNull()) {
-        QString strMsg = QString::fromAscii(msg);
-        QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
+    QString strMsg = QString::fromLatin1(msg);
+
+    if (!logger.isNull() && !QCoreApplication::closingDown()) {
+        if (recursiveLock.testAndSetOrdered(0, 1)) {
+            QMetaObject::invokeMethod(logger.data(), "append", Q_ARG(QString, strMsg));
+            recursiveLock = 0;
+        }
     } else {
-        warnings += msg;
+        warnings += strMsg;
         warnings += QLatin1Char('\n');
     }
     if (systemMsgOutput) { // Windows
         systemMsgOutput(type, msg);
     } else { // Unix
-        fprintf(stderr, "%s\n",msg);
+        fprintf(stderr, "%s\n", msg);
         fflush(stderr);
     }
 }
@@ -200,6 +211,13 @@ int main(int argc, char ** argv)
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
+#if defined(Q_WS_S60)
+    CAknAppUi *appUi = static_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+    if (appUi) {
+        appUi->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait);
+    }
+#endif
+    
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
 
