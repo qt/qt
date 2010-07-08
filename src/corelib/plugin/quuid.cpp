@@ -577,6 +577,7 @@ QUuid QUuid::createUuid()
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qdatetime.h"
+#include <stdlib.h> // for RAND_MAX
 QT_END_INCLUDE_NAMESPACE
 
 QUuid QUuid::createUuid()
