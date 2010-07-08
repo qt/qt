@@ -206,6 +206,15 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
     \since 4.7
+
+    \brief The SpringAnimation element allows a property to track a value in a spring-like motion
+
+    SpringAnimation mimics the oscillatory behavior of a spring, with the appropriate \l spring constant to
+    control the acceleration and the \l damping to control how quickly the effect dies away.
+
+    You can also limit the maximum \l velocity of the animation.
+
+
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
