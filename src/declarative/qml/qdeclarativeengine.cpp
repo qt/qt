@@ -1260,11 +1260,12 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
     QDate date = ctxt->argument(0).toDateTime().date();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid date format"));
         }
@@ -1287,11 +1288,12 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
     QTime date = ctxt->argument(0).toDateTime().time();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
@@ -1377,11 +1379,12 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
     QDateTime date = ctxt->argument(0).toDateTime();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else { 
             return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
