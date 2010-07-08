@@ -22,7 +22,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        <li class=\"nav-topright-doc nav-topright-doc-active\"><a href=\"http://doc.qt.nokia.com/\">\n" \
 			  "          DOC</a></li>\n" \
 			  "        <li class=\"nav-topright-blog\"><a href=\"http://blog.qt.nokia.com/\">BLOG</a></li>\n" \
-			  "        <li class=\"nav-topright-shop\"><a title=\"SHOP\" href=\"http://shop.qt.nokia.com\">SHOP</a></li>\n" \
 			  "      </ul>\n" \
 			  "    </div>\n" \
 			  "    <div id=\"shortCut\">\n" \
