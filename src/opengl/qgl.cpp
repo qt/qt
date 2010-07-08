@@ -94,6 +94,8 @@
 #include <qmutex.h>
 
 
+// #define QT_GL_CONTEXT_RESOURCE_DEBUG
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
@@ -2054,6 +2056,9 @@ QGLContext::~QGLContext()
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
 
+    // clean up resources specific to this context
+    d_ptr->cleanup();
+    // clean up resources belonging to this context's group
     d_ptr->group->cleanupResources(this);
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
@@ -2062,6 +2067,10 @@ QGLContext::~QGLContext()
 
 void QGLContextPrivate::cleanup()
 {
+    QHash<QGLContextResourceBase *, void *>::ConstIterator it;
+    for (it = m_resources.begin(); it != m_resources.end(); ++it)
+        it.key()->freeResource(it.value());
+    m_resources.clear();
 }
 
 #define ctx q_ptr
@@ -2114,20 +2123,10 @@ void QGLContextPrivate::syncGlState()
 
 GLuint QGLContext::bindTexture(const QString &fileName)
 {
-    Q_D(QGLContext);
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QGLDDSCache::const_iterator it = dds_cache->constFind(fileName);
-    if (it != dds_cache->constEnd()) {
-        glBindTexture(GL_TEXTURE_2D, it.value());
-        return it.value();
-    }
-
     QGLTexture texture(this);
     QSize size = texture.bindCompressedTexture(fileName);
     if (!size.isValid())
         return 0;
-
-    dds_cache->insert(fileName, texture.id);
     return texture.id;
 }
 
@@ -2547,7 +2546,8 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     const QX11Info *xinfo = qt_x11Info(paintDevice);
     if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
         && xinfo && xinfo->screen() == pixmap.x11Info().screen()
-        && target == GL_TEXTURE_2D)
+        && target == GL_TEXTURE_2D
+        && QApplication::instance()->thread() == QThread::currentThread())
     {
         texture = bindTextureFromNativePixmap(const_cast<QPixmap*>(&pixmap), key, options);
         if (texture) {
@@ -2752,24 +2752,8 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 */
 void QGLContext::deleteTexture(GLuint id)
 {
-    Q_D(QGLContext);
-
     if (QGLTextureCache::instance()->remove(this, id))
         return;
-
-    // check the DDS cache if the texture wasn't found in the pixmap/image
-    // cache
-    QGLDDSCache *dds_cache = &(d->group->m_dds_cache);
-    QList<QString> ddsKeys = dds_cache->keys();
-    for (int i = 0; i < ddsKeys.size(); ++i) {
-        GLuint texture = dds_cache->value(ddsKeys.at(i));
-        if (id == texture) {
-            dds_cache->remove(ddsKeys.at(i));
-            break;
-        }
-    }
-
-    // Finally, actually delete the texture ID
     glDeleteTextures(1, &id);
 }
 
@@ -4087,13 +4071,7 @@ bool QGLWidget::event(QEvent *e)
     }
 
 #if defined(Q_WS_X11)
-    // prevents X errors on some systems, where we get a flush to a
-    // hidden widget
-    if (e->type() == QEvent::Hide) {
-        makeCurrent();
-        glFinish();
-        doneCurrent();
-    } else if (e->type() == QEvent::ParentChange) {
+    if (e->type() == QEvent::ParentChange) {
         // if we've reparented a window that has the current context
         // bound, we need to rebind that context to the new window id
         if (d->glcx == QGLContext::currentContext())
@@ -5060,24 +5038,24 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 #endif
 
 #ifndef QT_OPENGL_ES_1
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QGL2PaintEngineEx>, qt_gl_2_engine)
 #endif
 
 #ifndef QT_OPENGL_ES_2
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
+Q_GLOBAL_STATIC(QGLEngineThreadStorage<QOpenGLPaintEngine>, qt_gl_engine)
 #endif
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
 #if defined(QT_OPENGL_ES_1)
-    return qt_gl_engine();
+    return qt_gl_engine()->engine();
 #elif defined(QT_OPENGL_ES_2)
-    return qt_gl_2_engine();
+    return qt_gl_2_engine()->engine();
 #else
     if (qt_gl_preferGL2Engine())
-        return qt_gl_2_engine();
+        return qt_gl_2_engine()->engine();
     else
-        return qt_gl_engine();
+        return qt_gl_engine()->engine();
 #endif
 }
 
@@ -5340,13 +5318,23 @@ void QGLContextGroup::removeShare(const QGLContext *context) {
         group->m_shares.clear();
 }
 
-QGLContextResource::QGLContextResource(FreeFunc f)
-    : free(f), active(0)
+QGLContextGroupResourceBase::QGLContextGroupResourceBase()
+    : active(0)
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Creating context group resource object %p.", this);
+#endif
 }
 
-QGLContextResource::~QGLContextResource()
+QGLContextGroupResourceBase::~QGLContextGroupResourceBase()
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Deleting context group resource %p. Group size: %d.", this, m_groups.size());
+#endif
+    for (int i = 0; i < m_groups.size(); ++i) {
+        m_groups.at(i)->m_resources.remove(this);
+        active.deref();
+    }
 #ifndef QT_NO_DEBUG
     if (active != 0) {
         qWarning("QtOpenGL: Resources are still available at program shutdown.\n"
@@ -5356,37 +5344,47 @@ QGLContextResource::~QGLContextResource()
 #endif
 }
 
-void QGLContextResource::insert(const QGLContext *key, void *value)
+void QGLContextGroupResourceBase::insert(const QGLContext *context, void *value)
 {
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Inserting context group resource %p for context %p, managed by %p.", value, context, this);
+#endif
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     Q_ASSERT(!group->m_resources.contains(this));
     group->m_resources.insert(this, value);
+    m_groups.append(group);
     active.ref();
 }
 
-void *QGLContextResource::value(const QGLContext *key)
+void *QGLContextGroupResourceBase::value(const QGLContext *context)
 {
-    QGLContextGroup *group = QGLContextPrivate::contextGroup(key);
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(context);
     return group->m_resources.value(this, 0);
 }
 
-void QGLContextResource::cleanup(const QGLContext *ctx, void *value)
+void QGLContextGroupResourceBase::cleanup(const QGLContext *ctx, void *value)
 {
+#ifdef QT_GL_CONTEXT_RESOURCE_DEBUG
+    qDebug("Cleaning up context group resource %p, for context %p in thread %p.", this, ctx, QThread::currentThread());
+#endif
     QGLShareContextScope scope(ctx);
-    free(value);
+    freeResource(value);
     active.deref();
+
+    QGLContextGroup *group = QGLContextPrivate::contextGroup(ctx);
+    m_groups.removeOne(group);
 }
 
-void QGLContextGroup::cleanupResources(const QGLContext *ctx)
+void QGLContextGroup::cleanupResources(const QGLContext *context)
 {
     // If there are still shares, then no cleanup to be done yet.
     if (m_shares.size() > 1)
         return;
 
     // Iterate over all resources and free each in turn.
-    QHash<QGLContextResource *, void *>::ConstIterator it;
+    QHash<QGLContextGroupResourceBase *, void *>::ConstIterator it;
     for (it = m_resources.begin(); it != m_resources.end(); ++it)
-        it.key()->cleanup(ctx, it.value());
+        it.key()->cleanup(context, it.value());
 }
 
 QGLSharedResourceGuard::~QGLSharedResourceGuard()

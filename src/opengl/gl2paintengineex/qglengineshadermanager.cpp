@@ -46,24 +46,29 @@
 #include <QMetaEnum>
 #endif
 
+// #define QT_GL_SHARED_SHADER_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-static void qt_shared_shaders_free(void *data)
+class QGLShaderStorage
 {
-    delete reinterpret_cast<QGLEngineSharedShaders *>(data);
-}
+public:
+    QGLEngineSharedShaders *shadersForThread(const QGLContext *context) {
+        QGLContextGroupResource<QGLEngineSharedShaders> *&shaders = m_storage.localData();
+        if (!shaders)
+            shaders = new QGLContextGroupResource<QGLEngineSharedShaders>();
+        return shaders->value(context);
+    }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_shared_shaders, (qt_shared_shaders_free))
+private:
+    QThreadStorage<QGLContextGroupResource<QGLEngineSharedShaders> *> m_storage;
+};
+
+Q_GLOBAL_STATIC(QGLShaderStorage, qt_shader_storage);
 
 QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLContext *context)
 {
-    QGLEngineSharedShaders *p = reinterpret_cast<QGLEngineSharedShaders *>(qt_shared_shaders()->value(context));
-    if (!p) {
-        QGLShareContextScope scope(context);
-        qt_shared_shaders()->insert(context, p = new QGLEngineSharedShaders(context));
-    }
-    return p;
+    return qt_shader_storage()->shadersForThread(context);
 }
 
 const char* QGLEngineSharedShaders::qShaderSnippets[] = {
@@ -170,18 +175,20 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     source.clear();
     source.append(qShaderSnippets[MainVertexShader]);
     source.append(qShaderSnippets[PositionOnlyVertexShader]);
-    vertexShader = new QGLShader(QGLShader::Vertex, context, this);
+    vertexShader = new QGLShader(QGLShader::Vertex, context, 0);
+    shaders.append(vertexShader);
     if (!vertexShader->compileSourceCode(source))
         qWarning("Vertex shader for simpleShaderProg (MainVertexShader & PositionOnlyVertexShader) failed to compile");
 
     source.clear();
     source.append(qShaderSnippets[MainFragmentShader]);
     source.append(qShaderSnippets[ShockingPinkSrcFragmentShader]);
-    fragShader = new QGLShader(QGLShader::Fragment, context, this);
+    fragShader = new QGLShader(QGLShader::Fragment, context, 0);
+    shaders.append(fragShader);
     if (!fragShader->compileSourceCode(source))
         qWarning("Fragment shader for simpleShaderProg (MainFragmentShader & ShockingPinkSrcFragmentShader) failed to compile");
 
-    simpleShaderProg = new QGLShaderProgram(context, this);
+    simpleShaderProg = new QGLShaderProgram(context, 0);
     simpleShaderProg->addShader(vertexShader);
     simpleShaderProg->addShader(fragShader);
     simpleShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
@@ -198,18 +205,20 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     source.clear();
     source.append(qShaderSnippets[MainWithTexCoordsVertexShader]);
     source.append(qShaderSnippets[UntransformedPositionVertexShader]);
-    vertexShader = new QGLShader(QGLShader::Vertex, context, this);
+    vertexShader = new QGLShader(QGLShader::Vertex, context, 0);
+    shaders.append(vertexShader);
     if (!vertexShader->compileSourceCode(source))
         qWarning("Vertex shader for blitShaderProg (MainWithTexCoordsVertexShader & UntransformedPositionVertexShader) failed to compile");
 
     source.clear();
     source.append(qShaderSnippets[MainFragmentShader]);
     source.append(qShaderSnippets[ImageSrcFragmentShader]);
-    fragShader = new QGLShader(QGLShader::Fragment, context, this);
+    fragShader = new QGLShader(QGLShader::Fragment, context, 0);
+    shaders.append(fragShader);
     if (!fragShader->compileSourceCode(source))
         qWarning("Fragment shader for blitShaderProg (MainFragmentShader & ImageSrcFragmentShader) failed to compile");
 
-    blitShaderProg = new QGLShaderProgram(context, this);
+    blitShaderProg = new QGLShaderProgram(context, 0);
     blitShaderProg->addShader(vertexShader);
     blitShaderProg->addShader(fragShader);
     blitShaderProg->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
@@ -220,13 +229,21 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
                     << simpleShaderProg->log();
     }
 
+#ifdef QT_GL_SHARED_SHADER_DEBUG
+    qDebug(" -> QGLEngineSharedShaders() %p for thread %p.", this, QThread::currentThread());
+#endif
 }
 
 QGLEngineSharedShaders::~QGLEngineSharedShaders()
 {
-    QList<QGLEngineShaderProg*>::iterator itr;
-    for (itr = cachedPrograms.begin(); itr != cachedPrograms.end(); ++itr)
-        delete *itr;
+#ifdef QT_GL_SHARED_SHADER_DEBUG
+    qDebug(" -> ~QGLEngineSharedShaders() %p for thread %p.", this, QThread::currentThread());
+#endif
+    qDeleteAll(shaders);
+    shaders.clear();
+
+    qDeleteAll(cachedPrograms);
+    cachedPrograms.clear();
 
     if (blitShaderProg) {
         delete blitShaderProg;
@@ -276,7 +293,8 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
             source.append(qShaderSnippets[prog.compositionFragShader]);
         if (prog.maskFragShader)
             source.append(qShaderSnippets[prog.maskFragShader]);
-        fragShader = new QGLShader(QGLShader::Fragment, ctxGuard.context(), this);
+        fragShader = new QGLShader(QGLShader::Fragment, ctxGuard.context(), 0);
+        shaders.append(fragShader);
         QByteArray description;
 #if defined(QT_DEBUG)
         // Name the shader for easier debugging
@@ -302,7 +320,8 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         source.clear();
         source.append(qShaderSnippets[prog.mainVertexShader]);
         source.append(qShaderSnippets[prog.positionVertexShader]);
-        vertexShader = new QGLShader(QGLShader::Vertex, ctxGuard.context(), this);
+        vertexShader = new QGLShader(QGLShader::Vertex, ctxGuard.context(), 0);
+        shaders.append(vertexShader);
 #if defined(QT_DEBUG)
         // Name the shader for easier debugging
         description.clear();
@@ -320,7 +339,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         newProg = new QGLEngineShaderProg(prog);
 
         // If the shader program's not found in the cache, create it now.
-        newProg->program = new QGLShaderProgram(ctxGuard.context(), this);
+        newProg->program = new QGLShaderProgram(ctxGuard.context(), 0);
         newProg->program->addShader(vertexShader);
         newProg->program->addShader(fragShader);
 
@@ -413,7 +432,6 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       currentShaderProg(0)
 {
     sharedShaders = QGLEngineSharedShaders::shadersForContext(context);
-    connect(sharedShaders, SIGNAL(shaderProgNeedsChanging()), this, SLOT(shaderProgNeedsChangingSlot()));
 }
 
 QGLEngineShaderManager::~QGLEngineShaderManager()

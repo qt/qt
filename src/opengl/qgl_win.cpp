@@ -1283,7 +1283,7 @@ void QGLContext::makeCurrent()
     if (d->rc == wglGetCurrentContext() || !d->valid)       // already current
         return;
 
-    if (d->win) {
+    if (d->win && !d->dc) {
         d->dc = GetDC(d->win);
         if (!d->dc) {
             qwglError("QGLContext::makeCurrent()", "GetDC()");

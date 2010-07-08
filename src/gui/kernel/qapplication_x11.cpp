@@ -1710,6 +1710,9 @@ void qt_init(QApplicationPrivate *priv, int,
     } else {
         // Qt controls everything (default)
 
+        if (QApplication::testAttribute(Qt::AA_X11InitThreads))
+            XInitThreads();
+
         // Set application name and class
         char *app_class = 0;
         if (argv && argv[0]) {
