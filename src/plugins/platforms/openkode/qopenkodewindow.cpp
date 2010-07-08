@@ -77,17 +77,17 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGL_TRANSPARENT_TYPE, EGL_NONE,
         EGL_NONE
     };
-    EGLint contextAttrs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2, // NOTE: not needed for VG
-        EGL_NONE
-    };
+
+    m_eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+    m_eglContextAttrs.append(2);
+    m_eglContextAttrs.append(EGL_NONE);
 
 //    m_eglWindowAttrs.append(EGL_RENDER_BUFFER);
 //    m_eglWindowAttrs.append(EGL_BACK_BUFFER);
     m_eglWindowAttrs.append(EGL_NONE);
 
-    EGLenum eglApi = EGL_OPENGL_ES_API;
-    eglBindAPI(eglApi);
+    m_eglApi = EGL_OPENGL_ES_API;
+    eglBindAPI(m_eglApi);
 
     QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();
     //XXXX: jl figure out how to pick the correct screen.
@@ -162,7 +162,8 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
     EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
 
-    m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(),m_eglConfig,contextAttrs,surface,eglApi);
+    m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
+                                                  m_eglContextAttrs.data(), surface, m_eglApi);
 }
 
 QOpenKODEWindow::~QOpenKODEWindow()
@@ -191,28 +192,14 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
         }
     }
 
+    //need to recreate context
     delete m_platformGlContext;
 
-    /********####neeeds cleaning up **********/
     QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();
-    //XXXX: jl figure out how to pick the correct screen.
-//    Q_ASSERT(screens.size() > tlw->d_func()->screenNumber);
-//    QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(tlw->d_func()->screenNumber));
     QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(0));
-
-    EGLint contextAttrs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 2, // NOTE: not needed for VG
-        EGL_NONE
-    };
-
-    EGLenum eglApi = EGL_OPENGL_ES_API;
-
     EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
-
-    qDebug() << "surface id " << surface;
-
-    m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(),m_eglConfig,contextAttrs,surface,eglApi);
-    /*******************************************/
+    m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(),m_eglConfig,
+                                                  m_eglContextAttrs.data(),surface,m_eglApi);
 }
 
 void QOpenKODEWindow::setVisible(bool visible)

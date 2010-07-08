@@ -66,6 +66,8 @@ private:
     EGLNativeWindowType m_eglWindow;
     EGLConfig m_eglConfig;
     QVector<EGLint> m_eglWindowAttrs;
+    QVector<EGLint> m_eglContextAttrs;
+    EGLenum m_eglApi;
     QEGLPlatformContext *m_platformGlContext;
 };
 
