@@ -1782,7 +1782,7 @@ void HtmlGenerator::generateHeader(const QString& title,
 	{
 		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/CreatorStyle.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
-		out() << "<body class=\"offline narrow\">\n"; // narrow mainly for Creator
+		out() << "<body class=\"offline narrow\">\n"; // offline for Creator and Assistant
 	}	
 	// Setting online doc configuration
     else
