@@ -214,7 +214,7 @@ HtmlGenerator::HtmlGenerator()
       numTableRows(0),
       threeColumnEnumValueTable(true),
       offlineDocs(true),
-      creatorDocs(false),
+      creatorDocs(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
       slow(false),
@@ -1782,17 +1782,15 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// Setting assistant configuration
     if (offlineDocs)
 	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/creatorStyle.css\" />"; // Only for Qt Creator
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
-		//out() << "<body class=\"offline narrow \">\n"; // offline for  Assistant
-		out() << "<body class=\"offline narrow creator\">\n"; // offline for Creator
+		out() << "<body class=\"offline \">\n"; // offline for  Assistant
 	}	
     if (creatorDocs)
 	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/creatorStyle.css\" />"; // Only for Qt Creator
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
-		//out() << "<body class=\"offline narrow \">\n"; // offline for  Assistant
-		out() << "<body class=\"offline narrow creator\">\n"; // offline for Creator
+		out() << "<body class=\"offline creator\">\n"; // offline for Creator
 	}	
 	// Setting online doc configuration
     else
