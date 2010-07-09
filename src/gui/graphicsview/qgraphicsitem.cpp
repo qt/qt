@@ -133,7 +133,8 @@
 
     \img graphicsview-parentchild.png
 
-    \section1 Transformation
+    \target Transformations
+    \section1 Transformations
 
     QGraphicsItem supports projective transformations in addition to its base
     position, pos(). There are several ways to change an item's transformation.
