@@ -2944,7 +2944,7 @@ int QAbstractItemView::sizeHintForRow(int row) const
 {
     Q_D(const QAbstractItemView);
 
-    if (row < 0 || row >= d->model->rowCount() || !model())
+    if (row < 0 || row >= d->model->rowCount(d->root))
         return -1;
 
     ensurePolished();
@@ -2956,7 +2956,7 @@ int QAbstractItemView::sizeHintForRow(int row) const
     for (int c = 0; c < colCount; ++c) {
         index = d->model->index(row, c, d->root);
         if (QWidget *editor = d->editorForIndex(index).editor)
-            height = qMax(height, editor->size().height());
+            height = qMax(height, editor->height());
         int hint = d->delegateForIndex(index)->sizeHint(option, index).height();
         height = qMax(height, hint);
     }
@@ -2975,7 +2975,7 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 {
     Q_D(const QAbstractItemView);
 
-    if (column < 0 || column >= d->model->columnCount() || !model())
+    if (column < 0 || column >= d->model->columnCount(d->root))
         return -1;
 
     ensurePolished();
