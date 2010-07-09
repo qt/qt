@@ -653,7 +653,7 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                "QAbstractItemView::setModel",
                "A model should return the exact same index "
                "(including its internal id/pointer) when asked for it twice in a row.");
-    Q_ASSERT_X(d->model->index(0,0).parent() == QModelIndex(),
+    Q_ASSERT_X(!d->model->index(0,0).parent().isValid(),
                "QAbstractItemView::setModel",
                "The parent of a top level index should be invalid");
 
