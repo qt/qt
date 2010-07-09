@@ -215,7 +215,7 @@ QT_BEGIN_NAMESPACE
 
         \since 4.7
 
-     \value AuthenticationReuseControlAttribute
+     \value AuthenticationReuseAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
         Indicates whether to use cached authorization credentials in the request,
         if available. If this is set to QNetworkRequest::Manual and the authentication

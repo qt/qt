@@ -40,9 +40,12 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QPixmap>
 #include <QBitmap>
+#include <QDir>
+#include <QImage>
+#include <QImageReader>
 #include <QPainter>
+#include <QPixmap>
 #include <private/qpixmap_raster_p.h>
 
 class tst_QPixmap : public QObject
@@ -62,6 +65,9 @@ private slots:
     void transformed();
     void mask_data();
     void mask();
+
+    void fromImageReader_data();
+    void fromImageReader();
 };
 
 Q_DECLARE_METATYPE(QImage::Format)
@@ -247,6 +253,62 @@ void tst_QPixmap::mask()
         QVERIFY(bitmap.size() == src.size());
     }
 }
+
+void tst_QPixmap::fromImageReader_data()
+{
+    const QString tempDir = QDir::tempPath();
+    QTest::addColumn<QString>("filename");
+
+    QImage image(2000, 2000, QImage::Format_ARGB32);
+    image.fill(0);
+    {
+        // Generate an image with opaque and transparent pixels
+        // with an interesting distribution.
+        QPainter painter(&image);
+
+        QRadialGradient radialGrad(QPointF(1000, 1000), 1000);
+        radialGrad.setColorAt(0, QColor(255, 0, 0, 255));
+        radialGrad.setColorAt(0.5, QColor(0, 255, 0, 255));
+        radialGrad.setColorAt(0.9, QColor(0, 0, 255, 100));
+        radialGrad.setColorAt(1, QColor(0, 0, 0, 0));
+
+        painter.fillRect(image.rect(), radialGrad);
+    }
+    image.save("test.png");
+
+    // RGB32
+    const QString rgb32Path = tempDir + QString::fromLatin1("/rgb32.jpg");
+    image.save(rgb32Path);
+    QTest::newRow("gradient RGB32") << rgb32Path;
+
+    // ARGB32
+    const QString argb32Path = tempDir + QString::fromLatin1("/argb32.png");
+    image.save(argb32Path);
+    QTest::newRow("gradient ARGB32") << argb32Path;
+
+    // Indexed 8
+    const QString indexed8Path = tempDir + QString::fromLatin1("/indexed8.gif");
+    image.save(indexed8Path);
+    QTest::newRow("gradient indexed8") << indexed8Path;
+
+}
+
+void tst_QPixmap::fromImageReader()
+{
+    QFETCH(QString, filename);
+    // warmup
+    {
+        QImageReader imageReader(filename);
+        QPixmap::fromImageReader(&imageReader);
+    }
+
+    QBENCHMARK {
+        QImageReader imageReader(filename);
+        QPixmap::fromImageReader(&imageReader);
+    }
+    QFile::remove(filename);
+}
+
 
 QTEST_MAIN(tst_QPixmap)
 
