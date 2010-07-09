@@ -579,6 +579,21 @@ bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QStri
     }
 }
 
+bool QDeclarativeEngineDebug::resetBindingForObject(int objectDebugId, const QString &propertyName)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("RESET_BINDING") << objectDebugId << propertyName;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool QDeclarativeEngineDebug::setMethodBody(int objectDebugId, const QString &methodName,
                                             const QString &methodBody)
 {
