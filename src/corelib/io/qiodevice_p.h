@@ -155,10 +155,10 @@ public:
         if ((first - buf) < size) {
             // underflow, the existing valid data needs to move to the end of the (potentially bigger) buffer
             makeSpace(len + size, freeSpaceAtStart);
-            memcpy(first - size, block, size);
         }
         first -= size;
         len += size;
+        memcpy(first, block, size);
     }
 
 private:
