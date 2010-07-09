@@ -277,7 +277,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     project = config.getString(CONFIG_PROJECT);
     offlineDocs = !config.getBool(CONFIG_ONLINE);
-    creatorDocs = !config.getBool(CONFIG_CREATOR);
+    creatorDocs = false; //!config.getBool(CONFIG_CREATOR);
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
@@ -1785,7 +1785,7 @@ void HtmlGenerator::generateHeader(const QString& title,
 	{
 		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
-		out() << "<body class=\"offline creator\">\n"; // offline for Creator
+		out() << "<body class=\"offline narrow creator\">\n"; // offline for Creator
 	}	
 	// Setting online doc configuration
     else
