@@ -232,7 +232,7 @@ qreal QDeclarativeSpringAnimation::to() const
 }
 
 /*!
-    \qmlproperty real SpringFollow::to
+    \qmlproperty real SpringAnimation::to
 */
 
 void QDeclarativeSpringAnimation::setTo(qreal value)
@@ -254,7 +254,7 @@ qreal QDeclarativeSpringAnimation::from() const
 }
 
 /*!
-    \qmlproperty real SpringFollow::from
+    \qmlproperty real SpringAnimation::from
 */
 
 void QDeclarativeSpringAnimation::setFrom(qreal value)
