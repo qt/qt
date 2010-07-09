@@ -475,27 +475,12 @@ bool QSslSocketPrivate::ensureLibraryLoaded()
 
 void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 {
+    QMutexLocker locker(openssl_locks()->initLock());
     if (s_loadedCiphersAndCerts)
         return;
     s_loadedCiphersAndCerts = true;
 
     resetDefaultCiphers();
-    setDefaultCaCertificates(systemCaCertificates());
-}
-
-/*!
-    \internal
-
-    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
-    been initialized.
-*/
-
-void QSslSocketPrivate::ensureInitialized()
-{
-    if (!supportsSsl())
-        return;
-
-    ensureCiphersAndCertsLoaded();
 
     //load symbols needed to receive certificates from system store
 #if defined(Q_OS_MAC)
@@ -532,6 +517,22 @@ void QSslSocketPrivate::ensureInitialized()
         qWarning("could not load crypt32 library"); // should never happen
     }
 #endif
+    setDefaultCaCertificates(systemCaCertificates());
+}
+
+/*!
+    \internal
+
+    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
+    been initialized.
+*/
+
+void QSslSocketPrivate::ensureInitialized()
+{
+    if (!supportsSsl())
+        return;
+
+    ensureCiphersAndCertsLoaded();
 }
 
 /*!
