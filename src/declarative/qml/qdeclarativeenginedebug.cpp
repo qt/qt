@@ -461,6 +461,11 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         bool isLiteralValue;
         ds >> objectId >> propertyName >> expr >> isLiteralValue;
         setBinding(objectId, propertyName, expr, isLiteralValue);
+    } else if (type == "RESET_BINDING") {
+        int objectId;
+        QString propertyName;
+        ds >> objectId >> propertyName;
+        resetBinding(objectId, propertyName);
     } else if (type == "SET_METHOD_BODY") {
         int objectId;
         QString methodName;
@@ -497,6 +502,28 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                 if (oldBinding)
                     oldBinding->destroy();
                 binding->update();
+            }
+        }
+    }
+}
+
+void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &propertyName)
+{
+    QObject *object = objectForId(objectId);
+    QDeclarativeContext *context = qmlContext(object);
+
+    if (object && context) {
+        if (object->property(propertyName.toLatin1()).isValid()) {
+            QDeclarativeProperty property(object, propertyName);
+            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(property);
+            if (oldBinding) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, 0);
+                if (oldBinding)
+                    oldBinding->destroy();
+            } else {
+                if (property.isResettable()) {
+                    property.reset();
+                }
             }
         }
     }

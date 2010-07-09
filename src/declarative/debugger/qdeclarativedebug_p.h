@@ -96,6 +96,7 @@ public:
                                                    QObject *parent = 0);
     bool setBindingForObject(int objectDebugId, const QString &propertyName,
                              const QVariant &bindingExpression, bool isLiteralValue);
+    bool resetBindingForObject(int objectDebugId, const QString &propertyName);
     bool setMethodBody(int objectDebugId, const QString &methodName, const QString &methodBody);
 
 private:
