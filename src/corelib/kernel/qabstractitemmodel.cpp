@@ -2547,7 +2547,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
             For example, as shown in the diagram, we move three rows from
             row 2 to 4 in the source, so \a sourceFirst is 2 and \a sourceLast is 4.
-            We move those items to above row 2 in the destination, so \a destinationRow is 2.
+            We move those items to above row 2 in the destination, so \a destinationChild is 2.
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 6
 
@@ -2558,7 +2558,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
         \o  To append rows to another parent, move them to after the last row.
 
             For example, as shown in the diagram, we move three rows to a
-            collection of 6 existing rows (ending in row 5), so \a destinationStart is 6:
+            collection of 6 existing rows (ending in row 5), so \a destinationChild is 6:
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 7
 
