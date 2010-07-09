@@ -2282,7 +2282,7 @@
     \endlist
 
     For more information about drag and drop with item views, refer to
-    \l{Using Drag and Drop with Item Views}.
+    \l{Using drag & drop with item views}.
 
     \section3 Convenience views
 
@@ -2293,7 +2293,7 @@
     the existing contents with the data being transferred, the underlying model
     will set the data of the target items rather than insert new rows and columns
     into the model. For more information on drag and drop in convenience views,
-    you can see \l{Using Drag and Drop with Item Views}.
+    you can see \l{Using drag & drop with item views}.
 
     \section2 Performance optimization for large amounts of data
 
