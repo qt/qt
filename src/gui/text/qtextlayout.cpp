@@ -401,6 +401,7 @@ QTextLayout::~QTextLayout()
 void QTextLayout::setFont(const QFont &font)
 {
     d->fnt = font;
+    d->feCache.reset();
 }
 
 /*!
@@ -540,6 +541,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
     }
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
+    d->feCache.reset();
 }
 
 /*!
@@ -1860,14 +1862,14 @@ void QTextLine::layout_helper(int maxGlyphs)
             lbh.currentPosition = qMax(line.from, current.position);
             end = current.position + eng->length(item);
             lbh.glyphs = eng->shapedGlyphs(&current);
+            QFontEngine *fontEngine = eng->fontEngine(current);
+            if (lbh.fontEngine != fontEngine) {
+                lbh.fontEngine = fontEngine;
+                lbh.minimumRightBearing = qMin(QFixed(),
+                                               QFixed::fromReal(fontEngine->minRightBearing()));
+            }
         }
         const QScriptItem &current = eng->layoutData->items[item];
-        QFontEngine *fontEngine = eng->fontEngine(current);
-        if (lbh.fontEngine != fontEngine) {
-            lbh.fontEngine = fontEngine;
-            lbh.minimumRightBearing = qMin(QFixed(),
-                                           QFixed::fromReal(fontEngine->minRightBearing()));
-        }
 
         lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
                                    current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
