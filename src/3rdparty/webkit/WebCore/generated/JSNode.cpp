@@ -394,11 +394,7 @@ void JSNode::put(ExecState* exec, const Identifier& propertyName, JSValue value,
 
 void setJSNodeNodeValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSNode* castedThisObj = static_cast<JSNode*>(thisObject);
-    Node* imp = static_cast<Node*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    imp->setNodeValue(valueToStringWithNullCheck(exec, value), ec);
-    setDOMException(exec, ec);
+    static_cast<JSNode*>(thisObject)->setNodeValue(exec, value);
 }
 
 void setJSNodePrefix(ExecState* exec, JSObject* thisObject, JSValue value)
@@ -412,11 +408,7 @@ void setJSNodePrefix(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSNodeTextContent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSNode* castedThisObj = static_cast<JSNode*>(thisObject);
-    Node* imp = static_cast<Node*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    imp->setTextContent(valueToStringWithNullCheck(exec, value), ec);
-    setDOMException(exec, ec);
+    static_cast<JSNode*>(thisObject)->setTextContent(exec, value);
 }
 
 JSValue JSNode::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
