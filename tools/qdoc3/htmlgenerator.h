@@ -288,6 +288,7 @@ class HtmlGenerator : public PageGenerator
     int numTableRows;
     bool threeColumnEnumValueTable;
     bool offlineDocs;
+    bool creatorDocs;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
