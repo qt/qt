@@ -214,6 +214,7 @@ HtmlGenerator::HtmlGenerator()
       numTableRows(0),
       threeColumnEnumValueTable(true),
       offlineDocs(true),
+      creatorDocs(false),
       funcLeftParen("\\S(\\()"),
       myTree(0),
       slow(false),
@@ -276,6 +277,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     project = config.getString(CONFIG_PROJECT);
     offlineDocs = !config.getBool(CONFIG_ONLINE);
+    creatorDocs = !config.getBool(CONFIG_CREATOR);
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
@@ -1775,9 +1777,17 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// Setting assistant configuration
     if (offlineDocs)
 	{
-		// out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/CreatorStyle.css\" />"; // Only for Qt Creator
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/creatorStyle.css\" />"; // Only for Qt Creator
 		out() << "</head>\n";
-		out() << "<body class=\"offline narrow\">\n"; // offline for Creator and Assistant
+		//out() << "<body class=\"offline narrow \">\n"; // offline for  Assistant
+		out() << "<body class=\"offline narrow creator\">\n"; // offline for Creator
+	}	
+    if (creatorDocs)
+	{
+		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/creatorStyle.css\" />"; // Only for Qt Creator
+		out() << "</head>\n";
+		//out() << "<body class=\"offline narrow \">\n"; // offline for  Assistant
+		out() << "<body class=\"offline narrow creator\">\n"; // offline for Creator
 	}	
 	// Setting online doc configuration
     else
@@ -1844,6 +1854,10 @@ void HtmlGenerator::generateFooter(const Node *node)
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
 	
 	    if (offlineDocs)
+		{
+          out() << "</body>\n";
+		}
+	    if (creatorDocs)
 		{
           out() << "</body>\n";
 		}
