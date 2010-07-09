@@ -992,7 +992,7 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
     face_id.filename = file_name;
     face_id.index = face_index;
 
-    canUploadGlyphsToServer = qApp->thread() == QThread::currentThread();
+    canUploadGlyphsToServer = QApplication::testAttribute(Qt::AA_X11InitThreads) || (qApp->thread() == QThread::currentThread());
 
     subpixelType = Subpixel_None;
     if (antialias) {

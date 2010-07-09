@@ -128,7 +128,7 @@ struct Q_AUTOTEST_EXPORT QScriptAnalysis
         TabOrObject = Tab,
         Object = 7
     };
-    unsigned short script    : 8;
+    unsigned short script    : 7;
     unsigned short bidiLevel : 6;  // Unicode Bidi algorithm embedding level (0-61)
     unsigned short flags     : 3;
     inline bool operator == (const QScriptAnalysis &other) const {

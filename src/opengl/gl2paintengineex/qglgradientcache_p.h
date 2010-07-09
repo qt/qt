@@ -54,6 +54,7 @@
 #include <QObject>
 #include <QtOpenGL/QtOpenGL>
 #include <private/qgl_p.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,22 +76,22 @@ class QGL2GradientCache
 public:
     static QGL2GradientCache *cacheForContext(const QGLContext *context);
 
-    QGL2GradientCache() { }
-    ~QGL2GradientCache() {cleanCache();}
+    QGL2GradientCache(const QGLContext *) {}
+    ~QGL2GradientCache() { cleanCache(); }
 
     GLuint getBuffer(const QGradient &gradient, qreal opacity);
     inline int paletteSize() const { return 1024; }
 
-protected:
+private:
     inline int maxCacheSize() const { return 60; }
     inline void generateGradientColorTable(const QGradient& gradient,
                                            uint *colorTable,
                                            int size, qreal opacity) const;
     GLuint addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity);
-
     void cleanCache();
 
     QGLGradientColorTableHash cache;
+    QMutex m_mutex;
 };
 
 QT_END_NAMESPACE
