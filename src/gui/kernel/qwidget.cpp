@@ -1662,6 +1662,7 @@ void QWidgetPrivate::createTLExtra()
 #endif
 #if defined(Q_WS_QPA)
         x->platformWindow = 0;
+        x->platformWindowFormat = QPlatformWindowFormat::defaultFormat();
 #endif
     }
 }
@@ -2455,6 +2456,7 @@ void QWidgetPrivate::createWinId(WId winid)
             q->create();
         }
 #else
+        Q_UNUSED(winid);
         q->create();
 #endif //Q_WS_QPA
 
@@ -11936,41 +11938,6 @@ QWindowSurface *QWidget::windowSurface() const
 
     return bs ? bs->windowSurface : 0;
 }
-
-#if defined(Q_WS_QPA)
-/*!
-    \preliminary
-
-    Sets the window to be the \a window specified.
-    The QWidget takes ownership of the \a surface.
-*/
-void QWidget::setPlatformWindow(QPlatformWindow *window)
-{
-    Q_D(QWidget);
-
-    QTLWExtra *topData = d->topData();
-    if (topData->platformWindow == window)
-        return;
-
-    delete topData->platformWindow;
-    topData->platformWindow = window;
-}
-
-/*!
-    \preliminary
-
-    Returns the QPlatformWindow this widget will be drawn into.
-*/
-QPlatformWindow *QWidget::platformWindow() const
-{
-    Q_D(const QWidget);
-    QTLWExtra *extra = d->maybeTopData();
-    if (extra && extra->platformWindow)
-        return extra->platformWindow;
-
-    return 0;
-}
-#endif //defined(Q_WS_QPA)
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const
 {

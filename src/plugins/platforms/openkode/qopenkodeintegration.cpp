@@ -110,10 +110,10 @@ QOpenKODEScreen::QOpenKODEScreen()
 
     KDint desktopSize[] = { mode.width, mode.height };
 
-//    if (kdSetDesktopPropertyivNV(kdDesktop, KD_DESKTOPPROPERTY_SIZE_NV, desktopSize)) {
-//        qErrnoWarning(kdGetError(), "Could not set desktop size");
-//        return;
-//    }
+    if (kdSetDesktopPropertyivNV(kdDesktop, KD_DESKTOPPROPERTY_SIZE_NV, desktopSize)) {
+        qErrnoWarning(kdGetError(), "Could not set desktop size");
+        return;
+    }
 
     // Once we've set up the desktop and display we don't need them anymore
     kdReleaseDisplayNV(kdDisplay);

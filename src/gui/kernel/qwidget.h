@@ -56,6 +56,10 @@
 #include <QtGui/qcursor.h>
 #include <QtGui/qkeysequence.h>
 
+#ifdef Q_WS_QPA //should this go somewhere else?
+#include <QtGui/qplatformwindowformat_qpa.h>
+#endif
+
 #ifdef QT_INCLUDE_COMPAT
 #include <QtGui/qevent.h>
 #endif
@@ -631,6 +635,10 @@ public:
 #if defined(Q_WS_QPA)
     void setPlatformWindow(QPlatformWindow *window);
     QPlatformWindow *platformWindow() const;
+
+    void setPlatformWindowFormat(const QPlatformWindowFormat &format);
+    QPlatformWindowFormat platformWindowFormat() const;
+
     friend class QDesktopScreenWidget;
 #endif
 

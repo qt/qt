@@ -229,6 +229,7 @@ struct QTLWExtra {
     uint inExpose : 1; // Prevents drawing recursion
 #elif defined(Q_WS_QPA)
     QPlatformWindow *platformWindow;
+    QPlatformWindowFormat platformWindowFormat;
 #endif
 };
 

@@ -1,0 +1,256 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+#ifndef QPLATFORMWINDOWFORMAT_QPA_H
+#define QPLATFORMWINDOWFORMAT_QPA_H
+
+#include <QPlatformWindow>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+class QPlatformWindowFormatPrivate;
+
+class Q_GUI_EXPORT QPlatformWindowFormat
+{
+public:
+    enum FormatOption {
+        DoubleBuffer            = 0x0001,
+        DepthBuffer             = 0x0002,
+        Rgba                    = 0x0004,
+        AlphaChannel            = 0x0008,
+        AccumBuffer             = 0x0010,
+        StencilBuffer           = 0x0020,
+        StereoBuffers           = 0x0040,
+        DirectRendering         = 0x0080,
+        HasOverlay              = 0x0100,
+        SampleBuffers           = 0x0200,
+        DeprecatedFunctions     = 0x0400,
+        SingleBuffer            = DoubleBuffer    << 16,
+        NoDepthBuffer           = DepthBuffer     << 16,
+        ColorIndex              = Rgba            << 16,
+        NoAlphaChannel          = AlphaChannel    << 16,
+        NoAccumBuffer           = AccumBuffer     << 16,
+        NoStencilBuffer         = StencilBuffer   << 16,
+        NoStereoBuffers         = StereoBuffers   << 16,
+        IndirectRendering       = DirectRendering << 16,
+        NoOverlay               = HasOverlay      << 16,
+        NoSampleBuffers         = SampleBuffers   << 16,
+        NoDeprecatedFunctions   = DeprecatedFunctions << 16
+    };
+    Q_DECLARE_FLAGS(FormatOptions, FormatOption)
+
+    enum OpenGLVersionFlag {
+        OpenGL_Version_None               = 0x00000000,
+        OpenGL_Version_1_1                = 0x00000001,
+        OpenGL_Version_1_2                = 0x00000002,
+        OpenGL_Version_1_3                = 0x00000004,
+        OpenGL_Version_1_4                = 0x00000008,
+        OpenGL_Version_1_5                = 0x00000010,
+        OpenGL_Version_2_0                = 0x00000020,
+        OpenGL_Version_2_1                = 0x00000040,
+        OpenGL_ES_Common_Version_1_0      = 0x00000080,
+        OpenGL_ES_CommonLite_Version_1_0  = 0x00000100,
+        OpenGL_ES_Common_Version_1_1      = 0x00000200,
+        OpenGL_ES_CommonLite_Version_1_1  = 0x00000400,
+        OpenGL_ES_Version_2_0             = 0x00000800,
+        OpenGL_Version_3_0                = 0x00001000,
+        OpenGL_Version_3_1                = 0x00002000,
+        OpenGL_Version_3_2                = 0x00004000,
+        OpenGL_Version_3_3                = 0x00008000,
+        OpenGL_Version_4_0                = 0x00010000
+    };
+    Q_DECLARE_FLAGS(OpenGLVersionFlags, OpenGLVersionFlag)
+
+    QPlatformWindowFormat();
+    QPlatformWindowFormat(FormatOptions options);
+    QPlatformWindowFormat(const QPlatformWindowFormat &other);
+    QPlatformWindowFormat &operator=(const QPlatformWindowFormat &other);
+    ~QPlatformWindowFormat();
+
+    void setDepthBufferSize(int size);
+    int  depthBufferSize() const;
+
+    void setAccumBufferSize(int size);
+    int  accumBufferSize() const;
+
+    void setRedBufferSize(int size);
+    int  redBufferSize() const;
+
+    void setGreenBufferSize(int size);
+    int  greenBufferSize() const;
+
+    void setBlueBufferSize(int size);
+    int  blueBufferSize() const;
+
+    void setAlphaBufferSize(int size);
+    int  alphaBufferSize() const;
+
+    void setStencilBufferSize(int size);
+    int  stencilBufferSize() const;
+
+    void setSampleBuffers(bool enable);
+    bool sampleBuffers() const;
+
+    void setSamples(int numSamples);
+    int  samples() const;
+
+    void setSwapInterval(int interval);
+    int  swapInterval() const;
+
+    bool doubleBuffer() const;
+    void setDoubleBuffer(bool enable);
+    bool depth() const;
+    void setDepth(bool enable);
+    bool rgba() const;
+    void setRgba(bool enable);
+    bool alpha() const;
+    void setAlpha(bool enable);
+    bool accum() const;
+    void setAccum(bool enable);
+    bool stencil() const;
+    void setStencil(bool enable);
+    bool stereo() const;
+    void setStereo(bool enable);
+    bool directRendering() const;
+    void setDirectRendering(bool enable);
+//    bool hasOverlay() const;
+//    void setOverlay(bool enable);
+
+    void setOption(QPlatformWindowFormat::FormatOptions opt);
+    bool testOption(QPlatformWindowFormat::FormatOptions opt) const;
+
+    static QPlatformWindowFormat defaultFormat();
+    static void setDefaultFormat(const QPlatformWindowFormat& f);
+
+//    static QPlatformWindowFormat defaultOverlayFormat();
+//    static void setDefaultOverlayFormat(const QPlatformWindowFormat& f);
+
+    static bool hasOpenGL();
+    static bool hasOpenGLOverlays();
+
+    void setVersion(int major, int minor);
+    int majorVersion() const;
+    int minorVersion() const;
+
+    enum OpenGLContextProfile {
+        NoProfile,
+        CoreProfile,
+        CompatibilityProfile
+    };
+
+    void setProfile(OpenGLContextProfile profile);
+    OpenGLContextProfile profile() const;
+
+
+    static OpenGLVersionFlags openGLVersionFlags();
+
+private:
+    QPlatformWindowFormatPrivate *d;
+
+    void detach();
+
+    friend Q_GUI_EXPORT bool operator==(const QPlatformWindowFormat&, const QPlatformWindowFormat&);
+    friend Q_GUI_EXPORT bool operator!=(const QPlatformWindowFormat&, const QPlatformWindowFormat&);
+};
+
+Q_GUI_EXPORT bool operator==(const QPlatformWindowFormat&, const QPlatformWindowFormat&);
+Q_GUI_EXPORT bool operator!=(const QPlatformWindowFormat&, const QPlatformWindowFormat&);
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformWindowFormat::FormatOptions)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformWindowFormat::OpenGLVersionFlags)
+
+inline bool QPlatformWindowFormat::doubleBuffer() const
+{
+    return testOption(QPlatformWindowFormat::DoubleBuffer);
+}
+
+inline bool QPlatformWindowFormat::depth() const
+{
+    return testOption(QPlatformWindowFormat::DepthBuffer);
+}
+
+inline bool QPlatformWindowFormat::rgba() const
+{
+    return testOption(QPlatformWindowFormat::Rgba);
+}
+
+inline bool QPlatformWindowFormat::alpha() const
+{
+    return testOption(QPlatformWindowFormat::AlphaChannel);
+}
+
+inline bool QPlatformWindowFormat::accum() const
+{
+    return testOption(QPlatformWindowFormat::AccumBuffer);
+}
+
+inline bool QPlatformWindowFormat::stencil() const
+{
+    return testOption(QPlatformWindowFormat::StencilBuffer);
+}
+
+inline bool QPlatformWindowFormat::stereo() const
+{
+    return testOption(QPlatformWindowFormat::StereoBuffers);
+}
+
+inline bool QPlatformWindowFormat::directRendering() const
+{
+    return testOption(QPlatformWindowFormat::DirectRendering);
+}
+
+//inline bool QPlatformWindowFormat::hasOverlay() const
+//{
+//    return testOption(QPlatformWindowFormat::HasOverlay);
+//}
+
+inline bool QPlatformWindowFormat::sampleBuffers() const
+{
+    return testOption(QPlatformWindowFormat::SampleBuffers);
+}
+
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif //QPLATFORMWINDOWFORMAT_QPA_H

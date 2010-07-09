@@ -691,6 +691,58 @@ int QWidget::metric(PaintDeviceMetric m) const
     return val;
 }
 
+/*!
+    \preliminary
+
+    Sets the window to be the \a window specified.
+    The QWidget takes ownership of the \a surface.
+*/
+void QWidget::setPlatformWindow(QPlatformWindow *window)
+{
+    Q_D(QWidget);
+
+    QTLWExtra *topData = d->topData();
+    if (topData->platformWindow == window)
+        return;
+
+    delete topData->platformWindow;
+    topData->platformWindow = window;
+}
+
+/*!
+    \preliminary
+
+    Returns the QPlatformWindow this widget will be drawn into.
+*/
+QPlatformWindow *QWidget::platformWindow() const
+{
+    Q_D(const QWidget);
+    QTLWExtra *extra = d->maybeTopData();
+    if (extra && extra->platformWindow)
+        return extra->platformWindow;
+
+    return 0;
+}
+
+void QWidget::setPlatformWindowFormat(const QPlatformWindowFormat &format)
+{
+    Q_D(QWidget);
+    QTLWExtra *topData = d->topData();
+    topData->platformWindowFormat = format;
+}
+
+QPlatformWindowFormat QWidget::platformWindowFormat() const
+{
+    Q_D(const QWidget);
+
+    QTLWExtra *extra = d->maybeTopData();
+    if (extra){
+        return extra->platformWindowFormat;
+    } else {
+        return QPlatformWindowFormat::defaultFormat();
+    }
+}
+
 void QWidgetPrivate::createSysExtra()
 {
 }

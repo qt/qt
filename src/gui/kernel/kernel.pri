@@ -214,9 +214,10 @@ qpa {
                 kernel/qplatformintegrationfactory_qpa_p.h \
                 kernel/qplatformintegrationplugin_qpa.h \
                 kernel/qplatformwindow_qpa.h \
+                kernel/qplatformwindowformat_qpa.h \
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qdesktopwidget_qpa_p.h
-		
+
 	SOURCES += \
 		kernel/qapplication_qpa.cpp \
 		kernel/qclipboard_qpa.cpp \
@@ -233,7 +234,8 @@ qpa {
                 kernel/qplatformscreen_qpa.cpp \
                 kernel/qplatformintegrationfactory_qpa.cpp \
                 kernel/qplatformintegrationplugin_qpa.cpp \
-                kernel/qplatformwindow_qpa.cpp
+                kernel/qplatformwindow_qpa.cpp \
+                kernel/qplatformwindowformat_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \
