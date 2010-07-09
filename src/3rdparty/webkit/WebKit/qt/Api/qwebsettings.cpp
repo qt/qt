@@ -187,6 +187,7 @@ void QWebSettingsPrivate::apply()
         value = attributes.value(QWebSettings::JavascriptCanAccessClipboard,
                                       global->attributes.value(QWebSettings::JavascriptCanAccessClipboard));
         settings->setDOMPasteAllowed(value);
+        settings->setJavaScriptCanAccessClipboard(value);
 
         value = attributes.value(QWebSettings::DeveloperExtrasEnabled,
                                       global->attributes.value(QWebSettings::DeveloperExtrasEnabled));
@@ -235,8 +236,8 @@ void QWebSettingsPrivate::apply()
                                       global->attributes.value(QWebSettings::LocalContentCanAccessFileUrls));
         settings->setAllowFileAccessFromFileURLs(value);
 
-        value = attributes.value(QWebSettings::XSSAuditorEnabled,
-                                      global->attributes.value(QWebSettings::XSSAuditorEnabled));
+        value = attributes.value(QWebSettings::XSSAuditingEnabled,
+                                      global->attributes.value(QWebSettings::XSSAuditingEnabled));
         settings->setXSSAuditorEnabled(value);
 
 #if ENABLE(TILED_BACKING_STORE)
