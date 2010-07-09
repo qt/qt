@@ -751,7 +751,7 @@ EXPORTS
 	?paint@QDeclarativeItem@@UAEXPAVQPainter@@PBVQStyleOptionGraphicsItem@@PAVQWidget@@@Z @ 750 NONAME ; void QDeclarativeItem::paint(class QPainter *, class QStyleOptionGraphicsItem const *, class QWidget *)
 	?send@QPacketProtocol@@QAE?AVQPacketAutoSend@@XZ @ 751 NONAME ; class QPacketAutoSend QPacketProtocol::send(void)
 	?countChanged@QDeclarativeListModel@@IAEXXZ @ 752 NONAME ; void QDeclarativeListModel::countChanged(void)
-	?setBindingForObject@QDeclarativeEngineDebug@@QAEPAVQDeclarativeDebugExpressionQuery@@HABVQString@@ABVQVariant@@_NPAVQObject@@@Z @ 753 NONAME ; class QDeclarativeDebugExpressionQuery * QDeclarativeEngineDebug::setBindingForObject(int, class QString const &, class QVariant const &, bool, class QObject *)
+	?setBindingForObject@QDeclarativeEngineDebug@@QAEPAVQDeclarativeDebugExpressionQuery@@HABVQString@@ABVQVariant@@_NPAVQObject@@@Z @ 753 NONAME ABSENT ; class QDeclarativeDebugExpressionQuery * QDeclarativeEngineDebug::setBindingForObject(int, class QString const &, class QVariant const &, bool, class QObject *)
 	??0QDeclarativeGridScaledImage@@QAE@PAVQIODevice@@@Z @ 754 NONAME ; QDeclarativeGridScaledImage::QDeclarativeGridScaledImage(class QIODevice *)
 	??_EQDeclarativeBinding@@UAE@I@Z @ 755 NONAME ; QDeclarativeBinding::~QDeclarativeBinding(unsigned int)
 	?baseMetaObject@QDeclarativeType@@QBEPBUQMetaObject@@XZ @ 756 NONAME ; struct QMetaObject const * QDeclarativeType::baseMetaObject(void) const
@@ -1668,4 +1668,11 @@ EXPORTS
 	??0QDeclarativePixmap@@QAE@PAVQDeclarativeEngine@@ABVQUrl@@ABVQSize@@@Z @ 1667 NONAME ; QDeclarativePixmap::QDeclarativePixmap(class QDeclarativeEngine *, class QUrl const &, class QSize const &)
 	?url@QDeclarativePixmap@@QBEABVQUrl@@XZ @ 1668 NONAME ; class QUrl const & QDeclarativePixmap::url(void) const
 	?load@QDeclarativePixmap@@QAEXPAVQDeclarativeEngine@@ABVQUrl@@ABVQSize@@_N@Z @ 1669 NONAME ; void QDeclarativePixmap::load(class QDeclarativeEngine *, class QUrl const &, class QSize const &, bool)
+	?imageType@QDeclarativeImageProvider@@QBE?AW4ImageType@1@XZ @ 1670 NONAME ; enum QDeclarativeImageProvider::ImageType QDeclarativeImageProvider::imageType(void) const
+	?qtAnimationStateChanged@QDeclarativeBehavior@@AAEXW4State@QAbstractAnimation@@0@Z @ 1671 NONAME ; void QDeclarativeBehavior::qtAnimationStateChanged(enum QAbstractAnimation::State, enum QAbstractAnimation::State)
+	?requestImage@QDeclarativeImageProvider@@UAE?AVQImage@@ABVQString@@PAVQSize@@ABV4@@Z @ 1672 NONAME ; class QImage QDeclarativeImageProvider::requestImage(class QString const &, class QSize *, class QSize const &)
+	?requestPixmap@QDeclarativeImageProvider@@UAE?AVQPixmap@@ABVQString@@PAVQSize@@ABV4@@Z @ 1673 NONAME ; class QPixmap QDeclarativeImageProvider::requestPixmap(class QString const &, class QSize *, class QSize const &)
+	?setBindingForObject@QDeclarativeEngineDebug@@QAE_NHABVQString@@ABVQVariant@@_N@Z @ 1674 NONAME ; bool QDeclarativeEngineDebug::setBindingForObject(int, class QString const &, class QVariant const &, bool)
+	??0QDeclarativeImageProvider@@QAE@W4ImageType@0@@Z @ 1675 NONAME ; QDeclarativeImageProvider::QDeclarativeImageProvider(enum QDeclarativeImageProvider::ImageType)
+	?setMethodBody@QDeclarativeEngineDebug@@QAE_NHABVQString@@0@Z @ 1676 NONAME ; bool QDeclarativeEngineDebug::setMethodBody(int, class QString const &, class QString const &)
 

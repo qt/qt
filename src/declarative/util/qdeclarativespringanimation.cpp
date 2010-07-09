@@ -183,11 +183,13 @@ void QDeclarativeSpringAnimationPrivate::tick(int time)
         lastTime = time;
     }
 
+    qreal old_to = to;
+
     QDeclarativePropertyPrivate::write(defaultProperty, currentValue,
                                        QDeclarativePropertyPrivate::BypassInterceptor |
                                        QDeclarativePropertyPrivate::DontRemoveBinding);
 
-    if (stop)
+    if (stop && old_to == to) // do not stop if we got restarted
         clock.stop();
 }
 
@@ -204,6 +206,15 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
     \since 4.7
+
+    \brief The SpringAnimation element allows a property to track a value in a spring-like motion
+
+    SpringAnimation mimics the oscillatory behavior of a spring, with the appropriate \l spring constant to
+    control the acceleration and the \l damping to control how quickly the effect dies away.
+
+    You can also limit the maximum \l velocity of the animation.
+
+
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
@@ -232,7 +243,7 @@ qreal QDeclarativeSpringAnimation::to() const
 }
 
 /*!
-    \qmlproperty real SpringFollow::to
+    \qmlproperty real SpringAnimation::to
 */
 
 void QDeclarativeSpringAnimation::setTo(qreal value)
@@ -254,7 +265,7 @@ qreal QDeclarativeSpringAnimation::from() const
 }
 
 /*!
-    \qmlproperty real SpringFollow::from
+    \qmlproperty real SpringAnimation::from
 */
 
 void QDeclarativeSpringAnimation::setFrom(qreal value)

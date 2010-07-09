@@ -429,6 +429,8 @@ void tst_qdeclarativetextinput::horizontalAlignment()
     QImage expect(expectfile);
 
     QCOMPARE(actual,expect);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::positionAt()
@@ -473,11 +475,13 @@ void tst_qdeclarativetextinput::positionAt()
 
 void tst_qdeclarativetextinput::maxLength()
 {
-    //QString componentStr = "import Qt 4.7\nTextInput {  maximumLength: 10; }";
     QDeclarativeView *canvas = createView(SRCDIR "/data/maxLength.qml");
+    QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->rootObject() != 0);
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
     QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());

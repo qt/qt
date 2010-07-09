@@ -66,6 +66,8 @@ void MMF::AbstractVideoPlayer::construct()
 
     createPlayer();
 
+    m_player->RegisterForVideoLoadingNotification(*this);
+
     TRACE_EXIT_0();
 }
 
@@ -211,7 +213,8 @@ void MMF::AbstractVideoPlayer::aspectRatioChanged()
     TRACE_CONTEXT(AbstractVideoPlayer::aspectRatioChanged, EVideoInternal);
     TRACE_ENTRY("state %d aspectRatio %d", state());
 
-    updateScaleFactors(m_videoOutput->videoWindowSize());
+    if (m_videoOutput)
+        updateScaleFactors(m_videoOutput->videoWindowSize());
 
     TRACE_EXIT_0();
 }
@@ -221,7 +224,8 @@ void MMF::AbstractVideoPlayer::scaleModeChanged()
     TRACE_CONTEXT(AbstractVideoPlayer::scaleModeChanged, EVideoInternal);
     TRACE_ENTRY("state %d", state());
 
-    updateScaleFactors(m_videoOutput->videoWindowSize());
+    if (m_videoOutput)
+        updateScaleFactors(m_videoOutput->videoWindowSize());
 
     TRACE_EXIT_0();
 }
@@ -357,6 +361,8 @@ void MMF::AbstractVideoPlayer::videoOutputChanged()
 
 void MMF::AbstractVideoPlayer::initVideoOutput()
 {
+    Q_ASSERT(m_videoOutput);
+
     bool connected = connect(
         m_videoOutput, SIGNAL(videoWindowChanged()),
         this, SLOT(videoWindowChanged())
@@ -378,9 +384,6 @@ void MMF::AbstractVideoPlayer::initVideoOutput()
     // Suppress warnings in release builds
     Q_UNUSED(connected);
 
-    // Do these after all connections are complete, to ensure
-    // that any signals generated get to their destinations.
-    m_videoOutput->winId();
     m_videoOutput->setVideoSize(m_videoFrameSize);
 }
 
@@ -400,6 +403,8 @@ QSize scaleToAspect(const QSize &srcRect, int aspectWidth, int aspectHeight)
 
 void MMF::AbstractVideoPlayer::updateScaleFactors(const QSize &windowSize, bool apply)
 {
+    Q_ASSERT(m_videoOutput);
+
     if (m_videoFrameSize.isValid()) {
         QRect videoRect;
 

@@ -21,7 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QScopedPointer>
 
-#include <AudioEffectBase.h>
+#include <audioeffectbase.h>
 
 #include <phonon/effectinterface.h>
 

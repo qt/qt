@@ -142,8 +142,8 @@ bool QDeclarativeAbstractAnimation::isRunning() const
     return d->running;
 }
 
-// the behavior connects the animation to this slot
-void QDeclarativeAbstractAnimation::behaviorControlRunningChanged(bool running) 
+// the behavior calls this function
+void QDeclarativeAbstractAnimation::notifyRunningChanged(bool running)
 {
     Q_D(QDeclarativeAbstractAnimation);
     if (d->disableUserControl && d->running != running) {

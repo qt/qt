@@ -691,7 +691,7 @@ EXPORTS
 	_ZN23QDeclarativeEngineDebug16staticMetaObjectE @ 690 NONAME DATA 16
 	_ZN23QDeclarativeEngineDebug17queryRootContextsERK32QDeclarativeDebugEngineReferenceP7QObject @ 691 NONAME
 	_ZN23QDeclarativeEngineDebug19getStaticMetaObjectEv @ 692 NONAME
-	_ZN23QDeclarativeEngineDebug19setBindingForObjectEiRK7QStringRK8QVariantbP7QObject @ 693 NONAME
+	_ZN23QDeclarativeEngineDebug19setBindingForObjectEiRK7QStringRK8QVariantbP7QObject @ 693 NONAME ABSENT
 	_ZN23QDeclarativeEngineDebug20queryObjectRecursiveERK32QDeclarativeDebugObjectReferenceP7QObject @ 694 NONAME
 	_ZN23QDeclarativeEngineDebug21queryAvailableEnginesEP7QObject @ 695 NONAME
 	_ZN23QDeclarativeEngineDebug21queryExpressionResultEiRK7QStringP7QObject @ 696 NONAME
@@ -1698,4 +1698,12 @@ EXPORTS
 	_ZNK18QDeclarativePixmap7isErrorEv @ 1697 NONAME
 	_ZNK18QDeclarativePixmap7isReadyEv @ 1698 NONAME
 	_ZNK18QDeclarativePixmap9isLoadingEv @ 1699 NONAME
+	_ZN20QDeclarativeBehavior23qtAnimationStateChangedEN18QAbstractAnimation5StateES1_ @ 1700 NONAME
+	_ZN23QDeclarativeEngineDebug13setMethodBodyEiRK7QStringS2_ @ 1701 NONAME
+	_ZN23QDeclarativeEngineDebug19setBindingForObjectEiRK7QStringRK8QVariantb @ 1702 NONAME
+	_ZN25QDeclarativeImageProvider12requestImageERK7QStringP5QSizeRKS3_ @ 1703 NONAME
+	_ZN25QDeclarativeImageProvider13requestPixmapERK7QStringP5QSizeRKS3_ @ 1704 NONAME
+	_ZN25QDeclarativeImageProviderC1ENS_9ImageTypeE @ 1705 NONAME
+	_ZN25QDeclarativeImageProviderC2ENS_9ImageTypeE @ 1706 NONAME
+	_ZNK25QDeclarativeImageProvider9imageTypeEv @ 1707 NONAME
 

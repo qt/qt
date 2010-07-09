@@ -205,6 +205,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
 
     undoEnabled = true;
     inContentsChange = false;
+    blockCursorAdjustment = false;
 
     defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
@@ -669,7 +670,14 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
 {
     if (length == 0)
         return;
+    blockCursorAdjustment = true;
     move(pos, -1, length, op);
+    blockCursorAdjustment = false;
+    foreach (QTextCursorPrivate *curs, cursors) {
+        if (curs->adjustPosition(pos, -length, op) == QTextCursorPrivate::CursorMoved) {
+            curs->changed = true;
+        }
+    }
 }
 
 void QTextDocumentPrivate::setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode)
@@ -1221,12 +1229,15 @@ void QTextDocumentPrivate::finishEdit()
         }
     }
 
+    QList<QTextCursor> changedCursors;
     foreach (QTextCursorPrivate *curs, cursors) {
         if (curs->changed) {
             curs->changed = false;
-            emit q->cursorPositionChanged(QTextCursor(curs));
+            changedCursors.append(QTextCursor(curs));
         }
     }
+    foreach (const QTextCursor &cursor, changedCursors)
+        emit q->cursorPositionChanged(cursor);
 
     contentsChanged();
 
@@ -1268,9 +1279,13 @@ void QTextDocumentPrivate::adjustDocumentChangesAndCursors(int from, int addedOr
     if (!editBlock)
         ++revision;
 
-    foreach (QTextCursorPrivate *curs, cursors) {
-        if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
-            curs->changed = true;
+    if (blockCursorAdjustment)  {
+        ; // postpone, will be called again from QTextDocumentPrivate::remove()
+    } else {
+        foreach (QTextCursorPrivate *curs, cursors) {
+            if (curs->adjustPosition(from, addedOrRemoved, op) == QTextCursorPrivate::CursorMoved) {
+                curs->changed = true;
+            }
         }
     }
 
