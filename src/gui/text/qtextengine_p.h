@@ -558,6 +558,23 @@ public:
 
     mutable QScriptLineArray lines;
 
+    struct FontEngineCache {
+        FontEngineCache();
+        mutable QFontEngine *prevFontEngine;
+        mutable QFontEngine *prevScaledFontEngine;
+        mutable int prevScript;
+        mutable int prevPosition;
+        mutable int prevLength;
+        inline void reset() {
+            prevFontEngine = 0;
+            prevScaledFontEngine = 0;
+            prevScript = -1;
+            prevPosition = -1;
+            prevLength = -1;
+        }
+    };
+    mutable FontEngineCache feCache;
+
     QString text;
     QFont fnt;
     QTextBlock block;

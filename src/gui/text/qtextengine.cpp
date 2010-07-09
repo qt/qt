@@ -1392,6 +1392,7 @@ void QTextEngine::invalidate()
     maxWidth = 0;
     if (specialData)
         specialData->resolvedFormatIndices.clear();
+    feCache.reset();
 }
 
 void QTextEngine::clearLineData()
@@ -1783,6 +1784,13 @@ QFont QTextEngine::font(const QScriptItem &si) const
     return font;
 }
 
+QTextEngine::FontEngineCache::FontEngineCache()
+{
+    reset();
+}
+
+//we cache the previous results of this function, as calling it numerous times with the same effective
+//input is common (and hard to cache at a higher level)
 QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFixed *descent, QFixed *leading) const
 {
     QFontEngine *engine = 0;
@@ -1791,28 +1799,47 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
 
     QFont font = fnt;
     if (hasFormats()) {
-        QTextCharFormat f = format(&si);
-        font = f.font();
-
-        if (block.docHandle() && block.docHandle()->layout()) {
-            // Make sure we get the right dpi on printers
-            QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
-            if (pdev)
-                font = QFont(font, pdev);
+        if (feCache.prevFontEngine && feCache.prevPosition == si.position && feCache.prevLength == length(&si) && feCache.prevScript == script) {
+            engine = feCache.prevFontEngine;
+            scaledEngine = feCache.prevScaledFontEngine;
         } else {
-            font = font.resolve(fnt);
-        }
-        engine = font.d->engineForScript(script);
-        QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
-        if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
-            if (font.pointSize() != -1)
-                font.setPointSize((font.pointSize() * 2) / 3);
-            else
-                font.setPixelSize((font.pixelSize() * 2) / 3);
-            scaledEngine = font.d->engineForScript(script);
+            QTextCharFormat f = format(&si);
+            font = f.font();
+
+            if (block.docHandle() && block.docHandle()->layout()) {
+                // Make sure we get the right dpi on printers
+                QPaintDevice *pdev = block.docHandle()->layout()->paintDevice();
+                if (pdev)
+                    font = QFont(font, pdev);
+            } else {
+                font = font.resolve(fnt);
+            }
+            engine = font.d->engineForScript(script);
+            QTextCharFormat::VerticalAlignment valign = f.verticalAlignment();
+            if (valign == QTextCharFormat::AlignSuperScript || valign == QTextCharFormat::AlignSubScript) {
+                if (font.pointSize() != -1)
+                    font.setPointSize((font.pointSize() * 2) / 3);
+                else
+                    font.setPixelSize((font.pixelSize() * 2) / 3);
+                scaledEngine = font.d->engineForScript(script);
+            }
+            feCache.prevFontEngine = engine;
+            feCache.prevScaledFontEngine = scaledEngine;
+            feCache.prevScript = script;
+            feCache.prevPosition = si.position;
+            feCache.prevLength = length(&si);
         }
     } else {
-        engine = font.d->engineForScript(script);
+        if (feCache.prevFontEngine && feCache.prevScript == script && feCache.prevPosition == -1)
+            engine = feCache.prevFontEngine;
+        else {
+            engine = font.d->engineForScript(script);
+            feCache.prevFontEngine = engine;
+            feCache.prevScript = script;
+            feCache.prevPosition = -1;
+            feCache.prevLength = -1;
+            feCache.prevScaledFontEngine = 0;
+        }
     }
 
     if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
