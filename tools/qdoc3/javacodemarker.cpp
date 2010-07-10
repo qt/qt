@@ -155,8 +155,10 @@ QList<Section> JavaCodeMarker::sections(const InnerNode * /* inner */, SynopsisS
     return QList<Section>();
 }
 
-const Node *JavaCodeMarker::resolveTarget(const QString &target, const Tree *tree,
-					  const Node *relative)
+const Node *JavaCodeMarker::resolveTarget(const QString &target,
+                                          const Tree *tree,
+					  const Node *relative,
+                                          const Node* /* self */)
 {
     if (target.endsWith("()")) {
         const FunctionNode *func;

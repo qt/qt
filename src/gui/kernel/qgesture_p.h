@@ -177,6 +177,7 @@ public:
 
     QPointF position;
     int timerId;
+    static int Timeout;
 };
 
 QT_END_NAMESPACE

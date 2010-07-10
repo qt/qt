@@ -589,7 +589,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     with a combined value of all key roles that is not already present in
     the model.
 
-    \sa {declarative/rssnews}{RSS News demo}
+    \sa {RSS News}
 */
 
 QDeclarativeXmlListModel::QDeclarativeXmlListModel(QObject *parent)

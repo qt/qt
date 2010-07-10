@@ -375,11 +375,4 @@ QList<Section> QsCodeMarker::sections( const InnerNode *inner, SynopsisStyle sty
     return sections;
 }
 
-const Node *QsCodeMarker::resolveTarget( const QString& /* target */,
-                                         const Tree * /* tree */,
-					 const Node * /* relative */ )
-{
-    return 0;
-}
-
 QT_END_NAMESPACE

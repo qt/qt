@@ -65,6 +65,7 @@ public slots:
 private slots:
     void simple_app();
     void simple_app_shadowbuild();
+    void simple_app_shadowbuild2();
     void simple_lib();
     void simple_dll();
     void subdirs();
@@ -152,6 +153,21 @@ void tst_qmake::simple_app_shadowbuild()
 {
     QString workDir = base_path + "/testdata/simple_app";
     QString buildDir = base_path + "/testdata/simple_app_build";
+
+    QVERIFY( test_compiler.qmake( workDir, "simple_app", buildDir ));
+    QVERIFY( test_compiler.make( buildDir ));
+    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.makeClean( buildDir ));
+    QVERIFY( test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should still exist after a make clean
+    QVERIFY( test_compiler.makeDistClean( buildDir ));
+    QVERIFY( !test_compiler.exists( buildDir, "simple_app", Exe, "1.0.0" )); // Should not exist after a make distclean
+    QVERIFY( test_compiler.removeMakefile( buildDir ) );
+}
+
+void tst_qmake::simple_app_shadowbuild2()
+{
+    QString workDir = base_path + "/testdata/simple_app";
+    QString buildDir = base_path + "/testdata/simple_app/build";
 
     QVERIFY( test_compiler.qmake( workDir, "simple_app", buildDir ));
     QVERIFY( test_compiler.make( buildDir ));

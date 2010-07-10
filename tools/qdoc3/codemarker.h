@@ -155,10 +155,11 @@ class CodeMarker
     virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
                                        SynopsisStyle style);
 #endif
-    virtual const Node *resolveTarget(const QString& target, 
-                                      const Tree *tree,
-		                      const Node *relative) = 0;
-    virtual QStringList macRefsForNode(const Node *node);
+    virtual const Node* resolveTarget(const QString& target, 
+                                      const Tree* tree,
+		                      const Node* relative,
+                                      const Node* self = 0);
+    virtual QStringList macRefsForNode(const Node* node);
 
     static void initialize(const Config& config);
     static void terminate();

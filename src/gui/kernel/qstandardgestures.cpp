@@ -517,7 +517,6 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
     const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
 
-    enum { TimerInterval = 2000 };
     enum { TapRadius = 40 };
 
     switch (event->type()) {
@@ -526,21 +525,21 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
-        d->timerId = q->startTimer(TimerInterval);
+        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     case QEvent::MouseButtonPress:
         d->position = me->globalPos();
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
-        d->timerId = q->startTimer(TimerInterval);
+        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     case QEvent::TouchBegin:
         d->position = ev->touchPoints().at(0).startScreenPos();
         q->setHotSpot(d->position);
         if (d->timerId)
             q->killTimer(d->timerId);
-        d->timerId = q->startTimer(TimerInterval);
+        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::MouseButtonRelease:
