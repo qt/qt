@@ -72,7 +72,6 @@ public:
     QList<Section> sections(const InnerNode *innerNode, SynopsisStyle style, Status status);
     QString functionBeginRegExp( const QString& funcName );
     QString functionEndRegExp( const QString& funcName );
-    const Node *resolveTarget( const QString& target, const Tree *tree, const Node *relative );
 };
 
 QT_END_NAMESPACE

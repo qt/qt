@@ -41,6 +41,7 @@
 
 #include "qgesture.h"
 #include "private/qgesture_p.h"
+#include "private/qstandardgestures_p.h"
 
 #ifndef QT_NO_GESTURES
 
@@ -725,6 +726,34 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
 {
     d_func()->position = value;
 }
+
+/*!
+    Set the timeout, in milliseconds, before the gesture triggers.
+
+    The recognizer will detect a touch down and and if \a msecs
+    later the touch is still down, it will trigger the QTapAndHoldGesture.
+    The default value is 700 milliseconds.
+*/
+// static
+void QTapAndHoldGesture::setTimeout(int msecs)
+{
+    QTapAndHoldGesturePrivate::Timeout = msecs;
+}
+
+/*!
+    Gets the timeout, in milliseconds, before the gesture triggers.
+
+    The recognizer will detect a touch down and and if timeout()
+    later the touch is still down, it will trigger the QTapAndHoldGesture.
+    The default value is 700 milliseconds.
+*/
+// static
+int QTapAndHoldGesture::timeout()
+{
+    return QTapAndHoldGesturePrivate::Timeout;
+}
+
+int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
 
 QT_END_NAMESPACE
 

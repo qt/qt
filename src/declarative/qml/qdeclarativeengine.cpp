@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
+  \qmlproperty string QML:QtObject::objectName
   This property allows you to give a name to this specific object instance.
 
   See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
@@ -236,8 +236,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
@@ -1077,7 +1077,7 @@ If you are certain the files will be local, you could simplify to:
 \snippet doc/src/snippets/declarative/componentCreation.js 2
 
 To create a QML object from an arbitrary string of QML (instead of a file),
-use \l{Qt::createQmlObject()}{Qt.createQmlObject()}.
+use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1124,7 +1124,7 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
-If this is the case, consider using \l{Qt::createComponent()}{Qt.createComponent()} instead.
+If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
