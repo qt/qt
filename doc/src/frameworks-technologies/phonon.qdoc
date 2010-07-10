@@ -34,6 +34,7 @@
 
     \tableofcontents
 
+    \target Phonon Overview
     \section1 Introduction
 
     Qt uses the Phonon multimedia framework to provide functionality
