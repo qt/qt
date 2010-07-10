@@ -64,7 +64,8 @@ enum {
 
 QTextCursorPrivate::QTextCursorPrivate(QTextDocumentPrivate *p)
     : priv(p), x(0), position(0), anchor(0), adjusted_anchor(0),
-      currentCharFormat(-1), visualNavigation(false), keepPositionOnInsert(false)
+      currentCharFormat(-1), visualNavigation(false), keepPositionOnInsert(false),
+      changed(false)
 {
     priv->addCursor(this);
 }
@@ -80,6 +81,7 @@ QTextCursorPrivate::QTextCursorPrivate(const QTextCursorPrivate &rhs)
     currentCharFormat = rhs.currentCharFormat;
     visualNavigation = rhs.visualNavigation;
     keepPositionOnInsert = rhs.keepPositionOnInsert;
+    changed = rhs.changed;
     priv->addCursor(this);
 }
 

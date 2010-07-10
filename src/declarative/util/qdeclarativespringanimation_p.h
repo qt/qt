@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVESMOOTHFOLLOW_H
-#define QDECLARATIVESMOOTHFOLLOW_H
+#ifndef QDECLARATIVESPRINGANIMATION_H
+#define QDECLARATIVESPRINGANIMATION_H
 
-#include <qdeclarativepropertyvaluesource.h>
 #include <qdeclarative.h>
+#include "private/qdeclarativeanimation_p.h"
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -51,33 +53,33 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeSpringFollowPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeSpringFollow : public QObject,
-                                       public QDeclarativePropertyValueSource
+class QDeclarativeSpringAnimationPrivate;
+class Q_AUTOTEST_EXPORT QDeclarativeSpringAnimation : public QDeclarativeAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeSpringFollow)
+    Q_DECLARE_PRIVATE(QDeclarativeSpringAnimation)
     Q_INTERFACES(QDeclarativePropertyValueSource)
 
-    Q_PROPERTY(qreal to READ to WRITE setTo)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
     Q_PROPERTY(qreal spring READ spring WRITE setSpring)
     Q_PROPERTY(qreal damping READ damping WRITE setDamping)
     Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
     Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
 
 public:
-    QDeclarativeSpringFollow(QObject *parent=0);
-    ~QDeclarativeSpringFollow();
+    QDeclarativeSpringAnimation(QObject *parent=0);
+    ~QDeclarativeSpringAnimation();
 
     virtual void setTarget(const QDeclarativeProperty &);
 
     qreal to() const;
     void setTo(qreal value);
+
+    qreal from() const;
+    void setFrom(qreal value);
 
     qreal velocity() const;
     void setVelocity(qreal velocity);
@@ -100,12 +102,16 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
-    bool inSync() const;
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
 
-    qreal value() const;
+protected:
+    virtual QAbstractAnimation *qtAnimation();
 
 Q_SIGNALS:
-    void valueChanged(qreal);
+    void toChanged(qreal);
+    void fromChanged(qreal);
     void modulusChanged();
     void massChanged();
     void syncChanged();
@@ -113,8 +119,8 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeSpringFollow)
+QML_DECLARE_TYPE(QDeclarativeSpringAnimation)
 
 QT_END_HEADER
 
-#endif // QDECLARATIVESMOOTHFOLLOW_H
+#endif // QDECLARATIVESPRINGANIMATION_H

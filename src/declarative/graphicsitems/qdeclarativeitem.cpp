@@ -1601,7 +1601,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
     Returns true if construction of the QML component is complete; otherwise
     returns false.
 
-    It is often desireable to delay some processing until the component is
+    It is often desirable to delay some processing until the component is
     completed.
 
     \sa componentComplete()
@@ -2145,7 +2145,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \property QDeclarativeItem::baselineOffset
   \brief The position of the item's baseline in local coordinates.
 
-  The baseline of a Text item is the imaginary line on which the text
+  The baseline of a \l Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 
@@ -2601,7 +2601,7 @@ void QDeclarativeItem::classBegin()
   \internal
 
   componentComplete() is called when all items in the component
-  have been constructed.  It is often desireable to delay some
+  have been constructed.  It is often desirable to delay some
   processing until the component is complete an all bindings in the
   component have been resolved.
 */

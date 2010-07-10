@@ -42,7 +42,6 @@
 #include <qdeclarativeextensionplugin.h>
 
 #include <qdeclarativeengine.h>
-#include <qdeclarativecontext.h>
 #include <qdeclarative.h>
 #include <qdeclarativeitem.h>
 #include <qdeclarativeimageprovider.h>
@@ -50,62 +49,57 @@
 #include <QImage>
 #include <QPainter>
 
-/*
-   This example illustrates using a QDeclarativeImageProvider to serve
-   images asynchronously.
-*/
-
 //![0]
 class ColorImageProvider : public QDeclarativeImageProvider
 {
 public:
-    // This is run in a low priority thread.
-    QImage request(const QString &id, QSize *size, const QSize &req_size)
+    ColorImageProvider()
+        : QDeclarativeImageProvider(Pixmap)
     {
-        if (size) *size = QSize(100,50);
-        QImage image(
-                req_size.width() > 0 ? req_size.width() : 100,
-                req_size.height() > 0 ? req_size.height() : 50,
-                QImage::Format_RGB32);
-        image.fill(QColor(id).rgba());
-        QPainter p(&image);
-        QFont f = p.font();
-        f.setPixelSize(30);
-        p.setFont(f);
-        p.setPen(Qt::black);
-        if (req_size.isValid())
-            p.scale(req_size.width()/100.0, req_size.height()/50.0);
-        p.drawText(QRectF(0,0,100,50),Qt::AlignCenter,id);
-        return image;
+    }
+
+    QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+    {
+        int width = 100;
+        int height = 50;
+
+        if (size)
+            *size = QSize(width, height);
+        QPixmap pixmap(requestedSize.width() > 0 ? requestedSize.width() : width,
+                       requestedSize.height() > 0 ? requestedSize.height() : height); 
+        pixmap.fill(QColor(id).rgba());
+//![0]
+
+        // write the color name
+        QPainter painter(&pixmap);
+        QFont f = painter.font();
+        f.setPixelSize(20);
+        painter.setFont(f);
+        painter.setPen(Qt::black);
+        if (requestedSize.isValid())
+            painter.scale(requestedSize.width() / width, requestedSize.height() / height);
+        painter.drawText(QRectF(0, 0, width, height), Qt::AlignCenter, id);
+
+//![1]
+        return pixmap;
     }
 };
+//![1]
 
 
 class ImageProviderExtensionPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    void registerTypes(const char *uri) {
+    void registerTypes(const char *uri)
+    {
         Q_UNUSED(uri);
-
     }
 
-    void initializeEngine(QDeclarativeEngine *engine, const char *uri) {
+    void initializeEngine(QDeclarativeEngine *engine, const char *uri)
+    {
         Q_UNUSED(uri);
-
         engine->addImageProvider("colors", new ColorImageProvider);
-
-        QStringList dataList;
-        dataList.append("image://colors/red");
-        dataList.append("image://colors/green");
-        dataList.append("image://colors/blue");
-        dataList.append("image://colors/brown");
-        dataList.append("image://colors/orange");
-        dataList.append("image://colors/purple");
-        dataList.append("image://colors/yellow");
-
-        QDeclarativeContext *ctxt = engine->rootContext();
-        ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
     }
 
 };
@@ -113,5 +107,4 @@ public:
 #include "imageprovider.moc"
 
 Q_EXPORT_PLUGIN(ImageProviderExtensionPlugin);
-//![0]
 

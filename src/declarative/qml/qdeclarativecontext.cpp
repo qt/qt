@@ -145,6 +145,8 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     has been created in that context is an expensive operation (essentially forcing all bindings
     to reevaluate). Thus whenever possible you should complete "setup" of the context
     before using it to create any objects.
+
+    \sa {Using QML in C++ Applications}
 */
 
 /*! \internal */

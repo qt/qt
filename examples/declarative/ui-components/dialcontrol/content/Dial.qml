@@ -50,11 +50,11 @@ Item {
 
 //! [needle_shadow]
     Image {
-        x: 93
+        x: 96
         y: 35
         source: "needle_shadow.png"
         transform: Rotation {
-            origin.x: 11; origin.y: 67
+            origin.x: 9; origin.y: 67
             angle: needleRotation.angle
         }
     }
@@ -62,17 +62,18 @@ Item {
 //! [needle]
     Image {
         id: needle
-        x: 95; y: 33
+        x: 98; y: 33
         smooth: true
         source: "needle.png"
         transform: Rotation {
             id: needleRotation
-            origin.x: 7; origin.y: 65
-            angle: -130
-            SpringFollow on angle {
-                spring: 1.4
-                damping: .15
-                to: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+            origin.x: 5; origin.y: 65
+            angle: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
+            Behavior on angle {
+                SpringAnimation {
+                    spring: 1.4
+                    damping: .15
+                }
             }
         }
     }

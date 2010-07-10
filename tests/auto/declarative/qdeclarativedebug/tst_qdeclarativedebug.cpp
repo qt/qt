@@ -71,7 +71,7 @@ class tst_QDeclarativeDebug : public QObject
     Q_OBJECT
 
 private:
-    QDeclarativeDebugObjectReference findRootObject();
+    QDeclarativeDebugObjectReference findRootObject(int context = 0);
     QDeclarativeDebugPropertyReference findProperty(const QList<QDeclarativeDebugPropertyReference> &props, const QString &name) const;
     void waitForQuery(QDeclarativeDebugQuery *query);
 
@@ -111,9 +111,11 @@ private slots:
     void tst_QDeclarativeDebugObjectReference();
     void tst_QDeclarativeDebugContextReference();
     void tst_QDeclarativeDebugPropertyReference();
+
+    void setMethodBody();
 };
 
-QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject()
+QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context)
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
@@ -125,7 +127,7 @@ QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject()
 
     if (q_context->rootContext().objects().count() == 0)
         return QDeclarativeDebugObjectReference();
-    QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[0], this);
+    QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[context], this);
     waitForQuery(q_obj);
 
     QDeclarativeDebugObjectReference result = q_obj->object();
@@ -290,9 +292,18 @@ void tst_QDeclarativeDebug::initTestCase()
                     "onEntered: { console.log('hello') }"
                 "}"
             "}";
+
     // add second component to test multiple root contexts
     qml << "import Qt 4.7\n"
             "Item {}";
+
+    // and a third to test methods
+    qml << "import Qt 4.7\n"
+            "Item {"
+                "function myMethodNoArgs() { return 3; }\n"
+                "function myMethod(a) { return a + 9; }\n"
+                "function myMethodIndirect() { myMethod(3); }\n"
+            "}";
 
     for (int i=0; i<qml.count(); i++) {
         QDeclarativeComponent component(m_engine);
@@ -320,6 +331,43 @@ void tst_QDeclarativeDebug::initTestCase()
 void tst_QDeclarativeDebug::cleanupTestCase()
 {
     qDeleteAll(m_components);
+}
+
+void tst_QDeclarativeDebug::setMethodBody()
+{
+    QDeclarativeDebugObjectReference obj = findRootObject(2);
+
+    QObject *root = m_components.at(2);
+    // Without args
+    {
+    QVariant rv;
+    QVERIFY(QMetaObject::invokeMethod(root, "myMethodNoArgs", Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, rv)));
+    QVERIFY(rv == QVariant(qreal(3)));
+
+
+    QVERIFY(m_dbg->setMethodBody(obj.debugId(), "myMethodNoArgs", "return 7"));
+    QTest::qWait(100);
+
+    QVERIFY(QMetaObject::invokeMethod(root, "myMethodNoArgs", Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, rv)));
+    QVERIFY(rv == QVariant(qreal(7)));
+    }
+
+    // With args
+    {
+    QVariant rv;
+    QVERIFY(QMetaObject::invokeMethod(root, "myMethod", Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, rv), Q_ARG(QVariant, QVariant(19))));
+    QVERIFY(rv == QVariant(qreal(28)));
+
+    QVERIFY(m_dbg->setMethodBody(obj.debugId(), "myMethod", "return a + 7"));
+    QTest::qWait(100);
+
+    QVERIFY(QMetaObject::invokeMethod(root, "myMethod", Qt::DirectConnection,
+                                      Q_RETURN_ARG(QVariant, rv), Q_ARG(QVariant, QVariant(19))));
+    QVERIFY(rv == QVariant(qreal(26)));
+    }
 }
 
 void tst_QDeclarativeDebug::watch_property()
@@ -581,7 +629,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QCOMPARE(context.debugId(), QDeclarativeDebugService::idForObject(actualContext));
     QCOMPARE(context.name(), actualContext->objectName());
 
-    QCOMPARE(context.objects().count(), 2); // 2 qml component objects created for context in main()
+    QCOMPARE(context.objects().count(), 3); // 3 qml component objects created for context in main()
 
     // root context query sends only root object data - it doesn't fill in
     // the children or property info

@@ -1022,6 +1022,8 @@ QVariant NestedListModel::data(int index, int role) const
     Q_ASSERT(_root && index >= 0 && index < _root->values.count());
     checkRoles();
     QVariant rv;
+    if (roleStrings.count() < role)
+        return rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
     if (!node)
