@@ -161,6 +161,7 @@ private:
     virtual void RunL();
     virtual void DoCancel();
 
+    void run();
     void list();
     void retrieveNextCertificate();
 
