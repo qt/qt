@@ -9,7 +9,7 @@ MyTypeObject {
         uintProperty = 10
         intProperty = -19
         realProperty = 23.2
-        doubleProperty = -19.7
+        doubleProperty = -19.75
         floatProperty = 8.5
         colorProperty = "red"
         dateProperty = "1982-11-25"

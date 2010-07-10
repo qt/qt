@@ -132,6 +132,8 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::loading()
@@ -201,6 +203,8 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::fileBrowser()
@@ -235,6 +239,8 @@ void tst_QDeclarativeViewer::fileBrowser()
     QVERIFY(viewer->view());
     QVERIFY(viewer->menuBar());
     QVERIFY(browserItem);
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::resizing()
@@ -290,6 +296,8 @@ void tst_QDeclarativeViewer::resizing()
     rootItem->setWidth(150);
     rootItem->setHeight(200);
     QTRY_COMPARE(viewer->size(), QSize(250, 350));
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::paths()
@@ -302,6 +310,8 @@ void tst_QDeclarativeViewer::paths()
 
     viewer->addPluginPath("miscPluginPath");
     viewer->view()->engine()->pluginPathList().contains("miscPluginPath");
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::slowMode()
@@ -311,6 +321,8 @@ void tst_QDeclarativeViewer::slowMode()
 
     viewer->setSlowMode(true);
     viewer->setSlowMode(false);
+
+    delete viewer;
 }
 
 QTEST_MAIN(tst_QDeclarativeViewer)

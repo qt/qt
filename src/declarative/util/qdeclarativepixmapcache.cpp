@@ -55,104 +55,209 @@
 #include <QFile>
 #include <QThread>
 #include <QMutex>
+#include <QMutexLocker>
+#include <QWaitCondition>
 #include <QBuffer>
 #include <QWaitCondition>
 #include <QtCore/qdebug.h>
 #include <private/qobject_p.h>
 #include <QSslError>
 
-// Maximum number of simultaneous image requests to send.
-static const int maxImageRequestCount = 8;
+#define IMAGEREQUEST_MAX_REQUEST_COUNT       8
+#define IMAGEREQUEST_MAX_REDIRECT_RECURSION 16
+#define CACHE_EXPIRE_TIME 30
+#define CACHE_REMOVAL_FRACTION 4
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeImageReaderEvent : public QEvent
+class QDeclarativePixmapReader;
+class QDeclarativePixmapData;
+class QDeclarativePixmapReply : public QObject
 {
+    Q_OBJECT
 public:
     enum ReadError { NoError, Loading, Decoding };
 
-    QDeclarativeImageReaderEvent(QDeclarativeImageReaderEvent::ReadError err, const QString &errStr, const QImage &img)
-        : QEvent(QEvent::User), error(err), errorString(errStr), image(img) {}
+    QDeclarativePixmapReply(QDeclarativePixmapData *);
+    ~QDeclarativePixmapReply();
 
-    ReadError error;
-    QString errorString;
-    QImage image;
-};
+    QDeclarativePixmapData *data;
+    QDeclarativePixmapReader *reader;
 
-class QDeclarativeImageRequestHandler;
-class QDeclarativeImageReader : public QThread
-{
-    Q_OBJECT
-public:
-    QDeclarativeImageReader(QDeclarativeEngine *eng);
-    ~QDeclarativeImageReader();
+    bool loading;
+    int redirectCount;
 
-    QDeclarativePixmapReply *getImage(const QUrl &url, int req_width, int req_height);
-    void cancel(QDeclarativePixmapReply *rep);
+    class Event : public QEvent {
+    public:
+        Event(ReadError, const QString &, const QSize &, const QImage &);
 
-    static QDeclarativeImageReader *instance(QDeclarativeEngine *engine);
-
-protected:
-    void run();
-
-private:
-    QList<QDeclarativePixmapReply*> jobs;
-    QList<QDeclarativePixmapReply*> cancelled;
-    QDeclarativeEngine *engine;
-    QDeclarativeImageRequestHandler *handler;
-    QObject *eventLoopQuitHack;
-    QMutex mutex;
-
-    static QHash<QDeclarativeEngine *,QDeclarativeImageReader*> readers;
-    static QMutex readerMutex;
-    friend class QDeclarativeImageRequestHandler;
-};
-
-QHash<QDeclarativeEngine *,QDeclarativeImageReader*> QDeclarativeImageReader::readers;
-QMutex QDeclarativeImageReader::readerMutex;
+        ReadError error;
+        QString errorString;
+        QSize implicitSize;
+        QImage image;
+    };
+    void postReply(ReadError, const QString &, const QSize &, const QImage &);
 
 
-class QDeclarativeImageRequestHandler : public QObject
-{
-    Q_OBJECT
-public:
-    QDeclarativeImageRequestHandler(QDeclarativeImageReader *read, QDeclarativeEngine *eng)
-        : QObject(), accessManager(0), engine(eng), reader(read), redirectCount(0)
-    {
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
-
-    QDeclarativePixmapReply *getImage(const QUrl &url, int req_width, int req_height);
-    void cancel(QDeclarativePixmapReply *reply);
+Q_SIGNALS:
+    void finished();
+    void downloadProgress(qint64, qint64);
 
 protected:
     bool event(QEvent *event);
+
+private:
+    Q_DISABLE_COPY(QDeclarativePixmapReply)
+
+public:
+    static int finishedIndex;
+    static int downloadProgressIndex;
+};
+
+class QDeclarativePixmapData;
+class QDeclarativePixmapReader : public QThread
+{
+    Q_OBJECT
+public:
+    QDeclarativePixmapReader(QDeclarativeEngine *eng);
+    ~QDeclarativePixmapReader();
+
+    QDeclarativePixmapReply *getImage(QDeclarativePixmapData *);
+    void cancel(QDeclarativePixmapReply *rep);
+
+    static QDeclarativePixmapReader *instance(QDeclarativeEngine *engine);
+
+protected:
+    void run();
 
 private slots:
     void networkRequestDone();
 
 private:
-    QNetworkAccessManager *networkAccessManager() {
-        if (!accessManager)
-            accessManager = QDeclarativeEnginePrivate::get(engine)->createNetworkAccessManager(this);
-        return accessManager;
-    }
+    void processJobs();
+    void processJob(QDeclarativePixmapReply *);
+
+    QList<QDeclarativePixmapReply*> jobs;
+    QList<QDeclarativePixmapReply*> cancelled;
+    QDeclarativeEngine *engine;
+    QObject *eventLoopQuitHack;
+
+    QMutex mutex;
+    class ThreadObject : public QObject {
+    public:
+        ThreadObject(QDeclarativePixmapReader *);
+        void processJobs();
+        virtual bool event(QEvent *e);
+    private:
+        QDeclarativePixmapReader *reader;
+    } *threadObject;
+    QWaitCondition waitCondition;
+
+    QNetworkAccessManager *networkAccessManager();
+    QNetworkAccessManager *accessManager;
 
     QHash<QNetworkReply*,QDeclarativePixmapReply*> replies;
-    QNetworkAccessManager *accessManager;
-    QDeclarativeEngine *engine;
-    QDeclarativeImageReader *reader;
-    int redirectCount;
 
     static int replyDownloadProgress;
     static int replyFinished;
     static int downloadProgress;
     static int thisNetworkRequestDone;
+    static QHash<QDeclarativeEngine *,QDeclarativePixmapReader*> readers;
+    static QMutex readerMutex;
 };
 
-//===========================================================================
+class QDeclarativePixmapData
+{
+public:
+    QDeclarativePixmapData(const QUrl &u, const QSize &s, const QString &e)
+    : refCount(1), inCache(false), pixmapStatus(QDeclarativePixmap::Error), 
+      url(u), errorString(e), requestSize(s), reply(0), prevUnreferenced(0),
+      prevUnreferencedPtr(0), nextUnreferenced(0)
+    {
+    }
 
-static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *errorString, QSize *impsize, int req_width, int req_height)
+    QDeclarativePixmapData(const QUrl &u, const QSize &r)
+    : refCount(1), inCache(false), pixmapStatus(QDeclarativePixmap::Loading), 
+      url(u), requestSize(r), reply(0), prevUnreferenced(0), prevUnreferencedPtr(0), 
+      nextUnreferenced(0)
+    {
+    }
+
+    QDeclarativePixmapData(const QUrl &u, const QPixmap &p, const QSize &s, const QSize &r)
+    : refCount(1), inCache(false), privatePixmap(false), pixmapStatus(QDeclarativePixmap::Ready), 
+      url(u), pixmap(p), implicitSize(s), requestSize(r), reply(0), prevUnreferenced(0),
+      prevUnreferencedPtr(0), nextUnreferenced(0)
+    {
+    }
+
+    QDeclarativePixmapData(const QPixmap &p)
+    : refCount(1), inCache(false), privatePixmap(true), pixmapStatus(QDeclarativePixmap::Ready),
+      pixmap(p), implicitSize(p.size()), requestSize(p.size()), reply(0), prevUnreferenced(0),
+      prevUnreferencedPtr(0), nextUnreferenced(0)
+    {
+    }
+
+    int cost() const;
+    void addref();
+    void release();
+    void addToCache();
+    void removeFromCache();
+
+    uint refCount;
+
+    bool inCache:1;
+    bool privatePixmap:1;
+    
+    QDeclarativePixmap::Status pixmapStatus;
+    QUrl url;
+    QString errorString;
+    QPixmap pixmap;
+    QSize implicitSize;
+    QSize requestSize;
+
+    QDeclarativePixmapReply *reply;
+
+    QDeclarativePixmapData *prevUnreferenced;
+    QDeclarativePixmapData**prevUnreferencedPtr;
+    QDeclarativePixmapData *nextUnreferenced;
+};
+
+int QDeclarativePixmapReply::finishedIndex = -1;
+int QDeclarativePixmapReply::downloadProgressIndex = -1;
+
+// XXX
+QHash<QDeclarativeEngine *,QDeclarativePixmapReader*> QDeclarativePixmapReader::readers;
+QMutex QDeclarativePixmapReader::readerMutex;
+
+int QDeclarativePixmapReader::replyDownloadProgress = -1;
+int QDeclarativePixmapReader::replyFinished = -1;
+int QDeclarativePixmapReader::downloadProgress = -1;
+int QDeclarativePixmapReader::thisNetworkRequestDone = -1;
+
+
+void QDeclarativePixmapReply::postReply(ReadError error, const QString &errorString, 
+                                        const QSize &implicitSize, const QImage &image)
+{
+    loading = false;
+    QCoreApplication::postEvent(this, new Event(error, errorString, implicitSize, image));
+}
+
+QDeclarativePixmapReply::Event::Event(ReadError e, const QString &s, const QSize &iSize, const QImage &i)
+: QEvent(QEvent::User), error(e), errorString(s), implicitSize(iSize), image(i)
+{
+}
+
+QNetworkAccessManager *QDeclarativePixmapReader::networkAccessManager()
+{
+    if (!accessManager) {
+        Q_ASSERT(threadObject);
+        accessManager = QDeclarativeEnginePrivate::get(engine)->createNetworkAccessManager(threadObject);
+    }
+    return accessManager;
+}
+
+static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *errorString, QSize *impsize, 
+                      const QSize &requestSize)
 {
     QImageReader imgio(dev);
 
@@ -163,17 +268,17 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
     }
 
     bool scaled = false;
-    if (req_width > 0 || req_height > 0) {
+    if (requestSize.width() > 0 || requestSize.height() > 0) {
         QSize s = imgio.size();
-        if (req_width && (force_scale || req_width < s.width())) {
-            if (req_height <= 0)
-                s.setHeight(s.height()*req_width/s.width());
-            s.setWidth(req_width); scaled = true;
+        if (requestSize.width() && (force_scale || requestSize.width() < s.width())) {
+            if (requestSize.height() <= 0)
+                s.setHeight(s.height()*requestSize.width()/s.width());
+            s.setWidth(requestSize.width()); scaled = true;
         }
-        if (req_height && (force_scale || req_height < s.height())) {
-            if (req_width <= 0)
-                s.setWidth(s.width()*req_height/s.height());
-            s.setHeight(req_height); scaled = true;
+        if (requestSize.height() && (force_scale || requestSize.height() < s.height())) {
+            if (requestSize.width() <= 0)
+                s.setWidth(s.width()*requestSize.height()/s.height());
+            s.setHeight(requestSize.height()); scaled = true;
         }
         if (scaled) { imgio.setScaledSize(s); }
     }
@@ -187,130 +292,39 @@ static bool readImage(const QUrl& url, QIODevice *dev, QImage *image, QString *e
         return true;
     } else {
         if (errorString)
-            *errorString = QDeclarativePixmapCache::tr("Error decoding: %1: %2").arg(url.toString())
+            *errorString = QDeclarativePixmap::tr("Error decoding: %1: %2").arg(url.toString())
                                 .arg(imgio.errorString());
         return false;
     }
 }
 
-
-//===========================================================================
-
-int QDeclarativeImageRequestHandler::replyDownloadProgress = -1;
-int QDeclarativeImageRequestHandler::replyFinished = -1;
-int QDeclarativeImageRequestHandler::downloadProgress = -1;
-int QDeclarativeImageRequestHandler::thisNetworkRequestDone = -1;
-
-typedef QHash<QUrl, QSize> QDeclarativePixmapSizeHash;
-Q_GLOBAL_STATIC(QDeclarativePixmapSizeHash, qmlOriginalSizes);
-
-bool QDeclarativeImageRequestHandler::event(QEvent *event)
+QDeclarativePixmapReader::QDeclarativePixmapReader(QDeclarativeEngine *eng)
+: QThread(eng), engine(eng), threadObject(0), accessManager(0)
 {
-    if (event->type() == QEvent::User) {
-        if (replyDownloadProgress == -1) {
-            replyDownloadProgress = QNetworkReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-            replyFinished = QNetworkReply::staticMetaObject.indexOfSignal("finished()");
-            downloadProgress = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
-            thisNetworkRequestDone = QDeclarativeImageRequestHandler::staticMetaObject.indexOfSlot("networkRequestDone()");
-        }
-
-        while (1) {
-            reader->mutex.lock();
-
-            if (reader->cancelled.count()) {
-                for (int i = 0; i < reader->cancelled.count(); ++i) {
-                    QDeclarativePixmapReply *job = reader->cancelled.at(i);
-                    QNetworkReply *reply = replies.key(job, 0);
-                    if (reply && reply->isRunning()) {
-                        // cancel any jobs already started
-                        replies.remove(reply);
-                        reply->close();
-                        job->release(true);
-                    } else {
-                        // remove from pending job list
-                        for (int j = 0; j < reader->jobs.count(); ++j) {
-                            if (reader->jobs.at(j) == job) {
-                                reader->jobs.removeAt(j);
-                                job->release(true);
-                                break;
-                            }
-                        }
-                    }
-                }
-                reader->cancelled.clear();
-            }
-
-            if (!reader->jobs.count() || replies.count() > maxImageRequestCount) {
-                reader->mutex.unlock();
-                break;
-            }
-
-            QDeclarativePixmapReply *runningJob = reader->jobs.takeLast();
-            QUrl url = runningJob->url();
-            reader->mutex.unlock();
-
-            // fetch
-            if (url.scheme() == QLatin1String("image")) {
-                // Use QmlImageProvider
-                QSize read_impsize;
-                QImage image = QDeclarativeEnginePrivate::get(engine)->getImageFromProvider(url, &read_impsize, QSize(runningJob->forcedWidth(),runningJob->forcedHeight()));
-                qmlOriginalSizes()->insert(url, read_impsize);
-                QDeclarativeImageReaderEvent::ReadError errorCode = QDeclarativeImageReaderEvent::NoError;
-                QString errorStr;
-                if (image.isNull()) {
-                    errorCode = QDeclarativeImageReaderEvent::Loading;
-                    errorStr = QDeclarativePixmapCache::tr("Failed to get image from provider: %1").arg(url.toString());
-                }
-                QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
-            } else {
-                QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
-                if (!lf.isEmpty()) {
-                    // Image is local - load/decode immediately
-                    QImage image;
-                    QDeclarativeImageReaderEvent::ReadError errorCode = QDeclarativeImageReaderEvent::NoError;
-                    QString errorStr;
-                    QFile f(lf);
-                    if (f.open(QIODevice::ReadOnly)) {
-                        QSize read_impsize;
-                        if (readImage(url, &f, &image, &errorStr, &read_impsize, runningJob->forcedWidth(),runningJob->forcedHeight())) {
-                            qmlOriginalSizes()->insert(url, read_impsize);
-                        } else {
-                            errorCode = QDeclarativeImageReaderEvent::Loading;
-                        }
-                    } else {
-                        errorStr = QDeclarativePixmapCache::tr("Cannot open: %1").arg(url.toString());
-                        errorCode = QDeclarativeImageReaderEvent::Loading;
-                    }
-                    QCoreApplication::postEvent(runningJob, new QDeclarativeImageReaderEvent(errorCode, errorStr, image));
-                } else {
-                    // Network resource
-                    QNetworkRequest req(url);
-                    req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-                    QNetworkReply *reply = networkAccessManager()->get(req);
-
-                    QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
-                    QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
-
-                    replies.insert(reply, runningJob);
-                }
-            }
-        }
-        return true;
-    }
-
-    return QObject::event(event);
+    eventLoopQuitHack = new QObject;
+    eventLoopQuitHack->moveToThread(this);
+    connect(eventLoopQuitHack, SIGNAL(destroyed(QObject*)), SLOT(quit()), Qt::DirectConnection);
+    start(QThread::IdlePriority);
 }
 
-#define IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION 16
+QDeclarativePixmapReader::~QDeclarativePixmapReader()
+{
+    readerMutex.lock();
+    readers.remove(engine);
+    readerMutex.unlock();
 
-void QDeclarativeImageRequestHandler::networkRequestDone()
+    eventLoopQuitHack->deleteLater();
+    wait();
+}
+
+void QDeclarativePixmapReader::networkRequestDone()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QDeclarativePixmapReply *job = replies.take(reply);
 
     if (job) {
-        redirectCount++;
-        if (redirectCount < IMAGEREQUESTHANDLER_MAX_REDIRECT_RECURSION) {
+        job->redirectCount++;
+        if (job->redirectCount < IMAGEREQUEST_MAX_REDIRECT_RECURSION) {
             QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
             if (redirect.isValid()) {
                 QUrl url = reply->url().resolved(redirect.toUrl());
@@ -327,62 +341,147 @@ void QDeclarativeImageRequestHandler::networkRequestDone()
                 return;
             }
         }
-        redirectCount=0;
 
         QImage image;
-        QDeclarativeImageReaderEvent::ReadError error;
+        QDeclarativePixmapReply::ReadError error = QDeclarativePixmapReply::NoError;
         QString errorString;
+        QSize readSize;
         if (reply->error()) {
-            error = QDeclarativeImageReaderEvent::Loading;
+            error = QDeclarativePixmapReply::Loading;
             errorString = reply->errorString();
         } else {
-            QSize read_impsize;
             QByteArray all = reply->readAll();
             QBuffer buff(&all);
             buff.open(QIODevice::ReadOnly);
-            if (readImage(reply->url(), &buff, &image, &errorString, &read_impsize, job->forcedWidth(), job->forcedHeight())) {
-                qmlOriginalSizes()->insert(reply->url(), read_impsize);
-                error = QDeclarativeImageReaderEvent::NoError;
-            } else {
-                error = QDeclarativeImageReaderEvent::Decoding;
+            if (!readImage(reply->url(), &buff, &image, &errorString, &readSize, job->data->requestSize)) {
+                error = QDeclarativePixmapReply::Decoding;
             }
         }
         // send completion event to the QDeclarativePixmapReply
-        QCoreApplication::postEvent(job, new QDeclarativeImageReaderEvent(error, errorString, image));
+        mutex.lock();
+        if (!cancelled.contains(job)) job->postReply(error, errorString, readSize, image);
+        mutex.unlock();
     }
-    // kick off event loop again if we have dropped below max request count
-    if (replies.count() == maxImageRequestCount)
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     reply->deleteLater();
+
+    // kick off event loop again incase we have dropped below max request count
+    threadObject->processJobs();
 }
 
-//===========================================================================
-
-QDeclarativeImageReader::QDeclarativeImageReader(QDeclarativeEngine *eng)
-    : QThread(eng), engine(eng), handler(0)
+QDeclarativePixmapReader::ThreadObject::ThreadObject(QDeclarativePixmapReader *i)
+: reader(i)
 {
-    eventLoopQuitHack = new QObject;
-    eventLoopQuitHack->moveToThread(this);
-    connect(eventLoopQuitHack, SIGNAL(destroyed(QObject*)), SLOT(quit()), Qt::DirectConnection);
-    start(QThread::IdlePriority);
 }
 
-QDeclarativeImageReader::~QDeclarativeImageReader()
+void QDeclarativePixmapReader::ThreadObject::processJobs() 
+{ 
+    QCoreApplication::postEvent(this, new QEvent(QEvent::User)); 
+}
+
+bool QDeclarativePixmapReader::ThreadObject::event(QEvent *e) 
+{
+    if (e->type() == QEvent::User) { 
+        reader->processJobs(); 
+        return true; 
+    } else { 
+        return QObject::event(e);
+    }
+}
+
+void QDeclarativePixmapReader::processJobs()
+{
+    QMutexLocker locker(&mutex);
+
+    while (true) {
+        if (cancelled.isEmpty() && (jobs.isEmpty() || replies.count() >= IMAGEREQUEST_MAX_REQUEST_COUNT)) 
+            return; // Nothing else to do
+
+        // Clean cancelled jobs
+        if (cancelled.count()) {
+            for (int i = 0; i < cancelled.count(); ++i) {
+                QDeclarativePixmapReply *job = cancelled.at(i);
+                QNetworkReply *reply = replies.key(job, 0);
+                if (reply && reply->isRunning()) {
+                    // cancel any jobs already started
+                    replies.remove(reply);
+                    reply->close();
+                }
+                delete job;
+            }
+            cancelled.clear();
+        }
+
+        if (!jobs.isEmpty() && replies.count() < IMAGEREQUEST_MAX_REQUEST_COUNT) {
+            QDeclarativePixmapReply *runningJob = jobs.takeLast();
+            runningJob->loading = true;
+
+            locker.unlock();
+            processJob(runningJob);
+            locker.relock();
+        }
+    }
+}
+
+void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
+{
+    QUrl url = runningJob->data->url;
+
+    // fetch
+    if (url.scheme() == QLatin1String("image")) {
+        // Use QmlImageProvider
+        QSize readSize;
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+        QImage image = ep->getImageFromProvider(url, &readSize, runningJob->data->requestSize);
+
+        QDeclarativePixmapReply::ReadError errorCode = QDeclarativePixmapReply::NoError;
+        QString errorStr;
+        if (image.isNull()) {
+            errorCode = QDeclarativePixmapReply::Loading;
+            errorStr = QDeclarativePixmap::tr("Failed to get image from provider: %1").arg(url.toString());
+        }
+
+        mutex.lock();
+        if (!cancelled.contains(runningJob)) runningJob->postReply(errorCode, errorStr, readSize, image);
+        mutex.unlock();
+    } else {
+        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+        if (!lf.isEmpty()) {
+            // Image is local - load/decode immediately
+            QImage image;
+            QDeclarativePixmapReply::ReadError errorCode = QDeclarativePixmapReply::NoError;
+            QString errorStr;
+            QFile f(lf);
+            QSize readSize;
+            if (f.open(QIODevice::ReadOnly)) {
+                if (!readImage(url, &f, &image, &errorStr, &readSize, runningJob->data->requestSize))
+                    errorCode = QDeclarativePixmapReply::Loading;
+            } else {
+                errorStr = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
+                errorCode = QDeclarativePixmapReply::Loading;
+            }
+            mutex.lock();
+            if (!cancelled.contains(runningJob)) runningJob->postReply(errorCode, errorStr, readSize, image);
+            mutex.unlock();
+        } else {
+            // Network resource
+            QNetworkRequest req(url);
+            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+            QNetworkReply *reply = networkAccessManager()->get(req);
+
+            QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
+            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+
+            replies.insert(reply, runningJob);
+        }
+    }
+}
+
+QDeclarativePixmapReader *QDeclarativePixmapReader::instance(QDeclarativeEngine *engine)
 {
     readerMutex.lock();
-    readers.remove(engine);
-    readerMutex.unlock();
-
-    eventLoopQuitHack->deleteLater();
-    wait();
-}
-
-QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *engine)
-{
-    readerMutex.lock();
-    QDeclarativeImageReader *reader = readers.value(engine);
+    QDeclarativePixmapReader *reader = readers.value(engine);
     if (!reader) {
-        reader = new QDeclarativeImageReader(engine);
+        reader = new QDeclarativePixmapReader(engine);
         readers.insert(engine, reader);
     }
     readerMutex.unlock();
@@ -390,348 +489,558 @@ QDeclarativeImageReader *QDeclarativeImageReader::instance(QDeclarativeEngine *e
     return reader;
 }
 
-QDeclarativePixmapReply *QDeclarativeImageReader::getImage(const QUrl &url, int req_width, int req_height)
+QDeclarativePixmapReply *QDeclarativePixmapReader::getImage(QDeclarativePixmapData *data)
 {
     mutex.lock();
-    QDeclarativePixmapReply *reply = new QDeclarativePixmapReply(this, url, req_width, req_height);
-    reply->addRef();
-    reply->setLoading();
+    QDeclarativePixmapReply *reply = new QDeclarativePixmapReply(data);
+    reply->reader = this;
     jobs.append(reply);
-    if (jobs.count() == 1 && handler)
-        QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
+    // XXX 
+    if (threadObject) threadObject->processJobs();
     mutex.unlock();
     return reply;
 }
 
-void QDeclarativeImageReader::cancel(QDeclarativePixmapReply *reply)
+void QDeclarativePixmapReader::cancel(QDeclarativePixmapReply *reply)
 {
     mutex.lock();
-    if (reply->isLoading()) {
-        // Add to cancel list to be cancelled in reader thread.
+    if (reply->loading) {
         cancelled.append(reply);
-        if (cancelled.count() == 1 && handler)
-            QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
+        // XXX 
+        if (threadObject) threadObject->processJobs();
+    } else {
+        jobs.removeAll(reply);
+        delete reply;
     }
     mutex.unlock();
 }
 
-void QDeclarativeImageReader::run()
+void QDeclarativePixmapReader::run()
 {
-    readerMutex.lock();
-    handler = new QDeclarativeImageRequestHandler(this, engine);
-    readerMutex.unlock();
-
-    exec();
-
-    delete handler;
-    handler = 0;
-}
-
-//===========================================================================
-
-/*!
-    \internal
-    \class QDeclarativePixmapCache
-    \brief Enacapsultes a pixmap for QDeclarativeGraphics items.
-
-    This class is NOT reentrant.
- */
-
-typedef QHash<QUrl, QDeclarativePixmapReply *> QDeclarativePixmapReplyHash;
-Q_GLOBAL_STATIC(QDeclarativePixmapReplyHash, qmlActivePixmapReplies);
-
-class QDeclarativePixmapReplyPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QDeclarativePixmapReply)
-
-public:
-    QDeclarativePixmapReplyPrivate(QDeclarativeImageReader *r, const QUrl &u, int req_width, int req_height)
-        : QObjectPrivate(), refCount(1), url(u), status(QDeclarativePixmapReply::Loading), loading(false), reader(r),
-            forced_width(req_width), forced_height(req_height)
-    {
+    if (replyDownloadProgress == -1) {
+        const QMetaObject *nr = &QNetworkReply::staticMetaObject;
+        const QMetaObject *pr = &QDeclarativePixmapReply::staticMetaObject;
+        const QMetaObject *ir = &QDeclarativePixmapReader::staticMetaObject;
+        replyDownloadProgress = nr->indexOfSignal("downloadProgress(qint64,qint64)");
+        replyFinished = nr->indexOfSignal("finished()");
+        downloadProgress = pr->indexOfSignal("downloadProgress(qint64,qint64)");
+        thisNetworkRequestDone = ir->indexOfSlot("networkRequestDone()");
     }
 
-    int refCount;
-    QUrl url;
-    QPixmap pixmap; // ensure reference to pixmap so QPixmapCache does not discard
-    QDeclarativePixmapReply::Status status;
-    bool loading;
-    QDeclarativeImageReader *reader;
-    int forced_width, forced_height;
-    QString errorString;
+    mutex.lock();
+    threadObject = new ThreadObject(this);
+    mutex.unlock();
+
+    processJobs();
+    exec();
+
+    delete threadObject;
+    threadObject = 0;
+}
+
+class QDeclarativePixmapKey
+{
+public:
+    const QUrl *url;
+    const QSize *size;
 };
 
-
-QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url, int req_width, int req_height)
-  : QObject(*new QDeclarativePixmapReplyPrivate(reader, url, req_width, req_height), 0)
+inline bool operator==(const QDeclarativePixmapKey &lhs, const QDeclarativePixmapKey &rhs)
 {
+    return *lhs.size == *rhs.size && *lhs.url == *rhs.url;
+}
+
+inline uint qHash(const QDeclarativePixmapKey &key)
+{
+    return qHash(*key.url) ^ key.size->width() ^ key.size->height();
+}
+
+class QDeclarativePixmapStore : public QObject
+{
+    Q_OBJECT
+public:
+    QDeclarativePixmapStore();
+
+    void unreferencePixmap(QDeclarativePixmapData *);
+    void referencePixmap(QDeclarativePixmapData *);
+
+protected:
+    virtual void timerEvent(QTimerEvent *);
+
+public:
+    QHash<QDeclarativePixmapKey, QDeclarativePixmapData *> m_cache;
+
+private:
+    QDeclarativePixmapData *m_unreferencedPixmaps;
+    QDeclarativePixmapData *m_lastUnreferencedPixmap;
+
+    int m_unreferencedCost;
+    int m_timerId;
+};
+Q_GLOBAL_STATIC(QDeclarativePixmapStore, pixmapStore);
+
+QDeclarativePixmapStore::QDeclarativePixmapStore()
+: m_unreferencedPixmaps(0), m_lastUnreferencedPixmap(0), m_unreferencedCost(0), m_timerId(-1)
+{
+}
+
+void QDeclarativePixmapStore::unreferencePixmap(QDeclarativePixmapData *data)
+{
+    Q_ASSERT(data->prevUnreferenced == 0);
+    Q_ASSERT(data->prevUnreferencedPtr == 0);
+    Q_ASSERT(data->nextUnreferenced == 0);
+
+    data->nextUnreferenced = m_unreferencedPixmaps;
+    data->prevUnreferencedPtr = &m_unreferencedPixmaps;
+
+    m_unreferencedPixmaps = data;
+    if (m_unreferencedPixmaps->nextUnreferenced) {
+        m_unreferencedPixmaps->nextUnreferenced->prevUnreferenced = m_unreferencedPixmaps;
+        m_unreferencedPixmaps->nextUnreferenced->prevUnreferencedPtr = &m_unreferencedPixmaps->nextUnreferenced;
+    }
+
+    if (!m_lastUnreferencedPixmap)
+        m_lastUnreferencedPixmap = data;
+
+    m_unreferencedCost += data->cost();
+
+    if (m_timerId == -1)
+        startTimer(CACHE_EXPIRE_TIME * 1000);
+}
+
+void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
+{
+    Q_ASSERT(data->prevUnreferencedPtr);
+
+    *data->prevUnreferencedPtr = data->nextUnreferenced;
+    if (data->nextUnreferenced) { 
+        data->nextUnreferenced->prevUnreferencedPtr = data->prevUnreferencedPtr;
+        data->nextUnreferenced->prevUnreferenced = data->prevUnreferenced;
+    }
+    if (m_lastUnreferencedPixmap == data)
+        m_lastUnreferencedPixmap = data->prevUnreferenced;
+
+    data->nextUnreferenced = 0;
+    data->prevUnreferencedPtr = 0;
+    data->prevUnreferenced = 0;
+
+    m_unreferencedCost -= data->cost();
+}
+
+void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
+{
+    int removalCost = m_unreferencedCost / CACHE_REMOVAL_FRACTION;
+
+    while (removalCost > 0 && m_lastUnreferencedPixmap) {
+        QDeclarativePixmapData *data = m_lastUnreferencedPixmap;
+        Q_ASSERT(data->nextUnreferenced == 0);
+
+        *data->prevUnreferencedPtr = 0;
+        m_lastUnreferencedPixmap = data->prevUnreferenced;
+        data->prevUnreferencedPtr = 0;
+        data->prevUnreferenced = 0;
+
+        removalCost -= data->cost();
+        data->removeFromCache();
+        delete data;
+    }
+
+    if (m_unreferencedPixmaps == 0) {
+        killTimer(m_timerId);
+        m_timerId = -1;
+    }
+}
+
+QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativePixmapData *d)
+: data(d), reader(0), loading(false), redirectCount(0)
+{
+    if (finishedIndex == -1) {
+        finishedIndex = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
+        downloadProgressIndex = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+    }
 }
 
 QDeclarativePixmapReply::~QDeclarativePixmapReply()
 {
 }
 
-const QUrl &QDeclarativePixmapReply::url() const
-{
-    Q_D(const QDeclarativePixmapReply);
-    return d->url;
-}
-
-int QDeclarativePixmapReply::forcedWidth() const
-{
-    Q_D(const QDeclarativePixmapReply);
-    return d->forced_width;
-}
-
-int QDeclarativePixmapReply::forcedHeight() const
-{
-    Q_D(const QDeclarativePixmapReply);
-    return d->forced_height;
-}
-
-QSize QDeclarativePixmapReply::implicitSize() const
-{
-    Q_D(const QDeclarativePixmapReply);
-    QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(d->url);
-    if (iter != qmlOriginalSizes()->end())
-        return *iter;
-    else
-        return QSize();
-}
-
 bool QDeclarativePixmapReply::event(QEvent *event)
 {
-    Q_D(QDeclarativePixmapReply);
     if (event->type() == QEvent::User) {
-        d->loading = false;
-        if (!release(true)) {
-            QDeclarativeImageReaderEvent *de = static_cast<QDeclarativeImageReaderEvent*>(event);
-            d->status = (de->error == QDeclarativeImageReaderEvent::NoError) ? Ready : Error;
-            if (d->status == Ready)
-                d->pixmap = QPixmap::fromImage(de->image);
-            else
-                d->errorString =  de->errorString;
-            QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
-            if (d->forced_width > 0 || d->forced_height > 0) {
-                key += ':';
-                key += QByteArray::number(d->forced_width);
-                key += 'x';
-                key += QByteArray::number(d->forced_height);
+
+        if (data) {
+            Event *de = static_cast<Event *>(event);
+            data->pixmapStatus = (de->error == NoError) ? QDeclarativePixmap::Ready : QDeclarativePixmap::Error;
+            
+            if (data->pixmapStatus == QDeclarativePixmap::Ready) {
+                data->pixmap = QPixmap::fromImage(de->image);
+                data->implicitSize = de->implicitSize;
+            } else {
+                data->errorString = de->errorString;
+                data->removeFromCache(); // We don't continue to cache error'd pixmaps
             }
-            QString strKey = QString::fromLatin1(key.constData(), key.count());
-            QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
+
+            data->reply = 0;
             emit finished();
         }
+
+        delete this;
         return true;
+    } else {
+        return QObject::event(event);
     }
-
-    return QObject::event(event);
 }
 
-QString QDeclarativePixmapReply::errorString() const
+int QDeclarativePixmapData::cost() const
 {
-    Q_D(const QDeclarativePixmapReply);
-    return d->errorString;
+    return pixmap.width() * pixmap.height() * pixmap.depth();
 }
 
-QDeclarativePixmapReply::Status QDeclarativePixmapReply::status() const
+void QDeclarativePixmapData::addref()
 {
-    Q_D(const QDeclarativePixmapReply);
-    return d->status;
+    ++refCount;
+    if (prevUnreferencedPtr) 
+        pixmapStore()->referencePixmap(this);
 }
 
-bool QDeclarativePixmapReply::isLoading() const
+void QDeclarativePixmapData::release()
 {
-    Q_D(const QDeclarativePixmapReply);
-    return d->loading;
-}
+    Q_ASSERT(refCount > 0);
+    --refCount;
 
-void QDeclarativePixmapReply::setLoading()
-{
-    Q_D(QDeclarativePixmapReply);
-    d->loading = true;
-}
+    if (refCount == 0) {
+        if (reply) {
+            reply->data = 0;
+            reply->reader->cancel(reply);
+            reply = 0;
+        }
 
-void QDeclarativePixmapReply::addRef()
-{
-    Q_D(QDeclarativePixmapReply);
-    ++d->refCount;
-}
-
-bool QDeclarativePixmapReply::release(bool defer)
-{
-    Q_D(QDeclarativePixmapReply);
-    Q_ASSERT(d->refCount > 0);
-    --d->refCount;
-    if (d->refCount == 0) {
-        qmlActivePixmapReplies()->remove(d->url);
-        if (defer)
-            deleteLater();
-        else
+        if (pixmapStatus == QDeclarativePixmap::Ready) {
+            pixmapStore()->unreferencePixmap(this);
+        } else {
+            removeFromCache();
             delete this;
-        return true;
-    } else if (d->refCount == 1 && d->loading) {
-        // The only reference left is the reader thread.
-        qmlActivePixmapReplies()->remove(d->url);
-        d->reader->cancel(this);
+        }
     }
-
-    return false;
 }
 
-/*!
-    Finds the cached pixmap corresponding to \a url.
-    If the image is a network resource and has not yet
-    been retrieved and cached, request() must be called.
-
-    Returns Ready, or Error if the image has been retrieved,
-    otherwise the current retrieval status.
-
-    If \a async is false the image will be loaded and decoded immediately;
-    otherwise the image will be loaded and decoded in a separate thread.
-
-    If \a req_width and \a req_height are non-zero, they are used for
-    the size of the rendered pixmap rather than the intrinsic size of the image.
-    Different request sizes add different cache items.
-
-    Note that images sourced from the network will always be loaded and
-    decoded asynchonously.
-*/
-QDeclarativePixmapReply::Status QDeclarativePixmapCache::get(const QUrl& url, QPixmap *pixmap, QString *errorString, QSize *impsize, bool async, int req_width, int req_height)
+void QDeclarativePixmapData::addToCache()
 {
-    QDeclarativePixmapReply::Status status = QDeclarativePixmapReply::Unrequested;
-    QByteArray key = url.toEncoded(QUrl::FormattingOption(0x100));
-
-    if (req_width > 0 || req_height > 0) {
-        key += ':';
-        key += QByteArray::number(req_width);
-        key += 'x';
-        key += QByteArray::number(req_height);
+    if (!inCache) {
+        QDeclarativePixmapKey key = { &url, &requestSize };
+        pixmapStore()->m_cache.insert(key, this);
+        inCache = true;
     }
+}
 
-    QString strKey = QString::fromLatin1(key.constData(), key.count());
+void QDeclarativePixmapData::removeFromCache()
+{
+    if (inCache) {
+        QDeclarativePixmapKey key = { &url, &requestSize };
+        pixmapStore()->m_cache.remove(key);
+        inCache = false;
+    }
+}
 
-#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    if (!async) {
-        QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
-        if (!lf.isEmpty()) {
-            status = QDeclarativePixmapReply::Ready;
-            if (!QPixmapCache::find(strKey,pixmap)) {
-                QFile f(lf);
-                QSize read_impsize;
-                if (f.open(QIODevice::ReadOnly)) {
-                    QImage image;
-                    if (readImage(url, &f, &image, errorString, &read_impsize, req_width, req_height)) {
-                        *pixmap = QPixmap::fromImage(image);
-                    } else {
-                        *pixmap = QPixmap();
-                        status = QDeclarativePixmapReply::Error;
-                    }
-                } else {
-                    if (errorString)
-                        *errorString = tr("Cannot open: %1").arg(url.toString());
-                    *pixmap = QPixmap();
-                    status = QDeclarativePixmapReply::Error;
-                }
-                if (status == QDeclarativePixmapReply::Ready) {
-                    QPixmapCache::insert(strKey, *pixmap);
-                    qmlOriginalSizes()->insert(url, read_impsize);
-                }
-                if (impsize)
-                    *impsize = read_impsize;
-            } else {
-                if (impsize) {
-                    QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(url);
-                    if (iter != qmlOriginalSizes()->end())
-                        *impsize = *iter;
+static QDeclarativePixmapData* createPixmapDataSync(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, bool *ok)
+{
+    if (url.scheme() == QLatin1String("image")) {
+        QSize readSize;
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+        QDeclarativeImageProvider::ImageType imageType = ep->getImageProviderType(url);
+
+        switch (imageType) {
+            case QDeclarativeImageProvider::Image:
+            {
+                QImage image = ep->getImageFromProvider(url, &readSize, requestSize);
+                if (!image.isNull()) {
+                    *ok = true;
+                    return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
                 }
             }
-            return status;
+            case QDeclarativeImageProvider::Pixmap:
+            {
+                QPixmap pixmap = ep->getPixmapFromProvider(url, &readSize, requestSize);
+                if (!pixmap.isNull()) {
+                    *ok = true;
+                    return new QDeclarativePixmapData(url, pixmap, readSize, requestSize);
+                }
+            }
         }
-    }
-#endif
 
-    QDeclarativePixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
-    if (iter != qmlActivePixmapReplies()->end() && (*iter)->status() == QDeclarativePixmapReply::Ready) {
-        // Must check this, since QPixmapCache::insert may have failed.
-        *pixmap = (*iter)->d_func()->pixmap;
-        status = (*iter)->status();
-        (*iter)->release();
-    } else if (QPixmapCache::find(strKey, pixmap)) {
-        if (iter != qmlActivePixmapReplies()->end()) {
-            status = (*iter)->status();
-            if (errorString)
-                *errorString = (*iter)->errorString();
-            (*iter)->release();
-        } else if (pixmap->isNull()) {
-            status = QDeclarativePixmapReply::Error;
-            if (errorString)
-                *errorString = tr("Unknown Error loading %1").arg(url.toString());
-        } else {
-            status = QDeclarativePixmapReply::Ready;
+        // no matching provider, or provider has bad image type, or provider returned null image
+        return new QDeclarativePixmapData(url, requestSize,
+            QDeclarativePixmap::tr("Failed to get image from provider: %1").arg(url.toString()));
+    }
+
+    QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(url);
+    if (localFile.isEmpty()) 
+        return 0;
+
+    QFile f(localFile);
+    QSize readSize;
+    QString errorString;
+
+    if (f.open(QIODevice::ReadOnly)) {
+        QImage image;
+        if (readImage(url, &f, &image, &errorString, &readSize, requestSize)) {
+            *ok = true;
+            return new QDeclarativePixmapData(url, QPixmap::fromImage(image), readSize, requestSize);
         }
-    } else if (iter != qmlActivePixmapReplies()->end()) {
-        status = QDeclarativePixmapReply::Loading;
-    }
-    if (impsize) {
-        QDeclarativePixmapSizeHash::Iterator iter = qmlOriginalSizes()->find(url);
-        if (iter != qmlOriginalSizes()->end())
-            *impsize = *iter;
-    }
-
-    return status;
-}
-
-/*!
-    Starts a network request to load \a url.
-
-    Returns a QDeclarativePixmapReply.  Caller should connect to QDeclarativePixmapReply::finished()
-    and call get() when the image is available.
-
-    The returned QDeclarativePixmapReply will be deleted when all request() calls are
-    matched by a corresponding get() call.
-*/
-QDeclarativePixmapReply *QDeclarativePixmapCache::request(QDeclarativeEngine *engine, const QUrl &url, int req_width, int req_height)
-{
-    QDeclarativePixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
-    if (iter == qmlActivePixmapReplies()->end()) {
-        QDeclarativeImageReader *reader = QDeclarativeImageReader::instance(engine);
-        QDeclarativePixmapReply *item = reader->getImage(url, req_width, req_height);
-        iter = qmlActivePixmapReplies()->insert(url, item);
     } else {
-        (*iter)->addRef();
+        errorString = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
+    }
+    return new QDeclarativePixmapData(url, requestSize, errorString);
+}
+
+
+struct QDeclarativePixmapNull {
+    QUrl url;
+    QPixmap pixmap;
+    QSize size;
+};
+Q_GLOBAL_STATIC(QDeclarativePixmapNull, nullPixmap);
+
+QDeclarativePixmap::QDeclarativePixmap()
+: d(0)
+{
+}
+
+QDeclarativePixmap::QDeclarativePixmap(QDeclarativeEngine *engine, const QUrl &url)
+: d(0)
+{
+    load(engine, url);
+}
+
+QDeclarativePixmap::QDeclarativePixmap(QDeclarativeEngine *engine, const QUrl &url, const QSize &size)
+: d(0)
+{
+    load(engine, url, size);
+}
+
+QDeclarativePixmap::~QDeclarativePixmap()
+{
+    if (d) {
+        d->release();
+        d = 0;
+    }
+}
+
+bool QDeclarativePixmap::isNull() const
+{
+    return d == 0;
+}
+
+bool QDeclarativePixmap::isReady() const
+{
+    return status() == Ready;
+}
+
+bool QDeclarativePixmap::isError() const
+{
+    return status() == Error;
+}
+
+bool QDeclarativePixmap::isLoading() const
+{
+    return status() == Loading;
+}
+
+QString QDeclarativePixmap::error() const
+{
+    if (d)
+        return d->errorString;
+    else
+        return QString();
+}
+
+QDeclarativePixmap::Status QDeclarativePixmap::status() const
+{
+    if (d)
+        return d->pixmapStatus;
+    else
+        return Null;
+}
+
+const QUrl &QDeclarativePixmap::url() const
+{
+    if (d)
+        return d->url;
+    else
+        return nullPixmap()->url;
+}
+
+const QSize &QDeclarativePixmap::implicitSize() const
+{
+    if (d) 
+        return d->implicitSize;
+    else
+        return nullPixmap()->size;
+}
+
+const QSize &QDeclarativePixmap::requestSize() const
+{
+    if (d)
+        return d->requestSize;
+    else
+        return nullPixmap()->size;
+}
+
+const QPixmap &QDeclarativePixmap::pixmap() const
+{
+    if (d) 
+        return d->pixmap;
+    else
+        return nullPixmap()->pixmap;
+}
+
+void QDeclarativePixmap::setPixmap(const QPixmap &p) 
+{
+    clear();
+
+    if (!p.isNull())
+        d = new QDeclarativePixmapData(p);
+}
+
+int QDeclarativePixmap::width() const
+{
+    if (d) 
+        return d->pixmap.width();
+    else
+        return 0;
+}
+
+int QDeclarativePixmap::height() const
+{
+    if (d) 
+        return d->pixmap.height();
+    else
+        return 0;
+}
+
+QRect QDeclarativePixmap::rect() const
+{
+    if (d)
+        return d->pixmap.rect();
+    else
+        return QRect();
+}
+
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url)
+{
+    load(engine, url, QSize(), false);
+}
+
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, bool async)
+{
+    load(engine, url, QSize(), async);
+}
+
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &size)
+{
+    load(engine, url, size, false);
+}
+
+void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, bool async)
+{
+    if (d) { d->release(); d = 0; }
+
+    QDeclarativePixmapKey key = { &url, &requestSize };
+    QDeclarativePixmapStore *store = pixmapStore();
+
+    QHash<QDeclarativePixmapKey, QDeclarativePixmapData *>::Iterator iter = store->m_cache.find(key);
+
+    if (iter == store->m_cache.end()) {
+        if (async) {
+            // pixmaps can only be loaded synchronously
+            if (url.scheme() == QLatin1String("image") 
+                    && QDeclarativeEnginePrivate::get(engine)->getImageProviderType(url) == QDeclarativeImageProvider::Pixmap) {
+                async = false;
+            }
+        }
+
+        if (!async) {
+            bool ok = false;
+            d = createPixmapDataSync(engine, url, requestSize, &ok);
+            if (ok) {
+                d->addToCache();
+                return;
+            }
+            if (d)  // loadable, but encountered error while loading
+                return;
+        } 
+
+        if (!engine)
+            return;
+
+        QDeclarativePixmapReader *reader = QDeclarativePixmapReader::instance(engine);
+
+        d = new QDeclarativePixmapData(url, requestSize);
+        d->addToCache();
+
+        d->reply = reader->getImage(d);
+    } else {
+        d = *iter;
+        d->addref();
+    }
+}
+
+void QDeclarativePixmap::clear()
+{
+    if (d) {
+        d->release();
+        d = 0;
+    }
+}
+
+void QDeclarativePixmap::clear(QObject *obj)
+{
+    if (d) {
+        if (d->reply) 
+            QObject::disconnect(d->reply, 0, obj, 0);
+        d->release();
+        d = 0;
+    }
+}
+
+bool QDeclarativePixmap::connectFinished(QObject *object, const char *method)
+{
+    if (!d || !d->reply) {
+        qWarning("QDeclarativePixmap: connectFinished() called when not loading.");
+        return false;
     }
 
-    return (*iter);
+    return QObject::connect(d->reply, SIGNAL(finished()), object, method);
 }
 
-/*!
-    Cancels a previous call to request().
-
-    May also cancel loading (eg. if no other pending request).
-
-    Any connections from the QDeclarativePixmapReply returned by request() to \a obj will be
-    disconnected.
-*/
-void QDeclarativePixmapCache::cancel(const QUrl& url, QObject *obj)
+bool QDeclarativePixmap::connectFinished(QObject *object, int method)
 {
-    QDeclarativePixmapReplyHash::Iterator iter = qmlActivePixmapReplies()->find(url);
-    if (iter == qmlActivePixmapReplies()->end())
-        return;
+    if (!d || !d->reply) {
+        qWarning("QDeclarativePixmap: connectFinished() called when not loading.");
+        return false;
+    }
 
-    QDeclarativePixmapReply *reply = *iter;
-    if (obj)
-        QObject::disconnect(reply, 0, obj, 0);
-    reply->release();
+    return QMetaObject::connect(d->reply, QDeclarativePixmapReply::finishedIndex, object, method);
 }
 
-/*!
-    This function is mainly for test verification. It returns the number of
-    requests that are still unfinished.
-*/
-int QDeclarativePixmapCache::pendingRequests()
+bool QDeclarativePixmap::connectDownloadProgress(QObject *object, const char *method)
 {
-    return qmlActivePixmapReplies()->count();
+    if (!d || !d->reply) {
+        qWarning("QDeclarativePixmap: connectDownloadProgress() called when not loading.");
+        return false;
+    }
+
+    return QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)), object, method);
+}
+
+bool QDeclarativePixmap::connectDownloadProgress(QObject *object, int method)
+{
+    if (!d || !d->reply) {
+        qWarning("QDeclarativePixmap: connectDownloadProgress() called when not loading.");
+        return false;
+    }
+
+    return QMetaObject::connect(d->reply, QDeclarativePixmapReply::downloadProgressIndex, object, method);
 }
 
 QT_END_NAMESPACE

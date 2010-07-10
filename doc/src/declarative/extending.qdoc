@@ -704,10 +704,6 @@ of some of the types. For the remaining types the default values are undefined.
 \row \o color \o #000000 (black)
 \endtable
 
-If specified, the optional "default" attribute marks the new property as the
-types default property, overriding any existing default property.  Using the
-default attribute twice in the same type block is an error.
-
 The following example shows how to declare a new "innerColor" property that
 controls the color of the inner rectangle.
 
@@ -724,6 +720,9 @@ controls the color of the inner rectangle.
         }
     }
 \endcode
+
+
+\section3 Property signal handlers
 
 Adding a property to an item automatically adds a \e{value-changed}
 signal handler to the item. The signal hander is named
@@ -742,6 +741,42 @@ example shows how to output to a text console a new value of property
         onInnerColorChanged: { console.log(rect.innerColor); }
     }
 \endcode
+
+
+\section3 Setting default properties
+
+The optional \c default attribute for a property marks it as the \e {default property}
+for a type. This allows other items to specify the default property's value
+as child elements. For example, the \l Item element's default property is its 
+\l{Item::children}{children} property. This allows the children of an \l Item 
+to be set like this:
+
+\qml
+Item {
+    Rectangle {}
+    Rectangle {}
+}
+\endqml
+
+If the \l{Item::children}{children} property was not the default property for 
+\l Item, its value would have to be set like this instead:
+
+\qml
+Item {
+    children: [
+        Rectangle {}
+        Rectangle {}
+    ]
+}
+\endqml
+
+See the \l{declarative/ui-components/tabwidget}{TabWidget} example for a
+demonstration of using default properties.
+
+Specifying a default property overrides any existing default property (for
+example, any default property inherited from a parent item). Using the
+default attribute twice in the same type block is an error.
+
 
 \target qml-property-aliases
 \section2 Property aliases

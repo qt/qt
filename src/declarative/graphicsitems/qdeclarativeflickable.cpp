@@ -641,18 +641,6 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
     }
 }
 
-QDeclarativeFlickable::FlickableDirection QDeclarativeFlickable::flickDirection() const
-{
-    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
-    return flickableDirection();
-}
-
-void QDeclarativeFlickable::setFlickDirection(FlickableDirection direction)
-{
-    qmlInfo(this) << "'flickDirection' is deprecated. Please use 'flickableDirection' instead.";
-    setFlickableDirection(direction);
-}
-
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
@@ -1354,7 +1342,7 @@ bool QDeclarativeFlickable::isFlickingVertically() const
 
     This property holds the time to delay (ms) delivering a press to
     children of the Flickable.  This can be useful where reacting
-    to a press before a flicking action has undesireable effects.
+    to a press before a flicking action has undesirable effects.
 
     If the flickable is dragged/flicked before the delay times out
     the press event will not be delivered.  If the button is released
