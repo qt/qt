@@ -68,6 +68,7 @@ private slots:
     void noFocus();
     void textEdit();
     void forceFocus();
+    void noParentFocus();
 };
 
 /*
@@ -97,7 +98,7 @@ void tst_qdeclarativefocusscope::basic()
     QDeclarativeView *view = new QDeclarativeView;
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/test.qml"));
 
-    QDeclarativeRectangle *item0 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item0"));
+    QDeclarativeFocusScope *item0 = findItem<QDeclarativeFocusScope>(view->rootObject(), QLatin1String("item0"));
     QDeclarativeRectangle *item1 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item1"));
     QDeclarativeRectangle *item2 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item2"));
     QDeclarativeRectangle *item3 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item3"));
@@ -228,7 +229,7 @@ void tst_qdeclarativefocusscope::textEdit()
     QDeclarativeView *view = new QDeclarativeView;
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/test5.qml"));
 
-    QDeclarativeRectangle *item0 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item0"));
+    QDeclarativeFocusScope *item0 = findItem<QDeclarativeFocusScope>(view->rootObject(), QLatin1String("item0"));
     QDeclarativeTextEdit *item1 = findItem<QDeclarativeTextEdit>(view->rootObject(), QLatin1String("item1"));
     QDeclarativeRectangle *item2 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item2"));
     QDeclarativeTextEdit *item3 = findItem<QDeclarativeTextEdit>(view->rootObject(), QLatin1String("item3"));
@@ -283,10 +284,10 @@ void tst_qdeclarativefocusscope::forceFocus()
     QDeclarativeView *view = new QDeclarativeView;
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/forcefocus.qml"));
 
-    QDeclarativeRectangle *item0 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item0"));
+    QDeclarativeFocusScope *item0 = findItem<QDeclarativeFocusScope>(view->rootObject(), QLatin1String("item0"));
     QDeclarativeRectangle *item1 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item1"));
     QDeclarativeRectangle *item2 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item2"));
-    QDeclarativeRectangle *item3 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item3"));
+    QDeclarativeFocusScope *item3 = findItem<QDeclarativeFocusScope>(view->rootObject(), QLatin1String("item3"));
     QDeclarativeRectangle *item4 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item4"));
     QDeclarativeRectangle *item5 = findItem<QDeclarativeRectangle>(view->rootObject(), QLatin1String("item5"));
     QVERIFY(item0 != 0);
@@ -333,6 +334,20 @@ void tst_qdeclarativefocusscope::forceFocus()
     delete view;
 }
 
+void tst_qdeclarativefocusscope::noParentFocus()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/chain.qml"));
+    QVERIFY(view->rootObject());
+
+    QVERIFY(view->rootObject()->property("focus1") == true);
+    QVERIFY(view->rootObject()->property("focus2") == false);
+    QVERIFY(view->rootObject()->property("focus3") == true);
+    QVERIFY(view->rootObject()->property("focus4") == true);
+    QVERIFY(view->rootObject()->property("focus5") == true);
+
+    delete view;
+}
 
 QTEST_MAIN(tst_qdeclarativefocusscope)
 

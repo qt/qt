@@ -2416,6 +2416,8 @@ QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
+    if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
+        emit q->wantsFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
     emit q->focusChanged(flag);
 }
 
@@ -3107,7 +3109,10 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 /*! \internal */
 bool QDeclarativeItem::wantsFocus() const
 {
-    return focusItem() != 0;
+    Q_D(const QDeclarativeItem);
+    return focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
+           (!parentItem() && focusItem() != 0);
 }
 
 /*!
