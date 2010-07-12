@@ -42,8 +42,8 @@
 #ifndef QPLATFORMINTEGRATION_H
 #define QPLATFORMINTEGRATION_H
 
-#include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qwindowdefs.h>
+#include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qplatformscreen_qpa.h>
 
 QT_BEGIN_HEADER

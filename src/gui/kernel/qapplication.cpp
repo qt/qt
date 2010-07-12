@@ -6032,6 +6032,8 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     default:
         break;
     }
+#else
+    Q_UNUSED(cshape);
 #endif
     return QPixmap();
 }

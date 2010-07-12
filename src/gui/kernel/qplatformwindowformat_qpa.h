@@ -78,27 +78,11 @@ public:
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
-    enum OpenGLVersionFlag {
-        OpenGL_Version_None               = 0x00000000,
-        OpenGL_Version_1_1                = 0x00000001,
-        OpenGL_Version_1_2                = 0x00000002,
-        OpenGL_Version_1_3                = 0x00000004,
-        OpenGL_Version_1_4                = 0x00000008,
-        OpenGL_Version_1_5                = 0x00000010,
-        OpenGL_Version_2_0                = 0x00000020,
-        OpenGL_Version_2_1                = 0x00000040,
-        OpenGL_ES_Common_Version_1_0      = 0x00000080,
-        OpenGL_ES_CommonLite_Version_1_0  = 0x00000100,
-        OpenGL_ES_Common_Version_1_1      = 0x00000200,
-        OpenGL_ES_CommonLite_Version_1_1  = 0x00000400,
-        OpenGL_ES_Version_2_0             = 0x00000800,
-        OpenGL_Version_3_0                = 0x00001000,
-        OpenGL_Version_3_1                = 0x00002000,
-        OpenGL_Version_3_2                = 0x00004000,
-        OpenGL_Version_3_3                = 0x00008000,
-        OpenGL_Version_4_0                = 0x00010000
+    enum WindowApi {
+        Raster,
+        OpenGL,
+        OpenVG
     };
-    Q_DECLARE_FLAGS(OpenGLVersionFlags, OpenGLVersionFlag)
 
     QPlatformWindowFormat();
     QPlatformWindowFormat(FormatOptions options);
@@ -136,6 +120,9 @@ public:
     void setSwapInterval(int interval);
     int  swapInterval() const;
 
+    void setWindowApi(QPlatformWindowFormat::WindowApi api);
+    WindowApi windowApi() const;
+
     bool doubleBuffer() const;
     void setDoubleBuffer(bool enable);
     bool depth() const;
@@ -164,25 +151,6 @@ public:
 //    static QPlatformWindowFormat defaultOverlayFormat();
 //    static void setDefaultOverlayFormat(const QPlatformWindowFormat& f);
 
-    static bool hasOpenGL();
-    static bool hasOpenGLOverlays();
-
-    void setVersion(int major, int minor);
-    int majorVersion() const;
-    int minorVersion() const;
-
-    enum OpenGLContextProfile {
-        NoProfile,
-        CoreProfile,
-        CompatibilityProfile
-    };
-
-    void setProfile(OpenGLContextProfile profile);
-    OpenGLContextProfile profile() const;
-
-
-    static OpenGLVersionFlags openGLVersionFlags();
-
 private:
     QPlatformWindowFormatPrivate *d;
 
@@ -196,7 +164,6 @@ Q_GUI_EXPORT bool operator==(const QPlatformWindowFormat&, const QPlatformWindow
 Q_GUI_EXPORT bool operator!=(const QPlatformWindowFormat&, const QPlatformWindowFormat&);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformWindowFormat::FormatOptions)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QPlatformWindowFormat::OpenGLVersionFlags)
 
 inline bool QPlatformWindowFormat::doubleBuffer() const
 {

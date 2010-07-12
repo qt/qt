@@ -62,7 +62,7 @@ public:
         , swapInterval(-1)
         , majorVersion(1)
         , minorVersion(0)
-        , profile(QPlatformWindowFormat::NoProfile)
+        , windowApi(QPlatformWindowFormat::Raster)
     {
     }
 
@@ -80,7 +80,7 @@ public:
           swapInterval(other->swapInterval),
           majorVersion(other->majorVersion),
           minorVersion(other->minorVersion),
-          profile(other->profile)
+          windowApi(other->windowApi)
     {
     }
     QAtomicInt ref;
@@ -96,7 +96,7 @@ public:
     int swapInterval;
     int majorVersion;
     int minorVersion;
-    QPlatformWindowFormat::OpenGLContextProfile profile;
+    QPlatformWindowFormat::WindowApi windowApi;
 };
 
 /*!
@@ -584,6 +584,17 @@ int QPlatformWindowFormat::swapInterval() const
     return d->swapInterval;
 }
 
+void QPlatformWindowFormat::setWindowApi(QPlatformWindowFormat::WindowApi api)
+{
+    detach();
+    d->windowApi = api;
+}
+
+QPlatformWindowFormat::WindowApi QPlatformWindowFormat::windowApi() const
+{
+    return d->windowApi;
+}
+
 ///*!
 //    \fn bool QGLFormat::hasOverlay() const
 
@@ -835,329 +846,6 @@ int QPlatformWindowFormat::stencilBufferSize() const
 }
 
 /*!
-    \since 4.7
-
-    Set the OpenGL version to the \a major and \a minor numbers. If a
-    context compatible with the requested OpenGL version cannot be
-    created, a context compatible with version 1.x is created instead.
-
-    \sa majorVersion(), minorVersion()
-*/
-void QPlatformWindowFormat::setVersion(int major, int minor)
-{
-    if (major < 1 || minor < 0) {
-        qWarning("QGLFormat::setVersion: Cannot set zero or negative version number %d.%d", major, minor);
-        return;
-    }
-    detach();
-    d->majorVersion = major;
-    d->minorVersion = minor;
-}
-
-/*!
-    \since 4.7
-
-    Returns the OpenGL major version.
-
-    \sa setVersion(), minorVersion()
-*/
-int QPlatformWindowFormat::majorVersion() const
-{
-    return d->majorVersion;
-}
-
-/*!
-    \since 4.7
-
-    Returns the OpenGL minor version.
-
-    \sa setVersion(), majorVersion()
-*/
-int QPlatformWindowFormat::minorVersion() const
-{
-    return d->minorVersion;
-}
-
-/*!
-    \enum QGLFormat::OpenGLContextProfile
-    \since 4.7
-
-    This enum describes the OpenGL context profiles that can be
-    specified for contexts implementing OpenGL version 3.2 or
-    higher. These profiles are different from OpenGL ES profiles.
-
-    \value NoProfile            OpenGL version is lower than 3.2.
-    \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
-    \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
-*/
-
-/*!
-    \since 4.7
-
-    Set the OpenGL context profile to \a profile. The \a profile is
-    ignored if the requested OpenGL version is less than 3.2.
-
-    \sa profile()
-*/
-void QPlatformWindowFormat::setProfile(OpenGLContextProfile profile)
-{
-    detach();
-    d->profile = profile;
-}
-
-/*!
-    \since 4.7
-
-    Returns the OpenGL context profile.
-
-    \sa setProfile()
-*/
-QPlatformWindowFormat::OpenGLContextProfile QPlatformWindowFormat::profile() const
-{
-    return d->profile;
-}
-
-
-/*!
-    \fn bool QGLFormat::hasOpenGL()
-
-    Returns true if the window system has any OpenGL support;
-    otherwise returns false.
-
-    \warning This function must not be called until the QApplication
-    object has been created.
-*/
-
-
-
-/*!
-    \fn bool QGLFormat::hasOpenGLOverlays()
-
-    Returns true if the window system supports OpenGL overlays;
-    otherwise returns false.
-
-    \warning This function must not be called until the QApplication
-    object has been created.
-*/
-
-QPlatformWindowFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(const QString &versionString)
-{
-    QPlatformWindowFormat::OpenGLVersionFlags versionFlags = QPlatformWindowFormat::OpenGL_Version_None;
-
-    if (versionString.startsWith(QLatin1String("OpenGL ES"))) {
-        QStringList parts = versionString.split(QLatin1Char(' '));
-        if (parts.size() >= 3) {
-            if (parts[2].startsWith(QLatin1String("1."))) {
-                if (parts[1].endsWith(QLatin1String("-CM"))) {
-                    versionFlags |= QPlatformWindowFormat::OpenGL_ES_Common_Version_1_0 |
-                                    QPlatformWindowFormat::OpenGL_ES_CommonLite_Version_1_0;
-                    if (parts[2].startsWith(QLatin1String("1.1")))
-                        versionFlags |= QPlatformWindowFormat::OpenGL_ES_Common_Version_1_1 |
-                                        QPlatformWindowFormat::OpenGL_ES_CommonLite_Version_1_1;
-                } else {
-                    // Not -CM, must be CL, CommonLite
-                    versionFlags |= QPlatformWindowFormat::OpenGL_ES_CommonLite_Version_1_0;
-                    if (parts[2].startsWith(QLatin1String("1.1")))
-                        versionFlags |= QPlatformWindowFormat::OpenGL_ES_CommonLite_Version_1_1;
-                }
-            } else {
-                // OpenGL ES version 2.0 or higher
-                versionFlags |= QPlatformWindowFormat::OpenGL_ES_Version_2_0;
-            }
-        } else {
-            // if < 3 parts to the name, it is an unrecognised OpenGL ES
-            qWarning("Unrecognised OpenGL ES version");
-        }
-    } else {
-        // not ES, regular OpenGL, the version numbers are first in the string
-        if (versionString.startsWith(QLatin1String("1."))) {
-            switch (versionString[2].toAscii()) {
-            case '5':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_5;
-            case '4':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_4;
-            case '3':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_3;
-            case '2':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_2;
-            case '1':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_1;
-            default:
-                break;
-            }
-        } else if (versionString.startsWith(QLatin1String("2."))) {
-            versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_1 |
-                            QPlatformWindowFormat::OpenGL_Version_1_2 |
-                            QPlatformWindowFormat::OpenGL_Version_1_3 |
-                            QPlatformWindowFormat::OpenGL_Version_1_4 |
-                            QPlatformWindowFormat::OpenGL_Version_1_5 |
-                            QPlatformWindowFormat::OpenGL_Version_2_0;
-            if (versionString[2].toAscii() == '1')
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_2_1;
-        } else if (versionString.startsWith(QLatin1String("3."))) {
-            versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_1 |
-                            QPlatformWindowFormat::OpenGL_Version_1_2 |
-                            QPlatformWindowFormat::OpenGL_Version_1_3 |
-                            QPlatformWindowFormat::OpenGL_Version_1_4 |
-                            QPlatformWindowFormat::OpenGL_Version_1_5 |
-                            QPlatformWindowFormat::OpenGL_Version_2_0 |
-                            QPlatformWindowFormat::OpenGL_Version_2_1 |
-                            QPlatformWindowFormat::OpenGL_Version_3_0;
-            switch (versionString[2].toAscii()) {
-            case '3':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_3_3;
-            case '2':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_3_2;
-            case '1':
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_3_1;
-            case '0':
-                break;
-            default:
-                versionFlags |= QPlatformWindowFormat::OpenGL_Version_3_1 |
-                                QPlatformWindowFormat::OpenGL_Version_3_2 |
-                                QPlatformWindowFormat::OpenGL_Version_3_3;
-                break;
-            }
-        } else if (versionString.startsWith(QLatin1String("4."))) {
-            versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_1 |
-                            QPlatformWindowFormat::OpenGL_Version_1_2 |
-                            QPlatformWindowFormat::OpenGL_Version_1_3 |
-                            QPlatformWindowFormat::OpenGL_Version_1_4 |
-                            QPlatformWindowFormat::OpenGL_Version_1_5 |
-                            QPlatformWindowFormat::OpenGL_Version_2_0 |
-                            QPlatformWindowFormat::OpenGL_Version_2_1 |
-                            QPlatformWindowFormat::OpenGL_Version_3_0 |
-                            QPlatformWindowFormat::OpenGL_Version_3_1 |
-                            QPlatformWindowFormat::OpenGL_Version_3_2 |
-                            QPlatformWindowFormat::OpenGL_Version_3_3 |
-                            QPlatformWindowFormat::OpenGL_Version_4_0;
-        } else {
-            versionFlags |= QPlatformWindowFormat::OpenGL_Version_1_1 |
-                            QPlatformWindowFormat::OpenGL_Version_1_2 |
-                            QPlatformWindowFormat::OpenGL_Version_1_3 |
-                            QPlatformWindowFormat::OpenGL_Version_1_4 |
-                            QPlatformWindowFormat::OpenGL_Version_1_5 |
-                            QPlatformWindowFormat::OpenGL_Version_2_0 |
-                            QPlatformWindowFormat::OpenGL_Version_2_1 |
-                            QPlatformWindowFormat::OpenGL_Version_3_0 |
-                            QPlatformWindowFormat::OpenGL_Version_3_1 |
-                            QPlatformWindowFormat::OpenGL_Version_3_2 |
-                            QPlatformWindowFormat::OpenGL_Version_3_3 |
-                            QPlatformWindowFormat::OpenGL_Version_4_0;
-        }
-    }
-    return versionFlags;
-}
-
-/*!
-    \enum QGLFormat::OpenGLVersionFlag
-    \since 4.2
-
-    This enum describes the various OpenGL versions that are
-    recognized by Qt. Use the QGLFormat::openGLVersionFlags() function
-    to identify which versions that are supported at runtime.
-
-    \value OpenGL_Version_None  If no OpenGL is present or if no OpenGL context is current.
-
-    \value OpenGL_Version_1_1  OpenGL version 1.1 or higher is present.
-
-    \value OpenGL_Version_1_2  OpenGL version 1.2 or higher is present.
-
-    \value OpenGL_Version_1_3  OpenGL version 1.3 or higher is present.
-
-    \value OpenGL_Version_1_4  OpenGL version 1.4 or higher is present.
-
-    \value OpenGL_Version_1_5  OpenGL version 1.5 or higher is present.
-
-    \value OpenGL_Version_2_0  OpenGL version 2.0 or higher is present.
-    Note that version 2.0 supports all the functionality of version 1.5.
-
-    \value OpenGL_Version_2_1  OpenGL version 2.1 or higher is present.
-
-    \value OpenGL_Version_3_0  OpenGL version 3.0 or higher is present.
-
-    \value OpenGL_Version_3_1  OpenGL version 3.1 or higher is present.
-    Note that OpenGL version 3.1 or higher does not necessarily support all the features of
-    version 3.0 and lower.
-
-    \value OpenGL_Version_3_2  OpenGL version 3.2 or higher is present.
-
-    \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
-
-    \value OpenGL_ES_Common_Version_1_0  OpenGL ES version 1.0 Common or higher is present.
-    The Common profile supports all the features of Common Lite.
-
-    \value OpenGL_ES_CommonLite_Version_1_1  OpenGL ES version 1.1 Common Lite or higher is present.
-
-    \value OpenGL_ES_Common_Version_1_1  OpenGL ES version 1.1 Common or higher is present.
-    The Common profile supports all the features of Common Lite.
-
-    \value OpenGL_ES_Version_2_0  OpenGL ES version 2.0 or higher is present.
-    Note that OpenGL ES version 2.0 does not support all the features of OpenGL ES 1.x.
-    So if OpenGL_ES_Version_2_0 is returned, none of the ES 1.x flags are returned.
-
-    See also \l{http://www.opengl.org} for more information about the different
-    revisions of OpenGL.
-
-    \sa openGLVersionFlags()
-*/
-
-/*!
-    \since 4.2
-
-    Identifies, at runtime, which OpenGL versions that are supported
-    by the current platform.
-
-    Note that if OpenGL version 1.5 is supported, its predecessors
-    (i.e., version 1.4 and lower) are also supported. To identify the
-    support of a particular feature, like multi texturing, test for
-    the version in which the feature was first introduced (i.e.,
-    version 1.3 in the case of multi texturing) to adapt to the largest
-    possible group of runtime platforms.
-
-    This function needs a valid current OpenGL context to work;
-    otherwise it will return OpenGL_Version_None.
-
-    \sa hasOpenGL(), hasOpenGLOverlays()
-*/
-QPlatformWindowFormat::OpenGLVersionFlags QPlatformWindowFormat::openGLVersionFlags()
-{
-//    static bool cachedDefault = false;
-    static OpenGLVersionFlags defaultVersionFlags = OpenGL_Version_None;
-//    QGLContext *currentCtx = const_cast<QGLContext *>(QGLContext::currentContext());
-//    QGLTemporaryContext *tmpContext = 0;
-
-//    if (currentCtx && currentCtx->d_func()->version_flags_cached)
-//        return currentCtx->d_func()->version_flags;
-
-//    if (!currentCtx) {
-//        if (cachedDefault) {
-//            return defaultVersionFlags;
-//        } else {
-//            if (!hasOpenGL())
-//                return defaultVersionFlags;
-//            tmpContext = new QGLTemporaryContext;
-//            cachedDefault = true;
-//        }
-//    }
-
-//    QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
-//    OpenGLVersionFlags versionFlags = qOpenGLVersionFlagsFromString(versionString);
-//    if (currentCtx) {
-//        currentCtx->d_func()->version_flags_cached = true;
-//        currentCtx->d_func()->version_flags = versionFlags;
-//    }
-//    if (tmpContext) {
-//        defaultVersionFlags = versionFlags;
-//        delete tmpContext;
-//    }
-
-//    return versionFlags;
-    return defaultVersionFlags;
-}
-
-
-/*!
     Returns the default QGLFormat for the application. All QGLWidget
     objects that are created use this format unless another format is
     specified, e.g. when they are constructed.
@@ -1266,7 +954,7 @@ bool operator==(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
         && a.d->swapInterval == b.d->swapInterval
         && a.d->majorVersion == b.d->majorVersion
         && a.d->minorVersion == b.d->minorVersion
-        && a.d->profile == b.d->profile);
+        && a.d->windowApi == b.d->windowApi);
 }
 
 
