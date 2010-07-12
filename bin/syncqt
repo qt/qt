@@ -960,7 +960,7 @@ if($check_includes) {
 	#iteration info
 	my $lib = $_;
 	my $dir = "$modules{$lib}";
-	foreach (split(/;/, $dir)) {
+	{
 	    my $current_dir = "$_";
 	    #calc subdirs
 	    my @subdirs = ($current_dir);
