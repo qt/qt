@@ -47,8 +47,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <net/if.h>
-
 QT_BEGIN_NAMESPACE
 
 #ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
@@ -577,15 +575,13 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
              * check if socket is in exception set
              * then signal RequestComplete for it
              */
-            qWarning("exception on %d [will do setdefaultif(0) - hack]", i.key()->socket());
+            qWarning("exception on %d [will close the socket handle - hack]", i.key()->socket());
             // quick fix; there is a bug
             // when doing read on socket
             // errors not preoperly mapped
             // after offline-ing the device
             // on some devices we do get exception
-            // close all exiting sockets
-            // and reset default IAP
-            ::setdefaultif(0);
+            ::close(i.key()->socket());
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
