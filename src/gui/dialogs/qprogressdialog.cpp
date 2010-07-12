@@ -153,6 +153,13 @@ void QProgressDialogPrivate::layout()
     const bool centered =
         bool(q->style()->styleHint(QStyle::SH_ProgressDialog_CenterCancelButton, 0, q));
 
+    int additionalSpacing = 0;
+#ifdef Q_OS_SYMBIAN
+    //In Symbian, we need to have wider margins for dialog borders, as the actual border is some pixels
+    //inside the dialog area (to enable transparent borders)
+    additionalSpacing = mlr;
+#endif
+
     QSize cs = cancel ? cancel->sizeHint() : QSize(0,0);
     QSize bh = bar->sizeHint();
     int cspc;
@@ -185,8 +192,8 @@ void QProgressDialogPrivate::layout()
     }
 
     if (label)
-        label->setGeometry(mlr, 0, q->width()-mlr*2, lh);
-    bar->setGeometry(mlr, lh+sp, q->width()-mlr*2, bh.height());
+        label->setGeometry(mlr, additionalSpacing, q->width() - mlr * 2, lh);
+    bar->setGeometry(mlr, lh + sp + additionalSpacing, q->width() - mlr * 2, bh.height());
 }
 
 void QProgressDialogPrivate::retranslateStrings()

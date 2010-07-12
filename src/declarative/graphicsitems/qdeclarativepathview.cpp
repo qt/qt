@@ -329,6 +329,10 @@ void QDeclarativePathViewPrivate::regenerate()
 
     \image pathview.gif
 
+    (Note the above example uses PathAttribute to scale and modify the
+    opacity of the items as they rotate. This additional code can be seen in the
+    PathAttribute documentation.)
+
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
@@ -552,6 +556,8 @@ void QDeclarativePathView::setCurrentIndex(int idx)
     \qmlmethod PathView::incrementCurrentIndex()
 
     Increments the current index.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativePathView::incrementCurrentIndex()
 {
@@ -563,6 +569,8 @@ void QDeclarativePathView::incrementCurrentIndex()
     \qmlmethod PathView::decrementCurrentIndex()
 
     Decrements the current index.
+
+    \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativePathView::decrementCurrentIndex()
 {

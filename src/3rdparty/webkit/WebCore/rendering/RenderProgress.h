@@ -40,6 +40,8 @@ private:
     virtual void calcPrefWidths();
     virtual void layout();
     virtual void updateFromElement();
+    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
+
     int m_position;
 };
 

@@ -283,7 +283,7 @@ public:
                 if (m_roles.count() == 1)
                     m_roleNames.insert("modelData", m_roles.at(0));
                 if (m_roles.count())
-                    m_roleNames.insert("hasModelChildren", 0);
+                    m_roleNames.insert("hasModelChildren", -1);
             } else if (m_listAccessor) {
                 m_roleNames.insert("modelData", 0);
                 if (m_listAccessor->type() == QDeclarativeListAccessor::Instance) {
@@ -817,6 +817,12 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
    
     \c view.qml:
     \snippet doc/src/snippets/declarative/visualdatamodel_rootindex/view.qml 0
+
+    If the \l model is a QAbstractItemModel subclass, the delegate can also
+    reference a \c hasModelChildren property (optionally qualified by a
+    \e model. prefix) that indicates whether the delegate's model item has 
+    any child nodes.
+
 
     \sa modelIndex(), parentModelIndex()
 */

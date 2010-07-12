@@ -63,6 +63,5 @@
 //! [4]
 
 //! [5]
-   set QT_SIS_OPTIONS=-i
-   make sis
+   make deploy
 //! [5]

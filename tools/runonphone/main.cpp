@@ -62,6 +62,8 @@ void printUsage(QTextStream& outstream, QString exeName)
             << "-v, --verbose                            show debugging output" << endl
             << "-q, --quiet                              hide progress messages" << endl
             << "-d, --download <remote file> <local file> copy file from phone to PC after running test" << endl
+            << "--nocrashlog                             Don't capture call stack if test crashes" << endl
+            << "--crashlogpath <dir>                     Path to save crash logs (default=working dir)" << endl
             << endl
             << "USB COM ports can usually be autodetected, use -p or -f to force a specific port." << endl
             << "If using System TRK, it is possible to copy the program directly to sys/bin on the phone." << endl
@@ -85,6 +87,8 @@ int main(int argc, char *argv[])
     QString downloadLocalFile;
     int loglevel=1;
     int timeout=0;
+    bool crashlog = true;
+    QString crashlogpath;
     QListIterator<QString> it(args);
     it.next(); //skip name of program
     while (it.hasNext()) {
@@ -126,6 +130,12 @@ int main(int argc, char *argv[])
                 loglevel=2;
             else if (arg == "--quiet" || arg == "-q")
                 loglevel=0;
+            else if (arg == "--nocrashlog")
+                crashlog = false;
+            else if (arg == "--crashlogpath") {
+                CHECK_PARAMETER_EXISTS
+                crashlogpath = it.next();
+            }
             else
                 errstream << "unknown command line option " << arg << endl;
         } else {
@@ -145,7 +155,7 @@ int main(int argc, char *argv[])
     if (serialPortName.isEmpty()) {
         if (loglevel > 0)
             outstream << "Detecting serial ports" << endl;
-        foreach (const SerialPortId &id, enumerateSerialPorts()) {
+        foreach (const SerialPortId &id, enumerateSerialPorts(loglevel)) {
             if (loglevel > 0)
                 outstream << "Port Name: " << id.portName << ", "
                      << "Friendly Name:" << id.friendlyName << endl;
@@ -199,6 +209,8 @@ int main(int argc, char *argv[])
 
     TrkSignalHandler handler;
     handler.setLogLevel(loglevel);
+    handler.setCrashLogging(crashlog);
+    handler.setCrashLogPath(crashlogpath);
 
     QObject::connect(launcher.data(), SIGNAL(copyingStarted()), &handler, SLOT(copyingStarted()));
     QObject::connect(launcher.data(), SIGNAL(canNotConnect(const QString &)), &handler, SLOT(canNotConnect(const QString &)));
@@ -215,8 +227,12 @@ int main(int argc, char *argv[])
     QObject::connect(launcher.data(), SIGNAL(copyProgress(int)), &handler, SLOT(copyProgress(int)));
     QObject::connect(launcher.data(), SIGNAL(stateChanged(int)), &handler, SLOT(stateChanged(int)));
     QObject::connect(launcher.data(), SIGNAL(processStopped(uint,uint,uint,QString)), &handler, SLOT(stopped(uint,uint,uint,QString)));
+    QObject::connect(launcher.data(), SIGNAL(libraryLoaded(trk::Library)), &handler, SLOT(libraryLoaded(trk::Library)));
+    QObject::connect(launcher.data(), SIGNAL(libraryUnloaded(trk::Library)), &handler, SLOT(libraryUnloaded(trk::Library)));
+    QObject::connect(launcher.data(), SIGNAL(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)), &handler, SLOT(registersAndCallStackReadComplete(const QList<uint> &,const QByteArray &)));
     QObject::connect(&handler, SIGNAL(resume(uint,uint)), launcher.data(), SLOT(resumeProcess(uint,uint)));
     QObject::connect(&handler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
+    QObject::connect(&handler, SIGNAL(getRegistersAndCallStack(uint,uint)), launcher.data(), SLOT(getRegistersAndCallStack(uint,uint)));
     QObject::connect(launcher.data(), SIGNAL(finished()), &handler, SLOT(finished()));
 
     QTimer timer;

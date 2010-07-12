@@ -341,6 +341,8 @@ QML list properties are typesafe - in this case \c {Fruit} is a QObject type tha
 
 \note QDeclarativeListProperty can only be used for lists of QObject-derived object pointers.
 
+\sa {Object and List Property Types}
+
 */
 
 /*!

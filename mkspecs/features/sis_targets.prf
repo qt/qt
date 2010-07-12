@@ -159,6 +159,16 @@ equals(GENERATE_SIS_TARGETS, true) {
 
         QMAKE_DISTCLEAN += $${sis_destdir}/$${baseTarget}.sis
     }
+
+    deploy_target.target = deploy
+    contains(QMAKE_HOST.os, "Windows") {
+        deploy_target.depends = sis
+        deploy_target.commands = call $$target_sis_target.target
+    } else {
+        deploy_target.commands = @echo Deployment not supported in this environment
+    }
+    QMAKE_EXTRA_TARGETS += deploy_target
+
 } else {
     contains(TEMPLATE, subdirs) {
         # Enable recursive sis target.

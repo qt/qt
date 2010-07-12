@@ -87,7 +87,7 @@ Text {
 An \l Item requests focus by setting the \c {Item::focus} property to true.
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
-sufficient.  If we run the following example with the \l {Qt Declarative UI Runtime}{qml} tool, we see that
+sufficient.  If we run the following example with the \l {QML Viewer}, we see that
 the \c {keyHandler} element has \e {active focus} and pressing the 'A', 'B'
 or 'C' keys modifies the text appropriately.
 
@@ -265,6 +265,10 @@ When a QML item explicitly relinquishes focus (by setting its
 \c {Item::focus} property to false while it has \e {active focus}), the system
 does not automatically select another element to receive focus.  That is, it
 is possible for there to be no currently \e {active focus}.
+
+See the {declarative/keyinteraction/focus}{Keyboard Focus example} for a 
+demonstration of moving keyboard focus between multiple areas using FocusScope
+elements.
 
 \section1 Advanced uses of Focus Scopes
 

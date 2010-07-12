@@ -76,7 +76,7 @@ public:
     explicit QEventDispatcherWin32(QObject *parent = 0);
     ~QEventDispatcherWin32();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
+    bool QT_ENSURE_STACK_ALIGNED_FOR_SSE processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
     void registerSocketNotifier(QSocketNotifier *notifier);

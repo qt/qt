@@ -121,6 +121,8 @@ public:
 
     void registerInterceptor(int index, int valueIndex, QDeclarativePropertyValueInterceptor *interceptor);
     QScriptValue vmeMethod(int index);
+    int vmeMethodLineNumber(int index);
+    void setVmeMethod(int index, const QScriptValue &);
     QScriptValue vmeProperty(int index);
     void setVMEProperty(int index, const QScriptValue &);
 

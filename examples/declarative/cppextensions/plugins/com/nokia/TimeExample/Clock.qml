@@ -57,10 +57,10 @@ Rectangle {
         smooth: true
         transform: Rotation {
             id: hourRotation
-            origin.x: 7.5; origin.y: 73; angle: 0
-            SpringFollow on angle {
-                spring: 2; damping: 0.2; modulus: 360
-                to: (clock.hours * 30) + (clock.minutes * 0.5)
+            origin.x: 7.5; origin.y: 73;
+            angle: (clock.hours * 30) + (clock.minutes * 0.5)
+            Behavior on angle {
+                SpringAnimation{ spring: 2; damping: 0.2; modulus: 360 }
             }
         }
     }
@@ -71,10 +71,10 @@ Rectangle {
         smooth: true
         transform: Rotation {
             id: minuteRotation
-            origin.x: 6.5; origin.y: 83; angle: 0
-            SpringFollow on angle {
-                spring: 2; damping: 0.2; modulus: 360
-                to: clock.minutes * 6
+            origin.x: 6.5; origin.y: 83;
+            angle: clock.minutes * 6
+            Behavior on angle {
+                SpringAnimation{ spring: 2; damping: 0.2; modulus: 360 }
             }
         }
     }

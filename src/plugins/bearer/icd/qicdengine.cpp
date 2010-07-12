@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 IcdNetworkConfigurationPrivate::IcdNetworkConfigurationPrivate()
-:   network_attrs(0), service_attrs(0)
+:   service_attrs(0), network_attrs(0)
 {
 }
 
@@ -251,6 +251,11 @@ void QIcdEngine::initialize()
                                          ICD_DBUS_API_INTERFACE,
                                          QDBusConnection::systemBus(),
                                          this);
+
+    // abort if cannot connect to DBus.
+    if (!m_dbusInterface->isValid())
+        return;
+
     connect(&m_scanTimer, SIGNAL(timeout()), this, SLOT(finishAsyncConfigurationUpdate()));
     m_scanTimer.setSingleShot(true);
 
@@ -322,10 +327,10 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
 }
 
 
-static uint32_t getNetworkAttrs(bool is_iap_id,
-                                const QString &iap_id,
-                                const QString &iap_type,
-                                QString security_method)
+static quint32 getNetworkAttrs(bool is_iap_id,
+                               const QString &iap_id,
+                               const QString &iap_type,
+                               QString security_method)
 {
     guint network_attr = 0;
     dbus_uint32_t cap = 0;
@@ -363,7 +368,7 @@ static uint32_t getNetworkAttrs(bool is_iap_id,
     if (is_iap_id)
     network_attr |= ICD_NW_ATTR_IAPNAME;
 
-    return (uint32_t)network_attr;
+    return quint32(network_attr);
 }
 
 

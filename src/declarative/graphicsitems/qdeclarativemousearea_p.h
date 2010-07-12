@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QDeclarativeDrag : public QObject
+class Q_AUTOTEST_EXPORT QDeclarativeDrag : public QObject
 {
     Q_OBJECT
 
@@ -110,7 +110,7 @@ private:
 
 class QDeclarativeMouseEvent;
 class QDeclarativeMouseAreaPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeMouseArea : public QDeclarativeItem
 {
     Q_OBJECT
 

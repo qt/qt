@@ -72,7 +72,10 @@ public:
         Courier,    TypeWriter = Courier,
         OldEnglish, Decorative = OldEnglish,
         System,
-        AnyStyle
+        AnyStyle,
+        Cursive,
+        Monospace,
+        Fantasy
     };
 
     enum StyleStrategy {

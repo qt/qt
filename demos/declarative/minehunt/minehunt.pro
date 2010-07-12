@@ -27,7 +27,7 @@ symbian:{
     TARGET.EPOCALLOWDLLDATA = 1
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.CAPABILITY = NetworkServices ReadUserData
-    importFiles.sources = qmlminehuntplugin.dll \
+    importFiles.sources = MinehuntCore/qmlminehuntplugin.dll \
     MinehuntCore/Explosion.qml \
     MinehuntCore/pics \
     MinehuntCore/qmldir

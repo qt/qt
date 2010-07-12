@@ -148,6 +148,11 @@ public:
     void setStandardErrorFile(const QString &fileName, OpenMode mode = Truncate);
     void setStandardOutputProcess(QProcess *destination);
 
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QString nativeArguments() const;
+    void setNativeArguments(const QString &arguments);
+#endif
+
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &dir);
 

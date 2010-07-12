@@ -281,6 +281,15 @@ QString QFont::defaultFamily() const
     case QFont::Courier:
         return QString::fromLatin1("Courier");
 
+    case QFont::Monospace:
+        return QString::fromLatin1("Courier New");
+
+    case QFont::Cursive:
+        return QString::fromLatin1("Comic Sans MS");
+
+    case QFont::Fantasy:
+        return QString::fromLatin1("Impact");
+
     case QFont::Decorative:
         return QString::fromLatin1("Old English");
 

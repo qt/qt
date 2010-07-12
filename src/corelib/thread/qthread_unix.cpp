@@ -247,6 +247,14 @@ void *QThreadPrivate::start(void *arg)
     data->symbian_thread_handle = RThread();
     TThreadId threadId = data->symbian_thread_handle.Id();
     data->symbian_thread_handle.Open(threadId);
+    // On symbian, threads other than the main thread are non critical by default
+    // This means a worker thread can crash without crashing the application - to
+    // use this feature, we would need to use RThread::Logon in the main thread
+    // to catch abnormal thread exit and emit the finished signal.
+    // For the sake of cross platform consistency, we set the thread as process critical
+    // - advanced users who want the symbian behaviour can change the critical
+    // attribute of the thread again once the app gains control in run()
+    User::SetCritical(User::EProcessCritical);
 #endif
 
     pthread_once(&current_thread_data_once, create_current_thread_data_key);

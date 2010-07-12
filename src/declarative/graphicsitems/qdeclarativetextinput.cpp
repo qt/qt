@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     On Mac OS X, the Up/Down key bindings for Home/End are explicitly disabled.
     If you want such bindings (on any platform), you will need to construct them in QML.
     
-    \sa TextEdit, Text
+    \sa TextEdit, Text, {declarative/text/textselection}{Text Selection example}
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
     : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
@@ -100,8 +100,6 @@ void QDeclarativeTextInput::setText(const QString &s)
     if(s == text())
         return;
     d->control->setText(s);
-    d->updateHorizontalScroll();
-    //emit textChanged();
 }
 
 /*!
@@ -149,12 +147,6 @@ void QDeclarativeTextInput::setText(const QString &s)
     \qmlproperty bool TextInput::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool TextInput::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -556,9 +548,9 @@ void QDeclarativeTextInput::setAutoScroll(bool b)
         return;
 
     d->autoScroll = b;
-    d->updateHorizontalScroll();
     //We need to repaint so that the scrolling is taking into account.
     updateSize(true);
+    d->updateHorizontalScroll();
     emit autoScrollChanged(d->autoScroll);
 }
 
@@ -832,7 +824,7 @@ void QDeclarativeTextInput::createCursor()
     QDeclarative_setParent_noEvent(d->cursorItem, this);
     d->cursorItem->setParentItem(this);
     d->cursorItem->setX(d->control->cursorToX());
-    d->cursorItem->setHeight(d->control->height());
+    d->cursorItem->setHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
 }
 
 void QDeclarativeTextInput::moveCursor()
@@ -916,6 +908,7 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
 void QDeclarativeTextInput::inputMethodEvent(QInputMethodEvent *ev)
 {
     Q_D(QDeclarativeTextInput);
+    ev->ignore();
     inputMethodPreHandler(ev);
     if (ev->isAccepted())
         return;
@@ -1026,27 +1019,31 @@ bool QDeclarativeTextInput::event(QEvent* ev)
 void QDeclarativeTextInput::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
-    if (newGeometry.width() != oldGeometry.width())
+    Q_D(QDeclarativeTextInput);
+    if (newGeometry.width() != oldGeometry.width()) {
         updateSize();
+        d->updateHorizontalScroll();
+    }
     QDeclarativePaintedItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+int QDeclarativeTextInputPrivate::calculateTextWidth()
+{
+    return qRound(control->naturalTextWidth());
 }
 
 void QDeclarativeTextInputPrivate::updateHorizontalScroll()
 {
     Q_Q(QDeclarativeTextInput);
-    QFontMetrics fm = QFontMetrics(font);
     int cix = qRound(control->cursorToX());
     QRect br(q->boundingRect().toRect());
-    //###Is this using bearing appropriately?
-    int minLB = qMax(0, -fm.minLeftBearing());
-    int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = qRound(control->naturalTextWidth()) + 1 + minRB;
+    int widthUsed = calculateTextWidth();
     if (autoScroll) {
-        if ((minLB + widthUsed) <=  br.width()) {
+        if (widthUsed <=  br.width()) {
             // text fits in br; use hscroll for alignment
             switch (hAlign & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {
             case Qt::AlignRight:
-                hscroll = widthUsed - br.width() + 1;
+                hscroll = widthUsed - br.width() - 1;
                 break;
             case Qt::AlignHCenter:
                 hscroll = (widthUsed - br.width()) / 2;
@@ -1056,7 +1053,6 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
                 hscroll = 0;
                 break;
             }
-            hscroll -= minLB;
         } else if (cix - hscroll >= br.width()) {
             // text doesn't fit, cursor is to the right of br (scroll right)
             hscroll = cix - br.width() + 1;
@@ -1076,7 +1072,6 @@ void QDeclarativeTextInputPrivate::updateHorizontalScroll()
         } else {
             hscroll = 0;
         }
-        hscroll -= minLB;
     }
 }
 
@@ -1101,7 +1096,6 @@ void QDeclarativeTextInput::drawContents(QPainter *p, const QRect &r)
         offset = QPoint(d->hscroll, 0);
     }
     d->control->draw(p, offset, r, flags);
-
     p->restore();
 }
 
@@ -1147,6 +1141,42 @@ void QDeclarativeTextInput::selectAll()
     Q_D(QDeclarativeTextInput);
     d->control->setSelection(0, d->control->text().length());
 }
+
+#ifndef QT_NO_CLIPBOARD
+/*!
+    \qmlmethod TextInput::cut()
+
+    Moves the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextInput::cut()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->copy();
+    d->control->del();
+}
+
+/*!
+    \qmlmethod TextInput::copy()
+
+    Copies the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextInput::copy()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->copy();
+}
+
+/*!
+    \qmlmethod TextInput::paste()
+
+    Replaces the currently selected text by the contents of the system clipboard.
+*/
+void QDeclarativeTextInput::paste()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->paste();
+}
+#endif // QT_NO_CLIPBOARD
 
 /*!
     \qmlmethod void TextInput::selectWord()
@@ -1398,18 +1428,11 @@ void QDeclarativeTextInputPrivate::init()
     q->connect(control, SIGNAL(selectionChanged()),
                q, SLOT(selectionChanged()));
     q->connect(control, SIGNAL(textChanged(const QString &)),
-               q, SIGNAL(displayTextChanged(const QString &)));
-    q->connect(control, SIGNAL(textChanged(const QString &)),
                q, SLOT(q_textChanged()));
     q->connect(control, SIGNAL(accepted()),
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
-    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-               q, SLOT(updateRect()));//TODO: Only update rect between pos's
-    q->connect(control, SIGNAL(selectionChanged()),
-               q, SLOT(updateRect()));//TODO: Only update rect in selection
-    //Note that above TODOs probably aren't that big a savings
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1422,6 +1445,8 @@ void QDeclarativeTextInputPrivate::init()
 void QDeclarativeTextInput::cursorPosChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect between pos's
+    updateMicroFocus();
     emit cursorPositionChanged();
 
     if(!d->control->hasSelectedText()){
@@ -1439,6 +1464,7 @@ void QDeclarativeTextInput::cursorPosChanged()
 void QDeclarativeTextInput::selectionChanged()
 {
     Q_D(QDeclarativeTextInput);
+    updateRect();//TODO: Only update rect in selection
     emit selectedTextChanged();
 
     if(d->lastSelectionStart != d->control->selectionStart()){
@@ -1458,9 +1484,11 @@ void QDeclarativeTextInput::selectionChanged()
 void QDeclarativeTextInput::q_textChanged()
 {
     Q_D(QDeclarativeTextInput);
-    d->updateHorizontalScroll();
     updateSize();
+    d->updateHorizontalScroll();
+    updateMicroFocus();
     emit textChanged();
+    emit displayTextChanged();
     if(hasAcceptableInput() != d->oldValidity){
         d->oldValidity = hasAcceptableInput();
         emit acceptableInputChanged();
@@ -1477,16 +1505,26 @@ void QDeclarativeTextInput::updateRect(const QRect &r)
     update();
 }
 
+QRectF QDeclarativeTextInput::boundingRect() const
+{
+    Q_D(const QDeclarativeTextInput);
+    QRectF r = QDeclarativePaintedItem::boundingRect();
+
+    int cursorWidth = d->cursorItem ? d->cursorItem->width() : d->control->cursorWidth();
+
+    // Could include font max left/right bearings to either side of rectangle.
+
+    r.setRight(r.right() + cursorWidth);
+    return r;
+}
+
 void QDeclarativeTextInput::updateSize(bool needsRedraw)
 {
     Q_D(QDeclarativeTextInput);
     int w = width();
     int h = height();
-    setImplicitHeight(d->control->height());
-    int cursorWidth = d->control->cursorWidth();
-    if(d->cursorItem)
-        cursorWidth = d->cursorItem->width();
-    setImplicitWidth(d->control->naturalTextWidth() + cursorWidth);
+    setImplicitHeight(d->control->height()-1); // -1 to counter QLineControl's +1 which is not consistent with Text.
+    setImplicitWidth(d->calculateTextWidth());
     setContentsSize(QSize(width(), height()));//Repaints if changed
     if(w==width() && h==height() && needsRedraw){
         clearCache();

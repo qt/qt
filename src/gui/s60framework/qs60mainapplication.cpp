@@ -71,17 +71,17 @@ _LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main" QT_LIBINFIX_UNICODE L".
 
   The QS60MainApplication provides a helper class for use in migrating
   from existing S60 based applications to Qt based applications. It is
-  used in the exact same way as the \c CAknApplication class from
+  used in the exact same way as the \c CEikApplication class from
   Symbian, but internally provides extensions used by Qt.
 
   When modifying old S60 applications that rely on implementing
-  functions in \c CAknApplication, the class should be modified to
-  inherit from this class instead of \c CAknApplication. Then the
+  functions in \c CEikApplication, the class should be modified to
+  inherit from this class instead of \c CEikApplication. Then the
   application can choose to override only certain functions. To make
   Qt use the custom application objects, pass a factory function to
   \c{QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)}.
 
-  For more information on \c CAknApplication, please see the S60 documentation.
+  For more information on \c CEikApplication, please see the S60 documentation.
 
   Unlike other Qt classes, QS60MainApplication behaves like an S60 class, and can throw Symbian
   leaves.
@@ -134,6 +134,21 @@ TFileName QS60MainApplication::ResourceFileName() const
     if (err == KErrNone)
         return finder.File();
     return KNullDesC();
+}
+
+void QS60MainApplication::PreDocConstructL()
+{
+    QS60MainApplicationBase::PreDocConstructL();
+}
+
+CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
+{
+    return QS60MainApplicationBase::OpenIniFileLC(aFs);
+}
+
+void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
+{
+    QS60MainApplicationBase::NewAppServerL(aAppServer);
 }
 
 QT_END_NAMESPACE

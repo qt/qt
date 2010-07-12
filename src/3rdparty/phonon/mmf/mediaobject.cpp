@@ -281,6 +281,9 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
         break;
     }
 
+    if (oldPlayer)
+        oldPlayer->close();
+
     AbstractPlayer* newPlayer = 0;
 
     // Construct newPlayer using oldPlayer (if not 0) in order to copy

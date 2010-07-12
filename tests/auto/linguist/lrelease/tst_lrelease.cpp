@@ -171,7 +171,12 @@ void tst_lrelease::mixedcodecs()
 {
     QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/mixedcodecs-ts11.ts"));
     QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/mixedcodecs-ts20.ts"));
+#ifdef Q_OS_WIN
+    QVERIFY(!QProcess::execute("fc /b testdata\\mixedcodecs-ts11.qm testdata\\mixedcodecs-ts20.qm"));
+#else
     QVERIFY(!QProcess::execute("cmp testdata/mixedcodecs-ts11.qm testdata/mixedcodecs-ts20.qm"));
+#endif
+
     QTranslator translator;
     QVERIFY(translator.load("testdata/mixedcodecs-ts11.qm"));
     qApp->installTranslator(&translator);

@@ -125,7 +125,7 @@ public:
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
 
 public:
-    QDeclarativeItem *viewport;
+    QDeclarativeItem *contentItem;
 
     AxisData hData;
     AxisData vData;
