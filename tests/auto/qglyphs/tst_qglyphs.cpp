@@ -66,6 +66,9 @@ private slots:
     void drawNonExistentGlyphs();
     void drawMultiScriptText1();
     void drawMultiScriptText2();
+    void drawStruckOutText();
+    void drawOverlinedText();
+    void drawUnderlinedText();
     void detach();
 
 private:
@@ -399,6 +402,129 @@ void tst_QGlyphs::detach()
 
     QCOMPARE(otherGlyphs.glyphIndexes(), QVector<quint32>() << 4 << 5 << 6);
     QCOMPARE(glyphs.glyphIndexes(), QVector<quint32>() << 1 << 2 << 3);
+}
+
+void tst_QGlyphs::drawStruckOutText()
+{
+    QPixmap textLayoutDraw(1000, 1000);
+    QPixmap drawGlyphs(1000, 1000);
+
+    textLayoutDraw.fill(Qt::white);
+    drawGlyphs.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setStrikeOut(true);
+
+    QTextLayout layout(s);
+    layout.setFont(font);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    {
+        QPainter p(&textLayoutDraw);
+        layout.draw(&p, QPointF(50, 50));
+    }
+
+    QGlyphs glyphs = layout.glyphs().size() > 0
+                                 ? layout.glyphs().at(0)
+                                 : QGlyphs();
+
+    {
+        QPainter p(&drawGlyphs);
+        p.drawGlyphs(QPointF(50, 50), glyphs);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    textLayoutDraw.save("drawStruckOutText_textLayoutDraw.png");
+    drawGlyphs.save("drawStruckOutText_drawGlyphIndexes.png");
+#endif
+
+    QCOMPARE(textLayoutDraw, drawGlyphs);
+}
+
+void tst_QGlyphs::drawOverlinedText()
+{
+    QPixmap textLayoutDraw(1000, 1000);
+    QPixmap drawGlyphs(1000, 1000);
+
+    textLayoutDraw.fill(Qt::white);
+    drawGlyphs.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setOverline(true);
+
+    QTextLayout layout(s);
+    layout.setFont(font);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    {
+        QPainter p(&textLayoutDraw);
+        layout.draw(&p, QPointF(50, 50));
+    }
+
+    QGlyphs glyphs = layout.glyphs().size() > 0
+                                 ? layout.glyphs().at(0)
+                                 : QGlyphs();
+
+    {
+        QPainter p(&drawGlyphs);
+        p.drawGlyphs(QPointF(50, 50), glyphs);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    textLayoutDraw.save("drawOverlineText_textLayoutDraw.png");
+    drawGlyphs.save("drawOverlineText_drawGlyphIndexes.png");
+#endif
+
+    QCOMPARE(textLayoutDraw, drawGlyphs);
+}
+
+void tst_QGlyphs::drawUnderlinedText()
+{
+    QPixmap textLayoutDraw(1000, 1000);
+    QPixmap drawGlyphs(1000, 1000);
+
+    textLayoutDraw.fill(Qt::white);
+    drawGlyphs.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setUnderline(true);
+
+    QTextLayout layout(s);
+    layout.setFont(font);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    {
+        QPainter p(&textLayoutDraw);
+        layout.draw(&p, QPointF(50, 50));
+    }
+
+    QGlyphs glyphs = layout.glyphs().size() > 0
+                                 ? layout.glyphs().at(0)
+                                 : QGlyphs();
+
+    {
+        QPainter p(&drawGlyphs);
+        p.drawGlyphs(QPointF(50, 50), glyphs);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    textLayoutDraw.save("drawUnderlineText_textLayoutDraw.png");
+    drawGlyphs.save("drawUnderlineText_drawGlyphIndexes.png");
+#endif
+
+    QCOMPARE(textLayoutDraw, drawGlyphs);
 }
 
 QTEST_MAIN(tst_QGlyphs)
