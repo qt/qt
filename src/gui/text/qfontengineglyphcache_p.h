@@ -72,7 +72,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFontEngineGlyphCache
+class QFontEngineGlyphCache: public QSharedData
 {
 public:
     enum Type {

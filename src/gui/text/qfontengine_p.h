@@ -262,7 +262,7 @@ protected:
 private:
     struct GlyphCacheEntry {
         void *context;
-        QFontEngineGlyphCache *cache;
+        QExplicitlySharedDataPointer<QFontEngineGlyphCache> cache;
         bool operator==(const GlyphCacheEntry &other) { return context == other.context && cache == other.cache; }
     };
 
