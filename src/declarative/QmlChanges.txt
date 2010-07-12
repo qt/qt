@@ -1,5 +1,10 @@
 =============================================================================
-The changes below are pre Qt 4.7.0 RC
+The changes below are pre Qt 4.7.0 tech preview
+
+TextInput
+   - copy(), cut() and paste() functions added
+
+The changes below are pre Qt 4.7.0 beta 2
 
 QDeclarativeView
    - initialSize() function added
@@ -16,8 +21,11 @@ Component:
     - errorsString() renamed to errorString()
 ListView:
     - ListView.prevSection property changed to ListView.previousSection
-
-TextInput xToPosition -> positionAt (to match TextEdit.positionAt)
+TextInput:
+    - xToPosition -> positionAt (to match TextEdit.positionAt)
+Image:
+    - pixmap property removed, use QDeclarativeImageProvider to serve pixmaps
+      instead
 
 QList<QObject*> models no longer provide properties in model object.  The
 properties are now updated when the object changes.  An object's property
@@ -34,6 +42,10 @@ The QDeclarativeExpression constructor has changed from
     QDeclarativeExpression(context, expression, scope)
 to
     QDeclarativeExpression(context, scope, expression, parent = 0)
+
+QDeclarativeImageProvider::request() has been renamed to
+QDeclarativeImageProvider::image() and the class can now provide
+both qimages and qpixmaps, and qimages can be served synchronously
 
 QML Viewer
 ------------

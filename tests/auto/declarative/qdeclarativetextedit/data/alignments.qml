@@ -16,7 +16,7 @@ Rectangle {
         height: 40
         color: "green"
 
-        Text {
+        TextEdit {
             id: t
 
             anchors.fill: parent

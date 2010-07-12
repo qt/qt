@@ -2,7 +2,7 @@ load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative gui
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_qdeclarativespringfollow.cpp
+SOURCES += tst_qdeclarativespringanimation.cpp
 
 symbian: {
     importFiles.sources = data

@@ -152,8 +152,6 @@ void QDeclarativeStyledTextPrivate::parse()
                 QTextCharFormat format;
                 if (formatStack.count())
                     format = formatStack.top();
-                else
-                    format.setFont(baseFont);
                 if (parseTag(ch, text, drawText, format))
                     formatStack.push(format);
             }
@@ -198,8 +196,10 @@ bool QDeclarativeStyledTextPrivate::parseTag(const QChar *&ch, const QString &te
             if (char0 == QLatin1Char('b')) {
                 if (tagLength == 1)
                     format.setFontWeight(QFont::Bold);
-                else if (tagLength == 2 && tag.at(1) == QLatin1Char('r'))
+                else if (tagLength == 2 && tag.at(1) == QLatin1Char('r')) {
                     textOut.append(QChar(QChar::LineSeparator));
+                    return false;
+                }
             } else if (char0 == QLatin1Char('i')) {
                 if (tagLength == 1)
                     format.setFontItalic(true);

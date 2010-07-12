@@ -214,8 +214,30 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
 
 /*!
     \class QDeclarativeExpression
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeExpression class evaluates JavaScript in a QML context.
+
+    For example, given a file \c main.qml like this:
+
+    \qml
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+    }
+    \endqml
+
+    The following code evaluates a JavaScript expression in the context of the
+    above QML:
+
+    \code
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("main.qml"));
+
+    QObject *myObject = component.create();
+    QDeclarativeExpression *expr = new QDeclarativeExpression(engine->rootContext(), myObject, "width * 2");
+    int result = expr->evaluate().toInt();  // result = 400
+    \endcode
 */
 
 /*!

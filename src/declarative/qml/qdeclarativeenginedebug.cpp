@@ -50,6 +50,8 @@
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativewatcher_p.h"
 #include "private/qdeclarativevaluetype_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
+#include "private/qdeclarativeexpression_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
@@ -453,20 +455,30 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
 
         sendMessage(reply);
     } else if (type == "SET_BINDING") {
-        int queryId;
         int objectId;
         QString propertyName;
         QVariant expr;
         bool isLiteralValue;
-        ds >> queryId >> objectId >> propertyName >> expr >> isLiteralValue;
+        ds >> objectId >> propertyName >> expr >> isLiteralValue;
         setBinding(objectId, propertyName, expr, isLiteralValue);
+    } else if (type == "RESET_BINDING") {
+        int objectId;
+        QString propertyName;
+        ds >> objectId >> propertyName;
+        resetBinding(objectId, propertyName);
+    } else if (type == "SET_METHOD_BODY") {
+        int objectId;
+        QString methodName;
+        QString methodBody;
+        ds >> objectId >> methodName >> methodBody;
+        setMethodBody(objectId, methodName, methodBody);
     }
 }
 
 void QDeclarativeEngineDebugServer::setBinding(int objectId,
-                                           const QString &propertyName,
-                                           const QVariant &expression,
-                                           bool isLiteralValue)
+                                               const QString &propertyName,
+                                               const QVariant &expression,
+                                               bool isLiteralValue)
 {
     QObject *object = objectForId(objectId);
     QDeclarativeContext *context = qmlContext(object);
@@ -493,7 +505,67 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
             }
         }
     }
+}
 
+void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &propertyName)
+{
+    QObject *object = objectForId(objectId);
+    QDeclarativeContext *context = qmlContext(object);
+
+    if (object && context) {
+        if (object->property(propertyName.toLatin1()).isValid()) {
+            QDeclarativeProperty property(object, propertyName);
+            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(property);
+            if (oldBinding) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, 0);
+                if (oldBinding)
+                    oldBinding->destroy();
+            } else {
+                if (property.isResettable()) {
+                    property.reset();
+                }
+            }
+        }
+    }
+}
+
+void QDeclarativeEngineDebugServer::setMethodBody(int objectId, const QString &method, const QString &body)
+{
+    QObject *object = objectForId(objectId);
+    QDeclarativeContext *context = qmlContext(object);
+    if (!object || !context || !context->engine())
+        return;
+    QDeclarativeContextData *contextData = QDeclarativeContextData::get(context);
+    if (!contextData)
+        return;
+
+    QDeclarativePropertyCache::Data dummy;
+    QDeclarativePropertyCache::Data *prop = 
+        QDeclarativePropertyCache::property(context->engine(), object, method, dummy);
+
+    if (!prop || !(prop->flags & QDeclarativePropertyCache::Data::IsVMEFunction))
+        return;
+
+    QMetaMethod metaMethod = object->metaObject()->method(prop->coreIndex);
+    QList<QByteArray> paramNames = metaMethod.parameterNames();
+
+    QString paramStr;
+    for (int ii = 0; ii < paramNames.count(); ++ii) {
+        if (ii != 0) paramStr.append(QLatin1String(","));
+        paramStr.append(QString::fromUtf8(paramNames.at(ii)));
+    }
+
+    QString jsfunction = QLatin1String("(function ") + method + QLatin1String("(") + paramStr + 
+                         QLatin1String(") {");
+    jsfunction += body;
+    jsfunction += QLatin1String("\n})");
+
+    QDeclarativeVMEMetaObject *vmeMetaObject = 
+        static_cast<QDeclarativeVMEMetaObject*>(QObjectPrivate::get(object)->metaObject);
+    Q_ASSERT(vmeMetaObject); // the fact we found the property above should guarentee this
+
+    int lineNumber = vmeMetaObject->vmeMethodLineNumber(prop->coreIndex);
+    vmeMetaObject->setVmeMethod(prop->coreIndex, QDeclarativeExpressionPrivate::evalInObjectScope(contextData, object, jsfunction, contextData->url.toString(), lineNumber, 0));
 }
 
 void QDeclarativeEngineDebugServer::propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value)

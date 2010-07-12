@@ -37,29 +37,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
-import "ImageProviderCore"
+import "ImageProviderCore" // import the plugin that registers the color image provider
+
 //![0]
-ListView {
-    width: 100; height: 100
-    anchors.fill: parent
-
-    model: myModel
-
-    delegate: Component {
-        Item {
-            width: 100
-            height: 50
-            Text {
-                text: "Loading..."
-                anchors.centerIn: parent
-            }
-            Image {
-                source: modelData
-                sourceSize: "50x25"
-            }
-        }
-    }
+Column {
+    Image { source: "image://colors/yellow" }
+    Image { source: "image://colors/red" }
 }
 //![0]
+

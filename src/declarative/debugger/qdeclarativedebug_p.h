@@ -94,11 +94,11 @@ public:
     QDeclarativeDebugExpressionQuery *queryExpressionResult(int objectDebugId, 
                                                    const QString &expr,
                                                    QObject *parent = 0);
-    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
-                                                          const QString &propertyName,
-                                                          const QVariant &bindingExpression,
-                                                          bool isLiteralValue,
-                                                          QObject *parent = 0);
+    bool setBindingForObject(int objectDebugId, const QString &propertyName,
+                             const QVariant &bindingExpression, bool isLiteralValue);
+    bool resetBindingForObject(int objectDebugId, const QString &propertyName);
+    bool setMethodBody(int objectDebugId, const QString &methodName, const QString &methodBody);
+
 private:
     Q_DECLARE_PRIVATE(QDeclarativeEngineDebug)
 };
@@ -202,11 +202,6 @@ public:
 
 private:
     friend class QDeclarativeEngineDebugPrivate;
-    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
-                                                          const QString &propertyName,
-                                                          const QVariant &bindingExpression,
-                                                          bool isLiteralValue,
-                                                          QObject *parent);
     QUrl m_url;
     int m_lineNumber;
     int m_columnNumber;
@@ -224,11 +219,6 @@ public:
     QString name() const;
 
 private:
-    QDeclarativeDebugExpressionQuery *setBindingForObject(int objectDebugId,
-                                                          const QString &propertyName,
-                                                          const QVariant &bindingExpression,
-                                                          bool isLiteralValue,
-                                                          QObject *parent);
     friend class QDeclarativeEngineDebugPrivate;
     int m_debugId;
     QString m_name;

@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <private/qdeclarativespringfollow_p.h>
+#include <private/qdeclarativespringanimation_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
@@ -50,11 +50,11 @@
 #define SRCDIR "."
 #endif
 
-class tst_qdeclarativespringfollow : public QObject
+class tst_qdeclarativespringanimation : public QObject
 {
     Q_OBJECT
 public:
-    tst_qdeclarativespringfollow();
+    tst_qdeclarativespringanimation();
 
 private slots:
     void defaultValues();
@@ -65,15 +65,15 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qdeclarativespringfollow::tst_qdeclarativespringfollow()
+tst_qdeclarativespringanimation::tst_qdeclarativespringanimation()
 {
 }
 
-void tst_qdeclarativespringfollow::defaultValues()
+void tst_qdeclarativespringanimation::defaultValues()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow1.qml"));
-    QDeclarativeSpringFollow *obj = qobject_cast<QDeclarativeSpringFollow*>(c.create());
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springanimation1.qml"));
+    QDeclarativeSpringAnimation *obj = qobject_cast<QDeclarativeSpringAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
@@ -83,19 +83,17 @@ void tst_qdeclarativespringfollow::defaultValues()
     QCOMPARE(obj->damping(), 0.);
     QCOMPARE(obj->epsilon(), 0.01);
     QCOMPARE(obj->modulus(), 0.);
-    QCOMPARE(obj->value(), 0.);
     QCOMPARE(obj->mass(), 1.);
-    QCOMPARE(obj->enabled(), true);
-    QCOMPARE(obj->inSync(), true);
+    QCOMPARE(obj->isRunning(), false);
 
     delete obj;
 }
 
-void tst_qdeclarativespringfollow::values()
+void tst_qdeclarativespringanimation::values()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow2.qml"));
-    QDeclarativeSpringFollow *obj = qobject_cast<QDeclarativeSpringFollow*>(c.create());
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springanimation2.qml"));
+    QDeclarativeSpringAnimation *obj = qobject_cast<QDeclarativeSpringAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
@@ -106,19 +104,18 @@ void tst_qdeclarativespringfollow::values()
     QCOMPARE(obj->epsilon(), 0.25);
     QCOMPARE(obj->modulus(), 360.0);
     QCOMPARE(obj->mass(), 2.0);
-    QCOMPARE(obj->enabled(), true);
+    QCOMPARE(obj->isRunning(), true);
 
-    QTRY_COMPARE(obj->value(), 1.44);
-    QTRY_COMPARE(obj->inSync(), true);
+    QTRY_COMPARE(obj->isRunning(), false);
 
     delete obj;
 }
 
-void tst_qdeclarativespringfollow::disabled()
+void tst_qdeclarativespringanimation::disabled()
 {
     QDeclarativeEngine engine;
-    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow3.qml"));
-    QDeclarativeSpringFollow *obj = qobject_cast<QDeclarativeSpringFollow*>(c.create());
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springanimation3.qml"));
+    QDeclarativeSpringAnimation *obj = qobject_cast<QDeclarativeSpringAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
@@ -129,14 +126,11 @@ void tst_qdeclarativespringfollow::disabled()
     QCOMPARE(obj->epsilon(), 0.25);
     QCOMPARE(obj->modulus(), 360.0);
     QCOMPARE(obj->mass(), 2.0);
-    QCOMPARE(obj->enabled(), false);
-
-    QCOMPARE(obj->value(), 0.0);
-    QCOMPARE(obj->inSync(), false);
+    QCOMPARE(obj->isRunning(), false);
 
     delete obj;
 }
 
-QTEST_MAIN(tst_qdeclarativespringfollow)
+QTEST_MAIN(tst_qdeclarativespringanimation)
 
-#include "tst_qdeclarativespringfollow.moc"
+#include "tst_qdeclarativespringanimation.moc"

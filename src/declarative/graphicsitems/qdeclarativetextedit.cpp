@@ -203,7 +203,7 @@ QString QDeclarativeTextEdit::text() const
     Sets the font size in pixels.
 
     Using this function makes the font device dependent.
-    Use \l pointSize to set the size of the font in a device independent manner.
+    Use \l font.pointSize to set the size of the font in a device independent manner.
 */
 
 /*!
@@ -1263,6 +1263,15 @@ void QDeclarativeTextEditPrivate::init()
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
 
+    // QTextControl follows the default text color
+    // defined by the platform, declarative text
+    // should be black by default
+    QPalette pal = control->palette();
+    if (pal.color(QPalette::Text) != color) {
+        pal.setColor(QPalette::Text, color);
+        control->setPalette(pal);
+    }
+
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
@@ -1332,6 +1341,15 @@ QRectF QDeclarativeTextEdit::boundingRect() const
 {
     Q_D(const QDeclarativeTextEdit);
     QRectF r = QDeclarativePaintedItem::boundingRect();
+    int cursorWidth = 1;
+    if(d->cursor)
+        cursorWidth = d->cursor->width();
+    if(!d->document->isEmpty())
+        cursorWidth += 3;// ### Need a better way of accounting for space between char and cursor
+
+    // Could include font max left/right bearings to either side of rectangle.
+
+    r.setRight(r.right() + cursorWidth);
     return r.translated(0,d->yoff);
 }
 
@@ -1371,12 +1389,6 @@ void QDeclarativeTextEdit::updateSize()
         int newWidth = qCeil(d->document->idealWidth());
         if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
-        int cursorWidth = 1;
-        if(d->cursor)
-            cursorWidth = d->cursor->width();
-        newWidth += cursorWidth;
-        if(!d->document->isEmpty())
-            newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
         qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
