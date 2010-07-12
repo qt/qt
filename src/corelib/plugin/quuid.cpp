@@ -577,6 +577,7 @@ QUuid QUuid::createUuid()
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qdatetime.h"
+#include "qthreadstorage.h"
 #include <stdlib.h> // for RAND_MAX
 QT_END_INCLUDE_NAMESPACE
 
@@ -589,6 +590,19 @@ QUuid QUuid::createUuid()
         int max = RAND_MAX;
         do { ++r; } while ((max=max>>1));
         randbits = r;
+    }
+
+    static QThreadStorage<int *> uuidseed;
+    if (!uuidseed.hasLocalData()) {
+        // Seed the PRNG once per thread with a combination of current time, a
+        // stack address and a serial counter (since thread stack addresses are
+        // re-used).
+        int *pseed = new int;
+        static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
+        qsrand(*pseed = QDateTime::currentDateTime().toTime_t()
+                        + quintptr(&pseed)
+                        + serial.fetchAndAddRelaxed(1));
+        uuidseed.setLocalData(pseed);
     }
 
     QUuid result;

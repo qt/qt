@@ -2609,14 +2609,7 @@ int qrand()
         SeedStorageType *pseed = seedStorage->localData();
         if (!pseed) {
             seedStorage->setLocalData(pseed = new SeedStorageType);
-
-            // Seed the PRNG, but only if it has not already been seeded. The
-            // default seed is a combination of current time, a stack address
-            // and a serial counter (since thread stack addresses are re-used).
-            static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-            *pseed = QDateTime::currentDateTime().toTime_t()
-                     + quintptr(&pseed)
-                     + serial.fetchAndAddRelaxed(1);
+            *pseed = 1;
         }
         return rand_r(pseed);
     } else {
