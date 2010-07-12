@@ -1112,11 +1112,11 @@ bool QSslSocketBackendPrivate::startHandshake()
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
             QString commonName = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
 
-            if (!isMatchingHostname(commonName.lower(), peerName.lower())) {
+            if (!isMatchingHostname(commonName.toLower(), peerName.toLower())) {
                 bool matched = false;
                 foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
-                    if (isMatchingHostname(altName.lower(), peerName.lower())) {
+                    if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
                         matched = true;
                         break;
                     }
