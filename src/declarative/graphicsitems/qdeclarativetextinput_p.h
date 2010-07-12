@@ -232,6 +232,11 @@ public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
+#ifndef QT_NO_CLIPBOARD
+    void cut();
+    void copy();
+    void paste();
+#endif
 
 private Q_SLOTS:
     void updateSize(bool needsRedraw = true);

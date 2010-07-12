@@ -1142,6 +1142,42 @@ void QDeclarativeTextInput::selectAll()
     d->control->setSelection(0, d->control->text().length());
 }
 
+#ifndef QT_NO_CLIPBOARD
+/*!
+    \qmlmethod TextInput::cut()
+
+    Moves the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextInput::cut()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->copy();
+    d->control->del();
+}
+
+/*!
+    \qmlmethod TextInput::copy()
+
+    Copies the currently selected text to the system clipboard.
+*/
+void QDeclarativeTextInput::copy()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->copy();
+}
+
+/*!
+    \qmlmethod TextInput::paste()
+
+    Replaces the currently selected text by the contents of the system clipboard.
+*/
+void QDeclarativeTextInput::paste()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->paste();
+}
+#endif // QT_NO_CLIPBOARD
+
 /*!
     \qmlmethod void TextInput::selectWord()
 

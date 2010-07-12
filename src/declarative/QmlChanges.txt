@@ -1,4 +1,9 @@
 =============================================================================
+The changes below are pre Qt 4.7.0 tech preview
+
+TextInput
+   - copy(), cut() and paste() functions added
+
 The changes below are pre Qt 4.7.0 beta 2
 
 QDeclarativeView
