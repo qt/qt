@@ -703,11 +703,8 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(focusArguments.at(0).toBool(), true);
 
     QCOMPARE(parentItem->hasFocus(), false);
-    QCOMPARE(parentItem->wantsFocus(), true);
-    QCOMPARE(wantsFocusSpy.count(),1);
-    QList<QVariant> wantsFocusArguments = wantsFocusSpy.first();
-    QVERIFY(wantsFocusArguments.count() == 1);
-    QCOMPARE(wantsFocusArguments.at(0).toBool(), true);
+    QCOMPARE(parentItem->wantsFocus(), false);
+    QCOMPARE(wantsFocusSpy.count(),0);
 
     delete canvas;
 }

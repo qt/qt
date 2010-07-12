@@ -286,7 +286,9 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void subFocusItemChange()
     {
-        emit q_func()->wantsFocusChanged(subFocusItem != 0);
+        if (flags & QGraphicsItem::ItemIsFocusScope || !parent)
+            emit q_func()->wantsFocusChanged(subFocusItem != 0);
+        //see also QDeclarativeItemPrivate::focusChanged
     }
 
     // Reimplemented from QGraphicsItemPrivate
