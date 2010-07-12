@@ -853,6 +853,18 @@ void tst_qdeclarativetextedit::navigation()
 
 void tst_qdeclarativetextedit::copyAndPaste() {
 #ifndef QT_NO_CLIPBOARD
+
+#ifdef Q_WS_MAC
+    {
+        PasteboardRef pasteboard;
+        OSStatus status = PasteboardCreate(0, &pasteboard);
+        if (status == noErr)
+            CFRelease(pasteboard);
+        else
+            QSKIP("This machine doesn't support the clipboard", SkipAll);
+    }
+#endif
+
     QString componentStr = "import Qt 4.7\nTextEdit { text: \"Hello world!\" }";
     QDeclarativeComponent textEditComponent(&engine);
     textEditComponent.setData(componentStr.toLatin1(), QUrl());

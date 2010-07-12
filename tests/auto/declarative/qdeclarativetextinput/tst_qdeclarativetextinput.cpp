@@ -700,6 +700,18 @@ void tst_qdeclarativetextinput::navigation()
 
 void tst_qdeclarativetextinput::copyAndPaste() {
 #ifndef QT_NO_CLIPBOARD
+
+#ifdef Q_WS_MAC
+    {
+        PasteboardRef pasteboard;
+        OSStatus status = PasteboardCreate(0, &pasteboard);
+        if (status == noErr)
+            CFRelease(pasteboard);
+        else
+            QSKIP("This machine doesn't support the clipboard", SkipAll);
+    }
+#endif
+
     QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
