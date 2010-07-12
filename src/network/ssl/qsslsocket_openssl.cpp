@@ -680,8 +680,20 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                 plainSocket->disconnectFromHost();
                 break;
+            case SSL_ERROR_SYSCALL: // some IO error
+            case SSL_ERROR_SSL: // error in the SSL library
+                // we do not know exactly what the error is, nor whether we can recover from it,
+                // so just return to prevent an endless loop in the outer "while" statement
+                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
+                q->setSocketError(QAbstractSocket::UnknownSocketError);
+                emit q->error(QAbstractSocket::UnknownSocketError);
+                return;
             default:
-                // ### Handle errors better.
+                // SSL_ERROR_WANT_CONNECT, SSL_ERROR_WANT_ACCEPT: can only happen with a
+                // BIO_s_connect() or BIO_s_accept(), which we do not call.
+                // SSL_ERROR_WANT_X509_LOOKUP: can only happen with a
+                // SSL_CTX_set_client_cert_cb(), which we do not call.
+                // So this default case should never be triggered.
                 q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
                 q->setSocketError(QAbstractSocket::UnknownSocketError);
                 emit q->error(QAbstractSocket::UnknownSocketError);
