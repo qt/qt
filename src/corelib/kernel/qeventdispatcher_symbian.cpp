@@ -496,6 +496,8 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     Q_ASSERT(!m_AOStatuses.contains(notifier));
@@ -507,6 +509,8 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
 
 void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 {
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     m_AOStatuses.remove(notifier);
@@ -516,6 +520,8 @@ void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 
 void QSelectThread::restart()
 {
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
 
     m_waitCond.wakeAll();
