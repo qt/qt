@@ -838,6 +838,9 @@ public:
 
 void tst_QGL::graphicsViewClipping()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
+#endif
     const int size = 64;
     UnclippedWidget *widget = new UnclippedWidget;
     widget->setFixedSize(size, size);
