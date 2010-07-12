@@ -944,13 +944,7 @@ void QDeclarativeViewer::statusChanged()
 
     if (canvas->status() == QDeclarativeView::Ready) {
         initialSize = canvas->initialSize();
-        if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            if (!isFullScreen() && !isMaximized()) {
-                canvas->setFixedSize(initialSize);
-                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrink
-                QTimer::singleShot(0, this, SLOT(updateSizeHints()));
-            }
-        }
+        updateSizeHints(true);
     }
 }
 
@@ -1075,13 +1069,9 @@ void QDeclarativeViewer::setRecordRate(int fps)
     record_rate = fps;
 }
 
-void QDeclarativeViewer::sceneResized(QSize size)
+void QDeclarativeViewer::sceneResized(QSize)
 {
-    if (size.width() > 0 && size.height() > 0) {
-        if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
-            updateSizeHints();
-        }
-    }
+    updateSizeHints();
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1344,17 +1334,7 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
 
 void QDeclarativeViewer::orientationChanged()
 {
-    if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-        if (canvas->rootObject()) {
-            QSizeF rootObjectSize = canvas->rootObject()->boundingRect().size();
-            if (size() != rootObjectSize.toSize()) {
-                canvas->setMinimumSize(rootObjectSize.toSize());
-                canvas->resize(rootObjectSize.toSize());
-                resize(rootObjectSize.toSize());
-                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
-            }
-        }
-    }
+    updateSizeHints();
 }
 
 void QDeclarativeViewer::setDeviceKeys(bool on)
@@ -1403,20 +1383,32 @@ void QDeclarativeViewer::setSizeToView(bool sizeToView)
     }
 }
 
-void QDeclarativeViewer::updateSizeHints()
+void QDeclarativeViewer::updateSizeHints(bool initial)
 {
-    if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
-        QSize newWindowSize = canvas->sizeHint();
+    static bool isRecursive = false;
+
+    if (isRecursive)
+        return;
+    isRecursive = true;
+
+    if (initial || (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject)) {
+        QSize newWindowSize = initial ? initialSize : canvas->sizeHint();
+        //qWarning() << "USH:" << (initial ? "INIT:" : "V2R:") << "setting fixed size " << newWindowSize;
         if (!isFullScreen() && !isMaximized()) {
-            canvas->setMinimumSize(newWindowSize);
-            canvas->resize(newWindowSize);
-            resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
-            canvas->setMinimumSize(QSize(0, 0));
+            canvas->setFixedSize(newWindowSize);
+            resize(1, 1);
+            layout()->setSizeConstraint(QLayout::SetFixedSize);
+            layout()->activate();
         }
-    } else { // QDeclarativeView::SizeRootObjectToView
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
     }
+    //qWarning() << "USH: R2V: setting free size ";
+    layout()->setSizeConstraint(QLayout::SetNoConstraint);
+    layout()->activate();
+    setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    canvas->setMinimumSize(QSize(0,0));
+    canvas->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+
+    isRecursive = false;
 }
 
 void QDeclarativeViewer::registerTypes()
