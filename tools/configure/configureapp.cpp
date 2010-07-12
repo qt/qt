@@ -2439,7 +2439,7 @@ void Configure::generateOutputVars()
         qmakeFormatPlugins += "gif";
 
     if (dictionary[ "TIFF" ] == "no")
-          qtConfig += "no-tiff";
+        qtConfig += "no-tiff";
     else if (dictionary[ "TIFF" ] == "plugin")
         qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
