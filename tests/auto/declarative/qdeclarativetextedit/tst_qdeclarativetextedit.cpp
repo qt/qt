@@ -96,6 +96,7 @@ private slots:
     void delegateLoading();
     void navigation();
     void readOnly();
+    void copyAndPaste();
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
     void geometrySignals();
@@ -840,6 +841,40 @@ void tst_qdeclarativetextedit::navigation()
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == true);
+}
+
+void tst_qdeclarativetextedit::copyAndPaste() {
+#ifndef QT_NO_CLIPBOARD
+    QString componentStr = "import Qt 4.7\nTextEdit { text: \"Hello world!\" }";
+    QDeclarativeComponent textEditComponent(&engine);
+    textEditComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextEdit *textEdit = qobject_cast<QDeclarativeTextEdit*>(textEditComponent.create());
+    QVERIFY(textEdit != 0);
+
+    // copy and paste
+    QCOMPARE(textEdit->text().length(), 12);
+    textEdit->select(0, textEdit->text().length());;
+    textEdit->copy();
+    QCOMPARE(textEdit->selectedText(), QString("Hello world!"));
+    QCOMPARE(textEdit->selectedText().length(), 12);
+    textEdit->setCursorPosition(0);
+    textEdit->paste();
+    QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textEdit->text().length(), 24);
+
+    // select word
+    textEdit->setCursorPosition(0);
+    textEdit->selectWord();
+    QCOMPARE(textEdit->selectedText(), QString("Hello"));
+
+    // select all and cut
+    textEdit->selectAll();
+    textEdit->cut();
+    QCOMPARE(textEdit->text().length(), 0);
+    textEdit->paste();
+    QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textEdit->text().length(), 24);
+#endif
 }
 
 void tst_qdeclarativetextedit::readOnly()

@@ -83,6 +83,7 @@ private slots:
 
     void cursorDelegate();
     void navigation();
+    void copyAndPaste();
     void readOnly();
 
     void openInputPanelOnClick();
@@ -683,6 +684,40 @@ void tst_qdeclarativetextinput::navigation()
     delete canvas;
 }
 
+void tst_qdeclarativetextinput::copyAndPaste() {
+#ifndef QT_NO_CLIPBOARD
+    QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    // copy and paste
+    QCOMPARE(textInput->text().length(), 12);
+    textInput->select(0, textInput->text().length());;
+    textInput->copy();
+    QCOMPARE(textInput->selectedText(), QString("Hello world!"));
+    QCOMPARE(textInput->selectedText().length(), 12);
+    textInput->setCursorPosition(0);
+    textInput->paste();
+    QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textInput->text().length(), 24);
+
+    // select word
+    textInput->setCursorPosition(0);
+    textInput->selectWord();
+    QCOMPARE(textInput->selectedText(), QString("Hello"));
+
+    // select all and cut
+    textInput->selectAll();
+    textInput->cut();
+    QCOMPARE(textInput->text().length(), 0);
+    textInput->paste();
+    QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textInput->text().length(), 24);
+#endif
+}
+
 void tst_qdeclarativetextinput::cursorDelegate()
 {
     QDeclarativeView* view = createView(SRCDIR "/data/cursorTest.qml");
@@ -994,7 +1029,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QCOMPARE(ic.openInputPanelReceived, false);
 
     // input method should be disabled
-    // if TextEdit loses focus
+    // if TextInput loses focus
     input.setFocus(false);
     QApplication::processEvents();
     QVERIFY(view.inputContext() == 0);
