@@ -2440,6 +2440,8 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "TIFF" ] == "no")
         qtConfig += "no-tiff";
+    else if (dictionary[ "TIFF" ] == "yes")
+        qtConfig += "tiff";
     else if (dictionary[ "TIFF" ] == "plugin")
         qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
@@ -2447,6 +2449,8 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "JPEG" ] == "no")
         qtConfig += "no-jpeg";
+    else if (dictionary[ "JPEG" ] == "yes")
+        qtConfig += "jpeg";
     else if (dictionary[ "JPEG" ] == "plugin")
         qmakeFormatPlugins += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
