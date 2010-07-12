@@ -92,3 +92,6 @@ contains(QT_CONFIG, jpeg):include($$PWD/qjpeghandler.pri)
 contains(QT_CONFIG, mng):include($$PWD/qmnghandler.pri)
 contains(QT_CONFIG, tiff):include($$PWD/qtiffhandler.pri)
 contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
+
+# SIMD
+SSE2_SOURCES += image/qimage_sse2.cpp

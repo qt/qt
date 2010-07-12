@@ -60,7 +60,8 @@ MMF::AbstractVideoOutput::AbstractVideoOutput(QWidget *parent)
     ,   m_aspectRatio(DefaultAspectRatio)
     ,   m_scaleMode(DefaultScaleMode)
 {
-
+    // Ensure that this widget has a native window handle
+    winId();
 }
 
 MMF::AbstractVideoOutput::~AbstractVideoOutput()

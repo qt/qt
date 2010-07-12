@@ -50,6 +50,10 @@ public:
 
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, JSC::EnumerationMode mode = JSC::ExcludeDontEnumProperties);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
+
+    // Custom functions
+    JSC::JSValue setNamedItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue setNamedItemNS(JSC::ExecState*, const JSC::ArgList&);
     NamedNodeMap* impl() const { return m_impl.get(); }
 
 private:
