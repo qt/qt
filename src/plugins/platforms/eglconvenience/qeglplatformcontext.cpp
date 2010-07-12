@@ -39,16 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qopenkodeglintegration.h"
+#include "qeglplatformcontext.h"
 
-#include <KD/kd.h>
+#include <EGL/egl.h>
 
 #include <QtCore/QDebug>
 #include <QtGui/QPlatformWindow>
-#include <QtGui/private/qapplication_p.h>
-
-#include <QtOpenGL/private/qwindowsurface_gl_p.h>
-
 
 QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
     : m_eglDisplay(display)
@@ -60,7 +56,7 @@ QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, E
     }
 
     eglBindAPI(m_eglApi);
-    m_eglContext = eglCreateContext(m_eglDisplay,config, KD_NULL,contextAttrs);
+    m_eglContext = eglCreateContext(m_eglDisplay,config, 0,contextAttrs);
     if (!m_eglContext) {
         qErrnoWarning("QEGLPlatformContext could not create eglContext");
     }

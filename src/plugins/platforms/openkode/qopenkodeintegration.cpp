@@ -42,7 +42,6 @@
 #include "qopenkodeintegration.h"
 #include "qopenkodewindowsurface.h"
 #include "qopenkodewindow.h"
-#include "qopenkodeglintegration.h"
 
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
 #include <QtOpenGL/private/qwindowsurface_gl_p.h>
@@ -238,8 +237,27 @@ QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) 
 
 QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId wid) const
 {
-//    return new QOpenKODEWindowSurface(widget, wid);
-    return new QGLWindowSurface(widget);
+    QWindowSurface *returnSurface = 0;
+    switch (widget->platformWindowFormat().windowApi()) {
+
+    case QPlatformWindowFormat::Raster:
+        returnSurface = new QOpenKODEWindowSurface(widget, wid);
+        break;
+
+    case QPlatformWindowFormat::OpenGL:
+        returnSurface = new QGLWindowSurface(widget);
+        break;
+
+    case QPlatformWindowFormat::OpenVG:
+//        returnSurface = new QVGWindowSurface(widget);
+        break;
+
+    default:
+        returnSurface = new QGLWindowSurface(widget);
+        break;
+    }
+
+    return returnSurface;
 }
 
 bool QOpenKODEIntegration::hasOpenGL() const
