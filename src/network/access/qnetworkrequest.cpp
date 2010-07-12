@@ -230,6 +230,14 @@ QT_BEGIN_NAMESPACE
 
         \since 4.7
 
+    \omitvalue MaximumDownloadBufferSizeAttribute
+        \since 4.7
+        \internal
+
+    \omitvalue DownloadBufferAttribute
+        \since 4.7
+        \internal
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

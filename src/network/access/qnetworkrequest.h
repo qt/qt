@@ -82,6 +82,8 @@ public:
         CookieLoadControlAttribute,
         AuthenticationReuseAttribute,
         CookieSaveControlAttribute,
+        MaximumDownloadBufferSizeAttribute, // internal
+        DownloadBufferAttribute, // internal
 
         User = 1000,
         UserMax = 32767
