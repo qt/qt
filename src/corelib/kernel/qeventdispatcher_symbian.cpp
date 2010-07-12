@@ -481,7 +481,8 @@ void QSelectThread::run()
             updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
         }
 
-        m_waitCond.wait(&m_mutex);
+        if (FD_ISSET(m_pipeEnds[0], &readfds))
+            m_waitCond.wait(&m_mutex);
     }
 
     m_mutex.unlock();
