@@ -1,4 +1,4 @@
-include($$QT_SOURCE_TREE/tools/shared/fontpanel/fontpanel.pri)
+include(../../../shared/fontpanel/fontpanel.pri)
 TEMPLATE = app
 LANGUAGE = C++
 TARGET = assistant

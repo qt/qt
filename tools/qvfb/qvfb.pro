@@ -35,7 +35,7 @@ SOURCES         = qvfb.cpp \
                   ../../src/gui/embedded/qlock.cpp \
                   ../../src/gui/embedded/qwssignalhandler.cpp
 
-include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
+include(../shared/deviceskin/deviceskin.pri)
 
 contains(QT_CONFIG, opengl) {
 	QT += opengl
