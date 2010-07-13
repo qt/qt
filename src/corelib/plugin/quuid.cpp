@@ -592,11 +592,13 @@ QUuid QUuid::createUuid()
         randbits = r;
     }
 
+    // Seed the PRNG once per thread with a combination of current time, a
+    // stack address and a serial counter (since thread stack addresses are
+    // re-used).
+#ifndef QT_BOOTSTRAPPED
     static QThreadStorage<int *> uuidseed;
-    if (!uuidseed.hasLocalData()) {
-        // Seed the PRNG once per thread with a combination of current time, a
-        // stack address and a serial counter (since thread stack addresses are
-        // re-used).
+    if (!uuidseed.hasLocalData())
+    {
         int *pseed = new int;
         static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
         qsrand(*pseed = QDateTime::currentDateTime().toTime_t()
@@ -604,6 +606,12 @@ QUuid QUuid::createUuid()
                         + serial.fetchAndAddRelaxed(1));
         uuidseed.setLocalData(pseed);
     }
+#else
+    static bool seeded = false;
+    if (!seeded)
+        qsrand(QDateTime::currentDateTime().toTime_t()
+               + quintptr(&seeded));
+#endif
 
     QUuid result;
     uint *data = &(result.data1);
