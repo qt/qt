@@ -1,3 +1,4 @@
+qtPrepareTool(LCONVERT, lconvert)
 qtPrepareTool(LUPDATE, lupdate)
 LUPDATE += -locations relative -no-ui-lines
 
@@ -58,9 +59,25 @@ addTsTargets(qvfb, ../tools/qvfb/qvfb.pro)
 check-ts.commands = (cd $$PWD && perl check-ts.pl)
 check-ts.depends = ts-all
 
+isEqual(QMAKE_DIR_SEP, /) {
+    commit-ts.commands = \
+        cd $$PWD/..; \
+        for f in `git diff-files --name-only translations/*_??.ts`; do \
+            $$LCONVERT -locations none -i \$\$f -o \$\$f; \
+        done; \
+        git add translations/*_??.ts && git commit
+} else {
+    wd = $$replace(PWD, /, \\)\\..
+    commit-ts.commands = \
+        cd $$wd && \
+        for /f usebackq %%f in (`git diff-files --name-only translations/*_??.ts`) do \
+            $$LCONVERT -locations none -i %%f -o %%f $$escape_expand(\\n\\t) \
+        cd $$wd && git add translations/*_??.ts && git commit
+}
+
 ts.commands = \
     @echo \"The \'ts\' target has been removed in favor of more fine-grained targets.\" && \
     echo \"Use \'ts-<target>-<lang>\' or \'ts-<lang>\' instead. To add a language,\" && \
     echo \"use \'untranslated\' for <lang>, rename the files and re-run \'qmake\'.\"
 
-QMAKE_EXTRA_TARGETS += $$unique(TS_TARGETS) ts check-ts
+QMAKE_EXTRA_TARGETS += $$unique(TS_TARGETS) ts commit-ts check-ts
