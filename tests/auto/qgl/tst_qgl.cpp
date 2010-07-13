@@ -1689,6 +1689,10 @@ protected:
 
 void tst_QGL::replaceClipping()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
+#endif
+
     ReplaceClippingGLWidget glw;
 #ifdef Q_WS_QWS
     glw.setWindowFlags(Qt::FramelessWindowHint);
