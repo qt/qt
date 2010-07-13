@@ -9,12 +9,12 @@ Rectangle {
 
     FocusScope {
         id: myScope
+        objectName: "item0"
         focus: true
 
         Keys.onReturnPressed: console.log("Error - FocusScope")
 
         Rectangle {
-            objectName: "item0"
             height: 120
             width: 420
 

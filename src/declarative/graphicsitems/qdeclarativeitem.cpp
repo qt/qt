@@ -1609,7 +1609,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 bool QDeclarativeItem::isComponentComplete() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_componentComplete;
+    return d->componentComplete;
 }
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
@@ -1750,7 +1750,7 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents(this);
-        if (d->_componentComplete)
+        if (d->componentComplete)
             d->_contents->complete();
     }
     return d->_contents->rectF();
@@ -2154,19 +2154,19 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 qreal QDeclarativeItem::baselineOffset() const
 {
     Q_D(const QDeclarativeItem);
-    if (!d->_baselineOffset.isValid()) {
+    if (!d->baselineOffset.isValid()) {
         return 0.0;
     } else
-        return d->_baselineOffset;
+        return d->baselineOffset;
 }
 
 void QDeclarativeItem::setBaselineOffset(qreal offset)
 {
     Q_D(QDeclarativeItem);
-    if (offset == d->_baselineOffset)
+    if (offset == d->baselineOffset)
         return;
 
-    d->_baselineOffset = offset;
+    d->baselineOffset = offset;
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2295,7 +2295,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
 bool QDeclarativeItem::keepMouseGrab() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_keepMouse;
+    return d->keepMouse;
 }
 
 /*!
@@ -2319,7 +2319,7 @@ bool QDeclarativeItem::keepMouseGrab() const
 void QDeclarativeItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QDeclarativeItem);
-    d->_keepMouse = keep;
+    d->keepMouse = keep;
 }
 
 /*!
@@ -2416,6 +2416,8 @@ QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
+    if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
+        emit q->wantsFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
     emit q->focusChanged(flag);
 }
 
@@ -2590,7 +2592,7 @@ QDeclarativeListProperty<QGraphicsTransform> QDeclarativeItem::transform()
 void QDeclarativeItem::classBegin()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = false;
+    d->componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
     if (d->_anchors)
@@ -2608,7 +2610,7 @@ void QDeclarativeItem::classBegin()
 void QDeclarativeItem::componentComplete()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = true;
+    d->componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
     if (d->_anchors) {
@@ -2626,7 +2628,7 @@ QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
     Q_Q(QDeclarativeItem);
     if (!_stateGroup) {
         _stateGroup = new QDeclarativeStateGroup;
-        if (!_componentComplete)
+        if (!componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));
@@ -3107,7 +3109,10 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 /*! \internal */
 bool QDeclarativeItem::wantsFocus() const
 {
-    return focusItem() != 0;
+    Q_D(const QDeclarativeItem);
+    return focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
+           (!parentItem() && focusItem() != 0);
 }
 
 /*!
