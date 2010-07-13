@@ -428,9 +428,9 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
     QHostAddress is normally used with the QTcpSocket, QTcpServer,
     and QUdpSocket to connect to a host or to set up a server.
 
-    A host address is set with setAddress(), checked for its type
-    using isIPv4Address() or isIPv6Address(), and retrieved with
-    toIPv4Address(), toIPv6Address(), or toString().
+    A host address is set with setAddress(), and retrieved with
+    toIPv4Address(), toIPv6Address(), or toString(). You can check the
+    type with protocol().
 
     \note Please note that QHostAddress does not do DNS lookups.
     QHostInfo is needed for that.
@@ -679,7 +679,8 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
     For example, if the address is 127.0.0.1, the returned value is
     2130706433 (i.e. 0x7f000001).
 
-    This value is only valid if isIp4Addr() returns true.
+    This value is only valid if the Protocol() is
+    \l{QAbstractSocket::}{IPv4Protocol}.
 
     \sa toString()
 */
@@ -704,7 +705,8 @@ QAbstractSocket::NetworkLayerProtocol QHostAddress::protocol() const
 
     \snippet doc/src/snippets/code/src_network_kernel_qhostaddress.cpp 0
 
-    This value is only valid if isIPv6Address() returns true.
+    This value is only valid if the protocol() is
+    \l{QAbstractSocket::}{IPv6Protocol}.
 
     \sa toString()
 */

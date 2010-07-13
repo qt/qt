@@ -431,55 +431,58 @@ private:
     mutable QMutex mutex;
 };
 
-class NetworkAccessManagerFactory : public QDeclarativeNetworkAccessManagerFactory
+class SystemProxyFactory : public QNetworkProxyFactory
 {
+public:
+    SystemProxyFactory() : proxyDirty(true), httpProxyInUse(false) {
+    }
+
+    virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+    {
+        if (proxyDirty)
+            setupProxy();
+        QString protocolTag = query.protocolTag();
+        if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+            QList<QNetworkProxy> ret;
+            ret << httpProxy;
+            return ret;
+        }
+#ifdef Q_OS_WIN
+        // systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
+        return QNetworkProxyFactory::proxyForQuery(query);
+#else
+        return QNetworkProxyFactory::systemProxyForQuery(query);
+#endif
+    }
+
+    void setupProxy() {
+        // Don't bother locking because we know that the proxy only
+        // changes in response to the settings dialog and that
+        // the view will be reloaded.
+        proxyDirty = false;
+        httpProxyInUse = ProxySettings::httpProxyInUse();
+        if (httpProxyInUse)
+            httpProxy = ProxySettings::httpProxy();
+    }
+
+    void proxyChanged() {
+        proxyDirty = true;
+    }
+
+private:
+    volatile bool proxyDirty;
+    bool httpProxyInUse;
+    QNetworkProxy httpProxy;
+};
+
+class NetworkAccessManagerFactory : public QObject, public QDeclarativeNetworkAccessManagerFactory
+{
+    Q_OBJECT
 public:
     NetworkAccessManagerFactory() : cacheSize(0) {}
     ~NetworkAccessManagerFactory() {}
 
     QNetworkAccessManager *create(QObject *parent);
-
-    void setupProxy(QNetworkAccessManager *nam)
-    {
-        class SystemProxyFactory : public QNetworkProxyFactory
-        {
-        public:
-            virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
-            {
-                QString protocolTag = query.protocolTag();
-                if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
-                    QList<QNetworkProxy> ret;
-                    ret << httpProxy;
-                    return ret;
-                }
-#ifdef Q_OS_WIN
-		// systemProxyForQuery can take insanely long on Windows (QTBUG-10106)
-                return QNetworkProxyFactory::proxyForQuery(query);
-#else
-                return QNetworkProxyFactory::systemProxyForQuery(query);
-#endif
-            }
-            void setHttpProxy (QNetworkProxy proxy)
-            {
-                httpProxy = proxy;
-                httpProxyInUse = true;
-            }
-            void unsetHttpProxy ()
-            {
-                httpProxyInUse = false;
-            }
-        private:
-            bool httpProxyInUse;
-            QNetworkProxy httpProxy;
-        };
-
-        SystemProxyFactory *proxyFactory = new SystemProxyFactory;
-        if (ProxySettings::httpProxyInUse())
-            proxyFactory->setHttpProxy(ProxySettings::httpProxy());
-        else
-            proxyFactory->unsetHttpProxy();
-        nam->setProxyFactory(proxyFactory);
-    }
 
     void setCacheSize(int size) {
         if (size != cacheSize) {
@@ -487,9 +490,23 @@ public:
         }
     }
 
+    void proxyChanged() {
+        foreach (QNetworkAccessManager *nam, namList) {
+            static_cast<SystemProxyFactory*>(nam->proxyFactory())->proxyChanged();
+        }
+    }
+
     static PersistentCookieJar *cookieJar;
+
+private slots:
+    void managerDestroyed(QObject *obj) {
+        namList.removeOne(static_cast<QNetworkAccessManager*>(obj));
+    }
+
+private:
     QMutex mutex;
     int cacheSize;
+    QList<QNetworkAccessManager*> namList;
 };
 
 PersistentCookieJar *NetworkAccessManagerFactory::cookieJar = 0;
@@ -510,7 +527,7 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     }
     manager->setCookieJar(cookieJar);
     cookieJar->setParent(0);
-    setupProxy(manager);
+    manager->setProxyFactory(new SystemProxyFactory);
     if (cacheSize > 0) {
         QNetworkDiskCache *cache = new QNetworkDiskCache;
         cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-viewer-network-cache"));
@@ -519,6 +536,8 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     } else {
         manager->setCache(0);
     }
+    connect(manager, SIGNAL(destroyed(QObject*)), this, SLOT(managerDestroyed(QObject*)));
+    namList.append(manager);
     qDebug() << "created new network access manager for" << parent;
     return manager;
 }
@@ -777,6 +796,7 @@ void QDeclarativeViewer::showProxySettings()
 
 void QDeclarativeViewer::proxySettingsChanged()
 {
+    namFactory->proxyChanged();
     reload ();
 }
 
@@ -924,13 +944,7 @@ void QDeclarativeViewer::statusChanged()
 
     if (canvas->status() == QDeclarativeView::Ready) {
         initialSize = canvas->initialSize();
-        if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-            if (!isFullScreen() && !isMaximized()) {
-                canvas->setFixedSize(initialSize);
-                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrink
-                QTimer::singleShot(0, this, SLOT(updateSizeHints()));
-            }
-        }
+        updateSizeHints(true);
     }
 }
 
@@ -1055,13 +1069,9 @@ void QDeclarativeViewer::setRecordRate(int fps)
     record_rate = fps;
 }
 
-void QDeclarativeViewer::sceneResized(QSize size)
+void QDeclarativeViewer::sceneResized(QSize)
 {
-    if (size.width() > 0 && size.height() > 0) {
-        if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
-            updateSizeHints();
-        }
-    }
+    updateSizeHints();
 }
 
 void QDeclarativeViewer::keyPressEvent(QKeyEvent *event)
@@ -1324,17 +1334,7 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
 
 void QDeclarativeViewer::orientationChanged()
 {
-    if (canvas->resizeMode() == QDeclarativeView::SizeRootObjectToView) {
-        if (canvas->rootObject()) {
-            QSizeF rootObjectSize = canvas->rootObject()->boundingRect().size();
-            if (size() != rootObjectSize.toSize()) {
-                canvas->setMinimumSize(rootObjectSize.toSize());
-                canvas->resize(rootObjectSize.toSize());
-                resize(rootObjectSize.toSize());
-                resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
-            }
-        }
-    }
+    updateSizeHints();
 }
 
 void QDeclarativeViewer::setDeviceKeys(bool on)
@@ -1383,20 +1383,32 @@ void QDeclarativeViewer::setSizeToView(bool sizeToView)
     }
 }
 
-void QDeclarativeViewer::updateSizeHints()
+void QDeclarativeViewer::updateSizeHints(bool initial)
 {
-    if (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject) {
-        QSize newWindowSize = canvas->sizeHint();
+    static bool isRecursive = false;
+
+    if (isRecursive)
+        return;
+    isRecursive = true;
+
+    if (initial || (canvas->resizeMode() == QDeclarativeView::SizeViewToRootObject)) {
+        QSize newWindowSize = initial ? initialSize : canvas->sizeHint();
+        //qWarning() << "USH:" << (initial ? "INIT:" : "V2R:") << "setting fixed size " << newWindowSize;
         if (!isFullScreen() && !isMaximized()) {
-            canvas->setMinimumSize(newWindowSize);
-            canvas->resize(newWindowSize);
-            resize(1, 1); // workaround for QMainWindowLayout NOT shrinking the window if the centralWidget() shrinks
-            canvas->setMinimumSize(QSize(0, 0));
+            canvas->setFixedSize(newWindowSize);
+            resize(1, 1);
+            layout()->setSizeConstraint(QLayout::SetFixedSize);
+            layout()->activate();
         }
-    } else { // QDeclarativeView::SizeRootObjectToView
-        canvas->setMinimumSize(QSize(0,0));
-        canvas->setMaximumSize(QSize(16777215,16777215));
     }
+    //qWarning() << "USH: R2V: setting free size ";
+    layout()->setSizeConstraint(QLayout::SetNoConstraint);
+    layout()->activate();
+    setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    canvas->setMinimumSize(QSize(0,0));
+    canvas->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+
+    isRecursive = false;
 }
 
 void QDeclarativeViewer::registerTypes()

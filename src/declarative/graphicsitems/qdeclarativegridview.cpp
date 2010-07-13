@@ -1216,6 +1216,11 @@ void QDeclarativeGridView::setModel(const QVariant &model)
             } else {
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
+                if (d->highlight && d->currentItem) {
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    d->updateTrackedItem();
+                }
+                d->moveReason = QDeclarativeGridViewPrivate::Other;
             }
         }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
@@ -1274,6 +1279,11 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             refill();
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
+            if (d->highlight && d->currentItem) {
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                d->updateTrackedItem();
+            }
+            d->moveReason = QDeclarativeGridViewPrivate::Other;
         }
         emit delegateChanged();
     }
@@ -1300,7 +1310,6 @@ void QDeclarativeGridView::setCurrentIndex(int index)
         return;
     if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
-        cancelFlick();
         d->updateCurrent(index);
     } else if (index != d->currentIndex) {
         d->currentIndex = index;
@@ -1381,7 +1390,7 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by a \l {SpringFollow} item:
+    Here is a highlight with its motion defined by a \l {SpringAnimation} item:
 
     \snippet doc/src/snippets/declarative/gridview/gridview.qml highlightFollowsCurrentItem
 */
@@ -2158,7 +2167,7 @@ void QDeclarativeGridView::componentComplete()
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
-        if (d->highlight) {
+        if (d->highlight && d->currentItem) {
             d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
@@ -2172,20 +2181,17 @@ void QDeclarativeGridView::trackedPositionChanged()
     Q_D(QDeclarativeGridView);
     if (!d->trackedItem || !d->currentItem)
         return;
-    if (!d->flickingHorizontally && !d->flickingVertically && !d->movingHorizontally && !d->movingVertically
-        && d->moveReason == QDeclarativeGridViewPrivate::SetIndex) {
+    if (d->moveReason == QDeclarativeGridViewPrivate::SetIndex) {
         const qreal trackedPos = d->trackedItem->rowPos();
         const qreal viewPos = d->position();
+        qreal pos = viewPos;
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
-                qreal pos = viewPos;
                 if (trackedPos > pos + d->highlightRangeEnd - d->rowSize())
                     pos = trackedPos - d->highlightRangeEnd + d->rowSize();
                 if (trackedPos < pos + d->highlightRangeStart)
                     pos = trackedPos - d->highlightRangeStart;
-                d->setPosition(pos);
             } else {
-                qreal pos = viewPos;
                 if (trackedPos < d->startPosition() + d->highlightRangeStart) {
                     pos = d->startPosition();
                 } else if (d->trackedItem->endRowPos() > d->endPosition() - d->size() + d->highlightRangeEnd) {
@@ -2199,14 +2205,12 @@ void QDeclarativeGridView::trackedPositionChanged()
                         pos = trackedPos - d->highlightRangeEnd + d->rowSize();
                     }
                 }
-                d->setPosition(pos);
             }
         } else {
             if (trackedPos < viewPos && d->currentItem->rowPos() < viewPos) {
-                d->setPosition(d->currentItem->rowPos() < trackedPos ? trackedPos : d->currentItem->rowPos());
+                pos = d->currentItem->rowPos() < trackedPos ? trackedPos : d->currentItem->rowPos();
             } else if (d->trackedItem->endRowPos() > viewPos + d->size()
                 && d->currentItem->endRowPos() > viewPos + d->size()) {
-                qreal pos;
                 if (d->trackedItem->endRowPos() < d->currentItem->endRowPos()) {
                     pos = d->trackedItem->endRowPos() - d->size();
                     if (d->rowSize() > d->size())
@@ -2216,8 +2220,11 @@ void QDeclarativeGridView::trackedPositionChanged()
                     if (d->rowSize() > d->size())
                         pos = d->currentItem->rowPos();
                 }
-                d->setPosition(pos);
             }
+        }
+        if (viewPos != pos) {
+            cancelFlick();
+            d->setPosition(pos);
         }
     }
 }
@@ -2563,6 +2570,12 @@ void QDeclarativeGridView::modelReset()
     refill();
     d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
+    if (d->highlight && d->currentItem) {
+        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        d->updateTrackedItem();
+    }
+    d->moveReason = QDeclarativeGridViewPrivate::Other;
+
     emit countChanged();
 }
 
