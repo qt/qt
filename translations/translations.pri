@@ -52,10 +52,14 @@ ts-linguist.depends = sub-tools
 ###### Assistant
 
 ts-assistant.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/assistant/tools/assistant/assistant.pro \
-                                    && $$LUPDATE \
-                                    ../tools/assistant/lib/lib.pro)
+                                    ../tools/assistant/tools/assistant/assistant.pro)
 ts-assistant.depends = sub-tools
+
+###### Qt Help Lib
+
+ts-qt_help.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
+                                    ../tools/assistant/lib/lib.pro)
+ts-qt_help.depends = sub-tools
 
 ###### Qtconfig
 
@@ -71,10 +75,10 @@ ts-qvfb.depends = sub-tools
 
 ###### Overall Rules
 
-ts.depends = ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb
+ts.depends = ts-qt ts-designer ts-linguist ts-assistant ts-qt_help ts-qtconfig ts-qvfb
 
 check-ts.commands = (cd $$PWD && perl check-ts.pl)
 check-ts.depends = ts
 
-QMAKE_EXTRA_TARGETS += ts-qt ts-designer ts-linguist ts-assistant ts-qtconfig ts-qvfb \
+QMAKE_EXTRA_TARGETS += ts-qt ts-designer ts-linguist ts-assistant ts-qt_help ts-qtconfig ts-qvfb \
                        ts check-ts
