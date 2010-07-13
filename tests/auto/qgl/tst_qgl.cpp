@@ -1286,6 +1286,9 @@ protected:
 
 void tst_QGL::glFBOUseInGLWidget()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
+#endif
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
 
