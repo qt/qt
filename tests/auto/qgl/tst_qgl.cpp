@@ -943,6 +943,10 @@ void tst_QGL::partialGLWidgetUpdates()
 // This tests that rendering to a QGLPBuffer using QPainter works.
 void tst_QGL::glPBufferRendering()
 {
+#ifdef Q_WS_MAC
+    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
+#endif
+
     if (!QGLPixelBuffer::hasOpenGLPbuffers())
         QSKIP("QGLPixelBuffer not supported on this platform", SkipSingle);
 
