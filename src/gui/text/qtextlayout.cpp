@@ -2228,6 +2228,8 @@ QList<QGlyphs> QTextLine::glyphs() const
             flags |= QTextItem::Underline;
         if (font.strikeOut())
             flags |= QTextItem::StrikeOut;
+        if (si.analysis.bidiLevel % 2)
+            flags |= QTextItem::RightToLeft;
 
         QGlyphLayout glyphLayout = eng->shapedGlyphs(&si).mid(iterator.glyphsStart,
                                                               iterator.glyphsEnd - iterator.glyphsStart);
@@ -2285,7 +2287,8 @@ QList<QGlyphs> QTextLine::glyphs() const
             QVarLengthArray<glyph_t> glyphsArray;
             QVarLengthArray<QFixedPoint> positionsArray;
 
-            fontEngine->getGlyphPositions(glyphLayout, QTransform(), 0, glyphsArray, positionsArray);
+            fontEngine->getGlyphPositions(glyphLayout, QTransform(), flags, glyphsArray,
+                                          positionsArray);
             Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
             QVector<quint32> glyphs;
