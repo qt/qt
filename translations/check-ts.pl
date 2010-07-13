@@ -49,7 +49,7 @@ my @groups = ("assistant", "designer", "linguist", "qt_help", "qtconfig", "qvfb"
 my %scores = ();
 my %langs = ();
 
-my $files = join("\n", <*.ts>);
+my $files = join("\n", <*_??.ts>);
 my $res = `xmlpatterns -param files=\"$files\" check-ts.xq`;
 for my $i (split(/ /, $res)) {
   $i =~ /^([^.]+).ts:(.*)$/;

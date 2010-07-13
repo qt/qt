@@ -25,7 +25,8 @@ defineTest(addTsTargets) {
         lang = $$replace(file, .*_((.._)?..)\\.ts$, \\1)
         addTsTarget(ts-$$lang, ts-$$1-$$lang, $$2, $$file)
     }
-    addTsTarget(ts-all, ts-$$1-all, $$2, $$files)
+    addTsTarget(ts-untranslated, ts-$$1-untranslated, $$2, $$PWD/$${1}_untranslated.ts)
+    addTsTarget(ts-all, ts-$$1-all, $$2, $$PWD/$${1}_untranslated.ts $$files)
 }
 
 addTsTargets(qt, -I../include -I../include/Qt \
@@ -59,6 +60,7 @@ check-ts.depends = ts-all
 
 ts.commands = \
     @echo \"The \'ts\' target has been removed in favor of more fine-grained targets.\" && \
-    echo \"Use \'ts-<target>-<lang>\' or \'ts-<lang>\' instead.\"
+    echo \"Use \'ts-<target>-<lang>\' or \'ts-<lang>\' instead. To add a language,\" && \
+    echo \"use \'untranslated\' for <lang>, rename the files and re-run \'qmake\'.\"
 
 QMAKE_EXTRA_TARGETS += $$unique(TS_TARGETS) ts check-ts
