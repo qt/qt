@@ -462,6 +462,7 @@ private slots:
     void sortItemsWhileAdding();
     void doNotMarkFullUpdateIfNotInScene();
     void itemDiesDuringDraggingOperation();
+    void QTBUG_12112_focusItem();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -10675,5 +10676,31 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     delete item;
     QVERIFY(QGraphicsScenePrivate::get(&scene)->dragDropItem == 0);
 }
+
+void tst_QGraphicsItem::QTBUG_12112_focusItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, 20, 20);
+    item1->setFlag(QGraphicsItem::ItemIsFocusable);
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(20, 20, 20, 20);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    item1->setFocus();
+    scene.addItem(item2);
+    scene.addItem(item1);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+
+    QVERIFY(item1->focusItem());
+    QVERIFY(!item2->focusItem());
+
+    item2->setFocus();
+    QVERIFY(!item1->focusItem());
+    QVERIFY(item2->focusItem());
+}
+
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"
