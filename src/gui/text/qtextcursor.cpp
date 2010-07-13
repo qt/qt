@@ -1281,7 +1281,7 @@ void QTextCursor::setVisualNavigation(bool b)
 /*!
   \since 4.7
 
-  Sets the visual x position for vertical cursor movements.
+  Sets the visual x position for vertical cursor movements to \a x.
 
   The vertical movement x position is cleared automatically when the cursor moves horizontally, and kept
   unchanged when the cursor moves vertically. The mechanism allows the cursor to move up and down on a
@@ -1333,8 +1333,8 @@ bool QTextCursor::keepPositionOnInsert() const
   Defines whether the cursor should keep its current position when text gets inserted at the current position of the
   cursor.
 
-  If \b is true, the cursor keeps its current position when text gets inserted at the positing of the cursor.
-  If \b is false, the cursor moves along with the inserted text.
+  If \a b is true, the cursor keeps its current position when text gets inserted at the positing of the cursor.
+  If \a b is false, the cursor moves along with the inserted text.
 
   The default is false.
 
