@@ -118,18 +118,14 @@ private:
                 data = dataBuf();
                 Orientation o = UnknownOrientation;
                 switch (data.iDeviceOrientation) {
-                case TSensrvOrientationData::EOrientationDisplayRightUp:
-                    o = LandscapeInverted;
-                    break;
                 case TSensrvOrientationData::EOrientationDisplayUp:
                     o = Portrait;
                     break;
-                case TSensrvOrientationData::EOrientationDisplayDown:
-                    o = PortraitInverted;
-                    break;
-                case TSensrvOrientationData::EOrientationDisplayLeftUp:
+                case TSensrvOrientationData::EOrientationDisplayRightUp:
                     o = Landscape;
                     break;
+                case TSensrvOrientationData::EOrientationDisplayLeftUp:
+                case TSensrvOrientationData::EOrientationDisplayDown:
                 case TSensrvOrientationData::EOrientationUndefined:
                 case TSensrvOrientationData::EOrientationDisplayUpwards:
                 case TSensrvOrientationData::EOrientationDisplayDownwards:
@@ -137,7 +133,7 @@ private:
                     break;
                 }
 
-                if (m_current != o) {
+                if (m_current != o && o != UnknownOrientation) {
                     m_current = o;
                     emit orientationChanged();
                 }
