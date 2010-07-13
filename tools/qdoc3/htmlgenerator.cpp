@@ -1347,7 +1347,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 
     if (!inner->doc().isEmpty()) {
         //out() << "<hr />\n"
-        out() << "<div class=\"descr\"/>\n" // QTBUG-9504
+        out() << "<div class=\"descr\">\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
@@ -1359,7 +1359,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     while (s != sections.end()) {
         //out() << "<hr />\n";
         if (!(*s).divClass.isEmpty())
-            out() << "<div class=\"" << (*s).divClass << "\"/>\n"; // QTBUG-9504
+            out() << "<div class=\"" << (*s).divClass << "\">\n"; // QTBUG-9504
         out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
 
         NodeList::ConstIterator m = (*s).members.begin();
@@ -1596,11 +1596,11 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
         out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
-        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
+        out() << "<div class=\"descr\">\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
     else
-        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
+        out() << "<div class=\"descr\">\n"; // QTBUG-9504
 
     generateBody(fake, marker);
     out() << "</div>\n"; // QTBUG-9504
