@@ -728,23 +728,12 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n)
                 classNode = static_cast<const ClassNode*>(n);
         }
-        if (names[0].startsWith("Q"))
+        if (names[0].startsWith("Qt"))
             return new QmlClassNode(tre->root(), QLatin1String("QML:")+names[0], classNode);
         else
             return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if (command == COMMAND_QMLBASICTYPE) {
-#if 0
-        QStringList parts = arg.split(" ");
-        qDebug() << command << parts;
-        if (parts.size() > 1) {
-            FakeNode* pageNode = static_cast<FakeNode*>(tre->root()->findNode(parts[1], Node::Fake));
-            if (pageNode) {
-                qDebug() << "FOUND";
-                return new QmlBasicTypeNode(pageNode, parts[0]);
-            }
-        }
-#endif
         return new QmlBasicTypeNode(tre->root(), arg);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
@@ -755,7 +744,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         QString type;
         QmlClassNode* qmlClass = 0;
         if (splitQmlMethodArg(doc,arg,type,element)) {
-            if (element.startsWith(QLatin1String("Q")))
+            if (element.startsWith(QLatin1String("Qt")))
                 element = QLatin1String("QML:") + element;
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {

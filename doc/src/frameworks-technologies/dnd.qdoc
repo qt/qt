@@ -45,7 +45,7 @@
     outlines the approach used to enable it in custom widgets. Drag
     and drop operations are also supported by Qt's item views and by
     the graphics view framework. More information is available in
-    \l{Using Drag and Drop with Item Views} and \l{Graphics View
+    \l{Using drag & drop with item views} and \l{Graphics View
     Framework}.
 
     \section1 Drag and Drop Classes

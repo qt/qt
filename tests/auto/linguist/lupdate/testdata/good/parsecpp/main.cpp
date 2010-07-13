@@ -275,3 +275,30 @@ void bogosity()
     // no spaces here. test collateral damage from ignoring equal sign
     Class::member=QObject::tr("just QObject");
 }
+
+
+
+namespace Internal {
+
+class Message : public QObject
+{
+    Q_OBJECT
+public:
+    Message(QObject *parent = 0);
+};
+
+} // The temporary closing of the namespace triggers the problem
+
+namespace Internal {
+
+static inline QString message1()
+{
+    return Message::tr("message1"); // Had no namespace
+}
+
+static inline QString message2()
+{
+    return Message::tr("message2"); // Already had namespace
+}
+
+}

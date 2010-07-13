@@ -327,10 +327,12 @@ bool QHelpProjectDataPrivate::hasValidSyntax(const QString &nameSpace,
     QUrl url;
     const QLatin1String scheme("qthelp");
     url.setScheme(scheme);
-    url.setHost(nameSpace);
+    const QString canonicalNamespace = nameSpace.toLower();
+    url.setHost(canonicalNamespace);
     url.setPath(vFolder);
 
-    const QString expectedUrl(scheme + QLatin1String("://") + nameSpace + slash + vFolder);
+    const QString expectedUrl(scheme + QLatin1String("://")
+        + canonicalNamespace + slash + vFolder);
     return url.isValid() && url.toString() == expectedUrl;
 }
 
