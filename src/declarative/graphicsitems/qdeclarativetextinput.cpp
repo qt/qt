@@ -275,6 +275,8 @@ void QDeclarativeTextInput::setSelectionColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::Highlight, d->selectionColor);
     d->control->setPalette(p);
+    clearCache();
+    update();
     emit selectionColorChanged(color);
 }
 
@@ -299,6 +301,8 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::HighlightedText, d->selectedTextColor);
     d->control->setPalette(p);
+    clearCache();
+    update();
     emit selectedTextColorChanged(color);
 }
 
