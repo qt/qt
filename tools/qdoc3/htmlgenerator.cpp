@@ -1738,8 +1738,9 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
         }
         else if (node->subType() == Node::Page) {
-            if (fn->name() == QString("examples.html")) {
-                out() << "              <li>Examples</li>";
+            if (fn->name() == QString("qdeclarativeexamples.html")) {
+                out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
+                out() << "              <li>QML Examples & Demos</li>";
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
@@ -1759,10 +1760,14 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
             QStringList sl = fn->name().split('/');
-            QString name = "examples-" + sl.at(0) + ".html";
-            QString t = CodeParser::titleFromName(name);
-            out() << "              <li><a href=\"" << name << "\">"
-                  << t << "</a></li>";
+            if (sl.contains("declarative"))
+                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples & Demos</a></li>";
+            else {
+                QString name = "examples-" + sl.at(0) + ".html";
+                QString t = CodeParser::titleFromName(name);
+                out() << "              <li><a href=\"" << name << "\">"
+                      << t << "</a></li>";
+            }
             out() << "              <li>" << title << "</li>";
         }
     }
