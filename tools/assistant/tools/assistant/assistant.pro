@@ -1,4 +1,4 @@
-include($$QT_SOURCE_TREE/tools/shared/fontpanel/fontpanel.pri)
+include(../../../shared/fontpanel/fontpanel.pri)
 TEMPLATE = app
 LANGUAGE = C++
 TARGET = assistant
@@ -108,3 +108,16 @@ contains(CONFIG, static): {
         DEFINES += USE_STATIC_SQLITE_PLUGIN
     }
 }
+
+TR_DIR = $$PWD/../../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/assistant_cs.ts \
+    $$TR_DIR/assistant_da.ts \
+    $$TR_DIR/assistant_de.ts \
+    $$TR_DIR/assistant_fr.ts \
+    $$TR_DIR/assistant_hu.ts \
+    $$TR_DIR/assistant_ja.ts \
+    $$TR_DIR/assistant_pl.ts \
+    $$TR_DIR/assistant_ru.ts \
+    $$TR_DIR/assistant_zh_CN.ts \
+    $$TR_DIR/assistant_zh_TW.ts
