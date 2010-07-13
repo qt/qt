@@ -1,84 +1,64 @@
-defineReplace(prependAll) {
-    prepend = $$1
-    arglist = $$2
-    append  = $$3
-    for(a,arglist) {
-      result += $${prepend}$${a}$${append}
-    }
-    return ($$result)
-}
-
 qtPrepareTool(LUPDATE, lupdate)
 LUPDATE += -locations relative -no-ui-lines
 
-###### Qt Libraries
+TS_TARGETS =
 
-QT_TS        = ar cs da de es fr he hu ja pl pt ru sk sl sv uk zh_CN zh_TW
+# meta target name, target name, lupdate base options, files
+defineTest(addTsTarget) {
+    cv = $${2}.commands
+    dv = $${2}.depends
+    $$cv = cd $$QT_SOURCE_TREE/src && $$LUPDATE $$3 -ts $$4
+    $$dv = sub-tools
+    export($$cv)
+    export($$dv)
+    dv = $${1}.depends
+    $$dv += $$2
+    export($$dv)
+    TS_TARGETS += $$1 $$2
+    export(TS_TARGETS)
+}
 
-ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                -I../include -I../include/Qt \
-                                    3rdparty/phonon \
-                                    3rdparty/webkit \
-                                    activeqt \
-                                    corelib \
-                                    declarative \
-                                    gui \
-                                    multimedia \
-                                    network \
-                                    opengl \
-                                    plugins \
-                                    qt3support \
-                                    script \
-                                    scripttools \
-                                    sql \
-                                    svg \
-                                    xml \
-                                    xmlpatterns \
-                                -ts $$prependAll($$QT_SOURCE_TREE/translations/qt_,$$QT_TS,.ts))
-ts-qt.depends = sub-tools
+# target basename, lupdate base options
+defineTest(addTsTargets) {
+    files = $$files($$PWD/$${1}_??.ts) $$files($$PWD/$${1}_??_??.ts)
+    for(file, files) {
+        lang = $$replace(file, .*_((.._)?..)\\.ts$, \\1)
+        addTsTarget(ts-$$lang, ts-$$1-$$lang, $$2, $$file)
+    }
+    addTsTarget(ts-all, ts-$$1-all, $$2, $$files)
+}
 
-###### Designer
-
-ts-designer.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/designer/designer.pro)
-ts-designer.depends = sub-tools
-
-###### Linguist
-
-ts-linguist.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/linguist/linguist/linguist.pro)
-ts-linguist.depends = sub-tools
-
-###### Assistant
-
-ts-assistant.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/assistant/tools/assistant/assistant.pro)
-ts-assistant.depends = sub-tools
-
-###### Qt Help Lib
-
-ts-qt_help.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/assistant/lib/lib.pro)
-ts-qt_help.depends = sub-tools
-
-###### Qtconfig
-
-ts-qtconfig.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/qtconfig/qtconfig.pro)
-ts-qtconfig.depends = sub-tools
-
-###### Qvfp
-
-ts-qvfb.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/qvfb/qvfb.pro)
-ts-qvfb.depends = sub-tools
-
-###### Overall Rules
-
-ts.depends = ts-qt ts-designer ts-linguist ts-assistant ts-qt_help ts-qtconfig ts-qvfb
+addTsTargets(qt, -I../include -I../include/Qt \
+    3rdparty/phonon \
+    3rdparty/webkit \
+    activeqt \
+    corelib \
+    declarative \
+    gui \
+    multimedia \
+    network \
+    opengl \
+    plugins \
+    qt3support \
+    script \
+    scripttools \
+    sql \
+    svg \
+    xml \
+    xmlpatterns \
+)
+addTsTargets(designer, ../tools/designer/designer.pro)
+addTsTargets(linguist, ../tools/linguist/linguist/linguist.pro)
+addTsTargets(assistant, ../tools/assistant/tools/assistant/assistant.pro)
+addTsTargets(qt_help, ../tools/assistant/lib/lib.pro)
+addTsTargets(qtconfig, ../tools/qtconfig/qtconfig.pro)
+addTsTargets(qvfb, ../tools/qvfb/qvfb.pro)
 
 check-ts.commands = (cd $$PWD && perl check-ts.pl)
-check-ts.depends = ts
+check-ts.depends = ts-all
 
-QMAKE_EXTRA_TARGETS += ts-qt ts-designer ts-linguist ts-assistant ts-qt_help ts-qtconfig ts-qvfb \
-                       ts check-ts
+ts.commands = \
+    @echo \"The \'ts\' target has been removed in favor of more fine-grained targets.\" && \
+    echo \"Use \'ts-<target>-<lang>\' or \'ts-<lang>\' instead.\"
+
+QMAKE_EXTRA_TARGETS += $$unique(TS_TARGETS) ts check-ts
