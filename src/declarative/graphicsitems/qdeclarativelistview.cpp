@@ -494,7 +494,7 @@ public:
     QSmoothedAnimation *highlightSizeAnimator;
     QDeclarativeViewSection *sectionCriteria;
     QString currentSection;
-    static const int sectionCacheSize = 3;
+    static const int sectionCacheSize = 4;
     QDeclarativeItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
@@ -1029,6 +1029,11 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
         }
         currentItem->item->setFocus(true);
         currentItem->attached->setIsCurrentItem(true);
+        // Avoid showing section delegate twice.  We still need the section heading so that
+        // currentItem positioning works correctly.
+        // This is slightly sub-optimal, but section heading caching minimizes the impact.
+        if (currentItem->section)
+            currentItem->section->setVisible(false);
     }
     updateHighlight();
     emit q->currentIndexChanged();
