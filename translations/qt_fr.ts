@@ -39,15 +39,15 @@
     </message>
     <message>
         <source>local audio file:</source>
-        <translation type="obsolete">Fichier audio local:</translation>
+        <translation type="obsolete">Fichier audio local : </translation>
     </message>
     <message>
         <source>local video file:</source>
-        <translation type="obsolete">Fichier vidéo local:</translation>
+        <translation type="obsolete">Fichier vidéo local : </translation>
     </message>
     <message>
         <source>remote media URL:</source>
-        <translation type="obsolete">URL distante :</translation>
+        <translation type="obsolete">URL distante : </translation>
     </message>
     <message>
         <source>run tests</source>
@@ -69,11 +69,11 @@
     <name>FakeReply</name>
     <message>
         <source>Fake error !</source>
-        <translation>Fausse erreur!</translation>
+        <translation>Fausse erreur !</translation>
     </message>
     <message>
         <source>Invalid URL</source>
-        <translation>URL non valide</translation>
+        <translation>URL invalide</translation>
     </message>
 </context>
 <context>
@@ -96,7 +96,7 @@
     </message>
     <message>
         <source>Preferences...</source>
-        <translation>Préférences…</translation>
+        <translation>Préférences...</translation>
     </message>
     <message>
         <source>Quit %1</source>
@@ -115,7 +115,7 @@
     </message>
     <message>
         <source>Location:</source>
-        <translation type="obsolete">Emplacement:</translation>
+        <translation type="obsolete">Emplacement : </translation>
     </message>
 </context>
 <context>
@@ -224,13 +224,13 @@ so on.</source>
     <message>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
-        <translation>Attention: Vous n&apos;avez apparemment pas installé le paquet gstreamer0.10-plugins-good.
+        <translation>Attention : Vous n&apos;avez apparemment pas installé le paquet gstreamer0.10-plugins-good.
 Des fonctionnalités vidéo ont été desactivées.</translation>
     </message>
     <message>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation>Attention: Vous n&apos;avez apparemment pas installées les plugins de base de GStreamer.
+        <translation>Attention : Vous n&apos;avez apparemment pas installées les plugins de base de GStreamer.
 Le support audio et vidéo est désactivé</translation>
     </message>
 </context>
@@ -286,7 +286,7 @@ have libgstreamer-plugins-base installed.</source>
     </message>
     <message>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
-        <translation>Un codec requis est manquant. Vous devez installer le codec suivant pour jouer le contenu: %0</translation>
+        <translation>Un codec requis est manquant. Vous devez installer le codec suivant pour jouer le contenu : %0</translation>
     </message>
     <message>
         <source>Could not open media source.</source>
@@ -371,7 +371,7 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     </message>
     <message>
         <source>Access denied</source>
-        <translation>Accès refusé</translation>
+        <translation>Autorisation refusée</translation>
     </message>
     <message>
         <source>Could not connect</source>
@@ -407,11 +407,11 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     </message>
     <message>
         <source>Invalid protocol</source>
-        <translation>Protocole non valide</translation>
+        <translation>Protocole invalide</translation>
     </message>
     <message>
         <source>Invalid URL</source>
-        <translation>URL non valide</translation>
+        <translation>URL invalide</translation>
     </message>
     <message>
         <source>Multicast error</source>
@@ -463,6 +463,14 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     <message>
         <source>Error opening URL</source>
         <translation>Erreur lors de l&apos;ouverture de l&apos;URL</translation>
+    </message>
+    <message>
+        <source>Error opening resource</source>
+        <translation>erreur lors de l&apos;ouverture de la ressource</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not opened</source>
+        <translation>erreur lors de l&apos;ouverture de la source : ressource non ouverte</translation>
     </message>
     <message>
         <source>Setting volume failed</source>
@@ -585,11 +593,19 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     <name>Phonon::MMF::MediaObject</name>
     <message>
         <source>Error opening source: type not supported</source>
-        <translation>Erreur lors de l&apos;ouverture de la source: type non supporté</translation>
+        <translation>Erreur lors de l&apos;ouverture de la source : type non supporté</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource is compressed</source>
+        <translation>Erreur lors de l&apos;ouverture de la source : ressource compressée</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not valid</source>
+        <translation>Erreur lors de l&apos;ouverture de la source : ressource invalide</translation>
     </message>
     <message>
         <source>Error opening source: media type could not be determined</source>
-        <translation>Erreur lors de l&apos;ouverture de la source: type de média non déterminé</translation>
+        <translation>Erreur lors de l&apos;ouverture de la source : type de média non déterminé</translation>
     </message>
 </context>
 <context>
@@ -637,7 +653,7 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     <name>Phonon::VolumeSlider</name>
     <message>
         <source>Volume: %1%</source>
-        <translation>Volume: %1%</translation>
+        <translation>Volume : %1%</translation>
     </message>
     <message>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
@@ -730,15 +746,15 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     </message>
     <message>
         <source>Look &amp;in:</source>
-        <translation>Chercher &amp;dans :</translation>
+        <translation>Chercher &amp;dans : </translation>
     </message>
     <message>
         <source>File &amp;name:</source>
-        <translation>&amp;Nom de fichier :</translation>
+        <translation>&amp;Nom de fichier : </translation>
     </message>
     <message>
         <source>File &amp;type:</source>
-        <translation>&amp;Type de fichier :</translation>
+        <translation>&amp;Type de fichier : </translation>
     </message>
     <message>
         <source>Back</source>
@@ -910,7 +926,7 @@ d&apos;avoir installé libgstreamer-plugins-base.</translation>
     </message>
     <message>
         <source>Directory:</source>
-        <translation>Dossier :</translation>
+        <translation>Dossier : </translation>
     </message>
     <message>
         <source>Error</source>
@@ -922,7 +938,7 @@ File not found.
 Check path and filename.</source>
         <translation>%1
 Impossible de trouver le fichier.
-Vérifier le chemin et le nom du fichier.</translation>
+Vérifiez le chemin et le nom du fichier.</translation>
     </message>
     <message>
         <source>All Files (*.*)</source>
@@ -1122,7 +1138,7 @@ en
     <name>Q3ToolBar</name>
     <message>
         <source>More...</source>
-        <translation>Reste...</translation>
+        <translation>Plus...</translation>
     </message>
 </context>
 <context>
@@ -1284,7 +1300,7 @@ en
     </message>
     <message>
         <source>COM &amp;Object:</source>
-        <translation>&amp;Objet COM :</translation>
+        <translation>&amp;Objet COM : </translation>
     </message>
 </context>
 <context>
@@ -1306,31 +1322,31 @@ en
     <name>QColorDialog</name>
     <message>
         <source>Hu&amp;e:</source>
-        <translation>&amp;Teinte :</translation>
+        <translation>&amp;Teinte : </translation>
     </message>
     <message>
         <source>&amp;Sat:</source>
-        <translation>&amp;Saturation :</translation>
+        <translation>&amp;Saturation : </translation>
     </message>
     <message>
         <source>&amp;Val:</source>
-        <translation>&amp;Valeur :</translation>
+        <translation>&amp;Valeur : </translation>
     </message>
     <message>
         <source>&amp;Red:</source>
-        <translation>&amp;Rouge :</translation>
+        <translation>&amp;Rouge : </translation>
     </message>
     <message>
         <source>&amp;Green:</source>
-        <translation>&amp;Vert :</translation>
+        <translation>&amp;Vert : </translation>
     </message>
     <message>
         <source>Bl&amp;ue:</source>
-        <translation>Ble&amp;u :</translation>
+        <translation>Ble&amp;u : </translation>
     </message>
     <message>
         <source>A&amp;lpha channel:</source>
-        <translation>Canal a&amp;lpha :</translation>
+        <translation>Canal a&amp;lpha : </translation>
     </message>
     <message>
         <source>Select Color</source>
@@ -1389,7 +1405,7 @@ en
     <message>
         <source>%1: permission denied</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="obsolete">%1: permission refusée</translation>
+        <translation type="obsolete">%1 : permission refusée</translation>
     </message>
     <message>
         <source>%1: already exists</source>
@@ -1399,7 +1415,7 @@ en
     <message>
         <source>%1: doesn&apos;t exists</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="obsolete">%1: n&apos;existe pas</translation>
+        <translation type="obsolete">%1 : n&apos;existe pas</translation>
     </message>
     <message>
         <source>%1: does not exist</source>
@@ -1433,31 +1449,31 @@ en
     </message>
     <message>
         <source>%1: key is empty</source>
-        <translation type="obsolete">%1: clé vide</translation>
+        <translation type="obsolete">%1 : clé vide</translation>
     </message>
     <message>
         <source>%1: unable to make key</source>
-        <translation type="obsolete">%1: impossible de créer la clé</translation>
+        <translation type="obsolete">%1 : impossible de créer la clé</translation>
     </message>
     <message>
         <source>%1: ftok failed</source>
-        <translation type="obsolete">%1: ftok a échoué</translation>
+        <translation type="obsolete">%1 : ftok a échoué</translation>
     </message>
     <message>
         <source>%1: already exists</source>
-        <translation type="obsolete">%1: existe déjà</translation>
+        <translation type="obsolete">%1 : existe déjà</translation>
     </message>
     <message>
         <source>%1: does not exist</source>
-        <translation type="obsolete">%1: n&apos;existe pas</translation>
+        <translation type="obsolete">%1 : n&apos;existe pas</translation>
     </message>
     <message>
         <source>%1: out of resources</source>
-        <translation type="obsolete">%1: plus de ressources disponibles</translation>
+        <translation type="obsolete">%1 : plus de ressources disponibles</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
-        <translation type="obsolete">%1: erreur inconnue %2</translation>
+        <translation type="obsolete">%1 : erreur inconnue %2</translation>
     </message>
 </context>
 <context>
@@ -1487,7 +1503,7 @@ en
     </message>
     <message>
         <source>Unable to prepare statement</source>
-        <translation>Impossible de prépare la requête</translation>
+        <translation>Impossible de préparer la requête</translation>
     </message>
     <message>
         <source>Unable to bind variable</source>
@@ -1575,7 +1591,7 @@ en
     </message>
     <message>
         <source>Cannot anchor to a null item.</source>
-        <translation>impossible d&apos;ancrer à un élément nul.</translation>
+        <translation>Impossible d&apos;ancrer à un élément nul.</translation>
     </message>
     <message>
         <source>Cannot anchor a horizontal edge to a vertical edge.</source>
@@ -1620,10 +1636,10 @@ en
     </message>
 </context>
 <context>
-    <name>QDeclarativeCompiledBindings</name>
+    <name>QDeclarativeBindings</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation></translation>
+        <translation>Boucle détectée dans l&apos;affectation pour la propriété &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -1654,11 +1670,15 @@ en
     </message>
     <message>
         <source>Invalid property assignment: float expected</source>
-        <translation>Affectation de propriété invalide : float attendu</translation>
+        <translation type="obsolete">Affectation de propriété invalide : float attendu</translation>
     </message>
     <message>
         <source>Invalid property assignment: double expected</source>
-        <translation>Affectation de propriété invalide : double attendu</translation>
+        <translation type="obsolete">Affectation de propriété invalide : double attendu</translation>
+    </message>
+    <message>
+        <source>Invalid property assignment: number expected</source>
+        <translation>Affectation de propriété invalide : nombre attendu</translation>
     </message>
     <message>
         <source>Invalid property assignment: color expected</source>
@@ -1706,238 +1726,245 @@ en
     </message>
     <message>
         <source>Component elements may not contain properties other than id</source>
-        <translation type="unfinished">Les éléments du composant ne peuvent pas contenir des propriétés autres que id</translation>
+        <translation>Les éléments du composant ne peuvent pas contenir des propriétés autres que id</translation>
     </message>
     <message>
         <source>Invalid component id specification</source>
-        <translation type="unfinished">L&apos;ID de composant spécifiée n&apos;est pas valide</translation>
+        <translation>L&apos;id de composant spécifiée n&apos;est pas valide</translation>
     </message>
     <message>
         <source>id is not unique</source>
-        <translation type="unfinished">l&apos;ID n&apos;est pas unique</translation>
+        <translation>l&apos;id n&apos;est pas unique</translation>
     </message>
     <message>
         <source>Invalid component body specification</source>
-        <translation type="unfinished">Le corps de la spécification du composant n&apos;est pas valide</translation>
+        <translation>Le corps de la spécification du composant n&apos;est pas valide</translation>
     </message>
     <message>
         <source>Component objects cannot declare new properties.</source>
-        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouvelles propriétés.</translation>
+        <translation>Les objets composants ne peuvent pas déclarer de nouvelles propriétés.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new signals.</source>
-        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouveaux signaux.</translation>
+        <translation>Les objets composants ne peuvent pas déclarer de nouveaux signaux.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new functions.</source>
-        <translation type="unfinished">Les objets composants ne peuvent pas déclarer de nouvelles fonctions.</translation>
+        <translation>Les objets composants ne peuvent pas déclarer de nouvelles fonctions.</translation>
     </message>
     <message>
         <source>Cannot create empty component specification</source>
-        <translation type="unfinished">Impossible de créer une spécification du composant vide</translation>
+        <translation>Impossible de créer une spécification du composant vide</translation>
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
-        <translation type="unfinished">L&apos;affectation du signal est ncorrectement spécifiée</translation>
+        <translation>L&apos;affectation du signal est incorrectement spécifiée</translation>
     </message>
     <message>
         <source>Cannot assign a value to a signal (expecting a script to be run)</source>
-        <translation type="unfinished">Impossible d&apos;assigner une valeur à un signal (celà exige d&apos;éxécuter un script)</translation>
+        <translation>Impossible d&apos;assigner une valeur à un signal (un script à exécuter est attendu)</translation>
     </message>
     <message>
         <source>Empty signal assignment</source>
-        <translation type="unfinished">Signal d&apos;affectation vide</translation>
+        <translation>Affectation de signal vide</translation>
     </message>
     <message>
         <source>Empty property assignment</source>
-        <translation type="unfinished">Propriété d&apos;affectation vide</translation>
+        <translation>Affectation de propriété vide</translation>
     </message>
     <message>
         <source>Attached properties cannot be used here</source>
-        <translation type="unfinished">La configuration spécifiée ne peut être utilisée.ici</translation>
+        <translation>La configuration spécifiée ne peut être utilisée ici.</translation>
     </message>
     <message>
         <source>Non-existent attached object</source>
-        <translation type="unfinished">Objet attaché non existant</translation>
+        <translation>Objet attaché inexistant</translation>
     </message>
     <message>
         <source>Invalid attached object assignment</source>
-        <translation type="unfinished">L&apos;affectation de l&apos;objet attaché est invalide</translation>
+        <translation>L&apos;affectation de l&apos;objet attaché est invalide</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent default property</source>
-        <translation type="unfinished">Impossible d&apos;attacher à une propriété par défaut non existante</translation>
+        <translation>Impossible d&apos;attacher à une propriété par défaut inexistante</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Impossible d&apos;attacher à une propriété non existante &quot;%1&quot;</translation>
+        <translation>Impossible d&apos;attacher à une propriété inexistante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Invalid use of namespace</source>
-        <translation type="unfinished">Utilisation invalide d&apos;espace de noms</translation>
+        <translation>Utilisation invalide d&apos;espace de noms</translation>
     </message>
     <message>
         <source>Not an attached property name</source>
-        <translation type="unfinished">Ce n&apos;est pas un nom de propriété attachée</translation>
+        <translation>Ce n&apos;est pas un nom de propriété attachée</translation>
     </message>
     <message>
         <source>Invalid use of id property</source>
-        <translation type="unfinished">Utilisation invalide de la propriété id</translation>
+        <translation>Utilisation invalide de la propriété id</translation>
     </message>
     <message>
         <source>Property has already been assigned a value</source>
-        <translation type="unfinished">Une valeur a déjà été attribuée à la propriété</translation>
+        <translation>Une valeur a déjà été attribuée à la propriété</translation>
     </message>
     <message>
         <source>Invalid grouped property access</source>
-        <translation type="unfinished">Accès invalide à une propriété groupée</translation>
+        <translation>Accès invalide à une propriété groupée</translation>
     </message>
     <message>
         <source>Cannot assign a value directly to a grouped property</source>
-        <translation type="unfinished">Impossible d&apos;assigner directement une valeur à une propriété groupée</translation>
+        <translation>Impossible d&apos;assigner directement une valeur à une propriété groupée</translation>
     </message>
     <message>
         <source>Invalid property use</source>
-        <translation type="unfinished">La propriété utilisée est invalide</translation>
+        <translation>La propriété utilisée est invalide</translation>
     </message>
     <message>
         <source>Property assignment expected</source>
-        <translation type="unfinished">Propriété d&apos;affectation attendue</translation>
+        <translation>Affectation de propriété attendue</translation>
     </message>
     <message>
         <source>Single property assignment expected</source>
-        <translation type="unfinished">Une seule propriété d&apos;affectation est attendue</translation>
+        <translation>Une seule affectation de propriété est attendue</translation>
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation type="unfinished">Affectation d&apos;objet innatendue</translation>
+        <translation>Affectation d&apos;objet inattendue</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished">Impossible d&apos;assigner un objet à une liste</translation>
+        <translation>Impossible d&apos;assigner un objet à une liste</translation>
     </message>
     <message>
         <source>Can only assign one binding to lists</source>
-        <translation type="unfinished">Un seul lien peut être assigné à des listes</translation>
+        <translation>Un seul lien peut être assigné à des listes</translation>
     </message>
     <message>
         <source>Cannot assign primitives to lists</source>
-        <translation type="unfinished">Impossible d&apos;assigner des primitives à des listes</translation>
+        <translation>Impossible d&apos;assigner des primitives à des listes</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a script property</source>
-        <translation type="unfinished">Impossible d&apos;assigner plusieurs valeurs à une propriété de script</translation>
+        <translation>Impossible d&apos;assigner plusieurs valeurs à une propriété de script</translation>
     </message>
     <message>
         <source>Invalid property assignment: script expected</source>
-        <translation type="unfinished">Propriété d&apos;affectation invalide: script attendu</translation>
+        <translation>Affectation de propriété invalide : script attendu</translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
-        <translation type="unfinished">Impossible d&apos;assigner un objet à une propriété</translation>
+        <translation>Impossible d&apos;assigner un objet à une propriété</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
-        <translation type="unfinished">&quot;%1&quot; ne peut pas fonctionner sur &quot;%2&quot;</translation>
+        <translation>&quot;%1&quot; ne peut pas opérer sur &quot;%2&quot;</translation>
     </message>
     <message>
         <source>Duplicate default property</source>
-        <translation type="unfinished">Propriété par défaut en double</translation>
+        <translation>Propriété par défaut en double</translation>
     </message>
     <message>
         <source>Duplicate property name</source>
-        <translation type="unfinished">Nom de propriété en double</translation>
+        <translation>Nom de propriété en double</translation>
     </message>
     <message>
         <source>Property names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Les noms des propriétés ne peuvent pas commencer par une majuscule</translation>
+        <translation>Les noms des propriétés ne peuvent pas commencer par une majuscule</translation>
+    </message>
+    <message>
+        <source>Illegal property name</source>
+        <translation>Nom de propriété invalide</translation>
     </message>
     <message>
         <source>Duplicate signal name</source>
-        <translation type="unfinished">Nom de signal en double</translation>
+        <translation>Nom de signal en double</translation>
     </message>
     <message>
         <source>Signal names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Les noms de signaux ne peuvent pas commencer par une majuscule</translation>
+        <translation>Les noms de signaux ne peuvent pas commencer par une majuscule</translation>
+    </message>
+    <message>
+        <source>Illegal signal name</source>
+        <translation>Nom de signal invalide</translation>
     </message>
     <message>
         <source>Duplicate method name</source>
-        <translation type="unfinished">Nom de méthode en double</translation>
+        <translation>Nom de méthode en double</translation>
     </message>
     <message>
         <source>Method names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Les noms des méthodes ne peuvent pas commencer par une majuscule</translation>
+        <translation>Les noms des méthodes ne peuvent pas commencer par une majuscule</translation>
+    </message>
+    <message>
+        <source>Illegal method name</source>
+        <translation>Nom de méthode invalide</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished">Valeur de propriété attribuée plusieurs fois</translation>
+        <translation>Valeur de propriété attribuée plusieurs fois</translation>
     </message>
     <message>
         <source>Invalid property nesting</source>
-        <translation type="unfinished">Propriété d&apos;emboîtement invalide</translation>
+        <translation>Imbrication de propriété invalide</translation>
     </message>
     <message>
         <source>Cannot override FINAL property</source>
-        <translation type="unfinished">Impossible de remplacer la propriété FINAL</translation>
+        <translation>Impossible de remplacer la propriété FINAL</translation>
     </message>
     <message>
         <source>Invalid property type</source>
-        <translation type="unfinished">Type de propriété invalide</translation>
+        <translation>Type de propriété invalide</translation>
     </message>
     <message>
         <source>Invalid empty ID</source>
-        <translation>ID vide non valide</translation>
+        <translation>id vide invalide</translation>
     </message>
     <message>
         <source>IDs cannot start with an uppercase letter</source>
-        <translation type="unfinished">Les IDs ne peuvent pas commencer par une  majuscule</translation>
+        <translation>Les ids ne peuvent pas commencer par une  majuscule</translation>
     </message>
     <message>
         <source>IDs must start with a letter or underscore</source>
-        <translation type="unfinished">Les IDs doivent commencer par une lettre ou un souligné</translation>
+        <translation>Les ids doivent commencer par une lettre ou un tiret bas</translation>
     </message>
     <message>
         <source>IDs must contain only letters, numbers, and underscores</source>
-        <translation type="unfinished">Les IDs ne peuvent contenir que des lettres, des nombres ou des soulignés</translation>
+        <translation>Les ids ne peuvent contenir que des lettres, des nombres ou des tirets bas</translation>
     </message>
     <message>
         <source>ID illegally masks global JavaScript property</source>
-        <translation type="unfinished">ID masque illégalement la propriété JavaScript globale</translation>
+        <translation>id masque illégalement la propriété JavaScript globale</translation>
     </message>
     <message>
-        <source>No property alias location</source>
-        <translatorcomment>??</translatorcomment>
-        <translation type="unfinished">La propriété de l&apos;alias n&apos;a pas d&apos;emplacement</translation>
-    </message>
-    <message>
-        <source>Invalid alias location</source>
-        <translation type="unfinished">Emplacement d&apos;alias invalide</translation>
+        <source></source>
+        <translation>L&apos;alias de propriété n&apos;a pas d&apos;emplacement</translation>
     </message>
     <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished">Référence d&apos;alias  invalide. La référence d&apos;alias doit être spécifiée comme &lt;id&gt; ou &lt;id&gt;.&lt;property&gt;</translation>
+        <translation>Référence d&apos;alias invalide. Les références d&apos;alias doivent être spécifiées comme &lt;id&gt; ou &lt;id&gt;.&lt;property&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation type="unfinished">Référence d&apos;alias invalide. Impossible de trouver l&apos;id &quot;%1&quot;</translation>
+        <translation>Référence d&apos;alias invalide. Impossible de trouver l&apos;id &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeComponent</name>
     <message>
         <source>Invalid empty URL</source>
-        <translation type="unfinished">URL vide non valide</translation>
+        <translation>URL vide invalide</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation type="unfinished">La ressource %1 n&apos;est pas disponible</translation>
+        <translation>La ressource %1 n&apos;est pas disponible</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished">L&apos;espace de noms %1 ne peut pas être utilisé comme un type</translation>
+        <translation>L&apos;espace de noms %1 ne peut pas être utilisé comme un type</translation>
     </message>
     <message>
         <source>%1 %2</source>
@@ -1945,130 +1972,130 @@ en
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished">Le type %1 n&apos;est pas disponible</translation>
+        <translation>Le type %1 n&apos;est pas disponible</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Imposible d&apos;assigner à la propriété inexistante &quot;%1&quot;</translation>
+        <translation>Imposible d&apos;assigner à la propriété inexistante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
-        <translation type="unfinished">Connexions: les éléments imbriqués ne sont pas autorisés</translation>
+        <translation>Connexions : les éléments imbriqués ne sont pas autorisés</translation>
     </message>
     <message>
         <source>Connections: syntax error</source>
-        <translation type="unfinished">Connexions: erreur de syntaxe</translation>
+        <translation>Connexions : erreur de syntaxe</translation>
     </message>
     <message>
         <source>Connections: script expected</source>
-        <translation type="unfinished">Connexions: script attendu</translation>
+        <translation>Connexions : script attendu</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeEngine</name>
     <message>
         <source>executeSql called outside transaction()</source>
-        <translation type="unfinished">executeSql a été 1.appelé en dehors de transaction()</translation>
+        <translation>executeSql a été appelé en dehors de transaction()</translation>
     </message>
     <message>
         <source>Read-only Transaction</source>
-        <translation type="unfinished">Transaction en lecture seule</translation>
+        <translation>Transaction en lecture seule</translation>
     </message>
     <message>
         <source>Version mismatch: expected %1, found %2</source>
-        <translation type="unfinished">Version incompatible:%1 attendue, %2 trouvée</translation>
+        <translation>Version incompatible : %1 attendue, %2 trouvée</translation>
     </message>
     <message>
         <source>SQL transaction failed</source>
-        <translation type="unfinished">la transaction SQL a échouée</translation>
+        <translation>la transaction SQL a échouée</translation>
     </message>
     <message>
         <source>transaction: missing callback</source>
-        <translation type="unfinished">transaction: le rappel est absent</translation>
+        <translation>transaction : la fonction de rappel est absente</translation>
     </message>
     <message>
         <source>SQL: database version mismatch</source>
-        <translation type="unfinished">SQL: la version de la base de données est incompatible</translation>
+        <translation>SQL : la version de la base de données est incompatible</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeFlipable</name>
     <message>
         <source>front is a write-once property</source>
-        <translation type="unfinished">avant est une propriété à écriture unique</translation>
+        <translation>front est une propriété à écriture unique</translation>
     </message>
     <message>
         <source>back is a write-once property</source>
-        <translation type="unfinished">arrière est une propriété à écriture unique</translation>
+        <translation>back est une propriété à écriture unique</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation type="unfinished">La définition &quot;%2&quot; du module &quot;%1% n&apos;est pas lisible</translation>
+        <translation>la définition &quot;%2&quot; du module &quot;%1% n&apos;est pas lisible</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation type="unfinished">Impossible de charger le plugin pour le module &quot;%1&quot;: %2</translation>
+        <translation>impossible de charger le plugin pour le module &quot;%1&quot; : %2</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation type="unfinished">Le plugin &quot;%2&quot; du module &quot;%1&quot; n&apos;a pas été trouvé</translation>
+        <translation>le plugin &quot;%2&quot; du module &quot;%1&quot; n&apos;a pas été trouvé</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; version %2.%3 is not installed</source>
-        <translation type="unfinished">la version %2.%3 du module &quot;%1&quot; n&apos;est pas installée</translation>
+        <translation>la version %2.%3 du module &quot;%1&quot; n&apos;est pas installée</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; is not installed</source>
-        <translation type="unfinished">le module &quot;%1&quot; n&apos;est pas installé</translation>
+        <translation>le module &quot;%1&quot; n&apos;est pas installé</translation>
     </message>
     <message>
         <source>&quot;%1&quot;: no such directory</source>
-        <translation type="unfinished">&quot;%1&quot;: le répertoire n&apos;existe pas</translation>
+        <translation>&quot;%1&quot; : le répertoire n&apos;existe pas</translation>
     </message>
     <message>
         <source>import &quot;%1&quot; has no qmldir and no namespace</source>
-        <translation type="unfinished">l&apos;importation &quot;%1&quot; n&apos;a pas de qmldir ni d&apos;espace de noms</translation>
+        <translation>l&apos;importation &quot;%1&quot; n&apos;a pas de qmldir ni d&apos;espace de noms</translation>
     </message>
     <message>
         <source>- %1 is not a namespace</source>
-        <translation type="unfinished">- %1 n&apos;est pas un espace de noms</translation>
+        <translation>- %1 n&apos;est pas un espace de noms</translation>
     </message>
     <message>
         <source>- nested namespaces not allowed</source>
-        <translation type="unfinished">- les espaces de noms imbriqués ne sont pas autorisés</translation>
+        <translation>- les espaces de noms imbriqués ne sont pas autorisés</translation>
     </message>
     <message>
         <source>local directory</source>
-        <translation type="unfinished">répertoire local</translation>
+        <translation>répertoire local</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 and in %2</source>
-        <translation type="unfinished">est ambigu. Trouvé dans %1 et dans %2</translation>
+        <translation>est ambigu. Trouvé dans %1 et dans %2</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
-        <translation type="unfinished">est ambigu. Trouvé dans %1 dans les versions %2.%3 et %4.%5</translation>
+        <translation>est ambigu. Trouvé dans %1 dans les versions %2.%3 et %4.%5</translation>
     </message>
     <message>
         <source>is instantiated recursively</source>
-        <translation type="unfinished">est instancié récursivement</translation>
+        <translation>est instancié récursivement</translation>
     </message>
     <message>
         <source>is not a type</source>
-        <translation type="unfinished">n&apos;est pas un type</translation>
+        <translation>n&apos;est pas un type</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
     <message>
         <source>KeyNavigation is only available via attached properties</source>
-        <translation type="unfinished"></translation>
+        <translation>KeyNavigation est disponible uniquement via les propriétés attachées</translation>
     </message>
 </context>
 <context>
@@ -2076,331 +2103,345 @@ en
     <message>
         <source>Keys is only available via attached properties</source>
         <translatorcomment>Keys, a verifier</translatorcomment>
-        <translation type="unfinished">Keys est disponible uniquement via les propriétés attachées</translation>
+        <translation>Keys est disponible uniquement via les propriétés attachées</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeListModel</name>
     <message>
         <source>remove: index %1 out of range</source>
-        <translation type="unfinished">supprimer: l&apos;inder %1 est hors de la plage de valeurs admissible</translation>
+        <translation>remove : l&apos;index %1 est hors de la plage de valeurs admissibles</translation>
     </message>
     <message>
         <source>insert: value is not an object</source>
-        <translation type="unfinished">insérer: une valeur n&apos;est pas un objet</translation>
+        <translation>insert : une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>insert: index %1 out of range</source>
-        <translation type="unfinished">insérer: l&apos;inder %1 est hors de la plage de valeurs admissible</translation>
+        <translation>insert : l&apos;index %1 est hors de la plage de valeurs admissibles</translation>
     </message>
     <message>
         <source>move: out of range</source>
-        <translation type="unfinished">Déplacer: hors de la plage de valeurs admissible</translation>
+        <translation>move : hors de la plage de valeurs admissibles</translation>
     </message>
     <message>
         <source>append: value is not an object</source>
-        <translation type="unfinished">ajouter: une valeur n&apos;est pas un objet</translation>
+        <translation>append : une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>set: value is not an object</source>
-        <translation type="unfinished">attribuer: une valeur n&apos;est pas un objet</translation>
+        <translation>set : une valeur n&apos;est pas un objet</translation>
     </message>
     <message>
         <source>set: index %1 out of range</source>
-        <translation type="unfinished">attribuer: l&apos;index %1 est hors de la plage de valeurs admissible</translation>
+        <translation>set : l&apos;index %1 est hors de la plage de valeurs admissible</translation>
     </message>
     <message>
         <source>ListElement: cannot contain nested elements</source>
-        <translation type="unfinished">ListElement: ne peut pas contenir des éléments imbriqués</translation>
+        <translation>ListElement : ne peut pas contenir des éléments imbriqués</translation>
     </message>
     <message>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation type="unfinished">ListElement: ne peut pas utiliser la propriété réservée &quot;id&quot;</translation>
+        <translation>ListElement : ne peut pas utiliser la propriété réservée &quot;id&quot;</translation>
     </message>
     <message>
         <source>ListElement: cannot use script for property value</source>
-        <translation type="unfinished">ListElement: ne peut pas utiliser script comme valeur pour une propriété</translation>
+        <translation>ListElement : ne peut pas utiliser script comme valeur pour une propriété</translation>
     </message>
     <message>
         <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation type="unfinished">ListModel: propriété indéfinie &apos;%1&apos;</translation>
+        <translation>ListModel : propriété indéfinie &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeLoader</name>
     <message>
         <source>Loader does not support loading non-visual elements.</source>
-        <translation type="unfinished">Le chargeur n&apos;est pas compatible avec le chargement d&apos;éléments non-visuels.</translation>
+        <translation>Le chargeur n&apos;est pas compatible avec le chargement d&apos;éléments non-visuels.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentAnimation</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentChange</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une transformation complexe</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle non uniforme</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished">Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
+        <translation>Impossible de conserver l&apos;aspect lors d&apos;une mise à l&apos;échelle égale à 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParser</name>
     <message>
         <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished">séquence d&apos;échappement unicode illégale</translation>
+        <translation>Séquence d&apos;échappement Unicode illégale</translation>
     </message>
     <message>
         <source>Illegal character</source>
-        <translation type="unfinished">caractère illégal</translation>
+        <translation>Caractère illégal</translation>
     </message>
     <message>
         <source>Unclosed string at end of line</source>
-        <translation type="unfinished">chaîne de caractères non fermée en fin de ligne</translation>
+        <translation>Chaîne de caractères non fermée en fin de ligne</translation>
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation type="unfinished">séquence d&apos;échappement illégale</translation>
+        <translation>Séquence d&apos;échappement illégale</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
-        <translation type="unfinished">commentaire non fermé en fin de ligne</translation>
+        <translation>Commentaire non fermé en fin de ligne</translation>
     </message>
     <message>
         <source>Illegal syntax for exponential number</source>
-        <translation type="unfinished">syntaxe illégale pour un nombre exponentiel</translation>
+        <translation>Syntaxe illégale pour un nombre exponentiel</translation>
     </message>
     <message>
         <source>Identifier cannot start with numeric literal</source>
-        <translatorcomment>??? </translatorcomment>
-        <translation type="unfinished">impossible de commencer un identifiant par un littéral numérique</translation>
+        <translation>Impossible de commencer un identifiant par un chiffre</translation>
     </message>
     <message>
         <source>Unterminated regular expression literal</source>
-        <translation type="unfinished">littéral  non terminé pour l&apos;expression régulière</translation>
+        <translation>Élément non terminé pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Invalid regular expression flag &apos;%0&apos;</source>
-        <translation type="unfinished">drapeau &apos;%0&apos; invalid pour l&apos;expression régulière</translation>
+        <translation>Drapeau &apos;%0&apos; invalid pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation type="unfinished">séquence antislash non terminée pour l&apos;expression régulière</translation>
+        <translation>Séquence antislash non terminée pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
-        <translation type="unfinished">class  non terminé pour l&apos;expression régulière</translation>
+        <translation>Classe non terminée pour l&apos;expression régulière</translation>
     </message>
     <message>
         <source>Syntax error</source>
-        <translation type="unfinished">Erreur de syntaxe</translation>
+        <translation>Erreur de syntaxe</translation>
     </message>
     <message>
         <source>Unexpected token `%1&apos;</source>
-        <translation type="unfinished">jeton inattendu &apos;%1&apos;</translation>
+        <translation>jeton inattendu &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Expected token `%1&apos;</source>
-        <translation type="unfinished">jeton attendu &apos;%1&apos;</translation>
+        <translation>jeton attendu &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished">valeur de propriété attribuée à plusieurs reprises</translation>
+        <translation>valeur de propriété attribuée à plusieurs reprises</translation>
     </message>
     <message>
         <source>Expected type name</source>
-        <translation type="unfinished">Nom de type attendu</translation>
+        <translation>Nom de type attendu</translation>
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation type="unfinished">qualificatif ID d&apos;importation invalide</translation>
+        <translation>qualificatif id d&apos;importation invalide</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation type="unfinished">&quot;Qt&quot; est un nom réservé et ne peut pas être utilisé comme qualificatif</translation>
+        <translation>&quot;Qt&quot; est un nom réservé et ne peut pas être utilisé comme qualificatif</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
         <translatorcomment>??</translatorcomment>
-        <translation type="unfinished">Les qualificatifs d&apos;importation de  script doivent être uniques.</translation>
+        <translation>Les qualificatifs d&apos;importation de script doivent être uniques.</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation type="unfinished">L&apos;importation de  script exige un qualificatif</translation>
+        <translation>L&apos;importation de script exige un qualificatif</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
-        <translation type="unfinished">L&apos;importation de  bibliothèque exige une version</translation>
+        <translation>L&apos;importation de bibliothèque exige une version</translation>
     </message>
     <message>
         <source>Expected parameter type</source>
-        <translation type="unfinished">Type de paramètre attendu</translation>
+        <translation>Type de paramètre attendu</translation>
     </message>
     <message>
         <source>Invalid property type modifier</source>
-        <translation type="unfinished">Modificateur invalide pour le type de propriété</translation>
+        <translation>Modificateur invalide pour le type de propriété</translation>
     </message>
     <message>
         <source>Unexpected property type modifier</source>
-        <translation type="unfinished">Modificateur innatendu pour le type de propriété</translation>
+        <translation>Modificateur inattendu pour le type de propriété</translation>
     </message>
     <message>
         <source>Expected property type</source>
-        <translation type="unfinished">Type de propriété attendue</translation>
+        <translation>Type de propriété attendu</translation>
     </message>
     <message>
         <source>Readonly not yet supported</source>
-        <translation type="unfinished">La lecture seule n&apos;est pas encore implémentée</translation>
+        <translation>La lecture seule n&apos;est pas encore implémentée</translation>
     </message>
     <message>
         <source>JavaScript declaration outside Script element</source>
-        <translation type="unfinished">Déclaration JavaScript en edhors de l&apos;élément Script</translation>
+        <translation>Déclaration JavaScript en dehors de l&apos;élément Script</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePauseAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished">Impossible d&apos;attribuer une durée &lt; 0</translation>
+        <translation>Impossible d&apos;attribuer une durée &lt; 0</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativePixmap</name>
+    <message>
+        <source>Error decoding: %1: %2</source>
+        <translation>Erreur de décodage : %1 : %2</translation>
+    </message>
+    <message>
+        <source>Failed to get image from provider: %1</source>
+        <translation>Impossible d&apos;obtenir l&apos;image du fournisseur : %1</translation>
+    </message>
+    <message>
+        <source>Cannot open: %1</source>
+        <translation>Impossible d&apos;ouvrir : %1</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePixmapCache</name>
     <message>
         <source>Error decoding: %1: %2</source>
-        <translation type="unfinished">Erreur de décodage: %1: %2</translation>
+        <translation type="obsolete">Erreur de décodage : %1 : %2</translation>
     </message>
     <message>
         <source>Failed to get image from provider: %1</source>
-        <translation type="unfinished">Impossible d&apos;obtenir l&apos;image du fournisseur: %1</translation>
+        <translation type="obsolete">Impossible d&apos;obtenir l&apos;image du fournisseur : %1</translation>
     </message>
     <message>
         <source>Cannot open: %1</source>
-        <translation type="unfinished">Impossible d&apos;ouvrir: %1</translation>
+        <translation type="obsolete">Impossible d&apos;ouvrir : %1</translation>
     </message>
     <message>
         <source>Unknown Error loading %1</source>
-        <translation type="unfinished">Erreur de chargement inconnue: %1</translation>
+        <translation type="obsolete">Erreur de chargement inconnue : %1</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished">Impossible d&apos;attribuer une durée &lt; 0</translation>
+        <translation>Impossible d&apos;attribuer une durée &lt; 0</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation type="unfinished">PropertyChanges n&apos;est pas compatible avec la création d&apos;objets spécifiques à un état.</translation>
+        <translation>PropertyChanges n&apos;est pas compatible avec la création d&apos;objets spécifiques à un état.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Ne peut pas assigner à la propriété inexistante &quot;%1&quot;</translation>
+        <translation>Ne peut pas assigner à la propriété inexistante &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation type="unfinished">Ne peut pas assigner à la propriété en lecture seule &quot;%1&quot;</translation>
+        <translation>Ne peut pas assigner à la propriété en lecture seule &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeTextInput</name>
     <message>
         <source>Could not load cursor delegate</source>
-        <translation type="unfinished">Impossible de charger le curseur délégué</translation>
+        <translation>Impossible de charger le délégué de curseur</translation>
     </message>
     <message>
         <source>Could not instantiate cursor delegate</source>
-        <translation type="unfinished">Impossible d&apos;instancier le curseur délégué</translation>
+        <translation>Impossible d&apos;instancier le délégué de curseur</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
-        <translation type="unfinished">Impossible de créer un objet de type %1</translation>
+        <translation>Impossible de créer un objet de type %1</translation>
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
-        <translation type="unfinished">Impossible d&apos;assigner la valeur %1 à la propriété %2</translation>
+        <translation>Impossible d&apos;assigner la valeur %1 à la propriété %2</translation>
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation type="unfinished">Impossible d&apos;assigner un objet de type %1 sans méthode défaut</translation>
+        <translation>Impossible d&apos;assigner un objet de type %1 sans méthode par défaut</translation>
     </message>
     <message>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
         <translatorcomment>le vs a confirmer</translatorcomment>
-        <translation type="unfinished">Impossible de connecter le signal/slot %1 %vs. %2 pour cause d&apos;incompatibilité</translation>
+        <translation>Impossible de connecter le signal/slot %1 %vs. %2 pour cause d&apos;incompatibilité</translation>
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation type="unfinished">NImpossible d&apos;assigner un objet à la propriété %1 d&apos;un signal</translation>
+        <translation>Impossible d&apos;assigner un objet à la propriété %1 d&apos;un signal</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished">Impossible d&apos;assigner un objet à une liste</translation>
+        <translation>Impossible d&apos;assigner un objet à une liste</translation>
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation type="unfinished">Impossible d&apos;assigner un objet à la propriété d&apos;une interface</translation>
+        <translation>Impossible d&apos;assigner un objet à la propriété d&apos;une interface</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
-        <translation type="unfinished">Impossible de créer un object attaché</translation>
+        <translation>Impossible de créer un objet attaché</translation>
     </message>
     <message>
         <source>Cannot set properties on %1 as it is null</source>
-        <translation type="unfinished">Impossible d&apos;attribuer les propriétés à %1 car ce dernier est nul</translation>
+        <translation>Impossible d&apos;attribuer les propriétés à %1 car ce dernier est nul</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation type="unfinished">Un composant délégué doit être de type Item.</translation>
+        <translation>Un composant délégué doit être de type Item.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModel</name>
     <message>
         <source>Qt was built without support for xmlpatterns</source>
-        <translation type="unfinished">Qt a été généré sans support pour xmlpatterns</translation>
+        <translation>Qt a été compilé sans support pour xmlpatterns</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModelRole</name>
     <message>
         <source>An XmlRole query must not start with &apos;/&apos;</source>
-        <translation type="unfinished">Une requête  XmlRole ne doit pas commencer par &apos;/&apos;</translation>
+        <translation>Une requête XmlRole ne doit pas commencer par &apos;/&apos;</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlRoleList</name>
     <message>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
-        <translation type="unfinished">Une requête  XmlListModel doit commencer par &apos;/&apos; ou &quot;//&quot;</translation>
+        <translation>Une requête XmlListModel doit commencer par &apos;/&apos; ou &quot;//&quot;</translation>
     </message>
 </context>
 <context>
@@ -2415,7 +2456,7 @@ en
     </message>
     <message>
         <source>SliderHandle</source>
-        <translation>Poignée</translation>
+        <translation>Poignée du slider</translation>
     </message>
 </context>
 <context>
@@ -2599,15 +2640,15 @@ en
     </message>
     <message>
         <source>Debug Message:</source>
-        <translation>Message de débogage:</translation>
+        <translation>Message de débogage : </translation>
     </message>
     <message>
         <source>Warning:</source>
-        <translation>Avertissement:</translation>
+        <translation>Avertissement : </translation>
     </message>
     <message>
         <source>Fatal Error:</source>
-        <translation>Erreur fatale:</translation>
+        <translation>Erreur fatale : </translation>
     </message>
 </context>
 <context>
@@ -2638,7 +2679,7 @@ en
     </message>
     <message>
         <source>Will not rename sequential file using block copy</source>
-        <translation>Ne renommera pas le fichier séquentiel avec la copie bloc</translation>
+        <translation>Ne renommera pas le fichier séquentiel avec la copie par blocs</translation>
     </message>
 </context>
 <context>
@@ -2714,11 +2755,11 @@ Veuillez vérifier que le nom du fichier est correct.</translation>
     </message>
     <message>
         <source>Files of type:</source>
-        <translation>Fichiers de type :</translation>
+        <translation>Fichiers de type : </translation>
     </message>
     <message>
         <source>Directory:</source>
-        <translation>Dossier :</translation>
+        <translation>Dossier : </translation>
     </message>
     <message>
         <source>
@@ -2744,7 +2785,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Are sure you want to delete &apos;%1&apos;?</source>
-        <translation>Etes-vous sûr de vouloir supprimer &apos;%1&apos; ?</translation>
+        <translation>Êtes-vous sûr de vouloir supprimer &apos;%1&apos; ?</translation>
     </message>
     <message>
         <source>Could not delete directory.</source>
@@ -2820,11 +2861,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>File &amp;name:</source>
-        <translation>&amp;Nom de fichier :</translation>
+        <translation>&amp;Nom de fichier : </translation>
     </message>
     <message>
         <source>Look in:</source>
-        <translation>Voir dans:</translation>
+        <translation>Voir dans : </translation>
     </message>
     <message>
         <source>Create New Folder</source>
@@ -2956,11 +2997,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Demi Bold</source>
-        <translation>Semi Gras</translation>
+        <translation>Demi-gras</translation>
     </message>
     <message>
         <source>Black</source>
-        <translation>Noir</translation>
+        <translation>Extra-gras</translation>
     </message>
     <message>
         <source>Demi</source>
@@ -2968,7 +3009,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation>Léger</translation>
+        <translation>Maigre</translation>
     </message>
     <message>
         <source>Italic</source>
@@ -3012,11 +3053,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Thaana</source>
-        <translation>Thaana</translation>
+        <translation>Thâna</translation>
     </message>
     <message>
         <source>Devanagari</source>
-        <translation>Devanagari</translation>
+        <translation>Dévanagari</translation>
     </message>
     <message>
         <source>Bengali</source>
@@ -3036,7 +3077,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Tamil</source>
-        <translation>Tamil</translation>
+        <translation>Tamoul</translation>
     </message>
     <message>
         <source>Telugu</source>
@@ -3176,11 +3217,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Connection to %1 closed</source>
-        <translation>Connexion à %1 arrêtée</translation>
+        <translation>Connexion à %1 fermée</translation>
     </message>
     <message>
         <source>Connection closed</source>
-        <translation>Connexion arrêtée</translation>
+        <translation>Connexion fermée</translation>
     </message>
     <message>
         <source>Host %1 not found</source>
@@ -3207,7 +3248,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <message>
         <source>Login failed:
 %1</source>
-        <translation>Échec du login:
+        <translation>Échec du login :
 %1</translation>
     </message>
     <message>
@@ -3299,7 +3340,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Invalid hostname</source>
-        <translation>Nom d&apos;hôte non valide</translation>
+        <translation>Nom d&apos;hôte invalide</translation>
     </message>
 </context>
 <context>
@@ -3338,11 +3379,11 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Connection to %1 closed</source>
-        <translation>Connexion à %1 arrêtée</translation>
+        <translation>Connexion à %1 fermée</translation>
     </message>
     <message>
         <source>Connection closed</source>
-        <translation>Connexion arrêtée</translation>
+        <translation>Connexion fermée</translation>
     </message>
     <message>
         <source>Unknown error</source>
@@ -3402,7 +3443,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>SSL handshake failed</source>
-        <translation>le handshake SSL a échoué</translation>
+        <translation>La poignée de main SSL a échoué</translation>
     </message>
     <message>
         <source>Connection refused (or timed out)</source>
@@ -3429,7 +3470,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Proxy denied connection</source>
-        <translation>Le Proxy a rejeté la connexion</translation>
+        <translation>Le proxy a rejeté la connexion</translation>
     </message>
     <message>
         <source>Error communicating with HTTP proxy</source>
@@ -3546,7 +3587,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QIODevice</name>
     <message>
         <source>Permission denied</source>
-        <translation>Accès refusé</translation>
+        <translation>Autorisation refusée</translation>
     </message>
     <message>
         <source>Too many open files</source>
@@ -3596,22 +3637,22 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QInputDialog</name>
     <message>
         <source>Enter a value:</source>
-        <translation>Entrer une valeur :</translation>
+        <translation>Entrer une valeur : </translation>
     </message>
 </context>
 <context>
     <name>QLibrary</name>
     <message>
         <source>QLibrary::load_sys: Cannot load %1 (%2)</source>
-        <translation type="obsolete">QLibrary::load_sys: Impossible de charger %1 (%2)</translation>
+        <translation type="obsolete">QLibrary::load_sys : Impossible de charger %1 (%2)</translation>
     </message>
     <message>
         <source>QLibrary::unload_sys: Cannot unload %1 (%2)</source>
-        <translation type="obsolete">QLibrary::unload_sys: Impossible de décharger %1 (%2)</translation>
+        <translation type="obsolete">QLibrary::unload_sys : Impossible de décharger %1 (%2)</translation>
     </message>
     <message>
         <source>QLibrary::resolve_sys: Symbol &quot;%1&quot; undefined in %2 (%3)</source>
-        <translation type="obsolete">QLibrary::resolve_sys: Symbole &quot;%1&quot; non défini dans %2 (%3)</translation>
+        <translation type="obsolete">QLibrary::resolve_sys : Symbole &quot;%1&quot; non défini dans %2 (%3)</translation>
     </message>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
@@ -3697,58 +3738,58 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QLocalServer</name>
     <message>
         <source>%1: Name error</source>
-        <translation>%1: Erreur de nom</translation>
+        <translation>%1 : Erreur de nom</translation>
     </message>
     <message>
         <source>%1: Permission denied</source>
-        <translation>%1: Permission refusée</translation>
+        <translation>%1 : Permission refusée</translation>
     </message>
     <message>
         <source>%1: Address in use</source>
-        <translation>%1: Address déjà utilisée</translation>
+        <translation>%1 : Address déjà utilisée</translation>
     </message>
     <message>
         <source>%1: Unknown error %2</source>
-        <translation>%1: Erreur inconnue %2</translation>
+        <translation>%1 : Erreur inconnue %2</translation>
     </message>
 </context>
 <context>
     <name>QLocalSocket</name>
     <message>
         <source>%1: Connection refused</source>
-        <translation>%1: Connexion refusée</translation>
+        <translation>%1 : Connexion refusée</translation>
     </message>
     <message>
         <source>%1: Remote closed</source>
-        <translation>%1: Connexion fermée</translation>
+        <translation>%1 : Connexion fermée</translation>
     </message>
     <message>
         <source>%1: Invalid name</source>
-        <translation>%1: Nom invalide</translation>
+        <translation>%1 : Nom invalide</translation>
     </message>
     <message>
         <source>%1: Socket access error</source>
-        <translation>%1: Erreur d&apos;accès au socket</translation>
+        <translation>%1 : Erreur d&apos;accès au socket</translation>
     </message>
     <message>
         <source>%1: Socket resource error</source>
-        <translation>%1: Erreur de ressource du socket</translation>
+        <translation>%1 : Erreur de ressource du socket</translation>
     </message>
     <message>
         <source>%1: Socket operation timed out</source>
-        <translation>%1: L&apos;opération socket a expiré</translation>
+        <translation>%1 : L&apos;opération socket a expiré</translation>
     </message>
     <message>
         <source>%1: Datagram too large</source>
-        <translation>%1: Datagramme trop grand</translation>
+        <translation>%1 : Datagramme trop grand</translation>
     </message>
     <message>
         <source>%1: Connection error</source>
-        <translation>%1: Erreur de connexion</translation>
+        <translation>%1 : Erreur de connexion</translation>
     </message>
     <message>
         <source>%1: The socket operation is not supported</source>
-        <translation>%1: L&apos;opération n&apos;est pas supportée</translation>
+        <translation>%1 : L&apos;opération n&apos;est pas supportée</translation>
     </message>
     <message>
         <source>%1: Unknown error</source>
@@ -3756,7 +3797,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>%1: Unknown error %2</source>
-        <translation>%1: Erreur inconnue %2</translation>
+        <translation>%1 : Erreur inconnue %2</translation>
     </message>
 </context>
 <context>
@@ -3932,10 +3973,6 @@ Voulez-vous quand même le supprimer ?</translation>
         <source>The file could not be accessed.</source>
         <translation>Impossible d&apos;accéder au fichier.</translation>
     </message>
-    <message>
-        <source>Playlist format is not supported.</source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>QMenu</name>
@@ -3956,7 +3993,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QMenuBar</name>
     <message>
         <source>About</source>
-        <translation type="obsolete">A propos</translation>
+        <translation type="obsolete">À propos</translation>
     </message>
     <message>
         <source>Config</source>
@@ -3988,7 +4025,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>About %1</source>
-        <translation type="obsolete">A propos de %1</translation>
+        <translation type="obsolete">À propos de %1</translation>
     </message>
     <message>
         <source>About Qt</source>
@@ -4027,7 +4064,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qtopia Core.&lt;/p&gt;&lt;p&gt;Qt is a Trolltech product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com/&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;h3&gt;A propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un toolkit C++ pour le développement d&apos;applications multi-platformes.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité du code source pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et toutes les variantes commerciales majeures d&apos;Unix. Qt est aussi disponible pour les systèmes embarqués sous le nom Qtopia Core.&lt;/p&gt;&lt;p&gt;Qt est un produit de Trolltech. &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un toolkit C++ pour le développement d&apos;applications multi-platformes.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité du code source pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et toutes les variantes commerciales majeures d&apos;Unix. Qt est aussi disponible pour les systèmes embarqués sous le nom Qtopia Core.&lt;/p&gt;&lt;p&gt;Qt est un produit de Trolltech. &lt;a href=&quot;http : //qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Show Details...</source>
@@ -4039,19 +4076,19 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;&lt;p&gt;Ce programme utilise Qt version %1.&lt;/p&gt;&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés tels que Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;&lt;p&gt;Ce programme utilise Qt version %1.&lt;/p&gt;&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés comme Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http : //qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http : //qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;h3&gt;A propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un framework de développement d&apos;applications multi-plateforme.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité du code source surMS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, et toutes les variantes majeures d&apos;Unix. Qt est aussi disponible pour l&apos;embarqué avec Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt est un produit de Nokia. Allez à &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour plus d&apos;informations.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un framework de développement d&apos;applications multi-plateforme.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité du code source surMS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, et toutes les variantes majeures d&apos;Unix. Qt est aussi disponible pour l&apos;embarqué avec Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt est un produit de Nokia. Allez à &lt;a href=&quot;http : //qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour plus d&apos;informations.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;p&gt;This program uses Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition is intended for the development of Open Source applications. You need a commercial Qt license for development of proprietary (closed source) applications.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/company/model/&quot;&gt;qt.nokia.com/company/model/&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;p&gt;Ce programme utilise Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition est prévu pour le développement d&apos;applications Open Source. Vous devez avoir un license commerciale de Qt pour développer des applications propiétaires (Closed Source).&lt;/p&gt;&lt;p&gt;Vous pouvez aller sur &lt;a href=&quot;http://qt.nokia.com/company/model/&quot;&gt;qt.nokia.com/company/model/&lt;/a&gt; pour plus d&apos;informations sur les licenses Qt.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;Ce programme utilise Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition est prévu pour le développement d&apos;applications Open Source. Vous devez avoir un license commerciale de Qt pour développer des applications propiétaires (Closed Source).&lt;/p&gt;&lt;p&gt;Vous pouvez aller sur &lt;a href=&quot;http : //qt.nokia.com/company/model/&quot;&gt;qt.nokia.com/company/model/&lt;/a&gt; pour plus d&apos;informations sur les licenses Qt.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt Embedded.&lt;/p&gt;&lt;p&gt;Qt is a Trolltech product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="obsolete">&lt;h3&gt;A propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un toolkit C++ pour le développement d&apos;application multi-plateforme.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité de votre source pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, toutes les variantes majeures d&apos;Unix. Qt est aussi disponible pour les périphériques embarqués avec Qt Embedded.&lt;/p&gt;&lt;p&gt;Qt est un produit de Trolltech. Voir &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour plus d&apos;informations.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;À propos de Qt&lt;/h3&gt;%1&lt;p&gt;Qt est un toolkit C++ pour le développement d&apos;application multi-plateforme.&lt;/p&gt;&lt;p&gt;Qt fournit la portabilité de votre source pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, toutes les variantes majeures d&apos;Unix. Qt est aussi disponible pour les périphériques embarqués avec Qt Embedded.&lt;/p&gt;&lt;p&gt;Qt est un produit de Trolltech. Voir &lt;a href=&quot;http : //qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour plus d&apos;informations.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
@@ -4059,7 +4096,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés tels que Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;Qt est une bibliothèque logicielle C++ pour le développement d’applications multiplateformes.&lt;/p&gt;&lt;p&gt;Qt fournit une portabilité source unique pour MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux et les principales variantes commerciales d’Unix. Qt est également disponible pour appareils intégrés comme Qt pour Embedded Linux et Qt pour Windows CE.&lt;/p&gt;&lt;p&gt;Il existe trois options de licence différentes conçues pour s’adapter aux besoins d’utilisateurs variés.&lt;/p&gt;&lt;p&gt;Qt concédée sous notre contrat de licence commerciale est destinée au développement de logiciels propriétaires/commerciaux dont vous ne souhaitez pas partager le code source avec des tiers ou qui ne peuvent se conformer aux termes de la LGPL GNU version 2.1 ou GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Qt concédée sous la LGPL GNU version 2.1 est destinée au développement d’applications Qt (propriétaires ou libres) à condition que vous vous conformiez aux conditions générales de la LGPL GNU version 2.1.&lt;/p&gt;&lt;p&gt;Qt concédée sous la licence publique générale GNU version 3.0 est destinée au développement d’applications Qt lorsque vous souhaitez utiliser ces applications avec d’autres logiciels soumis aux termes de la GPL GNU version 3.0 ou lorsque vous acceptez les termes de la GPL GNU version 3.0.&lt;/p&gt;&lt;p&gt;Veuillez consulter&lt;a href=&quot;http : //qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; pour un aperçu des concessions de licences Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation et/ou ses filiales.&lt;/p&gt;&lt;p&gt;Qt est un produit Nokia. Voir &lt;a href=&quot;http : //qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; pour de plus amples informations.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -4112,7 +4149,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Permission denied</source>
-        <translation>Accès refusé</translation>
+        <translation>Autorisation refusée</translation>
     </message>
     <message>
         <source>Connection timed out</source>
@@ -4209,7 +4246,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QNetworkAccessDebugPipeBackend</name>
     <message>
         <source>Write error writing to %1: %2</source>
-        <translation>Erreur lors de l&apos;écriture dans %1: %2</translation>
+        <translation>Erreur lors de l&apos;écriture dans %1 : %2</translation>
     </message>
     <message>
         <source>Socket error on %1: %2</source>
@@ -4284,7 +4321,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QNetworkReply</name>
     <message>
         <source>Error downloading %1 - server replied: %2</source>
-        <translation>Erreur lors du téléchargement de %1 - le serveur a répondu: %2</translation>
+        <translation>Erreur lors du téléchargement de %1 - le serveur a répondu : %2</translation>
     </message>
     <message>
         <source>Protocol &quot;%1&quot; is unknown</source>
@@ -4450,7 +4487,7 @@ Voulez-vous quand même le supprimer ?</translation>
     <name>QODBCResult</name>
     <message>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
-        <translation>QODBCResult::reset: Impossible d&apos;utiliser &apos;SQL_CURSOR_STATIC&apos; comme attribut de requête. Veuillez vérifier la configuration de votre pilote ODBC</translation>
+        <translation>QODBCResult::reset : Impossible d&apos;utiliser &apos;SQL_CURSOR_STATIC&apos; comme attribut de requête. Veuillez vérifier la configuration de votre pilote ODBC</translation>
     </message>
     <message>
         <source>Unable to execute statement</source>
@@ -4517,7 +4554,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Protocol error: packet of size 0 received</source>
-        <translation type="obsolete">Erreur de protocole: paquet de taille 0 reçu</translation>
+        <translation type="obsolete">Erreur de protocole : paquet de taille 0 reçu</translation>
     </message>
     <message>
         <source>No host name given</source>
@@ -4525,7 +4562,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Invalid hostname</source>
-        <translation type="obsolete">Nom d&apos;hôte non valide</translation>
+        <translation type="obsolete">Nom d&apos;hôte invalide</translation>
     </message>
     <message>
         <source>PulseAudio Sound Server</source>
@@ -4617,19 +4654,19 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Page size:</source>
-        <translation>Dimensions :</translation>
+        <translation>Dimensions : </translation>
     </message>
     <message>
         <source>Width:</source>
-        <translation>Largeur :</translation>
+        <translation>Largeur : </translation>
     </message>
     <message>
         <source>Height:</source>
-        <translation>Hauteur :</translation>
+        <translation>Hauteur : </translation>
     </message>
     <message>
         <source>Paper source:</source>
-        <translation>Source du papier :</translation>
+        <translation>Source du papier : </translation>
     </message>
     <message>
         <source>Orientation</source>
@@ -4719,7 +4756,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Number of copies:</source>
-        <translation type="obsolete">Nombre de copies :</translation>
+        <translation type="obsolete">Nombre de copies : </translation>
     </message>
     <message>
         <source>Paper format</source>
@@ -4867,15 +4904,15 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Page size:</source>
-        <translation type="obsolete">Dimensions :</translation>
+        <translation type="obsolete">Dimensions : </translation>
     </message>
     <message>
         <source>Orientation:</source>
-        <translation type="obsolete">Orientation :</translation>
+        <translation type="obsolete">Orientation : </translation>
     </message>
     <message>
         <source>Paper source:</source>
-        <translation type="obsolete">Source du papier :</translation>
+        <translation type="obsolete">Source du papier : </translation>
     </message>
     <message>
         <source>Print</source>
@@ -4899,7 +4936,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Size:</source>
-        <translation type="obsolete">Taille :</translation>
+        <translation type="obsolete">Taille : </translation>
     </message>
     <message>
         <source>Properties</source>
@@ -4907,7 +4944,7 @@ Voulez-vous quand même le supprimer ?</translation>
     </message>
     <message>
         <source>Printer info:</source>
-        <translation type="obsolete">Informations sur l&apos;imprimante :</translation>
+        <translation type="obsolete">Informations sur l&apos;imprimante : </translation>
     </message>
     <message>
         <source>Browse</source>
@@ -5281,7 +5318,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Copies:</source>
-        <translation>Copies :</translation>
+        <translation>Copies : </translation>
     </message>
     <message>
         <source>Collate</source>
@@ -5340,7 +5377,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>&amp;Name:</source>
-        <translation>&amp;Nom :</translation>
+        <translation>&amp;Nom : </translation>
     </message>
     <message>
         <source>P&amp;roperties</source>
@@ -5348,7 +5385,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Location:</source>
-        <translation>Emplacement :</translation>
+        <translation>Emplacement : </translation>
     </message>
     <message>
         <source>Preview</source>
@@ -5356,11 +5393,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Type:</source>
-        <translation>Type :</translation>
+        <translation>Type : </translation>
     </message>
     <message>
         <source>Output &amp;file:</source>
-        <translation>&amp;Fichier de sortie:</translation>
+        <translation>&amp;Fichier de sortie : </translation>
     </message>
     <message>
         <source>...</source>
@@ -5407,7 +5444,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Process failed to start: %1</source>
-        <translation>Le démarrage du processus a échoué: %1</translation>
+        <translation>Le démarrage du processus a échoué : %1</translation>
     </message>
 </context>
 <context>
@@ -5471,11 +5508,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>invalid interval</source>
-        <translation>intervalle non valide</translation>
+        <translation>intervalle invalide</translation>
     </message>
     <message>
         <source>invalid category</source>
-        <translation>catégorie non valide</translation>
+        <translation>catégorie invalide</translation>
     </message>
 </context>
 <context>
@@ -5586,15 +5623,15 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Ignore-count</source>
-        <translation>Comptes d&apos;ignorés</translation>
+        <translation>Nombre d&apos;ignorés</translation>
     </message>
     <message>
         <source>Single-shot</source>
-        <translation>Un seul tir</translation>
+        <translation>Un seul coup</translation>
     </message>
     <message>
         <source>Hit-count</source>
-        <translation>Compte de coups</translation>
+        <translation>Nombre de coups</translation>
     </message>
 </context>
 <context>
@@ -5616,7 +5653,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Line:</source>
-        <translation>Ligne:</translation>
+        <translation>Ligne : </translation>
     </message>
     <message>
         <source>Interrupt</source>
@@ -5747,7 +5784,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;La recherche est revenue au début</translation>
+        <translation>&lt;img src=&quot; : /qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;La recherche est revenue au début</translation>
     </message>
 </context>
 <context>
@@ -5773,7 +5810,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Location</source>
-        <translation>Lieu</translation>
+        <translation>Emplacement</translation>
     </message>
 </context>
 <context>
@@ -5792,7 +5829,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Breakpoint Condition:</source>
-        <translation>Condition du point d&apos;arrêt:</translation>
+        <translation>Condition du point d&apos;arrêt : </translation>
     </message>
 </context>
 <context>
@@ -5807,7 +5844,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Stack</source>
-        <translation>Empiler</translation>
+        <translation>Pile</translation>
     </message>
     <message>
         <source>Locals</source>
@@ -5853,7 +5890,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Left edge</source>
-        <translation>Extrême gauche</translation>
+        <translation>Bord gauche</translation>
     </message>
     <message>
         <source>Top</source>
@@ -5861,7 +5898,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Right edge</source>
-        <translation>Extrême droite</translation>
+        <translation>Bord droit</translation>
     </message>
     <message>
         <source>Bottom</source>
@@ -5988,11 +6025,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>%1: doesn&apos;t exist</source>
-        <translation>%1: n&apos;existe pas</translation>
+        <translation>%1 : n&apos;existe pas</translation>
     </message>
     <message>
         <source>%1: UNIX key file doesn&apos;t exist</source>
-        <translation>%1: le fichier de clés UNIX n&apos;existe pas</translation>
+        <translation>%1 : le fichier de clés UNIX n&apos;existe pas</translation>
     </message>
 </context>
 <context>
@@ -7100,7 +7137,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Unable to decrypt data: %1</source>
-        <translation>Impossible de décrypter les données: %1</translation>
+        <translation>Impossible de décrypter les données : %1</translation>
     </message>
     <message>
         <source>Private key does not certify public key, %1</source>
@@ -7136,11 +7173,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>The certificate&apos;s notBefore field contains an invalid time</source>
-        <translation>Le champ pasAvant du certificat inclut une heure non valide</translation>
+        <translation>Le champ pasAvant du certificat inclut une heure invalide</translation>
     </message>
     <message>
         <source>The certificate&apos;s notAfter field contains an invalid time</source>
-        <translation>Le champ pasAprès du certificat inclut une heure non valide</translation>
+        <translation>Le champ pasAprès du certificat inclut une heure invalide</translation>
     </message>
     <message>
         <source>The certificate is self-signed, and untrusted</source>
@@ -7222,11 +7259,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     <name>QSystemSemaphore</name>
     <message>
         <source>%1: out of resources</source>
-        <translation>%1: plus de ressources disponibles</translation>
+        <translation>%1 : plus de ressources disponibles</translation>
     </message>
     <message>
         <source>%1: permission denied</source>
-        <translation>%1: permission refusée</translation>
+        <translation>%1 : permission refusée</translation>
     </message>
     <message>
         <source>%1: already exists</source>
@@ -7238,7 +7275,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>%1: unknown error %2</source>
-        <translation>%1: erreur inconnue %2</translation>
+        <translation>%1 : erreur inconnue %2</translation>
     </message>
 </context>
 <context>
@@ -7694,7 +7731,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>Slider</source>
         <comment>Media controller element</comment>
-        <translation>Barre de défilement</translation>
+        <translation>Slider</translation>
     </message>
     <message>
         <source>Slider Thumb</source>
@@ -7906,7 +7943,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     <message>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
-        <translation>Ceci est un index. Veuillez saisir les mots-clé :</translation>
+        <translation>Ceci est un index. Veuillez saisir les mots-clé : </translation>
     </message>
     <message>
         <source>Scroll here</source>
@@ -8438,7 +8475,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>This is a searchable index. Enter search keywords: </source>
-        <translation type="obsolete">Ceci est un index. Veuillez saisir les mots-clé :</translation>
+        <translation type="obsolete">Ceci est un index. Veuillez saisir les mots-clé : </translation>
     </message>
     <message>
         <source>JavaScript Problem - %1</source>
@@ -8446,7 +8483,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>The script on this page appears to have a problem. Do you want to stop the script?</source>
-        <translation>Le script de cette page semble avoir un problème. Souhaitez-vous arrêter le script?</translation>
+        <translation>Le script de cette page semble avoir un problème. Souhaitez-vous arrêter le script ?</translation>
     </message>
     <message>
         <source>Paste and Match Style</source>
@@ -8630,161 +8667,161 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>error triggered by consumer</source>
-        <translation type="unfinished">Erreur déclenchée par le consommateur</translation>
+        <translation>Erreur déclenchée par le consommateur</translation>
     </message>
     <message>
         <source>unexpected end of file</source>
-        <translation type="unfinished">Fin de fichier inattendue</translation>
+        <translation>Fin de fichier inattendue</translation>
     </message>
     <message>
         <source>more than one document type definition</source>
-        <translation type="unfinished">plus d&apos;une définition de type de docuement</translation>
+        <translation>plus d&apos;une définition de type de document</translation>
     </message>
     <message>
         <source>error occurred while parsing element</source>
-        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique de l&apos;élement</translation>
+        <translation>une erreur s&apos;est produite pendant l&apos;analyse syntaxique de l&apos;élement</translation>
     </message>
     <message>
         <source>tag mismatch</source>
-        <translation type="unfinished">tag incongru</translation>
+        <translation>tag incongru</translation>
     </message>
     <message>
         <source>error occurred while parsing content</source>
-        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique du contenu</translation>
+        <translation>une erreur s&apos;est produite pendant l&apos;analyse syntaxique du contenu</translation>
     </message>
     <message>
         <source>unexpected character</source>
-        <translation type="unfinished">caractère inattendu</translation>
+        <translation>caractère inattendu</translation>
     </message>
     <message>
         <source>invalid name for processing instruction</source>
-        <translation type="unfinished">nom d&apos;instruction invalide</translation>
+        <translation>nom d&apos;instruction invalide</translation>
     </message>
     <message>
         <source>version expected while reading the XML declaration</source>
-        <translation type="unfinished">Une version est attendue dans la déclaration XML</translation>
+        <translation>une version est attendue dans la déclaration XML</translation>
     </message>
     <message>
         <source>wrong value for standalone declaration</source>
-        <translation type="unfinished">Valeur incorrecte pour une déclaration autonome</translation>
+        <translation>valeur incorrecte pour une déclaration &quot;standalone&quot;</translation>
     </message>
     <message>
         <source>error occurred while parsing document type definition</source>
-        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique de la définition du type de document</translation>
+        <translation>une erreur s&apos;est produite pendant l&apos;analyse syntaxique de la définition du type de document</translation>
     </message>
     <message>
         <source>letter is expected</source>
-        <translation type="unfinished">une lettre est attendue</translation>
+        <translation>une lettre est attendue</translation>
     </message>
     <message>
         <source>error occurred while parsing comment</source>
-        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique du commentaire</translation>
+        <translation>une erreur s&apos;est produite pendant l&apos;analyse syntaxique du commentaire</translation>
     </message>
     <message>
         <source>error occurred while parsing reference</source>
-        <translation type="unfinished">une erreur s&apos;est produite pendant l&apos;analyse syntaxique d&apos;une référence</translation>
+        <translation>une erreur s&apos;est produite pendant l&apos;analyse syntaxique d&apos;une référence</translation>
     </message>
     <message>
         <source>internal general entity reference not allowed in DTD</source>
-        <translation type="unfinished"></translation>
+        <translation>référence à une entité générale interne non autorisée dans la DTD</translation>
     </message>
     <message>
         <source>external parsed general entity reference not allowed in attribute value</source>
-        <translation type="unfinished"></translation>
+        <translation>référence à une entité générale externe non autorisée dans la valeur d&apos;attribut</translation>
     </message>
     <message>
         <source>external parsed general entity reference not allowed in DTD</source>
-        <translation type="unfinished"></translation>
+        <translation>référence à une entité générale externe non autorisée dans le DTD</translation>
     </message>
     <message>
         <source>unparsed entity reference in wrong context</source>
-        <translation type="unfinished"></translation>
+        <translation>référence à une entité non analysée dans le mauvais contexte</translation>
     </message>
     <message>
         <source>recursive entities</source>
-        <translation type="unfinished"></translation>
+        <translation>entités récursives</translation>
     </message>
     <message>
         <source>error in the text declaration of an external entity</source>
-        <translation type="unfinished"></translation>
+        <translation>erreur dans la déclaration texte d&apos;une entité externe</translation>
     </message>
     <message>
         <source>encoding declaration or standalone declaration expected while reading the XML declaration</source>
-        <translation type="unfinished"></translation>
+        <translation>déclaration d&apos;encodage ou déclaration &quot;standalone&quot; attendue lors de la lecture de la déclaration XML</translation>
     </message>
     <message>
         <source>standalone declaration expected while reading the XML declaration</source>
-        <translation type="unfinished"></translation>
+        <translation>déclaration &quot;standalone&quot; attendue lors de la lecture de la déclaration XML</translation>
     </message>
 </context>
 <context>
     <name>QXmlPatternistCLI</name>
     <message>
         <source>Warning in %1, at line %2, column %3: %4</source>
-        <translation>Avertissement dans %1, à la ligne %2, colonne %3: %4</translation>
+        <translation>Avertissement dans %1, à la ligne %2, colonne %3 : %4</translation>
     </message>
     <message>
         <source>Warning in %1: %2</source>
-        <translation>Avertissement dans %1: %2</translation>
+        <translation>Avertissement dans %1 : %2</translation>
     </message>
     <message>
-        <source>Unknown location</source>
+        <source></source>
         <translation>Lieu inconnu</translation>
     </message>
     <message>
         <source>Error %1 in %2, at line %3, column %4: %5</source>
-        <translation>Erreur %1 dans %2, à la ligne %3, colonne %4: %5</translation>
+        <translation>Erreur %1 dans %2, à la ligne %3, colonne %4 : %5</translation>
     </message>
     <message>
         <source>Error %1 in %2: %3</source>
-        <translation>Erreur %1 dans %2: %3</translation>
+        <translation>Erreur %1 dans %2 : %3</translation>
     </message>
 </context>
 <context>
     <name>QXmlStream</name>
     <message>
         <source>Extra content at end of document.</source>
-        <translation type="unfinished"></translation>
+        <translation>Contenu superflu à la fin du document.</translation>
     </message>
     <message>
         <source>Invalid entity value.</source>
-        <translation type="unfinished"></translation>
+        <translation>Valeur de l&apos;entité invalide.</translation>
     </message>
     <message>
         <source>Invalid XML character.</source>
-        <translation type="unfinished"></translation>
+        <translation>Caractère XML invalide.</translation>
     </message>
     <message>
         <source>Sequence &apos;]]&gt;&apos; not allowed in content.</source>
-        <translation type="unfinished"></translation>
+        <translation>séquence &apos;]]&gt;&apos; non autorisée dans le contenu.</translation>
     </message>
     <message>
         <source>Namespace prefix &apos;%1&apos; not declared</source>
-        <translation type="unfinished"></translation>
+        <translation>Le préfixe d&apos;espace de noms %1 n&apos;a pas été déclaré</translation>
     </message>
     <message>
         <source>Attribute redefined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Redéfinition d&apos;attribut.</translation>
     </message>
     <message>
         <source>Unexpected character &apos;%1&apos; in public id literal.</source>
-        <translation type="unfinished"></translation>
+        <translation>Caractère &apos;%1&apos; inattendu pour une valeur d&apos;identifiant public.</translation>
     </message>
     <message>
         <source>Invalid XML version string.</source>
-        <translation type="unfinished"></translation>
+        <translation>Chaîne de version XML invalide.</translation>
     </message>
     <message>
         <source>Unsupported XML version.</source>
-        <translation type="unfinished"></translation>
+        <translation>Version XML non supportée.</translation>
     </message>
     <message>
         <source>%1 is an invalid encoding name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 n&apos;est pas un nom d&apos;encodage valide.</translation>
     </message>
     <message>
         <source>Encoding %1 is unsupported</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 n&apos;est pas un encodage supporté</translation>
     </message>
     <message>
         <source>Invalid XML encoding name.</source>
@@ -8792,99 +8829,99 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Standalone accepts only yes or no.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le seules valeurs possibles pour &quot;standalone&quot; sont &quot;yes&quot; ou &quot;no&quot;.</translation>
     </message>
     <message>
         <source>Invalid attribute in XML declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Attribut invalide dans une déclaration XML.</translation>
     </message>
     <message>
         <source>Premature end of document.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fin de document inattendue.</translation>
     </message>
     <message>
         <source>Invalid document.</source>
-        <translation type="unfinished"></translation>
+        <translation>Document invalide.</translation>
     </message>
     <message>
         <source>Expected </source>
-        <translation type="unfinished"></translation>
+        <translation>Attendu(e)</translation>
     </message>
     <message>
         <source>, but got &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>, mais trouvé &apos;</translation>
     </message>
     <message>
         <source>Unexpected &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Inattendu(e)</translation>
     </message>
     <message>
         <source>Expected character data.</source>
-        <translation type="unfinished"></translation>
+        <translation>données texte attendues.</translation>
     </message>
     <message>
         <source>Recursive entity detected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entité récursive détectée.</translation>
     </message>
     <message>
         <source>Start tag expected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tag de départ attendu.</translation>
     </message>
     <message>
         <source>XML declaration not at start of document.</source>
-        <translation type="unfinished"></translation>
+        <translation>La déclaration XML doit être en début de document.</translation>
     </message>
     <message>
         <source>NDATA in parameter entity declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>NDATA dans une déclaration de paramètre d&apos;entité.</translation>
     </message>
     <message>
         <source>%1 is an invalid processing instruction name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 n&apos;est pas un nom d&apos;instruction valide.</translation>
     </message>
     <message>
         <source>Invalid processing instruction name.</source>
-        <translation type="unfinished"></translation>
+        <translation>nom d&apos;instruction invalide.</translation>
     </message>
     <message>
         <source>Illegal namespace declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Déclaration d&apos;espace de noms non autorisée.</translation>
     </message>
     <message>
         <source>Invalid XML name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom XML invalide.</translation>
     </message>
     <message>
         <source>Opening and ending tag mismatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tags ouvrant et fermants ne correspondent pas.</translation>
     </message>
     <message>
         <source>Reference to unparsed entity &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Référence à l&apos;entité &apos;%1&apos; non analysée.</translation>
     </message>
     <message>
         <source>Entity &apos;%1&apos; not declared.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entité &apos;%1&apos; non déclarée.</translation>
     </message>
     <message>
         <source>Reference to external entity &apos;%1&apos; in attribute value.</source>
-        <translation type="unfinished"></translation>
+        <translation>Référence à l&apos;entité externe &apos;%1&apos; en valeur d&apos;attribut.</translation>
     </message>
     <message>
         <source>Invalid character reference.</source>
-        <translation type="unfinished"></translation>
+        <translation>Référence à un caractère invalide.</translation>
     </message>
     <message>
         <source>Encountered incorrectly encoded content.</source>
-        <translation type="unfinished"></translation>
+        <translation>Du contenu avec un encodage incorrect a été rencontré.</translation>
     </message>
     <message>
         <source>The standalone pseudo attribute must appear after the encoding.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le pseudo-attribut &quot;standalone&quot; doit apparaître après l&apos;encodage.</translation>
     </message>
     <message>
         <source>%1 is an invalid PUBLIC identifier.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 n&apos;est pas un identifiant &quot;PUBLIC&quot; valide.</translation>
     </message>
 </context>
 <context>
@@ -8923,7 +8960,7 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Overflow: Can&apos;t represent date %1.</source>
-        <translation>Overflow: ne peut pas représenter la date %1.</translation>
+        <translation>Overflow : impossible de représenter la date %1.</translation>
     </message>
     <message>
         <source>Day %1 is invalid for month %2.</source>
@@ -8931,11 +8968,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>Time 24:%1:%2.%3 is invalid. Hour is 24, but minutes, seconds, and milliseconds are not all 0; </source>
-        <translation>L&apos;heure 24:%1:%2.%3 est invalide. L&apos;heure est 24 mais les minutes, seconndes et millisecondes ne sont pas à 0;</translation>
+        <translation>Heure 24 : %1 : %2.%3 est invalide. L&apos;heure est 24 mais les minutes, secondes et millisecondes ne sont pas à 0;</translation>
     </message>
     <message>
         <source>Time %1:%2:%3.%4 is invalid.</source>
-        <translation>L&apos;heure %1:%2:%3.%4 est invalide.</translation>
+        <translation>L&apos;heure %1 : %2 : %3.%4 est invalide.</translation>
     </message>
     <message>
         <source>Overflow: Date can&apos;t be represented.</source>
@@ -9197,11 +9234,11 @@ Veuillez choisir un nom de fichier différent.</translation>
     </message>
     <message>
         <source>%1 is an invalid regular expression pattern: %2</source>
-        <translation>%1 est un modèle d&apos;expression régulière invalide: %2</translation>
+        <translation>%1 est un modèle d&apos;expression régulière invalide : %2</translation>
     </message>
     <message>
         <source>%1 is an invalid flag for regular expressions. Valid flags are:</source>
-        <translation>%1 est un flag invalide pour des expressions régulières. Les flags valides sont :</translation>
+        <translation>%1 est un flag invalide pour des expressions régulières. Les flags valides sont : </translation>
     </message>
     <message>
         <source>If the first argument is the empty sequence or a zero-length string (no namespace), a prefix cannot be specified. Prefix %1 was specified.</source>
@@ -9604,16 +9641,12 @@ Veuillez choisir un nom de fichier différent.</translation>
         <translation>L&apos;URI ne peut pas avoir de fragments</translation>
     </message>
     <message>
-        <source>Element %1 is not allowed at this location.</source>
+        <source></source>
         <translation>L&apos;élément %1 n&apos;est pas autorisé à cet emplacement.</translation>
     </message>
     <message>
-        <source>Text nodes are not allowed at this location.</source>
-        <translation>Les noeuds de texte ne sont pas autorisés à cet emplacement.</translation>
-    </message>
-    <message>
         <source>Parse error: %1</source>
-        <translation>Erreur: %1</translation>
+        <translation>Erreur : %1</translation>
     </message>
     <message>
         <source>The value of the XSL-T version attribute must be a value of type %1, which %2 isn&apos;t.</source>

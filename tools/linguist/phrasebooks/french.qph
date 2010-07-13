@@ -1450,4 +1450,44 @@
     <source>New</source>
     <target>Créer</target>
 </phrase>
+<phrase>
+    <source>Play</source>
+    <target>Lecture</target>
+</phrase>
+<phrase>
+    <source>Slider</source>
+    <target>Barre de défilement</target>
+</phrase>
+<phrase>
+    <source>&amp;Restore</source>
+    <target>&amp;Restaurer</target>
+</phrase>
+<phrase>
+    <source>&amp;Move</source>
+    <target>&amp;Déplacer</target>
+</phrase>
+<phrase>
+    <source>New</source>
+    <target>Créer</target>
+</phrase>
+<phrase>
+    <source>Play</source>
+    <target>Lecture</target>
+</phrase>
+<phrase>
+    <source>&amp;Redo</source>
+    <target>&amp;Refaire</target>
+</phrase>
+<phrase>
+    <source>Raised</source>
+    <target>Bombé</target>
+</phrase>
+<phrase>
+    <source>Sunken</source>
+    <target>Enfoncé</target>
+</phrase>
+<phrase>
+    <source>Run:</source>
+    <target>Exécution :</target>
+</phrase>
 </QPH>
