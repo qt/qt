@@ -38,10 +38,11 @@
 **
 ****************************************************************************/
 
-//! [Quoting ModelView Tutorial]
 #ifndef MYMODEL_H
 #define MYMODEL_H
 
+//! [Quoting ModelView Tutorial]
+// mymodel.h
 #include <QAbstractTableModel>
 
 class MyModel : public QAbstractTableModel
@@ -53,6 +54,6 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 };
+//! [Quoting ModelView Tutorial]
 
 #endif // MYMODEL_H
-//! [Quoting ModelView Tutorial]

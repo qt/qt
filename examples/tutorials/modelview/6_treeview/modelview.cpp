@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 //! [Quoting ModelView Tutorial]
+// modelview.cpp
 #include <QTreeView>
 #include <QStandardItemModel>
 #include <QStandardItem>
@@ -64,14 +65,13 @@ ModelView::ModelView(QWidget *parent)
     // adding a row to an item starts a subtree
     preparedColumn.first()->appendRow(secondRow);
 
-    treeView->setModel( standardModel );
+    treeView->setModel(standardModel);
     treeView->expandAll();
 }
 
-//---------------------------------------------------------------------------
 QList<QStandardItem *> ModelView::prepareColumn(const QString &first,
                                                 const QString &second,
-                                                const QString &third )
+                                                const QString &third)
 {
     QList<QStandardItem *> colItems;
     colItems << new QStandardItem(first);

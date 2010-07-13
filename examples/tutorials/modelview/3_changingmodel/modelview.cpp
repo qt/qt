@@ -47,6 +47,6 @@ ModelView::ModelView(QWidget *parent)
 {
     tableView = new QTableView(this);
     setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this) );
+    tableView->setModel(new MyModel(this));
 }
 

@@ -56,7 +56,7 @@ private:
     QStandardItemModel *standardModel;
     QList<QStandardItem *> prepareColumn(const QString &first,
                                          const QString &second,
-                                         const QString &third );
+                                         const QString &third);
 public:
     ModelView(QWidget *parent = 0);
 };

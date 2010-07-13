@@ -53,22 +53,19 @@ MyModel::MyModel(QObject *parent)
 //! [quoting mymodel_d]
 
 //! [quoting mymodel_e]
-//-------------------------------------------------------
-int MyModel::rowCount(const QModelIndex & /*parent*/ ) const
+int MyModel::rowCount(const QModelIndex & /*parent*/) const
 {
     return ROWS;
 }
 
-//-------------------------------------------------------
-int MyModel::columnCount(const QModelIndex & /*parent*/ ) const
+int MyModel::columnCount(const QModelIndex & /*parent*/) const
 {
     return COLS;
 }
 
-//-------------------------------------------------------
-QVariant MyModel::data(const QModelIndex &index, int role ) const
+QVariant MyModel::data(const QModelIndex &index, int role) const
 {
-    if(role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole)
     {
         return m_gridData[modelIndexToOffset(index)];
     }
@@ -79,23 +76,21 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
 //-----------------------------------------------------------------
 
 //! [quoting mymodel_f]
-bool MyModel::setData ( const QModelIndex & index, const QVariant & value, int role  )
+bool MyModel::setData(const QModelIndex & index, const QVariant & value, int role)
 {
-    if(role == Qt::EditRole)
+    if (role == Qt::EditRole)
     {
         m_gridData[modelIndexToOffset(index)] = value.toString();
-        emit editCompleted(m_gridData.join(" | ") );
+        emit editCompleted(m_gridData.join(" | "));
     }
     return true;
 }
 
-//-----------------------------------------------------------------
-Qt::ItemFlags MyModel::flags ( const QModelIndex & /*index*/ ) const
+Qt::ItemFlags MyModel::flags(const QModelIndex & /*index*/) const
 {
     return Qt::ItemIsSelectable |  Qt::ItemIsEditable | Qt::ItemIsEnabled ;
 }
 
-//-----------------------------------------------------------------
 //convert row and column information to array offset
 int MyModel::modelIndexToOffset(const QModelIndex & index) const
 {

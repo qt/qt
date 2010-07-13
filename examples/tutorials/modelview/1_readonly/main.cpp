@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 //! [Quoting ModelView Tutorial]
+// main.cpp
 #include <QtGui/QApplication>
 #include "modelview.h"
 

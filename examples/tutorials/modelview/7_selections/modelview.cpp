@@ -74,13 +74,13 @@ ModelView::ModelView(QWidget *parent)
     italyItem->   appendRow(veronaItem);
     
     //register the model
-    treeView->setModel( standardModel );
+    treeView->setModel(standardModel);
     treeView->expandAll();
 
     //selection changes shall trigger a slot
     QItemSelectionModel *selectionModel= treeView->selectionModel();
-    connect(selectionModel, SIGNAL(selectionChanged ( const QItemSelection & , const QItemSelection & )),
-            this, SLOT(selectionChangedSlot(const QItemSelection & , const QItemSelection & )));
+    connect(selectionModel, SIGNAL(selectionChanged (const QItemSelection &, const QItemSelection &)),
+            this, SLOT(selectionChangedSlot(const QItemSelection &, const QItemSelection &)));
 }
 //! [quoting modelview_a]
 
@@ -93,7 +93,7 @@ void ModelView::selectionChangedSlot(const QItemSelection & /*newSelection*/, co
     QString selectedText = index.data(Qt::DisplayRole).toString();
     int hierarchyLevel=1;
     QModelIndex seekRoot = index;
-    while(seekRoot.parent() != QModelIndex() )
+    while(seekRoot.parent() != QModelIndex())
     {
         seekRoot = seekRoot.parent();
         hierarchyLevel++;

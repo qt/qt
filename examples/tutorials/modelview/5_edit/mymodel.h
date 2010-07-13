@@ -38,10 +38,11 @@
 **
 ****************************************************************************/
 
-//! [Quoting ModelView Tutorial]
 #ifndef MYMODEL_H
 #define MYMODEL_H
 
+//! [Quoting ModelView Tutorial]
+// mymodel.h
 #include <QAbstractTableModel>
 #include <QStringList>
 
@@ -53,14 +54,14 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
-    Qt::ItemFlags flags ( const QModelIndex & index ) const ;
+    bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex & index) const ;
 private:
     QStringList m_gridData;  //holds text entered into QTableView
     int modelIndexToOffset(const QModelIndex & index) const;
 signals:
     void editCompleted(const QString &);
 };
+//! [Quoting ModelView Tutorial]
 
 #endif // MYMODEL_H
-//! [Quoting ModelView Tutorial]

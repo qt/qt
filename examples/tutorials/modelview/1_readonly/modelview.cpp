@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 //! [Quoting ModelView Tutorial]
+// modelview.cpp
 #include <QTableView>
 #include "modelview.h"
 #include "mymodel.h"
@@ -48,6 +49,6 @@ ModelView::ModelView(QWidget *parent)
 {
     tableView = new QTableView(this);
     setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this) );
+    tableView->setModel(new MyModel(this));
 }
 //! [Quoting ModelView Tutorial]

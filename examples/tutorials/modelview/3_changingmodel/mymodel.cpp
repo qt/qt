@@ -50,32 +50,32 @@ MyModel::MyModel(QObject *parent)
 //    selectedCell = 0;
     timer = new QTimer(this);
     timer->setInterval(1000);
-    connect(timer, SIGNAL(timeout()) , this, SLOT(timerHit()) );
+    connect(timer, SIGNAL(timeout()) , this, SLOT(timerHit()));
     timer->start();
 }
 //! [quoting mymodel_a]
 //-------------------------------------------------------
-int MyModel::rowCount(const QModelIndex  & /*parent */ ) const
+int MyModel::rowCount(const QModelIndex & /*parent */) const
 {
     return 2;
 }
 
 //-------------------------------------------------------
-int MyModel::columnCount(const QModelIndex  & /*parent */ ) const
+int MyModel::columnCount(const QModelIndex & /*parent */) const
 {
     return 3;
 }
 
 //-------------------------------------------------------
 //! [quoting mymodel_QVariant ]
-QVariant MyModel::data(const QModelIndex &index, int role ) const
+QVariant MyModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
     int col = index.column();
 
-    if(role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole)
     {
-        if(row == 0 && col == 0 )
+        if (row == 0 && col == 0)
         {
             return QTime::currentTime().toString();
         }
@@ -88,8 +88,8 @@ QVariant MyModel::data(const QModelIndex &index, int role ) const
 void MyModel::timerHit()
 {
     //we identify the top left cell
-    QModelIndex topLeft = createIndex ( 0,0 );
+    QModelIndex topLeft = createIndex(0,0);
     //emit a signal to make the view reread identified data
-    emit dataChanged ( topLeft, topLeft );
+    emit dataChanged(topLeft, topLeft);
 }
 //! [quoting mymodel_b ]

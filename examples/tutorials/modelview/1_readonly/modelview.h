@@ -38,11 +38,11 @@
 **
 ****************************************************************************/
 
-//! [Quoting ModelView Tutorial]
 #ifndef MODELVIEW_H
 #define MODELVIEW_H
 
-
+//! [Quoting ModelView Tutorial]
+// modelview.h
 #include <QtGui/QMainWindow>
 
 class QTableView; //forward declaration
@@ -56,6 +56,6 @@ public:
     ModelView(QWidget *parent = 0);
 
 };
+//! [Quoting ModelView Tutorial]
 
 #endif // MODELVIEW_H
-//! [Quoting ModelView Tutorial]

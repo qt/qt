@@ -48,13 +48,13 @@ ModelView::ModelView(QWidget *parent)
     tableView = new QTableView(this);
     setCentralWidget(tableView);
     QAbstractTableModel *myModel = new MyModel(this);
-    tableView->setModel( myModel );
+    tableView->setModel(myModel);
 
     //transfer changes to the model to the window title
-    connect(myModel, SIGNAL(editCompleted(const QString &) ), this, SLOT(setWindowTitle(const QString &)));
+    connect(myModel, SIGNAL(editCompleted(const QString &)), this, SLOT(setWindowTitle(const QString &)));
 }
 
 void ModelView::showWindowTitle(const QString & title)
 {
-setWindowTitle( title );
+setWindowTitle(title);
 }
