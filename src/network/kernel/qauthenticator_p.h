@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpResponseHeader;
 
-class QAuthenticatorPrivate
+class Q_AUTOTEST_EXPORT QAuthenticatorPrivate
 {
 public:
     enum Method { None, Basic, Plain, Login, Ntlm, CramMd5, DigestMd5 };
