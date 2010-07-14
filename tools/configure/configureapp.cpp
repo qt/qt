@@ -3164,16 +3164,6 @@ void Configure::generateConfigfiles()
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
-
-        if (!QFile::exists(buildPath + "/include/QtCore/qconfig.h")) {
-            if (!writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                             buildPath + "/include/QtCore/qconfig.h")
-            || !writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                            buildPath + "/include/Qt/qconfig.h")) {
-                dictionary["DONE"] = "error";
-                return;
-            }
-        }
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any
