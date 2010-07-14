@@ -1627,7 +1627,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     // Try converting the path into a QRegion that tightly follows
     // the outline of the path we want to clip with.
-    QRegion region(path.convertToPainterPath().toFillPolygon(QTransform()).toPolygon());
+    QRegion region;
+    if (!path.isEmpty())
+        region = QRegion(path.convertToPainterPath().toFillPolygon(QTransform()).toPolygon());
+
     switch (op) {
         case Qt::NoClip:
         {
