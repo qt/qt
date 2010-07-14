@@ -10,8 +10,8 @@ contains(CONFIG, static) {
     INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtpropertybrowser
     INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/qtgradienteditor
 } else {
-    include($$QT_SOURCE_TREE/tools/shared/qtpropertybrowser/qtpropertybrowser.pri)
-    include($$QT_SOURCE_TREE/tools/shared/qtgradienteditor/qtcolorbutton.pri)
+    include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
+    include(../../../../shared/qtgradienteditor/qtcolorbutton.pri)
 }
 
 FORMS += $$PWD/paletteeditor.ui \

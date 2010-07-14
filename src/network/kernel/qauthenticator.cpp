@@ -50,6 +50,8 @@
 #include <qdatastream.h>
 #include <qendian.h>
 #include <qstring.h>
+#include <qdatetime.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -162,7 +164,18 @@ QString QAuthenticator::user() const
 void QAuthenticator::setUser(const QString &user)
 {
     detach();
-    d->user = user;
+
+    int separatorPosn = 0;
+    separatorPosn = user.indexOf(QLatin1String("\\"));
+
+    if (separatorPosn == -1) {
+        //No domain name present
+        d->user = user;
+    } else {
+        //domain name is present
+        d->realm = user.left(separatorPosn);
+        d->user = user.mid(separatorPosn+1);
+    }
 }
 
 /*!
@@ -264,16 +277,17 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
 
     switch(method) {
     case Basic:
-        realm = QString::fromLatin1(options.value("realm"));
+        if(realm.isEmpty())
+            realm = QString::fromLatin1(options.value("realm"));
         if (user.isEmpty())
             phase = Done;
         break;
     case Ntlm:
         // #### extract from header
-        realm.clear();
         break;
     case DigestMd5: {
-        realm = QString::fromLatin1(options.value("realm"));
+        if(realm.isEmpty())
+            realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
         if (user.isEmpty())
@@ -661,6 +675,20 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge,
  */
 #define NTLMSSP_NEGOTIATE_56 0x80000000
 
+/*
+ * AvId values
+ */
+#define AVTIMESTAMP 7
+
+//#define NTLMV1_CLIENT
+
+
+//************************Global variables***************************
+
+const int blockSize = 64; //As per RFC2104 Block-size is 512 bits
+const int nDigestLen = 16; //Trunctaion Length of the Hmac-Md5 digest
+const quint8 respversion = 1;
+const quint8 hirespversion = 1;
 
 /* usage:
    // fill up ctx with what we know.
@@ -803,6 +831,7 @@ public:
 
     // extracted
     QString targetNameStr, targetInfoStr;
+    QByteArray targetInfoBuff;
 };
 
 
@@ -818,6 +847,7 @@ public:
     // extracted
     QByteArray lmResponseBuf, ntlmResponseBuf;
     QString domainStr, userStr, workstationStr, sessionKeyStr;
+    QByteArray v2Hash;
 };
 
 
@@ -899,7 +929,7 @@ static QString qStringFromUcs2Le(const QByteArray& src)
     return QString((const QChar *)src.data(), src.size()/2);
 }
 
-
+#ifdef NTLMV1_CLIENT
 static QByteArray qEncodeNtlmResponse(const QAuthenticatorPrivate *ctx, const QNtlmPhase2Block& ch)
 {
     QCryptographicHash md4(QCryptographicHash::Md4);
@@ -941,7 +971,232 @@ static QByteArray qEncodeLmResponse(const QAuthenticatorPrivate *ctx, const QNtl
     hash.fill(0);
     return rc;
 }
+#endif
 
+/*********************************************************************
+* Function Name: qEncodeHmacMd5
+* Params:
+*    key:   Type - QByteArray
+*         - It is the Authentication key
+*    message:   Type - QByteArray
+*         - This is the actual message which will be encoded
+*           using HMacMd5 hash algorithm
+*
+* Return Value:
+*    hmacDigest:   Type - QByteArray
+*
+* Description:
+*    This function will be used to encode the input message using
+*    HMacMd5 hash algorithm.
+*
+*    As per the RFC2104 the HMacMd5 algorithm can be specified
+*        ---------------------------------------
+*         MD5(K XOR opad, MD5(K XOR ipad, text))
+*        ---------------------------------------
+*
+*********************************************************************/
+QByteArray qEncodeHmacMd5(QByteArray &key, const QByteArray &message)
+{
+    Q_ASSERT_X(!(message.isEmpty()),"qEncodeHmacMd5", "Empty message check");
+    Q_ASSERT_X(!(key.isEmpty()),"qEncodeHmacMd5", "Empty key check");
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    QByteArray hMsg;
+
+    QByteArray iKeyPad(blockSize, 0x36);
+    QByteArray oKeyPad(blockSize, 0x5c);
+
+    hash.reset();
+    // Adjust the key length to blockSize
+
+    if(blockSize < key.length()) {
+        hash.addData(key);
+        key = hash.result(); //MD5 will always return 16 bytes length output
+    }
+
+    //Key will be <= 16 or 20 bytes as hash function (MD5 or SHA hash algorithms)
+    //key size can be max of Block size only
+    key = key.leftJustified(blockSize,0,true);
+
+    //iKeyPad, oKeyPad and key are all of same size "blockSize"
+
+    //xor of iKeyPad with Key and store the result into iKeyPad
+    for(int i = 0; i<key.size();i++) {
+        iKeyPad[i] = key[i]^iKeyPad[i];
+    }
+
+    //xor of oKeyPad with Key and store the result into oKeyPad
+    for(int i = 0; i<key.size();i++) {
+        oKeyPad[i] = key[i]^oKeyPad[i];
+    }
+
+    iKeyPad.append(message); // (K0 xor ipad) || text
+
+    hash.reset();
+    hash.addData(iKeyPad);
+    hMsg = hash.result();
+                    //Digest gen after pass-1: H((K0 xor ipad)||text)
+
+    QByteArray hmacDigest;
+    oKeyPad.append(hMsg);
+    hash.reset();
+    hash.addData(oKeyPad);
+    hmacDigest = hash.result();
+                    // H((K0 xor opad )|| H((K0 xor ipad) || text))
+
+    /*hmacDigest should not be less than half the length of the HMAC output
+      (to match the birthday attack bound) and not less than 80 bits
+      (a suitable lower bound on the number of bits that need to be
+      predicted by an attacker).
+      Refer RFC 2104 for more details on truncation part */
+
+    /*MD5 hash always returns 16 byte digest only and HMAC-MD5 spec
+      (RFC 2104) also says digest length should be 16 bytes*/
+    return hmacDigest;
+}
+
+static QByteArray qCreatev2Hash(const QAuthenticatorPrivate *ctx,
+                                QNtlmPhase3Block *phase3)
+{
+    Q_ASSERT(phase3 != 0);
+    // since v2 Hash is need for both NTLMv2 and LMv2 it is calculated
+    // only once and stored and reused
+    if(phase3->v2Hash.size() == 0) {
+        QCryptographicHash md4(QCryptographicHash::Md4);
+        QByteArray passUnicode = qStringAsUcs2Le(ctx->password);
+        md4.addData(passUnicode.data(), passUnicode.size());
+
+        QByteArray hashKey = md4.result();
+        Q_ASSERT(hashKey.size() == 16);
+        // Assuming the user and domain is always unicode in challenge
+        QByteArray message =
+                qStringAsUcs2Le(ctx->user.toUpper()) +
+                qStringAsUcs2Le(ctx->realm);
+
+        phase3->v2Hash = qEncodeHmacMd5(hashKey, message);
+    }
+    return phase3->v2Hash;
+}
+
+static QByteArray clientChallenge(const QAuthenticatorPrivate *ctx)
+{
+    Q_ASSERT(ctx->cnonce.size() >= 8);
+    QByteArray clientCh = ctx->cnonce.right(8);
+    return clientCh;
+}
+
+// caller has to ensure a valid targetInfoBuff
+static bool qExtractServerTime(const QByteArray& targetInfoBuff,
+                               quint64 *serverTime)
+{
+    Q_ASSERT(serverTime != 0);
+    bool retValue = false;
+    QDataStream ds(targetInfoBuff);
+    ds.setByteOrder(QDataStream::LittleEndian);
+
+    quint16 avId;
+    quint16 avLen;
+
+    ds >> avId;
+    ds >> avLen;
+    while(avId != 0) {
+        if(avId == AVTIMESTAMP) {
+            QByteArray timeArray(avLen, 0);
+            //avLen size of QByteArray is allocated
+            ds.readRawData(timeArray.data(), avLen);
+            bool ok;
+            *serverTime = timeArray.toHex().toLongLong(&ok, 16);
+            retValue = true;
+            break;
+        }
+        ds.skipRawData(avLen);
+        ds >> avId;
+        ds >> avLen;
+    }
+    return retValue;
+}
+
+static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
+                                        const QNtlmPhase2Block& ch,
+                                        QNtlmPhase3Block *phase3)
+{
+    Q_ASSERT(phase3 != 0);
+    // return value stored in phase3
+    qCreatev2Hash(ctx, phase3);
+
+    QByteArray temp;
+    QDataStream ds(&temp, QIODevice::WriteOnly);
+    ds.setByteOrder(QDataStream::LittleEndian);
+
+    ds << respversion;
+    ds << hirespversion;
+
+    //Reserved
+    QByteArray reserved1(6, 0);
+    ds.writeRawData(reserved1.constData(), reserved1.size());
+
+    quint64 time = 0;
+
+    //if server sends time, use it instead of current time
+    if(!(ch.targetInfo.len && qExtractServerTime(ch.targetInfoBuff, &time))) {
+        QDateTime currentTime(QDate::currentDate(),
+                              QTime::currentTime(), Qt::UTC);
+
+        // number of seconds between 1601 and epoc(1970)
+        // 369 years, 89 leap years
+        // ((369 * 365) + 89) * 24 * 3600 = 11644473600
+
+        time = Q_UINT64_C(currentTime.toTime_t() + 11644473600);
+
+        // represented as 100 nano seconds
+        time = Q_UINT64_C(time * 10000000);
+    }
+    ds << time;
+
+    //8 byte client challenge
+    QByteArray clientCh = clientChallenge(ctx);
+    ds.writeRawData(clientCh.constData(), clientCh.size());
+
+    //Reserved
+    QByteArray reserved2(4, 0);
+    ds.writeRawData(reserved2.constData(), reserved2.size());
+
+    if (ch.targetInfo.len > 0) {
+        ds.writeRawData(ch.targetInfoBuff.constData(),
+                        ch.targetInfoBuff.size());
+    }
+
+    //Reserved
+    QByteArray reserved3(4, 0);
+    ds.writeRawData(reserved3.constData(), reserved3.size());
+
+    QByteArray message((const char*)ch.challenge, sizeof(ch.challenge));
+    message.append(temp);
+
+    QByteArray ntChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
+    ntChallengeResp.append(temp);
+
+    return ntChallengeResp;
+}
+
+static QByteArray qEncodeLmv2Response(const QAuthenticatorPrivate *ctx,
+                                      const QNtlmPhase2Block& ch,
+                                      QNtlmPhase3Block *phase3)
+{
+    Q_ASSERT(phase3 != 0);
+    // return value stored in phase3
+    qCreatev2Hash(ctx, phase3);
+
+    QByteArray message((const char*)ch.challenge, sizeof(ch.challenge));
+    QByteArray clientCh = clientChallenge(ctx);
+
+    message.append(clientCh);
+
+    QByteArray lmChallengeResp = qEncodeHmacMd5(phase3->v2Hash, message);
+    lmChallengeResp.append(clientCh);
+
+    return lmChallengeResp;
+}
 
 static bool qNtlmDecodePhase2(const QByteArray& data, QNtlmPhase2Block& ch)
 {
@@ -976,7 +1231,10 @@ static bool qNtlmDecodePhase2(const QByteArray& data, QNtlmPhase2Block& ch)
     }
 
     if (ch.targetInfo.len > 0) {
-        // UNUSED right now
+        if (ch.targetInfo.len + ch.targetInfo.offset > (unsigned)data.size())
+            return false;
+
+        ch.targetInfoBuff = data.mid(ch.targetInfo.offset, ch.targetInfo.len);
     }
 
     return true;
@@ -996,7 +1254,8 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
     bool unicode = ch.flags & NTLMSSP_NEGOTIATE_UNICODE;
 
-    ctx->realm = ch.targetNameStr;
+    if(ctx->realm.isEmpty())
+        ctx->realm = ch.targetNameStr;
 
     pb.flags = NTLMSSP_NEGOTIATE_NTLM;
     if (unicode)
@@ -1010,6 +1269,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     
     offset = qEncodeNtlmString(pb.domain, offset, ctx->realm, unicode);
     pb.domainStr = ctx->realm;
+
     offset = qEncodeNtlmString(pb.user, offset, ctx->user, unicode);
     pb.userStr = ctx->user;
 
@@ -1017,11 +1277,23 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
     pb.workstationStr = ctx->workstation;
 
     // Get LM response
+#ifdef NTLMV1_CLIENT
     pb.lmResponseBuf = qEncodeLmResponse(ctx, ch);
+#else
+    if (ch.targetInfo.len > 0) {
+        pb.lmResponseBuf = QByteArray();
+    } else {
+        pb.lmResponseBuf = qEncodeLmv2Response(ctx, ch, &pb);
+    }
+#endif
     offset = qEncodeNtlmBuffer(pb.lmResponse, offset, pb.lmResponseBuf);
 
     // Get NTLM response
+#ifdef NTLMV1_CLIENT
     pb.ntlmResponseBuf = qEncodeNtlmResponse(ctx, ch);
+#else
+    pb.ntlmResponseBuf = qEncodeNtlmv2Response(ctx, ch, &pb);
+#endif
     offset = qEncodeNtlmBuffer(pb.ntlmResponse, offset, pb.ntlmResponseBuf);
 
 

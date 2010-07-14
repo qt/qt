@@ -1388,26 +1388,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \property QDeclarativeItem::baseline
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::focus
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::wantsFocus
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::transformOrigin
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
@@ -1970,6 +1950,9 @@ QVariant QDeclarativeItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return v;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::keyPressPreHandler(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1980,6 +1963,9 @@ void QDeclarativeItem::keyPressPreHandler(QKeyEvent *event)
     d->doneEventPreHandler = true;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::keyReleasePreHandler(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1990,6 +1976,9 @@ void QDeclarativeItem::keyReleasePreHandler(QKeyEvent *event)
     d->doneEventPreHandler = true;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::inputMethodPreHandler(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1999,7 +1988,6 @@ void QDeclarativeItem::inputMethodPreHandler(QInputMethodEvent *event)
         event->ignore();
     d->doneEventPreHandler = true;
 }
-
 
 /*!
     \internal
@@ -2543,11 +2531,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*!
-  \property QDeclarativeItem::state
-  \internal
-*/
-
 /*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
@@ -2568,11 +2551,6 @@ void QDeclarativeItemPrivate::setState(const QString &state)
   This property holds the list of transformations to apply.
 
   For more information see \l Transform.
-*/
-
-/*!
-  \property QDeclarativeItem::transform
-  \internal
 */
 
 /*! \internal */
@@ -2861,6 +2839,26 @@ void QDeclarativeItem::setSmooth(bool smooth)
     emit smoothChanged(smooth);
     update();
 }
+
+/*!
+  \property QDeclarativeItem::focus
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transform
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transformOrigin
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::wantsFocus
+  \internal
+*/
 
 /*!
     \internal

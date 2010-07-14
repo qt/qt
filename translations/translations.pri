@@ -40,7 +40,7 @@ ts-qt.depends = sub-tools
 ###### Designer
 
 ts-designer.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/designer/translations/translations.pro)
+                                    ../tools/designer/designer.pro)
 ts-designer.depends = sub-tools
 
 ###### Linguist
@@ -52,21 +52,21 @@ ts-linguist.depends = sub-tools
 ###### Assistant
 
 ts-assistant.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/assistant/translations/translations.pro \
+                                    ../tools/assistant/tools/assistant/assistant.pro \
                                     && $$LUPDATE \
-                                    ../tools/assistant/translations/qt_help.pro)
+                                    ../tools/assistant/lib/lib.pro)
 ts-assistant.depends = sub-tools
 
 ###### Qtconfig
 
 ts-qtconfig.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/qtconfig/translations/translations.pro)
+                                    ../tools/qtconfig/qtconfig.pro)
 ts-qtconfig.depends = sub-tools
 
 ###### Qvfp
 
 ts-qvfb.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
-                                    ../tools/qvfb/translations/translations.pro)
+                                    ../tools/qvfb/qvfb.pro)
 ts-qvfb.depends = sub-tools
 
 ###### Overall Rules

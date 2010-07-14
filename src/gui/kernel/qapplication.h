@@ -267,8 +267,11 @@ public:
     virtual void commitData(QSessionManager& sm);
     virtual void saveState(QSessionManager& sm);
 #endif
+
+#ifndef QT_NO_IM
     void setInputContext(QInputContext *);
     QInputContext *inputContext() const;
+#endif
 
     static QLocale keyboardInputLocale();
     static Qt::LayoutDirection keyboardInputDirection();
