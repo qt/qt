@@ -7,11 +7,8 @@ TS_TARGETS =
 # meta target name, target name, lupdate base options, files
 defineTest(addTsTarget) {
     cv = $${2}.commands
-    dv = $${2}.depends
     $$cv = cd $$QT_SOURCE_TREE/src && $$LUPDATE $$3 -ts $$4
-    $$dv = sub-tools
     export($$cv)
-    export($$dv)
     dv = $${1}.depends
     $$dv += $$2
     export($$dv)
