@@ -44,59 +44,69 @@ Rectangle {
     id: box
     width: 350; height: 250
 
-    function showInfo(text) {
-        statusText.text = text
-    }
-
     Rectangle {
+        id: redSquare
         width: 80; height: 80
+        anchors.top: parent.top; anchors.left: parent.left; anchors.margins: 10
         color: "red"
 
         Text { text: "Click"; font.pixelSize: 16; anchors.centerIn: parent }
 
         MouseArea {
-            anchors.fill: parent
+            anchors.fill: parent 
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            onPressed: box.showInfo('Pressed (x=' + mouse.x + ' y=' + mouse.y + ' button=' 
-                    + (mouse.button == Qt.RightButton ? 'right' : 'left') 
-                    + ' Shift=' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') 
-            onReleased: box.showInfo('Released (x=' + mouse.x + ' y=' + mouse.y 
-                    + ' isClick=' + mouse.isClick + ' wasHeld=' + mouse.wasHeld + ')') 
-            onClicked: box.showInfo('Clicked (x=' + mouse.x + ' y=' + mouse.y + ' wasHeld=' + mouse.wasHeld + ')')
-            onDoubleClicked: box.showInfo('Double clicked (x=' + mouse.x + ' y=' + mouse.y + ')')
-            onPressAndHold: box.showInfo('Press and hold')
-            onEntered: box.showInfo('Entered (pressed=' + pressed + ')')
-            onExited: box.showInfo('Exited (pressed=' + pressed + ')')
+            onEntered: info.text = 'Entered'
+            onExited: info.text = 'Exited (pressed=' + pressed + ')'
+
+            onPressed: {
+                info.text = 'Pressed (button=' + (mouse.button == Qt.RightButton ? 'right' : 'left') 
+                    + ' shift=' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')'
+                var posInBox = redSquare.mapToItem(box, mouse.x, mouse.y)
+                posInfo.text = + mouse.x + ',' + mouse.y + ' in square'
+                        + ' (' + posInBox.x + ',' + posInBox.y + ' in window)'
+            }
+
+            onReleased: {
+                info.text = 'Released (isClick=' + mouse.isClick + ' wasHeld=' + mouse.wasHeld + ')'
+                posInfo.text = ''
+            }
+
+            onPressAndHold: info.text = 'Press and hold'
+            onClicked: info.text = 'Clicked (wasHeld=' + mouse.wasHeld + ')'
+            onDoubleClicked: info.text = 'Double clicked'
         }
     }
 
     Rectangle {
-        width: 80; height: 80; anchors.right: parent.right
+        id: blueSquare
+        width: 80; height: 80
+        x: box.width - width - 10; y: 10    // making this item draggable, so don't use anchors
         color: "blue"
 
         Text { text: "Drag"; font.pixelSize: 16; color: "white"; anchors.centerIn: parent }
 
         MouseArea {
             anchors.fill: parent
-            drag.target: parent
-            drag.axis: Drag.XAxis
+            drag.target: blueSquare
+            drag.axis: Drag.XandYAxis
             drag.minimumX: 0
-            drag.maximumX: 150
-
-            onPressed: box.showInfo('Pressed')
-            onReleased: box.showInfo('Released (isClick=' + mouse.isClick + ' wasHeld=' + mouse.wasHeld + ')')
-            onClicked: box.showInfo('Clicked' + ' (wasHeld=' + mouse.wasHeld + ')')
-            onDoubleClicked: box.showInfo('Double clicked')
-            onPressAndHold: box.showInfo('Press and hold')
+            drag.maximumX: box.width - parent.width
+            drag.minimumY: 0
+            drag.maximumY: box.height - parent.width
         }
     }
 
     Text {
-        id: statusText
-        anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; anchors.margins: 30
+        id: info
+        anchors.bottom: posInfo.top; anchors.horizontalCenter: parent.horizontalCenter; anchors.margins: 30
 
         onTextChanged: console.log(text)
+    }
+
+    Text {
+        id: posInfo
+        anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; anchors.margins: 30
     }
 }

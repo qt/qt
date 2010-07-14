@@ -508,8 +508,8 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
   \since 4.7
     \brief The XmlListModel element is used to specify a model using XPath expressions.
 
-    XmlListModel is used to create a model from XML data. XmlListModel can be used as a data source
-    for the view classes (such as ListView, PathView, GridView) and other classes that interact with model
+    XmlListModel is used to create a model from XML data. It can be used as a data source
+    for view elements (such as ListView, PathView, GridView) and other elements that interact with model
     data (such as \l Repeater).
 
     For example, if there is a XML document at http://www.mysite.com/feed.xml like this:
@@ -520,11 +520,11 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
         ...
         <channel>
             <item>
-                <title>Item A</title>
+                <title>A blog post</title>
                 <pubDate>Sat, 07 Sep 2010 10:00:01 GMT</pubDate>
             </item>
             <item>
-                <title>Item B</title>
+                <title>Another blog post</title>
                 <pubDate>Sat, 07 Sep 2010 15:35:01 GMT</pubDate>
             </item>
         </channel>
@@ -560,9 +560,16 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     ListView {
         width: 180; height: 300
         model: xmlModel
-        delegate: Text { title + " (" + pubDate + ")" }
+        delegate: Text { text: title + " (" + pubDate + ")" }
     }
     \endqml
+
+    \image qml-xmllistmodel-example.png
+
+    The XmlListModel data is loaded asynchronously, and \l status
+    is set to \l XmlListModel::Ready when loading is complete.
+    Note this means when XmlListModel is used for a view, the view is not
+    populated until the model is loaded.
 
 
     \section2 Using key XML roles

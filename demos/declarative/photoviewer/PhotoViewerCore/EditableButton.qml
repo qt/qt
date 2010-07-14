@@ -64,6 +64,10 @@ Item {
             container.labelChanged(textInput.text)
             container.focus = true
         }
+        Keys.onEnterPressed: {
+            container.labelChanged(textInput.text)
+            container.focus = true
+        }
         Keys.onEscapePressed: {
             textInput.text = container.label
             container.focus = true
