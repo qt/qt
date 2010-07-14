@@ -1,9 +1,8 @@
 TARGET  = qgif
 include(../../qpluginbase.pri)
 
-HEADERS += qgifhandler.h
-SOURCES += main.cpp \
-           qgifhandler.cpp
+include(../../../gui/image/qgifhandler.pri)
+SOURCES += $$PWD/main.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats
 target.path += $$[QT_INSTALL_PLUGINS]/imageformats

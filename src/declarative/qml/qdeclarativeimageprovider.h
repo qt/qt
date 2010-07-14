@@ -43,6 +43,7 @@
 #define QDECLARATIVEIMAGEPROVIDER_H
 
 #include <QtGui/qimage.h>
+#include <QtGui/qpixmap.h>
 
 QT_BEGIN_HEADER
 
@@ -50,11 +51,26 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QDeclarativeImageProviderPrivate;
+
 class Q_DECLARATIVE_EXPORT QDeclarativeImageProvider
 {
 public:
+    enum ImageType {
+        Image,
+        Pixmap
+    };
+
+    QDeclarativeImageProvider(ImageType type);
     virtual ~QDeclarativeImageProvider();
-    virtual QImage request(const QString &id, QSize *size, const QSize& requestedSize) = 0;
+
+    ImageType imageType() const;
+
+    virtual QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize);
+    virtual QPixmap requestPixmap(const QString &id, QSize *size, const QSize& requestedSize);
+
+private:
+    QDeclarativeImageProviderPrivate *d;
 };
 
 QT_END_NAMESPACE

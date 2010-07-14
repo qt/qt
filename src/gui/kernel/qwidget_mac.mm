@@ -2804,7 +2804,7 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     QList<QWidget *> widgets = q->findChildren<QWidget *>();
     for (int i=0; i<widgets.size(); ++i) {
         QWidget *child = widgets.at(i);
-        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created)) {
+        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created) && child->isVisibleTo(q)) {
             if (set)
                 [qt_mac_window_for(q) addChildWindow:qt_mac_window_for(child) ordered:NSWindowAbove];
             else
@@ -2861,9 +2861,11 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         }
         if (wasWindow) {
             oldToolbar = [oldWindow toolbar];
-            [oldToolbar retain];
-            oldToolbarVisible = [oldToolbar isVisible];
-            [oldWindow setToolbar:nil];
+            if (oldToolbar) {
+                [oldToolbar retain];
+                oldToolbarVisible = [oldToolbar isVisible];
+                [oldWindow setToolbar:nil];
+            }
         }
 #endif
     }

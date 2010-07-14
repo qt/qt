@@ -71,13 +71,15 @@ to explicitly set the \c target and \c property to animate.
 
 Animations can be joined into a group using SequentialAnimation and ParallelAnimation.
 
+See the \l {declarative/animation/basics}{Animation basics example} for a demonstration of creating and combining multiple animations in QML.
+
 \target state-transitions
 \section1 Transitions
 
-QML transitions describe animations to perform when \l{qmlstates}{state} changes occur. A transition
+\l Transition elements describe the animations to perform when \l{qmlstates}{state} changes occur. A transition
 can only be triggered by a state change.
 
-For example, a transition could describe how an item moves from its initial position to its new position:
+For example, a \l Transition could describe how an item moves from its initial position to its new position:
 
 \snippet doc/src/snippets/declarative/animation.qml transitions-1
 
@@ -108,9 +110,13 @@ making use of both sequential and parallel animations:
 
 \snippet doc/src/snippets/declarative/animation.qml transitions-3
 
+
+See \l {declarative/animation/states}{States and Transitions example} for a simple example of how transitions can be applied.
+
+
 \section1 Property Behaviors
 
-A \l{Behavior}{property behavior} specifies a default animation to run whenever the property's value changes, regardless
+A property \l {Behavior}{behavior} specifies a default animation to run whenever the property's value changes, regardless
 of what caused the change. The \c enabled property can be used to force a \l Behavior
 to only apply under certain circumstances.
 
@@ -119,7 +125,7 @@ whenever it changes. The animation will last 300 milliseconds and use an \l{Prop
 
 \snippet doc/src/snippets/declarative/animation.qml behavior
 
-Like using an animation as a value source, when used in a Behavior and animation does not need to specify
+Like using an animation as a value source, when used in a \l Behavior and animation does not need to specify
 a \c target or \c property.
 
 To trigger this behavior, we could enter a state that changes \c x:
@@ -148,5 +154,7 @@ If \c x were bound to another property, triggering the binding would also trigge
 
 If a state change has a transition animation matching a property with a \l Behavior, the transition animation
 will override the \l Behavior for that state change.
+
+The \l {declarative/animation/behaviors}{Behaviors example} shows how behaviors can be used to provide animations.
 
 */

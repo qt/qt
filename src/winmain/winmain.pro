@@ -12,7 +12,6 @@ win32 {
 	win32-borland:DEFINES += QT_NEEDS_QMAIN
 	SOURCES		= qtmain_win.cpp
 	CONFIG		+= png
-	CONFIG		-= jpeg
 	INCLUDEPATH	+= tmp $$QMAKE_INCDIR_QT/QtCore
 }
 

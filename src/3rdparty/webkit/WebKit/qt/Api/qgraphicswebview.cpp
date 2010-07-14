@@ -117,6 +117,8 @@ public:
 
     virtual QStyle* style() const;
 
+    virtual bool viewResizesToContentsEnabled() const { return resizesToContents; }
+
 #if USE(ACCELERATED_COMPOSITING)
     virtual void setRootGraphicsLayer(QGraphicsItem* layer);
     virtual void markForSync(bool scheduleSync);
@@ -442,6 +444,8 @@ QRectF QGraphicsWebViewPrivate::graphicsItemVisibleRect() const
 #if ENABLE(TILED_BACKING_STORE)
 void QGraphicsWebViewPrivate::updateTiledBackingStoreScale()
 {
+    if (!page)
+        return;
     WebCore::TiledBackingStore* backingStore = QWebFramePrivate::core(page->mainFrame())->tiledBackingStore();
     if (!backingStore)
         return;

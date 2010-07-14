@@ -385,7 +385,6 @@ VCXCLCompilerTool::VCXCLCompilerTool()
         DisableLanguageExtensions(unset),
         EnableFiberSafeOptimizations(unset),
         EnablePREfast(unset),
-        ExceptionHandling("false"),
         ExpandAttributedSource(unset),
         FloatingPointExceptions(unset),
         ForceConformanceInForLoopScope(unset),

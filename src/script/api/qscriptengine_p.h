@@ -50,7 +50,6 @@
 #include "bridge/qscriptobject_p.h"
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptvariant_p.h"
-#include "utils/qscriptdate_p.h"
 
 #include "DateConstructor.h"
 #include "DateInstance.h"
@@ -118,6 +117,9 @@ namespace QScript
     inline qsreal ToNumber(const QString &);
     inline QString ToString(qsreal);
 #endif
+
+    QDateTime MsToDateTime(JSC::ExecState *, qsreal);
+    qsreal DateTimeToMs(JSC::ExecState *, const QDateTime &);
 
     //some conversion helper functions
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
@@ -205,6 +207,7 @@ public:
 
     inline QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     inline JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
+    static inline unsigned propertyFlagsToJSCAttributes(const QScriptValue::PropertyFlags &flags);
 
     static inline JSC::JSValue jscValueFromVariant(JSC::ExecState*, const QVariant &value);
     static QVariant jscValueToVariant(JSC::ExecState*, JSC::JSValue value, int targetType);
@@ -346,6 +349,7 @@ public:
     JSC::ExecState *currentFrame;
 
     WTF::RefPtr<JSC::Structure> scriptObjectStructure;
+    WTF::RefPtr<JSC::Structure> staticScopeObjectStructure;
 
     QScript::QObjectPrototype *qobjectPrototype;
     WTF::RefPtr<JSC::Structure> qobjectWrapperObjectStructure;
@@ -639,6 +643,19 @@ inline JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptVal
     return vv->jscValue;
 }
 
+inline unsigned QScriptEnginePrivate::propertyFlagsToJSCAttributes(const QScriptValue::PropertyFlags &flags)
+{
+    unsigned attribs = 0;
+    if (flags & QScriptValue::ReadOnly)
+        attribs |= JSC::ReadOnly;
+    if (flags & QScriptValue::SkipInEnumeration)
+        attribs |= JSC::DontEnum;
+    if (flags & QScriptValue::Undeletable)
+        attribs |= JSC::DontDelete;
+    attribs |= flags & QScriptValue::UserRange;
+    return attribs;
+}
+
 inline QScriptValuePrivate::~QScriptValuePrivate()
 {
     if (engine)
@@ -846,7 +863,7 @@ inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, qsreal v
 
 inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, const QDateTime &value)
 {
-    return newDate(exec, QScript::FromDateTime(value));
+    return newDate(exec, QScript::DateTimeToMs(exec, value));
 }
 
 inline JSC::JSValue QScriptEnginePrivate::newObject()
@@ -979,12 +996,12 @@ inline JSC::UString QScriptEnginePrivate::toString(JSC::ExecState *exec, JSC::JS
     return str;
 }
 
-inline QDateTime QScriptEnginePrivate::toDateTime(JSC::ExecState *, JSC::JSValue value)
+inline QDateTime QScriptEnginePrivate::toDateTime(JSC::ExecState *exec, JSC::JSValue value)
 {
     if (!isDate(value))
         return QDateTime();
     qsreal t = static_cast<JSC::DateInstance*>(JSC::asObject(value))->internalNumber();
-    return QScript::ToDateTime(t, Qt::LocalTime);
+    return QScript::MsToDateTime(exec, t);
 }
 
 inline QObject *QScriptEnginePrivate::toQObject(JSC::ExecState *exec, JSC::JSValue value)

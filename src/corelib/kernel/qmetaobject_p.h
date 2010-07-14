@@ -276,12 +276,15 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
                     ++templdepth;
                 if (c == '>')
                     --templdepth;
-                if (templdepth == 0) {
+                if (templdepth == 0 || (templdepth == 1 && c == ',')) {
                     result += normalizeTypeInternal(tt, t-1, fixScope, false);
                     result += c;
-                    if (*t == '>')
-                        result += ' '; // avoid >>
-                    break;
+                    if (templdepth == 0) {
+                        if (*t == '>')
+                            result += ' '; // avoid >>
+                        break;
+                    }
+                    tt = t;
                 }
             }
         }

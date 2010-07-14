@@ -2421,7 +2421,9 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
             drawImage(r, image, sr);
         }
     } else {
-        const QImage image = pixmap.toImage();
+        QRect clippedSource = sr.toAlignedRect().intersected(pixmap.rect());
+        const QImage image = pd->toImage(clippedSource);
+        QRectF translatedSource = sr.translated(-clippedSource.topLeft());
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2432,10 +2434,10 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
                 drawBitmap(r.topLeft() + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
                 return;
             } else {
-                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), sr);
+                drawImage(r, d->rasterBuffer->colorizeBitmap(image, s->pen.color()), translatedSource);
             }
         } else {
-            drawImage(r, image, sr);
+            drawImage(r, image, translatedSource);
         }
     }
 }
@@ -2553,23 +2555,6 @@ namespace {
         return NoRotation;
     }
 
-    template <typename T> void memRotate(RotationType type, const T *srcBase, int w, int h, int sbpl, T *dstBase, int dbpl)
-    {
-        switch (type) {
-        case Rotation90:
-            qt_memrotate90(srcBase, w, h, sbpl, dstBase, dbpl);
-            break;
-        case Rotation180:
-            qt_memrotate180(srcBase, w, h, sbpl, dstBase, dbpl);
-            break;
-        case Rotation270:
-            qt_memrotate270(srcBase, w, h, sbpl, dstBase, dbpl);
-            break;
-        case NoRotation:
-            break;
-        }
-    }
-
     inline bool isPixelAligned(const QRectF &rect) {
         return QRectF(rect.toRect()) == rect;
     }
@@ -2650,7 +2635,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     {
         RotationType rotationType = qRotationType(s->matrix);
 
-        if (rotationType != NoRotation && img.rect().contains(sr.toAlignedRect())) {
+        if (rotationType != NoRotation && qMemRotateFunctions[d->rasterBuffer->format][rotationType] && img.rect().contains(sr.toAlignedRect())) {
             QRectF transformedTargetRect = s->matrix.mapRect(r);
 
             if ((!(s->renderHints & QPainter::SmoothPixmapTransform) && !(s->renderHints & QPainter::Antialiasing))
@@ -2678,10 +2663,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                 uint cw = clippedSourceRect.width();
                 uint ch = clippedSourceRect.height();
 
-                if (d->rasterBuffer->format == QImage::Format_RGB16)
-                    memRotate(rotationType, (quint16 *)srcBase, cw, ch, sbpl, (quint16 *)dstBase, dbpl);
-                else
-                    memRotate(rotationType, (quint32 *)srcBase, cw, ch, sbpl, (quint32 *)dstBase, dbpl);
+                qMemRotateFunctions[d->rasterBuffer->format][rotationType](srcBase, cw, ch, sbpl, dstBase, dbpl);
 
                 return;
             }
@@ -2690,7 +2672,11 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
-        if (s->flags.fast_images) {
+        QRectF targetBounds = s->matrix.mapRect(r);
+        bool exceedsPrecision = targetBounds.width() > 0xffff
+                                || targetBounds.height() > 0xffff;
+
+        if (s->flags.fast_images && !exceedsPrecision) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {

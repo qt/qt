@@ -54,7 +54,7 @@ QT_MODULE(Declarative)
 class QDeclarativeScaleGrid;
 class QDeclarativeGridScaledImage;
 class QDeclarativeBorderImagePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeBorderImage : public QDeclarativeImageBase
+class Q_AUTOTEST_EXPORT QDeclarativeBorderImage : public QDeclarativeImageBase
 {
     Q_OBJECT
     Q_ENUMS(TileMode)

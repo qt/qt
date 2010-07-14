@@ -884,7 +884,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 {
     const size_t fixedObjectThreshold = 5;
 
-    ListHashSet<RenderBox*>* positionedObjects = 0;
+    RenderBlock::PositionedObjectsListHashSet* positionedObjects = 0;
     if (RenderView* root = m_frame->contentRenderer())
         positionedObjects = root->positionedObjects();
 
@@ -896,14 +896,14 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
     // Get the rects of the fixed objects visible in the rectToScroll
     Vector<IntRect, fixedObjectThreshold> subRectToUpdate;
     bool updateInvalidatedSubRect = true;
-    ListHashSet<RenderBox*>::const_iterator end = positionedObjects->end();
-    for (ListHashSet<RenderBox*>::const_iterator it = positionedObjects->begin(); it != end; ++it) {
+    RenderBlock::PositionedObjectsListHashSet::const_iterator end = positionedObjects->end();
+    for (RenderBlock::PositionedObjectsListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         RenderBox* renderBox = *it;
         if (renderBox->style()->position() != FixedPosition)
             continue;
-        IntRect topLevelRect;
-        IntRect updateRect = renderBox->paintingRootRect(topLevelRect);
-        updateRect.move(-scrollX(), -scrollY());
+        IntRect updateRect = renderBox->layer()->repaintRectIncludingDescendants();
+        updateRect = contentsToWindow(updateRect);
+
         updateRect.intersect(rectToScroll);
         if (!updateRect.isEmpty()) {
             if (subRectToUpdate.size() >= fixedObjectThreshold) {
@@ -1315,14 +1315,13 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
 {
     ASSERT(m_frame->view() == this);
 
-    if (!m_layoutSchedulingEnabled || (m_frame->contentRenderer()
-            && m_frame->contentRenderer()->needsLayout())) {
+    if (m_frame->contentRenderer() && m_frame->contentRenderer()->needsLayout()) {
         if (relayoutRoot)
             relayoutRoot->markContainingBlocksForLayout(false);
         return;
     }
 
-    if (layoutPending()) {
+    if (layoutPending() || !m_layoutSchedulingEnabled) {
         if (m_layoutRoot != relayoutRoot) {
             if (isObjectAncestorContainerOf(m_layoutRoot, relayoutRoot)) {
                 // Keep the current root
@@ -1339,7 +1338,7 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
                 relayoutRoot->markContainingBlocksForLayout(false);
             }
         }
-    } else {
+    } else if (m_layoutSchedulingEnabled) {
         int delay = m_frame->document()->minimumLayoutDelay();
         m_layoutRoot = relayoutRoot;
         m_delayedLayout = delay != 0;

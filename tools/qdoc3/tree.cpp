@@ -134,15 +134,16 @@ Node *Tree::findNode(const QStringList &path, Node *relative, int findFlags)
 
 /*!
  */
-const Node *Tree::findNode(const QStringList &path,
-                           const Node *relative,
+const Node* Tree::findNode(const QStringList &path,
+                           const Node* start,
                            int findFlags) const
 {
-    if (!relative)
-        relative = root();
+    const Node* current = start;
+    if (!current)
+        current = root();
 
     do {
-        const Node *node = relative;
+        const Node *node = current;
         int i;
 
         for (i = 0; i < path.size(); ++i) {
@@ -171,9 +172,10 @@ const Node *Tree::findNode(const QStringList &path,
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
                     || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams))
-            return node;
-        relative = relative->parent();
-    } while (relative);
+            if ((node != start) && (node->subType() != Node::QmlPropertyGroup))
+                return node;
+        current = current->parent();
+    } while (current);
 
     return 0;
 }
@@ -1952,9 +1954,13 @@ QString Tree::fullDocumentLocation(const Node *node) const
     else if (node->type() == Node::Fake) {
 #ifdef QDOC_QML
         if ((node->subType() == Node::QmlClass) ||
-            (node->subType() == Node::QmlBasicType))
-            return "qml-" + node->fileBase() + ".html";
-        else
+            (node->subType() == Node::QmlBasicType)) {
+            QString fb = node->fileBase();
+            if (fb.startsWith(QLatin1String("QML:")))
+                return node->fileBase() + ".html";
+            else
+                return "qml-" + node->fileBase() + ".html";
+        } else
 #endif
         parentName = node->fileBase() + ".html";
     }

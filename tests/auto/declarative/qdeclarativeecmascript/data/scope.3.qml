@@ -1,10 +1,10 @@
 import Qt 4.7
+import Qt.test 1.0
 
-Item {
+MyQmlObject {
     id: root
 
     property int foo: 12
-    property int console: 11
 
     property bool test1: foo == 12
     property bool test2: console != 11

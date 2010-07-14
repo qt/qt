@@ -145,6 +145,8 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     has been created in that context is an expensive operation (essentially forcing all bindings
     to reevaluate). Thus whenever possible you should complete "setup" of the context
     before using it to create any objects.
+
+    \sa {Using QML in C++ Applications}
 */
 
 /*! \internal */
@@ -660,10 +662,9 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
             scriptContext->pushScope(enginePriv->contextClass->newUrlContext(url));
-            scriptContext->pushScope(enginePriv->globalClass->globalObject());
+            scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
         
-            QScriptValue scope = scriptEngine->newObject();
-            scriptContext->setActivationObject(scope);
+            QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
             scriptContext->pushScope(scope);
 
             scriptEngine->evaluate(code, url, 1);
@@ -686,10 +687,9 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
 
         scriptContext->pushScope(enginePriv->contextClass->newUrlContext(this, 0, url));
-        scriptContext->pushScope(enginePriv->globalClass->globalObject());
-        
-        QScriptValue scope = scriptEngine->newObject();
-        scriptContext->setActivationObject(scope);
+        scriptContext->pushScope(enginePriv->globalClass->staticGlobalObject());
+
+        QScriptValue scope = QScriptDeclarativeClass::newStaticScopeObject(scriptEngine);
         scriptContext->pushScope(scope);
 
         scriptEngine->evaluate(code, url, 1);

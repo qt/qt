@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QDeclarativeBasePositionerPrivate;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeBasePositioner : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeBasePositioner : public QDeclarativeItem
 {
     Q_OBJECT
 
@@ -112,7 +112,7 @@ private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeBasePositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeColumn : public QDeclarativeBasePositioner
+class Q_AUTOTEST_EXPORT QDeclarativeColumn : public QDeclarativeBasePositioner
 {
     Q_OBJECT
 public:
@@ -124,7 +124,7 @@ private:
     Q_DISABLE_COPY(QDeclarativeColumn)
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
+class Q_AUTOTEST_EXPORT QDeclarativeRow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
 public:
@@ -136,7 +136,7 @@ private:
     Q_DISABLE_COPY(QDeclarativeRow)
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
+class Q_AUTOTEST_EXPORT QDeclarativeGrid : public QDeclarativeBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowsChanged)
@@ -174,7 +174,7 @@ private:
 };
 
 class QDeclarativeFlowPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeFlow: public QDeclarativeBasePositioner
+class Q_AUTOTEST_EXPORT QDeclarativeFlow: public QDeclarativeBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)

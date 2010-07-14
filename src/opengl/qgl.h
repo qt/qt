@@ -281,12 +281,19 @@ private:
 
     friend Q_OPENGL_EXPORT bool operator==(const QGLFormat&, const QGLFormat&);
     friend Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QGLFormat &);
+#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLFormat::OpenGLVersionFlags)
 
 Q_OPENGL_EXPORT bool operator==(const QGLFormat&, const QGLFormat&);
 Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_OPENGL_EXPORT QDebug operator<<(QDebug, const QGLFormat &);
+#endif
 
 class Q_OPENGL_EXPORT QGLContext
 {

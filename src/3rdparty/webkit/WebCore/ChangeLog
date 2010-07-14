@@ -1,3 +1,696 @@
+2010-05-14  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by David Hyatt.
+
+        Move the m_width(Length) and m_columns(RenderTable::ColumnStruct)
+        vector out-of-bounds check out of the ASSERT into the main code.
+        https://bugs.webkit.org/show_bug.cgi?id=38261
+
+        Test: fast/table/fixed-table-layout-large-colspan-crash.html
+
+        * rendering/FixedTableLayout.cpp:
+        (WebCore::FixedTableLayout::calcWidthArray):
+
+2010-05-21  Beth Dakin  <bdakin@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Fix for <rdar://problem/8009118> Crash in WebCore::toAlphabetic() 
+        while running MangleMe
+        -and corresponding-
+        https://bugs.webkit.org/show_bug.cgi?id=39508
+
+        The math was slightly off here, and we wound up trying to access an 
+        array at index -1 in some cases. We need to decrement numberShadow 
+        rather than subtracting one from the result of the modulo 
+        operation.
+
+        * rendering/RenderListMarker.cpp:
+        (WebCore::toAlphabeticOrNumeric):
+
+2010-05-20  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Dave Hyatt.
+
+        <rdar://problem/8007953> Textarea using custom font appears blank
+
+        Test: fast/css/font-face-in-shadow-DOM.html
+
+        When a remote font is loaded, CSSFontSelector forces a style recalc, which replaces all
+        RenderSyles that have FontFallbackLists referencing the placeholder font with fresh
+        RenderStyles. However, it does not descend into shadow DOM trees, so those may end up with
+        styles that still reference the placeholder font.
+
+        The fix is to add RenderObject::requiresForcedStyleRecalcPropagation() and have it return
+        true from renderers that maintain shadow DOM trees or otherwise keep their own RenderStyles.
+
+        * dom/Element.cpp:
+        (WebCore::Element::recalcStyle): Check if forced style recalc needs to propagated.
+        * rendering/RenderButton.h:
+        (WebCore::RenderButton::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderDataGrid.h:
+        (WebCore::RenderDataGrid::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderFileUploadControl.h:
+        (WebCore::RenderFileUploadControl::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderListItem.h:
+        (WebCore::RenderListItem::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderMedia.h:
+        (WebCore::RenderMedia::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderMenuList.h:
+        (WebCore::RenderMenuList::RenderMenuList::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderProgress.h:
+        (WebCore::RenderProgress::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderSlider.h:
+        (WebCore::RenderSlider::requiresForcedStyleRecalcPropagation):
+        * rendering/RenderTextControl.h:
+        (WebCore::RenderTextControl::requiresForcedStyleRecalcPropagation):
+
+2010-04-02  Justin Schuh  <jschuh@chromium.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        XHR allows arbitrary XSRF across domains 
+        https://bugs.webkit.org/show_bug.cgi?id=36843
+
+        Added a one-line change to prevent bypassing the XDC check on
+        synchronous preflighted requests. Added layout tests to cover
+        variations of this problem.
+
+        Tests: http/tests/xmlhttprequest/access-control-preflight-async-header-denied.html
+               http/tests/xmlhttprequest/access-control-preflight-async-method-denied.html
+               http/tests/xmlhttprequest/access-control-preflight-sync-header-denied.html
+               http/tests/xmlhttprequest/access-control-preflight-sync-method-denied.html
+
+        * loader/DocumentThreadableLoader.cpp:
+        (WebCore::DocumentThreadableLoader::preflightFailure):
+
+2010-04-28  Julien Chaffraix  <jchaffraix@webkit.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        [XHR] Cross-Origin synchronous request with credential raises NETWORK_ERR
+        https://bugs.webkit.org/show_bug.cgi?id=37781
+        <rdar://problem/7905150>
+
+        Tests: http/tests/xmlhttprequest/access-control-preflight-credential-async.html
+               http/tests/xmlhttprequest/access-control-preflight-credential-sync.html
+
+        Rolling the patch in as I could not reproduce Qt results locally.
+
+        * loader/DocumentThreadableLoader.cpp:
+        (WebCore::DocumentThreadableLoader::DocumentThreadableLoader): Now we remove the
+        credential from the request here to avoid forgetting to do so in the different code path.
+        (WebCore::DocumentThreadableLoader::makeSimpleCrossOriginAccessRequest): Just add the
+        "Origin" header.
+        (WebCore::DocumentThreadableLoader::loadRequest): Check here the the credential have
+        been removed so that we don't leak them. Also tweaked a comment to make it clear that
+        the URL check has issue when credential is involved.
+
+2010-04-21  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Adam Roben.
+
+        Windows build fix.
+
+        * platform/network/cf/ResourceHandleCFNet.cpp: Declare CFURLConnectionCreateWithProperties
+        for now, as it's mistakenly missing from WebKitSupportLibrary headers.
+
+2010-05-19  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by David Hyatt.
+
+        Check that the node is a text node before doing a static cast
+        to a Text class pointer.
+        https://bugs.webkit.org/show_bug.cgi?id=38626    
+
+        Test: fast/text/text-transform-nontext-node-crash.xhtml
+
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::originalText):
+        * rendering/RenderTextFragment.cpp:
+        (WebCore::RenderTextFragment::originalText):
+        (WebCore::RenderTextFragment::previousCharacter):
+
+2010-05-12  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        HTML Entity Escape the contents of a textarea node when accessed
+        via the innerHTML and outerHTML node properties.
+        https://bugs.webkit.org/show_bug.cgi?id=38922
+
+        Test: fast/innerHTML/innerHTML-special-elements.html
+
+        * editing/markup.cpp:
+        (WebCore::appendStartMarkup):
+
+2010-05-12  James Robinson  <jamesr@chromium.org>
+
+        Patch by Dan Bernstein.
+
+        Reviewed by David Hyatt.
+
+        Fix marking the layout root's parent as needing layout
+        https://bugs.webkit.org/show_bug.cgi?id=37760
+
+        If an element gets marked as needing layout due to the recalcStyle()
+        call in FrameView::layout(), the m_layoutSchedulingEnabled flag will
+        be set to false.  It's possible at this point that a parent of the
+        existing FrameView::m_layoutRoot will be marked as needing layout.
+
+        This patch updates FrameView::scheduleRelayoutOfSubtree to account
+        for this case.
+
+        Manual test only due to subtle timing issues.
+
+        * manual-tests/layoutroot_detach.xml: Added.
+        * page/FrameView.cpp:
+        (WebCore::FrameView::scheduleRelayoutOfSubtree):
+
+2010-05-10  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Fix for https://bugs.webkit.org/show_bug.cgi?id=38583
+        <rdar://problem/7948784> Crash in Element::normalizeAttributes.
+
+        Test: fast/dom/Element/normalize-crash.html
+
+        * dom/Element.cpp:
+        (WebCore::Element::normalizeAttributes): Copy attributes to a vector
+        before iterating.
+        * dom/NamedAttrMap.cpp:
+        (WebCore::NamedNodeMap::copyAttributesToVector): Added.
+        * dom/NamedAttrMap.h:
+
+2010-05-10  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Based on a patch by Eric Seidel.
+
+        https://bugs.webkit.org/show_bug.cgi?id=28697
+        <rdar://problem/7946578> WebKit crash on WebCore::Node::nodeIndex()
+
+        It's not OK to call ContainerNode::willRemoveChild() in a loop, because Range code assumes
+        that it can adjust start and end position to any node except for the one being removed -
+        so these notifications cannot be batched.
+
+        Test: fast/dom/Range/remove-all-children-crash.html
+
+        * dom/ContainerNode.cpp:
+        (WebCore::willRemoveChild): Removed unused ExceptionCode.
+        (WebCore::willRemoveChildren): New function, used in removeChildren() case.
+        (WebCore::ContainerNode::removeChild): ExceptionCode return was always 0, don't bother with it.
+        (WebCore::ContainerNode::removeChildren): Call willRemoveChildrenFromNode.
+        (WebCore::dispatchChildRemovalEvents): Moved some logic out into willRemoveChildrenFromNode
+        and willRemoveChild.
+
+        * dom/Document.cpp:
+        (WebCore::Document::nodeChildrenWillBeRemoved): New function, used in removeChildren() case.
+
+        * dom/Document.h: 
+        (WebCore::Document::nodeChildrenWillBeRemoved): New function, used in removeChildren() case.
+
+        * dom/Range.h:
+        * dom/Range.cpp:
+        (WebCore::boundaryNodeChildrenWillBeRemoved): New function, used in removeChildren() case.
+        (WebCore::Range::nodeChildrenWillBeRemoved): Ditto.
+
+2010-05-03  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Adam Barth.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38497
+        <rdar://problem/7759438> Make sure that http URLs always have a host in SecurityOrigin
+
+        This is a hardening fix, and behavior really depends on what an underlying networking layer
+        does. So, no test.
+
+        * page/SecurityOrigin.cpp:
+        (WebCore::schemeRequiresAuthority): List schemes that need an authority for successful loading.
+        (WebCore::SecurityOrigin::SecurityOrigin): Never let e.g. http origins with empty authorities
+        have the same security origin.
+
+2010-05-03  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Add support for controlling clipboard access from javascript.
+        Clipboard access from javascript is disabled by default.
+        https://bugs.webkit.org/show_bug.cgi?id=27751
+
+        Test: editing/execCommand/clipboard-access.html
+
+        * WebCore.base.exp:
+        * editing/EditorCommand.cpp:
+        (WebCore::supportedCopyCut):
+        (WebCore::supportedPaste):
+        (WebCore::createCommandMap):
+        * page/Settings.cpp:
+        (WebCore::Settings::Settings):
+        (WebCore::Settings::setJavaScriptCanAccessClipboard):
+        * page/Settings.h:
+        (WebCore::Settings::javaScriptCanAccessClipboard):
+
+2010-04-30  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by David Kilzer.
+
+        Convert m_documentUnderMouse, m_dragInitiator to RefPtr.
+        Eliminated unused m_dragInitiator accessor to prevent dereferencing.
+        https://bugs.webkit.org/show_bug.cgi?id=37618
+
+        Test: editing/pasteboard/drag-drop-iframe-refresh-crash.html
+
+        * page/DragController.cpp:
+        (WebCore::DragController::tryDocumentDrag):
+        (WebCore::DragController::concludeEditDrag):
+        * page/DragController.h:
+        (WebCore::DragController::draggingImageURL):
+        (WebCore::DragController::documentUnderMouse):
+
+2010-04-14  Justin Schuh  <jschuh@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Javascript URL can be set as iframe.src via multiple DOM aliases
+        https://bugs.webkit.org/show_bug.cgi?id=37031
+
+        Moved frame/iframe checks from Attr to Node on inherited members.
+        Node child manipulation methods now return NOT_SUPPORTED_ERR if used
+        on a frame/iframe src attribute.
+        NamedNodeMap set methods now perform frame/iframe src checks.
+        Moved allowSettingSrcToJavascriptURL static helper function from 
+        JSElementCustom.cpp to exported function in JSDOMBinding.h.
+
+        * bindings/js/JSAttrCustom.cpp:
+        (WebCore::JSAttr::setValue):
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::allowSettingSrcToJavascriptURL):
+        * bindings/js/JSDOMBinding.h:
+        * bindings/js/JSElementCustom.cpp:
+        * bindings/js/JSNamedNodeMapCustom.cpp:
+        (WebCore::JSNamedNodeMap::setNamedItem):
+        (WebCore::JSNamedNodeMap::setNamedItemNS):
+        * bindings/js/JSNodeCustom.cpp:
+        (WebCore::isAttrFrameSrc):
+        (WebCore::JSNode::setNodeValue):
+        (WebCore::JSNode::setTextContent):
+        (WebCore::JSNode::insertBefore):
+        (WebCore::JSNode::replaceChild):
+        (WebCore::JSNode::removeChild):
+        (WebCore::JSNode::appendChild):
+        * bindings/v8/custom/V8AttrCustom.cpp:
+        * bindings/v8/custom/V8NamedNodeMapCustom.cpp:
+        (WebCore::V8NamedNodeMap::setNamedItemNSCallback):
+        (WebCore::V8NamedNodeMap::setNamedItemCallback):
+        (WebCore::toV8):
+        * bindings/v8/custom/V8NodeCustom.cpp:
+        (WebCore::isFrameSrc):
+        (WebCore::V8Node::textContentAccessorSetter):
+        (WebCore::V8Node::nodeValueAccessorSetter):
+        (WebCore::V8Node::insertBeforeCallback):
+        (WebCore::V8Node::replaceChildCallback):
+        (WebCore::V8Node::removeChildCallback):
+        (WebCore::V8Node::appendChildCallback):
+        * dom/Attr.idl:
+        * dom/NamedNodeMap.idl:
+        * dom/Node.idl:
+
+2010-03-26  Justin Schuh  <jschuh@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Security: iFrame.src accepts JavaScript URL via nodeValue or textContent
+        https://bugs.webkit.org/show_bug.cgi?id=36502
+
+        Overrode inherited nodeValue and textContent in Attr.idl so they proxy 
+        to value, which performs a security check.
+
+        Test: http/tests/security/xss-DENIED-iframe-src-alias.html
+
+        * bindings/js/JSAttrCustom.cpp:
+        (WebCore::JSAttr::nodeValue):
+        (WebCore::JSAttr::setNodeValue):
+        (WebCore::JSAttr::textContent):
+        (WebCore::JSAttr::setTextContent):
+        * bindings/v8/custom/V8AttrCustom.cpp:
+        (WebCore::V8Attr::nodeValueAccessorSetter):
+        (WebCore::V8Attr::nodeValueAccessorGetter):
+        (WebCore::V8Attr::textContentAccessorSetter):
+        (WebCore::V8Attr::textContentAccessorGetter):
+        * dom/Attr.idl:
+
+2010-05-05  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=38260
+        <rdar://problem/7917548> Fix whitespace removing in deprecatedParseURL().
+
+        Broken all the way since r4 (yes, that's a revision number).
+
+        Test: http/tests/security/xss-DENIED-javascript-with-spaces.html
+
+        * css/CSSHelper.cpp: (WebCore::deprecatedParseURL): Fixed loop conditions for remaining length.
+
+2010-04-23  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        <rdar://problem/7898436> :after content is duplicated
+
+        Test: fast/css-generated-content/after-duplicated-after-split.html
+
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::splitInlines): Pass the correct owner of the child list.
+
+2010-03-30  Chris Evans  <cevans@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Taint the canvas if an SVG-derived pattern is rendered into it.
+
+        https://bugs.webkit.org/show_bug.cgi?id=36838
+
+        Test: fast/canvas/svg-taint.html
+
+        * html/canvas/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::createPattern):
+          Take into account the image's hasSingleSecurityOrigin() property.
+
+2010-04-07  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Darinn Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=37230
+        <rdar://problem/7813115> REGRESSION (4.0.5): Safari asks for credentials all the time when
+        authenticating to Windows IIS Server
+
+        * platform/network/ProtectionSpace.h: (WebCore::ProtectionSpaceAuthenticationScheme): Added
+        a constant for ProtectionSpaceAuthenticationSchemeUnknown.
+
+        * platform/network/cf/AuthenticationCF.cpp: (WebCore::core):
+        * platform/network/cf/SocketStreamHandleCFNet.cpp: (WebCore::authenticationSchemeFromAuthenticationMethod):
+        Return ProtectionSpaceAuthenticationSchemeUnknown for unknown scheme.
+
+        * platform/network/mac/AuthenticationMac.mm:
+        (WebCore::mac): Support NTLM on systems older than 10.6. We actually get this string from
+        NSURLConnection, even though there was no public constant.
+        (WebCore::core): Return ProtectionSpaceAuthenticationSchemeUnknown for unknown scheme.
+
+2010-04-19  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Darin Adler.
+
+        Make the fix for <rdar://problem/7873647> from r57759 more robust.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::updateHoverActiveState): Use RefPtrs for the Nodes.
+
+2010-04-16  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        <rdar://problem/7873647> Crash when updating hover state
+
+        Test: fast/dynamic/hover-style-recalc-crash.html
+
+        Updating the hover state of an element caused the document to need style
+        recalc, and then updating the hover state of a link caused style recalc,
+        which changed the render tree while updateHoverActiveState() was iterating
+        over it, leading to a crash.
+
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::updateHoverActiveState): Collect the nodes to be
+        updated into vectors, then update their active and hover states.
+
+2010-03-31  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Darin Adler.
+
+        <http://webkit.org/b/36878> REGRESSION: Trailing colon on hostnames (with no port specified) causes "Not allowed to use restricted network port"
+
+        * platform/KURL.cpp:
+        (WebCore::KURL::port): Explicitly handle the case of a colon being present in the URL after the host name but with
+        no port number before the path.  This is handled in the same manner as the colon and port being omitted completely.
+
+2010-03-24  Mark Rowe  <mrowe@apple.com>
+
+        Revert the portion of r56489 that dealt with port zero as it introduced some test failures.
+
+        * platform/KURL.cpp:
+        (WebCore::KURL::port): Use the "ok" argument to charactersToUIntStrict to determine whether
+        it was able to successfully parse the string as an unsigned integer, rather than relying on
+        the fact it returned zero when it failed.
+
+2010-03-24  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Darin Adler.
+
+        WebKit should treat port numbers outside the valid range as being blacklisted
+        <http://webkit.org/b/36571> / <rdar://problem/7790908>
+
+        * platform/KURL.cpp:
+        (WebCore::KURL::port): Map invalid port numbers to invalidPortNumber.
+        (WebCore::portAllowed): Add invalidPortNumber to the blacklist.
+        * platform/KURLGoogle.cpp:  invalid port numbers to invalidPortNumber.
+        (WebCore::KURL::port): Add invalidPortNumber to the blacklist.
+        Also bring this in to sync with KURL.  Having this identical code in two places is stupid.
+
+2010-05-05  Alexey Proskuryakov  <ap@apple.com>
+
+        Reviewed by Adele Peterson.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26824
+        <rdar://problem/7018610> EventHandler can operate on a wrong frame if focus changes during
+        keyboard event dispatch.
+
+        EventHandler object is tied to a frame, so it's wrong for it to continue processing a keyboard
+        event if focused frame changes between keydown and keypress.
+
+        * manual-tests/focus-change-between-key-events.html: Added.
+
+        * page/EventHandler.cpp: (WebCore::EventHandler::keyEvent): Bail out early if focused frame
+        changes while dispatching keydown. Also made similar changes for Windows to maintain matching
+        behavior, even though EventHandler was re-entered anyway due to WM_KEYDOWN and WM_CHAR being
+        separate events.
+
+2010-07-02  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Canvas arcTo() should draw straight line to p1 if p0, p1 and p2 are collinear
+
+        The implementation of PathQt's addArcTo() was not float-safe and also had
+        a case where it drew an 'infinite' line, which is not part of the spec.
+
+        http://www.whatwg.org/specs/web-apps/current-work/#dom-context-2d-arcto
+
+        We now use qFuzzyCompare() in both cases. The method isPointOnPathBorder()
+        also had the same problem, and was refactored a bit in the process of fixing
+        the bug.
+
+        Initial patch by Andreas Kling.
+
+        https://bugs.webkit.org/show_bug.cgi?id=41412
+
+        * platform/graphics/qt/PathQt.cpp:
+
+2010-03-26  Shu Chang  <chang.shu@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Prevent referring d->m_job in the future because calling abort()
+        deletes the instance itself.
+        https://bugs.webkit.org/show_bug.cgi?id=36618
+
+        Test: http/tests/appcache/fallback.html
+
+        * platform/network/qt/ResourceHandleQt.cpp:
+        (WebCore::ResourceHandle::cancel):
+
+2010-06-28  Sam Magnuson  <smagnuson@netflix.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] GraphicsLayerQt delay seems unnecessary.
+        https://bugs.webkit.org/show_bug.cgi?id=40846
+
+        Test: compositing/animation/busy-indicator.html
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::recache):
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+        (WebCore::GraphicsLayerQt::setContentsToImage):
+        (WebCore::GraphicsLayerQt::addAnimation):
+
+2010-06-25  Sam Magnuson  <smagnuson@netflix.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] When any geometry change happens to a node it will resize the
+        backing cache
+        https://bugs.webkit.org/show_bug.cgi?id=40378
+
+        Continue to grow the cache, but never toss it. When the pixmap
+        cache gets too big it will be lost and created at the right size
+        next time.
+
+        No new tests: this is an optimization.
+
+        * platform/graphics/qt/GraphicsLayerQt.cpp:
+        (WebCore::GraphicsLayerQtImpl::recache):
+        (WebCore::GraphicsLayerQtImpl::paint):
+        (WebCore::GraphicsLayerQtImpl::flushChanges):
+
+2010-06-30  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Fraser.
+
+        Spatial Navigation: make elements in inner frames nested more than 1 level deep focusable
+        https://bugs.webkit.org/show_bug.cgi?id=41160
+
+        Patch addresses the problem of spatial navigation not work properly with nested
+        inner frames by adding the isNodeDeepDescendantOfDocument method. It recursively checks
+        if a give node is descendant of a given document or any parent of it.
+
+        Test: fast/events/spatial-navigation/snav-iframe-nested.html
+
+        * page/FocusController.cpp:
+        (WebCore::FocusController::deepFindFocusableNodeInDirection):
+        * page/SpatialNavigation.cpp:
+        (WebCore::isNodeDeepDescendantOfDocument):
+        * page/SpatialNavigation.h:
+
+2010-06-30  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Crash when uploading document to Google Docs
+        https://bugs.webkit.org/show_bug.cgi?id=40795
+
+        Fix bug where the local file wasn't opened (for POSTing)
+        if it were the first element in the form.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::FormDataIODevice::FormDataIODevice):
+        (WebCore::FormDataIODevice::moveToNextElement):
+        (WebCore::FormDataIODevice::openFileForCurrentElement):
+        * platform/network/qt/QNetworkReplyHandler.h:
+
+2010-06-29  Abhinav Mithal <abhinav.mithal@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] [Symbian] Fix doube-deallocation while destroying PluginContainerSymbian
+        https://bugs.webkit.org/show_bug.cgi?id=37303
+
+        * plugins/symbian/PluginViewSymbian.cpp:
+        (WebCore::PluginView::platformDestroy):
+
+2010-06-29  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt/Symbian] Fixed deployment paths for WebKit declarative plugin.
+
+        * WebCore.pro:
+
+2010-06-28  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Replace single treat-as-space characters with normal space
+        https://bugs.webkit.org/show_bug.cgi?id=41278
+
+        This keeps Qt from attempting glyph substitution and loading a bunch
+        of extra fonts when encountering &nbsp; entities.
+
+        * platform/graphics/qt/FontQt.cpp:
+        (WebCore::Font::floatWidthForComplexText):
+
+2010-06-24  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Unreviewed Symbian build fix.
+
+        The QML WebKit integration needs to be part of QtWebKit.sis
+
+        * WebCore.pro: Deploy qmlwebkitplugin.dll.
+
+2010-06-23  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Do not render the full frame when there is some elements with fixed positioning
+        https://bugs.webkit.org/show_bug.cgi?id=33150
+
+        Do not render the full frame when there is some elements with fixed positioning
+        https://bugs.webkit.org/show_bug.cgi?id=33150
+
+        The frame view take into acount the list of fixed object when scrolling
+        the view. If the number of object is lower than a certain threshold, the pixel
+        are blitted, and the invalidated area updated.
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::addFixedObject):
+        (WebCore::FrameView::removeFixedObject):
+        (WebCore::FrameView::scrollContentsFastPath):
+        * page/FrameView.h:
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::scrollContents):
+        (WebCore::ScrollView::scrollContentsFastPath):
+        * platform/ScrollView.h:
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::repaintRectIncludingDescendants):
+        * rendering/RenderLayer.h:
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::styleWillChange):
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Allocate the m_preloads list hash set dynamically and free it when done.
+        https://bugs.webkit.org/show_bug.cgi?id=39309
+        <rdar://problem/7998495>
+
+        This saves about 6000 bytes on a fully loaded document.
+
+        * loader/DocLoader.cpp:
+        (WebCore::DocLoader::requestPreload):
+        (WebCore::DocLoader::clearPreloads):
+        * loader/DocLoader.h:
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Revert unintended indentation and unnecessary nested name specifier.
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::clipOutPositionedObjects):
+        (WebCore::RenderBlock::insertPositionedObject):
+
+2010-05-18  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Add an inlineCapacity template parameter to ListHashSet and use it to shrink the positioned object list hash set.
+        https://bugs.webkit.org/show_bug.cgi?id=39304
+        <rdar://problem/7998366>
+
+        Set the inlineCapacity for the positionedObjects ListHashSet to 4 instead of 256. Since a RenderBlock usually has 
+        few positioned objects, this saves memory.
+
+        * WebCore.base.exp:
+        * rendering/RenderBlock.cpp:
+        (WebCore::clipOutPositionedObjects):
+        (WebCore::RenderBlock::insertPositionedObject):
+        * rendering/RenderBlock.h:
+        (WebCore::RenderBlock::positionedObjects):
+
 2010-06-22  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Unreviewed Qt/Symbian build fix.

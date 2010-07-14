@@ -67,21 +67,18 @@ public:
                                      const QScriptString &name,
                                      QueryFlags flags, uint *id);
 
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, uint id);
-
     virtual void setProperty(QScriptValue &object, const QScriptString &name,
                              uint id, const QScriptValue &value);
 
-    void explicitSetProperty(const QString &, const QScriptValue &);
+    void explicitSetProperty(const QStringList &, const QList<QScriptValue> &);
 
-    const QScriptValue &globalObject() const { return m_globalObject; }
+    const QScriptValue &staticGlobalObject() const { return m_staticGlobalObject; }
 
     const QSet<QString> &illegalNames() const { return m_illegalNames; }
 
 private:
     QSet<QString> m_illegalNames;
-    QScriptValue m_globalObject;
+    QScriptValue m_staticGlobalObject;
 };
 
 QT_END_NAMESPACE

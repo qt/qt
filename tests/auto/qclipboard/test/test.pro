@@ -10,13 +10,13 @@ win32 {
   }
 }
 
-wince*|symbian*: {
+wince*|symbian: {
   copier.sources = ../copier/copier.exe
   copier.path = copier
   paster.sources = ../paster/paster.exe  
   paster.path = paster
   
-  symbian*: {
+  symbian: {
     load(data_caging_paths)
     rsc.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/copier.rsc
     rsc.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/paster.rsc

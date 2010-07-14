@@ -61,52 +61,100 @@ class QTextDocumentWithImageResources : public QTextDocument {
     Q_OBJECT
 
 public:
-    QTextDocumentWithImageResources(QDeclarativeText *parent) :
-        QTextDocument(parent),
-        outstanding(0)
-    {
-    }
+    QTextDocumentWithImageResources(QDeclarativeText *parent);
+    virtual ~QTextDocumentWithImageResources();
 
+    void setText(const QString &);
     int resourcesLoading() const { return outstanding; }
 
 protected:
-    QVariant loadResource(int type, const QUrl &name)
-    {
-        QUrl url = qmlContext(parent())->resolvedUrl(name);
+    QVariant loadResource(int type, const QUrl &name);
 
-        if (type == QTextDocument::ImageResource) {
-            QPixmap pm;
-            QString errorString;
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(url, &pm, &errorString, 0, false, 0, 0);
-            if (status == QDeclarativePixmapReply::Ready)
-                return pm;
-            if (status == QDeclarativePixmapReply::Error) {
-                if (!errors.contains(url)) {
-                    errors.insert(url);
-                    qmlInfo(parent()) << errorString;
-                }
-            } else {
-                QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(parent()), url);
-                connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+private slots:
+    void requestFinished();
+
+private:
+    QHash<QUrl, QDeclarativePixmap *> m_resources;
+
+    int outstanding;
+    static QSet<QUrl> errors;
+};
+
+QTextDocumentWithImageResources::QTextDocumentWithImageResources(QDeclarativeText *parent) 
+: QTextDocument(parent), outstanding(0)
+{
+}
+
+QTextDocumentWithImageResources::~QTextDocumentWithImageResources()
+{
+    if (!m_resources.isEmpty()) 
+        qDeleteAll(m_resources);
+}
+
+QVariant QTextDocumentWithImageResources::loadResource(int type, const QUrl &name)
+{
+    QDeclarativeContext *context = qmlContext(parent());
+    QUrl url = context->resolvedUrl(name);
+
+    if (type == QTextDocument::ImageResource) {
+        QHash<QUrl, QDeclarativePixmap *>::Iterator iter = m_resources.find(url);
+
+        if (iter == m_resources.end()) {
+            QDeclarativePixmap *p = new QDeclarativePixmap(context->engine(), url);
+            iter = m_resources.insert(name, p);
+
+            if (p->isLoading()) {
+                p->connectFinished(this, SLOT(requestFinished()));
                 outstanding++;
             }
         }
 
-        return QTextDocument::loadResource(type,url); // The *resolved* URL
+        QDeclarativePixmap *p = *iter;
+        if (p->isReady()) {
+            return p->pixmap();
+        } else if (p->isError()) {
+            if (!errors.contains(url)) {
+                errors.insert(url);
+                qmlInfo(parent()) << p->error();
+            }
+        }
     }
 
-private slots:
-    void requestFinished()
-    {
-        outstanding--;
-        if (outstanding == 0)
-            static_cast<QDeclarativeText*>(parent())->reloadWithResources();
+    return QTextDocument::loadResource(type,url); // The *resolved* URL
+}
+
+void QTextDocumentWithImageResources::requestFinished()
+{
+    outstanding--;
+    if (outstanding == 0) {
+        QDeclarativeText *textItem = static_cast<QDeclarativeText*>(parent());
+        QString text = textItem->text();
+#ifndef QT_NO_TEXTHTMLPARSER
+        setHtml(text);
+#else
+        setPlainText(text);
+#endif
+        QDeclarativeTextPrivate *d = QDeclarativeTextPrivate::get(textItem);
+        d->updateLayout();
+        d->markImgDirty();
+    }
+}
+
+void QTextDocumentWithImageResources::setText(const QString &text)
+{
+    if (!m_resources.isEmpty()) {
+        qWarning("CLEAR");
+        qDeleteAll(m_resources);
+        m_resources.clear();
+        outstanding = 0;
     }
 
-private:
-    int outstanding;
-    static QSet<QUrl> errors;
-};
+#ifndef QT_NO_TEXTHTMLPARSER
+    setHtml(text);
+#else
+    setPlainText(text);
+#endif
+}
 
 QSet<QUrl> QTextDocumentWithImageResources::errors;
 
@@ -136,6 +184,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     HTML img tags that load remote images, the text is reloaded.
 
     Text provides read-only text. For editable text, see \l TextEdit.
+
+    \sa {declarative/text/fonts}{Fonts example}
 */
 
 /*!
@@ -222,12 +272,6 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     \qmlproperty bool Text::font.underline
 
     Sets whether the text is underlined.
-*/
-
-/*!
-    \qmlproperty bool Text::font.outline
-
-    Sets whether the font has an outline style.
 */
 
 /*!
@@ -318,11 +362,7 @@ void QDeclarativeText::setText(const QString &n)
     if (d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(n);
-#else
-            d->doc->setPlainText(n);
-#endif
+            d->doc->setText(n);
         }
     }
 
@@ -441,6 +481,8 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     \qml
     Text { font.pointSize: 18; text: "hello"; style: Text.Raised; styleColor: "gray" }
     \endqml
+
+    \sa style
  */
 QColor QDeclarativeText::styleColor() const
 {
@@ -609,11 +651,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     } else if (!wasRich && d->richText) {
         if (isComponentComplete()) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(d->text);
-#else
-            d->doc->setPlainText(d->text);
-#endif
+            d->doc->setText(d->text);
         }
         d->updateLayout();
         d->markImgDirty();
@@ -663,11 +701,78 @@ void QDeclarativeText::setElideMode(QDeclarativeText::TextElideMode mode)
     emit elideModeChanged(d->elideMode);
 }
 
+QRectF QDeclarativeText::boundingRect() const
+{
+    Q_D(const QDeclarativeText);
+
+    int w = width();
+    int h = height();
+
+    int x = 0;
+    int y = 0;
+
+    // Could include font max left/right bearings to either side of rectangle.
+
+    if (d->cache || d->style != Normal) {
+        switch (d->hAlign) {
+        case AlignLeft:
+            x = 0;
+            break;
+        case AlignRight:
+            x = w - d->imgCache.width();
+            break;
+        case AlignHCenter:
+            x = (w - d->imgCache.width()) / 2;
+            break;
+        }
+
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->imgCache.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->imgCache.height()) / 2;
+            break;
+        }
+
+        return QRectF(x,y,d->imgCache.width(),d->imgCache.height());
+    } else {
+        switch (d->hAlign) {
+        case AlignLeft:
+            x = 0;
+            break;
+        case AlignRight:
+            x = w - d->cachedLayoutSize.width();
+            break;
+        case AlignHCenter:
+            x = (w - d->cachedLayoutSize.width()) / 2;
+            break;
+        }
+
+        switch (d->vAlign) {
+        case AlignTop:
+            y = 0;
+            break;
+        case AlignBottom:
+            y = h - d->cachedLayoutSize.height();
+            break;
+        case AlignVCenter:
+            y = (h - d->cachedLayoutSize.height()) / 2;
+            break;
+        }
+
+        return QRectF(x,y,d->cachedLayoutSize.width(),d->cachedLayoutSize.height());
+    }
+}
+
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QDeclarativeText);
-    if (newGeometry.width() != oldGeometry.width()) {
+    if (!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width()) {
         if (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone) {
             //re-elide if needed
             if (d->singleline && d->elideMode != QDeclarativeText::ElideNone &&
@@ -713,6 +818,7 @@ void QDeclarativeTextPrivate::updateLayout()
     }
 }
 
+
 void QDeclarativeTextPrivate::updateSize()
 {
     Q_Q(QDeclarativeText);
@@ -730,7 +836,10 @@ void QDeclarativeTextPrivate::updateSize()
         //setup instance of QTextLayout for all cases other than richtext
         if (!richText) {
             size = setupTextLayout(&layout);
-            cachedLayoutSize = size;
+            if (cachedLayoutSize != size) {
+                q->prepareGeometryChange();
+                cachedLayoutSize = size;
+            }
             dy -= size.height();
         } else {
             singleline = false; // richtext can't elide or be optimized for single-line case
@@ -744,7 +853,13 @@ void QDeclarativeTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
-            cachedLayoutSize = doc->size().toSize();
+                q->prepareGeometryChange();
+            QSize dsize = doc->size().toSize();
+            if (dsize != cachedLayoutSize) {
+                q->prepareGeometryChange();
+                cachedLayoutSize = dsize;
+            }
+            size = QSize(int(doc->idealWidth()),dsize.height());
         }
         int yoff = 0;
 
@@ -757,8 +872,10 @@ void QDeclarativeTextPrivate::updateSize()
         q->setBaselineOffset(fm.ascent() + yoff);
 
         //### need to comfirm cost of always setting these for richText
-        q->setImplicitWidth(richText ? (int)doc->idealWidth() : size.width());
-        q->setImplicitHeight(richText ? (int)doc->size().height() : size.height());
+        internalWidthUpdate = true;
+        q->setImplicitWidth(size.width());
+        internalWidthUpdate = false;
+        q->setImplicitHeight(size.height());
         emit q->paintedSizeChanged();
     } else {
         dirty = true;
@@ -813,6 +930,8 @@ void QDeclarativeTextPrivate::drawOutline()
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
+    if (imgCache.size() != img.size())
+        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -831,6 +950,8 @@ void QDeclarativeTextPrivate::drawOutline(int yOffset)
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
+    if (imgCache.size() != img.size())
+        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -955,18 +1076,21 @@ void QDeclarativeTextPrivate::checkImgCache()
         return;
 
     bool empty = text.isEmpty();
+    QPixmap newImgCache;
     if (empty) {
-        imgCache = QPixmap();
         imgStyleCache = QPixmap();
     } else if (richText) {
-        imgCache = richTextImage(false);
+        newImgCache = richTextImage(false);
         if (style != QDeclarativeText::Normal)
             imgStyleCache = richTextImage(true); //### should use styleColor
     } else {
-        imgCache = wrappedTextImage(false);
+        newImgCache = wrappedTextImage(false);
         if (style != QDeclarativeText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
+    if (imgCache.size() != newImgCache.size())
+        q_func()->prepareGeometryChange();
+    imgCache = newImgCache;
     if (!empty)
         switch (style) {
         case QDeclarativeText::Outline:
@@ -994,20 +1118,6 @@ void QDeclarativeTextPrivate::ensureDoc()
     }
 }
 
-void QDeclarativeText::reloadWithResources()
-{
-    Q_D(QDeclarativeText);
-    if (!d->richText)
-        return;
-#ifndef QT_NO_TEXTHTMLPARSER
-    d->doc->setHtml(d->text);
-#else
-    d->doc->setPlainText(d->text);
-#endif
-    d->updateLayout();
-    d->markImgDirty();
-}
-
 /*!
     Returns the number of resources (images) that are being loaded asynchronously.
 */
@@ -1031,35 +1141,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
         if (d->smooth)
             p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-        int w = width();
-        int h = height();
-
-        int x = 0;
-        int y = 0;
-
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->imgCache.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->imgCache.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->imgCache.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->imgCache.height()) / 2;
-            break;
-        }
+        QRect br = boundingRect().toRect();
 
         bool needClip = clip() && (d->imgCache.width() > width() ||
                                    d->imgCache.height() > height());
@@ -1068,7 +1150,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             p->save();
             p->setClipRect(boundingRect(), Qt::IntersectClip);
         }
-        p->drawPixmap(x, y, d->imgCache);
+        p->drawPixmap(br.x(), br.y(), d->imgCache);
         if (needClip)
             p->restore();
 
@@ -1077,20 +1159,8 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
         }
     } else {
-        int h = height();
-        int y = 0;
+        qreal y = boundingRect().y();
 
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->cachedLayoutSize.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->cachedLayoutSize.height()) / 2;
-            break;
-        }
         bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
                                     d->cachedLayoutSize.height() > height());
 
@@ -1133,11 +1203,7 @@ void QDeclarativeText::componentComplete()
     if (d->dirty) {
         if (d->richText) {
             d->ensureDoc();
-#ifndef QT_NO_TEXTHTMLPARSER
-            d->doc->setHtml(d->text);
-#else
-            d->doc->setPlainText(d->text);
-#endif
+            d->doc->setText(d->text);
         }
         d->updateLayout();
         d->dirty = false;

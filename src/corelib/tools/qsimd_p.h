@@ -58,7 +58,7 @@ QT_BEGIN_HEADER
 #endif
 
 // SSE intrinsics
-#if defined(__SSE2__) && defined(QT_HAVE_SSE2) && !defined(QT_BOOTSTRAPPED)
+#if defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
 #if defined(QT_LINUXBASE)
 /// this is an evil hack - the posix_memalign declaration in LSB
 /// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
@@ -72,8 +72,10 @@ QT_BEGIN_HEADER
 #  include <emmintrin.h>
 #endif
 
+#if !defined(QT_BOOTSTRAPPED) && (!defined(Q_CC_MSVC) || (defined(_M_X64) || _M_IX86_FP == 2))
 #define QT_ALWAYS_HAVE_SSE2
 #endif
+#endif // defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
 
 // NEON intrinsics
 #if defined(QT_HAVE_NEON)

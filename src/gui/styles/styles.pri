@@ -182,5 +182,9 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
         RESOURCES += styles/qstyle_s60_simulated.qrc
     }
 } else {
+    symbian {
+        HEADERS += styles/qs60style.h
+        SOURCES += styles/qs60style_stub.cpp
+    }
     DEFINES += QT_NO_STYLE_S60
 }

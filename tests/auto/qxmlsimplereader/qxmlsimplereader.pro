@@ -12,7 +12,7 @@ QT += network xml
 QT -= gui
 
 
-wince*|symbian*: {
+wince*|symbian: {
    addFiles.sources = encodings parser xmldocs
    addFiles.path = .
    DEPLOYMENT += addFiles

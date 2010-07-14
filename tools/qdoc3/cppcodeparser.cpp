@@ -728,7 +728,10 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n)
                 classNode = static_cast<const ClassNode*>(n);
         }
-        return new QmlClassNode(tre->root(), names[0], classNode);
+        if (names[0].startsWith("Q"))
+            return new QmlClassNode(tre->root(), QLatin1String("QML:")+names[0], classNode);
+        else
+            return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if (command == COMMAND_QMLBASICTYPE) {
 #if 0
@@ -752,6 +755,8 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         QString type;
         QmlClassNode* qmlClass = 0;
         if (splitQmlMethodArg(doc,arg,type,element)) {
+            if (element.startsWith(QLatin1String("Q")))
+                element = QLatin1String("QML:") + element;
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
@@ -1850,16 +1855,40 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
         else if (key == "WRITE") {
             tre->addPropertyFunction(property, value, PropertyNode::Setter);
             property->setWritable(true);
-        } else if (key == "STORED")
+        }
+        else if (key == "STORED")
             property->setStored(value.toLower() == "true");
-        else if (key == "DESIGNABLE")
-            property->setDesignable(value.toLower() == "true");
+        else if (key == "DESIGNABLE") {
+            QString v = value.toLower();
+            if (v == "true")
+                property->setDesignable(true);
+            else if (v == "false")
+                property->setDesignable(false);
+            else {
+                property->setDesignable(false);
+                property->setRuntimeDesFunc(value);
+            }
+        }
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
         else if (key == "NOTIFY") {
             tre->addPropertyFunction(property, value, PropertyNode::Notifier);
         }
-
+        else if (key == "SCRIPTABLE") {
+            QString v = value.toLower();
+            if (v == "true")
+                property->setScriptable(true);
+            else if (v == "false")
+                property->setScriptable(false);
+            else {
+                property->setScriptable(false);
+                property->setRuntimeScrFunc(value);
+            }
+        }
+        else if (key == "COSTANT") 
+            property->setConstant();
+        else if (key == "FINAL") 
+            property->setFinal();
     }
     match(Tok_RightParen);
     return true;

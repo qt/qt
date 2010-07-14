@@ -54,6 +54,7 @@
 
 #ifdef Q_WS_S60
 #include <aknappui.h>
+#include <eikbtgpc.h>
 #endif
 
 // This is necessary in order to be able to perform delayed invokation on slots
@@ -738,9 +739,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
         return;
 
-    if ((data.window_flags & Qt::FramelessWindowHint) == 0)
-        return;
-
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
@@ -1085,12 +1083,14 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     Qt::WindowStates oldstate = windowState();
 
     const TBool isFullscreen = newstate & Qt::WindowFullScreen;
+#ifdef Q_WS_S60
     const TBool cbaRequested = windowFlags() & Qt::WindowSoftkeysVisibleHint;
     const TBool cbaVisible = CEikButtonGroupContainer::Current() ? true : false;
     const TBool softkeyVisibilityChange = isFullscreen && (cbaRequested != cbaVisible);
 
     if (oldstate == newstate && !softkeyVisibilityChange)
         return;
+#endif // Q_WS_S60
 
     if (isWindow()) {
         createWinId();

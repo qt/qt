@@ -240,7 +240,7 @@ QScriptValue QDeclarativeInclude::include(QScriptContext *ctxt, QScriptEngine *e
 
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(engine);
             scriptContext->pushScope(ep->contextClass->newUrlContext(context, 0, urlString));
-            scriptContext->pushScope(ep->globalClass->globalObject());
+            scriptContext->pushScope(ep->globalClass->staticGlobalObject());
             QScriptValue scope = QScriptDeclarativeClass::scopeChainValue(ctxt, -5);
             scriptContext->pushScope(scope);
             scriptContext->setActivationObject(scope);

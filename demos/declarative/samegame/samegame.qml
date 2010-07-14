@@ -88,7 +88,7 @@ Rectangle {
 
         Behavior on width {
             NumberAnimation {} 
-            enabled: initialWidth != 0
+            enabled: nameInputDialog.initialWidth != 0
         }
 
         onOpened: nameInputText.focus = true;

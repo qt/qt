@@ -176,6 +176,14 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     return false;
 }
 
+bool QEglContext::swapBuffersRegion2NOK(EGLSurface surface, const QRegion *region)
+{
+    Q_UNUSED(surface)
+    Q_UNUSED(region)
+    NOEGL
+    return false;
+}
+
 int QEglContext::configAttrib(int name) const
 {
     Q_UNUSED(name)
@@ -208,6 +216,15 @@ EGLBoolean QEgl::eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR img)
     return 0;
 }
 
+EGLBoolean QEgl::eglSwapBuffersRegion2NOK(EGLDisplay dpy, EGLSurface surface, EGLint count, const EGLint *rects)
+{
+    Q_UNUSED(dpy);
+    Q_UNUSED(surface);
+    Q_UNUSED(count);
+    Q_UNUSED(rects);
+    NOEGL
+    return 0;
+}
 
 #ifndef Q_WS_X11
 EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)

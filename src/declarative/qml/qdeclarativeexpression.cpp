@@ -145,7 +145,7 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, void *ex
         if (!dd->cachedClosures.at(progIdx)) {
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
             scriptContext->pushScope(ep->contextClass->newSharedContext());
-            scriptContext->pushScope(ep->globalClass->globalObject());
+            scriptContext->pushScope(ep->globalClass->staticGlobalObject());
             dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
             scriptEngine->popContext();
         }
@@ -188,7 +188,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
     } else {
         scriptContext->pushScope(ep->contextClass->newContext(context, object));
     }
-    scriptContext->pushScope(ep->globalClass->globalObject());
+    scriptContext->pushScope(ep->globalClass->staticGlobalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program, fileName, lineNumber);
     ep->scriptEngine.popContext();
     return rv;
@@ -206,7 +206,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
     } else {
         scriptContext->pushScope(ep->contextClass->newContext(context, object));
     }
-    scriptContext->pushScope(ep->globalClass->globalObject());
+    scriptContext->pushScope(ep->globalClass->staticGlobalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
     return rv;
@@ -214,8 +214,30 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
 
 /*!
     \class QDeclarativeExpression
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeExpression class evaluates JavaScript in a QML context.
+
+    For example, given a file \c main.qml like this:
+
+    \qml
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+    }
+    \endqml
+
+    The following code evaluates a JavaScript expression in the context of the
+    above QML:
+
+    \code
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("main.qml"));
+
+    QObject *myObject = component.create();
+    QDeclarativeExpression *expr = new QDeclarativeExpression(engine->rootContext(), myObject, "width * 2");
+    int result = expr->evaluate().toInt();  // result = 400
+    \endcode
 */
 
 /*!
@@ -369,7 +391,7 @@ QScriptValue QDeclarativeExpressionPrivate::eval(QObject *secondaryScope, bool *
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
         data->expressionContext = ep->contextClass->newContext(data->context(), data->me);
         scriptContext->pushScope(data->expressionContext);
-        scriptContext->pushScope(ep->globalClass->globalObject());
+        scriptContext->pushScope(ep->globalClass->staticGlobalObject());
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 

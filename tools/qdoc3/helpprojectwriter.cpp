@@ -41,7 +41,7 @@
 
 #include <QHash>
 #include <QMap>
-#include <qdebug.h>
+//#include <qdebug.h>
 
 #include "atom.h"
 #include "helpprojectwriter.h"
@@ -91,6 +91,7 @@ HelpProjectWriter::HelpProjectWriter(const Config &config, const QString &defaul
             subproject.title = config.getString(subprefix + "title");
             subproject.indexTitle = config.getString(subprefix + "indexTitle");
             subproject.sortPages = config.getBool(subprefix + "sortPages");
+            subproject.type = config.getString(subprefix + "type");
             readSelectors(subproject, config.getStringList(subprefix + "selectors"));
             project.subprojects[name] = subproject;
         }
@@ -625,44 +626,99 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     foreach (const QString &name, project.subprojects.keys()) {
         SubProject subproject = project.subprojects[name];
 
-        if (!name.isEmpty()) {
-            writer.writeStartElement("section");
-            QString indexPath = tree->fullDocumentLocation(tree->findFakeNodeByTitle(subproject.indexTitle));
-            writer.writeAttribute("ref", HtmlGenerator::cleanRef(indexPath));
-            writer.writeAttribute("title", subproject.title);
-            project.files.insert(indexPath);
-        }
-        if (subproject.sortPages) {
-            QStringList titles = subproject.nodes.keys();
-            titles.sort();
-            foreach (const QString &title, titles)
-                writeNode(project, writer, subproject.nodes[title]);
-        } else {
-            // Find a contents node and navigate from there, using the NextLink values.
-            foreach (const Node *node, subproject.nodes) {
-                QString nextTitle = node->links().value(Node::NextLink).first;
-                if (!nextTitle.isEmpty() &&
-                    node->links().value(Node::ContentsLink).first.isEmpty()) {
+        if (subproject.type == QLatin1String("manual")) {
 
-                    FakeNode *nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+            const FakeNode *indexPage = tree->findFakeNodeByTitle(subproject.indexTitle);
+            if (indexPage) {
+                Text indexBody = indexPage->doc().body();
+                const Atom *atom = indexBody.firstAtom();
+                QStack<int> sectionStack;
+                bool inItem = false;
 
-                    // Write the contents node.
-                    writeNode(project, writer, node);
+                while (atom) {
+                    switch (atom->type()) {
+                    case Atom::ListLeft:
+                        sectionStack.push(0);
+                        break;
+                    case Atom::ListRight:
+                        if (sectionStack.pop() > 0)
+                            writer.writeEndElement(); // section
+                        break;
+                    case Atom::ListItemLeft:
+                        inItem = true;
+                        break;
+                    case Atom::ListItemRight:
+                        inItem = false;
+                        break;
+                    case Atom::Link:
+                        if (inItem) {
+                            if (sectionStack.top() > 0)
+                                writer.writeEndElement(); // section
 
-                    while (nextPage) {
-                        writeNode(project, writer, nextPage);
-                        nextTitle = nextPage->links().value(Node::NextLink).first;
-                        if(nextTitle.isEmpty())
-                            break;
-                        nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+                            const FakeNode *page = tree->findFakeNodeByTitle(atom->string());
+                            writer.writeStartElement("section");
+                            QString indexPath = tree->fullDocumentLocation(page);
+                            writer.writeAttribute("ref", HtmlGenerator::cleanRef(indexPath));
+                            writer.writeAttribute("title", atom->string());
+                            project.files.insert(indexPath);
+
+                            sectionStack.top() += 1;
+                        }
+                        break;
+                    default:
+                        ;
                     }
-                    break;
+
+                    if (atom == indexBody.lastAtom())
+                        break;
+                    atom = atom->next();
+                }
+            } else
+                rootNode->doc().location().warning(
+                    tr("Failed to find index: %1").arg(subproject.indexTitle)
+                    );
+
+        } else {
+
+            if (!name.isEmpty()) {
+                writer.writeStartElement("section");
+                QString indexPath = tree->fullDocumentLocation(tree->findFakeNodeByTitle(subproject.indexTitle));
+                writer.writeAttribute("ref", HtmlGenerator::cleanRef(indexPath));
+                writer.writeAttribute("title", subproject.title);
+                project.files.insert(indexPath);
+            }
+            if (subproject.sortPages) {
+                QStringList titles = subproject.nodes.keys();
+                titles.sort();
+                foreach (const QString &title, titles)
+                    writeNode(project, writer, subproject.nodes[title]);
+            } else {
+                // Find a contents node and navigate from there, using the NextLink values.
+                foreach (const Node *node, subproject.nodes) {
+                    QString nextTitle = node->links().value(Node::NextLink).first;
+                    if (!nextTitle.isEmpty() &&
+                        node->links().value(Node::ContentsLink).first.isEmpty()) {
+
+                        FakeNode *nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+
+                        // Write the contents node.
+                        writeNode(project, writer, node);
+
+                        while (nextPage) {
+                            writeNode(project, writer, nextPage);
+                            nextTitle = nextPage->links().value(Node::NextLink).first;
+                            if(nextTitle.isEmpty())
+                                break;
+                            nextPage = const_cast<FakeNode *>(tree->findFakeNodeByTitle(nextTitle));
+                        }
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!name.isEmpty())
-            writer.writeEndElement(); // section
+            if (!name.isEmpty())
+                writer.writeEndElement(); // section
+        }
     }
 
     writer.writeEndElement(); // section

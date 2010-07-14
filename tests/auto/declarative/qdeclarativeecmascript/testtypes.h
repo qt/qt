@@ -86,6 +86,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
     Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
     Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int console READ console CONSTANT)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
@@ -142,6 +143,7 @@ public:
     QRegExp regExp() { return m_regExp; }
     void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
 
+    int console() const { return 11; }
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -555,7 +557,9 @@ Q_DECLARE_METATYPE(QScriptValue);
 class MyInvokableObject : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(TestEnum)
 public:
+    enum TestEnum { EnumValue1, EnumValue2 };
     MyInvokableObject() { reset(); }
 
     int invoked() const { return m_invoked; }
@@ -568,7 +572,7 @@ public:
 
     Q_INVOKABLE void method_NoArgs() { invoke(0); }
     Q_INVOKABLE int method_NoArgs_int() { invoke(1); return 6; }
-    Q_INVOKABLE qreal method_NoArgs_real() { invoke(2); return 19.7; }
+    Q_INVOKABLE qreal method_NoArgs_real() { invoke(2); return 19.75; }
     Q_INVOKABLE QPointF method_NoArgs_QPointF() { invoke(3); return QPointF(123, 4.5); }
     Q_INVOKABLE QObject *method_NoArgs_QObject() { invoke(4); return this; }
     Q_INVOKABLE MyInvokableObject *method_NoArgs_unknown() { invoke(5); return this; }
@@ -586,6 +590,8 @@ public:
     
     Q_INVOKABLE void method_overload(int a) { invoke(16); m_actuals << a; }
     Q_INVOKABLE void method_overload(int a, int b) { invoke(17); m_actuals << a << b; }
+
+    Q_INVOKABLE void method_with_enum(TestEnum e) { invoke(18); m_actuals << (int)e; }
 
 private:
     void invoke(int idx) { if (m_invoked != -1) m_invokedError = true; m_invoked = idx;}

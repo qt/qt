@@ -99,7 +99,7 @@ TextEdit {
     You can translate between cursor positions (characters from the start of the document) and pixel
     points using positionAt() and positionToRectangle().
 
-    \sa Text, TextInput
+    \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
 /*!
@@ -186,12 +186,6 @@ QString QDeclarativeTextEdit::text() const
 */
 
 /*!
-    \qmlproperty bool TextEdit::font.outline
-
-    Sets whether the font has an outline style.
-*/
-
-/*!
     \qmlproperty bool TextEdit::font.strikeout
 
     Sets whether the font has a strikeout style.
@@ -209,7 +203,7 @@ QString QDeclarativeTextEdit::text() const
     Sets the font size in pixels.
 
     Using this function makes the font device dependent.
-    Use \l pointSize to set the size of the font in a device independent manner.
+    Use \l font.pointSize to set the size of the font in a device independent manner.
 */
 
 /*!
@@ -1231,8 +1225,13 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
         r = QRect(0,0,INT_MAX,INT_MAX);
     } else {
         r = rf.toRect();
-        if (r != QRect(0,0,INT_MAX,INT_MAX)) // Don't translate "everything"
+        if (r.height() > INT_MAX/2) {
+            // Take care of overflow when translating "everything"
+            r.setTop(r.y() + d->yoff);
+            r.setBottom(INT_MAX/2);
+        } else {
             r = r.translated(0,d->yoff);
+        }
     }
     dirtyCache(r);
     emit update();
@@ -1264,6 +1263,15 @@ void QDeclarativeTextEditPrivate::init()
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
 
+    // QTextControl follows the default text color
+    // defined by the platform, declarative text
+    // should be black by default
+    QPalette pal = control->palette();
+    if (pal.color(QPalette::Text) != color) {
+        pal.setColor(QPalette::Text, color);
+        control->setPalette(pal);
+    }
+
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(q_textChanged()));
@@ -1284,6 +1292,7 @@ void QDeclarativeTextEditPrivate::init()
 void QDeclarativeTextEdit::q_textChanged()
 {
     updateSize();
+    updateMicroFocus();
     emit textChanged(text());
 }
 
@@ -1325,7 +1334,25 @@ void QDeclarativeTextEdit::updateSelectionMarkers()
         d->lastSelectionEnd = d->control->textCursor().selectionEnd();
         emit selectionEndChanged();
     }
+    updateMicroFocus();
 }
+
+QRectF QDeclarativeTextEdit::boundingRect() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    QRectF r = QDeclarativePaintedItem::boundingRect();
+    int cursorWidth = 1;
+    if(d->cursor)
+        cursorWidth = d->cursor->width();
+    if(!d->document->isEmpty())
+        cursorWidth += 3;// ### Need a better way of accounting for space between char and cursor
+
+    // Could include font max left/right bearings to either side of rectangle.
+
+    r.setRight(r.right() + cursorWidth);
+    return r.translated(0,d->yoff);
+}
+
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
 //    need to do all the calculations each time
@@ -1341,13 +1368,20 @@ void QDeclarativeTextEdit::updateSize()
             d->document->setTextWidth(width());
         dy -= (int)d->document->size().height();
 
+        int nyoff;
         if (heightValid()) {
             if (d->vAlign == AlignBottom)
-                d->yoff = dy;
+                nyoff = dy;
             else if (d->vAlign == AlignVCenter)
-                d->yoff = dy/2;
+                nyoff = dy/2;
+            else
+                nyoff = 0;
         } else {
-            d->yoff = 0;
+            nyoff = 0;
+        }
+        if (nyoff != d->yoff) {
+            prepareGeometryChange();
+            d->yoff = nyoff;
         }
         setBaselineOffset(fm.ascent() + d->yoff + d->textMargin);
 
@@ -1355,12 +1389,6 @@ void QDeclarativeTextEdit::updateSize()
         int newWidth = qCeil(d->document->idealWidth());
         if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
-        int cursorWidth = 1;
-        if(d->cursor)
-            cursorWidth = d->cursor->width();
-        newWidth += cursorWidth;
-        if(!d->document->isEmpty())
-            newWidth += 3;// ### Need a better way of accounting for space between char and cursor
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
         setImplicitWidth(newWidth);
         qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();

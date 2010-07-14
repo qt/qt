@@ -82,4 +82,7 @@ Other things you can do in a state change:
 \o Run some script with StateChangeScript
 \endlist
 
+
+The {declarative/animation/states}{States and Transitions example} demonstrates how to declare a basic set of states and then apply animated transitions between them.
+
 */

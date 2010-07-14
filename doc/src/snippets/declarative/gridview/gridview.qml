@@ -108,8 +108,10 @@ Component {
     Rectangle {
         width: view.cellWidth; height: view.cellHeight
         color: "lightsteelblue"; radius: 5
-        SpringFollow on x { to: view.currentItem.x; spring: 3; damping: 0.2 }
-        SpringFollow on y { to: view.currentItem.y; spring: 3; damping: 0.2 }
+        x: view.currentItem.x
+        y: view.currentItem.y
+        Behavior on x { SpringAnimation { spring: 3; damping: 0.2 } }
+        Behavior on y { SpringAnimation { spring: 3; damping: 0.2 } }
     }
 }
 

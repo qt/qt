@@ -90,7 +90,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 # ifdef old_qDebug
 #   undef qDebug
-#   define qDebug QT_QDEBUG_MACRO
+#   define qDebug QT_NO_QDEBUG_MACRO
 #   undef old_qDebug
 # endif
 class QMacWindowChangeEvent;
@@ -338,6 +338,7 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
+    void swapRegion(const QRegion *region);
 
 #if defined(Q_WS_WIN)
     void updateFormatVersion();
@@ -426,7 +427,7 @@ public:
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     static QGLExtensionFuncs qt_extensionFuncs;
-    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
+    static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif
 
     static void setCurrentContext(QGLContext *context);
