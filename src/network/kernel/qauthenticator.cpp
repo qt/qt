@@ -140,7 +140,8 @@ bool QAuthenticator::operator==(const QAuthenticator &other) const
     return d->user == other.d->user
         && d->password == other.d->password
         && d->realm == other.d->realm
-        && d->method == other.d->method;
+        && d->method == other.d->method
+        && d->options == other.d->options;
 }
 
 /*!
@@ -218,9 +219,49 @@ QString QAuthenticator::realm() const
     return d ? d->realm : QString();
 }
 
+/*!
+    \since 4.7
+    Returns the value related to option \a opt if it was set by the server.
+    See \l{QAuthenticator#Options} for more information on incoming options.
+    If option \a opt isn't found, an invalid QVariant will be returned.
+
+    \sa options(), QAuthenticator#Options
+*/
+QVariant QAuthenticator::option(const QString &opt) const
+{
+    return d ? d->options.value(opt) : QVariant();
+}
 
 /*!
-  returns true if the authenticator is null.
+    \since 4.7
+    Returns all incoming options set in this QAuthenticator object by parsing
+    the server reply. See \l{QAuthenticator#Options} for more information
+    on incoming options.
+
+    \sa option(), QAuthenticator#Options
+*/
+QVariantHash QAuthenticator::options() const
+{
+    return d ? d->options : QVariantHash();
+}
+
+/*!
+    \since 4.7
+
+    Sets the outgoing option \a opt to value \a value.
+    See \l{QAuthenticator#Options} for more information on outgoing options.
+
+    \sa options(), option(), QAuthenticator#Options
+*/
+void QAuthenticator::setOption(const QString &opt, const QVariant &value)
+{
+    detach();
+    d->options.insert(opt, value);
+}
+
+
+/*!
+    Returns true if the authenticator is null.
 */
 bool QAuthenticator::isNull() const
 {
