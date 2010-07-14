@@ -48,7 +48,7 @@
 
 #if defined(QDBUS_MAKEDLL)
 # define QDBUS_EXPORT Q_DECL_EXPORT
-#elif defined(QT_SHARED)
+#elif defined(QT_SHARED) || defined(QT_DLL)
 # define QDBUS_EXPORT Q_DECL_IMPORT
 #else
 # define QDBUS_EXPORT
