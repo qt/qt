@@ -2209,9 +2209,9 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_FSCOMPLETER
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
+#endif // QT_NO_FSCOMPLETER
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
-#endif // QT_NO_FSCOMPLETER
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
                      q, SLOT(_q_updateOkButton()));
 
