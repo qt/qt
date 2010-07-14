@@ -81,6 +81,7 @@ private slots:
     void enforceRange();
     void QTBUG_8456();
     void manualHighlight();
+    void footer();
 
 private:
     QDeclarativeView *createView();
@@ -146,6 +147,14 @@ public:
         list[idx] = QPair<QString,QString>(name, number);
         emit dataChanged(index(idx,0), index(idx,0));
     }
+
+    void clear() {
+        int count = list.count();
+        emit beginRemoveRows(QModelIndex(), 0, count-1);
+        list.clear();
+        emit endRemoveRows();
+    }
+
 
 private:
     QList<QPair<QString,QString> > list;
@@ -1160,6 +1169,38 @@ void tst_QDeclarativeGridView::manualHighlight()
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
     QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
     QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+}
+
+void tst_QDeclarativeGridView::footer()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 7; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/footer.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QDeclarativeText *footer = findItem<QDeclarativeText>(contentItem, "footer");
+    QVERIFY(footer);
+
+    QCOMPARE(footer->y(), 180.0);
+
+    model.removeItem(2);
+    QTRY_COMPARE(footer->y(), 120.0);
+
+    model.clear();
+    QTRY_COMPARE(footer->y(), 0.0);
 }
 
 
