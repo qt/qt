@@ -186,7 +186,7 @@ if (@ARGV)
             }
 
             # If the line specifies a file, parse the source and destination locations.
-            if ($line =~ m|\"([^\"]+)\"\s*\-\s*\"([^\"]+)\"|)
+            if ($line =~ m|^ *\"([^\"]+)\"\s*\-\s*\"([^\"]+)\"|)
             {
                 my $sourcePath = $1;
 
