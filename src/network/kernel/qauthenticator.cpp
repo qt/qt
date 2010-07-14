@@ -85,6 +85,44 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
   Note that, in particular, NTLM version 2 is not supported.
 
+  \section1 Options
+
+  In addition to the username and password required for authentication, a
+  QAuthenticator object can also contain additional options. The
+  options() function can be used to query incoming options sent by
+  the server; the setOption() function can
+  be used to set outgoing options, to be processed by the authenticator
+  calculation. The options accepted and provided depend on the authentication
+  type (see method()).
+
+  The following tables list known incoming options as well as accepted
+  outgoing options. The list of incoming options is not exhaustive, since
+  servers may include additional information at any time. The list of
+  outgoing options is exhaustive, however, and no unknown options will be
+  treated or sent back to the server.
+
+  \section2 Basic
+
+  \table
+    \header \o Option \o Direction \o Description
+    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+  \endtable
+
+  The Basic authentication mechanism supports no outgoing options.
+
+  \section2 NTLM version 1
+
+  The NTLM authentication mechanism currently supports no incoming or outgoing options.
+
+  \section2 Digest-MD5
+
+  \table
+    \header \o Option \o Direction \o Description
+    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+  \endtable
+
+  The Digest-MD5 authentication mechanism supports no outgoing options.
+
   \sa QSslSocket
 */
 
@@ -333,7 +371,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     switch(method) {
     case Basic:
         if(realm.isEmpty())
-            realm = QString::fromLatin1(options.value("realm"));
+            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (user.isEmpty())
             phase = Done;
         break;
@@ -342,7 +380,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
         break;
     case DigestMd5: {
         if(realm.isEmpty())
-            realm = QString::fromLatin1(options.value("realm"));
+            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
         if (user.isEmpty())
