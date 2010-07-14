@@ -499,11 +499,13 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
+#ifndef Q_WS_QPA //###############################################
             if (d_ptr->paintedRegion.boundingRect() != geometry()) {
                 // Emits warning if not supported. Should never happen unless
                 // setPartialUpdateSupport(true) has been called.
                 context()->d_func()->swapRegion(&d_ptr->paintedRegion);
             } else
+#endif                
                 context()->swapBuffers();
 
             d_ptr->paintedRegion = QRegion();
