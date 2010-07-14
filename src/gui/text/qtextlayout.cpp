@@ -2183,13 +2183,15 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 namespace {
     struct GlyphInfo
     {
-        GlyphInfo(const QGlyphLayout &layout, const QPointF &position)
-            : glyphLayout(layout), itemPosition(position)
+        GlyphInfo(const QGlyphLayout &layout, const QPointF &position,
+                  const QTextItemInt::RenderFlags &renderFlags)
+            : glyphLayout(layout), itemPosition(position), flags(renderFlags)
         {
         }
 
         QGlyphLayout glyphLayout;
         QPointF itemPosition;
+        QTextItem::RenderFlags flags;
     };
 }
 
@@ -2218,6 +2220,17 @@ QList<QGlyphs> QTextLine::glyphs() const
         QPointF pos(iterator.x.toReal(), y);
 
         QFont font = eng->font(si);
+
+        QTextItem::RenderFlags flags;
+        if (font.overline())
+            flags |= QTextItem::Overline;
+        if (font.underline())
+            flags |= QTextItem::Underline;
+        if (font.strikeOut())
+            flags |= QTextItem::StrikeOut;
+        if (si.analysis.bidiLevel % 2)
+            flags |= QTextItem::RightToLeft;
+
         QGlyphLayout glyphLayout = eng->shapedGlyphs(&si).mid(iterator.glyphsStart,
                                                               iterator.glyphsEnd - iterator.glyphsStart);
 
@@ -2235,7 +2248,7 @@ QList<QGlyphs> QTextLine::glyphs() const
 
                     QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                     glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
-                                                GlyphInfo(subLayout, pos));
+                                                GlyphInfo(subLayout, pos, flags));
 
                     start = end;
                     which = e;
@@ -2243,16 +2256,16 @@ QList<QGlyphs> QTextLine::glyphs() const
 
                 QGlyphLayout subLayout = glyphLayout.mid(start, end - start);
                 glyphLayoutHash.insertMulti(multiFontEngine->engine(which),
-                                            GlyphInfo(subLayout, pos));
+                                            GlyphInfo(subLayout, pos, flags));
 
             } else {
                 glyphLayoutHash.insertMulti(mainFontEngine,
-                                            GlyphInfo(glyphLayout, pos));
+                                            GlyphInfo(glyphLayout, pos, flags));
             }
         }
     }
 
-    QHash<QFontEngine *, QGlyphs> glyphsHash;
+    QHash<QPair<QFontEngine *, int>, QGlyphs> glyphsHash;
 
     QList<QFontEngine *> keys = glyphLayoutHash.uniqueKeys();
     for (int i=0; i<keys.size(); ++i) {
@@ -2265,11 +2278,17 @@ QList<QGlyphs> QTextLine::glyphs() const
         for (int j=0; j<glyphLayouts.size(); ++j) {
             const QPointF &pos = glyphLayouts.at(j).itemPosition;
             const QGlyphLayout &glyphLayout = glyphLayouts.at(j).glyphLayout;
+            const QTextItem::RenderFlags &flags = glyphLayouts.at(j).flags;            
+
+            font.setOverline(flags.testFlag(QTextItem::Overline));
+            font.setUnderline(flags.testFlag(QTextItem::Underline));
+            font.setStrikeOut(flags.testFlag(QTextItem::StrikeOut));
 
             QVarLengthArray<glyph_t> glyphsArray;
             QVarLengthArray<QFixedPoint> positionsArray;
 
-            fontEngine->getGlyphPositions(glyphLayout, QTransform(), 0, glyphsArray, positionsArray);
+            fontEngine->getGlyphPositions(glyphLayout, QTransform(), flags, glyphsArray,
+                                          positionsArray);
             Q_ASSERT(glyphsArray.size() == positionsArray.size());
 
             QVector<quint32> glyphs;
@@ -2283,10 +2302,12 @@ QList<QGlyphs> QTextLine::glyphs() const
             glyphIndexes.setGlyphIndexes(glyphs);
             glyphIndexes.setPositions(positions);
 
-            if (!glyphsHash.contains(fontEngine))
-                glyphsHash.insert(fontEngine, QGlyphs());
+            QPair<QFontEngine *, int> key(fontEngine, int(flags));
 
-            QGlyphs &target = glyphsHash[fontEngine];
+            if (!glyphsHash.contains(key))
+                glyphsHash.insert(key, QGlyphs());
+
+            QGlyphs &target = glyphsHash[key];
             target += glyphIndexes;
             target.setFont(font);
         }
