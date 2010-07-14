@@ -158,6 +158,11 @@ void QDeclarativeParticleMotion::destroy(QDeclarativeParticle &particle)
     \brief The ParticleMotionLinear object moves particles linearly.
 
     \sa Particles
+
+    This is the default motion, and moves the particles according to the
+    properties specified in the Particles element.
+
+    It has no further properties.
 */
 
 /*!
@@ -178,6 +183,13 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
     \since 4.7
     \brief The ParticleMotionGravity object moves particles towards a point.
 
+    This motion attracts the particles to the specified point with the specified acceleration.
+    To mimic earth gravity, set yattractor to -6360000 and acceleration to 9.8.
+
+    The defaults are all 0, not earth gravity, and so no motion will occur without setting
+    at least the acceleration property.
+
+
     \sa Particles
 */
 
@@ -186,6 +198,7 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
     \class QDeclarativeParticleMotionGravity
     \ingroup group_effects
     \brief The QDeclarativeParticleMotionGravity class moves the particles towards a point.
+
 */
 
 /*!
@@ -305,14 +318,14 @@ Rectangle {
 */
 
 /*!
-    \qmlproperty real QDeclarativeParticleMotionWander::xvariance
-    \qmlproperty real QDeclarativeParticleMotionWander::yvariance
+    \qmlproperty real ParticleMotionWander::xvariance
+    \qmlproperty real ParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty real QDeclarativeParticleMotionWander::pace
+    \qmlproperty real ParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
