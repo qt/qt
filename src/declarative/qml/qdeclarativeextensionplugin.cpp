@@ -67,10 +67,8 @@ QT_BEGIN_NAMESPACE
     See \l {Tutorial: Writing QML extensions with C++} for details on creating
     QML extensions, including how to build a plugin with with QDeclarativeExtensionPlugin.
     For a simple overview, see the \l{declarative/cppextensions/plugins}{plugins} example.
-    
-    Also see \l {How to Create Qt Plugins} for general Qt plugin documentation.
 
-    \sa QDeclarativeEngine::importPlugin()
+    \sa QDeclarativeEngine::importPlugin(), {How to Create Qt Plugins}
 */
 
 /*!

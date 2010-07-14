@@ -44,7 +44,7 @@
                   <li><a href="installation.html">Installation &amp; first steps</a></li>
                   <li><a href="how-to-learn-qt.html">How to learn Qt</a></li>
                   <li><a href="tutorials.html">Tutorials</a></li>
-                  <li><a href="examples.html">Examples</a></li>
+                  <li><a href="all-examples.html">Examples</a></li>
                   <li><a href="qt4-7-intro.html">Whats new in Qt 4.7</a></li>
                 </ul>
               </div>
@@ -56,30 +56,29 @@
             <div class="indexboxcont indexboxbar ">
               <div class="sectionlist tricol">
                 <ul>
-                  <li><a href="classes.html">Class index</a></li>
-                  <li><a href="functions.html">Function index</a></li>
-                  <li><a href="modules.html">Modules</a></li>
-                  <li><a href="namespaces.html">Namespaces</a></li>
-		  <li><a href="qtglobal.html">Global stuff</a></li>
-		  <li><a href="qdeclarativeelements.html">QML elements</a></li>
+					<li><a href="classes.html">Class index</a></li>
+					<li><a href="functions.html">Function index</a></li>
+					<li><a href="modules.html">Modules</a></li>
+					<li><a href="namespaces.html">Namespaces</a></li>
+					<li><a href="qtglobal.html">Global Declarations</a></li>
                 </ul>
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-		  <li><a href="qt-basic-concepts.html">Basic Qt Architecture</a></li>
-		  <li><a href="declarativeui.html">Device UI's &amp; Qt Quick</a></li>
-		  <li><a href="qt-gui-concepts.html">Desktop UI components</a></li>
-		  <li><a href="platform-specific.html">Platform-specific info</a></li>
-		  <li><a href="qt-graphics.html">Graphics, Painting  &amp Printing</a></li>
-                  <li><a href="qt-network.html">Input/Output &amp networking</a></li>
+					<li><a href="qt-basic-concepts.html">Programming with Qt</a></li>
+					<li><a href="qt-basic-concepts.html">Qt Architecture</a></li>
+					<li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific Development</a></li>
+					<li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
+					<li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
                 </ul>
               </div>
               <div class="sectionlist">
                 <ul>
-                  <li><a href="model-view-programming.html">Model/View programming</a></li>
-                  <li><a href="technology-apis.html">Qt API's for other technologies</a></li>
-                  <li><a href="best-practices.html">Qt How-to's &amp best practices</a></li>
-                  <li><a href="developing-with-qt.html">Cross-platform development</a></li>
+					<li><a href="declarativeui.html">Qt Quick</a></li>
+					<li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
+					<li><a href="qdeclarativeelements.html">QML Elements</a></li>
+					<li><a href="qt-gui-concepts.html">UI components</a></li>
+					<li><a href="declarativeui.html">Qt & GUI design</a></li>
                 </ul>
               </div>
             </div>

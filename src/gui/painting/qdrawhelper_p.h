@@ -152,6 +152,7 @@ typedef void (*SrcOverTransformFunc)(uchar *destPixels, int dbpl,
                                      const QTransform &targetRectTransform,
                                      int const_alpha);
 
+typedef void (*MemRotateFunc)(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
 
 struct DrawHelper {
     ProcessSpans blendColor;
@@ -165,6 +166,7 @@ struct DrawHelper {
 extern SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats];
 extern SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats];
 extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFormats];
+extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 

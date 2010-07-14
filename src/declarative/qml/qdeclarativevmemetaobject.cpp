@@ -751,6 +751,22 @@ void QDeclarativeVMEMetaObject::registerInterceptor(int index, int valueIndex, Q
     interceptors.insert(index, qMakePair(valueIndex, interceptor));
 }
 
+int QDeclarativeVMEMetaObject::vmeMethodLineNumber(int index)
+{
+    if (index < methodOffset) {
+        Q_ASSERT(parent);
+        return static_cast<QDeclarativeVMEMetaObject *>(parent)->vmeMethodLineNumber(index);
+    }
+
+    int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
+    Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + plainSignals + metaData->methodCount));
+
+    int rawIndex = index - methodOffset - plainSignals;
+
+    QDeclarativeVMEMetaData::MethodData *data = metaData->methodData() + rawIndex;
+    return data->lineNumber;
+}
+
 QScriptValue QDeclarativeVMEMetaObject::vmeMethod(int index)
 {
     if (index < methodOffset) {
@@ -760,6 +776,20 @@ QScriptValue QDeclarativeVMEMetaObject::vmeMethod(int index)
     int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
     Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + plainSignals + metaData->methodCount));
     return method(index - methodOffset - plainSignals);
+}
+
+void QDeclarativeVMEMetaObject::setVmeMethod(int index, const QScriptValue &value)
+{
+    if (index < methodOffset) {
+        Q_ASSERT(parent);
+        return static_cast<QDeclarativeVMEMetaObject *>(parent)->setVmeMethod(index, value);
+    }
+    int plainSignals = metaData->signalCount + metaData->propertyCount + metaData->aliasCount;
+    Q_ASSERT(index >= (methodOffset + plainSignals) && index < (methodOffset + plainSignals + metaData->methodCount));
+
+    if (!methods) 
+        methods = new QScriptValue[metaData->methodCount];
+    methods[index - methodOffset - plainSignals] = value;
 }
 
 QScriptValue QDeclarativeVMEMetaObject::vmeProperty(int index)

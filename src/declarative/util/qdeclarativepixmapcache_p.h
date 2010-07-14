@@ -42,69 +42,70 @@
 #ifndef QDECLARATIVEPIXMAPCACHE_H
 #define QDECLARATIVEPIXMAPCACHE_H
 
-#include <QtCore/QString>
-#include <QtGui/QPixmap>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qstring.h>
+#include <QtGui/qpixmap.h>
 #include <QtCore/qurl.h>
-#include <QtCore/QCoreApplication>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QDeclarativeEngine;
-class QNetworkReply;
-class QDeclarativeImageReader;
-
-class QDeclarativePixmapReplyPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativePixmapReply : public QObject
+class QDeclarativePixmapData;
+class Q_DECLARATIVE_EXPORT QDeclarativePixmap
 {
-    Q_OBJECT
+    Q_DECLARE_TR_FUNCTIONS(QDeclarativePixmap)
 public:
-    ~QDeclarativePixmapReply();
+    QDeclarativePixmap();
+    QDeclarativePixmap(QDeclarativeEngine *, const QUrl &);
+    QDeclarativePixmap(QDeclarativeEngine *, const QUrl &, const QSize &);
+    ~QDeclarativePixmap();
 
-    enum Status { Ready, Error, Unrequested, Loading };
-    Status status() const;
-    QString errorString() const;
+    enum Status { Null, Ready, Error, Loading };
 
-    const QUrl &url() const;
-    int forcedWidth() const;
-    int forcedHeight() const;
-    QSize implicitSize() const;
-
-Q_SIGNALS:
-    void finished();
-    void downloadProgress(qint64, qint64);
-
-protected:
-    bool event(QEvent *event);
-
-private:
-    void addRef();
-    bool release(bool defer=false);
+    bool isNull() const;
+    bool isReady() const;
+    bool isError() const;
     bool isLoading() const;
-    void setLoading();
+
+    Status status() const;
+    QString error() const;
+    const QUrl &url() const;
+    const QSize &implicitSize() const;
+    const QSize &requestSize() const;
+    const QPixmap &pixmap() const;
+    void setPixmap(const QPixmap &);
+
+    QRect rect() const;
+    int width() const;
+    int height() const;
+    inline operator const QPixmap &() const;
+
+    void load(QDeclarativeEngine *, const QUrl &);
+    void load(QDeclarativeEngine *, const QUrl &, bool);
+    void load(QDeclarativeEngine *, const QUrl &, const QSize &);
+    void load(QDeclarativeEngine *, const QUrl &, const QSize &, bool);
+
+    void clear();
+    void clear(QObject *);
+
+    bool connectFinished(QObject *, const char *);
+    bool connectFinished(QObject *, int);
+    bool connectDownloadProgress(QObject *, const char *);
+    bool connectDownloadProgress(QObject *, int);
 
 private:
-    QDeclarativePixmapReply(QDeclarativeImageReader *reader, const QUrl &url, int req_width, int req_height);
-    Q_DISABLE_COPY(QDeclarativePixmapReply)
-    Q_DECLARE_PRIVATE(QDeclarativePixmapReply)
-    friend class QDeclarativeImageRequestHandler;
-    friend class QDeclarativeImageReader;
-    friend class QDeclarativePixmapCache;
+    Q_DISABLE_COPY(QDeclarativePixmap);
+    QDeclarativePixmapData *d;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativePixmapCache
+inline QDeclarativePixmap::operator const QPixmap &() const
 {
-    Q_DECLARE_TR_FUNCTIONS(QDeclarativePixmapCache)
-public:
-    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, QString *errorString, QSize *impsize=0, bool async=false, int req_width=0, int req_height=0);
-    static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url, int req_width=0, int req_height=0);
-    static void cancel(const QUrl& url, QObject *obj);
-    static int pendingRequests();
-};
-
-
+    return pixmap();
+}
 
 QT_END_NAMESPACE
 

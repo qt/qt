@@ -196,6 +196,9 @@
     \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout}{QGraphicsGridLayout}
     \o \l{declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout}{QGraphicsLinearLayout}
     \endlist
+
+    Also see \l {Integrating QML with existing Qt UI code} for information on using QML 
+    in Qt applications that use the Graphics View framework or ordinary QWidget-based views.
 */
 
 /*!
@@ -211,8 +214,10 @@
     \title C++ Extensions: Image Provider
     \example declarative/cppextensions/imageprovider
 
-    This examples shows how to use QDeclarativeImageProvider to serve images asynchronously
-    into a QML item.
+    This examples shows how to use QDeclarativeImageProvider to serve images 
+    to QML image elements.
+
+    \image qml-imageprovider-example.png
 */
 
 /*!
@@ -249,6 +254,15 @@
     This example shows how to handle keyboard input and focus in QML.
 
     \image qml-focus-example.png
+*/
+
+/*!
+    \title Models and Views: AbstractItemModel
+    \example declarative/modelviews/abstractitemmodel
+
+    This example shows how to use a QAbstractItemModel subclass as a model in QML.
+
+    \image qml-abstractitemmodel-example.png
 */
 
 /*!
@@ -306,8 +320,7 @@
     \title Models and Views: Object ListModel
     \example declarative/modelviews/objectlistmodel
 
-    This example shows how to create a C++ extension that exposes a
-    QList<QObject*> as a model in QML.
+    This example shows how to use a QList<QObject*> as a model in QML.
 
     \image qml-objectlistmodel-example.png
 */
@@ -334,8 +347,7 @@
     \title Models and Views: String ListModel
     \example declarative/modelviews/stringlistmodel
 
-    This example shows how to create a C++ extension that exposes a
-    QStringList as a model in QML.
+    This example shows how to use a QStringList as a model in QML.
 
     \image qml-stringlistmodel-example.png
 */
@@ -465,7 +477,7 @@
 
     This example displays a set of clocks with different times for different cities.
     Each clock is created by combining \l Image elements with \l Rotation transforms 
-    and \l SpringFollow animations.
+    and \l SpringAnimation behaviors.
 
     \image qml-clocks-example.png
 */
@@ -505,7 +517,7 @@
     \title Toys: TV Tennis
     \example declarative/toys/tvtennis
 
-    This example shows how to use animation components such as \l SpringFollow,
+    This example shows how to use animation components such as \l SpringAnimation,
     \l SequentialAnimation and \l PropertyAction to create a game of TV tennis.
 
     \image qml-tvtennis-example.png
@@ -533,7 +545,7 @@
     \example declarative/ui-components/dialcontrol
 
     This example shows how to create a dial-type control. It combines
-    \l Image elements with \l Rotation transforms and \l SpringFollow animations
+    \l Image elements with \l Rotation transforms and \l SpringAnimatino behaviors
     to produce an interactive speedometer-type dial.
 
     \image qml-dialcontrol-example.png
@@ -601,7 +613,9 @@
     \title UI Components: Tab Widget
     \example declarative/ui-components/tabwidget
 
-    This example shows how to create a tab widget.
+    This example shows how to create a tab widget. It also demonstrates how
+    \l {Setting default properties}{default properties} can be used to collect and 
+    assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png
 */

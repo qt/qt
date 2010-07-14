@@ -1765,52 +1765,31 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
-            //todo: move the vertical spacing stuff into subElementRect
-            const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
             QStyleOptionMenuItem optionCheckBox;
 
             //Regardless of checkbox visibility, make room for it, this mirrors native implementation,
             //where text and icon placement is static regardless of content of menu item.
-            const int hSpacing = QS60StylePrivate::pixelMetric(PM_LayoutHorizontalSpacing);
             optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
             optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
             optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
+
+            const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
+            //The vertical spacing is doubled; it needs one spacing to separate checkbox from
+            //highlight and then it needs one to separate it whatever is shown after it (text/icon/both).
+            const int moveByX = optionCheckBox.rect.width() + 2 * vSpacing;
             optionCheckBox.rect.moveCenter(QPoint(
-                    optionCheckBox.rect.center().x(), 
+                    optionCheckBox.rect.center().x() + moveByX >> 1, 
                     menuItem->rect.center().y()));
-            const int moveByX = optionCheckBox.rect.width() + vSpacing +
-                    pixelMetric(PM_DefaultFrameWidth);
-            if (optionMenuItem.direction == Qt::LeftToRight) {
-                if (iconRect.isValid()) {
-                    iconRect.translate(moveByX, 0);
-                    iconRect.setWidth(iconRect.width() + vSpacing);
-                }
-                if (textRect.isValid()) {
-                    textRect.translate(moveByX, 0);
-                    textRect.setWidth(textRect.width() - moveByX - vSpacing);
-                }
-                optionCheckBox.rect.translate(vSpacing + pixelMetric(PM_DefaultFrameWidth), hSpacing >> 1);
-            } else {
-                if (textRect.isValid())
-                    textRect.setWidth(textRect.width() - moveByX);
-                if (iconRect.isValid()) {
-                    iconRect.setWidth(iconRect.width() + vSpacing);
-                    iconRect.translate(-optionCheckBox.rect.width() - vSpacing, 0);
-                }
+
+            if (optionMenuItem.direction != Qt::LeftToRight)
                 optionCheckBox.rect.translate(textRect.width() + iconRect.width(), 0);
-            }
+
 
             const bool selected = (option->state & State_Selected) && (option->state & State_Enabled);
             if (selected) {
-                const int spacing = pixelMetric(PM_DefaultFrameWidth) * 2;
-                int start; int end;
-                if (QApplication::layoutDirection() == Qt::LeftToRight) {
-                    start = optionMenuItem.rect.left() + spacing;
-                    end = qMax(textRect.right(), iconRect.right() + spacing);
-                } else {
-                    start = qMax(spacing, qMin(textRect.left(), iconRect.left() - spacing));
-                    end = optionMenuItem.rect.right() - spacing;
-                }
+                const int spacing = ignoreCheckMark ? (vSpacing + QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth)) : 0;
+                const int start = optionMenuItem.rect.left() + spacing;
+                const int end = optionMenuItem.rect.right() - spacing;
                 //-1 adjustment to avoid highlight being on top of possible separator item
                 const QRect highlightRect = QRect(
                         QPoint(start, option->rect.top()), 
@@ -3025,20 +3004,38 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     pixelMetric(PM_SmallIconSize, opt, widget);
                 ret = menuItem->rect;
 
+                QRect checkBoxRect = checkable ? menuItem->rect : QRect();
+                if (checkable) {
+                    checkBoxRect.setWidth(pixelMetric(PM_IndicatorWidth));
+                    checkBoxRect.setHeight(pixelMetric(PM_IndicatorHeight));
+                }
+
+                const int vSpacing = QS60StylePrivate::pixelMetric(PM_LayoutVerticalSpacing);
+                //The vertical spacing is doubled; it needs one spacing to separate checkbox from
+                //highlight and then it needs one to separate it whatever is shown after it (text/icon/both).
+                const int moveByX = checkBoxRect.width() + 2 * vSpacing;
+
                 if (element == SE_ItemViewItemDecoration) {
                     if (menuItem->icon.isNull()) {
                         ret = QRect();
                     } else {
                         if (menuItem->direction == Qt::RightToLeft)
-                            ret.translate(ret.width() - indicatorWidth, 0);
+                            ret.translate(ret.width() - indicatorWidth - moveByX, 0);
+                        else
+                            ret.translate(moveByX, 0);
                         ret.setWidth(indicatorWidth);
                     }
                 } else {
-                    if (!menuItem->icon.isNull())
+                    if (!menuItem->icon.isNull()) {
                         if (menuItem->direction == Qt::LeftToRight)
                             ret.adjust(indicatorWidth, 0, 0, 0);
                         else
                             ret.adjust(0, 0, -indicatorWidth, 0);
+                    }
+                    if (menuItem->direction == Qt::LeftToRight)
+                        ret.adjust(moveByX, 0, 0, 0);
+                    else
+                        ret.adjust(0, 0, -moveByX, 0);
 
                     // Make room for submenu indicator
                     if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu){
@@ -3114,6 +3111,11 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             }
             break;
         case SE_CheckBoxFocusRect:
+            ret = opt->rect;
+            break;
+        case SE_ProgressBarLabel:
+        case SE_ProgressBarContents:
+        case SE_ProgressBarGroove:
             ret = opt->rect;
             break;
         default:

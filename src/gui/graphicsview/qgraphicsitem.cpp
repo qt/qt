@@ -133,7 +133,8 @@
 
     \img graphicsview-parentchild.png
 
-    \section1 Transformation
+    \target Transformations
+    \section1 Transformations
 
     QGraphicsItem supports projective transformations in addition to its base
     position, pos(). There are several ways to change an item's transformation.
@@ -411,6 +412,11 @@
     these notifications are disabled by default. You must enable this flag
     to receive notifications for scene position changes. This flag was
     introduced in Qt 4.6.
+
+    \omitvalue ItemStopsClickFocusPropagation \omit The item stops propagating
+    click focus to items underneath when being clicked on. This flag
+    allows you create a non-focusable item that can be clicked on without
+    changing the focus. \endomit
 */
 
 /*!
@@ -5505,6 +5511,9 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
     // Update focus child chain. Stop at panels, or if this item
     // is hidden, stop at the first item with a visible parent.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
+    if (parent->panel() != q_ptr->panel())
+        return;
+
     do {
         // Clear any existing ancestor's subFocusItem.
         if (parent != q_ptr && parent->d_ptr->subFocusItem) {
@@ -7312,10 +7321,13 @@ void QGraphicsItem::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     if (QWidget *fw = QApplication::focusWidget()) {
-        for (int i = 0 ; i < scene()->views().count() ; ++i)
-            if (scene()->views().at(i) == fw)
-                if (QInputContext *inputContext = fw->inputContext())
-                    inputContext->update();
+        if (scene()) {
+            for (int i = 0 ; i < scene()->views().count() ; ++i) {
+                if (scene()->views().at(i) == fw)
+                    if (QInputContext *inputContext = fw->inputContext())
+                        inputContext->update();
+            }
+        }
 #ifndef QT_NO_ACCESSIBILITY
         // ##### is this correct
         QAccessible::updateAccessibility(fw, 0, QAccessible::StateChanged);
@@ -11431,6 +11443,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemSendsScenePositionChanges:
         str = "ItemSendsScenePositionChanges";
+        break;
+    case QGraphicsItem::ItemStopsClickFocusPropagation:
+        str = "ItemStopsClickFocusPropagation";
         break;
     }
     debug << str;

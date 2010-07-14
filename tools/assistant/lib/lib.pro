@@ -69,3 +69,16 @@ HEADERS += qhelpenginecore.h \
 # access to clucene
 HEADERS += qhelpsearchindexwriter_clucene_p.h \
     qhelpsearchindexreader_clucene_p.h
+
+TR_DIR = $$PWD/../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/qt_help_cs.ts \
+    $$TR_DIR/qt_help_da.ts \
+    $$TR_DIR/qt_help_de.ts \
+    $$TR_DIR/qt_help_hu.ts \
+    $$TR_DIR/qt_help_ja.ts \
+    $$TR_DIR/qt_help_pl.ts \
+    $$TR_DIR/qt_help_ru.ts \
+    $$TR_DIR/qt_help_zh_CN.ts \
+    $$TR_DIR/qt_help_zh_TW.ts \
+    $$TR_DIR/qt_help_fr.ts

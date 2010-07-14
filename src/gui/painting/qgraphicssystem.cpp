@@ -50,7 +50,7 @@
 #ifdef Q_WS_MAC
 # include <private/qpixmap_mac_p.h>
 #endif
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 # include <private/qpixmap_s60_p.h>
 #endif
 
@@ -71,7 +71,7 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     return new QS60PixmapData(type);    
 #elif !defined(Q_WS_QWS)
 #error QGraphicsSystem::createDefaultPixmapData() not implemented
@@ -79,5 +79,9 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
     return 0;
 }
 
+QPixmapData *QGraphicsSystem::createPixmapData(QPixmapData *origin)
+{
+    return createPixmapData(origin->pixelType());
+}
 
 QT_END_NAMESPACE

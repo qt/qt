@@ -6954,7 +6954,7 @@ bool QString::isRightToLeft() const
 
 /*! \fn bool QString::isRightToLeft() const
 
-    \internal
+    Returns true if the string is read right to left.
 */
 
 

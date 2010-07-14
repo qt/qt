@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
+  \qmlproperty string QML:QtObject::objectName
   This property allows you to give a name to this specific object instance.
 
   See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
@@ -151,6 +151,7 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
+\keyword QmlGlobalQtObject
 \qmlclass Qt QDeclarativeEnginePrivate
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
@@ -236,8 +237,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
@@ -620,23 +621,15 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
 /*!
 
   Sets the \a provider to use for images requested via the \e
-  image: url scheme, with host \a providerId.
+  image: url scheme, with host \a providerId. The QDeclarativeEngine 
+  takes ownership of \a provider.
 
-  QDeclarativeImageProvider allows images to be provided to QML
-  asynchronously.  The image request will be run in a low priority
-  thread.  This allows potentially costly image loading to be done in
-  the background, without affecting the performance of the UI.
+  Image providers enable support for pixmap and threaded image
+  requests. See the QDeclarativeImageProvider documentation for details on
+  implementing and using image providers.
 
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
-
-  The QDeclarativeEngine assumes ownership of the provider.
-
-  This example creates a provider with id \e colors:
-
-  \snippet examples/declarative/cppextensions/imageprovider/imageprovider.cpp 0
-
-  \snippet examples/declarative/cppextensions/imageprovider/imageprovider-example.qml 0
 
   \sa removeImageProvider()
 */
@@ -671,14 +664,33 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
     delete d->imageProviders.take(providerId);
 }
 
+QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProviderType(const QUrl &url)
+{
+    QMutexLocker locker(&mutex);
+    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        return provider->imageType();
+    return static_cast<QDeclarativeImageProvider::ImageType>(-1);
+}
+
 QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
 {
     QMutexLocker locker(&mutex);
     QImage image;
     QDeclarativeImageProvider *provider = imageProviders.value(url.host());
     if (provider)
-        image = provider->request(url.path().mid(1), size, req_size);
+        image = provider->requestImage(url.path().mid(1), size, req_size);
     return image;
+}
+
+QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size)
+{
+    QMutexLocker locker(&mutex);
+    QPixmap pixmap;
+    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    return pixmap;
 }
 
 /*!
@@ -1033,6 +1045,17 @@ QDeclarativeContextData *QDeclarativeEnginePrivate::getContext(QScriptContext *c
     return contextClass->contextFromValue(scopeNode);
 }
 
+/*!
+    Returns the QUrl associated with the script \a ctxt for the case that there is
+    no QDeclarativeContext.
+*/
+QUrl QDeclarativeEnginePrivate::getUrl(QScriptContext *ctxt)
+{
+    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    Q_ASSERT(scopeNode.isValid());
+    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
+    return contextClass->urlFromValue(scopeNode);
+}
 
 QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 {
@@ -1066,7 +1089,7 @@ If you are certain the files will be local, you could simplify to:
 \snippet doc/src/snippets/declarative/componentCreation.js 2
 
 To create a QML object from an arbitrary string of QML (instead of a file),
-use \l{Qt::createQmlObject()}{Qt.createQmlObject()}.
+use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1075,16 +1098,19 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         static_cast<QDeclarativeScriptEngine*>(engine)->p;
     QDeclarativeEngine* activeEngine = activeEnginePriv->q_func();
 
-    QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
-    Q_ASSERT(context);
-
     if(ctxt->argumentCount() != 1) {
         return ctxt->throwError(QLatin1String("Qt.createComponent(): Invalid arguments"));
-    }else{
+    } else {
+
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url = QUrl(context->resolvedUrl(QUrl(arg)));
+        QUrl url;
+        QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
+        if (context)
+            url = QUrl(context->resolvedUrl(QUrl(arg)));
+        else
+            url = activeEnginePriv->getUrl(ctxt).resolved(QUrl(arg));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeData::get(c, true)->setImplicitDestructible();
@@ -1110,7 +1136,7 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
-If this is the case, consider using \l{Qt::createComponent()}{Qt.createComponent()} instead.
+If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1245,11 +1271,12 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
     QDate date = ctxt->argument(0).toDateTime().date();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid date format"));
         }
@@ -1272,11 +1299,12 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
     QTime date = ctxt->argument(0).toDateTime().time();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
@@ -1362,11 +1390,12 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
     QDateTime date = ctxt->argument(0).toDateTime();
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
-        if (ctxt->argument(1).isString()) {
-            QString format = ctxt->argument(1).toString();
+        QScriptValue formatArg = ctxt->argument(1);
+        if (formatArg.isString()) {
+            QString format = formatArg.toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
-        } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else if (formatArg.isNumber()) {
+            enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else { 
             return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
@@ -1714,8 +1743,7 @@ void QDeclarativeEnginePrivate::warning(QDeclarativeEnginePrivate *engine, const
 /*!
 \qmlmethod Qt::quit()
 This function causes the QDeclarativeEngine::quit() signal to be emitted.
-Within the \l {Qt Declarative UI Runtime}{qml} application this causes the 
-launcher application to exit.
+Within the \l {QML Viewer}, this causes the launcher application to exit.
 */
 
 QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)

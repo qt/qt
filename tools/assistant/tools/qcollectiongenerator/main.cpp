@@ -459,6 +459,8 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
+    if (!config.filesToRegister().isEmpty())
+        CollectionConfiguration::updateLastRegisterTime(helpEngine);
 
     if (!config.title().isEmpty())
         CollectionConfiguration::setWindowTitle(helpEngine, config.title());

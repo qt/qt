@@ -8181,7 +8181,7 @@ EXPORTS
 	?rowsInserted@QTreeView@@MAEXABVQModelIndex@@HH@Z @ 8180 NONAME ; void QTreeView::rowsInserted(class QModelIndex const &, int, int)
 	?rowsRemoved@QTreeView@@IAEXABVQModelIndex@@HH@Z @ 8181 NONAME ; void QTreeView::rowsRemoved(class QModelIndex const &, int, int)
 	?rubberBandSelectionMode@QGraphicsView@@QBE?AW4ItemSelectionMode@Qt@@XZ @ 8182 NONAME ; enum Qt::ItemSelectionMode QGraphicsView::rubberBandSelectionMode(void) const
-	?s60AdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::s60AdjustedPosition(void)
+	?symbianAdjustedPosition@QDialog@@AAE_NXZ @ 8183 NONAME ; bool QDialog::symbianAdjustedPosition(void)
 	?s60UpdateIsOpaque@QWidgetPrivate@@QAEXXZ @ 8184 NONAME ; void QWidgetPrivate::s60UpdateIsOpaque(void)
 	?saturation@QColor@@QBEHXZ @ 8185 NONAME ; int QColor::saturation(void) const
 	?saturationF@QColor@@QBEMXZ @ 8186 NONAME ; float QColor::saturationF(void) const
@@ -12824,4 +12824,59 @@ EXPORTS
 	?createPixmapForImage@QRasterPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 12823 NONAME ; void QRasterPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	??0Tab@QTextOption@@QAE@MW4TabType@1@VQChar@@@Z @ 12824 NONAME ; QTextOption::Tab::Tab(float, enum QTextOption::TabType, class QChar)
 	?fromData@QRasterPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12825 NONAME ; bool QRasterPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?transformed@QRuntimePixmapData@@UBE?AVQPixmap@@ABVQTransform@@W4TransformationMode@Qt@@@Z @ 12826 NONAME ; class QPixmap QRuntimePixmapData::transformed(class QTransform const &, enum Qt::TransformationMode) const
+	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12827 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
+	?buffer@QRuntimePixmapData@@UAEPAVQImage@@XZ @ 12828 NONAME ; class QImage * QRuntimePixmapData::buffer(void)
+	?copy@QRuntimePixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12829 NONAME ; void QRuntimePixmapData::copy(class QPixmapData const *, class QRect const &)
+	?fromData@QRuntimePixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12830 NONAME ; bool QRuntimePixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?readBackInfo@QRuntimePixmapData@@QAEXXZ @ 12831 NONAME ; void QRuntimePixmapData::readBackInfo(void)
+	??_EQRuntimePixmapData@@UAE@I@Z @ 12832 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(unsigned int)
+	?paintEngine@QRuntimePixmapData@@UBEPAVQPaintEngine@@XZ @ 12833 NONAME ; class QPaintEngine * QRuntimePixmapData::paintEngine(void) const
+	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ; unsigned int QRuntimePixmapData::memoryUsage(void) const
+	?toImage@QRasterPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12835 NONAME ; class QImage QRasterPixmapData::toImage(class QRect const &) const
+	?fromImageReader@QRasterPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12836 NONAME ; void QRasterPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?fill@QRuntimePixmapData@@UAEXABVQColor@@@Z @ 12837 NONAME ; void QRuntimePixmapData::fill(class QColor const &)
+	?alphaChannel@QRuntimePixmapData@@UBE?AVQPixmap@@XZ @ 12838 NONAME ; class QPixmap QRuntimePixmapData::alphaChannel(void) const
+	?createCompatiblePixmapData@QRuntimePixmapData@@UBEPAVQPixmapData@@XZ @ 12839 NONAME ; class QPixmapData * QRuntimePixmapData::createCompatiblePixmapData(void) const
+	?toImage@QRuntimePixmapData@@UBE?AVQImage@@XZ @ 12840 NONAME ; class QImage QRuntimePixmapData::toImage(void) const
+	?resize@QRuntimePixmapData@@UAEXHH@Z @ 12841 NONAME ; void QRuntimePixmapData::resize(int, int)
+	?fromNativeType@QRuntimePixmapData@@UAEXPAXW4NativeType@QPixmapData@@@Z @ 12842 NONAME ; void QRuntimePixmapData::fromNativeType(void *, enum QPixmapData::NativeType)
+	?fromFile@QRuntimePixmapData@@UAE_NABVQString@@PBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12843 NONAME ; bool QRuntimePixmapData::fromFile(class QString const &, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?setAlphaChannel@QRuntimePixmapData@@UAEXABVQPixmap@@@Z @ 12844 NONAME ; void QRuntimePixmapData::setAlphaChannel(class QPixmap const &)
+	?fromImageReader@QPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12845 NONAME ; void QPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?toImage@QPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12846 NONAME ; class QImage QPixmapData::toImage(class QRect const &) const
+	?fromImageReader@QPixmap@@SA?AV1@PAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12847 NONAME ; class QPixmap QPixmap::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?fromImage@QRuntimePixmapData@@UAEXABVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12848 NONAME ; void QRuntimePixmapData::fromImage(class QImage const &, class QFlags<enum Qt::ImageConversionFlag>)
+	?setMask@QRuntimePixmapData@@UAEXABVQBitmap@@@Z @ 12849 NONAME ; void QRuntimePixmapData::setMask(class QBitmap const &)
+	?mask@QRuntimePixmapData@@UBE?AVQBitmap@@XZ @ 12850 NONAME ; class QBitmap QRuntimePixmapData::mask(void) const
+	?createPixmapData@QGraphicsSystem@@UAEPAVQPixmapData@@PAV2@@Z @ 12851 NONAME ; class QPixmapData * QGraphicsSystem::createPixmapData(class QPixmapData *)
+	?metric@QRuntimePixmapData@@UBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 12852 NONAME ; int QRuntimePixmapData::metric(enum QPaintDevice::PaintDeviceMetric) const
+	??1QRuntimePixmapData@@UAE@XZ @ 12853 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(void)
+	??0QRuntimePixmapData@@QAE@PBVQRuntimeGraphicsSystem@@W4PixelType@QPixmapData@@@Z @ 12854 NONAME ; QRuntimePixmapData::QRuntimePixmapData(class QRuntimeGraphicsSystem const *, enum QPixmapData::PixelType)
+	?hasAlphaChannel@QRuntimePixmapData@@UBE_NXZ @ 12855 NONAME ; bool QRuntimePixmapData::hasAlphaChannel(void) const
+	?runtimeData@QRuntimePixmapData@@UBEPAVQPixmapData@@XZ @ 12856 NONAME ; class QPixmapData * QRuntimePixmapData::runtimeData(void) const
+	?toNativeType@QRuntimePixmapData@@UAEPAXW4NativeType@QPixmapData@@@Z @ 12857 NONAME ; void * QRuntimePixmapData::toNativeType(enum QPixmapData::NativeType)
+	?copy@QRasterPixmapData@@UAEXPBVQPixmapData@@ABVQRect@@@Z @ 12858 NONAME ; void QRasterPixmapData::copy(class QPixmapData const *, class QRect const &)
+	?eglSwapBuffersRegion2NOK@QEgl@@YAHHHHPBH@Z @ 12859 NONAME ; int QEgl::eglSwapBuffersRegion2NOK(int, int, int, int const *)
+	?swapBuffersRegion2NOK@QEglContext@@QAE_NHPBVQRegion@@@Z @ 12860 NONAME ; bool QEglContext::swapBuffersRegion2NOK(int, class QRegion const *)
+	?OpenIniFileLC@QS60MainApplication@@UBEPAVCDictionaryStore@@AAVRFs@@@Z @ 12861 NONAME ; class CDictionaryStore * QS60MainApplication::OpenIniFileLC(class RFs &) const
+	?Reserved_MtsmObject@QS60MainAppUi@@MAEXXZ @ 12862 NONAME ; void QS60MainAppUi::Reserved_MtsmObject(void)
+	?HandleForegroundEventL@QS60MainAppUi@@MAEXH@Z @ 12863 NONAME ; void QS60MainAppUi::HandleForegroundEventL(int)
+	?OpenFileL@QS60MainDocument@@UAEPAVCFileStore@@HABVTDesC16@@AAVRFs@@@Z @ 12864 NONAME ; class CFileStore * QS60MainDocument::OpenFileL(int, class TDesC16 const &, class RFs &)
+	?HandleTouchPaneSizeChange@QS60MainAppUi@@UAEXXZ @ 12865 NONAME ; void QS60MainAppUi::HandleTouchPaneSizeChange(void)
+	?Reserved_MtsmPosition@QS60MainAppUi@@MAEXXZ @ 12866 NONAME ; void QS60MainAppUi::Reserved_MtsmPosition(void)
+	?ApplicationRect@QS60MainAppUi@@UBE?AVTRect@@XZ @ 12867 NONAME ; class TRect QS60MainAppUi::ApplicationRect(void) const
+	?HandleSystemEventL@QS60MainAppUi@@MAEXABVTWsEvent@@@Z @ 12868 NONAME ; void QS60MainAppUi::HandleSystemEventL(class TWsEvent const &)
+	?HandleApplicationSpecificEventL@QS60MainAppUi@@MAEXHABVTWsEvent@@@Z @ 12869 NONAME ; void QS60MainAppUi::HandleApplicationSpecificEventL(int, class TWsEvent const &)
+	?HandleError@QS60MainAppUi@@UAE?AW4TErrorHandlerResponse@@HABUSExtendedError@@AAVTDes16@@1@Z @ 12870 NONAME ; enum TErrorHandlerResponse QS60MainAppUi::HandleError(int, struct SExtendedError const &, class TDes16 &, class TDes16 &)
+	?PrepareToExit@QS60MainAppUi@@UAEXXZ @ 12871 NONAME ; void QS60MainAppUi::PrepareToExit(void)
+	?MopSupplyObject@QS60MainAppUi@@MAE?AVPtr@TTypeUid@@V3@@Z @ 12872 NONAME ; class TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(class TTypeUid)
+	?SetFadedL@QS60MainAppUi@@UAEXH@Z @ 12873 NONAME ; void QS60MainAppUi::SetFadedL(int)
+	?Exit@QS60MainAppUi@@UAEXXZ @ 12874 NONAME ; void QS60MainAppUi::Exit(void)
+	?ProcessCommandL@QS60MainAppUi@@UAEXH@Z @ 12875 NONAME ; void QS60MainAppUi::ProcessCommandL(int)
+	?OpenFileL@QS60MainDocument@@UAEXAAPAVCFileStore@@AAVRFile@@@Z @ 12876 NONAME ; void QS60MainDocument::OpenFileL(class CFileStore * &, class RFile &)
+	?HandleScreenDeviceChangedL@QS60MainAppUi@@MAEXXZ @ 12877 NONAME ; void QS60MainAppUi::HandleScreenDeviceChangedL(void)
+	?PreDocConstructL@QS60MainApplication@@UAEXXZ @ 12878 NONAME ; void QS60MainApplication::PreDocConstructL(void)
+	?NewAppServerL@QS60MainApplication@@UAEXAAPAVCApaAppServer@@@Z @ 12879 NONAME ; void QS60MainApplication::NewAppServerL(class CApaAppServer * &)
+	?HandleViewDeactivation@QS60MainAppUi@@UAEXABVTVwsViewId@@0@Z @ 12880 NONAME ; void QS60MainAppUi::HandleViewDeactivation(class TVwsViewId const &, class TVwsViewId const &)
 

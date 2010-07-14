@@ -269,9 +269,9 @@ public:
 
     } *symbian_menubar;
     static int symbianCommands(int command);
+#endif
 #ifdef QT_SOFTKEYS_ENABLED
     QAction *menuBarAction;
-#endif
 #endif
 };
 #endif

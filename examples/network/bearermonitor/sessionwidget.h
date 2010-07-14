@@ -41,12 +41,12 @@
 #ifndef SESSIONWIDGET_H
 #define SESSIONWIDGET_H
 
+#include <qnetworksession.h>
 #if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
 #include "ui_sessionwidget_maemo.h"
 #else
 #include "ui_sessionwidget.h"
 #endif
-#include <qnetworksession.h>
 
 QT_USE_NAMESPACE
 

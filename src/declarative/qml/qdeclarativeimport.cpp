@@ -409,7 +409,8 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
             QString localFileOrQrc = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(importUrl);
             if (!localFileOrQrc.isEmpty()) {
                 QString dir = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(base.resolved(QUrl(uri)));
-                if (dir.isEmpty() || !QDir().exists(dir)) {
+                QFileInfo dirinfo(dir);
+                if (dir.isEmpty() || !dirinfo.exists() || !dirinfo.isDir()) {
                     if (errorString)
                         *errorString = QDeclarativeImportDatabase::tr("\"%1\": no such directory").arg(uri_arg);
                     return false; // local import dirs must exist
@@ -425,7 +426,8 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
                 if (prefix.isEmpty()) {
                     // directory must at least exist for valid import
                     QString localFileOrQrc = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(base.resolved(QUrl(uri)));
-                    if (localFileOrQrc.isEmpty() || !QDir().exists(localFileOrQrc)) {
+                    QFileInfo dirinfo(localFileOrQrc);
+                    if (localFileOrQrc.isEmpty() || !dirinfo.exists() || !dirinfo.isDir()) {
                         if (errorString) {
                             if (localFileOrQrc.isEmpty())
                                 *errorString = QDeclarativeImportDatabase::tr("import \"%1\" has no qmldir and no namespace").arg(uri);
@@ -445,11 +447,23 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
 
     if (vmaj > -1 && vmin > -1 && !qmldircomponents.isEmpty()) {
         QList<QDeclarativeDirParser::Component>::ConstIterator it = qmldircomponents.begin();
+        int lowest_maj = INT_MAX;
+        int lowest_min = INT_MAX;
+        int highest_maj = INT_MIN;
+        int highest_min = INT_MIN;
         for (; it != qmldircomponents.end(); ++it) {
-            if (it->majorVersion > vmaj || (it->majorVersion == vmaj && it->minorVersion >= vmin))
-                break;
+            if (it->majorVersion > highest_maj || (it->majorVersion == highest_maj && it->minorVersion > highest_min)) {
+                highest_maj = it->majorVersion;
+                highest_min = it->minorVersion;
+            }
+            if (it->majorVersion < lowest_maj || (it->majorVersion == lowest_maj && it->minorVersion < lowest_min)) {
+                lowest_maj = it->majorVersion;
+                lowest_min = it->minorVersion;
+            }
         }
-        if (it == qmldircomponents.end()) {
+        if (lowest_maj > vmaj || (lowest_maj == vmaj && lowest_min > vmin)
+            || highest_maj < vmaj || (highest_maj == vmaj && highest_min < vmin))
+        {
             *errorString = QDeclarativeImportDatabase::tr("module \"%1\" version %2.%3 is not installed").arg(uri_arg).arg(vmaj).arg(vmin);
             return false;
         }

@@ -551,9 +551,13 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             QDeclarativeCustomParserNode node =
                 qvariant_cast<QDeclarativeCustomParserNode>(value);
 
-            if (node.name() != "ListElement") {
-                error(node, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
-                return false;
+            if (node.name() != listElementTypeName) {
+                const QMetaObject *mo = resolveType(node.name());
+                if (mo != &QDeclarativeListElement::staticMetaObject) {
+                    error(node, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
+                    return false;
+                }
+                listElementTypeName = node.name(); // cache right name for next time
             }
 
             {
@@ -650,6 +654,7 @@ QByteArray QDeclarativeListModelParser::compile(const QList<QDeclarativeCustomPa
 {
     QList<ListInstruction> instr;
     QByteArray data;
+    listElementTypeName = QByteArray(); // unknown
 
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QDeclarativeCustomParserProperty &prop = customProps.at(ii);
@@ -1017,6 +1022,8 @@ QVariant NestedListModel::data(int index, int role) const
     Q_ASSERT(_root && index >= 0 && index < _root->values.count());
     checkRoles();
     QVariant rv;
+    if (roleStrings.count() < role)
+        return rv;
 
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
     if (!node)

@@ -233,6 +233,8 @@ public:
 
     virtual QStyle* style() const;
 
+    virtual bool viewResizesToContentsEnabled() const { return false; }
+
     QWidget* view;
 };
 
@@ -3614,7 +3616,7 @@ QString QWebPage::userAgentForUrl(const QUrl&) const
         firstPartTemp += QString::fromLatin1("Sun Solaris");
 #elif defined Q_OS_ULTRIX
         firstPartTemp += QString::fromLatin1("DEC Ultrix");
-#elif defined Q_WS_S60
+#elif defined Q_OS_SYMBIAN
         firstPartTemp += QLatin1Char(' ');
         QSysInfo::S60Version s60Version = QSysInfo::s60Version();
         switch (s60Version) {

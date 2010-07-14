@@ -48,9 +48,32 @@
 
 #include <usb.h>
 
-QList<SerialPortId> enumerateSerialPorts()
+class InterfaceInfo
 {
-    QList<QString> eligableInterfaces;
+public:
+    InterfaceInfo(const QString &mf, const QString &pr, int mfid, int prid);
+    QString manufacturer;
+    QString product;
+    int manufacturerid;
+    int productid;
+};
+
+InterfaceInfo::InterfaceInfo(const QString &mf, const QString &pr, int mfid, int prid) :
+    manufacturer(mf),
+    product(pr),
+    manufacturerid(mfid),
+    productid(prid)
+{
+    if(mf.isEmpty())
+        manufacturer = QString("[%1]").arg(mfid, 4, 16, QChar('0'));
+    if(pr.isEmpty())
+        product = QString("[%1]").arg(prid, 4, 16, QChar('0'));
+}
+
+QList<SerialPortId> enumerateSerialPorts(int loglevel)
+{
+    QList<QString> eligibleInterfaces;
+    QList<InterfaceInfo> eligibleInterfacesInfo;
     QList<SerialPortId> list;
 
     usb_init();
@@ -85,6 +108,41 @@ QList<SerialPortId> enumerateSerialPorts()
                         }
                     }
                 }
+                
+                if (usableInterfaces.isEmpty())
+                    continue;
+                
+                QString manufacturerString;
+                QString productString;
+                
+                usb_dev_handle *devh = usb_open(device);
+                if (devh) {
+                    QByteArray buf;
+                    buf.resize(256);
+                    int err = usb_get_string_simple(devh, device->descriptor.iManufacturer, buf.data(), buf.size());
+                    if (err < 0) {
+                        if (loglevel > 1)
+                            qDebug() << "      can't read manufacturer name, error:" << err;
+                    } else {
+                        manufacturerString = QString::fromAscii(buf);
+                        if (loglevel > 1)
+                            qDebug() << "      manufacturer:" << manufacturerString;
+                    }
+
+                    buf.resize(256);
+                    err = usb_get_string_simple(devh, device->descriptor.iProduct, buf.data(), buf.size());
+                    if (err < 0) {
+                        if (loglevel > 1)
+                            qDebug() << "      can't read product name, error:" << err;
+                    } else {
+                        productString = QString::fromAscii(buf);
+                        if (loglevel > 1)
+                            qDebug() << "      product:" << productString;
+                    }
+                    usb_close(devh);
+                } else if (loglevel > 0) {
+                    qDebug() << "      can't open usb device";
+                }
 
                 // second loop to find the actual data interface.
                 foreach (int i, usableInterfaces) {
@@ -94,11 +152,22 @@ QList<SerialPortId> enumerateSerialPorts()
                             if (descriptor.bInterfaceNumber != i)
                                 continue;
                             if (descriptor.bInterfaceClass == 10) { // "CDC Data"
-                                // qDebug() << "      found the data port"
-                                //     << "bus:" << bus->dirname
-                                //     << "device" << device->filename
-                                //     << "interface" << descriptor.bInterfaceNumber;
-                                eligableInterfaces << QString("if%1").arg(QString::number(i), 2, QChar('0')); // fix!
+                                if (loglevel > 1) {
+                                    qDebug() << "      found the data port"
+                                             << "bus:" << bus->dirname
+                                             << "device" << device->filename
+                                             << "interface" << descriptor.bInterfaceNumber;
+                                }
+                                // ### manufacturer and product strings are only readable as root :(
+                                if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
+                                    eligibleInterfaces << QString("usb-%1_%2-if%3")
+                                                          .arg(manufacturerString.replace(QChar(' '), QChar('_')))
+                                                          .arg(productString.replace(QChar(' '), QChar('_')))
+                                                          .arg(i, 2, 16, QChar('0'));
+                                } else {
+                                    eligibleInterfaces << QString("if%1").arg(i, 2, 16, QChar('0')); // fix!
+                                }
+                                eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
                             }
                         }
                     }
@@ -106,13 +175,18 @@ QList<SerialPortId> enumerateSerialPorts()
             }
         }
     }
+    
+    if (loglevel > 1)
+        qDebug() << "      searching for interfaces:" << eligibleInterfaces;
 
     QDir dir("/dev/serial/by-id/");
     foreach (const QFileInfo &info, dir.entryInfoList()) {
         if (!info.isDir()) {
-            bool usable = eligableInterfaces.isEmpty();
-            foreach (const QString &iface, eligableInterfaces) {
+            bool usable = eligibleInterfaces.isEmpty();
+            foreach (const QString &iface, eligibleInterfaces) {
                 if (info.fileName().contains(iface)) {
+                    if (loglevel > 1)
+                        qDebug() << "      found device file:" << info.fileName() << endl;
                     usable = true;
                     break;
                 }
@@ -124,6 +198,21 @@ QList<SerialPortId> enumerateSerialPorts()
             id.friendlyName = info.fileName();
             id.portName = info.canonicalFilePath();
             list << id;
+        }
+    }
+
+    if (list.isEmpty() && !eligibleInterfacesInfo.isEmpty() && loglevel > 0) {
+        qDebug() << "Possible USB devices found, but without serial drivers:";
+        foreach(const InterfaceInfo &iface, eligibleInterfacesInfo) {
+            qDebug() << "    Manufacturer:"
+                     << iface.manufacturer
+                     << "Product:"
+                     << iface.product
+                     << endl
+                     << "    Load generic driver using:"
+                     << QString("sudo modprobe usbserial vendor=0x%1 product=0x%2")
+                        .arg(iface.manufacturerid, 4, 16, QChar('0'))
+                        .arg(iface.productid, 4, 16, QChar('0'));
         }
     }
     return list;

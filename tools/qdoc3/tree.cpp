@@ -125,24 +125,27 @@ Tree::~Tree()
 
 /*!
  */
-Node *Tree::findNode(const QStringList &path, Node *relative, int findFlags)
+Node *Tree::findNode(const QStringList &path, Node *relative, int findFlags, const Node* self)
 {
     return const_cast<Node*>(const_cast<const Tree*>(this)->findNode(path,
                                                                      relative,
-                                                                     findFlags));
+                                                                     findFlags,
+                                                                     self));
 }
 
 /*!
  */
-const Node *Tree::findNode(const QStringList &path,
-                           const Node *relative,
-                           int findFlags) const
+const Node* Tree::findNode(const QStringList &path,
+                           const Node* start,
+                           int findFlags,
+                           const Node* self) const
 {
-    if (!relative)
-        relative = root();
+    const Node* current = start;
+    if (!current)
+        current = root();
 
     do {
-        const Node *node = relative;
+        const Node *node = current;
         int i;
 
         for (i = 0; i < path.size(); ++i) {
@@ -170,10 +173,13 @@ const Node *Tree::findNode(const QStringList &path,
         }
         if (node && i == path.size()
                 && (!(findFlags & NonFunction) || node->type() != Node::Function
-                    || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams))
-            return node;
-        relative = relative->parent();
-    } while (relative);
+                    || ((FunctionNode *)node)->metaness() == FunctionNode::MacroWithoutParams)) {
+            if ((node != self) && (node->subType() != Node::QmlPropertyGroup)) {
+                return node;
+            }
+        }
+        current = current->parent();
+    } while (current);
 
     return 0;
 }

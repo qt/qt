@@ -470,6 +470,7 @@
     \value TextIncludeTrailingSpaces Same as IncludeTrailingSpaces
     \value TextJustificationForced Ensures that text lines are justified.
 
+    \omitvalue TextBypassShaping
     \omitvalue BreakAnywhere
     \omitvalue DontClip
     \omitvalue DontPrint
@@ -565,8 +566,9 @@
     be short, localized names. This is basically equivalent to using the date format
     string, "ddd MMM d yyyy". See QDate::toString() for more information.
 
-    \value ISODate ISO 8601 extended format: either \c{YYYY-MM-DD} for dates or
-    \c{YYYY-MM-DDTHH:MM:SS} for combined dates and times.
+    \value ISODate \l{ISO 8601} extended format: either \c{YYYY-MM-DD} for dates or
+    \c{YYYY-MM-DDTHH:MM:SS}, \c{YYYY-MM-DDTHH:MM:SSTZD} (e.g., 1997-07-16T19:20:30+01:00)
+    for combined dates and times.
 
     \value SystemLocaleShortDate The \l{QLocale::ShortFormat}{short format} used
     by the \l{QLocale::system()}{operating system}.
@@ -1729,7 +1731,7 @@
     \value Key_MediaLast
     \value Key_unknown
 
-    \value Key_Call     A key to answer or initiate a call (see \l Key_ToggleCallHangup for a key to toggle current call state)
+    \value Key_Call     A key to answer or initiate a call (see Qt::Key_ToggleCallHangup for a key to toggle current call state)
     \value Key_Camera   A key to activate the camera shutter
     \value Key_CameraFocus  A key to focus the camera
     \value Key_Context1
@@ -1737,7 +1739,7 @@
     \value Key_Context3
     \value Key_Context4
     \value Key_Flip
-    \value Key_Hangup   A key to end an ongoing call (see \l Key_ToggleCallHangup for a key to toggle current call state)
+    \value Key_Hangup   A key to end an ongoing call (see Qt::Key_ToggleCallHangup for a key to toggle current call state)
     \value Key_No
     \value Key_Select
     \value Key_Yes

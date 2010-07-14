@@ -237,8 +237,6 @@
     Qt works with the Standard Edition, the Professional Edition and Team
     System Edition of Visual Studio 2005.
 
-    We also test Qt 4 on Windows XP with Visual Studio .NET and Visual Studio 2003.
-
     In order to use Qt with the Visual Studio 2005/2008 Express Edition you need
     to download and install the platform SDK. Due to limitations in the
     Express Edition it is not possible for us to install the Qt Visual
@@ -266,6 +264,10 @@
     from Microsoft. See this
     \l{http://qt.nokia.com/developer/faqs/faq.2006-12-18.3281869860}{Knowledge Base entry}
     for more information.
+    
+    There currently is a problem when compiling Qt with Visual Studio 2010 for 64-bit.
+    Its optimizer causes trouble and crashes for the release builds and it is not supported
+    in that configuration. See task http://bugreports.qt.nokia.com/browse/QTBUG-11445.
 
     \section1 IBM xlC (AIX)
 

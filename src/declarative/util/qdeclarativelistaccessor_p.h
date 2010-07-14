@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeEngine;
-class Q_DECLARATIVE_EXPORT QDeclarativeListAccessor
+class Q_AUTOTEST_EXPORT QDeclarativeListAccessor
 {
 public:
     QDeclarativeListAccessor();

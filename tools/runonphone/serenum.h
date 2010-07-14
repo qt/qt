@@ -51,6 +51,6 @@ struct SerialPortId
     QString friendlyName;
 };
 
-QList<SerialPortId> enumerateSerialPorts();
+QList<SerialPortId> enumerateSerialPorts(int loglevel);
 
 #endif // WIN32SERENUM_H

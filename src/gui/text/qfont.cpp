@@ -1266,6 +1266,15 @@ QFont::StyleHint QFont::styleHint() const
     \value OldEnglish the font matcher prefers decorative fonts.
     \value Decorative is a synonym for \c OldEnglish.
 
+    \value Monospace the font matcher prefers fonts that map to the
+    CSS generic font-family 'monospace'.
+
+    \value Fantasy the font matcher prefers fonts that map to the
+    CSS generic font-family 'fantasy'.
+
+    \value Cursive the font matcher prefers fonts that map to the
+    CSS generic font-family 'cursive'.
+
     \value System the font matcher prefers system fonts.
 */
 

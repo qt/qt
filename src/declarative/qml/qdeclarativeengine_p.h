@@ -64,6 +64,7 @@
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativecontext_p.h"
 #include "qdeclarativeexpression.h"
+#include "qdeclarativeimageprovider.h"
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativepropertycache_p.h"
 #include "private/qdeclarativeobjectscriptclass_p.h"
@@ -233,7 +234,9 @@ public:
     mutable QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory;
 
     QHash<QString,QDeclarativeImageProvider*> imageProviders;
+    QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
+    QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
 
     mutable QMutex mutex;
 
@@ -315,6 +318,7 @@ public:
     static QDeclarativeEnginePrivate *get(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p; }
     static QDeclarativeEngine *get(QDeclarativeEnginePrivate *p) { return p->q_func(); }
     QDeclarativeContextData *getContext(QScriptContext *);
+    QUrl getUrl(QScriptContext *);
 
     static QString urlToLocalFileOrQrc(const QUrl& url);
 

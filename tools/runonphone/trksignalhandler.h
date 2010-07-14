@@ -43,6 +43,7 @@
 #define TRKSIGNALHANDLER_H
 #include <QObject>
 #include <QString>
+#include "symbianutils/trkutils.h"
 
 class TrkSignalHandlerPrivate;
 class TrkSignalHandler : public QObject
@@ -66,13 +67,20 @@ public slots:
     void stateChanged(int);
     void stopped(uint pc, uint pid, uint tid, const QString& reason);
     void timeout();
+    void libraryLoaded(const trk::Library &lib);
+    void libraryUnloaded(const trk::Library &lib);
+    void registersAndCallStackReadComplete(const QList<uint>& registers, const QByteArray& stack);
 signals:
     void resume(uint pid, uint tid);
+    void stop(uint pid, uint tid);
     void terminate();
+    void getRegistersAndCallStack(uint pid, uint tid);
 public:
     TrkSignalHandler();
     ~TrkSignalHandler();
     void setLogLevel(int);
+    void setCrashLogging(bool);
+    void setCrashLogPath(QString);
 private:
     TrkSignalHandlerPrivate *d;
 };

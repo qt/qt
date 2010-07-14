@@ -562,6 +562,54 @@ QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::queryExpressionResult
     return query;
 }
 
+bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QString &propertyName,
+                                                  const QVariant &bindingExpression,
+                                                  bool isLiteralValue)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool QDeclarativeEngineDebug::resetBindingForObject(int objectDebugId, const QString &propertyName)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("RESET_BINDING") << objectDebugId << propertyName;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool QDeclarativeEngineDebug::setMethodBody(int objectDebugId, const QString &methodName,
+                                            const QString &methodBody)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("SET_METHOD_BODY") << objectDebugId << methodName << methodBody;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 QDeclarativeDebugWatch::QDeclarativeDebugWatch(QObject *parent)
 : QObject(parent), m_state(Waiting), m_queryId(-1), m_client(0), m_objectDebugId(-1)
 {
@@ -698,7 +746,7 @@ QDeclarativeDebugExpressionQuery::~QDeclarativeDebugExpressionQuery()
         QDeclarativeEngineDebugPrivate::remove(m_client, this);
 }
 
-QString QDeclarativeDebugExpressionQuery::expression() const
+QVariant QDeclarativeDebugExpressionQuery::expression() const
 {
     return m_expr;
 }

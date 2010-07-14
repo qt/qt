@@ -138,42 +138,37 @@ void tst_qdeclarativepixmapcache::single()
         expectedError = "Cannot open: " + target.toString();
     }
 
-    QPixmap pixmap;
+    QDeclarativePixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QString errorString;
-    QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
+
+    pixmap.load(&engine, target);
 
     if (incache) {
-        QCOMPARE(errorString, expectedError);
+        QCOMPARE(pixmap.error(), expectedError);
         if (exists) {
-            QVERIFY(status == QDeclarativePixmapReply::Ready);
+            QVERIFY(pixmap.status() == QDeclarativePixmap::Ready);
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(status == QDeclarativePixmapReply::Error);
+            QVERIFY(pixmap.status() == QDeclarativePixmap::Error);
             QVERIFY(pixmap.width() <= 0);
         }
     } else {
-        QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(&engine, target);
-        QVERIFY(reply);
         QVERIFY(pixmap.width() <= 0);
 
         Slotter getter;
-        connect(reply, SIGNAL(finished()), &getter, SLOT(got()));
+        pixmap.connectFinished(&getter, SLOT(got()));
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
-        QString errorString;
         if (exists) {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
+            QVERIFY(pixmap.status() == QDeclarativePixmap::Ready);
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(QDeclarativePixmapCache::get(target, &pixmap, &errorString) == QDeclarativePixmapReply::Error);
+            QVERIFY(pixmap.status() == QDeclarativePixmap::Error);
             QVERIFY(pixmap.width() <= 0);
         }
-        QCOMPARE(errorString, expectedError);
+        QCOMPARE(pixmap.error(), expectedError);
     }
-
-    QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
 }
 
 void tst_qdeclarativepixmapcache::parallel_data()
@@ -185,47 +180,36 @@ void tst_qdeclarativepixmapcache::parallel_data()
     QTest::addColumn<QUrl>("target2");
     QTest::addColumn<int>("incache");
     QTest::addColumn<int>("cancel"); // which one to cancel
-    QTest::addColumn<int>("requests");
 
     QTest::newRow("local")
             << thisfile.resolved(QUrl("data/exists1.png"))
             << thisfile.resolved(QUrl("data/exists2.png"))
             << (localfile_optimized ? 2 : 0)
-            << -1
-            << (localfile_optimized ? 0 : 2)
-            ;
+            << -1;
 
     QTest::newRow("remote")
             << QUrl("http://127.0.0.1:14452/exists2.png")
             << QUrl("http://127.0.0.1:14452/exists3.png")
             << 0
-            << -1
-            << 2
-            ;
+            << -1;
 
     QTest::newRow("remoteagain")
             << QUrl("http://127.0.0.1:14452/exists2.png")
             << QUrl("http://127.0.0.1:14452/exists3.png")
             << 2
-            << -1
-            << 0
-            ;
+            << -1;
 
     QTest::newRow("remotecopy")
             << QUrl("http://127.0.0.1:14452/exists4.png")
             << QUrl("http://127.0.0.1:14452/exists4.png")
             << 0
-            << -1
-            << 1
-            ;
+            << -1;
 
     QTest::newRow("remotecopycancel")
             << QUrl("http://127.0.0.1:14452/exists5.png")
             << QUrl("http://127.0.0.1:14452/exists5.png")
             << 0
-            << 0
-            << 1
-            ;
+            << 0;
 }
 
 void tst_qdeclarativepixmapcache::parallel()
@@ -234,38 +218,38 @@ void tst_qdeclarativepixmapcache::parallel()
     QFETCH(QUrl, target2);
     QFETCH(int, incache);
     QFETCH(int, cancel);
-    QFETCH(int, requests);
 
     QList<QUrl> targets;
     targets << target1 << target2;
 
-    QList<QDeclarativePixmapReply*> replies;
+    QList<QDeclarativePixmap *> pixmaps;
+    QList<bool> pending;
     QList<Slotter*> getters;
+
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
-        QPixmap pixmap;
-        QString errorString;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(target, &pixmap, &errorString);
-        QDeclarativePixmapReply *reply = 0;
-        QVERIFY(status != QDeclarativePixmapReply::Error);
-        if (status != QDeclarativePixmapReply::Error && status != QDeclarativePixmapReply::Ready)
-            reply = QDeclarativePixmapCache::request(&engine, target);
-        replies.append(reply);
-        if (!reply) {
-            QVERIFY(pixmap.width() > 0);
+        QDeclarativePixmap *pixmap = new QDeclarativePixmap;
+
+        pixmap->load(&engine, target);
+
+        QVERIFY(pixmap->status() != QDeclarativePixmap::Error);
+        pixmaps.append(pixmap);
+        if (pixmap->isReady()) {
+            QVERIFY(pixmap->width() >  0);
             getters.append(0);
+            pending.append(false);
         } else {
-            QVERIFY(pixmap.width() <= 0);
+            QVERIFY(pixmap->width() <= 0);
             getters.append(new Slotter);
-            connect(reply, SIGNAL(finished()), getters[i], SLOT(got()));
+            pixmap->connectFinished(getters[i], SLOT(got()));
+            pending.append(true);
         }
     }
 
     QCOMPARE(incache+slotters, targets.count());
-    QCOMPARE(QDeclarativePixmapCache::pendingRequests(), requests);
 
     if (cancel >= 0) {
-        QDeclarativePixmapCache::cancel(targets.at(cancel), getters[cancel]);
+        pixmaps.at(cancel)->clear(getters[cancel]);
         slotters--;
     }
 
@@ -275,22 +259,21 @@ void tst_qdeclarativepixmapcache::parallel()
     }
 
     for (int i=0; i<targets.count(); ++i) {
-        QDeclarativePixmapReply *reply = replies[i];
-        if (reply) {
-            if (i == cancel) {
-                QVERIFY(!getters[i]->gotslot);
-            } else {
+        QDeclarativePixmap *pixmap = pixmaps[i];
+
+        if (i == cancel) {
+            QVERIFY(!getters[i]->gotslot);
+        } else {
+            if (pending[i]) 
                 QVERIFY(getters[i]->gotslot);
-                QPixmap pixmap;
-                QString errorString;
-                QVERIFY(QDeclarativePixmapCache::get(targets[i], &pixmap, &errorString) == QDeclarativePixmapReply::Ready);
-                QVERIFY(pixmap.width() > 0);
-            }
+
+            QVERIFY(pixmap->isReady());
+            QVERIFY(pixmap->width() > 0);
             delete getters[i];
         }
     }
 
-    QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
+    qDeleteAll(pixmaps);
 }
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)

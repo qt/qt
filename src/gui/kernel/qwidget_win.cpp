@@ -1167,7 +1167,7 @@ void QWidgetPrivate::show_sys()
         // This is to resolve the problem where popups are opened from the
         // system tray and not being implicitly activated
         if (q->windowType() == Qt::Popup &&
-            (!q->parentWidget() || !q->parentWidget()->isActiveWindow()))
+            !q->parentWidget() && !qApp->activeWindow()) 
             q->activateWindow();
     }
 

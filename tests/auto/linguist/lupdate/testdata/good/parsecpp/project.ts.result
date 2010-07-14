@@ -120,6 +120,19 @@ backslashed \ stuff.</source>
     </message>
 </context>
 <context>
+    <name>Internal::Message</name>
+    <message>
+        <location filename="main.cpp" line="296"/>
+        <source>message1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.cpp" line="301"/>
+        <source>message2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Kåntekst</name>
     <message utf8="true">
         <location filename="finddialog.cpp" line="180"/>

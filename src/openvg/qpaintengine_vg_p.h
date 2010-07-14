@@ -172,7 +172,6 @@ private:
     bool clearRect(const QRectF &rect, const QColor &color);
 };
 
-
 QT_END_NAMESPACE
 
 #endif

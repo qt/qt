@@ -56,16 +56,17 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QDeclarativeView view;
-
+//![0]
     QStringList dataList;
     dataList.append("Item 1");
     dataList.append("Item 2");
     dataList.append("Item 3");
     dataList.append("Item 4");
 
+    QDeclarativeView view;
     QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+//![0]
 
     view.setSource(QUrl("qrc:view.qml"));
     view.show();

@@ -11,18 +11,17 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
 			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
 			  "		<fieldset>\n" \
-              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\">\n" \
+              "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\"/>\n" \
 			  "		 </fieldset>\n" \
 			  "		</form></div>\n" \
 			  "    <div id=\"nav-topright\">\n" \
 			  "      <ul>\n" \
 			  "        <li class=\"nav-topright-home\"><a href=\"http://qt.nokia.com/\">Qt HOME</a></li>\n" \
-			  "        <li class=\"nav-topright-dev\"><a href=\"http://qt.nokia.com/developer\">DEV</a></li>\n" \
+			  "        <li class=\"nav-topright-dev\"><a href=\"http://developer.qt.nokia.com/\">DEV</a></li>\n" \
 			  "        <li class=\"nav-topright-labs\"><a href=\"http://labs.qt.nokia.com/blogs/\">LABS</a></li>\n" \
 			  "        <li class=\"nav-topright-doc nav-topright-doc-active\"><a href=\"http://doc.qt.nokia.com/\">\n" \
 			  "          DOC</a></li>\n" \
 			  "        <li class=\"nav-topright-blog\"><a href=\"http://blog.qt.nokia.com/\">BLOG</a></li>\n" \
-			  "        <li class=\"nav-topright-shop\"><a title=\"SHOP\" href=\"http://shop.qt.nokia.com\">SHOP</a></li>\n" \
 			  "      </ul>\n" \
 			  "    </div>\n" \
 			  "    <div id=\"shortCut\">\n" \
@@ -49,6 +48,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			"			   <li><a href=\"declarativeui.html\">Device UI's &amp; Qt Quick</a></li> \n" \
 			"			   <li><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li> \n" \
 			"			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+			"			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
 			"			 </ul> \n" \
 			"		</li> \n" \
 			"		 <li><a href=\"#\">Examples</a> \n" \
@@ -57,7 +57,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			"				 <li><a href=\"tutorials.html\">Tutorials</a></li> \n" \
 			"				 <li><a href=\"demos.html\">Demos</a></li> \n" \
 			"				 <li><a href=\"qdeclarativeexamples.html\">QML Examples</a></li> \n" \
-			"				 <li><a href=\"qdeclarativeexamples.html#Demos\">QML Demos</a></li> \n" \
 			"			 </ul> \n" \
 			"		 </li> \n" \
 			" </ul> \n" \
@@ -113,7 +112,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"tutorials.html\">Tutorials</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"demos.html\">Demos</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html\">QML Examples</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeexamples.html#Demos\">QML Demos</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "        </div>\n" \
@@ -160,8 +158,8 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p>Thank you for giving your feedback. <div class=\"note\">Make sure it is related the page. For more general bugs and \n" \
-			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a></div></p>\n" \
+			  "      <p id=\"noteHead\">Thank you for giving your feedback. <div class=\"note\">Make sure it is related to this specific page. For more general bugs and \n" \
+			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</div></p>\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\"></textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \

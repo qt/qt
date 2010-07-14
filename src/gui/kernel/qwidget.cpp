@@ -338,8 +338,10 @@ QInputContext *QWidgetPrivate::inputContext() const
 #ifndef QT_NO_IM
     if (ic)
         return ic;
-#endif
     return qApp->inputContext();
+#else
+    return 0;
+#endif
 }
 
 /*!
@@ -10695,7 +10697,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 
         break;
     case Qt::WA_AcceptTouchEvents:
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_WS_S60)
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
         if (on)
             d->registerTouchWindow();
 #endif

@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeLoaderPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeLoader : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeLoader : public QDeclarativeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)

@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeCompiledData;
-class Q_DECLARATIVE_EXPORT QDeclarativeInstruction
+class Q_AUTOTEST_EXPORT QDeclarativeInstruction
 {
 public:
     enum Type { 

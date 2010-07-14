@@ -118,9 +118,9 @@ void QDeclarativeLoaderPrivate::initResize()
     be instantiated may be specified directly by the \l sourceComponent
     property, or loaded from a URL via the \l source property.
 
-    Loader can be used to delay the creation of a component until it is required.
-    For example, this loads "Page1.qml" as a component into the \l Loader element
-    when the \l MouseArea is clicked:
+    Loader can be used to delay the creation of a component until it
+    is required.  For example, this loads "Page1.qml" as a component
+    into the Loader element, when the \l MouseArea is clicked:
 
     \code
     import Qt 4.7
@@ -165,7 +165,6 @@ void QDeclarativeLoaderPrivate::initResize()
 /*!
     \internal
     \class QDeclarativeLoader
-    \qmlclass Loader
  */
 
 /*!
@@ -174,7 +173,7 @@ void QDeclarativeLoaderPrivate::initResize()
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
-    Q_D(QDeclarativeItem);
+    Q_D(QDeclarativeLoader);
     d->flags |= QGraphicsItem::ItemIsFocusScope;
 }
 
@@ -183,6 +182,14 @@ QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
  */
 QDeclarativeLoader::~QDeclarativeLoader()
 {
+    Q_D(QDeclarativeLoader);
+    if (d->item) {
+        if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(d->item)) {
+            QDeclarativeItemPrivate *p =
+                    static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
+            p->removeItemChangeListener(d, QDeclarativeItemPrivate::Geometry);
+        }
+    }
 }
 
 /*!

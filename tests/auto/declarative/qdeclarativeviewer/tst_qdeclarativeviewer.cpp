@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
+#include <QtGui/qmenubar.h>
 #include "../../../shared/util.h"
 #include "qmlruntime.h"
 #include "../../../shared/util.h"
@@ -50,6 +51,12 @@
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
+#endif
+
+#if defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5) || defined(Q_WS_S60)
+#  define MENUBAR_HEIGHT(mw) 0
+#else
+#  define MENUBAR_HEIGHT(mw) (mw->menuBar()->height())
 #endif
 
 class tst_QDeclarativeViewer : public QObject
@@ -75,28 +82,34 @@ tst_QDeclarativeViewer::tst_QDeclarativeViewer()
 {
 }
 
+#define TEST_INITIAL_SIZES(viewer) { \
+    QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject()); \
+    QVERIFY(rootItem); \
+\
+    QCOMPARE(rootItem->width(), 200.0); \
+    QCOMPARE(rootItem->height(), 300.0); \
+    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300)); \
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300)); \
+    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer))); \
+    QCOMPARE(viewer->size(), viewer->sizeHint()); \
+}
+
 void tst_QDeclarativeViewer::orientation()
 {
-    QWidget window;
-    QDeclarativeViewer *viewer = new QDeclarativeViewer(&window);
+    QDeclarativeViewer *viewer = new QDeclarativeViewer();
     QVERIFY(viewer);
     viewer->open(SRCDIR "/data/orientation.qml");
     QVERIFY(viewer->view());
     QVERIFY(viewer->menuBar());
     QDeclarativeItem* rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject());
     QVERIFY(rootItem);
-    window.show();
+    viewer->show();
 
-    QApplication::setActiveWindow(&window);
-    QTest::qWaitForWindowShown(&window);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&window));
+    QApplication::setActiveWindow(viewer);
+    QTest::qWaitForWindowShown(viewer);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
-    QTRY_COMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->rotateOrientation();
     qApp->processEvents();
@@ -105,7 +118,7 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(rootItem->height(), 200.0);
     QTRY_COMPARE(viewer->view()->size(), QSize(300, 200));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(300, 200));
-    QCOMPARE(viewer->size(), QSize(300, 200+viewer->menuBar()->height()));
+    QCOMPARE(viewer->size(), QSize(300, 200 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->rotateOrientation();
@@ -115,8 +128,10 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(rootItem->height(), 300.0);
     QTRY_COMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
+    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::loading()
@@ -135,23 +150,17 @@ void tst_QDeclarativeViewer::loading()
     QTest::qWaitForWindowShown(viewer);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    // initial size
-    QTRY_COMPARE(rootItem->width(), 200.0);
-    QTRY_COMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->resize(QSize(400, 500));
     qApp->processEvents();
 
     // window resized
     QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
-    QCOMPARE(viewer->view()->size(), QSize(400, 500-viewer->menuBar()->height()));
+    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500-viewer->menuBar()->height()));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), QSize(400, 500));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
@@ -165,7 +174,7 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
+    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->resize(QSize(400, 500));
@@ -173,10 +182,10 @@ void tst_QDeclarativeViewer::loading()
 
     // window resized again
     QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0-viewer->menuBar()->height());
-    QCOMPARE(viewer->view()->size(), QSize(400, 500-viewer->menuBar()->height()));
+    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500-viewer->menuBar()->height()));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), QSize(400, 500));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
@@ -190,8 +199,10 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->view()->size(), QSize(200, 300));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
+    QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::fileBrowser()
@@ -226,6 +237,8 @@ void tst_QDeclarativeViewer::fileBrowser()
     QVERIFY(viewer->view());
     QVERIFY(viewer->menuBar());
     QVERIFY(browserItem);
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::resizing()
@@ -243,14 +256,7 @@ void tst_QDeclarativeViewer::resizing()
     QTest::qWaitForWindowShown(viewer);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(viewer));
 
-    // initial size
-    QCOMPARE(rootItem->width(), 200.0);
-    QCOMPARE(rootItem->height(), 300.0);
-    QCOMPARE(viewer->view()->size(), QSize(200, 300));
-    QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
-    QCOMPARE(viewer->size(), QSize(200, 300+viewer->menuBar()->height()));
-    QCOMPARE(viewer->size(), viewer->sizeHint());
+    TEST_INITIAL_SIZES(viewer);
 
     viewer->setSizeToView(false);
 
@@ -261,10 +267,10 @@ void tst_QDeclarativeViewer::resizing()
 
     QCOMPARE(rootItem->width(), 150.0);
     QCOMPARE(rootItem->height(), 200.0);
-    QCOMPARE(viewer->view()->size(), QSize(150, 200));
+    QTRY_COMPARE(viewer->view()->size(), QSize(150, 200));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(150, 200));
-    QCOMPARE(viewer->size(), QSize(150, 200+viewer->menuBar()->height()));
+    QCOMPARE(viewer->size(), QSize(150, 200 + MENUBAR_HEIGHT(viewer)));
 
     // do not size root object to view
     viewer->resize(QSize(180,250));
@@ -278,16 +284,18 @@ void tst_QDeclarativeViewer::resizing()
     qApp->processEvents();
 
     QTRY_COMPARE(rootItem->width(), 250.0);
-    QTRY_COMPARE(rootItem->height(), 350.0-viewer->menuBar()->height());
-    QCOMPARE(viewer->view()->size(), QSize(250, 350-viewer->menuBar()->height()));
+    QTRY_COMPARE(rootItem->height(), 350.0 - MENUBAR_HEIGHT(viewer));
+    QTRY_COMPARE(viewer->view()->size(), QSize(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350-viewer->menuBar()->height()));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), QSize(250, 350));
 
     // do not size view to root object
     rootItem->setWidth(150);
     rootItem->setHeight(200);
     QTRY_COMPARE(viewer->size(), QSize(250, 350));
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::paths()
@@ -300,6 +308,8 @@ void tst_QDeclarativeViewer::paths()
 
     viewer->addPluginPath("miscPluginPath");
     viewer->view()->engine()->pluginPathList().contains("miscPluginPath");
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::slowMode()
@@ -309,6 +319,8 @@ void tst_QDeclarativeViewer::slowMode()
 
     viewer->setSlowMode(true);
     viewer->setSlowMode(false);
+
+    delete viewer;
 }
 
 QTEST_MAIN(tst_QDeclarativeViewer)

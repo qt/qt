@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QRuntimeGraphicsSystem;
 
-class QRuntimePixmapData : public QPixmapData {
+class Q_GUI_EXPORT QRuntimePixmapData : public QPixmapData {
 public:
     QRuntimePixmapData(const QRuntimeGraphicsSystem *gs, PixelType type);
     ~QRuntimePixmapData();

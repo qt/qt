@@ -70,9 +70,9 @@ Component {
 
                 x: randomX; y: randomY
 
-                SpringFollow on rotation {
-                    to: -flickable.horizontalVelocity / 100
-                    spring: 2.0; damping: 0.15
+                rotation: -flickable.horizontalVelocity / 100;
+                Behavior on rotation {
+                    SpringAnimation { spring: 2.0; damping: 0.15 }
                 }
 
                 Item {

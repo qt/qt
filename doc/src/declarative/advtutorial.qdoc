@@ -164,14 +164,22 @@ The \c createBlock() function creates a block from the \c Block.qml file
 and moves the new block to its position on the game canvas. This involves several steps:
 
 \list
-\o \l {Qt::createComponent()}{Qt.createComponent()} is called to generate an element from \c Block.qml.
-   If the component is ready, we can call \c createObject() to create an instance of the \c Block item.
-\o If \c createObject() returned null (i.e. if there was an error while
-   loading the object), print the error information.
-\o Place the block in its position on the board and set its width and height.
-   Also, store it in the blocks array for future reference.
-\o Finally, print error information to the console if the component could not be
-   loaded for some reason (for example, if the file is missing).
+
+\o \l {QML:Qt::createComponent()}{Qt.createComponent()} is called to
+   generate an element from \c Block.qml.  If the component is ready,
+   we can call \c createObject() to create an instance of the \c Block
+   item.
+
+\o If \c createObject() returned null (i.e. if there was an error
+   while loading the object), print the error information.
+
+\o Place the block in its position on the board and set its width and
+   height.  Also, store it in the blocks array for future reference.
+
+\o Finally, print error information to the console if the component
+   could not be loaded for some reason (for example, if the file is
+   missing).
+
 \endlist
 
 
@@ -306,18 +314,17 @@ In anticipation of the new block animations, \c Block.qml file is now renamed to
 \section3 Animating block movement
 
 First we will animate the blocks so that they move in a fluid manner. QML has a number of methods for adding fluid
-movement, and in this case we're going to use the \l SpringFollow element to add an animation with a spring-like
-movement. In \c BoomBlock.qml, we apply a \l SpringFollow
-to the \c x and \c y properties so that the block will follow and animate its movement towards the
-position specified by the new \c targetX and \c targetY properties (whose values will be set by \c samegame.js).
-Here is the code added to \c BoomBlock.qml:
+movement, and in this case we're going to use the \l Behavior element to add a \l SpringAnimation.
+In \c BoomBlock.qml, we apply a \l SpringAnimation behavior to the \c x and \c y properties so that the
+block will follow and animate its movement in a spring-like fashion towards the specified position (whose
+values will be set by \c samegame.js).Here is the code added to \c BoomBlock.qml:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 1
 
 The \c spring and \c damping values can be changed to modify the spring-like effect of the animation.
 
 The \c {enabled: spawned} setting refers to the \c spawned value that is set from \c createBlock() in \c samegame.js.
-This ensures the \l SpringFollow on the \c x is only enabled after \c createBlock() has set the block to
+This ensures the \l SpringAnimation on the \c x is only enabled after \c createBlock() has set the block to
 the correct position. Otherwise, the blocks will slide out of the corner (0,0) when a game begins, instead of falling
 from the top in rows. (Try commenting out \c {enabled: spawned} and see for yourself.)
 

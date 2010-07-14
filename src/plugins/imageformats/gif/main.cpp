@@ -47,7 +47,7 @@
 #ifdef QT_NO_IMAGEFORMAT_GIF
 #undef QT_NO_IMAGEFORMAT_GIF
 #endif
-#include "qgifhandler.h"
+#include <qgifhandler_p.h>
 
 QT_BEGIN_NAMESPACE
 

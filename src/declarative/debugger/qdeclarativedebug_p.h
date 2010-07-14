@@ -94,6 +94,10 @@ public:
     QDeclarativeDebugExpressionQuery *queryExpressionResult(int objectDebugId, 
                                                    const QString &expr,
                                                    QObject *parent = 0);
+    bool setBindingForObject(int objectDebugId, const QString &propertyName,
+                             const QVariant &bindingExpression, bool isLiteralValue);
+    bool resetBindingForObject(int objectDebugId, const QString &propertyName);
+    bool setMethodBody(int objectDebugId, const QString &methodName, const QString &methodBody);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeEngineDebug)
@@ -348,7 +352,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDebugExpressionQuery : public QDeclarativ
 Q_OBJECT
 public:
     virtual ~QDeclarativeDebugExpressionQuery();
-    QString expression() const;
+    QVariant expression() const;
     QVariant result() const;
 private:
     friend class QDeclarativeEngineDebug;
@@ -356,7 +360,7 @@ private:
     QDeclarativeDebugExpressionQuery(QObject *);
     QDeclarativeEngineDebug *m_client;
     int m_queryId;
-    QString m_expr;
+    QVariant m_expr;
     QVariant m_result;
 
 };

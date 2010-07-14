@@ -148,9 +148,14 @@ QString QFont::defaultFamily() const
         case QFont::Times:
             return QString::fromLatin1("Times New Roman");
         case QFont::Courier:
+        case QFont::Monospace:
             return QString::fromLatin1("Courier New");
         case QFont::Decorative:
             return QString::fromLatin1("Bookman Old Style");
+        case QFont::Cursive:
+            return QString::fromLatin1("Comic Sans MS");
+        case QFont::Fantasy:
+            return QString::fromLatin1("Impact");
         case QFont::Helvetica:
             return QString::fromLatin1("Arial");
         case QFont::System:

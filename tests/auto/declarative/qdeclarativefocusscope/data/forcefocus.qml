@@ -8,10 +8,10 @@ Rectangle {
 
         FocusScope {
             id: firstScope
+            objectName: "item0"
             focus: true
 
             Rectangle {
-                objectName: "item0"
                 height: 120; width: 420
 
                 color: "transparent"
@@ -44,9 +44,9 @@ Rectangle {
 
         FocusScope {
             id: secondScope
+            objectName: "item3"
 
             Rectangle {
-                objectName: "item3"
                 y: 160; height: 120; width: 420
 
                 color: "transparent"

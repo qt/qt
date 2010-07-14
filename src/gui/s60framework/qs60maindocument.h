@@ -44,9 +44,15 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_WS_S60
+#ifdef Q_OS_SYMBIAN
 
-#include <AknDoc.h>
+#ifdef Q_WS_S60
+#include <akndoc.h>
+typedef CAknDocument QS60MainDocumentBase;
+#else
+#include <eikdoc.h>
+typedef CEikDocument QS60MainDocumentBase;
+#endif
 
 class CEikApplication;
 
@@ -58,7 +64,7 @@ QT_MODULE(Gui)
 
 class QS60MainAppUi;
 
-class Q_GUI_EXPORT QS60MainDocument : public CAknDocument
+class Q_GUI_EXPORT QS60MainDocument : public QS60MainDocumentBase
 {
 public:
 
@@ -69,12 +75,18 @@ public:
 public:
 
     virtual CEikAppUi *CreateAppUiL();
+
+public:
+
+    virtual CFileStore *OpenFileL(TBool aDoOpen, const TDesC &aFilename, RFs &aFs);
+
+    virtual void OpenFileL(CFileStore *&aFileStore, RFile &aFile);
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // Q_WS_S60
+#endif // Q_OS_SYMBIAN
 
 #endif // QS60MAINDOCUMENT_H

@@ -136,8 +136,14 @@ QString QFont::defaultFamily() const
             return QString::fromLatin1("Times New Roman");
         case QFont::Courier:
             return QString::fromLatin1("Courier New");
+        case QFont::Monospace:
+            return QString::fromLatin1("Courier");
         case QFont::Decorative:
             return QString::fromLatin1("Bookman Old Style");
+        case QFont::Cursive:
+            return QString::fromLatin1("Apple Chancery");
+        case QFont::Fantasy:
+            return QString::fromLatin1("Papyrus");
         case QFont::Helvetica:
         case QFont::System:
         default:

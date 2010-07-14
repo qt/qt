@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <EnvironmentalReverbBase.h>
+#include <environmentalreverbbase.h>
 #include "environmentalreverb.h"
 
 QT_BEGIN_NAMESPACE

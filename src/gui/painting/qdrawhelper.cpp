@@ -5014,7 +5014,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
                 length -= copy_image_width;
                 copy_image_width *= 2;
             }
-            qt_memconvert(dest, src, length);
+            if (length > 0)
+                qt_memconvert(dest, src, length);
         } else {
             while (length) {
                 int l = qMin(image_width - sx, length);
@@ -7817,6 +7818,15 @@ void qInitDrawhelperAsm()
 
 #ifdef QT_HAVE_SSE2
         if (features & SSE2) {
+            extern void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels,
+                                                  const uint *srcPixels,
+                                                  int length,
+                                                  uint const_alpha);
+            extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
+
+            functionForModeAsm[0] = comp_func_SourceOver_sse2;
+            functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
+
             extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                                                      const uchar *srcPixels, int sbpl,
                                                      int w, int h,
@@ -7825,7 +7835,6 @@ void qInitDrawhelperAsm()
                                                        const uchar *srcPixels, int sbpl,
                                                        int w, int h,
                                                        int const_alpha);
-
 
             qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
@@ -7890,8 +7899,12 @@ void qInitDrawhelperAsm()
             qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
 
             functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+            functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
             destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
             destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
+
+            qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
+            qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
         }
 #endif
 
