@@ -241,7 +241,20 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
 #ifndef QT_NO_HTTP
 void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header, bool isProxy)
 {
-    QList<QPair<QString, QString> > values = header.values();
+    const QList<QPair<QString, QString> > values = header.values();
+    QList<QPair<QByteArray, QByteArray> > rawValues;
+
+    QList<QPair<QString, QString> >::const_iterator it, end;
+    for (it = values.constBegin(), end = values.constEnd(); it != end; ++it)
+        rawValues.append(qMakePair(it->first.toLatin1(), it->second.toUtf8()));
+
+    // continue in byte array form
+    parseHttpResponse(rawValues, isProxy);
+}
+#endif
+
+void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
+{
     const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
 
     method = None;
@@ -255,24 +268,25 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
       authentication parameters.
     */
 
-    QString headerVal;
+    QByteArray headerVal;
     for (int i = 0; i < values.size(); ++i) {
-        const QPair<QString, QString> &current = values.at(i);
-        if (current.first.toLower() != QLatin1String(search))
+        const QPair<QByteArray, QByteArray> &current = values.at(i);
+        if (current.first.toLower() != search)
             continue;
-        QString str = current.second;
-        if (method < Basic && str.startsWith(QLatin1String("Basic"), Qt::CaseInsensitive)) {
-            method = Basic; headerVal = str.mid(6);
-        } else if (method < Ntlm && str.startsWith(QLatin1String("NTLM"), Qt::CaseInsensitive)) {
+        QByteArray str = current.second.toLower();
+        if (method < Basic && str.startsWith("basic")) {
+            method = Basic;
+            headerVal = current.second.mid(6);
+        } else if (method < Ntlm && str.startsWith("ntlm")) {
             method = Ntlm;
-            headerVal = str.mid(5);
-        } else if (method < DigestMd5 && str.startsWith(QLatin1String("Digest"), Qt::CaseInsensitive)) {
+            headerVal = current.second.mid(5);
+        } else if (method < DigestMd5 && str.startsWith("digest")) {
             method = DigestMd5;
-            headerVal = str.mid(7);
+            headerVal = current.second.mid(7);
         }
     }
 
-    challenge = headerVal.trimmed().toLatin1();
+    challenge = headerVal.trimmed();
     QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
     switch(method) {
@@ -300,7 +314,6 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
         phase = Invalid;
     }
 }
-#endif
 
 QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMethod, const QByteArray &path)
 {
