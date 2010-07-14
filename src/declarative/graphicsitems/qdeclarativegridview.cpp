@@ -2438,8 +2438,11 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
     if (removedVisible && d->visibleItems.isEmpty()) {
         d->timeline.clear();
         d->setPosition(0);
-        if (d->itemCount == 0)
+        if (d->itemCount == 0) {
+            d->updateHeader();
+            d->updateFooter();
             update();
+        }
     }
 
     emit countChanged();

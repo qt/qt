@@ -1077,7 +1077,7 @@ void QDeclarativeListViewPrivate::updateFooter()
     }
     if (footer) {
         if (visibleItems.count()) {
-            qreal endPos = endPosition();
+            qreal endPos = endPosition() + 1;
             if (lastVisibleIndex() == model->count()-1) {
                 footer->setPosition(endPos);
             } else {
@@ -2893,8 +2893,11 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
-        if (d->itemCount == 0)
+        if (d->itemCount == 0) {
+            d->updateHeader();
+            d->updateFooter();
             update();
+        }
     }
 
     emit countChanged();
