@@ -1706,4 +1706,5 @@ EXPORTS
 	_ZN25QDeclarativeImageProviderC1ENS_9ImageTypeE @ 1705 NONAME
 	_ZN25QDeclarativeImageProviderC2ENS_9ImageTypeE @ 1706 NONAME
 	_ZNK25QDeclarativeImageProvider9imageTypeEv @ 1707 NONAME
+	_ZN23QDeclarativeEngineDebug21resetBindingForObjectEiRK7QString @ 1708 NONAME
 
