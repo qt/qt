@@ -98,6 +98,7 @@ Item {
             Item {
                 id: returnKey
                 Keys.onReturnPressed: container.accept()
+                Keys.onEnterPressed: container.accept()
                 Keys.onEscapePressed: titleBar.state = ""
             }
         }

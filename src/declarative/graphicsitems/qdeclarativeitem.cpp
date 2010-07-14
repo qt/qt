@@ -2097,7 +2097,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
-  The margins property can be used to set all of the various margins at once, to the same value.
+  The \c anchors.margins property can be used to set all of the various margins at once, to the same value.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 
@@ -2132,9 +2132,11 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \endqml
   \endtable
 
-  anchors.fill provides a convenient way for one item to have the
+  \c anchors.fill provides a convenient way for one item to have the
   same geometry as another item, and is equivalent to connecting all
   four directional anchors.
+
+  To clear an anchor value, set it to \c undefined.
 
   \note You can only anchor an item to siblings or a parent.
 

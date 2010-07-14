@@ -33,7 +33,10 @@
 In addition to the more traditional \l Grid, \l Row, and \l Column,
 QML also provides a way to layout items using the concept of \e anchors.
 Each item can be thought of as having a set of 7 invisible "anchor lines":
-\e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, \e baseline, and \e bottom.
+\l {Item::anchors.left}{left}, \l {Item::anchors.horizontalCenter}{horizontalCenter},
+\l {Item::anchors.right}{right}, \l {Item::anchors.top}{top}, 
+\l {Item::anchors.verticalCenter}{verticalCenter}, \l {Item::anchors.baseline}{baseline},
+and \l {Item::anchors.bottom}{bottom}.
 
 \image edges_qml.png
 
