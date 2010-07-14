@@ -42,29 +42,33 @@
 #include "qglgradientcache_p.h"
 #include <private/qdrawhelper_p.h>
 #include <private/qgl_p.h>
-
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
-static void QGL2GradientCache_free(void *ptr)
+class QGL2GradientCacheWrapper
 {
-    delete reinterpret_cast<QGL2GradientCache *>(ptr);
-}
+public:
+    QGL2GradientCache *cacheForContext(const QGLContext *context) {
+        QMutexLocker lock(&m_mutex);
+        return m_resource.value(context);
+    }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_gradient_caches, (QGL2GradientCache_free))
+private:
+    QGLContextGroupResource<QGL2GradientCache> m_resource;
+    QMutex m_mutex;
+};
+
+Q_GLOBAL_STATIC(QGL2GradientCacheWrapper, qt_gradient_caches)
 
 QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
 {
-    QGL2GradientCache *p = reinterpret_cast<QGL2GradientCache *>(qt_gradient_caches()->value(context));
-    if (!p) {
-        QGLShareContextScope scope(context);
-        p = new QGL2GradientCache;
-        qt_gradient_caches()->insert(context, p);
-    }
-    return p;
+    return qt_gradient_caches()->cacheForContext(context);
 }
 
-void QGL2GradientCache::cleanCache() {
+void QGL2GradientCache::cleanCache()
+{
+    QMutexLocker lock(&m_mutex);
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
         const CacheInfo &cache_info = it.value();
@@ -75,6 +79,7 @@ void QGL2GradientCache::cleanCache() {
 
 GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
 {
+    QMutexLocker lock(&m_mutex);
     quint64 hash_val = 0;
 
     QGradientStops stops = gradient.stops();
@@ -88,7 +93,9 @@ GLuint QGL2GradientCache::getBuffer(const QGradient &gradient, qreal opacity)
     else {
         do {
             const CacheInfo &cache_info = it.value();
-            if (cache_info.stops == stops && cache_info.opacity == opacity && cache_info.interpolationMode == gradient.interpolationMode()) {
+            if (cache_info.stops == stops && cache_info.opacity == opacity
+                && cache_info.interpolationMode == gradient.interpolationMode())
+            {
                 return cache_info.texId;
             }
             ++it;

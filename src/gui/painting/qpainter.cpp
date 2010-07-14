@@ -155,6 +155,10 @@ static bool qt_painter_thread_test(int devType, const char *what, bool extraCond
 #endif
             break;
     default:
+#ifdef Q_WS_X11
+        if (QApplication::testAttribute(Qt::AA_X11InitThreads))
+            return true;
+#endif
         if (!extraCondition && QThread::currentThread() != qApp->thread()) {
             qWarning("QPainter: It is not safe to use %s outside the GUI thread", what);
             return false;
@@ -5249,7 +5253,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
 #endif
 
     if (d->extended) {
@@ -5319,7 +5323,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     if (!d->engine || pm.isNull())
         return;
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
 #endif
 
     qreal x = r.x();
@@ -5726,7 +5730,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
     for (int i=0; i<count; ++i)
-        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));    
+        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));
 
     d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
 
@@ -5735,7 +5739,7 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
 
 void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
                     int glyphCount)
-{    
+{
     QVarLengthArray<QFixedPoint, 128> positions(glyphCount);
     for (int i=0; i<glyphCount; ++i)
         positions[i] = QFixedPoint::fromPointF(positionArray[i]);
@@ -5923,7 +5927,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     // Recreate the layout of the static text because the matrix or font has changed
     if (staticTextNeedsReinit)
-        staticText_d->init();    
+        staticText_d->init();
 
     if (transformedPosition != staticText_d->position) { // Translate to actual position
         QFixed fx = QFixed::fromReal(transformedPosition.x());
@@ -6663,7 +6667,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
+    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()", true);
 #endif
 
     qreal sw = pixmap.width();

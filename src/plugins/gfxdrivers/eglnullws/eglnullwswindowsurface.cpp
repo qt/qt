@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,60 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINEGLYPHCACHE_P_H
-#define QFONTENGINEGLYPHCACHE_P_H
+#include "eglnullwswindowsurface.h"
+#include "eglnullwsscreenplugin.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QGLWidget>
 
+static const QWSWindowSurface::SurfaceFlags Flags
+    = QWSWindowSurface::RegionReserved | QWSWindowSurface::RegionReserved;
 
-#include "QtCore/qglobal.h"
-#include "QtCore/qatomic.h"
-#include <QtCore/qvarlengtharray.h>
-#include "private/qfont_p.h"
-
-#ifdef Q_WS_WIN
-#   include "QtCore/qt_windows.h"
-#endif
-
-#ifdef Q_WS_MAC
-#   include "private/qt_mac_p.h"
-#   include "QtCore/qmap.h"
-#   include "QtCore/qcache.h"
-#   include "private/qcore_mac_p.h"
-#endif
-
-QT_BEGIN_NAMESPACE
-
-class QFontEngineGlyphCache: public QSharedData
+EGLNullWSWindowSurface::EGLNullWSWindowSurface(QWidget *w)
+    :
+    QWSGLWindowSurface(w),
+    widget(w)
 {
-public:
-    enum Type {
-        Raster_RGBMask,
-        Raster_A8,
-        Raster_Mono
-    };
+    setSurfaceFlags(Flags);
+}
 
-    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
+EGLNullWSWindowSurface::EGLNullWSWindowSurface()
+    : widget(0)
+{
+    setSurfaceFlags(Flags);
+}
 
-    virtual ~QFontEngineGlyphCache() { }
+EGLNullWSWindowSurface::~EGLNullWSWindowSurface() {}
 
-    Type cacheType() const { return m_type; }
+QString EGLNullWSWindowSurface::key() const
+{
+    return QLatin1String(PluginName);
+}
 
-    QTransform m_transform;
-    QFontEngineGlyphCache::Type m_type;
-};
-typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
-typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;
+QPaintDevice *EGLNullWSWindowSurface::paintDevice()
+{
+    return widget;
+}
 
-QT_END_NAMESPACE
+bool EGLNullWSWindowSurface::isValid() const
+{
+    return qobject_cast<QGLWidget *>(window());
+}
 
-#endif
+QImage EGLNullWSWindowSurface::image() const
+{
+    return QImage();
+}

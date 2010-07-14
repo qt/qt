@@ -185,10 +185,6 @@ QFontEngine::QFontEngine()
 
 QFontEngine::~QFontEngine()
 {
-    for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(),
-            end = m_glyphCaches.constEnd(); it != end; ++it) {
-        delete it->cache;
-    }
     m_glyphCaches.clear();
     qHBFreeFace(hbFace);
 }
@@ -734,14 +730,16 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
 {
     Q_ASSERT(data);
 
-    GlyphCacheEntry entry = { key, data };
+    GlyphCacheEntry entry;
+    entry.context = key;
+    entry.cache = data;
     if (m_glyphCaches.contains(entry))
         return;
 
     // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
     // memory use when there is continous or random rotation
     if (m_glyphCaches.size() == 4)
-        delete m_glyphCaches.takeLast().cache;
+        m_glyphCaches.removeLast();
 
     m_glyphCaches.push_front(entry);
 
@@ -750,7 +748,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
 QFontEngineGlyphCache *QFontEngine::glyphCache(void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const
 {
     for (QLinkedList<GlyphCacheEntry>::const_iterator it = m_glyphCaches.constBegin(), end = m_glyphCaches.constEnd(); it != end; ++it) {
-        QFontEngineGlyphCache *c = it->cache;
+        QFontEngineGlyphCache *c = it->cache.data();
         if (key == it->context
             && type == c->cacheType()
             && qtransform_equals_no_translate(c->m_transform, transform)) {

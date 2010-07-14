@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,60 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QFONTENGINEGLYPHCACHE_P_H
-#define QFONTENGINEGLYPHCACHE_P_H
+#include "eglnullwsscreenplugin.h"
+#include "eglnullwsscreen.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QScreenDriverPlugin>
+#include <QStringList>
 
-
-#include "QtCore/qglobal.h"
-#include "QtCore/qatomic.h"
-#include <QtCore/qvarlengtharray.h>
-#include "private/qfont_p.h"
-
-#ifdef Q_WS_WIN
-#   include "QtCore/qt_windows.h"
-#endif
-
-#ifdef Q_WS_MAC
-#   include "private/qt_mac_p.h"
-#   include "QtCore/qmap.h"
-#   include "QtCore/qcache.h"
-#   include "private/qcore_mac_p.h"
-#endif
-
-QT_BEGIN_NAMESPACE
-
-class QFontEngineGlyphCache: public QSharedData
+class EGLNullWSScreenPlugin : public QScreenDriverPlugin
 {
 public:
-    enum Type {
-        Raster_RGBMask,
-        Raster_A8,
-        Raster_Mono
-    };
-
-    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
-
-    virtual ~QFontEngineGlyphCache() { }
-
-    Type cacheType() const { return m_type; }
-
-    QTransform m_transform;
-    QFontEngineGlyphCache::Type m_type;
+    virtual QStringList keys() const;
+    virtual QScreen *create(const QString& driver, int displayId);
 };
-typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
-typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;
 
-QT_END_NAMESPACE
+QStringList EGLNullWSScreenPlugin::keys() const
+{
+    return QStringList() << QLatin1String(PluginName);
+}
 
-#endif
+QScreen *EGLNullWSScreenPlugin::create(const QString& driver, int displayId)
+{
+    return (driver.toLower() == QLatin1String(PluginName) ?
+        new EGLNullWSScreen(displayId) : 0);
+}
+
+Q_EXPORT_PLUGIN2(qeglnullws, EGLNullWSScreenPlugin)

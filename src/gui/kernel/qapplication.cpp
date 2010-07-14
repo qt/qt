@@ -5780,6 +5780,8 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
 QGestureManager* QGestureManager::instance()
 {
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    if (!qAppPriv)
+        return 0;
     if (!qAppPriv->gestureManager)
         qAppPriv->gestureManager = new QGestureManager(qApp);
     return qAppPriv->gestureManager;
