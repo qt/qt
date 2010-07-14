@@ -2421,9 +2421,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <QDebug>
 QT_END_INCLUDE_NAMESPACE
 
+#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, QStyle::State state)
 {
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
     debug << "QStyle::State(";
 
     QStringList states;
@@ -2455,9 +2455,9 @@ QDebug operator<<(QDebug debug, QStyle::State state)
     qSort(states);
     debug << states.join(QLatin1String(" | "));
     debug << ')';
-#endif
     return debug;
 }
+#endif
 
 /*!
     \since 4.6
