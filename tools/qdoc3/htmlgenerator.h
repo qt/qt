@@ -324,6 +324,7 @@ class HtmlGenerator : public PageGenerator
     static int id;
  public:
     static bool debugging_on;
+    static QString divNavTop;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"
