@@ -83,17 +83,18 @@ Rectangle {
     id: container
     width: 600; height: 200
 
-    Image {
-        id: pic
-        source: "pics/qt.png"
-        opacity: (600.0 - pic.x) / 600
+    Rectangle {
+        id: rect
+        width: 50; height: 50
+        color: "red"
+        opacity: (600.0 - rect.x) / 600
 
         MouseArea {
             anchors.fill: parent
-            drag.target: pic
+            drag.target: rect
             drag.axis: Drag.XAxis
             drag.minimumX: 0
-            drag.maximumX: container.width - pic.width
+            drag.maximumX: container.width - rect.width
         }
     }
 }
