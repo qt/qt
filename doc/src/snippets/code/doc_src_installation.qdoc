@@ -263,7 +263,7 @@ make
 //! [40]
 
 //! [41]
-cd src/s60installs
+cd src
 make sis
 //! [41]
 
