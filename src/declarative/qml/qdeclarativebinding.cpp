@@ -205,6 +205,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             } else if (d->property.object() &&
                        !QDeclarativePropertyPrivate::write(d->property, value, flags)) {
 
+                if (wasDeleted)
+                    return;
+
                 QUrl url = QUrl(d->url);
                 int line = d->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
@@ -221,6 +224,9 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
                                         QLatin1String(" to ") +
                                         QLatin1String(QMetaType::typeName(d->property.propertyType())));
             }
+
+            if (wasDeleted)
+                return;
 
             if (d->error.isValid()) {
                if (!d->addError(ep)) ep->warning(this->error());
