@@ -107,6 +107,9 @@
     Text { text: "Hello world!" }
     \endqml
 
+    Strings have a \c length attribute that holds the number of
+    characters in the string.
+
     \sa {QML Basic Types}
 */
 

@@ -983,6 +983,7 @@ void tst_QTextTable::QTBUG11282_insertBeforeMergedEnding()
     //Check that the final size is what we expected
     QCOMPARE(table->rows(), rows);
     QCOMPARE(table->columns(), columns + insert.at(1));
+    delete textEdit;
 }
 
 QTEST_MAIN(tst_QTextTable)

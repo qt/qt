@@ -761,7 +761,7 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
 
     QGraphicsWidget *firstOld = 0;
     bool wasPreviousNew = true;
-    
+
     while (w != q) {
         bool isCurrentNew = q->isAncestorOf(w);
         if (isCurrentNew) {
@@ -796,7 +796,7 @@ void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *new
         newScene = newParent->scene();
 
     if (oldScene && newScene != oldScene)
-        oldScene->d_func()->tabFocusFirst = firstOld;
+        oldScene->d_func()->tabFocusFirst = (firstOld && firstOld->scene() == oldScene) ? firstOld : 0;
 
     QGraphicsItem *topLevelItem = newParent ? newParent->topLevelItem() : 0;
     QGraphicsWidget *topLevel = 0;

@@ -180,9 +180,13 @@ QDeclarativeImageProvider::ImageType QDeclarativeImageProvider::imageType() cons
     Implement this method to return the image with \a id. The default 
     implementation returns an empty image.
 
-    If \a requestedSize is a valid size, the image returned should be of that size.
+    The \a requestedSize corresponds to the \l {Image::sourceSize} requested by
+    an Image element. If \a requestedSize is a valid size, the image
+    returned should be of that size.
 
-    In all cases, \a size must be set to the original size of the image.
+    In all cases, \a size must be set to the original size of the image. This
+    is used to set the \l {Item::}{width} and \l {Item::}{height} of image
+    elements that should be automatically sized to the loaded image.
 
     \note this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
@@ -201,9 +205,13 @@ QImage QDeclarativeImageProvider::requestImage(const QString &id, QSize *size, c
     Implement this method to return the pixmap with \a id. The default
     implementation returns an empty pixmap.
 
-    If \a requestedSize is a valid size, the image returned should be of that size.
+    The \a requestedSize corresponds to the \l {Image::sourceSize} requested by
+    an Image element. If \a requestedSize is a valid size, the image
+    returned should be of that size.
 
-    In all cases, \a size must be set to the original size of the image.
+    In all cases, \a size must be set to the original size of the image. This
+    is used to set the \l {Item::}{width} and \l {Item::}{height} of image
+    elements that should be automatically sized to the loaded image.
 
     \note this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
