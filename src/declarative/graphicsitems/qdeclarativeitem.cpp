@@ -2499,7 +2499,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \qmlproperty bool Item::clip
   This property holds whether clipping is enabled.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
 
   Non-rectangular clipping regions are not supported for performance reasons.
