@@ -72,7 +72,9 @@ public:
     tst_QGL();
     virtual ~tst_QGL();
 
+#ifndef Q_WS_MAC //All tests are disabled on mac as they crash and prevent integration, see QTBUG-12138
 private slots:
+#endif
     void getSetCheck();
     void openGLVersionCheck();
     void graphicsViewClipping();
@@ -838,9 +840,6 @@ public:
 
 void tst_QGL::graphicsViewClipping()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
-#endif
     const int size = 64;
     UnclippedWidget *widget = new UnclippedWidget;
     widget->setFixedSize(size, size);
@@ -943,10 +942,6 @@ void tst_QGL::partialGLWidgetUpdates()
 // This tests that rendering to a QGLPBuffer using QPainter works.
 void tst_QGL::glPBufferRendering()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
-#endif
-
     if (!QGLPixelBuffer::hasOpenGLPbuffers())
         QSKIP("QGLPixelBuffer not supported on this platform", SkipSingle);
 
@@ -1290,9 +1285,6 @@ protected:
 
 void tst_QGL::glFBOUseInGLWidget()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
-#endif
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
 
@@ -1689,10 +1681,6 @@ protected:
 
 void tst_QGL::replaceClipping()
 {
-#ifdef Q_WS_MAC
-    QSKIP("Prevent integration, see QTBUG-12138", SkipAll);
-#endif
-
     ReplaceClippingGLWidget glw;
 #ifdef Q_WS_QWS
     glw.setWindowFlags(Qt::FramelessWindowHint);
