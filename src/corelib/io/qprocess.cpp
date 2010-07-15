@@ -1399,10 +1399,10 @@ QString QProcess::nativeArguments() const
     \since 4.7
     \overload
 
-    Sets additional native command line arguments for the program.
+    Sets additional native command line \a arguments for the program.
 
     On operating systems where the system API for passing command line
-    arguments to a subprocess natively uses a single string, one can
+    \a arguments to a subprocess natively uses a single string, one can
     conceive command lines which cannot be passed via QProcess's portable
     list-based API. In such cases this function must be used to set a
     string which is \e appended to the string composed from the usual

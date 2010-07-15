@@ -252,6 +252,9 @@ public:
     QPointF position() const;
     void setPosition(const QPointF &pos);
 
+    static void setTimeout(int msecs);
+    static int timeout();
+
     friend class QTapAndHoldGestureRecognizer;
 };
 

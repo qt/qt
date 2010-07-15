@@ -825,9 +825,10 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
     return sections;
 }
 
-const Node *CppCodeMarker::resolveTarget(const QString &target,
-                                         const Tree *tree,
-                                         const Node *relative)
+const Node *CppCodeMarker::resolveTarget(const QString& target,
+                                         const Tree* tree,
+                                         const Node* relative,
+                                         const Node* self)
 {
     if (target.endsWith("()")) {
         const FunctionNode *func;
@@ -869,11 +870,13 @@ const Node *CppCodeMarker::resolveTarget(const QString &target,
     else {
         QStringList path = target.split("::");
         const Node *node;
+        int flags = Tree::SearchBaseClasses |
+            Tree::SearchEnumValues |
+            Tree::NonFunction;
         if ((node = tree->findNode(path,
                                    relative,
-                                   Tree::SearchBaseClasses |
-                                   Tree::SearchEnumValues |
-                                   Tree::NonFunction)))
+                                   flags,
+                                   self)))
             return node;
     }
     return 0;

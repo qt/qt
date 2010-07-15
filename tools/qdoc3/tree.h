@@ -65,10 +65,13 @@ class Tree
     Tree();
     ~Tree();
 
-    Node *findNode(const QStringList &path, Node *relative=0, int findFlags=0);
-    Node *findNode(const QStringList &path, 
+    Node* findNode(const QStringList &path, 
+                   Node* relative=0, 
+                   int findFlags=0, 
+                   const Node* self=0);
+    Node* findNode(const QStringList &path, 
                    Node::Type type, 
-                   Node *relative = 0,
+                   Node* relative = 0,
                    int findFlags = 0);
     FunctionNode *findFunctionNode(const QStringList &path, 
                                    Node *relative = 0,
@@ -98,12 +101,13 @@ class Tree
     NamespaceNode *root() { return &roo; }
 
     QString version() const { return vers; }
-    const Node *findNode(const QStringList &path, 
-                         const Node *relative = 0, 
-                         int findFlags = 0) const;
-    const Node *findNode(const QStringList &path, 
+    const Node* findNode(const QStringList &path, 
+                         const Node* relative = 0, 
+                         int findFlags = 0,
+                         const Node* self=0) const;
+    const Node* findNode(const QStringList &path, 
                          Node::Type type, const 
-                         Node *relative = 0,
+                         Node* relative = 0,
                          int findFlags = 0) const;
     const FunctionNode *findFunctionNode(const QStringList &path, 
                                          const Node *relative = 0,

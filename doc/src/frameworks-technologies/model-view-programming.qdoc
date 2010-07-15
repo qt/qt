@@ -900,7 +900,7 @@
     after its application through the use of certain types of selection
     commands. These are discussed later in this section.
 
-    \section3 Current item &amp selected items
+    \section3 Current item and selected items
 
     In a view, there is always a current item and a selected item - two
     independent states. An item can be the current item and selected at the
@@ -1257,7 +1257,7 @@
     reimplement the \l{QAbstractItemModel::columnCount()}{columnCount()}
     function.
 
-    \section3 Model headers &amp data
+    \section3 Model headers and data
 
     For items in the view, we want to return the strings in the string list.
     The \l{QAbstractItemModel::data()}{data()} function is responsible for
@@ -1350,7 +1350,7 @@
 
     \snippet doc/src/snippets/stringlistmodel/model.cpp 1
 
-    \section3 Inserting &amp removing rows
+    \section3 Inserting and removing rows
 
     It is possible to change the number of rows and columns in a model. In the
     string list model it only makes sense to change the number of rows, so we
@@ -1634,7 +1634,7 @@
     contain the text given in the search string. This pattern can also be
     used in the list and table widgets.
 
-    \section1 Using drag &amp drop with item views
+    \section1 Using drag & drop with item views
 
     Qt's drag and drop infrastructure is fully supported by the model/view framework.
     Items in lists, tables, and trees can be dragged within the views, and data can be
@@ -1714,7 +1714,7 @@
     of QAbstractItemModel::removeRows(), either directly or by inheriting the
     implementation from its base class.
 
-    \section3 Enabling drag &amp drop for items
+    \section3 Enabling drag & drop for items
 
     Models indicate to views which items can be dragged, and which will accept drops,
     by reimplementing the QAbstractItemModel::flags() function to provide suitable
@@ -2124,12 +2124,12 @@
     children may be displayed incorrectly in some views until the user
     attempts to view the non-existent child items.
 
-    \section2 Navigation &amp model index creation
+    \section2 Navigation and model index creation
 
     Hierarchical models need to provide functions that views can call to navigate the
     tree-like structures they expose, and obtain model indexes for items.
 
-    \section3 Parents &amp children
+    \section3 Parents and children
 
     Since the structure exposed to views is determined by the underlying data
     structure, it is up to each model subclass to create its own model indexes
@@ -2153,7 +2153,7 @@
     models to supply some unique identifier to this function to ensure that
     the model index can be re-associated with its corresponding item later on.
 
-    \section2 Drag &amp drop support and MIME type handling
+    \section2 Drag & drop support and MIME type handling
 
     The model/view classes support drag and drop operations, providing default behavior
     that is sufficient for many applications. However, it is also possible to customize
@@ -2282,7 +2282,7 @@
     \endlist
 
     For more information about drag and drop with item views, refer to
-    \l{Using Drag and Drop with Item Views}.
+    \l{Using drag & drop with item views}.
 
     \section3 Convenience views
 
@@ -2293,7 +2293,7 @@
     the existing contents with the data being transferred, the underlying model
     will set the data of the target items rather than insert new rows and columns
     into the model. For more information on drag and drop in convenience views,
-    you can see \l{Using Drag and Drop with Item Views}.
+    you can see \l{Using drag & drop with item views}.
 
     \section2 Performance optimization for large amounts of data
 

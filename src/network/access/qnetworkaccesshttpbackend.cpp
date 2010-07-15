@@ -944,10 +944,10 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
 
     checkForRedirect(status);
 
-    emit metaDataChanged();
-
-    // invoke this asynchronously, else Arora/QtDemoBrowser don't like cached downloads
-    // see task 250221 / 251801
+    // This needs to be emitted in the event loop because it can be reached at
+    // the direct code path of qnam.get(...) before the user has a chance
+    // to connect any signals.
+    QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
     qRegisterMetaType<QIODevice*>("QIODevice*");
     QMetaObject::invokeMethod(this, "writeDownstreamData", Qt::QueuedConnection, Q_ARG(QIODevice*, contents));
 

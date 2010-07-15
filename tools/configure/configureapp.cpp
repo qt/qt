@@ -2439,7 +2439,9 @@ void Configure::generateOutputVars()
         qmakeFormatPlugins += "gif";
 
     if (dictionary[ "TIFF" ] == "no")
-          qtConfig += "no-tiff";
+        qtConfig += "no-tiff";
+    else if (dictionary[ "TIFF" ] == "yes")
+        qtConfig += "tiff";
     else if (dictionary[ "TIFF" ] == "plugin")
         qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
@@ -2447,6 +2449,8 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "JPEG" ] == "no")
         qtConfig += "no-jpeg";
+    else if (dictionary[ "JPEG" ] == "yes")
+        qtConfig += "jpeg";
     else if (dictionary[ "JPEG" ] == "plugin")
         qmakeFormatPlugins += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
@@ -3160,16 +3164,6 @@ void Configure::generateConfigfiles()
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
-
-        if (!QFile::exists(buildPath + "/include/QtCore/qconfig.h")) {
-            if (!writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                             buildPath + "/include/QtCore/qconfig.h")
-            || !writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                            buildPath + "/include/Qt/qconfig.h")) {
-                dictionary["DONE"] = "error";
-                return;
-            }
-        }
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any
