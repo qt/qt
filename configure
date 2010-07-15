@@ -4481,11 +4481,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     fi
 
     mv -f "$QMAKE_QCONFIG_H" "$QCONFIG_H"
-    for conf in "$outpath/include/QtCore/qconfig.h" "$outpath/include/Qt/qconfig.h"; do
-        if [ '!' -f "$conf" ]; then
-            ln -s "$QCONFIG_H" "$conf"
-        fi
-    done
 
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -f mkspecs/default

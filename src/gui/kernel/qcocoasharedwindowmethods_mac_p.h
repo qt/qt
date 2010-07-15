@@ -85,6 +85,8 @@ QT_END_NAMESPACE
 - (BOOL)canBecomeKeyWindow
 {
     QWidget *widget = [self QT_MANGLE_NAMESPACE(qt_qwidget)];
+    if (!widget)
+        return NO; // This should happen only for qt_root_win
 
     bool isToolTip = (widget->windowType() == Qt::ToolTip);
     bool isPopup = (widget->windowType() == Qt::Popup);
@@ -94,6 +96,8 @@ QT_END_NAMESPACE
 - (BOOL)canBecomeMainWindow
 {
     QWidget *widget = [self QT_MANGLE_NAMESPACE(qt_qwidget)];
+    if (!widget)
+        return NO; // This should happen only for qt_root_win
 
     bool isToolTip = (widget->windowType() == Qt::ToolTip);
     bool isPopup = (widget->windowType() == Qt::Popup);

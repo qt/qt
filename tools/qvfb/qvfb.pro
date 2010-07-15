@@ -35,7 +35,7 @@ SOURCES         = qvfb.cpp \
                   ../../src/gui/embedded/qlock.cpp \
                   ../../src/gui/embedded/qwssignalhandler.cpp
 
-include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
+include(../shared/deviceskin/deviceskin.pri)
 
 contains(QT_CONFIG, opengl) {
 	QT += opengl
@@ -62,3 +62,11 @@ unix:x11 {
 }
 
 RESOURCES	+= qvfb.qrc
+
+TR_DIR = $$PWD/../../translations
+TRANSLATIONS = \
+    $$TR_DIR/qvfb_hu.ts \
+    $$TR_DIR/qvfb_pl.ts \
+    $$TR_DIR/qvfb_ru.ts \
+    $$TR_DIR/qvfb_zh_CN.ts \
+    $$TR_DIR/qvfb_zh_TW.ts

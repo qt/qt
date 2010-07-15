@@ -25,8 +25,8 @@ contains(CONFIG, static) {
 
 TARGET = designer
 
-include($$QT_SOURCE_TREE/tools/shared/fontpanel/fontpanel.pri)
-include($$QT_SOURCE_TREE/tools/shared/qttoolbardialog/qttoolbardialog.pri)
+include(../../../shared/fontpanel/fontpanel.pri)
+include(../../../shared/qttoolbardialog/qttoolbardialog.pri)
 
 HEADERS += \
     qdesigner.h \
@@ -88,4 +88,3 @@ INSTALLS += target
 include(../sharedcomponents.pri)
 
 unix:!mac:LIBS += -lm
-TRANSLATIONS = designer_de.ts

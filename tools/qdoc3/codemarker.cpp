@@ -630,4 +630,12 @@ QList<Section> CodeMarker::qmlSections(const QmlClassNode* , SynopsisStyle )
 }
 #endif
 
+const Node* CodeMarker::resolveTarget(const QString& , 
+                                      const Tree* ,
+		                      const Node* ,
+                                      const Node* )
+{
+    return 0;
+}
+
 QT_END_NAMESPACE
