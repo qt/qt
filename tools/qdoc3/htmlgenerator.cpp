@@ -1382,12 +1382,14 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
 
     if (!inner->doc().isEmpty()) {
+        generateExtractionMark(inner, DetailedDescriptionMark);
         //out() << "<hr />\n"
         out() << "<div class=\"descr\"/>\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
+        generateExtractionMark(inner, EndMark);
     }
 
     sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
@@ -1593,12 +1595,14 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
             ++s;
         }
 
+        generateExtractionMark(fake, DetailedDescriptionMark);
         out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(fake, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, fake->name());
         generateAlsoList(fake, marker);
+        generateExtractionMark(fake, EndMark);
         //out() << "<hr />\n";
 
         sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
@@ -1631,16 +1635,20 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
+        generateExtractionMark(fake, DetailedDescriptionMark);
         out() << "<a name=\"" << registerRef("details") << "\"></a><div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>\n";
         out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
-    else
+    else {
+        generateExtractionMark(fake, DetailedDescriptionMark);
         out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
+    }
 
     generateBody(fake, marker);
     out() << "</div>\n"; // QTBUG-9504
     generateAlsoList(fake, marker);
+    generateExtractionMark(fake, EndMark);
 
     if (!fake->groupMembers().isEmpty()) {
         NodeMap groupMembersMap;
@@ -1913,6 +1921,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 {
     Text brief = node->doc().briefText();
     if (!brief.isEmpty()) {
+        generateExtractionMark(node, BriefMark);
         out() << "<p>";
         generateText(brief, node, marker);
         if (!relative || node == relative)
@@ -1920,6 +1929,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
         else
             out() << " <a href=\"" << linkForNode(node, relative) << "#";
         out() << registerRef("details") << "\">More...</a></p>\n";
+        generateExtractionMark(node, EndMark);
     }
 }
 
@@ -3504,6 +3514,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
 #ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
 #endif    
+    generateExtractionMark(node, MemberMark);
     if (node->type() == Node::Enum
             && (enume = static_cast<const EnumNode *>(node))->flagsType()) {
 #ifdef GENERATE_MAC_REFS    
@@ -3566,6 +3577,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         }
     }
     generateAlsoList(node, marker);
+    generateExtractionMark(node, EndMark);
 }
 
 void HtmlGenerator::findAllClasses(const InnerNode *node)
@@ -4148,6 +4160,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
 #ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
 #endif    
+    generateExtractionMark(node, MemberMark);
     out() << "<div class=\"qmlitem\">";
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
@@ -4219,6 +4232,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
     generateAlsoList(node, marker);
     out() << "</div>";
     out() << "</div>";
+    generateExtractionMark(node, EndMark);
 }
 
 /*!
@@ -4455,6 +4469,40 @@ void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marke
     writer.writeEndElement(); // qtPageIndex
     writer.writeEndDocument();
     file.close();
+}
+
+void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType markType)
+{
+    if (markType != EndMark) {
+        out() << "<!-- $$$" + node->name();
+        if (markType == MemberMark) {
+            if (node->type() == Node::Function) {
+                const FunctionNode *func = static_cast<const FunctionNode *>(node);
+                if (!func->associatedProperty()) {
+                    if (func->overloadNumber() == 1)
+                        out() << "[overload1]";
+                    out() << "$$$" + func->name() + func->rawParameters().remove(' ');
+                }
+            } else if (node->type() == Node::Property) {
+                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
+                out() << "-prop";
+                const NodeList &list = prop->functions();
+                foreach (const Node *propFuncNode, list) {
+                    if (propFuncNode->type() == Node::Function) {
+                        const FunctionNode *func = static_cast<const FunctionNode *>(propFuncNode);
+                        out() << "$$$" + func->name() + func->rawParameters().remove(' ');
+                    }
+                }
+            }
+        } else if (markType == BriefMark) {
+            out() << "-brief";
+        } else if (markType == DetailedDescriptionMark) {
+            out() << "-description";
+        }
+        out() << " -->\n";
+    } else {
+        out() << "<!-- @@@" + node->name() + " -->\n";
+    }
 }
 
 #endif
