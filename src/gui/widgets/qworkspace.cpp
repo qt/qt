@@ -2551,7 +2551,6 @@ QWorkspaceChild::QWorkspaceChild(QWidget* window, QWorkspace *parent, Qt::Window
                  this, SLOT(titleBarDoubleClicked()));
     }
 
-    setMinimumSize(128, 0);
     int fw =  style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, this);
     setContentsMargins(fw, fw, fw, fw);
 
@@ -2702,11 +2701,15 @@ QSize QWorkspaceChild::sizeHint() const
 
 QSize QWorkspaceChild::minimumSizeHint() const
 {
-    if (!childWidget)
-        return QWidget::minimumSizeHint() + baseSize();
-    QSize s = childWidget->minimumSize();
-    if (s.isEmpty())
-        s = childWidget->minimumSizeHint();
+    QSize s;
+    if (!childWidget) {
+        s = QWidget::minimumSizeHint();
+    } else {
+        s = childWidget->minimumSize();
+        if (s.isEmpty())
+            s = childWidget->minimumSizeHint();
+    }
+    s = s.expandedTo(QSize(128, 0));
     return s + baseSize();
 }
 
