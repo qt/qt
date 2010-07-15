@@ -37,20 +37,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "instrument.h"
+#ifndef PIESLICE_H
+#define PIESLICE_H
 
-Instrument::Instrument(QObject *parent)
-    : QObject(parent)
-{
-}
+#include <QDeclarativeItem>
+#include <QColor>
 
-QString Instrument::type() const
+class PieSlice : public QDeclarativeItem
 {
-    return m_type;
-}
+    Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
-void Instrument::setType(const QString &type)
-{
-    m_type = type;
-}
+public:
+    PieSlice(QDeclarativeItem *parent = 0);
+
+    QColor color() const;
+    void setColor(const QColor &QColor);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
+private:
+    QColor m_color;
+};
+
+#endif
 

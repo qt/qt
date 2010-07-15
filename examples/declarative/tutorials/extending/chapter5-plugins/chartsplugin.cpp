@@ -37,27 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef INSTRUMENT_H
-#define INSTRUMENT_H
-
-#include <QObject>
-
+#include "chartsplugin.h"
 //![0]
-class Instrument : public QObject
+#include "piechart.h"
+#include "pieslice.h"
+#include <QtDeclarative/qdeclarative.h>
+
+void ChartsPlugin::registerTypes(const char *uri)
 {
-    Q_OBJECT
-    Q_PROPERTY(QString type READ type WRITE setType)
+    qmlRegisterType<PieChart>(uri, 1, 0, "PieChart");
+    qmlRegisterType<PieSlice>(uri, 1, 0, "PieSlice");
+}
 
-public:
-    Instrument(QObject *parent = 0);
-
-    QString type() const;
-    void setType(const QString &type);
-
-private:
-    QString m_type;
-};
+Q_EXPORT_PLUGIN2(chartsplugin, ChartsPlugin);
 //![0]
-
-#endif
 

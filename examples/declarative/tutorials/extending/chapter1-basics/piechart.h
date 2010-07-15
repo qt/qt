@@ -37,30 +37,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+#ifndef PIECHART_H
+#define PIECHART_H
 
 //![0]
-#include <QObject>
+#include <QDeclarativeItem>
+#include <QColor>
 
-class Musician : public QObject
+class PieChart : public QDeclarativeItem
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString instrument READ instrument WRITE setInstrument)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
-    Musician(QObject *parent = 0);
+    PieChart(QDeclarativeItem *parent = 0);
 
     QString name() const;
     void setName(const QString &name);
 
-    QString instrument() const;
-    void setInstrument(const QString &instrument);
+    QColor color() const;
+    void setColor(const QColor &color);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
     QString m_name;
-    QString m_instrument;
+    QColor m_color;
 };
 //![0]
 

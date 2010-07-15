@@ -37,20 +37,36 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "instrument.h"
+#include "piechart.h"
+#include "pieslice.h"
 
-Instrument::Instrument(QObject *parent)
-    : QObject(parent)
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
+    // this doesn't need to disable QGraphicsItem::ItemHasNoContents
+    // anymore since the drawing is now done in PieSlice
 }
 
-QString Instrument::type() const
+QString PieChart::name() const
 {
-    return m_type;
+    return m_name;
 }
 
-void Instrument::setType(const QString &type)
+void PieChart::setName(const QString &name)
 {
-    m_type = type;
+    m_name = name;
 }
+
+PieSlice *PieChart::pieSlice() const
+{
+    return m_pieSlice;
+}
+
+//![0]
+void PieChart::setPieSlice(PieSlice *pieSlice)
+{
+    m_pieSlice = pieSlice;
+    pieSlice->setParentItem(this);
+}
+//![0]
 

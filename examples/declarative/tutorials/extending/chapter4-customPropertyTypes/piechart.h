@@ -37,18 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+#ifndef PIECHART_H
+#define PIECHART_H
 
-#include <QObject>
+#include <QDeclarativeItem>
 
-class Instrument;
+class PieSlice;
 
 //![0]
-class Musician : public QObject
+class PieChart : public QDeclarativeItem
 {
     Q_OBJECT
-    Q_PROPERTY(Instrument* instrument READ instrument WRITE setInstrument)
+    Q_PROPERTY(PieSlice* pieSlice READ pieSlice WRITE setPieSlice)
 //![0]
     Q_PROPERTY(QString name READ name WRITE setName)
 
@@ -56,19 +56,19 @@ class Musician : public QObject
 public:
 //![1]
 
-    Musician(QObject *parent = 0);
+    PieChart(QDeclarativeItem *parent = 0);
 
     QString name() const;
     void setName(const QString &name);
 
 //![2]
-    Instrument *instrument() const;
-    void setInstrument(Instrument *instrument);
+    PieSlice *pieSlice() const;
+    void setPieSlice(PieSlice *pieSlice);
 //![2]
 
 private:
     QString m_name;
-    Instrument *m_instrument;
+    PieSlice *m_pieSlice;
 
 //![3]
 };

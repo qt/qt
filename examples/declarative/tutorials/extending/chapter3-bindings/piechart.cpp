@@ -37,19 +37,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICPLUGIN_H
-#define MUSICPLUGIN_H
+#include "piechart.h"
+#include <QPainter>
+#include <QDebug>
 
-//![0]
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
-
-class MusicPlugin : public QDeclarativeExtensionPlugin
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-public:
-    void registerTypes(const char *uri);
-};
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
+
+QString PieChart::name() const
+{
+    return m_name;
+}
+
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
+
+QColor PieChart::color() const
+{
+    return m_color;
+}
+
+//![0]
+void PieChart::setColor(const QColor &color)
+{
+    if (color != m_color) {
+        m_color = color;
+        update();   // repaint with the new color
+        emit colorChanged();
+    }
+}
 //![0]
 
-#endif
+void PieChart::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
+}
 
+void PieChart::clearChart()
+{
+    setColor(QColor(Qt::transparent));
+    update();
+}

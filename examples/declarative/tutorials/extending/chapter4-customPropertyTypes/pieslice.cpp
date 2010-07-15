@@ -37,25 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef INSTRUMENT_H
-#define INSTRUMENT_H
+#include "pieslice.h"
 
-#include <QObject>
+#include <QPainter>
 
-class Instrument : public QObject
+PieSlice::PieSlice(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(QString type READ type WRITE setType)
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
 
-public:
-    Instrument(QObject *parent = 0);
+QColor PieSlice::color() const
+{
+    return m_color;
+}
 
-    QString type() const;
-    void setType(const QString &type);
+void PieSlice::setColor(const QColor &color)
+{
+    m_color = color;
+}
 
-private:
-    QString m_type;
-};
-
-#endif
+void PieSlice::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
+}
 

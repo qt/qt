@@ -37,32 +37,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+#ifndef CHARTSPLUGIN_H
+#define CHARTSPLUGIN_H
 
-#include <QObject>
+//![0]
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
 
-class Instrument;
-
-class Musician : public QObject
+class ChartsPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(Instrument* instrument READ instrument WRITE setInstrument)
-
 public:
-    Musician(QObject *parent = 0);
-
-    QString name() const;
-    void setName(const QString &name);
-
-    Instrument *instrument() const;
-    void setInstrument(Instrument *instrument);
-
-private:
-    QString m_name;
-    Instrument *m_instrument;
+    void registerTypes(const char *uri);
 };
+//![0]
 
 #endif
 
