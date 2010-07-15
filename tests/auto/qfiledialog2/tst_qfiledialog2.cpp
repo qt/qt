@@ -140,6 +140,7 @@ private slots:
     void QTBUG4419_lineEditSelectAll();
     void QTBUG6558_showDirsOnly();
     void QTBUG4842_selectFilterWithHideNameFilterDetails();
+    void dontShowCompleterOnRoot();
 
 private:
     QByteArray userSettings;
@@ -1192,6 +1193,27 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     //We compare the current combobox text with the non stripped version
     QCOMPARE(filters2->currentText(), chosenFilterString);
 
+}
+
+void tst_QFileDialog2::dontShowCompleterOnRoot()
+{
+    QNonNativeFileDialog fd(0, "TestFileDialog");
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.show();
+
+    QApplication::setActiveWindow(&fd);
+    QTest::qWaitForWindowShown(&fd);
+    QTRY_COMPARE(fd.isVisible(), true);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
+
+    fd.setDirectory("");
+    QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+    QTRY_VERIFY(lineEdit->text().isEmpty());
+
+    //The gatherer thread will then return the result
+    QApplication::processEvents();
+
+    QTRY_VERIFY(lineEdit->completer()->popup()->isHidden());
 }
 
 QTEST_MAIN(tst_QFileDialog2)
