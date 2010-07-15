@@ -276,9 +276,9 @@ public:
     QEglScreen();
     ~QEglScreen() {}
 
-    QRect geometry() const { /*qDebug() << "QEglScreen::geometry()";*/ return m_geometry; }
-    int depth() const { qDebug() << "QEglScreen::depth()"; return m_depth; }
-    QImage::Format format() const {qDebug() << "QEglScreen::format()";  return m_format; }
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
     //QSize physicalSize() const { return m_physicalSize; } //###
 
 public:
