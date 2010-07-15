@@ -306,7 +306,7 @@ int QDeclarativeListReference::count() const
 /*!
 \class QDeclarativeListProperty
 \since 4.7
-\brief The QDeclarativeListProperty class allows applications to explose list-like 
+\brief The QDeclarativeListProperty class allows applications to expose list-like 
 properties to QML.
 
 QML has many list properties, where more than one object value can be assigned.
