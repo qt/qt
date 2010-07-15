@@ -48,8 +48,9 @@ Tutorial chapters:
 \o \l{declarative/tutorials/extending/chapter2-methods}{Connecting to C++ Methods and Signals}
 \o \l{declarative/tutorials/extending/chapter3-bindings}{Adding Property Bindings}
 \o \l{declarative/tutorials/extending/chapter4-customPropertyTypes}{Using Custom Property Types}
-\o \l{declarative/tutorials/extending/chapter5-plugins}{Writing an Extension Plugin}
-\o \l{qml-extending-tutorial6.html}{In Summary}
+\o \l{declarative/tutorials/extending/chapter5-listproperties}{Using List Property Types}
+\o \l{declarative/tutorials/extending/chapter6-plugins}{Writing an Extension Plugin}
+\o \l{qml-extending-tutorial7.html}{In Summary}
 \endlist
 
 */
@@ -339,15 +340,65 @@ Try it out with the code in Qt's \c examples/tutorials/extending/chapter4-custom
 
 */
 
-/*!
-\title Chapter 5: Writing an Extension Plugin
 
-\example declarative/tutorials/extending/chapter5-plugins
+/*!
+\title Chapter 5: Using List Property Types
+
+\example declarative/tutorials/extending/chapter5-listproperties
+
+Right now, a \c PieChart can only have one \c PieSlice. Ideally a chart would
+have multiple slices, with different colors and sizes. To do this, we could
+have a \c slices property that accepts a list of \c PieSlice items:
+
+\snippet declarative/tutorials/extending/chapter5-listproperties/app.qml 0
+
+\image extending-tutorial-chapter5.png
+
+To do this, we replace the \c pieSlice property in \c PieChart with a \c slices property,
+declared as a QDeclarativeListProperty type. The QDeclarativeListProperty class enables the 
+creation of list properties in QML extensions. We replace the \c pieSlice()
+function with a \c slices() function that returns a list of slices, and add 
+an internal \c append_slice() function (discussed below). We also use a QList to 
+store the internal list of slices as \c m_slices:
+
+\snippet declarative/tutorials/extending/chapter5-listproperties/piechart.h 0
+\dots
+\snippet declarative/tutorials/extending/chapter5-listproperties/piechart.h 1
+\dots
+\snippet declarative/tutorials/extending/chapter5-listproperties/piechart.h 2
+
+Although the \c slices property does not have an associated \c WRITE function,
+it is still modifiable because of the way QDeclarativeListProperty works.
+In the \c PieChart implementation, we implement \c PieChart::slices() to
+return a QDeclarativeListProperty value and indicate that the internal
+\c PieChart::append_slice() function is to be called whenever a request is made from QML
+to add items to the list:
+
+\snippet declarative/tutorials/extending/chapter5-listproperties/piechart.cpp 0
+
+The \c append_slice() function simply sets the parent item as before,
+and adds the new item to the \c m_slices list. As you can see, the append function for a
+QDeclarativeListProperty is called with two arguments: the list property, and
+the item that is to be appended.
+
+The \c PieSlice class has also been modified to include \c fromAngle and \c angleSpan
+properties and to draw the slice according to these values. This is a straightforward
+modification if you have read the previous pages in this tutorial, so the code is not shown here.
+
+The complete code can be seen in the updated \c examples/tutorials/extending/chapter5-listproperties directory.
+
+*/
+
+
+/*!
+\title Chapter 6: Writing an Extension Plugin
+
+\example declarative/tutorials/extending/chapter6-plugins
 
 Currently the \c PieChart and \c PieSlice types are used by \c app.qml,
 which is displayed using a QDeclarativeView in a C++ application. An alternative
 way to use our QML extension is to create a plugin library to make it available
-to the QML engine. This allows us to load \c app.qml using the \l {QML Viewer}
+to the QML engine. This allows \c app.qml to be loaded with the \l {QML Viewer}
 (or some other QML \l{Qt Declarative UI Runtime}{runtime} application) instead of writing a \c main.cpp file and
 loading our own C++ application.
 
@@ -365,22 +416,22 @@ Q_EXPORT_PLUGIN2 for Qt's \l{How to Create Qt Plugins}{plugin system}.
 
 Here is the \c ChartsPlugin definition in \c chartsplugin.h:
 
-\snippet declarative/tutorials/extending/chapter5-plugins/chartsplugin.h 0
+\snippet declarative/tutorials/extending/chapter6-plugins/chartsplugin.h 0
 
 And its implementation in \c chartsplugin.cpp:
 
-\snippet declarative/tutorials/extending/chapter5-plugins/chartsplugin.cpp 0
+\snippet declarative/tutorials/extending/chapter6-plugins/chartsplugin.cpp 0
 
 Then, we write a \c .pro project file that defines the project as a plugin library
 and specifies with DESTDIR that library files should be built into a "lib" subdirectory:
 
-\quotefile declarative/tutorials/extending/chapter5-plugins/chapter5-plugins.pro
+\quotefile declarative/tutorials/extending/chapter6-plugins/chapter6-plugins.pro
 
 Finally, we add a \c qmldir file that is automatically parsed by the QML engine.
-Here, we specify that a plugin named "chapter5-plugin" (the name
+Here, we specify that a plugin named "chapter6-plugin" (the name
 of the example project) can be found in the "lib" subdirectory:
 
-\quotefile declarative/tutorials/extending/chapter5-plugins/qmldir
+\quotefile declarative/tutorials/extending/chapter6-plugins/qmldir
 
 Now we have a plugin, and instead of having a main.cpp and an executable, we can build
 the project and then load the QML file in the \l {QML Viewer}:
@@ -397,9 +448,10 @@ having PieChart.qml and PieSlice.qml files inside the project directory, which c
 be used by \c app.qml without import statements.
 */
 
+
 /*!
-\page qml-extending-tutorial6.html
-\title Chapter 6: In Summary
+\page qml-extending-tutorial7.html
+\title Chapter 7: In Summary
 
 In this tutorial, we've shown the basic steps for creating a QML extension:
 
@@ -408,39 +460,28 @@ In this tutorial, we've shown the basic steps for creating a QML extension:
 \o Add callable methods using Q_INVOKABLE or Qt slots, and connect to Qt signals with an \c onSignal syntax
 \o Add property bindings by defining \l{Qt's Property System}{NOTIFY} signals
 \o Define custom property types if the built-in types are not sufficient
+\o Define list property types using QDeclarativeListProperty
 \o Create a plugin library by defining a Qt plugin and writing a \c qmldir file
 \endlist
 
 
 The \l {Extending QML in C++} reference documentation shows other useful features that can be added to
-QML extensions. For example, we could use \l{Object and List Property Types}{list properties} to allow multiple slices for a \c PieChart:
+QML extensions. For example, we could use \l{Default Property}{default properties} to allow 
+slices to be added without using the \c slices property:
 
 \code
     PieChart {
-        slices: [
-            PieSlice { color: "red" }
-            PieSlice { color: "blue" }
-            PieSlice { color: "yellow" }
-        ]
+        PieSlice { ... }
+        PieSlice { ... }
+        PieSlice { ... }
     }
 \endcode
 
-Or use \l{Default Property}{default properties} and avoid an
-\c slices property altogether:
+Or randomly add and remove slices from time to time using \l{Property Value Sources}{property value sources}:
 
 \code
     PieChart {
-        PieSlice { color: "red" }
-        PieSlice { color: "blue" }
-        PieSlice { color: "yellow" }
-    }
-\endcode
-
-Or even change the \c color of a \c PieChart from time to time using \l{Property Value Sources}{property value sources}:
-
-\code
-    PieChart {
-        PieSliceRandomizer on color {}
+        PieSliceRandomizer on slices {}
     }
 \endcode
 

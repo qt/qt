@@ -58,10 +58,31 @@ void PieSlice::setColor(const QColor &color)
     m_color = color;
 }
 
+int PieSlice::fromAngle() const
+{
+    return m_fromAngle;
+}
+
+void PieSlice::setFromAngle(int angle)
+{
+    m_fromAngle = angle;
+}
+
+int PieSlice::angleSpan() const
+{
+    return m_angleSpan;
+}
+
+void PieSlice::setAngleSpan(int angle)
+{
+    m_angleSpan = angle;
+}
+
 void PieSlice::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
     QPen pen(m_color, 2);
     painter->setPen(pen);
     painter->setRenderHints(QPainter::Antialiasing, true);
-    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
+    painter->drawPie(boundingRect(), m_fromAngle * 16, m_angleSpan * 16);
 }
+

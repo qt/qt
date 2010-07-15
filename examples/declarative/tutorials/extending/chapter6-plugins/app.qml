@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,32 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "piechart.h"
-#include "pieslice.h"
+import Qt 4.7
 
-PieChart::PieChart(QDeclarativeItem *parent)
-    : QDeclarativeItem(parent)
-{
-}
+Item {
+    width: 300; height: 200
 
-QString PieChart::name() const
-{
-    return m_name;
-}
+    PieChart {
+        anchors.centerIn: parent
+        width: 100; height: 100
 
-void PieChart::setName(const QString &name)
-{
-    m_name = name;
-}
-
-PieSlice *PieChart::pieSlice() const
-{
-    return m_pieSlice;
-}
-
-void PieChart::setPieSlice(PieSlice *pieSlice)
-{
-    m_pieSlice = pieSlice;
-    m_pieSlice->setParentItem(this);
+        slices: [
+            PieSlice { 
+                anchors.fill: parent
+                color: "red"
+                fromAngle: 0; angleSpan: 110 
+            },
+            PieSlice { 
+                anchors.fill: parent
+                color: "black"
+                fromAngle: 110; angleSpan: 50 
+            },
+            PieSlice { 
+                anchors.fill: parent
+                color: "blue"
+                fromAngle: 160; angleSpan: 100
+            }
+        ]
+    }
 }
 

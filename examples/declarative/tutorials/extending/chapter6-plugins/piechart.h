@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,23 +37,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef PIECHART_H
+#define PIECHART_H
 
-import Qt 4.7
+#include <QDeclarativeItem>
 
-Item {
-    width: 300; height: 200
+class PieSlice;
 
-    PieChart {
-        id: chart
-        anchors.centerIn: parent
-        width: 100; height: 100
+class PieChart : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QDeclarativeListProperty<PieSlice> slices READ slices)
+    Q_PROPERTY(QString name READ name WRITE setName)
 
-        pieSlice: PieSlice { 
-            anchors.fill: parent
-            color: "red" 
-        }
-    }
+public:
+    PieChart(QDeclarativeItem *parent = 0);
 
-    Component.onCompleted: console.log("The pie is colored " + chart.pieSlice.color)
-}
+    QString name() const;
+    void setName(const QString &name);
+
+    QDeclarativeListProperty<PieSlice> slices();
+
+private:
+    static void append_slice(QDeclarativeListProperty<PieSlice> *list, PieSlice *slice);
+
+    QString m_name;
+    QList<PieSlice *> m_slices;
+};
+
+#endif
 

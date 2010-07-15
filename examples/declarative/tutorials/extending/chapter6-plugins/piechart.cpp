@@ -37,28 +37,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef PIESLICE_H
-#define PIESLICE_H
+#include "piechart.h"
+#include "pieslice.h"
 
-#include <QDeclarativeItem>
-#include <QColor>
-
-class PieSlice : public QDeclarativeItem
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(QColor color READ color WRITE setColor)
+}
 
-public:
-    PieSlice(QDeclarativeItem *parent = 0);
+QString PieChart::name() const
+{
+    return m_name;
+}
 
-    QColor color() const;
-    void setColor(const QColor &QColor);
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+QDeclarativeListProperty<PieSlice> PieChart::slices() 
+{
+    return QDeclarativeListProperty<PieSlice>(this, 0, &PieChart::append_slice);
+}
 
-private:
-    QColor m_color;
-};
-
-#endif
+void PieChart::append_slice(QDeclarativeListProperty<PieSlice> *list, PieSlice *slice)
+{
+    PieChart *chart = qobject_cast<PieChart *>(list->object);
+    if (chart) {
+        slice->setParentItem(chart);
+        chart->m_slices.append(slice);
+    }
+}
 
