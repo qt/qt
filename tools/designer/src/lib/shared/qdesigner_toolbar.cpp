@@ -467,6 +467,7 @@ QRect ToolBarEventFilter::freeArea(const QToolBar *tb)
     switch (tb->orientation()) {
     case Qt::Horizontal:
         switch (tb->layoutDirection()) {
+        case Qt::LayoutDirectionAuto: // Should never happen
         case Qt::LeftToRight:
             rc.setX(exclusionRectangle.right() + 1);
             break;

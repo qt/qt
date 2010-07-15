@@ -50,8 +50,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#if !defined(QT_NO_STYLE_S60)
-
 //Public custom pixel metrics values.
 //These can be used to fetch custom pixel metric value from outside QS60Style.
 enum {
@@ -91,14 +89,14 @@ public:
 #endif
     bool event(QEvent *e);
 
-#ifndef Q_WS_S60
+#ifndef Q_OS_SYMBIAN
     static QStringList partKeys();
     static QStringList colorListKeys();
     void setS60Theme(const QHash<QString, QPicture> &parts,
         const QHash<QPair<QString , int>, QColor> &colors);
     bool loadS60ThemeFromBlob(const QString &blobFile);
     bool saveS60ThemeToBlob(const QString &blobFile) const;
-#endif // !Q_WS_S60
+#endif // !Q_OS_SYMBIAN
 
 protected Q_SLOTS:
     QIcon standardIconImplementation(
@@ -112,8 +110,6 @@ private:
     friend class QStyleFactory;
     friend class QApplicationPrivate;
 };
-
-#endif // QT_NO_STYLE_S60
 
 QT_END_NAMESPACE
 

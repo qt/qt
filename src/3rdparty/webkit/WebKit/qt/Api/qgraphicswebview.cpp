@@ -117,6 +117,8 @@ public:
 
     virtual QStyle* style() const;
 
+    virtual bool viewResizesToContentsEnabled() const { return resizesToContents; }
+
 #if USE(ACCELERATED_COMPOSITING)
     virtual void setRootGraphicsLayer(QGraphicsItem* layer);
     virtual void markForSync(bool scheduleSync);

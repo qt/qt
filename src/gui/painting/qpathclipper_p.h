@@ -148,8 +148,8 @@ public:
     int first;
     int second;
 
-    qreal angle;
-    qreal invAngle;
+    double angle;
+    double invAngle;
 
     int next(Traversal traversal, Direction direction) const;
 

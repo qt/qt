@@ -65,12 +65,12 @@ QT_BEGIN_NAMESPACE
     \snippet examples/declarative/modelviews/package/Delegate.qml 0
 
     These named items are used as the delegates by the two views who
-    reference the special VisualDataModel.parts property to select
+    reference the special \l{VisualDataModel::parts} property to select
     a model which provides the chosen delegate.
 
     \snippet examples/declarative/modelviews/package/view.qml 0
 
-    \sa {declarative/modelviews/package}{Package example}, QtDeclarative
+    \sa {declarative/modelviews/package}{Package example}, {demos/declarative/photoviewer}{Photo Viewer demo}, QtDeclarative
 */
 
 /*!

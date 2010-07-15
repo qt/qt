@@ -3,6 +3,10 @@
 
 CONFIG -= def_files_disabled
 
+# We need a target name without the INFIX'ed part, since DEF files are not infixed.
+equals(QMAKE_TARGET_PRODUCT, Qt4):clean_TARGET = $$replace(TARGET, "$${QT_LIBINFIX}$", "")
+else:clean_TARGET = $$TARGET
+
 symbian-abld|symbian-sbsv2 {
     # Firstly, if the MMP_RULES already contain a defBlock variable, don't generate another one
     # (this bit is slightly magic, because it depends upon everyone creating their DEFFILE statements
@@ -17,25 +21,25 @@ symbian-abld|symbian-sbsv2 {
             !isEmpty(DEF_FILE) {
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE $$DEF_FILE/bwins/$${TARGET}.def" \
+                "DEFFILE $$DEF_FILE/bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE $$DEF_FILE/eabi/$${TARGET}.def" \
+                "DEFFILE $$DEF_FILE/eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             } else:!isEmpty(defFilePath) {
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE $$defFilePath/bwins/$${TARGET}.def" \
+                "DEFFILE $$defFilePath/bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE $$defFilePath/eabi/$${TARGET}.def" \
+                "DEFFILE $$defFilePath/eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             } else {
                 # If defFilePath is not defined, then put the folders containing the DEF files at the
                 # same level as the .pro (and generated MMP) file(s)
                 defBlock = \
                 "$${LITERAL_HASH}ifdef WINSCW" \
-                "DEFFILE ./bwins/$${TARGET}.def" \
+                "DEFFILE ./bwins/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}elif defined EABI" \
-                "DEFFILE ./eabi/$${TARGET}.def" \
+                "DEFFILE ./eabi/$${clean_TARGET}.def" \
                 "$${LITERAL_HASH}endif"
             }
             MMP_RULES += defBlock
@@ -52,7 +56,7 @@ symbian-abld|symbian-sbsv2 {
         !exists("$$_PRO_FILE_PWD_/$$defFile/eabi") {
             system("$$QMAKE_MKDIR $$_PRO_FILE_PWD_/$$defFile/eabi")
         }
-        elf2e32FileToAdd = $$_PRO_FILE_PWD_/$$defFile/eabi/$$basename(TARGET)u.def
+        elf2e32FileToAdd = $$_PRO_FILE_PWD_/$$defFile/eabi/$$basename(clean_TARGET)u.def
     } else {
         elf2e32FileToAdd = $$_PRO_FILE_PWD_/$$defFile
     }

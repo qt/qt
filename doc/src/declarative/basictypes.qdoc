@@ -107,6 +107,9 @@
     Text { text: "Hello world!" }
     \endqml
 
+    Strings have a \c length attribute that holds the number of
+    characters in the string.
+
     \sa {QML Basic Types}
 */
 
@@ -397,6 +400,29 @@
     \qml
     Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
     \endqml
+
+    \sa {QML Basic Types}
+*/
+
+/*!
+    \qmlbasictype enumeration
+    \ingroup qmlbasictypes
+
+    \brief An enumeration type consists of a set of named values.
+
+    An enumeration type consists of a set of named values.
+
+    An enumeration value may be specifed as either a string:
+    \qml
+    Text { horizontalAlignment: "AlignRight" }
+    \endqml
+    
+    or as \c {<Element>.<value>}:
+    \qml
+    Text { horizontalAlignment: Text.AlignRight }
+    \endqml
+
+    The second form is preferred.
 
     \sa {QML Basic Types}
 */

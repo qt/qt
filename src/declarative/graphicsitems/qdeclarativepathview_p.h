@@ -53,7 +53,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativePathViewPrivate;
 class QDeclarativePathViewAttached;
-class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativePathView : public QDeclarativeItem
 {
     Q_OBJECT
 

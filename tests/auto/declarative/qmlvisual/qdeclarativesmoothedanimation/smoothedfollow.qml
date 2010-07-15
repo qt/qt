@@ -14,27 +14,27 @@ Rectangle {
     }
 
     Rectangle {
-        width: 50; height: 20; y: 60; color: "red"
-        SmoothedFollow on x { to: rect.x; velocity: 400; enabled: true }
+        width: 50; height: 20; x: rect.x; y: 60; color: "red"
+        Behavior on x { SmoothedAnimation { velocity: 400 } }
     }
 
     Rectangle {
-        width: 50; height: 20; y: 90; color: "yellow"
-        SmoothedFollow on x { to: rect.x; velocity: 300; reversingMode: SmoothedAnimation.Immediate; enabled: true }
+        width: 50; height: 20; x: rect.x; y: 90; color: "yellow"
+        Behavior on x { SmoothedAnimation { velocity: 300; reversingMode: SmoothedAnimation.Immediate } }
     }
 
     Rectangle {
-        width: 50; height: 20; y: 120; color: "green"
-        SmoothedFollow on x { to: rect.x; reversingMode: SmoothedAnimation.Sync; enabled: true }
+        width: 50; height: 20; x: rect.x; y: 120; color: "green"
+        Behavior on x { SmoothedAnimation { reversingMode: SmoothedAnimation.Sync } }
     }
 
     Rectangle {
-        width: 50; height: 20; y: 150; color: "purple"
-        SmoothedFollow on x { to: rect.x; maximumEasingTime: 200; enabled: true }
+        width: 50; height: 20; x: rect.x; y: 150; color: "purple"
+        Behavior on x { SmoothedAnimation { maximumEasingTime: 200 } }
     }
 
     Rectangle {
-        width: 50; height: 20; y: 180; color: "blue"
-        SmoothedFollow on x { to: rect.x; duration: 300; enabled: true }
+        width: 50; height: 20; x: rect.x; y: 180; color: "blue"
+        Behavior on x { SmoothedAnimation { duration: 300 } }
     }
 }

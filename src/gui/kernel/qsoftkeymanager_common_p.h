@@ -71,7 +71,7 @@ protected:
     QHash<QAction*, Qt::Key> keyedActions;
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;
-
+    bool pendingUpdate;
 };
 
 QT_END_NAMESPACE

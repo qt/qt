@@ -108,6 +108,7 @@ QString QFont::defaultFamily() const
         case QFont::Times:
             return QString::fromLatin1("times");
         case QFont::Courier:
+        case QFont::Monospace:
             return QString::fromLatin1("courier");
         case QFont::Decorative:
             return QString::fromLatin1("old english");

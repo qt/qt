@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <AudioEqualizerBase.h>
+#include <audioequalizerbase.h>
 #include "audioequalizer.h"
 
 QT_BEGIN_NAMESPACE

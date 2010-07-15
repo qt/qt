@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 //### set component root as focusscope
-class Q_DECLARATIVE_EXPORT QDeclarativeFocusScope : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeFocusScope : public QDeclarativeItem
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeItem)

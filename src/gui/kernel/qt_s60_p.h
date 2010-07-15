@@ -155,7 +155,9 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+#endif
 
+#ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
 #endif
 };
@@ -208,7 +210,7 @@ protected: // from MAknFadedComponent
     TInt CountFadedComponents() {return 1;}
     CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
 #else
-    #warning No fallback implementation for QSymbianControl::FadeBehindPopup
+    // #warning No fallback implementation for QSymbianControl::FadeBehindPopup
     void FadeBehindPopup(bool /*fade*/){ }
 #endif
 
@@ -277,9 +279,9 @@ inline QS60Data::QS60Data()
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
   memoryLimitForHwRendering(0),
-  s60ApplicationFactory(0),
-#ifdef Q_WS_S60
-  s60InstalledTrapHandler(0)
+  s60ApplicationFactory(0)
+#ifdef Q_OS_SYMBIAN
+  ,s60InstalledTrapHandler(0)
 #endif
 {
 }

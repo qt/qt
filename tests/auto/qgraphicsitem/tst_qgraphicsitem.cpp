@@ -422,6 +422,7 @@ private slots:
     void setGraphicsEffect();
     void panel();
     void addPanelToActiveScene();
+    void panelWithFocusItem();
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
@@ -442,6 +443,7 @@ private slots:
     void updateMicroFocus();
     void textItem_shortcuts();
     void scroll();
+    void stopClickFocusPropagation();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -461,6 +463,7 @@ private slots:
     void sortItemsWhileAdding();
     void doNotMarkFullUpdateIfNotInScene();
     void itemDiesDuringDraggingOperation();
+    void QTBUG_12112_focusItem();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -8415,6 +8418,54 @@ void tst_QGraphicsItem::panel()
     QVERIFY(!panel1->isActive());
 }
 
+void tst_QGraphicsItem::panelWithFocusItem()
+{
+    QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
+    QGraphicsRectItem *parentPanel = new QGraphicsRectItem;
+    QGraphicsRectItem *parentPanelFocusItem = new QGraphicsRectItem(parentPanel);
+    parentPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    parentPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
+    parentPanelFocusItem->setFocus();
+    scene.addItem(parentPanel);
+
+    QVERIFY(parentPanel->isActive());
+    QVERIFY(parentPanelFocusItem->hasFocus());
+    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+
+    QGraphicsRectItem *childPanel = new QGraphicsRectItem;
+    QGraphicsRectItem *childPanelFocusItem = new QGraphicsRectItem(childPanel);
+    childPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    childPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
+    childPanelFocusItem->setFocus();
+
+    QVERIFY(!childPanelFocusItem->hasFocus());
+    QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+    QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+
+    childPanel->setParentItem(parentPanel);
+
+    QVERIFY(!parentPanel->isActive());
+    QVERIFY(!parentPanelFocusItem->hasFocus());
+    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+
+    QVERIFY(childPanel->isActive());
+    QVERIFY(childPanelFocusItem->hasFocus());
+    QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+    QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+
+    childPanel->hide();
+
+    QVERIFY(parentPanel->isActive());
+    QVERIFY(parentPanelFocusItem->hasFocus());
+    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+}
+
 void tst_QGraphicsItem::addPanelToActiveScene()
 {
     QGraphicsScene scene;
@@ -10268,6 +10319,59 @@ void tst_QGraphicsItem::scroll()
     QCOMPARE(item2->lastExposedRect, expectedItem2Expose);
 }
 
+void tst_QGraphicsItem::stopClickFocusPropagation()
+{
+    class MyItem : public QGraphicsRectItem
+    {
+    public:
+        MyItem() : QGraphicsRectItem(0, 0, 100, 100) {}
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+        {
+            painter->fillRect(boundingRect(), hasFocus() ? QBrush(Qt::red) : brush());
+        }
+    };
+
+    QGraphicsScene scene(-50, -50, 400, 400);
+    scene.setStickyFocus(true);
+
+    QGraphicsRectItem *noFocusOnTop = new MyItem;
+    noFocusOnTop->setBrush(Qt::yellow);
+    noFocusOnTop->setFlag(QGraphicsItem::ItemStopsClickFocusPropagation);
+
+    QGraphicsRectItem *focusableUnder = new MyItem;
+    focusableUnder->setBrush(Qt::blue);
+    focusableUnder->setFlag(QGraphicsItem::ItemIsFocusable);
+    focusableUnder->setPos(50, 50);
+
+    QGraphicsRectItem *itemWithFocus = new MyItem;
+    itemWithFocus->setBrush(Qt::black);
+    itemWithFocus->setFlag(QGraphicsItem::ItemIsFocusable);
+    itemWithFocus->setPos(250, 10);
+
+    scene.addItem(noFocusOnTop);
+    scene.addItem(focusableUnder);
+    scene.addItem(itemWithFocus);
+    focusableUnder->stackBefore(noFocusOnTop);
+    itemWithFocus->setFocus();
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QApplication::setActiveWindow(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QVERIFY(itemWithFocus->hasFocus());
+
+    QPointF mousePressPoint = noFocusOnTop->mapToScene(QPointF());
+    mousePressPoint.rx() += 60;
+    mousePressPoint.ry() += 60;
+    const QList<QGraphicsItem *> itemsAtMousePressPosition = scene.items(mousePressPoint);
+    QVERIFY(itemsAtMousePressPosition.contains(focusableUnder));
+
+    sendMousePress(&scene, mousePressPoint);
+    QVERIFY(itemWithFocus->hasFocus());
+}
+
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
 {
     struct Item : public QGraphicsTextItem
@@ -10621,5 +10725,31 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     delete item;
     QVERIFY(QGraphicsScenePrivate::get(&scene)->dragDropItem == 0);
 }
+
+void tst_QGraphicsItem::QTBUG_12112_focusItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, 20, 20);
+    item1->setFlag(QGraphicsItem::ItemIsFocusable);
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(20, 20, 20, 20);
+    item2->setFlag(QGraphicsItem::ItemIsFocusable);
+    item1->setFocus();
+    scene.addItem(item2);
+    scene.addItem(item1);
+
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
+
+    QVERIFY(item1->focusItem());
+    QVERIFY(!item2->focusItem());
+
+    item2->setFocus();
+    QVERIFY(!item1->focusItem());
+    QVERIFY(item2->focusItem());
+}
+
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

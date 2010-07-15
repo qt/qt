@@ -66,7 +66,6 @@ class QDeclarativeBorderImagePrivate : public QDeclarativeImageBasePrivate
 public:
     QDeclarativeBorderImagePrivate()
       : border(0), sciReply(0),
-        sciPendingPixmapCache(false),
         horizontalTileMode(QDeclarativeBorderImage::Stretch),
         verticalTileMode(QDeclarativeBorderImage::Stretch),
         redirectCount(0)
@@ -97,7 +96,6 @@ public:
     QDeclarativeScaleGrid *border;
     QUrl sciurl;
     QNetworkReply *sciReply;
-    bool sciPendingPixmapCache;
     QDeclarativeBorderImage::TileMode horizontalTileMode;
     QDeclarativeBorderImage::TileMode verticalTileMode;
     int redirectCount;

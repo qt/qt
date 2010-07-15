@@ -145,7 +145,7 @@ QT_BEGIN_NAMESPACE
     an Item's parent should be done using the associated change elements
     (ParentChange and AnchorChanges, respectively).
 
-    \sa {qmlstate}{States}, QtDeclarative
+    \sa {declarative/animation/states}{states example}, {qmlstate}{States}, QtDeclarative
 */
 
 /*!

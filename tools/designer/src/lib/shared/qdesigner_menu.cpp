@@ -77,6 +77,7 @@ using namespace qdesigner_internal;
 static inline void extendClickableArea(QRect *subMenuRect, Qt::LayoutDirection dir)
 {
     switch (dir) {
+    case Qt::LayoutDirectionAuto: // Should never happen
     case Qt::LeftToRight:
         subMenuRect->setLeft(subMenuRect->left() - 20);
         break;
@@ -931,8 +932,8 @@ void QDesignerMenu::moveUp(bool ctrl)
 
     if (ctrl)
         (void) swap(m_currentIndex, m_currentIndex - 1);
-
-    m_currentIndex = qMax(0, --m_currentIndex);
+    --m_currentIndex;
+    m_currentIndex = qMax(0, m_currentIndex);
     // Always re-select, swapping destroys order
     update();
     selectCurrentAction();
@@ -947,7 +948,8 @@ void QDesignerMenu::moveDown(bool ctrl)
     if (ctrl)
         (void) swap(m_currentIndex + 1, m_currentIndex);
 
-    m_currentIndex = qMin(actions().count() - 1, ++m_currentIndex);
+    ++m_currentIndex;
+    m_currentIndex = qMin(actions().count() - 1, m_currentIndex);
     update();
     if (!ctrl)
         selectCurrentAction();

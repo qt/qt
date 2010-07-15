@@ -112,6 +112,7 @@
     \row \o \c release-armv5 \o Build release binaries for hardware using RVCT.
     \row \o \c run           \o Run the application on the emulator.
     \row \o \c runonphone    \o Run the application on a device.
+    \row \o \c deploy        \o Deploys the project into a device.
     \row \o \c sis           \o Create signed \c .sis file for project.
     \row \o \c unsigned_sis  \o Create unsigned \c .sis file for project.
     \row \o \c installer_sis \o Create signed \l{Smart Installer}{smart installer}
@@ -172,7 +173,7 @@
                                        By default empty.
     \endtable
 
-    The suppported options for \c QT_SIS_OPTIONS:
+    The supported options for \c QT_SIS_OPTIONS:
 
     \target Supported options for QT_SIS_OPTIONS
     \table
@@ -186,7 +187,7 @@
     \endtable
 
     Execute the \c{createpackage.pl} script without any
-    parameters for detailed information about options. By default no otions are given.
+    parameters for detailed information about options. By default no options are given.
 
     For example:
 
@@ -196,9 +197,9 @@
 
     \snippet doc/src/snippets/code/doc_src_symbian-introduction.qdoc 3
 
-    If you want to install the program immediately, make sure that the device
-    is connected to the computer in "PC Suite" mode, and run \c sis target
-    with the \c QT_SIS_OPTIONS=-i, like this:
+    If you want to install the program immediately after creating \c .sis file,
+    make sure that the device is connected to the computer in "PC Suite" mode,
+    and use \c deploy target instead of \c sis target:
 
     \snippet doc/src/snippets/code/doc_src_symbian-introduction.qdoc 5
 

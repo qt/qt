@@ -69,14 +69,17 @@
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <mdaaudiotoneplayer.h>     // For CMdaAudioToneUtility
 
-#if defined(Q_WS_S60)
-# if !defined(QT_NO_IM)
-#  include "qinputcontext.h"
-#  include <private/qcoefepinputcontext_p.h>
-# endif
+#if defined(Q_OS_SYMBIAN)
 # include <private/qs60mainapplication_p.h>
 # include <centralrepository.h>
 # include "qs60mainappui.h"
+# include "qinputcontext.h"
+#endif
+
+#if defined(Q_WS_S60)
+# if !defined(QT_NO_IM)
+#  include <private/qcoefepinputcontext_p.h>
+# endif
 #endif
 
 #include "private/qstylesheetstyle_p.h"
@@ -894,7 +897,7 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
         if (qic && qic->filterEvent(keyEvent))
             return EKeyWasConsumed;
     }
-#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
+#endif // !defined(QT_NO_IM) && defined(Q_OS_SYMBIAN)
 
     if (widget && qt_sendSpontaneousEvent(widget, keyEvent))
         if (keyEvent->isAccepted())
@@ -1974,10 +1977,10 @@ int QApplicationPrivate::symbianHandleCommand(const QSymbianEvent *symbianEvent)
         ret = 1;
         break;
     default:
+#ifdef Q_WS_S60
         bool handled = QSoftKeyManager::handleCommand(command);
         if (handled)
             ret = 1;
-#ifdef Q_WS_S60
         else
             ret = QMenuBarPrivate::symbianCommands(command);
 #endif

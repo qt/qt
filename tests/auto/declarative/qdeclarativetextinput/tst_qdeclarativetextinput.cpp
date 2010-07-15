@@ -47,13 +47,31 @@
 #include <private/qdeclarativetextinput_p.h>
 #include <private/qdeclarativetextinput_p_p.h>
 #include <QDebug>
+#include <QDir>
 #include <QStyle>
 #include <QInputContext>
+#include <private/qapplication_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
+
+QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
+{
+    // XXX This will be replaced by some clever persistent platform image store.
+    QString persistent_dir = SRCDIR "/data";
+    QString arch = "unknown-architecture"; // QTest needs to help with this.
+
+    QString expectfile = persistent_dir + QDir::separator() + filebasename + "-" + arch + ".png";
+
+    if (!QFile::exists(expectfile)) {
+        actual.save(expectfile);
+        qWarning() << "created" << expectfile;
+    }
+
+    return expectfile;
+}
 
 class tst_qdeclarativetextinput : public QObject
 
@@ -63,21 +81,26 @@ public:
     tst_qdeclarativetextinput();
 
 private slots:
+
     void text();
     void width();
     void font();
     void color();
     void selection();
 
+    void horizontalAlignment_data();
+    void horizontalAlignment();
+
     void positionAt();
 
     void maxLength();
     void masks();
     void validators();
-    void inputMethodHints();
+    void inputMethods();
 
     void cursorDelegate();
     void navigation();
+    void copyAndPaste();
     void readOnly();
 
     void openInputPanelOnClick();
@@ -153,7 +176,7 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), 1.);//1 for the cursor
+        QCOMPARE(textinputObject->width(), 0.0);
 
         delete textinputObject;
     }
@@ -170,7 +193,8 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+        int delta = abs(int(textinputObject->width()) - metricWidth);
+        QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
     }
@@ -370,6 +394,46 @@ void tst_qdeclarativetextinput::selection()
     delete textinputObject;
 }
 
+void tst_qdeclarativetextinput::horizontalAlignment_data()
+{
+    QTest::addColumn<int>("hAlign");
+    QTest::addColumn<QString>("expectfile");
+
+    QTest::newRow("L") << int(Qt::AlignLeft) << "halign_left";
+    QTest::newRow("R") << int(Qt::AlignRight) << "halign_right";
+    QTest::newRow("C") << int(Qt::AlignHCenter) << "halign_center";
+}
+
+void tst_qdeclarativetextinput::horizontalAlignment()
+{
+    QFETCH(int, hAlign);
+    QFETCH(QString, expectfile);
+
+    QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment.qml");
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+    QObject *ob = canvas->rootObject();
+    QVERIFY(ob != 0);
+    ob->setProperty("horizontalAlignment",hAlign);
+    QImage actual(canvas->width(), canvas->height(), QImage::Format_RGB32);
+    actual.fill(qRgb(255,255,255));
+    {
+        QPainter p(&actual);
+        canvas->render(&p);
+    }
+
+    expectfile = createExpectedFileIfNotFound(expectfile, actual);
+
+    QImage expect(expectfile);
+
+    QCOMPARE(actual,expect);
+
+    delete canvas;
+}
+
 void tst_qdeclarativetextinput::positionAt()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/positionAt.qml");
@@ -412,11 +476,13 @@ void tst_qdeclarativetextinput::positionAt()
 
 void tst_qdeclarativetextinput::maxLength()
 {
-    //QString componentStr = "import Qt 4.7\nTextInput {  maximumLength: 10; }";
     QDeclarativeView *canvas = createView(SRCDIR "/data/maxLength.qml");
+    QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->rootObject() != 0);
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
     QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());
@@ -557,18 +623,31 @@ void tst_qdeclarativetextinput::validators()
     delete canvas;
 }
 
-void tst_qdeclarativetextinput::inputMethodHints()
+void tst_qdeclarativetextinput::inputMethods()
 {
-    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethods.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
+    // test input method hints
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(input != 0);
+    QVERIFY(input->inputMethodHints() & Qt::ImhNoPredictiveText);
+    input->setInputMethodHints(Qt::ImhUppercaseOnly);
+    QVERIFY(input->inputMethodHints() & Qt::ImhUppercaseOnly);
 
     QVERIFY(canvas->rootObject() != 0);
-    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
-    QVERIFY(textinputObject != 0);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
-    textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
-    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhUppercaseOnly);
+
+    input->setFocus(true);
+    QVERIFY(input->hasFocus() == true);
+    // test that input method event is committed
+    QInputMethodEvent event;
+    event.setCommitString( "My ", -12, 0);
+    QApplication::sendEvent(canvas, &event);
+    QCOMPARE(input->text(), QString("My Hello world!"));
 
     delete canvas;
 }
@@ -617,6 +696,52 @@ void tst_qdeclarativetextinput::navigation()
     QCOMPARE(input->cursorPosition(),2);
 
     delete canvas;
+}
+
+void tst_qdeclarativetextinput::copyAndPaste() {
+#ifndef QT_NO_CLIPBOARD
+
+#ifdef Q_WS_MAC
+    {
+        PasteboardRef pasteboard;
+        OSStatus status = PasteboardCreate(0, &pasteboard);
+        if (status == noErr)
+            CFRelease(pasteboard);
+        else
+            QSKIP("This machine doesn't support the clipboard", SkipAll);
+    }
+#endif
+
+    QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\" }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    // copy and paste
+    QCOMPARE(textInput->text().length(), 12);
+    textInput->select(0, textInput->text().length());;
+    textInput->copy();
+    QCOMPARE(textInput->selectedText(), QString("Hello world!"));
+    QCOMPARE(textInput->selectedText().length(), 12);
+    textInput->setCursorPosition(0);
+    textInput->paste();
+    QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textInput->text().length(), 24);
+
+    // select word
+    textInput->setCursorPosition(0);
+    textInput->selectWord();
+    QCOMPARE(textInput->selectedText(), QString("Hello"));
+
+    // select all and cut
+    textInput->selectAll();
+    textInput->cut();
+    QCOMPARE(textInput->text().length(), 0);
+    textInput->paste();
+    QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
+    QCOMPARE(textInput->text().length(), 24);
+#endif
 }
 
 void tst_qdeclarativetextinput::cursorDelegate()
@@ -930,7 +1055,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QCOMPARE(ic.openInputPanelReceived, false);
 
     // input method should be disabled
-    // if TextEdit loses focus
+    // if TextInput loses focus
     input.setFocus(false);
     QApplication::processEvents();
     QVERIFY(view.inputContext() == 0);

@@ -4,7 +4,7 @@ import "scriptErrors.js" as Script
 MyQmlObject {
     property int t: a.value
     property int w: Script.getValue();
-    property int x: undefinedObject
+    property int x: undefined
     property int y: (a.value, undefinedObject)
 
     onBasicSignal: { console.log(a.value); }

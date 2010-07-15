@@ -107,6 +107,9 @@ private:
     QDeclarativeObjectData objectData(QObject *);
     QDeclarativeObjectProperty propertyData(QObject *, int);
     QVariant valueContents(const QVariant &defaultValue) const;
+    void setBinding(int objectId, const QString &propertyName, const QVariant &expression, bool isLiteralValue);
+    void resetBinding(int objectId, const QString &propertyName);
+    void setMethodBody(int objectId, const QString &method, const QString &body);
 
     static QList<QDeclarativeEngine *> m_engines;
     QDeclarativeWatcher *m_watch;

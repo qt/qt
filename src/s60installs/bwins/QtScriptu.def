@@ -401,4 +401,6 @@ EXPORTS
 	?didReachBreakpoint@QScriptEngineAgentPrivate@@UAEXABVDebuggerCallFrame@QTJSC@@HH@Z @ 400 NONAME ; void QScriptEngineAgentPrivate::didReachBreakpoint(class QTJSC::DebuggerCallFrame const &, int, int)
 	?exception@QScriptEngineAgentPrivate@@UAEXABVDebuggerCallFrame@QTJSC@@HH_N@Z @ 401 NONAME ; void QScriptEngineAgentPrivate::exception(class QTJSC::DebuggerCallFrame const &, int, int, bool)
 	?reportAdditionalMemoryCost@QScriptEngine@@QAEXH@Z @ 402 NONAME ; void QScriptEngine::reportAdditionalMemoryCost(int)
+	?newStaticScopeObject@QScriptDeclarativeClass@@SA?AVQScriptValue@@PAVQScriptEngine@@@Z @ 403 NONAME ; class QScriptValue QScriptDeclarativeClass::newStaticScopeObject(class QScriptEngine *)
+	?newStaticScopeObject@QScriptDeclarativeClass@@SA?AVQScriptValue@@PAVQScriptEngine@@HPBVQString@@PBV2@PBV?$QFlags@W4PropertyFlag@QScriptValue@@@@@Z @ 404 NONAME ; class QScriptValue QScriptDeclarativeClass::newStaticScopeObject(class QScriptEngine *, int, class QString const *, class QScriptValue const *, class QFlags<enum QScriptValue::PropertyFlag> const *)
 

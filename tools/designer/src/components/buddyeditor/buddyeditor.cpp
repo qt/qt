@@ -405,6 +405,7 @@ QWidget *BuddyEditor::findBuddy(QLabel *l, const QWidgetList &existingBuddies) c
     const int y = geom.center().y();
     QWidget *neighbour = 0;
     switch (l->layoutDirection()) {
+    case Qt::LayoutDirectionAuto:
     case Qt::LeftToRight: { // Walk right to find next managed neighbour
         const int xEnd = parent->size().width();
         for (int x = geom.right() + 1; x < xEnd; x += DeltaX)

@@ -882,7 +882,7 @@ bool qt_resolve_frag_program_extensions(QGLContext *ctx);
 bool qt_resolve_glsl_extensions(QGLContext *ctx);
 
 #ifndef QT_NO_EGL
-bool qt_resolve_eglimage_gl_extensions(QGLContext *ctx);
+Q_OPENGL_EXPORT bool qt_resolve_eglimage_gl_extensions(QGLContext *ctx);
 #endif
 
 QT_END_NAMESPACE

@@ -488,13 +488,10 @@ void QGraphicsEffect::setEnabled(bool enable)
 */
 
 /*!
-    Schedules a redraw of the source. Call this function whenever the source
-    needs to be redrawn.
+    Schedules a redraw of the effect. Call this function whenever the effect
+    needs to be redrawn. This function does not trigger a redraw of the source.
 
-    This convenience function is equivalent to calling
-    QGraphicsEffectSource::update().
-
-    \sa updateBoundingRect(), QGraphicsEffectSource::update()
+    \sa updateBoundingRect()
 */
 void QGraphicsEffect::update()
 {
