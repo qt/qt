@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,45 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+import Qt 4.7
 
-#include <QObject>
+Item {
+    width: 300; height: 200
 
-//![0]
-class Musician : public QObject
-{
-//![0]
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString instrument READ instrument WRITE setInstrument)
+    PieChart {
+        anchors.centerIn: parent
+        width: 100; height: 100
 
-//![1]
-public:
-//![1]
-
-    Musician(QObject *parent = 0);
-
-    QString name() const;
-    void setName(const QString &name);
-
-    QString instrument() const;
-    void setInstrument(const QString &instrument);
-
-//![2]
-    Q_INVOKABLE void perform();
-
-signals:
-    void performanceEnded();
-//![2]
-
-private:
-    QString m_name;
-    QString m_instrument;
-
-//![3]
-};
-//![3]
-
-#endif
+        slices: [
+            PieSlice { 
+                anchors.fill: parent
+                color: "red"
+                fromAngle: 0; angleSpan: 110 
+            },
+            PieSlice { 
+                anchors.fill: parent
+                color: "black"
+                fromAngle: 110; angleSpan: 50 
+            },
+            PieSlice { 
+                anchors.fill: parent
+                color: "blue"
+                fromAngle: 160; angleSpan: 100
+            }
+        ]
+    }
+}
 

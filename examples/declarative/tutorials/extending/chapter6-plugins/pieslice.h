@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,30 +37,38 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
-import Charts 1.0
-import Qt 4.7
+#ifndef PIESLICE_H
+#define PIESLICE_H
 
-Item {
-    width: 300; height: 200
+#include <QDeclarativeItem>
+#include <QColor>
 
-    PieChart {
-        id: aPieChart
-        anchors.centerIn: parent
-        width: 100; height: 100
-        color: "red"
+class PieSlice : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(int fromAngle READ fromAngle WRITE setFromAngle)
+    Q_PROPERTY(int angleSpan READ angleSpan WRITE setAngleSpan)
 
-        onChartCleared: console.log("The chart has been cleared")
-    }
+public:
+    PieSlice(QDeclarativeItem *parent = 0);
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: aPieChart.clearChart()
-    }
+    QColor color() const;
+    void setColor(const QColor &color);
 
-    Text {
-        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
-        text: "Click anywhere to clear the chart"
-    }
-}
-//![0]
+    int fromAngle() const;
+    void setFromAngle(int angle);
+
+    int angleSpan() const;
+    void setAngleSpan(int span);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
+private:
+    QColor m_color;
+    int m_fromAngle;
+    int m_angleSpan;
+};
+
+#endif
+

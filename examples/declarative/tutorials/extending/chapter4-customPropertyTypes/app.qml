@@ -38,17 +38,23 @@
 **
 ****************************************************************************/
 //![0]
-import Music 1.0
+import Charts 1.0
 import Qt 4.7
 
 Item {
+    width: 300; height: 200
 
-    Musician {
-        id: reddy
-        name: "Reddy the Rocker"
-        instrument: Instrument { type: "Guitar" }
+    PieChart {
+        id: chart
+        anchors.centerIn: parent
+        width: 100; height: 100
+
+        pieSlice: PieSlice { 
+            anchors.fill: parent
+            color: "red" 
+        }
     }
 
-    Component.onCompleted: console.log("Reddy plays the " + reddy.instrument.type)
+    Component.onCompleted: console.log("The pie is colored " + chart.pieSlice.color)
 }
 //![0]

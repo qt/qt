@@ -1,5 +1,5 @@
 QT += declarative
 
-HEADERS += musician.h
-SOURCES += musician.cpp \
+HEADERS += piechart.h
+SOURCES += piechart.cpp \
            main.cpp

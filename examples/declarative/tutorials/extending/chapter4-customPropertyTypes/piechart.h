@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,17 +37,42 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef PIECHART_H
+#define PIECHART_H
 
-import Qt 4.7
+#include <QDeclarativeItem>
 
-Item {
+class PieSlice;
 
-    Musician {
-        id: reddy
-        name: "Reddy the Rocker"
-        instrument: Instrument { type: "Guitar" }
-    }
+//![0]
+class PieChart : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(PieSlice* pieSlice READ pieSlice WRITE setPieSlice)
+//![0]
+    Q_PROPERTY(QString name READ name WRITE setName)
 
-    Component.onCompleted: console.log("Reddy plays the " + reddy.instrument.type)
-}
+//![1]
+public:
+//![1]
+
+    PieChart(QDeclarativeItem *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+//![2]
+    PieSlice *pieSlice() const;
+    void setPieSlice(PieSlice *pieSlice);
+//![2]
+
+private:
+    QString m_name;
+    PieSlice *m_pieSlice;
+
+//![3]
+};
+//![3]
+
+#endif
 

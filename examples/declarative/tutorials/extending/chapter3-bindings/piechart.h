@@ -37,40 +37,48 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "musician.h"
-#include <QDebug>
+#ifndef PIECHART_H
+#define PIECHART_H
 
-Musician::Musician(QObject *parent)
-    : QObject(parent)
-{
-}
-
-QString Musician::name() const
-{
-    return m_name;
-}
-
-void Musician::setName(const QString &name)
-{
-    m_name = name;
-}
-
-QString Musician::instrument() const
-{
-    return m_instrument;
-}
+#include <QDeclarativeItem>
+#include <QColor>
 
 //![0]
-void Musician::setInstrument(const QString &instrument)
+class PieChart : public QDeclarativeItem
 {
-    if (instrument != m_instrument) {
-        m_instrument = instrument;
-        emit instrumentChanged();
-    }
-}
 //![0]
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
 
-void Musician::perform()
-{
-    qWarning() << m_name << "is playing the" << m_instrument;
-}
+//![1]
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+public:
+//![1]
+
+    PieChart(QDeclarativeItem *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    QColor color() const;
+    void setColor(const QColor &color);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
+    Q_INVOKABLE void clearChart();
+
+//![2]
+signals:
+    void colorChanged();
+//![2]
+
+private:
+    QString m_name;
+    QColor m_color;
+
+//![3]
+};
+//![3]
+
+#endif
+
