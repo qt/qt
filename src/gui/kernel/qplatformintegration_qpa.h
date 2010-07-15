@@ -55,6 +55,7 @@ class QPlatformWindow;
 class QWindowSurface;
 class QBlittable;
 class QWidget;
+class QPlatformEventLoopIntegration;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -73,7 +74,11 @@ public:
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
+// Experimental
+    virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
+
     virtual bool hasOpenGL() const;
+
 
 };
 

@@ -93,8 +93,6 @@ void QOpenKODEWindowSurface::flush(QWidget *widget, const QRegion &region, const
         y = boundingRect.y();
     }
 
-    qDebug() << "flush" << widget << offset << region.boundingRect() << mImage.format() << blitImage.format();
-
     GLuint shaderProgram = QOpenKODEIntegration::blitterProgram();
 
     glUseProgram(shaderProgram);
@@ -125,7 +123,7 @@ void QOpenKODEWindowSurface::flush(QWidget *widget, const QRegion &region, const
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, mImage.bits());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, mImage.bits());
 
     // Enable vertex attribute associated with vertex position
     glEnableVertexAttribArray(posId);
@@ -166,7 +164,7 @@ void QOpenKODEWindowSurface::beginPaint(const QRegion &region)
     Q_UNUSED(region);
     if (mImage.isNull())  {
         m_platformGLContext = window()->platformWindow()->glContext();
-        mImage = QImage(size(),QImage::Format_RGB32);
+        mImage = QImage(size(),QImage::Format_RGB888);
     }
 }
 

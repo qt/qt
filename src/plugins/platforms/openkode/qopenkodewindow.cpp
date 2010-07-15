@@ -60,7 +60,6 @@
 QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     : QPlatformWindow(tlw)
 {
-
     if (tlw->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenVG) {
         m_eglApi = EGL_OPENVG_API;
     } else {

@@ -10,13 +10,15 @@ SOURCES =   main.cpp \
             qopenkodewindowsurface.cpp \
             qopenkodewindow.cpp \
             ../eglconvenience/qeglplatformcontext.cpp \
-            ../eglconvenience/qeglconvenience.cpp
+            ../eglconvenience/qeglconvenience.cpp \
+            qopenkodeeventloopintegration.cpp
 
 HEADERS =   qopenkodeintegration.h \
             qopenkodewindowsurface.h \
             qopenkodewindow.h \
             ../eglconvenience/qeglplatformcontext.h \
-            ../eglconvenience/qeglconvenience.h
+            ../eglconvenience/qeglconvenience.h \
+            qopenkodeeventloopintegration.h
 
 RESOURCES = resources.qrc
 

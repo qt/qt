@@ -56,6 +56,11 @@ QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, in
     return QPixmap();
 }
 
+QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration() const
+{
+    return 0;
+}
+
 bool QPlatformIntegration::hasOpenGL() const
 {
     return false;

@@ -42,6 +42,7 @@
 #include "qopenkodeintegration.h"
 #include "qopenkodewindowsurface.h"
 #include "qopenkodewindow.h"
+#include "qopenkodeeventloopintegration.h"
 
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
 #include <QtOpenGL/private/qwindowsurface_gl_p.h>
@@ -184,41 +185,11 @@ static GLuint loadShaders(const QString &vertexShader, const QString &fragmentSh
     return prog;
 }
 
-class QOpenKODEEventLoopHelper : public QThread
-{
-public:
-    QOpenKODEEventLoopHelper(QSemaphore *m)
-            : eventMutex(m)
-    {
-        m->acquire();
-    }
-
-protected:
-    void run()
-    {
-        if (kdInitializeNV() == KD_ENOTINITIALIZED) {
-            qFatal("Did not manage to initialize openkode");
-        }
-        eventMutex->release();
-
-        const KDEvent *event;
-        while ((event = kdWaitEvent(-1)) != 0) {
-            qDebug() << "!!! received event!";
-            kdDefaultEvent(event);
-        }
-    }
-
-private:
-    QSemaphore *eventMutex;
-};
-
 QOpenKODEIntegration::QOpenKODEIntegration()
-    : eventMutex(1)
 {
-    QOpenKODEEventLoopHelper *loop = new QOpenKODEEventLoopHelper(&eventMutex);
-    loop->start();
-    eventMutex.acquire(); // block until initialization done
-
+    if (kdInitializeNV() == KD_ENOTINITIALIZED) {
+        qFatal("Did not manage to initialize openkode");
+    }
     QOpenKODEScreen *mPrimaryScreen = new QOpenKODEScreen();
 
     mScreens.append(mPrimaryScreen);
@@ -263,6 +234,11 @@ QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId w
 bool QOpenKODEIntegration::hasOpenGL() const
 {
     return true;
+}
+
+QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration() const
+{
+    return new QOpenKODEEventLoopIntegration;
 }
 
 GLuint QOpenKODEIntegration::blitterProgram()
