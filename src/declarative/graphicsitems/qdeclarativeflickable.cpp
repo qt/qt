@@ -1030,23 +1030,23 @@ void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject>
 
 int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *property)
 {
-    QDeclarativeItem *viewport = static_cast<QDeclarativeFlickablePrivate*>(property->data)->viewport;
-    return viewport->childItems().count() + viewport->children().count();
+    QDeclarativeItem *contentItem= static_cast<QDeclarativeFlickablePrivate*>(property->data)->contentItem;
+    return contentItem->childItems().count() + contentItem->children().count();
 }
 
 QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *property, int index)
 {
-    QDeclarativeItem *viewport = static_cast<QDeclarativeFlickablePrivate*>(property->data)->viewport;
+    QDeclarativeItem *contentItem = static_cast<QDeclarativeFlickablePrivate*>(property->data)->contentItem;
 
-    int childItemCount = viewport->childItems().count();
+    int childItemCount = contentItem->childItems().count();
 
     if (index < 0)
         return 0;
 
     if (index < childItemCount) {
-        return viewport->childItems().at(index)->toGraphicsObject();
+        return contentItem->childItems().at(index)->toGraphicsObject();
     } else {
-        return viewport->children().at(index - childItemCount);
+        return contentItem->children().at(index - childItemCount);
     }
 
     return 0;
@@ -1054,13 +1054,13 @@ QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject>
 
 void QDeclarativeFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *property)
 {
-    QDeclarativeItem *viewport = static_cast<QDeclarativeFlickablePrivate*>(property->data)->viewport;
+    QDeclarativeItem *contentItem = static_cast<QDeclarativeFlickablePrivate*>(property->data)->contentItem;
 
-    const QList<QGraphicsItem*> graphicsItems = viewport->childItems();
+    const QList<QGraphicsItem*> graphicsItems = contentItem->childItems();
     for (int i = 0; i < graphicsItems.count(); i++)
-        viewport->scene()->removeItem(graphicsItems[i]);
+        contentItem->scene()->removeItem(graphicsItems[i]);
 
-    const QList<QObject*> objects = viewport->children();
+    const QList<QObject*> objects = contentItem->children();
     for (int i = 0; i < objects.count(); i++)
         objects[i]->setParent(0);
 }
