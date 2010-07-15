@@ -37,32 +37,52 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+#include "pieslice.h"
 
-#include <QObject>
+#include <QPainter>
 
-class Instrument;
-
-class Musician : public QObject
+PieSlice::PieSlice(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(Instrument* instrument READ instrument WRITE setInstrument)
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
 
-public:
-    Musician(QObject *parent = 0);
+QColor PieSlice::color() const
+{
+    return m_color;
+}
 
-    QString name() const;
-    void setName(const QString &name);
+void PieSlice::setColor(const QColor &color)
+{
+    m_color = color;
+}
 
-    Instrument *instrument() const;
-    void setInstrument(Instrument *instrument);
+int PieSlice::fromAngle() const
+{
+    return m_fromAngle;
+}
 
-private:
-    QString m_name;
-    Instrument *m_instrument;
-};
+void PieSlice::setFromAngle(int angle)
+{
+    m_fromAngle = angle;
+}
 
-#endif
+int PieSlice::angleSpan() const
+{
+    return m_angleSpan;
+}
+
+void PieSlice::setAngleSpan(int angle)
+{
+    m_angleSpan = angle;
+}
+
+void PieSlice::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), m_fromAngle * 16, m_angleSpan * 16);
+}
 

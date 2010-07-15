@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,30 +37,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
-import Charts 1.0
-import Qt 4.7
+#include "piechart.h"
+#include "pieslice.h"
 
-Item {
-    width: 300; height: 200
+#include <qdeclarative.h>
+#include <QDeclarativeView>
+#include <QApplication>
 
-    PieChart {
-        id: aPieChart
-        anchors.centerIn: parent
-        width: 100; height: 100
-        color: "red"
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-        onChartCleared: console.log("The chart has been cleared")
-    }
+    qmlRegisterType<PieChart>("Charts", 1, 0, "PieChart");
+    qmlRegisterType<PieSlice>("Charts", 1, 0, "PieSlice");
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: aPieChart.clearChart()
-    }
-
-    Text {
-        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
-        text: "Click anywhere to clear the chart"
-    }
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("app.qml"));
+    view.show();
+    return app.exec();
 }
-//![0]

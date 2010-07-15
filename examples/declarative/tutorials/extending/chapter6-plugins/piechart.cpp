@@ -37,20 +37,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "instrument.h"
+#include "piechart.h"
+#include "pieslice.h"
 
-Instrument::Instrument(QObject *parent)
-    : QObject(parent)
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
 }
 
-QString Instrument::type() const
+QString PieChart::name() const
 {
-    return m_type;
+    return m_name;
 }
 
-void Instrument::setType(const QString &type)
+void PieChart::setName(const QString &name)
 {
-    m_type = type;
+    m_name = name;
+}
+
+QDeclarativeListProperty<PieSlice> PieChart::slices() 
+{
+    return QDeclarativeListProperty<PieSlice>(this, 0, &PieChart::append_slice);
+}
+
+void PieChart::append_slice(QDeclarativeListProperty<PieSlice> *list, PieSlice *slice)
+{
+    PieChart *chart = qobject_cast<PieChart *>(list->object);
+    if (chart) {
+        slice->setParentItem(chart);
+        chart->m_slices.append(slice);
+    }
 }
 

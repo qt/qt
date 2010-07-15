@@ -37,27 +37,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef INSTRUMENT_H
-#define INSTRUMENT_H
+#ifndef PIECHART_H
+#define PIECHART_H
 
-#include <QObject>
+#include <QDeclarativeItem>
+
+class PieSlice;
 
 //![0]
-class Instrument : public QObject
+class PieChart : public QDeclarativeItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString type READ type WRITE setType)
+    Q_PROPERTY(QDeclarativeListProperty<PieSlice> slices READ slices)
+//![0]
+    Q_PROPERTY(QString name READ name WRITE setName)
 
+//![1]
 public:
-    Instrument(QObject *parent = 0);
+//![1]
+    PieChart(QDeclarativeItem *parent = 0);
 
-    QString type() const;
-    void setType(const QString &type);
+    QString name() const;
+    void setName(const QString &name);
+
+//![2]
+    QDeclarativeListProperty<PieSlice> slices();
 
 private:
-    QString m_type;
+    static void append_slice(QDeclarativeListProperty<PieSlice> *list, PieSlice *slice);
+
+    QString m_name;
+    QList<PieSlice *> m_slices;
 };
-//![0]
+//![2]
 
 #endif
 

@@ -37,18 +37,36 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "musicplugin.h"
-//![0]
-#include "musician.h"
-#include "instrument.h"
-#include <QtDeclarative/qdeclarative.h>
+#include "piechart.h"
+#include "pieslice.h"
 
-void MusicPlugin::registerTypes(const char *uri)
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    qmlRegisterType<Musician>(uri, 1, 0, "Musician");
-    qmlRegisterType<Instrument>(uri, 1, 0, "Instrument");
 }
 
-Q_EXPORT_PLUGIN2(musicplugin, MusicPlugin);
-//![0]
+QString PieChart::name() const
+{
+    return m_name;
+}
 
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
+
+//![0]
+QDeclarativeListProperty<PieSlice> PieChart::slices() 
+{
+    return QDeclarativeListProperty<PieSlice>(this, 0, &PieChart::append_slice);
+}
+
+void PieChart::append_slice(QDeclarativeListProperty<PieSlice> *list, PieSlice *slice)
+{
+    PieChart *chart = qobject_cast<PieChart *>(list->object);
+    if (chart) {
+        slice->setParentItem(chart);
+        chart->m_slices.append(slice);
+    }
+}
+//![0]
