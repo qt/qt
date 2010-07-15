@@ -6687,6 +6687,7 @@ elif [ "$CFG_TIFF" = "yes" ]; then
 fi
 if [ "$CFG_LIBFREETYPE" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-freetype"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FREETYPE"
 elif [ "$CFG_LIBFREETYPE" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-freetype"
 else
