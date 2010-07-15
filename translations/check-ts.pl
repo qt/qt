@@ -52,7 +52,7 @@ my %langs = ();
 my $files = join("\n", <*_??.ts>);
 my $res = `xmlpatterns -param files=\"$files\" check-ts.xq`;
 for my $i (split(/ /, $res)) {
-  $i =~ /^([^.]+).ts:(.*)$/;
+  $i =~ /^([^.]+)\.ts:(.*)$/;
   my ($fn, $pc) = ($1, $2);
   for my $g (@groups) {
     if ($fn =~ /^${g}_(.*)$/) {
