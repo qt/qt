@@ -878,7 +878,7 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::State)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::SubControls)
 
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG_STREAM)
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QStyle::State state);
 #endif
 
