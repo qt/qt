@@ -1023,7 +1023,7 @@ QString QFSFileEngine::fileName(FileName file) const
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                               kCFURLPOSIXPathStyle, true);
-        if (CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
+        if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
             if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
                 if (CFGetTypeID(name) == CFStringGetTypeID())
                     return QCFString::toQString((CFStringRef)name);
@@ -1141,7 +1141,7 @@ QString QFSFileEngine::fileName(FileName file) const
                 if (FSResolveAliasFile(&fref, true, &isFolder, &isAlias) == noErr && isAlias) {
                     AliasHandle alias;
                     if (FSNewAlias(0, &fref, &alias) == noErr && alias) {
-                        CFStringRef cfstr;
+                        QCFString cfstr;
                         if (FSCopyAliasInfo(alias, 0, 0, &cfstr, 0, 0) == noErr)
                             return QCFString::toQString(cfstr);
                     }

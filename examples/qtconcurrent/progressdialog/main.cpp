@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     QProgressDialog dialog;
     dialog.setLabelText(QString("Progressing using %1 thread(s)...").arg(QThread::idealThreadCount()));
  
-    // Create a QFutureWatcher and conncect signals and slots.
+    // Create a QFutureWatcher and connect signals and slots.
     QFutureWatcher<void> futureWatcher;
     QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
     QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
