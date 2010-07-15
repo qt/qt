@@ -127,8 +127,12 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
     rowHeight += margin * 2 + paddingDoubled;
 
-    if (m_w == 0)
-        m_w = QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH;
+    if (m_w == 0) {
+        if (fontEngine->maxCharWidth() <= QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH)
+            m_w = QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH;
+        else
+            m_w = qt_next_power_of_two(fontEngine->maxCharWidth());
+    }
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();
