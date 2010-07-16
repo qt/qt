@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
     \value GLTextureHandle The handle of the buffer is an OpenGL texture ID.
     \value XvShmImageHandle The handle contains pointer to shared memory XVideo image.
     \value CoreImageHandle The handle contains pointer to Mac OS X CIImage.
+    \value QPixmapHandle The handle of the buffer is a QPixmap.
     \value UserHandle Start value for user defined handle types.
 
     \sa handleType()
