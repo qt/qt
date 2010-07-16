@@ -1671,6 +1671,9 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     different. For more information see the individual property documentation, as well
     as the \l{QML Animation} introduction.
 
+    Note that PropertyAnimation inherits the abstract \l Animation element.
+    This includes additional properties and methods for controlling the animation.
+
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
