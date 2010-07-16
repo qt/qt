@@ -498,6 +498,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 int style = GetWindowLong(internalWinId(), GWL_STYLE) | WS_BORDER | WS_POPUP | WS_CAPTION;
                 SetWindowLong(internalWinId(), GWL_STYLE, style);
                 SetWindowLong(internalWinId(), GWL_EXSTYLE, GetWindowLong (internalWinId(), GWL_EXSTYLE) & ~ WS_EX_NODRAG);
+                qt_wince_unmaximize(this);
             }
             if (isVisible() && newstate & Qt::WindowMaximized)
                 qt_wince_maximize(this);

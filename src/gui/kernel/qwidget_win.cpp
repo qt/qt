@@ -70,6 +70,7 @@
 #include "qguifunctions_wince.h"
 QT_USE_NAMESPACE
 extern void qt_wince_maximize(QWidget *widget);                          //defined in qguifunctions_wince.cpp
+extern void qt_wince_unmaximize(QWidget *widget);                        //defined in qguifunctions_wince.cpp
 extern void qt_wince_minimize(HWND hwnd);                                //defined in qguifunctions_wince.cpp
 extern void qt_wince_full_screen(HWND hwnd, bool fullScreen, UINT swpf); //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_mobile();                                        //defined in qguifunctions_wince.cpp
