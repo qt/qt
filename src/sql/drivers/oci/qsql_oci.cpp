@@ -648,7 +648,7 @@ QByteArray qMakeOraDate(const QDateTime& dt)
 
 QDateTime qMakeDate(const char* oraDate)
 {
-    int century = oraDate[0];
+    int century = uchar(oraDate[0]);
     if(century >= 100){
         int year    = uchar(oraDate[1]);
         year = ((century-100)*100) + (year-100);
