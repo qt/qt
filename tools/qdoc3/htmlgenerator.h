@@ -123,6 +123,12 @@ class HtmlGenerator : public PageGenerator
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
+    enum ExtractionMarkType {
+        BriefMark,
+        DetailedDescriptionMark,
+        MemberMark,
+        EndMark
+    };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
     const Node *findNodeForTarget(const QString &target, 
@@ -266,6 +272,7 @@ class HtmlGenerator : public PageGenerator
                               CodeMarker* marker) const;
     void generatePageIndex(const QString& fileName, 
                            CodeMarker* marker) const;
+    void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
 #if 0
     NavigationBar currentNavigationBar;
