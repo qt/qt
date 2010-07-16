@@ -1935,7 +1935,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             // We ignore the right bearing if the minimum negative bearing is too little to
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
-                if (lbh.calculateNewWidth(line) + lbh.minimumRightBearing > line.width)
+                if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
                     if (!breakany) {
