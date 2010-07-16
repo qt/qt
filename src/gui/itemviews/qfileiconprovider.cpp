@@ -100,69 +100,80 @@ public:
     QIcon getMacIcon(const QFileInfo &fi) const;
 #endif
     QFileIconProvider *q_ptr;
-    QString homePath;
+    const QString homePath;
 
 private:
-    QIcon file;
-    QIcon fileLink;
-    QIcon directory;
-    QIcon directoryLink;
-    QIcon harddisk;
-    QIcon floppy;
-    QIcon cdrom;
-    QIcon ram;
-    QIcon network;
-    QIcon computer;
-    QIcon desktop;
-    QIcon trashcan;
-    QIcon generic;
-    QIcon home;
+    mutable QIcon file;
+    mutable QIcon fileLink;
+    mutable QIcon directory;
+    mutable QIcon directoryLink;
+    mutable QIcon harddisk;
+    mutable QIcon floppy;
+    mutable QIcon cdrom;
+    mutable QIcon ram;
+    mutable QIcon network;
+    mutable QIcon computer;
+    mutable QIcon desktop;
+    mutable QIcon trashcan;
+    mutable QIcon generic;
+    mutable QIcon home;
 };
 
-QFileIconProviderPrivate::QFileIconProviderPrivate()
+QFileIconProviderPrivate::QFileIconProviderPrivate() :
+    homePath(QDir::home().absolutePath())
 {
-    QStyle *style = QApplication::style();
-    file = style->standardIcon(QStyle::SP_FileIcon);
-    directory = style->standardIcon(QStyle::SP_DirIcon);
-    fileLink = style->standardIcon(QStyle::SP_FileLinkIcon);
-    directoryLink = style->standardIcon(QStyle::SP_DirLinkIcon);
-    harddisk = style->standardIcon(QStyle::SP_DriveHDIcon);
-    floppy = style->standardIcon(QStyle::SP_DriveFDIcon);
-    cdrom = style->standardIcon(QStyle::SP_DriveCDIcon);
-    network = style->standardIcon(QStyle::SP_DriveNetIcon);
-    computer = style->standardIcon(QStyle::SP_ComputerIcon);
-    desktop = style->standardIcon(QStyle::SP_DesktopIcon);
-    trashcan = style->standardIcon(QStyle::SP_TrashIcon);
-    home = style->standardIcon(QStyle::SP_DirHomeIcon);
-    homePath = QDir::home().absolutePath();
 }
 
 QIcon QFileIconProviderPrivate::getIcon(QStyle::StandardPixmap name) const
 {
     switch (name) {
     case QStyle::SP_FileIcon:
+        if (file.isNull())
+            file = QApplication::style()->standardIcon(name);
         return file;
     case QStyle::SP_FileLinkIcon:
+        if (fileLink.isNull())
+            fileLink = QApplication::style()->standardIcon(name);
         return fileLink;
     case QStyle::SP_DirIcon:
+        if (directory.isNull())
+            directory = QApplication::style()->standardIcon(name);
         return directory;
     case QStyle::SP_DirLinkIcon:
+        if (directoryLink.isNull())
+            directoryLink = QApplication::style()->standardIcon(name);
         return directoryLink;
     case QStyle::SP_DriveHDIcon:
+        if (harddisk.isNull())
+            harddisk = QApplication::style()->standardIcon(name);
         return harddisk;
     case QStyle::SP_DriveFDIcon:
+        if (floppy.isNull())
+            floppy = QApplication::style()->standardIcon(name);
         return floppy;
     case QStyle::SP_DriveCDIcon:
+        if (cdrom.isNull())
+            cdrom = QApplication::style()->standardIcon(name);
         return cdrom;
     case QStyle::SP_DriveNetIcon:
+        if (network.isNull())
+            network = QApplication::style()->standardIcon(name);
         return network;
     case QStyle::SP_ComputerIcon:
+        if (computer.isNull())
+            computer = QApplication::style()->standardIcon(name);
         return computer;
     case QStyle::SP_DesktopIcon:
+        if (desktop.isNull())
+            desktop = QApplication::style()->standardIcon(name);
         return desktop;
     case QStyle::SP_TrashIcon:
+        if (trashcan.isNull())
+            trashcan = QApplication::style()->standardIcon(name);
         return trashcan;
     case QStyle::SP_DirHomeIcon:
+        if (home.isNull())
+            home = QApplication::style()->standardIcon(name);
         return home;
     default:
         return QIcon();

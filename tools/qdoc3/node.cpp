@@ -299,7 +299,7 @@ InnerNode::~InnerNode()
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
-    if (node)
+    if (node && node->subType() != QmlPropertyGroup)
         return node;
     if ((type() == Fake) && (subType() == QmlClass)) {
         for (int i=0; i<children.size(); ++i) {

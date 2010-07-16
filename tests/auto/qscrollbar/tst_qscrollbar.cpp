@@ -130,7 +130,7 @@ void tst_QScrollBar::task_209492()
     QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
                                 Qt::LeftButton, Qt::LeftButton, 0);
     QApplication::sendEvent(verticalScrollBar, &mousePressEvent);
-    QTest::qWait(50);
+    QTest::qWait(1);
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, pressPoint, globalPressPoint,
                                   Qt::LeftButton, Qt::LeftButton, 0);
     QApplication::sendEvent(verticalScrollBar, &mouseReleaseEvent);
