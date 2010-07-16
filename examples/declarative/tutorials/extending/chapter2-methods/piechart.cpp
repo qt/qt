@@ -37,38 +37,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "musician.h"
+#include "piechart.h"
+#include <QPainter>
 #include <QDebug>
 
-Musician::Musician(QObject *parent)
-    : QObject(parent)
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QString Musician::name() const
+QString PieChart::name() const
 {
     return m_name;
 }
 
-void Musician::setName(const QString &name)
+void PieChart::setName(const QString &name)
 {
     m_name = name;
 }
 
-QString Musician::instrument() const
+QColor PieChart::color() const
 {
-    return m_instrument;
+    return m_color;
 }
 
-void Musician::setInstrument(const QString &instrument)
+void PieChart::setColor(const QColor &color)
 {
-    m_instrument = instrument;
+    m_color = color;
+}
+
+void PieChart::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
 }
 
 //![0]
-void Musician::perform()
+void PieChart::clearChart()
 {
-    qWarning() << m_name << "is playing the" << m_instrument;
-    emit performanceEnded();
+    setColor(QColor(Qt::transparent));
+    update();
+
+    emit chartCleared();
 }
 //![0]

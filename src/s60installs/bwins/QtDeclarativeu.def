@@ -1675,4 +1675,5 @@ EXPORTS
 	?setBindingForObject@QDeclarativeEngineDebug@@QAE_NHABVQString@@ABVQVariant@@_N@Z @ 1674 NONAME ; bool QDeclarativeEngineDebug::setBindingForObject(int, class QString const &, class QVariant const &, bool)
 	??0QDeclarativeImageProvider@@QAE@W4ImageType@0@@Z @ 1675 NONAME ; QDeclarativeImageProvider::QDeclarativeImageProvider(enum QDeclarativeImageProvider::ImageType)
 	?setMethodBody@QDeclarativeEngineDebug@@QAE_NHABVQString@@0@Z @ 1676 NONAME ; bool QDeclarativeEngineDebug::setMethodBody(int, class QString const &, class QString const &)
+	?resetBindingForObject@QDeclarativeEngineDebug@@QAE_NHABVQString@@@Z @ 1677 NONAME ; bool QDeclarativeEngineDebug::resetBindingForObject(int, class QString const &)
 

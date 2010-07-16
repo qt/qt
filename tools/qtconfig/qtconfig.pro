@@ -29,11 +29,3 @@ target.path=$$[QT_INSTALL_BINS]
 INSTALLS        += target
 INCLUDEPATH        += .
 DBFILE                 = qtconfig.db
-
-TR_DIR = $$PWD/../../translations
-TRANSLATIONS = \
-    $$TR_DIR/qtconfig_hu.ts \
-    $$TR_DIR/qtconfig_pl.ts \
-    $$TR_DIR/qtconfig_ru.ts \
-    $$TR_DIR/qtconfig_zh_CN.ts \
-    $$TR_DIR/qtconfig_zh_TW.ts

@@ -37,31 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "musician.h"
-#include "instrument.h"
+#include "pieslice.h"
 
-Musician::Musician(QObject *parent)
-    : QObject(parent)
+#include <QPainter>
+
+PieSlice::PieSlice(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QString Musician::name() const
+QColor PieSlice::color() const
 {
-    return m_name;
+    return m_color;
 }
 
-void Musician::setName(const QString &name)
+void PieSlice::setColor(const QColor &color)
 {
-    m_name = name;
+    m_color = color;
 }
 
-Instrument *Musician::instrument() const
+void PieSlice::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    return m_instrument;
-}
-
-void Musician::setInstrument(Instrument *instrument)
-{
-    m_instrument = instrument;
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
 }
 

@@ -37,42 +37,45 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
-
-#include <QObject>
-
-class Instrument;
+#include "piechart.h"
+#include <QPainter>
 
 //![0]
-class Musician : public QObject
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-    Q_PROPERTY(Instrument* instrument READ instrument WRITE setInstrument)
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
 //![0]
-    Q_PROPERTY(QString name READ name WRITE setName)
+
+QString PieChart::name() const
+{
+    return m_name;
+}
+
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
+
+QColor PieChart::color() const
+{
+    return m_color;
+}
+
+void PieChart::setColor(const QColor &color)
+{
+    m_color = color;
+}
 
 //![1]
-public:
+void PieChart::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
+}
 //![1]
-
-    Musician(QObject *parent = 0);
-
-    QString name() const;
-    void setName(const QString &name);
-
-//![2]
-    Instrument *instrument() const;
-    void setInstrument(Instrument *instrument);
-//![2]
-
-private:
-    QString m_name;
-    Instrument *m_instrument;
-
-//![3]
-};
-//![3]
-
-#endif
 

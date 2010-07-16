@@ -37,19 +37,36 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICPLUGIN_H
-#define MUSICPLUGIN_H
+#include "piechart.h"
+#include "pieslice.h"
 
-//![0]
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
-
-class MusicPlugin : public QDeclarativeExtensionPlugin
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
 {
-    Q_OBJECT
-public:
-    void registerTypes(const char *uri);
-};
-//![0]
+    // this doesn't need to disable QGraphicsItem::ItemHasNoContents
+    // anymore since the drawing is now done in PieSlice
+}
 
-#endif
+QString PieChart::name() const
+{
+    return m_name;
+}
+
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
+
+PieSlice *PieChart::pieSlice() const
+{
+    return m_pieSlice;
+}
+
+//![0]
+void PieChart::setPieSlice(PieSlice *pieSlice)
+{
+    m_pieSlice = pieSlice;
+    pieSlice->setParentItem(this);
+}
+//![0]
 

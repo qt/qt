@@ -73,6 +73,7 @@ private slots:
     void versions();
 
     void threadUniqueness();
+    void processUniqueness();
 
 public:
     // Variables
@@ -194,6 +195,34 @@ void tst_QUuid::threadUniqueness()
     for (int i = 1; i < threads.count(); ++i)
         QVERIFY(threads[0]->uuid != threads[i]->uuid);
     qDeleteAll(threads);
+}
+
+void tst_QUuid::processUniqueness()
+{
+    QProcess process;
+    QString processOneOutput;
+    QString processTwoOutput;
+
+    // Start it once
+#ifdef Q_OS_MAC
+    process.start("testProcessUniqueness/testProcessUniqueness.app");
+#else
+    process.start("testProcessUniqueness/testProcessUniqueness");
+#endif
+    QVERIFY(process.waitForFinished());
+    processOneOutput = process.readAllStandardOutput();
+
+    // Start it twice
+#ifdef Q_OS_MAC
+    process.start("testProcessUniqueness/testProcessUniqueness.app");
+#else
+    process.start("testProcessUniqueness/testProcessUniqueness");
+#endif
+    QVERIFY(process.waitForFinished());
+    processTwoOutput = process.readAllStandardOutput();
+
+    // They should be *different*!
+    QVERIFY(processOneOutput != processTwoOutput);
 }
 
 QTEST_MAIN(tst_QUuid)
