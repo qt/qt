@@ -314,6 +314,8 @@ void qt_wince_maximize(QWidget *widget)
             shidi.dwFlags |= SHIDIF_CANCELBUTTON;
         if (widget->windowFlags() & Qt::WindowOkButtonHint)
             shidi.dwFlags |= SHIDIF_DONEBUTTON;
+        if (!(widget->windowFlags() & (Qt::WindowCancelButtonHint | Qt::WindowOkButtonHint)))
+            shidi.dwFlags |= SHIDIF_CANCELBUTTON;
         resolveAygLibs();
         if (ptrAygInitDialog)
             ptrAygInitDialog(&shidi);
