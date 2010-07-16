@@ -95,6 +95,8 @@ private slots:
     void creating();
     void creatingQObject();
     void mixTrackingPointerCode();
+    void reentrancyWhileDestructing();
+
     void threadStressTest_data();
     void threadStressTest();
     void map();
@@ -1869,6 +1871,60 @@ void tst_QSharedPointer::invalidConstructs()
         QFAIL("Fail");
     }
 }
+
+namespace QTBUG11730 {
+    struct IB
+    {
+        virtual ~IB() {}
+    };
+
+    struct IA
+    {
+        virtual QSharedPointer<IB> getB() = 0;
+    };
+
+    struct B: public IB
+    {
+        IA *m_a;
+        B(IA *a_a) :m_a(a_a)
+        { }
+        ~B()
+        {
+            QSharedPointer<IB> b = m_a->getB();
+        }
+    };
+
+    struct A: public IA
+    {
+        QSharedPointer<IB> b;
+
+        virtual QSharedPointer<IB> getB()
+        {
+            return b;
+        }
+
+        A()
+        {
+            b = QSharedPointer<IB>(new B(this));
+        }
+
+        ~A()
+        {
+            b.clear();
+        }
+    };
+}
+
+void tst_QSharedPointer::reentrancyWhileDestructing()
+{
+    // this bug is about recursing back into QSharedPointer::clear()
+    // from inside it
+    // that is, the destructor of the object being deleted recurses
+    // into the same QSharedPointer object.
+    // First reported as QTBUG-11730
+    QTBUG11730::A obj;
+}
+
 
 QTEST_MAIN(tst_QSharedPointer)
 

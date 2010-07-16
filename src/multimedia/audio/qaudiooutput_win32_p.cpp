@@ -52,6 +52,53 @@
 
 #include "qaudiooutput_win32_p.h"
 
+#ifndef SPEAKER_FRONT_LEFT
+    #define SPEAKER_FRONT_LEFT            0x00000001
+    #define SPEAKER_FRONT_RIGHT           0x00000002
+    #define SPEAKER_FRONT_CENTER          0x00000004
+    #define SPEAKER_LOW_FREQUENCY         0x00000008
+    #define SPEAKER_BACK_LEFT             0x00000010
+    #define SPEAKER_BACK_RIGHT            0x00000020
+    #define SPEAKER_FRONT_LEFT_OF_CENTER  0x00000040
+    #define SPEAKER_FRONT_RIGHT_OF_CENTER 0x00000080
+    #define SPEAKER_BACK_CENTER           0x00000100
+    #define SPEAKER_SIDE_LEFT             0x00000200
+    #define SPEAKER_SIDE_RIGHT            0x00000400
+    #define SPEAKER_TOP_CENTER            0x00000800
+    #define SPEAKER_TOP_FRONT_LEFT        0x00001000
+    #define SPEAKER_TOP_FRONT_CENTER      0x00002000
+    #define SPEAKER_TOP_FRONT_RIGHT       0x00004000
+    #define SPEAKER_TOP_BACK_LEFT         0x00008000
+    #define SPEAKER_TOP_BACK_CENTER       0x00010000
+    #define SPEAKER_TOP_BACK_RIGHT        0x00020000
+    #define SPEAKER_RESERVED              0x7FFC0000
+    #define SPEAKER_ALL                   0x80000000
+#endif
+
+#ifndef _WAVEFORMATEXTENSIBLE_
+
+    #define _WAVEFORMATEXTENSIBLE_
+    typedef struct
+    {
+        WAVEFORMATEX Format;          // Base WAVEFORMATEX data
+        union
+        {
+            WORD wValidBitsPerSample; // Valid bits in each sample container
+            WORD wSamplesPerBlock;    // Samples per block of audio data; valid
+                                      // if wBitsPerSample=0 (but rarely used).
+            WORD wReserved;           // Zero if neither case above applies.
+        } Samples;
+        DWORD dwChannelMask;          // Positions of the audio channels
+        GUID SubFormat;               // Format identifier GUID
+    } WAVEFORMATEXTENSIBLE, *PWAVEFORMATEXTENSIBLE, *LPPWAVEFORMATEXTENSIBLE;
+    typedef const WAVEFORMATEXTENSIBLE* LPCWAVEFORMATEXTENSIBLE;
+
+#endif
+
+#if !defined(WAVE_FORMAT_EXTENSIBLE)
+#define WAVE_FORMAT_EXTENSIBLE 0xFFFE
+#endif
+
 //#define DEBUG_AUDIO 1
 
 QT_BEGIN_NAMESPACE
@@ -146,7 +193,7 @@ void QAudioOutputPrivate::freeBlocks(WAVEHDR* blockArray)
 
     for(int i = 0; i < count; i++) {
         waveOutUnprepareHeader(hWaveOut,blocks, sizeof(WAVEHDR));
-        blocks+=sizeof(WAVEHDR);
+        blocks++;
     }
     HeapFree(GetProcessHeap(), 0, blockArray);
 }
@@ -258,15 +305,49 @@ bool QAudioOutputPrivate::open()
 	}
     }
 
-    if(waveOutOpen(&hWaveOut, devId, &wfx,
-                (DWORD_PTR)&waveOutProc,
-                (DWORD_PTR) this,
-                CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
-        errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
-        emit stateChanged(deviceState);
-        qWarning("QAudioOutput: open error");
-        return false;
+    if ( settings.channels() <= 2) {
+        if(waveOutOpen(&hWaveOut, devId, &wfx,
+                    (DWORD_PTR)&waveOutProc,
+                    (DWORD_PTR) this,
+                    CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+            errorState = QAudio::OpenError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            qWarning("QAudioOutput: open error");
+            return false;
+        }
+    } else {
+        WAVEFORMATEXTENSIBLE wfex;
+        wfex.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+        wfex.Format.nChannels = settings.channels();
+        wfex.Format.wBitsPerSample = settings.sampleSize();
+        wfex.Format.nSamplesPerSec = settings.frequency();
+        wfex.Format.nBlockAlign = wfex.Format.nChannels*wfex.Format.wBitsPerSample/8;
+        wfex.Format.nAvgBytesPerSec=wfex.Format.nSamplesPerSec*wfex.Format.nBlockAlign;
+        wfex.Samples.wValidBitsPerSample=wfex.Format.wBitsPerSample;
+        static const GUID _KSDATAFORMAT_SUBTYPE_PCM = {
+             0x00000001, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+        wfex.SubFormat=_KSDATAFORMAT_SUBTYPE_PCM;
+        wfex.Format.cbSize=22;
+
+        wfex.dwChannelMask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT;
+        if (settings.channels() >= 4)
+            wfex.dwChannelMask |= SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT;
+        if (settings.channels() >= 6)
+            wfex.dwChannelMask |= SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY;
+        if (settings.channels() == 8)
+            wfex.dwChannelMask |= SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT;
+
+        if(waveOutOpen(&hWaveOut, devId, &wfex.Format,
+                    (DWORD_PTR)&waveOutProc,
+                    (DWORD_PTR) this,
+                    CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
+            errorState = QAudio::OpenError;
+            deviceState = QAudio::StoppedState;
+            emit stateChanged(deviceState);
+            qWarning("QAudioOutput: open error");
+            return false;
+        }
     }
 
     totalTimeValue = 0;

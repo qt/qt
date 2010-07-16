@@ -1269,8 +1269,14 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
 
     Returns the bounding rect of this item's children (excluding itself).
 */
-void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect, bool doClip)
 {
+    Q_Q(QGraphicsItem);
+
+    QRectF childrenRect;
+    QRectF *result = rect;
+    rect = &childrenRect;
+
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr.data();
@@ -1292,6 +1298,15 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
                 childd->childrenBoundingRectHelper(x, rect);
         }
     }
+
+    if (doClip && (flags & QGraphicsItem::ItemClipsChildrenToShape)){
+        if (x)
+            *rect &= x->mapRect(q->boundingRect());
+        else
+            *rect &= q->boundingRect();
+    }
+
+    *result |= *rect;
 }
 
 void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
@@ -11110,8 +11125,14 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem syste
     }
 
     QRectF rect = item->boundingRect();
-    if (!item->d_ptr->children.isEmpty())
-        rect |= item->childrenBoundingRect();
+    if (!item->d_ptr->children.isEmpty()) {
+        if (dirtyChildrenBoundingRect) {
+            childrenBoundingRect = QRectF();
+            item->d_ptr->childrenBoundingRectHelper(0, &childrenBoundingRect, true);
+            dirtyChildrenBoundingRect = false;
+        }
+        rect |= childrenBoundingRect;
+    }
 
     if (deviceCoordinates) {
         Q_ASSERT(info->painter);

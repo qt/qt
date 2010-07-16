@@ -70,7 +70,7 @@
     \value UnorderedReduce Reduction is done in an arbitrary order.
     \value OrderedReduce Reduction is done in the order of the
     original sequence.
-    \value SequentialReduce Reduction is done sequentally: only one
+    \value SequentialReduce Reduction is done sequentially: only one
     thread will enter the reduce function at a time. (Parallel reduction
     might be supported in a future version of Qt Concurrent.)
 */
