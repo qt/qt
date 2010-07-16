@@ -165,7 +165,6 @@
     \image qml-layoutitem-example.png
 */
 /*!
-    \title QGraphicsGridLayout
     \example declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout
 
     This example shows how to use QGraphicsGridLayout to lay out QML items. This is 
