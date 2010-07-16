@@ -334,7 +334,6 @@ void QFontDialogPrivate::init()
 
     familyList->setFocus();
     retranslateStrings();
-    nativeDialogInUse = false;
 }
 
 /*!
