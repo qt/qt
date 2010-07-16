@@ -152,16 +152,16 @@ void tst_QDeclarativeViewer::loading()
 
     TEST_INITIAL_SIZES(viewer);
 
-    viewer->resize(QSize(400, 500));
+    viewer->resize(QSize(250, 350));
     qApp->processEvents();
 
     // window resized
-    QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
-    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
+    QTRY_COMPARE(rootItem->width(), 250.0);
+    QTRY_COMPARE(rootItem->height(), 350.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), QSize(400, 500));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350 - MENUBAR_HEIGHT(viewer)));
+    QCOMPARE(viewer->size(), QSize(250, 350));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->reload();
@@ -177,16 +177,16 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
-    viewer->resize(QSize(400, 500));
+    viewer->resize(QSize(250, 350));
     qApp->processEvents();
 
     // window resized again
-    QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
-    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
+    QTRY_COMPARE(rootItem->width(), 250.0);
+    QTRY_COMPARE(rootItem->height(), 350.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), QSize(400, 500));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350 - MENUBAR_HEIGHT(viewer)));
+    QCOMPARE(viewer->size(), QSize(250, 350));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->open(SRCDIR "/data/orientation.qml");
