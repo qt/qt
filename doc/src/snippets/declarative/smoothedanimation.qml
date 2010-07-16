@@ -37,54 +37,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "model.h"
-
-Animal::Animal(const QString &type, const QString &size)
-    : m_type(type), m_size(size)
-{
-}
-
-QString Animal::type() const
-{
-    return m_type;
-}
-
-QString Animal::size() const
-{
-    return m_size;
-}
 
 //![0]
-AnimalModel::AnimalModel(QObject *parent)
-    : QAbstractListModel(parent)
-{
-    QHash<int, QByteArray> roles;
-    roles[TypeRole] = "type";
-    roles[SizeRole] = "size";
-    setRoleNames(roles);
+import Qt 4.7
+
+Rectangle {
+    width: 800; height: 600
+    color: "blue"
+
+    Rectangle {
+        width: 60; height: 60
+        x: rect1.x - 5; y: rect1.y - 5
+        color: "green"
+
+        Behavior on x { SmoothedAnimation { velocity: 200 } }
+        Behavior on y { SmoothedAnimation { velocity: 200 } }
+    }
+
+    Rectangle {
+        id: rect1
+        width: 50; height: 50
+        color: "red"
+    }
+
+    focus: true
+    Keys.onRightPressed: rect1.x = rect1.x + 100
+    Keys.onLeftPressed: rect1.x = rect1.x - 100
+    Keys.onUpPressed: rect1.y = rect1.y - 100
+    Keys.onDownPressed: rect1.y = rect1.y + 100
 }
 //![0]
-
-void AnimalModel::addAnimal(const Animal &animal)
-{
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    m_animals << animal;
-    endInsertRows();
-}
-
-int AnimalModel::rowCount(const QModelIndex & parent) const {
-    return m_animals.count();
-}
-
-QVariant AnimalModel::data(const QModelIndex & index, int role) const {
-    if (index.row() < 0 || index.row() > m_animals.count())
-        return QVariant();
-
-    const Animal &animal = m_animals[index.row()];
-    if (role == TypeRole)
-        return animal.type();
-    else if (role == SizeRole)
-        return animal.size();
-    return QVariant();
-}
-
