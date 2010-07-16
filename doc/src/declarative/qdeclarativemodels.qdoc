@@ -208,7 +208,10 @@ Models can be defined in C++ and then made available to QML. This is useful
 for exposing existing C++ data models or otherwise complex datasets to QML.
 
 A C++ model class can be defined as a QStringList, a QList<QObject*> or a
-QAbstractItemModel. 
+QAbstractItemModel. The first two are useful for exposing simpler datasets,
+while QAbstractItemModel provides a more flexible solution for more complex
+models.
+
 
 \section2 QStringList
 
@@ -268,7 +271,10 @@ the model by calling QDeclarativeContext::setContextProperty() again.
 
 \section2 QAbstractItemModel
 
-A model can be defined by subclassing QAbstractItemModel.
+A model can be defined by subclassing QAbstractItemModel. This is the
+best approach if you have a more complex model that cannot be supported
+by the other approaches. A QAbstractItemModel can also automatically 
+notify a QML view when the model data has changed.
 
 The roles of a QAbstractItemModel subclass can be exposed to QML by calling 
 QAbstractItemModel::setRoleNames(). The default role names set by Qt are:
@@ -304,6 +310,12 @@ This model is displayed by a ListView delegate that accesses the \e type and \e 
 roles:
 
 \snippet examples/declarative/modelviews/abstractitemmodel/view.qml 0
+
+QML views are automatically updated when the model changes. Remember the model
+must follow the standard rules for model changes and notify the view when
+the model has changed by using QAbstractItemModel::dataChanged(), 
+QAbstractItemModel::beginInsertRows(), etc. See the \l {Model subclassing reference} for
+more information.
 
 The complete example is available in Qt's \l {declarative/modelviews/abstractitemmodel}{examples/declarative/modelviews/abstractitemmodel} directory.
 

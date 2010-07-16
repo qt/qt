@@ -37,54 +37,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "model.h"
-
-Animal::Animal(const QString &type, const QString &size)
-    : m_type(type), m_size(size)
-{
-}
-
-QString Animal::type() const
-{
-    return m_type;
-}
-
-QString Animal::size() const
-{
-    return m_size;
-}
 
 //![0]
-AnimalModel::AnimalModel(QObject *parent)
-    : QAbstractListModel(parent)
-{
-    QHash<int, QByteArray> roles;
-    roles[TypeRole] = "type";
-    roles[SizeRole] = "size";
-    setRoleNames(roles);
+import Qt 4.7
+
+Rectangle {
+    width: 300; height: 300
+
+    Rectangle {
+        id: rect
+        width: 50; height: 50
+        color: "red"
+
+        Behavior on x { SpringAnimation { spring: 2; damping: 0.2 } }
+        Behavior on y { SpringAnimation { spring: 2; damping: 0.2 } }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            rect.x = mouse.x
+            rect.y = mouse.y
+        }
+    }
 }
 //![0]
-
-void AnimalModel::addAnimal(const Animal &animal)
-{
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    m_animals << animal;
-    endInsertRows();
-}
-
-int AnimalModel::rowCount(const QModelIndex & parent) const {
-    return m_animals.count();
-}
-
-QVariant AnimalModel::data(const QModelIndex & index, int role) const {
-    if (index.row() < 0 || index.row() > m_animals.count())
-        return QVariant();
-
-    const Animal &animal = m_animals[index.row()];
-    if (role == TypeRole)
-        return animal.type();
-    else if (role == SizeRole)
-        return animal.size();
-    return QVariant();
-}
 

@@ -38,19 +38,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 //![0]
 import Qt 4.7
 
 Rectangle {
-    id: myRect
     width: 100; height: 100
     color: "red"
 
-    MouseArea { id: mouseArea; anchors.fill: parent }
-
-    states: State {
-        name: "hidden"; when: mouseArea.pressed
-        PropertyChanges { target: myRect; opacity: 0 }
-    }
+    NumberAnimation on x { to: 50; duration: 1000 }
 }
 //![0]
+
