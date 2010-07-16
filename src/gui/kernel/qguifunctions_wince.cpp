@@ -131,15 +131,6 @@ static void resolveAygLibs()
     }
 }
 
-struct DIBINFO : public BITMAPINFO
-{
-    RGBQUAD arColors[255];
-
-    operator LPBITMAPINFO() { return (LPBITMAPINFO) this; }
-    operator LPBITMAPINFOHEADER() { return &bmiHeader; }
-    RGBQUAD* ColorTable() { return bmiColors; }
-};
-
 int qt_wince_GetDIBits(HDC /*hdc*/ , HBITMAP hSourceBitmap, uint, uint, LPVOID lpvBits, LPBITMAPINFO, uint)
 {
     if (!lpvBits) {
