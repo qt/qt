@@ -25,6 +25,13 @@ qhp.Qt.excluded  += $QT_SOURCE_TREE/doc/src/development/assistant-manual.qdoc \
                     $QT_SOURCE_TREE/doc/src/examples/trollprint.qdoc \
                     $QT_SOURCE_TREE/doc/src/development/qmake-manual.qdoc
 
+# Remove the QML documentation from the Qt-only documentation.
+
+excludedirs += $QT_SOURCE_TREE/src/declarative \
+               $QT_SOURCE_TREE/src/imports \
+               $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/declarative \
+               $QT_SOURCE_TREE/doc/src/declarative
+
 outputdir         = $QT_BUILD_TREE/doc-build/html-qt_ja_JP
 tagfile           = $QT_BUILD_TREE/doc-build/html-qt_ja_JP/qt.tags
 base              = file:$QT_BUILD_TREE/doc-build/html-qt_ja_JP
