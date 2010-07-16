@@ -54,6 +54,10 @@ public:
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
+    // Custom attributes
+    void setNodeValue(JSC::ExecState*, JSC::JSValue);
+    void setTextContent(JSC::ExecState*, JSC::JSValue);
+
     // Custom functions
     JSC::JSValue insertBefore(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue replaceChild(JSC::ExecState*, const JSC::ArgList&);

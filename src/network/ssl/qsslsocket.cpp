@@ -574,7 +574,7 @@ void QSslSocket::setProtocol(QSsl::SslProtocol protocol)
     certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients and QueryPeer for servers.
 
     \sa setPeerVerifyMode(), peerVerifyDepth(), mode()
 */
@@ -594,7 +594,7 @@ QSslSocket::PeerVerifyMode QSslSocket::peerVerifyMode() const
     certificate is valid.
 
     The default mode is AutoVerifyPeer, which tells QSslSocket to use
-    VerifyPeer for clients, QueryPeer for clients.
+    VerifyPeer for clients and QueryPeer for servers.
 
     Setting this mode after encryption has started has no effect on the
     current connection.
@@ -1849,7 +1849,7 @@ QList<QSslCipher> QSslSocketPrivate::defaultCiphers()
 */
 QList<QSslCipher> QSslSocketPrivate::supportedCiphers()
 {
-    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
+    QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->supportedCiphers;
 }
@@ -1879,7 +1879,7 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 */
 QList<QSslCertificate> QSslSocketPrivate::defaultCaCertificates()
 {
-    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
+    QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     return globalData()->config->caCertificates;
 }
@@ -1962,7 +1962,7 @@ void QSslConfigurationPrivate::setDefaultConfiguration(const QSslConfiguration &
 */
 void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPrivate *ptr)
 {
-    QSslSocketPrivate::ensureCertsAndCiphersLoaded();
+    QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     const QSslConfigurationPrivate *global = globalData()->config.constData();
 

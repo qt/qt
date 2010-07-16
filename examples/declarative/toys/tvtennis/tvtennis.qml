@@ -50,7 +50,6 @@ Rectangle {
         id: ball
 
         // Add a property for the target y coordinate
-        property int targetY : page.height - 10
         property variant direction : "right"
 
         x: 20; width: 20; height: 20; z: 1
@@ -65,15 +64,18 @@ Rectangle {
             PropertyAction { target: ball; property: "direction"; value: "right" }
         }
 
-        // Make y follow the target y coordinate, with a velocity of 200
-        SpringFollow on y { to: ball.targetY; velocity: 200 }
+        // Make y move with a velocity of 200 
+        Behavior on y { SpringAnimation{ velocity: 200; }
+        }
+
+        Component.onCompleted: y = page.height-10; // start the ball motion
 
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
             if (y <= 0) {
-                targetY = page.height - 20;
+                y = page.height - 20;
             } else if (y >= page.height - 20) {
-                targetY = 0;
+                y = 0;
             }
         }
     }
@@ -84,19 +86,15 @@ Rectangle {
         id: leftBat
         color: "Lime"
         x: 2; width: 20; height: 90
-        SpringFollow on y {
-            to: ball.y - 45; velocity: 300
-            enabled: ball.direction == 'left'
-        }
+        y: ball.direction == 'left' ? ball.y - 45 : page.height/2 -45;
+        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
     }
     Rectangle {
         id: rightBat
         color: "Lime"
         x: page.width - 22; width: 20; height: 90
-        SpringFollow on y {
-            to: ball.y-45; velocity: 300
-            enabled: ball.direction == 'right'
-        }
+        y: ball.direction == 'right' ? ball.y - 45 : page.height/2 -45;
+        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
     }
 
     // The rest, to make it look realistic, if neither ever scores...

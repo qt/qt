@@ -1,3 +1,65 @@
+2010-07-09  Simon Hausmann <simon.hausmann@nokia.com>
+
+        Unreviewed trivial Symbian build fix.
+
+        [Qt] Fix the Symbian build when compiling without S60
+
+        Use Q_OS_SYMBIAN instead of Q_WS_S60 for the user agent
+        determination.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::userAgentForUrl):
+
+2010-07-09  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fixed Qt symbian/linux-armcc mkspec when configured with -qtlibinfix.
+
+        * declarative/declarative.pro: Use QT_LIBINFIX.
+
+2010-06-01  Raine Makelainen  <raine.makelainen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt]: REGRESSION(r58703): QWebSettings::JavascriptCanAccessClipboard has wrong case in "Javascript" part.
+        https://bugs.webkit.org/show_bug.cgi?id=39878        
+
+        QWebSettings::JavaScriptCanAccessClipboard reverted back to
+        QWebSettings::JavascriptCanAccessClipboard. QWebSettings::DOMPasteAllowed enum removed.
+
+        Value of QWebSettings::JavascriptCanAccessClipboard to setDOMPasteAllowed and 
+        setJavaScriptCanAccessClipboard of WebCore::Settings.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        * Api/qwebsettings.h:
+
+2010-05-03  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Adam Barth.
+
+        Add support for controlling clipboard access from javascript.
+        Clipboard access from javascript is disabled by default.
+        https://bugs.webkit.org/show_bug.cgi?id=27751
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        * Api/qwebsettings.h:
+
+2010-03-24  Kent Hansen  <kent.hansen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Rename QWebSettings::XSSAuditorEnabled to XSSAuditingEnabled
+        https://bugs.webkit.org/show_bug.cgi?id=36522
+
+        For consistency with other QWebSettings attributes.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        * Api/qwebsettings.h:
+
 2010-05-19  Antti Koivisto  <koivisto@iki.fi>
 
         Rubber-stamped by Kenneth Rohde Christiansen.

@@ -65,18 +65,20 @@ QT_BEGIN_NAMESPACE
         Image { source: "qtlogo.png" }
     \endqml
     \endtable
-    
-    If a size is not specified explicitly, the Image element is sized to the loaded image.
-    Image elements can be stretched and tiled using the \l fillMode property.
 
-    If the image \l source is a network resource, the image is loaded asynchronous and the
-    \l progress and \l status properties are updated appropriately.  Otherwise, if the image is
-    available locally, it is loaded immediately and the user interface is blocked until loading is
-    complete.  (This is typically the correct behavior for user interface elements.)
-    For large local images, which do not need to be visible immediately, it may be preferable to
-    enable \l asynchronous loading.  This loads the image in the background using a low priority thread.
+    If the \l {Image::width}{width} and \l{Image::height}{height} properties are not specified,
+    the Image element is automatically sized to the loaded image. Image elements can be 
+    stretched and tiled using the \l fillMode property.
 
-    Images are cached and shared internally, so if several Image elements have the same source
+    By default, locally available images are loaded immediately, and the user interface
+    is blocked until loading is complete. If a large image is to be loaded, it may be
+    preferable to load the image in a low priority thread, by enabling the \l asynchronous
+    property.
+
+    If the image is from a network rather than a local resource, it is automatically loaded
+    asynchronously, and the \l progress and \l status properties are updated as appropriate.  
+
+    Images are cached and shared internally, so if several Image elements have the same \l source,
     only one copy of the image will be loaded.
 
     \bold Note: Images are often the greatest user of memory in QML user interfaces.  It is recommended
@@ -84,7 +86,7 @@ QT_BEGIN_NAMESPACE
     size bounded via the \l sourceSize property. This is especially important for content
     that is loaded from external sources or provided by the user.
 
-    \sa {declarative/imageelements/image}{Image example}
+    \sa {declarative/imageelements/image}{Image example}, QDeclarativeImageProvider
 */
 
 /*!
@@ -114,19 +116,10 @@ QDeclarativeImage::~QDeclarativeImage()
 {
 }
 
-/*!
-    \qmlproperty QPixmap Image::pixmap
-
-    This property holds the QPixmap image to display.
-
-    This is useful for displaying images provided by a C++ implementation,
-    for example, a model may provide a data role of type QPixmap.
-*/
-
 QPixmap QDeclarativeImage::pixmap() const
 {
     Q_D(const QDeclarativeImage);
-    return d->pix;
+    return d->pix.pixmap();
 }
 
 void QDeclarativeImage::setPixmap(const QPixmap &pix)
@@ -140,7 +133,7 @@ void QDeclarativeImage::setPixmap(const QPixmap &pix)
 void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
 {
     Q_Q(QDeclarativeImage);
-    pix = pixmap;
+    pix.setPixmap(pixmap);
 
     q->setImplicitWidth(pix.width());
     q->setImplicitHeight(pix.height());
@@ -331,17 +324,34 @@ qreal QDeclarativeImage::paintedHeight() const
 /*!
     \qmlproperty QSize Image::sourceSize
 
-    This property holds the size of the loaded image, in pixels.
+    This property holds the actual width and height of the loaded image.
 
-    This is used to control the storage used by a loaded image. Unlike
-    the width and height properties, which scale the painting of the image, this property
-    affects the number of pixels stored.
+    Unlike the \l {Item::}{width} and \l {Item::}{height} properties, which scale
+    the painting of the image, this property sets the actual number of pixels
+    stored for the loaded image so that large images do not use more
+    memory than necessary. For example, this ensures the image is memory is no
+    larger than 1024x1024 pixels, regardless of the Image's \l {Item::}{width} and 
+    \l {Item::}{height} values:
+
+    \code
+    Rectangle {
+        width: ...
+        height: ...
+
+        Image {
+           anchors.fill: parent
+           source: "reallyBigImage.jpg"
+           sourceSize.width: 1024
+           sourceSize.height: 1024
+        }
+    }
+    \endcode
 
     If the image's actual size is larger than the sourceSize, the image is scaled down.
     If only one dimension of the size is set to greater than 0, the
     other dimension is set in proportion to preserve the source image's aspect ratio.
     (The \l fillMode is independent of this.)
-   
+
     If the source is an instrinsically scalable image (eg. SVG), this property
     determines the size of the loaded image regardless of intrinsic size.
     Avoid changing this property dynamically; rendering an SVG is \e slow compared
@@ -351,34 +361,8 @@ qreal QDeclarativeImage::paintedHeight() const
     be no greater than this property specifies. For some formats (currently only JPEG),
     the whole image will never actually be loaded into memory.
  
-    \note \e{Changing this property dynamically will lead to the image source being reloaded,
-    potentially even from the network if it is not in the disk cache.}
-
-    Here is an example that ensures the size of the image in memory is
-    no larger than 1024x1024 pixels, regardless of the size of the Image element.
-
-    \code
-    Image {
-       anchors.fill: parent
-       source: "images/reallyBigImage.jpg"
-       sourceSize.width: 1024
-       sourceSize.height: 1024
-    }
-    \endcode
-
-    The example below ensures the memory used by the image is no more than necessary 
-    to display the image at the size of the Image element.
-    Of course if the Image element is resized a costly reload will be required, so
-    use this technique \e only when the Image size is fixed.
-
-    \code
-    Image {
-       anchors.fill: parent
-       source: "images/reallyBigImage.jpg"
-       sourceSize.width: width
-       sourceSize.height: height
-    }
-    \endcode
+    \note \e {Changing this property dynamically causes the image source to be reloaded,
+    potentially even from the network, if it is not in the disk cache.}
 */
 
 void QDeclarativeImage::updatePaintedGeometry()
@@ -422,6 +406,8 @@ void QDeclarativeImage::geometryChanged(const QRectF &newGeometry, const QRectF 
     Image can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
 
     The URL may be absolute, or relative to the URL of the component.
+
+    \sa QDeclarativeImageProvider
 */
 
 /*!
@@ -431,7 +417,7 @@ void QDeclarativeImage::geometryChanged(const QRectF &newGeometry, const QRectF 
     asynchronously in a separate thread.  The default value is
     false, causing the user interface thread to block while the
     image is loaded.  Setting \a asynchronous to true is useful where
-    maintaining a responsive user interface is more desireable
+    maintaining a responsive user interface is more desirable
     than having images immediately visible.
 
     Note that this property is only valid for images read from the
@@ -522,7 +508,6 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
 void QDeclarativeImage::pixmapChange()
 {
     updatePaintedGeometry();
-    emit pixmapChanged();
 }
 
 QT_END_NAMESPACE

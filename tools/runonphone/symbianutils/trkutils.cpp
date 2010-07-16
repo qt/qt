@@ -52,6 +52,25 @@
 
 namespace trk {
 
+Library::Library() : codeseg(0), dataseg(0), pid(0)
+{
+}
+
+Library::Library(const TrkResult &result) : codeseg(0), dataseg(0), pid(0)
+{
+    if (result.data.size() < 20) {
+        qWarning("Invalid trk creation notification received.");
+        return;
+    }
+
+    const char *data = result.data.constData();
+    pid = extractInt(data + 2);
+    codeseg = extractInt(data + 10);
+    dataseg = extractInt(data + 14);
+    const uint len = extractShort(data + 18);
+    name = result.data.mid(20, len);
+}
+
 TrkAppVersion::TrkAppVersion()
 {
     reset();
@@ -77,11 +96,11 @@ void Session::reset()
     extended1TypeSize = 0;
     extended2TypeSize = 0;
     pid = 0;
+    mainTid = 0;
     tid = 0;
     codeseg = 0;
     dataseg = 0;
 
-    currentThread = 0;
     libraries.clear();
     trkAppVersion.reset();
 }
@@ -143,6 +162,90 @@ QString Session::deviceDescription(unsigned verbose) const
     return msg.arg(formatTrkVersion(trkAppVersion));
 }
 
+QByteArray Session::gdbLibraryList() const
+{
+    const int count = libraries.size();
+    QByteArray response = "l<library-list>";
+    for (int i = 0; i != count; ++i) {
+        const trk::Library &lib = libraries.at(i);
+        response += "<library name=\"";
+        response += lib.name;
+        response += "\">";
+        response += "<section address=\"0x";
+        response += trk::hexNumber(lib.codeseg);
+        response += "\"/>";
+        response += "<section address=\"0x";
+        response += trk::hexNumber(lib.dataseg);
+        response += "\"/>";
+        response += "<section address=\"0x";
+        response += trk::hexNumber(lib.dataseg);
+        response += "\"/>";
+        response += "</library>";
+    }
+    response += "</library-list>";
+    return response;
+}
+
+QByteArray Session::gdbQsDllInfo(int start, int count) const
+{
+    // Happens with  gdb 6.4.50.20060226-cvs / CodeSourcery.
+    // Never made it into FSF gdb that got qXfer:libraries:read instead.
+    // http://sourceware.org/ml/gdb/2007-05/msg00038.html
+    // Name=hexname,TextSeg=textaddr[,DataSeg=dataaddr]
+    const int libraryCount = libraries.size();
+    const int end = count < 0 ? libraryCount : qMin(libraryCount, start + count);
+    QByteArray response(1, end == libraryCount ? 'l' : 'm');
+    for (int i = start; i < end; ++i) {
+        if (i != start)
+            response += ';';
+        const Library &lib = libraries.at(i);
+        response += "Name=";
+        response += lib.name.toHex();
+        response += ",TextSeg=";
+        response += hexNumber(lib.codeseg);
+        response += ",DataSeg=";
+        response += hexNumber(lib.dataseg);
+    }
+    return response;
+}
+
+QString Session::toString() const
+{
+    QString rc;
+    QTextStream str(&rc);
+    str << "Session: " << deviceDescription(false) << '\n'
+            << "pid: " << pid <<  "main thread: " << mainTid
+            << " current thread: " << tid << ' ';
+    str.setIntegerBase(16);
+    str << " code: 0x" << codeseg << " data: 0x" << dataseg << '\n';
+    if (const int libCount = libraries.size()) {
+        str << "Libraries:\n";
+        for (int i = 0; i < libCount; i++)
+            str << " #" << i << ' ' << libraries.at(i).name
+                << " code: 0x" << libraries.at(i).codeseg
+                << " data: 0x" << libraries.at(i).dataseg << '\n';
+    }
+    if (const int moduleCount = modules.size()) {
+        str << "Modules:\n";
+        for (int i = 0; i < moduleCount; i++)
+            str << " #" << i << ' ' << modules.at(i) << '\n';
+    }
+    str.setIntegerBase(10);
+    if (!addressToBP.isEmpty()) {
+        typedef QHash<uint, uint>::const_iterator BP_ConstIterator;
+        str << "Breakpoints:\n";
+        const BP_ConstIterator cend = addressToBP.constEnd();
+        for (BP_ConstIterator it = addressToBP.constBegin(); it != cend; ++it) {
+            str.setIntegerBase(16);
+            str << "  0x" << it.key();
+            str.setIntegerBase(10);
+            str << ' ' << it.value() << '\n';
+        }
+    }
+
+    return rc;
+}
+
 // --------------
 
 QByteArray decode7d(const QByteArray &ba)
@@ -188,18 +291,15 @@ SYMBIANUTILS_EXPORT QString stringFromArray(const QByteArray &ba, int maxLen)
     QString ascii;
     const int size = maxLen == -1 ? ba.size() : qMin(ba.size(), maxLen);
     for (int i = 0; i < size; ++i) {
-        //if (i == 5 || i == ba.size() - 2)
-        //    str += "  ";
-        int c = byte(ba.at(i));
-        str += QString("%1 ").arg(c, 2, 16, QChar('0'));
-        if (i >= 8 && i < ba.size() - 2)
-            ascii += QChar(c).isPrint() ? QChar(c) : QChar('.');
+        const int c = byte(ba.at(i));
+        str += QString::fromAscii("%1 ").arg(c, 2, 16, QChar('0'));
+        ascii += QChar(c).isPrint() ? QChar(c) : QChar('.');
     }
     if (size != ba.size()) {
-        str += "...";
-        ascii += "...";
+        str += QLatin1String("...");
+        ascii += QLatin1String("...");
     }
-    return str + "  " + ascii;
+    return str + QLatin1String("  ") + ascii;
 }
 
 SYMBIANUTILS_EXPORT QByteArray hexNumber(uint n, int digits)
@@ -299,20 +399,30 @@ ushort isValidTrkResult(const QByteArray &buffer, bool serialFrame, ushort& mux)
     return firstDelimiterPos != -1 ? firstDelimiterPos : buffer.size();
 }
 
-bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *result, QByteArray *rawData)
+bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *result, bool &linkEstablishmentMode, QByteArray *rawData)
 {
     result->clear();
     if(rawData)
         rawData->clear();
-    const ushort len = isValidTrkResult(*buffer, serialFrame, result->multiplex);
-    if (!len)
-        return false;
+    ushort len = isValidTrkResult(*buffer, serialFrame, result->multiplex);
     // handle receiving application output, which is not a regular command
     const int delimiterPos = serialFrame ? 4 : 0;
+    if (linkEstablishmentMode) {
+        //when "hot connecting" a device, we can receive partial frames.
+        //this code resyncs by discarding data until a TRK frame is found
+        while (buffer->length() > delimiterPos
+               && result->multiplex != MuxTextTrace
+               && !(result->multiplex == MuxTrk && buffer->at(delimiterPos) == 0x7e)) {
+            buffer->remove(0,1);
+            len = isValidTrkResult(*buffer, serialFrame, result->multiplex);
+        }
+    }
+    if (!len)
+        return false;
     if (buffer->at(delimiterPos) != 0x7e) {
         result->isDebugOutput = true;
         result->data = buffer->mid(delimiterPos, len);
-        *buffer->remove(0, delimiterPos + len);
+        buffer->remove(0, delimiterPos + len);
         return true;
     }
     // FIXME: what happens if the length contains 0xfe?
@@ -320,7 +430,7 @@ bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *result, QByt
     const QByteArray data = decode7d(buffer->mid(delimiterPos + 1, len - 2));
     if(rawData)
         *rawData = data;
-    *buffer->remove(0, delimiterPos + len);
+    buffer->remove(0, delimiterPos + len);
 
     byte sum = 0;
     for (int i = 0; i < data.size(); ++i) // 3 = 2 * 0xfe + sum
@@ -335,6 +445,7 @@ bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *result, QByt
     //logMessage("   CURR DATA: " << stringFromArray(data));
     //QByteArray prefix = "READ BUF:                                       ";
     //logMessage((prefix + "HEADER: " + stringFromArray(header).toLatin1()).data());
+    linkEstablishmentMode = false; //have received a good TRK packet, therefore in sync
     return true;
 }
 

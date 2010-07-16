@@ -202,154 +202,17 @@ x11|embedded {
         DEFINES += QT_NO_CUPS QT_NO_LPR
 }
 
-contains(QMAKE_MAC_XARCH, no) {
-    DEFINES += QT_NO_MAC_XARCH
-} else:if(mmx|3dnow|sse|sse2|iwmmxt) {
+if(mmx|3dnow|sse|sse2|iwmmxt) {
     HEADERS += painting/qdrawhelper_x86_p.h \
                painting/qdrawhelper_mmx_p.h \
-               painting/qdrawhelper_sse_p.h
-    mmx {
-        DEFINES += QT_HAVE_MMX
-        MMX_SOURCES += painting/qdrawhelper_mmx.cpp
-    }
-    3dnow {
-        DEFINES += QT_HAVE_3DNOW
-        MMX3DNOW_SOURCES += painting/qdrawhelper_mmx3dnow.cpp
-        sse {
-            SSE3DNOW_SOURCES += painting/qdrawhelper_sse3dnow.cpp
-        }
-    }
-    sse {
-        DEFINES += QT_HAVE_SSE
-        SSE_SOURCES += painting/qdrawhelper_sse.cpp
-
-        DEFINES += QT_HAVE_MMXEXT
-    }
-    sse2 {
-        DEFINES += QT_HAVE_SSE2
-        SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
-    }
-    iwmmxt {
-        DEFINES += QT_HAVE_IWMMXT
-        IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
-    }
-
-    win32-g++*|!win32:!*-icc* {
-        mmx {
-            mmx_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                mmx_compiler.commands += -Xarch_i386 -mmmx
-                mmx_compiler.commands += -Xarch_x86_64 -mmmx
-            } else {
-                mmx_compiler.commands += -mmmx
-            }
-
-            mmx_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-            mmx_compiler.dependency_type = TYPE_C
-            mmx_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-            mmx_compiler.input = MMX_SOURCES
-            mmx_compiler.variable_out = OBJECTS
-            mmx_compiler.name = compiling[mmx] ${QMAKE_FILE_IN}
-            silent:mmx_compiler.commands = @echo compiling[mmx] ${QMAKE_FILE_IN} && $$mmx_compiler.commands
-            QMAKE_EXTRA_COMPILERS += mmx_compiler
-        }
-        3dnow {
-            mmx3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                mmx3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -mmmx
-                mmx3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -mmmx
-            } else {
-                mmx3dnow_compiler.commands += -m3dnow -mmmx
-            }
-
-            mmx3dnow_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-            mmx3dnow_compiler.dependency_type = TYPE_C
-            mmx3dnow_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-            mmx3dnow_compiler.input = MMX3DNOW_SOURCES
-            mmx3dnow_compiler.variable_out = OBJECTS
-            mmx3dnow_compiler.name = compiling[mmx3dnow] ${QMAKE_FILE_IN}
-            silent:mmx3dnow_compiler.commands = @echo compiling[mmx3dnow] ${QMAKE_FILE_IN} && $$mmx3dnow_compiler.commands
-            QMAKE_EXTRA_COMPILERS += mmx3dnow_compiler
-            sse {
-                sse3dnow_compiler.commands = $$QMAKE_CXX -c -Winline
-
-                mac {
-                    sse3dnow_compiler.commands += -Xarch_i386 -m3dnow -Xarch_i386 -msse
-                    sse3dnow_compiler.commands += -Xarch_x86_64 -m3dnow -Xarch_x86_64 -msse
-                } else {
-                    sse3dnow_compiler.commands += -m3dnow -msse
-                }
-
-                sse3dnow_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-                sse3dnow_compiler.dependency_type = TYPE_C
-                sse3dnow_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-                sse3dnow_compiler.input = SSE3DNOW_SOURCES
-                sse3dnow_compiler.variable_out = OBJECTS
-                sse3dnow_compiler.name = compiling[sse3dnow] ${QMAKE_FILE_IN}
-                silent:sse3dnow_compiler.commands = @echo compiling[sse3dnow] ${QMAKE_FILE_IN} && $$sse3dnow_compiler.commands
-                QMAKE_EXTRA_COMPILERS += sse3dnow_compiler
-            }
-        }
-        sse {
-            sse_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                sse_compiler.commands += -Xarch_i386 -msse
-                sse_compiler.commands += -Xarch_x86_64 -msse
-            } else {
-                sse_compiler.commands += -msse
-            }
-
-            sse_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-            sse_compiler.dependency_type = TYPE_C
-            sse_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-            sse_compiler.input = SSE_SOURCES
-            sse_compiler.variable_out = OBJECTS
-            sse_compiler.name = compiling[sse] ${QMAKE_FILE_IN}
-            silent:sse_compiler.commands = @echo compiling[sse] ${QMAKE_FILE_IN} && $$sse_compiler.commands
-            QMAKE_EXTRA_COMPILERS += sse_compiler
-        }
-        sse2 {
-            sse2_compiler.commands = $$QMAKE_CXX -c -Winline
-
-            mac {
-                sse2_compiler.commands += -Xarch_i386 -msse2
-                sse2_compiler.commands += -Xarch_x86_64 -msse2
-            } else {
-                sse2_compiler.commands += -msse2
-            }
-
-            sse2_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-            sse2_compiler.dependency_type = TYPE_C
-            sse2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-            sse2_compiler.input = SSE2_SOURCES
-            sse2_compiler.variable_out = OBJECTS
-            sse2_compiler.name = compiling[sse2] ${QMAKE_FILE_IN}
-            silent:sse2_compiler.commands = @echo compiling[sse2] ${QMAKE_FILE_IN} && $$sse2_compiler.commands
-            QMAKE_EXTRA_COMPILERS += sse2_compiler
-        }
-        iwmmxt {
-            iwmmxt_compiler.commands = $$QMAKE_CXX -c -Winline
-            iwmmxt_compiler.commands += -mcpu=iwmmxt
-            iwmmxt_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-            iwmmxt_compiler.dependency_type = TYPE_C
-            iwmmxt_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-            iwmmxt_compiler.input = IWMMXT_SOURCES
-            iwmmxt_compiler.variable_out = OBJECTS
-            iwmmxt_compiler.name = compiling[iwmmxt] ${QMAKE_FILE_IN}
-            silent:iwmmxt_compiler.commands = @echo compiling[iwmmxt] ${QMAKE_FILE_IN} && $$iwmmxt_compiler.commands
-            QMAKE_EXTRA_COMPILERS += iwmmxt_compiler
-        }
-    } else {
-        mmx: SOURCES += $$MMX_SOURCES
-        3dnow: SOURCES += $$MMX3DNOW_SOURCES
-        3dnow:sse: SOURCES += $$SSE3DNOW_SOURCES
-        sse: SOURCES += $$SSE_SOURCES
-        sse2: SOURCES += $$SSE2_SOURCES
-        iwmmxt: SOURCES += $$IWMMXT_SOURCES
-    }
+               painting/qdrawhelper_sse_p.h \
+               painting/qdrawingprimitive_sse2_p.h
+    MMX_SOURCES += painting/qdrawhelper_mmx.cpp
+    MMX3DNOW_SOURCES += painting/qdrawhelper_mmx3dnow.cpp
+    SSE3DNOW_SOURCES += painting/qdrawhelper_sse3dnow.cpp
+    SSE_SOURCES += painting/qdrawhelper_sse.cpp
+    SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
+    IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 }
 
 x11 {

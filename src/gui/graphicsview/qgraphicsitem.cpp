@@ -3258,6 +3258,8 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     // Update the child focus chain.
+    if (scene && scene->focusItem())
+        scene->focusItem()->d_ptr->clearSubFocus();
     f->d_ptr->setSubFocus();
 
     // Update the scene's focus item.
@@ -5511,6 +5513,9 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
     // Update focus child chain. Stop at panels, or if this item
     // is hidden, stop at the first item with a visible parent.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
+    if (parent->panel() != q_ptr->panel())
+        return;
+
     do {
         // Clear any existing ancestor's subFocusItem.
         if (parent != q_ptr && parent->d_ptr->subFocusItem) {
@@ -7635,9 +7640,9 @@ int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObjec
 QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    if (index >= 0 && index < d->children.count()) 
+    if (index >= 0 && index < d->children.count())
         return d->children.at(index)->toGraphicsObject();
-    else 
+    else
         return 0;
 }
 

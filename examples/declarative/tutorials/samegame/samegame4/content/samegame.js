@@ -57,8 +57,7 @@ function createBlock(column, row) {
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
         dynamicObject.x = column * gameCanvas.blockSize;
-        dynamicObject.targetX = column * gameCanvas.blockSize;
-        dynamicObject.targetY = row * gameCanvas.blockSize;
+        dynamicObject.y = row * gameCanvas.blockSize;
         dynamicObject.width = gameCanvas.blockSize;
         dynamicObject.height = gameCanvas.blockSize;
         dynamicObject.spawned = true;
@@ -128,7 +127,7 @@ function shuffleDown() {
             } else {
                 if (fallDist > 0) {
                     var obj = board[index(column, row)];
-                    obj.targetY += fallDist * gameCanvas.blockSize;
+                    obj.y += fallDist * gameCanvas.blockSize;
                     board[index(column, row + fallDist)] = obj;
                     board[index(column, row)] = null;
                 }
@@ -146,7 +145,7 @@ function shuffleDown() {
                     obj = board[index(column, row)];
                     if (obj == null)
                         continue;
-                    obj.targetX -= fallDist * gameCanvas.blockSize;
+                    obj.x -= fallDist * gameCanvas.blockSize;
                     board[index(column - fallDist, row)] = obj;
                     board[index(column, row)] = null;
                 }

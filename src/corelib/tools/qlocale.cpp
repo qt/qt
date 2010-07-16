@@ -2096,6 +2096,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     \value Serbia
     \value SaintBarthelemy
     \value SaintMartin
+    \value LatinAmericaAndTheCaribbean
     \omitvalue LastCountry
 
     \sa country()

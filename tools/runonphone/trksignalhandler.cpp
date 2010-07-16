@@ -42,7 +42,19 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include <QObject>
+#include <QFile>
+#include <QDir>
 #include "trksignalhandler.h"
+#include "trkutils.h"
+
+class CrashState
+{
+public:
+    uint pid;
+    uint tid;
+    QString crashReason;
+    uint crashPC;
+};
 
 class TrkSignalHandlerPrivate
 {
@@ -55,6 +67,14 @@ private:
     QTextStream err;
     int loglevel;
     int lastpercent;
+    QList<trk::Library> libraries;
+    QFile crashlogtextfile;
+    QFile crashstackfile;
+    QList<CrashState> queuedCrashes;
+    QList<int> dyingThreads;
+    QString crashlogPath;
+    bool crashlog;
+    bool terminateNeeded;
 };
 
 void TrkSignalHandler::copyingStarted()
@@ -108,6 +128,7 @@ void TrkSignalHandler::startingApplication()
 
 void TrkSignalHandler::applicationRunning(uint pid)
 {
+    Q_UNUSED(pid)
     if (d->loglevel > 0)
         d->out << "Running..." << endl;
 }
@@ -155,13 +176,163 @@ void TrkSignalHandler::setLogLevel(int level)
     d->loglevel = level;
 }
 
+void TrkSignalHandler::setCrashLogging(bool enabled)
+{
+    d->crashlog = enabled;
+}
+
+void TrkSignalHandler::setCrashLogPath(QString path)
+{
+    d->crashlogPath = path;
+}
+
+bool lessThanCodeBase(const trk::Library& cs1, const trk::Library& cs2)
+{
+    return cs1.codeseg < cs2.codeseg;
+}
+
 void TrkSignalHandler::stopped(uint pc, uint pid, uint tid, const QString& reason)
 {
     d->err << "STOPPED: pc=" << hex << pc << " pid=" << pid
            << " tid=" << tid << dec << " - " << reason << endl;
-    // if it was a breakpoint, then we could continue with "emit resume(pid, tid);"
-    // since we have set no breakpoints, it will be a just in time debug of a panic / exception
-    emit terminate();
+
+    if (d->crashlog) {
+        CrashState cs;
+        cs.pid = pid;
+        cs.tid = tid;
+        cs.crashPC = pc;
+        cs.crashReason = reason;
+
+        if (d->dyingThreads.contains(tid)) {
+            if(d->queuedCrashes.isEmpty())
+                emit terminate();
+            else
+                d->terminateNeeded = true;
+        } else {
+            d->queuedCrashes.append(cs);
+            d->dyingThreads.append(tid);
+
+            if (d->queuedCrashes.count() == 1) {
+                d->err << "Fetching registers and stack..." << endl;
+                emit getRegistersAndCallStack(pid, tid);
+            }
+        }
+    }
+    else
+        emit terminate();
+}
+
+void TrkSignalHandler::registersAndCallStackReadComplete(const QList<uint>& registers, const QByteArray& stack)
+{
+    CrashState cs = d->queuedCrashes.first();
+    QDir dir(d->crashlogPath);
+    d->crashlogtextfile.setFileName(dir.filePath(QString("d_exc_%1.txt").arg(cs.tid)));
+    d->crashstackfile.setFileName(dir.filePath(QString("d_exc_%1.stk").arg(cs.tid)));
+    d->crashlogtextfile.open(QIODevice::WriteOnly);
+    QTextStream crashlog(&d->crashlogtextfile);
+
+    crashlog << "-----------------------------------------------------------------------------" << endl;
+    crashlog << "EKA2 USER CRASH LOG" << endl;
+    crashlog << "Thread Name: " << QString("ProcessID-%1::ThreadID-%2").arg(cs.pid).arg(cs.tid) << endl;
+    crashlog << "Thread ID: " << cs.tid << endl;
+    //this is wrong, but TRK doesn't make stack limit available so we lie
+    crashlog << QString("User Stack %1-%2").arg(registers.at(13), 8, 16, QChar('0')).arg(registers.at(13) + stack.size(), 8, 16, QChar('0')) << endl;
+    //this is also wrong, but TRK doesn't give all information for exceptions
+    crashlog << QString("Panic: PC=%1 ").arg(cs.crashPC, 8, 16, QChar('0')) << cs.crashReason << endl;
+    crashlog << endl;
+    crashlog << "USER REGISTERS:" << endl;
+    crashlog << QString("CPSR=%1").arg(registers.at(16), 8, 16, QChar('0')) << endl;
+    for (int i=0;i<16;i+=4) {
+        crashlog << QString("r%1=%2 %3 %4 %5")
+            .arg(i, 2, 10, QChar('0'))
+            .arg(registers.at(i), 8, 16, QChar('0'))
+            .arg(registers.at(i+1), 8, 16, QChar('0'))
+            .arg(registers.at(i+2), 8, 16, QChar('0'))
+            .arg(registers.at(i+3), 8, 16, QChar('0')) << endl;
+    }
+    crashlog << endl;
+
+    //emit info for post mortem debug
+    qSort(d->libraries.begin(), d->libraries.end(), lessThanCodeBase);
+    d->err << "Code Segments:" << endl;
+    crashlog << "CODE SEGMENTS:" << endl;
+    for(int i=0; i<d->libraries.count(); i++) {
+        const trk::Library& seg = d->libraries.at(i);
+        if(seg.pid != cs.pid)
+            continue;
+        if (d->loglevel > 1) {
+            d->err << QString("Code: %1 Data: %2 Name: ")
+                .arg(seg.codeseg, 8, 16, QChar('0'))
+                .arg(seg.dataseg, 8, 16, QChar('0'))
+                << seg.name << endl;
+        }
+
+        //produce fake code segment end addresses since we don't get the real ones from TRK
+        uint end;
+        if (i+1 < d->libraries.count())
+            end = d->libraries.at(i+1).codeseg - 1;
+        else
+            end = 0xFFFFFFFF;
+
+        crashlog << QString("%1-%2 ")
+            .arg(seg.codeseg, 8, 16, QChar('0'))
+            .arg(end, 8, 16, QChar('0'))
+            << seg.name << endl;
+    }
+
+    d->crashlogtextfile.close();
+
+    if (d->loglevel > 1) {
+        d->err << "Registers:" << endl;
+        for (int i=0;i<16;i++) {
+            d->err << QString("R%1: %2 ").arg(i, 2, 10, QChar('0')).arg(registers.at(i), 8, 16, QChar('0'));
+            if (i % 4 == 3)
+                d->err << endl;
+        }
+        d->err << QString("CPSR: %1").arg(registers.at(16), 8, 16, QChar('0')) << endl;
+
+        d->err << "Stack:" << endl;
+        uint sp = registers.at(13);
+        for(int i=0; i<stack.size(); i+=16, sp+=16) {
+            d->err << QString("%1: ").arg(sp, 8, 16, QChar('0'));
+            d->err << trk::stringFromArray(stack.mid(i,16));
+            d->err << endl;
+        }
+    }
+    d->crashstackfile.open(QIODevice::WriteOnly);
+    d->crashstackfile.write(stack);
+    d->crashstackfile.close();
+
+    if (d->loglevel > 0)
+        d->err << "Crash logs saved to " << d->crashlogtextfile.fileName() << " & " << d->crashstackfile.fileName() << endl;
+
+    // resume the thread to allow Symbian OS to handle the panic normally.
+    // terminate when a non main thread is suspended reboots the phone (TRK bug)
+    emit resume(cs.pid, cs.tid);
+
+    //fetch next crashed thread
+    d->queuedCrashes.removeFirst();
+    if (d->queuedCrashes.count()) {
+        cs = d->queuedCrashes.first();
+        d->err << "Fetching registers and stack..." << endl;
+        emit getRegistersAndCallStack(cs.pid, cs.tid);
+    }
+    else if (d->terminateNeeded)
+        emit terminate();
+
+}
+
+void TrkSignalHandler::libraryLoaded(const trk::Library &lib)
+{
+    d->libraries << lib;
+}
+
+void TrkSignalHandler::libraryUnloaded(const trk::Library &lib)
+{
+    for (QList<trk::Library>::iterator i = d->libraries.begin(); i != d->libraries.end(); i++) {
+        if((*i).name == lib.name && (*i).pid == lib.pid)
+            i = d->libraries.erase(i);
+    }
 }
 
 void TrkSignalHandler::timeout()
@@ -174,7 +345,8 @@ TrkSignalHandlerPrivate::TrkSignalHandlerPrivate()
     : out(stdout),
     err(stderr),
     loglevel(0),
-    lastpercent(0)
+    lastpercent(0),
+    terminateNeeded(false)
 {
 
 }

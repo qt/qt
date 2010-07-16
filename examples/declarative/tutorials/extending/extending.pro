@@ -5,5 +5,6 @@ SUBDIRS += \
     chapter2-methods \
     chapter3-bindings \
     chapter4-customPropertyTypes \
-    chapter5-plugins 
+    chapter5-listproperties \
+    chapter6-plugins 
 

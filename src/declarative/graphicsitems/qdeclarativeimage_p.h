@@ -57,7 +57,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeImage : public QDeclarativeImageBase
     Q_OBJECT
     Q_ENUMS(FillMode)
 
-    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap NOTIFY pixmapChanged DESIGNABLE false)
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedGeometryChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedGeometryChanged)
@@ -79,7 +78,6 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:
-    void pixmapChanged();
     void fillModeChanged();
     void paintedGeometryChanged();
 

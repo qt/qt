@@ -107,55 +107,72 @@ private:
     QDeclarativeDelayedError **prevError;
 };
 
-class QDeclarativeExpressionData : public QDeclarativeAbstractExpression, public QDeclarativeDelayedError, public QDeclarativeRefCount
+class QDeclarativeQtScriptExpression : public QDeclarativeAbstractExpression, 
+                                       public QDeclarativeDelayedError
 {
 public:
-    QDeclarativeExpressionData();
-    virtual ~QDeclarativeExpressionData();
+    enum Mode { SharedContext, ExplicitContext };
 
-    QDeclarativeExpressionPrivate *q;
+    QDeclarativeQtScriptExpression();
+    virtual ~QDeclarativeQtScriptExpression();
 
     QDeclarativeRefCount *dataRef;
+
     QString expression;
-    bool expressionFunctionValid:1;
-    bool expressionRewritten:1;
+
+    Mode expressionFunctionMode;
     QScriptValue expressionFunction;
-    QScriptValue expressionContext;
 
-    QObject *me;
+    QScriptValue expressionContext; // Only used in ExplicitContext
+    QObject *scopeObject;           // Only used in SharedContext
+
+    bool notifyOnValueChange() const;
+    void setNotifyOnValueChange(bool);
+    void resetNotifyOnChange();
+    void setNotifyObject(QObject *, int );
+
+    QScriptValue scriptValue(QObject *secondaryScope, bool *isUndefined);
+
+    class DeleteWatcher {
+    public:
+        inline DeleteWatcher(QDeclarativeQtScriptExpression *data);
+        inline ~DeleteWatcher();
+        inline bool wasDeleted() const;
+    private:
+        bool *m_wasDeleted;
+        bool m_wasDeletedStorage;
+        QDeclarativeQtScriptExpression *m_d;
+    };
+
+private:
+    void clearGuards();
+    QScriptValue eval(QObject *secondaryScope, bool *isUndefined);
+    void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties);
+
     bool trackChange;
-
-    bool isShared;
-
-    QString url; // This is a QString for a reason.  QUrls are slooooooow...
-    int line;
 
     QDeclarativeNotifierEndpoint *guardList;
     int guardListLength;
+
+    QObject *guardObject;
+    int guardObjectNotifyIndex;
+    bool *deleted;
 };
 
 class QDeclarativeExpression;
 class QString;
-class QDeclarativeExpressionPrivate : public QObjectPrivate
+class QDeclarativeExpressionPrivate : public QObjectPrivate, public QDeclarativeQtScriptExpression
 {
     Q_DECLARE_PUBLIC(QDeclarativeExpression)
 public:
     QDeclarativeExpressionPrivate();
-    QDeclarativeExpressionPrivate(QDeclarativeExpressionData *);
     ~QDeclarativeExpressionPrivate();
 
     void init(QDeclarativeContextData *, const QString &, QObject *);
     void init(QDeclarativeContextData *, void *, QDeclarativeRefCount *, QObject *, const QString &, int);
 
-    QDeclarativeExpressionData *data;
-
     QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
     QScriptValue scriptValue(QObject *secondaryScope = 0, bool *isUndefined = 0);
-
-    QScriptValue eval(QObject *secondaryScope, bool *isUndefined = 0);
-
-    void updateGuards(const QPODVector<QDeclarativeEnginePrivate::CapturedProperty> &properties);
-    void clearGuards();
 
     static QDeclarativeExpressionPrivate *get(QDeclarativeExpression *expr) {
         return static_cast<QDeclarativeExpressionPrivate *>(QObjectPrivate::get(expr));
@@ -172,7 +189,31 @@ public:
                                           int, QScriptValue *);
     static QScriptValue evalInObjectScope(QDeclarativeContextData *, QObject *, const QScriptProgram &, 
                                           QScriptValue *);
+
+    bool expressionFunctionValid:1;
+
+    QString url; // This is a QString for a reason.  QUrls are slooooooow...
+    int line;
 };
+
+QDeclarativeQtScriptExpression::DeleteWatcher::DeleteWatcher(QDeclarativeQtScriptExpression *data)
+: m_wasDeletedStorage(false), m_d(data) 
+{
+    if (!m_d->deleted) 
+        m_d->deleted = &m_wasDeletedStorage; 
+    m_wasDeleted = m_d->deleted;
+}
+
+QDeclarativeQtScriptExpression::DeleteWatcher::~DeleteWatcher() 
+{
+    if (false == *m_wasDeleted && m_wasDeleted == m_d->deleted)
+        m_d->deleted = 0;
+}
+
+bool QDeclarativeQtScriptExpression::DeleteWatcher::wasDeleted() const 
+{ 
+    return *m_wasDeleted; 
+}
 
 QT_END_NAMESPACE
 

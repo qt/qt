@@ -99,10 +99,12 @@ Component {
     Rectangle {
         width: 180; height: 40
         color: "lightsteelblue"; radius: 5
-        SpringFollow on y {
-            to: list.currentItem.y
-            spring: 3
-            damping: 0.2
+        y: list.currentItem.y
+        Behavior on y {
+            SpringAnimation {
+                spring: 3
+                damping: 0.2
+            }
         }
     }
 }

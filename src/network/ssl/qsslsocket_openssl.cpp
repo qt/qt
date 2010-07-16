@@ -74,9 +74,8 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QSslSocketPrivate::s_initialized = false;
-QBasicAtomicInt QSslSocketPrivate::s_CertsAndCiphersLoaded;
-Q_GLOBAL_STATIC(QMutex, s_CertsAndCiphersLoadedMutex);
+bool QSslSocketPrivate::s_libraryLoaded = false;
+bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 
 // Useful defines
 #define SSL_ERRORSTR() QString::fromLocal8Bit(q_ERR_error_string(q_ERR_get_error(), NULL))
@@ -171,7 +170,7 @@ QSslSocketBackendPrivate::QSslSocketBackendPrivate()
       session(0)
 {
     // Calls SSL_library_init().
-    ensureCertsAndCiphersLoaded();
+    ensureInitialized();
 }
 
 QSslSocketBackendPrivate::~QSslSocketBackendPrivate()
@@ -200,7 +199,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *ciph
             ciph.d->protocol = QSsl::SslV2;
         else if (protoString == QLatin1String("TLSv1"))
             ciph.d->protocol = QSsl::TlsV1;
-        
+
         if (descriptionList.at(2).startsWith(QLatin1String("Kx=")))
             ciph.d->keyExchangeMethod = descriptionList.at(2).mid(3);
         if (descriptionList.at(3).startsWith(QLatin1String("Au=")))
@@ -368,7 +367,7 @@ init_context:
     // Set verification depth.
     if (configuration.peerVerifyDepth != 0)
         q_SSL_CTX_set_verify_depth(ctx, configuration.peerVerifyDepth);
-    
+
     // Create and initialize SSL session
     if (!(ssl = q_SSL_new(ctx))) {
         // ### Bad error code
@@ -422,18 +421,18 @@ void QSslSocketPrivate::deinitialize()
 
 bool QSslSocketPrivate::supportsSsl()
 {
-    return ensureInitialized();
+    return ensureLibraryLoaded();
 }
 
-bool QSslSocketPrivate::ensureInitialized()
+bool QSslSocketPrivate::ensureLibraryLoaded()
 {
     if (!q_resolveOpenSslSymbols())
         return false;
 
     // Check if the library itself needs to be initialized.
     QMutexLocker locker(openssl_locks()->initLock());
-    if (!s_initialized) {
-        s_initialized = true;
+    if (!s_libraryLoaded) {
+        s_libraryLoaded = true;
 
         // Initialize OpenSSL.
         q_CRYPTO_set_id_callback(id_function);
@@ -474,25 +473,15 @@ bool QSslSocketPrivate::ensureInitialized()
     return true;
 }
 
-/*!
-    \internal
-
-    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
-    been initialized.
-*/
-
-void QSslSocketPrivate::ensureCertsAndCiphersLoaded()
+void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 {
-    // use double-checked locking to speed up this function
-    if (s_CertsAndCiphersLoaded)
+    QMutexLocker locker(openssl_locks()->initLock());
+    if (s_loadedCiphersAndCerts)
         return;
+    s_loadedCiphersAndCerts = true;
 
-    QMutexLocker locker(s_CertsAndCiphersLoadedMutex());
-    if (s_CertsAndCiphersLoaded)
-        return;
+    resetDefaultCiphers();
 
-    if (!supportsSsl())
-        return;
     //load symbols needed to receive certificates from system store
 #if defined(Q_OS_MAC)
     QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
@@ -528,12 +517,22 @@ void QSslSocketPrivate::ensureCertsAndCiphersLoaded()
         qWarning("could not load crypt32 library"); // should never happen
     }
 #endif
-    resetDefaultCiphers();
     setDefaultCaCertificates(systemCaCertificates());
-    // we need to make sure that s_CertsAndCiphersLoaded is executed after the library loading above
-    // (the compiler/processor might reorder instructions otherwise)
-    if (!s_CertsAndCiphersLoaded.testAndSetRelease(0, 1))
-        Q_ASSERT_X(false, "certificate store", "certificate store has already been initialized!");
+}
+
+/*!
+    \internal
+
+    Declared static in QSslSocketPrivate, makes sure the SSL libraries have
+    been initialized.
+*/
+
+void QSslSocketPrivate::ensureInitialized()
+{
+    if (!supportsSsl())
+        return;
+
+    ensureCiphersAndCertsLoaded();
 }
 
 /*!
@@ -617,6 +616,11 @@ void QCertificateRetriever::retrieveNextCertificate()
 }
 
 void QCertificateRetriever::RunL()
+{
+    QT_TRYCATCH_LEAVING(run());
+}
+
+void QCertificateRetriever::run()
 {
     switch (state) {
     case Initializing:
@@ -820,7 +824,7 @@ void QSslSocketBackendPrivate::transmit()
     bool transmitting;
     do {
         transmitting = false;
-        
+
         // If the connection is secure, we can transfer data from the write
         // buffer (in plain text) to the write BIO through SSL_write.
         if (connectionEncrypted && !writeBuffer.isEmpty()) {
@@ -967,8 +971,20 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                 plainSocket->disconnectFromHost();
                 break;
+            case SSL_ERROR_SYSCALL: // some IO error
+            case SSL_ERROR_SSL: // error in the SSL library
+                // we do not know exactly what the error is, nor whether we can recover from it,
+                // so just return to prevent an endless loop in the outer "while" statement
+                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
+                q->setSocketError(QAbstractSocket::UnknownSocketError);
+                emit q->error(QAbstractSocket::UnknownSocketError);
+                return;
             default:
-                // ### Handle errors better.
+                // SSL_ERROR_WANT_CONNECT, SSL_ERROR_WANT_ACCEPT: can only happen with a
+                // BIO_s_connect() or BIO_s_accept(), which we do not call.
+                // SSL_ERROR_WANT_X509_LOOKUP: can only happen with a
+                // SSL_CTX_set_client_cert_cb(), which we do not call.
+                // So this default case should never be triggered.
                 q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
                 q->setSocketError(QAbstractSocket::UnknownSocketError);
                 emit q->error(QAbstractSocket::UnknownSocketError);
@@ -1102,17 +1118,16 @@ bool QSslSocketBackendPrivate::startHandshake()
             QString peerName = (verificationPeerName.isEmpty () ? q->peerName() : verificationPeerName);
             QString commonName = configuration.peerCertificate.subjectInfo(QSslCertificate::CommonName);
 
-            QRegExp regexp(commonName, Qt::CaseInsensitive, QRegExp::Wildcard);
-            if (!regexp.exactMatch(peerName)) {
+            if (!isMatchingHostname(commonName.toLower(), peerName.toLower())) {
                 bool matched = false;
                 foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
-                    regexp.setPattern(altName);
-                    if (regexp.exactMatch(peerName)) {
+                    if (isMatchingHostname(altName.toLower(), peerName.toLower())) {
                         matched = true;
                         break;
                     }
                 }
+
                 if (!matched) {
                     // No matches in common names or alternate names.
                     QSslError error(QSslError::HostNameMismatch, configuration.peerCertificate);
@@ -1240,6 +1255,41 @@ QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates
             certificates << QSslCertificatePrivate::QSslCertificate_from_X509(entry);
     }
     return certificates;
+}
+
+bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
+{
+    int wildcard = cn.indexOf(QLatin1Char('*'));
+
+    // Check this is a wildcard cert, if not then just compare the strings
+    if (wildcard < 0)
+        return cn == hostname;
+
+    int firstCnDot = cn.indexOf(QLatin1Char('.'));
+    int secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
+
+    // Check at least 3 components
+    if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.length()))
+        return false;
+
+    // Check * is last character of 1st component (ie. there's a following .)
+    if (wildcard+1 != firstCnDot)
+        return false;
+
+    // Check only one star
+    if (cn.lastIndexOf(QLatin1Char('*')) != wildcard)
+        return false;
+
+    // Check characters preceding * (if any) match
+    if (wildcard && (hostname.leftRef(wildcard) != cn.leftRef(wildcard)))
+        return false;
+
+    // Check characters following first . match
+    if (hostname.midRef(hostname.indexOf(QLatin1Char('.'))) != cn.midRef(firstCnDot))
+        return false;
+
+    // Ok, I guess this was a wildcard CN and the hostname matches.
+    return true;
 }
 
 QT_END_NAMESPACE

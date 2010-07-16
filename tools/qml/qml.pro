@@ -37,6 +37,9 @@ symbian {
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
     TARGET.CAPABILITY = NetworkServices ReadUserData
+    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
+        LIBS += -lsensrvclient -lsensrvutil
+    }
 }
 mac {
     QMAKE_INFO_PLIST=Info_mac.plist

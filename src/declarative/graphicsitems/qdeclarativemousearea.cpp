@@ -443,7 +443,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         QPointF startLocalPos;
         QPointF curLocalPos;
-        if (drag()->target()->parent()) {
+        if (drag()->target()->parentItem()) {
             startLocalPos = drag()->target()->parentItem()->mapFromScene(d->startScene);
             curLocalPos = drag()->target()->parentItem()->mapFromScene(event->scenePos());
         } else {
@@ -761,16 +761,22 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \c drag provides a convenient way to make an item draggable.
 
     \list
-    \i \c drag.target specifies the item to drag.
+    \i \c drag.target specifies the id of the item to drag.
     \i \c drag.active specifies if the target item is currently being dragged.
     \i \c drag.axis specifies whether dragging can be done horizontally (\c Drag.XAxis), vertically (\c Drag.YAxis), or both (\c Drag.XandYAxis)
     \i \c drag.minimum and \c drag.maximum limit how far the target can be dragged along the corresponding axes.
     \endlist
 
-    The following example displays an image that can be dragged along the X-axis. The opacity
-    of the image is reduced when it is dragged to the right.
+    The following example displays a \l Rectangle that can be dragged along the X-axis. The opacity
+    of the rectangle is reduced when it is dragged to the right.
 
     \snippet doc/src/snippets/declarative/mousearea.qml drag
+
+    \note Items cannot be dragged if they are anchored for the requested 
+    \c drag.axis. For example, if \c anchors.left or \c anchors.right was set
+    for \c rect in the above example, it cannot be dragged along the X-axis.
+    This can be avoided by settng the anchor value to \c undefined in 
+    an \l onPressed handler.
 */
 
 QT_END_NAMESPACE

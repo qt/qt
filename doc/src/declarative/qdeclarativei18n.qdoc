@@ -49,7 +49,7 @@ capabilities are described more fully in:
 \o \l {Qt Linguist Manual}
 \endlist
 
-You can test a translation with the \l {Qt Declarative UI Runtime}{qml} tool using the -translation option.
+You can test a translation with the \l {QML Viewer} using the -translation option.
 
 \section1 Example
 
@@ -61,8 +61,8 @@ hello.qml:
 import Qt 4.7
 
 Rectangle {
- width: 200; height: 200
- Text { text: qsTr("Hello"); anchors.centerIn: parent }
+    width: 200; height: 200
+    Text { text: qsTr("Hello"); anchors.centerIn: parent }
 }
 \endqml
 
@@ -76,7 +76,7 @@ a translation and create the release file \c hello.qm.
 
 Finally, we can test the translation:
 \code
-qml -translation hello.qm hello.qml
+qmlviewer -translation hello.qm hello.qml
 \endcode
 
 

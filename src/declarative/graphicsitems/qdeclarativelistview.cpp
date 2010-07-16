@@ -494,7 +494,7 @@ public:
     QSmoothedAnimation *highlightSizeAnimator;
     QDeclarativeViewSection *sectionCriteria;
     QString currentSection;
-    static const int sectionCacheSize = 3;
+    static const int sectionCacheSize = 4;
     QDeclarativeItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
@@ -1029,6 +1029,11 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
         }
         currentItem->item->setFocus(true);
         currentItem->attached->setIsCurrentItem(true);
+        // Avoid showing section delegate twice.  We still need the section heading so that
+        // currentItem positioning works correctly.
+        // This is slightly sub-optimal, but section heading caching minimizes the impact.
+        if (currentItem->section)
+            currentItem->section->setVisible(false);
     }
     updateHighlight();
     emit q->currentIndexChanged();
@@ -1072,7 +1077,7 @@ void QDeclarativeListViewPrivate::updateFooter()
     }
     if (footer) {
         if (visibleItems.count()) {
-            qreal endPos = endPosition();
+            qreal endPos = endPosition() + 1;
             if (lastVisibleIndex() == model->count()-1) {
                 footer->setPosition(endPos);
             } else {
@@ -1547,6 +1552,10 @@ void QDeclarativeListView::setModel(const QVariant &model)
             } else {
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
+                if (d->highlight && d->currentItem) {
+                    d->highlight->setPosition(d->currentItem->position());
+                    d->updateTrackedItem();
+                }
             }
         }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
@@ -1610,6 +1619,10 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             refill();
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
+            if (d->highlight && d->currentItem) {
+                d->highlight->setPosition(d->currentItem->position());
+                d->updateTrackedItem();
+            }
         }
     }
     emit delegateChanged();
@@ -1636,7 +1649,6 @@ void QDeclarativeListView::setCurrentIndex(int index)
         return;
     if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-        cancelFlick();
         d->updateCurrent(index);
     } else if (index != d->currentIndex) {
         d->currentIndex = index;
@@ -1720,7 +1732,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by a \l {SpringFollow} item:
+    Here is a highlight with its motion defined by a \l {SpringAnimation} item:
 
     \snippet doc/src/snippets/declarative/listview/listview.qml highlightFollowsCurrentItem
 
@@ -2439,7 +2451,6 @@ void QDeclarativeListView::incrementCurrentIndex()
     if (currentIndex() < d->model->count() - 1 || d->wrap) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()+1;
-        cancelFlick();
         d->updateCurrent(index < d->model->count() ? index : 0);
     }
 }
@@ -2458,7 +2469,6 @@ void QDeclarativeListView::decrementCurrentIndex()
     if (currentIndex() > 0 || d->wrap) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()-1;
-        cancelFlick();
         d->updateCurrent(index >= 0 ? index : d->model->count()-1);
     }
 }
@@ -2591,7 +2601,7 @@ void QDeclarativeListView::componentComplete()
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
-        if (d->highlight) {
+        if (d->highlight && d->currentItem) {
             d->highlight->setPosition(d->currentItem->position());
             d->updateTrackedItem();
         }
@@ -2611,20 +2621,17 @@ void QDeclarativeListView::trackedPositionChanged()
     Q_D(QDeclarativeListView);
     if (!d->trackedItem || !d->currentItem)
         return;
-    if (!d->flickingHorizontally && !d->flickingVertically && !d->movingHorizontally && !d->movingVertically
-        && d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
+    if (d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
         const qreal trackedPos = qCeil(d->trackedItem->position());
         const qreal viewPos = d->position();
+        qreal pos = viewPos;
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
-                qreal pos = viewPos;
                 if (trackedPos > pos + d->highlightRangeEnd - d->trackedItem->size())
                     pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
                 if (trackedPos < pos + d->highlightRangeStart)
                     pos = trackedPos - d->highlightRangeStart;
-                d->setPosition(pos);
             } else {
-                qreal pos = viewPos;
                 if (trackedPos < d->startPosition() + d->highlightRangeStart) {
                     pos = d->startPosition();
                 } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
@@ -2638,14 +2645,12 @@ void QDeclarativeListView::trackedPositionChanged()
                         pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
                     }
                 }
-                d->setPosition(pos);
             }
         } else {
             if (trackedPos < viewPos && d->currentItem->position() < viewPos) {
-                d->setPosition(d->currentItem->position() < trackedPos ? trackedPos : d->currentItem->position());
+                pos = d->currentItem->position() < trackedPos ? trackedPos : d->currentItem->position();
             } else if (d->trackedItem->endPosition() > viewPos + d->size()
                         && d->currentItem->endPosition() > viewPos + d->size()) {
-                qreal pos;
                 if (d->trackedItem->endPosition() < d->currentItem->endPosition()) {
                     pos = d->trackedItem->endPosition() - d->size();
                     if (d->trackedItem->size() > d->size())
@@ -2655,8 +2660,11 @@ void QDeclarativeListView::trackedPositionChanged()
                     if (d->currentItem->size() > d->size())
                         pos = d->currentItem->position();
                 }
-                d->setPosition(pos);
             }
+        }
+        if (viewPos != pos) {
+            cancelFlick();
+            d->setPosition(pos);
         }
     }
 }
@@ -2885,8 +2893,11 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
-        if (d->itemCount == 0)
+        if (d->itemCount == 0) {
+            d->updateHeader();
+            d->updateFooter();
             update();
+        }
     }
 
     emit countChanged();
@@ -3021,6 +3032,11 @@ void QDeclarativeListView::modelReset()
     refill();
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
+    if (d->highlight && d->currentItem) {
+        d->highlight->setPosition(d->currentItem->position());
+        d->updateTrackedItem();
+    }
+    d->moveReason = QDeclarativeListViewPrivate::Other;
     emit countChanged();
 }
 

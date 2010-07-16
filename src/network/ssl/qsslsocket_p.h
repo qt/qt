@@ -63,7 +63,6 @@
 #include <QtCore/qstringlist.h>
 
 #include <private/qringbuffer_p.h>
-#include <QtCore/QMutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -114,8 +113,7 @@ public:
     QString verificationPeerName;
 
     static bool supportsSsl();
-    static bool ensureInitialized();
-    static void ensureCertsAndCiphersLoaded();
+    static void ensureInitialized();
     static void deinitialize();
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> supportedCiphers();
@@ -163,8 +161,11 @@ public:
     virtual QSslCipher sessionCipher() const = 0;
 
 private:
-    static bool s_initialized;
-    static QBasicAtomicInt s_CertsAndCiphersLoaded;
+    static bool ensureLibraryLoaded();
+    static void ensureCiphersAndCertsLoaded();
+
+    static bool s_libraryLoaded;
+    static bool s_loadedCiphersAndCerts;
 };
 
 QT_END_NAMESPACE

@@ -1581,7 +1581,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
     Returns true if construction of the QML component is complete; otherwise
     returns false.
 
-    It is often desireable to delay some processing until the component is
+    It is often desirable to delay some processing until the component is
     completed.
 
     \sa componentComplete()
@@ -1589,7 +1589,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 bool QDeclarativeItem::isComponentComplete() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_componentComplete;
+    return d->componentComplete;
 }
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
@@ -1730,7 +1730,7 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents(this);
-        if (d->_componentComplete)
+        if (d->componentComplete)
             d->_contents->complete();
     }
     return d->_contents->rectF();
@@ -2085,7 +2085,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
-  The margins property can be used to set all of the various margins at once, to the same value.
+  The \c anchors.margins property can be used to set all of the various margins at once, to the same value.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 
@@ -2120,9 +2120,11 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \endqml
   \endtable
 
-  anchors.fill provides a convenient way for one item to have the
+  \c anchors.fill provides a convenient way for one item to have the
   same geometry as another item, and is equivalent to connecting all
   four directional anchors.
+
+  To clear an anchor value, set it to \c undefined.
 
   \note You can only anchor an item to siblings or a parent.
 
@@ -2133,7 +2135,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \property QDeclarativeItem::baselineOffset
   \brief The position of the item's baseline in local coordinates.
 
-  The baseline of a Text item is the imaginary line on which the text
+  The baseline of a \l Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 
@@ -2142,19 +2144,19 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 qreal QDeclarativeItem::baselineOffset() const
 {
     Q_D(const QDeclarativeItem);
-    if (!d->_baselineOffset.isValid()) {
+    if (!d->baselineOffset.isValid()) {
         return 0.0;
     } else
-        return d->_baselineOffset;
+        return d->baselineOffset;
 }
 
 void QDeclarativeItem::setBaselineOffset(qreal offset)
 {
     Q_D(QDeclarativeItem);
-    if (offset == d->_baselineOffset)
+    if (offset == d->baselineOffset)
         return;
 
-    d->_baselineOffset = offset;
+    d->baselineOffset = offset;
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2283,7 +2285,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
 bool QDeclarativeItem::keepMouseGrab() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_keepMouse;
+    return d->keepMouse;
 }
 
 /*!
@@ -2307,7 +2309,7 @@ bool QDeclarativeItem::keepMouseGrab() const
 void QDeclarativeItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QDeclarativeItem);
-    d->_keepMouse = keep;
+    d->keepMouse = keep;
 }
 
 /*!
@@ -2404,6 +2406,8 @@ QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
+    if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
+        emit q->wantsFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
     emit q->focusChanged(flag);
 }
 
@@ -2487,7 +2491,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \qmlproperty bool Item::clip
   This property holds whether clipping is enabled.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
 
   Non-rectangular clipping regions are not supported for performance reasons.
@@ -2568,7 +2572,7 @@ QDeclarativeListProperty<QGraphicsTransform> QDeclarativeItem::transform()
 void QDeclarativeItem::classBegin()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = false;
+    d->componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
     if (d->_anchors)
@@ -2579,14 +2583,14 @@ void QDeclarativeItem::classBegin()
   \internal
 
   componentComplete() is called when all items in the component
-  have been constructed.  It is often desireable to delay some
+  have been constructed.  It is often desirable to delay some
   processing until the component is complete an all bindings in the
   component have been resolved.
 */
 void QDeclarativeItem::componentComplete()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = true;
+    d->componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
     if (d->_anchors) {
@@ -2604,7 +2608,7 @@ QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
     Q_Q(QDeclarativeItem);
     if (!_stateGroup) {
         _stateGroup = new QDeclarativeStateGroup;
-        if (!_componentComplete)
+        if (!componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));
@@ -3105,7 +3109,10 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 /*! \internal */
 bool QDeclarativeItem::wantsFocus() const
 {
-    return focusItem() != 0;
+    Q_D(const QDeclarativeItem);
+    return focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
+           (!parentItem() && focusItem() != 0);
 }
 
 /*!

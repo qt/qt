@@ -562,31 +562,52 @@ QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::queryExpressionResult
     return query;
 }
 
-QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::setBindingForObject(int objectDebugId,
-                                                                               const QString &propertyName,
-                                                                               const QVariant &bindingExpression,
-                                                                               bool isLiteralValue,
-                                                                               QObject *parent)
+bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QString &propertyName,
+                                                  const QVariant &bindingExpression,
+                                                  bool isLiteralValue)
 {
     Q_D(QDeclarativeEngineDebug);
 
-    QDeclarativeDebugExpressionQuery *query = new QDeclarativeDebugExpressionQuery(parent);
     if (d->client->isConnected() && objectDebugId != -1) {
-        query->m_client = this;
-        query->m_expr = bindingExpression;
-        int queryId = d->getId();
-        query->m_queryId = queryId;
-        d->expressionQuery.insert(queryId, query);
-
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("SET_BINDING") << queryId << objectDebugId << propertyName << bindingExpression << isLiteralValue;
+        ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue;
         d->client->sendMessage(message);
+        return true;
     } else {
-        query->m_state = QDeclarativeDebugQuery::Error;
+        return false;
     }
+}
 
-    return query;
+bool QDeclarativeEngineDebug::resetBindingForObject(int objectDebugId, const QString &propertyName)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("RESET_BINDING") << objectDebugId << propertyName;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool QDeclarativeEngineDebug::setMethodBody(int objectDebugId, const QString &methodName,
+                                            const QString &methodBody)
+{
+    Q_D(QDeclarativeEngineDebug);
+
+    if (d->client->isConnected() && objectDebugId != -1) {
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("SET_METHOD_BODY") << objectDebugId << methodName << methodBody;
+        d->client->sendMessage(message);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 QDeclarativeDebugWatch::QDeclarativeDebugWatch(QObject *parent)

@@ -54,7 +54,7 @@
 //
 
 #include "qconfig.h"
-#include "qfontengine_p.h"
+#include <private/qfontengine_p.h>
 #include "qsize.h"
 #include <openfont.h>
 
@@ -134,6 +134,7 @@ public:
 
 private:
     friend class QFontPrivate;
+    friend class QSymbianVGFontGlyphCache;
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
     CFont *fontWithSize(qreal size) const;

@@ -17,7 +17,8 @@ HEADERS += \
     qpixmapdata_vg_p.h \
     qpixmapfilter_vg_p.h \
     qvgcompositionhelper_p.h \
-    qvgimagepool_p.h
+    qvgimagepool_p.h \
+    qvgfontglyphcache_p.h
 SOURCES += \
     qpaintengine_vg.cpp \
     qpixmapdata_vg.cpp \
@@ -33,7 +34,11 @@ contains(QT_CONFIG, egl) {
         qwindowsurface_vgegl.cpp
 }
 
-symbian: DEFINES += QVG_RECREATE_ON_SIZE_CHANGE QVG_BUFFER_SCROLLING
+symbian {
+    DEFINES += QVG_RECREATE_ON_SIZE_CHANGE QVG_BUFFER_SCROLLING
+    SOURCES += \
+        qvg_symbian.cpp
+}
 
 include(../qbase.pri)
 

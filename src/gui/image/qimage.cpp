@@ -58,6 +58,7 @@
 #include <private/qmemrotate_p.h>
 #include <private/qpixmapdata_p.h>
 #include <private/qimagescale_p.h>
+#include <private/qsimd_p.h>
 
 #include <qhash.h>
 
@@ -209,7 +210,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
         break;
     }
 
-    const int bytes_per_line = ((width * depth + 31) >> 5) << 2; // bytes per scanline (must be multiple of 8)
+    const int bytes_per_line = ((width * depth + 31) >> 5) << 2; // bytes per scanline (must be multiple of 4)
 
     // sanity check for potential overflows
     if (INT_MAX/depth < width
@@ -3630,7 +3631,7 @@ static const Image_Converter converter_map[QImage::NImageFormats][QImage::NImage
     } // Format_ARGB4444_Premultiplied
 };
 
-static const InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
+static InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
 {
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -3726,6 +3727,19 @@ static const InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     } // Format_ARGB4444_Premultiplied
 };
+
+void qInitImageConversions()
+{
+    const uint features = qDetectCPUFeatures();
+    Q_UNUSED(features);
+
+#ifdef QT_HAVE_SSE2
+    if (features & SSE2) {
+        extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
+        inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_sse2;
+    }
+#endif
+}
 
 /*!
     Returns a copy of the image in the given \a format.

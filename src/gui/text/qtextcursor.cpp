@@ -64,7 +64,8 @@ enum {
 
 QTextCursorPrivate::QTextCursorPrivate(QTextDocumentPrivate *p)
     : priv(p), x(0), position(0), anchor(0), adjusted_anchor(0),
-      currentCharFormat(-1), visualNavigation(false), keepPositionOnInsert(false)
+      currentCharFormat(-1), visualNavigation(false), keepPositionOnInsert(false),
+      changed(false)
 {
     priv->addCursor(this);
 }
@@ -80,6 +81,7 @@ QTextCursorPrivate::QTextCursorPrivate(const QTextCursorPrivate &rhs)
     currentCharFormat = rhs.currentCharFormat;
     visualNavigation = rhs.visualNavigation;
     keepPositionOnInsert = rhs.keepPositionOnInsert;
+    changed = rhs.changed;
     priv->addCursor(this);
 }
 
@@ -1281,7 +1283,7 @@ void QTextCursor::setVisualNavigation(bool b)
 /*!
   \since 4.7
 
-  Sets the visual x position for vertical cursor movements.
+  Sets the visual x position for vertical cursor movements to \a x.
 
   The vertical movement x position is cleared automatically when the cursor moves horizontally, and kept
   unchanged when the cursor moves vertically. The mechanism allows the cursor to move up and down on a
@@ -1333,8 +1335,8 @@ bool QTextCursor::keepPositionOnInsert() const
   Defines whether the cursor should keep its current position when text gets inserted at the current position of the
   cursor.
 
-  If \b is true, the cursor keeps its current position when text gets inserted at the positing of the cursor.
-  If \b is false, the cursor moves along with the inserted text.
+  If \a b is true, the cursor keeps its current position when text gets inserted at the positing of the cursor.
+  If \a b is false, the cursor moves along with the inserted text.
 
   The default is false.
 
