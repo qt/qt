@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,30 +37,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef PIECHART_H
+#define PIECHART_H
+
 //![0]
-import Charts 1.0
-import Qt 4.7
+#include <QDeclarativeItem>
+#include <QColor>
 
-Item {
-    width: 300; height: 200
+class PieChart : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
-    PieChart {
-        id: aPieChart
-        anchors.centerIn: parent
-        width: 100; height: 100
-        color: "red"
+public:
+    PieChart(QDeclarativeItem *parent = 0);
 
-        onChartCleared: console.log("The chart has been cleared")
-    }
+    QString name() const;
+    void setName(const QString &name);
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: aPieChart.clearChart()
-    }
+    QColor color() const;
+    void setColor(const QColor &color);
 
-    Text {
-        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
-        text: "Click anywhere to clear the chart"
-    }
-}
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+
+private:
+    QString m_name;
+    QColor m_color;
+};
 //![0]
+
+#endif
+

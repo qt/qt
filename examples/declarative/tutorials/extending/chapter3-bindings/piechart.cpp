@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,30 +37,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "piechart.h"
+#include <QPainter>
+#include <QDebug>
+
+PieChart::PieChart(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
+{
+    // need to disable this flag to draw inside a QDeclarativeItem
+    setFlag(QGraphicsItem::ItemHasNoContents, false);
+}
+
+QString PieChart::name() const
+{
+    return m_name;
+}
+
+void PieChart::setName(const QString &name)
+{
+    m_name = name;
+}
+
+QColor PieChart::color() const
+{
+    return m_color;
+}
+
 //![0]
-import Charts 1.0
-import Qt 4.7
-
-Item {
-    width: 300; height: 200
-
-    PieChart {
-        id: aPieChart
-        anchors.centerIn: parent
-        width: 100; height: 100
-        color: "red"
-
-        onChartCleared: console.log("The chart has been cleared")
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: aPieChart.clearChart()
-    }
-
-    Text {
-        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
-        text: "Click anywhere to clear the chart"
+void PieChart::setColor(const QColor &color)
+{
+    if (color != m_color) {
+        m_color = color;
+        update();   // repaint with the new color
+        emit colorChanged();
     }
 }
 //![0]
+
+void PieChart::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+    painter->drawPie(boundingRect(), 90 * 16, 290 * 16);
+}
+
+void PieChart::clearChart()
+{
+    setColor(QColor(Qt::transparent));
+    update();
+}

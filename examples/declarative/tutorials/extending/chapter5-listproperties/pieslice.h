@@ -37,32 +37,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MUSICIAN_H
-#define MUSICIAN_H
+#ifndef PIESLICE_H
+#define PIESLICE_H
+
+#include <QDeclarativeItem>
+#include <QColor>
 
 //![0]
-#include <QObject>
-
-class Musician : public QObject
+class PieSlice : public QDeclarativeItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QString instrument READ instrument WRITE setInstrument)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(int fromAngle READ fromAngle WRITE setFromAngle)
+    Q_PROPERTY(int angleSpan READ angleSpan WRITE setAngleSpan)
+//![0]
 
 public:
-    Musician(QObject *parent = 0);
+    PieSlice(QDeclarativeItem *parent = 0);
 
-    QString name() const;
-    void setName(const QString &name);
+    QColor color() const;
+    void setColor(const QColor &color);
 
-    QString instrument() const;
-    void setInstrument(const QString &instrument);
+    int fromAngle() const;
+    void setFromAngle(int angle);
+
+    int angleSpan() const;
+    void setAngleSpan(int span);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
-    QString m_name;
-    QString m_instrument;
+    QColor m_color;
+    int m_fromAngle;
+    int m_angleSpan;
 };
-//![0]
 
 #endif
 
