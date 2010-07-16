@@ -272,33 +272,8 @@ void QSmoothedAnimation::init()
     with both a velocity of 200 and a duration of 8000 set.
 
     The follow example shows one rectangle tracking the position of another.
-\code
-import Qt 4.7
 
-Rectangle {
-    width: 800; height: 600; color: "blue"
-
-    Rectangle {
-        color: "green"
-        width: 60; height: 60;
-        x: rect1.x - 5; y: rect1.y - 5;
-        Behavior on x { SmoothedAnimation { velocity: 200 } }
-        Behavior on y { SmoothedAnimation { velocity: 200 } }
-    }
-
-    Rectangle {
-        id: rect1
-        color: "red"
-        width: 50; height: 50;
-    }
-
-    focus: true
-    Keys.onRightPressed: rect1.x = rect1.x + 100
-    Keys.onLeftPressed: rect1.x = rect1.x - 100
-    Keys.onUpPressed: rect1.y = rect1.y - 100
-    Keys.onDownPressed: rect1.y = rect1.y + 100
-}
-\endcode
+    \snippet doc/src/snippets/declarative/smoothedanimation.qml 0
 
     The default velocity of SmoothedAnimation is 200 units/second.  Note that if the range of the
     value being animated is small, then the velocity will need to be adjusted
@@ -306,6 +281,11 @@ Rectangle {
     To enable a smooth animation in this range the velocity will need to be
     set to a value such as 0.5 units/second.  Animating from 0 to 1.0 with a velocity
     of 0.5 will take 2000 ms to complete.
+
+    Like any other animation element, a SmoothedAnimation can be applied in a
+    number of ways, including transitions, behaviors and property value 
+    sources. The \l PropertyAnimation documentation shows a variety of methods
+    for creating animations.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
@@ -388,11 +368,13 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
 
     Sets how the SmoothedAnimation behaves if an animation direction is reversed.
 
-    If reversing mode is \c SmoothedAnimation.Eased, the animation will smoothly decelerate, and
-    then reverse direction.  If the reversing mode is \c SmoothedAnimation.Immediate, the
-    animation will immediately begin accelerating in the reverse direction,
-    begining with a velocity of 0.  If the reversing mode is \c SmoothedAnimation.Sync, the
-    property is immediately set to the target value.
+    Possible values are:
+
+    \list
+    \o SmoothedAnimation.Eased (default) - the animation will smoothly decelerate, and then reverse direction
+    \o SmoothedAnimation.Immediate - the animation will immediately begin accelerating in the reverse direction, begining with a velocity of 0
+    \o SmoothedAnimation.Sync - the property is immediately set to the target value
+    \endlist
 */
 QDeclarativeSmoothedAnimation::ReversingMode QDeclarativeSmoothedAnimation::reversingMode() const
 {

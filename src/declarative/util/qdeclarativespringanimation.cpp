@@ -207,14 +207,24 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
     \since 4.7
 
-    \brief The SpringAnimation element allows a property to track a value in a spring-like motion
+    \brief The SpringAnimation element allows a property to track a value in a spring-like motion.
 
     SpringAnimation mimics the oscillatory behavior of a spring, with the appropriate \l spring constant to
     control the acceleration and the \l damping to control how quickly the effect dies away.
 
     You can also limit the maximum \l velocity of the animation.
 
+    The following \l Rectangle moves to the position of the mouse using a 
+    SpringAnimation when the mouse is clicked:
 
+    \snippet doc/src/snippets/declarative/springanimation.qml 0
+
+    Like any other animation element, a SpringAnimation can be applied in a
+    number of ways, including transitions, behaviors and property value 
+    sources. The \l PropertyAnimation documentation shows a variety of methods
+    for creating animations.
+
+    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
@@ -244,6 +254,11 @@ qreal QDeclarativeSpringAnimation::to() const
 
 /*!
     \qmlproperty real SpringAnimation::to
+
+    This property holds the value at which the animation will end.
+
+    If not set, the animation will continue until it reaches the
+    value that is being tracked.
 */
 
 void QDeclarativeSpringAnimation::setTo(qreal value)
@@ -266,6 +281,11 @@ qreal QDeclarativeSpringAnimation::from() const
 
 /*!
     \qmlproperty real SpringAnimation::from
+
+    This property holds the value from which the animation will begin.
+
+    If not set, the animation will start regardless of the 
+    value being tracked.
 */
 
 void QDeclarativeSpringAnimation::setFrom(qreal value)
@@ -325,10 +345,12 @@ void QDeclarativeSpringAnimation::setSpring(qreal spring)
 
 /*!
     \qmlproperty real SpringAnimation::damping
-    This property holds the spring damping constant
+    This property holds the spring damping value.
 
-    The damping constant describes how quickly a sprung follower comes to rest.
-    Useful range is 0 - 1.0
+    This value describes how quickly a sprung follower comes to rest.
+
+    The useful range is 0 - 1.0. The lower the value, the faster the
+    follower comes to rest.
 */
 qreal QDeclarativeSpringAnimation::damping() const
 {
@@ -348,7 +370,7 @@ void QDeclarativeSpringAnimation::setDamping(qreal damping)
 
 /*!
     \qmlproperty real SpringAnimation::epsilon
-    This property holds the spring epsilon
+    This property holds the spring epsilon.
 
     The epsilon is the rate and amount of change in the value which is close enough
     to 0 to be considered equal to zero. This will depend on the usage of the value.

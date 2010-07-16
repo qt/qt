@@ -38,19 +38,64 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+
 import Qt 4.7
 
+Row {
+
+//![transition]
 Rectangle {
-    id: myRect
+    id: rect
     width: 100; height: 100
     color: "red"
 
-    MouseArea { id: mouseArea; anchors.fill: parent }
-
     states: State {
-        name: "hidden"; when: mouseArea.pressed
-        PropertyChanges { target: myRect; opacity: 0 }
+        name: "moved"
+        PropertyChanges { target: rect; x: 50 }
+    }
+
+    transitions: Transition { 
+        PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } 
     }
 }
-//![0]
+//![transition]
+
+//![behavior]
+Rectangle {
+    width: 100; height: 100
+    color: "red"
+
+    Behavior on x { PropertyAnimation {} }
+
+    MouseArea { anchors.fill: parent; onClicked: parent.x = 50 }
+}
+//![behavior]
+
+//![propertyvaluesource]
+Rectangle {
+    width: 100; height: 100
+    color: "red"
+
+    SequentialAnimation on x {
+        loops: Animation.Infinite
+        PropertyAnimation { to: 50 }
+        PropertyAnimation { to: 0 }
+    }
+}
+//![propertyvaluesource]
+
+//![standalone]
+Rectangle {
+    id: theRect
+    width: 100; height: 100
+    color: "red"
+
+    // this is a standalone animation, it's not running by default
+    PropertyAnimation { id: animation; target: theRect; property: "width"; to: 30; duration: 500 }
+
+    MouseArea { anchors.fill: parent; onClicked: animation.running = true }
+}
+//![standalone]
+
+
+}
