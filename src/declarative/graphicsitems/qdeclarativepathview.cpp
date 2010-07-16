@@ -403,7 +403,7 @@ QDeclarativePathView::~QDeclarativePathView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
-    Models can also be created directly in XML, using the ListModel element.
+    Models can also be created directly in QML, using the ListModel element.
 
     \sa {qmlmodels}{Data Models}
 */
@@ -627,8 +627,8 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
     so as to stay with the current item.
 
     The below example demonstrates how to make a simple highlight.  Note the use
-    of the PathView.onPath property to ensure that the highlight is hidden
-    when flicked off of the path.
+    of the \l{PathView::onPath}{PathView.onPath} attached property to ensure that
+    the highlight is hidden when flicked away from the path.
 
     \code
     Component {
