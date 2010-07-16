@@ -157,8 +157,10 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
         return result;          // failed
     }
 
-    if (isHostExcluded(dict, query.peerHostName()))
+    if (isHostExcluded(dict, query.peerHostName())) {
+        CFRelease(dict);
         return result;          // no proxy for this host
+    }
 
     // is there a PAC enabled? If so, use it first.
     CFNumberRef pacEnabled;
@@ -222,6 +224,7 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             result << https;
     }
 
+    CFRelease(dict);
     return result;
 }
 
