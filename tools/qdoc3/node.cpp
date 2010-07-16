@@ -299,7 +299,7 @@ InnerNode::~InnerNode()
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
-    if (node)
+    if (node && node->subType() != QmlPropertyGroup)
         return node;
     if ((type() == Fake) && (subType() == QmlClass)) {
         for (int i=0; i<children.size(); ++i) {
@@ -1243,6 +1243,24 @@ QStringList FunctionNode::parameterNames() const
         ++p;
     }
     return names;
+}
+
+/*!
+  Returns a raw list of parameters. If \a names is true, the
+  names are included. If \a values is true, the default values
+  are included, if any are present.
+ */
+QString FunctionNode::rawParameters(bool names, bool values) const
+{
+    QString raw;
+    foreach (const Parameter &parameter, parameters()) {
+        raw += parameter.leftType() + parameter.rightType();
+        if (names)
+            raw += parameter.name();
+        if (values)
+            raw += parameter.defaultValue();
+    }
+    return raw;
 }
 
 /*!

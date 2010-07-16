@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
+  \qmlproperty string QML:QtObject::objectName
   This property allows you to give a name to this specific object instance.
 
   See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
@@ -219,7 +219,7 @@ of their use.
 
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
-: captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false),
+: captureProperties(false), rootContext(0), isDebugging(false),
   outputWarningsToStdErr(true), contextClass(0), sharedContext(0), sharedScope(0),
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
@@ -237,8 +237,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
@@ -1090,8 +1090,6 @@ If you are certain the files will be local, you could simplify to:
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
-
-\sa {Dynamic Object Management}
 */
 
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1139,8 +1137,6 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
-
-\sa {Dynamic Object Management}
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)

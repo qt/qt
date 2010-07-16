@@ -145,9 +145,9 @@ private slots:
     void warningsWidgetOpened();
     void warningsWidgetClosed();
 
-    void updateSizeHints();
-
 private:
+    void updateSizeHints(bool initial = false);
+
     QString getVideoFileName();
 
     LoggerWidget *loggerWindow;

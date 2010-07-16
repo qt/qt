@@ -94,14 +94,13 @@ public:
 #endif
 };
 
+Q_GLOBAL_STATIC(QWidget, globalStyleInfoWidget);
+
 QLayoutStyleInfo QGraphicsGridLayoutPrivate::styleInfo() const
 {
-    static QWidget *wid = 0;
-    if (!wid)
-        wid = new QWidget;
     QGraphicsItem *item = parentItem();
     QStyle *style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : QApplication::style();
-    return QLayoutStyleInfo(style, wid);
+    return QLayoutStyleInfo(style, globalStyleInfoWidget());
 }
 
 /*!

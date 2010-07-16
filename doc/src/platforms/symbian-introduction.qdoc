@@ -51,12 +51,29 @@
         \o \l {Exception Safety with Symbian}
         \o \l {Platform Notes - Symbian} {Qt for the Symbian platform - state of support}
         \o \l {qmake Platform Notes#Symbian platform} {Qt for Symbian extensions for qmake}
+	\o \l {Symbian Platform Security Requirements} {Symbian Platform Security Requirements}
     \endlist
     \o
     \list
         \o \l {Deploying an Application on the Symbian platform}{Deploying Applications}
     \endlist
     \endtable
+*/
+
+/*!
+    \page symbian-platform-security-requirements.html
+
+    \title Symbian Platform Security Requirements
+    \ingroup qtsymbian
+
+    On Symbian, processes that access media via the network must
+    have the \c NetworkServices platform security capability. If the client
+    process lacks this capability, operations will result in errors.
+    This failure is indicated by a state() of Phonon::ErrorState.
+
+    Platform security capabilities are added via the
+    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
+    qmake variable.
 */
 
 /*!

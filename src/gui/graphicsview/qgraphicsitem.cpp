@@ -133,7 +133,8 @@
 
     \img graphicsview-parentchild.png
 
-    \section1 Transformation
+    \target Transformations
+    \section1 Transformations
 
     QGraphicsItem supports projective transformations in addition to its base
     position, pos(). There are several ways to change an item's transformation.
@@ -3257,6 +3258,8 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     // Update the child focus chain.
+    if (scene && scene->focusItem())
+        scene->focusItem()->d_ptr->clearSubFocus();
     f->d_ptr->setSubFocus();
 
     // Update the scene's focus item.
@@ -7637,9 +7640,9 @@ int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObjec
 QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGraphicsObject> *list, int index)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    if (index >= 0 && index < d->children.count()) 
+    if (index >= 0 && index < d->children.count())
         return d->children.at(index)->toGraphicsObject();
-    else 
+    else
         return 0;
 }
 

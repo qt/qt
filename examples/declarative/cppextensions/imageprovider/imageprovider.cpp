@@ -54,7 +54,7 @@ class ColorImageProvider : public QDeclarativeImageProvider
 {
 public:
     ColorImageProvider()
-        : QDeclarativeImageProvider(Pixmap)
+        : QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
     {
     }
 

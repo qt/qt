@@ -120,11 +120,11 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItemPrivate : public QGraphicsItemPrivate
 public:
     QDeclarativeItemPrivate()
     : _anchors(0), _contents(0),
-      _baselineOffset(0),
+      baselineOffset(0),
       _anchorLines(0),
       _stateGroup(0), origin(QDeclarativeItem::Center),
       widthValid(false), heightValid(false),
-      _componentComplete(true), _keepMouse(false),
+      componentComplete(true), keepMouse(false),
       smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
       mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
     {
@@ -144,11 +144,9 @@ public:
             QDeclarative_setParent_noEvent(q, parent);
             q->setParentItem(parent);
         }
-        _baselineOffset.invalidate();
+        baselineOffset.invalidate();
         mouseSetsFocus = false;
     }
-
-    QString _id;
 
     // Private Properties
     qreal width() const;
@@ -203,7 +201,7 @@ public:
         if (!_anchors) {
             Q_Q(QDeclarativeItem);
             _anchors = new QDeclarativeAnchors(q);
-            if (!_componentComplete)
+            if (!componentComplete)
                 _anchors->classBegin();
         }
         return _anchors;
@@ -211,7 +209,7 @@ public:
     QDeclarativeAnchors *_anchors;
     QDeclarativeContents *_contents;
 
-    QDeclarativeNullableValue<qreal> _baselineOffset;
+    QDeclarativeNullableValue<qreal> baselineOffset;
 
     struct AnchorLines {
         AnchorLines(QGraphicsObject *);
@@ -260,8 +258,8 @@ public:
     QDeclarativeItem::TransformOrigin origin:4;
     bool widthValid:1;
     bool heightValid:1;
-    bool _componentComplete:1;
-    bool _keepMouse:1;
+    bool componentComplete:1;
+    bool keepMouse:1;
     bool smooth:1;
     bool transformOriginDirty : 1;
     bool doneEventPreHandler : 1;
@@ -286,7 +284,9 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void subFocusItemChange()
     {
-        emit q_func()->wantsFocusChanged(subFocusItem != 0);
+        if (flags & QGraphicsItem::ItemIsFocusScope || !parent)
+            emit q_func()->wantsFocusChanged(subFocusItem != 0);
+        //see also QDeclarativeItemPrivate::focusChanged
     }
 
     // Reimplemented from QGraphicsItemPrivate

@@ -55,6 +55,7 @@
 #include <QAuthenticator>
 
 #include "private/qhostinfo_p.h"
+#include "private/qsslsocket_openssl_p.h"
 
 #include "../network-settings.h"
 
@@ -163,6 +164,7 @@ private slots:
     void setDefaultCiphers();
     void supportedCiphers();
     void systemCaCertificates();
+    void wildcardCertificateNames();
     void wildcard();
     void setEmptyKey();
     void spontaneousWrite();
@@ -1061,6 +1063,28 @@ void tst_QSslSocket::systemCaCertificates()
     QList<QSslCertificate> certs = QSslSocket::systemCaCertificates();
     QVERIFY(certs.size() > 1);
     QCOMPARE(certs, QSslSocket::defaultCaCertificates());
+}
+
+void tst_QSslSocket::wildcardCertificateNames()
+{
+    // Passing CN matches
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("www.example.com"), QString("www.example.com")), true );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example.com"), QString("www.example.com")), true );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("xxx*.example.com"), QString("xxxwww.example.com")), true );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("f*.example.com"), QString("foo.example.com")), true );
+
+    // Failing CN matches
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("xxx.example.com"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.*.com"), QString("www.example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example.com"), QString("baa.foo.example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("f*.example.com"), QString("baa.example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.com"), QString("example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*fail.com"), QString("example.com")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example."), QString("www.example.")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*.example."), QString("www.example")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString(""), QString("www")), false );
+    QCOMPARE( QSslSocketBackendPrivate::isMatchingHostname(QString("*"), QString("www")), false );
 }
 
 void tst_QSslSocket::wildcard()

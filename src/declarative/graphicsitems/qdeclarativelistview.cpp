@@ -494,7 +494,7 @@ public:
     QSmoothedAnimation *highlightSizeAnimator;
     QDeclarativeViewSection *sectionCriteria;
     QString currentSection;
-    static const int sectionCacheSize = 3;
+    static const int sectionCacheSize = 4;
     QDeclarativeItem *sectionCache[sectionCacheSize];
     qreal spacing;
     qreal highlightMoveSpeed;
@@ -1029,6 +1029,11 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
         }
         currentItem->item->setFocus(true);
         currentItem->attached->setIsCurrentItem(true);
+        // Avoid showing section delegate twice.  We still need the section heading so that
+        // currentItem positioning works correctly.
+        // This is slightly sub-optimal, but section heading caching minimizes the impact.
+        if (currentItem->section)
+            currentItem->section->setVisible(false);
     }
     updateHighlight();
     emit q->currentIndexChanged();
@@ -1072,7 +1077,7 @@ void QDeclarativeListViewPrivate::updateFooter()
     }
     if (footer) {
         if (visibleItems.count()) {
-            qreal endPos = endPosition();
+            qreal endPos = endPosition() + 1;
             if (lastVisibleIndex() == model->count()-1) {
                 footer->setPosition(endPos);
             } else {
@@ -1727,7 +1732,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
     
-    Here is a highlight with its motion defined by a \l {SpringAniamtion} item:
+    Here is a highlight with its motion defined by a \l {SpringAnimation} item:
 
     \snippet doc/src/snippets/declarative/listview/listview.qml highlightFollowsCurrentItem
 
@@ -2888,8 +2893,11 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
         d->setPosition(0);
-        if (d->itemCount == 0)
+        if (d->itemCount == 0) {
+            d->updateHeader();
+            d->updateFooter();
             update();
+        }
     }
 
     emit countChanged();

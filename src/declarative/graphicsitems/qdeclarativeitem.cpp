@@ -1388,26 +1388,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \property QDeclarativeItem::baseline
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::focus
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::wantsFocus
-    \internal
-*/
-
-/*!
-    \property QDeclarativeItem::transformOrigin
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::childrenRectChanged(const QRectF &)
     \internal
 */
@@ -1609,7 +1589,7 @@ QDeclarativeItem *QDeclarativeItem::parentItem() const
 bool QDeclarativeItem::isComponentComplete() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_componentComplete;
+    return d->componentComplete;
 }
 
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
@@ -1750,7 +1730,7 @@ QRectF QDeclarativeItem::childrenRect()
     Q_D(QDeclarativeItem);
     if (!d->_contents) {
         d->_contents = new QDeclarativeContents(this);
-        if (d->_componentComplete)
+        if (d->componentComplete)
             d->_contents->complete();
     }
     return d->_contents->rectF();
@@ -1970,6 +1950,9 @@ QVariant QDeclarativeItem::inputMethodQuery(Qt::InputMethodQuery query) const
     return v;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::keyPressPreHandler(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1980,6 +1963,9 @@ void QDeclarativeItem::keyPressPreHandler(QKeyEvent *event)
     d->doneEventPreHandler = true;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::keyReleasePreHandler(QKeyEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1990,6 +1976,9 @@ void QDeclarativeItem::keyReleasePreHandler(QKeyEvent *event)
     d->doneEventPreHandler = true;
 }
 
+/*!
+  \internal
+ */
 void QDeclarativeItem::inputMethodPreHandler(QInputMethodEvent *event)
 {
     Q_D(QDeclarativeItem);
@@ -1999,7 +1988,6 @@ void QDeclarativeItem::inputMethodPreHandler(QInputMethodEvent *event)
         event->ignore();
     d->doneEventPreHandler = true;
 }
-
 
 /*!
     \internal
@@ -2097,7 +2085,7 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
-  The margins property can be used to set all of the various margins at once, to the same value.
+  The \c anchors.margins property can be used to set all of the various margins at once, to the same value.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 
@@ -2132,9 +2120,11 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \endqml
   \endtable
 
-  anchors.fill provides a convenient way for one item to have the
+  \c anchors.fill provides a convenient way for one item to have the
   same geometry as another item, and is equivalent to connecting all
   four directional anchors.
+
+  To clear an anchor value, set it to \c undefined.
 
   \note You can only anchor an item to siblings or a parent.
 
@@ -2154,19 +2144,19 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 qreal QDeclarativeItem::baselineOffset() const
 {
     Q_D(const QDeclarativeItem);
-    if (!d->_baselineOffset.isValid()) {
+    if (!d->baselineOffset.isValid()) {
         return 0.0;
     } else
-        return d->_baselineOffset;
+        return d->baselineOffset;
 }
 
 void QDeclarativeItem::setBaselineOffset(qreal offset)
 {
     Q_D(QDeclarativeItem);
-    if (offset == d->_baselineOffset)
+    if (offset == d->baselineOffset)
         return;
 
-    d->_baselineOffset = offset;
+    d->baselineOffset = offset;
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2295,7 +2285,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
 bool QDeclarativeItem::keepMouseGrab() const
 {
     Q_D(const QDeclarativeItem);
-    return d->_keepMouse;
+    return d->keepMouse;
 }
 
 /*!
@@ -2319,7 +2309,7 @@ bool QDeclarativeItem::keepMouseGrab() const
 void QDeclarativeItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QDeclarativeItem);
-    d->_keepMouse = keep;
+    d->keepMouse = keep;
 }
 
 /*!
@@ -2416,6 +2406,8 @@ QDeclarativeItem *QDeclarativeItem::childAt(qreal x, qreal y) const
 void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
+    if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
+        emit q->wantsFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
     emit q->focusChanged(flag);
 }
 
@@ -2499,7 +2491,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \qmlproperty bool Item::clip
   This property holds whether clipping is enabled.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
 
   Non-rectangular clipping regions are not supported for performance reasons.
@@ -2539,11 +2531,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*!
-  \property QDeclarativeItem::state
-  \internal
-*/
-
 /*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
@@ -2566,11 +2553,6 @@ void QDeclarativeItemPrivate::setState(const QString &state)
   For more information see \l Transform.
 */
 
-/*!
-  \property QDeclarativeItem::transform
-  \internal
-*/
-
 /*! \internal */
 QDeclarativeListProperty<QGraphicsTransform> QDeclarativeItem::transform()
 {
@@ -2590,7 +2572,7 @@ QDeclarativeListProperty<QGraphicsTransform> QDeclarativeItem::transform()
 void QDeclarativeItem::classBegin()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = false;
+    d->componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
     if (d->_anchors)
@@ -2608,7 +2590,7 @@ void QDeclarativeItem::classBegin()
 void QDeclarativeItem::componentComplete()
 {
     Q_D(QDeclarativeItem);
-    d->_componentComplete = true;
+    d->componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
     if (d->_anchors) {
@@ -2626,7 +2608,7 @@ QDeclarativeStateGroup *QDeclarativeItemPrivate::_states()
     Q_Q(QDeclarativeItem);
     if (!_stateGroup) {
         _stateGroup = new QDeclarativeStateGroup;
-        if (!_componentComplete)
+        if (!componentComplete)
             _stateGroup->classBegin();
         QObject::connect(_stateGroup, SIGNAL(stateChanged(QString)),
                          q, SIGNAL(stateChanged(QString)));
@@ -2857,6 +2839,26 @@ void QDeclarativeItem::setSmooth(bool smooth)
     emit smoothChanged(smooth);
     update();
 }
+
+/*!
+  \property QDeclarativeItem::focus
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transform
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transformOrigin
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::wantsFocus
+  \internal
+*/
 
 /*!
     \internal
@@ -3107,7 +3109,10 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 /*! \internal */
 bool QDeclarativeItem::wantsFocus() const
 {
-    return focusItem() != 0;
+    Q_D(const QDeclarativeItem);
+    return focusItem() == this ||
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
+           (!parentItem() && focusItem() != 0);
 }
 
 /*!

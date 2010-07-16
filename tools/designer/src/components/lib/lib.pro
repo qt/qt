@@ -44,11 +44,11 @@ SOURCES += qdesigner_components.cpp
 }
 
 INCLUDEPATH += . .. \
-    $$QT_SOURCE_TREE/tools/designer/src/lib/components \
-    $$QT_SOURCE_TREE/tools/designer/src/lib/sdk \
-    $$QT_SOURCE_TREE/tools/designer/src/lib/extension \
-    $$QT_SOURCE_TREE/tools/designer/src/lib/uilib \
-    $$QT_SOURCE_TREE/tools/designer/src/lib/shared
+    $$PWD/../../lib/components \
+    $$PWD/../../lib/sdk \
+    $$PWD/../../lib/extension \
+    $$PWD/../../lib/uilib \
+    $$PWD/../../lib/shared
 
 include(../propertyeditor/propertyeditor.pri)
 include(../objectinspector/objectinspector.pri)
