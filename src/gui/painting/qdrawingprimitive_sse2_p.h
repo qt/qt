@@ -141,12 +141,24 @@ QT_BEGIN_NAMESPACE
 // with shortcuts if fully opaque or fully transparent.
 #define BLEND_SOURCE_OVER_ARGB32_SSE2(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
     int x = 0; \
+\
+    /* First, get dst aligned. */ \
+    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
+    const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
+    for (; x < prologLength; ++x) { \
+        uint s = src[x]; \
+        if (s >= 0xff000000) \
+            dst[x] = s; \
+        else if (s != 0) \
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+    } \
+\
     for (; x < length-3; x += 4) { \
         const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
         const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask); \
         if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) { \
             /* all opaque */ \
-            _mm_storeu_si128((__m128i *)&dst[x], srcVector); \
+            _mm_store_si128((__m128i *)&dst[x], srcVector); \
         } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) { \
             /* not fully transparent */ \
             /* extract the alpha channel on 2 x 16 bits */ \
@@ -157,13 +169,13 @@ QT_BEGIN_NAMESPACE
             alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16)); \
             alphaChannel = _mm_sub_epi16(one, alphaChannel); \
  \
-            const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]); \
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]); \
             __m128i destMultipliedByOneMinusAlpha; \
             BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
  \
             /* result = s + d * (1-alpha) */\
             const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
-            _mm_storeu_si128((__m128i *)&dst[x], result); \
+            _mm_store_si128((__m128i *)&dst[x], result); \
         } \
     } \
     for (; x < length; ++x) { \
@@ -189,6 +201,17 @@ QT_BEGIN_NAMESPACE
 #define BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector) \
 { \
     int x = 0; \
+\
+    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
+    const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
+    for (; x < prologLength; ++x) { \
+        uint s = src[x]; \
+        if (s >= 0xff000000) \
+            dst[x] = s; \
+        else if (s != 0) \
+            dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+    } \
+\
     for (; x < length-3; x += 4) { \
         __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]); \
         if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) { \
@@ -198,12 +221,12 @@ QT_BEGIN_NAMESPACE
             alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16)); \
             alphaChannel = _mm_sub_epi16(one, alphaChannel); \
  \
-            const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]); \
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]); \
             __m128i destMultipliedByOneMinusAlpha; \
             BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
  \
             const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
-            _mm_storeu_si128((__m128i *)&dst[x], result); \
+            _mm_store_si128((__m128i *)&dst[x], result); \
         } \
     } \
     for (; x < length; ++x) { \
