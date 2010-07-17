@@ -4,7 +4,8 @@ contains(QT_CONFIG, dbus) {
     contains(QT_CONFIG, icd) {
         SUBDIRS += icd
     } else {
-        SUBDIRS += networkmanager generic
+        SUBDIRS += generic
+        !mac:SUBDIRS += connman networkmanager 
     }
 }
 

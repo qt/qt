@@ -71,6 +71,18 @@
     A guided tour through the translations process, explaining the
     tools provided for developers, translators and release managers.
 
+
+    \row
+    \o{2,1} \l{modelview.html}{\bold{ModelView}}
+    \o{2,1}
+    
+    \row
+    \o \image treeview_sml.png ModelView
+    \o This tutorial gives an introduction to ModelView programming using the Qt cross-platform framework
+
+    \o
+    \o
+    
     \row
     \o{2,1} \l{QTestLib Tutorial}{\bold QTestLib}
     \o{2,1} \l{qmake Tutorial}{\bold qmake}

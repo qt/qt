@@ -230,7 +230,7 @@ void AddressWidget::writeToFile(QString fileName)
         return;
     }
 
-    QList< QPair<QString, QString> > pairs = table->getList();    
+    QList< QPair<QString, QString> > pairs = table->getList();
     QDataStream out(&file);
     out << pairs;
 }
