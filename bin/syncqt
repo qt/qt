@@ -691,7 +691,6 @@ my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dis
 my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
 my %colliding_headers = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "qconfig.h" ) );
 
 foreach (@modules_to_sync) {
     #iteration info
@@ -801,7 +800,6 @@ foreach (@modules_to_sync) {
         foreach (@subdirs) {
             my $subdir = "$_";
             my @headers = findFiles("$subdir", "^[-a-z0-9_]*\\.h\$" , 0);
-            push @headers, $inject_headers{$subdir} if (defined $inject_headers{$subdir});
             foreach (@headers) {
                 my $header = "$_";
                 $header = 0 if("$header" =~ /^ui_.*.h/);
