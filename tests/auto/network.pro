@@ -36,7 +36,7 @@ SUBDIRS=\
     qsslkey \
     qsslsocket \
 
-contains(QT_CONFIG, private_tests): SUBDIRS -= \
+!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qauthenticator \
     qhttpnetworkconnection \
     qhttpnetworkreply \

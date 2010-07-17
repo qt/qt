@@ -42,7 +42,7 @@ my %modules = ( # path to module name map
         "QtScript" => "$basedir/src/script",
         "QtScriptTools" => "$basedir/src/scripttools",
         "Qt3Support" => "$basedir/src/qt3support",
-        "ActiveQt" => "$basedir/src/activeqt/container;$basedir/src/activeqt/control;$basedir/src/activeqt/shared",
+        "ActiveQt" => "$basedir/src/activeqt",
         "QtTest" => "$basedir/src/testlib",
         "QtHelp" => "$basedir/tools/assistant/lib",
         "QtDesigner" => "$basedir/tools/designer/src/lib",
@@ -995,7 +995,7 @@ if($check_includes) {
         #iteration info
         my $lib = $_;
         my $dir = "$modules{$lib}";
-        foreach (split(/;/, $dir)) {
+	{
             my $current_dir = "$_";
             #calc subdirs
             my @subdirs = ($current_dir);
