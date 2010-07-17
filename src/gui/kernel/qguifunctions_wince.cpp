@@ -76,6 +76,10 @@ struct AygSIPINFO
 #define SHIDIF_SIZEDLGFULLSCREEN 0x0004
 #endif
 
+#ifndef SHDB_HIDE
+#define SHDB_HIDE 0x0002
+#endif
+
 #ifndef SHFS_SHOWTASKBAR
 #define SHFS_SHOWTASKBAR 0x0001
 #endif
@@ -112,10 +116,12 @@ struct AygSIPINFO
 typedef BOOL (*AygInitDialog)(AygSHINITDLGINFO*);
 typedef BOOL (*AygFullScreen)(HWND, DWORD);
 typedef BOOL (*AygSHSipInfo)(UINT, UINT, PVOID, UINT);
+typedef BOOL (*AygSHDoneButton)(HWND, DWORD);
 
 static AygInitDialog ptrAygInitDialog = 0;
 static AygFullScreen ptrAygFullScreen = 0;
 static AygSHSipInfo  ptrAygSHSipInfo  = 0;
+static AygSHDoneButton ptrAygSHDoneButton = 0;
 static bool aygResolved = false;
 
 static void resolveAygLibs()
@@ -128,17 +134,9 @@ static void resolveAygLibs()
         ptrAygInitDialog = (AygInitDialog) ayglib.resolve("SHInitDialog");
         ptrAygFullScreen = (AygFullScreen) ayglib.resolve("SHFullScreen");
         ptrAygSHSipInfo  = (AygSHSipInfo)  ayglib.resolve("SHSipInfo");
+        ptrAygSHDoneButton = (AygSHDoneButton) ayglib.resolve("SHDoneButton");
     }
 }
-
-struct DIBINFO : public BITMAPINFO
-{
-    RGBQUAD arColors[255];
-
-    operator LPBITMAPINFO() { return (LPBITMAPINFO) this; }
-    operator LPBITMAPINFOHEADER() { return &bmiHeader; }
-    RGBQUAD* ColorTable() { return bmiColors; }
-};
 
 int qt_wince_GetDIBits(HDC /*hdc*/ , HBITMAP hSourceBitmap, uint, uint, LPVOID lpvBits, LPBITMAPINFO, uint)
 {
@@ -323,6 +321,8 @@ void qt_wince_maximize(QWidget *widget)
             shidi.dwFlags |= SHIDIF_CANCELBUTTON;
         if (widget->windowFlags() & Qt::WindowOkButtonHint)
             shidi.dwFlags |= SHIDIF_DONEBUTTON;
+        if (!(widget->windowFlags() & (Qt::WindowCancelButtonHint | Qt::WindowOkButtonHint)))
+            shidi.dwFlags |= SHIDIF_CANCELBUTTON;
         resolveAygLibs();
         if (ptrAygInitDialog)
             ptrAygInitDialog(&shidi);
@@ -331,6 +331,16 @@ void qt_wince_maximize(QWidget *widget)
         SystemParametersInfo(SPI_GETWORKAREA, 0, &r, 0);
         MoveWindow(hwnd, r.top, r.left, r.right - r.left, r.bottom - r.top, true);
         SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong (hwnd, GWL_EXSTYLE) | WS_EX_NODRAG);
+    }
+}
+
+void qt_wince_unmaximize(QWidget *widget)
+{
+    if (ptrAygSHDoneButton && qt_wince_is_mobile()
+        && !(widget->windowFlags() & (Qt::WindowCancelButtonHint | Qt::WindowOkButtonHint)))
+    {
+        // Hide the [X] button, we've added in qt_wince_maximize.
+        ptrAygSHDoneButton(widget->winId(), SHDB_HIDE);
     }
 }
 
