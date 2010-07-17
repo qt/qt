@@ -2485,7 +2485,7 @@ extern "C" LRESULT QT_WIN_CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wPa
             if (OkCommand)
                 QApplication::postEvent(widget, new QEvent(QEvent::OkRequest));
             if (CancelCommand)
-                QApplication::postEvent(widget, new QEvent(QEvent::Close));
+                widget->showMinimized();
             else
 #ifndef QT_NO_MENUBAR
                 QMenuBar::wceCommands(LOWORD(wParam));

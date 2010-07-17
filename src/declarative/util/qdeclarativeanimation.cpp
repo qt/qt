@@ -634,13 +634,23 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
     \inherits PropertyAnimation
     \brief The ColorAnimation element allows you to animate color changes.
 
-    \code
-    ColorAnimation { from: "white"; to: "#c0c0c0"; duration: 100 }
-    \endcode
+    ColorAnimation defines an animation to be applied when a color value 
+    changes.
+
+    Here is a ColorAnimation applied to the \c color property of a \l Rectangle 
+    as a property value source:
+
+    \snippet doc/src/snippets/declarative/coloranimation.qml 0
+
+    Like any other animation element, a NumberAnimation can be applied in a
+    number of ways, including transitions, behaviors and property value 
+    sources. The \l PropertyAnimation documentation shows a variety of methods
+    for creating animations.
 
     When used in a transition, ColorAnimation will by default animate
-    all properties of type color that are changing. If a property or properties
-    are explicitly set for the animation, then those will be used instead.
+    all properties of type color that have changed. If a \l{PropertyAnimation::}{property} 
+    or \l{PropertyAnimation::}{properties} are explicitly set for the animation, 
+    then those are used instead.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
@@ -665,6 +675,17 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
 /*!
     \qmlproperty color ColorAnimation::from
     This property holds the starting color.
+
+    For example, the following animation is not applied until a color value
+    has reached "#c0c0c0":
+
+    Item {
+        states: [ ... ]
+
+        transition: Transition {
+            NumberAnimation { from: "#c0c0c0"; duration: 2000 }
+        }
+    }
 */
 QColor QDeclarativeColorAnimation::from() const
 {
@@ -1098,11 +1119,22 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
-    For example, to animate a set of properties over 200ms, from their values in the start state to
-    their values in the end state of the transition:
-    \code
-    NumberAnimation { properties: "x,y,scale"; duration: 200 }
-    \endcode
+    NumberAnimation defines an animation to be applied when a numerical value 
+    changes.
+
+    Here is a NumberAnimation applied to the \c x property of a \l Rectangle 
+    as a property value source:
+
+    \snippet doc/src/snippets/declarative/numberanimation.qml 0
+
+    Like any other animation element, a NumberAnimation can be applied in a
+    number of ways, including transitions, behaviors and property value 
+    sources. The \l PropertyAnimation documentation shows a variety of methods
+    for creating animations.
+
+    Note that NumberAnimation may not animate smoothly if there are irregular
+    changes in the number value that it is tracking. If this is the case, use
+    SmoothedAnimation instead.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
@@ -1137,9 +1169,23 @@ void QDeclarativeNumberAnimation::init()
 
 /*!
     \qmlproperty real NumberAnimation::from
-    This property holds the starting value.
-    If not set, then the value defined in the start state of the transition.
+    This property holds the starting number value.
+
+    For example, the following animation is not applied until the \c x value
+    has reached 100:
+
+    Item {
+        states: [ ... ]
+
+        transition: Transition {
+            NumberAnimation { properties: "x"; from: 100; duration: 200 }
+        }
+    }
+
+    If this value is not set, it defaults to the value defined in the start 
+    state of the \l Transition.
 */
+
 qreal QDeclarativeNumberAnimation::from() const
 {
     Q_D(const QDeclarativePropertyAnimation);
@@ -1153,8 +1199,10 @@ void QDeclarativeNumberAnimation::setFrom(qreal f)
 
 /*!
     \qmlproperty real NumberAnimation::to
-    This property holds the ending value.
-    If not set, then the value defined in the end state of the transition or Behavior.
+    This property holds the ending number value.
+
+    If this value is not set, it defaults to the value defined in the end 
+    state of the \l Transition or \l Behavior.
 */
 qreal QDeclarativeNumberAnimation::to() const
 {
@@ -1199,7 +1247,9 @@ QDeclarativeVector3dAnimation::~QDeclarativeVector3dAnimation()
 /*!
     \qmlproperty real Vector3dAnimation::from
     This property holds the starting value.
-    If not set, then the value defined in the start state of the transition.
+
+    If this value is not set, it defaults to the value defined in the start 
+    state of the \l Transition.
 */
 QVector3D QDeclarativeVector3dAnimation::from() const
 {
@@ -1215,7 +1265,9 @@ void QDeclarativeVector3dAnimation::setFrom(QVector3D f)
 /*!
     \qmlproperty real Vector3dAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition or Behavior.
+
+    If this value is not set, it defaults to the value defined in the end 
+    state of the \l Transition or \l Behavior.
 */
 QVector3D QDeclarativeVector3dAnimation::to() const
 {
@@ -1320,8 +1372,21 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
 
 /*!
     \qmlproperty real RotationAnimation::from
-    This property holds the starting value.
-    If not set, then the value defined in the start state of the transition.
+    This property holds the starting number value.
+
+    For example, the following animation is not applied until the \c angle value
+    has reached 100:
+
+    Item {
+        states: [ ... ]
+
+        transition: Transition {
+            RotationAnimation { properties: "angle"; from: 100; duration: 2000 }
+        }
+    }
+
+    If this value is not set, it defaults to the value defined in the start 
+    state of the \l Transition.
 */
 qreal QDeclarativeRotationAnimation::from() const
 {
@@ -1337,7 +1402,9 @@ void QDeclarativeRotationAnimation::setFrom(qreal f)
 /*!
     \qmlproperty real RotationAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition or Behavior.
+
+    If this value is not set, it defaults to the value defined in the end 
+    state of the \l Transition or \l Behavior.
 */
 qreal QDeclarativeRotationAnimation::to() const
 {
@@ -1620,56 +1687,57 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 
-    PropertyAnimation provides a way to animate changes to a property's value. It can
-    be used in many different situations:
+    PropertyAnimation provides a way to animate changes to a property's value. 
+
+    It can be used to define animations in a number of ways:
+   
     \list
-    \o In a Transition
+    \o In a \l Transition
 
-    Animate any objects that have changed their x or y properties in the target state using
-    an InOutQuad easing curve:
-    \qml
-    Transition { PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } }
-    \endqml
-    \o In a Behavior
+    For example, to animate any objects that have changed their \c x or \c y properties 
+    as a result of a state change, using an \c InOutQuad easing curve:
 
-    Animate all changes to a rectangle's x property.
-    \qml
-    Rectangle {
-        Behavior on x { PropertyAnimation {} }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/propertyanimation.qml transition
+
+
+    \o In a \l Behavior
+
+    For example, to animate all changes to a rectangle's \c x property:
+
+    \snippet doc/src/snippets/declarative/propertyanimation.qml behavior
+
+
     \o As a property value source
 
-    Repeatedly animate the rectangle's x property.
-    \qml
-    Rectangle {
-        SequentialAnimation on x {
-            loops: Animation.Infinite
-            PropertyAnimation { to: 50 }
-            PropertyAnimation { to: 0 }
-        }
-    }
-    \endqml
+    For example, to repeatedly animate the rectangle's \c x property:
+
+    \snippet doc/src/snippets/declarative/propertyanimation.qml propertyvaluesource
+
+
     \o In a signal handler
 
-    Fade out \c theObject when clicked:
+    For example, to fade out \c theObject when clicked:
     \qml
     MouseArea {
         anchors.fill: theObject
         onClicked: PropertyAnimation { target: theObject; property: "opacity"; to: 0 }
     }
     \endqml
+
     \o Standalone
 
-    Animate \c theObject's size property over 200ms, from its current size to 20-by-20:
-    \qml
-    PropertyAnimation { target: theObject; property: "size"; to: "20x20"; duration: 200 }
-    \endqml
+    For example, to animate \c rect's \c width property over 500ms, from its current width to 30:
+
+    \snippet doc/src/snippets/declarative/propertyanimation.qml standalone
+
     \endlist
 
     Depending on how the animation is used, the set of properties normally used will be
     different. For more information see the individual property documentation, as well
     as the \l{QML Animation} introduction.
+
+    Note that PropertyAnimation inherits the abstract \l Animation element.
+    This includes additional properties and methods for controlling the animation.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */

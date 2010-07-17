@@ -1144,4 +1144,7 @@ EXPORTS
 	?startPolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1143 NONAME ; void QNetworkConfigurationManagerPrivate::startPolling(void)
 	?capabilities@QNetworkConfigurationManagerPrivate@@QAE?AV?$QFlags@W4Capability@QNetworkConfigurationManager@@@@XZ @ 1144 NONAME ; class QFlags<enum QNetworkConfigurationManager::Capability> QNetworkConfigurationManagerPrivate::capabilities(void)
 	?addPendingConnection@QTcpServer@@IAEXPAVQTcpSocket@@@Z @ 1145 NONAME ; void QTcpServer::addPendingConnection(class QTcpSocket *)
+	?option@QAuthenticator@@QBE?AVQVariant@@ABVQString@@@Z @ 1146 NONAME ; class QVariant QAuthenticator::option(class QString const &) const
+	?options@QAuthenticator@@QBE?AV?$QHash@VQString@@VQVariant@@@@XZ @ 1147 NONAME ; class QHash<class QString, class QVariant> QAuthenticator::options(void) const
+	?setOption@QAuthenticator@@QAEXABVQString@@ABVQVariant@@@Z @ 1148 NONAME ; void QAuthenticator::setOption(class QString const &, class QVariant const &)
 

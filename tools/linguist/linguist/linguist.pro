@@ -94,15 +94,3 @@ FORMS += statistics.ui \
     translationsettings.ui \
     finddialog.ui
 RESOURCES += linguist.qrc
-
-TR_DIR = $$PWD/../../../translations
-TRANSLATIONS = \
-    $$TR_DIR/linguist_cs.ts \
-    $$TR_DIR/linguist_de.ts \
-    $$TR_DIR/linguist_fr.ts \
-    $$TR_DIR/linguist_hu.ts \
-    $$TR_DIR/linguist_ja.ts \
-    $$TR_DIR/linguist_pl.ts \
-    $$TR_DIR/linguist_ru.ts \
-    $$TR_DIR/linguist_zh_CN.ts \
-    $$TR_DIR/linguist_zh_TW.ts

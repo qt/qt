@@ -43,6 +43,7 @@
 #define QAUTHENTICATOR_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -72,6 +73,10 @@ public:
     void setPassword(const QString &password);
 
     QString realm() const;
+
+    QVariant option(const QString &opt) const;
+    QVariantHash options() const;
+    void setOption(const QString &opt, const QVariant &value);
 
     bool isNull() const;
     void detach();

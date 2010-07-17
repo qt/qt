@@ -112,6 +112,7 @@ SUBDIRS=\
     qmdisubwindow \
     qmessagebox \
     qmetaobject \
+    qmimedata \
     qmouseevent_modal \
     qmovie \
     qnetworkaccessmanager_and_qprogressdialog \

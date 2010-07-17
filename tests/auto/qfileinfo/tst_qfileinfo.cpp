@@ -1082,7 +1082,7 @@ void tst_QFileInfo::isHidden_data()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QVERIFY(QDir("./hidden-directory").exists() || QDir().mkdir("./hidden-directory"));
-    QVERIFY(SetFileAttributesW(QString("./hidden-directory").utf16(),FILE_ATTRIBUTE_HIDDEN));
+    QVERIFY(SetFileAttributesW(reinterpret_cast<LPCWSTR>(QString("./hidden-directory").utf16()),FILE_ATTRIBUTE_HIDDEN));
     QTest::newRow("C:/path/to/hidden-directory") << QDir::currentPath() + QString::fromLatin1("/hidden-directory") << true;
     QTest::newRow("C:/path/to/hidden-directory/.") << QDir::currentPath() + QString::fromLatin1("/hidden-directory/.") << true;
 #endif

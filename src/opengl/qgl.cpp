@@ -1334,6 +1334,10 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
 
     \value OpenGL_Version_3_2  OpenGL version 3.2 or higher is present.
 
+    \value OpenGL_Version_3_3  OpenGL version 3.3 or higher is present.
+
+    \value OpenGL_Version_4_0  OpenGL version 4.0 or higher is present.
+
     \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
 
     \value OpenGL_ES_Common_Version_1_0  OpenGL ES version 1.0 Common or higher is present.
@@ -5037,8 +5041,9 @@ void QGLWidget::deleteTexture(QMacCompatGLuint id)
 /*!
     \since 4.4
 
-    Calls the corresponding QGLContext::drawTexture() on
-    this widget's context.
+    Calls the corresponding QGLContext::drawTexture() with
+    \a target, \a textureId, and \a textureTarget for this
+    widget's context.
 */
 void QGLWidget::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
@@ -5058,8 +5063,9 @@ void QGLWidget::drawTexture(const QRectF &target, QMacCompatGLuint textureId, QM
 /*!
     \since 4.4
 
-    Calls the corresponding QGLContext::drawTexture() on
-    this widget's context.
+    Calls the corresponding QGLContext::drawTexture() with
+    \a point, \a textureId, and \a textureTarget for this
+    widget's context.
 */
 void QGLWidget::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {
