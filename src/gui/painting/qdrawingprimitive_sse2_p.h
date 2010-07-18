@@ -205,11 +205,11 @@ QT_BEGIN_NAMESPACE
     const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
     const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
     for (; x < prologLength; ++x) { \
-        uint s = src[x]; \
-        if (s >= 0xff000000) \
-            dst[x] = s; \
-        else if (s != 0) \
+        quint32 s = src[x]; \
+        if (s != 0) { \
+            s = BYTE_MUL(s, const_alpha); \
             dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s)); \
+        } \
     } \
 \
     for (; x < length-3; x += 4) { \
