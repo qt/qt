@@ -1198,12 +1198,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("image.png") << QString("image.png")
                                       << QByteArray("png") << QSize(22, 22)
                                       << QString("");
-    QTest::newRow("pngwithcompressedtext.png") << QString("pngwithcompressedtext.png")
-                                                      << QByteArray("png") << QSize(32, 32)
-                                                      << QString("");
-    QTest::newRow("pngwithtext.png") << QString("pngwithtext.png")
-                                            << QByteArray("png") << QSize(32, 32)
-                                            << QString("");
     QTest::newRow("kollada.png") << QString("kollada.png")
                                         << QByteArray("png") << QSize(436, 160)
                                         << QString("");
