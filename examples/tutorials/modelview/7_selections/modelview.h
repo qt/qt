@@ -43,10 +43,11 @@
 
 #include <QtGui/QMainWindow>
 
+QT_BEGIN_NAMESPACE
 class QTreeView; //forward declaration
 class QStandardItemModel;
 class QItemSelection;
-
+QT_END_NAMESPACE
 
 class ModelView : public QMainWindow
 {
