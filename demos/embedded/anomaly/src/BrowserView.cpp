@@ -51,10 +51,6 @@
 #include "webview.h"
 #include "ZoomStrip.h"
 
-#if defined (Q_OS_SYMBIAN)
-#include "sym_iap_util.h"
-#endif
-
 BrowserView::BrowserView(QWidget *parent)
     : QWidget(parent)
     , m_titleBar(0)
@@ -70,6 +66,26 @@ BrowserView::BrowserView(QWidget *parent)
     m_zoomLevels << 30 << 50 << 67 << 80 << 90;
     m_zoomLevels << 100;
     m_zoomLevels << 110 << 120 << 133 << 150 << 170 << 200 << 240 << 300;
+
+    QNetworkConfigurationManager manager;
+    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+        // Get saved network configuration
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        const QString id =
+            settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+        settings.endGroup();
+
+        // If the saved network configuration is not currently discovered use the system
+        // default
+        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+        if ((config.state() & QNetworkConfiguration::Discovered) !=
+            QNetworkConfiguration::Discovered) {
+            config = manager.defaultConfiguration();
+        }
+
+        m_webView->page()->networkAccessManager()->setConfiguration(config);
+    }
 
     QTimer::singleShot(0, this, SLOT(initialize()));
 }
@@ -100,9 +116,6 @@ void BrowserView::initialize()
     m_webView->setHtml("about:blank");
     m_webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_webView->setFocus();
-#ifdef Q_OS_SYMBIAN
-    QTimer::singleShot(0, this, SLOT(setDefaultIap()));
-#endif
 }
 
 void BrowserView::start()
@@ -173,12 +186,6 @@ void BrowserView::resizeEvent(QResizeEvent *event)
     int zh = m_zoomStrip->sizeHint().height();
     m_zoomStrip->move(width() - zw, (height() - zh) / 2);
 }
-#ifdef Q_OS_SYMBIAN
-void BrowserView::setDefaultIap()
-{
-    qt_SetDefaultIap();
-}
-#endif
 
 void BrowserView::navigate(const QUrl &url)
 {
