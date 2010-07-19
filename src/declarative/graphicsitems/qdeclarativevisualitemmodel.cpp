@@ -1089,6 +1089,11 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
     if (d->m_visualItemModel)
         return d->m_visualItemModel->stringValue(index, name);
 
+    if ((!d->m_listModelInterface || !d->m_abstractItemModel) && d->m_listAccessor) {
+        if (QObject *object = d->m_listAccessor->at(index).value<QObject*>())
+            return object->property(name.toUtf8()).toString();
+    }
+
     if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
         return QString();
 

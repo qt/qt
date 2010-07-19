@@ -63,9 +63,6 @@ public slots:
     void navigate(const QUrl &url);
     void zoomIn();
     void zoomOut();
-#ifdef Q_OS_SYMBIAN
-    void setDefaultIap();
-#endif
 
 private slots:
     void initialize();
