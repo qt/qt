@@ -218,6 +218,17 @@ uint qDetectCPUFeatures()
         features |= SSE;
     if (result & (1u << 26))
         features |= SSE2;
+    if (extended_result & (1u))
+        features |= SSE3;
+    if (extended_result & (1u << 9))
+        features |= SSSE3;
+    if (extended_result & (1u << 19))
+        features |= SSE4_1;
+    if (extended_result & (1u << 20))
+        features |= SSE4_2;
+    if (extended_result & (1u << 28))
+        features |= AVX;
+
 #endif // i386
 
 #if defined(QT_HAVE_MMX)

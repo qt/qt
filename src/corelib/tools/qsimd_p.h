@@ -119,7 +119,12 @@ enum CPUFeatures {
     SSE2        = 0x20,
     CMOV        = 0x40,
     IWMMXT      = 0x80,
-    NEON        = 0x100
+    NEON        = 0x100,
+    SSE3        = 0x200,
+    SSSE3       = 0x400,
+    SSE4_1      = 0x800,
+    SSE4_2      = 0x1000,
+    AVX         = 0x2000
 };
 
 Q_CORE_EXPORT uint qDetectCPUFeatures();
