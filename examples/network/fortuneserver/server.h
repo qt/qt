@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QLabel;
 class QPushButton;
 class QTcpServer;
+class QNetworkSession;
 QT_END_NAMESPACE
 
 //! [0]
@@ -58,6 +59,7 @@ public:
     Server(QWidget *parent = 0);
 
 private slots:
+    void sessionOpened();
     void sendFortune();
 
 private:
@@ -65,6 +67,7 @@ private:
     QPushButton *quitButton;
     QTcpServer *tcpServer;
     QStringList fortunes;
+    QNetworkSession *networkSession;
 };
 //! [0]
 
