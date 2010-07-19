@@ -13,13 +13,12 @@ wince*|symbian: {
    icons.path = convertFromToHICON
    
    DEPLOYMENT += task31722_0 task31722_1 icons
-   DEPLOYMENT_PLUGIN += qico
 }
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"
+   DEPLOYMENT_PLUGIN += qico
 } else:symbian {
-   DEPLOYMENT_PLUGIN += qmng
    LIBS += -lfbscli.dll -lbitgdi.dll -lgdi.dll
    contains(QT_CONFIG, openvg) {
        LIBS += $$QMAKE_LIBS_OPENVG
