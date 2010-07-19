@@ -567,7 +567,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     \image qml-xmllistmodel-example.png
 
     The XmlListModel data is loaded asynchronously, and \l status
-    is set to \l XmlListModel::Ready when loading is complete.
+    is set to \c XmlListModel.Ready when loading is complete.
     Note this means when XmlListModel is used for a view, the view is not
     populated until the model is loaded.
 
