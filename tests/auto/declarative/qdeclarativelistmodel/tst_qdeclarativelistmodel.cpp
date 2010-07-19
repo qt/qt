@@ -193,8 +193,9 @@ void tst_qdeclarativelistmodel::dynamic_data()
 
     QTest::newRow("count") << "count" << 0 << "";
 
-    QTest::newRow("get1") << "{get(0)}" << 0 << "";
-    QTest::newRow("get2") << "{get(-1)}" << 0 << "";
+    QTest::newRow("get1") << "{get(0) === undefined}" << 1 << "";
+    QTest::newRow("get2") << "{get(-1) === undefined}" << 1 << "";
+    QTest::newRow("get3") << "{append({'foo':123});get(0) != undefined}" << 1 << "";
 
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
@@ -292,8 +293,6 @@ void tst_qdeclarativelistmodel::dynamic()
     if (e.hasError())
         qDebug() << e.error(); // errors not expected
 
-    if (QTest::currentDataTag() != QLatin1String("clear3") && QTest::currentDataTag() != QLatin1String("remove3"))
-        QVERIFY(!e.hasError());
     QCOMPARE(actual,result);
 }
 
@@ -307,6 +306,9 @@ void tst_qdeclarativelistmodel::dynamic_worker()
     QFETCH(QString, script);
     QFETCH(int, result);
     QFETCH(QString, warning);
+
+    // This is same as dynamic() except it applies the test to a ListModel called 
+    // from a WorkerScript (i.e. testing the internal NestedListModel class)
 
     QDeclarativeListModel model;
     QDeclarativeEngine eng;

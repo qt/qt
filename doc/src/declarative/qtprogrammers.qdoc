@@ -27,8 +27,6 @@
 
 /*!
 
-   INCOMPLETE
-
 \page qtprogrammers.html
 \target qtprogrammers
 \title QML for Qt programmers
@@ -146,4 +144,14 @@ transition from an arbitrary Text item, or characters within a Text item, so you
 item would need to be sufficiently flexible to allow such animation.
 
 \section1 QML Items Compared With QGraphicsWidgets
+
+The main difference between QML items and QGraphicsWidgets is how they are intended to be used. The technical implementation details are much the same, but in practice they are different because QML items are made for declarative and compositional use, and QGraphicsWidgets are made for imperative and more integrated use. Both QML items and QGraphicsWidgets inherit from QGraphicsObject, and can co-exist. The differences are in the layouting system and the interfacing with other components. Note that, as QGraphicsWidgets tend more to be all-in-one packages, the equivalent of a QGraphicsWidget may be many QML items composed across several QML files, but it can still be loaded and used as a single QGraphicsObject from C++.
+
+QGraphicsWidgets are usually designed to be laid out with QGraphicsLayouts. QML does not use QGraphicsLayouts, as the Qt layouts do not mix well with animated and fluid UIs, so the geometry interface is one of the main differences. When writing QML elements, you allow the designers to place their bounding rectangle using absolute geometry, bindings or anchors (all setup for you when you inherit QDeclarativeItem) and you do not use layouts or size hints. If size hints are appropriate, then place them in the QML documentation so that the designers know how to use the item best, but still have complete control over the look and feel.
+
+The other main difference is that QGraphicsWidgets tend to follow the widget model, in that they are a self-contained bundle of UI and logic. In contrast, QML primitives are usually a single purpose item that does not fulfill a use case on its own, but is composed into the equivalent of the widget inside the QML file. So when writing QML Items, try to avoid doing UI logic or composing visual elements inside the items. Try instead to write more general purpose primitives, so that the look and feel (which involves the UI logic) can be written in QML.
+
+Both differences are caused by the different method of interaction. QGraphicsWidget is a QGraphicsObject subclass which makes fluid UI development from C++ easier, and QDeclarativeItem is a QGraphicsObject subclass which makes fluid UI development from QML easier. The difference therefore is primarily one of the interface exposed, and the design of the items that come with it (the Declarative primitives for QML and the nothing for QGraphicsWidget, because you need to write your own UI logic into the subclass).
+
+If you wish to use both QML and C++ to write the UI, for example to ease the transition period, it is recommended to use QDeclarativeItem subclasses (although you can use QGraphicsWidgets as well). To allow for easier use from C++ make the root item of each C++ component a LayoutItem, and load individual 'widgets' of QML (possibly comprised of multiple files, and containing a self-contained bundle of UI and logic) into your scene to replace individual QGraphicsWidgets one at a time.
 */

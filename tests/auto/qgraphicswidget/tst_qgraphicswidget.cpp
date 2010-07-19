@@ -176,6 +176,7 @@ private slots:
     void task243004_setStyleCrash();
     void task250119_shortcutContext();
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
+    void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
 };
 
 
@@ -3086,6 +3087,25 @@ void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()
 
     // Add an item into the scene.
     scene.addItem(parent2);
+
+    //This should not crash
+}
+void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
+{
+    QGraphicsScene scene;
+    QGraphicsWidget* item1 = new QGraphicsWidget;
+    QGraphicsWidget* item2 = new QGraphicsWidget;
+    QGraphicsWidget* item3 = new QGraphicsWidget;
+
+    scene.addItem(item1);
+    scene.addItem(item2);
+
+    scene.removeItem(item2);
+    scene.removeItem(item1);
+    delete item2;
+    delete item1;
+
+    scene.addItem(item3);
 
     //This should not crash
 }

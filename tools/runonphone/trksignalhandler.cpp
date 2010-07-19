@@ -71,8 +71,10 @@ private:
     QFile crashlogtextfile;
     QFile crashstackfile;
     QList<CrashState> queuedCrashes;
+    QList<int> dyingThreads;
     QString crashlogPath;
     bool crashlog;
+    bool terminateNeeded;
 };
 
 void TrkSignalHandler::copyingStarted()
@@ -201,15 +203,23 @@ void TrkSignalHandler::stopped(uint pc, uint pid, uint tid, const QString& reaso
         cs.crashPC = pc;
         cs.crashReason = reason;
 
-        d->queuedCrashes.append(cs);
+        if (d->dyingThreads.contains(tid)) {
+            if(d->queuedCrashes.isEmpty())
+                emit terminate();
+            else
+                d->terminateNeeded = true;
+        } else {
+            d->queuedCrashes.append(cs);
+            d->dyingThreads.append(tid);
 
-        if (d->queuedCrashes.count() == 1) {
-            d->err << "Fetching registers and stack..." << endl;
-            emit getRegistersAndCallStack(pid, tid);
+            if (d->queuedCrashes.count() == 1) {
+                d->err << "Fetching registers and stack..." << endl;
+                emit getRegistersAndCallStack(pid, tid);
+            }
         }
     }
     else
-        emit resume(pid, tid);
+        emit terminate();
 }
 
 void TrkSignalHandler::registersAndCallStackReadComplete(const QList<uint>& registers, const QByteArray& stack)
@@ -307,6 +317,8 @@ void TrkSignalHandler::registersAndCallStackReadComplete(const QList<uint>& regi
         d->err << "Fetching registers and stack..." << endl;
         emit getRegistersAndCallStack(cs.pid, cs.tid);
     }
+    else if (d->terminateNeeded)
+        emit terminate();
 
 }
 
@@ -333,7 +345,8 @@ TrkSignalHandlerPrivate::TrkSignalHandlerPrivate()
     : out(stdout),
     err(stderr),
     loglevel(0),
-    lastpercent(0)
+    lastpercent(0),
+    terminateNeeded(false)
 {
 
 }

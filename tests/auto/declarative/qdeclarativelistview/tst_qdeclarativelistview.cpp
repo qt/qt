@@ -97,6 +97,7 @@ private slots:
     void QTBUG_9791();
     void manualHighlight();
     void QTBUG_11105();
+    void footer();
 
 private:
     template <class T> void items();
@@ -1556,6 +1557,37 @@ void tst_QDeclarativeListView::QTBUG_11105()
     QCOMPARE(itemCount, 5);
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::footer()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 3; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/footer.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QDeclarativeText *footer = findItem<QDeclarativeText>(contentItem, "footer");
+    QVERIFY(footer);
+    QCOMPARE(footer->y(), 60.0);
+
+    model.removeItem(1);
+    QTRY_COMPARE(footer->y(), 40.0);
+
+    model.clear();
+    QTRY_COMPARE(footer->y(), 0.0);
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

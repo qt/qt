@@ -37,7 +37,9 @@ custom user interfaces from a rich set of \l {QML Elements}{QML elements}.
 Qt Quick helps programmers and designers collaborate to
 build the fluid user interfaces that are becoming common in portable
 consumer devices, such as mobile phones, media players, set-top boxes
-and netbooks.
+and netbooks. Qt Quick consists of the QtDeclarative C++ module, QML, and
+the integration of both of these into the Qt Creator IDE. Using the QtDeclarative
+C++ module, you can load and interact with QML files from your Qt application.
 
 QML is an extension to \l
 {http://www.ecma-international.org/publications/standards/Ecma-262.htm}
@@ -58,7 +60,7 @@ complete internet-enabled applications like a \l
 Qt Quick builds on \l {QML for Qt programmers}{Qt's existing
 strengths}.  QML can be be used to incrementally extend an existing
 application or to build completely new applications.  QML is fully \l
-{Extending QML in C++}{extensible from C++}.
+{Extending QML in C++}{extensible from C++} through the QtDeclarative Module.
 
 \section1 Getting Started
 

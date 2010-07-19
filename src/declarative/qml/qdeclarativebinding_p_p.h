@@ -60,30 +60,24 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeBindingData : public QDeclarativeExpressionData
-{
-public:
-    QDeclarativeBindingData();
-    virtual ~QDeclarativeBindingData();
-
-    bool updating:1;
-    bool enabled:1;
-
-    QDeclarativeProperty property;
-
-    virtual void refresh();
-};
-
 class QDeclarativeBindingPrivate : public QDeclarativeExpressionPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeBinding)
 public:
     QDeclarativeBindingPrivate();
-
-    QDeclarativeBindingData *bindingData() { return static_cast<QDeclarativeBindingData *>(data); }
-    const QDeclarativeBindingData *bindingData() const { return static_cast<const QDeclarativeBindingData *>(data); }
+    ~QDeclarativeBindingPrivate();
 
     virtual void emitValueChanged();
+
+protected:
+    virtual void refresh();
+
+private:
+    bool updating:1;
+    bool enabled:1;
+    QDeclarativeProperty property; 
+
+    bool *deleted;
 };
 
 QT_END_NAMESPACE

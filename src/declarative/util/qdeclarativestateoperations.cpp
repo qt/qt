@@ -1039,7 +1039,7 @@ public:
 
 /*!
     \qmlproperty Item AnchorChanges::target
-    This property holds the Item whose anchors will change
+    This property holds the \l Item for which the anchor changes will be applied.
 */
 
 QDeclarativeAnchorChanges::QDeclarativeAnchorChanges(QObject *parent)
