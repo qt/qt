@@ -577,7 +577,7 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
                 if (FxListItem *item = visibleItem(modelIndex+1))
                     listItem->attached->m_nextSection = item->attached->section();
-                else
+                else if (modelIndex < model->count()-1)
                     listItem->attached->m_nextSection = sectionAt(modelIndex+1);
             }
         }
