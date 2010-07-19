@@ -1649,7 +1649,7 @@ void QTextDocumentPrivate::compressPieceTable()
     int newLen = 0;
 
     for (FragmentMap::Iterator it = fragments.begin(); !it.atEnd(); ++it) {
-        qMemCopy(newTextPtr, text.constData() + it->stringPosition, it->size_array[0] * sizeof(QChar));
+        memcpy(newTextPtr, text.constData() + it->stringPosition, it->size_array[0] * sizeof(QChar));
         it->stringPosition = newLen;
         newTextPtr += it->size_array[0];
         newLen += it->size_array[0];
