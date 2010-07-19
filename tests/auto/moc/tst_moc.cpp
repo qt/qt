@@ -491,6 +491,7 @@ private slots:
     void typenameWithUnsigned();
     void warnOnVirtualSignal();
     void QTBUG5590_dummyProperty();
+    void QTBUG12260_defaultTemplate();
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1339,6 +1340,20 @@ public slots:
 signals:
     void testSignal(TestTemplate2<const int, const short*>);
 };
+
+class QTBUG12260_defaultTemplate_Object : public QObject
+{ Q_OBJECT
+public slots:
+    void doSomething(QHash<QString, QVariant> values = QHash<QString, QVariant>()) { Q_UNUSED(values); }
+    void doAnotherThing(bool a = (1 < 3), bool b = (1 > 4)) { Q_UNUSED(a); Q_UNUSED(b); }
+};
+
+
+void tst_Moc::QTBUG12260_defaultTemplate()
+{
+    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomething(QHash<QString,QVariant>)") != -1);
+    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
+}
 
 
 QTEST_APPLESS_MAIN(tst_Moc)
