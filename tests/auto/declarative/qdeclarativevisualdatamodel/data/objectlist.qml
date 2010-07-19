@@ -11,6 +11,9 @@ ListView {
             width: 100
             color: model.modelData.color
             Text { objectName: "name"; text: name }
+            Text { objectName: "section"; text: parent.ListView.section }
         }
     }
+    section.property: "name"
+    section.criteria: ViewSection.FullString
 }
