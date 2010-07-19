@@ -1526,8 +1526,8 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     gif)
-        [ "$VAL" = "qt" ] && VAL=yes
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+        [ "$VAL" = "qt" ] && VAL=auto
+        if [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
             CFG_GIF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3634,26 +3634,26 @@ Third Party Libraries:
  +  -system-zlib ....... Use zlib from the operating system.
                          See http://www.gzip.org/zlib
 
-    -no-gif ............ Do not compile the plugin for GIF reading support.
- *  -qt-gif ............ Compile the plugin for GIF reading support.
-                         See also src/plugins/imageformats/gif/qgifhandler.h
+    -no-gif ............ Do not compile GIF reading support.
+ *  -qt-gif ............ Compile GIF reading support.
+                         See also src/gui/image/qgifhandler.h
 
-    -no-libtiff ........ Do not compile the plugin for TIFF support.
+    -no-libtiff ........ Do not compile TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.
  +  -system-libtiff .... Use libtiff from the operating system.
                          See http://www.libtiff.org
 
-    -no-libpng ......... Do not compile in PNG support.
+    -no-libpng ......... Do not compile PNG support.
     -qt-libpng ......... Use the libpng bundled with Qt.
  +  -system-libpng ..... Use libpng from the operating system.
                          See http://www.libpng.org/pub/png
 
-    -no-libmng ......... Do not compile the plugin for MNG support.
+    -no-libmng ......... Do not compile MNG support.
     -qt-libmng ......... Use the libmng bundled with Qt.
  +  -system-libmng ..... Use libmng from the operating system.
                          See http://www.libmng.com
 
-    -no-libjpeg ........ Do not compile the plugin for JPEG support.
+    -no-libjpeg ........ Do not compile JPEG support.
     -qt-libjpeg ........ Use the libjpeg bundled with Qt.
  +  -system-libjpeg .... Use libjpeg from the operating system.
                          See http://www.ijg.org
@@ -5154,6 +5154,8 @@ if [ "$CFG_ICONV" != "no" ]; then
 	CFG_ICONV=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/iconv" "POSIX iconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=yes
+    elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/sun-libiconv" "SUN libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+        CFG_ICONV=sun
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" "$OPT_VERBOSE" "$relpath" "$outpath" "config.tests/unix/gnu-libiconv" "GNU libiconv" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_ICONV=gnu
     else
@@ -6675,6 +6677,7 @@ fi
 [ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
 [ "$CFG_CUPS" = "yes" ] && QT_CONFIG="$QT_CONFIG cups"
 [ "$CFG_ICONV" = "yes" ] && QT_CONFIG="$QT_CONFIG iconv"
+[ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
 [ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"
@@ -7620,6 +7623,13 @@ fi
 if [ "$CFG_REDUCE_EXPORTS" = "yes" ]; then
 cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 #define QT_VISIBILITY_AVAILABLE
+
+EOF
+fi
+
+if [ -n "$QT_LIBINFIX" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#define QT_LIBINFIX "$QT_LIBINFIX"
 
 EOF
 fi

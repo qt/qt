@@ -5957,7 +5957,7 @@ EXPORTS
 	_ZN7QDialog16staticMetaObjectE @ 5956 NONAME DATA 16
 	_ZN7QDialog18setSizeGripEnabledEb @ 5957 NONAME
 	_ZN7QDialog19getStaticMetaObjectEv @ 5958 NONAME
-	_ZN7QDialog19s60AdjustedPositionEv @ 5959 NONAME
+	_ZN7QDialog23symbianAdjustedPositionEv @ 5959 NONAME
 	_ZN7QDialog4doneEi @ 5960 NONAME
 	_ZN7QDialog4execEv @ 5961 NONAME
 	_ZN7QDialog4openEv @ 5962 NONAME
@@ -12020,4 +12020,68 @@ EXPORTS
 	_ZN10QImageData14convertInPlaceEN6QImage6FormatE6QFlagsIN2Qt19ImageConversionFlagEE @ 12019 NONAME
 	_ZN17QRasterPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 12020 NONAME
 	_ZN17QRasterPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12021 NONAME
+	_ZN15QGraphicsSystem16createPixmapDataEP11QPixmapData @ 12022 NONAME
+	_ZN17QRasterPixmapData4copyEPK11QPixmapDataRK5QRect @ 12023 NONAME
+	_ZNK11QPixmapData7toImageERK5QRect @ 12024 NONAME
+	_ZNK17QRasterPixmapData7toImageERK5QRect @ 12025 NONAME
+	_ZTV15QGraphicsSystem @ 12026 NONAME
+	_ZN11QPixmapData15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 12027 NONAME
+	_ZN17QRasterPixmapData15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 12028 NONAME
+	_ZN18QRuntimePixmapData12readBackInfoEv @ 12029 NONAME
+	_ZN18QRuntimePixmapData12toNativeTypeEN11QPixmapData10NativeTypeE @ 12030 NONAME
+	_ZN18QRuntimePixmapData14fromNativeTypeEPvN11QPixmapData10NativeTypeE @ 12031 NONAME
+	_ZN18QRuntimePixmapData15setAlphaChannelERK7QPixmap @ 12032 NONAME
+	_ZN18QRuntimePixmapData4copyEPK11QPixmapDataRK5QRect @ 12033 NONAME
+	_ZN18QRuntimePixmapData4fillERK6QColor @ 12034 NONAME
+	_ZN18QRuntimePixmapData6bufferEv @ 12035 NONAME
+	_ZN18QRuntimePixmapData6resizeEii @ 12036 NONAME
+	_ZN18QRuntimePixmapData6scrollEiiRK5QRect @ 12037 NONAME
+	_ZN18QRuntimePixmapData7setMaskERK7QBitmap @ 12038 NONAME
+	_ZN18QRuntimePixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12039 NONAME
+	_ZN18QRuntimePixmapData8fromFileERK7QStringPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 12040 NONAME
+	_ZN18QRuntimePixmapData9fromImageERK6QImage6QFlagsIN2Qt19ImageConversionFlagEE @ 12041 NONAME
+	_ZN18QRuntimePixmapDataC1EPK22QRuntimeGraphicsSystemN11QPixmapData9PixelTypeE @ 12042 NONAME
+	_ZN18QRuntimePixmapDataC2EPK22QRuntimeGraphicsSystemN11QPixmapData9PixelTypeE @ 12043 NONAME
+	_ZN18QRuntimePixmapDataD0Ev @ 12044 NONAME
+	_ZN18QRuntimePixmapDataD1Ev @ 12045 NONAME
+	_ZN18QRuntimePixmapDataD2Ev @ 12046 NONAME
+	_ZN7QPixmap15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 12047 NONAME
+	_ZNK18QRuntimePixmapData11memoryUsageEv @ 12048 NONAME
+	_ZNK18QRuntimePixmapData11paintEngineEv @ 12049 NONAME
+	_ZNK18QRuntimePixmapData11runtimeDataEv @ 12050 NONAME
+	_ZNK18QRuntimePixmapData11transformedERK10QTransformN2Qt18TransformationModeE @ 12051 NONAME
+	_ZNK18QRuntimePixmapData12alphaChannelEv @ 12052 NONAME
+	_ZNK18QRuntimePixmapData15hasAlphaChannelEv @ 12053 NONAME
+	_ZNK18QRuntimePixmapData26createCompatiblePixmapDataEv @ 12054 NONAME
+	_ZNK18QRuntimePixmapData4maskEv @ 12055 NONAME
+	_ZNK18QRuntimePixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 12056 NONAME
+	_ZNK18QRuntimePixmapData7toImageEv @ 12057 NONAME
+	_ZTI18QRuntimePixmapData @ 12058 NONAME
+	_ZTV18QRuntimePixmapData @ 12059 NONAME
+	_ZN11QEglContext21swapBuffersRegion2NOKEiPK7QRegion @ 12060 NONAME
+	_ZN4QEgl24eglSwapBuffersRegion2NOKEiiiPKi @ 12061 NONAME
+	_ZN13QS60MainAppUi11HandleErrorEiRK14SExtendedErrorR6TDes16S4_ @ 12062 NONAME
+	_ZN13QS60MainAppUi13PrepareToExitEv @ 12063 NONAME
+	_ZN13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12064 NONAME
+	_ZN13QS60MainAppUi15ProcessCommandLEi @ 12065 NONAME
+	_ZN13QS60MainAppUi18HandleSystemEventLERK8TWsEvent @ 12066 NONAME
+	_ZN13QS60MainAppUi19Reserved_MtsmObjectEv @ 12067 NONAME
+	_ZN13QS60MainAppUi21Reserved_MtsmPositionEv @ 12068 NONAME
+	_ZN13QS60MainAppUi22HandleForegroundEventLEi @ 12069 NONAME
+	_ZN13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12070 NONAME
+	_ZN13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12071 NONAME
+	_ZN13QS60MainAppUi26HandleScreenDeviceChangedLEv @ 12072 NONAME
+	_ZN13QS60MainAppUi31HandleApplicationSpecificEventLEiRK8TWsEvent @ 12073 NONAME
+	_ZN13QS60MainAppUi4ExitEv @ 12074 NONAME
+	_ZN13QS60MainAppUi9SetFadedLEi @ 12075 NONAME
+	_ZN16QS60MainDocument9OpenFileLERP10CFileStoreR5RFile @ 12076 NONAME
+	_ZN16QS60MainDocument9OpenFileLEiRK7TDesC16R3RFs @ 12077 NONAME
+	_ZN19QS60MainApplication13NewAppServerLERP13CApaAppServer @ 12078 NONAME
+	_ZN19QS60MainApplication16PreDocConstructLEv @ 12079 NONAME
+	_ZNK13QS60MainAppUi15ApplicationRectEv @ 12080 NONAME
+	_ZNK19QS60MainApplication13OpenIniFileLCER3RFs @ 12081 NONAME
+	_ZThn100_N13QS60MainAppUi25HandleTouchPaneSizeChangeEv @ 12082 NONAME
+	_ZThn24_N13QS60MainAppUi15ProcessCommandLEi @ 12083 NONAME
+	_ZThn40_N13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12084 NONAME
+	_ZThn92_N13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12085 NONAME
 

@@ -579,6 +579,193 @@ void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer, int x, int 
     }
 }
 
+void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha)
+{
+    if ((const_alpha & qAlpha(color)) == 255) {
+        QT_MEMFILL_UINT(destPixels, length, color);
+    } else {
+        if (const_alpha != 255)
+            color = BYTE_MUL(color, const_alpha);
+
+        const quint32 minusAlphaOfColor = qAlpha(~color);
+        int x = 0;
+
+        uint32_t *dst = (uint32_t *) destPixels;
+        const uint32x4_t colorVector = vdupq_n_u32(color);
+        uint16x8_t half = vdupq_n_u16(0x80);
+        const uint16x8_t minusAlphaOfColorVector = vdupq_n_u16(minusAlphaOfColor);
+
+        for (; x < length-3; x += 4) {
+            uint32x4_t dstVector = vld1q_u32(&dst[x]);
+
+            const uint8x16_t dst8 = vreinterpretq_u8_u32(dstVector);
+
+            const uint8x8_t dst8_low = vget_low_u8(dst8);
+            const uint8x8_t dst8_high = vget_high_u8(dst8);
+
+            const uint16x8_t dst16_low = vmovl_u8(dst8_low);
+            const uint16x8_t dst16_high = vmovl_u8(dst8_high);
+
+            const uint16x8_t result16_low = qvbyte_mul_u16(dst16_low, minusAlphaOfColorVector, half);
+            const uint16x8_t result16_high = qvbyte_mul_u16(dst16_high, minusAlphaOfColorVector, half);
+
+            const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
+            const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
+
+            uint32x4_t blendedPixels = vcombine_u32(result32_low, result32_high);
+            uint32x4_t colorPlusBlendedPixels = vaddq_u32(colorVector, blendedPixels);
+            vst1q_u32(&dst[x], colorPlusBlendedPixels);
+        }
+
+        for (;x < length; ++x)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+    }
+}
+
+static const int tileSize = 32;
+
+extern "C" void qt_rotate90_16_neon(quint16 *dst, const quint16 *src, int sstride, int dstride, int count);
+
+void qt_memrotate90_16_neon(const uchar *srcPixels, int w, int h, int sstride, uchar *destPixels, int dstride)
+{
+    const ushort *src = (const ushort *)srcPixels;
+    ushort *dest = (ushort *)destPixels;
+
+    sstride /= sizeof(ushort);
+    dstride /= sizeof(ushort);
+
+    const int pack = sizeof(quint32) / sizeof(ushort);
+    const int unaligned =
+        qMin(uint((quintptr(dest) & (sizeof(quint32)-1)) / sizeof(ushort)), uint(h));
+    const int restX = w % tileSize;
+    const int restY = (h - unaligned) % tileSize;
+    const int unoptimizedY = restY % pack;
+    const int numTilesX = w / tileSize + (restX > 0);
+    const int numTilesY = (h - unaligned) / tileSize + (restY >= pack);
+
+    for (int tx = 0; tx < numTilesX; ++tx) {
+        const int startx = w - tx * tileSize - 1;
+        const int stopx = qMax(startx - tileSize, 0);
+
+        if (unaligned) {
+            for (int x = startx; x >= stopx; --x) {
+                ushort *d = dest + (w - x - 1) * dstride;
+                for (int y = 0; y < unaligned; ++y) {
+                    *d++ = src[y * sstride + x];
+                }
+            }
+        }
+
+        for (int ty = 0; ty < numTilesY; ++ty) {
+            const int starty = ty * tileSize + unaligned;
+            const int stopy = qMin(starty + tileSize, h - unoptimizedY);
+
+            int x = startx;
+            // qt_rotate90_16_neon writes to eight rows, four pixels at a time
+            for (; x >= stopx + 7; x -= 8) {
+                ushort *d = dest + (w - x - 1) * dstride + starty;
+                const ushort *s = &src[starty * sstride + x - 7];
+                qt_rotate90_16_neon(d, s, sstride * 2, dstride * 2, stopy - starty);
+            }
+
+            for (; x >= stopx; --x) {
+                quint32 *d = reinterpret_cast<quint32*>(dest + (w - x - 1) * dstride + starty);
+                for (int y = starty; y < stopy; y += pack) {
+                    quint32 c = src[y * sstride + x];
+                    for (int i = 1; i < pack; ++i) {
+                        const int shift = (sizeof(int) * 8 / pack * i);
+                        const ushort color = src[(y + i) * sstride + x];
+                        c |= color << shift;
+                    }
+                    *d++ = c;
+                }
+            }
+        }
+
+        if (unoptimizedY) {
+            const int starty = h - unoptimizedY;
+            for (int x = startx; x >= stopx; --x) {
+                ushort *d = dest + (w - x - 1) * dstride + starty;
+                for (int y = starty; y < h; ++y) {
+                    *d++ = src[y * sstride + x];
+                }
+            }
+        }
+    }
+}
+
+extern "C" void qt_rotate270_16_neon(quint16 *dst, const quint16 *src, int sstride, int dstride, int count);
+
+void qt_memrotate270_16_neon(const uchar *srcPixels, int w, int h,
+                             int sstride,
+                             uchar *destPixels, int dstride)
+{
+    const ushort *src = (const ushort *)srcPixels;
+    ushort *dest = (ushort *)destPixels;
+
+    sstride /= sizeof(ushort);
+    dstride /= sizeof(ushort);
+
+    const int pack = sizeof(quint32) / sizeof(ushort);
+    const int unaligned =
+        qMin(uint((long(dest) & (sizeof(quint32)-1)) / sizeof(ushort)), uint(h));
+    const int restX = w % tileSize;
+    const int restY = (h - unaligned) % tileSize;
+    const int unoptimizedY = restY % pack;
+    const int numTilesX = w / tileSize + (restX > 0);
+    const int numTilesY = (h - unaligned) / tileSize + (restY >= pack);
+
+    for (int tx = 0; tx < numTilesX; ++tx) {
+        const int startx = tx * tileSize;
+        const int stopx = qMin(startx + tileSize, w);
+
+        if (unaligned) {
+            for (int x = startx; x < stopx; ++x) {
+                ushort *d = dest + x * dstride;
+                for (int y = h - 1; y >= h - unaligned; --y) {
+                    *d++ = src[y * sstride + x];
+                }
+            }
+        }
+
+        for (int ty = 0; ty < numTilesY; ++ty) {
+            const int starty = h - 1 - unaligned - ty * tileSize;
+            const int stopy = qMax(starty - tileSize, unoptimizedY);
+
+            int x = startx;
+            // qt_rotate90_16_neon writes to eight rows, four pixels at a time
+            for (; x < stopx - 7; x += 8) {
+                ushort *d = dest + x * dstride + h - 1 - starty;
+                const ushort *s = &src[starty * sstride + x];
+                qt_rotate90_16_neon(d + 7 * dstride, s, -sstride * 2, -dstride * 2, starty - stopy);
+            }
+
+            for (; x < stopx; ++x) {
+                quint32 *d = reinterpret_cast<quint32*>(dest + x * dstride
+                                                        + h - 1 - starty);
+                for (int y = starty; y > stopy; y -= pack) {
+                    quint32 c = src[y * sstride + x];
+                    for (int i = 1; i < pack; ++i) {
+                        const int shift = (sizeof(int) * 8 / pack * i);
+                        const ushort color = src[(y - i) * sstride + x];
+                        c |= color << shift;
+                    }
+                    *d++ = c;
+                }
+            }
+        }
+        if (unoptimizedY) {
+            const int starty = unoptimizedY - 1;
+            for (int x = startx; x < stopx; ++x) {
+                ushort *d = dest + x * dstride + h - 1 - starty;
+                for (int y = starty; y >= 0; --y) {
+                    *d++ = src[y * sstride + x];
+                }
+            }
+        }
+    }
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_HAVE_NEON

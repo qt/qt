@@ -158,6 +158,11 @@ void QDeclarativeParticleMotion::destroy(QDeclarativeParticle &particle)
     \brief The ParticleMotionLinear object moves particles linearly.
 
     \sa Particles
+
+    This is the default motion, and moves the particles according to the
+    properties specified in the Particles element.
+
+    It has no further properties.
 */
 
 /*!
@@ -178,6 +183,13 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
     \since 4.7
     \brief The ParticleMotionGravity object moves particles towards a point.
 
+    This motion attracts the particles to the specified point with the specified acceleration.
+    To mimic earth gravity, set yattractor to -6360000 and acceleration to 9.8.
+
+    The defaults are all 0, not earth gravity, and so no motion will occur without setting
+    at least the acceleration property.
+
+
     \sa Particles
 */
 
@@ -186,6 +198,7 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
     \class QDeclarativeParticleMotionGravity
     \ingroup group_effects
     \brief The QDeclarativeParticleMotionGravity class moves the particles towards a point.
+
 */
 
 /*!
@@ -305,14 +318,14 @@ Rectangle {
 */
 
 /*!
-    \qmlproperty real QDeclarativeParticleMotionWander::xvariance
-    \qmlproperty real QDeclarativeParticleMotionWander::yvariance
+    \qmlproperty real ParticleMotionWander::xvariance
+    \qmlproperty real ParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty real QDeclarativeParticleMotionWander::pace
+    \qmlproperty real ParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
@@ -437,7 +450,7 @@ public:
         , lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
         , angle(0), angleDev(0), velocity(0), velocityDev(0), emissionCarry(0.)
         , addParticleTime(0), addParticleCount(0), lastAdvTime(0)
-        , motion(0), pendingPixmapCache(false), clock(this)
+        , motion(0), clock(this)
     {
     }
 
@@ -456,7 +469,7 @@ public:
     void updateOpacity(QDeclarativeParticle &p, int age);
 
     QUrl url;
-    QPixmap image;
+    QDeclarativePixmap image;
     int count;
     int emissionRate;
     qreal emissionVariance;
@@ -475,7 +488,6 @@ public:
     QDeclarativeParticleMotion *motion;
     QDeclarativeParticlesPainter *paintItem;
 
-    bool pendingPixmapCache;
 
     QList<QPair<int, int> > bursts;//countLeft, emissionRate pairs
     QList<QDeclarativeParticle> particles;
@@ -709,9 +721,6 @@ QDeclarativeParticles::QDeclarativeParticles(QDeclarativeItem *parent)
 
 QDeclarativeParticles::~QDeclarativeParticles()
 {
-    Q_D(QDeclarativeParticles);
-    if (d->pendingPixmapCache)
-        QDeclarativePixmapCache::cancel(d->url, this);
 }
 
 /*!
@@ -732,10 +741,8 @@ QUrl QDeclarativeParticles::source() const
 void QDeclarativeParticles::imageLoaded()
 {
     Q_D(QDeclarativeParticles);
-    d->pendingPixmapCache = false;
-    QString errorString;
-    if (QDeclarativePixmapCache::get(d->url, &d->image, &errorString)==QDeclarativePixmapReply::Error)
-        qmlInfo(this) << errorString;
+    if (d->image.isError())
+        qmlInfo(this) << d->image.error();
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -747,27 +754,20 @@ void QDeclarativeParticles::setSource(const QUrl &name)
     if ((d->url.isEmpty() == name.isEmpty()) && name == d->url)
         return;
 
-    if (d->pendingPixmapCache) {
-        QDeclarativePixmapCache::cancel(d->url, this);
-        d->pendingPixmapCache = false;
-    }
     if (name.isEmpty()) {
         d->url = name;
-        d->image = QPixmap();
+        d->image.clear(this);
         d->paintItem->updateSize();
         d->paintItem->update();
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QString errorString;
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->image, &errorString);
-        if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
-            QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
-            connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
-            d->pendingPixmapCache = true;
+        d->image.load(qmlEngine(this), d->url);
+        if (d->image.isLoading()) {
+            d->image.connectFinished(this, SLOT(imageLoaded()));
         } else {
-            if (status == QDeclarativePixmapReply::Error)
-                qmlInfo(this) << errorString;
+            if (d->image.isError()) 
+                qmlInfo(this) << d->image.error();
             //### unify with imageLoaded
             d->paintItem->updateSize();
             d->paintItem->update();
@@ -1245,7 +1245,7 @@ void QDeclarativeParticles::burst(int count, int emissionRate)
 
 void QDeclarativeParticlesPainter::updateSize()
 {
-    if (!d->_componentComplete)
+    if (!d->componentComplete)
         return;
 
     const int parentX = parentItem()->x();

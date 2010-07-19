@@ -96,7 +96,7 @@ private:
 };
 
 
-class QGLPixmapData : public QPixmapData
+class Q_OPENGL_EXPORT QGLPixmapData : public QPixmapData
 {
 public:
     QGLPixmapData(PixelType type);

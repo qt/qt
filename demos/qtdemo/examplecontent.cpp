@@ -79,14 +79,20 @@ void ExampleContent::animationStopped(int id)
 QString ExampleContent::loadDescription()
 {
     QByteArray ba = MenuManager::instance()->getHtml(this->name);
+    QString errorMsg;
+    int errorLine, errorColumn;
 
     QDomDocument exampleDoc;
-    exampleDoc.setContent(ba, false);
+    if (!exampleDoc.setContent(ba, false, &errorMsg, &errorLine, &errorColumn)) {
+        qDebug() << errorMsg << errorLine << errorColumn;
+    }
 
     QDomNodeList paragraphs = exampleDoc.elementsByTagName("p");
     if (paragraphs.length() < 1 && Colors::verbose)
-        qDebug() << "- ExampleContent::loadDescription(): Could not load description:" << MenuManager::instance()->info[this->name]["docfile"];
-    QString description = Colors::contentColor + QLatin1String("Could not load description. Ensure that the documentation for Qt is built.");
+        qDebug() << "- ExampleContent::loadDescription(): Could not load description:"
+                 << MenuManager::instance()->info[this->name]["docfile"];
+    QString description = Colors::contentColor +
+        QLatin1String("Could not load description. Ensure that the documentation for Qt is built.");
     for (int p = 0; p < int(paragraphs.length()); ++p) {
         description = this->extractTextFromParagraph(paragraphs.item(p));
         if (this->isSummary(description)) {
@@ -99,7 +105,8 @@ QString ExampleContent::loadDescription()
 bool ExampleContent::isSummary(const QString &text)
 {
     return (!text.contains("[") &&
-        text.indexOf(QRegExp(QString("(In )?((The|This) )?(%1 )?.*(tutorial|example|demo|application)").arg(this->name), Qt::CaseInsensitive)) != -1);
+        text.indexOf(QRegExp(QString("(In )?((The|This) )?(%1 )?.*(tutorial|example|demo|application)").arg(this->name),
+                             Qt::CaseInsensitive)) != -1);
 }
 
 QString ExampleContent::extractTextFromParagraph(const QDomNode &parentNode)

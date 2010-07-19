@@ -54,7 +54,7 @@ Network transparency is supported throughout QML, for example:
 \o WebViews - the \c url property of WebView (obviously!)
 \endlist
 
-Even QML types themselves can be on the network - if the \l {Qt Declarative UI Runtime}{qml} tool is used to load
+Even QML types themselves can be on the network - if the \l {QML Viewer} is used to load
 \tt http://example.com/mystuff/Hello.qml and that content refers to a type "World", the engine
 will load \tt http://example.com/mystuff/qmldir and resolve the type just as it would for a local file.
 For example if the qmldir file contains the line "World World.qml", it will load 
@@ -119,7 +119,7 @@ All network access from QML is managed by a QNetworkAccessManager set on the QDe
 By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager by
 providing a QDeclarativeNetworkAccessManagerFactory and setting it via
 QDeclarativeEngine::setNetworkAccessManagerFactory().
-For example, the \l {Qt Declarative UI Runtime}{qml} tool sets a QDeclarativeNetworkAccessManagerFactory which
+For example, the \l {QML Viewer} sets a QDeclarativeNetworkAccessManagerFactory which
 creates QNetworkAccessManager that trusts HTTP Expiry headers to avoid network cache checks,
 allows HTTP Pipelining, adds a persistent HTTP CookieJar, a simple disk cache, and supports proxy settings.
 

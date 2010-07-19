@@ -50,7 +50,7 @@ TabWidget {
         color: "#e3e3e3"
 
         Rectangle {
-            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            anchors.fill: parent; anchors.margins: 20
             color: "#ff7f7f"
             Text {
                 width: parent.width - 20
@@ -68,7 +68,7 @@ TabWidget {
         color: "#e3e3e3"
 
         Rectangle {
-            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            anchors.fill: parent; anchors.margins: 20
             color: "#7fff7f"
             Text {
                 width: parent.width - 20
@@ -85,7 +85,7 @@ TabWidget {
         anchors.fill: parent; color: "#e3e3e3"
 
         Rectangle {
-            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            anchors.fill: parent; anchors.margins: 20
             color: "#7f7fff"
             Text {
                 width: parent.width - 20

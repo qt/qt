@@ -63,6 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QImageWriter;
+
 struct Q_GUI_EXPORT QImageData {        // internal image data
     QImageData();
     ~QImageData();
@@ -107,6 +109,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
 
     QPaintEngine *paintEngine;
 };
+
+void qInitImageConversions();
 
 QT_END_NAMESPACE
 

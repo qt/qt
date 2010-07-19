@@ -43,10 +43,11 @@ import Qt 4.7
 
 Item {
     id: delegate
-    height: childrenRect.height + 20
+    height: column.height + 40
     width: delegate.ListView.view.width
 
     Column {
+        id: column
         x: 20; y: 20
         width: parent.width - 40
 

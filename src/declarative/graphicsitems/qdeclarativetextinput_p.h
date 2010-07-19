@@ -56,7 +56,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTextInputPrivate;
 class QValidator;
-class Q_DECLARATIVE_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -187,6 +187,8 @@ public:
     void drawContents(QPainter *p,const QRect &r);
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
+    QRectF boundingRect() const;
+
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
@@ -208,7 +210,7 @@ Q_SIGNALS:
     void inputMaskChanged(const QString &inputMask);
     void echoModeChanged(EchoMode echoMode);
     void passwordCharacterChanged();
-    void displayTextChanged(const QString &text);
+    void displayTextChanged();
     void focusOnPressChanged(bool focusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
@@ -230,6 +232,11 @@ public Q_SLOTS:
     void selectAll();
     void selectWord();
     void select(int start, int end);
+#ifndef QT_NO_CLIPBOARD
+    void cut();
+    void copy();
+    void paste();
+#endif
 
 private Q_SLOTS:
     void updateSize(bool needsRedraw = true);

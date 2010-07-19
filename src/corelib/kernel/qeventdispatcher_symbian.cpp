@@ -47,8 +47,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include <net/if.h>
-
 QT_BEGIN_NAMESPACE
 
 #ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
@@ -100,16 +98,19 @@ static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, 
 class QSelectMutexGrabber
 {
 public:
-    QSelectMutexGrabber(int fd, QMutex *mutex)
+    QSelectMutexGrabber(int writeFd, int readFd, QMutex *mutex)
         : m_mutex(mutex)
     {
         if (m_mutex->tryLock())
             return;
 
         char dummy = 0;
-        qt_pipe_write(fd, &dummy, 1);
+        qt_pipe_write(writeFd, &dummy, 1);
 
         m_mutex->lock();
+
+        char buffer;
+        while (::read(readFd, &buffer, 1) > 0) {}
     }
 
     ~QSelectMutexGrabber()
@@ -403,10 +404,6 @@ void QSelectThread::run()
         ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
         savedSelectErrno = errno;
 
-        char buffer;
-
-        while (::read(m_pipeEnds[0], &buffer, 1) > 0) {}
-
         if(ret == 0) {
          // do nothing
         } else if (ret < 0) {
@@ -481,7 +478,8 @@ void QSelectThread::run()
             updateActivatedNotifiers(QSocketNotifier::Write, &writefds);
         }
 
-        m_waitCond.wait(&m_mutex);
+        if (FD_ISSET(m_pipeEnds[0], &readfds))
+            m_waitCond.wait(&m_mutex);
     }
 
     m_mutex.unlock();
@@ -495,7 +493,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
         start();
     }
 
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], m_pipeEnds[0], &m_mutex);
 
     Q_ASSERT(!m_AOStatuses.contains(notifier));
 
@@ -506,7 +506,9 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
 
 void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 {
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], m_pipeEnds[0], &m_mutex);
 
     m_AOStatuses.remove(notifier);
 
@@ -515,7 +517,9 @@ void QSelectThread::cancelSocketEvents ( QSocketNotifier *notifier )
 
 void QSelectThread::restart()
 {
-    QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
+    Q_ASSERT(QThread::currentThread() == this->thread());
+
+    QSelectMutexGrabber lock(m_pipeEnds[1], m_pipeEnds[0], &m_mutex);
 
     m_waitCond.wakeAll();
 }
@@ -571,17 +575,13 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
              * check if socket is in exception set
              * then signal RequestComplete for it
              */
-            qWarning("exception on %d [will do setdefaultif(0) - hack]", i.key()->socket());
+            qWarning("exception on %d [will close the socket handle - hack]", i.key()->socket());
             // quick fix; there is a bug
             // when doing read on socket
             // errors not preoperly mapped
             // after offline-ing the device
             // on some devices we do get exception
-            // close all exiting sockets
-            // and reset default IAP
-            if(::setdefaultif(0) != KErrNone) // well we can't do much about it
-                qWarning("setdefaultif(0) failed");
-
+            ::close(i.key()->socket());
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);

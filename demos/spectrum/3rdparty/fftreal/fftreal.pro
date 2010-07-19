@@ -1,3 +1,5 @@
+include(../../spectrum.pri)
+
 TEMPLATE = lib
 TARGET   = fftreal
 
@@ -31,13 +33,13 @@ symbian {
     # Provide unique ID for the generated binary, required by Symbian OS
     TARGET.UID3 = 0xA000E403
     TARGET.CAPABILITY = UserEnvironment
+}
+
+macx {
+    CONFIG += lib_bundle
 } else {
-    macx {
-        CONFIG += lib_bundle
-    } else {
-        DESTDIR = ../../bin
-    }
-} 
+    !symbian: DESTDIR = ../..
+}
 
 # Install
 

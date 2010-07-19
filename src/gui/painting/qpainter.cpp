@@ -6031,7 +6031,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
                 Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
         }
 
-        QTextItemInt gf(glyphs, &d->state->font, fontEngine);
+        QTextItemInt gf(glyphs, &d->state->font, str.data(), len, fontEngine);
         drawTextItem(p, gf);
         return;
     }
@@ -9045,6 +9045,15 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 
     if (!d->engine)
         return;
+
+#ifndef QT_NO_DEBUG
+    for (int i = 0; i < fragmentCount; ++i) {
+        QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
+                          fragments[i].width, fragments[i].height);
+        if (!(QRectF(pixmap.rect()).contains(sourceRect)))
+            qWarning("QPainter::drawPixmapFragments - the source rect is not contained by the pixmap's rectangle");
+    }
+#endif
 
     if (d->engine->isExtended()) {
         d->extended->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);

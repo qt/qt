@@ -52,7 +52,7 @@ class QString;
 class QDeclarativeStyledTextPrivate;
 class QTextLayout;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeStyledText
+class Q_AUTOTEST_EXPORT QDeclarativeStyledText
 {
 public:
     static void parse(const QString &string, QTextLayout &layout);

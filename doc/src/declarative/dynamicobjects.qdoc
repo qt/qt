@@ -39,8 +39,12 @@ QML also supports the dynamic creation of objects from within JavaScript
 code. This is useful if the existing QML elements do not fit the needs of your
 application, and there are no C++ components involved.
 
+See the {declarative/toys/dynamicscene}{Dynamic Scene example} for a demonstration
+of the concepts discussed on this page.
+
 
 \section1 Creating Objects Dynamically
+
 There are two ways to create objects dynamically from JavaScript. You can either call 
 \l {QML:Qt::createComponent()}{Qt.createComponent()} to create
 a component which instantiates items, or use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}

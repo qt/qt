@@ -93,6 +93,7 @@ Item {
                     color: "#151515"; selectionColor: "green"
                     KeyNavigation.tab: login
                     KeyNavigation.backtab: nameIn
+                    onAccepted: login.doLogin();
                 }
             }
         }
@@ -114,6 +115,7 @@ Item {
                 KeyNavigation.tab: guest
                 KeyNavigation.backtab: passIn
                 Keys.onReturnPressed: login.doLogin();
+                Keys.onEnterPressed: login.doLogin();
                 Keys.onSelectPressed: login.doLogin();
                 Keys.onSpacePressed: login.doLogin();
                 onClicked: login.doLogin();
@@ -134,6 +136,7 @@ Item {
                 KeyNavigation.tab: nameIn
                 KeyNavigation.backtab: login
                 Keys.onReturnPressed: guest.doGuest();
+                Keys.onEnterPressed: guest.doGuest();
                 Keys.onSelectPressed: guest.doGuest();
                 Keys.onSpacePressed: guest.doGuest();
                 onClicked: guest.doGuest();

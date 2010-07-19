@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 class QImageWriter;
+class QImageReader;
 class QColor;
 class QVariant;
 class QX11Info;
@@ -134,6 +135,7 @@ public:
 
     QImage toImage() const;
     static QPixmap fromImage(const QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
+    static QPixmap fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
     bool load(const QString& fileName, const char *format = 0, Qt::ImageConversionFlags flags = Qt::AutoColor);
     bool loadFromData(const uchar *buf, uint len, const char* format = 0, Qt::ImageConversionFlags flags = Qt::AutoColor);

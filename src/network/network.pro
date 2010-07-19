@@ -27,5 +27,20 @@ QMAKE_LIBS += $$QMAKE_LIBS_NETWORK
 
 symbian {
    TARGET.UID3=0x2001B2DE
-   LIBS += -lesock -linsock
+   LIBS += -lesock -linsock -lcertstore -lefsrv -lctframework
+
+    # Partial upgrade SIS file
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    pu_header = "; Partial upgrade package for testing QtGui changes without reinstalling everything" \
+                "$${LITERAL_HASH}{\"Qt network\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
+    partial_upgrade.pkg_prerules = pu_header vendorinfo
+    partial_upgrade.sources = $$QMAKE_LIBDIR_QT/QtNetwork.dll
+    partial_upgrade.path = c:/sys/bin
+    DEPLOYMENT = partial_upgrade $$DEPLOYMENT
 }

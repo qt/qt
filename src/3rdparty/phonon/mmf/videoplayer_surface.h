@@ -62,6 +62,9 @@ private:
     void handleVideoWindowChanged();
     void handleParametersChanged(VideoParameters parameters);
 
+    void addDisplayWindow(const TRect &rect);
+    void removeDisplayWindow();
+
 private:
     // Window handle which has been passed to the MMF via
     // CVideoPlayerUtility2::SetDisplayWindowL

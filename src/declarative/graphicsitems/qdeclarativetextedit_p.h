@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 
 class QDeclarativeTextEditPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)
@@ -194,6 +194,8 @@ public:
     Q_INVOKABLE QRectF positionToRectangle(int) const;
     Q_INVOKABLE int positionAt(int x, int y) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+
+    QRectF boundingRect() const;
 
 Q_SIGNALS:
     void textChanged(const QString &);

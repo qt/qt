@@ -128,7 +128,7 @@ Item {
                 cursorVisible: true; font.bold: true
                 width: parent.width - 12
                 height: parent.height - 8
-                font.pointSize: 10
+                font.pixelSize: 12
                 wrapMode: TextEdit.Wrap
                 color: "#151515"; selectionColor: "green"
             }
@@ -136,6 +136,7 @@ Item {
             Item {
                 id: returnKey
                 Keys.onReturnPressed: container.accept()
+                Keys.onEnterPressed: container.accept()
                 Keys.onEscapePressed: titleBar.state = ""
             }
         }

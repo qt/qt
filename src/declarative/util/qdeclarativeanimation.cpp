@@ -142,6 +142,16 @@ bool QDeclarativeAbstractAnimation::isRunning() const
     return d->running;
 }
 
+// the behavior calls this function
+void QDeclarativeAbstractAnimation::notifyRunningChanged(bool running)
+{
+    Q_D(QDeclarativeAbstractAnimation);
+    if (d->disableUserControl && d->running != running) {
+        d->running = running;
+        emit runningChanged(running);
+    }
+}
+
 //commence is called to start an animation when it is used as a
 //simple animation, and not as part of a transition
 void QDeclarativeAbstractAnimationPrivate::commence()
@@ -176,6 +186,8 @@ void QDeclarativeAbstractAnimation::setRunning(bool r)
 {
     Q_D(QDeclarativeAbstractAnimation);
     if (!d->componentComplete) {
+        if (d->running && r == d->running)    //don't re-register
+            return;
         d->running = r;
         if (r == false)
             d->avoidPropertyValueSourceStart = true;

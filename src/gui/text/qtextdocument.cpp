@@ -583,11 +583,11 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
 void QTextDocument::markContentsDirty(int from, int length)
 {
     Q_D(QTextDocument);
-    if (!d->inContentsChange)
-        d->beginEditBlock();
     d->documentChange(from, length);
-    if (!d->inContentsChange)
-        d->endEditBlock();
+    if (!d->inContentsChange) {
+        d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
+        d->docChangeFrom = -1;
+    }
 }
 
 /*!
