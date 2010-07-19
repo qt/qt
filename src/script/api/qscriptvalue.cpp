@@ -1268,6 +1268,7 @@ QDateTime QScriptValue::toDateTime() const
     Q_D(const QScriptValue);
     if (!d || !d->engine)
         return QDateTime();
+    QScript::APIShim shim(d->engine);
     return QScriptEnginePrivate::toDateTime(d->engine->currentFrame, d->jscValue);
 }
 
@@ -1284,6 +1285,7 @@ QRegExp QScriptValue::toRegExp() const
     Q_D(const QScriptValue);
     if (!d || !d->engine)
          return QRegExp();
+    QScript::APIShim shim(d->engine);
     return QScriptEnginePrivate::toRegExp(d->engine->currentFrame, d->jscValue);
 }
 #endif // QT_NO_REGEXP
@@ -1303,6 +1305,7 @@ QObject *QScriptValue::toQObject() const
     Q_D(const QScriptValue);
     if (!d || !d->engine)
         return 0;
+    QScript::APIShim shim(d->engine);
     return QScriptEnginePrivate::toQObject(d->engine->currentFrame, d->jscValue);
 }
 
@@ -1317,6 +1320,7 @@ const QMetaObject *QScriptValue::toQMetaObject() const
     Q_D(const QScriptValue);
     if (!d || !d->engine)
         return 0;
+    QScript::APIShim shim(d->engine);
     return QScriptEnginePrivate::toQMetaObject(d->engine->currentFrame, d->jscValue);
 }
 
@@ -1407,6 +1411,7 @@ QScriptValue QScriptValue::property(quint32 arrayIndex,
     Q_D(const QScriptValue);
     if (!d || !d->isObject())
         return QScriptValue();
+    QScript::APIShim shim(d->engine);
     return d->engine->scriptValueFromJSCValue(d->property(arrayIndex, mode));
 }
 
@@ -1434,6 +1439,7 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
                  "cannot set value created in a different engine");
         return;
     }
+    QScript::APIShim shim(d->engine);
     JSC::JSValue jsValue = d->engine->scriptValueToJSCValue(value);
     d->setProperty(arrayIndex, jsValue, flags);
 }

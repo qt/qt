@@ -2024,6 +2024,11 @@ nach
         <translation>Signalnamen dürfen nicht mit einem Großbuchstaben beginnen</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Illegal signal name</source>
+        <translation>Ungültiger Name für Signal</translation>
+    </message>
+    <message>
         <location line="+6"/>
         <source>Duplicate method name</source>
         <translation>Mehrfaches Auftreten eines Methodennamens</translation>
@@ -2032,6 +2037,11 @@ nach
         <location line="+2"/>
         <source>Method names cannot begin with an upper case letter</source>
         <translation>Methodennamen dürfen nicht mit einem Großbuchstaben beginnen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Illegal method name</source>
+        <translation>Ungültiger Name für Methode</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -7713,19 +7723,51 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Kontext4</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Call</source>
+        <extracomment>Button to start a call (note: a separate button is used to end the call)</extracomment>
         <translation>Anruf</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Hangup</source>
+        <extracomment>Button to end a call (note: a separate button is used to start the call)</extracomment>
         <translation>Auflegen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Toggle Call/Hangup</source>
+        <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
+        <translation>Anrufen/Aufhängen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Flip</source>
         <translation>Umdrehen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Voice Dial</source>
+        <extracomment>Button to trigger voice dialling</extracomment>
+        <translation>Sprachwahl</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Last Number Redial</source>
+        <extracomment>Button to redial the last number called</extracomment>
+        <translation>Wahlwiederholung</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Camera Shutter</source>
+        <extracomment>Button to trigger the camera shutter (take a picture)</extracomment>
+        <translation>Auslöser</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Camera Focus</source>
+        <extracomment>Button to focus the camera</extracomment>
+        <translation>Scharfstellen</translation>
     </message>
     <message>
         <location line="+4"/>

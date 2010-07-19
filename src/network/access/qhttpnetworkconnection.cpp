@@ -286,13 +286,8 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
 
     resend = false;
     //create the response header to be used with QAuthenticatorPrivate.
-    QHttpResponseHeader responseHeader;
     QList<QPair<QByteArray, QByteArray> > fields = reply->header();
-    QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-    while (it != fields.constEnd()) {
-        responseHeader.addValue(QString::fromLatin1(it->first), QString::fromUtf8(it->second));
-        it++;
-    }
+
     //find out the type of authentication protocol requested.
     QAuthenticatorPrivate::Method authMethod = reply->d_func()->authenticationMethod(isProxy);
     if (authMethod != QAuthenticatorPrivate::None) {
@@ -310,7 +305,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (auth->isNull())
             auth->detach();
         QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*auth);
-        priv->parseHttpResponse(responseHeader, isProxy);
+        priv->parseHttpResponse(fields, isProxy);
 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             if ((isProxy && pendingProxyAuthSignal) ||(!isProxy && pendingAuthSignal)) {

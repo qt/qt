@@ -3,7 +3,7 @@
 contains(CONFIG, static) {
     INCLUDEPATH *= $$QT_SOURCE_TREE/tools/shared/findwidget
 } else {
-    include($$QT_SOURCE_TREE/tools/shared/findwidget/findwidget.pri)
+    include(../../../../shared/findwidget/findwidget.pri)
 }
 
 INCLUDEPATH += $$PWD

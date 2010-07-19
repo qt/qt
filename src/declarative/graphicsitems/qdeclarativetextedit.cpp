@@ -202,8 +202,9 @@ QString QDeclarativeTextEdit::text() const
 
     Sets the font size in pixels.
 
-    Using this function makes the font device dependent.
-    Use \l font.pointSize to set the size of the font in a device independent manner.
+    Using this function makes the font device dependent.  Use
+    \l{TextEdit::font.pointSize} to set the size of the font in a
+    device independent manner.
 */
 
 /*!

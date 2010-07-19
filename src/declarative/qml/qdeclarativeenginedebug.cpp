@@ -495,7 +495,7 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                 QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
             } else {
                 QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
-                QDeclarativeProperty property(object, propertyName);
+                QDeclarativeProperty property(object, propertyName, context);
                 binding->setTarget(property);
                 binding->setNotifyOnValueChanged(true);
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);

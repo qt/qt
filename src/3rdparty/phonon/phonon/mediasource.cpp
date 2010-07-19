@@ -50,7 +50,7 @@ MediaSource::MediaSource(const QString &filename)
     const QFileInfo fileInfo(filename);
     if (fileInfo.exists()) {
         bool localFs = QAbstractFileEngine::LocalDiskFlag & QFSFileEngine(filename).fileFlags(QAbstractFileEngine::LocalDiskFlag);
-        if (localFs) {
+        if (localFs && !filename.startsWith(QLatin1String(":/")) && !filename.startsWith(QLatin1String("qrc://"))) {
             d->url = QUrl::fromLocalFile(fileInfo.absoluteFilePath());
         } else {
 #ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM

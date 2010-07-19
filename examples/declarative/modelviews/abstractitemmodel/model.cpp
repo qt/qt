@@ -67,7 +67,9 @@ AnimalModel::AnimalModel(QObject *parent)
 
 void AnimalModel::addAnimal(const Animal &animal)
 {
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
     m_animals << animal;
+    endInsertRows();
 }
 
 int AnimalModel::rowCount(const QModelIndex & parent) const {
