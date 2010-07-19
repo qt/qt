@@ -40,28 +40,13 @@
 ****************************************************************************/
 
 import Qt 4.7
-import Effects 1.0
 
-/* Vars exposed from C++
-   pixmap bgAppPixmap
-   bool useBlur (to turn on, pass -use-blur on the cmd line. Off by default 'cause it's too slow)
-*/
 Item {
     id: main
     //height and width set by program to fill window
     //below properties are sometimes set from C++
     property url qmlFile: ''
     property bool show: false
-    /*
-    Image{
-        id: bg
-        opacity: 0
-        anchors.fill: parent
-        z: -1
-        pixmap: bgAppPixmap
-        effect: Blur { id: blurEffect; enabled: useBlur; blurRadius: 8;}
-    }
-    */
 
     Item{ id:embeddedViewer
         width: parent.width
@@ -114,13 +99,6 @@ Item {
                 anchors.fill:parent
             }
 
-            effect: DropShadow  {
-                enabled: useBlur;
-                blurRadius: 9;
-                color: "#88000000";
-                xOffset:0
-                yOffset:0
-            }
         }
 
         Text{
