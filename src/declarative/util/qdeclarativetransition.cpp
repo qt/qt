@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
             Transition { ... }
         ]
     }
-    |endqml
+    \endqml
 
     \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, {QtDeclarative}
 */

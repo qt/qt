@@ -317,6 +317,15 @@
 */
 
 /*!
+    \title Models and Views: PathView
+    \example declarative/modelviews/pathview
+
+    This example shows how to use the PathView element.
+
+    \image qml-pathview-example.png
+*/
+
+/*!
     \title Models and Views: Object ListModel
     \example declarative/modelviews/objectlistmodel
 
