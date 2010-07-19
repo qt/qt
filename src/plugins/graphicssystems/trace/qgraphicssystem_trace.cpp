@@ -98,7 +98,11 @@ QPaintDevice *QTraceWindowSurface::paintDevice()
 {
     if (!buffer) {
         buffer = new QPaintBuffer;
+#ifdef Q_WS_QPA
+        buffer->setBoundingRect(QRect(QPoint(), size()));
+#else
         buffer->setBoundingRect(geometry());
+#endif
     }
     return buffer;
 }

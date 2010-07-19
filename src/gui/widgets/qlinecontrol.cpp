@@ -112,7 +112,7 @@ void QLineControl::updateDisplayText(bool forceUpdate)
 
     Copies the currently selected text into the clipboard using the given
     \a mode.
-  
+
     \note If the echo mode is set to a mode other than Normal then copy
     will not work.  This is to prevent using copy as a method of bypassing
     password features of the line control.
@@ -486,7 +486,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 /*!
     \internal
 
-    Draws the display text for the line control using the given 
+    Draws the display text for the line control using the given
     \a painter, \a clip, and \a offset.  Which aspects of the display text
     are drawn is specified by the given \a flags.
 

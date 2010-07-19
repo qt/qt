@@ -42,7 +42,8 @@
 #include "qcore_unix_p.h"
 #include "qelapsedtimer.h"
 
-#ifndef Q_OS_VXWORKS
+#ifdef Q_OS_NACL
+#elif !defined (Q_OS_VXWORKS)
 # if !defined(Q_OS_HPUX) || defined(__ia64)
 #  include <sys/select.h>
 # endif

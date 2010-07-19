@@ -19,7 +19,7 @@ embedded {
     HEADERS += inputmethod/qwsinputcontext_p.h
     SOURCES += inputmethod/qwsinputcontext_qws.cpp
 }
-mac:!embedded {
+mac:!embedded:!qpa {
     HEADERS += inputmethod/qmacinputcontext_p.h
     SOURCES += inputmethod/qmacinputcontext_mac.cpp
 }

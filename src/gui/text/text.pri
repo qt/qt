@@ -92,7 +92,7 @@ unix:x11 {
 		text/qfontengine_ft.cpp
 }
 
-!embedded:!x11:mac {
+!embedded:!qpa:!x11:mac {
 	SOURCES += \
 		text/qfont_mac.cpp
         OBJECTIVE_SOURCES += text/qfontengine_mac.mm
@@ -108,6 +108,19 @@ embedded {
 	HEADERS += \
 		text/qfontengine_ft_p.h \
 		text/qfontengine_qpf_p.h \
+		text/qabstractfontengine_qws.h \
+		text/qabstractfontengine_p.h
+	DEFINES += QT_NO_FONTCONFIG
+}
+
+qpa {
+	SOURCES += \
+		text/qfont_qws.cpp \
+		text/qfontengine_ft.cpp \
+		text/qfontengine_qpf.cpp \
+		text/qabstractfontengine_qws.cpp
+	HEADERS += \
+		text/qfontengine_ft_p.h \
 		text/qabstractfontengine_qws.h \
 		text/qabstractfontengine_p.h
 	DEFINES += QT_NO_FONTCONFIG

@@ -112,7 +112,9 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
     bool pipefail = false;
 
     // initialize the common parts of the event loop
-#if defined(Q_OS_INTEGRITY)
+#if defined(Q_OS_NACL)
+   // do nothing.
+#elif defined(Q_OS_INTEGRITY)
     // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
     if (socketpair(AF_INET, SOCK_STREAM, PF_INET, thread_pipe) == -1) {
         perror("QEventDispatcherUNIXPrivate(): Unable to create socket pair");
@@ -157,7 +159,9 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
-#if defined(Q_OS_VXWORKS)
+#if defined(Q_OS_NACL)
+   // do nothing.
+#elif defined(Q_OS_VXWORKS)
     close(thread_pipe[0]);
 
     char name[20];
@@ -312,7 +316,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_NACL)
     if (!QElapsedTimer::isMonotonic()) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = qt_gettime();
@@ -364,6 +368,10 @@ timeval qAbs(const timeval &t)
 */
 bool QTimerInfoList::timeChanged(timeval *delta)
 {
+#ifdef Q_OS_NACL
+    Q_UNUSED(delta)
+    return false; // Calling "times" crashes.
+#endif
     struct tms unused;
     clock_t currentTicks = times(&unused);
 

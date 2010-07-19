@@ -68,6 +68,10 @@
 #include <QtGui/private/qegl_p.h>
 #endif
 
+#if defined(Q_WS_QPA)
+#include <QtGui/QPlatformGLContext>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
@@ -161,7 +165,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS)
                        , wsurf(0)
 #endif
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
@@ -351,11 +355,14 @@ public:
     Qt::HANDLE threadId;
 #endif
 #ifndef QT_NO_EGL
-    uint ownsEglContext : 1;
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
     EGLSurface eglSurfaceForDevice() const;
+#endif
+
+#if defined(Q_WS_QPA)
+    QPlatformGLContext *platformContext;
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
@@ -394,6 +401,10 @@ public:
     uint workaround_brokenFBOReadBack : 1;
     uint workaroundsCached : 1;
 
+#ifndef QT_NO_EGL
+    uint ownsEglContext : 1;
+#endif
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
@@ -416,7 +427,7 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     static Q_OPENGL_EXPORT QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif

@@ -54,7 +54,12 @@ uint qDetectCPUFeatures()
     if (features != 0xffffffff)
         return features;
 
-#if defined (Q_OS_WINCE)
+#if defined (Q_OS_NACL)
+    // The qDetectCPUFeatures assembler fails verification in the
+    // Native Client sandbox due to use of pushf/popf.
+    features = 0;
+    return features;
+#elif defined (Q_OS_WINCE)
 #if defined (ARM)
     if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX)) {
         features = IWMMXT;

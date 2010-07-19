@@ -1231,7 +1231,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1240,7 +1240,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1249,7 +1249,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1258,7 +1258,16 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QPA, Q_WS_S60
+*/
+
+/*!
+    \macro Q_WS_QPA
+    \relates <QtGlobal>
+
+    Defined on Qt for Embedded Linux, Lite version.
+
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!

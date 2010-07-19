@@ -65,14 +65,20 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qpointer.h"
 #include "private/qcoreapplication_p.h"
-#include "private/qshortcutmap_p.h"
+#include "QtGui/private/qshortcutmap_p.h"
 #include <private/qthread_p.h>
+#include "QtCore/qpoint.h"
+#include <QTime>
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
 #include <private/qgraphicssystem_qws_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
 #include <w32std.h>
+#endif
+#ifdef Q_WS_QPA
+#include <QWindowSystemInterface>
+#include "QtGui/qplatformintegration_qpa.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -312,10 +318,18 @@ public:
     static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
-#if !defined(Q_WS_QWS)
-    { return graphics_system; }
-#else
+#if defined(Q_WS_QWS)
     { return QScreen::instance()->graphicsSystem(); }
+#else
+    { return graphics_system; }
+#endif
+
+#if defined(Q_WS_QPA)
+    static QPlatformIntegration *platformIntegration()
+    { return platform_integration; }
+
+    static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
+    { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 #endif
 
     void createEventDispatcher();
@@ -417,6 +431,7 @@ public:
     static QPalette *set_pal;
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
+    static QPlatformIntegration *platform_integration;
     static bool runtime_graphics_system;
 
 private:
@@ -474,6 +489,23 @@ public:
     static bool qt_mac_apply_settings();
 #endif
 
+#ifdef Q_WS_QPA
+    static void processMouseEvent(QWindowSystemInterface::MouseEvent *e);
+    static void processKeyEvent(QWindowSystemInterface::KeyEvent *e);
+    static void processWheelEvent(QWindowSystemInterface::WheelEvent *e);
+    static void processTouchEvent(QWindowSystemInterface::TouchEvent *e);
+
+    static void processCloseEvent(QWidget *tlw);
+    static void processGeometryChange(QWidget *tlw, const QRect &newRect);
+
+    static void processUserEvent(QWindowSystemInterface::UserEvent *e);
+
+    static void reportScreenCount(int count);
+    static void reportGeometryChange(int screenIndex);
+    static void reportAvailableGeometryChange(int screenIndex);
+
+#endif
+
 #ifdef Q_WS_QWS
     QPointer<QWSManager> last_manager;
     QWSServerCleaner qwsServerCleaner;
@@ -518,7 +550,7 @@ public:
     int symbianResourceChange(const QSymbianEvent *symbianEvent);
 
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -626,6 +658,8 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
   extern void qt_x11_enforce_cursor(QWidget *);
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
+#elif defined (Q_WS_QPA)
+  extern void qt_qpa_set_cursor(QWidget *, bool);
 #endif
 
 QT_END_NAMESPACE

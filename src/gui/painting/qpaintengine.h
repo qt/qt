@@ -213,6 +213,7 @@ public:
         OpenVG,
         OpenGL2,
         PaintBuffer,
+        Blitter,
 
         User = 50,    // first user type id
         MaxUser = 100 // last user type id
@@ -268,6 +269,9 @@ private:
 #ifdef Q_WS_QWS
     friend class QtopiaPrintEngine;
     friend class QtopiaPrintEnginePrivate;
+    friend class QProxyFontEngine;
+#endif
+#ifdef Q_WS_QPA
     friend class QProxyFontEngine;
 #endif
     friend class QPainter;

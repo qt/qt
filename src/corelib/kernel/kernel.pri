@@ -78,12 +78,12 @@ wince*: {
 		kernel/qfunctions_wince.h
 }
 
-mac:!embedded {
+mac:!embedded:!qpa{
     SOURCES += \
         kernel/qcoreapplication_mac.cpp
 }
 
-mac {
+mac:!nacl {
        SOURCES += \
 		kernel/qcore_mac.cpp
 }
