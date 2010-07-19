@@ -6,6 +6,7 @@ Rectangle {
     property int currentB: -1
     property real delegateWidth: 60
     property real delegateHeight: 20
+    property real delegateScale: 1.0
     width: 240
     height: 320
     color: "#ffffff"
@@ -17,6 +18,7 @@ Rectangle {
                 objectName: "wrapper"
                 height: root.delegateHeight
                 width: root.delegateWidth
+                scale: root.delegateScale
                 color: PathView.isCurrentItem ? "lightsteelblue" : "white"
                 border.color: "black"
                 Text {
