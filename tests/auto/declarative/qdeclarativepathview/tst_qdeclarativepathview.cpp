@@ -451,9 +451,17 @@ void tst_QDeclarativePathView::pathMoved()
     QCOMPARE(firstItem->pos() + offset, start);
 
     // Change delegate size
+    pathview->setOffset(0.1);
+    pathview->setOffset(0.0);
     canvas->rootObject()->setProperty("delegateWidth", 30);
     QCOMPARE(firstItem->width(), 30.0);
     offset.setX(firstItem->width()/2);
+    QTRY_COMPARE(firstItem->pos() + offset, start);
+
+    // Change delegate scale
+    pathview->setOffset(0.1);
+    pathview->setOffset(0.0);
+    canvas->rootObject()->setProperty("delegateScale", 1.2);
     QTRY_COMPARE(firstItem->pos() + offset, start);
 
     delete canvas;
