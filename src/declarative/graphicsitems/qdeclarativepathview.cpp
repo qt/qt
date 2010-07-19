@@ -284,8 +284,8 @@ void QDeclarativePathViewPrivate::updateItem(QDeclarativeItem *item, qreal perce
             att->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
     }
     QPointF pf = path->pointAt(percent);
-    item->setX(qRound(pf.x() - item->width()*item->scale()/2));
-    item->setY(qRound(pf.y() - item->height()*item->scale()/2));
+    item->setX(qRound(pf.x() - item->width()/2));
+    item->setY(qRound(pf.y() - item->height()/2));
 }
 
 void QDeclarativePathViewPrivate::regenerate()
