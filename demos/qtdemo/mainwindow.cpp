@@ -310,14 +310,6 @@ void MainWindow::checkAdapt()
                qDebug() << "- benchmark adaption: removed ticker (fps < 30)";
         }
 
-        //Note: Because we don't adapt later in the program, if blur makes FPS plummet then we won't catch it
-        if (!Colors::noBlur && MenuManager::instance()->declarativeEngine && this->mainSceneRoot){
-            Colors::noBlur = true;
-            MenuManager::instance()->declarativeEngine->rootContext()->setContextProperty("useBlur", false);
-            if (Colors::verbose)
-               qDebug() << "- benchmark adaption: removed blur (fps < 30)";
-        }
-
         if (this->fpsMedian < 20){
             Colors::noAnimations = true;
             if (Colors::verbose)
