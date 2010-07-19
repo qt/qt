@@ -81,7 +81,6 @@ bool Colors::noRescale = false;
 bool Colors::noAnimations = false;
 bool Colors::noBlending = false;
 bool Colors::noScreenSync = false;
-bool Colors::noBlur = true;
 bool Colors::fullscreen = false;
 bool Colors::usePixmaps = false;
 bool Colors::useLoop = false;
@@ -233,8 +232,6 @@ void Colors::parseArgs(int argc, char *argv[])
             Colors::showFps = true;
         else if (s == "-no-blending")
             Colors::noBlending = true;
-        else if (s == "-use-blur")
-            Colors::noBlur = false;
         else if (s == "-no-sync")
             Colors::noScreenSync = true;
         else if (s.startsWith("-menu"))
@@ -270,7 +267,7 @@ void Colors::parseArgs(int argc, char *argv[])
         else if (s.startsWith("-h") || s.startsWith("-help")){
             QMessageBox::warning(0, "Arguments",
                                  QString("Usage: qtdemo [-verbose] [-no-adapt] [-opengl] [-software] [-fullscreen] [-ticker[0|1]] ")
-                                 + "[-animations[0|1]] [-no-blending] [-use-blur] [-no-sync] [-use-timer-update[0|1]] [-pause[0|1]]  "
+                                 + "[-animations[0|1]] [-no-blending] [-no-sync] [-use-timer-update[0|1]] [-pause[0|1]]  "
                                  + "[-use-window-mask] [-no-rescale] "
                                  + "[-use-pixmaps] [-show-fps] [-show-br] [-8bit[0|1]] [-menu<int>] [-use-loop] [-use-balls] "
                                  + "[-animation-speed<float>] [-fps<int>] "
@@ -298,7 +295,6 @@ void Colors::setLowSettings()
     Colors::usePixmaps = true;
     Colors::noAnimations = true;
     Colors::noBlending = true;
-    Colors::noBlur = true;
 }
 
 void Colors::detectSystemResources()
