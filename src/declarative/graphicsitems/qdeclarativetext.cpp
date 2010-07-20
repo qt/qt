@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
+
 class QTextDocumentWithImageResources : public QTextDocument {
     Q_OBJECT
 
@@ -714,6 +716,8 @@ QRectF QDeclarativeText::boundingRect() const
     // Could include font max left/right bearings to either side of rectangle.
 
     if (d->cache || d->style != Normal) {
+        QDeclarativeTextPrivate *dd = const_cast<QDeclarativeTextPrivate *>(d);
+        dd->checkImgCache();
         switch (d->hAlign) {
         case AlignLeft:
             x = 0;
@@ -1028,7 +1032,14 @@ QPixmap QDeclarativeTextPrivate::wrappedTextImage(bool drawStyle)
     QPixmap img(size);
     if (!size.isEmpty()) {
         img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
         QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
         drawWrappedText(&p, QPointF(0,0), drawStyle);
     }
     return img;
@@ -1051,7 +1062,14 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
     //paint text
     QPixmap img(size);
     img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+    bool oldSmooth = qt_applefontsmoothing_enabled;
+    qt_applefontsmoothing_enabled = false;
+#endif
     QPainter p(&img);
+#ifdef Q_WS_MAC
+    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
 
     QAbstractTextDocumentLayout::PaintContext context;
 
