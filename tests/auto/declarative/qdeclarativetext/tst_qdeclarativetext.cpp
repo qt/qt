@@ -246,6 +246,7 @@ void tst_qdeclarativetext::width()
         QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
 
         QVERIFY(textObject != 0);
+        QVERIFY(textObject->boundingRect().width() > 0);
         QCOMPARE(textObject->width(), qreal(metricWidth));
         QVERIFY(textObject->textFormat() == QDeclarativeText::AutoText); // setting text doesn't change format
     }
