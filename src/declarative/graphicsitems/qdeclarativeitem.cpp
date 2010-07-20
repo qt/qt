@@ -1514,6 +1514,9 @@ QDeclarativeItem::~QDeclarativeItem()
     \endqml
 
     The default transform origin is \c Item.Center.
+
+    To set an arbitrary transform origin point use the \l Scale or \l Rotation
+    transform elements.
 */
 
 /*!
@@ -2176,6 +2179,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Rotation
 */
 
 /*!
@@ -2212,6 +2217,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Scale
 */
 
 /*!
