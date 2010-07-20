@@ -90,6 +90,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItem : public QGraphicsObject, public QDe
     Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QDeclarativeListProperty<QGraphicsTransform> transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
+    Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint) // transformOriginPoint is read-only for Item
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
