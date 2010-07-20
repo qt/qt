@@ -39,31 +39,35 @@ QML also supports the dynamic creation of objects from within JavaScript
 code. This is useful if the existing QML elements do not fit the needs of your
 application, and there are no C++ components involved.
 
-See the {declarative/toys/dynamicscene}{Dynamic Scene example} for a demonstration
+See the \l {declarative/toys/dynamicscene}{Dynamic Scene example} for a demonstration
 of the concepts discussed on this page.
 
 
 \section1 Creating Objects Dynamically
 
 There are two ways to create objects dynamically from JavaScript. You can either call 
-\l {QML:Qt::createComponent()}{Qt.createComponent()} to create
-a component which instantiates items, or use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
+\l {QML:Qt::createComponent()}{Qt.createComponent()} to dynamically create
+a \l Component object, or use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
 to create an item from a string of QML.
-Creating a component is better if you have a predefined
-item, and you want to create dynamic instances of that item; creating an item from
-a string of QML is useful when the item QML itself is generated at runtime.
+Creating a component is better if you have an existing component defined in a \c .qml 
+file, and you want to dynamically create instances of that component. Otherwise,
+creating an item from a string of QML is useful when the item QML itself is generated 
+at runtime.
 
-If you have a component specified in a QML file, you can dynamically load it with
-the \l {QML:Qt::createComponent()}{Qt.createComponent()} function on the \l{QML Global Object}. 
-This function takes the URL of the QML file as its only argument and returns
-a component object which can be used to create and load that QML file.
 
-Once you have a component you can use its \l {Component::createObject()}{createObject()} method to create an instance of
+\section2 Creating a Component dynamically
+
+To dynamically load a component defined in a QML file, call the 
+\l {QML:Qt::createComponent()}{Qt.createComponent()} function on the \l{QML Global Object}. 
+This function takes the URL of the QML file as its only argument and creates
+a \l Component object from this URL.
+
+Once you have a \l Component, you can call its \l {Component::createObject()}{createObject()} method to create an instance of
 the component. This function takes exactly one argument, which is the parent for the new item. Since graphical items will
 not appear on the scene without a parent, it is recommended that you set the parent this way. However, if you wish to set
-the parent later you can safely pass null to this function.
+the parent later you can safely pass \c null to this function.
 
-Here is an example. Here is a \c Sprite.qml, which defines a simple QML component:
+Here is an example. First there is \c Sprite.qml, which defines a simple QML component:
 
 \snippet doc/src/snippets/declarative/Sprite.qml 0
 
@@ -72,35 +76,48 @@ that will create \c Sprite objects:
 
 \snippet doc/src/snippets/declarative/createComponent.qml 0
 
-Here is \c componentCreation.js. Remember that QML files that might be loaded
-over the network cannot be expected to be ready immediately:
+Here is \c componentCreation.js. Notice it checks whether the component \l{Component::status}{status} is
+\c Component.Ready before calling \l {Component::createObject()}{createObject()}
+in case the QML file is loaded over a network and thus is not ready immediately.
 
-\snippet doc/src/snippets/declarative/componentCreation.js 0
+\snippet doc/src/snippets/declarative/componentCreation.js vars
 \codeline
-\snippet doc/src/snippets/declarative/componentCreation.js 1
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js remote
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js finishCreation
 
-If you are certain the files will be local, you could simplify to:
+If you are certain the QML file to be loaded is a local file, you could omit the \c finishCreation() 
+function and call \l {Component::createObject()}{createObject()} immediately:
 
-\snippet doc/src/snippets/declarative/componentCreation.js 2
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js local
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
 
-Notice that once a \c Sprite object is created, its parent is set to \c appWindow (defined
-in \c main.qml). After creating an item, you must set its parent to an item within the scene.
-Otherwise your dynamically created item will not appear in the scene.
+Notice in both instances, \l {Component::createObject()}{createObject()} is called with 
+\c appWindow passed as an argument so that the created object will become a child of the
+\c appWindow item in \c main.qml. Otherwise, the new item will not appear in the scene.
 
 When using files with relative paths, the path should
 be relative to the file where \l {QML:Qt::createComponent()}{Qt.createComponent()} is executed.
 
-If the QML component does not exist until runtime, you can create a QML item from
+
+\section2 Creating an object from a string of QML
+
+If the QML is not defined until runtime, you can create a QML item from
 a string of QML using the \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()} function, as in the following example:
 
 \snippet doc/src/snippets/declarative/createQmlObject.qml 0
 
 The first argument is the string of QML to create. Just like in a new file, you will need to
-import any types you wish to use. For importing files with relative paths, the path should
-be relative to the file where the item in the second argument is defined. Remember to set the parent after
-creating the item. The second argument is another item in the scene, and the new item is created
-in the same QML Context as this item. The third argument is the file path associated with this
-item, which is used for error reporting.
+import any types you wish to use. The second argument is the parent item for the new item;
+this should be an existing item in the scene. The third argument is the file path to associate
+with the new item; this is used for error reporting.
+
+If the string of QML imports files using relative paths, the path should be relative
+to the file in which the parent item (the second argument to the method) is defined.
+
 
 \section1 Maintaining Dynamically Created Objects
 
@@ -114,9 +131,9 @@ The actual creation context depends on how an item is created:
 \o If \l {QML:Qt::createComponent()}{Qt.createComponent()} is used, the creation context
    is the QDeclarativeContext in which this method is called
 \o If \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
-   if called, it is the context of the item used as the second argument to this method
+   if called, the creation context is the context of the parent item passed to this method
 \o If a \c {Component{}} item is defined and \l {Component::createObject()}{createObject()}
-   is called on that item, it is the context in which the \c Component is defined
+   is called on that item, the creation context is the context in which the \c Component is defined
 \endlist
 
 Also, note that while dynamically created objects may be used the same as other objects, they
