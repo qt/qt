@@ -1344,14 +1344,18 @@ signals:
 class QTBUG12260_defaultTemplate_Object : public QObject
 { Q_OBJECT
 public slots:
+#if !(defined(Q_CC_GNU) && __GNUC__ == 4 && __GNUC_MINOR__ <= 3) //gcc bug, this does not compile
     void doSomething(QHash<QString, QVariant> values = QHash<QString, QVariant>()) { Q_UNUSED(values); }
+#endif
     void doAnotherThing(bool a = (1 < 3), bool b = (1 > 4)) { Q_UNUSED(a); Q_UNUSED(b); }
 };
 
 
 void tst_Moc::QTBUG12260_defaultTemplate()
 {
+#if !(defined(Q_CC_GNU) && __GNUC__ == 4 && __GNUC_MINOR__ <= 3)
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomething(QHash<QString,QVariant>)") != -1);
+#endif
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
 }
 
