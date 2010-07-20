@@ -45,12 +45,13 @@
 #include "private/qdeclarativeevents_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 static const int PressAndHoldDelay = 800;
 
 QDeclarativeDrag::QDeclarativeDrag(QObject *parent)
-: QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0),
+: QObject(parent), _target(0), _axis(XandYAxis), _xmin(-FLT_MAX), _xmax(FLT_MAX), _ymin(-FLT_MAX), _ymax(FLT_MAX),
 _active(false)
 {
 }
