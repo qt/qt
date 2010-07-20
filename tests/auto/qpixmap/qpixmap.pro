@@ -12,7 +12,10 @@ wince*|symbian: {
    icons.sources = convertFromToHICON/*       
    icons.path = convertFromToHICON
    
-   DEPLOYMENT += task31722_0 task31722_1 icons
+   loadFromData.sources = loadFromData/*
+   loadFromData.path = loadFromData
+
+   DEPLOYMENT += task31722_0 task31722_1 icons loadFromData
 }
 
 wince*: {
