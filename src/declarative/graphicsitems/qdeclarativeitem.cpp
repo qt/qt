@@ -64,6 +64,10 @@
 #include <QtGui/qgraphicstransform.h>
 #include <qlistmodelinterface_p.h>
 
+#ifndef FLT_MAX
+#define FLT_MAX 1E+37
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
