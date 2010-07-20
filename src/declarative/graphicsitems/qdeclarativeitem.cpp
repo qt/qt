@@ -63,11 +63,9 @@
 #include <QtGui/qgraphicstransform.h>
 #include <qlistmodelinterface_p.h>
 
-QT_BEGIN_NAMESPACE
+#include <float.h>
 
-#ifndef FLT_MAX
-#define FLT_MAX 1E+37
-#endif
+QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transform QGraphicsTransform
@@ -1514,6 +1512,9 @@ QDeclarativeItem::~QDeclarativeItem()
     \endqml
 
     The default transform origin is \c Item.Center.
+
+    To set an arbitrary transform origin point use the \l Scale or \l Rotation
+    transform elements.
 */
 
 /*!
@@ -2192,6 +2193,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Rotation
 */
 
 /*!
@@ -2228,6 +2231,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Scale
 */
 
 /*!
