@@ -357,7 +357,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
@@ -1979,7 +1979,7 @@ void tst_QWidget::showMaximized()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowMaximized));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_S60) && !defined(Q_WS_QPA)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -2078,7 +2078,7 @@ void tst_QWidget::showFullScreen()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined (Q_WS_S60)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined (Q_WS_S60) && !defined(Q_WS_QPA)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -6362,7 +6362,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6458,7 +6458,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6554,7 +6554,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -9167,7 +9167,7 @@ void tst_QWidget::maskedUpdate()
     QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
