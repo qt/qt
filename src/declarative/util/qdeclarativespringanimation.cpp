@@ -215,7 +215,9 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
     You can also limit the maximum \l velocity of the animation.
 
     The following \l Rectangle moves to the position of the mouse using a 
-    SpringAnimation when the mouse is clicked:
+    SpringAnimation when the mouse is clicked. The use of the \l Behavior
+    on the \c x and \c y values indicates that whenever these values are 
+    changed, a SpringAnimation should be applied.
 
     \snippet doc/src/snippets/declarative/springanimation.qml 0
 
@@ -224,7 +226,7 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
     sources. The \l PropertyAnimation documentation shows a variety of methods
     for creating animations.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
+    \sa SmoothedAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}
 */
 
 QDeclarativeSpringAnimation::QDeclarativeSpringAnimation(QObject *parent)
@@ -284,8 +286,8 @@ qreal QDeclarativeSpringAnimation::from() const
 
     This property holds the value from which the animation will begin.
 
-    If not set, the animation will start regardless of the 
-    value being tracked.
+    If not set, the animation will start whenever the tracked value has
+    changed, regardless of its value.
 */
 
 void QDeclarativeSpringAnimation::setFrom(qreal value)
@@ -303,7 +305,10 @@ void QDeclarativeSpringAnimation::setFrom(qreal value)
 
 /*!
     \qmlproperty real SpringAnimation::velocity
+
     This property holds the maximum velocity allowed when tracking the source.
+
+    The default value is 0 (no maximum velocity).
 */
 
 qreal QDeclarativeSpringAnimation::velocity() const
@@ -322,13 +327,14 @@ void QDeclarativeSpringAnimation::setVelocity(qreal velocity)
 
 /*!
     \qmlproperty real SpringAnimation::spring
-    This property holds the spring constant
 
-    The spring constant describes how strongly the target is pulled towards the
-    source. Setting spring to 0 turns off spring tracking.  Useful values 0 - 5.0
+    This property describes how strongly the target is pulled towards the
+    source. The default value is 0 (that is, the spring-like motion is disabled).
+    
+    The useful value range is 0 - 5.0.
 
-    When a spring constant is set and the velocity property is greater than 0,
-    velocity limits the maximum speed.
+    When this property is set and the \l velocity value is greater than 0,
+    the \l velocity limits the maximum speed.
 */
 qreal QDeclarativeSpringAnimation::spring() const
 {
@@ -347,10 +353,11 @@ void QDeclarativeSpringAnimation::setSpring(qreal spring)
     \qmlproperty real SpringAnimation::damping
     This property holds the spring damping value.
 
-    This value describes how quickly a sprung follower comes to rest.
+    This value describes how quickly the spring-like motion comes to rest.
+    The default value is 0.
 
-    The useful range is 0 - 1.0. The lower the value, the faster the
-    follower comes to rest.
+    The useful value range is 0 - 1.0. The lower the value, the faster it
+    comes to rest.
 */
 qreal QDeclarativeSpringAnimation::damping() const
 {
@@ -392,7 +399,7 @@ void QDeclarativeSpringAnimation::setEpsilon(qreal epsilon)
 
 /*!
     \qmlproperty real SpringAnimation::modulus
-    This property holds the modulus value.
+    This property holds the modulus value. The default value is 0.
 
     Setting a \a modulus forces the target value to "wrap around" at the modulus.
     For example, setting the modulus to 360 will cause a value of 370 to wrap around to 10.
@@ -417,8 +424,10 @@ void QDeclarativeSpringAnimation::setModulus(qreal modulus)
     \qmlproperty real SpringAnimation::mass
     This property holds the "mass" of the property being moved.
 
-    mass is 1.0 by default.  Setting a different mass changes the dynamics of
-    a \l spring follow.
+    The value is 1.0 by default. 
+    
+    A greater mass causes slower movement and a greater spring-like 
+    motion when an item comes to rest.
 */
 qreal QDeclarativeSpringAnimation::mass() const
 {

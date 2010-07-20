@@ -59,15 +59,12 @@
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qmath.h>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
-
-#ifndef FLT_MAX
-#define FLT_MAX 1E+37
-#endif
 
 /*!
     \qmlclass Transform QGraphicsTransform
