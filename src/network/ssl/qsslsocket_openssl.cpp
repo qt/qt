@@ -59,6 +59,8 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QLibrary> // for loading the security lib for the CA store
 
+QT_BEGIN_NAMESPACE
+
 #if defined(Q_OS_MAC)
 #define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
     PtrSecCertificateGetData QSslSocketPrivate::ptrSecCertificateGetData = 0;
@@ -71,8 +73,6 @@
 #elif defined(Q_OS_SYMBIAN)
 #include <QtCore/private/qcore_symbian_p.h>
 #endif
-
-QT_BEGIN_NAMESPACE
 
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
