@@ -114,6 +114,8 @@ contains(sql-drivers, sqlite) {
         QMAKE_CXXFLAGS *= $$QT_CFLAGS_SQLITE
     }
 
+    symbian:include(../../plugins/sqldrivers/sqlite_symbian/sqlite_symbian.pri)
+
     HEADERS +=      drivers/sqlite/qsql_sqlite.h
     SOURCES +=      drivers/sqlite/qsql_sqlite.cpp
 }
