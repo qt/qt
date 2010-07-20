@@ -107,6 +107,7 @@ QtGui
     * [QTBUG-9024] Improved performance when calling update() on items that
       are clipped by an ancestor (QGraphicsItem::ItemClipsChildrenToShape).
     * [QTBUG-7703], [QTBUG-8378] Fixed scrolling issues
+    * [QTBUG-12112] Fixed focusItem() returning incorrect value.
 
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
@@ -118,6 +119,10 @@ QtGui
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
       the mouse.
     * [QTBUG-10338] Fixed drawing artifacts due to rounding errors.
+
+ - QGraphicsWidget
+    * [QTBUG-12056] Fixed a crash occuring when adding a QGraphicsWidget
+      to a scene after removing and deleting another QGraphicsWidget.
 
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
