@@ -713,6 +713,8 @@ QRectF QDeclarativeText::boundingRect() const
     // Could include font max left/right bearings to either side of rectangle.
 
     if (d->cache || d->style != Normal) {
+        QDeclarativeTextPrivate *dd = const_cast<QDeclarativeTextPrivate *>(d);
+        dd->checkImgCache();
         switch (d->hAlign) {
         case AlignLeft:
             x = 0;
