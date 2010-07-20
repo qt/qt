@@ -115,22 +115,55 @@ QT_BEGIN_NAMESPACE
 /*!
   \qmlclass QtObject QObject
   \since 4.7
-  \brief The QtObject element is the most basic element in QML
+  \brief The QtObject element is the most basic element in QML.
 
   The QtObject element is a non-visual element which contains only the
-  objectName property. It is useful for when you need an extremely
-  lightweight element to place your own custom properties in.
+  objectName property. 
+
+  It can be useful to create a QtObject if you need an extremely
+  lightweight element to enclose a set of custom properties:
+
+  \snippet doc/src/snippets/declarative/qtobject.qml 0
 
   It can also be useful for C++ integration, as it is just a plain
   QObject. See the QObject documentation for further details.
 */
 /*!
   \qmlproperty string QML:QtObject::objectName
-  This property allows you to give a name to this specific object instance.
+  This property holds the QObject::objectName for this specific object instance.
 
-  See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
-  in the scripting documentation for details how objectName can be used from
-  scripts.
+  This allows a C++ application to locate an item within a QML component
+  using the QObject::findChild() method. For example, the following C++ 
+  application locates the child \l Rectangle item and dynamically changes its
+  \c color value:
+
+    \qml
+    // MyRect.qml
+
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+
+        Rectangle {
+            anchors.fill: parent
+            color: "red" 
+            objectName: "myRect"
+        }
+    }
+    \endqml
+
+    \code
+    // main.cpp
+
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("MyRect.qml"));
+    view.show();
+
+    QDeclarativeItem *item = view.rootObject()->findChild<QDeclarativeItem*>("myRect");
+    if (item) 
+        item->setProperty("color", QColor(Qt::yellow));
+    \endcode
 */
 
 struct StaticQtMetaObject : public QObject
