@@ -45,11 +45,8 @@
 #include "private/qdeclarativeevents_p_p.h"
 
 #include <QGraphicsSceneMouseEvent>
-#include <QtCore/qmath.h>
 
-#ifndef FLT_MAX
-#define FLT_MAX 1E+37
-#endif
+#include <float.h>
 
 QT_BEGIN_NAMESPACE
 static const int PressAndHoldDelay = 800;
