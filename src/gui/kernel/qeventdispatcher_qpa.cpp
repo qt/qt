@@ -191,11 +191,11 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
     QApplication::sendPostedEvents();
 
     while (!d->interrupt) {        // also flushes output buffer ###can be optimized
-        QWindowSystemInterface::UserEvent *event;
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event;
         if (!(flags & QEventLoop::ExcludeUserInputEvents)
-            && QWindowSystemInterfacePrivate::userEventsQueued() > 0) {
+            && QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0) {
             // process a pending user input event
-            event = QWindowSystemInterfacePrivate::getUserEvent();
+            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
             if (!event)
                 break;
         } else {
@@ -208,7 +208,7 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
         }
         nevents++;
 
-        QApplicationPrivate::processUserEvent(event);
+        QApplicationPrivate::processWindowSystemEvent(event);
         delete event;
     }
 
@@ -222,7 +222,7 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 bool QEventDispatcherQPA::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QWindowSystemInterfacePrivate::userEventsQueued();
+    return qGlobalPostedEventsCount() || QWindowSystemInterfacePrivate::windowSystemEventsQueued();
 }
 
 void QEventDispatcherQPA::registerSocketNotifier(QSocketNotifier *notifier)
