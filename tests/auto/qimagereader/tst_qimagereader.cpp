@@ -123,9 +123,6 @@ private slots:
     void supportsAnimation_data();
     void supportsAnimation();
 
-    void description_data();
-    void description();
-
     void readFromResources_data();
     void readFromResources();
 
@@ -1253,53 +1250,6 @@ void tst_QImageReader::devicePosition()
 }
 
 
-void tst_QImageReader::description_data()
-{
-    QTest::addColumn<QString>("fileName");
-    QTest::addColumn<QStringMap>("description");
-
-    QMap<QString, QString> willem;
-    willem["Title"] = "PngSuite";
-    willem["Author"] = "Willem A.J. van Schaik (gwillem@ntuvax.ntu.ac.sg)";
-    willem["Copyright"] = "Copyright Willem van Schaik, Singapore 1995";
-    willem["Description"] = "A compilation of a set of images created to test the "
-                            "various color-types of the PNG format. Included are "
-                            "black&white, color, paletted, with alpha channel, with "
-                            "transparency formats. All bit-depths allowed according "
-                            "to the spec are present.";
-    willem["Software"] = "Created on a NeXTstation color using \"pnmtopng\".";
-    willem["Disclaimer"] = "Freeware.";
-
-    QTest::newRow("PNG") << QString("pngwithtext.png") << willem;
-    QTest::newRow("PNG Compressed") << QString("pngwithcompressedtext.png") << willem;
-}
-
-void tst_QImageReader::description()
-{
-    QFETCH(QString, fileName);
-    QFETCH(QStringMap, description);
-
-    // Sanity check
-    QVERIFY(!QImage(prefix + fileName).isNull());
-
-    QImageReader reader(prefix + fileName);
-
-    foreach (QString key, description.keys())
-        QCOMPARE(reader.text(key), description.value(key));
-    QCOMPARE(reader.textKeys(), QStringList(description.keys()));
-
-    QImage image = reader.read();
-    QVERIFY(!image.isNull());
-
-    foreach (QString key, description.keys())
-        QCOMPARE(image.text(key), description.value(key));
-    QCOMPARE(image.textKeys(), QStringList(description.keys()));
-
-    foreach (QString key, description.keys())
-        QCOMPARE(reader.text(key), description.value(key));
-    QCOMPARE(reader.textKeys(), QStringList(description.keys()));
-}
-
 void tst_QImageReader::readFromResources_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -1405,12 +1355,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("image.png") << QString("image.png")
                                       << QByteArray("png") << QSize(22, 22)
                                       << QString("");
-    QTest::newRow("pngwithcompressedtext.png") << QString("pngwithcompressedtext.png")
-                                                      << QByteArray("png") << QSize(32, 32)
-                                                      << QString("");
-    QTest::newRow("pngwithtext.png") << QString("pngwithtext.png")
-                                            << QByteArray("png") << QSize(32, 32)
-                                            << QString("");
     QTest::newRow("kollada.png") << QString("kollada.png")
                                         << QByteArray("png") << QSize(436, 160)
                                         << QString("");
