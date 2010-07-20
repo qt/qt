@@ -1080,13 +1080,20 @@ Here is an example. Notice it checks whether the component \l{Component::status}
 \c Component.Ready before calling \l {Component::createObject()}{createObject()}
 in case the QML file is loaded over a network and thus is not ready immediately.
 
-\snippet doc/src/snippets/declarative/componentCreation.js 0
+\snippet doc/src/snippets/declarative/componentCreation.js vars
 \codeline
-\snippet doc/src/snippets/declarative/componentCreation.js 1
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js remote
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js finishCreation
 
-If you are certain the files will be local, you could simplify to:
+If you are certain the QML file to be loaded is a local file, you could omit the \c finishCreation() 
+function and call \l {Component::createObject()}{createObject()} immediately:
 
-\snippet doc/src/snippets/declarative/componentCreation.js 2
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js local
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
