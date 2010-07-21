@@ -301,8 +301,7 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     Sets the letter spacing for the font.
 
     Letter spacing changes the default spacing between individual letters in the font.
-    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
-    the width of the character itself.
+    A positive value increases the letter spacing by the corresponding pixels; a negative value decreases the spacing.
 */
 
 /*!

@@ -973,7 +973,7 @@ qreal QDeclarativeFontValueType::letterSpacing() const
 
 void QDeclarativeFontValueType::setLetterSpacing(qreal size)
 {
-    font.setLetterSpacing(QFont::PercentageSpacing, size);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, size);
 }
 
 qreal QDeclarativeFontValueType::wordSpacing() const
