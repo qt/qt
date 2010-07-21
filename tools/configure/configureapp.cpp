@@ -581,8 +581,8 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
-	else if (configCmdLine.at(i) == "-qt-gif")
-            dictionary[ "GIF" ] = "yes";
+        else if (configCmdLine.at(i) == "-qt-gif")
+            dictionary[ "GIF" ] = "plugin";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";

@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(DBus)
 
 class QDBusAbstractAdaptorPrivate;
-class QDBUS_EXPORT QDBusAbstractAdaptor: public QObject
+class Q_DBUS_EXPORT QDBusAbstractAdaptor: public QObject
 {
     Q_OBJECT
 protected:

@@ -57,7 +57,7 @@ class QDBusConnectionPrivate;
 class QDBusError;
 class QDBusConnection;
 
-class QDBUS_EXPORT QDBusServer: public QObject
+class Q_DBUS_EXPORT QDBusServer: public QObject
 {
     Q_OBJECT
 public:

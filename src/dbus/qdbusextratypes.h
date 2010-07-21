@@ -59,7 +59,7 @@ QT_MODULE(DBus)
 // defined in qhash.cpp
 Q_CORE_EXPORT uint qHash(const QString &key);
 
-class QDBUS_EXPORT QDBusObjectPath : private QString
+class Q_DBUS_EXPORT QDBusObjectPath : private QString
 {
 public:
     inline QDBusObjectPath() { }
@@ -109,7 +109,7 @@ inline uint qHash(const QDBusObjectPath &objectPath)
 { return qHash(objectPath.path()); }
 
 
-class QDBUS_EXPORT QDBusSignature : private QString
+class Q_DBUS_EXPORT QDBusSignature : private QString
 {
 public:
     inline QDBusSignature() { }
