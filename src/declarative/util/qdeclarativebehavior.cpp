@@ -186,7 +186,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
         return;
     }
 
-    if (value == d->targetValue)
+    if (d->animation->isRunning() && value == d->targetValue)
         return;
 
     d->currentValue = d->property.read();
