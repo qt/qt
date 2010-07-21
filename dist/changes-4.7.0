@@ -65,6 +65,8 @@ QtCore
  - QMetaType
     * Significantly improved performance of the type() function
     * [QTBUG-8235] Support QEasingCurve as a built in metatype.
+    * Added possibility to register several name for the same type with
+      qRegisterMetaType<>() (ie. for typedef)
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
  - QXmlStreamReader
@@ -74,6 +76,8 @@ QtCore
  - QAbstractAnimation
     * [QTBUG-10654] Avoids animation with loopCount == 0 to change state
       to running and stopped.
+ - QVarLenghtArray
+    * Added some API to be more consistant with other containers
 
 QtGui
 -----
@@ -186,6 +190,9 @@ QtOpenGL
    improvements on some hardware.
    
  - [QTBUG-9706] Improved appearance of text antialiasing.
+
+ - QTreeView
+    * Optimized
 
 QtNetwork
 ---------
@@ -368,7 +375,7 @@ Qt for Windows CE
 
 
 - moc
-
+  * Fixed several parsing bugs. Including changes in the normalized signature.
 
 - uic
 
