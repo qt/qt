@@ -371,7 +371,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // right
     QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
@@ -380,7 +380,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // down
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
@@ -389,7 +389,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item4");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // left
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier, "", false, 1);
@@ -398,7 +398,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item3");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // up
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
@@ -407,7 +407,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // tab
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
@@ -416,7 +416,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // backtab
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
@@ -425,7 +425,7 @@ void tst_QDeclarativeItem::keyNavigation()
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     delete canvas;
 }
@@ -618,21 +618,21 @@ void tst_QDeclarativeItem::mouseFocus()
 
     QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "declarativeItem");
     QVERIFY(item);
-    QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
+    QSignalSpy focusSpy(item, SIGNAL(activeFocusChanged(bool)));
 
     QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
     QApplication::processEvents();
     QCOMPARE(focusSpy.count(), 1);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     // make sure focusable graphics widget underneath does not steal focus
     QTest::mouseClick(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(item->scenePos()));
     QApplication::processEvents();
     QCOMPARE(focusSpy.count(), 1);
-    QVERIFY(item->hasFocus());
+    QVERIFY(item->hasActiveFocus());
 
     item->setFocus(false);
-    QVERIFY(!item->hasFocus());
+    QVERIFY(!item->hasActiveFocus());
     QCOMPARE(focusSpy.count(), 2);
     item->setFocus(true);
     QCOMPARE(focusSpy.count(), 3);
@@ -664,7 +664,7 @@ void tst_QDeclarativeItem::propertyChanges()
     QSignalSpy baselineOffsetSpy(item, SIGNAL(baselineOffsetChanged(qreal)));
     QSignalSpy childrenRectSpy(parentItem, SIGNAL(childrenRectChanged(QRectF)));
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
-    QSignalSpy wantsFocusSpy(parentItem, SIGNAL(wantsFocusChanged(bool)));
+    QSignalSpy wantsFocusSpy(parentItem, SIGNAL(activeFocusChanged(bool)));
 
     item->setParentItem(parentItem);
     item->setWidth(100.0);
@@ -696,14 +696,14 @@ void tst_QDeclarativeItem::propertyChanges()
     QVERIFY(childrenRectArguments.count() == 1);
     QCOMPARE(parentItem->childrenRect(), childrenRectArguments.at(0).toRectF());
 
-    QCOMPARE(item->hasFocus(), true);
+    QCOMPARE(item->hasActiveFocus(), true);
     QCOMPARE(focusSpy.count(),1);
     QList<QVariant> focusArguments = focusSpy.first();
     QVERIFY(focusArguments.count() == 1);
     QCOMPARE(focusArguments.at(0).toBool(), true);
 
+    QCOMPARE(parentItem->hasActiveFocus(), false);
     QCOMPARE(parentItem->hasFocus(), false);
-    QCOMPARE(parentItem->wantsFocus(), false);
     QCOMPARE(wantsFocusSpy.count(),0);
 
     delete canvas;

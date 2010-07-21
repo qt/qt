@@ -10,27 +10,27 @@ Rectangle {
     FocusScope {
         y: 100
         focus: true
-        Rectangle { width: 50; height: 50; color: parent.wantsFocus?"red":"blue" }
+        Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
 
         FocusScope {
             y: 100
             focus: true
-            Rectangle { width: 50; height: 50; color: parent.wantsFocus?"red":"blue" }
+            Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
 
             FocusScope {
                 y: 100
                 focus: true
-                Rectangle { width: 50; height: 50; color: parent.wantsFocus?"red":"blue" }
+                Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
 
                 FocusScope {
                     y: 100
                     focus: true
-                    Rectangle { width: 50; height: 50; color: parent.wantsFocus?"red":"blue" }
+                    Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
 
                     FocusScope {
                         y: 100
                         focus: true
-                        Rectangle { width: 50; height: 50; color: parent.wantsFocus?"red":"blue" }
+                        Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
                     }
                 }
             }
