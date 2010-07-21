@@ -97,6 +97,8 @@ private slots:
 
     void clickLink();
 
+    void QTBUG_12291();
+
 private:
     QStringList standard;
     QStringList richText;
@@ -896,6 +898,23 @@ void tst_qdeclarativetext::wordSpacing()
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->font().wordSpacing(), 200.);
     }
+}
+
+void tst_qdeclarativetext::QTBUG_12291()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/rotated.qml");
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QObject *ob = canvas->rootObject();
+    QVERIFY(ob != 0);
+
+    QDeclarativeText *text = ob->findChild<QDeclarativeText*>("text");
+    QVERIFY(text);
+    QVERIFY(text->boundingRect().isValid());
 }
 
 class EventSender : public QGraphicsItem

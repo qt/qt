@@ -710,63 +710,37 @@ QRectF QDeclarativeText::boundingRect() const
     int x = 0;
     int y = 0;
 
+    QSize size = d->cachedLayoutSize;
+    if (d->style != Normal)
+        size += QSize(2,2);
+
     // Could include font max left/right bearings to either side of rectangle.
 
-    if (d->cache || d->style != Normal) {
-        QDeclarativeTextPrivate *dd = const_cast<QDeclarativeTextPrivate *>(d);
-        dd->checkImgCache();
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->imgCache.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->imgCache.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->imgCache.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->imgCache.height()) / 2;
-            break;
-        }
-
-        return QRectF(x,y,d->imgCache.width(),d->imgCache.height());
-    } else {
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->cachedLayoutSize.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->cachedLayoutSize.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->cachedLayoutSize.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->cachedLayoutSize.height()) / 2;
-            break;
-        }
-
-        return QRectF(x,y,d->cachedLayoutSize.width(),d->cachedLayoutSize.height());
+    switch (d->hAlign) {
+    case AlignLeft:
+        x = 0;
+        break;
+    case AlignRight:
+        x = w - size.width();
+        break;
+    case AlignHCenter:
+        x = (w - size.width()) / 2;
+        break;
     }
+
+    switch (d->vAlign) {
+    case AlignTop:
+        y = 0;
+        break;
+    case AlignBottom:
+        y = h - size.height();
+        break;
+    case AlignVCenter:
+        y = (h - size.height()) / 2;
+        break;
+    }
+
+    return QRectF(x,y,size.width(),size.height());
 }
 
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
