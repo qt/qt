@@ -2872,7 +2872,7 @@ void QDeclarativeItem::setSmooth(bool smooth)
 */
 
 /*!
-  \property QDeclarativeItem::wantsFocus
+  \property QDeclarativeItem::activeFocus
   \internal
 */
 
