@@ -40,6 +40,7 @@
 
 import Qt 4.7
 
+//![0]
 Text {
     text: "Hello world!"    //a basic greeting
     /*
@@ -49,3 +50,4 @@ Text {
     font.family: "Helvetica"
     font.pointSize: 24
 }
+//![0]
