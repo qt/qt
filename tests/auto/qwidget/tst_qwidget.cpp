@@ -2167,7 +2167,10 @@ void tst_QWidget::resizeEvent()
         wParent.show();
         QCOMPARE (wChild.m_resizeEventCount, 1); // initial resize event before paint
         wParent.hide();
-        wChild.resize(QSize(640,480));
+        QSize safeSize(640,480);
+        if (wChild.size() == safeSize)
+            safeSize.setWidth(639);
+        wChild.resize(safeSize);
         QCOMPARE (wChild.m_resizeEventCount, 1);
         wParent.show();
         QCOMPARE (wChild.m_resizeEventCount, 2);
@@ -2178,7 +2181,10 @@ void tst_QWidget::resizeEvent()
         wTopLevel.show();
         QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
-        wTopLevel.resize(QSize(640,480));
+        QSize safeSize(640,480);
+        if (wTopLevel.size() == safeSize)
+            safeSize.setWidth(639);
+        wTopLevel.resize(safeSize);
         QCOMPARE (wTopLevel.m_resizeEventCount, 1);
         wTopLevel.show();
         QCOMPARE (wTopLevel.m_resizeEventCount, 2);
@@ -3375,6 +3381,10 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
 #endif
+#if defined(Q_WS_QPA)
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
+#endif
+
     QTRY_COMPARE(QApplication::widgetAt(100,100)->objectName(), w1->objectName());
     QTRY_COMPARE(QApplication::widgetAt(101,101)->objectName(), w2->objectName());
 
@@ -3392,6 +3402,9 @@ void tst_QWidget::widgetAt()
 #endif
 #if defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
+#endif
+#if defined(Q_WS_QPA)
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
 #endif
     QTRY_VERIFY(QApplication::widgetAt(100,100) == w1);
     QTRY_VERIFY(QApplication::widgetAt(101,101) == w2);
