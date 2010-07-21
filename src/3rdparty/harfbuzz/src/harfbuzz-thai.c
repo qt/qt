@@ -91,7 +91,7 @@ static void thaiWordBreaks(const HB_UChar16 *string, hb_uint32 len, HB_CharAttri
     for (i = 0; i < numbreaks; ++i) {
         if (break_positions[i] > 0) {
             attributes[break_positions[i]-1].lineBreakType = HB_Break;
-            attributes[i].wordBoundary = TRUE;
+            attributes[break_positions[i]-1].wordBoundary = TRUE;
         }
     }
 
