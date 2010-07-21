@@ -2343,6 +2343,9 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
         data->colortable.resize(256);
         for (int i = 0; i < 256; ++i)
             data->colortable[i] = qRgb(i, i, i);
+    } else {
+        for (int i = 0; i < data->colortable.size(); ++i)
+            data->colortable[i] = PREMUL(data->colortable.at(i));
     }
     const int tableSize = data->colortable.size() - 1;
 
@@ -2352,11 +2355,11 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
         for (int pixI = 0; pixI < width; ++pixI) {
             --src_data;
             --dest_data;
-            const uint pixel = data->colortable[qMin<int>(tableSize, *src_data)];
-            *dest_data = (quint32) PREMUL(pixel);
+            *dest_data = data->colortable[qMin<int>(tableSize, *src_data)];
         }
     }
 
+    data->colortable = QVector<QRgb>();
     data->format = QImage::Format_ARGB32_Premultiplied;
     data->bytes_per_line = dst_bytes_per_line;
     data->depth = depth;
@@ -2401,6 +2404,7 @@ static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversio
         }
     }
 
+    data->colortable = QVector<QRgb>();
     data->format = QImage::Format_RGB32;
     data->bytes_per_line = dst_bytes_per_line;
     data->depth = depth;
@@ -2446,6 +2450,7 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
         }
     }
 
+    data->colortable = QVector<QRgb>();
     data->format = QImage::Format_RGB16;
     data->bytes_per_line = dst_bytes_per_line;
     data->depth = depth;
