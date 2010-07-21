@@ -7007,9 +7007,6 @@ fi
 if [ "$CFG_EXCEPTIONS" = "unspecified" -a "$PLATFORM_QWS" = "yes" ]; then
     CFG_EXCEPTIONS=no
 fi
-if [ "$CFG_EXCEPTIONS" = "unspecified" -a "$PLATFORM_QPA" = "yes" ]; then
-    CFG_EXCEPTIONS=no
-fi
 
 if [ "$CFG_EXCEPTIONS" != "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG exceptions"
