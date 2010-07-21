@@ -432,8 +432,10 @@ public:
     static QPalette *set_pal;
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
-    static QPlatformIntegration *platform_integration;
     static bool runtime_graphics_system;
+#ifdef Q_WS_QPA
+    static QPlatformIntegration *platform_integration;
+#endif
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!

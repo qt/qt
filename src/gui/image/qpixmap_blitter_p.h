@@ -11,9 +11,10 @@ class Q_GUI_EXPORT  QBlittablePixmapData : public QPixmapData
 {
 //     Q_DECLARE_PRIVATE(QBlittablePixmapData);
 public:
-    QBlittablePixmapData(QPixmapData::PixelType type);
+    QBlittablePixmapData();
     ~QBlittablePixmapData();
 
+    virtual QBlittable *createBlittable(const QSize &size) const = 0;
     QBlittable *blittable() const;
     void setBlittable(QBlittable *blittable);
 

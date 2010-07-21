@@ -66,7 +66,6 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
-    virtual QBlittable *createBlittable(const QSize &size) const;
     virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
 
 // Window System functions
@@ -77,6 +76,7 @@ public:
 // Experimental
     virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
+// should it be hasGLContext?
     virtual bool hasOpenGL() const;
 
 
