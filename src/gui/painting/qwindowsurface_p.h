@@ -86,6 +86,7 @@ public:
 #else
     virtual void resize(const QSize &size);
     QSize size() const;
+    inline QRect geometry() const { return QRect(QPoint(), size()); }     //### cleanup before Qt 5
 #endif
 
     virtual bool scroll(const QRegion &area, int dx, int dy);
