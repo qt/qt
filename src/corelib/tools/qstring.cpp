@@ -69,6 +69,10 @@
 #include <winnls.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include <e32cmn.h>
+#endif
+
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
