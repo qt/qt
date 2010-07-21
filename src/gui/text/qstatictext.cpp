@@ -148,9 +148,7 @@ QStaticText::QStaticText()
 }
 
 /*!
-    Constructs a QStaticText object with the given \a text and bounded by the given \a size.
-
-    If an invalid size is passed for \a size the text will be unbounded.
+    Constructs a QStaticText object with the given \a text.
 */
 QStaticText::QStaticText(const QString &text)
     : data(new QStaticTextPrivate)

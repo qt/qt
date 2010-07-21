@@ -740,6 +740,11 @@ CFG_MMX=auto
 CFG_3DNOW=auto
 CFG_SSE=auto
 CFG_SSE2=auto
+CFG_SSE3=auto
+CFG_SSSE3=auto
+CFG_SSE4_1=auto
+CFG_SSE4_2=auto
+CFG_AVX=auto
 CFG_REDUCE_RELOCATIONS=no
 CFG_IPV6=auto
 CFG_NAS=no
@@ -1638,6 +1643,41 @@ while [ "$#" -gt 0 ]; do
     sse2)
         if [ "$VAL" = "no" ]; then
             CFG_SSE2="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    sse3)
+        if [ "$VAL" = "no" ]; then
+            CFG_SSE3="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    ssse3)
+        if [ "$VAL" = "no" ]; then
+            CFG_SSSE3="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    sse4.1)
+        if [ "$VAL" = "no" ]; then
+            CFG_SSE4_1="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    sse4.2)
+        if [ "$VAL" = "no" ]; then
+            CFG_SSE4_2="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    avx)
+        if [ "$VAL" = "no" ]; then
+            CFG_AVX="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3445,6 +3485,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
+        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
@@ -3636,6 +3677,11 @@ cat << EOF
     -no-3dnow .......... Do not compile with use of 3DNOW instructions.
     -no-sse ............ Do not compile with use of SSE instructions.
     -no-sse2 ........... Do not compile with use of SSE2 instructions.
+    -no-sse3 ........... Do not compile with use of SSE3 instructions.
+    -no-ssse3 .......... Do not compile with use of SSSE3 instructions.
+    -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
+    -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
+    -no-avx ............ Do not compile with use of AVX instructions.
 
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
@@ -4687,6 +4733,51 @@ if [ "${CFG_SSE2}" = "auto" ]; then
        CFG_SSE2=yes
     else
        CFG_SSE2=no
+    fi
+fi
+
+# detect sse3 support
+if [ "${CFG_SSE3}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse3 "sse3" $L_FLAGS $I_FLAGS $l_FLAGS "-msse3"; then
+       CFG_SSE3=yes
+    else
+       CFG_SSE3=no
+    fi
+fi
+
+# detect ssse3 support
+if [ "${CFG_SSSE3}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ssse3 "ssse3" $L_FLAGS $I_FLAGS $l_FLAGS "-mssse3"; then
+       CFG_SSSE3=yes
+    else
+       CFG_SSSE3=no
+    fi
+fi
+
+# detect sse4.1 support
+if [ "${CFG_SSE4_1}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse4_1 "sse4_1" $L_FLAGS $I_FLAGS $l_FLAGS "-msse4.1"; then
+       CFG_SSE4_1=yes
+    else
+       CFG_SSE4_1=no
+    fi
+fi
+
+# detect sse4.2 support
+if [ "${CFG_SSE4_2}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/sse4_2 "sse4_2" $L_FLAGS $I_FLAGS $l_FLAGS "-msse4.2"; then
+       CFG_SSE4_2=yes
+    else
+       CFG_SSE4_2=no
+    fi
+fi
+
+# detect avx support
+if [ "${CFG_AVX}" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/avx "avx" $L_FLAGS $I_FLAGS $l_FLAGS "-mavx"; then
+       CFG_AVX=yes
+    else
+       CFG_AVX=no
     fi
 fi
 
@@ -6613,6 +6704,11 @@ fi
 [ "$CFG_3DNOW" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG 3dnow"
 [ "$CFG_SSE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse"
 [ "$CFG_SSE2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse2"
+[ "$CFG_SSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse3"
+[ "$CFG_SSSE3" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG ssse3"
+[ "$CFG_SSE4_1" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_1"
+[ "$CFG_SSE4_2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG sse4_2"
+[ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
 [ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 [ "$PLATFORM_MAC" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG $CFG_MAC_ARCHS"
@@ -8021,7 +8117,9 @@ echo "Support for S60 ........ $CFG_S60"
 echo "Symbian DEF files ...... $CFG_SYMBIAN_DEFFILES"
 echo "STL support ............ $CFG_STL"
 echo "PCH support ............ $CFG_PRECOMPILE"
-echo "MMX/3DNOW/SSE/SSE2...... ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
+echo "MMX/3DNOW/SSE/SSE2/SSE3. ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}/${CFG_SSE3}"
+echo "SSSE3/SSE4.1/SSE4.2..... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
+echo "AVX..................... ${CFG_AVX}"
 if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
     echo "iWMMXt support ......... ${CFG_IWMMXT}"
     echo "NEON support ........... ${CFG_NEON}"

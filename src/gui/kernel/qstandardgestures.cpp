@@ -515,11 +515,14 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
 
     const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
     const QMouseEvent *me = static_cast<const QMouseEvent *>(event);
+#ifndef QT_NO_GRAPHICSVIEW
     const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
+#endif
 
     enum { TapRadius = 40 };
 
     switch (event->type()) {
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMousePress:
         d->position = gsme->screenPos();
         q->setHotSpot(d->position);
@@ -527,6 +530,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
             q->killTimer(d->timerId);
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
+#endif
     case QEvent::MouseButtonPress:
         d->position = me->globalPos();
         q->setHotSpot(d->position);
@@ -541,7 +545,9 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
             q->killTimer(d->timerId);
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMouseRelease:
+#endif
     case QEvent::MouseButtonRelease:
     case QEvent::TouchEnd:
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
@@ -559,12 +565,14 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
+#ifndef QT_NO_GRAPHICSVIEW
     case QEvent::GraphicsSceneMouseMove: {
         QPoint delta = gsme->screenPos() - d->position.toPoint();
         if (d->timerId && delta.manhattanLength() <= TapRadius)
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
+#endif
     default:
         return QGestureRecognizer::Ignore;
     }
