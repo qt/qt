@@ -93,9 +93,6 @@ private slots:
     void largeTiff();
 #endif
 
-    void setDescription_data();
-    void setDescription();
-
     void writeToInvalidDevice();
 
     void supportsOption_data();
@@ -418,41 +415,6 @@ void tst_QImageWriter::readWriteNonDestructive()
     QImage::Format readFormat = image2.format();
     QCOMPARE(readFormat, expectedFormat);
     QCOMPARE(image, image2);
-}
-
-void tst_QImageWriter::setDescription_data()
-{
-    QTest::addColumn<QString>("fileName");
-    QTest::addColumn<QStringMap>("description");
-
-    QMap<QString, QString> willem;
-    willem["Title"] = "PngSuite";
-    willem["Author"] = "Willem A.J. van Schaik (willem@schaik.com)";
-    willem["Copyright"] = "Copyright Willem van Schaik, Singapore 1995-96";
-    willem["Description"] = "A compilation of a set of images created to test the "
-                            "various color-types of the PNG format. Included are "
-                            "black&white, color, paletted, with alpha channel, with "
-                            "transparency formats. All bit-depths allowed according "
-                            "to the spec are present.";
-    willem["Software"] = "Created on a NeXTstation color using \"pnmtopng\".";
-    willem["Disclaimer"] = "Freeware.";
-
-    QTest::newRow("PNG") << prefix + QString("gen-pngwithtext.png") << willem;
-}
-
-void tst_QImageWriter::setDescription()
-{
-    QFETCH(QString, fileName);
-    QFETCH(QStringMap, description);
-
-    QImageWriter writer(fileName, "png");
-    foreach (QString key, description.keys())
-        writer.setText(key, description.value(key));
-    QVERIFY(writer.write(QImage(prefix + "kollada.png")));
-
-    QImageReader reader(fileName);
-    foreach (QString key, description.keys())
-        QCOMPARE(reader.text(key), description.value(key));
 }
 
 void tst_QImageWriter::writeToInvalidDevice()
