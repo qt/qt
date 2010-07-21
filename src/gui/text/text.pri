@@ -197,8 +197,6 @@ contains(QT_CONFIG, freetype) {
     # pull in the proper freetype2 include directory
     include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
     LIBS_PRIVATE += -lfreetype
-} else {
-    DEFINES *= QT_NO_FREETYPE
 }
 
 contains(QT_CONFIG, fontconfig) {
