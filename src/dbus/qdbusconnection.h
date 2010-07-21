@@ -72,7 +72,7 @@ class QDBusConnectionInterface;
 class QObject;
 
 class QDBusConnectionPrivate;
-class QDBUS_EXPORT QDBusConnection
+class Q_DBUS_EXPORT QDBusConnection
 {
     Q_GADGET
     Q_ENUMS(BusType UnregisterMode)

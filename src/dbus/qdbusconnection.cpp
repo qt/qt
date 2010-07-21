@@ -125,7 +125,7 @@ QDBusConnectionManager::~QDBusConnectionManager()
     connectionHash.clear();
 }
 
-QDBUS_EXPORT void qDBusBindToApplication();
+Q_DBUS_EXPORT void qDBusBindToApplication();
 void qDBusBindToApplication()
 {
 }

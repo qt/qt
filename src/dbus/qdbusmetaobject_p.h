@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QDBusError;
 
 struct QDBusMetaObjectPrivate;
-struct QDBUS_EXPORT QDBusMetaObject: public QMetaObject
+struct Q_DBUS_EXPORT QDBusMetaObject: public QMetaObject
 {
     bool cached;
 
