@@ -45,13 +45,14 @@
 #include <QPlatformWindow>
 
 #include "qdirectfbconvenience.h"
+#include "qdirectfbinput.h"
 
 QT_BEGIN_NAMESPACE
 
 class QDirectFbWindow : public QPlatformWindow
 {
 public:
-    QDirectFbWindow(QWidget *tlw);
+    QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler);
     ~QDirectFbWindow();
 
     void setGeometry(const QRect &rect);
@@ -66,6 +67,8 @@ public:
 
 private:
     IDirectFBWindow *m_dfbWindow;
+    QDirectFbInput *m_inputHandler;
+
 };
 
 QT_END_NAMESPACE

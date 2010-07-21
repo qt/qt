@@ -71,10 +71,10 @@ public:
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
 
-    void flush();
+    void registerSocketNotifier(QSocketNotifier *notifier);
+    void unregisterSocketNotifier(QSocketNotifier *notifier);
 
-    void startingUp();
-    void closingDown();
+    void flush();
 
 protected:
     int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,

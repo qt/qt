@@ -10,89 +10,61 @@
 
 #include <directfb.h>
 
-InputSocketWaiter::InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent)
-    : QThread(parent), m_eventBuffer(eventBuffer),m_shouldStop(false)
+QDirectFbInput::QDirectFbInput(QObject *parent)
+    : QObject(parent), m_shouldStop(false)
 {
-    this->start();
-}
+    m_dfbInterface = QDirectFbConvenience::dfbInterface();
 
-InputSocketWaiter::~InputSocketWaiter()
-{
-    m_shouldStop = true;
-    m_eventBuffer->WakeUp(m_eventBuffer);
-    m_cleanupMutex.lock();
-}
-
-void InputSocketWaiter::continueWaitingForEvents()
-{
-    m_finishedProcessingEvents.wakeAll();
-}
-
-void InputSocketWaiter::run()
-{
-    m_cleanupMutex.lock();
-    while (1) {
-        m_eventBuffer->WaitForEvent(m_eventBuffer);
-        if (m_shouldStop)
-            break;
-        emit newEvent();
-        QMutex waitForProcessingMutex;
-        waitForProcessingMutex.lock();
-        m_finishedProcessingEvents.wait(&waitForProcessingMutex);
-    }
-    m_cleanupMutex.unlock();
-}
-
-QDirectFbInput *QDirectFbInput::instance()
-{
-    static QDirectFbInput *input = 0;
-    if (!input) {
-        input = new QDirectFbInput();
-    }
-    return input;
-}
-
-QDirectFbInput::QDirectFbInput()
-    : QObject()
-{
-    dfbInterface = QDirectFbConvenience::dfbInterface();
-
-    DFBResult ok = dfbInterface->CreateEventBuffer(dfbInterface,&eventBuffer);
+    DFBResult ok = m_dfbInterface->CreateEventBuffer(m_dfbInterface,&m_eventBuffer);
     if (ok != DFB_OK)
         DirectFBError("Failed to initialise eventbuffer", ok);
 
-    dfbInterface->GetDisplayLayer(dfbInterface,DLID_PRIMARY, &dfbDisplayLayer);
+    m_dfbInterface->GetDisplayLayer(m_dfbInterface,DLID_PRIMARY, &m_dfbDisplayLayer);
 
-    m_inputHandler = new InputSocketWaiter(eventBuffer,this);
-    connect(m_inputHandler,SIGNAL(newEvent()),this,SLOT(handleEvents()));
+}
 
-    connect(QApplication::instance(),SIGNAL(aboutToQuit()),SLOT(applicationEnd()));
+void QDirectFbInput::runInputEventLoop()
+{
+    while (true) {
+        m_eventBuffer->WaitForEvent(m_eventBuffer);
+        if (m_shouldStop) {
+            m_waitStop.release();
+            break;
+        }
+        handleEvents();
+    }
+}
+
+void QDirectFbInput::stopInputEventLoop()
+{
+    m_shouldStop = true;
+    m_waitStop.acquire();
 }
 
 void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
 {
-    tlwMap.insert(id,tlw);
+    m_tlwMap.insert(id,tlw);
     IDirectFBWindow *window;
-    dfbDisplayLayer->GetWindow(dfbDisplayLayer,id,&window);
+    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer,id,&window);
 
-    window->AttachEventBuffer(window,eventBuffer);
+    window->AttachEventBuffer(window,m_eventBuffer);
 }
 
 void QDirectFbInput::removeWindow(WId wId)
 {
     IDirectFBWindow *window;
-    dfbDisplayLayer->GetWindow(dfbDisplayLayer,wId, &window);
+    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer,wId, &window);
 
-    window->DetachEventBuffer(window,eventBuffer);
-    tlwMap.remove(wId);
+    window->DetachEventBuffer(window,m_eventBuffer);
+    m_tlwMap.remove(wId);
 }
 
 void QDirectFbInput::handleEvents()
 {
-    DFBResult hasEvent = eventBuffer->HasEvent(eventBuffer);
+    DFBResult hasEvent = m_eventBuffer->HasEvent(m_eventBuffer);
     while(hasEvent == DFB_OK){
         DFBEvent event;
-        DFBResult ok = eventBuffer->GetEvent(eventBuffer,&event);
+        DFBResult ok = m_eventBuffer->GetEvent(m_eventBuffer,&event);
         if (ok != DFB_OK)
             DirectFBError("Failed to get event",ok);
         if (event.clazz == DFEC_WINDOW) {
@@ -118,9 +90,8 @@ void QDirectFbInput::handleEvents()
 
         }
 
-        hasEvent = eventBuffer->HasEvent(eventBuffer);
+        hasEvent = m_eventBuffer->HasEvent(m_eventBuffer);
     }
-    m_inputHandler->continueWaitingForEvents();
 }
 
 void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
@@ -140,14 +111,8 @@ void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
     } else if (event.window.type == DWET_BUTTONUP) {
         window->UngrabPointer(window);
     }
-    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWidget *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons);
-}
-
-void QDirectFbInput::applicationEnd()
-{
-    delete m_inputHandler;
-    m_inputHandler = 0;
 }
 
 void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
@@ -155,7 +120,7 @@ void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
     QPoint p(event.window.cx, event.window.cy);
     QPoint globalPos = globalPoint(event);
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWidget *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleWheelEvent(tlw, timestamp, p, globalPos,
                                           event.window.step*120,
                                           Qt::Vertical);
@@ -172,13 +137,13 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     QChar character;
     if (DFB_KEY_TYPE(event.window.key_symbol) == DIKT_UNICODE)
         character = QChar(event.window.key_symbol);
-    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWidget *tlw = m_tlwMap.value(event.window.window_id);
     QWindowSystemInterface::handleKeyEvent(tlw, timestamp, type, key, modifiers, character);
 }
 
 void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
 {
-    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWidget *tlw = m_tlwMap.value(event.window.window_id);
     switch (event.window.type) {
     case DWET_ENTER:
         QWindowSystemInterface::handleEnterEvent(tlw);
@@ -194,7 +159,7 @@ void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
 inline QPoint QDirectFbInput::globalPoint(const DFBEvent &event) const
 {
     IDirectFBWindow *window;
-    dfbDisplayLayer->GetWindow(dfbDisplayLayer,event.window.window_id,&window);
+    m_dfbDisplayLayer->GetWindow(m_dfbDisplayLayer,event.window.window_id,&window);
     int x,y;
     window->GetPosition(window,&x,&y);
     return QPoint(event.window.cx +x, event.window.cy + y);

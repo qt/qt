@@ -45,8 +45,8 @@
 
 #include <directfb.h>
 
-QDirectFbWindow::QDirectFbWindow(QWidget *tlw)
-    : QPlatformWindow(tlw)
+QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
+    : QPlatformWindow(tlw), m_inputHandler(inputhandler)
 {
     IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     DFBDisplayLayerConfig layerConfig;
@@ -83,12 +83,12 @@ QDirectFbWindow::QDirectFbWindow(QWidget *tlw)
 
     DFBWindowID id;
     m_dfbWindow->GetID(m_dfbWindow, &id);
-    QDirectFbInput::instance()->addWindow(id,tlw);
+    m_inputHandler->addWindow(id,tlw);
 }
 
 QDirectFbWindow::~QDirectFbWindow()
 {
-    QDirectFbInput::instance()->removeWindow(winId());
+    m_inputHandler->removeWindow(winId());
     m_dfbWindow->Destroy(m_dfbWindow);
 }
 

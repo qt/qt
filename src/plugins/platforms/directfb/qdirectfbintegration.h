@@ -50,6 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QThread;
 class QDirectFBCursor;
 
 class QDirectFbScreen : public QPlatformScreen
@@ -81,6 +82,7 @@ class QDirectFbIntegration : public QPlatformIntegration
 {
 public:
     QDirectFbIntegration();
+    ~QDirectFbIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
@@ -89,10 +91,10 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
-
-
 private:
     QList<QPlatformScreen *> mScreens;
+    QDirectFbInput *mInput;
+    QThread *mInputRunner;
 };
 
 QT_END_NAMESPACE

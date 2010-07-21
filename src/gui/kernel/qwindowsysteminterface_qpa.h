@@ -58,22 +58,13 @@ QT_MODULE(Gui)
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
-    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
-        handleMouseEvent(w, eventTime.elapsed(), local, global, b);
-    }
-
+    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
     static void handleMouseEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
 
-    static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1) {
-        handleKeyEvent(w, eventTime.elapsed(), t, k, mods, text, autorep, count);
-    }
-
+    static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
     static void handleKeyEvent(QWidget *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
 
-    static void handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
-        handleWheelEvent(w, eventTime.elapsed(), local, global, d, o);
-    }
-
+    static void handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
     static void handleWheelEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
 
     struct TouchPoint {
@@ -85,10 +76,7 @@ public:
         Qt::TouchPointStates state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
     };
 
-    static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points) {
-        handleTouchEvent(w, eventTime.elapsed(), type, devType, points);
-    }
-
+    static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
     static void handleTouchEvent(QWidget *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
 
     // delivered directly by the plugin via spontaneous events
@@ -101,67 +89,6 @@ public:
     static void handleScreenGeometryChange(int screenIndex);
     static void handleScreenAvailableGeometryChange(int screenIndex);
     static void handleScreenCountChange(int count);
-
-    class UserEvent {
-    public:
-        UserEvent(QWidget * w, ulong time, QEvent::Type t)
-            { widget = QWeakPointer<QWidget>(w); type = t; timestamp = time; }
-        QWeakPointer<QWidget> widget;
-        QEvent::Type type;
-        unsigned long timestamp;
-    };
-
-    class MouseEvent : public UserEvent {
-    public:
-        MouseEvent(QWidget * w, ulong time, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
-            : UserEvent(w, time, QEvent::MouseMove){ localPos = local; globalPos = global; buttons = b; }
-        QPoint localPos;
-        QPoint globalPos;
-        Qt::MouseButtons buttons;
-    };
-
-    class WheelEvent : public UserEvent {
-    public:
-        WheelEvent(QWidget *w, ulong time, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
-            : UserEvent(w, time, QEvent::Wheel) { localPos = local; globalPos = global; delta = d; orient = o; }
-        int delta;
-        QPoint localPos;
-        QPoint globalPos;
-        Qt::Orientation orient;
-    };
-
-    class KeyEvent : public UserEvent {
-    public:
-        KeyEvent(QWidget *w, ulong time, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1)
-            :UserEvent(w, time, t){ key = k; unicode = text; repeat = autorep; repeatCount = count; modifiers = mods; }
-        int key;
-        QString unicode;
-        bool repeat;
-        ushort repeatCount;
-        Qt::KeyboardModifiers modifiers;
-    };
-
-    class TouchEvent : public UserEvent {
-    public:
-        TouchEvent(QWidget *w, ulong time, QEvent::Type t, QTouchEvent::DeviceType d, const QList<QTouchEvent::TouchPoint> &p)
-            :UserEvent(w, time, t) { devType = d; points = p; }
-        QTouchEvent::DeviceType devType;
-        QList<QTouchEvent::TouchPoint> points;
-    };
-
-private:
-    static QTime eventTime;
-
-};
-
-class QWindowSystemInterfacePrivate {
-public:
-    static QList<QWindowSystemInterface::UserEvent *> userEventQueue;
-    static QMutex queueMutex;
-
-    static int userEventsQueued() { queueMutex.lock(); int ret = userEventQueue.count(); queueMutex.unlock(); return ret; }
-    static QWindowSystemInterface::UserEvent * getUserEvent();
-    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev);
 };
 
 QT_END_NAMESPACE

@@ -86,7 +86,8 @@ public:
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
 
     bool hasOpenGL() const;
-    QPlatformGLContext * createGLContext();
+
+    QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
     virtual QList<QPlatformScreen *> screens() const { return mScreens; }
 
@@ -94,7 +95,6 @@ public:
 
 private:
     QList<QPlatformScreen *> mScreens;
-    QSemaphore eventMutex;
 };
 
 QT_END_NAMESPACE

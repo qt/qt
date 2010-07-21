@@ -49,9 +49,10 @@
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
 
-#include <private/qpixmap_blitter_p.h>
-#include <private/qpixmapdata_p.h>
-#include <QCoreApplication>
+#include <QtGui/private/qpixmap_blitter_p.h>
+#include <QtGui/private/qpixmapdata_p.h>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
 
 QT_BEGIN_NAMESPACE
 
@@ -94,8 +95,22 @@ QDirectFbIntegration::QDirectFbIntegration()
     }
     delete[] argv;
 
+
     QDirectFbScreen *primaryScreen = new QDirectFbScreen(0);
     mScreens.append(primaryScreen);
+
+    mInputRunner = new QThread;
+    mInput = new QDirectFbInput(0);
+    mInput->moveToThread(mInputRunner);
+    QObject::connect(mInputRunner,SIGNAL(started()),mInput,SLOT(runInputEventLoop()));
+    mInputRunner->start();
+}
+
+QDirectFbIntegration::~QDirectFbIntegration()
+{
+    mInput->stopInputEventLoop();
+    delete mInputRunner;
+    delete mInput;
 }
 
 QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -109,7 +124,8 @@ QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type)
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QDirectFbWindow(widget);
+    QDirectFbInput *input = const_cast<QDirectFbInput *>(mInput);//gah
+    return new QDirectFbWindow(widget,input);
 }
 
 QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId winId) const
