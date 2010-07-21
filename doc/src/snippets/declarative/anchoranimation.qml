@@ -37,15 +37,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
 import Qt 4.7
-import "componentCreation.js" as MyScript
 
-Rectangle {
-    id: appWindow
-    width: 300; height: 300
+Item {
+    id: container
+    width: 200; height: 200
 
-    Component.onCompleted: MyScript.createSpriteObjects();
+    Rectangle {
+        id: myRect
+        width: 100; height: 100
+        color: "red"
+    }
+
+    states: State {
+        name: "reanchored"
+        AnchorChanges { target: myRect; anchors.right: container.right }
+    }
+
+    transitions: Transition {
+        // smoothly reanchor myRect and move into new position
+        AnchorAnimation { duration: 1000 }
+    }
+
+    Component.onCompleted: container.state = "reanchored"
 }
 //![0]
