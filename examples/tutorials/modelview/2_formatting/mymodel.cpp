@@ -89,7 +89,8 @@ QVariant MyModel::data(const QModelIndex &index, int role) const
 
         if (row == 1 && col == 2)  //change background only for cell(1,2)
         {
-            QBrush redBackground(QColor(Qt::red));
+            QColor redColor(Qt::red);
+            QBrush redBackground(redColor);
             return redBackground;
         }
         break;
