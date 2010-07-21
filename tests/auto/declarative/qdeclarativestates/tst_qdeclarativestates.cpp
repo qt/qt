@@ -922,7 +922,7 @@ void tst_qdeclarativestates::propertyErrors()
     QCOMPARE(rect->color(),QColor("red"));
 
     QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to non-existent property \"colr\"");
-    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to read-only property \"wantsFocus\"");
+    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to read-only property \"activeFocus\"");
     QDeclarativeItemPrivate::get(rect)->setState("blue");
 }
 

@@ -287,9 +287,16 @@ public:
     virtual void subFocusItemChange()
     {
         if (flags & QGraphicsItem::ItemIsFocusScope || !parent)
-            emit q_func()->wantsFocusChanged(subFocusItem != 0);
+            emit q_func()->activeFocusChanged(subFocusItem != 0);
         //see also QDeclarativeItemPrivate::focusChanged
     }
+
+    // Reimplemented from QGraphicsItemPrivate
+    virtual void focusScopeItemChange(bool isSubFocusItem)
+    {
+        emit q_func()->focusChanged(isSubFocusItem);
+    }
+
 
     // Reimplemented from QGraphicsItemPrivate
     virtual void siblingOrderChange()

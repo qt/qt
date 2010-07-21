@@ -43,11 +43,11 @@ import Qt 4.7
 FocusScope {
     clip: true
 
-    onWantsFocusChanged: if (wantsFocus) mainView.state = "showListViews"
+    onActiveFocusChanged: if (activeFocus) mainView.state = "showListViews"
 
     ListView {
         id: list1
-        y: wantsFocus ? 10 : 40; width: parent.width / 3; height: parent.height - 20
+        y: activeFocus ? 10 : 40; width: parent.width / 3; height: parent.height - 20
         focus: true
         KeyNavigation.up: gridMenu; KeyNavigation.left: contextMenu; KeyNavigation.right: list2
         model: 10; cacheBuffer: 200
@@ -60,7 +60,7 @@ FocusScope {
 
     ListView {
         id: list2
-        y: wantsFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
+        y: activeFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
         KeyNavigation.up: gridMenu; KeyNavigation.left: list1; KeyNavigation.right: list3
         model: 10; cacheBuffer: 200
         delegate: ListViewDelegate {}
@@ -72,7 +72,7 @@ FocusScope {
 
     ListView {
         id: list3
-        y: wantsFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
+        y: activeFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
         KeyNavigation.up: gridMenu; KeyNavigation.left: list2
         model: 10; cacheBuffer: 200
         delegate: ListViewDelegate {}
