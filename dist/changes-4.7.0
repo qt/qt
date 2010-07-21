@@ -249,7 +249,13 @@ Qt Plugins
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
-
+ - Sqlite
+   * [QTBUG-11904] Pointer aliasing problem in sqlite
+ - OCI
+   * [QTBUG-10919] Unable to insert unicode chars with codepoint > 255 
+     in nvarchar2 column on oracle
+   * [QTBUG-8210] Oracle - DATE in db with a year greater or equal to 2800 
+     returns an invalid date
 
 ****************************************************************************
 *                      Platform Specific Changes                           *

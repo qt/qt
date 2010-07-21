@@ -1148,7 +1148,7 @@ int QTextBlock::charFormatIndex() const
   direction from the blocks content. Returns either Qt::LeftToRight
   or Qt::RightToLeft.
 
-  \sa QTextBlock::layoutDirection(), QString::isRightToLeft(), Qt::LayoutDirection
+  \sa QTextFormat::layoutDirection(), QString::isRightToLeft(), Qt::LayoutDirection
 */
 Qt::LayoutDirection QTextBlock::textDirection() const
 {
