@@ -919,8 +919,6 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
     QDeclarativeJS::Lexer l(0);
     l.setCode(script, 0);
 
-    int lastLine = -1;
-
     int token = l.lex();
 
     while (true) {
