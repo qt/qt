@@ -828,6 +828,10 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 void QApplicationPrivate::processMoveEvent(QWindowSystemInterfacePrivate::MoveEvent *moveEvent)
 {
+    if (moveEvent->moved.isNull()) {
+        //qDebug() << "QApplicationPrivate::processMoveEvent NULL";
+        return;
+    }
     moveEvent->moved.data()->data->crect.setTopLeft(moveEvent->newPos);
     QMoveEvent e(moveEvent->moved.data()->geometry().topLeft(), moveEvent->newPos);
     QApplication::sendSpontaneousEvent(moveEvent->moved.data(), &e);
@@ -835,6 +839,10 @@ void QApplicationPrivate::processMoveEvent(QWindowSystemInterfacePrivate::MoveEv
 
 void QApplicationPrivate::processResizeEvent(QWindowSystemInterfacePrivate::ResizeEvent *e)
 {
+    if (e->sizeChanged.isNull()) {
+        //qDebug() << "QApplicationPrivate::processResizeEvent NULL";
+        return;
+    }
     e->sizeChanged.data()->data->crect.setSize(e->newSize);
     QResizeEvent resizeEvent(e->sizeChanged.data()->data->crect.size(), e->newSize);
     QApplication::sendSpontaneousEvent(e->sizeChanged.data(), &resizeEvent);
@@ -843,6 +851,10 @@ void QApplicationPrivate::processResizeEvent(QWindowSystemInterfacePrivate::Resi
 
 void QApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e)
 {
+    if (e->topLevel.isNull()) {
+        //qDebug() << "QApplicationPrivate::processCloseEvent NULL";
+        return;
+    }
     e->topLevel.data()->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
