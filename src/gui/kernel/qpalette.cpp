@@ -876,6 +876,8 @@ void QPalette::detach()
 */
 bool QPalette::operator==(const QPalette &p) const
 {
+    if (p.currentColorGroup() != current_group)
+        return false;
     if (isCopyOf(p))
         return true;
     for(int grp = 0; grp < (int)NColorGroups; grp++) {

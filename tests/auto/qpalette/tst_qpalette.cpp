@@ -65,6 +65,7 @@ public slots:
 private slots:
     void roleValues_data();
     void roleValues();
+    void operators();
 };
 
 tst_QPalette::tst_QPalette()
@@ -126,6 +127,35 @@ void tst_QPalette::roleValues()
     QFETCH(int, role);
     QFETCH(int, value);
     QCOMPARE(role, value);
+}
+
+void tst_QPalette::operators()
+{
+    {
+        QPalette palette = qApp->palette();
+        QPalette copy = palette;
+        QCOMPARE(palette.currentColorGroup(), copy.currentColorGroup());
+        QCOMPARE(palette.resolve(), copy.resolve());
+        QVERIFY(copy.isCopyOf(palette));
+
+    }
+
+    {
+        QPalette palette = qApp->palette();
+        QPalette copy = palette;
+        copy.setColor(QPalette::Base, palette.color(QPalette::Base).lighter());
+        QVERIFY(palette != copy);
+        QVERIFY(!copy.isCopyOf(palette));
+    }
+
+    {
+        QPalette palette = qApp->palette();
+        QPalette copy = palette;
+        copy.setCurrentColorGroup(QPalette::Inactive);
+        palette.setCurrentColorGroup(QPalette::Active);
+        QVERIFY(palette != copy);
+    }
+
 }
 
 QTEST_MAIN(tst_QPalette)

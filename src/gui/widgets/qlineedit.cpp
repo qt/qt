@@ -1946,7 +1946,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QLineControl::DrawSelections;
         // Palette only used for selections/mask and may not be in sync
-        if(d->control->palette() != pal)
+        if (d->control->palette() != pal)
             d->control->setPalette(pal);
     }
 
