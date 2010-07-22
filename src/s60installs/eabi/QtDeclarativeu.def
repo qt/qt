@@ -59,7 +59,7 @@ EXPORTS
 	_ZN16QDeclarativeItem13parentChangedEPS_ @ 58 NONAME
 	_ZN16QDeclarativeItem13setParentItemEPS_ @ 59 NONAME
 	_ZN16QDeclarativeItem13smoothChangedEb @ 60 NONAME
-	_ZN16QDeclarativeItem15childrenChangedEv @ 61 NONAME
+	_ZN16QDeclarativeItem15childrenChangedEv @ 61 NONAME ABSENT
 	_ZN16QDeclarativeItem15geometryChangedERK6QRectFS2_ @ 62 NONAME
 	_ZN16QDeclarativeItem15keyReleaseEventEP9QKeyEvent @ 63 NONAME
 	_ZN16QDeclarativeItem16inputMethodEventEP17QInputMethodEvent @ 64 NONAME

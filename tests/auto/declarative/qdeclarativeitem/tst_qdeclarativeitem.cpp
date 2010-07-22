@@ -665,6 +665,7 @@ void tst_QDeclarativeItem::propertyChanges()
     QSignalSpy childrenRectSpy(parentItem, SIGNAL(childrenRectChanged(QRectF)));
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
     QSignalSpy wantsFocusSpy(parentItem, SIGNAL(activeFocusChanged(bool)));
+    QSignalSpy childrenChangedSpy(parentItem, SIGNAL(childrenChanged()));
 
     item->setParentItem(parentItem);
     item->setWidth(100.0);
@@ -677,6 +678,10 @@ void tst_QDeclarativeItem::propertyChanges()
     QList<QVariant> parentArguments = parentSpy.first();
     QVERIFY(parentArguments.count() == 1);
     QCOMPARE(item->parentItem(), qvariant_cast<QDeclarativeItem *>(parentArguments.at(0)));
+    QCOMPARE(childrenChangedSpy.count(),1);
+
+    item->setParentItem(parentItem);
+    QCOMPARE(childrenChangedSpy.count(),1);
 
     QCOMPARE(item->width(), 100.0);
     QCOMPARE(widthSpy.count(),1);
