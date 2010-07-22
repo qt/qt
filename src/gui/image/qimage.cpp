@@ -2440,12 +2440,23 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
     const int width = data->width;
     const int src_pad = data->bytes_per_line - width;
     const int dest_pad = (dst_bytes_per_line >> 1) - width;
-    if (data->colortable.size() == 0) {
-        data->colortable.resize(256);
+
+    quint16 colorTableRGB16[256];
+    if (data->colortable.isEmpty()) {
         for (int i = 0; i < 256; ++i)
-            data->colortable[i] = qRgb(i, i, i);
+            colorTableRGB16[i] = qt_colorConvert<quint16, quint32>(qRgb(i, i, i), 0);
+    } else {
+        // 1) convert the existing colors to RGB16
+        const int tableSize = data->colortable.size();
+        for (int i = 0; i < tableSize; ++i)
+            colorTableRGB16[i] = qt_colorConvert<quint16, quint32>(data->colortable.at(i), 0);
+        data->colortable = QVector<QRgb>();
+
+        // 2) fill the rest of the table in case src_data > colortable.size()
+        const quint16 lastColor = colorTableRGB16[tableSize - 1];
+        for (int i = tableSize; i < 256; ++i)
+            colorTableRGB16[i] = lastColor;
     }
-    const int tableSize = data->colortable.size() - 1;
 
     for (int i = 0; i < data->height; ++i) {
         src_data -= src_pad;
@@ -2453,12 +2464,10 @@ static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConvers
         for (int pixI = 0; pixI < width; ++pixI) {
             --src_data;
             --dest_data;
-            const uint pixel = data->colortable[qMin<int>(tableSize, *src_data)];
-            *dest_data = qt_colorConvert<quint16, quint32>(pixel, 0);
+            *dest_data = colorTableRGB16[*src_data];
         }
     }
 
-    data->colortable = QVector<QRgb>();
     data->format = QImage::Format_RGB16;
     data->bytes_per_line = dst_bytes_per_line;
     data->depth = depth;
