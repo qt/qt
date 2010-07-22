@@ -152,7 +152,6 @@ public:
     Q_INVOKABLE QDeclarativeItem *childAt(qreal x, qreal y) const;
 
 Q_SIGNALS:
-    void childrenChanged();
     void childrenRectChanged(const QRectF &);
     void baselineOffsetChanged(qreal);
     void stateChanged(const QString &);
