@@ -115,6 +115,7 @@ private slots:
     void navigation();
     void readOnly();
     void copyAndPaste();
+    void textInput();
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
     void geometrySignals();
@@ -882,6 +883,12 @@ void tst_qdeclarativetextedit::copyAndPaste() {
     QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textEdit->text().length(), 24);
 
+    // QTBUG-12339
+    // test that document and internal text attribute are in sync
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(textEdit);
+    QDeclarativeTextEditPrivate *editPrivate = static_cast<QDeclarativeTextEditPrivate*>(pri);
+    QCOMPARE(textEdit->text(), editPrivate->text);
+
     // select word
     textEdit->setCursorPosition(0);
     textEdit->selectWord();
@@ -960,6 +967,33 @@ public:
     bool openInputPanelReceived;
     bool closeInputPanelReceived;
 };
+
+void tst_qdeclarativetextedit::textInput()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QDeclarativeTextEdit edit;
+    QDeclarativeItemPrivate* pri = QDeclarativeItemPrivate::get(&edit);
+    QDeclarativeTextEditPrivate *editPrivate = static_cast<QDeclarativeTextEditPrivate*>(pri);
+    edit.setPos(0, 0);
+    scene.addItem(&edit);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    edit.setFocus(true);
+    QVERIFY(edit.hasActiveFocus() == true);
+
+    // test that input method event is committed
+    QInputMethodEvent event;
+    event.setCommitString( "Hello world!", 0, 0);
+    QApplication::sendEvent(&view, &event);
+    QCOMPARE(edit.text(), QString("Hello world!"));
+
+    // QTBUG-12339
+    // test that document and internal text attribute are in sync
+    QCOMPARE(editPrivate->text, QString("Hello world!"));
+}
 
 void tst_qdeclarativetextedit::openInputPanelOnClick()
 {
