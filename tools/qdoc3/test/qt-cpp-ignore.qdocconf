@@ -91,4 +91,6 @@ Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           K_DECLARE_PRIVATE \
                           PHONON_OBJECT \
                           PHONON_HEIR \
-			  Q_PRIVATE_PROPERTY
+			  Q_PRIVATE_PROPERTY \
+			  Q_DECLARE_PRIVATE_D \
+			  Q_CLASSINFO

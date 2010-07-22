@@ -4094,8 +4094,11 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<td class=\"tblQmlPropNode\"><p>";
 
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
-                if (!qpn->isWritable())
+
+                if (!qpn->isWritable(myTree)) {
+                    qDebug() << "QPN:" << qpn->name();
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
+                }
                 if (qpgn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";
                 generateQmlItem(qpn, relative, marker, false);
@@ -4111,10 +4114,10 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
-		if (++numTableRows % 2 == 1)
-			out() << "<tr class=\"odd\">";
-		else
-			out() << "<tr class=\"even\">";
+        if (++numTableRows % 2 == 1)
+            out() << "<tr class=\"odd\">";
+        else
+            out() << "<tr class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
