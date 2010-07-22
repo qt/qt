@@ -60,7 +60,7 @@ void setParentForChildrenOfWidget(QPlatformWindow *window, const QWidget *widget
     for (int i = 0; i < children.size(); i++) {
         if (children.at(i)->isWidgetType()) {
             const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
-            if (childWidget) { // should not be nessesary
+            if (childWidget) { // should not be necessary
                 if (childWidget->platformWindow()) {
                     childWidget->platformWindow()->setParent(window);
                 } else {
@@ -179,6 +179,12 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     }
 
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
+    
+    // Reparenting toplevel to child    
+    if (!(f&Qt::Window) && (oldFlags&Qt::Window)) {
+        //qDebug() << "setParent_sys() change from toplevel";
+        q->destroy();
+    }
 
     data.window_flags = f;
     q->setAttribute(Qt::WA_WState_Created, false);
@@ -190,12 +196,11 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         if (QPlatformWindow *window = q->platformWindow())
             data.window_flags = window->setWindowFlags(data.window_flags);
     }
-    // XXX Reparenting child to toplevel or vice versa ###
+    
+    // Reparenting child to toplevel 
     if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
         //qDebug() << "setParent_sys() change to toplevel";
-        q->create(); //### this cannot be right
-    } else if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
-        qDebug() << "######## setParent_sys() change from toplevel not implemented ########";
+        q->create(); //### too early: this ought to happen at show() time
     }
 
 
