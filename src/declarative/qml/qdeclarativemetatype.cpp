@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#include <QtDeclarative/qdeclarativeprivate.h>
+static int registerType(const QDeclarativePrivate::RegisterType &);
+static int registerInterface(const QDeclarativePrivate::RegisterInterface &);
+
 #include "private/qdeclarativemetatype_p.h"
 
 #include "private/qdeclarativeproxymetaobject_p.h"
@@ -485,17 +489,17 @@ int QDeclarativeType::index() const
     return d->m_index;
 }
 
-int QDeclarativePrivate::registerAutoParentFunction(AutoParentFunction function)
+static int registerAutoParentFunction(QDeclarativePrivate::RegisterAutoParent &autoparent)
 {
     QWriteLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
 
-    data->parentFunctions.append(function);
+    data->parentFunctions.append(autoparent.function);
 
     return data->parentFunctions.count() - 1;
 }
 
-int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &interface)
+static int registerInterface(const QDeclarativePrivate::RegisterInterface &interface)
 {
     if (interface.version > 0) 
         qFatal("qmlRegisterType(): Cannot mix incompatible QML versions.");
@@ -524,7 +528,7 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterfa
     return index;
 }
 
-int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &type)
+static int registerType(const QDeclarativePrivate::RegisterType &type)
 {
     if (type.elementName) {
         for (int ii = 0; type.elementName[ii]; ++ii) {
@@ -573,6 +577,22 @@ int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &t
     }
 
     return index;
+}
+
+/*
+This method is "over generalized" to allow us to (potentially) register more types of things in
+the future without adding exported symbols.
+*/
+int QDeclarativePrivate::qmlregister(RegistrationType type, void *data)
+{
+    if (type == TypeRegistration) {
+        return registerType(*reinterpret_cast<RegisterType *>(data));
+    } else if (type == InterfaceRegistration) {
+        return registerInterface(*reinterpret_cast<RegisterInterface *>(data));
+    } else if (type == AutoParentRegistration) {
+        return registerAutoParentFunction(*reinterpret_cast<RegisterAutoParent *>(data));
+    }
+    return -1;
 }
 
 /*
