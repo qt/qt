@@ -545,9 +545,9 @@ void QDeclarativeEngine::clearComponentCache()
   component instances should be added to sub-contexts parented to the
   root context.
 */
-QDeclarativeContext *QDeclarativeEngine::rootContext()
+QDeclarativeContext *QDeclarativeEngine::rootContext() const
 {
-    Q_D(QDeclarativeEngine);
+    Q_D(const QDeclarativeEngine);
     return d->rootContext;
 }
 
