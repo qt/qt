@@ -255,7 +255,6 @@ void QDeclarativeTextEdit::setText(const QString &text)
     Q_D(QDeclarativeTextEdit);
     if (QDeclarativeTextEdit::text() == text)
         return;
-    d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -1290,9 +1289,11 @@ void QDeclarativeTextEditPrivate::init()
 
 void QDeclarativeTextEdit::q_textChanged()
 {
+    Q_D(QDeclarativeTextEdit);
+    d->text = text();
     updateSize();
     updateMicroFocus();
-    emit textChanged(text());
+    emit textChanged(d->text);
 }
 
 void QDeclarativeTextEdit::moveCursorDelegate()
