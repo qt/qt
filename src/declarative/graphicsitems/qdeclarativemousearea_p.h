@@ -62,6 +62,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeDrag : public QObject
     Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin NOTIFY minimumYChanged)
     Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax NOTIFY maximumYChanged)
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
+    Q_PROPERTY(bool filterChildren READ filterChildren WRITE setFilterChildren NOTIFY filterChildrenChanged)
     //### consider drag and drop
 
 public:
@@ -88,6 +89,9 @@ public:
     bool active() const;
     void setActive(bool);
 
+    bool filterChildren() const;
+    void setFilterChildren(bool);
+
 Q_SIGNALS:
     void targetChanged();
     void axisChanged();
@@ -96,6 +100,7 @@ Q_SIGNALS:
     void minimumYChanged();
     void maximumYChanged();
     void activeChanged();
+    void filterChildrenChanged();
 
 private:
     QGraphicsObject *_target;
@@ -104,7 +109,8 @@ private:
     qreal _xmax;
     qreal _ymin;
     qreal _ymax;
-    bool _active;
+    bool _active : 1;
+    bool _filterChildren: 1;
     Q_DISABLE_COPY(QDeclarativeDrag)
 };
 
@@ -177,6 +183,8 @@ protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     bool sceneEvent(QEvent *);
+    bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEventFilter(QGraphicsItem *i, QEvent *e);
     void timerEvent(QTimerEvent *event);
 
     virtual void geometryChanged(const QRectF &newGeometry,
