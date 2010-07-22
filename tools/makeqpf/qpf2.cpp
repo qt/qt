@@ -543,7 +543,7 @@ void QPF::addGlyphs(QFontEngine *fe, const QList<CharacterRange> &ranges)
                         ;
                 }
 
-                qMemCopy(data, img.bits(), img.byteCount());
+                memcpy(data, img.bits(), img.byteCount());
             }
         }
     }

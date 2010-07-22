@@ -115,4 +115,25 @@ provide an image that includes the frame and the shadow.
 Avoid running JavaScript during animation.  For example, running a complex
 JavaScript expression for each frame of an x property animation.
 
+\section1 Rendering
+
+Often using a different graphics system will give superior performance to the native
+graphics system (this is especially the case on X11). This can be configured using
+QApplication::setGraphicsSystem() or via the command line using the \c -graphicssystem
+switch.
+
+You can enable OpenGL acceleration using the \c opengl graphics system, or by setting a
+QGLWidget as the viewport of your QDeclarativeView.
+
+You may need to try various options to find what works the best for your application.
+For embedded X11-based devices one recommended combination is to use the raster graphics
+system with a QGLWidget for the viewport. While this doesn't guarantee the \bold fastest
+performance for all use-cases, it typically has \bold{consistently good} performance for
+all use-cases. In contrast, only using the raster paint engine may result in very good
+performance for parts of your application and very poor performance elsewhere.
+
+The QML Viewer uses the raster graphics system by default for X11 and OS X. It also
+includes a \c -opengl command line option which sets a QGLWidget as the viewport of the
+view. On OS X, a QGLWidget is always used.
+
 */

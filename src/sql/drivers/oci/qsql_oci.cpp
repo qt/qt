@@ -93,8 +93,17 @@ enum { QOCIEncoding = 2002 }; // AL16UTF16LE
 enum { QOCIEncoding = 2000 }; // AL16UTF16
 #endif
 
-static const ub1 CSID_NCHAR = SQLCS_NCHAR;
+// Always set the OCI_ATTR_CHARSET_FORM to SQLCS_NCHAR is safe
+// because Oracle server will deal with the implicit Conversion
+// Between CHAR and NCHAR.
+// see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705 
+static const ub1 qOraCharsetForm = SQLCS_NCHAR;
+
+#if defined (OCI_UTF16ID)
+static const ub2 qOraCharset = OCI_UTF16ID;
+#else
 static const ub2 qOraCharset = OCI_UCS2ID;
+#endif
 
 typedef QVarLengthArray<sb2, 32> IndicatorArray;
 typedef QVarLengthArray<ub2, 32> SizeArray;
@@ -209,12 +218,24 @@ void QOCIResultPrivate::setCharset(OCIBind* hbnd)
                    OCI_HTYPE_BIND,
                    // this const cast is safe since OCI doesn't touch
                    // the charset.
+                   const_cast<void *>(static_cast<const void *>(&qOraCharsetForm)),
+                   0,
+                   OCI_ATTR_CHARSET_FORM,
+                   err);
+    if (r != 0)
+        qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_FORM: ", err);
+
+    r = OCIAttrSet(hbnd,
+                   OCI_HTYPE_BIND,
+                   // this const cast is safe since OCI doesn't touch
+                   // the charset.
                    const_cast<void *>(static_cast<const void *>(&qOraCharset)),
                    0,
                    OCI_ATTR_CHARSET_ID,
                    err);
     if (r != 0)
         qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_ID: ", err);
+
 }
 
 int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
@@ -648,7 +669,7 @@ QByteArray qMakeOraDate(const QDateTime& dt)
 
 QDateTime qMakeDate(const char* oraDate)
 {
-    int century = oraDate[0];
+    int century = uchar(oraDate[0]);
     if(century >= 100){
         int year    = uchar(oraDate[1]);
         year = ((century-100)*100) + (year-100);
@@ -934,6 +955,17 @@ void QOCICols::setCharset(OCIDefine* dfn)
     int r = 0;
 
     Q_ASSERT(dfn);
+
+    r = OCIAttrSet(dfn,
+                   OCI_HTYPE_DEFINE,
+                   // this const cast is safe since OCI doesn't touch
+                   // the charset.
+                   const_cast<void *>(static_cast<const void *>(&qOraCharsetForm)),
+                   0,
+                   OCI_ATTR_CHARSET_FORM,
+                   d->err);
+    if (r != 0)
+        qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_FORM: ", d->err);
 
     r = OCIAttrSet(dfn,
                    OCI_HTYPE_DEFINE,

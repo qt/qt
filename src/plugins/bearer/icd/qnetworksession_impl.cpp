@@ -620,6 +620,9 @@ static QString get_network_interface()
 	return iface;
     }
 
+    if (addr_results.first().ip_info.isEmpty())
+	return QString();
+
     const char *address = addr_results.first().ip_info.first().address.toAscii().constData();
     struct in_addr addr;
     if (inet_aton(address, &addr) == 0) {

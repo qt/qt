@@ -250,12 +250,12 @@ export PATH
 
 //! [38]
 cd /home/user/qt/%VERSION%
-./configure -platform linux-g++ -xplatform symbian/linux-armcc -arch symbian
+./configure -platform linux-g++ -xplatform symbian/linux-armcc
 //! [38]
 
 //! [39]
 cd /home/user/qt/%VERSION%
-./configure -platform linux-g++ -xplatform symbian/linux-gcce -arch symbian -no-webkit
+./configure -platform linux-g++ -xplatform symbian/linux-gcce -no-webkit
 //! [39]
 
 //! [40]
@@ -263,7 +263,7 @@ make
 //! [40]
 
 //! [41]
-cd src/s60installs
+cd src
 make sis
 //! [41]
 

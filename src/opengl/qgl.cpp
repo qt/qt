@@ -3722,7 +3722,7 @@ QGLWidget::~QGLWidget()
 #endif
     delete d->glcx;
     d->glcx = 0;
-#if defined(Q_WGL)
+#if defined(Q_WS_WIN)
     delete d->olcx;
     d->olcx = 0;
 #endif

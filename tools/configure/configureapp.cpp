@@ -581,6 +581,8 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
+        else if (configCmdLine.at(i) == "-qt-gif")
+            dictionary[ "GIF" ] = "plugin";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";
@@ -1741,7 +1743,7 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler.h\n");
+        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler_p.h\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
@@ -3164,16 +3166,6 @@ void Configure::generateConfigfiles()
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
-
-        if (!QFile::exists(buildPath + "/include/QtCore/qconfig.h")) {
-            if (!writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                             buildPath + "/include/QtCore/qconfig.h")
-            || !writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                            buildPath + "/include/Qt/qconfig.h")) {
-                dictionary["DONE"] = "error";
-                return;
-            }
-        }
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any

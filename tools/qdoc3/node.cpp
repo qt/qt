@@ -1286,6 +1286,24 @@ QStringList FunctionNode::parameterNames() const
 }
 
 /*!
+  Returns a raw list of parameters. If \a names is true, the
+  names are included. If \a values is true, the default values
+  are included, if any are present.
+ */
+QString FunctionNode::rawParameters(bool names, bool values) const
+{
+    QString raw;
+    foreach (const Parameter &parameter, parameters()) {
+        raw += parameter.leftType() + parameter.rightType();
+        if (names)
+            raw += parameter.name();
+        if (values)
+            raw += parameter.defaultValue();
+    }
+    return raw;
+}
+
+/*!
   Returns the list of reconstructed parameters. If \a values
   is true, the default values are included, if any are present.
  */

@@ -2645,7 +2645,7 @@ EXPORTS
 	?childItems@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2644 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::childItems(void) const
 	?children@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2645 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::children(void) const
 	?childrenBoundingRect@QGraphicsItem@@QBE?AVQRectF@@XZ @ 2646 NONAME ; class QRectF QGraphicsItem::childrenBoundingRect(void) const
-	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ABSENT ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
 	?childrenCheckState@QTreeWidgetItem@@ABE?AVQVariant@@H@Z @ 2648 NONAME ; class QVariant QTreeWidgetItem::childrenCheckState(int) const
 	?childrenClippedToShape@QGraphicsItemPrivate@@QBE_NXZ @ 2649 NONAME ; bool QGraphicsItemPrivate::childrenClippedToShape(void) const
 	?childrenCollapsible@QSplitter@@QBE_NXZ @ 2650 NONAME ; bool QSplitter::childrenCollapsible(void) const

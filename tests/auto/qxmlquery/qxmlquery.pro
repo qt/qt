@@ -23,7 +23,12 @@ wince*|symbian: {
    addFiles.path    = .
 
    patternistFiles.sources = ../xmlpatterns/queries
-   patternistFiles.path    = ../xmlpatterns
+   symbian: {
+       #../xmlpatterns resolves to an illegal path for deployment
+       patternistFiles.path    = xmlpatterns
+   } else {
+       patternistFiles.path    = ../xmlpatterns
+   }
 
    DEPLOYMENT += addFiles patternistFiles
 }

@@ -32,7 +32,10 @@ New features
 
  - QNetworkSession, QNetworkConfiguration, QNetworkConfigurationManager
     * New bearer management classes added.
-
+	
+ - QStaticText class was added to support high-performance output of 
+   seldomly altered text. 
+	
 Third party components
 ----------------------
 
@@ -62,6 +65,8 @@ QtCore
  - QMetaType
     * Significantly improved performance of the type() function
     * [QTBUG-8235] Support QEasingCurve as a built in metatype.
+    * Added possibility to register several name for the same type with
+      qRegisterMetaType<>() (ie. for typedef)
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
  - QXmlStreamReader
@@ -71,17 +76,19 @@ QtCore
  - QAbstractAnimation
     * [QTBUG-10654] Avoids animation with loopCount == 0 to change state
       to running and stopped.
+ - QVarLenghtArray
+    * Added some API to be more consistant with other containers
 
 QtGui
 -----
-
+ 
  - QAbstractItemView
     * Fixed a bug that would cause keyboard searches not to behave
       properly when used within 400 milliseconds of midnight.
 
  - QComboBox
     * [QTBUG-8796] Made ForegroundRole work for all styles.
-
+				
  - QPrinter
     * Obsoleted the slightly confusing setNumCopies() and numCopies()
       functions, and replaced them with setCopyCount(), copyCount() and
@@ -104,6 +111,7 @@ QtGui
     * [QTBUG-9024] Improved performance when calling update() on items that
       are clipped by an ancestor (QGraphicsItem::ItemClipsChildrenToShape).
     * [QTBUG-7703], [QTBUG-8378] Fixed scrolling issues
+    * [QTBUG-12112] Fixed focusItem() returning incorrect value.
 
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
@@ -115,6 +123,10 @@ QtGui
     * [QTBUG-7438] Fixed viewport cursor getting reset when releasing
       the mouse.
     * [QTBUG-10338] Fixed drawing artifacts due to rounding errors.
+
+ - QGraphicsWidget
+    * [QTBUG-12056] Fixed a crash occuring when adding a QGraphicsWidget
+      to a scene after removing and deleting another QGraphicsWidget.
 
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
@@ -156,10 +168,31 @@ QtGui
  - QSplitter
     * [QTBUG-9335] Improve support for 1-pixel splitters by using a 
       larger drag area.
+	  	  
+ - QTextDocumentWriter
+    * Fixed tab-stops and table padding in ODF export.
 
+ - QTextLayout
+    * [QTBUG-11427] Fix possible crash in QTextLayout for glyphless 
+      items.
+    * [QTBUG-8864] Fix regression in right alignment of text with 
+      negative right bearing.
+	  
  - QTransform
     * [QTBUG-8557] Fixed bug in QTransform::type() potentially occuring
       after using operator/ or operator* or their overloads.
+	  
+QtOpenGL
+--------
+ - Improve performance of text by adding special cased fragment shader.
+ 
+ - Made width and height of glyph cache power-of-two for performance 
+   improvements on some hardware.
+   
+ - [QTBUG-9706] Improved appearance of text antialiasing.
+
+ - QTreeView
+    * Optimized
 
 QtNetwork
 ---------
@@ -223,7 +256,13 @@ Qt Plugins
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
-
+ - Sqlite
+   * [QTBUG-11904] Pointer aliasing problem in sqlite
+ - OCI
+   * [QTBUG-10919] Unable to insert unicode chars with codepoint > 255 
+     in nvarchar2 column on oracle
+   * [QTBUG-8210] Oracle - DATE in db with a year greater or equal to 2800 
+     returns an invalid date
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -234,7 +273,19 @@ Qt for Linux/X11
  - QGtkStyle
     * Fixed rtl issues with sliders (QTBUG-8986)
     * Fixed missing pressed appearance on scroll bar handles. (QTBUG-10396)  
-
+ 
+ - QFontDatabase
+    * [QTBUG-4428] Fixed regression when using bitmap fonts on some 
+      Linux systems.
+ 
+ - QFontEngine
+     * [QTBUG-9442] Avoid possible square root of negative number in 
+      FreeType font engine.
+	  
+ - QFontMetrics
+    * [QTBUG-10448] Fix crash when using fonts in non-gui QApplication.
+	  
+ 	
 Qt for Windows
 --------------
  - Popup windows now implicitly activate when shown. (QTBUG-7386)
@@ -252,6 +303,20 @@ Qt for Mac OS X
     * Removed frame around statusbar items. (QTBUG-3574)
     * More native appearance of item view headers and frames. (QTBUG-10047)    
 
+ - QFontEngine	
+    * Enable fractional metrics for the font engine on Mac in all 
+      stages of text layout.
+    * [QTBUG-5529] Enable design metrics for correct character spacing 
+      in ATSUI font engine. (Mac/Carbon)
+
+- QTextDocument
+    * [QTBUG-8791] Fix misalignment of fixed width fonts between 
+      format changes on Cocoa.
+	  
+ - QTextLayout
+    * [QTBUG-9879] Fix off-by-one in vertical position for elided and 
+	  non-elided text.
+ 
 Qt for Embedded Linux
 ---------------------
 
@@ -310,7 +375,7 @@ Qt for Windows CE
 
 
 - moc
-
+  * Fixed several parsing bugs. Including changes in the normalized signature.
 
 - uic
 

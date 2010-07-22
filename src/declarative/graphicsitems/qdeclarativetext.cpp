@@ -1127,6 +1127,15 @@ int QDeclarativeText::resourcesLoading() const
     return d->doc ? d->doc->resourcesLoading() : 0;
 }
 
+/*!
+  \qmlproperty bool Text::clip
+  This property holds whether the text is clipped.
+
+  Note that if the text does not fit in the bounding rectangle it will be abruptly chopped.
+
+  If you want to display potentially long text in a limited space, you probably want to use \c elide instead.
+*/
+
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeText);
@@ -1146,13 +1155,10 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
         bool needClip = clip() && (d->imgCache.width() > width() ||
                                    d->imgCache.height() > height());
 
-        if (needClip) {
-            p->save();
-            p->setClipRect(boundingRect(), Qt::IntersectClip);
-        }
-        p->drawPixmap(br.x(), br.y(), d->imgCache);
         if (needClip)
-            p->restore();
+            p->drawPixmap(0, 0, width(), height(), d->imgCache, -br.x(), -br.y(), width(), height());
+        else
+            p->drawPixmap(br.x(), br.y(), d->imgCache);
 
         if (d->smooth) {
             p->setRenderHint(QPainter::Antialiasing, oldAA);
@@ -1166,7 +1172,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
 
         if (needClip) {
             p->save();
-            p->setClipRect(boundingRect(), Qt::IntersectClip);
+            p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
         }
         if (d->richText) {
             QAbstractTextDocumentLayout::PaintContext context;

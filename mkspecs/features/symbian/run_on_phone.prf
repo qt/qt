@@ -5,7 +5,7 @@ GENERATE_RUN_TARGETS = false
 contains(TEMPLATE, app): GENERATE_RUN_TARGETS = true
 else:!equals(DEPLOYMENT, default_deployment) {
     for(dep_item, $$list($$DEPLOYMENT)) {
-        dep_item_sources = $$eval($${dep_item}.sources)
+        eval(dep_item_sources = $${dep_item}.sources)
         !isEmpty(dep_item_sources): GENERATE_RUN_TARGETS = true
     }
 }

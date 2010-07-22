@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(DBus)
 
 class QDBusInterfacePrivate;
-class QDBUS_EXPORT QDBusInterface: public QDBusAbstractInterface
+class Q_DBUS_EXPORT QDBusInterface: public QDBusAbstractInterface
 {
     friend class QDBusConnection;
 private:

@@ -38,23 +38,29 @@
 **
 ****************************************************************************/
 //![0]
-import Music 1.0
+import Charts 1.0
 import Qt 4.7
 
-Rectangle {
-    width: 200; height: 200
+Item {
+    width: 300; height: 200
 
-    Musician {
-        id: aMusician
-        name: "Reddy the Rocker"
-        instrument: "Guitar"
+    PieChart {
+        id: aPieChart
+        anchors.centerIn: parent
+        width: 100; height: 100
+        color: "red"
 
-        onPerformanceEnded: console.log("The performance has now ended")
+        onChartCleared: console.log("The chart has been cleared")
     }
 
     MouseArea {
         anchors.fill: parent
-        onClicked: aMusician.perform()
+        onClicked: aPieChart.clearChart()
+    }
+
+    Text {
+        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
+        text: "Click anywhere to clear the chart"
     }
 }
 //![0]

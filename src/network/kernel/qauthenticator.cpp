@@ -85,6 +85,44 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
 
   Note that, in particular, NTLM version 2 is not supported.
 
+  \section1 Options
+
+  In addition to the username and password required for authentication, a
+  QAuthenticator object can also contain additional options. The
+  options() function can be used to query incoming options sent by
+  the server; the setOption() function can
+  be used to set outgoing options, to be processed by the authenticator
+  calculation. The options accepted and provided depend on the authentication
+  type (see method()).
+
+  The following tables list known incoming options as well as accepted
+  outgoing options. The list of incoming options is not exhaustive, since
+  servers may include additional information at any time. The list of
+  outgoing options is exhaustive, however, and no unknown options will be
+  treated or sent back to the server.
+
+  \section2 Basic
+
+  \table
+    \header \o Option \o Direction \o Description
+    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+  \endtable
+
+  The Basic authentication mechanism supports no outgoing options.
+
+  \section2 NTLM version 1
+
+  The NTLM authentication mechanism currently supports no incoming or outgoing options.
+
+  \section2 Digest-MD5
+
+  \table
+    \header \o Option \o Direction \o Description
+    \row \o \tt{realm} \o Incoming \o Contains the realm of the authentication, the same as realm()
+  \endtable
+
+  The Digest-MD5 authentication mechanism supports no outgoing options.
+
   \sa QSslSocket
 */
 
@@ -140,7 +178,8 @@ bool QAuthenticator::operator==(const QAuthenticator &other) const
     return d->user == other.d->user
         && d->password == other.d->password
         && d->realm == other.d->realm
-        && d->method == other.d->method;
+        && d->method == other.d->method
+        && d->options == other.d->options;
 }
 
 /*!
@@ -218,9 +257,49 @@ QString QAuthenticator::realm() const
     return d ? d->realm : QString();
 }
 
+/*!
+    \since 4.7
+    Returns the value related to option \a opt if it was set by the server.
+    See \l{QAuthenticator#Options} for more information on incoming options.
+    If option \a opt isn't found, an invalid QVariant will be returned.
+
+    \sa options(), QAuthenticator#Options
+*/
+QVariant QAuthenticator::option(const QString &opt) const
+{
+    return d ? d->options.value(opt) : QVariant();
+}
 
 /*!
-  returns true if the authenticator is null.
+    \since 4.7
+    Returns all incoming options set in this QAuthenticator object by parsing
+    the server reply. See \l{QAuthenticator#Options} for more information
+    on incoming options.
+
+    \sa option(), QAuthenticator#Options
+*/
+QVariantHash QAuthenticator::options() const
+{
+    return d ? d->options : QVariantHash();
+}
+
+/*!
+    \since 4.7
+
+    Sets the outgoing option \a opt to value \a value.
+    See \l{QAuthenticator#Options} for more information on outgoing options.
+
+    \sa options(), option(), QAuthenticator#Options
+*/
+void QAuthenticator::setOption(const QString &opt, const QVariant &value)
+{
+    detach();
+    d->options.insert(opt, value);
+}
+
+
+/*!
+    Returns true if the authenticator is null.
 */
 bool QAuthenticator::isNull() const
 {
@@ -241,7 +320,20 @@ QAuthenticatorPrivate::QAuthenticatorPrivate()
 #ifndef QT_NO_HTTP
 void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header, bool isProxy)
 {
-    QList<QPair<QString, QString> > values = header.values();
+    const QList<QPair<QString, QString> > values = header.values();
+    QList<QPair<QByteArray, QByteArray> > rawValues;
+
+    QList<QPair<QString, QString> >::const_iterator it, end;
+    for (it = values.constBegin(), end = values.constEnd(); it != end; ++it)
+        rawValues.append(qMakePair(it->first.toLatin1(), it->second.toUtf8()));
+
+    // continue in byte array form
+    parseHttpResponse(rawValues, isProxy);
+}
+#endif
+
+void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray> > &values, bool isProxy)
+{
     const char *search = isProxy ? "proxy-authenticate" : "www-authenticate";
 
     method = None;
@@ -255,30 +347,31 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
       authentication parameters.
     */
 
-    QString headerVal;
+    QByteArray headerVal;
     for (int i = 0; i < values.size(); ++i) {
-        const QPair<QString, QString> &current = values.at(i);
-        if (current.first.toLower() != QLatin1String(search))
+        const QPair<QByteArray, QByteArray> &current = values.at(i);
+        if (current.first.toLower() != search)
             continue;
-        QString str = current.second;
-        if (method < Basic && str.startsWith(QLatin1String("Basic"), Qt::CaseInsensitive)) {
-            method = Basic; headerVal = str.mid(6);
-        } else if (method < Ntlm && str.startsWith(QLatin1String("NTLM"), Qt::CaseInsensitive)) {
+        QByteArray str = current.second.toLower();
+        if (method < Basic && str.startsWith("basic")) {
+            method = Basic;
+            headerVal = current.second.mid(6);
+        } else if (method < Ntlm && str.startsWith("ntlm")) {
             method = Ntlm;
-            headerVal = str.mid(5);
-        } else if (method < DigestMd5 && str.startsWith(QLatin1String("Digest"), Qt::CaseInsensitive)) {
+            headerVal = current.second.mid(5);
+        } else if (method < DigestMd5 && str.startsWith("digest")) {
             method = DigestMd5;
-            headerVal = str.mid(7);
+            headerVal = current.second.mid(7);
         }
     }
 
-    challenge = headerVal.trimmed().toLatin1();
+    challenge = headerVal.trimmed();
     QHash<QByteArray, QByteArray> options = parseDigestAuthenticationChallenge(challenge);
 
     switch(method) {
     case Basic:
         if(realm.isEmpty())
-            realm = QString::fromLatin1(options.value("realm"));
+            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (user.isEmpty())
             phase = Done;
         break;
@@ -287,7 +380,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
         break;
     case DigestMd5: {
         if(realm.isEmpty())
-            realm = QString::fromLatin1(options.value("realm"));
+            this->options[QLatin1String("realm")] = realm = QString::fromLatin1(options.value("realm"));
         if (options.value("stale").toLower() == "true")
             phase = Start;
         if (user.isEmpty())
@@ -300,7 +393,6 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
         phase = Invalid;
     }
 }
-#endif
 
 QByteArray QAuthenticatorPrivate::calculateResponse(const QByteArray &requestMethod, const QByteArray &path)
 {
