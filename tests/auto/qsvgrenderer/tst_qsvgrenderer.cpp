@@ -1354,12 +1354,8 @@ void tst_QSvgRenderer::smallFont()
 
     for (int i = 0; i < COUNT; ++i) {
         QByteArray data(svgs[i]);
-        if (i == 0) {
+        if (i == 0)
             QTest::ignoreMessage(QtWarningMsg, "QFont::setPointSizeF: Point size <= 0 (0.000000), must be greater than 0");
-#ifdef Q_WS_WIN
-            QTest::ignoreMessage(QtWarningMsg, "QFont::setPointSize: Point size <= 0 (0), must be greater than 0");
-#endif
-        }
         QSvgRenderer renderer(data);
         images[i] = QImage(50, 50, QImage::Format_ARGB32_Premultiplied);
         images[i].fill(-1);
