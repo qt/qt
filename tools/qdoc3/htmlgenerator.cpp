@@ -4415,8 +4415,8 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
                     out() << "$$$" + func->name() + func->rawParameters().remove(' ');
                 }
             } else if (node->type() == Node::Property) {
-                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
                 out() << "-prop";
+                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
                 const NodeList &list = prop->functions();
                 foreach (const Node *propFuncNode, list) {
                     if (propFuncNode->type() == Node::Function) {
@@ -4424,6 +4424,10 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
                         out() << "$$$" + func->name() + func->rawParameters().remove(' ');
                     }
                 }
+            } else if (node->type() == Node::Enum) {
+                const EnumNode *enumNode = static_cast<const EnumNode *>(node);
+                foreach (const EnumItem &item, enumNode->items())
+                    out() << "$$$" + item.name();
             }
         } else if (markType == BriefMark) {
             out() << "-brief";
