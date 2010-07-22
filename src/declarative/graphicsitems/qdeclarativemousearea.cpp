@@ -46,12 +46,14 @@
 
 #include <QGraphicsSceneMouseEvent>
 
+#include <float.h>
+
 QT_BEGIN_NAMESPACE
 static const int PressAndHoldDelay = 800;
 
 QDeclarativeDrag::QDeclarativeDrag(QObject *parent)
-: QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0),
-_active(false)
+: QObject(parent), _target(0), _axis(XandYAxis), _xmin(-FLT_MAX), _xmax(FLT_MAX), _ymin(-FLT_MAX), _ymax(FLT_MAX),
+_active(false), _filterChildren(false)
 {
 }
 
@@ -158,11 +160,23 @@ void QDeclarativeDrag::setActive(bool drag)
     emit activeChanged();
 }
 
+bool QDeclarativeDrag::filterChildren() const
+{
+    return _filterChildren;
+}
+
+void QDeclarativeDrag::setFilterChildren(bool filter)
+{
+    if (_filterChildren == filter)
+        return;
+    _filterChildren = filter;
+    emit filterChildrenChanged();
+}
+
 QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 {
     delete drag;
 }
-
 
 /*!
     \qmlclass MouseArea QDeclarativeMouseArea
@@ -396,6 +410,7 @@ void QDeclarativeMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     d->moved = false;
+    d->stealMouse = false;
     if (!d->absorb)
         QDeclarativeItem::mousePressEvent(event);
     else {
@@ -454,8 +469,10 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         const int dragThreshold = QApplication::startDragDistance();
         qreal dx = qAbs(curLocalPos.x() - startLocalPos.x());
         qreal dy = qAbs(curLocalPos.y() - startLocalPos.y());
-        if ((d->dragX && !(dx < dragThreshold)) || (d->dragY && !(dy < dragThreshold)))
+        if ((d->dragX && !(dx < dragThreshold)) || (d->dragY && !(dy < dragThreshold))) {
             d->drag->setActive(true);
+            d->stealMouse = true;
+        }
         if (!keepMouseGrab()) {
             if ((!d->dragY && dy < dragThreshold && d->dragX && dx > dragThreshold)
                 || (!d->dragX && dx < dragThreshold && d->dragY && dy > dragThreshold)
@@ -493,6 +510,7 @@ void QDeclarativeMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QDeclarativeMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
+    d->stealMouse = false;
     if (!d->absorb) {
         QDeclarativeItem::mouseReleaseEvent(event);
     } else {
@@ -503,6 +521,8 @@ void QDeclarativeMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         // If we don't accept hover, we need to reset containsMouse.
         if (!acceptHoverEvents())
             setHovered(false);
+        if (scene()->mouseGrabberItem() == this)
+            ungrabMouse();
         setKeepMouseGrab(false);
     }
 }
@@ -575,6 +595,71 @@ bool QDeclarativeMouseArea::sceneEvent(QEvent *event)
         }
     }
     return rv;
+}
+
+bool QDeclarativeMouseArea::sendMouseEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QDeclarativeMouseArea);
+    QGraphicsSceneMouseEvent mouseEvent(event->type());
+    QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
+
+    QGraphicsScene *s = scene();
+    QDeclarativeItem *grabber = s ? qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem()) : 0;
+    bool stealThisEvent = d->stealMouse;
+    if ((stealThisEvent || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
+        mouseEvent.setAccepted(false);
+        for (int i = 0x1; i <= 0x10; i <<= 1) {
+            if (event->buttons() & i) {
+                Qt::MouseButton button = Qt::MouseButton(i);
+                mouseEvent.setButtonDownPos(button, mapFromScene(event->buttonDownPos(button)));
+            }
+        }
+        mouseEvent.setScenePos(event->scenePos());
+        mouseEvent.setLastScenePos(event->lastScenePos());
+        mouseEvent.setPos(mapFromScene(event->scenePos()));
+        mouseEvent.setLastPos(mapFromScene(event->lastScenePos()));
+
+        switch(mouseEvent.type()) {
+        case QEvent::GraphicsSceneMouseMove:
+            mouseMoveEvent(&mouseEvent);
+            break;
+        case QEvent::GraphicsSceneMousePress:
+            mousePressEvent(&mouseEvent);
+            break;
+        case QEvent::GraphicsSceneMouseRelease:
+            mouseReleaseEvent(&mouseEvent);
+            break;
+        default:
+            break;
+        }
+        grabber = qobject_cast<QDeclarativeItem*>(s->mouseGrabberItem());
+        if (grabber && stealThisEvent && !grabber->keepMouseGrab() && grabber != this)
+            grabMouse();
+
+        return stealThisEvent;
+    }
+    if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease) {
+        d->stealMouse = false;
+        ungrabMouse();
+    }
+    return false;
+}
+
+bool QDeclarativeMouseArea::sceneEventFilter(QGraphicsItem *i, QEvent *e)
+{
+    Q_D(QDeclarativeMouseArea);
+    if (!d->absorb || !isVisible() || !d->drag || !d->drag->filterChildren())
+        return QDeclarativeItem::sceneEventFilter(i, e);
+    switch (e->type()) {
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMouseRelease:
+        return sendMouseEvent(static_cast<QGraphicsSceneMouseEvent *>(e));
+    default:
+        break;
+    }
+
+    return QDeclarativeItem::sceneEventFilter(i, e);
 }
 
 void QDeclarativeMouseArea::timerEvent(QTimerEvent *event)
@@ -757,6 +842,7 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     \qmlproperty real MouseArea::drag.maximumX
     \qmlproperty real MouseArea::drag.minimumY
     \qmlproperty real MouseArea::drag.maximumY
+    \qmlproperty bool MouseArea::drag.filterChildren
 
     \c drag provides a convenient way to make an item draggable.
 
@@ -777,6 +863,12 @@ QDeclarativeDrag *QDeclarativeMouseArea::drag()
     for \c rect in the above example, it cannot be dragged along the X-axis.
     This can be avoided by settng the anchor value to \c undefined in 
     an \l onPressed handler.
+
+    If \c drag.filterChildren is set to true, a drag can override descendant MouseAreas.  This
+    enables a parent MouseArea to handle drags, for example, while descendants handle clicks:
+
+    \snippet doc/src/snippets/declarative/mouseareadragfilter.qml dragfilter
+
 */
 
 QT_END_NAMESPACE

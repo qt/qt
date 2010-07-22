@@ -176,8 +176,7 @@ void QDeclarativeTextInput::setText(const QString &s)
     Sets the letter spacing for the font.
 
     Letter spacing changes the default spacing between individual letters in the font.
-    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
-    the width of the character itself.
+    A positive value increases the letter spacing by the corresponding pixels; a negative value decreases the spacing.
 */
 
 /*!
@@ -376,14 +375,14 @@ void QDeclarativeTextInput::setMaxLength(int ml)
     \qmlproperty bool TextInput::cursorVisible
     Set to true when the TextInput shows a cursor.
 
-    This property is set and unset when the TextInput gets focus, so that other
+    This property is set and unset when the TextInput gets active focus, so that other
     properties can be bound to whether the cursor is currently showing. As it
     gets set and unset automatically, when you set the value yourself you must
     keep in mind that your value may be overwritten.
 
     It can be set directly in script, for example if a KeyProxy might
     forward keys to it and you desire it to look active when this happens
-    (but without actually giving it the focus).
+    (but without actually giving it active focus).
 
     It should not be set directly on the element, like in the below QML,
     as the specified value will be overridden an lost on focus changes.
@@ -396,7 +395,7 @@ void QDeclarativeTextInput::setMaxLength(int ml)
     \endcode
 
     In the above snippet the cursor will still become visible when the
-    TextInput gains focus.
+    TextInput gains active focus.
 */
 bool QDeclarativeTextInput::isCursorVisible() const
 {
@@ -511,9 +510,9 @@ QString QDeclarativeTextInput::selectedText() const
 }
 
 /*!
-    \qmlproperty bool TextInput::focusOnPress
+    \qmlproperty bool TextInput::activeFocusOnPress
 
-    Whether the TextInput should gain focus on a mouse press. By default this is
+    Whether the TextInput should gain active focus on a mouse press. By default this is
     set to true.
 */
 bool QDeclarativeTextInput::focusOnPress() const
@@ -530,7 +529,7 @@ void QDeclarativeTextInput::setFocusOnPress(bool b)
 
     d->focusOnPress = b;
 
-    emit focusOnPressChanged(d->focusOnPress);
+    emit activeFocusOnPressChanged(d->focusOnPress);
 }
 
 /*!
@@ -946,15 +945,15 @@ void QDeclarativeTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextInput);
     if(d->focusOnPress){
-        bool hadFocus = hasFocus();
-        forceFocus();
+        bool hadActiveFocus = hasActiveFocus();
+        forceActiveFocus();
         if (d->showInputPanelOnFocus) {
-            if (hasFocus() && hadFocus && !isReadOnly()) {
+            if (hasActiveFocus() && hadActiveFocus && !isReadOnly()) {
                 // re-open input panel on press if already focused
                 openSoftwareInputPanel();
             }
         } else { // show input panel on click
-            if (hasFocus() && !hadFocus) {
+            if (hasActiveFocus() && !hadActiveFocus) {
                 d->clickCausedFocus = true;
             }
         }
@@ -1313,10 +1312,10 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
     Symbian^3 -based devices the panels are opened by clicking TextInput. On other platforms
-    the panels are automatically opened when TextInput element gains focus. Input panels are
-    always closed if no editor owns focus.
+    the panels are automatically opened when TextInput element gains active focus. Input panels are
+    always closed if no editor has active focus.
 
-  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+  . You can disable the automatic behavior by setting the property \c activeFocusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
     the behavior you want.
 
@@ -1327,12 +1326,12 @@ void QDeclarativeTextInput::moveCursorSelection(int position)
         TextInput {
             id: textInput
             text: "Hello world!"
-            focusOnPress: false
+            activeFocusOnPress: false
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (!textInput.focus) {
-                        textInput.focus = true;
+                    if (!textInput.activeFocus) {
+                        textInput.forceActiveFocus()
                         textInput.openSoftwareInputPanel();
                     } else {
                         textInput.focus = false;
@@ -1364,10 +1363,10 @@ void QDeclarativeTextInput::openSoftwareInputPanel()
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
     Symbian^3 -based devices the panels are opened by clicking TextInput. On other platforms
-    the panels are automatically opened when TextInput element gains focus. Input panels are
-    always closed if no editor owns focus.
+    the panels are automatically opened when TextInput element gains active focus. Input panels are
+    always closed if no editor has active focus.
 
-  . You can disable the automatic behavior by setting the property \c focusOnPress to false
+  . You can disable the automatic behavior by setting the property \c activeFocusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
     the behavior you want.
 
@@ -1378,12 +1377,12 @@ void QDeclarativeTextInput::openSoftwareInputPanel()
         TextInput {
             id: textInput
             text: "Hello world!"
-            focusOnPress: false
+            activeFocusOnPress: false
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (!textInput.focus) {
-                        textInput.focus = true;
+                    if (!textInput.activeFocus) {
+                        textInput.forceActiveFocus();
                         textInput.openSoftwareInputPanel();
                     } else {
                         textInput.focus = false;

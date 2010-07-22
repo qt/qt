@@ -75,8 +75,8 @@ public:
     QUrl source() const;
     void setSource(const QUrl&);
 
-    QDeclarativeEngine* engine();
-    QDeclarativeContext* rootContext();
+    QDeclarativeEngine* engine() const;
+    QDeclarativeContext* rootContext() const;
 
     QGraphicsObject *rootObject() const;
 
