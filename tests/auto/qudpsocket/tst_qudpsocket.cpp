@@ -866,7 +866,15 @@ void tst_QUdpSocket::multicast()
         // bind first, then verify that we can join the multicast group
         QVERIFY2(receiver.bind(),
                  qPrintable(receiver.errorString()));
-        QVERIFY2(receiver.joinMulticastGroup(groupAddress, QUdpSocket::MulticastLoopback),
+        receiver.setSocketOption(QUdpSocket::MulticastTtlOption, 2);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastTtlOption).toInt(), 2);
+        receiver.setSocketOption(QUdpSocket::MulticastTtlOption, 128);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastTtlOption).toInt(), 128);
+        receiver.setSocketOption(QUdpSocket::MulticastTtlOption, 0);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastTtlOption).toInt(), 0);
+        receiver.setSocketOption(QUdpSocket::MulticastLoopbackOption, 1);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastLoopbackOption).toInt(), 1);
+        QVERIFY2(receiver.joinMulticastGroup(groupAddress),
                  qPrintable(receiver.errorString()));
 
         QList<QByteArray> datagrams = QList<QByteArray>()
@@ -901,7 +909,11 @@ void tst_QUdpSocket::multicast()
 
         QVERIFY2(receiver.bind(),
                  qPrintable(receiver.errorString()));
-        QVERIFY2(receiver.joinMulticastGroup(groupAddress, QUdpSocket::MulticastLoopback),
+        receiver.setSocketOption(QUdpSocket::MulticastTtlOption, 128);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastTtlOption).toInt(), 128);
+        receiver.setSocketOption(QUdpSocket::MulticastLoopbackOption, 0);
+        QCOMPARE(receiver.socketOption(QUdpSocket::MulticastLoopbackOption).toInt(), 0);
+        QVERIFY2(receiver.joinMulticastGroup(groupAddress),
                  qPrintable(receiver.errorString()));
         receiver.close();
         QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::leaveMulticastGroup() called on a QUdpSocket when not in QUdpSocket::BoundState");

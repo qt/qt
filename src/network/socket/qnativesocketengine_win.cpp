@@ -401,7 +401,14 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::KeepAliveOption:
         n = SO_KEEPALIVE;
         break;
-    case QNativeSocketEngine::MulticastLoopback:
+    case QNativeSocketEngine::MulticastTtlOption:
+        {
+            unsigned long val = 0;
+            if (WSAIoctl(socketDescriptor, SIO_MULTICAST_SCOPE, 0, 0, &val, sizeof(val), 0, 0 ,0) == 0)
+                return val;
+            return -1;
+        }
+    case QNativeSocketEngine::MulticastLoopbackOption:
         {
             unsigned long val = 0;
             if (WSAIoctl(socketDescriptor, SIO_MULTIPOINT_LOOPBACK, 0, 0, &val, sizeof(val), 0, 0, 0) == 0)
@@ -468,7 +475,15 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::KeepAliveOption:
         n = SO_KEEPALIVE;
         break;
-    case QNativeSocketEngine::MulticastLoopback:
+    case QNativeSocketEngine::MulticastTtlOption:
+        {
+            unsigned long val = v, outval;
+            if (WSAIoctl(socketDescriptor, SIO_MULTICAST_SCOPE, &val, sizeof(val), &outval, sizeof(outval), 0, 0, 0) == 0)
+                return true;
+            WS_ERROR_DEBUG(WSAGetLastError());
+            return false;
+        }
+    case QNativeSocketEngine::MulticastLoopbackOption:
         {
             unsigned long val = v, outval;
             if (WSAIoctl(socketDescriptor, SIO_MULTIPOINT_LOOPBACK, &val, sizeof(val), &outval, sizeof(outval), 0, 0, 0) == 0)

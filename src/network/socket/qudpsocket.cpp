@@ -332,9 +332,9 @@ bool QUdpSocket::bind(quint16 port, BindMode mode)
 /*!
     \since 4.6
 */
-bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastMode mode)
+bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress)
 {
-    return joinMulticastGroup(groupAddress, QNetworkInterface(), mode);
+    return joinMulticastGroup(groupAddress, QNetworkInterface());
 }
 
 /*!
@@ -342,13 +342,10 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress, MulticastM
     \overload
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
-                                    const QNetworkInterface &iface,
-                                    MulticastMode mode)
+                                    const QNetworkInterface &iface)
 {
     Q_D(QUdpSocket);
     QT_CHECK_BOUND("QUdpSocket::joinMulticastGroup()", false);
-    d->socketEngine->setOption(QAbstractSocketEngine::MulticastLoopback,
-                               (mode & MulticastLoopback) ? 1 : 0);
     return d->socketEngine->joinMulticastGroup(groupAddress, iface);
 }
 

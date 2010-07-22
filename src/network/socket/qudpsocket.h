@@ -68,12 +68,6 @@ public:
     };
     Q_DECLARE_FLAGS(BindMode, BindFlag)
 
-    enum MulticastFlag {
-        DefaultMulticastFlagForPlatform = 0x0,
-        MulticastLoopback  = 0x1
-    };
-    Q_DECLARE_FLAGS(MulticastMode, MulticastFlag)
-
     explicit QUdpSocket(QObject *parent = 0);
     virtual ~QUdpSocket();
 
@@ -83,11 +77,9 @@ public:
     bool bind(quint16 port, BindMode mode);
     // ### Qt 5: Merge the bind functions
 
+    bool joinMulticastGroup(const QHostAddress &groupAddress);
     bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            MulticastMode mode = DefaultMulticastFlagForPlatform);
-    bool joinMulticastGroup(const QHostAddress &groupAddress,
-                            const QNetworkInterface &iface,
-                            MulticastMode mode = DefaultMulticastFlagForPlatform);
+                            const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);

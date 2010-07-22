@@ -96,7 +96,8 @@ public:
         ReceiveOutOfBandData,
         LowDelayOption,
         KeepAliveOption,
-        MulticastLoopback
+        MulticastTtlOption,
+        MulticastLoopbackOption
     };
 
     virtual bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol) = 0;

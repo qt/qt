@@ -248,7 +248,12 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
     case QNativeSocketEngine::KeepAliveOption:
         n = SO_KEEPALIVE;
         break;
-    case QNativeSocketEngine::MulticastLoopback:
+    case QNativeSocketEngine::MulticastTtlOption:
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_TTL;
+        break;
+    case QNativeSocketEngine::MulticastLoopbackOption:
+        level = IPPROTO_IP;
         n = IP_MULTICAST_LOOP;
         break;
     }
@@ -334,7 +339,12 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::KeepAliveOption:
         n = SO_KEEPALIVE;
         break;
-    case QNativeSocketEngine::MulticastLoopback:
+    case QNativeSocketEngine::MulticastTtlOption:
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_TTL;
+        break;
+    case QNativeSocketEngine::MulticastLoopbackOption:
+        level = IPPROTO_IP;
         n = IP_MULTICAST_LOOP;
         break;
     }
