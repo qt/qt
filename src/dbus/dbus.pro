@@ -3,7 +3,7 @@ QPRO_PWD = $$PWD
 QT = core \
     xml
 CONFIG += link_pkgconfig
-DEFINES += QDBUS_MAKEDLL \
+DEFINES += QT_BUILD_DBUS_LIB \
     DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 contains(QT_CONFIG, dbus-linked) { 

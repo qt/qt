@@ -85,6 +85,7 @@ private slots:
     void testFillInheritance();
     void testStopOffsetOpacity();
     void testUseElement();
+    void smallFont();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -1340,6 +1341,29 @@ void tst_QSvgRenderer::testUseElement()
             QCOMPARE(images[8], images[i]);
         }
     }
+}
+
+void tst_QSvgRenderer::smallFont()
+{
+    static const char *svgs[] = { "<svg width=\"50px\" height=\"50px\"><text x=\"10\" y=\"10\" font-size=\"0\">Hello world</text></svg>",
+                                  "<svg width=\"50px\" height=\"50px\"><text x=\"10\" y=\"10\" font-size=\"0.5\">Hello world</text></svg>"
+    };
+    const int COUNT = sizeof(svgs) / sizeof(svgs[0]);
+    QImage images[COUNT];
+    QPainter p;
+
+    for (int i = 0; i < COUNT; ++i) {
+        QByteArray data(svgs[i]);
+        if (i == 0)
+            QTest::ignoreMessage(QtWarningMsg, "QFont::setPointSizeF: Point size <= 0 (0.000000), must be greater than 0");
+        QSvgRenderer renderer(data);
+        images[i] = QImage(50, 50, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+    }
+    QVERIFY(images[0] != images[1]);
 }
 
 QTEST_MAIN(tst_QSvgRenderer)

@@ -1120,6 +1120,17 @@ bool CppCodeParser::match(int target)
 }
 
 /*!
+  Skip to \a target. If \a target is found before the end
+  of input, return true. Otherwise return false.
+ */
+bool CppCodeParser::skipTo(int target)
+{
+    while ((tok != Tok_Eoi) && (tok != target))
+        readToken();
+    return (tok == target ? true : false);
+}
+
+/*!
   If the current token is one of the keyword thingees that
   are used in Qt, skip over it to the next token and return
   true. Otherwise just return false without reading the
@@ -1362,7 +1373,9 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
 
     if (!matchDataType(&returnType)) {
         if (tokenizer->parsingFnOrMacro()
-                && (match(Tok_Q_DECLARE_FLAGS) || match(Tok_Q_PROPERTY)))
+                && (match(Tok_Q_DECLARE_FLAGS) ||
+                    match(Tok_Q_PROPERTY) ||
+                    match(Tok_Q_PRIVATE_PROPERTY)))
             returnType = CodeChunk(previousLexeme());
         else {
             return false;
@@ -1796,11 +1809,19 @@ bool CppCodeParser::matchTypedefDecl(InnerNode *parent)
 
 bool CppCodeParser::matchProperty(InnerNode *parent)
 {
-    if (!match(Tok_Q_PROPERTY) &&
-        !match(Tok_Q_OVERRIDE) &&
-        !match(Tok_QDOC_PROPERTY))
+    int expected_tok = Tok_LeftParen;
+    if (match(Tok_Q_PRIVATE_PROPERTY)) {
+        expected_tok = Tok_Comma;
+        if (!skipTo(Tok_Comma))
+            return false;
+    }
+    else if (!match(Tok_Q_PROPERTY) &&
+             !match(Tok_Q_OVERRIDE) &&
+             !match(Tok_QDOC_PROPERTY)) {
         return false;
-    if (!match(Tok_LeftParen))
+    }
+    
+    if (!match(expected_tok))
         return false;
 
     QString name;
@@ -1949,6 +1970,7 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
             break;
         case Tok_Q_OVERRIDE:
         case Tok_Q_PROPERTY:
+        case Tok_Q_PRIVATE_PROPERTY:
         case Tok_QDOC_PROPERTY:
             matchProperty(parent);
             break;
