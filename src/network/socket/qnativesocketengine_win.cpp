@@ -402,19 +402,13 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         n = SO_KEEPALIVE;
         break;
     case QNativeSocketEngine::MulticastTtlOption:
-        {
-            unsigned long val = 0;
-            if (WSAIoctl(socketDescriptor, SIO_MULTICAST_SCOPE, 0, 0, &val, sizeof(val), 0, 0 ,0) == 0)
-                return val;
-            return -1;
-        }
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_TTL;
+        break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        {
-            unsigned long val = 0;
-            if (WSAIoctl(socketDescriptor, SIO_MULTIPOINT_LOOPBACK, 0, 0, &val, sizeof(val), 0, 0, 0) == 0)
-                return val;
-            return -1;
-        }
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_LOOP;
+        break;
     }
 
     int v = -1;
@@ -476,21 +470,13 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         n = SO_KEEPALIVE;
         break;
     case QNativeSocketEngine::MulticastTtlOption:
-        {
-            unsigned long val = v, outval;
-            if (WSAIoctl(socketDescriptor, SIO_MULTICAST_SCOPE, &val, sizeof(val), &outval, sizeof(outval), 0, 0, 0) == 0)
-                return true;
-            WS_ERROR_DEBUG(WSAGetLastError());
-            return false;
-        }
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_TTL;
+        break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        {
-            unsigned long val = v, outval;
-            if (WSAIoctl(socketDescriptor, SIO_MULTIPOINT_LOOPBACK, &val, sizeof(val), &outval, sizeof(outval), 0, 0, 0) == 0)
-                return true;
-            WS_ERROR_DEBUG(WSAGetLastError());
-            return false;
-        }
+        level = IPPROTO_IP;
+        n = IP_MULTICAST_LOOP;
+        break;
     }
 
     if (::setsockopt(socketDescriptor, level, n, (char*)&v, sizeof(v)) != 0) {
