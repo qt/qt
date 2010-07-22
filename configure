@@ -7080,6 +7080,13 @@ EOF
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
 	;;
+    symbian/*-gcce)
+        canBuildWebKit="no"
+        canBuildQtConcurrent="no"
+        ;;
+    symbian/*-armcc)
+        canBuildQtConcurrent="no"
+        ;;
 esac
 
 if [ "$CFG_GUI" = "no" ]; then
