@@ -311,8 +311,6 @@ public:
     QVariant from;
     QVariant to;
 
-    QEasingCurve easing;
-
     QObject *target;
     QString propertyName;
     QString properties;
