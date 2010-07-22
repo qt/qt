@@ -193,6 +193,7 @@ class Node
     virtual QString fileBase() const;
     QUuid guid() const;
     QString ditaXmlHref();
+    QString extractClassName(const QString &string) const;
 
  protected:
     Node(Type type, InnerNode* parent, const QString& name);
@@ -326,6 +327,8 @@ struct RelatedClass
     QString             dataTypeWithTemplateArgs;
 };
 
+class PropertyNode;
+
 class ClassNode : public InnerNode
 {
  public:
@@ -337,8 +340,9 @@ class ClassNode : public InnerNode
                       const QString &dataTypeWithTemplateArgs = "");
     void fixBaseClasses();
 
-    const QList<RelatedClass> &baseClasses() const { return bas; }
-    const QList<RelatedClass> &derivedClasses() const { return der; }
+    const QList<RelatedClass> &baseClasses() const { return bases; }
+    const QList<RelatedClass> &derivedClasses() const { return derived; }
+    const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases; }
 
     bool hideFromMainList() const { return hidden; }
     void setHideFromMainList(bool value) { hidden = value; }
@@ -349,10 +353,12 @@ class ClassNode : public InnerNode
     void setQmlElement(const QString& value) { qmlelement = value; }
     virtual bool isAbstract() const { return abstract; }
     virtual void setAbstract(bool b) { abstract = b; }
+    const PropertyNode* findPropertyNode(const QString& name) const;
 
  private:
-    QList<RelatedClass> bas;
-    QList<RelatedClass> der;
+    QList<RelatedClass> bases;
+    QList<RelatedClass> derived;
+    QList<RelatedClass> ignoredBases;
     bool hidden;
     bool abstract;
     QString sname;
@@ -436,6 +442,8 @@ class QmlPropGroupNode : public FakeNode
     bool    att;
 };
 
+class Tree;
+
 class QmlPropertyNode : public LeafNode
 {
  public:
@@ -454,7 +462,7 @@ class QmlPropertyNode : public LeafNode
     QString qualifiedDataType() const { return dt; }
     bool isStored() const { return fromTrool(sto,true); }
     bool isDesignable() const { return fromTrool(des,false); }
-    bool isWritable() const { return fromTrool(wri,true); }
+    bool isWritable(const Tree* tree) const;
     bool isAttached() const { return att; }
     virtual bool isQmlNode() const { return true; }
 

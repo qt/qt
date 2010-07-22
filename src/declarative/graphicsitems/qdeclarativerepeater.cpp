@@ -138,7 +138,6 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 /*!
     \internal
     \class QDeclarativeRepeater
-    \qmlclass Repeater
  */
 
 /*!
