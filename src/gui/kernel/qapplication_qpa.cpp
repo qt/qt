@@ -828,12 +828,14 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 void QApplicationPrivate::processMoveEvent(QWindowSystemInterfacePrivate::MoveEvent *moveEvent)
 {
-        QMoveEvent e(moveEvent->moved.data()->geometry().topLeft(), moveEvent->newPos);
-        QApplication::sendSpontaneousEvent(moveEvent->moved.data(), &e);
+    moveEvent->moved.data()->data->crect.setTopLeft(moveEvent->newPos);
+    QMoveEvent e(moveEvent->moved.data()->geometry().topLeft(), moveEvent->newPos);
+    QApplication::sendSpontaneousEvent(moveEvent->moved.data(), &e);
 }
 
 void QApplicationPrivate::processResizeEvent(QWindowSystemInterfacePrivate::ResizeEvent *e)
 {
+    e->sizeChanged.data()->data->crect.setSize(e->newSize);
     QResizeEvent resizeEvent(e->sizeChanged.data()->data->crect.size(), e->newSize);
     QApplication::sendSpontaneousEvent(e->sizeChanged.data(), &resizeEvent);
     e->sizeChanged.data()->update();
