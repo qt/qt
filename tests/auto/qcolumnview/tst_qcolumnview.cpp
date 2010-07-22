@@ -398,9 +398,10 @@ void tst_QColumnView::scrollTo()
     QFETCH(bool, giveFocus);
     if (reverse)
         qApp->setLayoutDirection(Qt::RightToLeft);
-    ColumnView view;
+    QWidget topLevel;
+    ColumnView view(&topLevel);
     view.resize(200, 200);
-    view.show();
+    topLevel.show();
     view.scrollTo(QModelIndex(), QAbstractItemView::EnsureVisible);
     QCOMPARE(view.HorizontalOffset(), 0);
 
@@ -718,13 +719,14 @@ void tst_QColumnView::moveGrip()
     QFETCH(bool, reverse);
     if (reverse)
         qApp->setLayoutDirection(Qt::RightToLeft);
-    ColumnView view;
+    QWidget topLevel;
+    ColumnView view(&topLevel);
     TreeModel model;
     view.setModel(&model);
     QModelIndex home = model.thirdLevel();
     view.setCurrentIndex(home);
     view.resize(640, 200);
-    view.show();
+    topLevel.show();
     QTest::qWait(ANIMATION_DELAY);
 
     int columnNum = view.createdColumns.count() - 2;
@@ -741,9 +743,9 @@ void tst_QColumnView::moveGrip()
 
     QAbstractItemView *column = qobject_cast<QAbstractItemView *>(grip->parent());
     int oldX = column->width();
-    QCOMPARE(view.columnWidths()[columnNum], oldX);
+    QCOMPARE(view.columnWidths().value(columnNum), oldX);
     grip->moveGrip(10);
-    QCOMPARE(view.columnWidths()[columnNum], (oldX + (reverse ? -10 : 10)));
+    QCOMPARE(view.columnWidths().value(columnNum), (oldX + (reverse ? -10 : 10)));
 }
 
 void tst_QColumnView::doubleClick()
@@ -889,12 +891,13 @@ void tst_QColumnView::rowDelegate()
 
 void tst_QColumnView::resize()
 {
-    ColumnView view;
+    QWidget topLevel;
+    ColumnView view(&topLevel);
     QDirModel model;
     view.setModel(&model);
     view.resize(200, 200);
 
-    view.show();
+    topLevel.show();
     QModelIndex home = model.index(QDir::homePath()).parent();
     view.setCurrentIndex(home);
     QTest::qWait(ANIMATION_DELAY);
