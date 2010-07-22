@@ -2346,8 +2346,12 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
     } else {
         for (int i = 0; i < data->colortable.size(); ++i)
             data->colortable[i] = PREMUL(data->colortable.at(i));
+
+        // Fill the rest of the table in case src_data > colortable.size()
+        const int oldSize = data->colortable.size();
+        const QRgb lastColor = data->colortable.at(oldSize - 1);
+        data->colortable.insert(oldSize, 256 - oldSize, lastColor);
     }
-    const int tableSize = data->colortable.size() - 1;
 
     for (int i = 0; i < data->height; ++i) {
         src_data -= src_pad;
@@ -2355,7 +2359,7 @@ static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConve
         for (int pixI = 0; pixI < width; ++pixI) {
             --src_data;
             --dest_data;
-            *dest_data = data->colortable[qMin<int>(tableSize, *src_data)];
+            *dest_data = data->colortable.at(*src_data);
         }
     }
 
@@ -2391,8 +2395,12 @@ static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversio
         data->colortable.resize(256);
         for (int i = 0; i < 256; ++i)
             data->colortable[i] = qRgb(i, i, i);
+    } else {
+        // Fill the rest of the table in case src_data > colortable.size()
+        const int oldSize = data->colortable.size();
+        const QRgb lastColor = data->colortable.at(oldSize - 1);
+        data->colortable.insert(oldSize, 256 - oldSize, lastColor);
     }
-    const int tableSize = data->colortable.size() - 1;
 
     for (int i = 0; i < data->height; ++i) {
         src_data -= src_pad;
@@ -2400,7 +2408,7 @@ static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversio
         for (int pixI = 0; pixI < width; ++pixI) {
             --src_data;
             --dest_data;
-            *dest_data = (quint32) data->colortable[qMin<int>(tableSize, *src_data)];
+            *dest_data = (quint32) data->colortable.at(*src_data);
         }
     }
 
