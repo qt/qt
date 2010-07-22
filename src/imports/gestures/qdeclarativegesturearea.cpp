@@ -228,7 +228,7 @@ void QDeclarativeGestureArea::connectSignals()
         ds >> gesturetype;
         QString script;
         ds >> script;
-        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), 0, script);
+        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), this, script);
         d->bindings.insert(Qt::GestureType(gesturetype),exp);
         grabGesture(Qt::GestureType(gesturetype));
     }
