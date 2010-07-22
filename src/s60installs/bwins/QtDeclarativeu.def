@@ -813,7 +813,7 @@ EXPORTS
 	??0QDeclarativeView@@QAE@ABVQUrl@@PAVQWidget@@@Z @ 812 NONAME ; QDeclarativeView::QDeclarativeView(class QUrl const &, class QWidget *)
 	?qt_metacall@QDeclarativePixmapReply@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 813 NONAME ABSENT ; int QDeclarativePixmapReply::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?valueChanged@QDeclarativeExpression@@IAEXXZ @ 814 NONAME ; void QDeclarativeExpression::valueChanged(void)
-	?childrenChanged@QDeclarativeItem@@IAEXXZ @ 815 NONAME ; void QDeclarativeItem::childrenChanged(void)
+	?childrenChanged@QDeclarativeItem@@IAEXXZ @ 815 NONAME ABSENT ; void QDeclarativeItem::childrenChanged(void)
 	??_EQDeclarativeView@@UAE@I@Z @ 816 NONAME ; QDeclarativeView::~QDeclarativeView(unsigned int)
 	?trUtf8@QDeclarativeStateGroup@@SA?AVQString@@PBD0H@Z @ 817 NONAME ; class QString QDeclarativeStateGroup::trUtf8(char const *, char const *, int)
 	?tag@QMetaMethodBuilder@@QBE?AVQByteArray@@XZ @ 818 NONAME ; class QByteArray QMetaMethodBuilder::tag(void) const
