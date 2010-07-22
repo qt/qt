@@ -390,7 +390,10 @@ static int qCocoaViewCount = 0;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
     QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
-    qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
+    if (QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction != Qt::IgnoreAction
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).buttons == qDMEvent.mouseButtons()
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).modifiers == qDMEvent.keyboardModifiers())
+        qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
     qDMEvent.accept();
     QApplication::sendEvent(qwidget, &qDMEvent);
 
