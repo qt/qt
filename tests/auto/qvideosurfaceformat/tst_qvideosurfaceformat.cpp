@@ -127,16 +127,37 @@ void tst_QVideoSurfaceFormat::construct_data()
     QTest::addColumn<QSize>("frameSize");
     QTest::addColumn<QVideoFrame::PixelFormat>("pixelFormat");
     QTest::addColumn<QAbstractVideoBuffer::HandleType>("handleType");
+    QTest::addColumn<bool>("valid");
 
     QTest::newRow("32x32 rgb32 no handle")
             << QSize(32, 32)
             << QVideoFrame::Format_RGB32
-            << QAbstractVideoBuffer::NoHandle;
+            << QAbstractVideoBuffer::NoHandle
+            << true;
 
     QTest::newRow("1024x768 YUV444 GL texture")
             << QSize(32, 32)
             << QVideoFrame::Format_YUV444
-            << QAbstractVideoBuffer::GLTextureHandle;
+            << QAbstractVideoBuffer::GLTextureHandle
+            << true;
+
+    QTest::newRow("32x32 invalid no handle")
+            << QSize(32, 32)
+            << QVideoFrame::Format_Invalid
+            << QAbstractVideoBuffer::NoHandle
+            << false;
+
+    QTest::newRow("invalid size, rgb32 no handle")
+            << QSize()
+            << QVideoFrame::Format_RGB32
+            << QAbstractVideoBuffer::NoHandle
+            << false;
+
+    QTest::newRow("0x0 rgb32 no handle")
+            << QSize(0,0)
+            << QVideoFrame::Format_RGB32
+            << QAbstractVideoBuffer::NoHandle
+            << true;
 }
 
 void tst_QVideoSurfaceFormat::construct()
@@ -144,6 +165,7 @@ void tst_QVideoSurfaceFormat::construct()
     QFETCH(QSize, frameSize);
     QFETCH(QVideoFrame::PixelFormat, pixelFormat);
     QFETCH(QAbstractVideoBuffer::HandleType, handleType);
+    QFETCH(bool, valid);
 
     QRect viewport(QPoint(0, 0), frameSize);
 
@@ -154,6 +176,7 @@ void tst_QVideoSurfaceFormat::construct()
     QCOMPARE(format.frameSize(), frameSize);
     QCOMPARE(format.frameWidth(), frameSize.width());
     QCOMPARE(format.frameHeight(), frameSize.height());
+    QCOMPARE(format.isValid(), valid);
     QCOMPARE(format.viewport(), viewport);
     QCOMPARE(format.scanLineDirection(), QVideoSurfaceFormat::TopToBottom);
     QCOMPARE(format.frameRate(), 0.0);
