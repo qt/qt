@@ -4109,7 +4109,6 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
 
                 if (!qpn->isWritable(myTree)) {
-                    qDebug() << "QPN:" << qpn->name();
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
                 }
                 if (qpgn->isDefault())
