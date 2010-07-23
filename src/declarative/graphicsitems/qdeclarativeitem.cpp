@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlclass Translate QGraphicsTranslate
+    \qmlclass Translate QDeclarativeTranslate
     \since 4.7
     \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
@@ -418,7 +418,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
 
 
 /*!
-    \qmlclass KeyNavigation
+    \qmlclass KeyNavigation QDeclarativeKeyNavigationAttached
     \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
@@ -712,7 +712,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 }
 
 /*!
-    \qmlclass Keys
+    \qmlclass Keys QDeclarativeKeysAttached
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
@@ -2046,20 +2046,6 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 {
     return anchorLines()->baseline;
 }
-
-/*!
-  \qmlproperty AnchorLine Item::top
-  \qmlproperty AnchorLine Item::bottom
-  \qmlproperty AnchorLine Item::left
-  \qmlproperty AnchorLine Item::right
-  \qmlproperty AnchorLine Item::horizontalCenter
-  \qmlproperty AnchorLine Item::verticalCenter
-  \qmlproperty AnchorLine Item::baseline
-
-  The anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
-*/
 
 /*!
   \qmlproperty AnchorLine Item::anchors.top

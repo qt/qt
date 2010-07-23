@@ -50,6 +50,13 @@
 
 QT_BEGIN_NAMESPACE
 
+
+/*!
+    \class QDeclarativeImageBase
+    \internal
+    \brief The base class for declarative images.
+ */
+
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {

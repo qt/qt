@@ -4107,8 +4107,10 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<td class=\"tblQmlPropNode\"><p>";
 
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
-                if (!qpn->isWritable())
+
+                if (!qpn->isWritable(myTree)) {
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
+                }
                 if (qpgn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";
                 generateQmlItem(qpn, relative, marker, false);
@@ -4124,10 +4126,10 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         //out() << "<tr>";
-		if (++numTableRows % 2 == 1)
-			out() << "<tr class=\"odd\">";
-		else
-			out() << "<tr class=\"even\">";
+        if (++numTableRows % 2 == 1)
+            out() << "<tr class=\"odd\">";
+        else
+            out() << "<tr class=\"even\">";
         out() << "<td class=\"tblQmlFuncNode\"><p>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
         generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
@@ -4415,8 +4417,8 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
                     out() << "$$$" + func->name() + func->rawParameters().remove(' ');
                 }
             } else if (node->type() == Node::Property) {
-                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
                 out() << "-prop";
+                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
                 const NodeList &list = prop->functions();
                 foreach (const Node *propFuncNode, list) {
                     if (propFuncNode->type() == Node::Function) {
@@ -4424,6 +4426,10 @@ void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType 
                         out() << "$$$" + func->name() + func->rawParameters().remove(' ');
                     }
                 }
+            } else if (node->type() == Node::Enum) {
+                const EnumNode *enumNode = static_cast<const EnumNode *>(node);
+                foreach (const EnumItem &item, enumNode->items())
+                    out() << "$$$" + item.name();
             }
         } else if (markType == BriefMark) {
             out() << "-brief";

@@ -57,7 +57,7 @@ class QDBusConnection;
 class QDBusMessage;
 
 class QDBusContextPrivate;
-class QDBUS_EXPORT QDBusContext
+class Q_DBUS_EXPORT QDBusContext
 {
 public:
     QDBusContext();

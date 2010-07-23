@@ -401,6 +401,7 @@ void tst_qdeclarativebehaviors::sameValue()
 
     target->setProperty("x", 0);
     QTRY_VERIFY(target->x() != qreal(0) && target->x() != qreal(100));
+    QTRY_VERIFY(target->x() == qreal(0));   //make sure Behavior has finished.
 
     target->setX(100);
     QCOMPARE(target->x(), qreal(100));

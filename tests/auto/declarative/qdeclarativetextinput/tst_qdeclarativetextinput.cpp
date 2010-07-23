@@ -802,6 +802,9 @@ void tst_qdeclarativetextinput::echoMode()
     QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
 
     QVERIFY(canvas->rootObject() != 0);
 
@@ -849,6 +852,7 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
     input->setFocus(false);
+    QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
 }
 

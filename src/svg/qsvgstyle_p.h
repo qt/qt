@@ -338,7 +338,7 @@ public:
     {
         // Store the _pixel_ size in the font. Since QFont::setPixelSize() only takes an int, call
         // QFont::SetPointSize() instead. Set proper font size just before rendering.
-        m_qfont.setPointSize(size);
+        m_qfont.setPointSizeF(size);
         m_sizeSet = 1;
     }
 

@@ -733,7 +733,7 @@ CFG_OPENSSL=auto
 CFG_PTMALLOC=no
 CFG_STL=auto
 CFG_PRECOMPILE=auto
-CFG_SEPARATE_DEBUG_INFO=auto
+CFG_SEPARATE_DEBUG_INFO=no
 CFG_SEPARATE_DEBUG_INFO_NOCOPY=no
 CFG_REDUCE_EXPORTS=auto
 CFG_MMX=auto
@@ -2307,7 +2307,7 @@ fi
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
     echo "WARNING: -debug-and-release is not supported anymore on Qt/X11 and Qt for Embedded Linux"
-    echo "By default, Qt is built in release mode with separate debug information, so"
+    echo "Qt can be built in release mode with separate debug information, so"
     echo "-debug-and-release is not necessary anymore"
     echo
 fi
@@ -7080,6 +7080,13 @@ EOF
         canBuildWebKit="no"
         canBuildQtConcurrent="no"
 	;;
+    symbian/*-gcce)
+        canBuildWebKit="no"
+        canBuildQtConcurrent="no"
+        ;;
+    symbian/*-armcc)
+        canBuildQtConcurrent="no"
+        ;;
 esac
 
 if [ "$CFG_GUI" = "no" ]; then

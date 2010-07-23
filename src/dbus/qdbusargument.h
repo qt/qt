@@ -64,7 +64,7 @@ QT_MODULE(DBus)
 class QDBusArgumentPrivate;
 class QDBusDemarshaller;
 class QDBusMarshaller;
-class QDBUS_EXPORT QDBusArgument
+class Q_DBUS_EXPORT QDBusArgument
 {
 public:
     enum ElementType {
@@ -184,43 +184,43 @@ template<> inline QVariant qdbus_cast<QVariant>(const QVariant &v, QVariant *)
     return qdbus_cast<QDBusVariant>(v).variant();
 }
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QVariant &v);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QVariant &v);
 
 // QVariant types
 #ifndef QDBUS_NO_SPECIALTYPES
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QDate &date);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QDate &date);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QDate &date);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QDate &date);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QTime &time);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QTime &time);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QTime &time);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QTime &time);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QDateTime &dt);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QDateTime &dt);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QDateTime &dt);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QDateTime &dt);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QRect &rect);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QRect &rect);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QRect &rect);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QRect &rect);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QRectF &rect);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QRectF &rect);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QRectF &rect);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QRectF &rect);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QSize &size);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QSize &size);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QSize &size);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QSize &size);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QSizeF &size);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QSizeF &size);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QSizeF &size);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QSizeF &size);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QPoint &pt);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QPoint &pt);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QPoint &pt);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QPoint &pt);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QPointF &pt);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QPointF &pt);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QPointF &pt);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QPointF &pt);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QLine &line);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QLine &line);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QLine &line);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QLine &line);
 
-QDBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QLineF &line);
-QDBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QLineF &line);
+Q_DBUS_EXPORT const QDBusArgument &operator>>(const QDBusArgument &a, QLineF &line);
+Q_DBUS_EXPORT QDBusArgument &operator<<(QDBusArgument &a, const QLineF &line);
 #endif
 
 template<template <typename> class Container, typename T>

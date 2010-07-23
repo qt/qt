@@ -2071,17 +2071,16 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
 QEasingCurve QDeclarativePropertyAnimation::easing() const
 {
     Q_D(const QDeclarativePropertyAnimation);
-    return d->easing;
+    return d->va->easingCurve();
 }
 
 void QDeclarativePropertyAnimation::setEasing(const QEasingCurve &e)
 {
     Q_D(QDeclarativePropertyAnimation);
-    if (d->easing == e)
+    if (d->va->easingCurve() == e)
         return;
 
-    d->easing = e;
-    d->va->setEasingCurve(d->easing);
+    d->va->setEasingCurve(e);
     emit easingChanged(e);
 }
 
