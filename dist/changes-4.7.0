@@ -131,6 +131,7 @@ QtGui
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
     * [QTBUG-7982] Added QImage::bitPlaneCount().
+    * [QTBUG-9072] Fixed alpha check for 1-bit-per-pixel images.
 
  - QPicture
     * [QTBUG-4974] Printing QPictures containing text to a high resolution
@@ -154,6 +155,8 @@ QtGui
     * [QTBUG-8035] Got rid of bezier intersection code in the boolean
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
+    * [QTBUG-11291] Fixed infinite recursion when drawing very large painter
+      paths.
 
  - QPixmap
     * [QTBUG-4149] Fixed QPixmap::grabWidget() on widgets that have not yet
