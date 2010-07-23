@@ -385,9 +385,9 @@ EXPORTS
 	_ZN19QDeclarativeDomListD1Ev @ 384 NONAME
 	_ZN19QDeclarativeDomListD2Ev @ 385 NONAME
 	_ZN19QDeclarativeDomListaSERKS_ @ 386 NONAME
-	_ZN19QDeclarativePrivate12registerTypeERKNS_12RegisterTypeE @ 387 NONAME
-	_ZN19QDeclarativePrivate12registerTypeERKNS_17RegisterInterfaceE @ 388 NONAME
-	_ZN19QDeclarativePrivate26registerAutoParentFunctionEPFNS_16AutoParentResultEP7QObjectS2_E @ 389 NONAME
+	_ZN19QDeclarativePrivate12registerTypeERKNS_12RegisterTypeE @ 387 NONAME ABSENT
+	_ZN19QDeclarativePrivate12registerTypeERKNS_17RegisterInterfaceE @ 388 NONAME ABSENT
+	_ZN19QDeclarativePrivate26registerAutoParentFunctionEPFNS_16AutoParentResultEP7QObjectS2_E @ 389 NONAME ABSENT
 	_ZN19QDeclarativePrivate30qdeclarativeelement_destructorEP7QObject @ 390 NONAME
 	_ZN19QListModelInterface10itemsMovedEiii @ 391 NONAME
 	_ZN19QListModelInterface11qt_metacallEN11QMetaObject4CallEiPPv @ 392 NONAME
@@ -1713,4 +1713,5 @@ EXPORTS
 	_ZNK16QDeclarativeView11rootContextEv @ 1712 NONAME
 	_ZNK16QDeclarativeView6engineEv @ 1713 NONAME
 	_ZNK18QDeclarativeEngine11rootContextEv @ 1714 NONAME
+	_ZN19QDeclarativePrivate11qmlregisterENS_16RegistrationTypeEPv @ 1715 NONAME
 
