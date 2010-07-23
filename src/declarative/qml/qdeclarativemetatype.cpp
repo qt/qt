@@ -40,9 +40,6 @@
 ****************************************************************************/
 
 #include <QtDeclarative/qdeclarativeprivate.h>
-static int registerType(const QDeclarativePrivate::RegisterType &);
-static int registerInterface(const QDeclarativePrivate::RegisterInterface &);
-
 #include "private/qdeclarativemetatype_p.h"
 
 #include "private/qdeclarativeproxymetaobject_p.h"
@@ -489,7 +486,7 @@ int QDeclarativeType::index() const
     return d->m_index;
 }
 
-static int registerAutoParentFunction(QDeclarativePrivate::RegisterAutoParent &autoparent)
+int registerAutoParentFunction(QDeclarativePrivate::RegisterAutoParent &autoparent)
 {
     QWriteLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
@@ -499,7 +496,7 @@ static int registerAutoParentFunction(QDeclarativePrivate::RegisterAutoParent &a
     return data->parentFunctions.count() - 1;
 }
 
-static int registerInterface(const QDeclarativePrivate::RegisterInterface &interface)
+int registerInterface(const QDeclarativePrivate::RegisterInterface &interface)
 {
     if (interface.version > 0) 
         qFatal("qmlRegisterType(): Cannot mix incompatible QML versions.");
@@ -528,7 +525,7 @@ static int registerInterface(const QDeclarativePrivate::RegisterInterface &inter
     return index;
 }
 
-static int registerType(const QDeclarativePrivate::RegisterType &type)
+int registerType(const QDeclarativePrivate::RegisterType &type)
 {
     if (type.elementName) {
         for (int ii = 0; type.elementName[ii]; ++ii) {
