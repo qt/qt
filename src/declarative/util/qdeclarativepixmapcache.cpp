@@ -614,7 +614,7 @@ void QDeclarativePixmapStore::unreferencePixmap(QDeclarativePixmapData *data)
     m_unreferencedCost += data->cost();
 
     if (m_timerId == -1)
-        startTimer(CACHE_EXPIRE_TIME * 1000);
+        m_timerId = startTimer(CACHE_EXPIRE_TIME * 1000);
 }
 
 void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
