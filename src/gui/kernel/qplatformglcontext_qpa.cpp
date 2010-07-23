@@ -39,35 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORM_GL_CONTEXT_H
-#define QPLATFORM_GL_CONTEXT_H
+#include "qplatformglcontext_qpa.h"
 
-#include <QtOpenGL/qgl.h>
+static QPlatformGLContext *staticSharedContext = 0;
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class Q_OPENGL_EXPORT QPlatformGLContext
+void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)
 {
-public:
-    virtual ~QPlatformGLContext() { }
+    staticSharedContext = sharedContext;
+}
 
-    virtual void makeCurrent() = 0;
-    virtual void doneCurrent() = 0;
-    virtual void swapBuffers() = 0;
-    virtual void* getProcAddress(const QString& procName) = 0;
-
-    static QPlatformGLContext *defaultSharedContext();
-
-protected:
-    static void setDefaultSharedContext(QPlatformGLContext *sharedContext);
-
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-
-#endif // QPLATFORM_GL_INTEGRATION_P_H
+QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
+{
+    return staticSharedContext;
+}

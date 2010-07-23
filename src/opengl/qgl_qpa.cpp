@@ -66,6 +66,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
         if (!widget->platformWindow()){
+            QPlatformWindowFormat format = widget->platformWindowFormat();
+            format.setWindowApi(QPlatformWindowFormat::OpenGL);
+            widget->setPlatformWindowFormat(format);
             widget->winId();//make window
         }
         d->platformContext = widget->platformWindow()->glContext();

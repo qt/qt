@@ -510,7 +510,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
-    QString platformName = qgetenv("QT_QPA_PLATFORM");
+    QString platformName = QLatin1String(qgetenv("QT_QPA_PLATFORM"));
 
     // Get command line params
 
@@ -526,7 +526,7 @@ void qt_init(QApplicationPrivate *priv, int type)
                 appFont = argv[i];
         } else if (arg == "-platform") {
             if (++i < argc)
-                platformName = argv[i];
+                platformName = QLatin1String(argv[i]);
         } else if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];

@@ -50,7 +50,8 @@ public:
         : ref(1)
         , opts(QPlatformWindowFormat::DoubleBuffer | QPlatformWindowFormat::DepthBuffer
              | QPlatformWindowFormat::Rgba | QPlatformWindowFormat::DirectRendering
-             | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions)
+             | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions
+             | QPlatformWindowFormat::UseDefaultSharedContext)
         , depthSize(-1)
         , accumSize(-1)
         , stencilSize(-1)
@@ -60,9 +61,8 @@ public:
         , alphaSize(-1)
         , numSamples(-1)
         , swapInterval(-1)
-        , majorVersion(1)
-        , minorVersion(0)
         , windowApi(QPlatformWindowFormat::Raster)
+        , sharedContext(0)
     {
     }
 
@@ -78,9 +78,8 @@ public:
           alphaSize(other->alphaSize),
           numSamples(other->numSamples),
           swapInterval(other->swapInterval),
-          majorVersion(other->majorVersion),
-          minorVersion(other->minorVersion),
-          windowApi(other->windowApi)
+          windowApi(other->windowApi),
+          sharedContext(other->sharedContext)
     {
     }
     QAtomicInt ref;
@@ -94,9 +93,8 @@ public:
     int alphaSize;
     int numSamples;
     int swapInterval;
-    int majorVersion;
-    int minorVersion;
     QPlatformWindowFormat::WindowApi windowApi;
+    QPlatformGLContext *sharedContext;
 };
 
 /*!
@@ -519,6 +517,16 @@ void QPlatformWindowFormat::setSampleBuffers(bool enable)
     setOption(enable ? QPlatformWindowFormat::SampleBuffers : QPlatformWindowFormat::NoSampleBuffers);
 }
 
+void QPlatformWindowFormat::setUseDefaultSharedContext(bool enable)
+{
+    if (enable) {
+        setOption(QPlatformWindowFormat::UseDefaultSharedContext);
+        d->sharedContext = 0;
+    } else {
+        setOption(QPlatformWindowFormat::NoDefaultSharedContext);
+    }
+}
+
 /*!
     Returns the number of samples per pixel when multisampling is
     enabled. By default, the highest number of samples that is
@@ -593,6 +601,17 @@ void QPlatformWindowFormat::setWindowApi(QPlatformWindowFormat::WindowApi api)
 QPlatformWindowFormat::WindowApi QPlatformWindowFormat::windowApi() const
 {
     return d->windowApi;
+}
+
+void QPlatformWindowFormat::setSharedContext(QPlatformGLContext *context)
+{
+    setUseDefaultSharedContext(false);
+    d->sharedContext = context;
+}
+
+QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
+{
+    return d->sharedContext;
 }
 
 ///*!
@@ -952,8 +971,6 @@ bool operator==(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
         && a.d->swapInterval == b.d->swapInterval
-        && a.d->majorVersion == b.d->majorVersion
-        && a.d->minorVersion == b.d->minorVersion
         && a.d->windowApi == b.d->windowApi);
 }
 

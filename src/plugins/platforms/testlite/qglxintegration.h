@@ -42,7 +42,13 @@
 #ifndef Q_GLX_CONTEXT_H
 #define Q_GLX_CONTEXT_H
 
+#include "qtestlitewindow.h"
+
 #include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformWindowFormat>
+
+#include <QtCore/QMutex>
+
 #include <GL/glx.h>
 
 QT_BEGIN_NAMESPACE
@@ -52,7 +58,7 @@ class MyDisplay;
 class QGLXGLContext : public QPlatformGLContext
 {
 public:
-    QGLXGLContext(WId winId, MyDisplay *xd, QGLFormat& format, QPlatformGLContext* shareContext);
+    QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format);
     ~QGLXGLContext();
 
     virtual void makeCurrent();
@@ -61,11 +67,19 @@ public:
     virtual void* getProcAddress(const QString& procName);
 
     GLXContext glxContext() {return m_context;}
+
+
 private:
+    static QVector<int> buildSpec(const QPlatformWindowFormat &format);
+    static GLXFBConfig findConfig(const GLXFBConfig *configs,int configCount, const QPlatformWindowFormat &format, const MyDisplay *xd);
+
     MyDisplay  *m_xd;
     Drawable    m_drawable;
-    GLXFBConfig m_config;
     GLXContext  m_context;
+
+    QGLXGLContext (MyDisplay *display, Drawable drawable, GLXContext context);
+    static QMutex m_defaultSharedContextMutex;
+    static void createDefaultSharedContex(MyDisplay *xd);
 };
 
 

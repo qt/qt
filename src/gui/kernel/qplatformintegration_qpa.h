@@ -73,10 +73,12 @@ public:
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
-// Experimental
+// Experimental in mainthread eventloop integration
+// This should only be used if it is only possible to do window system event processing in
+// the gui thread. All of the functions in QWindowSystemInterface are thread safe.
     virtual QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
-// should it be hasGLContext?
+//jl:XXX should it be hasGLContext and do we need it at all?
     virtual bool hasOpenGL() const;
 
 
