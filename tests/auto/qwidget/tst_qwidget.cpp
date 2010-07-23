@@ -988,8 +988,8 @@ void tst_QWidget::palettePropagation2()
 {
     // ! Note, the code below is executed in tst_QWidget's constructor.
     // QPalette palette;
-    // palette.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
-    // palette.setColor(QPalette::Text, QColor(21, 22, 23));
+    // font.setColor(QPalette::ToolTipBase, QColor(12, 13, 14));
+    // font.setColor(QPalette::Text, QColor(21, 22, 23));
     // qApp->setPalette(palette, "QPropagationTestWidget");
 
     QWidget *root = new QWidget;
@@ -1000,7 +1000,7 @@ void tst_QWidget::palettePropagation2()
     QWidget *child4 = new QWidget(child3);
     QWidget *child5 = new QWidget(child4);
     root->show();
-    QTest::qWaitForWindowShown(root);
+    QTest::qWait(100);
 
     // These colors are unlikely to be imposed on the default palette of
     // QWidget ;-).
