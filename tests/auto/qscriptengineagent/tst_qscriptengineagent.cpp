@@ -116,6 +116,8 @@ private slots:
     void evaluateProgram_SyntaxError();
     void evaluateNullProgram();
     void QTBUG6108();
+    void backtraces_data();
+    void backtraces();
 
 private:
     double m_testProperty;
@@ -2377,6 +2379,87 @@ void tst_QScriptEngineAgent::QTBUG6108()
 
     QCOMPARE(spy->at(4).type, ScriptEngineEvent::ScriptUnload);
     QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
+}
+
+class BacktraceSpy : public QScriptEngineAgent
+{
+public:
+    BacktraceSpy(QScriptEngine *engine, const QStringList &expectedbacktrace, int breakpoint)
+        : QScriptEngineAgent(engine), expectedbacktrace(expectedbacktrace), breakpoint(breakpoint), ok(false) {}
+
+    QStringList expectedbacktrace;
+    int breakpoint;
+    bool ok;
+
+protected:
+
+    void exceptionThrow(qint64 , const QScriptValue &, bool)
+    {  check();  }
+
+    void positionChange(qint64 , int lineNumber, int )
+    {
+        if (lineNumber == breakpoint)
+            check();
+    }
+
+private:
+    void check()
+    {
+        QCOMPARE(engine()->currentContext()->backtrace(), expectedbacktrace);
+        ok = true;
+    }
+};
+
+
+void tst_QScriptEngineAgent::backtraces_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<int>("breakpoint");
+    QTest::addColumn<QStringList>("expectedbacktrace");
+
+    {
+        QString source(
+            "function foo() {\n"
+            "  var a = 5\n"
+            "}\n"
+            "foo('hello', { })\n"
+            "var r = 0;");
+
+        QStringList expected;
+        expected
+            << "foo('hello', [object Object]) at filename.js:2"
+            << "<global>() at filename.js:4";
+        QTest::newRow("simple breakpoint") << source <<  2 << expected;
+    }
+
+    {
+        QString source(
+            "function foo() {\n"
+            "  error = err\n" //this must throw
+            "}\n"
+            "foo('hello', { })\n"
+            "var r = 0;");
+
+        QStringList expected;
+        expected
+            << "foo('hello', [object Object]) at filename.js:2"
+            << "<global>() at filename.js:4";
+        QTest::newRow("throw because of error") << source <<  -100 << expected;
+    }
+}
+
+void tst_QScriptEngineAgent::backtraces()
+{
+    QFETCH(QString, code);
+    QFETCH(int, breakpoint);
+    QFETCH(QStringList, expectedbacktrace);
+
+    QScriptEngine eng;
+    BacktraceSpy *spy = new BacktraceSpy(&eng, expectedbacktrace, breakpoint);
+    eng.setAgent(spy);
+    QLatin1String filename("filename.js");
+    eng.evaluate(code, filename);
+    QVERIFY(spy->ok);
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)
