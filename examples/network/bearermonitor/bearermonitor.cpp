@@ -180,10 +180,8 @@ void BearerMonitor::configurationChanged(const QNetworkConfiguration &config)
 void BearerMonitor::updateSnapConfiguration(QTreeWidgetItem *parent, const QNetworkConfiguration &snap)
 {
     QMap<QString, QTreeWidgetItem *> itemMap;
-    for (int i = 0; i < parent->childCount(); ++i) {
-        QTreeWidgetItem *item = parent->child(i);
+    foreach (QTreeWidgetItem *item, parent->takeChildren())
         itemMap.insert(item->data(0, Qt::UserRole).toString(), item);
-    }
 
     QList<QNetworkConfiguration> allConfigurations = snap.children();
 
@@ -194,6 +192,8 @@ void BearerMonitor::updateSnapConfiguration(QTreeWidgetItem *parent, const QNetw
         if (item) {
             updateItem(item, config);
 
+            parent->addChild(item);
+
             if (config.type() == QNetworkConfiguration::ServiceNetwork)
                 updateSnapConfiguration(item, config);
         } else {
@@ -201,10 +201,7 @@ void BearerMonitor::updateSnapConfiguration(QTreeWidgetItem *parent, const QNetw
         }
     }
 
-    foreach (const QString &id, itemMap.keys())
-        delete itemMap.value(id);
-
-    itemMap.clear();
+    qDeleteAll(itemMap);
 }
 
 void BearerMonitor::updateConfigurations()
@@ -239,8 +236,7 @@ void BearerMonitor::updateConfigurations()
         }
     }
 
-    foreach (const QString &id, itemMap.keys())
-        delete itemMap.value(id);
+    qDeleteAll(itemMap);
 }
 
 void BearerMonitor::onlineStateChanged(bool isOnline)
