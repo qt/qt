@@ -128,6 +128,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 
     if (windowType() != Qt::Desktop) {
         if (destroyWindow && isWindow()) {
+//### jl: delete all child windows...
             QTLWExtra *topData = d->maybeTopData();
             if (topData) {
                 delete topData->platformWindow;

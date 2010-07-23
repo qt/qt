@@ -102,11 +102,8 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
     case QWindowSystemInterfacePrivate::Touch:
         QApplicationPrivate::processTouchEvent(static_cast<QWindowSystemInterfacePrivate::TouchEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::Move:
-        QApplicationPrivate::processMoveEvent(static_cast<QWindowSystemInterfacePrivate::MoveEvent *>(e));
-        break;
-    case QWindowSystemInterfacePrivate::Resize:
-        QApplicationPrivate::processResizeEvent(static_cast<QWindowSystemInterfacePrivate::ResizeEvent *>(e));
+    case QWindowSystemInterfacePrivate::GeometryChange:
+        QApplicationPrivate::processGeometryChangeEvent(static_cast<QWindowSystemInterfacePrivate::GeometryChangeEvent*>(e));
         break;
     case QWindowSystemInterfacePrivate::Enter:
         QApplicationPrivate::processEnterEvent(static_cast<QWindowSystemInterfacePrivate::EnterEvent *>(e));
@@ -826,27 +823,33 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 }
 
-void QApplicationPrivate::processMoveEvent(QWindowSystemInterfacePrivate::MoveEvent *moveEvent)
-{
-    if (moveEvent->moved.isNull()) {
-        //qDebug() << "QApplicationPrivate::processMoveEvent NULL";
-        return;
-    }
-    moveEvent->moved.data()->data->crect.setTopLeft(moveEvent->newPos);
-    QMoveEvent e(moveEvent->moved.data()->geometry().topLeft(), moveEvent->newPos);
-    QApplication::sendSpontaneousEvent(moveEvent->moved.data(), &e);
-}
 
-void QApplicationPrivate::processResizeEvent(QWindowSystemInterfacePrivate::ResizeEvent *e)
+void QApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {
-    if (e->sizeChanged.isNull()) {
-        //qDebug() << "QApplicationPrivate::processResizeEvent NULL";
-        return;
+    if (e->tlw.isNull())
+       return;
+    QWidget *tlw = e->tlw.data();
+    if (!tlw->isWindow())
+        return; //geo of native child widgets is controlled by lighthouse
+                //so we already have sent the events; besides this new rect
+                //is not mapped to parent
+
+    QRect newRect = e->newGeometry;
+    QRect cr(tlw->geometry());
+    bool isResize = cr.size() != newRect.size();
+    bool isMove = cr.topLeft() != newRect.topLeft();
+    tlw->data->crect = newRect;
+    if (isResize) {
+        QResizeEvent e(tlw->data->crect.size(), cr.size());
+        QApplication::sendSpontaneousEvent(tlw, &e);
+        tlw->update();
     }
-    e->sizeChanged.data()->data->crect.setSize(e->newSize);
-    QResizeEvent resizeEvent(e->sizeChanged.data()->data->crect.size(), e->newSize);
-    QApplication::sendSpontaneousEvent(e->sizeChanged.data(), &resizeEvent);
-    e->sizeChanged.data()->update();
+
+    if (isMove) {
+        //### frame geometry
+        QMoveEvent e(tlw->data->crect.topLeft(), cr.topLeft());
+        QApplication::sendSpontaneousEvent(tlw, &e);
+    }
 }
 
 void QApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e)

@@ -75,28 +75,8 @@ void QWindowSystemInterface::handleLeaveEvent(QWidget *tlw)
 
 void QWindowSystemInterface::handleGeometryChange(QWidget *tlw, const QRect &newRect)
 {
-    if (!tlw)
-        return;
-    if (!tlw->isWindow())
-        return; //geo of native child widgets is controlled by lighthouse
-                //so we already have sent the events; besides this new rect
-                //is not mapped to parent
-
-    QRect cr(tlw->geometry());
-
-    bool isResize = cr.size() != newRect.size();
-    bool isMove = cr.topLeft() != newRect.topLeft();
-    if (isResize) {
-        QWindowSystemInterfacePrivate::ResizeEvent *resizeEvent =
-                new QWindowSystemInterfacePrivate::ResizeEvent(tlw,newRect.size());
-        QWindowSystemInterfacePrivate::queueWindowSystemEvent(resizeEvent);
-    }
-
-    if (isMove) {
-        QWindowSystemInterfacePrivate::MoveEvent *moveEvent =
-                new QWindowSystemInterfacePrivate::MoveEvent(tlw,newRect.topLeft());
-        QWindowSystemInterfacePrivate::queueWindowSystemEvent(moveEvent);
-    }
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
 
