@@ -2925,6 +2925,8 @@ void Configure::generateCachefile()
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
 
+        configStream << "#modules" << endl << "for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)" << endl;
+
         configStream.flush();
         configFile.close();
     }
