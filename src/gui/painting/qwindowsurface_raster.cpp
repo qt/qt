@@ -248,10 +248,6 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 #ifdef Q_WS_MAC
 
-//     qDebug() << "Flushing" << widget << rgn << offset;
-
-//     d->image->image.save("flush.png");
-
     Q_UNUSED(offset);
     // Get a context for the widget.
 #ifndef QT_MAC_USE_COCOA
@@ -282,22 +278,18 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
 
     qt_mac_drawCGImage(context, &area, subImage);
+
     CGImageRelease(subImage);
     CGImageRelease(image);
 
-//     CGSize size = { d->image->image.width(), d->image->image.height() };
-//     CGLayerRef layer = CGLayerCreateWithContext(d->image->cg, size, 0);
-//     CGPoint pt = { 0, 0 };
-//     CGContextDrawLayerAtPoint(context, pt, layer);
-//     CGLayerRelease(layer);
-
-    // Restore context.
-    CGContextRestoreGState(context);
 #ifndef QT_MAC_USE_COCOA
     QDEndCGContext(port, &context);
 #else
     CGContextFlush(context);
 #endif
+
+    // Restore context.
+    CGContextRestoreGState(context);
 
 #endif // Q_WS_MAC
 

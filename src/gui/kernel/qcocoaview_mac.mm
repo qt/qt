@@ -498,9 +498,9 @@ static int qCocoaViewCount = 0;
         return;
 
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
-            bs->markDirty(qwidget->rect(), qwidget);
+        qwidget->update(qwidget->rect());
         qwidgetprivate->syncBackingStore(qwidget->rect());
+        return;
     }
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
