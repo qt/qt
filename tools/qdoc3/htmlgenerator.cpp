@@ -1474,7 +1474,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
     */
-    if (fake->name() != QString("index.html"))
+    const QmlClassNode* qml_cn = 0;
+    if (fake->subType() == Node::QmlClass) {
+        qml_cn = static_cast<const QmlClassNode*>(fake);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        generateTableOfContents(fake,marker,&sections);
+    }
+    else if (fake->name() != QString("index.html"))
         generateTableOfContents(fake,marker,0);
 
     generateTitle(fullTitle,
@@ -1548,16 +1554,15 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 #ifdef QDOC_QML
     else if (fake->subType() == Node::QmlClass) {
-        const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
         generateBrief(qml_cn, marker);
         generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
         s = sections.begin();
         while (s != sections.end()) {
-            out() << "<a name=\"" << registerRef((*s).name) << "\"></a>" << divNavTop << "\n";
+            out() << "<a name=\"" << registerRef((*s).name.toLower())
+                  << "\"></a>" << divNavTop << "\n";
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
             generateQmlSummary(*s,fake,marker);
             ++s;
@@ -2061,7 +2066,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         }
     }
     else if (sections && ((node->type() == Node::Class) ||
-                          (node->type() == Node::Namespace))) {
+                          (node->type() == Node::Namespace) ||
+                          (node->subType() == Node::QmlClass))) {
         QList<Section>::ConstIterator s = sections->begin();
         while (s != sections->end()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
