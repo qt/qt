@@ -1150,6 +1150,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
             if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
                 parentFocusScopeItem = fsi;
                 p->d_ptr->focusScopeItem = 0;
+                fsi->d_ptr->focusScopeItemChange(false);
             }
             break;
         }
@@ -1182,6 +1183,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
+                newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
                 // only way to set focus on a child of a focus scope is
                 // by setting focus on the scope itself.
@@ -5581,6 +5583,16 @@ void QGraphicsItemPrivate::resetFocusProxy()
     changes.
 */
 void QGraphicsItemPrivate::subFocusItemChange()
+{
+}
+
+/*!
+    \internal
+
+    Subclasses can reimplement this function to be notified when an item
+    becomes a focusScopeItem (or is no longer a focusScopeItem).
+*/
+void QGraphicsItemPrivate::focusScopeItemChange(bool isSubFocusItem)
 {
 }
 

@@ -1632,8 +1632,14 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
     \qmlproperty int ListView::currentIndex
     \qmlproperty Item ListView::currentItem
 
-    \c currentIndex holds the index of the current item.
-    \c currentItem is the current item.  Note that the position of the current item
+    The \c currentIndex property holds the index of the current item, and
+    \c currentItem holds the current item. 
+
+    If highlightFollowsCurrentItem is \c true, setting either of these 
+    properties will smoothly scroll the ListView so that the current 
+    item becomes visible.
+    
+    Note that the position of the current item
     may only be approximate until it becomes visible in the view.
 */
 int QDeclarativeListView::currentIndex() const
@@ -1727,7 +1733,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
     \qmlproperty bool ListView::highlightFollowsCurrentItem
     This property holds whether the highlight is managed by the view.
 
-    If this property is true, the highlight is moved smoothly
+    If this property is true (the default value), the highlight is moved smoothly
     to follow the current item.  Otherwise, the
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
@@ -1848,6 +1854,8 @@ void QDeclarativeListView::setHighlightRangeMode(HighlightRangeMode mode)
     \qmlproperty real ListView::spacing
 
     This property holds the spacing between items.
+
+    The default value is 0.
 */
 qreal QDeclarativeListView::spacing() const
 {
@@ -1914,11 +1922,13 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
 
 /*!
     \qmlproperty bool ListView::keyNavigationWraps
-    This property holds whether the list wraps key navigation.
+    This property holds whether the list wraps key navigation. 
 
     If this is true, key navigation that would move the current item selection
     past the end of the list instead wraps around and moves the selection to
     the start of the list, and vice-versa.
+
+    By default, key navigation is not wrapped.
 */
 bool QDeclarativeListView::isWrapEnabled() const
 {

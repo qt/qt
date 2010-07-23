@@ -253,15 +253,22 @@ void QSmoothedAnimation::init()
     \inherits NumberAnimation
     \brief The SmoothedAnimation element allows a property to smoothly track a value.
 
-    The SmoothedAnimation animates a property's value to a set target value
-    using an ease in/out quad easing curve.  If the animation is restarted
-    with a different target value, the easing curves used to animate to the old
-    and the new target values are smoothly spliced together to avoid any obvious
-    visual glitches by maintaining the current velocity.
+    A SmoothedAnimation animates a property's value to a set target value
+    using an ease in/out quad easing curve.  When the target value changes,
+    the easing curves used to animate between the old and new target values 
+    are smoothly spliced together to create a smooth movement to the new 
+    target value that maintains the current velocity.
 
-    The property animation is configured by setting the velocity at which the
-    animation should occur, or the duration that the animation should take.
-    If both a velocity and a duration are specified, the one that results in
+    The follow example shows one \l Rectangle tracking the position of another
+    using SmoothedAnimation. The green rectangle's \c x and \c y values are
+    bound to those of the red rectangle. Whenever these values change, the
+    green rectangle smoothly animates to its new position:
+
+    \snippet doc/src/snippets/declarative/smoothedanimation.qml 0
+
+    A SmoothedAnimation can be configured by setting the \l velocity at which the
+    animation should occur, or the \l duration that the animation should take.
+    If both the \l velocity and \l duration are specified, the one that results in
     the quickest animation is chosen for each change in the target value.
 
     For example, animating from 0 to 800 will take 4 seconds if a velocity
@@ -270,10 +277,6 @@ void QSmoothedAnimation::init()
     Animating from 0 to 20000 will take 10 seconds if a velocity of 200 is set,
     will take 8 seconds with a duration of 8000 set, and will take 8 seconds
     with both a velocity of 200 and a duration of 8000 set.
-
-    The follow example shows one rectangle tracking the position of another.
-
-    \snippet doc/src/snippets/declarative/smoothedanimation.qml 0
 
     The default velocity of SmoothedAnimation is 200 units/second.  Note that if the range of the
     value being animated is small, then the velocity will need to be adjusted
@@ -287,7 +290,7 @@ void QSmoothedAnimation::init()
     sources. The \l PropertyAnimation documentation shows a variety of methods
     for creating animations.
 
-    \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
+    \sa SpringAnimation, NumberAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
 QDeclarativeSmoothedAnimation::QDeclarativeSmoothedAnimation(QObject *parent)

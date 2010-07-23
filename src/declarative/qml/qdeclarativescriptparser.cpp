@@ -896,6 +896,14 @@ QList<QDeclarativeError> QDeclarativeScriptParser::errors() const
     return _errors;
 }
 
+static void replaceWithSpace(QString &str, int idx, int n) 
+{
+    QChar *data = str.data() + idx;
+    QChar space(' ');
+    for (int ii = 0; ii < n; ++ii)
+        *data++ = space;
+}
+
 /*
 Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
 are:
@@ -905,83 +913,48 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
 {
     QDeclarativeParser::Object::ScriptBlock::Pragmas rv = QDeclarativeParser::Object::ScriptBlock::None;
 
-    const QChar forwardSlash(QLatin1Char('/'));
-    const QChar star(QLatin1Char('*'));
-    const QChar newline(QLatin1Char('\n'));
-    const QChar dot(QLatin1Char('.'));
-    const QChar semicolon(QLatin1Char(';'));
-    const QChar space(QLatin1Char(' '));
-    const QString pragma(QLatin1String(".pragma "));
+    const QString pragma(QLatin1String("pragma"));
+    const QString library(QLatin1String("library"));
 
-    const QChar *pragmaData = pragma.constData();
+    QDeclarativeJS::Lexer l(0);
+    l.setCode(script, 0);
 
-    const QChar *data = script.constData();
-    const int length = script.count();
-    for (int ii = 0; ii < length; ++ii) {
-        const QChar &c = data[ii];
+    int token = l.lex();
 
-        if (c.isSpace())
-            continue;
+    while (true) {
+        if (token != QDeclarativeJSGrammar::T_DOT)
+            return rv;
 
-        if (c == forwardSlash) {
-            ++ii;
-            if (ii >= length)
-                return rv;
+        int startOffset = l.tokenOffset();
+        int startLine = l.currentLineNo();
 
-            const QChar &c = data[ii];
-            if (c == forwardSlash) {
-                // Find next newline
-                while (ii < length && data[++ii] != newline) {};
-            } else if (c == star) {
-                // Find next star
-                while (true) {
-                    while (ii < length && data[++ii] != star) {};
-                    if (ii + 1 >= length)
-                        return rv;
+        token = l.lex();
 
-                    if (data[ii + 1] == forwardSlash) {
-                        ++ii;
-                        break;
-                    }
-                }
-            } else {
-                return rv;
-            }
-        } else if (c == dot) {
-            // Could be a pragma!
-            if (ii + pragma.length() >= length ||
-                0 != ::memcmp(data + ii, pragmaData, sizeof(QChar) * pragma.length()))
-                return rv;
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine ||
+            script.mid(l.tokenOffset(), l.tokenLength()) != pragma)
+            return rv;
 
-            int pragmaStatementIdx = ii;
+        token = l.lex();
 
-            ii += pragma.length();
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine)
+            return rv;
 
-            while (ii < length && data[ii].isSpace()) { ++ii; }
+        QString pragmaValue = script.mid(l.tokenOffset(), l.tokenLength());
+        int endOffset = l.tokenLength() + l.tokenOffset();
 
-            int startIdx = ii;
+        token = l.lex();
+        if (l.currentLineNo() == startLine)
+            return rv;
 
-            while (ii < length && data[ii].isLetter()) { ++ii; }
-
-            int endIdx = ii;
-
-            if (ii != length && data[ii] != forwardSlash && !data[ii].isSpace() && data[ii] != semicolon)
-                return rv;
-
-            QString p(data + startIdx, endIdx - startIdx);
-
-            if (p == QLatin1String("library"))
-                rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
-            else
-                return rv;
-
-            for (int jj = pragmaStatementIdx; jj < endIdx; ++jj) script[jj] = space;
-
+        if (pragmaValue == QLatin1String("library")) {
+            rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
+            replaceWithSpace(script, startOffset, endOffset - startOffset);
         } else {
             return rv;
         }
     }
-
     return rv;
 }
 
