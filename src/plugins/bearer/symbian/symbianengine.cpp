@@ -351,55 +351,57 @@ void SymbianEngine::updateConfigurationsL()
             QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
             mutex.lock();
         }
-        QNetworkConfigurationPrivatePointer privSNAP = snapConfigurations.value(ident);
-            
+
+        // Loop through all connection methods in this SNAP
+        QMap<unsigned int, QNetworkConfigurationPrivatePointer> connections;
         for (int j=0; j < destination.ConnectionMethodCount(); j++) {
             RCmConnectionMethod connectionMethod = destination.ConnectionMethodL(j);
             CleanupClosePushL(connectionMethod);
-            
+
             TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
             QString iface = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
             // Check that IAP can be found from accessPointConfigurations list
-            QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.value(iface);
-            if (!priv) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+            if (ptr) {
+                knownConfigs.removeOne(iface);
+            } else {
                 SymbianNetworkConfigurationPrivate *cpPriv = NULL;
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
-                    QNetworkConfigurationPrivatePointer ptr(cpPriv);
+                    ptr = QNetworkConfigurationPrivatePointer(cpPriv);
                     accessPointConfigurations.insert(ptr->id, ptr);
 
                     mutex.unlock();
                     QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
                     mutex.lock();
-
-                    QMutexLocker configLocker(&privSNAP->mutex);
-                    privSNAP->serviceNetworkMembers.append(ptr);
                 }
-            } else {
-                knownConfigs.removeOne(iface);
-                // Check that IAP can be found from related SNAP's configuration list
-                bool iapFound = false;
-                QMutexLocker snapConfigLocker(&privSNAP->mutex);
-                for (int i = 0; i < privSNAP->serviceNetworkMembers.count(); i++) {
-                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericIdentifier() ==
-                        iapId) {
-                        iapFound = true;
-                        break;
-                    }
-                }
-                if (!iapFound)
-                    privSNAP->serviceNetworkMembers.append(priv);
             }
-            
+
+            if (ptr) {
+                unsigned int priority;
+                TRAPD(error, priority = destination.PriorityL(connectionMethod));
+                if (!error)
+                    connections.insert(priority, ptr);
+            }
+
             CleanupStack::PopAndDestroy(&connectionMethod);
         }
-        
+
+        QNetworkConfigurationPrivatePointer privSNAP = snapConfigurations.value(ident);
         QMutexLocker snapConfigLocker(&privSNAP->mutex);
-        if (privSNAP->serviceNetworkMembers.count() > 1) {
+
+        if (privSNAP->serviceNetworkMembers != connections) {
+            privSNAP->serviceNetworkMembers = connections;
+
             // Roaming is supported only if SNAP contains more than one IAP
-            privSNAP->roamingSupported = true;
+            privSNAP->roamingSupported = privSNAP->serviceNetworkMembers.count() > 1;
+
+            snapConfigLocker.unlock();
+            mutex.unlock();
+            QT_TRYCATCH_LEAVING(emit configurationChanged(privSNAP));
+            mutex.lock();
         }
-        
+
         CleanupStack::PopAndDestroy(&destination);
     }
     CleanupStack::PopAndDestroy(&destinations);
@@ -449,10 +451,13 @@ void SymbianEngine::updateConfigurationsL()
             QNetworkConfigurationPrivatePointer ptr2 = snapConfigurations.value(iface);
             // => Check if one of the IAPs of the SNAP is active
             QMutexLocker snapConfigLocker(&ptr2->mutex);
-            for (int i = 0; i < ptr2->serviceNetworkMembers.count(); ++i) {
-                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericIdentifier() ==
+            QMutableMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(ptr2->serviceNetworkMembers);
+            while (i.hasNext()) {
+                i.next();
+
+                if (toSymbianConfig(i.value())->numericIdentifier() ==
                     toSymbianConfig(ptr)->numericIdentifier()) {
-                    ptr2->serviceNetworkMembers.removeAt(i);
+                    i.remove();
                     break;
                 }
             }
@@ -806,15 +811,19 @@ void SymbianEngine::updateStatesToSnaps()
         // => Check if one of the IAPs of the SNAP is discovered or active
         //    => If one of IAPs is active, also SNAP is active
         //    => If one of IAPs is discovered but none of the IAPs is active, SNAP is discovered
-        for (int i=0; i<ptr->serviceNetworkMembers.count(); i++) {
-            QMutexLocker configLocker(&ptr->serviceNetworkMembers[i]->mutex);
+        QMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(ptr->serviceNetworkMembers);
+        while (i.hasNext()) {
+            i.next();
 
-            if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active)
-                    == QNetworkConfiguration::Active) {
+            const QNetworkConfigurationPrivatePointer child = i.value();
+
+            QMutexLocker configLocker(&child->mutex);
+
+            if ((child->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
                 active = true;
                 break;
-            } else if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Discovered)
-                        == QNetworkConfiguration::Discovered) {
+            } else if ((child->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
                 discovered = true;
             }
         }
