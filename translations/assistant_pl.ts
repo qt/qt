@@ -124,6 +124,11 @@ Powód:
         <source>New Folder</source>
         <translation>Nowy katalog</translation>
     </message>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/bookmarkdialog.cpp" line="+227"/>
+        <source>Rename Folder</source>
+        <translation>Zmień nazwę katalogu</translation>
+    </message>
 </context>
 <context>
     <name>BookmarkManager</name>
@@ -143,7 +148,7 @@ Powód:
         <translation>Zamierzasz usunąć katalog co spowoduje również usunięcie jego zawartości. Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+148"/>
         <source>Manage Bookmarks...</source>
         <translation>Zarządzanie zakładkami...</translation>
     </message>
@@ -186,6 +191,148 @@ Powód:
         <location line="+1"/>
         <source>Rename Bookmark</source>
         <translation>Zmień nazwę zakładki</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkManagerWidget</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanagerwidget.ui"/>
+        <source>Manage Bookmarks</source>
+        <translation>Zarządzanie zakładkami</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Search:</source>
+        <translation>Wyszukaj:</translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanagerwidget.cpp" line="+258"/>
+        <source>Remove</source>
+        <translation>Usuń</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Import and Backup</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanagerwidget.cpp" line="-30"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanagerwidget.cpp" line="-142"/>
+        <source>Import...</source>
+        <translation>Importuj...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export...</source>
+        <translation>Exportuj...</translation>
+    </message>
+    <message>
+        <location line="+112"/>
+        <source>Open File</source>
+        <translation>Otwórz plik</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+16"/>
+        <source>Files (*.xbel)</source>
+        <translation>Pliki (*.xbel)</translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <source>Save File</source>
+        <translation>Zachowaj plik</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Qt Assistant</source>
+        <translation>Qt Assistant</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unable to save bookmarks.</source>
+        <translation>Nie można zachować zakładek.</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>You are goingto delete a Folder, this will also&lt;br&gt; remove it&apos;s content. Are you sure to continue?</source>
+        <translation>Zamierzasz usunąć katalog co spowoduje również&lt;br&gt;usunięcie jego zawartości. Czy chcesz kontynuować?</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Delete Folder</source>
+        <translation>Usuń katalog</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename Folder</source>
+        <translation>Zmień nazwę katalogu</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show Bookmark</source>
+        <translation>Pokaż zakładkę</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Bookmark in New Tab</source>
+        <translation>Pokaż zakładkę w nowej karcie</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Delete Bookmark</source>
+        <translation>Usuń zakładkę</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename Bookmark</source>
+        <translation>Zmień nazwę zakładki</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkModel</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmodel.cpp" line="+88"/>
+        <source>Name</source>
+        <translation>Nazwa</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Address</source>
+        <translation>Adres</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bookmarks Menu</source>
+        <translation>Menu zakładek</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkWidget</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/bookmarkwidget.ui"/>
+        <source>Bookmarks</source>
+        <translation>Zakładki</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Filter:</source>
+        <translation>Filtr:</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Add</source>
+        <translation>Dodaj</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Remove</source>
+        <translation>Usuń</translation>
     </message>
 </context>
 <context>
@@ -327,6 +474,29 @@ Powód:
     </message>
 </context>
 <context>
+    <name>FindWidget</name>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/findwidget.cpp" line="+85"/>
+        <source>Previous</source>
+        <translation>Poprzedni</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Next</source>
+        <translation>Następny</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Case Sensitive</source>
+        <translation>Uwzględniaj wielkość liter</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FontPanel</name>
     <message>
         <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
@@ -365,6 +535,21 @@ Powód:
         <location line="+6"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
         <translation>&lt;title&gt;Błąd 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;Strona nie może być znaleziona&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
+    </message>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/helpviewer_qtb.cpp" line="+230"/>
+        <source>Copy &amp;Link Location</source>
+        <translation>Skopiuj &amp;odsyłacz</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Open Link in New Tab	Ctrl+LMB</source>
+        <translation>Otwórz odsyłacz w nowej karcie	Ctrl+LMB</translation>
+    </message>
+    <message>
+        <location filename="../tools/assistant/tools/assistant/helpviewer_qwv.cpp" line="+260"/>
+        <source>Open Link in New Tab</source>
+        <translation>Otwórz odsyłacz w nowej karcie</translation>
     </message>
 </context>
 <context>

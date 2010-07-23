@@ -131,6 +131,7 @@ QtGui
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
     * [QTBUG-7982] Added QImage::bitPlaneCount().
+    * [QTBUG-9072] Fixed alpha check for 1-bit-per-pixel images.
 
  - QPicture
     * [QTBUG-4974] Printing QPictures containing text to a high resolution
@@ -146,6 +147,11 @@ QtGui
       processors with a NEON vector unit.
     * Fixed some performance issues when drawing sub-pixmaps of large
       pixmaps and falling back to raster in the X11 paint engine.
+    * [QTBUG-7596] Safeguard ourselves against corrupt registry values for
+      ClearType gamma on Windows.
+    * [QTBUG-9218] Fixed flattening of largely scaled, thin, dashed beziers.
+    * [QTBUG-9437] Fixed crash in the raster paint engine when drawing largely
+      scaled images.
 
  - QPainterPath
     * [QTBUG-3778] Fixed bug in painter path polygon intersection code.
@@ -154,6 +160,8 @@ QtGui
     * [QTBUG-8035] Got rid of bezier intersection code in the boolean
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
+    * [QTBUG-11291] Fixed infinite recursion when drawing very large painter
+      paths.
 
  - QPixmap
     * [QTBUG-4149] Fixed QPixmap::grabWidget() on widgets that have not yet
