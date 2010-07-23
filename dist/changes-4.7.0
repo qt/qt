@@ -147,6 +147,11 @@ QtGui
       processors with a NEON vector unit.
     * Fixed some performance issues when drawing sub-pixmaps of large
       pixmaps and falling back to raster in the X11 paint engine.
+    * [QTBUG-7596] Safeguard ourselves against corrupt registry values for
+      ClearType gamma on Windows.
+    * [QTBUG-9218] Fixed flattening of largely scaled, thin, dashed beziers.
+    * [QTBUG-9437] Fixed crash in the raster paint engine when drawing largely
+      scaled images.
 
  - QPainterPath
     * [QTBUG-3778] Fixed bug in painter path polygon intersection code.
