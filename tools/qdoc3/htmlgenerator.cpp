@@ -1256,20 +1256,18 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(inner,marker,&sections);
-    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
-
-#ifdef QDOC_QML
-    if (classe && !classe->qmlElement().isEmpty()) {
-        generateInstantiatedBy(classe,marker);
-    }
-#endif
-    
+    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);    
     generateBrief(inner, marker);
     generateIncludes(inner, marker);
     generateStatus(inner, marker);
     if (classe) {
         generateInherits(classe, marker);
         generateInheritedBy(classe, marker);
+#ifdef QDOC_QML
+        if (!classe->qmlElement().isEmpty()) {
+            generateInstantiatedBy(classe,marker);
+        }
+#endif
     }
     generateThreadSafeness(inner, marker);
     generateSince(inner, marker);
@@ -1476,7 +1474,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
     */
-    if (fake->name() != QString("index.html"))
+    const QmlClassNode* qml_cn = 0;
+    if (fake->subType() == Node::QmlClass) {
+        qml_cn = static_cast<const QmlClassNode*>(fake);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        generateTableOfContents(fake,marker,&sections);
+    }
+    else if (fake->name() != QString("index.html"))
         generateTableOfContents(fake,marker,0);
 
     generateTitle(fullTitle,
@@ -1550,16 +1554,15 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 #ifdef QDOC_QML
     else if (fake->subType() == Node::QmlClass) {
-        const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
-        generateQmlInherits(qml_cn, marker);
-        generateQmlInstantiates(qml_cn, marker);
         generateBrief(qml_cn, marker);
+        generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        generateQmlInstantiates(qml_cn, marker);
         s = sections.begin();
         while (s != sections.end()) {
-            out() << "<a name=\"" << registerRef((*s).name) << "\"></a>" << divNavTop << "\n";
+            out() << "<a name=\"" << registerRef((*s).name.toLower())
+                  << "\"></a>" << divNavTop << "\n";
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
             generateQmlSummary(*s,fake,marker);
             ++s;
@@ -2063,7 +2066,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         }
     }
     else if (sections && ((node->type() == Node::Class) ||
-                          (node->type() == Node::Namespace))) {
+                          (node->type() == Node::Namespace) ||
+                          (node->subType() == Node::QmlClass))) {
         QList<Section>::ConstIterator s = sections->begin();
         while (s != sections->end()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
@@ -4180,16 +4184,14 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             const Node* n = myTree->findNode(strList,Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
-                out() << "<p class=\"centerAlign\">";
                 Text text;
-                text << "[Inherits ";
+                text << Atom::ParaLeft << "Inherits ";
                 text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
                 text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
                 text << Atom(Atom::String, linkPair.second);
                 text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-                text << "]";
+                text << Atom::ParaRight;
                 generateText(text, cn, marker);
-                out() << "</p>";
             }
         }
     }
@@ -4227,9 +4229,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 {
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        out() << "<p class=\"centerAlign\">";
         Text text;
-        text << "[";
+        text << Atom::ParaLeft;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         QString name = qcn->name();
@@ -4242,9 +4243,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, cn->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-        text << "]";
+        text << Atom::ParaRight;
         generateText(text, qcn, marker);
-        out() << "</p>";
     }
 }
 
@@ -4261,9 +4261,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
-            out() << "<p class=\"centerAlign\">";
             Text text;
-            text << "[";
+            text << Atom::ParaLeft;
             text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, cn->name());
@@ -4273,9 +4272,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, n->name());
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-            text << "]";
+            text << Atom::ParaRight;
             generateText(text, cn, marker);
-            out() << "</p>";
         }
     }
 }
