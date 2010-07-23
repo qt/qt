@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
+
 class QTextDocumentWithImageResources : public QTextDocument {
     Q_OBJECT
 
@@ -301,8 +303,7 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     Sets the letter spacing for the font.
 
     Letter spacing changes the default spacing between individual letters in the font.
-    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
-    the width of the character itself.
+    A positive value increases the letter spacing by the corresponding pixels; a negative value decreases the spacing.
 */
 
 /*!
@@ -711,61 +712,37 @@ QRectF QDeclarativeText::boundingRect() const
     int x = 0;
     int y = 0;
 
+    QSize size = d->cachedLayoutSize;
+    if (d->style != Normal)
+        size += QSize(2,2);
+
     // Could include font max left/right bearings to either side of rectangle.
 
-    if (d->cache || d->style != Normal) {
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->imgCache.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->imgCache.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->imgCache.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->imgCache.height()) / 2;
-            break;
-        }
-
-        return QRectF(x,y,d->imgCache.width(),d->imgCache.height());
-    } else {
-        switch (d->hAlign) {
-        case AlignLeft:
-            x = 0;
-            break;
-        case AlignRight:
-            x = w - d->cachedLayoutSize.width();
-            break;
-        case AlignHCenter:
-            x = (w - d->cachedLayoutSize.width()) / 2;
-            break;
-        }
-
-        switch (d->vAlign) {
-        case AlignTop:
-            y = 0;
-            break;
-        case AlignBottom:
-            y = h - d->cachedLayoutSize.height();
-            break;
-        case AlignVCenter:
-            y = (h - d->cachedLayoutSize.height()) / 2;
-            break;
-        }
-
-        return QRectF(x,y,d->cachedLayoutSize.width(),d->cachedLayoutSize.height());
+    switch (d->hAlign) {
+    case AlignLeft:
+        x = 0;
+        break;
+    case AlignRight:
+        x = w - size.width();
+        break;
+    case AlignHCenter:
+        x = (w - size.width()) / 2;
+        break;
     }
+
+    switch (d->vAlign) {
+    case AlignTop:
+        y = 0;
+        break;
+    case AlignBottom:
+        y = h - size.height();
+        break;
+    case AlignVCenter:
+        y = (h - size.height()) / 2;
+        break;
+    }
+
+    return QRectF(x,y,size.width(),size.height());
 }
 
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
@@ -1028,7 +1005,14 @@ QPixmap QDeclarativeTextPrivate::wrappedTextImage(bool drawStyle)
     QPixmap img(size);
     if (!size.isEmpty()) {
         img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
         QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
         drawWrappedText(&p, QPointF(0,0), drawStyle);
     }
     return img;
@@ -1051,7 +1035,14 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
     //paint text
     QPixmap img(size);
     img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+    bool oldSmooth = qt_applefontsmoothing_enabled;
+    qt_applefontsmoothing_enabled = false;
+#endif
     QPainter p(&img);
+#ifdef Q_WS_MAC
+    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
 
     QAbstractTextDocumentLayout::PaintContext context;
 

@@ -494,7 +494,7 @@ void tst_qdeclarativetextinput::maxLength()
     }
 
     textinputObject->setText("");
-    QTRY_VERIFY(textinputObject->hasFocus() == true);
+    QTRY_VERIFY(textinputObject->hasActiveFocus() == true);
     for(int i=0; i<20; i++){
         QCOMPARE(textinputObject->text().length(), qMin(i,10));
         //simulateKey(canvas, Qt::Key_A);
@@ -515,7 +515,7 @@ void tst_qdeclarativetextinput::masks()
     QVERIFY(canvas->rootObject() != 0);
     QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
-    QTRY_VERIFY(textinputObject->hasFocus() == true);
+    QTRY_VERIFY(textinputObject->hasActiveFocus() == true);
     QVERIFY(textinputObject->text().length() == 0);
     QCOMPARE(textinputObject->inputMask(), QString("HHHHhhhh; "));
     for(int i=0; i<10; i++){
@@ -544,7 +544,7 @@ void tst_qdeclarativetextinput::validators()
     QDeclarativeTextInput *intInput = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("intInput")));
     QVERIFY(intInput);
     intInput->setFocus(true);
-    QTRY_VERIFY(intInput->hasFocus());
+    QTRY_VERIFY(intInput->hasActiveFocus());
     QTest::keyPress(canvas, Qt::Key_1);
     QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(intInput->text(), QLatin1String("1"));
@@ -565,7 +565,7 @@ void tst_qdeclarativetextinput::validators()
     QDeclarativeTextInput *dblInput = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("dblInput")));
     QTRY_VERIFY(dblInput);
     dblInput->setFocus(true);
-    QVERIFY(dblInput->hasFocus() == true);
+    QVERIFY(dblInput->hasActiveFocus() == true);
     QTest::keyPress(canvas, Qt::Key_1);
     QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(dblInput->text(), QLatin1String("1"));
@@ -594,7 +594,7 @@ void tst_qdeclarativetextinput::validators()
     QDeclarativeTextInput *strInput = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("strInput")));
     QTRY_VERIFY(strInput);
     strInput->setFocus(true);
-    QVERIFY(strInput->hasFocus() == true);
+    QVERIFY(strInput->hasActiveFocus() == true);
     QTest::keyPress(canvas, Qt::Key_1);
     QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String(""));
@@ -642,7 +642,7 @@ void tst_qdeclarativetextinput::inputMethods()
     QVERIFY(canvas->rootObject() != 0);
 
     input->setFocus(true);
-    QVERIFY(input->hasFocus() == true);
+    QVERIFY(input->hasActiveFocus() == true);
     // test that input method event is committed
     QInputMethodEvent event;
     event.setCommitString( "My ", -12, 0);
@@ -669,11 +669,11 @@ void tst_qdeclarativetextinput::navigation()
 
     QVERIFY(input != 0);
     input->setCursorPosition(0);
-    QTRY_VERIFY(input->hasFocus() == true);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
     simulateKey(canvas, Qt::Key_Left);
-    QVERIFY(input->hasFocus() == false);
+    QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Right);
-    QVERIFY(input->hasFocus() == true);
+    QVERIFY(input->hasActiveFocus() == true);
     //QT-2944: If text is selected, ensure we deselect upon cursor motion
     input->setCursorPosition(input->text().length());
     input->select(0,input->text().length());
@@ -681,11 +681,11 @@ void tst_qdeclarativetextinput::navigation()
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->selectionStart() == input->selectionEnd());
     QVERIFY(input->selectionStart() == input->text().length());
-    QVERIFY(input->hasFocus() == true);
+    QVERIFY(input->hasActiveFocus() == true);
     simulateKey(canvas, Qt::Key_Right);
-    QVERIFY(input->hasFocus() == false);
+    QVERIFY(input->hasActiveFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
-    QVERIFY(input->hasFocus() == true);
+    QVERIFY(input->hasActiveFocus() == true);
 
     // Up and Down should NOT do Home/End, even on Mac OS X (QTBUG-10438).
     input->setCursorPosition(2);
@@ -784,7 +784,7 @@ void tst_qdeclarativetextinput::readOnly()
     QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
-    QTRY_VERIFY(input->hasFocus() == true);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
     QVERIFY(input->isReadOnly() == true);
     QString initial = input->text();
     for(int k=Qt::Key_0; k<=Qt::Key_Z; k++)
@@ -802,13 +802,16 @@ void tst_qdeclarativetextinput::echoMode()
     QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
 
     QVERIFY(canvas->rootObject() != 0);
 
     QDeclarativeTextInput *input = qobject_cast<QDeclarativeTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
-    QTRY_VERIFY(input->hasFocus() == true);
+    QTRY_VERIFY(input->hasActiveFocus() == true);
     QString initial = input->text();
     Qt::InputMethodHints ref;
     QCOMPARE(initial, QLatin1String("ABCDefgh"));
@@ -849,6 +852,7 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
     input->setFocus(false);
+    QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
 }
 
@@ -901,7 +905,7 @@ void tst_qdeclarativetextinput::openInputPanelOnClick()
     MyInputContext ic;
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
-    QSignalSpy focusOnPressSpy(&input, SIGNAL(focusOnPressChanged(bool)));
+    QSignalSpy focusOnPressSpy(&input, SIGNAL(activeFocusOnPressChanged(bool)));
     input.setText("Hello world");
     input.setPos(0, 0);
     scene.addItem(&input);
@@ -948,7 +952,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     MyInputContext ic;
     view.setInputContext(&ic);
     QDeclarativeTextInput input;
-    QSignalSpy focusOnPressSpy(&input, SIGNAL(focusOnPressChanged(bool)));
+    QSignalSpy focusOnPressSpy(&input, SIGNAL(activeFocusOnPressChanged(bool)));
     input.setText("Hello world");
     input.setPos(0, 0);
     scene.addItem(&input);
@@ -970,7 +974,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     // focus on press, input panel on focus
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
-    QVERIFY(input.hasFocus());
+    QVERIFY(input.hasActiveFocus());
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
 
@@ -980,7 +984,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     ic.openInputPanelReceived = false;
 
     // if already focused, input panel can be opened on press
-    QVERIFY(input.hasFocus());
+    QVERIFY(input.hasActiveFocus());
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
@@ -1008,7 +1012,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QVERIFY(!view.testAttribute(Qt::WA_InputMethodEnabled));
 
     // no automatic input panel events should
-    // be sent if focusOnPress is false
+    // be sent if activeFocusOnPress is false
     input.setFocusOnPress(false);
     QCOMPARE(focusOnPressSpy.count(),1);
     input.setFocusOnPress(false);
@@ -1035,7 +1039,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QCOMPARE(ic.closeInputPanelReceived, true);
     ic.closeInputPanelReceived = false;
 
-    // set focusOnPress back to true
+    // set activeFocusOnPress back to true
     input.setFocusOnPress(true);
     QCOMPARE(focusOnPressSpy.count(),2);
     input.setFocusOnPress(true);

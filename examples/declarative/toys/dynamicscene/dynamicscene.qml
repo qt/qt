@@ -184,7 +184,6 @@ Item {
                     id: qmlText
                     anchors.fill: parent; anchors.margins: 5
                     readOnly: false
-                    focusOnPress: true
                     font.pixelSize: 14
                     wrapMode: TextEdit.WordWrap
 

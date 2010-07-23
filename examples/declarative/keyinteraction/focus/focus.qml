@@ -58,7 +58,7 @@ Rectangle {
 
             width: parent.width; height: 320
             focus: true
-            interactive: parent.wantsFocus
+            interactive: parent.activeFocus
         }
 
         ListViews {
@@ -98,7 +98,7 @@ Rectangle {
 
     states: State {
         name: "contextMenuOpen"
-        when: !mainView.wantsFocus
+        when: !mainView.activeFocus
         PropertyChanges { target: contextMenu; x: 0; open: true }
         PropertyChanges { target: mainView; x: 130 }
         PropertyChanges { target: shade; opacity: 0.25 }

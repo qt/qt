@@ -1,9 +1,19 @@
 =============================================================================
-The changes below are pre Qt 4.7.0 tech preview
+The changes below are pre Qt 4.7.0 RC1
 
 TextInput
    - copy(), cut() and paste() functions added
+Font.letterSpacing
+   - was percentage based.  Now specified in pixels.
+Item
+   - wantsFocus renamed to activeFocus
+   - forceFocus() renamed to forceActiveFocus()
+   - focus now returns the scoped focus (i.e. focus read/write now manipulate
+     the same value)
+TextInput and TextEdit:
+   - focusOnPress renamed to activeFocusOnPress
 
+=============================================================================
 The changes below are pre Qt 4.7.0 beta 2
 
 QDeclarativeView

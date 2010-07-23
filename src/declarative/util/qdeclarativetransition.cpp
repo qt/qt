@@ -66,8 +66,6 @@ QT_BEGIN_NAMESPACE
    
     \snippet doc/src/snippets/declarative/transition.qml 0
 
-    Items can have multiple transitions, if 
-
     To specify multiple transitions, specify \l Item::transitions as a list:
 
     \qml

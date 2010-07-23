@@ -42,6 +42,17 @@
 #ifndef QDECLARATIVEPRIVATE_H
 #define QDECLARATIVEPRIVATE_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #ifndef Q_OS_WIN
@@ -177,6 +188,9 @@ namespace QDeclarativePrivate
         return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::metaObject();
     }
 
+    enum AutoParentResult { Parented, IncompatibleObject, IncompatibleParent };
+    typedef AutoParentResult (*AutoParentFunction)(QObject *object, QObject *parent);
+
     struct RegisterType {
         int version;
 
@@ -214,13 +228,19 @@ namespace QDeclarativePrivate
         const char *iid;
     };
 
-    enum AutoParentResult { Parented, IncompatibleObject, IncompatibleParent };
-    typedef AutoParentResult (*AutoParentFunction)(QObject *object, QObject *parent);
+    struct RegisterAutoParent {
+        int version;
 
-    int Q_DECLARATIVE_EXPORT registerAutoParentFunction(AutoParentFunction);
-    int Q_DECLARATIVE_EXPORT registerType(const RegisterType &);
-    int Q_DECLARATIVE_EXPORT registerType(const RegisterInterface &);
+        AutoParentFunction function;
+    };
 
+    enum RegistrationType {
+        TypeRegistration       = 0, 
+        InterfaceRegistration  = 1,
+        AutoParentRegistration = 2
+    };
+
+    int Q_DECLARATIVE_EXPORT qmlregister(RegistrationType, void *);
 }
 
 QT_END_NAMESPACE

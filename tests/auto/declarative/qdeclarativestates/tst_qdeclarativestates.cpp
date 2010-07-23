@@ -121,6 +121,7 @@ private slots:
     void anchorChanges4();
     void anchorChanges5();
     void anchorChangesCrash();
+    void anchorRewindBug();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -807,6 +808,40 @@ void tst_qdeclarativestates::anchorChangesCrash()
     delete rect;
 }
 
+// QTBUG-12273
+void tst_qdeclarativestates::anchorRewindBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorRewindBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItem * column = rect->findChild<QDeclarativeItem*>("column");
+
+    QVERIFY(column != 0);
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->heightValid);
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->widthValid);
+    QCOMPARE(column->height(), 200.0);
+    QDeclarativeItemPrivate::get(rect)->setState("reanchored");
+
+    // column height and width should stay implicit
+    // and column's implicit resizing should still work
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->heightValid);
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->widthValid);
+    QCOMPARE(column->height(), 100.0);
+
+    QDeclarativeItemPrivate::get(rect)->setState("");
+
+    // column height and width should stay implicit
+    // and column's implicit resizing should still work
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->heightValid);
+    QVERIFY(!QDeclarativeItemPrivate::get(column)->widthValid);
+    QCOMPARE(column->height(), 200.0);
+
+    delete rect;
+}
+
 void tst_qdeclarativestates::script()
 {
     QDeclarativeEngine engine;
@@ -887,7 +922,7 @@ void tst_qdeclarativestates::propertyErrors()
     QCOMPARE(rect->color(),QColor("red"));
 
     QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to non-existent property \"colr\"");
-    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to read-only property \"wantsFocus\"");
+    QTest::ignoreMessage(QtWarningMsg, fullDataPath("/data/propertyErrors.qml") + ":8:9: QML PropertyChanges: Cannot assign to read-only property \"activeFocus\"");
     QDeclarativeItemPrivate::get(rect)->setState("blue");
 }
 

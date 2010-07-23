@@ -41,7 +41,7 @@
 //![0]
 import Qt 4.7
 
-Rectangle {
+Item {
     width: 300; height: 300
 
     Rectangle {
@@ -56,8 +56,8 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: {
-            rect.x = mouse.x
-            rect.y = mouse.y
+            rect.x = mouse.x - rect.width/2
+            rect.y = mouse.y - rect.height/2
         }
     }
 }

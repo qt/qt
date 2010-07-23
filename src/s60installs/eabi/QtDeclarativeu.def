@@ -44,7 +44,7 @@ EXPORTS
 	_ZN16QDeclarativeInfoD1Ev @ 43 NONAME
 	_ZN16QDeclarativeInfoD2Ev @ 44 NONAME
 	_ZN16QDeclarativeItem10classBeginEv @ 45 NONAME
-	_ZN16QDeclarativeItem10forceFocusEv @ 46 NONAME
+	_ZN16QDeclarativeItem10forceFocusEv @ 46 NONAME ABSENT
 	_ZN16QDeclarativeItem10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 47 NONAME
 	_ZN16QDeclarativeItem10resetWidthEv @ 48 NONAME
 	_ZN16QDeclarativeItem10sceneEventEP6QEvent @ 49 NONAME
@@ -59,7 +59,7 @@ EXPORTS
 	_ZN16QDeclarativeItem13parentChangedEPS_ @ 58 NONAME
 	_ZN16QDeclarativeItem13setParentItemEPS_ @ 59 NONAME
 	_ZN16QDeclarativeItem13smoothChangedEb @ 60 NONAME
-	_ZN16QDeclarativeItem15childrenChangedEv @ 61 NONAME
+	_ZN16QDeclarativeItem15childrenChangedEv @ 61 NONAME ABSENT
 	_ZN16QDeclarativeItem15geometryChangedERK6QRectFS2_ @ 62 NONAME
 	_ZN16QDeclarativeItem15keyReleaseEventEP9QKeyEvent @ 63 NONAME
 	_ZN16QDeclarativeItem16inputMethodEventEP17QInputMethodEvent @ 64 NONAME
@@ -69,7 +69,7 @@ EXPORTS
 	_ZN16QDeclarativeItem17componentCompleteEv @ 68 NONAME
 	_ZN16QDeclarativeItem17setBaselineOffsetEf @ 69 NONAME
 	_ZN16QDeclarativeItem17setImplicitHeightEf @ 70 NONAME
-	_ZN16QDeclarativeItem17wantsFocusChangedEb @ 71 NONAME
+	_ZN16QDeclarativeItem17wantsFocusChangedEb @ 71 NONAME ABSENT
 	_ZN16QDeclarativeItem18keyPressPreHandlerEP9QKeyEvent @ 72 NONAME
 	_ZN16QDeclarativeItem18setTransformOriginENS_15TransformOriginE @ 73 NONAME
 	_ZN16QDeclarativeItem19childrenRectChangedERK6QRectF @ 74 NONAME
@@ -143,7 +143,7 @@ EXPORTS
 	_ZN16QDeclarativeView11qt_metacallEN11QMetaObject4CallEiPPv @ 142 NONAME
 	_ZN16QDeclarativeView11qt_metacastEPKc @ 143 NONAME
 	_ZN16QDeclarativeView11resizeEventEP12QResizeEvent @ 144 NONAME
-	_ZN16QDeclarativeView11rootContextEv @ 145 NONAME
+	_ZN16QDeclarativeView11rootContextEv @ 145 NONAME ABSENT
 	_ZN16QDeclarativeView12sceneResizedE5QSize @ 146 NONAME
 	_ZN16QDeclarativeView13setResizeModeENS_10ResizeModeE @ 147 NONAME
 	_ZN16QDeclarativeView13setRootObjectEP7QObject @ 148 NONAME
@@ -151,7 +151,7 @@ EXPORTS
 	_ZN16QDeclarativeView15continueExecuteEv @ 150 NONAME
 	_ZN16QDeclarativeView16staticMetaObjectE @ 151 NONAME DATA 16
 	_ZN16QDeclarativeView19getStaticMetaObjectEv @ 152 NONAME
-	_ZN16QDeclarativeView6engineEv @ 153 NONAME
+	_ZN16QDeclarativeView6engineEv @ 153 NONAME ABSENT
 	_ZN16QDeclarativeView9setSourceERK4QUrl @ 154 NONAME
 	_ZN16QDeclarativeViewC1EP7QWidget @ 155 NONAME
 	_ZN16QDeclarativeViewC1ERK4QUrlP7QWidget @ 156 NONAME
@@ -202,7 +202,7 @@ EXPORTS
 	_ZN18QDeclarativeEngine10setBaseUrlERK4QUrl @ 201 NONAME
 	_ZN18QDeclarativeEngine11qt_metacallEN11QMetaObject4CallEiPPv @ 202 NONAME
 	_ZN18QDeclarativeEngine11qt_metacastEPKc @ 203 NONAME
-	_ZN18QDeclarativeEngine11rootContextEv @ 204 NONAME
+	_ZN18QDeclarativeEngine11rootContextEv @ 204 NONAME ABSENT
 	_ZN18QDeclarativeEngine12importPluginERK7QStringS2_PS0_ @ 205 NONAME
 	_ZN18QDeclarativeEngine13addImportPathERK7QString @ 206 NONAME
 	_ZN18QDeclarativeEngine13addPluginPathERK7QString @ 207 NONAME
@@ -385,9 +385,9 @@ EXPORTS
 	_ZN19QDeclarativeDomListD1Ev @ 384 NONAME
 	_ZN19QDeclarativeDomListD2Ev @ 385 NONAME
 	_ZN19QDeclarativeDomListaSERKS_ @ 386 NONAME
-	_ZN19QDeclarativePrivate12registerTypeERKNS_12RegisterTypeE @ 387 NONAME
-	_ZN19QDeclarativePrivate12registerTypeERKNS_17RegisterInterfaceE @ 388 NONAME
-	_ZN19QDeclarativePrivate26registerAutoParentFunctionEPFNS_16AutoParentResultEP7QObjectS2_E @ 389 NONAME
+	_ZN19QDeclarativePrivate12registerTypeERKNS_12RegisterTypeE @ 387 NONAME ABSENT
+	_ZN19QDeclarativePrivate12registerTypeERKNS_17RegisterInterfaceE @ 388 NONAME ABSENT
+	_ZN19QDeclarativePrivate26registerAutoParentFunctionEPFNS_16AutoParentResultEP7QObjectS2_E @ 389 NONAME ABSENT
 	_ZN19QDeclarativePrivate30qdeclarativeelement_destructorEP7QObject @ 390 NONAME
 	_ZN19QListModelInterface10itemsMovedEiii @ 391 NONAME
 	_ZN19QListModelInterface11qt_metacallEN11QMetaObject4CallEiPPv @ 392 NONAME
@@ -1075,7 +1075,7 @@ EXPORTS
 	_ZNK15QPacketProtocol17maximumPacketSizeEv @ 1074 NONAME
 	_ZNK16QDeclarativeItem10metaObjectEv @ 1075 NONAME
 	_ZNK16QDeclarativeItem10parentItemEv @ 1076 NONAME
-	_ZNK16QDeclarativeItem10wantsFocusEv @ 1077 NONAME
+	_ZNK16QDeclarativeItem10wantsFocusEv @ 1077 NONAME ABSENT
 	_ZNK16QDeclarativeItem10widthValidEv @ 1078 NONAME
 	_ZNK16QDeclarativeItem11heightValidEv @ 1079 NONAME
 	_ZNK16QDeclarativeItem11mapFromItemERK12QScriptValueff @ 1080 NONAME
@@ -1707,4 +1707,11 @@ EXPORTS
 	_ZN25QDeclarativeImageProviderC2ENS_9ImageTypeE @ 1706 NONAME
 	_ZNK25QDeclarativeImageProvider9imageTypeEv @ 1707 NONAME
 	_ZN23QDeclarativeEngineDebug21resetBindingForObjectEiRK7QString @ 1708 NONAME
+	_ZN16QDeclarativeItem16forceActiveFocusEv @ 1709 NONAME
+	_ZN16QDeclarativeItem18activeFocusChangedEb @ 1710 NONAME
+	_ZNK16QDeclarativeItem14hasActiveFocusEv @ 1711 NONAME
+	_ZNK16QDeclarativeView11rootContextEv @ 1712 NONAME
+	_ZNK16QDeclarativeView6engineEv @ 1713 NONAME
+	_ZNK18QDeclarativeEngine11rootContextEv @ 1714 NONAME
+	_ZN19QDeclarativePrivate11qmlregisterENS_16RegistrationTypeEPv @ 1715 NONAME
 

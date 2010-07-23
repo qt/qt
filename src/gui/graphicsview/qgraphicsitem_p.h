@@ -482,6 +482,7 @@ public:
     void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
     virtual void subFocusItemChange();
+    virtual void focusScopeItemChange(bool isSubFocusItem);
 
     static void children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
     static int children_count(QDeclarativeListProperty<QGraphicsObject> *list);
