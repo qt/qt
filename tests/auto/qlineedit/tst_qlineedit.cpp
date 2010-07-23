@@ -3716,18 +3716,26 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
-    testWidget->setText("               ");
-    QPalette p = testWidget->palette();
+    QLineEdit le;
+    le.setText("               ");
+    QPalette p = le.palette();
     p.setBrush(QPalette::Active, QPalette::Highlight, Qt::green);
     p.setBrush(QPalette::Inactive, QPalette::Highlight, Qt::red);
-    testWidget->setPalette(p);
-    testWidget->selectAll();
-    QImage img(testWidget->rect().size(),QImage::Format_ARGB32 );
-    testWidget->render(&img);
-    QCOMPARE(img.pixel(10, testWidget->height()/2), QColor(Qt::green).rgb());
+    le.setPalette(p);
+
+    le.show();
+    QApplication::setActiveWindow(&le);
+    QTest::qWaitForWindowShown(&le);
+    le.setFocus();
+    QTRY_VERIFY(le.hasFocus());
+    le.selectAll();
+
+    QImage img(le.size(),QImage::Format_ARGB32 );
+    le.render(&img);
+    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::green).rgb());
     QApplication::setActiveWindow(0);
-    testWidget->render(&img);
-    QCOMPARE(img.pixel(10, testWidget->height()/2), QColor(Qt::red).rgb());
+    le.render(&img);
+    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
 
 QTEST_MAIN(tst_QLineEdit)
