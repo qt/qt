@@ -1256,20 +1256,18 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(inner,marker,&sections);
-    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
-
-#ifdef QDOC_QML
-    if (classe && !classe->qmlElement().isEmpty()) {
-        generateInstantiatedBy(classe,marker);
-    }
-#endif
-    
+    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);    
     generateBrief(inner, marker);
     generateIncludes(inner, marker);
     generateStatus(inner, marker);
     if (classe) {
         generateInherits(classe, marker);
         generateInheritedBy(classe, marker);
+#ifdef QDOC_QML
+        if (!classe->qmlElement().isEmpty()) {
+            generateInstantiatedBy(classe,marker);
+        }
+#endif
     }
     generateThreadSafeness(inner, marker);
     generateSince(inner, marker);
@@ -1552,10 +1550,10 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     else if (fake->subType() == Node::QmlClass) {
         const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
-        generateQmlInherits(qml_cn, marker);
-        generateQmlInstantiates(qml_cn, marker);
         generateBrief(qml_cn, marker);
+        generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
+        generateQmlInstantiates(qml_cn, marker);
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
         s = sections.begin();
         while (s != sections.end()) {
@@ -4180,16 +4178,14 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             const Node* n = myTree->findNode(strList,Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
-                out() << "<p class=\"centerAlign\">";
                 Text text;
-                text << "[Inherits ";
+                text << Atom::ParaLeft << "Inherits ";
                 text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
                 text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
                 text << Atom(Atom::String, linkPair.second);
                 text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-                text << "]";
+                text << Atom::ParaRight;
                 generateText(text, cn, marker);
-                out() << "</p>";
             }
         }
     }
@@ -4227,9 +4223,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 {
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        out() << "<p class=\"centerAlign\">";
         Text text;
-        text << "[";
+        text << Atom::ParaLeft;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         QString name = qcn->name();
@@ -4242,9 +4237,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, cn->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-        text << "]";
+        text << Atom::ParaRight;
         generateText(text, qcn, marker);
-        out() << "</p>";
     }
 }
 
@@ -4261,9 +4255,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
-            out() << "<p class=\"centerAlign\">";
             Text text;
-            text << "[";
+            text << Atom::ParaLeft;
             text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, cn->name());
@@ -4273,9 +4266,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, n->name());
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-            text << "]";
+            text << Atom::ParaRight;
             generateText(text, cn, marker);
-            out() << "</p>";
         }
     }
 }
