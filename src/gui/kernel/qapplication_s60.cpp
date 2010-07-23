@@ -382,6 +382,10 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
 QSymbianControl::~QSymbianControl()
 {
+    // Ensure backing store is deleted before the top-level
+    // window is destroyed
+    qt_widget_private(qwidget)->topData()->backingStore.destroy();
+
     if (S60->curWin == this)
         S60->curWin = 0;
     if (!QApplicationPrivate::is_app_closing) {
