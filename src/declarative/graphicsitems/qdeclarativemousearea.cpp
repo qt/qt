@@ -521,7 +521,8 @@ void QDeclarativeMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         // If we don't accept hover, we need to reset containsMouse.
         if (!acceptHoverEvents())
             setHovered(false);
-        if (scene()->mouseGrabberItem() == this)
+        QGraphicsScene *s = scene();
+        if (s && s->mouseGrabberItem() == this)
             ungrabMouse();
         setKeepMouseGrab(false);
     }
