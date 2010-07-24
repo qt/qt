@@ -7865,7 +7865,7 @@ QT_NAMESPACE = $QT_NAMESPACE
 QT_NAMESPACE_MAC_CRC = $QT_NAMESPACE_MAC_CRC
 
 #modules
-for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)
+for(mod,\$\$list(\$\$files(\$\$[QMAKE_MKSPECS]/modules/qt_*.pri))):include(\$\$mod)
 
 EOF
 if [ "$CFG_RPATH" = "yes" ]; then
