@@ -143,6 +143,7 @@ class Config
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"
 #define CONFIG_ONLINE                   "online"
+#define CONFIG_OFFLINE                  "offline"
 #define CONFIG_CREATOR                  "creator"
 #define CONFIG_OUTPUTDIR                "outputdir"
 #define CONFIG_OUTPUTENCODING           "outputencoding"
