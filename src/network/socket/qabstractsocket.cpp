@@ -356,6 +356,10 @@
     to enable.
     \value KeepAliveOption Set this to 1 to enable the SO_KEEPALIVE socket option
 
+    \value MulticastTtlOption Set this to an integer value to set IP_MULTICAST_TTL (TTL for multicast datagrams) socket option.
+
+    \value MulticastLoopbackOption Set this to 1 to enable the IP_MULTICAST_LOOP (multicast loopback) socket option.
+
     \sa QAbstractSocket::setSocketOption(), QAbstractSocket::socketOption()
 */
 

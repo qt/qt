@@ -330,7 +330,16 @@ bool QUdpSocket::bind(quint16 port, BindMode mode)
 }
 
 /*!
-    \since 4.6
+    \since 4.8
+
+    Joins the the multicast group specified by \a groupAddress on the default
+    interface chosen by the operating system. The socket must be in BoundState,
+    otherwise an error occurs.
+
+    This function returns true if successful; otherwise it returns false
+    and sets the socket error accordingly.
+
+    \sa leaveMulticastGroup()
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress)
 {
@@ -338,8 +347,13 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress)
 }
 
 /*!
-    \since 4.6
+    \since 4.8
     \overload
+
+    Joins the multicast group address \a groupAddress on the interface \a
+    iface.
+
+    \sa leaveMulticastGroup()
 */
 bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
                                     const QNetworkInterface &iface)
@@ -350,7 +364,16 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
 }
 
 /*!
-    \since 4.6
+    \since 4.8
+
+    Leaves the multicast group specified by \a groupAddress on the default
+    interface chosen by the operating system. The socket must be in BoundState,
+    otherwise an error occurs.
+
+   This function returns true if successful; otherwise it returns false and
+   sets the socket error accordingly.
+
+   \sa joinMulticastGroup()
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
 {
@@ -358,8 +381,13 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress)
 }
 
 /*!
-    \since 4.6
+    \since 4.8
     \overload
+
+    Leaves the multicast group specified by \a groupAddress on the interface \a
+    iface.
+
+    \sa joinMulticastGroup()
 */
 bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
                                      const QNetworkInterface &iface)
