@@ -1945,6 +1945,41 @@ const uint qt_bayer_matrix[16][16] = {
     ((((argb >> 24) * alpha) >> 8) << 24) | (argb & 0x00ffffff)
 
 
+// prototypes of all the composition functions
+void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_DestinationOver(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Source(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Destination(uint *, const uint *, int, uint);
+void QT_FASTCALL comp_func_SourceIn(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_DestinationIn(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_SourceOut(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_DestinationOut(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_SourceAtop(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_DestinationAtop(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_XOR(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Plus(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Multiply(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Screen(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Overlay(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Darken(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Lighten(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_ColorDodge(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_ColorBurn(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_HardLight(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_SoftLight(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Difference(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL comp_func_Exclusion(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SourceOrDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SourceAndDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SourceXorDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotSourceAndNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotSourceOrNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotSourceXorDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotSource(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotSourceAndDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SourceAndNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
+
 QT_END_NAMESPACE
 
 #endif // QDRAWHELPER_P_H
