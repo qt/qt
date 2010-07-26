@@ -211,6 +211,8 @@ namespace WebCore {
 
         QString chooseFile(const QString& oldFile);
 
+        static bool deferMainResourceDataLoad;
+
     private:
         Frame *m_frame;
         QWebFrame *m_webFrame;
