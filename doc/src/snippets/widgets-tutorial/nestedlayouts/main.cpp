@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
         << (QStringList() << "David Bradley" << "42")
         << (QStringList() << "Knut Walters" << "25")
         << (QStringList() << "Andrea Jones" << "34");
-    foreach (QStringList row, rows) {
+    foreach (const QStringList &row, rows) {
         QList<QStandardItem *> items;
-        foreach (QString text, row)
+        foreach (const QString &text, row)
             items.append(new QStandardItem(text));
         model.appendRow(items);
     }

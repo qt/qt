@@ -76,7 +76,7 @@ int main()
         // FORMATS
 //! [2]
         QStringList list = QPicture::inputFormatList();
-        foreach (QString string, list)
+        foreach (const QString &string, list)
             myProcessing(string);
 //! [2]
     }
@@ -85,7 +85,7 @@ int main()
         // OUTPUT
 //! [3]
         QStringList list = QPicture::outputFormatList();
-        foreach (QString string, list)
+        foreach (const QString &string, list)
             myProcessing(string);
 //! [3]
     }
