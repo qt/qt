@@ -77,6 +77,12 @@
 
     \snippet doc/src/snippets/code/src_network_socket_qudpsocket.cpp 0
 
+    QUdpSocket also supports UDP multicast. Use the joinMulticastGroup() and
+    leaveMulticastGroup() to control group membership, and the
+    QAbstractSocket::MulticastTtlOption and
+    QAbstractSocket::MulticastLoopbackOption to set the TTL and loopback socket
+    options.
+
     With QUdpSocket, you can also establish a virtual connection to a
     UDP server using connectToHost() and then use read() and write()
     to exchange datagrams without specifying the receiver for each
