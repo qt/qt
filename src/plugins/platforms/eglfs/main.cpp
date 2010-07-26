@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/QPlatformIntegrationPlugin>
-#include "eglintegration.h"
+#include "qeglfsintegration.h"
 
 QT_BEGIN_NAMESPACE
 

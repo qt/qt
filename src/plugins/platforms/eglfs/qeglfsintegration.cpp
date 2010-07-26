@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "eglintegration.h"
+#include "qeglfsintegration.h"
 
 #include <QtGui/QPlatformWindow>
 #include <QtOpenGL/private/qwindowsurface_gl_p.h>

@@ -1,13 +1,15 @@
-TARGET = eglintegration
+TARGET = qeglfs
 TEMPLATE = lib
 CONFIG += plugin
 
 QT += opengl
 
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
+
 SOURCES =   main.cpp \
-            eglintegration.cpp \
+            qeglfsintegration.cpp \
             ../eglconvenience/qeglconvenience.cpp
-HEADERS =   eglintegration.h \
+HEADERS =   qeglfsintegration.h \
             ../eglconvenience/qeglconvenience.h
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
