@@ -416,7 +416,7 @@ void QGLBuffer::allocate(const void *data, int count)
 
     \sa release(), create()
 */
-bool QGLBuffer::bind() const
+bool QGLBuffer::bind()
 {
 #ifndef QT_NO_DEBUG
     if (!isCreated())
@@ -448,7 +448,7 @@ bool QGLBuffer::bind() const
 
     \sa bind()
 */
-void QGLBuffer::release() const
+void QGLBuffer::release()
 {
 #ifndef QT_NO_DEBUG
     if (!isCreated())
