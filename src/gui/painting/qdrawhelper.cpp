@@ -1715,11 +1715,6 @@ void QT_FASTCALL comp_func_XOR(uint *dest, const uint *src, int length, uint con
     }
 }
 
-static const uint AMASK = 0xff000000;
-static const uint RMASK = 0x00ff0000;
-static const uint GMASK = 0x0000ff00;
-static const uint BMASK = 0x000000ff;
-
 struct QFullCoverage {
     inline void store(uint *dest, const uint src) const
     {
@@ -7775,6 +7770,7 @@ void qInitDrawhelperAsm()
 #ifdef QT_HAVE_MMX
     if (features & MMX) {
         functionForModeAsm = qt_functionForMode_MMX;
+
         functionForModeSolidAsm = qt_functionForModeSolid_MMX;
         qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_mmx;
 #ifdef QT_HAVE_3DNOW
@@ -7823,8 +7819,10 @@ void qInitDrawhelperAsm()
                                                   int length,
                                                   uint const_alpha);
             extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
+            extern void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha);
 
             functionForModeAsm[0] = comp_func_SourceOver_sse2;
+            functionForModeAsm[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
             functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
 
             extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,

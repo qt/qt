@@ -91,6 +91,11 @@ QT_BEGIN_NAMESPACE
 #  define Q_STATIC_INLINE_FUNCTION static inline
 #endif
 
+static const uint AMASK = 0xff000000;
+static const uint RMASK = 0x00ff0000;
+static const uint GMASK = 0x0000ff00;
+static const uint BMASK = 0x000000ff;
+
 /*******************************************************************************
  * QSpan
  *
