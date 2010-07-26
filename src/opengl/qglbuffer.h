@@ -101,8 +101,8 @@ public:
 
     void destroy();
 
-    bool bind() const;
-    void release() const;
+    bool bind();
+    void release();
 
     static void release(QGLBuffer::Type type);
 
