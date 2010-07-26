@@ -133,7 +133,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         if (mm.methodType() == QMetaMethod::Signal)
             // adding a signal
             isSignal = true;
-        else if (mm.methodType() == QMetaMethod::Slot && mm.access() == QMetaMethod::Public)
+        else if (mm.access() == QMetaMethod::Public && (mm.methodType() == QMetaMethod::Slot || mm.methodType() == QMetaMethod::Method))
             isSignal = false;
         else
             continue;           // neither signal nor public slot
@@ -141,9 +141,9 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         if (isSignal && !(flags & (QDBusConnection::ExportScriptableSignals |
                                    QDBusConnection::ExportNonScriptableSignals)))
             continue;           // we're not exporting any signals
-        if (!isSignal && !(flags & (QDBusConnection::ExportScriptableSlots |
-                                    QDBusConnection::ExportNonScriptableSlots)))
-            continue;           // we're not exporting any slots
+        if (!isSignal && (!(flags & (QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportNonScriptableSlots)) &&
+                          !(flags & (QDBusConnection::ExportScriptableInvokables | QDBusConnection::ExportNonScriptableInvokables))))
+            continue;           // we're not exporting any slots or invokables
 
         QString xml = QString::fromLatin1("    <%1 name=\"%2\">\n")
                       .arg(isSignal ? QLatin1String("signal") : QLatin1String("method"))
