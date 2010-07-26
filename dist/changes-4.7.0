@@ -345,6 +345,12 @@ Qt for Windows CE
     * QTabBar scroll button size has been fixed. (QTBUG-8757)
     * Detection of Windows mobile 6.5 fixed. (QTBUG-8418)
 
+Qt for Symbian
+--------------
+
+ - QSplashScreen
+    * [QTBUG-11129] Fixed a hanging bug in QSplashScreen on 3.1 devices.
+
 
 
 ****************************************************************************
@@ -358,8 +364,20 @@ Qt for Windows CE
 
 - Build System
 
-  - "configure -fast" on Windows now also works for other make tools than
-    nmake. (QTBUG-8562)
+ - [QT-3540] Fixed Symbian resources not honoring TARGET with a path.
+ - "configure -fast" on Windows now also works for other make tools than
+   nmake. (QTBUG-8562)
+ - [QTBUG-11351] Fixed memory restrictions not being passed on to elf2e32.
+ - [QTBUG-11385] Removed the need to specify -arch symbian when compiling
+   for Symbian on Linux.
+ - [QTBUG-11396] "configure -qtlibinfix" now works when compiling for
+   Symbian on Linux.
+ - [QTBUG-11670] Fixed a bug which caused "make runonphone" to look for
+   package in the wrong place.
+ - [QTBUG-11727] Fixed a bug which made builds outside of the Qt tree fail
+   to compile.
+ - [QTBUG-11927] "configure -silent" now works with the
+   symbian/linux-armcc and symbian/linux-gcce mkspecs.
 
 - Assistant
 
