@@ -9681,7 +9681,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 
@@ -9730,7 +9729,7 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QVERIFY(0 != backingStore(child));
 
     // Parent is obscured, therefore its backing store should be destroyed
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QEXPECT_FAIL("", "QTBUG-12406", Continue);
     QVERIFY(0 == backingStore(parent));
 
     // Disable full screen
@@ -9744,7 +9743,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 }
