@@ -41,7 +41,7 @@
 #define CHARTSPLUGIN_H
 
 //![0]
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
+#include <QDeclarativeExtensionPlugin>
 
 class ChartsPlugin : public QDeclarativeExtensionPlugin
 {

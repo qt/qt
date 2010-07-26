@@ -228,7 +228,7 @@ There are also string based constructors for these types. See \l{qdeclarativebas
 
 \section1 Date/Time Formatters
 
-The Qt object contains several functions for formatting dates and times.
+The Qt object contains several functions for formatting QDateTime, QDate and QTime values.
 
 \list
     \o \l{QML:Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
