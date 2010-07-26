@@ -234,6 +234,73 @@ uint qDetectCPUFeatures()
 
 #endif // i386
 
+#if defined(__x86_64__) || defined(Q_OS_WIN64)
+    uint feature_result = 0;
+
+#if defined(Q_CC_GNU)
+    asm ("push %%rbx\n"
+         "pushf\n"
+         "pop %%rax\n"
+         "mov %%eax, %%ebx\n"
+         "xor $0x00200000, %%eax\n"
+         "push %%rax\n"
+         "popf\n"
+         "pushf\n"
+         "pop %%rax\n"
+         "xor %%edx, %%edx\n"
+         "xor %%ebx, %%eax\n"
+         "jz 1f\n"
+
+         "mov $0x00000001, %%eax\n"
+         "cpuid\n"
+         "1:\n"
+         "pop %%rbx\n"
+         "mov %%ecx, %0\n"
+        : "=r" (feature_result)
+        :
+        : "%eax", "%ecx", "%edx"
+        );
+#elif defined (Q_OS_WIN64)
+    _asm {
+        push rax
+        push rbx
+        push rcx
+        push rdx
+        pushfd
+        pop rax
+        mov ebx, eax
+        xor eax, 00200000h
+        push rax
+        popfd
+        pushfd
+        pop rax
+        mov edx, 0
+        xor eax, ebx
+        jz skip
+
+        mov eax, 1
+        cpuid
+        mov feature_result, ecx
+    skip:
+        pop rdx
+        pop rcx
+        pop rbx
+        pop rax
+    }
+#endif
+
+    if (feature_result & (1u))
+        features |= SSE3;
+    if (feature_result & (1u << 9))
+        features |= SSSE3;
+    if (feature_result & (1u << 19))
+        features |= SSE4_1;
+    if (feature_result & (1u << 20))
+        features |= SSE4_2;
+    if (feature_result & (1u << 28))
+        features |= AVX;
+#endif // x86_64
+
 #if defined(QT_HAVE_MMX)
     if (qgetenv("QT_NO_MMX").toInt())
         features ^= MMX;
