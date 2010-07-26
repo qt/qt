@@ -3716,6 +3716,9 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
+#ifndef Q_WS_X11
+    QSKIP("Only tested on X11", SkipAll);
+#endif
     QLineEdit le;
     le.setText("               ");
     QPalette p = le.palette();
