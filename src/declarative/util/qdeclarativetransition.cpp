@@ -66,13 +66,13 @@ QT_BEGIN_NAMESPACE
    
     \snippet doc/src/snippets/declarative/transition.qml 0
 
-    To specify multiple transitions, specify \l Item::transitions as a list:
+    To define multiple transitions, specify \l Item::transitions as a list:
 
     \qml
     Item {
         ...
         transitions: [
-            Transition { ... }
+            Transition { ... },
             Transition { ... }
         ]
     }
