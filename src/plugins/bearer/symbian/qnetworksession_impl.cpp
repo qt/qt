@@ -1044,6 +1044,11 @@ void QNetworkSessionPrivateImpl::RunL()
             TInt error = KErrNone;
             QNetworkConfiguration newActiveConfig = activeConfiguration();
             if (!newActiveConfig.isValid()) {
+                // RConnection startup was successfull but no configuration
+                // was found. That indicates that user has chosen to create a
+                // new WLAN configuration (from scan results), but that new
+                // configuration does not have access to Internet (Internet
+                // Connectivity Test, ICT, failed).
                 error = KErrGeneral;
             } else {
                 // Use name of the IAP to open global 'Open C' RConnection
@@ -1053,15 +1058,23 @@ void QNetworkSessionPrivateImpl::RunL()
                 strcpy(ifr.ifr_name, nameAsByteArray.constData());
                 error = setdefaultif(&ifr);
             }
-            
             if (error != KErrNone) {
                 isOpen = false;
                 isOpening = false;
                 iError = QNetworkSession::UnknownSessionError;
                 QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-                Cancel();
                 if (ipConnectionNotifier) {
                     ipConnectionNotifier->StopNotifications();
+                }
+                if (!newActiveConfig.isValid()) {
+                    // No valid configuration, bail out.
+                    // Status updates from QNCM won't be received correctly
+                    // because there is no configuration to associate them with so transit here.
+                    iConnection.Close();
+                    newState(QNetworkSession::Closing);
+                    newState(QNetworkSession::Disconnected);
+                } else {
+                    Cancel();
                 }
                 QT_TRYCATCH_LEAVING(syncStateWithInterface());
                 return;
