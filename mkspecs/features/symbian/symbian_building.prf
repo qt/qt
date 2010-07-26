@@ -131,7 +131,6 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
                       $$QMAKE_POST_LINK
-    silent:QMAKE_POST_LINK = @echo postlinking $@ && $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${baseTarget}.dso
@@ -178,7 +177,6 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       $$QMAKE_ELF2E32_FLAGS \
                       && ln "$${symbianDestdir}/$${baseTarget}.exe" "$${symbianDestdir}/$${baseTarget}" \
                       $$QMAKE_POST_LINK
-    silent:QMAKE_POST_LINK = @echo postlinking $@ && $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.exe
     QMAKE_CLEAN += $${symbianDestdir}/$${baseTarget}
@@ -245,7 +243,6 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o$${symbianDestdir}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsg \
                             -i${QMAKE_FILE_NAME}
-silent:symbianresources.commands = @echo rcomp $< && $$symbianresources.commands
 symbianresources.dependency_type = TYPE_C
 symbianresources.CONFIG = no_link target_predeps
 
@@ -269,7 +266,6 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                   -o$${symbianDestdir}/$${baseResourceTarget}.rsc \
                                   -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg \
                                   -i$${baseResourceTarget}.rss
-    silent:symbianGenResource.commands = @echo rcomp $${baseResourceTarget}.rss && $$symbianGenResource.commands
     symbianGenResource.depends = $${baseResourceTarget}.rss
     PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
@@ -288,7 +284,6 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                      -o$${symbianDestdir}/$${baseResourceTarget}_reg.rsc \
                                      -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg \
                                      -i$${baseResourceTarget}_reg.rss
-    silent:symbianGenRegResource.commands = @echo rcomp $${baseResourceTarget}_reg.rss && $$symbianGenRegResource.commands
     symbianGenRegResource.depends = $${baseResourceTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
     PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg

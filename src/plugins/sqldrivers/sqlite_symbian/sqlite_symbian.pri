@@ -13,7 +13,6 @@
                                           && $$QMAKE_COPY ${QMAKE_FILE_OUT_BASE}.h ${QMAKE_FILE_OUT}.tmp \
                                           && $$QMAKE_DEL_FILE ${QMAKE_FILE_OUT_BASE}.h \
                                           && $$QMAKE_MOVE ${QMAKE_FILE_OUT}.tmp ${QMAKE_FILE_OUT}
-        silent:symbian_sqlite3_header.commands = @echo unzipping $@ && $$symbian_sqlite3_header.commands
         QMAKE_EXTRA_COMPILERS += symbian_sqlite3_header
 
         # The QMAKE_COPY section is to update timestamp on the file.
@@ -25,7 +24,6 @@
                                        && $$QMAKE_COPY ${QMAKE_FILE_OUT_BASE}.dso ${QMAKE_FILE_OUT}.tmp \
                                        && $$QMAKE_DEL_FILE ${QMAKE_FILE_OUT_BASE}.dso \
                                        && $$QMAKE_MOVE ${QMAKE_FILE_OUT}.tmp ${QMAKE_FILE_OUT}
-        silent:symbian_sqlite3_dso.commands = @echo unzipping $@ && $$symbian_sqlite3_dso.commands
         QMAKE_EXTRA_COMPILERS += symbian_sqlite3_dso
 
         symbian_sqlite3_ver_dso.input = symbian_sqlite3_zip_file
