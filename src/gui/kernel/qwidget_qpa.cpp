@@ -116,8 +116,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
-    //### jl: subwindows now enabled
-    Q_UNUSED(destroySubWindows);
 
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
@@ -127,8 +125,18 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         QApplication::setActiveWindow(0);
 
     if (windowType() != Qt::Desktop) {
-        if (destroyWindow && isWindow()) {
-//### jl: delete all child windows...
+        if (destroySubWindows) {
+            QObjectList childList(children());
+            for (int i = 0; i < childList.size(); i++) {
+                QWidget *widget = qobject_cast<QWidget *>(childList.at(i));
+                if (widget && widget->testAttribute(Qt::WA_NativeWindow)) {
+                    if (widget->platformWindow()) {
+                        widget->destroy();
+                    }
+                }
+            }
+        }
+        if (destroyWindow) {
             QTLWExtra *topData = d->maybeTopData();
             if (topData) {
                 delete topData->platformWindow;
