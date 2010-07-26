@@ -597,11 +597,11 @@ int QNativeSocketEnginePrivate::nativeAccept()
 }
 
 
-static bool doMulticast(QNativeSocketEnginePrivate *d,
-                        int how6,
-                        int how4,
-                        const QHostAddress &groupAddress,
-                        const QNetworkInterface &interface)
+static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
+                                      int how6,
+                                      int how4,
+                                      const QHostAddress &groupAddress,
+                                      const QNetworkInterface &interface)
 {
     int sockOpt = 0;
     void *sockArg;
@@ -668,29 +668,29 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
 bool QNativeSocketEnginePrivate::nativeJoinMulticastGroup(const QHostAddress &groupAddress,
                                                           const QNetworkInterface &interface)
 {
-    return doMulticast(this,
+    return multicastMembershipHelper(this,
 #ifndef QT_NO_IPV6
-                       IPV6_JOIN_GROUP,
+                                     IPV6_JOIN_GROUP,
 #else
-                       0,
+                                     0,
 #endif
-                       IP_ADD_MEMBERSHIP,
-                       groupAddress,
-                       interface);
+                                     IP_ADD_MEMBERSHIP,
+                                     groupAddress,
+                                     interface);
 }
 
 bool QNativeSocketEnginePrivate::nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
                                                            const QNetworkInterface &interface)
 {
-    return doMulticast(this,
+    return multicastMembershipHelper(this,
 #ifndef QT_NO_IPV6
-                       IPV6_LEAVE_GROUP,
+                                     IPV6_LEAVE_GROUP,
 #else
-                       0,
+                                     0,
 #endif
-                       IP_DROP_MEMBERSHIP,
-                       groupAddress,
-                       interface);
+                                     IP_DROP_MEMBERSHIP,
+                                     groupAddress,
+                                     interface);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const

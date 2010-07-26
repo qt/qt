@@ -765,11 +765,11 @@ int QNativeSocketEnginePrivate::nativeAccept()
     return acceptedDescriptor;
 }
 
-static bool doMulticast(QNativeSocketEnginePrivate *d,
-                        int how6,
-                        int how4,
-                        const QHostAddress &groupAddress,
-                        const QNetworkInterface &iface)
+static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
+                                      int how6,
+                                      int how4,
+                                      const QHostAddress &groupAddress,
+                                      const QNetworkInterface &iface)
 {
     int sockOpt = 0;
     char *sockArg;
@@ -828,29 +828,29 @@ static bool doMulticast(QNativeSocketEnginePrivate *d,
 bool QNativeSocketEnginePrivate::nativeJoinMulticastGroup(const QHostAddress &groupAddress,
                                                           const QNetworkInterface &iface)
 {
-    return doMulticast(this,
+    return multicastMembershipHelper(this,
 #ifndef QT_NO_IPV6
-                       IPV6_JOIN_GROUP,
+                                     IPV6_JOIN_GROUP,
 #else
-                       0,
+                                     0,
 #endif
-                       IP_ADD_MEMBERSHIP,
-                       groupAddress,
-                       iface);
+                                     IP_ADD_MEMBERSHIP,
+                                     groupAddress,
+                                     iface);
 }
 
 bool QNativeSocketEnginePrivate::nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
                                                            const QNetworkInterface &iface)
 {
-    return doMulticast(this,
+    return multicastMembershipHelper(this,
 #ifndef QT_NO_IPV6
-                       IPV6_LEAVE_GROUP,
+                                     IPV6_LEAVE_GROUP,
 #else
-                       0,
+                                     0,
 #endif
-                       IP_DROP_MEMBERSHIP,
-                       groupAddress,
-                       iface);
+                                     IP_DROP_MEMBERSHIP,
+                                     groupAddress,
+                                     iface);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
