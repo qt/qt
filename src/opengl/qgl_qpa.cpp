@@ -87,8 +87,10 @@ void QGLContext::reset()
     doneCurrent();
 
     if (d->platformContext) {
-        //dont delete. This will be done by the platform
-        d->platformContext = 0;
+        if (d->paintDevice && d->paintDevice->devType() == QInternal::Widget) {
+            QWidget *widget = static_cast<QWidget *>(d->paintDevice);
+            widget->destroy();
+        }
     }
 
     d->crWin = false;
