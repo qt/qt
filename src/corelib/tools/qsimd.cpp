@@ -91,6 +91,7 @@ uint qDetectCPUFeatures()
     features = MMX|SSE|SSE2;
 #elif defined(__i386__) || defined(_M_IX86)
     unsigned int extended_result = 0;
+    unsigned int feature_result = 0;
     uint result = 0;
     /* see p. 118 of amd64 instruction set manual Vol3 */
 #if defined(Q_CC_GNU)
@@ -112,7 +113,8 @@ uint qDetectCPUFeatures()
          "1:\n"
          "pop %%ebx\n"
          "mov %%edx, %0\n"
-        : "=r" (result)
+         "mov %%ecx, %1\n"
+        : "=r" (result), "=r" (feature_result)
         :
         : "%eax", "%ecx", "%edx"
         );
@@ -164,6 +166,7 @@ uint qDetectCPUFeatures()
         mov eax, 1
         cpuid
         mov result, edx
+        mov feature_result, ecx
     skip:
         pop edx
         pop ecx
@@ -218,15 +221,15 @@ uint qDetectCPUFeatures()
         features |= SSE;
     if (result & (1u << 26))
         features |= SSE2;
-    if (extended_result & (1u))
+    if (feature_result & (1u))
         features |= SSE3;
-    if (extended_result & (1u << 9))
+    if (feature_result & (1u << 9))
         features |= SSSE3;
-    if (extended_result & (1u << 19))
+    if (feature_result & (1u << 19))
         features |= SSE4_1;
-    if (extended_result & (1u << 20))
+    if (feature_result & (1u << 20))
         features |= SSE4_2;
-    if (extended_result & (1u << 28))
+    if (feature_result & (1u << 28))
         features |= AVX;
 
 #endif // i386
