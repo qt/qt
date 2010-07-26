@@ -300,7 +300,8 @@ if($stub) {
         && $templatepkg !~ m/_installer\.pkg$/i
         && !$onlyUnsigned) {
         print("Auto-patching capabilities for self signed package.\n");
-        system ("patch_capabilities $pkgoutput");
+        my $patch_capabilities = File::Spec->catfile(dirname($0), "patch_capabilities");
+        system ("$patch_capabilities $pkgoutput");
     }
 
     # Create SIS.
