@@ -508,7 +508,7 @@ static bool shouldWatchService(const QString &service)
     return !service.isEmpty() && !service.startsWith(QLatin1Char(':'));
 }
 
-extern QDBUS_EXPORT void qDBusAddSpyHook(QDBusSpyHook);
+extern Q_DBUS_EXPORT void qDBusAddSpyHook(QDBusSpyHook);
 void qDBusAddSpyHook(QDBusSpyHook hook)
 {
     qDBusSpyHookList()->append(hook);
