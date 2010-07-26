@@ -146,12 +146,14 @@ void QNetworkSessionPrivateImpl::configurationRemoved(QNetworkConfigurationPriva
     }
 }
 
+// Function sets the state of the session to match the state
+// of the underlying interface (the configuration this session is based on)
 void QNetworkSessionPrivateImpl::syncStateWithInterface()
 {
     if (!publicConfig.isValid())
         return;
 
-    if (iFirstSync && publicConfig.isValid()) {
+    if (iFirstSync) {
         QObject::connect(engine, SIGNAL(configurationStateChanged(TUint32, TUint32, QNetworkSession::State)),
                          this, SLOT(configurationStateChanged(TUint32, TUint32, QNetworkSession::State)));
         // Listen to configuration removals, so that in case the configuration
@@ -162,46 +164,25 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     // Start listening IAP state changes from QNetworkConfigurationManagerPrivate
     iHandleStateNotificationsFromManager = true;    
 
-    // Check open connections to see if there is already
-    // an open connection to selected IAP or SNAP
-    TUint count;
-    TRequestStatus status;
-    iConnectionMonitor.GetConnectionCount(count, status);
-    User::WaitForRequest(status);
-    if (status.Int() != KErrNone) {
-        return;
-    }
-
-    TUint numSubConnections;
-    TUint connectionId;
-    for (TUint i = 1; i <= count; i++) {
-        TInt ret = iConnectionMonitor.GetConnectionInfo(i, connectionId, numSubConnections);
-        if (ret == KErrNone) {
-            TUint apId;
-            iConnectionMonitor.GetUintAttribute(connectionId, 0, KIAPId, apId, status);
-            User::WaitForRequest(status);
-            if (status.Int() == KErrNone) {
-                TInt connectionStatus;
-                iConnectionMonitor.GetIntAttribute(connectionId, 0, KConnectionStatus, connectionStatus, status);
-                User::WaitForRequest(status);
-                if (connectionStatus == KLinkLayerOpen) {
-                    if (state != QNetworkSession::Closing) {
-                        if (newState(QNetworkSession::Connected, apId)) {
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (state != QNetworkSession::Connected) {
-        if ((publicConfig.state() & QNetworkConfiguration::Discovered) ==
-            QNetworkConfiguration::Discovered) {
-            newState(QNetworkSession::Disconnected);
-        } else {
-            newState(QNetworkSession::NotAvailable);
-        }
+    // Check what is the state of the configuration this session is based on
+    // and set the session in appropriate state.
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "QNS this : " << QString::number((uint)this) << " - "
+             << "syncStateWithInterface() state of publicConfig is: " << publicConfig.state();
+#endif
+    switch (publicConfig.state()) {
+    case QNetworkConfiguration::Active:
+        newState(QNetworkSession::Connected);
+        break;
+    case QNetworkConfiguration::Discovered:
+        newState(QNetworkSession::Disconnected);
+        break;
+    case QNetworkConfiguration::Defined:
+        newState(QNetworkSession::NotAvailable);
+        break;
+    case QNetworkConfiguration::Undefined:
+    default:
+        newState(QNetworkSession::Invalid);
     }
 }
 
@@ -253,7 +234,8 @@ QNetworkInterface QNetworkSessionPrivateImpl::currentInterface() const
              << "currentInterface() requested, state: " << state
              << "publicConfig validity: " << publicConfig.isValid();
     if (activeInterface.isValid())
-        qDebug() << "interface is: " << activeInterface.humanReadableName();
+        qDebug() << "QNS this : " << QString::number((uint)this) << " - "
+                 << "interface is: " << activeInterface.humanReadableName();
 #endif
 
     if (!publicConfig.isValid() || state != QNetworkSession::Connected) {
@@ -906,6 +888,14 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
     if (iapId == 0) {
         _LIT(KSetting, "IAP\\Id");
         iConnection.GetIntSetting(KSetting, iapId);
+#ifdef OCC_FUNCTIONALITY_AVAILABLE
+        // Check if this is an Easy WLAN configuration. On Symbian^3 RConnection may report
+        // the used configuration as 'EasyWLAN' IAP ID if someone has just opened the configuration
+        // from WLAN Scan dialog, _and_ that connection is still up. We need to find the
+        // real matching configuration. Function alters the Easy WLAN ID to real IAP ID (only if
+        // easy WLAN):
+        engine->easyWlanTrueIapId(iapId);
+#endif
     }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE

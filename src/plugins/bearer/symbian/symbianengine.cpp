@@ -270,7 +270,7 @@ void SymbianEngine::updateConfigurationsL()
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
 
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE    
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
     // S60 version is >= Series60 3rd Edition Feature Pack 2
     TInt error = KErrNone;
     
@@ -311,7 +311,17 @@ void SymbianEngine::updateConfigurationsL()
     iCmManager.AllDestinationsL(destinations);
     for(int i = 0; i < destinations.Count(); i++) {
         RCmDestination destination;
-        destination = iCmManager.DestinationL(destinations[i]);
+
+        // Some destinatsions require ReadDeviceData -capability (MMS/WAP)
+        // The below function will leave in these cases. Don't. Proceed to
+        // next destination (if any).
+        TRAPD(error, destination = iCmManager.DestinationL(destinations[i]));
+        if (error == KErrPermissionDenied) {
+            continue;
+        } else {
+            User::LeaveIfError(error);
+        }
+
         CleanupClosePushL(destination);
         QString ident = QT_BEARERMGMT_CONFIGURATION_SNAP_PREFIX +
                         QString::number(qHash(destination.Id()));
@@ -319,12 +329,12 @@ void SymbianEngine::updateConfigurationsL()
             knownSnapConfigs.removeOne(ident);
         } else {
             SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
-    
+
             HBufC *pName = destination.NameLC();
             QT_TRYCATCH_LEAVING(cpPriv->name = QString::fromUtf16(pName->Ptr(),pName->Length()));
             CleanupStack::PopAndDestroy(pName);
             pName = NULL;
-    
+
             cpPriv->isValid = true;
             cpPriv->id = ident;
             cpPriv->numericId = destination.Id();
@@ -393,7 +403,6 @@ void SymbianEngine::updateConfigurationsL()
         CleanupStack::PopAndDestroy(&destination);
     }
     CleanupStack::PopAndDestroy(&destinations);
-    
 #else
     // S60 version is < Series60 3rd Edition Feature Pack 2
     CCommsDbTableView* pDbTView = ipCommsDB->OpenTableLC(TPtrC(IAP));
@@ -423,8 +432,9 @@ void SymbianEngine::updateConfigurationsL()
     }
     CleanupStack::PopAndDestroy(pDbTView);
 #endif
+
     QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
-    
+
     foreach (const QString &oldIface, knownConfigs) {
         //remove non existing IAP
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
@@ -687,6 +697,11 @@ void SymbianEngine::updateActiveAccessPoints()
             if (!ptr) {
                 // If IAP was not found, check if the update was about EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
+                // Change the ident correspondingly
+                if (ptr) {
+                    ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                            QString::number(qHash(toSymbianConfig(ptr)->numericIdentifier()));
+                }
             }
 #endif
             if (ptr) {
@@ -1224,6 +1239,45 @@ QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUi
     }
     return QNetworkConfigurationPrivatePointer();
 }
+
+bool SymbianEngine::easyWlanTrueIapId(TUint32& trueIapId)
+{
+    // Check if this is easy wlan id in the first place
+    if (trueIapId != iCmManager.EasyWlanIdL())
+        return false;
+
+    // Loop through all connections that connection monitor is aware
+    // and check for IAPs based on easy WLAN
+    TRequestStatus status;
+    TUint connectionCount;
+    iConnectionMonitor.GetConnectionCount(connectionCount, status);
+    User::WaitForRequest(status);
+    TUint connectionId;
+    TUint subConnectionCount;
+    TUint apId;
+    if (status.Int() == KErrNone) {
+        for (TUint i = 1; i <= connectionCount; i++) {
+            iConnectionMonitor.GetConnectionInfo(i, connectionId, subConnectionCount);
+            iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount,
+                                                KIAPId, apId, status);
+            User::WaitForRequest(status);
+            if (apId == trueIapId) {
+                QNetworkConfigurationPrivatePointer ptr =
+                    configurationFromEasyWlan(apId, connectionId);
+                if (ptr) {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+                    qDebug() << "QNCM easyWlanTrueIapId(), found true IAP ID: "
+                             << toSymbianConfig(ptr)->numericIdentifier();
+#endif
+                    trueIapId = toSymbianConfig(ptr)->numericIdentifier();
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 #endif
 
 // Sessions may use this function to report configuration state changes,
