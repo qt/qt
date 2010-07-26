@@ -125,25 +125,27 @@ equals(GENERATE_SIS_TARGETS, true) {
             QMAKE_EXTRA_TARGETS += store_build_target
         }
     } else {
+        qtPrepareTool(QMAKE_CREATEPACKAGE, createpackage)
+
         sis_destdir = $$DESTDIR
         isEmpty(sis_destdir):sis_destdir = .
         baseTarget = $$basename(TARGET)
         !equals(TARGET, "$$baseTarget"):sis_destdir = $$sis_destdir/$$dirname(TARGET)
 
         sis_target.target = sis
-        sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
+        sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                   - $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
         sis_target.depends = first
 
         unsigned_sis_target.target = unsigned_sis
-        unsigned_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg
+        unsigned_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg
         unsigned_sis_target.depends = first
 
         target_sis_target.target = $${sis_destdir}/$${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
 
         installer_sis_target.target = installer_sis
-        installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
+        installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                             $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
         installer_sis_target.depends = $${sis_destdir}/$${baseTarget}.sis
 
