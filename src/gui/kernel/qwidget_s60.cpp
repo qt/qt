@@ -1134,8 +1134,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
         const bool cbaVisibilityHint = windowFlags() & Qt::WindowSoftkeysVisibleHint;
         if (newstate & Qt::WindowFullScreen && !cbaVisibilityHint) {
+            setAttribute(Qt::WA_OutsideWSRange, false);
             window->SetExtentToWholeScreen();
         } else if (newstate & Qt::WindowMaximized || ((newstate & Qt::WindowFullScreen) && cbaVisibilityHint)) {
+            setAttribute(Qt::WA_OutsideWSRange, false);
             TRect maxExtent = qt_QRect2TRect(qApp->desktop()->availableGeometry(this));
             window->SetExtent(maxExtent.iTl, maxExtent.Size());
         } else {
