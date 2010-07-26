@@ -618,7 +618,7 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
             continue;
 
         // check type:
-        if (mm.methodType() != QMetaMethod::Slot)
+        if (mm.methodType() != QMetaMethod::Slot && mm.methodType() != QMetaMethod::Method)
             continue;
 
         // check name:
@@ -682,10 +682,17 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
         if (isAsync && metaTypes.count() > i + 1)
             continue;
 
-        if (isScriptable && (flags & QDBusConnection::ExportScriptableSlots) == 0)
-            continue;           // not exported
-        if (!isScriptable && (flags & QDBusConnection::ExportNonScriptableSlots) == 0)
-            continue;           // not exported
+        if (mm.methodType() == QMetaMethod::Slot) {
+            if (isScriptable && (flags & QDBusConnection::ExportScriptableSlots) == 0)
+                continue;           // scriptable slots not exported
+            if (!isScriptable && (flags & QDBusConnection::ExportNonScriptableSlots) == 0)
+                continue;           // non-scriptable slots not exported
+        } else {
+            if (isScriptable && (flags & QDBusConnection::ExportScriptableInvokables) == 0)
+                continue;           // scriptable invokables not exported
+            if (!isScriptable && (flags & QDBusConnection::ExportNonScriptableInvokables) == 0)
+                continue;           // non-scriptable invokables not exported
+        }
 
         // if we got here, this slot matched
         return idx;
@@ -1379,7 +1386,8 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
         return;                 // internal filters have already run or an error has been sent
 
     // try the object itself:
-    if (node.flags & (QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportNonScriptableSlots)) {
+    if (node.flags & (QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportNonScriptableSlots) ||
+        node.flags & (QDBusConnection::ExportScriptableInvokables|QDBusConnection::ExportNonScriptableInvokables)) {
         bool interfaceFound = true;
         if (!msg.interface().isEmpty())
             interfaceFound = qDBusInterfaceInObject(node.obj, msg.interface());
