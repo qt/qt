@@ -2773,7 +2773,10 @@ QPoint QIconModeViewBase::initDynamicLayout(const QListViewLayoutInfo &info)
         y = info.bounds.y() + info.spacing;
         items.reserve(rowCount() - hiddenCount());
     } else {
-        const QListViewItem item = items.at(info.first - 1);
+        int idx = info.first - 1;
+        while (idx > 0 && !items.at(idx).isValid())
+            --idx;
+        const QListViewItem &item = items.at(idx);
         x = item.x;
         y = item.y;
         if (info.flow == QListView::LeftToRight)
@@ -2899,6 +2902,8 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
     // resize the content area
     if (done || !info.bounds.contains(item->rect()))
         contentsSize = QSize(rect.width(), rect.height());
+    if (rect.size().isEmpty())
+        return;
     // resize tree
     int insertFrom = info.first;
     if (done || info.first == 0) {
