@@ -1130,7 +1130,9 @@ void QNetworkSessionPrivateImpl::RunL()
             isOpening = false;
             activeConfig = QNetworkConfiguration();
             serviceConfig = QNetworkConfiguration();
-            if (publicConfig.state() == QNetworkConfiguration::Undefined ||
+            if (statusCode == KErrCancel) {
+                iError = QNetworkSession::SessionAbortedError;
+            } else if (publicConfig.state() == QNetworkConfiguration::Undefined ||
                 publicConfig.state() == QNetworkConfiguration::Defined) {
                 iError = QNetworkSession::InvalidConfigurationError;
             } else {
