@@ -1113,15 +1113,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         // The window decoration visibility has to be changed before doing actual window state
         // change since in that order the availableGeometry will return directly the right size and
         // we will avoid unnecessarty redraws
-        CEikStatusPane *statusPane = S60->statusPane();
-        CEikButtonGroupContainer *buttonGroup = S60->buttonGroupContainer();
-        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        if (statusPane)
-            statusPane->MakeVisible(visible);
-        if (buttonGroup) {
-            // Visibility
-            buttonGroup->MakeVisible(visible || (isFullscreen && cbaRequested));
-        }
+        const bool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        const bool statusPaneVisibility = visible;
+        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaRequested));
+        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif // Q_WS_S60
 
         // Ensure the initial size is valid, since we store it as normalGeometry below.
@@ -1145,7 +1140,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             // accurate because it did not consider the status pane. This means that when returning
             // normal mode after showing the status pane, the geometry would overlap so we should
             // move it if it never had an explicit position.
-            if (!wasMoved && statusPane && visible) {
+            if (!wasMoved && S60->statusPane() && visible) {
                 TPoint tl = static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl;
                 normalGeometry.setTopLeft(QPoint(tl.iX, tl.iY));
             }
