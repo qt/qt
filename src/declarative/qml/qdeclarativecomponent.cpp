@@ -119,6 +119,8 @@ class QByteArray;
 
     \qml
     Item {
+        width: 100; height: 100
+
         Component {
             id: redSquare
 
@@ -146,7 +148,7 @@ class QByteArray;
     to specify how each list item is to be displayed.
 
     Component objects can also be dynamically generated using
-    \l{Qt::createComponent}{Qt.createComponent()}.
+    \l{Qt::createComponent()}{Qt.createComponent()}.
 */
 
 /*!

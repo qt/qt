@@ -148,7 +148,7 @@ lots of dynamically created items, however, you may receive a worthwhile
 performance benefit if unused items are deleted.
 
 Note that you should never manually delete items that were dynamically created
-by QML elements (such as \l Loader). Also, you should generally avoid deleting
+by QML elements (such as \l Loader and \l Repeater). Also, you should generally avoid deleting
 items that you did not dynamically create yourself.
 
 Items can be deleted using the \c destroy() method. This method has an optional
