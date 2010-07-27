@@ -1563,6 +1563,10 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
     sources. The \l {QML Animation} documentation shows a variety of methods
     for creating animations.
 
+    \note Once an animation has been grouped into a SequentialAnimation or 
+    ParallelAnimation, it cannot be individually started and stopped; the
+    SequentialAnimation or ParallelAnimation must be started and stopped as a group.
+    
     \sa ParallelAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
 
@@ -1627,6 +1631,10 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
     number of ways, including transitions, behaviors and property value 
     sources. The \l {QML Animation} documentation shows a variety of methods
     for creating animations.
+
+    \note Once an animation has been grouped into a SequentialAnimation or 
+    ParallelAnimation, it cannot be individually started and stopped; the
+    SequentialAnimation or ParallelAnimation must be started and stopped as a group.
 
     \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
