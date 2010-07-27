@@ -217,7 +217,7 @@ QStringList list;
 list << "AlPha" << "beTA" << "gamma" << "DELTA";
 
 QMap<QString, QString> map;
-foreach (QString str, list)
+foreach (const QString &str, list)
     map.insert(str.toLower(), str);
 
 list = map.values();

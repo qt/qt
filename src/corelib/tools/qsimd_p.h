@@ -72,6 +72,27 @@ QT_BEGIN_HEADER
 #  include <emmintrin.h>
 #endif
 
+// SSE3 intrinsics
+#if defined(QT_HAVE_SSE3) && (defined(__SSE3__) || defined(Q_CC_MSVC))
+#include <pmmintrin.h>
+#endif
+
+// SSSE3 intrinsics
+#if defined(QT_HAVE_SSSE3) && (defined(__SSSE3__) || defined(Q_CC_MSVC))
+#include <tmmintrin.h>
+#endif
+
+// SSE4.1 and SSE4.2 intrinsics
+#if (defined(QT_HAVE_SSE4_1) || defined(QT_HAVE_SSE4_2)) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
+#include <smmintrin.h>
+#endif
+
+// AVX intrinsics
+#if defined(QT_HAVE_AVX) && (defined(__AVX__) || defined(Q_CC_MSVC))
+#include <immintrin.h>
+#endif
+
+
 #if !defined(QT_BOOTSTRAPPED) && (!defined(Q_CC_MSVC) || (defined(_M_X64) || _M_IX86_FP == 2))
 #define QT_ALWAYS_HAVE_SSE2
 #endif

@@ -130,7 +130,7 @@ QPixmap DropArea::extractPixmap(const QByteArray &data, const QString &format)
     QList<QByteArray> imageFormats = QImageReader::supportedImageFormats();
     QPixmap pixmap;
 
-    foreach (QByteArray imageFormat, imageFormats) {
+    foreach (const QByteArray &imageFormat, imageFormats) {
         if (format.mid(6) == QString(imageFormat)) {
             pixmap.loadFromData(data, imageFormat);
             break;

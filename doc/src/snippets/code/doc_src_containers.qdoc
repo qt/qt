@@ -216,7 +216,7 @@ while (i.hasNext())
 //! [17]
 QLinkedList<QString> list;
 ...
-foreach (QString str, list)
+foreach (const QString &str, list)
     qDebug() << str;
 //! [17]
 
@@ -224,7 +224,7 @@ foreach (QString str, list)
 //! [18]
 QLinkedList<QString> list;
 ...
-foreach (QString str, list) {
+foreach (const QString &str, list) {
     if (str.isEmpty())
         break;
     qDebug() << str;
@@ -235,7 +235,7 @@ foreach (QString str, list) {
 //! [19]
 QMap<QString, int> map;
 ...
-foreach (QString str, map.keys())
+foreach (const QString &str, map.keys())
     qDebug() << str << ":" << map.value(str);
 //! [19]
 
@@ -243,7 +243,7 @@ foreach (QString str, map.keys())
 //! [20]
 QMultiMap<QString, int> map;
 ...
-foreach (QString str, map.uniqueKeys()) {
+foreach (const QString &str, map.uniqueKeys()) {
     foreach (int i, map.values(str))
         qDebug() << str << ":" << i;
 }

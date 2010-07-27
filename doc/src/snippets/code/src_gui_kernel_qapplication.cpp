@@ -158,13 +158,13 @@ appname -session id
 
 
 //! [10]
-foreach (QString command, mySession.restartCommand())
+foreach (const QString &command, mySession.restartCommand())
     do_something(command);
 //! [10]
 
 
 //! [11]
-foreach (QString command, mySession.discardCommand())
+foreach (const QString &command, mySession.discardCommand())
     do_something(command);
 //! [11]
 

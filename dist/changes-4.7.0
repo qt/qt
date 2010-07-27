@@ -216,6 +216,7 @@ QtNetwork
   * [QTBUG-9618] [MR 2372] send secure cookies only over secure connections
   * [QTBUG-7713] Fix bug related to re-sending request
   * [QTBUG-7673] Fix issue with some webservers
+  * [QTBUG-11029] do not accept cookies with non-alpha-numerical domain
  - Sockets
   * Better support for derived QTcpServer
   * [QTBUG-7054] Fix error handling with waitFor*() for socket engine
@@ -223,6 +224,10 @@ QtNetwork
  - SSL
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
+  * [QTBUG-9973] QSslCertificate: support large serial numbers
+  * [QTBUG-8833] make QSslSocket::systemCaCertificates() use system certs
+  * [QT-3567] QSslSocket: improve error handling (fixes Secunia Advisory SA40389)
+  * [QBTUG-4455, MR 731] Fix handling of SSL certificates with wildcard domain names
 
 QtScript
 --------
@@ -245,6 +250,7 @@ QtXmlPatterns
  - [QTBUG-8920] fixed crash with anonymous types in XsdSchemaChecker
  - [QTBUG-8394] include/import/redefine schemas only once
  - QXmlSchema: fix crash with referencing elements
+ - [QBTUG-6485] QXmlSchema: allow usage of xsd:all
 
 Qt Plugins
 ----------
@@ -471,6 +477,4 @@ QtCore:
 
 QtNetwork:
   - Qt does no longer provide its own CA bundle, but uses system APIs for
-    retrieving the default system certificates. On Symbian,
-    QSslSocket::systemCaCertificates() provides an empty list of
-    certificates.
+    retrieving the default system certificates.
