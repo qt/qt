@@ -6929,6 +6929,8 @@ fi
 # turn off exceptions for the compilers that support it
 if [ "$PLATFORM_QWS" = "yes" ]; then
     COMPILER=`echo $XPLATFORM | cut -f 3- -d-`
+elif [ "$XPLATFORM" != "$PLATFORM" ]; then
+    COMPILER=`echo $XPLATFORM | cut -f 2- -d-`
 else
     COMPILER=`echo $PLATFORM | cut -f 2- -d-`
 fi
@@ -7407,9 +7409,17 @@ rm -f .options
 BUILD_OPTIONS="$BUILD_CONFIG $BUILD_OPTIONS"
 # extract the operating system from the XPLATFORM
 TARGET_OPERATING_SYSTEM=`echo $XPLATFORM | cut -f 2- -d/ | cut -f -1 -d-`
+case "$XPLATFORM" in
+symbian*)
+    QT_BUILD_KEY_SYSTEM_PART="Symbian"
+    ;;
+*)
+    QT_BUILD_KEY_SYSTEM_PART="$CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER"
+    ;;
+esac
 
 # when cross-compiling, don't include build-host information (build key is target specific)
-QT_BUILD_KEY="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+QT_BUILD_KEY="$CFG_USER_BUILD_KEY $QT_BUILD_KEY_SYSTEM_PART $BUILD_OPTIONS"
 if [ -n "$QT_NAMESPACE" ]; then
     QT_BUILD_KEY="$QT_BUILD_KEY $QT_NAMESPACE"
 fi
