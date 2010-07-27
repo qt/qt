@@ -305,10 +305,10 @@ void QPanGesture::setAcceleration(qreal value)
     \class QPinchGesture
     \since 4.6
     \brief The QPinchGesture class describes a pinch gesture made my the user.
-    \ingroup multitouch
+    \ingroup touch
     \ingroup gestures
 
-    A pinch gesture is a form of multitouch user input in which the user typically
+    A pinch gesture is a form of touch user input in which the user typically
     touches two points on the input device with a thumb and finger, before moving
     them closer together or further apart to change the scale factor, zoom, or level
     of detail of the user interface.
@@ -388,7 +388,7 @@ void QPanGesture::setAcceleration(qreal value)
     \brief the current scale factor
 
     The scale factor measures the scale factor associated with the distance
-    between two of the user's inputs on a multitouch device.
+    between two of the user's inputs on a touch device.
 
     \sa totalScaleFactor, lastScaleFactor
 */

@@ -597,9 +597,9 @@
 
     See \l{The State Machine Framework} documentation for more information.
 
-    \section1 Multi-Touch and Gestures
+    \section1 Touch and Gestures
 
-    Support for multi-touch input enables users to interact with many
+    Support for touch input enables users to interact with many
     parts of a user interface at the same time, and provides the basis
     for gestures. Additional infrastructure for gesture recognition
     allows a sequence of touch inputs to be combined to create gestures
@@ -613,12 +613,12 @@
     \list
         \o Allows users to interact with applications in more natural ways.
         \o Simplifies finger-based interaction with UI components.
-        \o Combines support for common basic gestures and multi-touch gestures
+        \o Combines support for common basic gestures and touch gestures
            in a single general framework.
         \o Enables extensibility by design.
     \endlist
 
-    See the QTouchEvent class documentation for more information on multi-touch
+    See the QTouchEvent class documentation for more information on touch
     input and QGestureEvent for gestures.
 
     \section1 DOM access API
