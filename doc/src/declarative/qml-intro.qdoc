@@ -105,8 +105,16 @@ This is a valid QML script. To run it, copy it and save it to a file, say
 myexample.qml, and on the command line run the command
 
     \code
-    qml myexample.qml
+    qmlviewer myexample.qml
     \endcode
+
+On Mac OS X, open the "QMLViewer" application instead and open the
+\c myexample.qml file, or run it from the command line:
+
+    \code
+    QMLViewer.app/Contents/MacOS/QMLViewer myexample.qml
+    \endcode
+    
 
 It will create a very boring rectangle in its own window.
 

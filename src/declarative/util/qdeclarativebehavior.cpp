@@ -75,28 +75,21 @@ public:
     \since 4.7
     \brief The Behavior element allows you to specify a default animation for a property change.
 
-    Behaviors provide one way to specify \l{qdeclarativeanimation.html}{animations} in QML.
+    A Behavior defines the default animation to be applied whenever a 
+    particular property value changes.
 
-    In the example below, the rectangle will use a bounce easing curve over 200 millisecond for any changes to its y property:
-    \code
-    Rectangle {
-        width: 20; height: 20
-        color: "#00ff00"
-        y: 200  // initial value
-        Behavior on y {
-            NumberAnimation {
-                easing.type: Easing.OutBounce
-                easing.amplitude: 100
-                duration: 200
-            }
-        }
-    }
-    \endcode
+    For example, the following Behavior defines a NumberAnimation to be run
+    whenever the \l Rectangle's \c width value changes. When the MouseArea
+    is clicked, the \c width is changed, triggering the behavior's animation:
 
-    Currently only a single Behavior may be specified for a property;
-    this Behavior can be enabled and disabled via the \l{enabled} property.
+    \snippet doc/src/snippets/declarative/behavior.qml 0
 
-    \sa {declarative/animation/behaviors}{Behavior example}, QtDeclarative
+    To run multiple animations within a Behavior, use ParallelAnimation or
+    SequentialAnimation.
+
+    Note that a property cannot have more than one assigned Behavior.
+
+    \sa {Property Behaviors}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
 */
 
 
@@ -113,7 +106,7 @@ QDeclarativeBehavior::~QDeclarativeBehavior()
     \qmlproperty Animation Behavior::animation
     \default
 
-    The animation to use when the behavior is triggered.
+    This property holds the animation to run when the behavior is triggered.
 */
 
 QDeclarativeAbstractAnimation *QDeclarativeBehavior::animation()
@@ -138,10 +131,6 @@ void QDeclarativeBehavior::setAnimation(QDeclarativeAbstractAnimation *animation
                 SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)),
                 this,
                 SLOT(qtAnimationStateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
-        connect(this,
-                SIGNAL(qtAnimationRunningChanged(bool)),
-                d->animation,
-                SLOT(behaviorControlRunningChanged(bool)));
     }
 }
 
@@ -150,13 +139,15 @@ void QDeclarativeBehavior::qtAnimationStateChanged(QAbstractAnimation::State new
 {
     Q_D(QDeclarativeBehavior);
     if (!d->blockRunningChanged)
-        emit qtAnimationRunningChanged(newState == QAbstractAnimation::Running);
+        d->animation->notifyRunningChanged(newState == QAbstractAnimation::Running);
 }
 
 
 /*!
     \qmlproperty bool Behavior::enabled
-    Whether the Behavior will be triggered when the property it is tracking changes.
+
+    This property holds whether the behavior will be triggered when the tracked
+    property changes value.
 
     By default a Behavior is enabled.
 */

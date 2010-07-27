@@ -52,8 +52,7 @@ SUBDIRS += \
            qdeclarativeqt \
            qdeclarativerepeater \
            qdeclarativesmoothedanimation \
-           qdeclarativesmoothedfollow\
-           qdeclarativespringfollow \
+           qdeclarativespringanimation \
            qdeclarativesqldatabase \
            qdeclarativestates \
            qdeclarativestyledtext \

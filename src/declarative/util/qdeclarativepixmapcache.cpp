@@ -114,6 +114,18 @@ public:
     static int downloadProgressIndex;
 };
 
+class QDeclarativePixmapReaderThreadObject : public QObject {
+    Q_OBJECT
+public:
+    QDeclarativePixmapReaderThreadObject(QDeclarativePixmapReader *);
+    void processJobs();
+    virtual bool event(QEvent *e);
+private slots:
+    void networkRequestDone();
+private:
+    QDeclarativePixmapReader *reader;
+};
+
 class QDeclarativePixmapData;
 class QDeclarativePixmapReader : public QThread
 {
@@ -130,12 +142,11 @@ public:
 protected:
     void run();
 
-private slots:
-    void networkRequestDone();
-
 private:
+    friend class QDeclarativePixmapReaderThreadObject;
     void processJobs();
     void processJob(QDeclarativePixmapReply *);
+    void networkRequestDone(QNetworkReply *);
 
     QList<QDeclarativePixmapReply*> jobs;
     QList<QDeclarativePixmapReply*> cancelled;
@@ -143,14 +154,7 @@ private:
     QObject *eventLoopQuitHack;
 
     QMutex mutex;
-    class ThreadObject : public QObject {
-    public:
-        ThreadObject(QDeclarativePixmapReader *);
-        void processJobs();
-        virtual bool event(QEvent *e);
-    private:
-        QDeclarativePixmapReader *reader;
-    } *threadObject;
+    QDeclarativePixmapReaderThreadObject *threadObject;
     QWaitCondition waitCondition;
 
     QNetworkAccessManager *networkAccessManager();
@@ -161,7 +165,7 @@ private:
     static int replyDownloadProgress;
     static int replyFinished;
     static int downloadProgress;
-    static int thisNetworkRequestDone;
+    static int threadNetworkRequestDone;
     static QHash<QDeclarativeEngine *,QDeclarativePixmapReader*> readers;
     static QMutex readerMutex;
 };
@@ -232,7 +236,7 @@ QMutex QDeclarativePixmapReader::readerMutex;
 int QDeclarativePixmapReader::replyDownloadProgress = -1;
 int QDeclarativePixmapReader::replyFinished = -1;
 int QDeclarativePixmapReader::downloadProgress = -1;
-int QDeclarativePixmapReader::thisNetworkRequestDone = -1;
+int QDeclarativePixmapReader::threadNetworkRequestDone = -1;
 
 
 void QDeclarativePixmapReply::postReply(ReadError error, const QString &errorString, 
@@ -317,9 +321,8 @@ QDeclarativePixmapReader::~QDeclarativePixmapReader()
     wait();
 }
 
-void QDeclarativePixmapReader::networkRequestDone()
+void QDeclarativePixmapReader::networkRequestDone(QNetworkReply *reply)
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QDeclarativePixmapReply *job = replies.take(reply);
 
     if (job) {
@@ -335,7 +338,7 @@ void QDeclarativePixmapReader::networkRequestDone()
                 reply = networkAccessManager()->get(req);
 
                 QMetaObject::connect(reply, replyDownloadProgress, job, downloadProgress);
-                QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+                QMetaObject::connect(reply, replyFinished, threadObject, threadNetworkRequestDone);
 
                 replies.insert(reply, job);
                 return;
@@ -368,17 +371,17 @@ void QDeclarativePixmapReader::networkRequestDone()
     threadObject->processJobs();
 }
 
-QDeclarativePixmapReader::ThreadObject::ThreadObject(QDeclarativePixmapReader *i)
+QDeclarativePixmapReaderThreadObject::QDeclarativePixmapReaderThreadObject(QDeclarativePixmapReader *i)
 : reader(i)
 {
 }
 
-void QDeclarativePixmapReader::ThreadObject::processJobs() 
+void QDeclarativePixmapReaderThreadObject::processJobs() 
 { 
     QCoreApplication::postEvent(this, new QEvent(QEvent::User)); 
 }
 
-bool QDeclarativePixmapReader::ThreadObject::event(QEvent *e) 
+bool QDeclarativePixmapReaderThreadObject::event(QEvent *e) 
 {
     if (e->type() == QEvent::User) { 
         reader->processJobs(); 
@@ -386,6 +389,12 @@ bool QDeclarativePixmapReader::ThreadObject::event(QEvent *e)
     } else { 
         return QObject::event(e);
     }
+}
+
+void QDeclarativePixmapReaderThreadObject::networkRequestDone()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    reader->networkRequestDone(reply);
 }
 
 void QDeclarativePixmapReader::processJobs()
@@ -469,7 +478,7 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
             QNetworkReply *reply = networkAccessManager()->get(req);
 
             QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
-            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+            QMetaObject::connect(reply, replyFinished, threadObject, threadNetworkRequestDone);
 
             replies.insert(reply, runningJob);
         }
@@ -520,15 +529,15 @@ void QDeclarativePixmapReader::run()
     if (replyDownloadProgress == -1) {
         const QMetaObject *nr = &QNetworkReply::staticMetaObject;
         const QMetaObject *pr = &QDeclarativePixmapReply::staticMetaObject;
-        const QMetaObject *ir = &QDeclarativePixmapReader::staticMetaObject;
+        const QMetaObject *ir = &QDeclarativePixmapReaderThreadObject::staticMetaObject;
         replyDownloadProgress = nr->indexOfSignal("downloadProgress(qint64,qint64)");
         replyFinished = nr->indexOfSignal("finished()");
         downloadProgress = pr->indexOfSignal("downloadProgress(qint64,qint64)");
-        thisNetworkRequestDone = ir->indexOfSlot("networkRequestDone()");
+        threadNetworkRequestDone = ir->indexOfSlot("networkRequestDone()");
     }
 
     mutex.lock();
-    threadObject = new ThreadObject(this);
+    threadObject = new QDeclarativePixmapReaderThreadObject(this);
     mutex.unlock();
 
     processJobs();
@@ -605,7 +614,7 @@ void QDeclarativePixmapStore::unreferencePixmap(QDeclarativePixmapData *data)
     m_unreferencedCost += data->cost();
 
     if (m_timerId == -1)
-        startTimer(CACHE_EXPIRE_TIME * 1000);
+        m_timerId = startTimer(CACHE_EXPIRE_TIME * 1000);
 }
 
 void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
@@ -952,10 +961,9 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
 
     if (iter == store->m_cache.end()) {
         if (async) {
+            // pixmaps can only be loaded synchronously
             if (url.scheme() == QLatin1String("image") 
                     && QDeclarativeEnginePrivate::get(engine)->getImageProviderType(url) == QDeclarativeImageProvider::Pixmap) {
-                qWarning().nospace() << "Pixmaps must be loaded synchronously, ignoring asynchronous property for Image with source: "
-                        << url.toString();
                 async = false;
             }
         }

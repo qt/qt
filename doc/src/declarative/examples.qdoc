@@ -36,11 +36,18 @@ Qt includes a set of examples and demos that show how to use various aspects
 of QML. The examples are small demonstrations of particular QML components, 
 while the demos contain more complete and functional applications.
 
-To run the examples and demos, you can use Qt Creator or the included \l {Qt Declarative UI Runtime}{qmlviewer}
-command-line application. For example, from your build directory, run:
+To run the examples and demos, open them in Qt Creator or use the included
+\l {QML Viewer} tool. The \l {QML Viewer} can be run from the command line:
 
 \code
-    bin/qmlviewer $QTDIR/demos/declarative/samegame/samegame.qml
+    qmlviewer $QTDIR/demos/declarative/samegame/samegame.qml
+\endcode
+
+On Mac OS X, you can run the included "QMLViewer" application from the
+Finder, or use the command line:
+
+\code
+    QMLViewer.app/Contents/MacOS/QMLViewer $QTDIR/demos/declarative/samegame/samegame.qml
 \endcode
 
 
@@ -168,6 +175,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
 \o \l{declarative/modelviews/listview}{ListView}
+\o \l{declarative/modelviews/pathview}{PathView}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
 \o \l{declarative/modelviews/visualitemmodel}{VisualItemModel}

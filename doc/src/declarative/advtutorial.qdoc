@@ -164,14 +164,22 @@ The \c createBlock() function creates a block from the \c Block.qml file
 and moves the new block to its position on the game canvas. This involves several steps:
 
 \list
-\o \l {QML:Qt::createComponent()}{Qt.createComponent()} is called to generate an element from \c Block.qml.
-   If the component is ready, we can call \c createObject() to create an instance of the \c Block item.
-\o If \c createObject() returned null (i.e. if there was an error while
-   loading the object), print the error information.
-\o Place the block in its position on the board and set its width and height.
-   Also, store it in the blocks array for future reference.
-\o Finally, print error information to the console if the component could not be
-   loaded for some reason (for example, if the file is missing).
+
+\o \l {QML:Qt::createComponent()}{Qt.createComponent()} is called to
+   generate an element from \c Block.qml.  If the component is ready,
+   we can call \c createObject() to create an instance of the \c Block
+   item.
+
+\o If \c createObject() returned null (i.e. if there was an error
+   while loading the object), print the error information.
+
+\o Place the block in its position on the board and set its width and
+   height.  Also, store it in the blocks array for future reference.
+
+\o Finally, print error information to the console if the component
+   could not be loaded for some reason (for example, if the file is
+   missing).
+
 \endlist
 
 

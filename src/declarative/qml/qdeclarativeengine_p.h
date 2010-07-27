@@ -162,7 +162,6 @@ public:
     QPODVector<CapturedProperty> capturedProperties;
 
     QDeclarativeContext *rootContext;
-    QDeclarativeExpression *currentExpression;
     bool isDebugging;
 
     bool outputWarningsToStdErr;

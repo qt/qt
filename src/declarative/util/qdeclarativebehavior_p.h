@@ -83,7 +83,6 @@ public:
 
 Q_SIGNALS:
     void enabledChanged();
-    void qtAnimationRunningChanged(bool running);
 
 private Q_SLOTS:
     void componentFinalized();

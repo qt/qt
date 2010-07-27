@@ -134,10 +134,12 @@ public:
 private Q_SLOTS:
     void timelineComplete();
     void componentFinalized();
-    void behaviorControlRunningChanged(bool running);
-
 private:
     virtual void setTarget(const QDeclarativeProperty &);
+    void notifyRunningChanged(bool running);
+    friend class QDeclarativeBehavior;
+
+
 };
 
 class QDeclarativePauseAnimationPrivate;

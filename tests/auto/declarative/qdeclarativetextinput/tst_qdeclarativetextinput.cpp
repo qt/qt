@@ -47,6 +47,7 @@
 #include <private/qdeclarativetextinput_p.h>
 #include <private/qdeclarativetextinput_p_p.h>
 #include <QDebug>
+#include <QDir>
 #include <QStyle>
 #include <QInputContext>
 #include <private/qapplication_p.h>
@@ -55,6 +56,22 @@
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
+
+QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
+{
+    // XXX This will be replaced by some clever persistent platform image store.
+    QString persistent_dir = SRCDIR "/data";
+    QString arch = "unknown-architecture"; // QTest needs to help with this.
+
+    QString expectfile = persistent_dir + QDir::separator() + filebasename + "-" + arch + ".png";
+
+    if (!QFile::exists(expectfile)) {
+        actual.save(expectfile);
+        qWarning() << "created" << expectfile;
+    }
+
+    return expectfile;
+}
 
 class tst_qdeclarativetextinput : public QObject
 
@@ -176,7 +193,8 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
+        int delta = abs(int(textinputObject->width()) - metricWidth);
+        QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
     }
@@ -381,22 +399,15 @@ void tst_qdeclarativetextinput::horizontalAlignment_data()
     QTest::addColumn<int>("hAlign");
     QTest::addColumn<QString>("expectfile");
 
-    QTest::newRow("L") << int(Qt::AlignLeft) << SRCDIR "/data/halign_left.png";
-    QTest::newRow("R") << int(Qt::AlignRight) << SRCDIR "/data/halign_right.png";
-    QTest::newRow("C") << int(Qt::AlignHCenter) << SRCDIR "/data/halign_center.png";
+    QTest::newRow("L") << int(Qt::AlignLeft) << "halign_left";
+    QTest::newRow("R") << int(Qt::AlignRight) << "halign_right";
+    QTest::newRow("C") << int(Qt::AlignHCenter) << "halign_center";
 }
 
 void tst_qdeclarativetextinput::horizontalAlignment()
 {
     QFETCH(int, hAlign);
     QFETCH(QString, expectfile);
-
-#ifdef Q_WS_X11
-   // Font-specific, but not likely platform-specific, so only test on one platform
-   QFont fn;
-   fn.setRawName("-misc-fixed-medium-r-*-*-8-*-*-*-*-*-*-*");
-   QApplication::setFont(fn);
-#endif
 
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontalAlignment.qml");
 
@@ -409,17 +420,18 @@ void tst_qdeclarativetextinput::horizontalAlignment()
     ob->setProperty("horizontalAlignment",hAlign);
     QImage actual(canvas->width(), canvas->height(), QImage::Format_RGB32);
     actual.fill(qRgb(255,255,255));
-    QPainter p(&actual);
-    canvas->render(&p);
+    {
+        QPainter p(&actual);
+        canvas->render(&p);
+    }
+
+    expectfile = createExpectedFileIfNotFound(expectfile, actual);
 
     QImage expect(expectfile);
 
-#ifdef Q_WS_X11
-    // Font-specific, but not likely platform-specific, so only test on one platform
-    if (QApplicationPrivate::graphics_system_name == "raster" || QApplicationPrivate::graphics_system_name == "") {
-        QCOMPARE(actual,expect);
-    }
-#endif
+    QCOMPARE(actual,expect);
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::positionAt()
@@ -464,11 +476,13 @@ void tst_qdeclarativetextinput::positionAt()
 
 void tst_qdeclarativetextinput::maxLength()
 {
-    //QString componentStr = "import Qt 4.7\nTextInput {  maximumLength: 10; }";
     QDeclarativeView *canvas = createView(SRCDIR "/data/maxLength.qml");
+    QVERIFY(canvas->rootObject() != 0);
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->rootObject() != 0);
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+
     QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());
@@ -686,6 +700,18 @@ void tst_qdeclarativetextinput::navigation()
 
 void tst_qdeclarativetextinput::copyAndPaste() {
 #ifndef QT_NO_CLIPBOARD
+
+#ifdef Q_WS_MAC
+    {
+        PasteboardRef pasteboard;
+        OSStatus status = PasteboardCreate(0, &pasteboard);
+        if (status == noErr)
+            CFRelease(pasteboard);
+        else
+            QSKIP("This machine doesn't support the clipboard", SkipAll);
+    }
+#endif
+
     QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
@@ -776,6 +802,9 @@ void tst_qdeclarativetextinput::echoMode()
     QDeclarativeView *canvas = createView(SRCDIR "/data/echoMode.qml");
     canvas->show();
     canvas->setFocus();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
 
     QVERIFY(canvas->rootObject() != 0);
 
@@ -823,6 +852,7 @@ void tst_qdeclarativetextinput::echoMode()
     QCOMPARE(input->text(), QLatin1String("a"));
     QCOMPARE(input->displayText(), QLatin1String("a"));
     input->setFocus(false);
+    QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
 }
 

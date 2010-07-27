@@ -533,6 +533,13 @@ void QDeclarativeCurve::setY(qreal y)
 /*!
     \qmlproperty string PathAttribute::name
     the name of the attribute to change.
+
+    This attribute will be available to the delegate as PathView.<name>
+
+    Note that using an existing Item property name such as "opacity" as an
+    attribute is allowed.  This is because path attributes add a new
+    \l{qdeclarativeintroduction.html#attached-properties} {Attached Property}
+    which in no way clashes with existing properties.
 */
 
 /*!

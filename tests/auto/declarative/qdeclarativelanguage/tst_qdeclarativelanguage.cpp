@@ -289,6 +289,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("importNonExistOlder (installed)") << "importNonExistOlder.qml" << "importNonExistOlder.errors.txt" << false;
     QTest::newRow("importNewerVersion (installed)") << "importNewerVersion.qml" << "importNewerVersion.errors.txt" << false;
     QTest::newRow("invalidImportID") << "invalidImportID.qml" << "invalidImportID.errors.txt" << false;
+    QTest::newRow("importFile") << "importFile.qml" << "importFile.errors.txt" << false;
 
     QTest::newRow("signal.1") << "signal.1.qml" << "signal.1.errors.txt" << false;
     QTest::newRow("signal.2") << "signal.2.qml" << "signal.2.errors.txt" << false;

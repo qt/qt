@@ -130,6 +130,8 @@ void tst_QDeclarativeViewer::orientation()
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::loading()
@@ -150,16 +152,16 @@ void tst_QDeclarativeViewer::loading()
 
     TEST_INITIAL_SIZES(viewer);
 
-    viewer->resize(QSize(400, 500));
+    viewer->resize(QSize(250, 350));
     qApp->processEvents();
 
     // window resized
-    QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
-    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
+    QTRY_COMPARE(rootItem->width(), 250.0);
+    QTRY_COMPARE(rootItem->height(), 350.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), QSize(400, 500));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350 - MENUBAR_HEIGHT(viewer)));
+    QCOMPARE(viewer->size(), QSize(250, 350));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->reload();
@@ -175,16 +177,16 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
-    viewer->resize(QSize(400, 500));
+    viewer->resize(QSize(250, 350));
     qApp->processEvents();
 
     // window resized again
-    QTRY_COMPARE(rootItem->width(), 400.0);
-    QTRY_COMPARE(rootItem->height(), 500.0 - MENUBAR_HEIGHT(viewer));
-    QCOMPARE(viewer->view()->size(), QSize(400, 500 - MENUBAR_HEIGHT(viewer)));
+    QTRY_COMPARE(rootItem->width(), 250.0);
+    QTRY_COMPARE(rootItem->height(), 350.0 - MENUBAR_HEIGHT(viewer));
+    QCOMPARE(viewer->view()->size(), QSize(250, 350 - MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->view()->initialSize(), QSize(200, 300));
-    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(400, 500 - MENUBAR_HEIGHT(viewer)));
-    QCOMPARE(viewer->size(), QSize(400, 500));
+    QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(250, 350 - MENUBAR_HEIGHT(viewer)));
+    QCOMPARE(viewer->size(), QSize(250, 350));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
     viewer->open(SRCDIR "/data/orientation.qml");
@@ -199,6 +201,8 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->view()->sceneRect().size(), QSizeF(200, 300));
     QCOMPARE(viewer->size(), QSize(200, 300 + MENUBAR_HEIGHT(viewer)));
     QCOMPARE(viewer->size(), viewer->sizeHint());
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::fileBrowser()
@@ -233,6 +237,8 @@ void tst_QDeclarativeViewer::fileBrowser()
     QVERIFY(viewer->view());
     QVERIFY(viewer->menuBar());
     QVERIFY(browserItem);
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::resizing()
@@ -288,6 +294,8 @@ void tst_QDeclarativeViewer::resizing()
     rootItem->setWidth(150);
     rootItem->setHeight(200);
     QTRY_COMPARE(viewer->size(), QSize(250, 350));
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::paths()
@@ -300,6 +308,8 @@ void tst_QDeclarativeViewer::paths()
 
     viewer->addPluginPath("miscPluginPath");
     viewer->view()->engine()->pluginPathList().contains("miscPluginPath");
+
+    delete viewer;
 }
 
 void tst_QDeclarativeViewer::slowMode()
@@ -309,6 +319,8 @@ void tst_QDeclarativeViewer::slowMode()
 
     viewer->setSlowMode(true);
     viewer->setSlowMode(false);
+
+    delete viewer;
 }
 
 QTEST_MAIN(tst_QDeclarativeViewer)

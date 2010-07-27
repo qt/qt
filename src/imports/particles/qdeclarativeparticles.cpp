@@ -1245,7 +1245,7 @@ void QDeclarativeParticles::burst(int count, int emissionRate)
 
 void QDeclarativeParticlesPainter::updateSize()
 {
-    if (!d->_componentComplete)
+    if (!d->componentComplete)
         return;
 
     const int parentX = parentItem()->x();

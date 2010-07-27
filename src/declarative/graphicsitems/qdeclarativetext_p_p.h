@@ -72,7 +72,7 @@ public:
     QDeclarativeTextPrivate()
       : color((QRgb)0), style(QDeclarativeText::Normal),
         hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-        imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), doc(0),
+        imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
         format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
     {
 #if defined(QML_NO_TEXT_CACHE)
@@ -119,6 +119,7 @@ public:
     bool richText:1;
     bool singleline:1;
     bool cache:1;
+    bool internalWidthUpdate:1;
     QTextDocumentWithImageResources *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;

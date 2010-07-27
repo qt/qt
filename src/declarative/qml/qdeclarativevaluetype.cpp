@@ -74,7 +74,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 QDeclarativeValueTypeFactory::QDeclarativeValueTypeFactory()

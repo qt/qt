@@ -409,7 +409,8 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
             QString localFileOrQrc = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(importUrl);
             if (!localFileOrQrc.isEmpty()) {
                 QString dir = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(base.resolved(QUrl(uri)));
-                if (dir.isEmpty() || !QDir().exists(dir)) {
+                QFileInfo dirinfo(dir);
+                if (dir.isEmpty() || !dirinfo.exists() || !dirinfo.isDir()) {
                     if (errorString)
                         *errorString = QDeclarativeImportDatabase::tr("\"%1\": no such directory").arg(uri_arg);
                     return false; // local import dirs must exist
@@ -425,7 +426,8 @@ bool QDeclarativeImportsPrivate::add(const QDeclarativeDirComponents &qmldircomp
                 if (prefix.isEmpty()) {
                     // directory must at least exist for valid import
                     QString localFileOrQrc = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(base.resolved(QUrl(uri)));
-                    if (localFileOrQrc.isEmpty() || !QDir().exists(localFileOrQrc)) {
+                    QFileInfo dirinfo(localFileOrQrc);
+                    if (localFileOrQrc.isEmpty() || !dirinfo.exists() || !dirinfo.isDir()) {
                         if (errorString) {
                             if (localFileOrQrc.isEmpty())
                                 *errorString = QDeclarativeImportDatabase::tr("import \"%1\" has no qmldir and no namespace").arg(uri);

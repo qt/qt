@@ -72,7 +72,7 @@ The second exception is explained in more detail in the section below on Namespa
 \section2 The Import Path
 
 Installed modules are searched for on the import path.
-The \c -I option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the import path.
+The \c -I option to the \l {QML Viewer} adds paths to the import path.
 
 From C++, the path is available via \l QDeclarativeEngine::importPathList() and can be prepended to
 using \l QDeclarativeEngine::addImportPath().
@@ -129,7 +129,7 @@ to the module.
 of the plugin binary, which is platform dependent; e.g. the library MyAppTypes would produce
 a libMyAppTypes.so on Linux and MyAppTypes.dll on Windows. 
 By default the engine searches for the plugin library in the directory containing the \c qmldir
-file.  The \c -P option to the \l {Qt Declarative UI Runtime}{qml} runtime adds paths to the 
+file.  The \c -P option to the \l {QML Viewer} adds paths to the 
 plugin search path. 
 From C++, the path is available via \l QDeclarativeEngine::pluginPathList() and can be prepended to
 using \l QDeclarativeEngine::addPluginPath().

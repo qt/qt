@@ -1,7 +1,7 @@
 QT += declarative
 
-HEADERS += musician.h \
-           instrument.h 
-SOURCES += musician.cpp \
-           instrument.cpp \
+HEADERS += piechart.h \
+           pieslice.h 
+SOURCES += piechart.cpp \
+           pieslice.cpp \
            main.cpp

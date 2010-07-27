@@ -50,27 +50,78 @@ QT_BEGIN_NAMESPACE
 
     \ingroup plugins
 
-    QDeclarativeExtensionPlugin is a plugin interface that makes it
-    possible to offer extensions that can be loaded dynamically into
-    applications using the QDeclarativeEngine class.
-
-    Writing a QML extension plugin is achieved by subclassing this
-    base class, reimplementing the pure virtual registerTypes()
-    function, and exporting the class using the Q_EXPORT_PLUGIN2()
-    macro.
+    QDeclarativeExtensionPlugin is a plugin interface that makes it possible to
+    create QML extensions that can be loaded dynamically into QML applications.
+    These extensions allow custom QML types to be made available to the QML engine. 
+    
+    To write a QML extension plugin:
+    
+    \list
+    \o Subclass QDeclarativeExtensionPlugin, implement registerTypes() method
+    to register types using qmlRegisterType(), and export the class using the Q_EXPORT_PLUGIN2() macro
+    \o Write an appropriate project file for the plugin
+    \o Create a \l{The qmldir file}{qmldir file} to describe the plugin
+    \endlist
 
     QML extension plugins can be used to provide either application-specific or
     library-like plugins. Library plugins should limit themselves to registering types,
     as any manipulation of the engine's root context may cause conflicts
     or other issues in the library user's code.
 
-    See \l {Tutorial: Writing QML extensions with C++} for details on creating
-    QML extensions, including how to build a plugin with with QDeclarativeExtensionPlugin.
-    For a simple overview, see the \l{declarative/cppextensions/plugins}{plugins} example.
-    
-    Also see \l {How to Create Qt Plugins} for general Qt plugin documentation.
 
-    \sa QDeclarativeEngine::importPlugin()
+    \section1 An example
+
+    Suppose there is a new \c TimeModel C++ class that should be made available
+    as a new QML element. It provides the current time through \c hour and \c minute 
+    properties, like this:
+
+    \snippet examples/declarative/cppextensions/plugins/plugin.cpp 0
+    \dots
+
+    To make this class available as a QML type, create a plugin that registers
+    this type using qmlRegisterType(). For this example the plugin
+    module will be named \c com.nokia.TimeExample (as defined in the project
+    file further below).
+
+    \snippet examples/declarative/cppextensions/plugins/plugin.cpp plugin
+    \codeline
+    \snippet examples/declarative/cppextensions/plugins/plugin.cpp export
+
+    This registers the \c TimeModel class with the 1.0 version of this 
+    plugin library, as a QML type called \c Time. The Q_ASSERT statement 
+    ensures the module is imported correctly by any QML components that use this plugin.
+
+    The project file defines the project as a plugin library and specifies 
+    it should be built into the \c com/nokia/TimeExample directory:
+
+    \code
+    TEMPLATE = lib
+    CONFIG += qt plugin
+    QT += declarative
+
+    DESTDIR = com/nokia/TimeExample
+    TARGET = qmlqtimeexampleplugin
+    ...
+    \endcode    
+
+    Finally, a \l{The qmldir file}{qmldir file} is required in the \c com/nokia/TimeExample directory
+    that describes the plugin. This directory includes a \c Clock.qml file that
+    should be bundled with the plugin, so it needs to be specified in the \c qmldir
+    file:
+
+    \quotefile examples/declarative/cppextensions/plugins/com/nokia/TimeExample/qmldir
+
+    Once the project is built and installed, the new \c Time element can be 
+    used by any QML component that imports the \c com.nokia.TimeExample module:
+
+    \snippet examples/declarative/cppextensions/plugins/plugins.qml 0
+
+    The full source code is available in the \l {declarative/cppextensions/plugins}{plugins example}.
+
+    The \l {Tutorial: Writing QML extensions with C++} also contains a chapter
+    on creating QML plugins.
+
+    \sa QDeclarativeEngine::importPlugin(), {How to Create Qt Plugins}
 */
 
 /*!
@@ -97,7 +148,7 @@ QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(QObject *parent)
 }
 
 /*!
-  Destroys the plugin.
+  \internal
  */
 QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 {

@@ -76,15 +76,15 @@ application or to build completely new applications.  QML is fully \l
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
-\o \l {Integrating JavaScript}
-\o \l {QML Scope}
 \o \l {Network Transparency}
+\o \l {QML Scope}
+\o \l {Integrating JavaScript}
 \o \l {Data Models}
 \o \l {anchor-layout.html}{Anchor-based Layout}
 \o \l {qdeclarativestates.html}{States}
 \o \l {qdeclarativeanimation.html}{Animation}
-\o \l {qdeclarativemodules.html}{Modules}
 \o \l {qdeclarativefocus.html}{Keyboard Focus}
+\o \l {qdeclarativemodules.html}{Modules}
 \o \l {Extending types from QML}
 \o \l {qdeclarativedynamicobjects.html}{Dynamic Object Creation}
 \o \l {qmlruntime.html}{The Qt Declarative Runtime}
@@ -92,10 +92,10 @@ application or to build completely new applications.  QML is fully \l
 
 \section1 Using QML with C++
 \list
-\o \l {Tutorial: Writing QML extensions with C++}
-\o \l {Extending QML in C++}
 \o \l {Using QML in C++ Applications}
 \o \l {Integrating QML with existing Qt UI code}
+\o \l {Tutorial: Writing QML extensions with C++}
+\o \l {Extending QML in C++}
 \endlist
 
 \section1 Reference

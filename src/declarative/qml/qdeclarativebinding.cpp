@@ -54,27 +54,20 @@
 
 QT_BEGIN_NAMESPACE
 
-QDeclarativeBindingData::QDeclarativeBindingData()
-: updating(false), enabled(false)
+void QDeclarativeBindingPrivate::refresh()
 {
-}
-
-QDeclarativeBindingData::~QDeclarativeBindingData()
-{
-    removeError();
-}
-
-void QDeclarativeBindingData::refresh()
-{
-    if (enabled && !updating && q) {
-        QDeclarativeBinding *b = static_cast<QDeclarativeBinding *>(QDeclarativeExpressionPrivate::get(q));
-        b->update();
-    }
+    Q_Q(QDeclarativeBinding);
+    q->update();
 }
 
 QDeclarativeBindingPrivate::QDeclarativeBindingPrivate()
-: QDeclarativeExpressionPrivate(new QDeclarativeBindingData)
+: updating(false), enabled(false), deleted(0)
 {
+}
+
+QDeclarativeBindingPrivate::~QDeclarativeBindingPrivate()
+{
+    if (deleted) *deleted = true;
 }
 
 QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, QObject *obj, 
@@ -109,7 +102,7 @@ QDeclarativeBinding::~QDeclarativeBinding()
 void QDeclarativeBinding::setTarget(const QDeclarativeProperty &prop)
 {
     Q_D(QDeclarativeBinding);
-    d->bindingData()->property = prop;
+    d->property = prop;
 
     update();
 }
@@ -117,50 +110,53 @@ void QDeclarativeBinding::setTarget(const QDeclarativeProperty &prop)
 QDeclarativeProperty QDeclarativeBinding::property() const 
 {
    Q_D(const QDeclarativeBinding);
-   return d->bindingData()->property; 
+   return d->property; 
 }
 
 void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
 
-    QDeclarativeBindingData *data = d->bindingData();
-
-    if (!data->enabled || !data->context() || !data->context()->isValid())
+    if (!d->enabled || !d->context() || !d->context()->isValid()) 
         return;
 
-    data->addref();
+    if (!d->updating) {
+        d->updating = true;
+        bool wasDeleted = false;
+        d->deleted = &wasDeleted;
 
-    if (!data->updating) {
-        data->updating = true;
+        if (d->property.propertyType() == qMetaTypeId<QDeclarativeBinding *>()) {
 
-        if (data->property.propertyType() == qMetaTypeId<QDeclarativeBinding *>()) {
-
-            int idx = data->property.index();
+            int idx = d->property.index();
             Q_ASSERT(idx != -1);
-
 
             QDeclarativeBinding *t = this;
             int status = -1;
             void *a[] = { &t, 0, &status, &flags };
-            QMetaObject::metacall(data->property.object(),
+            QMetaObject::metacall(d->property.object(),
                                   QMetaObject::WriteProperty,
                                   idx, a);
 
+            if (wasDeleted)
+                return;
+
         } else {
-            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context()->engine);
+            QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(d->context()->engine);
 
             bool isUndefined = false;
             QVariant value;
 
             QScriptValue scriptValue = d->scriptValue(0, &isUndefined);
-            if (data->property.propertyTypeCategory() == QDeclarativeProperty::List) {
+            if (wasDeleted)
+                return;
+
+            if (d->property.propertyTypeCategory() == QDeclarativeProperty::List) {
                 value = ep->scriptValueToVariant(scriptValue, qMetaTypeId<QList<QObject *> >());
             } else if (scriptValue.isNull() && 
-                       data->property.propertyTypeCategory() == QDeclarativeProperty::Object) {
+                       d->property.propertyTypeCategory() == QDeclarativeProperty::Object) {
                 value = QVariant::fromValue((QObject *)0);
             } else {
-                value = ep->scriptValueToVariant(scriptValue, data->property.propertyType());
+                value = ep->scriptValueToVariant(scriptValue, d->property.propertyType());
                 if (value.userType() == QMetaType::QObjectStar && !qvariant_cast<QObject*>(value)) {
                     // If the object is null, we extract the predicted type.  While this isn't
                     // 100% reliable, in many cases it gives us better error messages if we
@@ -172,73 +168,78 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
             }
 
 
-            if (data->error.isValid()) {
+            if (d->error.isValid()) {
 
-            } else if (isUndefined && data->property.isResettable()) {
+            } else if (isUndefined && d->property.isResettable()) {
 
-                data->property.reset();
+                d->property.reset();
 
-            } else if (isUndefined && data->property.propertyType() == qMetaTypeId<QVariant>()) {
+            } else if (isUndefined && d->property.propertyType() == qMetaTypeId<QVariant>()) {
 
-                QDeclarativePropertyPrivate::write(data->property, QVariant(), flags);
+                QDeclarativePropertyPrivate::write(d->property, QVariant(), flags);
 
             } else if (isUndefined) {
 
-                QUrl url = QUrl(data->url);
-                int line = data->line;
+                QUrl url = QUrl(d->url);
+                int line = d->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
-                data->error.setUrl(url);
-                data->error.setLine(line);
-                data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ")
-                    + QLatin1String(QMetaType::typeName(data->property.propertyType()))
-                    + QLatin1String(" ") + data->property.name());
+                d->error.setUrl(url);
+                d->error.setLine(line);
+                d->error.setColumn(-1);
+                d->error.setDescription(QLatin1String("Unable to assign [undefined] to ") +
+                                        QLatin1String(QMetaType::typeName(d->property.propertyType())) +
+                                        QLatin1String(" ") + d->property.name());
 
             } else if (!scriptValue.isRegExp() && scriptValue.isFunction()) {
 
-                QUrl url = QUrl(data->url);
-                int line = data->line;
+                QUrl url = QUrl(d->url);
+                int line = d->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
-                data->error.setUrl(url);
-                data->error.setLine(line);
-                data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign a function to a property."));
+                d->error.setUrl(url);
+                d->error.setLine(line);
+                d->error.setColumn(-1);
+                d->error.setDescription(QLatin1String("Unable to assign a function to a property."));
 
-            } else if (data->property.object() &&
-                       !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
+            } else if (d->property.object() &&
+                       !QDeclarativePropertyPrivate::write(d->property, value, flags)) {
 
-                QUrl url = QUrl(data->url);
-                int line = data->line;
+                if (wasDeleted)
+                    return;
+
+                QUrl url = QUrl(d->url);
+                int line = d->line;
                 if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
                 const char *valueType = 0;
                 if (value.userType() == QVariant::Invalid) valueType = "null";
                 else valueType = QMetaType::typeName(value.userType());
 
-                data->error.setUrl(url);
-                data->error.setLine(line);
-                data->error.setColumn(-1);
-                data->error.setDescription(QLatin1String("Unable to assign ") +
-                                           QLatin1String(valueType) +
-                                           QLatin1String(" to ") +
-                                           QLatin1String(QMetaType::typeName(data->property.propertyType())));
+                d->error.setUrl(url);
+                d->error.setLine(line);
+                d->error.setColumn(-1);
+                d->error.setDescription(QLatin1String("Unable to assign ") +
+                                        QLatin1String(valueType) +
+                                        QLatin1String(" to ") +
+                                        QLatin1String(QMetaType::typeName(d->property.propertyType())));
             }
 
-            if (data->error.isValid()) {
-               if (!data->addError(ep)) ep->warning(this->error());
+            if (wasDeleted)
+                return;
+
+            if (d->error.isValid()) {
+               if (!d->addError(ep)) ep->warning(this->error());
             } else {
-                data->removeError();
+                d->removeError();
             }
         }
 
-        data->updating = false;
+        d->updating = false;
+        d->deleted = 0;
     } else {
-        qmlInfo(data->property.object()) << tr("Binding loop detected for property \"%1\"").arg(data->property.name());
+        qmlInfo(d->property.object()) << tr("Binding loop detected for property \"%1\"").arg(d->property.name());
     }
-
-    data->release();
 }
 
 void QDeclarativeBindingPrivate::emitValueChanged()
@@ -250,13 +251,13 @@ void QDeclarativeBindingPrivate::emitValueChanged()
 void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
-    d->bindingData()->enabled = e;
+    d->enabled = e;
     setNotifyOnValueChanged(e);
 
     QDeclarativeAbstractBinding::setEnabled(e, flags);
 
     if (e) {
-        addToObject(d->bindingData()->property.object());
+        addToObject(d->property.object());
         update(flags);
     } else {
         removeFromObject();
@@ -266,14 +267,14 @@ void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteF
 int QDeclarativeBinding::propertyIndex()
 {
     Q_D(QDeclarativeBinding);
-    return QDeclarativePropertyPrivate::bindingIndex(d->bindingData()->property);
+    return QDeclarativePropertyPrivate::bindingIndex(d->property);
 }
 
 bool QDeclarativeBinding::enabled() const
 {
     Q_D(const QDeclarativeBinding);
 
-    return d->bindingData()->enabled;
+    return d->enabled;
 }
 
 QString QDeclarativeBinding::expression() const

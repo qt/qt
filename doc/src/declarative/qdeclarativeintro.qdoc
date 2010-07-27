@@ -129,7 +129,7 @@ Commenting in QML is similar to JavaScript.
 \o Multiline comments start with /* and finish with *\/
 \endlist
 
-\quotefile doc/src/snippets/declarative/comments.qml
+\snippet doc/src/snippets/declarative/comments.qml 0
 
 Comments are ignored by the engine. They are useful for explaining what you
 are doing; for referring back to at a later date, or for others reading
@@ -314,7 +314,7 @@ Item {
 
 \section2 Signal Handlers
 
-Signal handlers allow actions to be taken in reponse to an event.  For instance,
+Signal handlers allow actions to be taken in response to an event.  For instance,
 the \l MouseArea element has signal handlers to handle mouse press, release
 and click:
 
