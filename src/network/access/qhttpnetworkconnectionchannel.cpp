@@ -419,15 +419,8 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                 bytes = replyPrivate->readBodyFast(socket, &replyPrivate->responseData);
                 replyPrivate->totalProgress += bytes;
                 if (replyPrivate->shouldEmitSignals()) {
-                    QPointer<QHttpNetworkReply> replyPointer = reply;
                     emit reply->readyRead();
-                    // make sure that the reply is valid
-                    if (replyPointer.isNull())
-                        return;
                     emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
-                    // make sure that the reply is valid
-                    if (replyPointer.isNull())
-                        return;
                 }
             }
             else
@@ -445,17 +438,10 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                     if (!replyPrivate->autoDecompress) {
                         replyPrivate->totalProgress += bytes;
                         if (replyPrivate->shouldEmitSignals()) {
-                            QPointer<QHttpNetworkReply> replyPointer = reply;
                             // important: At the point of this readyRead(), the byteDatas list must be empty,
                             // else implicit sharing will trigger memcpy when the user is reading data!
                             emit reply->readyRead();
-                            // make sure that the reply is valid
-                            if (replyPointer.isNull())
-                                return;
                             emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
-                            // make sure that the reply is valid
-                           if (replyPointer.isNull())
-                                return;
                         }
                     }
 #ifndef QT_NO_COMPRESS
@@ -589,18 +575,10 @@ bool QHttpNetworkConnectionChannel::expand(bool dataComplete)
                 reply->d_func()->totalProgress += inflated.size();
                 reply->d_func()->appendUncompressedReplyData(inflated);
                 if (reply->d_func()->shouldEmitSignals()) {
-                    QPointer<QHttpNetworkReply> replyPointer = reply;
                     // important: At the point of this readyRead(), inflated must be cleared,
                     // else implicit sharing will trigger memcpy when the user is reading data!
                     emit reply->readyRead();
-                    // make sure that the reply is valid
-                    if (replyPointer.isNull())
-                        return true;
                     emit reply->dataReadProgress(reply->d_func()->totalProgress, 0);
-                    // make sure that the reply is valid
-                    if (replyPointer.isNull())
-                        return true;
-
                 }
             }
         } else {

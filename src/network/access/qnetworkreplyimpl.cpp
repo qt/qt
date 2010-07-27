@@ -543,8 +543,6 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
 {
     Q_Q(QNetworkReplyImpl);
 
-    QPointer<QNetworkReplyImpl> qq = q;
-
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
@@ -555,13 +553,10 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
     // else implicit sharing will trigger memcpy when the user is reading data!
     emit q->readyRead();
 
-    // hopefully we haven't been deleted here
-    if (!qq.isNull()) {
-        resumeNotificationHandling();
-        // do we still have room in the buffer?
-        if (nextDownstreamBlockSize() > 0)
-            backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
-    }
+    resumeNotificationHandling();
+    // do we still have room in the buffer?
+    if (nextDownstreamBlockSize() > 0)
+        backendNotify(QNetworkReplyImplPrivate::NotifyDownstreamReadyWrite);
 }
 
 // this is used when it was fetched from the cache, right?
