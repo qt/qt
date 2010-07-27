@@ -48,7 +48,15 @@ Sender::Sender(QWidget *parent)
 {
     groupAddress = QHostAddress("239.255.43.21");
 
-    statusLabel = new QLabel(tr("Ready to send datagrams to multicast group %1 on port 45454").arg(groupAddress.toString()));
+    statusLabel = new QLabel(tr("Ready to multicast datagrams to group %1 on port 45454").arg(groupAddress.toString()));
+
+    ttlLabel = new QLabel(tr("TTL for multicast datagrams:"));
+    ttlSpinBox = new QSpinBox;
+    ttlSpinBox->setRange(0, 255);
+
+    QHBoxLayout *ttlLayout = new QHBoxLayout;
+    ttlLayout->addWidget(ttlLabel);
+    ttlLayout->addWidget(ttlSpinBox);
 
     startButton = new QPushButton(tr("&Start"));
     quitButton = new QPushButton(tr("&Quit"));
@@ -61,16 +69,24 @@ Sender::Sender(QWidget *parent)
     udpSocket = new QUdpSocket(this);
     messageNo = 1;
 
+    connect(ttlSpinBox, SIGNAL(valueChanged(int)), this, SLOT(ttlChanged(int)));
     connect(startButton, SIGNAL(clicked()), this, SLOT(startSending()));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
     connect(timer, SIGNAL(timeout()), this, SLOT(sendDatagram()));
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(statusLabel);
+    mainLayout->addLayout(ttlLayout);
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
 
     setWindowTitle(tr("Multicast Sender"));
+    ttlSpinBox->setValue(1);
+}
+
+void Sender::ttlChanged(int newTtl)
+{
+    udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl);
 }
 
 void Sender::startSending()

@@ -50,6 +50,7 @@ class QLabel;
 class QPushButton;
 class QTimer;
 class QUdpSocket;
+class QSpinBox;
 QT_END_NAMESPACE
 
 class Sender : public QDialog
@@ -60,11 +61,14 @@ public:
     Sender(QWidget *parent = 0);
 
 private slots:
+    void ttlChanged(int newTtl);
     void startSending();
     void sendDatagram();
 
 private:
     QLabel *statusLabel;
+    QLabel *ttlLabel;
+    QSpinBox *ttlSpinBox;
     QPushButton *startButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
