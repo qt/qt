@@ -88,9 +88,11 @@
     to exchange datagrams without specifying the receiver for each
     datagram.
 
-    The \l{network/broadcastsender}{Broadcast Sender} and
-    \l{network/broadcastreceiver}{Broadcast Receiver} examples
-    illustrate how to use QUdpSocket in applications.
+    The \l{network/broadcastsender}{Broadcast Sender},
+    \l{network/broadcastreceiver}{Broadcast Receiver},
+    \l{network/multicastsender}{Multicast Sender}, and
+    \l{network/multicastreceiver}{Multicast Receiver} examples illustrate how
+    to use QUdpSocket in applications.
 
     \section1 Symbian Platform Security Requirements
 

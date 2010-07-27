@@ -473,6 +473,8 @@
     \o  \l{network/bearercloud}{Bearer Cloud}\raisedaster
     \o  \l{network/bearermonitor}{Bearer Monitor}
     \o  \l{network/securesocketclient}{Secure Socket Client}
+    \o  \l{network/multicastreceiver}{Multicast Receiver}
+    \o  \l{network/multicastsender}{Multicast Sender}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.
