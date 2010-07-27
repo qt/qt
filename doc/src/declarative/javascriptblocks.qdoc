@@ -236,6 +236,31 @@ This restriction exists as the QML environment is not yet fully established.
 To run code after the environment setup has completed, refer to
 \l {Running JavaScript at Startup}.
 
+\o The value of \c this is currently undefined in QML
+
+The value of \c this is undefined in QML.  To refer to any element, provide
+an \c id.  For example:
+
+\qml
+Item {
+    width: 200; height: 100
+    function mouseAreaClicked(area) {
+        console.log("Clicked in area at: " + area.x + ", " + area.y);
+    }
+    // This will not work because this is undefined
+    MouseArea {
+        height: 50; width: 200
+        onClicked: mouseAreaClicked(this)
+    }
+    // This will pass area2 to the function
+    MouseArea {
+        id: area2
+        y: 50; height: 50; width: 200
+        onClicked: mouseAreaClicked(area2)
+    }
+}
+\endqml
+
 \endlist
 
 */
