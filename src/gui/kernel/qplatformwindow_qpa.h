@@ -79,7 +79,7 @@ public:
 
     virtual void setOpacity(qreal level);
 
-    virtual QPlatformGLContext *glContext();
+    virtual QPlatformGLContext *glContext() const;
 protected:
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:

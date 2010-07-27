@@ -181,7 +181,7 @@ QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext c
 QGLXGLContext::~QGLXGLContext()
 {
     if (m_context) {
-        qDebug("Destroying GLX context 0x%x", m_context);
+        qDebug("Destroying GLX context 0x%p", m_context);
         glXDestroyContext(m_xd->display, m_context);
     }
 }

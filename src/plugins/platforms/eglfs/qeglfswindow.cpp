@@ -71,7 +71,7 @@ WId QEglFSWindow::winId() const
 
 
 
-QPlatformGLContext *QEglFSWindow::glContext()
+QPlatformGLContext *QEglFSWindow::glContext() const
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglWindow::glContext %p\n", m_screen->platformContext());

@@ -56,10 +56,11 @@ class QEglFSWindow : public QPlatformWindow
 {
 public:
     QEglFSWindow(QWidget *w, QEglFSScreen *screen);
-    QPlatformGLContext *glContext();
 
     void setGeometry(const QRect &);
     WId winId() const;
+
+    QPlatformGLContext *glContext() const;
 
 private:
     QEglFSScreen *m_screen;

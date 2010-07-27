@@ -62,7 +62,7 @@ public:
     void setVisible(bool visible);
     WId winId() const { return WId(m_eglWindow); }
 
-    QPlatformGLContext *glContext();
+    QPlatformGLContext *glContext() const;
 
 private:
     struct KDWindow *m_kdWindow;

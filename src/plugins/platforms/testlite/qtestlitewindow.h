@@ -127,7 +127,7 @@ public:
 
     void setCursor(QCursor * cursor);
 
-    QPlatformGLContext *glContext();
+    QPlatformGLContext *glContext() const;
 
 private:
     int xpos, ypos;
@@ -138,7 +138,6 @@ private:
     GC createGC();
     Cursor createCursorShape(int cshape);
     Cursor createCursorBitmap(QCursor * cursor);
-    QPlatformGLContext *createGLContext();
 
     int currentCursor;
 

@@ -1011,18 +1011,13 @@ void QTestLiteWindow::setCursor(QCursor * cursor)
     XFlush(xd->display);
 }
 
-QPlatformGLContext *QTestLiteWindow::glContext()
+QPlatformGLContext *QTestLiteWindow::glContext() const
 {
     if (!mGLContext) {
-        mGLContext = createGLContext();
+        QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
+        that->mGLContext = new QGLXGLContext(x_window, xd, widget()->platformWindowFormat());
     }
     return mGLContext;
-}
-
-QPlatformGLContext *QTestLiteWindow::createGLContext()
-{
-    QPlatformGLContext *context = new QGLXGLContext(x_window, xd, widget()->platformWindowFormat());
-    return context;
 }
 
 Cursor QTestLiteWindow::createCursorBitmap(QCursor * cursor)

@@ -169,7 +169,7 @@ void QOpenKODEWindow::setVisible(bool visible)
     }
 }
 
-QPlatformGLContext *QOpenKODEWindow::glContext()
+QPlatformGLContext *QOpenKODEWindow::glContext() const
 {
     return m_platformGlContext;
 }
