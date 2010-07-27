@@ -291,7 +291,10 @@ glyph_metrics_t QFontEngineS60::boundingBox(glyph_t glyph)
 
 QFixed QFontEngineS60::ascent() const
 {
-    return m_originalFont->FontMaxAscent();
+    // Workaround for QTBUG-8013
+    // Stroke based fonts may return an incorrect FontMaxAscent of 0.
+    const QFixed ascent = m_originalFont->FontMaxAscent();
+    return (ascent > 0) ? ascent : QFixed::fromReal(m_originalFontSizeInPixels) - descent();
 }
 
 QFixed QFontEngineS60::descent() const
