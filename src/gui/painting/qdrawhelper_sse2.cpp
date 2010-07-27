@@ -164,6 +164,72 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
     }
 }
 
+inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
+{
+#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+#undef MIX
+    return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
+}
+
+inline int comp_func_Plus_one_pixel(uint d, const uint s)
+{
+#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+#undef MIX
+    return result;
+}
+
+void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
+{
+    int x = 0;
+    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
+    const int prologLength = qMin(length, offsetToAlignOn16Bytes);
+
+    if (const_alpha == 255) {
+        // 1) Prologue: align destination on 16 bytes
+        for (; x < prologLength; ++x)
+            dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
+
+        // 2) composition with SSE2
+        for (; x < length - 3; x += 4) {
+            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+
+            const __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            _mm_store_si128((__m128i *)&dst[x], result);
+        }
+
+        // 3) Epilogue:
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
+    } else {
+        const int one_minus_const_alpha = 255 - const_alpha;
+        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
+
+        // 1) Prologue: align destination on 16 bytes
+        for (; x < prologLength; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
+
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        // 2) composition with SSE2
+        for (; x < length - 3; x += 4) {
+            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+
+            __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            INTERPOLATE_PIXEL_255_SSE2(result, result, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
+            _mm_store_si128((__m128i *)&dst[x], result);
+        }
+
+        // 3) Epilogue:
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
+    }
+}
+
 void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 {
     if (count < 7) {

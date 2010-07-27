@@ -4176,14 +4176,18 @@ void tst_QPainter::inactivePainter()
     p.setWorldTransform(QTransform().scale(0.5, 0.5), true);
 }
 
-bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMode op)
+bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMode op, qreal opacity = 1.0)
 {
-    QImage actual(1, 1, QImage::Format_ARGB32_Premultiplied);
+    // The test image needs to be large enough to test SIMD code
+    const QSize imageSize(100, 100);
+
+    QImage actual(imageSize, QImage::Format_ARGB32_Premultiplied);
     actual.fill(QColor(dst, dst, dst).rgb());
 
     QPainter p(&actual);
     p.setCompositionMode(op);
-    p.fillRect(0, 0, 1, 1, QColor(src, src, src));
+    p.setOpacity(opacity);
+    p.fillRect(QRect(QPoint(), imageSize), QColor(src, src, src));
     p.end();
 
     if (qRed(actual.pixel(0, 0)) != expected) {
@@ -4191,7 +4195,9 @@ bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMo
                src, dst, qRed(actual.pixel(0, 0)), expected);
         return false;
     } else {
-        return true;
+        QImage refImage(imageSize, QImage::Format_ARGB32_Premultiplied);
+        refImage.fill(QColor(expected, expected, expected).rgb());
+        return actual == refImage;
     }
 }
 
@@ -4205,6 +4211,16 @@ void tst_QPainter::extendedBlendModes()
     QVERIFY(testCompositionMode(255,   0, 255, QPainter::CompositionMode_Plus));
     QVERIFY(testCompositionMode(  0, 255, 255, QPainter::CompositionMode_Plus));
     QVERIFY(testCompositionMode(128, 128, 255, QPainter::CompositionMode_Plus));
+
+    QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(127, 128, 165, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(127,   0,  37, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0, 127, 127, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(255,   0,  75, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0, 255, 255, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(128, 128, 166, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(186, 200, 255, QPainter::CompositionMode_Plus, 0.3));
 
     QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_Multiply));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Multiply));
