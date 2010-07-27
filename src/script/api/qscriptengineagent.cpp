@@ -117,6 +117,8 @@ void QScriptEngineAgentPrivate::attach()
     if (engine->originalGlobalObject()->debugger())
         engine->originalGlobalObject()->setDebugger(0);
     JSC::Debugger::attach(engine->originalGlobalObject());
+    if (!QScriptEnginePrivate::get(engine)->isEvaluating())
+        JSC::Debugger::recompileAllJSFunctions(engine->globalData);
 }
 
 void QScriptEngineAgentPrivate::detach()

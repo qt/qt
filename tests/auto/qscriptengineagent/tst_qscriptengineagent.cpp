@@ -97,6 +97,7 @@ private slots:
     void functionEntryAndExit_objectCall();
     void positionChange_1();
     void positionChange_2();
+    void positionChange_3();
     void exceptionThrowAndCatch();
     void eventOrder_assigment();
     void eventOrder_functionDefinition();
@@ -1624,6 +1625,56 @@ void tst_QScriptEngineAgent::positionChange_2()
     }
     delete spy;
 }
+
+void tst_QScriptEngineAgent::positionChange_3()
+{
+    QScriptEngine eng;
+    eng.evaluate("function some_function1(a) {\n a++; \n return a + 12; } \n some_function1(42);", "function1.qs", 12);
+    QScriptValue some_function2 = eng.evaluate("(function (b) {\n b--; \n return b + 11; })", "function2.qs", 21);
+    some_function2.call(QScriptValue(), QScriptValueList() << 2 );
+
+    // Test that the agent work, even if installed after the function has been evaluated.
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnorePositionChange));
+    {
+        spy->clear();
+        QScriptValue v = eng.evaluate("some_function1(15)");
+        QCOMPARE(v.toInt32(), (15+1+12));
+        QCOMPARE(spy->count(), 3);
+
+        // some_function1()
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(0).scriptId != -1);
+        QCOMPARE(spy->at(0).lineNumber, 1);
+
+        // a++
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(1).scriptId != spy->at(0).scriptId);
+        QCOMPARE(spy->at(1).lineNumber, 13);
+        // return a + 12
+        QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(2).scriptId == spy->at(1).scriptId);
+        QCOMPARE(spy->at(2).lineNumber, 14);
+    }
+
+    {
+        spy->clear();
+        QScriptValue v = some_function2.call(QScriptValue(), QScriptValueList() << 89 );
+        QCOMPARE(v.toInt32(), (89-1+11));
+        QCOMPARE(spy->count(), 2);
+
+        // b--
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(0).scriptId != -1);
+        QCOMPARE(spy->at(0).lineNumber, 22);
+        // return b + 11
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(1).scriptId == spy->at(0).scriptId);
+        QCOMPARE(spy->at(1).lineNumber, 23);
+    }
+
+    QVERIFY(!eng.hasUncaughtException());
+}
+
 
 void tst_QScriptEngineAgent::exceptionThrowAndCatch()
 {
