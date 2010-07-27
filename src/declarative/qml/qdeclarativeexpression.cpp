@@ -604,6 +604,7 @@ QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope,
         scriptContext->pushScope(ep->globalClass->staticGlobalObject());
 
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
+        rewriteBinding.setName(name);
         bool ok = true;
         const QString code = rewriteBinding(expression, &ok);
         if (ok) 
