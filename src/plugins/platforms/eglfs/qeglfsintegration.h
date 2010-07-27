@@ -42,16 +42,19 @@
 #ifndef EGLINTEGRATION_H
 #define EGLINTEGRATION_H
 
+#include "qeglfsscreen.h"
+
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
-class QEglScreen;
-class QEglIntegration : public QPlatformIntegration
+class QEglFSIntegration : public QPlatformIntegration
 {
 public:
-    QEglIntegration();
+    QEglFSIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -61,10 +64,10 @@ public:
 
 private:
     QList<QPlatformScreen *> mScreens;
-    QEglScreen *m_primaryScreen;
+    QEglFSScreen *m_primaryScreen;
 };
 
 QT_END_NAMESPACE
-
+QT_END_HEADER
 
 #endif

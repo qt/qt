@@ -1,7 +1,5 @@
 #include "qeglconvenience.h"
 
-#include <QtCore/QDebug>
-
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format)
 {
     int redSize     = format.redBufferSize();
@@ -178,7 +176,6 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
     } else {
         configureAttributes.append(EGL_OPENGL_ES2_BIT);
     }
-
     configureAttributes.append(EGL_NONE);
 
     do {
@@ -228,6 +225,6 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
         }
         delete [] configs;
     } while (q_reduceConfigAttributes(&configureAttributes));
-    qDebug() << "RETURNING NULL!";
+    qWarning("Cant find EGLConfig, returning null config");
     return 0;
 }

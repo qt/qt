@@ -62,7 +62,7 @@ QPlatformIntegration* QEglIntegrationPlugin::create(const QString& system, const
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "eglfs")
-        return new QEglIntegration;
+        return new QEglFSIntegration;
 
     return 0;
 }
