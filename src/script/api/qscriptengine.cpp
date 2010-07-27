@@ -4196,6 +4196,7 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
                  "cannot set agent belonging to different engine");
         return;
     }
+    QScript::APIShim shim(d);
     if (d->activeAgent)
         QScriptEngineAgentPrivate::get(d->activeAgent)->detach();
     d->activeAgent = agent;
