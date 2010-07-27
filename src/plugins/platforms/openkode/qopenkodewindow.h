@@ -47,6 +47,9 @@
 
 #include <KD/kd.h>
 
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 class QEGLPlatformContext;
 
 class QOpenKODEWindow : public QPlatformWindow
@@ -70,5 +73,8 @@ private:
     EGLenum m_eglApi;
     QEGLPlatformContext *m_platformGlContext;
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif //QOPENKODEWINDOW_H

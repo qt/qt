@@ -4,6 +4,10 @@
 #include <QtGui/QPlatformEventLoopIntegration>
 
 class KDThread;
+
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 class QOpenKODEEventLoopIntegration : public QPlatformEventLoopIntegration
 {
 public:
@@ -13,5 +17,8 @@ public:
 private:
     KDThread *m_kdThread;
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QOPENKODEEVENTLOOPINTEGRATION_H

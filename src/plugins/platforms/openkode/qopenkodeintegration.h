@@ -51,6 +51,7 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 struct KDDesktopNV;
@@ -98,5 +99,6 @@ private:
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif

@@ -2,7 +2,7 @@
 
 #include <KD/kd.h>
 
-#include <QtCore/QDebug>
+QT_BEGIN_NAMESPACE
 
 QOpenKODEEventLoopIntegration::QOpenKODEEventLoopIntegration()
 {
@@ -27,3 +27,5 @@ void QOpenKODEEventLoopIntegration::wakeup()
     KDEvent *event = kdCreateEvent();
     kdPostThreadEvent(event,m_kdThread);
 }
+
+QT_END_NAMESPACE
