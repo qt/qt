@@ -12047,8 +12047,8 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 {
     Q_D(QWidget);
     if (d->gestureContext.remove(gesture)) {
-        QGestureManager *manager = QGestureManager::instance();
-        manager->cleanupCachedGestures(this, gesture);
+        if (QGestureManager *manager = QGestureManager::instance())
+            manager->cleanupCachedGestures(this, gesture);
     }
 }
 #endif // QT_NO_GESTURES
