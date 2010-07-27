@@ -145,7 +145,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
 void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
 {
-    Q_ASSERT(const_alpha >= 0);
     Q_ASSERT(const_alpha < 256);
 
     const quint32 *src = (const quint32 *) srcPixels;
