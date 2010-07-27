@@ -464,6 +464,7 @@ void tst_QTreeWidget::editItem()
     QTreeWidget tree;
     populate(&tree, topLevelItems, new TreeItem(QStringList() << "1" << "2"));
     tree.show();
+    QTest::qWaitForWindowShown(&tree);
 
     QSignalSpy itemChangedSpy(
         &tree, SIGNAL(itemChanged(QTreeWidgetItem*,int)));
