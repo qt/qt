@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example multitouch/dials
-    \title Multi-Touch Dials Example
+    \example touch/knobs
+    \title Touch Knobs Example
 
-    The Multi-Touch Dials example shows how to apply multi-touch to a set of
-    standard Qt widgets.
+    The Touch Knobs example shows how to create custom controls that
+    accept touch input.
 
-    \image multitouch-dials-example.png
+    \image touch-knobs-example.png
 */
