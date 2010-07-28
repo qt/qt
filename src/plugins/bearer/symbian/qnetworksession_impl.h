@@ -134,7 +134,8 @@ protected: // From CActive
 private Q_SLOTS:
     void configurationStateChanged(TUint32 accessPointId, TUint32 connMonId, QNetworkSession::State newState);
     void configurationRemoved(QNetworkConfigurationPrivatePointer config);
-    
+    void configurationAdded(QNetworkConfigurationPrivatePointer config);
+
 private:
     TUint iapClientCount(TUint aIAPId) const;
     quint64 transferredData(TUint dataType) const;
