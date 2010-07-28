@@ -54,6 +54,7 @@
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qbuffer.h"
@@ -953,6 +954,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
         && (isLocalFile || req.url().scheme() == QLatin1String("qrc"))) {
         return new QNetworkReplyFileImpl(this, req, op);
+    }
+
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
+            && req.url().scheme().toLower() == QLatin1String("data")) {
+        return new QNetworkReplyDataImpl(this, req, op);
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT

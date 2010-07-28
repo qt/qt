@@ -27,6 +27,7 @@ HEADERS += \
     access/qnetworkreply.h \
     access/qnetworkreply_p.h \
     access/qnetworkreplyimpl_p.h \
+    access/qnetworkreplydataimpl_p.h \
     access/qnetworkreplyfileimpl_p.h \
     access/qabstractnetworkcache_p.h \
     access/qabstractnetworkcache.h \
@@ -55,6 +56,7 @@ SOURCES += \
     access/qnetworkrequest.cpp \
     access/qnetworkreply.cpp \
     access/qnetworkreplyimpl.cpp \
+    access/qnetworkreplydataimpl.cpp \
     access/qnetworkreplyfileimpl.cpp \
     access/qabstractnetworkcache.cpp \
     access/qnetworkdiskcache.cpp
