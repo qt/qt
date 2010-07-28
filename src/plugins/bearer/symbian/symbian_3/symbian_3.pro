@@ -6,7 +6,7 @@ symbian {
         DEFINES += SNAP_FUNCTIONALITY_AVAILABLE
         LIBS += -lcmmanager
 
-        exists($$MW_LAYER_PUBLIC_EXPORT_PATH(extendedconnpref.h)) {
+        exists($$prependEpocroot($$MW_LAYER_PUBLIC_EXPORT_PATH(extendedconnpref.h))) {
             DEFINES += OCC_FUNCTIONALITY_AVAILABLE
             LIBS += -lextendedconnpref
         }
