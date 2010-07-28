@@ -83,9 +83,9 @@ function doOperation(op) {
         display.text ="0"
     }
 
-    if (op == rotateLeft)
-        main.state = "orientation " + Orientation.Landscape
     if (op == rotateRight)
+        main.state = "orientation " + Orientation.Landscape
+    if (op == rotateLeft)
         main.state = ''
 }
 

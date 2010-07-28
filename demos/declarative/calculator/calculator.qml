@@ -85,7 +85,7 @@ Rectangle {
 
                     Button {
                         id: rotateButton
-                        width: column.w; height: column.h; color: 'purple'; operation: rotateLeft
+                        width: column.w; height: column.h; color: 'purple'; operation: rotateRight
                     }
                     Button { width: column.w; height: column.h; color: 'purple'; operation: leftArrow }
                     Button { width: column.w; height: column.h; color: 'purple'; operation: "C" }
@@ -134,18 +134,18 @@ Rectangle {
         states: [
             State {
                 name: "orientation " + Orientation.Landscape
-                PropertyChanges { target: main; rotation: -90; width: window.height; height: window.width }
-                PropertyChanges { target: rotateButton; operation: rotateRight }
-            },
-            State {
-                name: "orientation " + Orientation.PortraitInverted
-                PropertyChanges { target: main; rotation: -180; }
+                PropertyChanges { target: main; rotation: 90; width: window.height; height: window.width }
                 PropertyChanges { target: rotateButton; operation: rotateLeft }
             },
             State {
-                name: "orientation " + Orientation.LandscapeInverted
-                PropertyChanges { target: main; rotation: -270; width: window.height; height: window.width }
+                name: "orientation " + Orientation.PortraitInverted
+                PropertyChanges { target: main; rotation: 180; }
                 PropertyChanges { target: rotateButton; operation: rotateRight }
+            },
+            State {
+                name: "orientation " + Orientation.LandscapeInverted
+                PropertyChanges { target: main; rotation: 270; width: window.height; height: window.width }
+                PropertyChanges { target: rotateButton; operation: rotateLeft }
             }
         ]
 
