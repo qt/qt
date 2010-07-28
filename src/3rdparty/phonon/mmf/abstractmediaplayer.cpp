@@ -258,13 +258,13 @@ void MMF::AbstractMediaPlayer::open()
 
     case MediaSource::Stream: {
         QResource *const resource = m_parent->resource();
-        if (resource && resource->isValid()) {
+        if (resource) {
             m_buffer.Set(resource->data(), resource->size());
             symbianErr = openDescriptor(m_buffer);
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening resource");
         } else {
-            errorMessage = tr("Error opening source: resource not valid");
+            errorMessage = tr("Error opening source: resource not opened");
         }
         break;
     }

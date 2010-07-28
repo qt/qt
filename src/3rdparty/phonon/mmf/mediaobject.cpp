@@ -315,10 +315,14 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
             if (fileName.startsWith(QLatin1String(":/")) || fileName.startsWith(QLatin1String("qrc://"))) {
                 Q_ASSERT(!m_resource);
                 m_resource = new QResource(fileName);
-                if (m_resource->isValid())
-                    mediaType = bufferMediaType(m_resource->data(), m_resource->size());
-                else
+                if (m_resource->isValid()) {
+                    if (m_resource->isCompressed())
+                        errorMessage = tr("Error opening source: resource is compressed");
+                    else
+		        mediaType = bufferMediaType(m_resource->data(), m_resource->size());
+		} else {
                     errorMessage = tr("Error opening source: resource not valid");
+                }
             } else {
                 errorMessage = tr("Error opening source: type not supported");
             }
