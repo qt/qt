@@ -226,8 +226,6 @@ void QS60Beep::MatoPlayComplete(TInt aError)
 }
 
 
-QHash<TInt, TUint> QApplicationPrivate::scanCodeCache;
-
 static Qt::KeyboardModifiers mapToQtModifiers(TUint s60Modifiers)
 {
     Qt::KeyboardModifiers result = Qt::NoModifier;
@@ -2096,13 +2094,18 @@ void QApplication::setEffectEnabled(Qt::UIEffect /* effect */, bool /* enable */
 
 TUint QApplicationPrivate::resolveS60ScanCode(TInt scanCode, TUint keysym)
 {
+    if (!scanCode)
+        return keysym;
+
+    QApplicationPrivate *d = QApplicationPrivate::instance();
+
     if (keysym) {
         // If keysym is specified, cache it.
-        scanCodeCache.insert(scanCode, keysym);
+        d->scanCodeCache.insert(scanCode, keysym);
         return keysym;
     } else {
         // If not, retrieve the cached version.
-        return scanCodeCache[scanCode];
+        return d->scanCodeCache[scanCode];
     }
 }
 
