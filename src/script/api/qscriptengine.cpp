@@ -152,8 +152,7 @@ QT_BEGIN_NAMESPACE
   evaluation caused an exception by calling hasUncaughtException(). In
   that case, you can call toString() on the error object to obtain an
   error message. The current uncaught exception is also available
-  through uncaughtException(). You can obtain a human-readable
-  backtrace of the exception with uncaughtExceptionBacktrace().
+  through uncaughtException().
   Calling clearExceptions() will cause any uncaught exceptions to be
   cleared.
 
@@ -2800,8 +2799,7 @@ void QScriptEnginePrivate::popContext()
 
   The exception state is cleared when evaluate() is called.
 
-  \sa uncaughtException(), uncaughtExceptionLineNumber(),
-      uncaughtExceptionBacktrace()
+  \sa uncaughtException(), uncaughtExceptionLineNumber()
 */
 bool QScriptEngine::hasUncaughtException() const
 {
@@ -2819,7 +2817,6 @@ bool QScriptEngine::hasUncaughtException() const
   message.
 
   \sa hasUncaughtException(), uncaughtExceptionLineNumber(),
-      uncaughtExceptionBacktrace()
 */
 QScriptValue QScriptEngine::uncaughtException() const
 {
@@ -2839,7 +2836,7 @@ QScriptValue QScriptEngine::uncaughtException() const
   Line numbers are 1-based, unless a different base was specified as
   the second argument to evaluate().
 
-  \sa hasUncaughtException(), uncaughtExceptionBacktrace()
+  \sa hasUncaughtException()
 */
 int QScriptEngine::uncaughtExceptionLineNumber() const
 {
@@ -2851,7 +2848,7 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 /*!
   Returns a human-readable backtrace of the last uncaught exception.
 
-  Each line is of the form \c{<function-name>(<arguments>)@<file-name>:<line-number>}.
+  It is in the form \c{<function-name>()@<file-name>:<line-number>}.
 
   \sa uncaughtException()
 */
