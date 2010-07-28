@@ -79,7 +79,6 @@ public:
     static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
     static void handleTouchEvent(QWidget *w, ulong timestamp, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
 
-    // delivered directly by the plugin via spontaneous events
     static void handleGeometryChange(QWidget *w, const QRect &newRect);
     static void handleCloseEvent(QWidget *w);
     static void handleEnterEvent(QWidget *w);

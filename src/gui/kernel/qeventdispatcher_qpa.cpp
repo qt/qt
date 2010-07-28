@@ -255,7 +255,9 @@ int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_
     Q_D(QEventDispatcherQPA);
     int retVal = 0;
     if (d->hasIntegration()) {
-        qint64 timeoutmsec = timeout->tv_sec * 1000 + (timeout->tv_usec/1000);
+        qint64 timeoutmsec = 0;
+        if (timeout)
+            timeoutmsec = timeout->tv_sec * 1000 + (timeout->tv_usec/1000);
         d->selectReturnMutex->lock();
         if (d->selectWorkerNeedsSync) {
             if (d->selectWorkerHasResult) {
