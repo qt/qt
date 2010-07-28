@@ -170,6 +170,12 @@ private:
     QNetworkConfigurationManager manager;
     QIcdEngine *engine;
 
+    struct Statistics {
+        quint64 txData;
+        quint64 rxData;
+        quint64 activeTime;
+    };
+
     // The config set on QNetworkSession.
     QNetworkConfiguration config;
 
@@ -186,7 +192,7 @@ private:
     friend class IcdListener;
     void updateState(QNetworkSession::State);
     void updateIdentifier(const QString &newId);
-    quint64 getStatistics(bool sent) const;
+    Statistics getStatistics() const;
     void cleanupSession(void);
 
     void updateProxyInformation();
