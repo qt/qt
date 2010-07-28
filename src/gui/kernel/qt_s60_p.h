@@ -224,6 +224,7 @@ private:
     void HandlePointerEvent(const TPointerEvent& aPointerEvent);
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
+    TKeyResponse handleVirtualMouse(const TKeyEvent& keyEvent,TEventCode type);
     bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
     void sendMouseEvent(
             QWidget *receiver,
