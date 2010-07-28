@@ -124,7 +124,8 @@ class tst_MediaObject : public QObject
         void init();
         void cleanup();
 
-        void testPlayFromResource();
+        void testPlayFromResourceDirect();
+        void testPlayFromResourceFile();
         void testPlayIllegalFile();
         void initTestCase();
         void checkForDefaults();
@@ -199,11 +200,22 @@ void tst_MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstat
         QWARN(QByteArray(QByteArray(QTest::toString(oldstate)) + " to " + QByteArray(QTest::toString(newstate))));
 }
 
-void tst_MediaObject::testPlayFromResource()
+void tst_MediaObject::testPlayFromResourceDirect()
 {
-#ifdef Q_OS_SYMBIAN
-    QSKIP("Not implemented yet.", SkipAll);
-#else
+    MediaObject media;
+    media.setCurrentSource(Phonon::MediaSource(MEDIA_FILEPATH));
+    QVERIFY(media.state() != Phonon::ErrorState);
+    if (media.state() != Phonon::StoppedState)
+        QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
+    QCOMPARE(media.state(), Phonon::StoppedState);
+    media.play();
+    if (media.state() != Phonon::PlayingState)
+        QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
+    QCOMPARE(media.state(), Phonon::PlayingState);
+}
+
+void tst_MediaObject::testPlayFromResourceFile()
+{
     QFile file(MEDIA_FILEPATH);
     MediaObject media;
     media.setCurrentSource(&file);
@@ -215,7 +227,6 @@ void tst_MediaObject::testPlayFromResource()
     if (media.state() != Phonon::PlayingState)
         QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
     QCOMPARE(media.state(), Phonon::PlayingState);
-#endif
 }
 
 void tst_MediaObject::testPlayIllegalFile()
