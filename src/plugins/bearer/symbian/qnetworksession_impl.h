@@ -64,7 +64,7 @@
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <comms-infras/cs_mobility_apiext.h>
 #endif
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
     #include <extendedconnpref.h>
 #endif
 
