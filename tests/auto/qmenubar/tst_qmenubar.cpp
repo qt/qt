@@ -338,6 +338,8 @@ void tst_QMenuBar::initTestCase_noQt3()
 
     initSimpleMenubar_noQt3();
     mw->show();
+    QTest::qWaitForWindowShown(mw);
+    mw->activateWindow();
 
     menu1 = new QtTestSlot( mw );
     menu2 = new QtTestSlot( mw );
