@@ -44,7 +44,6 @@
 
 #include "CodeBlock.h"
 #include "Error.h"
-#include "JSLock.h"
 #include "Interpreter.h"
 
 #include "PrototypeFunction.h"
@@ -1002,7 +1001,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
-    JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
     while (freeScriptValues) {
@@ -1291,7 +1289,6 @@ bool QScriptEnginePrivate::isCollecting() const
 
 void QScriptEnginePrivate::collectGarbage()
 {
-    JSC::JSLock lock(false);
     QScript::APIShim shim(this);
     globalData->heap.collectAllGarbage();
 }
@@ -1321,7 +1318,6 @@ JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t
                                                   bool &compile)
 {
     Q_Q(QScriptEngine);
-    JSC::JSLock lock(false); // ### hmmm
     QBoolBlocker inEvalBlocker(inEval, true);
     q->currentContext()->activationObject(); //force the creation of a context for native function;
 
