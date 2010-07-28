@@ -291,14 +291,17 @@ void SymbianEngine::updateConfigurationsL()
             if (error == KErrNone) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
-
-                mutex.unlock();
-                // Emit configuration added. Connected slots may throw execptions
-                // which propagate here --> must be converted to leaves (standard
-                // std::exception would cause any TRAP trapping this function to terminate
-                // program).
-                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                mutex.lock();
+                if (!iFirstUpdate) {
+                    // Emit configuration added. Connected slots may throw execptions
+                    // which propagate here --> must be converted to leaves (standard
+                    // std::exception would cause any TRAP trapping this function to terminate
+                    // program).
+                    QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                    updateStatesToSnaps();
+                    mutex.unlock();
+                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                    mutex.lock();
+                }
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -346,10 +349,13 @@ void SymbianEngine::updateConfigurationsL()
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
-
-            mutex.unlock();
-            QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-            mutex.lock();
+            if (!iFirstUpdate) {
+                QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                updateStatesToSnaps();
+                mutex.unlock();
+                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                mutex.lock();
+            }
         }
 
         // Loop through all connection methods in this SNAP
@@ -362,19 +368,23 @@ void SymbianEngine::updateConfigurationsL()
             QString iface = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
             // Check that IAP can be found from accessPointConfigurations list
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
-            if (ptr) {
-                knownConfigs.removeOne(iface);
-            } else {
+            if (!ptr) {
                 SymbianNetworkConfigurationPrivate *cpPriv = NULL;
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
                     ptr = QNetworkConfigurationPrivatePointer(cpPriv);
                     accessPointConfigurations.insert(ptr->id, ptr);
 
-                    mutex.unlock();
-                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                    mutex.lock();
+                    if (!iFirstUpdate) {
+                        QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                        updateStatesToSnaps();
+                        mutex.unlock();
+                        QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                        mutex.lock();
+                    }
                 }
+            } else {
+                knownConfigs.removeOne(iface);
             }
 
             if (ptr) {
@@ -397,6 +407,9 @@ void SymbianEngine::updateConfigurationsL()
             privSNAP->roamingSupported = privSNAP->serviceNetworkMembers.count() > 1;
 
             snapConfigLocker.unlock();
+
+            updateStatesToSnaps();
+
             mutex.unlock();
             QT_TRYCATCH_LEAVING(emit configurationChanged(privSNAP));
             mutex.lock();
@@ -422,10 +435,13 @@ void SymbianEngine::updateConfigurationsL()
             if (readNetworkConfigurationValuesFromCommsDb(apId, cpPriv)) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
-
-                mutex.unlock();
-                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                mutex.lock();
+                if (!iFirstUpdate) {
+                    QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                    updateStatesToSnaps();
+                    mutex.unlock();
+                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                    mutex.lock();
+                }
             } else {
                 delete cpPriv;
             }
@@ -478,6 +494,10 @@ void SymbianEngine::updateConfigurationsL()
     stopCommsDatabaseNotifications();
     TRAP_IGNORE(defaultConfig = defaultConfigurationL());
     startCommsDatabaseNotifications();
+
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    updateStatesToSnaps();
+#endif
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -711,7 +731,8 @@ void SymbianEngine::updateActiveAccessPoints()
 #endif
             if (ptr) {
                 iConnectionMonitor.GetIntAttribute(connectionId, subConnectionCount, KConnectionStatus, connectionStatus, status);
-                User::WaitForRequest(status);          
+                User::WaitForRequest(status);
+
                 if (connectionStatus == KLinkLayerOpen) {
                     online = true;
                     inactiveConfigs.removeOne(ident);
