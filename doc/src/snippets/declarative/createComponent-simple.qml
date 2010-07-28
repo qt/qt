@@ -37,25 +37,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import Qt 4.7
 
-Rectangle {
-    id: parentItem
+Item {
+    id: container
+    width: 300; height: 300
 
-    width: 100
-    height: 100
-    
-    function createIt() {
-//![0]
-var newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
-    parentItem, "dynamicSnippet1");
-//![0]
-
-//![destroy]
-newObject.destroy(1000);
-//![destroy]
+    function loadButton() {
+        var component = Qt.createComponent("Button.qml");
+        if (component.status == Component.Ready) {
+            var button = component.createObject(container);
+            button.color = "red";
+        }
     }
 
-    Component.onCompleted: createIt()
+    Component.onCompleted: loadButton()
 }
+//![0]

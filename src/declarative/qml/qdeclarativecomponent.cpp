@@ -609,6 +609,9 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     the \a parent value. Note that if the returned object is to be displayed, you 
     must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
     property, or else the object will not be visible.
+
+    Dynamically created instances can be deleted with the \c destroy() method.
+    See \l {Dynamic Object Management} for more information.
 */
 
 /*!
