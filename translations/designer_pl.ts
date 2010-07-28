@@ -506,7 +506,7 @@
         <translation>Usuń pasek narzędzi</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1194"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1196"/>
         <source>Set action text</source>
         <translation>Ustaw tekst akcji</translation>
     </message>
@@ -587,14 +587,14 @@
         <translation>Dodaj przyciski do grupy</translation>
     </message>
     <message>
-        <location line="+8"/>
         <location filename="../tools/designer/src/lib/shared/formlayoutmenu.cpp" line="+458"/>
+        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+8"/>
         <source>Add &apos;%1&apos; to &apos;%2&apos;</source>
         <extracomment>Command description for adding buttons to a QButtonGroup</extracomment>
         <translation>Dodaj &apos;%1&apos; do &apos;%2&apos;</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location filename="../tools/designer/src/components/taskmenu/button_taskmenu.cpp" line="+14"/>
         <source>Remove buttons from group</source>
         <translation>Usuń przyciski z grupy</translation>
     </message>
@@ -703,7 +703,7 @@
 <context>
     <name>ConnectionDelegate</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+644"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+645"/>
         <source>&lt;object&gt;</source>
         <translation>&lt;obiekt&gt;</translation>
     </message>
@@ -1030,13 +1030,21 @@
     <message>
         <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+375"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
-        <extracomment>Parsing layout stretch values</extracomment>
+        <extracomment>Parsing layout stretch values
+----------
+Parsing layout stretch values
+----------
+Parsing layout stretch values</extracomment>
         <translation>Niepoprawna wartość rozciągniecia dla &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
     <message>
         <location line="+62"/>
         <source>Invalid minimum size for &apos;%1&apos;: &apos;%2&apos;</source>
-        <extracomment>Parsing grid layout minimum size values</extracomment>
+        <extracomment>Parsing grid layout minimum size values
+----------
+Parsing grid layout minimum size values
+----------
+Parsing grid layout minimum size values</extracomment>
         <translation>Niepoprawna wartość minimalna dla &apos;%1&apos;: &apos;%2&apos;</translation>
     </message>
 </context>
@@ -1445,7 +1453,7 @@ To wskazuje na niespójność w pliku ui.</translation>
         <translation>Podczas przypisywania kolejności tabulacji: widżet &apos;%1&apos; nie został znaleziony.</translation>
     </message>
     <message>
-        <location line="+908"/>
+        <location line="+923"/>
         <source>Invalid QButtonGroup reference &apos;%1&apos; referenced by &apos;%2&apos;.</source>
         <translation>Niepoprawny odnośnik QButtonGroup &apos;%1&apos;, użyty w &apos;%2&apos;.</translation>
     </message>
@@ -1988,7 +1996,7 @@ Czy chcesz spróbować ponownie?</translation>
 <context>
     <name>QDesignerMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1179"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1180"/>
         <source>Type Here</source>
         <translation>Wpisz tutaj</translation>
     </message>
@@ -2009,12 +2017,12 @@ Czy chcesz spróbować ponownie?</translation>
     </message>
     <message>
         <location line="-300"/>
-        <location line="+648"/>
+        <location line="+649"/>
         <source>Add separator</source>
         <translation>Dodaj separator</translation>
     </message>
     <message>
-        <location line="-680"/>
+        <location line="-681"/>
         <source>Insert separator</source>
         <translation>Wstaw separator</translation>
     </message>
@@ -2088,7 +2096,7 @@ Czy chcesz spróbować ponownie?</translation>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+758"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+762"/>
         <source>Dynamic Properties</source>
         <translation>Dynamiczne właściwości</translation>
     </message>
@@ -2279,7 +2287,11 @@ Strony pojemników powinny być dodawane jedynie poprzez wyspecyfikowanie ich w 
     <message>
         <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+168"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
-        <extracomment>Empty class name passed to widget factory method</extracomment>
+        <extracomment>Empty class name passed to widget factory method
+----------
+Empty class name passed to widget factory method
+----------
+Empty class name passed to widget factory method</extracomment>
         <translation>Pusta nazwa klasy została przekazana do %1 (nazwa obiektu: &apos;%2&apos;).</translation>
     </message>
     <message>
@@ -3960,6 +3972,54 @@ Czy chcesz nadpisać szablon?</translation>
     </message>
 </context>
 <context>
+    <name>VideoPlayerTaskMenu</name>
+    <message>
+        <location filename="../tools/designer/src/plugins/phononwidgets/videoplayertaskmenu.cpp" line="+79"/>
+        <source>Available Mime Types</source>
+        <translation>Dostępne typy mime</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Display supported mime types...</source>
+        <translation>Pokaż dostępne typy mime...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Load...</source>
+        <translation>Załaduj...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Play</source>
+        <translation>Odtwórz</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pause</source>
+        <translation>Pauza</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stop</source>
+        <translation>Zatrzymaj</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Choose Video Player Media Source</source>
+        <translation>Wybierz źródło odtwarzacza wideo</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>An error has occurred in &apos;%1&apos;: %2</source>
+        <translation>Wystąpił błąd w &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Video Player Error</source>
+        <translation>Błąd odtwarzacza wideo</translation>
+    </message>
+</context>
+<context>
     <name>WidgetDataBase</name>
     <message>
         <location filename="../tools/designer/src/lib/shared/widgetdatabase.cpp" line="+814"/>
@@ -4147,7 +4207,7 @@ Czy chcesz nadpisać szablon?</translation>
         </translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+48"/>
         <source>Set automatically</source>
         <translation>Ustaw automatycznie</translation>
     </message>

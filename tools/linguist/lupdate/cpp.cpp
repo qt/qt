@@ -1686,9 +1686,14 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 HashString ns = HashString(text);
                 yyTok = getToken();
                 if (yyTok == Tok_LeftBrace) {
+                    yyTok = getToken();
                     namespaceDepths.push(namespaces.count());
                     enterNamespace(&namespaces, ns);
-                    yyTok = getToken();
+
+                    functionContext = namespaces;
+                    functionContextUnresolved.clear();
+                    prospectiveContext.clear();
+                    pendingContext.clear();
                 } else if (yyTok == Tok_Equals) {
                     // e.g. namespace Is = OuterSpace::InnerSpace;
                     QList<HashString> fullName;

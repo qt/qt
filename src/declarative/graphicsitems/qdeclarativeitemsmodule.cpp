@@ -95,7 +95,8 @@ static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject 
 
 void QDeclarativeItemModule::defineModule()
 {
-    QDeclarativePrivate::registerAutoParentFunction(qgraphicsobject_autoParent);
+    QDeclarativePrivate::RegisterAutoParent autoparent = { 0, &qgraphicsobject_autoParent };
+    QDeclarativePrivate::qmlregister(QDeclarativePrivate::AutoParentRegistration, &autoparent);
 
 #ifdef QT_NO_MOVIE
     qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",

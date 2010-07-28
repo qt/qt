@@ -208,7 +208,10 @@ Models can be defined in C++ and then made available to QML. This is useful
 for exposing existing C++ data models or otherwise complex datasets to QML.
 
 A C++ model class can be defined as a QStringList, a QList<QObject*> or a
-QAbstractItemModel. 
+QAbstractItemModel. The first two are useful for exposing simpler datasets,
+while QAbstractItemModel provides a more flexible solution for more complex
+models.
+
 
 \section2 QStringList
 
@@ -268,7 +271,10 @@ the model by calling QDeclarativeContext::setContextProperty() again.
 
 \section2 QAbstractItemModel
 
-A model can be defined by subclassing QAbstractItemModel.
+A model can be defined by subclassing QAbstractItemModel. This is the
+best approach if you have a more complex model that cannot be supported
+by the other approaches. A QAbstractItemModel can also automatically 
+notify a QML view when the model data has changed.
 
 The roles of a QAbstractItemModel subclass can be exposed to QML by calling 
 QAbstractItemModel::setRoleNames(). The default role names set by Qt are:
@@ -304,6 +310,12 @@ This model is displayed by a ListView delegate that accesses the \e type and \e 
 roles:
 
 \snippet examples/declarative/modelviews/abstractitemmodel/view.qml 0
+
+QML views are automatically updated when the model changes. Remember the model
+must follow the standard rules for model changes and notify the view when
+the model has changed by using QAbstractItemModel::dataChanged(), 
+QAbstractItemModel::beginInsertRows(), etc. See the \l {Model subclassing reference} for
+more information.
 
 The complete example is available in Qt's \l {declarative/modelviews/abstractitemmodel}{examples/declarative/modelviews/abstractitemmodel} directory.
 
@@ -428,5 +440,78 @@ Rectangle {
     }
 }
 \endcode
+
+\section1 Accessing Views and Models from Delegates
+
+You can access the view for which a delegate is used, and its
+properties, by using ListView.view in a delegate on a ListView, or
+GridView.view in a delegate on a GridView, etc. In particular, you can
+access the model and its properties by using ListView.view.model.
+
+This is useful when you want to use the same delegate for a number of
+views, for example, but you want decorations or other features to be
+different for each view, and you would like these different settings to
+be properties of each of the views. Similarly, it might be of interest
+to access or show some properties of the model.
+
+In the following example, the delegate shows the property \e{language}
+of the model, and the color of one of the fields depends on the
+property \e{fruit_color} of the view.
+
+\code
+Rectangle {
+     width: 200; height: 200
+
+    ListModel {
+        id: fruitModel
+        property string language: "en"
+        ListElement {
+            name: "Apple"
+            cost: 2.45
+        }
+        ListElement {
+            name: "Orange"
+            cost: 3.25
+        }
+        ListElement {
+            name: "Banana"
+            cost: 1.95
+        }
+    }
+
+    Component {
+        id: fruitDelegate
+        Row {
+                Text { text: " Fruit: " + name; color: ListView.view.fruit_color }
+                Text { text: " Cost: $" + cost }
+                Text { text: " Language: " + ListView.view.model.language }
+        }
+    }
+
+    ListView {
+        property color fruit_color: "green"
+        model: fruitModel
+        delegate: fruitDelegate
+        anchors.fill: parent
+    }
+}
+\endcode
+
+Another important case is when some action (e.g. mouse click) in the
+delegate should update data in the model. In this case you can define
+a function in the model, e.g.:
+
+\code
+        setData(int row, const QString & field_name, QVariant new_value),
+\endcode
+
+...and call it from the delegate using:
+
+\code
+        ListView.view.model.setData(index, field, value)
+\endcode
+
+...assuming that \e{field} holds the name of the field which should be
+updated, and that \e{value} holds the new value.
 
 */

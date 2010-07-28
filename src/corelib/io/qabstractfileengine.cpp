@@ -818,7 +818,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
     You can call dirName() to get the directory name, nameFilters() to get a
     stringlist of name filters, and filters() to get the entry filters.
 
-    The pure virual function hasNext() returns true if the current directory
+    The pure virtual function hasNext() returns true if the current directory
     has at least one more entry (i.e., the directory name is valid and
     accessible, and we have not reached the end of the entry list), and false
     otherwise. Reimplement next() to seek to the next entry.
@@ -828,7 +828,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
     function is provided for convenience; it returns the full path of the
     current entry.
 
-    Here is an example of how to implement an interator that returns each of
+    Here is an example of how to implement an iterator that returns each of
     three fixed entries in sequence.
 
     \snippet doc/src/snippets/code/src_corelib_io_qabstractfileengine.cpp 3
@@ -959,7 +959,7 @@ QString QAbstractFileEngineIterator::currentFilePath() const
 /*!
     The virtual function returns a QFileInfo for the current directory
     entry. This function is provided for convenience. It can also be slightly
-    faster that creating a QFileInfo object yourself, as the object returned
+    faster than creating a QFileInfo object yourself, as the object returned
     by this function might contain cached information that QFileInfo otherwise
     would have to access through the file engine.
 

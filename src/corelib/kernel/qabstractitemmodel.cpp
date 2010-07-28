@@ -1197,7 +1197,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \l{QAbstractItemModel::}{endInsertRows()} must be called.
 
     \sa {Model Classes}, {Model Subclassing Reference}, QModelIndex,
-        QAbstractItemView, {Using Drag and Drop with Item Views},
+        QAbstractItemView, {Using drag & drop with item views},
         {Simple DOM Model Example}, {Simple Tree Model Example},
         {Editable Tree Model Example}, {Fetch More Example}
 */
@@ -1761,7 +1761,7 @@ QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
     where to place the data. This can occur in a tree when data is dropped on
     a parent. Models will usually append the data to the parent in this case.
 
-    \sa supportedDropActions(), {Using Drag and Drop with Item Views}
+    \sa supportedDropActions(), {Using drag & drop with item views}
 */
 bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                       int row, int column, const QModelIndex &parent)
@@ -1798,8 +1798,8 @@ bool QAbstractItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     reimplement the dropMimeData() function to handle the additional
     operations.
 
-    \sa dropMimeData(), Qt::DropActions, {Using Drag and Drop with Item
-    Views}
+    \sa dropMimeData(), Qt::DropActions, {Using drag & drop with item
+    views}
 */
 Qt::DropActions QAbstractItemModel::supportedDropActions() const
 {
@@ -1815,7 +1815,7 @@ Qt::DropActions QAbstractItemModel::supportedDropActions() const
     supportedDragActions() is used by QAbstractItemView::startDrag() as the
     default values when a drag occurs.
 
-    \sa Qt::DropActions, {Using Drag and Drop with Item Views}
+    \sa Qt::DropActions, {Using drag & drop with item views}
 */
 Qt::DropActions QAbstractItemModel::supportedDragActions() const
 {
@@ -1831,7 +1831,7 @@ Qt::DropActions QAbstractItemModel::supportedDragActions() const
 
     Sets the supported drag \a actions for the items in the model.
 
-    \sa supportedDragActions(), {Using Drag and Drop with Item Views}
+    \sa supportedDragActions(), {Using drag & drop with item views}
 */
 void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
 {
@@ -2547,7 +2547,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 
             For example, as shown in the diagram, we move three rows from
             row 2 to 4 in the source, so \a sourceFirst is 2 and \a sourceLast is 4.
-            We move those items to above row 2 in the destination, so \a destinationRow is 2.
+            We move those items to above row 2 in the destination, so \a destinationChild is 2.
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 6
 
@@ -2558,7 +2558,7 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
         \o  To append rows to another parent, move them to after the last row.
 
             For example, as shown in the diagram, we move three rows to a
-            collection of 6 existing rows (ending in row 5), so \a destinationStart is 6:
+            collection of 6 existing rows (ending in row 5), so \a destinationChild is 6:
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 7
 

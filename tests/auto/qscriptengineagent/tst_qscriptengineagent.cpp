@@ -97,6 +97,7 @@ private slots:
     void functionEntryAndExit_objectCall();
     void positionChange_1();
     void positionChange_2();
+    void positionChange_3();
     void exceptionThrowAndCatch();
     void eventOrder_assigment();
     void eventOrder_functionDefinition();
@@ -116,6 +117,8 @@ private slots:
     void evaluateProgram_SyntaxError();
     void evaluateNullProgram();
     void QTBUG6108();
+    void backtraces_data();
+    void backtraces();
 
 private:
     double m_testProperty;
@@ -1623,6 +1626,56 @@ void tst_QScriptEngineAgent::positionChange_2()
     delete spy;
 }
 
+void tst_QScriptEngineAgent::positionChange_3()
+{
+    QScriptEngine eng;
+    eng.evaluate("function some_function1(a) {\n a++; \n return a + 12; } \n some_function1(42);", "function1.qs", 12);
+    QScriptValue some_function2 = eng.evaluate("(function (b) {\n b--; \n return b + 11; })", "function2.qs", 21);
+    some_function2.call(QScriptValue(), QScriptValueList() << 2 );
+
+    // Test that the agent work, even if installed after the function has been evaluated.
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnorePositionChange));
+    {
+        spy->clear();
+        QScriptValue v = eng.evaluate("some_function1(15)");
+        QCOMPARE(v.toInt32(), (15+1+12));
+        QCOMPARE(spy->count(), 3);
+
+        // some_function1()
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(0).scriptId != -1);
+        QCOMPARE(spy->at(0).lineNumber, 1);
+
+        // a++
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(1).scriptId != spy->at(0).scriptId);
+        QCOMPARE(spy->at(1).lineNumber, 13);
+        // return a + 12
+        QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(2).scriptId == spy->at(1).scriptId);
+        QCOMPARE(spy->at(2).lineNumber, 14);
+    }
+
+    {
+        spy->clear();
+        QScriptValue v = some_function2.call(QScriptValue(), QScriptValueList() << 89 );
+        QCOMPARE(v.toInt32(), (89-1+11));
+        QCOMPARE(spy->count(), 2);
+
+        // b--
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(0).scriptId != -1);
+        QCOMPARE(spy->at(0).lineNumber, 22);
+        // return b + 11
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
+        QVERIFY(spy->at(1).scriptId == spy->at(0).scriptId);
+        QCOMPARE(spy->at(1).lineNumber, 23);
+    }
+
+    QVERIFY(!eng.hasUncaughtException());
+}
+
+
 void tst_QScriptEngineAgent::exceptionThrowAndCatch()
 {
     QScriptEngine eng;
@@ -2377,6 +2430,87 @@ void tst_QScriptEngineAgent::QTBUG6108()
 
     QCOMPARE(spy->at(4).type, ScriptEngineEvent::ScriptUnload);
     QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
+}
+
+class BacktraceSpy : public QScriptEngineAgent
+{
+public:
+    BacktraceSpy(QScriptEngine *engine, const QStringList &expectedbacktrace, int breakpoint)
+        : QScriptEngineAgent(engine), expectedbacktrace(expectedbacktrace), breakpoint(breakpoint), ok(false) {}
+
+    QStringList expectedbacktrace;
+    int breakpoint;
+    bool ok;
+
+protected:
+
+    void exceptionThrow(qint64 , const QScriptValue &, bool)
+    {  check();  }
+
+    void positionChange(qint64 , int lineNumber, int )
+    {
+        if (lineNumber == breakpoint)
+            check();
+    }
+
+private:
+    void check()
+    {
+        QCOMPARE(engine()->currentContext()->backtrace(), expectedbacktrace);
+        ok = true;
+    }
+};
+
+
+void tst_QScriptEngineAgent::backtraces_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<int>("breakpoint");
+    QTest::addColumn<QStringList>("expectedbacktrace");
+
+    {
+        QString source(
+            "function foo() {\n"
+            "  var a = 5\n"
+            "}\n"
+            "foo('hello', { })\n"
+            "var r = 0;");
+
+        QStringList expected;
+        expected
+            << "foo('hello', [object Object]) at filename.js:2"
+            << "<global>() at filename.js:4";
+        QTest::newRow("simple breakpoint") << source <<  2 << expected;
+    }
+
+    {
+        QString source(
+            "function foo() {\n"
+            "  error = err\n" //this must throw
+            "}\n"
+            "foo('hello', { })\n"
+            "var r = 0;");
+
+        QStringList expected;
+        expected
+            << "foo('hello', [object Object]) at filename.js:2"
+            << "<global>() at filename.js:4";
+        QTest::newRow("throw because of error") << source <<  -100 << expected;
+    }
+}
+
+void tst_QScriptEngineAgent::backtraces()
+{
+    QFETCH(QString, code);
+    QFETCH(int, breakpoint);
+    QFETCH(QStringList, expectedbacktrace);
+
+    QScriptEngine eng;
+    BacktraceSpy *spy = new BacktraceSpy(&eng, expectedbacktrace, breakpoint);
+    eng.setAgent(spy);
+    QLatin1String filename("filename.js");
+    eng.evaluate(code, filename);
+    QVERIFY(spy->ok);
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)

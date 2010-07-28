@@ -77,7 +77,7 @@ public:
     QDeclarativeVisualItemModelPrivate() : QObjectPrivate() {}
 
     static void children_append(QDeclarativeListProperty<QDeclarativeItem> *prop, QDeclarativeItem *item) {
-        item->QObject::setParent(prop->object);
+        QDeclarative_setParent_noEvent(item, prop->object);
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.append(item);
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->itemAppended();
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->emitChildrenChanged();
@@ -185,9 +185,11 @@ QDeclarativeItem *QDeclarativeVisualItemModel::item(int index, bool)
     return d->children.at(index);
 }
 
-QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDeclarativeItem *)
+QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDeclarativeItem *item)
 {
-    // Nothing to do
+    if (item->scene())
+        item->scene()->removeItem(item);
+    QDeclarative_setParent_noEvent(item, this);
     return 0;
 }
 
@@ -1088,6 +1090,11 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
     Q_D(QDeclarativeVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->stringValue(index, name);
+
+    if ((!d->m_listModelInterface || !d->m_abstractItemModel) && d->m_listAccessor) {
+        if (QObject *object = d->m_listAccessor->at(index).value<QObject*>())
+            return object->property(name.toUtf8()).toString();
+    }
 
     if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
         return QString();

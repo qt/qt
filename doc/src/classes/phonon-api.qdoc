@@ -1577,7 +1577,6 @@
     \since 4.4
     \brief The MediaObject class provides an interface for media playback.
 
-
     The media object manages a \l{Phonon::}{MediaSource}, which
     supplies the media object with multimedia content, e.g., from a
     file. A playback in Phonon is always started by calling the
@@ -1651,17 +1650,8 @@
     playback of the current source, but it is possible to try with a
     different one. A user readable error message is given by
     errorString().
-    \section1 Symbian Platform Security Requirements
 
-    On Symbian, processes which access media via the network must
-    have the \c NetworkServices platform security capability. If the client
-    process lacks this capability, operations will result in errors.
-    This failure is indicated by a state() of Phonon::ErrorState.
-
-    Platform security capabilities are added via the
-    \l{qmake-variable-reference.html#target-capability}{TARGET.CAPABILITY}
-    qmake variable.
-
+    \sa {Symbian Platform Security Requirements}
     \sa Phonon::MediaSource, Phonon::AudioOutput, VideoWidget,
     {Music Player Example}, {Phonon Overview}, Phonon::VideoPlayer,
     Phonon::createPlayer(), {Phonon Module}

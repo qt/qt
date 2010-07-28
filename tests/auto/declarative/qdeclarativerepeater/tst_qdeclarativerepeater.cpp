@@ -361,6 +361,15 @@ void tst_QDeclarativeRepeater::itemModel()
     QVERIFY(qobject_cast<QObject*>(container->childItems().at(2))->objectName() == "item3");
     QVERIFY(container->childItems().at(3) == repeater);
 
+    QMetaObject::invokeMethod(canvas->rootObject(), "switchModel");
+    QCOMPARE(container->childItems().count(), 3);
+    QVERIFY(qobject_cast<QObject*>(container->childItems().at(0))->objectName() == "item4");
+    QVERIFY(qobject_cast<QObject*>(container->childItems().at(1))->objectName() == "item5");
+    QVERIFY(container->childItems().at(2) == repeater);
+
+    testObject->setUseModel(false);
+    QCOMPARE(container->childItems().count(), 1);
+
     delete testObject;
     delete canvas;
 }

@@ -32,7 +32,10 @@ New features
 
  - QNetworkSession, QNetworkConfiguration, QNetworkConfigurationManager
     * New bearer management classes added.
-
+	
+ - QStaticText class was added to support high-performance output of 
+   seldomly altered text. 
+	
 Third party components
 ----------------------
 
@@ -62,6 +65,8 @@ QtCore
  - QMetaType
     * Significantly improved performance of the type() function
     * [QTBUG-8235] Support QEasingCurve as a built in metatype.
+    * Added possibility to register several name for the same type with
+      qRegisterMetaType<>() (ie. for typedef)
  - QState
     * [QTBUG-7741] Added a function to get the out-going transitions
  - QXmlStreamReader
@@ -71,17 +76,19 @@ QtCore
  - QAbstractAnimation
     * [QTBUG-10654] Avoids animation with loopCount == 0 to change state
       to running and stopped.
+ - QVarLenghtArray
+    * Added some API to be more consistant with other containers
 
 QtGui
 -----
-
+ 
  - QAbstractItemView
     * Fixed a bug that would cause keyboard searches not to behave
       properly when used within 400 milliseconds of midnight.
 
  - QComboBox
     * [QTBUG-8796] Made ForegroundRole work for all styles.
-
+				
  - QPrinter
     * Obsoleted the slightly confusing setNumCopies() and numCopies()
       functions, and replaced them with setCopyCount(), copyCount() and
@@ -104,6 +111,7 @@ QtGui
     * [QTBUG-9024] Improved performance when calling update() on items that
       are clipped by an ancestor (QGraphicsItem::ItemClipsChildrenToShape).
     * [QTBUG-7703], [QTBUG-8378] Fixed scrolling issues
+    * [QTBUG-12112] Fixed focusItem() returning incorrect value.
 
  - QGraphicsTextItem
     * [QTBUG-7333] Fixed keyboard shortcuts not being triggered when the
@@ -116,9 +124,14 @@ QtGui
       the mouse.
     * [QTBUG-10338] Fixed drawing artifacts due to rounding errors.
 
+ - QGraphicsWidget
+    * [QTBUG-12056] Fixed a crash occuring when adding a QGraphicsWidget
+      to a scene after removing and deleting another QGraphicsWidget.
+
  - QImage
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
     * [QTBUG-7982] Added QImage::bitPlaneCount().
+    * [QTBUG-9072] Fixed alpha check for 1-bit-per-pixel images.
 
  - QPicture
     * [QTBUG-4974] Printing QPictures containing text to a high resolution
@@ -134,6 +147,11 @@ QtGui
       processors with a NEON vector unit.
     * Fixed some performance issues when drawing sub-pixmaps of large
       pixmaps and falling back to raster in the X11 paint engine.
+    * [QTBUG-7596] Safeguard ourselves against corrupt registry values for
+      ClearType gamma on Windows.
+    * [QTBUG-9218] Fixed flattening of largely scaled, thin, dashed beziers.
+    * [QTBUG-9437] Fixed crash in the raster paint engine when drawing largely
+      scaled images.
 
  - QPainterPath
     * [QTBUG-3778] Fixed bug in painter path polygon intersection code.
@@ -142,6 +160,8 @@ QtGui
     * [QTBUG-8035] Got rid of bezier intersection code in the boolean
       operators (intersect, subtract, unite) to prevent numerical
       stability issues.
+    * [QTBUG-11291] Fixed infinite recursion when drawing very large painter
+      paths.
 
  - QPixmap
     * [QTBUG-4149] Fixed QPixmap::grabWidget() on widgets that have not yet
@@ -156,10 +176,31 @@ QtGui
  - QSplitter
     * [QTBUG-9335] Improve support for 1-pixel splitters by using a 
       larger drag area.
+	  	  
+ - QTextDocumentWriter
+    * Fixed tab-stops and table padding in ODF export.
 
+ - QTextLayout
+    * [QTBUG-11427] Fix possible crash in QTextLayout for glyphless 
+      items.
+    * [QTBUG-8864] Fix regression in right alignment of text with 
+      negative right bearing.
+	  
  - QTransform
     * [QTBUG-8557] Fixed bug in QTransform::type() potentially occuring
       after using operator/ or operator* or their overloads.
+	  
+QtOpenGL
+--------
+ - Improve performance of text by adding special cased fragment shader.
+ 
+ - Made width and height of glyph cache power-of-two for performance 
+   improvements on some hardware.
+   
+ - [QTBUG-9706] Improved appearance of text antialiasing.
+
+ - QTreeView
+    * Optimized
 
 QtNetwork
 ---------
@@ -175,6 +216,7 @@ QtNetwork
   * [QTBUG-9618] [MR 2372] send secure cookies only over secure connections
   * [QTBUG-7713] Fix bug related to re-sending request
   * [QTBUG-7673] Fix issue with some webservers
+  * [QTBUG-11029] do not accept cookies with non-alpha-numerical domain
  - Sockets
   * Better support for derived QTcpServer
   * [QTBUG-7054] Fix error handling with waitFor*() for socket engine
@@ -182,6 +224,10 @@ QtNetwork
  - SSL
   * [QTBUG-2515] Do not make OpenSSL prompt for a password
   * [QTBUG-6504, QTBUG-8924, QTBUG-5645] Fix memleak
+  * [QTBUG-9973] QSslCertificate: support large serial numbers
+  * [QTBUG-8833] make QSslSocket::systemCaCertificates() use system certs
+  * [QT-3567] QSslSocket: improve error handling (fixes Secunia Advisory SA40389)
+  * [QBTUG-4455, MR 731] Fix handling of SSL certificates with wildcard domain names
 
 QtScript
 --------
@@ -204,6 +250,7 @@ QtXmlPatterns
  - [QTBUG-8920] fixed crash with anonymous types in XsdSchemaChecker
  - [QTBUG-8394] include/import/redefine schemas only once
  - QXmlSchema: fix crash with referencing elements
+ - [QBTUG-6485] QXmlSchema: allow usage of xsd:all
 
 Qt Plugins
 ----------
@@ -223,7 +270,13 @@ Qt Plugins
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
-
+ - Sqlite
+   * [QTBUG-11904] Pointer aliasing problem in sqlite
+ - OCI
+   * [QTBUG-10919] Unable to insert unicode chars with codepoint > 255 
+     in nvarchar2 column on oracle
+   * [QTBUG-8210] Oracle - DATE in db with a year greater or equal to 2800 
+     returns an invalid date
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -234,7 +287,19 @@ Qt for Linux/X11
  - QGtkStyle
     * Fixed rtl issues with sliders (QTBUG-8986)
     * Fixed missing pressed appearance on scroll bar handles. (QTBUG-10396)  
-
+ 
+ - QFontDatabase
+    * [QTBUG-4428] Fixed regression when using bitmap fonts on some 
+      Linux systems.
+ 
+ - QFontEngine
+     * [QTBUG-9442] Avoid possible square root of negative number in 
+      FreeType font engine.
+	  
+ - QFontMetrics
+    * [QTBUG-10448] Fix crash when using fonts in non-gui QApplication.
+	  
+ 	
 Qt for Windows
 --------------
  - Popup windows now implicitly activate when shown. (QTBUG-7386)
@@ -252,6 +317,20 @@ Qt for Mac OS X
     * Removed frame around statusbar items. (QTBUG-3574)
     * More native appearance of item view headers and frames. (QTBUG-10047)    
 
+ - QFontEngine	
+    * Enable fractional metrics for the font engine on Mac in all 
+      stages of text layout.
+    * [QTBUG-5529] Enable design metrics for correct character spacing 
+      in ATSUI font engine. (Mac/Carbon)
+
+- QTextDocument
+    * [QTBUG-8791] Fix misalignment of fixed width fonts between 
+      format changes on Cocoa.
+	  
+ - QTextLayout
+    * [QTBUG-9879] Fix off-by-one in vertical position for elided and 
+	  non-elided text.
+ 
 Qt for Embedded Linux
 ---------------------
 
@@ -272,6 +351,12 @@ Qt for Windows CE
     * QTabBar scroll button size has been fixed. (QTBUG-8757)
     * Detection of Windows mobile 6.5 fixed. (QTBUG-8418)
 
+Qt for Symbian
+--------------
+
+ - QSplashScreen
+    * [QTBUG-11129] Fixed a hanging bug in QSplashScreen on 3.1 devices.
+
 
 
 ****************************************************************************
@@ -285,8 +370,20 @@ Qt for Windows CE
 
 - Build System
 
-  - "configure -fast" on Windows now also works for other make tools than
-    nmake. (QTBUG-8562)
+ - [QT-3540] Fixed Symbian resources not honoring TARGET with a path.
+ - "configure -fast" on Windows now also works for other make tools than
+   nmake. (QTBUG-8562)
+ - [QTBUG-11351] Fixed memory restrictions not being passed on to elf2e32.
+ - [QTBUG-11385] Removed the need to specify -arch symbian when compiling
+   for Symbian on Linux.
+ - [QTBUG-11396] "configure -qtlibinfix" now works when compiling for
+   Symbian on Linux.
+ - [QTBUG-11670] Fixed a bug which caused "make runonphone" to look for
+   package in the wrong place.
+ - [QTBUG-11727] Fixed a bug which made builds outside of the Qt tree fail
+   to compile.
+ - [QTBUG-11927] "configure -silent" now works with the
+   symbian/linux-armcc and symbian/linux-gcce mkspecs.
 
 - Assistant
 
@@ -310,7 +407,7 @@ Qt for Windows CE
 
 
 - moc
-
+  * Fixed several parsing bugs. Including changes in the normalized signature.
 
 - uic
 
@@ -380,6 +477,4 @@ QtCore:
 
 QtNetwork:
   - Qt does no longer provide its own CA bundle, but uses system APIs for
-    retrieving the default system certificates. On Symbian,
-    QSslSocket::systemCaCertificates() provides an empty list of
-    certificates.
+    retrieving the default system certificates.

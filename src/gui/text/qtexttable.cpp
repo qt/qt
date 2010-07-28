@@ -754,19 +754,39 @@ void QTextTable::insertColumns(int pos, int num)
     QTextFormatCollection *c = p->formatCollection();
     p->beginEditBlock();
 
+    QList<int> extendedSpans;
     for (int i = 0; i < d->nRows; ++i) {
         int cell;
         if (i == d->nRows - 1 && pos == d->nCols)
             cell = d->fragment_end;
         else
             cell = d->grid[i*d->nCols + pos];
-        QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
-        QTextCharFormat fmt = c->charFormat(it->format);
         if (pos > 0 && pos < d->nCols && cell == d->grid[i*d->nCols + pos - 1]) {
             // cell spans the insertion place, extend it
-            fmt.setTableCellColumnSpan(fmt.tableCellColumnSpan() + num);
-            p->setCharFormat(it.position(), 1, fmt);
+            if (!extendedSpans.contains(cell)) {
+                QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
+                QTextCharFormat fmt = c->charFormat(it->format);
+                fmt.setTableCellColumnSpan(fmt.tableCellColumnSpan() + num);
+                p->setCharFormat(it.position(), 1, fmt);
+                d->dirty = true;
+                extendedSpans << cell;
+            }
         } else {
+            /* If the next cell is spanned from the row above, we need to find the right position
+            to insert to */
+            if (i > 0 && pos < d->nCols && cell == d->grid[(i-1) * d->nCols + pos]) {
+                int gridIndex = i*d->nCols + pos;
+                const int gridEnd = d->nRows * d->nCols - 1;
+                while (gridIndex < gridEnd && cell == d->grid[gridIndex]) {
+                    ++gridIndex;
+                }
+                if (gridIndex == gridEnd)
+                    cell = d->fragment_end;
+                else
+                    cell = d->grid[gridIndex];
+            }
+            QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
+            QTextCharFormat fmt = c->charFormat(it->format);
             fmt.setTableCellRowSpan(1);
             fmt.setTableCellColumnSpan(1);
             Q_ASSERT(fmt.objectIndex() == objectIndex());
@@ -915,12 +935,13 @@ void QTextTable::removeColumns(int pos, int num)
     for (int r = 0; r < d->nRows; ++r) {
         for (int c = pos; c < pos + num; ++c) {
             int cell = d->grid[r*d->nCols + c];
-            if (touchedCells.contains(cell))
-                continue;
-            touchedCells << cell;
             QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
             QTextCharFormat fmt = collection->charFormat(it->format);
             int span = fmt.tableCellColumnSpan();
+            if (touchedCells.contains(cell) && span <= 1)
+                continue;
+            touchedCells << cell;
+
             if (span > 1) {
                 fmt.setTableCellColumnSpan(span - 1);
                 p->setCharFormat(it.position(), 1, fmt);

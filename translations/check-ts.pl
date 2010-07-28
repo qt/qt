@@ -43,19 +43,18 @@
 
 use strict;
 
-# "qt" must come last to avoid prefix matching.
-my @groups = ("assistant", "designer", "linguist", "qt_help", "qtconfig", "qvfb", "qt");
+my @groups = ("qt", "assistant", "designer", "linguist", "qt_help", "qtconfig", "qvfb");
 
 my %scores = ();
 my %langs = ();
 
-my $files = join("\n", <*.ts>);
+my $files = join("\n", <*_??.ts>);
 my $res = `xmlpatterns -param files=\"$files\" check-ts.xq`;
 for my $i (split(/ /, $res)) {
-  $i =~ /^([^.]+).ts:(.*)$/;
+  $i =~ /^([^.]+)\.ts:(.*)$/;
   my ($fn, $pc) = ($1, $2);
   for my $g (@groups) {
-    if ($fn =~ /^${g}_(.*)$/) {
+    if ($fn =~ /^${g}_((.._)?..)$/) {
       my $lang = $1;
       $scores{$g}{$lang} = $pc;
       $langs{$lang} = 1;
@@ -63,10 +62,6 @@ for my $i (split(/ /, $res)) {
     }
   }
 }
-
-# now we move "qt" to the front, as it should be the first column.
-pop @groups;
-unshift @groups, "qt";
 
 my $code = "";
 

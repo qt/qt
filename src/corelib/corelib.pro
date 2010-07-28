@@ -66,6 +66,21 @@ sse {
 sse2 {
     DEFINES += QT_HAVE_SSE2
 }
+sse3 {
+    DEFINES += QT_HAVE_SSE3
+}
+ssse3 {
+    DEFINES += QT_HAVE_SSSE3
+}
+sse4_1 {
+    DEFINES += QT_HAVE_SSE4_1
+}
+sse4_2 {
+    DEFINES += QT_HAVE_SSE4_2
+}
+avx {
+    DEFINES += QT_HAVE_AVX
+}
 iwmmxt {
     DEFINES += QT_HAVE_IWMMXT
 }

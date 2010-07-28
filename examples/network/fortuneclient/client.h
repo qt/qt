@@ -50,6 +50,7 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTcpSocket;
+class QNetworkSession;
 QT_END_NAMESPACE
 
 //! [0]
@@ -65,6 +66,7 @@ private slots:
     void readFortune();
     void displayError(QAbstractSocket::SocketError socketError);
     void enableGetFortuneButton();
+    void sessionOpened();
 
 private:
     QLabel *hostLabel;
@@ -79,9 +81,8 @@ private:
     QTcpSocket *tcpSocket;
     QString currentFortune;
     quint16 blockSize;
-#ifdef Q_OS_SYMBIAN
-    bool isDefaultIapSet;
-#endif
+
+    QNetworkSession *networkSession;
 };
 //! [0]
 

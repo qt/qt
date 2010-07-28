@@ -109,7 +109,7 @@ bool DragDropListModel::dropMimeData(const QMimeData *data,
 
 //! [6]
     insertRows(beginRow, rows, QModelIndex());
-    foreach (QString text, newItems) {
+    foreach (const QString &text, newItems) {
         QModelIndex idx = index(beginRow, 0, QModelIndex());
         setData(idx, text);
         beginRow++;
@@ -139,7 +139,7 @@ QMimeData *DragDropListModel::mimeData(const QModelIndexList &indexes) const
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    foreach (QModelIndex index, indexes) {
+    foreach (const QModelIndex &index, indexes) {
         if (index.isValid()) {
             QString text = data(index, Qt::DisplayRole).toString();
             stream << text;

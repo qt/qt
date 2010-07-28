@@ -91,7 +91,6 @@ public:
     static bool noAnimations;
     static bool noBlending;
     static bool noScreenSync;
-    static bool noBlur;
     static bool useLoop;
     static bool noWindowMask;
     static bool usePixmaps;

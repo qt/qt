@@ -41,6 +41,7 @@
 
 #include "qgesture.h"
 #include "private/qgesture_p.h"
+#include "private/qstandardgestures_p.h"
 
 #ifndef QT_NO_GESTURES
 
@@ -305,10 +306,10 @@ void QPanGesture::setAcceleration(qreal value)
     \class QPinchGesture
     \since 4.6
     \brief The QPinchGesture class describes a pinch gesture made my the user.
-    \ingroup multitouch
+    \ingroup touch
     \ingroup gestures
 
-    A pinch gesture is a form of multitouch user input in which the user typically
+    A pinch gesture is a form of touch user input in which the user typically
     touches two points on the input device with a thumb and finger, before moving
     them closer together or further apart to change the scale factor, zoom, or level
     of detail of the user interface.
@@ -388,7 +389,7 @@ void QPanGesture::setAcceleration(qreal value)
     \brief the current scale factor
 
     The scale factor measures the scale factor associated with the distance
-    between two of the user's inputs on a multitouch device.
+    between two of the user's inputs on a touch device.
 
     \sa totalScaleFactor, lastScaleFactor
 */
@@ -725,6 +726,34 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
 {
     d_func()->position = value;
 }
+
+/*!
+    Set the timeout, in milliseconds, before the gesture triggers.
+
+    The recognizer will detect a touch down and and if \a msecs
+    later the touch is still down, it will trigger the QTapAndHoldGesture.
+    The default value is 700 milliseconds.
+*/
+// static
+void QTapAndHoldGesture::setTimeout(int msecs)
+{
+    QTapAndHoldGesturePrivate::Timeout = msecs;
+}
+
+/*!
+    Gets the timeout, in milliseconds, before the gesture triggers.
+
+    The recognizer will detect a touch down and and if timeout()
+    later the touch is still down, it will trigger the QTapAndHoldGesture.
+    The default value is 700 milliseconds.
+*/
+// static
+int QTapAndHoldGesture::timeout()
+{
+    return QTapAndHoldGesturePrivate::Timeout;
+}
+
+int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
 
 QT_END_NAMESPACE
 

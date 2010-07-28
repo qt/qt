@@ -54,7 +54,6 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qlibraryinfo.h>
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtesttable_p.h"
@@ -1008,9 +1007,6 @@ static void qParseArgs(int argc, char *argv[])
         " -iterations  n  : Sets the number of accumulation iterations.\n"
         " -median  n      : Sets the number of median iterations.\n"
         " -vb             : Print out verbose benchmarking information.\n"
-#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
-        " -chart          : Create chart based on the benchmark result.\n"
-#endif
          "\n"
         " -help      : This help\n";
 
@@ -1128,12 +1124,8 @@ static void qParseArgs(int argc, char *argv[])
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
-#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
         } else if (strcmp(argv[i], "-chart") == 0) {
-            QBenchmarkGlobalData::current->createChart = true;
-            QTestLog::setLogMode(QTestLog::XML);
-            QTestLog::redirectOutput("results.xml");
-#endif
+            fprintf(stderr, "Warning: `-chart' option is not available\n");
         } else if (strcmp(argv[i], "-qws") == 0) {
             // do nothing
         } else if (strcmp(argv[i], "-graphicssystem") == 0) {
@@ -1741,26 +1733,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
      }
-#endif
-
-
-#if !defined(QT_NO_PROCESS) && !defined(QT_NO_SETTINGS)
-    if (QBenchmarkGlobalData::current->createChart) {
-        QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath);
-#ifdef Q_OS_WIN
-        chartLocation += QLatin1String("/../tools/qtestlib/chart/release/chart.exe");
-#else
-        chartLocation += QLatin1String("/../tools/qtestlib/chart/chart");
-#endif
-        if (QFile::exists(chartLocation)) {
-            QProcess p;
-            p.setProcessChannelMode(QProcess::ForwardedChannels);
-            p.start(chartLocation, QStringList() << QLatin1String("results.xml"));
-            p.waitForFinished(-1);
-        } else {
-            qDebug() << QLatin1String("Could not find the chart tool in ") + chartLocation + QLatin1String(", please make sure it is compiled.");
-        }
-    }
 #endif
 
 #if defined(QTEST_NOEXITCODE)

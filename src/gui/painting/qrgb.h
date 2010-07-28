@@ -64,7 +64,7 @@ Q_GUI_EXPORT_INLINE int qBlue(QRgb rgb)                // get blue part of RGB
 { return (rgb & 0xff); }
 
 Q_GUI_EXPORT_INLINE int qAlpha(QRgb rgb)                // get alpha part of RGBA
-{ return ((rgb >> 24) & 0xff); }
+{ return rgb >> 24; }
 
 Q_GUI_EXPORT_INLINE QRgb qRgb(int r, int g, int b)// set RGB value
 { return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff); }

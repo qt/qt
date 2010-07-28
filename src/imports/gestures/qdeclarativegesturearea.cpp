@@ -228,7 +228,7 @@ void QDeclarativeGestureArea::connectSignals()
         ds >> gesturetype;
         QString script;
         ds >> script;
-        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), 0, script);
+        QDeclarativeExpression *exp = new QDeclarativeExpression(qmlContext(this), this, script);
         d->bindings.insert(Qt::GestureType(gesturetype),exp);
         grabGesture(Qt::GestureType(gesturetype));
     }
@@ -261,7 +261,10 @@ bool QDeclarativeGestureAreaPrivate::gestureEvent(QGestureEvent *event)
     bool accept = true;
     for (Bindings::Iterator it = bindings.begin(); it != bindings.end(); ++it) {
         if ((gesture = event->gesture(it.key()))) {
-            it.value()->evaluate();
+            QDeclarativeExpression *expr = it.value();
+            expr->evaluate();
+            if (expr->hasError())
+                qmlInfo(q_func()) << expr->error();
             event->setAccepted(true); // XXX only if value returns true?
         }
     }

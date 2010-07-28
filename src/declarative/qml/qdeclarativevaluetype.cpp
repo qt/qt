@@ -74,7 +74,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 QDeclarativeValueTypeFactory::QDeclarativeValueTypeFactory()
@@ -973,7 +973,7 @@ qreal QDeclarativeFontValueType::letterSpacing() const
 
 void QDeclarativeFontValueType::setLetterSpacing(qreal size)
 {
-    font.setLetterSpacing(QFont::PercentageSpacing, size);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, size);
 }
 
 qreal QDeclarativeFontValueType::wordSpacing() const

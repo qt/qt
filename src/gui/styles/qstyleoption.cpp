@@ -5419,9 +5419,10 @@ QStyleHintReturnVariant::QStyleHintReturnVariant() : QStyleHintReturn(Version, T
     Returns a T or 0 depending on the type of \a hint.
 */
 
+#if !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
 {
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG)
     switch (optionType) {
     case QStyleOption::SO_Default:
         debug << "SO_Default"; break;
@@ -5488,7 +5489,7 @@ QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
 
 QDebug operator<<(QDebug debug, const QStyleOption &option)
 {
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
+#if !defined(QT_NO_DEBUG)
     debug << "QStyleOption(";
     debug << QStyleOption::OptionType(option.type);
     debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
@@ -5498,5 +5499,6 @@ QDebug operator<<(QDebug debug, const QStyleOption &option)
 #endif
     return debug;
 }
+#endif
 
 QT_END_NAMESPACE

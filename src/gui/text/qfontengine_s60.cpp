@@ -94,7 +94,7 @@ bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *len
     } else {
         *length = tableByteLength;
         if (buffer)
-            qMemCopy(buffer, fontTable.TableContent(), tableByteLength);
+            memcpy(buffer, fontTable.TableContent(), tableByteLength);
     }
 
     fontTable.Close();
@@ -146,7 +146,7 @@ bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *len
     } else {
         *length = tableByteLength;
         if (buffer)
-            qMemCopy(buffer, table, tableByteLength);
+            memcpy(buffer, table, tableByteLength);
     }
 
     m_trueTypeExtension->ReleaseTrueTypeTable(table);

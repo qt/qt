@@ -87,9 +87,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeItem : public QGraphicsObject, public QDe
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(bool clip READ clip WRITE setClip NOTIFY clipChanged) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
-    Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
+    Q_PROPERTY(bool activeFocus READ hasActiveFocus NOTIFY activeFocusChanged)
     Q_PROPERTY(QDeclarativeListProperty<QGraphicsTransform> transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
+    Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint) // transformOriginPoint is read-only for Item
     Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -138,7 +139,7 @@ public:
     QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
-    bool wantsFocus() const;
+    bool hasActiveFocus() const;
     bool hasFocus() const;
     void setFocus(bool);
 
@@ -147,16 +148,15 @@ public:
 
     Q_INVOKABLE QScriptValue mapFromItem(const QScriptValue &item, qreal x, qreal y) const;
     Q_INVOKABLE QScriptValue mapToItem(const QScriptValue &item, qreal x, qreal y) const;
-    Q_INVOKABLE void forceFocus();
+    Q_INVOKABLE void forceActiveFocus();
     Q_INVOKABLE QDeclarativeItem *childAt(qreal x, qreal y) const;
 
 Q_SIGNALS:
-    void childrenChanged();
     void childrenRectChanged(const QRectF &);
     void baselineOffsetChanged(qreal);
     void stateChanged(const QString &);
     void focusChanged(bool);
-    void wantsFocusChanged(bool);
+    void activeFocusChanged(bool);
     void parentChanged(QDeclarativeItem *);
     void transformOriginChanged(TransformOrigin);
     void smoothChanged(bool);
