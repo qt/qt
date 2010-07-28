@@ -58,6 +58,11 @@ MediaSource::MediaSource(const QString &filename)
             d->type = Stream;
             d->ioDevice = new QFile(filename);
             d->setStream(new IODeviceStream(d->ioDevice, d->ioDevice));
+#ifdef Q_OS_SYMBIAN
+            // On Symbian, we need to access the resource buffer directly, rather than
+            // via QFile indirection
+            d->url =  QUrl::fromLocalFile(fileInfo.absoluteFilePath());
+#endif
 #else
             d->type = Invalid;
 #endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
