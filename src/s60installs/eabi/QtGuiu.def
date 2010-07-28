@@ -12084,4 +12084,8 @@ EXPORTS
 	_ZThn24_N13QS60MainAppUi15ProcessCommandLEi @ 12083 NONAME
 	_ZThn40_N13QS60MainAppUi15MopSupplyObjectE8TTypeUid @ 12084 NONAME
 	_ZThn92_N13QS60MainAppUi22HandleViewDeactivationERK10TVwsViewIdS2_ @ 12085 NONAME
+	_ZN18QTapAndHoldGesture10setTimeoutEi @ 12086 NONAME ABSENT
+	_ZN18QTapAndHoldGesture7timeoutEv @ 12087 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate20focusScopeItemChangeEb @ 12088 NONAME
+	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12089 NONAME ABSENT
 

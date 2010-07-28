@@ -12879,4 +12879,8 @@ EXPORTS
 	?PreDocConstructL@QS60MainApplication@@UAEXXZ @ 12878 NONAME ; void QS60MainApplication::PreDocConstructL(void)
 	?NewAppServerL@QS60MainApplication@@UAEXAAPAVCApaAppServer@@@Z @ 12879 NONAME ; void QS60MainApplication::NewAppServerL(class CApaAppServer * &)
 	?HandleViewDeactivation@QS60MainAppUi@@UAEXABVTVwsViewId@@0@Z @ 12880 NONAME ; void QS60MainAppUi::HandleViewDeactivation(class TVwsViewId const &, class TVwsViewId const &)
+	?timeout@QTapAndHoldGesture@@SAHXZ @ 12881 NONAME ABSENT ; int QTapAndHoldGesture::timeout(void)
+	?focusScopeItemChange@QGraphicsItemPrivate@@UAEX_N@Z @ 12882 NONAME ; void QGraphicsItemPrivate::focusScopeItemChange(bool)
+	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12883 NONAME ABSENT ; void QTapAndHoldGesture::setTimeout(int)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@_N@Z @ 12884 NONAME ABSENT ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *, bool)
 
