@@ -661,14 +661,6 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         // the EKeyEvent events. This is what resolveS60ScanCode does.
 
 
-        // ### hackish way to send Qt application to background when pressing right softkey
-        /*
-        if( keyEvent.iScanCode == EStdKeyDevice1 ) {
-            S60->window_group->SetOrdinalPosition(-1);
-            qApp->setActiveWindow(0);
-            return EKeyWasNotConsumed;
-        }
-        */
 
         TUint s60Keysym = QApplicationPrivate::resolveS60ScanCode(keyEvent.iScanCode,
                 keyEvent.iCode);
@@ -687,10 +679,6 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
                 (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
-//        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
-//        if (!wid)
-//             Could happen if window isn't shown yet.
-//            return EKeyWasNotConsumed;
         QWidget *widget;
         widget = QWidget::keyboardGrabber();
         if (!widget) {
