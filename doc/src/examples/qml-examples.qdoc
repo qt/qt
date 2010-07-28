@@ -409,6 +409,14 @@
     \endtable
 */
 
+
+/*!
+    \title Screen orientation
+    \example declarative/screenorientation
+
+    This example shows how to implement screen orientation support for your application.
+*/
+
 /*!
     \title SQL Local Storage Example
     \example declarative/sqllocalstorage
