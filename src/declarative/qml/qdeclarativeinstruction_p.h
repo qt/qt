@@ -292,7 +292,8 @@ public:
     struct StoreSignalInstruction {
         int signalIndex;
         int value;
-        int context;
+        short context;
+        int name;
     };
     struct AssignSignalObjectInstruction {
         int signal;
