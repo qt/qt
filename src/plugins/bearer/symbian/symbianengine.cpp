@@ -693,7 +693,7 @@ void SymbianEngine::updateActiveAccessPoints()
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // If IAP was not found, check if the update was about EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1050,7 +1050,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // Check if status was regarding EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1075,7 +1075,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // Check for EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1183,7 +1183,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         User::WaitForRequest(status);
         QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
         if (!ptr) {
             // If IAP was not found, check if the update was about EasyWLAN
             ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1204,7 +1204,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
     }
 }
 
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
 // Tries to derive configuration from EasyWLAN.
 // First checks if the interface brought up was EasyWLAN, then derives the real SSID,
 // and looks up configuration based on that one.
