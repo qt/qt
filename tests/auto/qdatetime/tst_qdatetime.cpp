@@ -961,14 +961,26 @@ void tst_QDateTime::currentDateTime()
     upperBound.setTime_t(buf2);
     upperBound = upperBound.addSecs(1);
 
-    QVERIFY(lowerBound < upperBound);
+    QString details = QString("\n"
+        "lowerBound: %1\n"
+        "dt1:        %2\n"
+        "dt2:        %3\n"
+        "dt3:        %4\n"
+        "upperBound: %5\n")
+        .arg(lowerBound.toTime_t())
+        .arg(dt1.toTime_t())
+        .arg(dt2.toTime_t())
+        .arg(dt3.toTime_t())
+        .arg(upperBound.toTime_t());
 
-    QVERIFY(lowerBound <= dt1);
-    QVERIFY(dt1 < upperBound);
-    QVERIFY(lowerBound <= dt2);
-    QVERIFY(dt2 < upperBound);
-    QVERIFY(lowerBound <= dt3);
-    QVERIFY(dt3 < upperBound);
+    QVERIFY2(lowerBound < upperBound, qPrintable(details));
+
+    QVERIFY2(lowerBound <= dt1, qPrintable(details));
+    QVERIFY2(dt1 < upperBound, qPrintable(details));
+    QVERIFY2(lowerBound <= dt2, qPrintable(details));
+    QVERIFY2(dt2 < upperBound, qPrintable(details));
+    QVERIFY2(lowerBound <= dt3, qPrintable(details));
+    QVERIFY2(dt3 < upperBound, qPrintable(details));
 
     QVERIFY(dt1.timeSpec() == Qt::LocalTime);
     QVERIFY(dt2.timeSpec() == Qt::LocalTime);
@@ -1000,14 +1012,26 @@ void tst_QDateTime::currentDateTimeUtc()
     upperBound.setTime_t(buf2);
     upperBound = upperBound.addSecs(1);
 
-    QVERIFY(lowerBound < upperBound);
+    QString details = QString("\n"
+        "lowerBound: %1\n"
+        "dt1:        %2\n"
+        "dt2:        %3\n"
+        "dt3:        %4\n"
+        "upperBound: %5\n")
+        .arg(lowerBound.toTime_t())
+        .arg(dt1.toTime_t())
+        .arg(dt2.toTime_t())
+        .arg(dt3.toTime_t())
+        .arg(upperBound.toTime_t());
 
-    QVERIFY(lowerBound <= dt1);
-    QVERIFY(dt1 < upperBound);
-    QVERIFY(lowerBound <= dt2);
-    QVERIFY(dt2 < upperBound);
-    QVERIFY(lowerBound <= dt3);
-    QVERIFY(dt3 < upperBound);
+    QVERIFY2(lowerBound < upperBound, qPrintable(details));
+
+    QVERIFY2(lowerBound <= dt1, qPrintable(details));
+    QVERIFY2(dt1 < upperBound, qPrintable(details));
+    QVERIFY2(lowerBound <= dt2, qPrintable(details));
+    QVERIFY2(dt2 < upperBound, qPrintable(details));
+    QVERIFY2(lowerBound <= dt3, qPrintable(details));
+    QVERIFY2(dt3 < upperBound, qPrintable(details));
 
     QVERIFY(dt1.timeSpec() == Qt::UTC);
     QVERIFY(dt2.timeSpec() == Qt::LocalTime);
