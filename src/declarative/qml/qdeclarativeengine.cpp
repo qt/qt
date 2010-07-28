@@ -1104,29 +1104,20 @@ QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 \qmlmethod object Qt::createComponent(url)
 
 Returns a \l Component object created using the QML file at the specified \a url,
-or \c null if there was an error in creating the component.
+or \c null if an empty string was given.
+
+The returned component's \l Component::status property indicates whether the
+component was successfully created. If the status is \c Component.Error, 
+see \l Component::errorString() for an error description.
 
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Notice it checks whether the component \l{Component::status}{status} is
-\c Component.Ready before calling \l {Component::createObject()}{createObject()}
-in case the QML file is loaded over a network and thus is not ready immediately.
+For example:
 
-\snippet doc/src/snippets/declarative/componentCreation.js vars
-\codeline
-\snippet doc/src/snippets/declarative/componentCreation.js func
-\snippet doc/src/snippets/declarative/componentCreation.js remote
-\snippet doc/src/snippets/declarative/componentCreation.js func-end
-\codeline
-\snippet doc/src/snippets/declarative/componentCreation.js finishCreation
+\snippet doc/src/snippets/declarative/createComponent-simple.qml 0
 
-If you are certain the QML file to be loaded is a local file, you could omit the \c finishCreation() 
-function and call \l {Component::createObject()}{createObject()} immediately:
-
-\snippet doc/src/snippets/declarative/componentCreation.js func
-\snippet doc/src/snippets/declarative/componentCreation.js local
-\snippet doc/src/snippets/declarative/componentCreation.js func-end
+See \l {Dynamic Object Management} for more information on using this function.
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
@@ -1177,6 +1168,8 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
+
+See \l {Dynamic Object Management} for more information on using this function.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
