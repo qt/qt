@@ -1197,6 +1197,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                 QT_TRYCATCH_LEAVING(changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Defined));
             }
         }
+        // Something has in IAPs, update states to SNAPs
+        updateStatesToSnaps();
         }
         break;
 
