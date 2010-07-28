@@ -304,7 +304,7 @@ public:
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
     static QScriptValue quit(QScriptContext*, QScriptEngine*);
 
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
     static QScriptValue formatDate(QScriptContext*, QScriptEngine*);
     static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
     static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);

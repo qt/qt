@@ -103,6 +103,10 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 
     rects->resize(QDesktopWidgetPrivate::screenCount);
     workrects->resize(QDesktopWidgetPrivate::screenCount);
+
+    (*rects)[0].setRect(0, 0, S60->screenWidthInPixels, S60->screenHeightInPixels);
+    QRect wr = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect());
+    (*workrects)[0].setRect(wr.x(), wr.y(), wr.width(), wr.height());
 }
 
 void QDesktopWidgetPrivate::cleanup()
@@ -146,17 +150,23 @@ QWidget *QDesktopWidget::screen(int /* screen */)
     return this;
 }
 
-const QRect QDesktopWidget::availableGeometry(int /* screen */) const
-{
-    TRect clientRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-    return qt_TRect2QRect(clientRect);
-}
-
-const QRect QDesktopWidget::screenGeometry(int /* screen */) const
+const QRect QDesktopWidget::availableGeometry(int screen) const
 {
     Q_D(const QDesktopWidget);
-    return QRect(0, 0, S60->screenWidthInPixels, S60->screenHeightInPixels);
-    }
+    if (screen < 0 || screen >= d->screenCount)
+        screen = d->primaryScreen;
+
+    return d->workrects->at(screen);
+}
+
+const QRect QDesktopWidget::screenGeometry(int screen) const
+{
+    Q_D(const QDesktopWidget);
+    if (screen < 0 || screen >= d->screenCount)
+        screen = d->primaryScreen;
+
+    return d->rects->at(screen);
+}
 
 int QDesktopWidget::screenNumber(const QWidget * /* widget */) const
 {

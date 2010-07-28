@@ -194,6 +194,7 @@ public:
 
     QString url; // This is a QString for a reason.  QUrls are slooooooow...
     int line;
+    QByteArray name; //function name, hint for the debugger
 };
 
 QDeclarativeQtScriptExpression::DeleteWatcher::DeleteWatcher(QDeclarativeQtScriptExpression *data)
