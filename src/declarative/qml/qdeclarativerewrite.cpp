@@ -102,7 +102,7 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     unsigned startOfStatement = node->firstSourceLocation().begin() - _position;
     unsigned endOfStatement = node->lastSourceLocation().end() - _position;
 
-    _writer->replace(startOfStatement, 0, QLatin1String("(function() { "));
+    _writer->replace(startOfStatement, 0, QLatin1String("(function ") + QString::fromUtf8(_name) + QLatin1String("() { "));
     _writer->replace(endOfStatement, 0, QLatin1String(" })"));
 
     if (rewriteDump()) {

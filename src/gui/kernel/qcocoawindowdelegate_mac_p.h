@@ -105,5 +105,6 @@ QT_FORWARD_DECLARE_CLASS(QWidgetData)
 - (NSSize)closestAcceptableSizeForWidget:(QWidget *)qwidget
         window:(NSWindow *)window withNewSize:(NSSize)proposedSize;
 - (QWidget *)qt_qwidgetForWindow:(NSWindow *)window;
+- (void)syncContentViewFrame: (NSNotification *)notification;
 @end
 #endif

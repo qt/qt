@@ -40,7 +40,7 @@
               </div>
               <div class="section sectionlist">
                 <ul>
-                  <li><a href="how-to-learn-qt.html">Getting started</a></li>
+                  <li><a href="gettingstarted.html">Getting started</a></li>
                   <li><a href="installation.html">Installation</a></li>
                   <li><a href="how-to-learn-qt.html">How to learn Qt</a></li>
                   <li><a href="tutorials.html">Tutorials</a></li>

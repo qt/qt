@@ -60,7 +60,7 @@ void QDeclarativeViewSection::setProperty(const QString &property)
 {
     if (property != m_property) {
         m_property = property;
-        emit changed();
+        emit propertyChanged();
     }
 }
 
@@ -68,7 +68,7 @@ void QDeclarativeViewSection::setCriteria(QDeclarativeViewSection::SectionCriter
 {
     if (criteria != m_criteria) {
         m_criteria = criteria;
-        emit changed();
+        emit criteriaChanged();
     }
 }
 
@@ -1385,14 +1385,16 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     the delegate is able to access the model's \c name and \c number data directly.
 
     An improved list view is shown below. The delegate is visually improved and is moved 
-    into a separate \c contactDelegate component. Also, the currently selected item is highlighted
-    with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
-    to enable keyboard navigation for the list view.
+    into a separate \c contactDelegate component.
     
     \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
     \image listview-highlight.png
 
-    In a GridView, delegates are instantiated as needed and may be destroyed at any time.
+    The currently selected item is highlighted with a blue \l Rectangle using the \l highlight property,
+    and \c focus is set to \c true to enable keyboard navigation for the list view.
+    The list view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
+
+    Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
     \note Views do not enable \e clip automatically.  If the view
