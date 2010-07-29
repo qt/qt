@@ -363,12 +363,12 @@ class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeIte
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeKeyNavigationAttached)
 
-    Q_PROPERTY(QDeclarativeItem *left READ left WRITE setLeft NOTIFY changed)
-    Q_PROPERTY(QDeclarativeItem *right READ right WRITE setRight NOTIFY changed)
-    Q_PROPERTY(QDeclarativeItem *up READ up WRITE setUp NOTIFY changed)
-    Q_PROPERTY(QDeclarativeItem *down READ down WRITE setDown NOTIFY changed)
-    Q_PROPERTY(QDeclarativeItem *tab READ tab WRITE setTab NOTIFY changed)
-    Q_PROPERTY(QDeclarativeItem *backtab READ backtab WRITE setBacktab NOTIFY changed)
+    Q_PROPERTY(QDeclarativeItem *left READ left WRITE setLeft NOTIFY leftChanged)
+    Q_PROPERTY(QDeclarativeItem *right READ right WRITE setRight NOTIFY rightChanged)
+    Q_PROPERTY(QDeclarativeItem *up READ up WRITE setUp NOTIFY upChanged)
+    Q_PROPERTY(QDeclarativeItem *down READ down WRITE setDown NOTIFY downChanged)
+    Q_PROPERTY(QDeclarativeItem *tab READ tab WRITE setTab NOTIFY tabChanged)
+    Q_PROPERTY(QDeclarativeItem *backtab READ backtab WRITE setBacktab NOTIFY backtabChanged)
     Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
 
     Q_ENUMS(Priority)
@@ -396,7 +396,12 @@ public:
     static QDeclarativeKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
-    void changed();
+    void leftChanged();
+    void rightChanged();
+    void upChanged();
+    void downChanged();
+    void tabChanged();
+    void backtabChanged();
     void priorityChanged();
 
 private:
