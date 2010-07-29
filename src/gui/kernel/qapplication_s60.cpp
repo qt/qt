@@ -621,71 +621,125 @@ TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCo
 
 TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCode type)
 {
-    switch (type) {
-    //case EEventKeyDown: // <-- Intentionally left out. See below.
-    case EEventKeyUp:
-    case EEventKey:
-    {
+    /*
+      S60 has a confusing way of delivering key events. There are three types of
+      events: EEventKey, EEventKeyDown and EEventKeyUp. When a key is pressed,
+      EEventKeyDown is first generated, followed by EEventKey. Then, when the key is
+      released, EEventKeyUp is generated.
+      However, it is possible that only the EEventKey is generated alone, typically
+      in relation to virtual keyboards. In that case we need to take care to
+      generate both press and release events in Qt, since applications expect that.
+      We do this by having three states for each used scan code, depending on the
+      events received. See the switch below for what happens in each state
+      transition.
+    */
+
+    if (type != EEventKeyDown)
         if (handleVirtualMouse(keyEvent, type) == EKeyWasConsumed)
             return EKeyWasConsumed;
 
-        // S60 has a confusing way of delivering key events. There are three types of
-        // events: EKeyEvent, EKeyEventDown and EKeyEventUp. When a key is pressed, the
-        // two first events are generated. When releasing the key, the last one is
-        // generated.
-        // Because S60 does not generate keysyms for EKeyEventDown and EKeyEventUp events,
-        // we need to do some special tricks to map it to the Qt way. First, we completely
-        // discard EKeyEventDown events, since they are redundant. Second, since
-        // EKeyEventUp does not give us a keysym, we need to cache the keysyms from
-        // the EKeyEvent events. This is what resolveS60ScanCode does.
+    TKeyResponse ret = EKeyWasNotConsumed;
+#define GET_RETURN(x) (ret = ((x) == EKeyWasConsumed) ? EKeyWasConsumed : ret)
 
+    // This top level switch corresponds to the states, and the inner switches
+    // correspond to the transitions.
+    QS60Data::ScanCodeState &scanCodeState = S60->scanCodeStates[keyEvent.iScanCode];
+    switch (scanCodeState) {
+    case QS60Data::Unpressed:
+        switch (type) {
+        case EEventKeyDown:
+            scanCodeState = QS60Data::KeyDown;
+            break;
+        case EEventKey:
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyPress));
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyRelease));
+            break;
+        case EEventKeyUp:
+            // No action.
+            break;
+        }
+        break;
+    case QS60Data::KeyDown:
+        switch (type) {
+        case EEventKeyDown:
+            // This should never happen, just stay in this state to be safe.
+            break;
+        case EEventKey:
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyPress));
+            scanCodeState = QS60Data::KeyDownAndKey;
+            break;
+        case EEventKeyUp:
+            scanCodeState = QS60Data::Unpressed;
+            break;
+        }
+        break;
+    case QS60Data::KeyDownAndKey:
+        switch (type) {
+        case EEventKeyDown:
+            // This should never happen, just stay in this state to be safe.
+            break;
+        case EEventKey:
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyRelease));
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyPress));
+            break;
+        case EEventKeyUp:
+            GET_RETURN(sendSymbianKeyEvent(keyEvent, QEvent::KeyRelease));
+            scanCodeState = QS60Data::Unpressed;
+            break;
+        }
+        break;
+    }
+    return ret;
 
+#undef GET_RETURN
+}
 
-        TUint s60Keysym = QApplicationPrivate::resolveS60ScanCode(keyEvent.iScanCode,
-                keyEvent.iCode);
-        int keyCode;
-        if (s60Keysym == EKeyNull){ //some key events have 0 in iCode, for them iScanCode should be used
-            keyCode = qt_keymapper_private()->mapS60ScanCodesToQt(keyEvent.iScanCode);
-        } else if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
-            // Normal characters keys.
-            keyCode = s60Keysym;
+TKeyResponse QSymbianControl::sendSymbianKeyEvent(const TKeyEvent &keyEvent, QEvent::Type type)
+{
+    // Because S60 does not generate keysyms for EKeyEventDown and EKeyEventUp
+    // events, we need to cache the keysyms from the EKeyEvent events. This is what
+    // resolveS60ScanCode does.
+    TUint s60Keysym = QApplicationPrivate::resolveS60ScanCode(keyEvent.iScanCode,
+            keyEvent.iCode);
+    int keyCode;
+    if (s60Keysym == EKeyNull){ //some key events have 0 in iCode, for them iScanCode should be used
+        keyCode = qt_keymapper_private()->mapS60ScanCodesToQt(keyEvent.iScanCode);
+    } else if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
+        // Normal characters keys.
+        keyCode = s60Keysym;
+    } else {
+        // Special S60 keys.
+        keyCode = qt_keymapper_private()->mapS60KeyToQt(s60Keysym);
+    }
+
+    Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
+    QKeyEventEx qKeyEvent(type, keyCode, mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
+            (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
+    QWidget *widget;
+    widget = QWidget::keyboardGrabber();
+    if (!widget) {
+        if (QApplicationPrivate::popupWidgets != 0) {
+            widget = QApplication::activePopupWidget()->focusWidget();
+            if (!widget) {
+                widget = QApplication::activePopupWidget();
+            }
         } else {
-            // Special S60 keys.
-            keyCode = qt_keymapper_private()->mapS60KeyToQt(s60Keysym);
-        }
-
-        Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
-        QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
-                mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                (keyEvent.iRepeats != 0), 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
-        QWidget *widget;
-        widget = QWidget::keyboardGrabber();
-        if (!widget) {
-            if (QApplicationPrivate::popupWidgets != 0) {
-                widget = QApplication::activePopupWidget()->focusWidget();
-                if (!widget) {
-                    widget = QApplication::activePopupWidget();
-                }
-            } else {
-                widget = QApplicationPrivate::focus_widget;
-                if (!widget) {
-                    widget = qwidget;
-                }
+            widget = QApplicationPrivate::focus_widget;
+            if (!widget) {
+                widget = qwidget;
             }
         }
+    }
 
-        QEventDispatcherS60 *dispatcher;
-        // It is theoretically possible for someone to install a different event dispatcher.
-        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) != 0) {
-            if (dispatcher->excludeUserInputEvents()) {
-                dispatcher->saveInputEvent(this, widget, new QKeyEventEx(qKeyEvent));
-                return EKeyWasConsumed;
-            }
+    QEventDispatcherS60 *dispatcher;
+    // It is theoretically possible for someone to install a different event dispatcher.
+    if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widget->d_func()->threadData->eventDispatcher)) != 0) {
+        if (dispatcher->excludeUserInputEvents()) {
+            dispatcher->saveInputEvent(this, widget, new QKeyEventEx(qKeyEvent));
+            return EKeyWasConsumed;
         }
-        return sendKeyEvent(widget, &qKeyEvent);
     }
-    }
-    return EKeyWasNotConsumed;
+    return sendKeyEvent(widget, &qKeyEvent);
 }
 
 TKeyResponse QSymbianControl::handleVirtualMouse(const TKeyEvent& keyEvent,TEventCode type)
