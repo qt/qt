@@ -548,8 +548,8 @@ QString QConnmanEngine::typeToBearer(const QString &type)
     if(type == "bluetooth")
         return "Bluetooth";
     if(type == "cellular") {
-        return "Cellular";
-        // not handled: CDMA2000 HSPA
+        return "2G";
+        // not handled: CDMA2000 HSPA WCDMA
     }
     if(type == "wimax")
         return "WiMax";
@@ -614,6 +614,9 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 
         if(serv->getType() == "Cellular") {
             networkName = serv->getAPN();
+            if(networkName.isEmpty()) {
+                networkName = serv->getName();
+            }
         }
 
         cpPriv->name = networkName;
@@ -701,6 +704,9 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
                 bearerName = "WCDMA";
             }
             networkName = serv->getAPN();
+            if(networkName.isEmpty()) {
+                networkName = serv->getName();
+            }
         }
 
         cpPriv->name = networkName;
