@@ -40,11 +40,7 @@
 ****************************************************************************/
 
 #include <libicd-network-wlan-dev.h>
-#include <maemo_icd.h>
-#include <iapconf.h>
-#include <proxyconf.h>
 #include <wlancond.h>
-#include <iapmonitor.h>
 #include <icd/dbus_api.h>
 
 int main(int, char **)

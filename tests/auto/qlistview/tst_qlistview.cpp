@@ -1653,8 +1653,8 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
     //we'll make sure the item is repainted
     delegate.numPaints = 0;
     QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
     QCOMPARE(list.visualRect(index).topLeft(), topLeft);
-    QCOMPARE(delegate.numPaints, 1);
 }
 
 

@@ -1070,6 +1070,7 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
             store.storeSignal.value =
                 output->indexForString(v->value.asScript().trimmed());
             store.storeSignal.context = ctxt.stack;
+            store.storeSignal.name = output->indexForByteArray(prop->name);
             output->bytecode << store;
 
         }
@@ -2765,6 +2766,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         bool isSharable = sharableTest.isSharable(expression);
         
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
+        rewriteBinding.setName('$'+binding.property->name);
         expression = rewriteBinding(expression);
 
         quint32 length = expression.length();
