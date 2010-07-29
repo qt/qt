@@ -51,6 +51,8 @@
 #include <QFontMetrics>
 #include <QPainter>
 
+#ifndef QT_NO_LINEEDIT
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1536,4 +1538,6 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_LINEEDIT
 

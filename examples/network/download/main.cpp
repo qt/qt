@@ -150,7 +150,7 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
     } else {
         QString filename = saveFileName(url);
         if (saveToDisk(filename, reply))
-            printf("Download of %s succeded (saved to %s)\n",
+            printf("Download of %s succeeded (saved to %s)\n",
                    url.toEncoded().constData(), qPrintable(filename));
     }
 

@@ -142,7 +142,7 @@ public:
         qreal dv = -2 * cosa / bufw;
 
         for (int ray = 0; ray < bufw; ++ray, u += du, v += dv) {
-            // everytime this ray advances 'u' units in x direction,
+            // every time this ray advances 'u' units in x direction,
             // it also advanced 'v' units in y direction
             qreal uu = (u < 0) ? -u : u;
             qreal vv = (v < 0) ? -v : v;

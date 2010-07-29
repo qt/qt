@@ -94,7 +94,7 @@ void parseHtmlFile(QTextStream &out, const QString &fileName) {
 
 int main(int argc, char **argv)
 {
-    // intialize QtCore application
+    // initialize QtCore application
     QCoreApplication app(argc, argv);
 
     // get a list of all html files in the current directory
