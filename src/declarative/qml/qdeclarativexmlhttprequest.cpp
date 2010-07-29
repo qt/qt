@@ -1306,10 +1306,11 @@ QString QDeclarativeXMLHttpRequest::responseBody() const
 {
     QXmlStreamReader reader(m_responseEntityBody);
     reader.readNext();
+#ifndef QT_NO_TEXTCODEC
     QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
     if (codec)
         return codec->toUnicode(m_responseEntityBody);
-
+#endif
     return QString::fromUtf8(m_responseEntityBody);
 }
 
