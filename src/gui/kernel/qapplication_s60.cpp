@@ -112,6 +112,25 @@ QS60Data* qGlobalS60Data()
     return qt_s60Data();
 }
 
+#ifdef Q_WS_S60
+void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible)
+{
+    bool buttonGroupVisibilityChanged = false;
+    if (CEikButtonGroupContainer *const b = buttonGroupContainer()) {
+        buttonGroupVisibilityChanged = (b->IsVisible() != buttonGroupVisible);
+        b->MakeVisible(buttonGroupVisible);
+    }
+    bool statusPaneVisibilityChanged = false;
+    if (CEikStatusPane *const s = statusPane()) {
+        statusPaneVisibilityChanged = (s->IsVisible() != statusPaneVisible);
+        s->MakeVisible(statusPaneVisible);
+    }
+    if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged)
+        // Ensure that control rectangle is updated
+        static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
+}
+#endif
+
 bool qt_nograb()                                // application no-grab option
 {
 #if defined(QT_DEBUG)
@@ -1100,17 +1119,12 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        CEikStatusPane *statusPane = S60->statusPane();
-        CEikButtonGroupContainer *buttonGroup = S60->buttonGroupContainer();
-        TBool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
-        if (statusPane)
-            statusPane->MakeVisible(visible);
-        if (buttonGroup) {
-            // Visibility
-            const TBool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-            const TBool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
-            buttonGroup->MakeVisible(visible || (isFullscreen && cbaVisibilityHint));
-        }
+        const bool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        const bool statusPaneVisibility = visible;
+        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
+        S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
