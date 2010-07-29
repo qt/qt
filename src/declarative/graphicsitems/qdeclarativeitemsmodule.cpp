@@ -142,7 +142,9 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QGraphicsScale>("Qt",4,7,"Scale");
     qmlRegisterType<QDeclarativeText>("Qt",4,7,"Text");
     qmlRegisterType<QDeclarativeTextEdit>("Qt",4,7,"TextEdit");
+#ifndef QT_NO_LINEEDIT
     qmlRegisterType<QDeclarativeTextInput>("Qt",4,7,"TextInput");
+#endif
     qmlRegisterType<QDeclarativeViewSection>("Qt",4,7,"ViewSection");
     qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,7,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,7,"VisualItemModel");
