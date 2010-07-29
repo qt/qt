@@ -1311,8 +1311,12 @@ void Element::focus(bool restorePreviousSelection)
             return;
     }
 
-    if (Page* page = doc->page())
+    RefPtr<Node> protect;
+    if (Page* page = doc->page()) {
+        // Focus and change event handlers can cause us to lose our last ref.
+        protect = this;
         page->focusController()->setFocusedNode(this, doc->frame());
+    }
 
     // Setting the focused node above might have invalidated the layout due to scripts.
     doc->updateLayoutIgnorePendingStylesheets();
@@ -1534,5 +1538,16 @@ const QualifiedName& Element::rareIDAttributeName() const
 {
     return rareData()->m_idAttributeName;
 }
+
+#if ENABLE(SVG)
+bool Element::childShouldCreateRenderer(Node* child) const
+{
+    // Only create renderers for SVG elements whose parents are SVG elements, or for proper <svg xmlns="svgNS"> subdocuments.
+    if (child->isSVGElement())
+        return child->hasTagName(SVGNames::svgTag) || isSVGElement();
+
+    return Node::childShouldCreateRenderer(child);
+}
+#endif
 
 } // namespace WebCore
