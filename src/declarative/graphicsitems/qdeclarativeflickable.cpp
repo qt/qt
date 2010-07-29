@@ -1426,21 +1426,23 @@ void QDeclarativeFlickable::movementEnding()
         if (!d->flickingHorizontally)
            emit flickEnded();
     }
-    if (d->movingHorizontally) {
-        d->movingHorizontally = false;
-        d->hMoved = false;
-        emit movingChanged();
-        emit movingHorizontallyChanged();
-        if (!d->movingVertically)
-            emit movementEnded();
-    }
-    if (d->movingVertically) {
-        d->movingVertically = false;
-        d->vMoved = false;
-        emit movingChanged();
-        emit movingVerticallyChanged();
-        if (!d->movingHorizontally)
-            emit movementEnded();
+    if (!d->pressed && !d->stealMouse) {
+        if (d->movingHorizontally) {
+            d->movingHorizontally = false;
+            d->hMoved = false;
+            emit movingChanged();
+            emit movingHorizontallyChanged();
+            if (!d->movingVertically)
+                emit movementEnded();
+        }
+        if (d->movingVertically) {
+            d->movingVertically = false;
+            d->vMoved = false;
+            emit movingChanged();
+            emit movingVerticallyChanged();
+            if (!d->movingHorizontally)
+                emit movementEnded();
+        }
     }
     d->hData.smoothVelocity.setValue(0);
     d->vData.smoothVelocity.setValue(0);

@@ -37,46 +37,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
 import Qt 4.7
 
-Rectangle {
-    id: screen
+Item {
+    id: container
+    width: 300; height: 300
 
-    width: 490; height: 720
-
-    SystemPalette { id: activePalette }
-
-    Item {
-        width: parent.width
-        anchors { top: parent.top; bottom: toolBar.top }
-
-        Image {
-            id: background
-            anchors.fill: parent
-            source: "../shared/pics/background.jpg"
-            fillMode: Image.PreserveAspectCrop
+    function loadButton() {
+        var component = Qt.createComponent("Button.qml");
+        if (component.status == Component.Ready) {
+            var button = component.createObject(container);
+            button.color = "red";
         }
     }
 
-    Rectangle {
-        id: toolBar
-        width: parent.width; height: 30
-        color: activePalette.window
-        anchors.bottom: screen.bottom
-
-        Button {
-            anchors { left: parent.left; verticalCenter: parent.verticalCenter }
-            text: "New Game" 
-            onClicked: console.log("This doesn't do anything yet...")
-        }
-
-        Text {
-            id: score
-            anchors { right: parent.right; verticalCenter: parent.verticalCenter }
-            text: "Score: Who knows?"
-        }
-    }
+    Component.onCompleted: loadButton()
 }
 //![0]

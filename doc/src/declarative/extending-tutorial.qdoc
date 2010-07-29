@@ -421,7 +421,7 @@ To create a plugin library, we need:
 \list
 \o A plugin class that registers our QML types
 \o A project file that describes the plugin 
-\o A "qmldir" file that tells the QML engine to load the plugin
+\o A \l{Writing a qmldir file}{qmldir} file that tells the QML engine to load the plugin
 \endlist
 
 First, we create a plugin class named \c ChartsPlugin. It subclasses QDeclarativeExtensionPlugin
@@ -441,8 +441,8 @@ and specifies with DESTDIR that library files should be built into a "lib" subdi
 
 \quotefile declarative/tutorials/extending/chapter6-plugins/chapter6-plugins.pro
 
-Finally, we add a \c qmldir file that is automatically parsed by the QML engine.
-Here, we specify that a plugin named "chapter6-plugin" (the name
+Finally, we add a \l{Writing a qmldir file}{qmldir} file that is automatically parsed by the QML engine.
+In this file, we specify that a plugin named "chapter6-plugin" (the name
 of the example project) can be found in the "lib" subdirectory:
 
 \quotefile declarative/tutorials/extending/chapter6-plugins/qmldir

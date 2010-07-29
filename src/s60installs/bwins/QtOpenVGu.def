@@ -164,12 +164,11 @@ EXPORTS
 	?qt_vg_create_context@@YAPAVQEglContext@@PAVQPaintDevice@@H@Z @ 163 NONAME ; class QEglContext * qt_vg_create_context(class QPaintDevice *, int)
 	?reclaimImages@QVGPixmapData@@UAEXXZ @ 164 NONAME ; void QVGPixmapData::reclaimImages(void)
 	?hibernate@QVGPixmapData@@UAEXXZ @ 165 NONAME ; void QVGPixmapData::hibernate(void)
-	?drawStaticTextItem@QVGPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 166 NONAME ; void QVGPaintEngine::drawStaticTextItem(class QStaticTextItem *)
-	?drawPixmapFragments@QVGPaintEngine@@UAEXPBVPixmapFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 167 NONAME ; void QVGPaintEngine::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
-	?drawCachedGlyphs@QVGPaintEngine@@QAE_NHPBIABVQFont@@PAVQFontEngine@@ABVQPointF@@@Z @ 168 NONAME ABSENT ; bool QVGPaintEngine::drawCachedGlyphs(int, unsigned int const *, class QFont const &, class QFontEngine *, class QPointF const &)
-	?supportsStaticContents@QVGEGLWindowSurfaceDirect@@UBE_NXZ @ 169 NONAME ; bool QVGEGLWindowSurfaceDirect::supportsStaticContents(void) const
-	?scroll@QVGEGLWindowSurfacePrivate@@UAE_NPAVQWidget@@ABVQRegion@@HH@Z @ 170 NONAME ; bool QVGEGLWindowSurfacePrivate::scroll(class QWidget *, class QRegion const &, int, int)
-	?scroll@QVGEGLWindowSurfaceDirect@@UAE_NPAVQWidget@@ABVQRegion@@HH@Z @ 171 NONAME ; bool QVGEGLWindowSurfaceDirect::scroll(class QWidget *, class QRegion const &, int, int)
-	?supportsStaticContents@QVGEGLWindowSurfacePrivate@@UBE_NXZ @ 172 NONAME ; bool QVGEGLWindowSurfacePrivate::supportsStaticContents(void) const
-	?drawCachedGlyphs@QVGPaintEngine@@QAE_NHPBIABVQFont@@PAVQFontEngine@@ABVQPointF@@PBUQFixedPoint@@@Z @ 173 NONAME ; bool QVGPaintEngine::drawCachedGlyphs(int, unsigned int const *, class QFont const &, class QFontEngine *, class QPointF const &, struct QFixedPoint const *)
+	?supportsStaticContents@QVGEGLWindowSurfaceDirect@@UBE_NXZ @ 166 NONAME ; bool QVGEGLWindowSurfaceDirect::supportsStaticContents(void) const
+	?scroll@QVGEGLWindowSurfacePrivate@@UAE_NPAVQWidget@@ABVQRegion@@HH@Z @ 167 NONAME ; bool QVGEGLWindowSurfacePrivate::scroll(class QWidget *, class QRegion const &, int, int)
+	?scroll@QVGEGLWindowSurfaceDirect@@UAE_NPAVQWidget@@ABVQRegion@@HH@Z @ 168 NONAME ; bool QVGEGLWindowSurfaceDirect::scroll(class QWidget *, class QRegion const &, int, int)
+	?supportsStaticContents@QVGEGLWindowSurfacePrivate@@UBE_NXZ @ 169 NONAME ; bool QVGEGLWindowSurfacePrivate::supportsStaticContents(void) const
+	?drawCachedGlyphs@QVGPaintEngine@@QAE_NHPBIABVQFont@@PAVQFontEngine@@ABVQPointF@@PBUQFixedPoint@@@Z @ 170 NONAME ; bool QVGPaintEngine::drawCachedGlyphs(int, unsigned int const *, class QFont const &, class QFontEngine *, class QPointF const &, struct QFixedPoint const *)
+	?drawPixmapFragments@QVGPaintEngine@@UAEXPBVPixmapFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 171 NONAME ; void QVGPaintEngine::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
+	?drawStaticTextItem@QVGPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 172 NONAME ; void QVGPaintEngine::drawStaticTextItem(class QStaticTextItem *)
 
