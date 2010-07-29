@@ -890,7 +890,13 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
         const bool dateShown = (d->sections & DateSections_Mask);
         Q_ASSERT(dateShown || timeShown);
         if (timeShown && !dateShown) {
+            QTime time = d->value.toTime();
             setDateRange(d->value.toDate(), d->value.toDate());
+            if (d->minimum.toTime() >= d->maximum.toTime()) {
+                setTimeRange(QDATETIMEEDIT_TIME_MIN, QDATETIMEEDIT_TIME_MAX);
+                // if the time range became invalid during the adjustment, the time would have been reset
+                setTime(time);
+            }
         } else if (dateShown && !timeShown) {
             setTimeRange(QDATETIMEEDIT_TIME_MIN, QDATETIMEEDIT_TIME_MAX);
             d->value = QDateTime(d->value.toDate(), QTime(), d->spec);
@@ -1654,6 +1660,15 @@ void QDateTimeEditPrivate::updateTimeSpec()
     minimum = minimum.toDateTime().toTimeSpec(spec);
     maximum = maximum.toDateTime().toTimeSpec(spec);
     value = value.toDateTime().toTimeSpec(spec);
+
+    // time zone changes can lead to 00:00:00 becomes 01:00:00 and 23:59:59 becomes 00:59:59 (invalid range)
+    const bool dateShown = (sections & QDateTimeEdit::DateSections_Mask);
+    if (!dateShown) {
+        if (minimum.toTime() >= maximum.toTime()){
+            minimum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MIN, spec);
+            maximum = QDateTime(value.toDate(), QDATETIMEEDIT_TIME_MAX, spec);
+        }
+    }
 }
 
 void QDateTimeEditPrivate::updateEdit()
