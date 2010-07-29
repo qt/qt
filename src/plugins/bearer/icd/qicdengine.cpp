@@ -60,16 +60,11 @@ IcdNetworkConfigurationPrivate::~IcdNetworkConfigurationPrivate()
 {
 }
 
-QString IcdNetworkConfigurationPrivate::bearerName() const
+QString IcdNetworkConfigurationPrivate::bearerTypeName() const
 {
-    if (iap_type == QLatin1String("WLAN_INFRA") ||
-        iap_type == QLatin1String("WLAN_ADHOC")) {
-        return QLatin1String("WLAN");
-    } else if (iap_type == QLatin1String("GPRS")) {
-        return QLatin1String("HSPA");
-    } else {
-        return iap_type;
-    }
+    QMutexLocker locker(&mutex);
+
+    return iap_type;
 }
 
 /* The IapAddTimer is a helper class that makes sure we update
@@ -400,6 +395,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
                     ptr->mutex.lock();
                     ptr->id = iap_id;
                     toIcdConfig(ptr)->iap_type = iap_type;
+                    ptr->bearerType = bearerTypeFromIapType(iap_type);
                     toIcdConfig(ptr)->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
                     toIcdConfig(ptr)->network_id = ssid;
                     toIcdConfig(ptr)->service_id = saved_iap.value("service_id").toString();
@@ -424,6 +420,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
                 cpPriv->isValid = true;
                 cpPriv->id = iap_id;
                 cpPriv->iap_type = iap_type;
+                cpPriv->bearerType = bearerTypeFromIapType(iap_type);
                 cpPriv->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
                 cpPriv->service_id = saved_iap.value("service_id").toString();
                 cpPriv->service_type = saved_iap.value("service_type").toString();
@@ -480,6 +477,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
             ptr->isValid = true;
             if (toIcdConfig(ptr)->iap_type != iap_type) {
                 toIcdConfig(ptr)->iap_type = iap_type;
+                ptr->bearerType = bearerTypeFromIapType(iap_type);
                 update_needed = true;
             }
             if (iap_type.startsWith(QLatin1String("WLAN"))) {
@@ -580,6 +578,7 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
             cpPriv->network_id = ssid;
             cpPriv->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
             cpPriv->iap_type = iap_type;
+            cpPriv->bearerType = bearerTypeFromIapType(iap_type);
             cpPriv->service_id = saved_ap.value("service_id").toString();
             cpPriv->service_type = saved_ap.value("service_type").toString();
             cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
@@ -688,6 +687,7 @@ rescan_list:
                     cpPriv->id = scanned_ssid.data();  // Note: id is now ssid, it should be set to IAP id if the IAP is saved
                     cpPriv->network_id = scanned_ssid;
                     cpPriv->iap_type = ap.scan.network_type;
+                    cpPriv->bearerType = bearerTypeFromIapType(cpPriv->iap_type);
                     cpPriv->network_attrs = ap.scan.network_attrs;
                     cpPriv->service_id = ap.scan.service_id;
                     cpPriv->service_type = ap.scan.service_type;

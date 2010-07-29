@@ -53,7 +53,7 @@
 
 #include <math.h>
 
-static QMap<QString, QSvgRenderer *> svgCache;
+static QMap<QNetworkConfiguration::BearerType, QSvgRenderer *> svgCache;
 
 //! [0]
 Cloud::Cloud(const QNetworkConfiguration &config, QGraphicsItem *parent)
@@ -313,17 +313,25 @@ void Cloud::stateChanged(QNetworkSession::State state)
 //! [1]
 void Cloud::newConfigurationActivated()
 {
-    const QString bearerTypeName = configuration.bearerTypeName();
-    if (!svgCache.contains(bearerTypeName)) {
-        if (bearerTypeName == QLatin1String("WLAN"))
-            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":wlan.svg")));
-        else if (bearerTypeName == QLatin1String("Ethernet"))
-            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":lan.svg")));
-        else
-            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":unknown.svg")));
+    QNetworkConfiguration::BearerType bearerType = configuration.bearerType();
+    if (!svgCache.contains(bearerType)) {
+        QSvgRenderer *renderer = 0;
+        switch (bearerType) {
+        case QNetworkConfiguration::BearerWLAN:
+            renderer = new QSvgRenderer(QLatin1String(":wlan.svg"));
+            break;
+        case QNetworkConfiguration::BearerEthernet:
+            renderer = new QSvgRenderer(QLatin1String(":lan.svg"));
+            break;
+        default:
+            renderer = new QSvgRenderer(QLatin1String(":unknown.svg"));
+        }
+
+        if (renderer)
+            svgCache.insert(bearerType, renderer);
     }
 
-    icon->setSharedRenderer(svgCache[bearerTypeName]);
+    icon->setSharedRenderer(svgCache[bearerType]);
 
     if (configuration.name().isEmpty()) {
         text->setPlainText(tr("HIDDEN NETWORK"));
