@@ -273,6 +273,9 @@ private slots:
 
     void task196924();
     void focusNextPrevChild();
+
+    void taskQTBUG_12384_timeSpecShowTimeOnly();
+
 private:
     EditorDateEdit* testWidget;
     QWidget *testFocusWidget;
@@ -3420,7 +3423,20 @@ void tst_QDateTimeEdit::focusNextPrevChild()
     QCOMPARE(edit.currentSection(), QDateTimeEdit::MonthSection);
 }
 
+void tst_QDateTimeEdit::taskQTBUG_12384_timeSpecShowTimeOnly()
+{
+    QDateTime time = QDateTime::fromString("20100723 04:02:40", "yyyyMMdd hh:mm:ss");
+    time.setTimeSpec(Qt::UTC);
 
+    EditorDateEdit edit;
+    edit.setDisplayFormat("hh:mm:ss");
+    edit.setTimeSpec(Qt::UTC);
+    edit.setDateTime(time);
+
+    QCOMPARE(edit.minimumTime(), QTime(0, 0, 0, 0));
+    QCOMPARE(edit.maximumTime(), QTime(23, 59, 59, 999));
+    QCOMPARE(edit.time(), time.time());
+}
 
 QTEST_MAIN(tst_QDateTimeEdit)
 #include "tst_qdatetimeedit.moc"
