@@ -90,6 +90,26 @@ void QDeclarativePathViewAttached::setValue(const QByteArray &name, const QVaria
     m_metaobject->setValue(name, val);
 }
 
+
+void QDeclarativePathViewPrivate::init()
+{
+    Q_Q(QDeclarativePathView);
+    offset = 0;
+    q->setAcceptedMouseButtons(Qt::LeftButton);
+    q->setFlag(QGraphicsItem::ItemIsFocusScope);
+    q->setFiltersChildEvents(true);
+    q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
+    lastPosTime.invalidate();
+    static int timelineCompletedIdx = -1;
+    static int movementEndingIdx = -1;
+    if (timelineCompletedIdx == -1) {
+        timelineCompletedIdx = QDeclarativeTimeLine::staticMetaObject.indexOfSignal("completed()");
+        movementEndingIdx = QDeclarativePathView::staticMetaObject.indexOfSlot("movementEnding()");
+    }
+    QMetaObject::connect(&tl, timelineCompletedIdx,
+                         q, movementEndingIdx, Qt::DirectConnection);
+}
+
 QDeclarativeItem *QDeclarativePathViewPrivate::getItem(int modelIndex)
 {
     Q_Q(QDeclarativePathView);
@@ -848,6 +868,61 @@ void QDeclarativePathView::setInteractive(bool interactive)
 }
 
 /*!
+    \qmlproperty bool PathView::moving
+
+    This property holds whether the view is currently moving
+    due to the user either dragging or flicking the view.
+*/
+bool QDeclarativePathView::isMoving() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->moving;
+}
+
+/*!
+    \qmlproperty bool PathView::flicking
+
+    This property holds whether the view is currently moving
+    due to the user flicking the view.
+*/
+bool QDeclarativePathView::isFlicking() const
+{
+    Q_D(const QDeclarativePathView);
+    return d->flicking;
+}
+
+/*!
+    \qmlsignal PathView::onMovementStarted()
+
+    This handler is called when the view begins moving due to user
+    interaction.
+*/
+
+/*!
+    \qmlsignal PathView::onMovementEnded()
+
+    This handler is called when the view stops moving due to user
+    interaction.  If a flick was generated, this handler will
+    be triggered once the flick stops.  If a flick was not
+    generated, the handler will be triggered when the
+    user stops dragging - i.e. a mouse or touch release.
+*/
+
+/*!
+    \qmlsignal PathView::onFlickStarted()
+
+    This handler is called when the view is flicked.  A flick
+    starts from the point that the mouse or touch is released,
+    while still in motion.
+*/
+
+/*!
+    \qmlsignal PathView::onFlickEnded()
+
+    This handler is called when the view stops moving due to a flick.
+*/
+
+/*!
     \qmlproperty Component PathView::delegate
 
     The delegate provides a template defining each item instantiated by the view.
@@ -964,7 +1039,11 @@ void QDeclarativePathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             return;
     }
 
-    d->stealMouse = false;
+    if (d->tl.isActive() && d->flicking)
+        d->stealMouse = true; // If we've been flicked then steal the click.
+    else
+        d->stealMouse = false;
+
     d->lastElapsed = 0;
     d->lastDist = 0;
     QDeclarativeItemPrivate::start(d->lastPosTime);
@@ -999,6 +1078,11 @@ void QDeclarativePathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             d->lastElapsed = QDeclarativeItemPrivate::restart(d->lastPosTime);
             d->lastDist = diff;
             d->startPc = newPc;
+        }
+        if (!d->moving) {
+            d->moving = true;
+            emit movingChanged();
+            emit movementStarted();
         }
     }
 }
@@ -1039,12 +1123,19 @@ void QDeclarativePathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
         d->moveOffset.setValue(d->offset);
         d->tl.accel(d->moveOffset, velocity, accel, dist);
         d->tl.callback(QDeclarativeTimeLineCallback(&d->moveOffset, d->fixOffsetCallback, d));
+        if (!d->flicking) {
+            d->flicking = true;
+            emit flickingChanged();
+            emit flickStarted();
+        }
     } else {
         d->fixOffset();
     }
 
     d->lastPosTime.invalidate();
     ungrabMouse();
+    if (!d->tl.isActive())
+        movementEnding();
 }
 
 bool QDeclarativePathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
@@ -1370,6 +1461,21 @@ void QDeclarativePathView::ticked()
 {
     Q_D(QDeclarativePathView);
     d->updateCurrent();
+}
+
+void QDeclarativePathView::movementEnding()
+{
+    Q_D(QDeclarativePathView);
+    if (d->flicking) {
+        d->flicking = false;
+        emit flickingChanged();
+        emit flickEnded();
+    }
+    if (d->moving && !d->stealMouse) {
+        d->moving = false;
+        emit movingChanged();
+        emit movementEnded();
+    }
 }
 
 // find the item closest to the snap position

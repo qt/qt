@@ -59,4 +59,9 @@ Rectangle {
             PathAttribute { name: "angle"; value: 45 }
         }
     }
+
+    Column {
+        Rectangle { width: 20; height: 20; color: "red"; opacity: photoPathView.moving ? 1 : 0 }
+        Rectangle { width: 20; height: 20; color: "blue"; opacity: photoPathView.flicking ? 1 : 0 }
+    }
 }
