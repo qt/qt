@@ -58,6 +58,8 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_XMLSTREAMREADER
+
 // From DOM-Level-3-Core spec
 // http://www.w3.org/TR/DOM-Level-3-Core/core.html
 #define INDEX_SIZE_ERR 1
@@ -1661,5 +1663,7 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_XMLSTREAMREADER
 
 #include <qdeclarativexmlhttprequest.moc>

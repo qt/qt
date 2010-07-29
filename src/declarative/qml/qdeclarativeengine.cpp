@@ -301,7 +301,9 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         + QDir::separator() + QLatin1String("OfflineStorage");
 #endif
 
+#ifndef QT_NO_XMLSTREAMREADER
     qt_add_qmlxmlhttprequest(this);
+#endif
     qt_add_qmlsqldatabase(this);
     // XXX A Multimedia "Qt.Sound" class also needs to be made available,
     // XXX but we don't want a dependency in that cirection.
