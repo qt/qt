@@ -252,7 +252,7 @@ QVideoSurfaceFormat::~QVideoSurfaceFormat()
 
 bool QVideoSurfaceFormat::isValid() const
 {
-    return d->pixelFormat == QVideoFrame::Format_Invalid && d->frameSize.isValid();
+    return d->pixelFormat != QVideoFrame::Format_Invalid && d->frameSize.isValid();
 }
 
 /*!
