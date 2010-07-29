@@ -768,7 +768,7 @@ void Semantic::parseTypedef(TypedefAST *ast)
 void Semantic::parseTypeSpecifier(TypeSpecifierAST *ast)
 {
     // If this is a classSpecifier or a EnumSpecifier we skip the name lookup,
-    // becuase looking up the name "E" in a class definition like
+    // because looking up the name "E" in a class definition like
     // "class E { ..." makes no sense. (There might be a variable named E
     // already declared, but that variable is now shadowed by the class type.)
     if(   ast->nodeType() != NodeType_EnumSpecifier
@@ -807,7 +807,7 @@ void Semantic::parseNameUse(NameAST* name)
 
 /*
     looks up name used in basescope. If name->isGlobal() is true or if classOrNamespaceList()
-    returns a non-emty list, the C++ qualified name lookup rules are used. Otherwise the
+    returns a non-empty list, the C++ qualified name lookup rules are used. Otherwise the
     unquialified name lookup rules are used.  Returns the a list of members that was found,
     In most cases this list will contain zero or one element, exept in the case of overloaded functions.
     TODO: Argument-dependent name lookup
@@ -975,7 +975,7 @@ FunctionMember *Semantic::functionLookup(CodeModel::Scope *baseScope,
 */
 FunctionMember *Semantic::selectFunction(QList<CodeModel::Member*> candidatateList, const DeclaratorAST *functionDeclarator)
 {
-    // get arguments for funciton we are looking for
+    // get arguments for function we are looking for
     FunctionMember testFunction;
     parseFunctionArguments(functionDeclarator, &testFunction);
     const ArgumentCollection testArgumentCollection = testFunction.arguments();

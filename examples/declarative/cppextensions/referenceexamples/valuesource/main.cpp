@@ -86,7 +86,7 @@ int main(int argc, char ** argv)
 
         party->startParty();
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
     }
 
     return app.exec();

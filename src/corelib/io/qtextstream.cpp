@@ -1991,7 +1991,7 @@ bool QTextStreamPrivate::getReal(double *f)
         return true;
     buf[i] = '\0';
 
-    // backward-compatibility. Old implmentation supported +nan/-nan
+    // backward-compatibility. Old implementation supported +nan/-nan
     // for some reason. QLocale only checks for lower-case
     // nan/+inf/-inf, so here we also check for uppercase and mixed
     // case versions.
