@@ -383,12 +383,20 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 }
 
 /*!
-    Returns the type of bearer. The string is not translated and
-    therefore can not be shown to the user. The subsequent table presents the currently known
-    bearer types:
+    \fn QString QNetworkConfiguration::bearerName() const
+    \deprecated
+
+    This function is deprecated.  It is equivalent to calling bearerTypeName().
+*/
+
+/*!
+    Returns the type of bearer used by this network configuration as a string.
+
+    The string is not translated and therefore can not be shown to the user. The subsequent table
+    presents the currently known bearer types:
 
     \table
-        \header 
+        \header
             \o Value
             \o Description
         \row
@@ -403,7 +411,7 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
         \row
             \o 2G
             \o The session uses CSD, GPRS, HSCSD, EDGE or cdmaOne.
-        \row 
+        \row
             \o CDMA2000
             \o The session uses CDMA.
         \row
@@ -420,11 +428,11 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
             \o The session uses WiMAX.
     \endtable
 
-    This function returns an empty string if this is an invalid configuration,
-    a network configuration of type \l QNetworkConfiguration::ServiceNetwork or
+    This function returns an empty string if this is an invalid configuration, a network
+    configuration of type \l QNetworkConfiguration::ServiceNetwork or
     \l QNetworkConfiguration::UserChoice.
 */
-QString QNetworkConfiguration::bearerName() const
+QString QNetworkConfiguration::bearerTypeName() const
 {
     if (!isValid())
         return QString();

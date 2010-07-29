@@ -106,7 +106,11 @@ public:
     StateFlags state() const;
     Type type() const;
     Purpose purpose() const;
-    QString bearerName() const;
+
+    // Required to maintain source compatibility with Qt Mobility.
+    QT_DEPRECATED inline QString bearerName() const { return bearerTypeName(); }
+    QString bearerTypeName() const;
+
     QString identifier() const;
     bool isRoamingAvailable() const;
     QList<QNetworkConfiguration> children() const;
