@@ -60,7 +60,7 @@ void QDeclarativeViewSection::setProperty(const QString &property)
 {
     if (property != m_property) {
         m_property = property;
-        emit changed();
+        emit propertyChanged();
     }
 }
 
@@ -68,7 +68,7 @@ void QDeclarativeViewSection::setCriteria(QDeclarativeViewSection::SectionCriter
 {
     if (criteria != m_criteria) {
         m_criteria = criteria;
-        emit changed();
+        emit criteriaChanged();
     }
 }
 

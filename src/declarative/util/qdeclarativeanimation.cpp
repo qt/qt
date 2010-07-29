@@ -939,7 +939,7 @@ void QDeclarativePropertyAction::setTarget(QObject *o)
     if (d->target == o)
         return;
     d->target = o;
-    emit targetChanged(d->target, d->propertyName);
+    emit targetChanged();
 }
 
 QString QDeclarativePropertyAction::property() const
@@ -954,7 +954,7 @@ void QDeclarativePropertyAction::setProperty(const QString &n)
     if (d->propertyName == n)
         return;
     d->propertyName = n;
-    emit targetChanged(d->target, d->propertyName);
+    emit propertyChanged();
 }
 
 /*!
@@ -2096,7 +2096,7 @@ void QDeclarativePropertyAnimation::setTarget(QObject *o)
     if (d->target == o)
         return;
     d->target = o;
-    emit targetChanged(d->target, d->propertyName);
+    emit targetChanged();
 }
 
 QString QDeclarativePropertyAnimation::property() const
@@ -2111,7 +2111,7 @@ void QDeclarativePropertyAnimation::setProperty(const QString &n)
     if (d->propertyName == n)
         return;
     d->propertyName = n;
-    emit targetChanged(d->target, d->propertyName);
+    emit propertyChanged();
 }
 
 QString QDeclarativePropertyAnimation::properties() const
