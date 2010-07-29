@@ -73,14 +73,12 @@ Item { id:link
                 }
             }
 
-                    /*
             transform: Rotation {
                 id: actualImageRotation
                 origin.x: width/2; origin.y: height/2;
                 angle: rotation * 90
                 Behavior on angle { NumberAnimation { duration: spawned ? 200 : 0} }
             }
-            */
         }
 
         Image {
