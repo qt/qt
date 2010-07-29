@@ -103,7 +103,7 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
         m_animationGroup->addAnimation(pa);    
     }
 
-    // Set up intial state graph
+    // Set up initial state graph
 //! [3]
     m_machine = new QStateMachine();
     m_machine->addDefaultAnimation(m_animationGroup);

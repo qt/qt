@@ -482,7 +482,7 @@
     becomes managed by this QSharedPointer and must not be passed to
     another QSharedPointer object or deleted outside this object.
 
-    The \a deleter paramter specifies the custom deleter for this
+    The \a deleter parameter specifies the custom deleter for this
     object. The custom deleter is called when the strong reference
     count drops to 0 instead of the operator delete(). This is useful,
     for instance, for calling deleteLater() in a QObject instead:

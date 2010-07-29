@@ -425,7 +425,7 @@ void QSelectThread::run()
                 //     ones that return -1 in select
                 // after loop update notifiers for all of them
 
-                // as we dont have "exception" notifier type
+                // as we don't have "exception" notifier type
                 // we should force monitoring fd_set of this
                 // type as well
 

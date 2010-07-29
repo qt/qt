@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
             qWarning() << bestShoe->name() << "is wearing the best shoes!";
 
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
     }
 
     return 0;

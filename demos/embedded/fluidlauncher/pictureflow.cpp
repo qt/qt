@@ -603,7 +603,7 @@ static QImage prepareSurface(QImage img, int w, int h)
   Qt::TransformationMode mode = Qt::SmoothTransformation;
   img = img.scaled(w, h, Qt::IgnoreAspectRatio, mode);
 
-  // slightly larger, to accomodate for the reflection
+  // slightly larger, to accommodate for the reflection
   int hs = h * 2;
   int hofs = h / 3;
 
