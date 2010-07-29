@@ -65,8 +65,6 @@ public:
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 
-    QString bearerName(const QString &id);
-
     void connectToId(const QString &id);
     void disconnectFromId(const QString &id);
 

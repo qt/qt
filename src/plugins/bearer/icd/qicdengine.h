@@ -54,13 +54,25 @@ class QNetworkConfigurationPrivate;
 class IapMonitor;
 class QDBusInterface;
 
+inline QNetworkConfiguration::BearerType bearerTypeFromIapType(const QString &iapType)
+{
+    if (iapType == QLatin1String("WLAN_INFRA") ||
+        iapType == QLatin1String("WLAN_ADHOC")) {
+        return QNetworkConfiguration::BearerWLAN;
+    } else if (iapType == QLatin1String("GPRS")) {
+        return QNetworkConfiguration::BearerHSPA;
+    } else {
+        return QNetworkConfiguration::BearerUnknown;
+    }
+}
+
 class IcdNetworkConfigurationPrivate : public QNetworkConfigurationPrivate
 {
 public:
     IcdNetworkConfigurationPrivate();
     ~IcdNetworkConfigurationPrivate();
 
-    QString bearerName() const;
+    virtual QString bearerTypeName() const;
 
     // In Maemo the id field (defined in QNetworkConfigurationPrivate)
     // is the IAP id (which typically is UUID)

@@ -181,30 +181,6 @@ bool QNetworkManagerEngine::hasIdentifier(const QString &id)
     return false;
 }
 
-QString QNetworkManagerEngine::bearerName(const QString &id)
-{
-    QMutexLocker locker(&mutex);
-
-    QNetworkManagerSettingsConnection *connection = connectionFromId(id);
-
-    if (!connection)
-        return QString();
-
-    QNmSettingsMap map = connection->getSettings();
-    const QString connectionType = map.value("connection").value("type").toString();
-
-    if (connectionType == "802-3-ethernet")
-        return QLatin1String("Ethernet");
-    else if (connectionType == "802-11-wireless")
-        return QLatin1String("WLAN");
-    else if (connectionType == "gsm")
-        return QLatin1String("2G");
-    else if (connectionType == "cdma")
-        return QLatin1String("CDMA2000");
-    else
-        return QString();
-}
-
 void QNetworkManagerEngine::connectToId(const QString &id)
 {
     QMutexLocker locker(&mutex);
@@ -611,7 +587,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
         ptr->purpose = QNetworkConfiguration::PublicPurpose;
     }
     ptr->state = QNetworkConfiguration::Undefined;
-    ptr->bearer = QLatin1String("WLAN");
+    ptr->bearerType = QNetworkConfiguration::BearerWLAN;
 
     accessPointConfigurations.insert(ptr->id, ptr);
 
@@ -724,7 +700,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
     const QString connectionType = map.value("connection").value("type").toString();
 
     if (connectionType == QLatin1String("802-3-ethernet")) {
-        cpPriv->bearer = QLatin1String("Ethernet");
+        cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
 
         foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
@@ -739,7 +715,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             }
         }
     } else if (connectionType == QLatin1String("802-11-wireless")) {
-        cpPriv->bearer = QLatin1String("WLAN");
+        cpPriv->bearerType = QNetworkConfiguration::BearerWLAN;
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
         const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
@@ -767,9 +743,9 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             }
         }
     } else if (connectionType == "gsm") {
-        cpPriv->bearer = QLatin1String("2G");
+        cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
     } else if (connectionType == "cdma") {
-        cpPriv->bearer = QLatin1String("CDMA2000");
+        cpPriv->bearerType = QNetworkConfiguration::BearerCDMA2000;
     }
 
     return cpPriv;

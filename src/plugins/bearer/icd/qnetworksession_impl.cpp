@@ -318,6 +318,7 @@ QNetworkConfiguration& QNetworkSessionPrivateImpl::copyConfig(QNetworkConfigurat
     cpPriv->purpose = fromPriv->purpose;
     cpPriv->network_id = fromPriv->network_id;
     cpPriv->iap_type = fromPriv->iap_type;
+    cpPriv->bearerType = fromPriv->bearerType;
     cpPriv->network_attrs = fromPriv->network_attrs;
     cpPriv->service_type = fromPriv->service_type;
     cpPriv->service_id = fromPriv->service_id;
@@ -443,6 +444,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
             ptr->id = toIcdConfig(ptr)->network_id;
             toIcdConfig(ptr)->network_attrs = state_results.first().params.network_attrs;
             toIcdConfig(ptr)->iap_type = state_results.first().params.network_type;
+            ptr->bearerType = bearerTypeFromIapType(toIcdConfig(ptr)->iap_type);
             toIcdConfig(ptr)->service_type = state_results.first().params.service_type;
             toIcdConfig(ptr)->service_id = state_results.first().params.service_id;
             toIcdConfig(ptr)->service_attrs = state_results.first().params.service_attrs;
@@ -816,6 +818,7 @@ void QNetworkSessionPrivateImpl::stateChange(const QDBusMessage& rep)
             icdConfig->name = name;
 
         icdConfig->iap_type = rep.arguments().at(3).toString(); // connect_result.connect.network_type;
+        icdConfig->bearerType = bearerTypeFromIapType(icdConfig->iap_type);
         icdConfig->isValid = true;
         icdConfig->state = QNetworkConfiguration::Active;
         icdConfig->type = QNetworkConfiguration::InternetAccessPoint;
