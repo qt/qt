@@ -261,9 +261,9 @@ void Cloud::stateChanged(QNetworkSession::State state)
     tooltip += tr("<br>Id: %1").arg(configuration.identifier());
 #endif
 
-    const QString bearerName = configuration.bearerName();
-    if (!bearerName.isEmpty())
-        tooltip += tr("<br>Bearer: %1").arg(bearerName);
+    const QString bearerTypeName = configuration.bearerTypeName();
+    if (!bearerTypeName.isEmpty())
+        tooltip += tr("<br>Bearer: %1").arg(bearerTypeName);
 
     QString s = tr("<br>State: %1 (%2)");
     switch (state) {
@@ -313,17 +313,17 @@ void Cloud::stateChanged(QNetworkSession::State state)
 //! [1]
 void Cloud::newConfigurationActivated()
 {
-    const QString bearerName = configuration.bearerName();
-    if (!svgCache.contains(bearerName)) {
-        if (bearerName == QLatin1String("WLAN"))
-            svgCache.insert(bearerName, new QSvgRenderer(QLatin1String(":wlan.svg")));
-        else if (bearerName == QLatin1String("Ethernet"))
-            svgCache.insert(bearerName, new QSvgRenderer(QLatin1String(":lan.svg")));
+    const QString bearerTypeName = configuration.bearerTypeName();
+    if (!svgCache.contains(bearerTypeName)) {
+        if (bearerTypeName == QLatin1String("WLAN"))
+            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":wlan.svg")));
+        else if (bearerTypeName == QLatin1String("Ethernet"))
+            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":lan.svg")));
         else
-            svgCache.insert(bearerName, new QSvgRenderer(QLatin1String(":unknown.svg")));
+            svgCache.insert(bearerTypeName, new QSvgRenderer(QLatin1String(":unknown.svg")));
     }
 
-    icon->setSharedRenderer(svgCache[bearerName]);
+    icon->setSharedRenderer(svgCache[bearerTypeName]);
 
     if (configuration.name().isEmpty()) {
         text->setPlainText(tr("HIDDEN NETWORK"));
