@@ -40,41 +40,59 @@
 ****************************************************************************/
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QSettings>
 #include <QtGui/QApplication>
 #include <QtDeclarative/QDeclarativeView>
 #include <QtDeclarative/QDeclarativeEngine>
+#include <QtDeclarative/QDeclarativeNetworkAccessManagerFactory>
+#include <QtNetwork/QNetworkConfiguration>
+#include <QtNetwork/QNetworkConfigurationManager>
+#include <QtNetwork/QNetworkAccessManager>
 
-#if defined(Q_OS_SYMBIAN)
-#include <QtCore/QTextCodec>
-#include <QtCore/QTimer>
-#include "sym_iap_util.h"
-
-class QmlAppView : public QDeclarativeView
+// Factory to create QNetworkAccessManagers that use the saved network configuration; otherwise
+// the system default.
+class NetworkAccessManagerFactory : public QDeclarativeNetworkAccessManagerFactory
 {
-Q_OBJECT
 public:
-    QmlAppView(QWidget *parent = 0)
-        : QDeclarativeView(parent)
-    {
-        QTimer::singleShot(0, this, SLOT(setDefaultIap()));
+    ~NetworkAccessManagerFactory() { }
+
+    QNetworkAccessManager *create(QObject *parent);
+};
+
+QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
+{
+    QNetworkAccessManager *accessManager = new QNetworkAccessManager(parent);
+
+    QNetworkConfigurationManager manager;
+    if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
+        // Get saved network configuration
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
+        settings.endGroup();
+
+        // If the saved network configuration is not currently discovered use the system default
+        QNetworkConfiguration config = manager.configurationFromIdentifier(id);
+        if ((config.state() & QNetworkConfiguration::Discovered) !=
+            QNetworkConfiguration::Discovered) {
+            config = manager.defaultConfiguration();
+        }
+
+        accessManager->setConfiguration(config);
     }
 
-private slots:
-    void setDefaultIap()
-    {
-        qt_SetDefaultIap();
-    }
-};
-#else // Q_OS_SYMBIAN
-typedef QDeclarativeView QmlAppView;
-#endif // Q_OS_SYMBIAN
+    return accessManager;
+}
 
 int main(int argc, char *argv[])
 {
     QApplication application(argc, argv);
 
+    NetworkAccessManagerFactory networkAccessManagerFactory;
+
     const QString mainQmlApp = QLatin1String("twitter.qml");
-    QmlAppView view;
+    QDeclarativeView view;
+    view.engine()->setNetworkAccessManagerFactory(&networkAccessManagerFactory);
     view.setSource(QUrl(mainQmlApp));
     view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
 
@@ -87,6 +105,3 @@ int main(int argc, char *argv[])
     return application.exec();
 }
 
-#if defined(Q_OS_SYMBIAN)
-#include "qmltwitter.moc"
-#endif // Q_OS_SYMBIAN

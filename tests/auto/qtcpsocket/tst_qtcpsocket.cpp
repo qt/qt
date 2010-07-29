@@ -275,7 +275,7 @@ void tst_QTcpSocket::initTestCase_data()
 
     QTest::newRow("WithHttpProxy") << true << int(HttpProxy) << false;
     QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic) << false;
-//    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm) << false;
+    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm) << false;
 
 #ifndef QT_NO_OPENSSL
     QTest::newRow("WithoutProxy SSL") << false << 0 << true;
@@ -284,7 +284,7 @@ void tst_QTcpSocket::initTestCase_data()
 
     QTest::newRow("WithHttpProxy SSL") << true << int(HttpProxy) << true;
     QTest::newRow("WithHttpProxyBasicAuth SSL") << true << int(HttpProxy | AuthBasic) << true;
-//    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
+    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
 }
 

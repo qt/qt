@@ -118,7 +118,7 @@ Widget::Widget(QWidget *parent)
 
     result.clear();
 //! [12]
-    foreach (QString str, list) {
+    foreach (const QString &str, list) {
         if (str.contains("Bill"))
             result += str;
     }

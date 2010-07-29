@@ -105,6 +105,7 @@ private slots:
     void geometries_data();
     void geometries();
     void avoidRecursionInInsertItem();
+    void styleInfoLeak();
     void task236367_maxSizeHint();
 };
 
@@ -2194,6 +2195,12 @@ void tst_QGraphicsGridLayout::avoidRecursionInInsertItem()
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::addItem: cannot insert itself");
     layout->addItem(layout, 0, 0);
     QCOMPARE(layout->count(), 0);
+}
+
+void tst_QGraphicsGridLayout::styleInfoLeak()
+{
+    QGraphicsGridLayout grid;
+    grid.horizontalSpacing();
 }
 
 void tst_QGraphicsGridLayout::task236367_maxSizeHint()

@@ -297,6 +297,10 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
         return;
 
     commitCurrentString(false);
+
+    //update cursor position, now this pre-edit text has been committed.
+    //this prevents next keypress overwriting it (QTBUG-11673)
+    m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)

@@ -397,6 +397,9 @@ private slots:
     void childAt();
 #ifdef Q_WS_MAC
     void childAt_unifiedToolBar();
+#ifdef QT_MAC_USE_COCOA
+    void taskQTBUG_11373();
+#endif // QT_MAC_USE_COCOA
 #endif
 
 private:
@@ -9691,7 +9694,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 
@@ -9740,7 +9742,7 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QVERIFY(0 != backingStore(child));
 
     // Parent is obscured, therefore its backing store should be destroyed
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QEXPECT_FAIL("", "QTBUG-12406", Continue);
     QVERIFY(0 == backingStore(parent));
 
     // Disable full screen
@@ -9754,7 +9756,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 }
@@ -10435,6 +10436,26 @@ void tst_QWidget::childAt_unifiedToolBar()
     QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
     QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
 }
+
+#ifdef QT_MAC_USE_COCOA
+void tst_QWidget::taskQTBUG_11373()
+{
+    QMainWindow * myWindow = new QMainWindow();
+    QWidget * center = new QWidget();
+    myWindow -> setCentralWidget(center);
+    QWidget * drawer = new QWidget(myWindow, Qt::Drawer);
+    drawer -> hide();
+    QCOMPARE(drawer->isVisible(), false);
+    myWindow -> show();
+    myWindow -> raise();
+    // The drawer shouldn't be visible now.
+    QCOMPARE(drawer->isVisible(), false);
+    myWindow -> setWindowState(Qt::WindowFullScreen);
+    myWindow -> setWindowState(Qt::WindowNoState);
+    // The drawer should still not be visible, since we haven't shown it.
+    QCOMPARE(drawer->isVisible(), false);
+}
+#endif // QT_MAC_USE_COCOA
 #endif
 
 QTEST_MAIN(tst_QWidget)

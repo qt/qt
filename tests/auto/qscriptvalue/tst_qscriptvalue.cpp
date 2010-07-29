@@ -2123,6 +2123,10 @@ void tst_QScriptValue::getSetProperty()
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
     QVERIFY(object.propertyFlags(foo) == 0);
+
+    // Setting index property on non-Array
+    object.setProperty(13, num);
+    QVERIFY(object.property(13).equals(num));
 }
 
 void tst_QScriptValue::arrayElementGetterSetter()

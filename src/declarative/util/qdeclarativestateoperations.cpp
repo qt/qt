@@ -1501,8 +1501,12 @@ void QDeclarativeAnchorChanges::rewind()
 
     d->target->setX(d->rewindX);
     d->target->setY(d->rewindY);
-    d->target->setWidth(d->rewindWidth);
-    d->target->setHeight(d->rewindHeight);
+    if (targetPrivate->widthValid) {
+        d->target->setWidth(d->rewindWidth);
+    }
+    if (targetPrivate->heightValid) {
+        d->target->setHeight(d->rewindHeight);
+    }
 }
 
 void QDeclarativeAnchorChanges::saveCurrentValues()

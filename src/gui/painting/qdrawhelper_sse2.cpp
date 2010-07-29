@@ -110,13 +110,23 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
             const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
             for (int y = 0; y < h; ++y) {
                 int x = 0;
+
+                // First, align dest to 16 bytes:
+                const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
+                const int prologLength = qMin(w, offsetToAlignOn16Bytes);
+                for (; x < prologLength; ++x) {
+                    quint32 s = src[x];
+                    s = BYTE_MUL(s, const_alpha);
+                    dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
+                }
+
                 for (; x < w-3; x += 4) {
                     __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
                     if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
-                        const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+                        const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
                         __m128i result;
                         INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
-                        _mm_storeu_si128((__m128i *)&dst[x], result);
+                        _mm_store_si128((__m128i *)&dst[x], result);
                     }
                 }
                 for (; x<w; ++x) {
@@ -135,7 +145,6 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
 
 void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha)
 {
-    Q_ASSERT(const_alpha >= 0);
     Q_ASSERT(const_alpha < 256);
 
     const quint32 *src = (const quint32 *) srcPixels;
@@ -151,6 +160,72 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
     } else {
         const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
         BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector);
+    }
+}
+
+inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
+{
+#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+#undef MIX
+    return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
+}
+
+inline int comp_func_Plus_one_pixel(uint d, const uint s)
+{
+#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+#undef MIX
+    return result;
+}
+
+void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
+{
+    int x = 0;
+    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
+    const int prologLength = qMin(length, offsetToAlignOn16Bytes);
+
+    if (const_alpha == 255) {
+        // 1) Prologue: align destination on 16 bytes
+        for (; x < prologLength; ++x)
+            dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
+
+        // 2) composition with SSE2
+        for (; x < length - 3; x += 4) {
+            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+
+            const __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            _mm_store_si128((__m128i *)&dst[x], result);
+        }
+
+        // 3) Epilogue:
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
+    } else {
+        const int one_minus_const_alpha = 255 - const_alpha;
+        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
+
+        // 1) Prologue: align destination on 16 bytes
+        for (; x < prologLength; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
+
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        // 2) composition with SSE2
+        for (; x < length - 3; x += 4) {
+            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+
+            __m128i result = _mm_adds_epu8(srcVector, dstVector);
+            INTERPOLATE_PIXEL_255_SSE2(result, result, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
+            _mm_store_si128((__m128i *)&dst[x], result);
+        }
+
+        // 3) Epilogue:
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
     }
 }
 

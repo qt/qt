@@ -117,7 +117,7 @@ void QDeclarativeTranslate::setY(qreal y)
 }
 
 /*!
-    \reimp
+    \internal
 */
 void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
 {

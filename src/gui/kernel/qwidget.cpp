@@ -338,8 +338,10 @@ QInputContext *QWidgetPrivate::inputContext() const
 #ifndef QT_NO_IM
     if (ic)
         return ic;
-#endif
     return qApp->inputContext();
+#else
+    return 0;
+#endif
 }
 
 /*!

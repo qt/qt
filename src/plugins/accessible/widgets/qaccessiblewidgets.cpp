@@ -984,7 +984,7 @@ int QAccessibleDockWidget::childCount() const
 int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
 {
     if (child) {
-        if (qobject_cast<QDockWidget *>(child->object()) == dockWidget() && child->role(0) == TitleBar) {
+        if (child->role(0) == TitleBar) {
             return 1;
         } else {
             return 2;   //###
@@ -1214,7 +1214,7 @@ int QAccessibleTitleBar::childAt(int x, int y) const
 
 QObject *QAccessibleTitleBar::object() const
 {
-    return m_dockWidget;
+    return 0;
 }
 
 QDockWidgetLayout *QAccessibleTitleBar::dockWidgetLayout() const

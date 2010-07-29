@@ -191,7 +191,7 @@ closed via \l{QNetworkSession::close()}, respectively. If the session
 is \l{QNetworkSession::Disconnected}{disconnected} at the time of the
 \l{QNetworkSession::open()}{open()} call the underlying interface is started;
 otherwise only the reference counter against the global session is
-incremeted. The opposite behavior can be observed when using
+incremented. The opposite behavior can be observed when using
 \l{QNetworkSession::close()}{close()}.
 
 In some use cases it may be necessary to turn the interface off despite of

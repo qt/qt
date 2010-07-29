@@ -1,6 +1,8 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                addressbook
+                addressbook \
+                modelview
+
 
 # install
 sources.files = README *.pro

@@ -171,7 +171,7 @@ QByteArrayMatcher::~QByteArrayMatcher()
 QByteArrayMatcher &QByteArrayMatcher::operator=(const QByteArrayMatcher &other)
 {
     q_pattern = other.q_pattern;
-    qMemCopy(&p, &other.p, sizeof(p));
+    memcpy(&p, &other.p, sizeof(p));
     return *this;
 }
 

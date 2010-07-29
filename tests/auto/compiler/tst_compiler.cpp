@@ -640,7 +640,7 @@ static inline double qt_inf()
 #endif
 
     union { uchar c[8]; double d; } returnValue;
-    qMemCopy(returnValue.c, bytes, sizeof(returnValue.c));
+    memcpy(returnValue.c, bytes, sizeof(returnValue.c));
     return returnValue.d;
 }
 

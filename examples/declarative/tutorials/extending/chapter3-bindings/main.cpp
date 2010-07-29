@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 //![0]
-#include "musician.h"
+#include "piechart.h"
 #include <qdeclarative.h>
 #include <QDeclarativeView>
 #include <QApplication>
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    qmlRegisterType<Musician>("Music", 1, 0, "Musician");
+    qmlRegisterType<PieChart>("Charts", 1, 0, "PieChart");
 
     QDeclarativeView view;
     view.setSource(QUrl::fromLocalFile("app.qml"));

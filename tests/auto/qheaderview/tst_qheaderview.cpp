@@ -193,6 +193,7 @@ private slots:
     void QTBUG6058_reset();
     void QTBUG7833_sectionClicked();
     void QTBUG8650_crashOnInsertSections();
+    void QTBUG12268_hiddenMovedSectionSorting();
 
 protected:
     QHeaderView *view;
@@ -2069,6 +2070,26 @@ void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
     QList<QStandardItem *> items;
     items << new QStandardItem("c");
     model.insertColumn(0, items);
+}
+
+void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
+{
+    QTableView view;
+    QStandardItemModel *model = new QStandardItemModel(4,3, &view);
+    for (int i = 0; i< model->rowCount(); ++i)
+        for (int j = 0; j< model->columnCount(); ++j)
+            model->setData(model->index(i,j), QString("item [%1,%2]").arg(i).arg(j));
+    view.setModel(model);
+    view.horizontalHeader()->setMovable(true);
+    view.setSortingEnabled(true);
+    view.sortByColumn(1, Qt::AscendingOrder);
+    view.horizontalHeader()->moveSection(0,2);
+    view.setColumnHidden(1, true);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
+    QTest::mouseClick(view.horizontalHeader()->viewport(), Qt::LeftButton);
+    QCOMPARE(view.horizontalHeader()->hiddenSectionCount(), 1);
 }
 
 QTEST_MAIN(tst_QHeaderView)
