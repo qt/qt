@@ -31,7 +31,7 @@ symbian:{
     DEPLOYMENT += certFiles
 
     # Symbian toolchain does not support correct include semantics
-    INCPATH+=..\\..\\..\\..\\include\\QtNetwork\\private
+    INCLUDEPATH+=..\\..\\..\\..\\include\\QtNetwork\\private
     # bigfile test case requires more heap
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
     TARGET.CAPABILITY="ALL -TCB"
