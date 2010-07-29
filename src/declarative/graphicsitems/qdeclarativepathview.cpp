@@ -334,7 +334,7 @@ void QDeclarativePathViewPrivate::regenerate()
     and XmlListModel, or custom model classes defined in C++ that inherit from
     QAbstractListModel.
 
-    A ListView has a \l model, which defines the data to be displayed, and
+    The view has a \l model, which defines the data to be displayed, and
     a \l delegate, which defines how the data should be displayed.  
     The \l delegate is instantiated for each item on the \l path.
     The items may be flicked to move them along the path.
@@ -352,6 +352,9 @@ void QDeclarativePathViewPrivate::regenerate()
     (Note the above example uses PathAttribute to scale and modify the
     opacity of the items as they rotate. This additional code can be seen in the
     PathAttribute documentation.)
+
+    The \c focus can be set to \c true to enable keyboard navigation.
+    The path view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.

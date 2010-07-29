@@ -266,7 +266,7 @@ When a QML item explicitly relinquishes focus (by setting its
 does not automatically select another element to receive focus.  That is, it
 is possible for there to be no currently \e {active focus}.
 
-See the {declarative/keyinteraction/focus}{Keyboard Focus example} for a 
+See the \l{declarative/keyinteraction/focus}{Keyboard Focus example} for a 
 demonstration of moving keyboard focus between multiple areas using FocusScope
 elements.
 
