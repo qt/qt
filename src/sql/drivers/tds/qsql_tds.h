@@ -48,7 +48,10 @@
 
 #ifdef Q_OS_WIN32
 #define WIN32_LEAN_AND_MEAN
+#ifndef Q_USE_SYBASE
 #define DBNTWIN32 // indicates 32bit windows dblib
+#endif
+#include <winsock2.h>
 #include <QtCore/qt_windows.h>
 #include <sqlfront.h>
 #include <sqldb.h>
