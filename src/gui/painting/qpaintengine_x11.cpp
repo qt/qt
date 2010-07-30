@@ -696,11 +696,10 @@ void QX11PaintEngine::drawLines(const QLine *lines, int lineCount)
                 linef = d->matrix.map(QLineF(lines[i]));
             }
             if (clipLine(&linef, d->polygonClipper.boundingRect())) {
-                int x1 = qRound(linef.x1() + aliasedCoordinateDelta);
-                int y1 = qRound(linef.y1() + aliasedCoordinateDelta);
-                int x2 = qRound(linef.x2() + aliasedCoordinateDelta);
-                int y2 = qRound(linef.y2() + aliasedCoordinateDelta);
-
+                int x1 = qFloor(linef.x1() + aliasedCoordinateDelta);
+                int y1 = qFloor(linef.y1() + aliasedCoordinateDelta);
+                int x2 = qFloor(linef.x2() + aliasedCoordinateDelta);
+                int y2 = qFloor(linef.y2() + aliasedCoordinateDelta);
                 XDrawLine(d->dpy, d->hd, d->gc, x1, y1, x2, y2);
             }
         }
@@ -730,11 +729,10 @@ void QX11PaintEngine::drawLines(const QLineF *lines, int lineCount)
         for (int i = 0; i < lineCount; ++i) {
             QLineF linef = d->matrix.map(lines[i]);
             if (clipLine(&linef, d->polygonClipper.boundingRect())) {
-                int x1 = qRound(linef.x1() + aliasedCoordinateDelta);
-                int y1 = qRound(linef.y1() + aliasedCoordinateDelta);
-                int x2 = qRound(linef.x2() + aliasedCoordinateDelta);
-                int y2 = qRound(linef.y2() + aliasedCoordinateDelta);
-
+                int x1 = qFloor(linef.x1() + aliasedCoordinateDelta);
+                int y1 = qFloor(linef.y1() + aliasedCoordinateDelta);
+                int x2 = qFloor(linef.x2() + aliasedCoordinateDelta);
+                int y2 = qFloor(linef.y2() + aliasedCoordinateDelta);
                 XDrawLine(d->dpy, d->hd, d->gc, x1, y1, x2, y2);
             }
         }
@@ -1690,8 +1688,8 @@ void QX11PaintEnginePrivate::strokePolygon_dev(const QPointF *polygonPoints, int
     if (clippedCount > 0) {
         QVarLengthArray<XPoint> xpoints(clippedCount);
         for (int i = 0; i < clippedCount; ++i) {
-            xpoints[i].x = qRound(clippedPoints[i].x + aliasedCoordinateDelta);
-            xpoints[i].y = qRound(clippedPoints[i].y + aliasedCoordinateDelta);
+            xpoints[i].x = qFloor(clippedPoints[i].x + aliasedCoordinateDelta);
+            xpoints[i].y = qFloor(clippedPoints[i].y + aliasedCoordinateDelta);
         }
         uint numberPoints = qMin(clippedCount, xlibMaxLinePoints);
         XPoint *pts = xpoints.data();

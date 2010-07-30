@@ -103,6 +103,9 @@ private slots:
 
     void copy();
 
+    void fill_data();
+    void fill();
+
     void setPixel_data();
     void setPixel();
 
@@ -1012,6 +1015,67 @@ void tst_QImage::copy()
     {
         QImage img(16,16,QImage::Format_ARGB32);
         img.copy(QRect(1000,1,1,1));
+    }
+}
+
+void tst_QImage::fill_data()
+{
+    QTest::addColumn<int>("format");
+    QTest::addColumn<uint>("input");
+    QTest::addColumn<uint>("expectedResult");
+
+    QTest::newRow("ARGB32") << int(QImage::Format_ARGB32) << 0x33557799u << 0x33557799u;
+    QTest::newRow("RGB888") << int(QImage::Format_RGB888) << 0x335577u << 0x335577u;
+    QTest::newRow("RGB16") << int(QImage::Format_RGB16) << 0x3355u << 0x3355u;
+    QTest::newRow("Indexed8") << int(QImage::Format_Indexed8) << 0x55u << 0x55u;
+    QTest::newRow("Mono") << int(QImage::Format_Mono) << 1u << 1u;
+    QTest::newRow("Mono_LSB") << int(QImage::Format_MonoLSB) << 0u << 0u;
+}
+
+void tst_QImage::fill()
+{
+    QFETCH(int, format);
+    QFETCH(uint, input);
+    QFETCH(uint, expectedResult);
+
+    QImage img(13, 15, (QImage::Format)format);
+    img.fill(input);
+
+    const int bpp = img.depth();
+    for (int y = 0; y < img.height(); ++y) {
+        uchar *line = img.scanLine(y);
+        for (int x = 0; x < img.width(); ++x) {
+            uint value;
+            switch (bpp) {
+            case 32:
+                value = *((uint*)line);
+                line += 4;
+                break;
+            case 24:
+                value = ((uint)line[0] << 16) | ((uint)line[1] << 8) | line[2];
+                line += 3;
+                break;
+            case 16:
+                value = *((quint16*)line);
+                line += 2;
+                break;
+            case 8:
+                value = *line;
+                line++;
+                break;
+            case 1:
+                if (format == QImage::Format_Mono)
+                    value = (*line >> (7- (x & 7))) & 1;
+                else if (format == QImage::Format_MonoLSB)
+                    value = (*line >> (x & 7)) & 1;
+
+                if (x && !(x & 7))
+                    ++line;
+                break;
+            }
+
+            QCOMPARE(value, expectedResult);
+        }
     }
 }
 
