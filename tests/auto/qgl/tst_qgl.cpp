@@ -72,9 +72,7 @@ public:
     tst_QGL();
     virtual ~tst_QGL();
 
-#ifndef Q_WS_MAC //All tests are disabled on mac as they crash and prevent integration, see QTBUG-12138
 private slots:
-#endif
     void getSetCheck();
     void openGLVersionCheck();
     void graphicsViewClipping();
