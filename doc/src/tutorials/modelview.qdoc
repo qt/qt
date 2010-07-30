@@ -123,7 +123,7 @@ Table, list and tree widgets are components frequently used in GUIs. There are 2
 \raw HTML
 </td>
 <td width="20px" valign="top"></td>
-<td align="right" valign="top">
+<td width="387px" align="left" valign="top">
 \endraw
     
     \raw HTML
@@ -657,10 +657,10 @@ Other references to delegates in Qt Documentation:
 
 
     \raw HTML
-    </td><td align="right" valign="top">
+    </td><td width="278px" align="right" valign="top">
     \endraw
 
-    \inlineimage path.png
+    \image path.png
 
     \raw HTML
     </td></tr></table>
