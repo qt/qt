@@ -364,7 +364,7 @@ void QDeclarativePathViewPrivate::regenerate()
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
 
-    \sa Path
+    \sa Path, {declarative/modelviews/pathview}{PathView example}
 */
 
 QDeclarativePathView::QDeclarativePathView(QDeclarativeItem *parent)
