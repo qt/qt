@@ -73,6 +73,10 @@ document - such as \c Rectangle and \c ListView - including those made within an
 import statements.  QML does not import any modules by default, so at least one \c import
 statement must be present or no elements will be available!
 
+Each \c id value in a QML document must be unique within that document. They
+do not need to be unique across different documents as id values are
+resolved according to the document scope.
+
 
 \section1 Documents as Component Definitions
 

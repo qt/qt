@@ -87,6 +87,10 @@ Rectangle { width: 100; height: 100 }
 When multiple property/value pairs are specified on a single line, they
 must be separated by a semicolon.
 
+The \c import statement imports the \c Qt \l{QML Modules}{module}, which contains all of the
+standard \l {QML Elements}. Without this import statement, the \l Rectangle
+and \l Image elements would not be available.
+
 \section1 Expressions
 
 In addition to assigning values to properties, you can also assign
@@ -181,7 +185,8 @@ Item {
 
 \section3 The \c id property
 
-Each object can be given a special unique property called an \e id. Assigning an id enables the object
+Each object can be given a special unique property called an \e id. No other object within the
+same \l{QML Documents}{QML document} can have the same \c id value. Assigning an id enables the object
 to be referred to by other objects and scripts.
 
 The first Rectangle element below has an \e id, "myRect". The second Rectange element defines its
