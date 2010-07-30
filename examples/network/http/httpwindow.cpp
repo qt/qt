@@ -206,7 +206,7 @@ void HttpWindow::httpFinished()
 
 void HttpWindow::httpReadyRead()
 {
-    // this slot gets called everytime the QNetworkReply has new data.
+    // this slot gets called every time the QNetworkReply has new data.
     // We read all of its new data and write it into the file.
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply

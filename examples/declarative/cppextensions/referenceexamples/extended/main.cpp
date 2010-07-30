@@ -58,7 +58,7 @@ int main(int argc, char ** argv)
         edit->show();
         return app.exec();
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
         return 0;
     }
 }

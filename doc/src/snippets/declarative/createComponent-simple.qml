@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,28 +37,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QCoreApplication>
-#include <QDeclarativeEngine>
-#include <QDeclarativeComponent>
-#include <QDebug>
-#include "person.h"
-
-int main(int argc, char ** argv)
-{
-    QCoreApplication app(argc, argv);
 //![0]
-    qmlRegisterType<Person>("People", 1,0, "Person");
-//![0]
+import Qt 4.7
 
-    QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
-    Person *person = qobject_cast<Person *>(component.create());
-    if (person) {
-        qWarning() << "The person's name is" << person->name();
-        qWarning() << "They wear a" << person->shoeSize() << "sized shoe";
-    } else {
-        qWarning() << "An error occurred";
+Item {
+    id: container
+    width: 300; height: 300
+
+    function loadButton() {
+        var component = Qt.createComponent("Button.qml");
+        if (component.status == Component.Ready) {
+            var button = component.createObject(container);
+            button.color = "red";
+        }
     }
 
-    return 0;
+    Component.onCompleted: loadButton()
 }
+//![0]

@@ -831,7 +831,9 @@ bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     _scriptFile = fileName;
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
+#ifndef QT_NO_TEXTCODEC
     stream.setCodec("UTF-8");
+#endif
     const QString code = stream.readAll();
 
     data = new QDeclarativeScriptParserJsASTData(fileName);

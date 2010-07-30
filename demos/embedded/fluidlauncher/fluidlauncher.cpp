@@ -154,7 +154,7 @@ void FluidLauncher::parseDemos(QXmlStreamReader& reader)
 
                 DemoApplication* newDemo = new DemoApplication(
                         filename.toString(),
-                        name.isEmpty() ? "Unamed Demo" : name.toString(),
+                        name.isEmpty() ? "Unnamed Demo" : name.toString(),
                         image.toString(),
                         args.toString().split(" "));
                 demoList.append(newDemo);

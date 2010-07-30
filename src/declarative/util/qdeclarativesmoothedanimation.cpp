@@ -375,7 +375,7 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
 
     \list
     \o SmoothedAnimation.Eased (default) - the animation will smoothly decelerate, and then reverse direction
-    \o SmoothedAnimation.Immediate - the animation will immediately begin accelerating in the reverse direction, begining with a velocity of 0
+    \o SmoothedAnimation.Immediate - the animation will immediately begin accelerating in the reverse direction, beginning with a velocity of 0
     \o SmoothedAnimation.Sync - the property is immediately set to the target value
     \endlist
 */
