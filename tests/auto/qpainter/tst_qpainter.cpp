@@ -3642,7 +3642,7 @@ void tst_QPainter::drawImage_task258776()
     painter.end();
 
     QImage expected(33, 33, QImage::Format_RGB32);
-    expected.fill(0xff0000);
+    expected.fill(0x0000ff);
 
     painter.begin(&expected);
     painter.drawImage(QRectF(0, 0, 32, 32), src);
