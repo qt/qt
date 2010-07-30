@@ -696,7 +696,7 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
             bearerName = typeToBearer(serv->getType());
         }
 
-        if(bearerName == "Cellular") {
+        if(bearerName == "2G") {
             QString mode = serv->getMode();
             if(mode == "gprs" || mode == "edge") {
                 bearerName = "2G";
