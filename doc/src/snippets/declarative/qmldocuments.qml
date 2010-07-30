@@ -38,52 +38,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-#ifndef QDECLARATIVETRANSLATE_H
-#define QDECLARATIVETRANSLATE_H
+Rectangle {
+    property alias text: textItem.text
 
-#include "qdeclarativeitem.h"
+    width: 100; height: 30
+    border.width: 1 
+    radius: 5
+    smooth: true
 
-QT_BEGIN_HEADER
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "darkGray" }
+        GradientStop { position: 0.5; color: "black" }
+        GradientStop { position: 1.0; color: "darkGray" }
+    }
 
-QT_BEGIN_NAMESPACE
+    Text {
+        id: textItem
+        anchors.centerIn: parent
+        font.pointSize: 20
+        color: "white"
+    }
 
-QT_MODULE(Declarative)
-
-class QDeclarativeTranslatePrivate;
-
-class Q_AUTOTEST_EXPORT QDeclarativeTranslate : public QGraphicsTransform
-{
-    Q_OBJECT
-
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
-
-public:
-    QDeclarativeTranslate(QObject *parent = 0);
-    ~QDeclarativeTranslate();
-
-    qreal x() const;
-    void setX(qreal);
-
-    qreal y() const;
-    void setY(qreal);
-
-    void applyTo(QMatrix4x4 *matrix) const;
-
-Q_SIGNALS:
-    void xChanged();
-    void yChanged();
-
-private:
-    Q_DECLARE_PRIVATE(QDeclarativeTranslate)
-    Q_DISABLE_COPY(QDeclarativeTranslate)
-};
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QDeclarativeTranslate)
-
-QT_END_HEADER
-
-#endif
+}
+//![0]

@@ -105,6 +105,7 @@ public:
 
     QDeclarativeView *view() const;
     LoggerWidget *warningsWidget() const;
+    QString currentFile() const { return currentFileOrUrl; }
 
     void enableExperimentalGestures();
 
