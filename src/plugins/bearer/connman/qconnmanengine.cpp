@@ -612,7 +612,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 
         QString networkName = serv->getName();
 
-        if(serv->getType() == "Cellular") {
+        if(serv->getType() == "cellular") {
             networkName = serv->getAPN();
             if(networkName.isEmpty()) {
                 networkName = serv->getName();
