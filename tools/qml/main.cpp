@@ -56,7 +56,8 @@ QT_USE_NAMESPACE
 
 QtMsgHandler systemMsgOutput = 0;
 
-
+static QDeclarativeViewer *openFile(const QString &fileName);
+static void showViewer(QDeclarativeViewer *viewer);
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -117,6 +118,11 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 #endif
 
+static QDeclarativeViewer* globalViewer = 0;
+
+// The qml file that is shown if the user didn't specify a QML file
+QString initialFile = "qrc:/startup/startup.qml";
+
 void usage()
 {
     qWarning("Usage: qmlviewer [options] <filename>");
@@ -175,6 +181,332 @@ void scriptOptsUsage()
 
 enum WarningsConfig { ShowWarnings, HideWarnings, DefaultWarnings };
 
+struct ViewerOptions
+{
+    ViewerOptions()
+        : frameless(false),
+          fps(0.0),
+          autorecord_from(0),
+          autorecord_to(0),
+          dither("none"),
+          runScript(false),
+          devkeys(false),
+          cache(0),
+          useGL(false),
+          fullScreen(false),
+          stayOnTop(false),
+          maximized(false),
+          useNativeFileBrowser(true),
+          experimentalGestures(false),
+          warningsConfig(DefaultWarnings),
+          sizeToView(true)
+    {
+#if defined(Q_OS_SYMBIAN)
+        maximized = true;
+        useNativeFileBrowser = false;
+#endif
+
+#if defined(Q_WS_MAC)
+        useGL = true;
+#endif
+    }
+
+    bool frameless;
+    double fps;
+    int autorecord_from;
+    int autorecord_to;
+    QString dither;
+    QString recordfile;
+    QStringList recordargs;
+    QStringList imports;
+    QStringList plugins;
+    QString script;
+    QString scriptopts;
+    bool runScript;
+    bool devkeys;
+    int cache;
+    QString translationFile;
+    bool useGL;
+    bool fullScreen;
+    bool stayOnTop;
+    bool maximized;
+    bool useNativeFileBrowser;
+    bool experimentalGestures;
+
+    WarningsConfig warningsConfig;
+    bool sizeToView;
+
+    QDeclarativeViewer::ScriptOptions scriptOptions;
+};
+
+static ViewerOptions opts;
+static QStringList fileNames;
+
+class Application : public QApplication
+{
+    Q_OBJECT
+public:
+    Application(int &argc, char **&argv)
+        : QApplication(argc, argv)
+    {}
+
+protected:
+    bool event(QEvent *ev)
+    {
+        if (ev->type() != QEvent::FileOpen)
+            return QApplication::event(ev);
+
+        QFileOpenEvent *fev = static_cast<QFileOpenEvent *>(ev);
+
+        globalViewer->open(fev->file());
+        if (!globalViewer->isVisible())
+            showViewer(globalViewer);
+
+        return true;
+    }
+
+private Q_SLOTS:
+    void showInitialViewer()
+    {
+        QApplication::processEvents();
+
+        QDeclarativeViewer *viewer = globalViewer;
+        if (!viewer)
+            return;
+        if (viewer->currentFile().isEmpty()) {
+            if(opts.useNativeFileBrowser)
+                viewer->open(initialFile);
+            else
+                viewer->openFile();
+        }
+        if (!viewer->isVisible())
+            showViewer(viewer);
+    }
+};
+
+static void parseScriptOptions()
+{
+    QStringList options =
+        opts.scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
+
+    QDeclarativeViewer::ScriptOptions scriptOptions = 0;
+    for (int i = 0; i < options.count(); ++i) {
+        const QString &option = options.at(i);
+        if (option == QLatin1String("help")) {
+            scriptOptsUsage();
+        } else if (option == QLatin1String("play")) {
+            scriptOptions |= QDeclarativeViewer::Play;
+        } else if (option == QLatin1String("record")) {
+            scriptOptions |= QDeclarativeViewer::Record;
+        } else if (option == QLatin1String("testimages")) {
+            scriptOptions |= QDeclarativeViewer::TestImages;
+        } else if (option == QLatin1String("testerror")) {
+            scriptOptions |= QDeclarativeViewer::TestErrorProperty;
+        } else if (option == QLatin1String("exitoncomplete")) {
+            scriptOptions |= QDeclarativeViewer::ExitOnComplete;
+        } else if (option == QLatin1String("exitonfailure")) {
+            scriptOptions |= QDeclarativeViewer::ExitOnFailure;
+        } else if (option == QLatin1String("saveonexit")) {
+            scriptOptions |= QDeclarativeViewer::SaveOnExit;
+        } else if (option == QLatin1String("snapshot")) {
+            scriptOptions |= QDeclarativeViewer::Snapshot;
+        } else {
+            scriptOptsUsage();
+        }
+    }
+
+    opts.scriptOptions = scriptOptions;
+}
+
+static void parseCommandLineOptions(const QStringList &arguments)
+{
+    for (int i = 1; i < arguments.count(); ++i) {
+        bool lastArg = (i == arguments.count() - 1);
+        QString arg = arguments.at(i);
+        if (arg == "-frameless") {
+            opts.frameless = true;
+        } else if (arg == "-maximized") {
+            opts.maximized = true;
+        } else if (arg == "-fullscreen") {
+            opts.fullScreen = true;
+        } else if (arg == "-stayontop") {
+            opts.stayOnTop = true;
+        } else if (arg == "-netcache") {
+            if (lastArg) usage();
+            opts.cache = arguments.at(++i).toInt();
+        } else if (arg == "-recordrate") {
+            if (lastArg) usage();
+            opts.fps = arguments.at(++i).toDouble();
+        } else if (arg == "-recordfile") {
+            if (lastArg) usage();
+            opts.recordfile = arguments.at(++i);
+        } else if (arg == "-record") {
+            if (lastArg) usage();
+            opts.recordargs << arguments.at(++i);
+        } else if (arg == "-recorddither") {
+            if (lastArg) usage();
+            opts.dither = arguments.at(++i);
+        } else if (arg == "-autorecord") {
+            if (lastArg) usage();
+            QString range = arguments.at(++i);
+            int dash = range.indexOf('-');
+            if (dash > 0)
+                opts.autorecord_from = range.left(dash).toInt();
+            opts.autorecord_to = range.mid(dash+1).toInt();
+        } else if (arg == "-devicekeys") {
+            opts.devkeys = true;
+        } else if (arg == "-dragthreshold") {
+            if (lastArg) usage();
+            qApp->setStartDragDistance(arguments.at(++i).toInt());
+        } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
+            qWarning("Qt QML Viewer version %s", QT_VERSION_STR);
+            exit(0);
+        } else if (arg == "-translation") {
+            if (lastArg) usage();
+            opts.translationFile = arguments.at(++i);
+        } else if (arg == "-opengl") {
+            opts.useGL = true;
+        } else if (arg == "-qmlbrowser") {
+            opts.useNativeFileBrowser = false;
+        } else if (arg == "-warnings") {
+            if (lastArg) usage();
+            QString warningsStr = arguments.at(++i);
+            if (warningsStr == QLatin1String("show")) {
+                opts.warningsConfig = ShowWarnings;
+            } else if (warningsStr == QLatin1String("hide")) {
+                opts.warningsConfig = HideWarnings;
+            } else {
+                usage();
+            }
+        } else if (arg == "-I" || arg == "-L") {
+            if (arg == "-L")
+                qWarning("-L option provided for compatibility only, use -I instead");
+            if (lastArg) {
+                QDeclarativeEngine tmpEngine;
+                QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
+                qWarning("Current search path: %s", paths.toLocal8Bit().constData());
+                exit(0);
+            }
+            opts.imports << arguments.at(++i);
+        } else if (arg == "-P") {
+            if (lastArg) usage();
+            opts.plugins << arguments.at(++i);
+        } else if (arg == "-script") {
+            if (lastArg) usage();
+            opts.script = arguments.at(++i);
+        } else if (arg == "-scriptopts") {
+            if (lastArg) usage();
+            opts.scriptopts = arguments.at(++i);
+        } else if (arg == "-savescript") {
+            if (lastArg) usage();
+            opts.script = arguments.at(++i);
+            opts.runScript = false;
+        } else if (arg == "-playscript") {
+            if (lastArg) usage();
+            opts.script = arguments.at(++i);
+            opts.runScript = true;
+        } else if (arg == "-sizeviewtorootobject") {
+            opts.sizeToView = false;
+        } else if (arg == "-sizerootobjecttoview") {
+            opts.sizeToView = true;
+        } else if (arg == "-experimentalgestures") {
+            opts.experimentalGestures = true;
+        } else if (!arg.startsWith('-')) {
+            fileNames.append(arg);
+        } else if (true || arg == "-help") {
+            usage();
+        }
+    }
+
+    if (!opts.scriptopts.isEmpty()) {
+
+        parseScriptOptions();
+
+        if (opts.script.isEmpty())
+            usage();
+
+        if (!(opts.scriptOptions & QDeclarativeViewer::Record) && !(opts.scriptOptions & QDeclarativeViewer::Play))
+            scriptOptsUsage();
+    }  else if (!opts.script.isEmpty()) {
+        usage();
+    }
+
+}
+
+static QDeclarativeViewer *createViewer()
+{
+    Qt::WFlags wflags = (opts.frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    if (opts.stayOnTop)
+        wflags |= Qt::WindowStaysOnTopHint;
+
+    QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
+    viewer->setAttribute(Qt::WA_DeleteOnClose, true);
+
+    if (!opts.scriptopts.isEmpty()) {
+        viewer->setScriptOptions(opts.scriptOptions);
+        viewer->setScript(opts.script);
+    }
+
+#if !defined(Q_OS_SYMBIAN)
+    logger = viewer->warningsWidget();
+    if (opts.warningsConfig == ShowWarnings) {
+        logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
+        logger.data()->show();
+    } else if (opts.warningsConfig == HideWarnings){
+        logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
+    }
+#endif
+
+    if (opts.experimentalGestures)
+        viewer->enableExperimentalGestures();
+
+    foreach (QString lib, opts.imports)
+        viewer->addLibraryPath(lib);
+
+    foreach (QString plugin, opts.plugins)
+        viewer->addPluginPath(plugin);
+
+    viewer->setNetworkCacheSize(opts.cache);
+    viewer->setRecordFile(opts.recordfile);
+    viewer->setSizeToView(opts.sizeToView);
+    if (opts.fps > 0)
+        viewer->setRecordRate(opts.fps);
+    if (opts.autorecord_to)
+        viewer->setAutoRecord(opts.autorecord_from, opts.autorecord_to);
+    if (opts.devkeys)
+        viewer->setDeviceKeys(true);
+    viewer->setRecordDither(opts.dither);
+    if (opts.recordargs.count())
+        viewer->setRecordArgs(opts.recordargs);
+
+    viewer->setUseNativeFileBrowser(opts.useNativeFileBrowser);
+
+    return viewer;
+}
+
+void showViewer(QDeclarativeViewer *viewer)
+{
+    if (opts.fullScreen)
+        viewer->showFullScreen();
+    else if (opts.maximized)
+        viewer->showMaximized();
+    else
+        viewer->show();
+
+    viewer->setUseGL(opts.useGL);
+    viewer->raise();
+}
+
+QDeclarativeViewer *openFile(const QString &fileName)
+{
+    QDeclarativeViewer *viewer = globalViewer;
+
+    viewer->open(fileName);
+    showViewer(viewer);
+
+    return viewer;
+}
+
 int main(int argc, char ** argv)
 {
 #if defined (Q_OS_SYMBIAN)
@@ -204,264 +536,54 @@ int main(int argc, char ** argv)
         QApplication::setGraphicsSystem("raster");
 #endif
 
-    QApplication app(argc, argv);
+    Application app(argc, argv);
     app.setApplicationName("QtQmlViewer");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
 
-
-    
     QDeclarativeViewer::registerTypes();
     QDeclarativeTester::registerTypes();
 
-    bool frameless = false;
-    QString fileName;
-    double fps = 0;
-    int autorecord_from = 0;
-    int autorecord_to = 0;
-    QString dither = "none";
-    QString recordfile;
-    QStringList recordargs;
-    QStringList imports;
-    QStringList plugins;
-    QString script;
-    QString scriptopts;
-    bool runScript = false;
-    bool devkeys = false;
-    int cache = 0;
-    QString translationFile;
-    bool useGL = false;
-    bool fullScreen = false;
-    bool stayOnTop = false;
-    bool maximized = false;
-    bool useNativeFileBrowser = true;
-    bool experimentalGestures = false;
-
-    WarningsConfig warningsConfig = DefaultWarnings;
-    bool sizeToView = true;
-
-#if defined(Q_OS_SYMBIAN)
-    maximized = true;
-    useNativeFileBrowser = false;
-#endif
-
-#if defined(Q_WS_MAC)
-    useGL = true;
-#endif
-
-    for (int i = 1; i < argc; ++i) {
-        bool lastArg = (i == argc - 1);
-        QString arg = argv[i];
-        if (arg == "-frameless") {
-            frameless = true;
-        } else if (arg == "-maximized") {
-            maximized = true;
-        } else if (arg == "-fullscreen") {
-            fullScreen = true;
-        } else if (arg == "-stayontop") {
-            stayOnTop = true;
-        } else if (arg == "-netcache") {
-            if (lastArg) usage();
-            cache = QString(argv[++i]).toInt();
-        } else if (arg == "-recordrate") {
-            if (lastArg) usage();
-            fps = QString(argv[++i]).toDouble();
-        } else if (arg == "-recordfile") {
-            if (lastArg) usage();
-            recordfile = QString(argv[++i]);
-        } else if (arg == "-record") {
-            if (lastArg) usage();
-            recordargs << QString(argv[++i]);
-        } else if (arg == "-recorddither") {
-            if (lastArg) usage();
-            dither = QString(argv[++i]);
-        } else if (arg == "-autorecord") {
-            if (lastArg) usage();
-            QString range = QString(argv[++i]);
-            int dash = range.indexOf('-');
-            if (dash > 0)
-                autorecord_from = range.left(dash).toInt();
-            autorecord_to = range.mid(dash+1).toInt();
-        } else if (arg == "-devicekeys") {
-            devkeys = true;
-        } else if (arg == "-dragthreshold") {
-            if (lastArg) usage();
-            app.setStartDragDistance(QString(argv[++i]).toInt());
-        } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
-            qWarning("Qt QML Viewer version %s", QT_VERSION_STR);
-            exit(0);
-        } else if (arg == "-translation") {
-            if (lastArg) usage();
-            translationFile = argv[++i];
-        } else if (arg == "-opengl") {
-            useGL = true;
-        } else if (arg == "-qmlbrowser") {
-            useNativeFileBrowser = false;
-        } else if (arg == "-warnings") {
-            if (lastArg) usage();
-            QString warningsStr = QString(argv[++i]);
-            if (warningsStr == QLatin1String("show")) {
-                warningsConfig = ShowWarnings;
-            } else if (warningsStr == QLatin1String("hide")) {
-                warningsConfig = HideWarnings;
-            } else {
-                usage();
-            }
-        } else if (arg == "-I" || arg == "-L") {
-            if (arg == "-L")
-                qWarning("-L option provided for compatibility only, use -I instead");
-            if (lastArg) {
-                QDeclarativeEngine tmpEngine;
-                QString paths = tmpEngine.importPathList().join(QLatin1String(":"));
-                qWarning("Current search path: %s", paths.toLocal8Bit().constData());
-                exit(0);
-            }
-            imports << QString(argv[++i]);
-        } else if (arg == "-P") {
-            if (lastArg) usage();
-            plugins << QString(argv[++i]);
-        } else if (arg == "-script") {
-            if (lastArg) usage();
-            script = QString(argv[++i]);
-        } else if (arg == "-scriptopts") {
-            if (lastArg) usage();
-            scriptopts = QString(argv[++i]);
-        } else if (arg == "-savescript") {
-            if (lastArg) usage();
-            script = QString(argv[++i]);
-            runScript = false;
-        } else if (arg == "-playscript") {
-            if (lastArg) usage();
-            script = QString(argv[++i]);
-            runScript = true;
-        } else if (arg == "-sizeviewtorootobject") {
-            sizeToView = false;
-        } else if (arg == "-sizerootobjecttoview") {
-            sizeToView = true;
-        } else if (arg == "-experimentalgestures") {
-            experimentalGestures = true;
-        } else if (arg[0] != '-') {
-            fileName = arg;
-        } else if (1 || arg == "-help") {
-            usage();
-        }
-    }
+    parseCommandLineOptions(app.arguments());
 
     QTranslator qmlTranslator;
-    if (!translationFile.isEmpty()) {
-        qmlTranslator.load(translationFile);
+    if (!opts.translationFile.isEmpty()) {
+        qmlTranslator.load(opts.translationFile);
         app.installTranslator(&qmlTranslator);
     }
 
-    Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
-    if (stayOnTop)
-        wflags |= Qt::WindowStaysOnTopHint;
-
-    QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
-    viewer->setAttribute(Qt::WA_DeleteOnClose, true);
-    if (!scriptopts.isEmpty()) {
-        QStringList options =
-            scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
-
-        QDeclarativeViewer::ScriptOptions scriptOptions = 0;
-        for (int i = 0; i < options.count(); ++i) {
-            const QString &option = options.at(i);
-            if (option == QLatin1String("help")) {
-                scriptOptsUsage();
-            } else if (option == QLatin1String("play")) {
-                scriptOptions |= QDeclarativeViewer::Play;
-            } else if (option == QLatin1String("record")) {
-                scriptOptions |= QDeclarativeViewer::Record;
-            } else if (option == QLatin1String("testimages")) {
-                scriptOptions |= QDeclarativeViewer::TestImages;
-            } else if (option == QLatin1String("testerror")) {
-                scriptOptions |= QDeclarativeViewer::TestErrorProperty;
-            } else if (option == QLatin1String("exitoncomplete")) {
-                scriptOptions |= QDeclarativeViewer::ExitOnComplete;
-            } else if (option == QLatin1String("exitonfailure")) {
-                scriptOptions |= QDeclarativeViewer::ExitOnFailure;
-            } else if (option == QLatin1String("saveonexit")) {
-                scriptOptions |= QDeclarativeViewer::SaveOnExit;
-            } else if (option == QLatin1String("snapshot")) {
-                scriptOptions |= QDeclarativeViewer::Snapshot;
-            } else {
-                scriptOptsUsage();
-            }
-        }
-
-        if (script.isEmpty())
-            usage();
-
-        if (!(scriptOptions & QDeclarativeViewer::Record) && !(scriptOptions & QDeclarativeViewer::Play))
-            scriptOptsUsage();
-        viewer->setScriptOptions(scriptOptions);
-        viewer->setScript(script);
-    }  else if (!script.isEmpty()) {
-        usage();
-    }
-
-#if !defined(Q_OS_SYMBIAN)
-    logger = viewer->warningsWidget();
-    if (warningsConfig == ShowWarnings) {
-        logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
-        logger.data()->show();
-    } else if (warningsConfig == HideWarnings){
-        logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
-    }
-#endif
-
-    if (experimentalGestures)
-        viewer->enableExperimentalGestures();
-
-    foreach (QString lib, imports)
-        viewer->addLibraryPath(lib);
-
-    foreach (QString plugin, plugins)
-        viewer->addPluginPath(plugin);
-
-    viewer->setNetworkCacheSize(cache);
-    viewer->setRecordFile(recordfile);
-    viewer->setSizeToView(sizeToView);
-    if (fps>0)
-        viewer->setRecordRate(fps);
-    if (autorecord_to)
-        viewer->setAutoRecord(autorecord_from,autorecord_to);
-    if (devkeys)
-        viewer->setDeviceKeys(true);
-    viewer->setRecordDither(dither);
-    if (recordargs.count())
-        viewer->setRecordArgs(recordargs);
-
-    viewer->setUseNativeFileBrowser(useNativeFileBrowser);
-    if (fullScreen && maximized)
+    if (opts.fullScreen && opts.maximized)
         qWarning() << "Both -fullscreen and -maximized specified. Using -fullscreen.";
 
-    if (fileName.isEmpty()) {
+    if (fileNames.isEmpty()) {
         QFile qmlapp(QLatin1String("qmlapp"));
         if (qmlapp.exists() && qmlapp.open(QFile::ReadOnly)) {
-                QString content = QString::fromUtf8(qmlapp.readAll());
-                qmlapp.close();
+            QString content = QString::fromUtf8(qmlapp.readAll());
+            qmlapp.close();
 
-                int newline = content.indexOf(QLatin1Char('\n'));
-                if (newline >= 0)
-                    fileName = content.left(newline);
-                else
-                    fileName = content;
-            }
+            int newline = content.indexOf(QLatin1Char('\n'));
+            if (newline >= 0)
+                fileNames += content.left(newline);
+            else
+                fileNames += content;
+        }
     }
 
-    if (!fileName.isEmpty()) {
-        viewer->open(fileName);
-        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
+    globalViewer = createViewer();
+
+    if (fileNames.isEmpty()) {
+        // show the initial viewer delayed.
+        // This prevents an initial viewer popping up while there
+        // are FileOpen events coming through the event queue
+        QTimer::singleShot(1, &app, SLOT(showInitialViewer()));
     } else {
-        if (!useNativeFileBrowser)
-            viewer->openFile();
-        fullScreen ? viewer->showFullScreen() : maximized ? viewer->showMaximized() : viewer->show();
-        if (useNativeFileBrowser)
-            viewer->openFile();
+        foreach (const QString &fileName, fileNames)
+            openFile(fileName);
     }
-    viewer->setUseGL(useGL);
-    viewer->raise();
+
+    QObject::connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
     return app.exec();
 }
+
+#include "main.moc"

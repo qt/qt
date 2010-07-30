@@ -102,6 +102,49 @@
 
 QT_BEGIN_NAMESPACE
 
+class DragAndDropView : public QDeclarativeView
+{
+    Q_OBJECT
+public:
+    DragAndDropView(QDeclarativeViewer *parent = 0)
+    : QDeclarativeView(parent)
+    {
+        setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event)
+    {
+        const QMimeData *mimeData = event->mimeData();
+        if (mimeData->hasUrls())
+            event->acceptProposedAction();
+    }
+
+    void dragMoveEvent(QDragMoveEvent *event)
+    {
+        event->acceptProposedAction();
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent *event)
+    {
+        event->accept();
+    }
+
+    void dropEvent(QDropEvent *event)
+    {
+        const QMimeData *mimeData = event->mimeData();
+        if (!mimeData->hasUrls())
+            return;
+        const QList<QUrl> urlList = mimeData->urls();
+        foreach (const QUrl &url, urlList) {
+            if (url.scheme() == QLatin1String("file")) {
+                static_cast<QDeclarativeViewer *>(parent())->open(url.toLocalFile());
+                event->accept();
+                return;
+            }
+        }
+    }
+};
+
 class Runtime : public QObject
 {
     Q_OBJECT
@@ -596,7 +639,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
         recdlg->warning->hide();
     }
 
-    canvas = new QDeclarativeView(this);
+    canvas = new DragAndDropView(this);
 
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
@@ -605,7 +648,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(statusChanged(QDeclarativeView::Status)), this, SLOT(statusChanged()));
-    QObject::connect(canvas->engine(), SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
+    QObject::connect(canvas->engine(), SIGNAL(quit()), this, SLOT(close()));
 
     QObject::connect(warningsWidget(), SIGNAL(opened()), this, SLOT(warningsWidgetOpened()));
     QObject::connect(warningsWidget(), SIGNAL(closed()), this, SLOT(warningsWidgetClosed()));
@@ -664,11 +707,11 @@ LoggerWidget *QDeclarativeViewer::warningsWidget() const
 void QDeclarativeViewer::createMenu()
 {
     QAction *openAction = new QAction(tr("&Open..."), this);
-    openAction->setShortcut(QKeySequence("Ctrl+O"));
+    openAction->setShortcuts(QKeySequence::Open);
     connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
     QAction *reloadAction = new QAction(tr("&Reload"), this);
-    reloadAction->setShortcut(QKeySequence("Ctrl+R"));
+    reloadAction->setShortcuts(QKeySequence::Refresh);
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
     QAction *snapshotAction = new QAction(tr("&Take Snapshot"), this);
@@ -717,10 +760,16 @@ void QDeclarativeViewer::createMenu()
     landscapeInvAction->setCheckable(true);
 
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
+    aboutAction->setMenuRole(QAction::AboutQtRole);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+    QAction *closeAction = new QAction(tr("&Close"), this);
+    closeAction->setShortcuts(QKeySequence::Close);
+    connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+
     QAction *quitAction = new QAction(tr("&Quit"), this);
-    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    quitAction->setMenuRole(QAction::QuitRole);
+    quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QMenuBar *menu = menuBar();
@@ -751,6 +800,7 @@ void QDeclarativeViewer::createMenu()
     fileMenu->addAction(openAction);
     fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
+    fileMenu->addAction(closeAction);
     fileMenu->addAction(quitAction);
 
 #if !defined(Q_OS_SYMBIAN)
@@ -927,7 +977,7 @@ void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        open("qrc:/content/Browser.qml");
+        open("qrc:/browser/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
