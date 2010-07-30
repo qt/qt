@@ -120,6 +120,7 @@ private:
 
 class QVGPaintEnginePrivate : public QPaintEngineExPrivate
 {
+    Q_DECLARE_PUBLIC(QVGPaintEngine)
 public:
     // Extra blending modes from VG_KHR_advanced_blending extension.
     // Use the QT_VG prefix to avoid conflicts with any definitions
@@ -150,7 +151,7 @@ public:
         QT_VG_BLEND_XOR_KHR           = 0x2026
     };
 
-    QVGPaintEnginePrivate();
+    QVGPaintEnginePrivate(QVGPaintEngine *q_ptr);
     ~QVGPaintEnginePrivate();
 
     void init();
@@ -171,6 +172,7 @@ public:
     void setBrushTransform(const QBrush& brush, VGMatrixMode mode);
     void setupColorRamp(const QGradient *grad, VGPaint paint);
     void setImageOptions();
+    void systemStateChanged();
 #if !defined(QVG_SCISSOR_CLIP)
     void ensureMask(QVGPaintEngine *engine, int width, int height);
     void modifyMask
@@ -299,6 +301,9 @@ public:
 
     // Clear all lazily-set modes.
     void clearModes();
+
+private:
+    QVGPaintEngine *q;
 };
 
 inline void QVGPaintEnginePrivate::setImageMode(VGImageMode mode)
@@ -350,7 +355,7 @@ void QVGPaintEnginePrivate::clearModes()
     imageQuality = (VGImageQuality)0;
 }
 
-QVGPaintEnginePrivate::QVGPaintEnginePrivate()
+QVGPaintEnginePrivate::QVGPaintEnginePrivate(QVGPaintEngine *q_ptr) : q(q_ptr)
 {
     init();
 }
@@ -1452,7 +1457,7 @@ QVGPainterState::~QVGPainterState()
 }
 
 QVGPaintEngine::QVGPaintEngine()
-    : QPaintEngineEx(*new QVGPaintEnginePrivate)
+    : QPaintEngineEx(*new QVGPaintEnginePrivate(this))
 {
 }
 
@@ -2993,6 +2998,11 @@ void QVGPaintEnginePrivate::setImageOptions()
     } else {
         setImageMode(VG_DRAW_IMAGE_NORMAL);
     }
+}
+
+void QVGPaintEnginePrivate::systemStateChanged()
+{
+    q->updateScissor();
 }
 
 static void drawVGImage(QVGPaintEnginePrivate *d,
