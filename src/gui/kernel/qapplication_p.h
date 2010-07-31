@@ -603,7 +603,7 @@ private:
 #endif
 
 #ifdef Q_OS_SYMBIAN
-    static QHash<TInt, TUint> scanCodeCache;
+    QHash<TInt, TUint> scanCodeCache;
 #endif
 
     static QApplicationPrivate *self;
