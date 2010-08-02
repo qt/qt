@@ -100,7 +100,7 @@ QDBusError QDBusServer::lastError() const
 }
 
 /*!
-    Returns the address this server is assosiated with.
+    Returns the address this server is associated with.
 */
 QString QDBusServer::address() const
 {

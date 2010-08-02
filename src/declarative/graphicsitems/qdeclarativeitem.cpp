@@ -423,7 +423,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
     It is common in key-based UIs to use arrow keys to navigate
-    between focussed items.  The KeyNavigation property provides a
+    between focused items.  The KeyNavigation property provides a
     convenient way of specifying which item will gain focus
     when an arrow key is pressed.  The following example provides
     key navigation for a 2x2 grid of items.
@@ -2494,7 +2494,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   Item {
     filter: [
       Blur { ... },
-      Relection { ... }
+      Reflection { ... }
       ...
     ]
   }

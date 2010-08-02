@@ -57,7 +57,7 @@ int main(int argc, char ** argv)
         qWarning() << "The person's name is" << person->name();
         qWarning() << "They wear a" << person->shoeSize() << "sized shoe";
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
     }
 
     return 0;
