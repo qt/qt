@@ -158,7 +158,7 @@ MMF::MediaType MMF::MediaObject::bufferMediaType(const uchar *data, qint64 size)
     if (openRecognizer()) {
         TDataRecognitionResult recognizerResult;
         const TPtrC8 des(data, size);
-        const TInt err = m_recognizer.RecognizeData(des, recognizerResult);
+        const TInt err = m_recognizer.RecognizeData(KNullDesC, des, recognizerResult);
         if (KErrNone == err) {
             const TPtrC mimeType = recognizerResult.iDataType.Des();
             result = Utils::mimeTypeToMediaType(mimeType);
