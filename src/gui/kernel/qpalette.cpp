@@ -872,7 +872,7 @@ void QPalette::detach()
     \note The current ColorGroup is not taken into account when
     comparing palettes
 
-    \sa operator==
+    \sa operator==()
 */
 
 /*!
@@ -882,7 +882,7 @@ void QPalette::detach()
     \note The current ColorGroup is not taken into account when
     comparing palettes
 
-    \sa operator!=
+    \sa operator!=()
 */
 bool QPalette::operator==(const QPalette &p) const
 {
