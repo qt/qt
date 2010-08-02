@@ -56,6 +56,7 @@ public:
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
+    void makeDefaultSaredContext();
 private:
     EGLContext m_eglContext;
     EGLDisplay m_eglDisplay;
