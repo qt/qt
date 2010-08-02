@@ -62,7 +62,7 @@
 12        }
     \endcode
 
-    Let's go through the code line by line. In the first two lines, we
+    Let us go through the code line by line. In the first two lines, we
     include the header files for QApplication and QTextEdit, which are
     the two classes that we need for this example. All Qt classes have
     a header file named after them.
@@ -97,9 +97,9 @@
     following shell commands build the program.
 
     \code
-        vattekar@positive:~/testing/gssnippets/part1$ qmake -project
-        vattekar@positive:~/testing/gssnippets/part1$ qmake
-        vattekar@positive:~/testing/gssnippets/part1$ make
+        qmake -project
+        qmake
+        make
     \endcode
 
     This will leave an executable in the \c part1 directory (note that
@@ -134,7 +134,7 @@
 
     \image gs2.png
 
-    Let's take a look at the code.
+    Let us take a look at the code.
 
     \code
  1        #include <QtGui>
@@ -217,7 +217,7 @@
 
     \image gs3.png
 
-    Let's look at the code:
+    Let us look at the code:
 
     \code
  5        class Notepad : public QWidget
@@ -275,7 +275,7 @@
     We now use the function \l{QObject::}{tr()} around our user
     visible strings. This function is necessary when you want to
     provide your application in more than one language (e.g.  English
-    and Chinese). We won't go into details here, but you can follow
+    and Chinese). We will not go into details here, but you can follow
     the \c {Qt Linguist} link from the learn more table.
 
     \section2 Learn More
@@ -312,8 +312,8 @@
     The following shell commands build the example.
 
     \code
-        vattekar@positive:~/testing/gssnippets/part3$ qmake
-        vattekar@positive:~/testing/gssnippets/part3$ make
+        qmake
+        make
     \endcode
 
     \section1 Using a QMainWindow
@@ -326,7 +326,7 @@
 
     \image gs4.png
 
-    Let's look at the new \c Notepad class definition.
+    Let us look at the new \c Notepad class definition.
 
     \code
         #include <QtGui>
@@ -422,7 +422,7 @@
 
     \image gs5.png
 
-    Let's start with the \c open() slot:
+    We will start with the \c open() slot:
 
     \code
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
@@ -451,7 +451,7 @@
 
     If we have a file name, we try to open the file with
     \l{QIODevice::}{open()}, which returns true if the file could be
-    opened. We won't go into error handling here, but you can follow
+    opened. We will not go into error handling here, but you can follow
     the links from the learn more section. If the file could not be
     opened, we use QMessageBox to display a dialog with an error
     message (see the QMessageBox class description for further
@@ -465,7 +465,7 @@
     edit. We then \l{QIODevice::}{close()} the file to return the file
     descriptor back to the operating system.
 
-    Now, let's move on to the the \c save() slot.
+    Now, let us move on to the the \c save() slot.
 
     \code
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "",

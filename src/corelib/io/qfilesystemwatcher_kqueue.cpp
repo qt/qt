@@ -295,12 +295,12 @@ void QKqueueFileSystemWatcherEngine::run()
                     path = idToPath.value(id);
                     if (path.isEmpty()) {
                         DEBUG() << "QKqueueFileSystemWatcherEngine: received a kevent for a file we're not watching";
-                        continue;
+                        goto process_next_event;
                     }
                 }
                 if (kev.filter != EVFILT_VNODE) {
                     DEBUG() << "QKqueueFileSystemWatcherEngine: received a kevent with the wrong filter";
-                    continue;
+                    goto process_next_event;
                 }
 
                 if ((kev.fflags & (NOTE_DELETE | NOTE_REVOKE | NOTE_RENAME)) != 0) {
@@ -337,6 +337,7 @@ void QKqueueFileSystemWatcherEngine::run()
             }
 
             // are there any more?
+process_next_event:
             r = kevent(kqfd, 0, 0, &kev, 1, &ZeroTimeout);
         } while (r > 0);
     }

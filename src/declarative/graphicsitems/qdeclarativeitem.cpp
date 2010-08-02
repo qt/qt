@@ -1432,11 +1432,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenChanged()
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
@@ -2855,6 +2850,41 @@ void QDeclarativeItem::setSmooth(bool smooth)
 }
 
 /*!
+  \property QDeclarativeItem::anchors
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::left
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::right
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::horizontalCenter
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::top
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::bottom
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::verticalCenter
+  \internal
+*/
+
+/*!
   \property QDeclarativeItem::focus
   \internal
 */
@@ -2871,6 +2901,41 @@ void QDeclarativeItem::setSmooth(bool smooth)
 
 /*!
   \property QDeclarativeItem::activeFocus
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::baseline
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::data
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::resources
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::state
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::states
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transformOriginPoint
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transitions
   \internal
 */
 
