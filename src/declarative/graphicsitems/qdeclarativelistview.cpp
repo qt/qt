@@ -1620,6 +1620,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             for (int i = 0; i < d->visibleItems.count(); ++i)
                 d->releaseItem(d->visibleItems.at(i));
             d->visibleItems.clear();
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             refill();
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
