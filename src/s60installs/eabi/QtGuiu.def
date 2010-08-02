@@ -12088,4 +12088,7 @@ EXPORTS
 	_ZN18QTapAndHoldGesture7timeoutEv @ 12087 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate20focusScopeItemChangeEb @ 12088 NONAME
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12089 NONAME ABSENT
+	_ZN14QGraphicsScale13xScaleChangedEv @ 12090 NONAME
+	_ZN14QGraphicsScale13yScaleChangedEv @ 12091 NONAME
+	_ZN14QGraphicsScale13zScaleChangedEv @ 12092 NONAME
 

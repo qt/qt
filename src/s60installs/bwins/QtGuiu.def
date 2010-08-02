@@ -12883,4 +12883,7 @@ EXPORTS
 	?focusScopeItemChange@QGraphicsItemPrivate@@UAEX_N@Z @ 12882 NONAME ; void QGraphicsItemPrivate::focusScopeItemChange(bool)
 	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12883 NONAME ABSENT ; void QTapAndHoldGesture::setTimeout(int)
 	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@_N@Z @ 12884 NONAME ABSENT ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *, bool)
+	?zScaleChanged@QGraphicsScale@@IAEXXZ @ 12885 NONAME ; void QGraphicsScale::zScaleChanged(void)
+	?xScaleChanged@QGraphicsScale@@IAEXXZ @ 12886 NONAME ; void QGraphicsScale::xScaleChanged(void)
+	?yScaleChanged@QGraphicsScale@@IAEXXZ @ 12887 NONAME ; void QGraphicsScale::yScaleChanged(void)
 
