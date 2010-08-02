@@ -104,14 +104,23 @@ void QNetworkManagerEngine::initialize()
     QMutexLocker locker(&mutex);
 
     // Get current list of access points.
-    foreach (const QDBusObjectPath &devicePath, interface->getDevices())
+    foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
+        locker.unlock();
         deviceAdded(devicePath);
+        locker.relock();
+    }
 
     // Get connections.
-    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections())
+    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections()) {
+        locker.unlock();
         newConnection(settingsPath, systemSettings);
-    foreach (const QDBusObjectPath &settingsPath, userSettings->listConnections())
+        locker.relock();
+    }
+    foreach (const QDBusObjectPath &settingsPath, userSettings->listConnections()) {
+        locker.unlock();
         newConnection(settingsPath, userSettings);
+        locker.relock();
+    }
 
     // Get active connections.
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
@@ -130,11 +139,6 @@ bool QNetworkManagerEngine::networkManagerAvailable() const
     QMutexLocker locker(&mutex);
 
     return interface->isValid();
-}
-
-void QNetworkManagerEngine::doRequestUpdate()
-{
-    emit updateCompleted();
 }
 
 QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
@@ -233,9 +237,7 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
 
 void QNetworkManagerEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
-
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    QMetaObject::invokeMethod(this, "updateCompleted", Qt::QueuedConnection);
 }
 
 void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
@@ -361,13 +363,10 @@ void QNetworkManagerEngine::devicePropertiesChanged(const QString &path,
 
 void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkManagerInterfaceDevice device(path.path());
     if (device.deviceType() == DEVICE_TYPE_802_11_WIRELESS) {
         QNetworkManagerInterfaceDeviceWireless *wirelessDevice =
             new QNetworkManagerInterfaceDeviceWireless(device.connectionInterface()->path());
-        wirelessDevices.insert(path.path(), wirelessDevice);
 
         wirelessDevice->setConnections();
         connect(wirelessDevice, SIGNAL(accessPointAdded(QString,QDBusObjectPath)),
@@ -379,6 +378,10 @@ void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 
         foreach (const QDBusObjectPath &apPath, wirelessDevice->getAccessPoints())
             newAccessPoint(QString(), apPath);
+
+        mutex.lock();
+        wirelessDevices.insert(path.path(), wirelessDevice);
+        mutex.unlock();
     }
 }
 
@@ -685,8 +688,6 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                                                                      const QString &settingsPath,
                                                                      const QNmSettingsMap &map)
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
     cpPriv->name = map.value("connection").value("id").toString();
     cpPriv->isValid = true;
@@ -735,9 +736,9 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationRemoved(ptr);
-                    locker.relock();
+                    mutex.lock();
                 }
                 break;
             }
@@ -753,8 +754,6 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
 QNetworkManagerSettingsConnection *QNetworkManagerEngine::connectionFromId(const QString &id) const
 {
-    QMutexLocker locker(&mutex);
-
     for (int i = 0; i < connections.count(); ++i) {
         QNetworkManagerSettingsConnection *connection = connections.at(i);
         const QString service = connection->connectionInterface()->service();
