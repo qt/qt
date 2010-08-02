@@ -358,8 +358,10 @@ QDeclarativeStatePrivate::generateActionList(QDeclarativeStateGroup *group) cons
     if (!extends.isEmpty()) {
         QList<QDeclarativeState *> states = group->states();
         for (int ii = 0; ii < states.count(); ++ii)
-            if (states.at(ii)->name() == extends)
+            if (states.at(ii)->name() == extends) {
+                qmlExecuteDeferred(states.at(ii));
                 applyList = static_cast<QDeclarativeStatePrivate*>(states.at(ii)->d_func())->generateActionList(group);
+            }
     }
 
     foreach(QDeclarativeStateOperation *op, operations)
