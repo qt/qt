@@ -37,29 +37,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
 import Qt 4.7
 
 Item {
-    width: 300; height: 300
+    id: container
+    width: 200; height: 200
 
     Rectangle {
-        id: rect
-        width: 50; height: 50
+        id: myRect
+        width: 100; height: 100
         color: "red"
-
-        Behavior on x { SpringAnimation { spring: 2; damping: 0.2 } }
-        Behavior on y { SpringAnimation { spring: 2; damping: 0.2 } }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            rect.x = mouse.x - rect.width/2
-            rect.y = mouse.y - rect.height/2
-        }
+    states: State {
+        name: "reanchored"
+        AnchorChanges { target: myRect; anchors.right: container.right }
     }
+
+    transitions: Transition {
+        // smoothly reanchor myRect and move into new position
+        AnchorAnimation { duration: 1000 }
+    }
+
+    Component.onCompleted: container.state = "reanchored"
 }
 //![0]
-

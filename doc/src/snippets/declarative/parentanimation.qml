@@ -61,6 +61,12 @@ Item {
             ParentChange { target: blueRect; parent: redRect; x: 10; y: 10 }
         }
 
+        transitions: Transition {
+            ParentAnimation {
+                NumberAnimation { properties: "x,y"; duration: 1000 }
+            }
+        }
+
         MouseArea { anchors.fill: parent; onClicked: blueRect.state = "reparented" }
     }
 }
