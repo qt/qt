@@ -63,6 +63,7 @@ void setParentForChildrenOfWidget(QPlatformWindow *window, const QWidget *widget
             if (childWidget) { // should not be necessary
                 if (childWidget->platformWindow()) {
                     childWidget->platformWindow()->setParent(window);
+                    childWidget->platformWindow()->setWindowFlags(Qt::SubWindow);
                 } else {
                     setParentForChildrenOfWidget(window,childWidget);
                 }
@@ -106,6 +107,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->platformWindow()) {
             platformWindow->setParent(nativeParent->platformWindow());
+            platformWindow->setWindowFlags(Qt::SubWindow);
         }
     }
 
@@ -174,6 +176,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             QWidget * parentWithWindow = newparent->platformWindow()? newparent : newparent->nativeParentWidget();
             if (parentWithWindow && parentWithWindow->platformWindow()) {
                 q->platformWindow()->setParent(parentWithWindow->platformWindow());
+                q->platformWindow()->setWindowFlags(Qt::SubWindow);
             }
         }
 

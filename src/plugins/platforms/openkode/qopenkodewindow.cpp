@@ -45,6 +45,10 @@
 
 #include <KD/kd.h>
 #include <KD/NV_display.h>
+#include <KD/kdplatform.h>
+#ifdef KD_ATX_keyboard
+#include "openkodekeytranslator.h"
+#endif
 
 #include <EGL/egl.h>
 
@@ -56,6 +60,20 @@
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
+
+void kdProcessMouseEvents( const KDEvent *event )
+{
+    QOpenKODEWindow *window = static_cast<QOpenKODEWindow *>(event->userptr);
+    window->processMouseEvents(event);
+}
+
+#ifdef KD_ATX_keyboard
+void kdProcessKeyEvents( const KDEvent *event )
+{
+    QOpenKODEWindow *window = static_cast<QOpenKODEWindow *>(event->userptr);
+    window->processKeyEvents(event);
+}
+#endif //KD_ATX_keyboard
 
 QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     : QPlatformWindow(tlw)
@@ -92,54 +110,90 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
     m_kdWindow = kdCreateWindow(screen->eglDisplay(),
                               m_eglConfig,
-                              KD_NULL);
+                              this);
+    kdInstallCallback(kdProcessMouseEvents,KD_EVENT_INPUT_POINTER,this);
+#ifdef KD_ATX_keyboard
+    kdInstallCallback(kdProcessKeyEvents, KD_EVENT_INPUT_KEY_ATX,this);
+#endif //KD_ATX_keyboard
+
     if (!m_kdWindow) {
         qErrnoWarning(kdGetError(), "Error creating native window");
         return;
     }
 
-    const KDint windowSize[2]  = { tlw->width(), tlw->height()-1 };
-    if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_SIZE, windowSize)) {
-        qErrnoWarning(kdGetError(), "Could not set native window size");
-        return;
+    bool fullscreen = false;
+    KDboolean exclusive(false);
+    if (kdSetWindowPropertybv(m_kdWindow,KD_WINDOWPROPERTY_DESKTOP_EXCLUSIVE_NV, &exclusive)) {
+        fullscreen = true;
     }
 
-    KDboolean visibillity(false);
-    if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
-        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
+    if (fullscreen) {
+        tlw->setGeometry(screen->geometry());
+        screen->setFullScreen(fullscreen);
+    }else {
+        const KDint windowSize[2]  = { tlw->width(), tlw->height() };
+        if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_SIZE, windowSize)) {
+            qErrnoWarning(kdGetError(), "Could not set native window size");
+        }
+        KDboolean visibillity(false);
+        if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
+            qErrnoWarning(kdGetError(), "Could not set visibillity to false");
+        }
+
+        const KDint windowPos[2] = { tlw->x(), tlw->y() };
+        if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
+            qErrnoWarning(kdGetError(), "Could not set native window position");
+            return;
+        }
     }
 
-    const KDint windowPos[2] = { tlw->x(), tlw->y() };
-    if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
-        qErrnoWarning(kdGetError(), "Could not set native window position");
-        return;
+
+
+
+    if (!fullscreen || (fullscreen && !QPlatformGLContext::defaultSharedContext())) {
+        if (kdRealizeWindow(m_kdWindow, &m_eglWindow)) {
+            qErrnoWarning(kdGetError(), "Could not realize native window");
+            return;
+        }
+
+        EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
+        m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
+                                                      m_eglContextAttrs.data(), surface, m_eglApi);
+        m_platformGlContext->makeDefaultSaredContext();
+    } else {
+        m_platformGlContext = static_cast<QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext());
+        kdDestroyWindow(m_kdWindow);
+        m_kdWindow = 0;
     }
-
-    if (kdRealizeWindow(m_kdWindow, &m_eglWindow)) {
-        qErrnoWarning(kdGetError(), "Could not realize native window");
-        return;
-    }
-
-    EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
-
-    m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
-                                                  m_eglContextAttrs.data(), surface, m_eglApi);
 }
+
 
 QOpenKODEWindow::~QOpenKODEWindow()
 {
     qDebug() << "destroying window" << m_kdWindow;
-    delete m_platformGlContext;
-    kdDestroyWindow(m_kdWindow);
+    if (m_platformGlContext != QPlatformGLContext::defaultSharedContext()) {
+        delete m_platformGlContext;
+    }
+    if (m_kdWindow)
+        kdDestroyWindow(m_kdWindow);
 }
 void QOpenKODEWindow::setGeometry(const QRect &rect)
 {
+    if (!m_kdWindow) {
+        QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();
+        QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(0));
+        widget()->setGeometry(screen->geometry());
+        return;
+    }
+    bool needToDeleteContext = false;
     const QRect geo = geometry();
     if (geo.size() != rect.size()) {
-        const KDint windowSize[2]  = { rect.width(), rect.height() -1 };
+        const KDint windowSize[2]  = { rect.width(), rect.height() };
         if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_SIZE, windowSize)) {
             qErrnoWarning(kdGetError(), "Could not set native window size");
             //return;
+        } else {
+            needToDeleteContext = true;
         }
     }
 
@@ -148,11 +202,16 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
         if (kdSetWindowPropertyiv(m_kdWindow, KD_WINDOWPROPERTY_DESKTOP_OFFSET_NV, windowPos)) {
             qErrnoWarning(kdGetError(), "Could not set native window position");
             //return;
+        } else {
+            needToDeleteContext = true;
         }
     }
 
     //need to recreate context
-    delete m_platformGlContext;
+    if (needToDeleteContext) {
+        qDebug() << "deleting context";
+        delete m_platformGlContext;
+    }
 
     QList<QPlatformScreen *> screens = QApplicationPrivate::platformIntegration()->screens();
     QOpenKODEScreen *screen = qobject_cast<QOpenKODEScreen *>(screens.at(0));
@@ -163,14 +222,96 @@ void QOpenKODEWindow::setGeometry(const QRect &rect)
 
 void QOpenKODEWindow::setVisible(bool visible)
 {
+    if (!m_kdWindow)
+        return;
     KDboolean visibillity(visible);
     if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_VISIBILITY, &visibillity)) {
-        qErrnoWarning(kdGetError(), "Could not set visibillity to false");
+        qErrnoWarning(kdGetError(), "Could not set visibillity property");
     }
+}
+
+WId QOpenKODEWindow::winId() const
+{
+    static int i = 0;
+    return i++;
 }
 
 QPlatformGLContext *QOpenKODEWindow::glContext() const
 {
     return m_platformGlContext;
 }
+
+void QOpenKODEWindow::raise()
+{
+    if (!m_kdWindow)
+        return;
+    KDboolean focus(true);
+    if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_FOCUS, &focus)) {
+        qErrnoWarning(kdGetError(), "Could not set focus");
+    }
+}
+
+void QOpenKODEWindow::lower()
+{
+    if (!m_kdWindow)
+        return;
+    KDboolean focus(false);
+    if (kdSetWindowPropertybv(m_kdWindow, KD_WINDOWPROPERTY_FOCUS, &focus)) {
+        qErrnoWarning(kdGetError(), "Could not set focus");
+    }
+}
+
+void QOpenKODEWindow::processMouseEvents(const KDEvent *event)
+{
+    int x = event->data.inputpointer.x;
+    int y = event->data.inputpointer.y;
+    Qt::MouseButtons buttons;
+    switch(event->data.inputpointer.select) {
+    case 1:
+        buttons = Qt::LeftButton;
+        break;
+    default:
+        buttons = Qt::NoButton;
+    }
+    qDebug() << x << y;
+    QPoint pos(x,y);
+    QWindowSystemInterface::handleMouseEvent(0,event->timestamp,pos,pos,buttons);
+}
+
+void QOpenKODEWindow::processKeyEvents(const KDEvent *event)
+{
+#ifdef KD_ATX_keyboard
+    //KD_KEY_PRESS_ATX 1
+    QEvent::Type keyPressed = QEvent::KeyRelease;
+    if (event->data.keyboardInputKey.flags)
+        keyPressed = QEvent::KeyPress;
+//KD_KEY_LOCATION_LEFT_ATX // dont care for now
+//KD_KEY_LOCATION_RIGHT_ATX
+//KD_KEY_LOCATION_NUMPAD_ATX
+    Qt::KeyboardModifiers mod = Qt::NoModifier;
+    int openkodeMods = event->data.keyboardInputKey.flags;
+    if (openkodeMods & KD_KEY_MODIFIER_SHIFT_ATX)
+        mod |= Qt::ShiftModifier;
+    if (openkodeMods & KD_KEY_MODIFIER_CTRL_ATX)
+        mod |= Qt::ControlModifier;
+    if (openkodeMods & KD_KEY_MODIFIER_ALT_ATX)
+        mod |= Qt::AltModifier;
+    if (openkodeMods & KD_KEY_MODIFIER_META_ATX)
+        mod |= Qt::MetaModifier;
+
+    Qt::Key qtKey;
+    QChar keyText;
+    int key = event->data.keyboardInputKey.keycode;
+    if (key >= 0x20 && key <= 0x0ff){ // 8 bit printable Latin1
+        qtKey = Qt::Key(key);
+        keyText = QChar(event->data.keyboardInputKeyChar.character);
+        if (!(mod & Qt::ShiftModifier))
+            keyText = keyText.toLower();
+    } else {
+        qtKey = keyTranslator(key);
+    }
+    QWindowSystemInterface::handleKeyEvent(0,event->timestamp,keyPressed,qtKey,mod,keyText);
+#endif
+}
+
 QT_END_NAMESPACE

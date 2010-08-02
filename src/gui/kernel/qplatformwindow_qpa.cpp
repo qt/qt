@@ -47,6 +47,7 @@ class QPlatformWindowPrivate
 {
     QWidget *tlw;
     QRect rect;
+    Qt::WindowFlags flags;
     friend class QPlatformWindow;
 };
 
@@ -92,8 +93,9 @@ Requests setting the window flags of this surface to \a type. Returns the actual
 */
 Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    Q_UNUSED(flags);
-    return Qt::Window;
+    Q_D(QPlatformWindow);
+    d->flags = flags;
+    return flags;
 }
 
 /*!
@@ -101,7 +103,8 @@ Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 */
 Qt::WindowFlags QPlatformWindow::windowFlags() const
 {
-    return Qt::Window;
+    Q_D(const QPlatformWindow);
+    return d->flags;
 }
 
 WId QPlatformWindow::winId() const { return WId(0); }

@@ -802,6 +802,9 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 
+    if (!focusW->isWindow())
+        focusW = focusW->window();
+
     modifiers = e->modifiers;
     QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
     QApplication::sendSpontaneousEvent(focusW, &ev);

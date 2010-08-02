@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qopenkodeintegration.h"
-#include "qopenkodewindowsurface.h"
 #include "qopenkodewindow.h"
 #include "qopenkodeeventloopintegration.h"
 
@@ -67,6 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 QOpenKODEScreen::QOpenKODEScreen()
+    : mIsFullScreen(false)
 {
     KDDesktopNV *kdDesktop = KD_NULL;
     KDDisplayNV *kdDisplay = KD_NULL;
@@ -130,12 +130,13 @@ QOpenKODEScreen::QOpenKODEScreen()
         qErrnoWarning("EGL failed to initialize display");
     }
 
-    const int defaultDpi = 72;
-    mGeometry = QRect(0, 0, mode.width, mode.height);
-    mPhysicalSize = QSize(mode.width * 25.4 / defaultDpi, mode.height * 25.4 / defaultDpi);
+//    cursor = new QOpenKODECursor(this);
 
+    mGeometry = QRect(0, 0, mode.width, mode.height);
     mDepth = 24;
     mFormat = QImage::Format_RGB32;
+
+
 }
 
 static GLuint loadShaders(const QString &vertexShader, const QString &fragmentShader)
@@ -186,6 +187,7 @@ static GLuint loadShaders(const QString &vertexShader, const QString &fragmentSh
 }
 
 QOpenKODEIntegration::QOpenKODEIntegration()
+    : mEventLoopIntegration(0)
 {
     if (kdInitializeNV() == KD_ENOTINITIALIZED) {
         qFatal("Did not manage to initialize openkode");
@@ -194,6 +196,10 @@ QOpenKODEIntegration::QOpenKODEIntegration()
 
     mScreens.append(mPrimaryScreen);
 
+}
+QOpenKODEIntegration::~QOpenKODEIntegration()
+{
+    delete mEventLoopIntegration;
 }
 
 QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -212,9 +218,6 @@ QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId w
     switch (widget->platformWindowFormat().windowApi()) {
 
     case QPlatformWindowFormat::Raster:
-        returnSurface = new QOpenKODEWindowSurface(widget, wid);
-        break;
-
     case QPlatformWindowFormat::OpenGL:
         returnSurface = new QGLWindowSurface(widget);
         break;
@@ -238,7 +241,11 @@ bool QOpenKODEIntegration::hasOpenGL() const
 
 QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration() const
 {
-    return new QOpenKODEEventLoopIntegration;
+    if (!mEventLoopIntegration) {
+        QOpenKODEIntegration *that = const_cast<QOpenKODEIntegration *>(this);
+        that->mEventLoopIntegration = new QOpenKODEEventLoopIntegration;
+    }
+    return mEventLoopIntegration;
 }
 
 GLuint QOpenKODEIntegration::blitterProgram()

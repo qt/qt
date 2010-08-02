@@ -42,6 +42,8 @@
 #ifndef QGRAPHICSSYSTEM_OPENKODE_H
 #define QGRAPHICSSYSTEM_OPENKODE_H
 
+#include "qopenkodeeventloopintegration.h"
+
 #include <QtCore/qsemaphore.h>
 
 #include <QtGui/QPlatformIntegration>
@@ -55,6 +57,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 struct KDDesktopNV;
+class QOpenKODECursor;
 
 class QOpenKODEScreen : public QPlatformScreen
 {
@@ -66,21 +69,24 @@ public:
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
 
     EGLDisplay eglDisplay() { return mEglDisplay; }
-public:
+
+    bool isFullScreen() const {return mIsFullScreen;}
+    void setFullScreen(bool fullscreen) { mIsFullScreen = fullscreen; }
+private:
     QRect mGeometry;
     int mDepth;
     QImage::Format mFormat;
-    QSize mPhysicalSize;
     EGLDisplay mEglDisplay;
+    bool mIsFullScreen;
 };
 
 class QOpenKODEIntegration : public QPlatformIntegration
 {
 public:
     QOpenKODEIntegration();
+    ~QOpenKODEIntegration();
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
@@ -96,6 +102,7 @@ public:
 
 private:
     QList<QPlatformScreen *> mScreens;
+    QOpenKODEEventLoopIntegration *mEventLoopIntegration;
 };
 
 QT_END_NAMESPACE
