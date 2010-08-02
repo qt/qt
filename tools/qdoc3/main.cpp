@@ -475,8 +475,10 @@ int main(int argc, char **argv)
     /*
       Main loop.
      */
-    foreach (QString qf, qdocFiles)
+    foreach (QString qf, qdocFiles) {
+        qDebug() << "PROCESSING:" << qf;
 	processQdocconfFile(qf);
+    }
 
     qDeleteAll(trees);
     return EXIT_SUCCESS;
