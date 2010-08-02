@@ -472,7 +472,12 @@ namespace {
             qMemCopy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
 
             m_items.append(currentItem);
-        }                
+        }
+
+        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode )
+        {
+            /* intentionally empty */
+        }
 
         virtual bool begin(QPaintDevice *)  { return true; }
         virtual bool end() { return true; }
