@@ -575,9 +575,11 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
+            }
+            if (modelIndex < model->count()-1) {
                 if (FxListItem *item = visibleItem(modelIndex+1))
                     listItem->attached->m_nextSection = item->attached->section();
-                else if (modelIndex < model->count()-1)
+                else
                     listItem->attached->m_nextSection = sectionAt(modelIndex+1);
             }
         }
@@ -1618,6 +1620,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             for (int i = 0; i < d->visibleItems.count(); ++i)
                 d->releaseItem(d->visibleItems.at(i));
             d->visibleItems.clear();
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             refill();
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
