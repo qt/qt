@@ -372,9 +372,8 @@ void QScriptEngineAgent::functionExit(qint64 scriptId,
 /*!
   This function is called when the engine is about to execute a new
   statement in the script identified by \a scriptId.  The statement
-  begins on the line and column specified by \a lineNumber and \a
-  columnNumber.  This event is not generated for native Qt Script
-  functions.
+  begins on the line and column specified by \a lineNumber
+  This event is not generated for native Qt Script functions.
 
   Reimplement this function to handle this event. For example, a
   debugger implementation could reimplement this function to provide
@@ -382,6 +381,8 @@ void QScriptEngineAgent::functionExit(qint64 scriptId,
   count the number of times each statement is executed.
 
   The default implementation does nothing.
+
+  \note \a columnNumber is undefined
 
   \sa scriptLoad(), functionEntry()
 */
