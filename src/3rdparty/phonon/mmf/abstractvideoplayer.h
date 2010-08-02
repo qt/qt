@@ -66,6 +66,7 @@ public:
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(RFile &file);
     virtual int openUrl(const QString &url);
+    virtual int openDescriptor(const TDesC8 &des);
     virtual int bufferStatus() const;
     virtual void close();
 
