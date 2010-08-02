@@ -94,12 +94,12 @@
               </div>
               <div class="section sectionlist">
                 <ul>
-                  <li><a href="http://doc.qt.nokia.com/qtcreator-2.0/index.html">Qt Creator</a></li>
+                  <li><a href="http://doc.qt.nokia.com/qtcreator-2.0/index.html">Qt Creator</a> (online document)</li>
                   <li><a href="designer-manual.html">Qt Designer</a></li>
                   <li><a href="linguist-manual.html">Qt Linguist</a></li>
                   <li><a href="assistant-manual.html">Qt Assistant</a></li>
-                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a></li>
-                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Integration</a> and <a href="http://qt.nokia.com/products/appdev">add-ins</a></li>
+                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a> (online document)</li>
+                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Integration</a> (online document) and <a href="http://qt.nokia.com/products/appdev">add-ins</a> (online document)</li>
                   <li><a href="qvfb.html">Virtual Framebuffer</a></li>
                 </ul>
               </div>
