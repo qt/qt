@@ -2010,7 +2010,7 @@ void QImage::fill(uint pixel)
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
     } else if (d->depth == 24) {
-        qt_rectfill<qrgb888>(reinterpret_cast<qrgb888*>(d->data), pixel,
+        qt_rectfill<quint24>(reinterpret_cast<quint24*>(d->data), pixel,
                              0, 0, d->width, d->height, d->bytes_per_line);
         return;
     }
