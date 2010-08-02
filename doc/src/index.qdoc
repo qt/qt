@@ -65,8 +65,8 @@
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-                    <li><a href="qt-basic-concepts.html">Programming with Qt</a></li>
-                    <li><a href="qt-basic-concepts.html">Qt Architecture</a></li>
+                 <!--   <li><a href="qt-basic-concepts.html">Programming with Qt</a></li> -->
+                    <li><a href="qt-basic-concepts.html">Basic Qt Architecture</a></li>
                     <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific Development</a></li>
                     <li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
                     <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
@@ -78,7 +78,7 @@
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
                     <li><a href="qt-gui-concepts.html">UI components</a></li>
-                    <li><a href="declarativeui.html">Qt & GUI design</a></li>
+                <!--    <li><a href="declarativeui.html">Qt & GUI design</a></li> -->
                 </ul>
               </div>
             </div>
