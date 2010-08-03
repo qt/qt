@@ -2088,7 +2088,7 @@ while [ "$#" -gt 0 ]; do
                 [ "$VAR" = "decoration" ] && QMakeVar del "${VAR}s" "$VAL"
                 [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"` && CFG_DECORATION_PLUGIN="$CFG_DECORATION_PLUGIN ${VAL}"
                 [ "$VAR" = "kbd" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
+                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
                 [ "$VAR" = "mouse" ] && QMakeVar del "${VAR}s" "$VAL"
                 [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_MOUSE_PLUGIN="$CFG_MOUSE_PLUGIN ${VAL}"
                 [ "$VAR" = "gfx" ] && QMakeVar del "${VAR}s" "$VAL"
