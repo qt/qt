@@ -370,6 +370,8 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
         setPartialUpdateSupport(false); // Force full-screen updates
     else
         setPartialUpdateSupport(true);
+#else
+    setPartialUpdateSupport(false);
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;
