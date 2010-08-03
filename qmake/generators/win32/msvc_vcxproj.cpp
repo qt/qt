@@ -282,12 +282,6 @@ void VcxprojGenerator::initCompilerTool()
         conf.compiler.ForcedIncludeFiles            = project->values("PRECOMPILED_HEADER");
         conf.compiler.PreprocessToFile              = _False;
         conf.compiler.PreprocessSuppressLineNumbers = _False;
-        // Minimal build option triggers an Internal Compiler Error
-        // when used in conjunction with /FI and /Yu, so remove it
-        project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
-        project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
-        project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
-        project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("/Gm");
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));

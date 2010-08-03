@@ -908,6 +908,7 @@ void VcprojGenerator::initCompilerTool()
         conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER");
         // Minimal build option triggers an Internal Compiler Error
         // when used in conjunction with /FI and /Yu, so remove it
+        // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
         project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
         project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
         project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
