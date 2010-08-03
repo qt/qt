@@ -275,9 +275,10 @@ void VcxprojGenerator::initCompilerTool()
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
 
-    // Common for both release and debug
-    if(project->isActiveConfig("windows"))
-        conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
+    if (project->isActiveConfig("windows"))
+        conf.compiler.PreprocessorDefinitions += "_WINDOWS";
+    else if (project->isActiveConfig("console"))
+        conf.compiler.PreprocessorDefinitions += "_CONSOLE";
 
     conf.compiler.PreprocessorDefinitions += project->values("DEFINES");
     conf.compiler.PreprocessorDefinitions += project->values("PRL_EXPORT_DEFINES");

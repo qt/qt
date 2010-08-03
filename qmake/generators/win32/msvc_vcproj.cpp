@@ -51,7 +51,6 @@
 #include <stdlib.h>
 
 //#define DEBUG_SOLUTION_GEN
-//#define DEBUG_PROJECT_GEN
 
 QT_BEGIN_NAMESPACE
 // Filter GUIDs (Do NOT change these!) ------------------------------
@@ -209,6 +208,7 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator() : Win32MakefileGenerator(), init_flag(false)
 {
 }
+
 bool VcprojGenerator::writeMakefile(QTextStream &t)
 {
     initProject(); // Fills the whole project with proper data
@@ -649,12 +649,12 @@ bool VcprojGenerator::hasBuiltinCompiler(const QString &file)
 
 void VcprojGenerator::init()
 {
-    if(init_flag)
+    if (init_flag)
         return;
-    if(project->first("TEMPLATE") == "vcsubdirs") { //too much work for subdirs
-        init_flag = true;
+    init_flag = true;
+
+    if(project->first("TEMPLATE") == "vcsubdirs") //too much work for subdirs
         return;
-    }
 
     debug_msg(1, "Generator: MSVC.NET: Initializing variables");
 
@@ -667,6 +667,20 @@ void VcprojGenerator::init()
         project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
     processVars();
+
+    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
+
+    if(!project->values("VERSION").isEmpty()) {
+        QString version = project->values("VERSION")[0];
+        int firstDot = version.indexOf(".");
+        QString major = version.left(firstDot);
+        QString minor = version.right(version.length() - firstDot - 1);
+        minor.replace(QRegExp("\\."), "");
+        project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
+    }
+
+    MakefileGenerator::init();
     initOld();           // Currently calling old DSP code to set variables. CLEAN UP!
 
     // Figure out what we're trying to build
@@ -917,9 +931,10 @@ void VcprojGenerator::initCompilerTool()
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
 
-    // Common for both release and debug
-    if(project->isActiveConfig("windows"))
-        conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
+    if (project->isActiveConfig("windows"))
+        conf.compiler.PreprocessorDefinitions += "_WINDOWS";
+    else if (project->isActiveConfig("console"))
+        conf.compiler.PreprocessorDefinitions += "_CONSOLE";
 
     conf.compiler.PreprocessorDefinitions += project->values("DEFINES");
     conf.compiler.PreprocessorDefinitions += project->values("PRL_EXPORT_DEFINES");
@@ -993,7 +1008,6 @@ void VcprojGenerator::initResourceTool()
     if(project->isActiveConfig("staticlib"))
         conf.resource.ResourceOutputFileName = project->first("DESTDIR") + "/$(InputName).res";
 }
-
 
 void VcprojGenerator::initIDLTool()
 {
@@ -1402,72 +1416,8 @@ void VcprojGenerator::initExtraCompilerOutputs()
     }
 }
 
-/* \internal
-    Sets up all needed variables from the environment and all the different caches and .conf files
-*/
-
 void VcprojGenerator::initOld()
 {
-    if(init_flag)
-        return;
-
-    init_flag = true;
-    QStringList::Iterator it;
-
-    // Decode version, and add it to $$MSVCPROJ_VERSION --------------
-    if(!project->values("VERSION").isEmpty()) {
-        QString version = project->values("VERSION")[0];
-        int firstDot = version.indexOf(".");
-        QString major = version.left(firstDot);
-        QString minor = version.right(version.length() - firstDot - 1);
-        minor.replace(QRegExp("\\."), "");
-        project->values("MSVCPROJ_VERSION").append("/VERSION:" + major + "." + minor);
-        project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
-    }
-
-    project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
-    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
-
-     // Get filename w/o extension -----------------------------------
-    QString msvcproj_project = "";
-    QString targetfilename = "";
-    if(!project->isEmpty("TARGET")) {
-        project->values("TARGET") = unescapeFilePaths(project->values("TARGET"));
-        targetfilename = msvcproj_project = project->first("TARGET");
-    }
-
-    // Init base class too -------------------------------------------
-    MakefileGenerator::init();
-
-    if(msvcproj_project.isEmpty())
-        msvcproj_project = Option::output.fileName();
-
-    msvcproj_project = msvcproj_project.right(msvcproj_project.length() - msvcproj_project.lastIndexOf("\\") - 1);
-    msvcproj_project = msvcproj_project.left(msvcproj_project.lastIndexOf("."));
-    msvcproj_project.replace(QRegExp("-"), "");
-
-    project->values("MSVCPROJ_PROJECT").append(msvcproj_project);
-    QStringList &proj = project->values("MSVCPROJ_PROJECT");
-
-    for(it = proj.begin(); it != proj.end(); ++it)
-        (*it).replace(QRegExp("\\.[a-zA-Z0-9_]*$"), "");
-
-    // SUBSYSTEM -----------------------------------------------------
-    if(!project->values("QMAKE_APP_FLAG").isEmpty()) {
-            project->values("MSVCPROJ_TEMPLATE").append("win32app" + project->first("VCPROJ_EXTENSION"));
-            if(project->isActiveConfig("console")) {
-                project->values("MSVCPROJ_CONSOLE").append("CONSOLE");
-                project->values("MSVCPROJ_WINCONDEF").append("_CONSOLE");
-                project->values("MSVCPROJ_VCPROJTYPE").append("0x0103");
-                project->values("MSVCPROJ_SUBSYSTEM").append("CONSOLE");
-            } else {
-                project->values("MSVCPROJ_CONSOLE").clear();
-                project->values("MSVCPROJ_WINCONDEF").append("_WINDOWS");
-                project->values("MSVCPROJ_VCPROJTYPE").append("0x0101");
-                project->values("MSVCPROJ_SUBSYSTEM").append("WINDOWS");
-            }
-    }
-
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
@@ -1550,8 +1500,6 @@ QString VcprojGenerator::replaceExtraCompilerVariables(const QString &var, const
     return ret;
 }
 
-
-
 bool VcprojGenerator::openOutput(QFile &file, const QString &/*build*/) const
 {
     QString outdir;
@@ -1603,7 +1551,6 @@ QString VcprojGenerator::findTemplate(QString file)
     return ret;
 }
 
-
 void VcprojGenerator::processPrlVariable(const QString &var, const QStringList &l)
 {
     if(var == "QMAKE_PRL_DEFINES") {
@@ -1622,9 +1569,8 @@ void VcprojGenerator::outputVariables()
 #if 0
     qDebug("Generator: MSVC.NET: List of current variables:");
     for(QMap<QString, QStringList>::ConstIterator it = project->variables().begin(); it != project->variables().end(); ++it)
-        qDebug("Generator: MSVC.NET: %s => %s", it.key().toLatin1().constData(), it.data().join(" | ").toLatin1().constData());
+        qDebug("Generator: MSVC.NET: %s => %s", qPrintable(it.key()), qPrintable(it.value().join(" | ")));
 #endif
 }
 
 QT_END_NAMESPACE
-
