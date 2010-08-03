@@ -916,20 +916,9 @@ void VcprojGenerator::initCompilerTool()
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
-    if(project->isActiveConfig("debug")){
-        // Debug version
-        if((projectTarget == Application) || (projectTarget == StaticLib))
-            conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DBG"));
-        else
-            conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLLDBG"));
-    } else {
-        // Release version
+    if(project->isActiveConfig("release")) {
         conf.compiler.PreprocessorDefinitions += "QT_NO_DEBUG";
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
-        if((projectTarget == Application) || (projectTarget == StaticLib))
-            conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT"));
-        else
-            conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS_MT_DLL"));
     }
 
     // Common for both release and debug
