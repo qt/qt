@@ -1527,6 +1527,22 @@ void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window)
         [theWindow display];
     }
 }
+
+void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
+{
+    if (!childWidget)
+        return;
+
+    QWidget *parent = childWidget->parentWidget();
+    if (childWidget->isWindow() && parent) {
+        if ([[qt_mac_window_for(parent) childWindows] containsObject:qt_mac_window_for(childWidget)]) {
+            QWidgetPrivate *d = qt_widget_private(childWidget);
+            d->setSubWindowStacking(false);
+            d->setSubWindowStacking(true);
+        }
+    }
+}
+
 #endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
