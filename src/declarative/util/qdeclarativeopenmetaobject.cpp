@@ -161,6 +161,12 @@ public:
         prop.second = true;
     }
 
+    inline bool hasData(int idx) const {
+        if (idx >= data.count())
+            return false;
+        return data[idx].second;
+    }
+
     bool autoCreate;
     QDeclarativeOpenMetaObject *q;
     QAbstractDynamicMetaObject *parent;
@@ -293,6 +299,12 @@ void QDeclarativeOpenMetaObject::setValue(const QByteArray &name, const QVariant
 
     dataVal = val;
     activate(d->object, id + d->type->d->signalOffset, 0);
+}
+
+// returns true if this value has been initialized by a call to either value() or setValue()
+bool QDeclarativeOpenMetaObject::hasValue(int id) const
+{
+    return d->hasData(id);
 }
 
 void QDeclarativeOpenMetaObject::setCached(bool c)

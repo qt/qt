@@ -444,6 +444,9 @@ public:
 
     int propForRole(int) const;
     void setValue(int, const QVariant &);
+    bool hasValue(int id) const {
+        return m_meta->hasValue(id);
+    }
 
     void ensureProperties();
 
@@ -1216,11 +1219,13 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                 int role = roles.at(roleIdx);
                 int propId = data->propForRole(role);
                 if (propId != -1) {
-                    if (d->m_listModelInterface) {
-                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
-                    } else if (d->m_abstractItemModel) {
-                        QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
-                        data->setValue(propId, d->m_abstractItemModel->data(index, role));
+                    if (data->hasValue(propId)) {
+                        if (d->m_listModelInterface) {
+                            data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
+                        } else if (d->m_abstractItemModel) {
+                            QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
+                            data->setValue(propId, d->m_abstractItemModel->data(index, role));
+                        }
                     }
                 } else {
                     QString roleName;

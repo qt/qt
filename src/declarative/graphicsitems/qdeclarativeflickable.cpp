@@ -681,12 +681,15 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             if (newY < maxY && maxY - minY <= 0)
                 newY = maxY + (newY - maxY) / 2;
             if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newY > minY || newY < maxY)) {
-                if (newY > minY)
-                    newY = minY;
-                else if (newY < maxY)
+                rejectY = true;
+                if (newY < maxY) {
                     newY = maxY;
-                else
-                    rejectY = true;
+                    rejectY = false;
+                }
+                if (newY > minY) {
+                    newY = minY;
+                    rejectY = false;
+                }
             }
             if (!rejectY && stealMouse) {
                 vData.move.setValue(qRound(newY));
@@ -708,12 +711,15 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             if (newX < maxX && maxX - minX <= 0)
                 newX = maxX + (newX - maxX) / 2;
             if (boundsBehavior == QDeclarativeFlickable::StopAtBounds && (newX > minX || newX < maxX)) {
-                if (newX > minX)
-                    newX = minX;
-                else if (newX < maxX)
+                rejectX = true;
+                if (newX < maxX) {
                     newX = maxX;
-                else
-                    rejectX = true;
+                    rejectX = false;
+                }
+                if (newX > minX) {
+                    newX = minX;
+                    rejectX = false;
+                }
             }
             if (!rejectX && stealMouse) {
                 hData.move.setValue(qRound(newX));
