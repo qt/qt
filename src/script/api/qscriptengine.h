@@ -349,11 +349,7 @@ inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *
 }
 
 template<typename T>
-T qscriptvalue_cast(const QScriptValue &value
-#if !defined qdoc && defined Q_CC_MSVC && _MSC_VER < 1300
-, T * = 0
-#endif
-    )
+T qscriptvalue_cast(const QScriptValue &value)
 {
     T t;
     const int id = qMetaTypeId<T>();
@@ -366,13 +362,11 @@ T qscriptvalue_cast(const QScriptValue &value
     return T();
 }
 
-#if !defined Q_CC_MSVC || _MSC_VER >= 1300
 template <>
 inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value)
 {
     return value.toVariant();
 }
-#endif
 
 template <typename T>
 inline T qScriptValueToValue(const QScriptValue &value)
@@ -428,11 +422,7 @@ void qScriptValueToSequence(const QScriptValue &value, Container &cont)
     quint32 len = value.property(QLatin1String("length")).toUInt32();
     for (quint32 i = 0; i < len; ++i) {
         QScriptValue item = value.property(i);
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-        cont.push_back(qscriptvalue_cast<Container::value_type>(item));
-#else
         cont.push_back(qscriptvalue_cast<typename Container::value_type>(item));
-#endif
     }
 }
 

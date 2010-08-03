@@ -947,11 +947,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         case QMetaType::UChar:
         case QMetaType::UShort:
         case QMetaType::ULong:
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            *f = (double)(qlonglong)qMetaTypeUNumber(d);
-#else
             *f = double(qMetaTypeUNumber(d));
-#endif
             break;
         default:
             *f = 0.0;
@@ -986,11 +982,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         case QMetaType::UChar:
         case QMetaType::UShort:
         case QMetaType::ULong:
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            *f = (float)(qlonglong)qMetaTypeUNumber(d);
-#else
             *f = float(qMetaTypeUNumber(d));
-#endif
             break;
         default:
             *f = 0.0f;
