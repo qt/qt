@@ -112,6 +112,7 @@ src_webkit_declarative.target = sub-webkitdeclarative
    src_declarative.depends = src_gui src_script src_network
    src_plugins.depends = src_gui src_sql src_svg src_multimedia
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
+   src_s60installs.depends -= src_s60installs
    src_imports.depends = src_gui src_declarative
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network
