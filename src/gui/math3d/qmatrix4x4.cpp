@@ -102,8 +102,6 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
     \sa optimize()
 */
 
-#if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
-
 /*!
     \fn QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
 
@@ -125,8 +123,6 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 
     \sa qGenericMatrixFromMatrix4x4()
 */
-
-#endif
 
 /*!
     \fn QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)

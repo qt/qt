@@ -137,10 +137,8 @@ public:
     inline QNoDebug &nospace() { return *this; }
     inline QNoDebug &maybeSpace() { return *this; }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template<typename T>
     inline QNoDebug &operator<<(const T &) { return *this; }
-#endif
 };
 
 Q_CORE_EXPORT_INLINE QDebug qCritical() { return QDebug(QtCriticalMsg); }
@@ -285,10 +283,8 @@ Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
 inline QNoDebug qDebug() { return QNoDebug(); }
 #define qDebug QT_NO_QDEBUG_MACRO
 
-#ifdef QT_NO_MEMBER_TEMPLATES
 template<typename T>
 inline QNoDebug operator<<(QNoDebug debug, const T &) { return debug; }
-#endif
 
 #endif
 

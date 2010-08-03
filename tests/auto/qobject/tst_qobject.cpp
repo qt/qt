@@ -669,11 +669,9 @@ void tst_QObject::findChildren()
     l = qFindChildren<QObject*>(&o, "unnamed");
     QCOMPARE(l.size(), 0);
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     tl = o.findChildren<QTimer *>("t1");
     QCOMPARE(tl.size(), 1);
     QCOMPARE(tl.at(0), &t1);
-#endif
 }
 
 

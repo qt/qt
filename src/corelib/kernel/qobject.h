@@ -156,7 +156,6 @@ public:
     int startTimer(int interval);
     void killTimer(int id);
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template<typename T>
     inline T findChild(const QString &aName = QString()) const
     { return qFindChild<T>(this, aName); }
@@ -169,7 +168,6 @@ public:
     template<typename T>
     inline QList<T> findChildren(const QRegExp &re) const
     { return qFindChildren<T>(this, re); }
-#endif
 #endif
 
 #ifdef QT3_SUPPORT
@@ -369,7 +367,7 @@ inline QList<T> qFindChildren(const QObject *o, const QRegExp &re)
 template <class T>
 inline T qobject_cast(QObject *object)
 {
-#if !defined(QT_NO_MEMBER_TEMPLATES) && !defined(QT_NO_QOBJECT_CHECK)
+#if !defined(QT_NO_QOBJECT_CHECK)
     reinterpret_cast<T>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(object));
 #endif
     return static_cast<T>(reinterpret_cast<T>(0)->staticMetaObject.cast(object));
@@ -382,7 +380,7 @@ inline T qobject_cast(const QObject *object)
     register T ptr = static_cast<T>(object);
     Q_UNUSED(ptr);
 
-#if !defined(QT_NO_MEMBER_TEMPLATES) && !defined(QT_NO_QOBJECT_CHECK)
+#if !defined(QT_NO_QOBJECT_CHECK)
     reinterpret_cast<T>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(const_cast<QObject *>(object)));
 #endif
     return static_cast<T>(const_cast<QObject *>(reinterpret_cast<T>(0)->staticMetaObject.cast(const_cast<QObject *>(object))));

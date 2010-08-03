@@ -65,13 +65,11 @@ inline QScriptValue qscriptQMetaObjectConstructor(QScriptContext *, QScriptEngin
 class QRegExp;
 #endif
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template <typename T>
 inline QScriptValue qScriptValueFromValue(QScriptEngine *, const T &);
 
 template <typename T>
 inline T qScriptValueToValue(const QScriptValue &);
-#endif
 
 class QScriptSyntaxCheckResultPrivate;
 class Q_SCRIPT_EXPORT QScriptSyntaxCheckResult
@@ -196,9 +194,7 @@ public:
 
     QScriptValue newQMetaObject(const QMetaObject *metaObject, const QScriptValue &ctor = QScriptValue());
 
-#  ifndef QT_NO_MEMBER_TEMPLATES
     template <class T> QScriptValue scriptValueFromQMetaObject();
-#  endif // QT_NO_MEMBER_TEMPLATES
 
 #endif // QT_NO_QOBJECT
 
@@ -213,7 +209,6 @@ public:
 
 
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template <typename T>
     inline QScriptValue toScriptValue(const T &value)
     {
@@ -224,7 +219,6 @@ public:
     {
         return qScriptValueToValue<T>(value);
     }
-#endif // QT_NO_MEMBER_TEMPLATES
 
     void installTranslatorFunctions(const QScriptValue &object = QScriptValue());
 
@@ -311,12 +305,10 @@ template<> inline QScriptValue qscriptQMetaObjectConstructor<T>(QScriptContext *
     return o; \
 }
 
-#  ifndef QT_NO_MEMBER_TEMPLATES
     template <class T> QScriptValue QScriptEngine::scriptValueFromQMetaObject()
     {
         return qScriptValueFromQMetaObject<T>(this);
     }
-#  endif // QT_NO_MEMBER_TEMPLATES
 
 #endif // QT_NO_QOBJECT
 
