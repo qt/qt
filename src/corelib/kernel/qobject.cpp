@@ -1746,10 +1746,6 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 11
 
-    \warning This function is not available with MSVC 6. Use
-    qFindChild() instead if you need to support that version of the
-    compiler.
-
     \sa findChildren(), qFindChild()
 */
 
@@ -1770,10 +1766,6 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 13
 
-    \warning This function is not available with MSVC 6. Use
-    qFindChildren() instead if you need to support that version of the
-    compiler.
-
     \sa findChild(), qFindChildren()
 */
 
@@ -1785,10 +1777,6 @@ QObjectList QObject::queryList(const char *inheritsClass,
     and that have names matching the regular expression \a regExp,
     or an empty list if there are no such objects.
     The search is performed recursively.
-
-    \warning This function is not available with MSVC 6. Use
-    qFindChildren() instead if you need to support that version of the
-    compiler.
 */
 
 /*!
@@ -1796,9 +1784,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \relates QObject
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChild()
 */
@@ -1808,9 +1798,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \relates QObject
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChildren()
 */
@@ -1821,9 +1813,13 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
+
+    \sa QObject::findChildren()
 */
 
 /*!
@@ -1833,9 +1829,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChild()
 */
@@ -1847,9 +1845,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChildren()
 */

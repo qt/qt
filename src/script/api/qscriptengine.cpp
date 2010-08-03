@@ -2435,10 +2435,6 @@ QScriptValue QScriptEngine::newQMetaObject(
 
   \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 13
 
-  \warning This function is not available with MSVC 6. Use
-  qScriptValueFromQMetaObject() instead if you need to support that version
-  of the compiler.
-
   \sa QScriptEngine::newQMetaObject()
 */
 
@@ -2451,9 +2447,11 @@ QScriptValue QScriptEngine::newQMetaObject(
   \c{T}.
 
   This function is equivalent to
-  QScriptEngine::scriptValueFromQMetaObject(). It is provided as a
-  work-around for MSVC 6, which doesn't support member template
-  functions.
+  QScriptEngine::scriptValueFromQMetaObject().
+
+  \note This function was provided as a workaround for MSVC 6
+  which did not support member template functions. It is advised
+  to use the other form in new code.
 
   \sa QScriptEngine::newQMetaObject()
 */
@@ -3744,10 +3742,6 @@ QStringList QScriptEngine::importedExtensions() const
     to newVariant()); you can change this behavior by installing your
     own type conversion functions with qScriptRegisterMetaType().
 
-    \warning This function is not available with MSVC 6. Use
-    qScriptValueFromValue() instead if you need to support that
-    version of the compiler.
-
     \sa fromScriptValue(), qScriptRegisterMetaType()
 */
 
@@ -3761,10 +3755,6 @@ QStringList QScriptEngine::importedExtensions() const
     description of the built-in type conversion provided by
     QtScript.
 
-    \warning This function is not available with MSVC 6. Use
-    qScriptValueToValue() or qscriptvalue_cast() instead if you need
-    to support that version of the compiler.
-
     \sa toScriptValue(), qScriptRegisterMetaType()
 */
 
@@ -3777,8 +3767,10 @@ QStringList QScriptEngine::importedExtensions() const
     value of template type \c{T}.
 
     This function is equivalent to QScriptEngine::toScriptValue().
-    It is provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa qScriptValueToValue()
 */
@@ -3791,8 +3783,10 @@ QStringList QScriptEngine::importedExtensions() const
     Returns the given \a value converted to the template type \c{T}.
 
     This function is equivalent to QScriptEngine::fromScriptValue().
-    It is provided as a work-around for MSVC 6, which doesn't
-    support member template functions.
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa qScriptValueFromValue()
 */
