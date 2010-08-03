@@ -5382,7 +5382,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
+    # Auto-detect GStreamer support (needed for Phonon)
     if [ "$CFG_PHONON" != "no" ]; then
         if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
             if [ -n "$PKG_CONFIG" ]; then
