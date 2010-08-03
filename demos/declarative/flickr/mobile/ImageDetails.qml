@@ -45,7 +45,7 @@ import "../common" as Common
 Flipable {
     id: container
 
-    property variant frontContainer: containerFront
+    property alias frontContainer: containerFront
     property string photoTitle: ""
     property string photoTags: ""
     property int photoWidth
@@ -76,17 +76,17 @@ Flipable {
         Column {
             spacing: 10
             anchors {
-                left: parent.left; leftMargin: 20
-                right: parent.right; rightMargin: 20
-                top: parent.top; topMargin: 180
+                left: parent.left; leftMargin: 10
+                right: parent.right; rightMargin: 10
+                top: parent.top; topMargin: 120
             }
-            Text { font.bold: true; color: "white"; elide: Text.ElideRight; text: container.photoTitle }
-            Text { color: "white"; elide: Text.ElideRight; text: "<b>Size:</b> " + container.photoWidth + 'x' + container.photoHeight }
-            Text { color: "white"; elide: Text.ElideRight; text: "<b>Type:</b> " + container.photoType }
-            Text { color: "white"; elide: Text.ElideRight; text: "<b>Author:</b> " + container.photoAuthor }
-            Text { color: "white"; elide: Text.ElideRight; text: "<b>Published:</b> " + container.photoDate }
-            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
-            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags }
+            Text { font.bold: true; color: "white"; elide: Text.ElideRight; text: container.photoTitle; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: "Size: " + container.photoWidth + 'x' + container.photoHeight; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: "Type: " + container.photoType; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: "Author: " + container.photoAuthor; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: "Published: " + container.photoDate; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags == "" ? "" : "Tags: "; width: parent.width }
+            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags; width: parent.width }
         }
     }
 

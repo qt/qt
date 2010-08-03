@@ -65,8 +65,11 @@ symbian-abld|symbian-sbsv2 {
     epocroot_prefix = $${EPOCROOT}
 }
 
-exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
-    
+symbian-abld|symbian-sbsv2:exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
+
+    # Symbian does not provide correct profiles for non-mmp based systems, so
+    # we only should get in here with abld and sbsv2.
+
     # Load platform specific paths
     load($${EPOCROOT}epoc32/include/platform_paths.prf)
 

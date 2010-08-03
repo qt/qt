@@ -1877,9 +1877,9 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
     case SV_S60_5_0:
         return SV_9_4;
     case SV_S60_5_1:
-        return SV_9_4;
+        return SV_SF_2;
     case SV_S60_5_2:
-        return SV_9_4;
+        return SV_SF_3;
     default:
         return SV_Unknown;
     }

@@ -63,9 +63,9 @@
     #include <cmpluginpacketdatadef.h>
     #include <cmplugindialcommondefs.h>
 #else
-    #include <apaccesspointitem.h>
-    #include <apdatahandler.h>
-    #include <aputils.h> 
+    #include <ApAccessPointItem.h>
+    #include <ApDataHandler.h>
+    #include <ApUtils.h>
 #endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
