@@ -1971,7 +1971,7 @@ void QGLShaderProgram::setUniformValue(int location, const QSize& size)
     Q_D(QGLShaderProgram);
     Q_UNUSED(d);
     if (location != -1) {
-        GLfloat values[4] = {size.width(), size.width()};
+        GLfloat values[4] = {size.width(), size.height()};
         glUniform2fv(location, 1, values);
     }
 }
