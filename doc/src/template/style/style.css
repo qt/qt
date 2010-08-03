@@ -1552,18 +1552,17 @@
 
 @media print
 {
-     input, textarea, .header, .footer, .toolbar, .feedback, .wrapper .hd, .wrapper .bd .sidebar, .wrapper .ft
+     input, textarea, .header, .footer, .toolbar, .feedback, .wrapper .hd, .wrapper .bd .sidebar, .wrapper .ft, #feedbackBox, #blurpage, .toc, .breadcrumb, .toolbar, .floatingResult
     {
         display: none;
         background: none;
     }
     .content
     {
-        position: absolute;
-        top: 0px;
-        left: 0px;
         background: none;
         display: block;
+		width: 100%; margin: 0; float: none;
+		
     }
 }
 /* end of print media */
