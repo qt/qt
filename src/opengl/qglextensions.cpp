@@ -233,6 +233,10 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
     if (glCreateShader)
         return true;
 
+    // Must at least have the FragmentShader extension to continue.
+    if (!(QGLExtensions::glExtensions() & QGLExtensions::FragmentShader))
+        return false;
+
     glCreateShader = (_glCreateShader) ctx->getProcAddress(QLatin1String("glCreateShader"));
     if (glCreateShader) {
         glShaderSource = (_glShaderSource) ctx->getProcAddress(QLatin1String("glShaderSource"));
