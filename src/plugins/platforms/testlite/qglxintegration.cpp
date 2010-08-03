@@ -125,6 +125,54 @@ GLXFBConfig QGLXGLContext::findConfig(const GLXFBConfig *configs, int configCoun
     return chosenConfig;
 }
 
+QPlatformWindowFormat QGLXGLContext::platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config)
+{
+    QPlatformWindowFormat format;
+    int redSize     = 0;
+    int greenSize   = 0;
+    int blueSize    = 0;
+    int alphaSize   = 0;
+    int depthSize   = 0;
+    int stencilSize = 0;
+    int sampleCount = 0;
+    int level       = 0;
+    int rgba        = 0;
+    int stereo      = 0;
+    int accumSizeA  = 0;
+    int accumSizeR  = 0;
+    int accumSizeG  = 0;
+    int accumSizeB  = 0;
+
+    glXGetFBConfigAttrib(display, config, GLX_RED_SIZE,     &redSize);
+    glXGetFBConfigAttrib(display, config, GLX_GREEN_SIZE,   &greenSize);
+    glXGetFBConfigAttrib(display, config, GLX_BLUE_SIZE,    &blueSize);
+    glXGetFBConfigAttrib(display, config, GLX_ALPHA_SIZE,   &alphaSize);
+    glXGetFBConfigAttrib(display, config, GLX_DEPTH_SIZE,   &depthSize);
+    glXGetFBConfigAttrib(display, config, GLX_STENCIL_SIZE, &stencilSize);
+    glXGetFBConfigAttrib(display, config, GLX_SAMPLES,      &sampleCount);
+    glXGetFBConfigAttrib(display, config, GLX_LEVEL,        &level);
+    glXGetFBConfigAttrib(display, config, GLX_RGBA,         &rgba);
+    glXGetFBConfigAttrib(display, config, GLX_STEREO,       &stereo);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_ALPHA_SIZE, &accumSizeA);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_RED_SIZE, &accumSizeR);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_GREEN_SIZE, &accumSizeG);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_BLUE_SIZE, &accumSizeB);
+
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    format.setAlphaBufferSize(alphaSize);
+    format.setDepthBufferSize(depthSize);
+    format.setStencilBufferSize(stencilSize);
+    format.setSamples(sampleCount);
+    format.setDirectRendering(true); // We don't support anything else for now.
+    format.setRgba(rgba);
+    format.setStereo(stereo);
+    format.setAccumBufferSize(accumSizeA + accumSizeB + accumSizeG + accumSizeR);
+
+    return format;
+}
+
 QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , m_xd(xd)
@@ -159,6 +207,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     {
         GLXFBConfig config = findConfig(configs,confcount,format,xd);
         m_context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+        m_windowFormat = QGLXGLContext::platformWindowFromGLXFBConfig(xd->display,config);
         XFree(configs);
     } else {
         qFatal("Warning no context created");
@@ -167,9 +216,6 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;
 #endif
-
-// TODO: Populate the QGLFormat with the values of the GLXFBConfig
-
 }
 
 QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext context)
@@ -264,6 +310,11 @@ void* QGLXGLContext::getProcAddress(const QString& procName)
     if (!glXGetProcAddressARB)
         return 0;
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
+}
+
+QPlatformWindowFormat QGLXGLContext::platformWindowFormat() const
+{
+    return m_windowFormat;
 }
 
 QT_END_NAMESPACE

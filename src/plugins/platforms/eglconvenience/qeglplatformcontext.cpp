@@ -45,8 +45,11 @@
 
 #include <QtGui/QPlatformWindow>
 
+#include "qeglconvenience.h"
+
 QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
-    : m_eglDisplay(display)
+    : QPlatformGLContext()
+    , m_eglDisplay(display)
     , m_eglSurface(surface)
     , m_eglApi(eglApi)
 {
@@ -61,6 +64,8 @@ QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, E
         eglTerminate(m_eglDisplay);
         qFatal("EGL error");
     }
+
+    m_windowFormat = qt_qPlatformWindowFormatFromConfig(display,config);
 }
 
 QEGLPlatformContext::~QEGLPlatformContext()
@@ -141,4 +146,9 @@ void* QEGLPlatformContext::getProcAddress(const QString& procName)
 void QEGLPlatformContext::makeDefaultSaredContext()
 {
     setDefaultSharedContext(this);
+}
+
+QPlatformWindowFormat QEGLPlatformContext::platformWindowFormat() const
+{
+    return m_windowFormat;
 }

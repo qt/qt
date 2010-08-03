@@ -1,5 +1,7 @@
 #include "qeglconvenience.h"
 
+QT_BEGIN_NAMESPACE
+
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format)
 {
     int redSize     = format.redBufferSize();
@@ -228,3 +230,46 @@ EGLConfig q_configFromQPlatformWindowFormat(EGLDisplay display, const QPlatformW
     qWarning("Cant find EGLConfig, returning null config");
     return 0;
 }
+
+QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, const EGLConfig config)
+{
+    QPlatformWindowFormat format;
+    EGLint redSize     = 0;
+    EGLint greenSize   = 0;
+    EGLint blueSize    = 0;
+    EGLint alphaSize   = 0;
+    EGLint depthSize   = 0;
+    EGLint stencilSize = 0;
+    EGLint sampleCount = 0;
+    EGLint level       = 0;
+
+    eglGetConfigAttrib(display, config, EGL_RED_SIZE,     &redSize);
+    eglGetConfigAttrib(display, config, EGL_GREEN_SIZE,   &greenSize);
+    eglGetConfigAttrib(display, config, EGL_BLUE_SIZE,    &blueSize);
+    eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE,   &alphaSize);
+    eglGetConfigAttrib(display, config, EGL_DEPTH_SIZE,   &depthSize);
+    eglGetConfigAttrib(display, config, EGL_STENCIL_SIZE, &stencilSize);
+    eglGetConfigAttrib(display, config, EGL_SAMPLES,      &sampleCount);
+    eglGetConfigAttrib(display, config, EGL_LEVEL,        &level);
+
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    format.setAlphaBufferSize(alphaSize);
+    format.setDepthBufferSize(depthSize);
+    format.setStencilBufferSize(stencilSize);
+    format.setSamples(sampleCount);
+    format.setDirectRendering(true); // All EGL contexts are direct-rendered
+    format.setRgba(true);            // EGL doesn't support colour index rendering
+    format.setStereo(false);         // EGL doesn't support stereo buffers
+    format.setAccumBufferSize(0);    // EGL doesn't support accululation buffers
+
+    // Clear the EGL error state because some of the above may
+    // have errored out because the attribute is not applicable
+    // to the surface type.  Such errors don't matter.
+    eglGetError();
+
+    return format;
+}
+
+QT_END_NAMESPACE

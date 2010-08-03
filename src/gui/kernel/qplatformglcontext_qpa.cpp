@@ -41,6 +41,9 @@
 
 #include "qplatformglcontext_qpa.h"
 
+QPlatformGLContext::~QPlatformGLContext()
+{ }
+
 static QPlatformGLContext *staticSharedContext = 0;
 
 void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)

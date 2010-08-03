@@ -57,11 +57,15 @@ public:
     void* getProcAddress(const QString& procName);
 
     void makeDefaultSaredContext();
+
+    QPlatformWindowFormat platformWindowFormat() const;
 private:
     EGLContext m_eglContext;
     EGLDisplay m_eglDisplay;
     EGLSurface m_eglSurface;
     EGLenum m_eglApi;
+
+    QPlatformWindowFormat m_windowFormat;
 };
 
 #endif //QOPENKODEGLINTEGRATION_H

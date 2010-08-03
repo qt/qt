@@ -134,6 +134,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
             widget->winId();//make window
         }
         d->platformContext = widget->platformWindow()->glContext();
+        d->glFormat = qt_platformwindowformat_to_glformat(d->platformContext->platformWindowFormat());
         d->valid =(bool) d->platformContext;
     }
 

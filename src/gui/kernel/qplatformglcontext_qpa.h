@@ -51,16 +51,19 @@ QT_BEGIN_NAMESPACE
 class Q_OPENGL_EXPORT QPlatformGLContext
 {
 public:
-    virtual ~QPlatformGLContext() { }
+    virtual ~QPlatformGLContext();
 
     virtual void makeCurrent() = 0;
     virtual void doneCurrent() = 0;
     virtual void swapBuffers() = 0;
     virtual void* getProcAddress(const QString& procName) = 0;
 
+    virtual QPlatformWindowFormat platformWindowFormat() const = 0;
+
     static QPlatformGLContext *defaultSharedContext();
 
 protected:
+
     static void setDefaultSharedContext(QPlatformGLContext *sharedContext);
 
 };
