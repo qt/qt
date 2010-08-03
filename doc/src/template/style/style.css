@@ -1345,7 +1345,7 @@
 
         font: normal 13px/1.2 Verdana;
         color: #363534;
-		background-color: #FFFFFF;
+		background-color: #FAFAFA;
     }
 
 
@@ -1406,7 +1406,9 @@
 
 
 	border-bottom:1px solid #E5E5E5;
-	width:100%,
+	/*width:100%;*/
+	margin-left:-5px;
+	margin-right:-5px;
     }	
     .creator .wrap .breadcrumb ul li a
     {
