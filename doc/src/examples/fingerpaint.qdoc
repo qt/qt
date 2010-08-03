@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example multitouch/fingerpaint
+    \example touch/fingerpaint
     \title Finger Paint Example
 
-    The Finger Paint example shows the use of multi-touch with a custom widget
+    The Finger Paint example shows the use of touch with a custom widget
     to create a simple painting application.
 
-    \image multitouch-fingerpaint-example.png
+    \image touch-fingerpaint-example.png
 */

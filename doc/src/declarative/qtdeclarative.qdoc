@@ -70,12 +70,22 @@
 
   Returns the QML type id.
 
-  Example: Register the C++ class \c MinehuntGame as the QML type
-  named \c Game for version 0.1 in the import library \c MinehuntCore:
+  For example, this registers a C++ class \c MySliderItem as a QML type
+  named \c Slider for version 1.0 of a \l{QML Modules}{module} called
+  "com.mycompany.qmlcomponents":
 
   \code
-  qmlRegisterType<MinehuntGame>("MinehuntCore", 0, 1, "Game");
+  qmlRegisterType<MySliderItem>("com.mycompany.qmlcomponents", 1, 0, "Slider");
   \endcode
+
+  Once this is registered, the type can be used in QML by importing the 
+  specified module name and version number:
+
+  \qml
+  imoprt com.mycompany.qmlcomponents 1.0
+
+  Slider { ... }
+  \endqml
 
   Note that it's perfectly reasonable for a library to register types to older versions
   than the actual version of the library. Indeed, it is normal for the new library to allow

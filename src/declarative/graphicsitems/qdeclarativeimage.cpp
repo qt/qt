@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
     \endqml
     \endtable
 
-    If the \l {Image::width}{width} and \l{Image::height}{height} properties are not specified,
+    If the \l {Item::width}{width} and \l{Item::height}{height} properties are not specified,
     the Image element is automatically sized to the loaded image. Image elements can be 
     stretched and tiled using the \l fillMode property.
 

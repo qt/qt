@@ -74,6 +74,9 @@ class Q_AUTOTEST_EXPORT QDeclarativePathView : public QDeclarativeItem
     Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
 
+    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
+    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
+
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
@@ -122,6 +125,9 @@ public:
     bool isInteractive() const;
     void setInteractive(bool);
 
+    bool isMoving() const;
+    bool isFlicking() const;
+
     int count() const;
 
     QDeclarativeComponent *delegate() const;
@@ -151,9 +157,15 @@ Q_SIGNALS:
     void pathItemCountChanged();
     void flickDecelerationChanged();
     void interactiveChanged();
+    void movingChanged();
+    void flickingChanged();
     void highlightChanged();
     void highlightItemChanged();
     void highlightMoveDurationChanged();
+    void movementStarted();
+    void movementEnded();
+    void flickStarted();
+    void flickEnded();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -167,6 +179,7 @@ protected:
 private Q_SLOTS:
     void refill();
     void ticked();
+    void movementEnding();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int,int,int);

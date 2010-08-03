@@ -80,7 +80,7 @@ while (i != set.constEnd()) {
 //! [6]
 QSet<QString> set;
 ...
-foreach (QString value, set)
+foreach (const QString &value, set)
     qDebug() << value;
 //! [6]
 

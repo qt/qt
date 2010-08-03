@@ -80,6 +80,7 @@ private slots:
     void startup();
     void groupedPropertyCrash();
     void runningTrue();
+    void sameValue();
 };
 
 void tst_qdeclarativebehaviors::simpleBehavior()
@@ -382,6 +383,33 @@ void tst_qdeclarativebehaviors::runningTrue()
     QSignalSpy runningSpy(animation, SIGNAL(runningChanged(bool)));
     rect->setProperty("myValue", 180);
     QTRY_VERIFY(runningSpy.count() > 0);
+}
+
+//QTBUG-12295
+void tst_qdeclarativebehaviors::sameValue()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/qtbug12295.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *target = rect->findChild<QDeclarativeRectangle*>("myRect");
+    QVERIFY(target);
+
+    target->setX(100);
+    QCOMPARE(target->x(), qreal(100));
+
+    target->setProperty("x", 0);
+    QTRY_VERIFY(target->x() != qreal(0) && target->x() != qreal(100));
+    QTRY_VERIFY(target->x() == qreal(0));   //make sure Behavior has finished.
+
+    target->setX(100);
+    QCOMPARE(target->x(), qreal(100));
+
+    //this is the main point of the test -- the behavior needs to be triggered again
+    //even though we set 0 twice in a row.
+    target->setProperty("x", 0);
+    QTRY_VERIFY(target->x() != qreal(0) && target->x() != qreal(100));
 }
 
 QTEST_MAIN(tst_qdeclarativebehaviors)

@@ -88,7 +88,7 @@ private slots:
     void sessionStop();
 
     void roamingErrorCodes();
-    
+
     void sessionProperties_data();
     void sessionProperties();
 
@@ -918,6 +918,10 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         session.waitForOpened();
 #endif        
 
+        // Wait until the configuration is uptodate as well, it may be signaled 'connected'
+        // bit later than the session
+        QTRY_VERIFY(configuration.state() == QNetworkConfiguration::Active);
+
         if (session.isOpen())
             QVERIFY(!sessionOpenedSpy.isEmpty() || !errorSpy.isEmpty());
         if (!errorSpy.isEmpty()) {
@@ -1131,8 +1135,9 @@ void tst_QNetworkSession::sessionOpenCloseStop()
                         roamedSuccessfully = true;
                     } else if (state == QNetworkSession::Closing) {
                         QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);
-                        QTRY_VERIFY(session.state() == QNetworkSession::Connected);
-                        roamedSuccessfully = true;
+                        QTRY_VERIFY(session.state() == QNetworkSession::Connected ||
+                                    session.state() == QNetworkSession::Disconnected);
+                        roamedSuccessfully = false;
                     } else if (state == QNetworkSession::Disconnected) {
                         QTRY_VERIFY(!errorSpy.isEmpty());
                         QTRY_VERIFY(session2.state() == QNetworkSession::Disconnected);

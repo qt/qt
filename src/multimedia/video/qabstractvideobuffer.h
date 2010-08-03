@@ -63,6 +63,7 @@ public:
         GLTextureHandle,
         XvShmImageHandle,
         CoreImageHandle,
+        QPixmapHandle,
         UserHandle = 1000
     };
 

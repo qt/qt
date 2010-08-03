@@ -2645,7 +2645,7 @@ EXPORTS
 	?childItems@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2644 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::childItems(void) const
 	?children@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2645 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::children(void) const
 	?childrenBoundingRect@QGraphicsItem@@QBE?AVQRectF@@XZ @ 2646 NONAME ; class QRectF QGraphicsItem::childrenBoundingRect(void) const
-	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ABSENT ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
 	?childrenCheckState@QTreeWidgetItem@@ABE?AVQVariant@@H@Z @ 2648 NONAME ; class QVariant QTreeWidgetItem::childrenCheckState(int) const
 	?childrenClippedToShape@QGraphicsItemPrivate@@QBE_NXZ @ 2649 NONAME ; bool QGraphicsItemPrivate::childrenClippedToShape(void) const
 	?childrenCollapsible@QSplitter@@QBE_NXZ @ 2650 NONAME ; bool QSplitter::childrenCollapsible(void) const
@@ -12372,7 +12372,7 @@ EXPORTS
 	?staticMetaObject@QBoxLayout@@2UQMetaObject@@B @ 12371 NONAME ; struct QMetaObject const QBoxLayout::staticMetaObject
 	?qt_tab_all_widgets@@3_NA @ 12372 NONAME ; bool qt_tab_all_widgets
 	?staticMetaObject@QSpinBox@@2UQMetaObject@@B @ 12373 NONAME ; struct QMetaObject const QSpinBox::staticMetaObject
-	?scanCodeCache@QApplicationPrivate@@0V?$QHash@HI@@A @ 12374 NONAME ; class QHash<int, unsigned int> QApplicationPrivate::scanCodeCache
+	?scanCodeCache@QApplicationPrivate@@0V?$QHash@HI@@A @ 12374 NONAME ABSENT ; class QHash<int, unsigned int> QApplicationPrivate::scanCodeCache
 	?staticMetaObject@QItemSelectionModel@@2UQMetaObject@@B @ 12375 NONAME ; struct QMetaObject const QItemSelectionModel::staticMetaObject
 	?staticMetaObject@QItemDelegate@@2UQMetaObject@@B @ 12376 NONAME ; struct QMetaObject const QItemDelegate::staticMetaObject
 	?staticMetaObject@QPushButton@@2UQMetaObject@@B @ 12377 NONAME ; struct QMetaObject const QPushButton::staticMetaObject
@@ -12879,4 +12879,11 @@ EXPORTS
 	?PreDocConstructL@QS60MainApplication@@UAEXXZ @ 12878 NONAME ; void QS60MainApplication::PreDocConstructL(void)
 	?NewAppServerL@QS60MainApplication@@UAEXAAPAVCApaAppServer@@@Z @ 12879 NONAME ; void QS60MainApplication::NewAppServerL(class CApaAppServer * &)
 	?HandleViewDeactivation@QS60MainAppUi@@UAEXABVTVwsViewId@@0@Z @ 12880 NONAME ; void QS60MainAppUi::HandleViewDeactivation(class TVwsViewId const &, class TVwsViewId const &)
+	?timeout@QTapAndHoldGesture@@SAHXZ @ 12881 NONAME ; int QTapAndHoldGesture::timeout(void)
+	?focusScopeItemChange@QGraphicsItemPrivate@@UAEX_N@Z @ 12882 NONAME ; void QGraphicsItemPrivate::focusScopeItemChange(bool)
+	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12883 NONAME ; void QTapAndHoldGesture::setTimeout(int)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@_N@Z @ 12884 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *, bool)
+	?zScaleChanged@QGraphicsScale@@IAEXXZ @ 12885 NONAME ; void QGraphicsScale::zScaleChanged(void)
+	?xScaleChanged@QGraphicsScale@@IAEXXZ @ 12886 NONAME ; void QGraphicsScale::xScaleChanged(void)
+	?yScaleChanged@QGraphicsScale@@IAEXXZ @ 12887 NONAME ; void QGraphicsScale::yScaleChanged(void)
 

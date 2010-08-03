@@ -118,9 +118,9 @@ void QDeclarativeLoaderPrivate::initResize()
     be instantiated may be specified directly by the \l sourceComponent
     property, or loaded from a URL via the \l source property.
 
-    Loader can be used to delay the creation of a component until it is required.
-    For example, this loads "Page1.qml" as a component into the Loader element
-    when the \l MouseArea is clicked:
+    Loader can be used to delay the creation of a component until it
+    is required.  For example, this loads "Page1.qml" as a component
+    into the Loader element, when the \l MouseArea is clicked:
 
     \code
     import Qt 4.7
@@ -159,13 +159,15 @@ void QDeclarativeLoaderPrivate::initResize()
 
     unloads "Page1.qml" and frees resources consumed by it.
 
+    Note that Loader is a focus scope. Its \c focus property must be set to \c true for any of its children
+    to get the \e {active focus} (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
+
     \sa {dynamic-object-creation}{Dynamic Object Creation}
 */
 
 /*!
     \internal
     \class QDeclarativeLoader
-    \qmlclass Loader
  */
 
 /*!

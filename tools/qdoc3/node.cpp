@@ -44,6 +44,8 @@
 */
 
 #include "node.h"
+#include "tree.h"
+#include "codemarker.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -171,6 +173,32 @@ QString Node::accessString() const
     return "public";
 }
 
+/*!
+  Extract a class name from the type \a string and return it.
+ */
+QString Node::extractClassName(const QString &string) const
+{
+    QString result;
+    for (int i=0; i<=string.size(); ++i) {
+        QChar ch;
+        if (i != string.size())
+            ch = string.at(i);
+
+        QChar lower = ch.toLower();
+        if ((lower >= QLatin1Char('a') && lower <= QLatin1Char('z')) ||
+            ch.digitValue() >= 0 ||
+            ch == QLatin1Char('_') ||
+            ch == QLatin1Char(':')) {
+            result += ch;
+        }
+        else if (!result.isEmpty()) {
+            if (result != QLatin1String("const"))
+                return result;
+            result.clear();
+        }
+    }
+    return result;
+}
 
 /*!
   Returns a string representing the access specifier.
@@ -299,7 +327,7 @@ InnerNode::~InnerNode()
 Node *InnerNode::findNode(const QString& name)
 {
     Node *node = childMap.value(name);
-    if (node)
+    if (node && node->subType() != QmlPropertyGroup)
         return node;
     if ((type() == Fake) && (subType() == QmlClass)) {
         for (int i=0; i<children.size(); ++i) {
@@ -426,6 +454,9 @@ void InnerNode::setOverload(const FunctionNode *func, bool overlode)
 }
 
 /*!
+  Mark all child nodes that have no documentation as having
+  private access and internal status. qdoc will then ignore
+  them for documentation purposes.
  */
 void InnerNode::makeUndocumentedChildrenInternal()
 {
@@ -831,6 +862,7 @@ NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
 
 /*!
   \class ClassNode
+  \brief This class represents a C++ class.
  */
 
 /*!
@@ -850,8 +882,8 @@ void ClassNode::addBaseClass(Access access,
                              ClassNode *node,
                              const QString &dataTypeWithTemplateArgs)
 {
-    bas.append(RelatedClass(access, node, dataTypeWithTemplateArgs));
-    node->der.append(RelatedClass(access, this));
+    bases.append(RelatedClass(access, node, dataTypeWithTemplateArgs));
+    node->derived.append(RelatedClass(access, this));
 }
 
 /*!
@@ -859,16 +891,16 @@ void ClassNode::addBaseClass(Access access,
 void ClassNode::fixBaseClasses()
 {
     int i;
-
     i = 0;
-    while (i < bas.size()) {
-        ClassNode *baseClass = bas.at(i).node;
-        if (baseClass->access() == Node::Private) {
-            bas.removeAt(i);
-
-            const QList<RelatedClass> &basesBases = baseClass->baseClasses();
-            for (int j = basesBases.size() - 1; j >= 0; --j)
-                bas.insert(i, basesBases.at(j));
+    while (i < bases.size()) {
+        ClassNode* bc = bases.at(i).node;
+        if (bc->access() == Node::Private) {
+            RelatedClass rc = bases.at(i);
+            bases.removeAt(i);
+            ignoredBases.append(rc);
+            const QList<RelatedClass> &bb = bc->baseClasses();
+            for (int j = bb.size() - 1; j >= 0; --j)
+                bases.insert(i, bb.at(j));
         }
         else {
             ++i;
@@ -876,20 +908,28 @@ void ClassNode::fixBaseClasses()
     }
 
     i = 0;
-    while (i < der.size()) {
-        ClassNode *derivedClass = der.at(i).node;
-        if (derivedClass->access() == Node::Private) {
-            der.removeAt(i);
-
-            const QList<RelatedClass> &dersDers =
-                derivedClass->derivedClasses();
-            for (int j = dersDers.size() - 1; j >= 0; --j)
-                der.insert(i, dersDers.at(j));
+    while (i < derived.size()) {
+        ClassNode* dc = derived.at(i).node;
+        if (dc->access() == Node::Private) {
+            derived.removeAt(i);
+            const QList<RelatedClass> &dd = dc->derivedClasses();
+            for (int j = dd.size() - 1; j >= 0; --j)
+                derived.insert(i, dd.at(j));
         }
         else {
             ++i;
         }
     }
+}
+
+/*!
+  Search the child list to find the property node with the
+  specified \a name.
+ */
+const PropertyNode* ClassNode::findPropertyNode(const QString& name) const
+{
+    const Node* n = findNode(name,Node::Property);
+    return (n ? static_cast<const PropertyNode*>(n) : 0);
 }
 
 /*!
@@ -1246,6 +1286,24 @@ QStringList FunctionNode::parameterNames() const
 }
 
 /*!
+  Returns a raw list of parameters. If \a names is true, the
+  names are included. If \a values is true, the default values
+  are included, if any are present.
+ */
+QString FunctionNode::rawParameters(bool names, bool values) const
+{
+    QString raw;
+    foreach (const Parameter &parameter, parameters()) {
+        raw += parameter.leftType() + parameter.rightType();
+        if (names)
+            raw += parameter.name();
+        if (values)
+            raw += parameter.defaultValue();
+    }
+    return raw;
+}
+
+/*!
   Returns the list of reconstructed parameters. If \a values
   is true, the default values are included, if any are present.
  */
@@ -1567,6 +1625,144 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
         return defaultValue;
     }
 }
+
+static QString valueType(const QString& n)
+{
+    if (n == "QPoint")
+        return "QDeclarativePointValueType";
+    if (n == "QPointF")
+        return "QDeclarativePointFValueType";
+    if (n == "QSize")
+        return "QDeclarativeSizeValueType";
+    if (n == "QSizeF")
+        return "QDeclarativeSizeFValueType";
+    if (n == "QRect")
+        return "QDeclarativeRectValueType";
+    if (n == "QRectF")
+        return "QDeclarativeRectFValueType";
+    if (n == "QVector2D")
+        return "QDeclarativeVector2DValueType";
+    if (n == "QVector3D")
+        return "QDeclarativeVector3DValueType";
+    if (n == "QVector4D")
+        return "QDeclarativeVector4DValueType";
+    if (n == "QQuaternion")
+        return "QDeclarativeQuaternionValueType";
+    if (n == "QMatrix4x4")
+        return "QDeclarativeMatrix4x4ValueType";
+    if (n == "QEasingCurve")
+        return "QDeclarativeEasingValueType";
+    if (n == "QFont")
+        return "QDeclarativeFontValueType";
+    return QString();
+}
+
+/*!
+  Returns true if a QML property or attached property is
+  read-only. The algorithm for figuring this out is long
+  amd tedious and almost certainly will break. It currently
+  doesn't work for qmlproperty bool PropertyChanges::explicit,
+  because the tokenized gets confused on "explicit" .
+ */
+bool QmlPropertyNode::isWritable(const Tree* tree) const
+{
+    Node* n = parent();
+    while (n && n->subType() != Node::QmlClass)
+        n = n->parent();
+    if (n) {
+        const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
+        const ClassNode* cn = qcn->classNode();
+        if (cn) {
+            QStringList dotSplit = name().split(QChar('.'));
+            const PropertyNode* pn = cn->findPropertyNode(dotSplit[0]);
+            if (pn) {
+                if (dotSplit.size() > 1) {
+                    QStringList path(extractClassName(pn->qualifiedDataType()));
+                    const Node* nn = tree->findNode(path,Class);
+                    if (nn) {
+                        const ClassNode* cn = static_cast<const ClassNode*>(nn);
+                        pn = cn->findPropertyNode(dotSplit[1]);
+                        if (pn) {
+                            return pn->isWritable();
+                        }
+                        else {
+                            const QList<RelatedClass>& bases = cn->baseClasses();
+                            if (!bases.isEmpty()) {
+                                for (int i=0; i<bases.size(); ++i) {
+                                    const ClassNode* cn = bases[i].node;
+                                    pn = cn->findPropertyNode(dotSplit[1]);
+                                    if (pn) {
+                                        return pn->isWritable();
+                                    }
+                                }
+                            }
+                            const QList<RelatedClass>& ignoredBases = cn->ignoredBaseClasses();
+                            if (!ignoredBases.isEmpty()) {
+                                for (int i=0; i<ignoredBases.size(); ++i) {
+                                    const ClassNode* cn = ignoredBases[i].node;
+                                    pn = cn->findPropertyNode(dotSplit[1]);
+                                    if (pn) {
+                                        return pn->isWritable();
+                                    }
+                                }
+                            }
+                            QString vt = valueType(cn->name());
+                            if (!vt.isEmpty()) {
+                                QStringList path(vt);
+                                const Node* vtn = tree->findNode(path,Class);
+                                if (vtn) {
+                                    const ClassNode* cn = static_cast<const ClassNode*>(vtn);
+                                    pn = cn->findPropertyNode(dotSplit[1]);
+                                    if (pn) {
+                                        return pn->isWritable();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    return pn->isWritable();
+                }
+            }
+            else {
+                const QList<RelatedClass>& bases = cn->baseClasses();
+                if (!bases.isEmpty()) {
+                    for (int i=0; i<bases.size(); ++i) {
+                        const ClassNode* cn = bases[i].node;
+                        pn = cn->findPropertyNode(dotSplit[0]);
+                        if (pn) {
+                            return pn->isWritable();
+                        }
+                    }
+                }
+                const QList<RelatedClass>& ignoredBases = cn->ignoredBaseClasses();
+                if (!ignoredBases.isEmpty()) {
+                    for (int i=0; i<ignoredBases.size(); ++i) {
+                        const ClassNode* cn = ignoredBases[i].node;
+                        pn = cn->findPropertyNode(dotSplit[0]);
+                        if (pn) {
+                            return pn->isWritable();
+                        }
+                    }
+                }
+                if (isAttached()) {
+                    QString classNameAttached = cn->name() + "Attached";
+                    QStringList path(classNameAttached);
+                    const Node* nn = tree->findNode(path,Class);
+                    const ClassNode* acn = static_cast<const ClassNode*>(nn);
+                    pn = acn->findPropertyNode(dotSplit[0]);
+                    if (pn) {
+                        return pn->isWritable();
+                    }
+                }
+            }
+        }
+    }
+    location().warning(tr("Can't determine read-only status of QML property %1; writable assumed.").arg(name()));
+    return true;
+}
+
 #endif
 
 QT_END_NAMESPACE

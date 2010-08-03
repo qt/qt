@@ -70,6 +70,16 @@
 
 QT_BEGIN_NAMESPACE
 
+// The cache limit describes the maximum "junk" in the cache.
+// These are the same defaults as QPixmapCache
+#if defined(Q_OS_SYMBIAN)
+static int cache_limit = 1024 * 1024; // 1048 KB cache limit for symbian
+#elif defined(Q_WS_QWS) || defined(Q_WS_WINCE)
+static int cache_limit = 2048 * 1024; // 2048 KB cache limit for embedded
+#else
+static int cache_limit = 10240 * 1024; // 10 MB cache limit for desktop
+#endif
+
 class QDeclarativePixmapReader;
 class QDeclarativePixmapData;
 class QDeclarativePixmapReply : public QObject
@@ -114,6 +124,18 @@ public:
     static int downloadProgressIndex;
 };
 
+class QDeclarativePixmapReaderThreadObject : public QObject {
+    Q_OBJECT
+public:
+    QDeclarativePixmapReaderThreadObject(QDeclarativePixmapReader *);
+    void processJobs();
+    virtual bool event(QEvent *e);
+private slots:
+    void networkRequestDone();
+private:
+    QDeclarativePixmapReader *reader;
+};
+
 class QDeclarativePixmapData;
 class QDeclarativePixmapReader : public QThread
 {
@@ -130,12 +152,11 @@ public:
 protected:
     void run();
 
-private slots:
-    void networkRequestDone();
-
 private:
+    friend class QDeclarativePixmapReaderThreadObject;
     void processJobs();
     void processJob(QDeclarativePixmapReply *);
+    void networkRequestDone(QNetworkReply *);
 
     QList<QDeclarativePixmapReply*> jobs;
     QList<QDeclarativePixmapReply*> cancelled;
@@ -143,14 +164,7 @@ private:
     QObject *eventLoopQuitHack;
 
     QMutex mutex;
-    class ThreadObject : public QObject {
-    public:
-        ThreadObject(QDeclarativePixmapReader *);
-        void processJobs();
-        virtual bool event(QEvent *e);
-    private:
-        QDeclarativePixmapReader *reader;
-    } *threadObject;
+    QDeclarativePixmapReaderThreadObject *threadObject;
     QWaitCondition waitCondition;
 
     QNetworkAccessManager *networkAccessManager();
@@ -161,7 +175,7 @@ private:
     static int replyDownloadProgress;
     static int replyFinished;
     static int downloadProgress;
-    static int thisNetworkRequestDone;
+    static int threadNetworkRequestDone;
     static QHash<QDeclarativeEngine *,QDeclarativePixmapReader*> readers;
     static QMutex readerMutex;
 };
@@ -232,7 +246,7 @@ QMutex QDeclarativePixmapReader::readerMutex;
 int QDeclarativePixmapReader::replyDownloadProgress = -1;
 int QDeclarativePixmapReader::replyFinished = -1;
 int QDeclarativePixmapReader::downloadProgress = -1;
-int QDeclarativePixmapReader::thisNetworkRequestDone = -1;
+int QDeclarativePixmapReader::threadNetworkRequestDone = -1;
 
 
 void QDeclarativePixmapReply::postReply(ReadError error, const QString &errorString, 
@@ -317,9 +331,8 @@ QDeclarativePixmapReader::~QDeclarativePixmapReader()
     wait();
 }
 
-void QDeclarativePixmapReader::networkRequestDone()
+void QDeclarativePixmapReader::networkRequestDone(QNetworkReply *reply)
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QDeclarativePixmapReply *job = replies.take(reply);
 
     if (job) {
@@ -335,7 +348,7 @@ void QDeclarativePixmapReader::networkRequestDone()
                 reply = networkAccessManager()->get(req);
 
                 QMetaObject::connect(reply, replyDownloadProgress, job, downloadProgress);
-                QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+                QMetaObject::connect(reply, replyFinished, threadObject, threadNetworkRequestDone);
 
                 replies.insert(reply, job);
                 return;
@@ -368,17 +381,17 @@ void QDeclarativePixmapReader::networkRequestDone()
     threadObject->processJobs();
 }
 
-QDeclarativePixmapReader::ThreadObject::ThreadObject(QDeclarativePixmapReader *i)
+QDeclarativePixmapReaderThreadObject::QDeclarativePixmapReaderThreadObject(QDeclarativePixmapReader *i)
 : reader(i)
 {
 }
 
-void QDeclarativePixmapReader::ThreadObject::processJobs() 
+void QDeclarativePixmapReaderThreadObject::processJobs() 
 { 
     QCoreApplication::postEvent(this, new QEvent(QEvent::User)); 
 }
 
-bool QDeclarativePixmapReader::ThreadObject::event(QEvent *e) 
+bool QDeclarativePixmapReaderThreadObject::event(QEvent *e) 
 {
     if (e->type() == QEvent::User) { 
         reader->processJobs(); 
@@ -386,6 +399,12 @@ bool QDeclarativePixmapReader::ThreadObject::event(QEvent *e)
     } else { 
         return QObject::event(e);
     }
+}
+
+void QDeclarativePixmapReaderThreadObject::networkRequestDone()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    reader->networkRequestDone(reply);
 }
 
 void QDeclarativePixmapReader::processJobs()
@@ -469,7 +488,7 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
             QNetworkReply *reply = networkAccessManager()->get(req);
 
             QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
-            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+            QMetaObject::connect(reply, replyFinished, threadObject, threadNetworkRequestDone);
 
             replies.insert(reply, runningJob);
         }
@@ -520,15 +539,15 @@ void QDeclarativePixmapReader::run()
     if (replyDownloadProgress == -1) {
         const QMetaObject *nr = &QNetworkReply::staticMetaObject;
         const QMetaObject *pr = &QDeclarativePixmapReply::staticMetaObject;
-        const QMetaObject *ir = &QDeclarativePixmapReader::staticMetaObject;
+        const QMetaObject *ir = &QDeclarativePixmapReaderThreadObject::staticMetaObject;
         replyDownloadProgress = nr->indexOfSignal("downloadProgress(qint64,qint64)");
         replyFinished = nr->indexOfSignal("finished()");
         downloadProgress = pr->indexOfSignal("downloadProgress(qint64,qint64)");
-        thisNetworkRequestDone = ir->indexOfSlot("networkRequestDone()");
+        threadNetworkRequestDone = ir->indexOfSlot("networkRequestDone()");
     }
 
     mutex.lock();
-    threadObject = new ThreadObject(this);
+    threadObject = new QDeclarativePixmapReaderThreadObject(this);
     mutex.unlock();
 
     processJobs();
@@ -571,6 +590,8 @@ public:
     QHash<QDeclarativePixmapKey, QDeclarativePixmapData *> m_cache;
 
 private:
+    void shrinkCache(int remove);
+
     QDeclarativePixmapData *m_unreferencedPixmaps;
     QDeclarativePixmapData *m_lastUnreferencedPixmap;
 
@@ -604,8 +625,10 @@ void QDeclarativePixmapStore::unreferencePixmap(QDeclarativePixmapData *data)
 
     m_unreferencedCost += data->cost();
 
-    if (m_timerId == -1)
-        startTimer(CACHE_EXPIRE_TIME * 1000);
+    shrinkCache(-1); // Shrink the cache incase it has become larger than cache_limit
+
+    if (m_timerId == -1 && m_unreferencedPixmaps) 
+        m_timerId = startTimer(CACHE_EXPIRE_TIME * 1000);
 }
 
 void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
@@ -627,11 +650,9 @@ void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
     m_unreferencedCost -= data->cost();
 }
 
-void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
+void QDeclarativePixmapStore::shrinkCache(int remove)
 {
-    int removalCost = m_unreferencedCost / CACHE_REMOVAL_FRACTION;
-
-    while (removalCost > 0 && m_lastUnreferencedPixmap) {
+    while ((remove > 0 || m_unreferencedCost > cache_limit) && m_lastUnreferencedPixmap) {
         QDeclarativePixmapData *data = m_lastUnreferencedPixmap;
         Q_ASSERT(data->nextUnreferenced == 0);
 
@@ -640,10 +661,17 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
         data->prevUnreferencedPtr = 0;
         data->prevUnreferenced = 0;
 
-        removalCost -= data->cost();
+        remove -= data->cost();
         data->removeFromCache();
         delete data;
     }
+}
+
+void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
+{
+    int removalCost = m_unreferencedCost / CACHE_REMOVAL_FRACTION;
+
+    shrinkCache(removalCost);
 
     if (m_unreferencedPixmaps == 0) {
         killTimer(m_timerId);
@@ -693,7 +721,7 @@ bool QDeclarativePixmapReply::event(QEvent *event)
 
 int QDeclarativePixmapData::cost() const
 {
-    return pixmap.width() * pixmap.height() * pixmap.depth();
+    return (pixmap.width() * pixmap.height() * pixmap.depth()) / 8;
 }
 
 void QDeclarativePixmapData::addref()

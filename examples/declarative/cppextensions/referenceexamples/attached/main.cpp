@@ -83,7 +83,7 @@ int main(int argc, char ** argv)
         }
 
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
     }
 
     return 0;

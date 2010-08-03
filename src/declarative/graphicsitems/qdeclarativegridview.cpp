@@ -1085,12 +1085,14 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \c portrait data directly.
 
     An improved grid view is shown below. The delegate is visually improved and is moved 
-    into a separate \c contactDelegate component. Also, the currently selected item is highlighted
-    with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
-    to enable keyboard navigation for the grid view.
+    into a separate \c contactDelegate component.
     
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs advanced
     \image gridview-highlight.png
+
+    The currently selected item is highlighted with a blue \l Rectangle using the \l highlight property,
+    and \c focus is set to \c true to enable keyboard navigation for the grid view.
+    The grid view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
@@ -1276,6 +1278,11 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         if (isComponentComplete()) {
+            for (int i = 0; i < d->visibleItems.count(); ++i)
+                d->releaseItem(d->visibleItems.at(i));
+            d->visibleItems.clear();
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             refill();
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
@@ -1293,9 +1300,15 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
   \qmlproperty int GridView::currentIndex
   \qmlproperty Item GridView::currentItem
 
-  \c currentIndex holds the index of the current item.
-  \c currentItem is the current item.  Note that the position of the current item
-  may only be approximate until it becomes visible in the view.
+    The \c currentIndex property holds the index of the current item, and
+    \c currentItem holds the current item. 
+
+    If highlightFollowsCurrentItem is \c true, setting either of these 
+    properties will smoothly scroll the GridView so that the current 
+    item becomes visible.
+    
+    Note that the position of the current item
+    may only be approximate until it becomes visible in the view.
 */
 int QDeclarativeGridView::currentIndex() const
 {
@@ -1385,7 +1398,7 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
   \qmlproperty bool GridView::highlightFollowsCurrentItem
   This property sets whether the highlight is managed by the view.
 
-    If this property is true, the highlight is moved smoothly
+    If this property is true (the default value), the highlight is moved smoothly
     to follow the current item.  Otherwise, the
     highlight is not moved by the view, and any movement must be implemented
     by the highlight.  
@@ -1568,6 +1581,8 @@ void QDeclarativeGridView::setFlow(Flow flow)
     If this is true, key navigation that would move the current item selection
     past one end of the view instead wraps around and moves the selection to
     the other end of the view.
+
+    By default, key navigation is not wrapped.
 */
 bool QDeclarativeGridView::isWrapEnabled() const
 {

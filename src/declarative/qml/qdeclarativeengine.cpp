@@ -115,22 +115,55 @@ QT_BEGIN_NAMESPACE
 /*!
   \qmlclass QtObject QObject
   \since 4.7
-  \brief The QtObject element is the most basic element in QML
+  \brief The QtObject element is the most basic element in QML.
 
   The QtObject element is a non-visual element which contains only the
-  objectName property. It is useful for when you need an extremely
-  lightweight element to place your own custom properties in.
+  objectName property. 
+
+  It can be useful to create a QtObject if you need an extremely
+  lightweight element to enclose a set of custom properties:
+
+  \snippet doc/src/snippets/declarative/qtobject.qml 0
 
   It can also be useful for C++ integration, as it is just a plain
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
-  This property allows you to give a name to this specific object instance.
+  \qmlproperty string QML:QtObject::objectName
+  This property holds the QObject::objectName for this specific object instance.
 
-  See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
-  in the scripting documentation for details how objectName can be used from
-  scripts.
+  This allows a C++ application to locate an item within a QML component
+  using the QObject::findChild() method. For example, the following C++ 
+  application locates the child \l Rectangle item and dynamically changes its
+  \c color value:
+
+    \qml
+    // MyRect.qml
+
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+
+        Rectangle {
+            anchors.fill: parent
+            color: "red" 
+            objectName: "myRect"
+        }
+    }
+    \endqml
+
+    \code
+    // main.cpp
+
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("MyRect.qml"));
+    view.show();
+
+    QDeclarativeItem *item = view.rootObject()->findChild<QDeclarativeItem*>("myRect");
+    if (item) 
+        item->setProperty("color", QColor(Qt::yellow));
+    \endcode
 */
 
 struct StaticQtMetaObject : public QObject
@@ -195,7 +228,7 @@ There are also string based constructors for these types. See \l{qdeclarativebas
 
 \section1 Date/Time Formatters
 
-The Qt object contains several functions for formatting dates and times.
+The Qt object contains several functions for formatting QDateTime, QDate and QTime values.
 
 \list
     \o \l{QML:Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
@@ -237,8 +270,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
@@ -268,7 +301,9 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         + QDir::separator() + QLatin1String("OfflineStorage");
 #endif
 
+#ifndef QT_NO_XMLSTREAMREADER
     qt_add_qmlxmlhttprequest(this);
+#endif
     qt_add_qmlsqldatabase(this);
     // XXX A Multimedia "Qt.Sound" class also needs to be made available,
     // XXX but we don't want a dependency in that cirection.
@@ -296,7 +331,7 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
     //date/time formatting
     qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
     qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
@@ -545,9 +580,9 @@ void QDeclarativeEngine::clearComponentCache()
   component instances should be added to sub-contexts parented to the
   root context.
 */
-QDeclarativeContext *QDeclarativeEngine::rootContext()
+QDeclarativeContext *QDeclarativeEngine::rootContext() const
 {
-    Q_D(QDeclarativeEngine);
+    Q_D(const QDeclarativeEngine);
     return d->rootContext;
 }
 
@@ -1071,27 +1106,23 @@ QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 \qmlmethod object Qt::createComponent(url)
 
 Returns a \l Component object created using the QML file at the specified \a url,
-or \c null if there was an error in creating the component.
+or \c null if an empty string was given.
+
+The returned component's \l Component::status property indicates whether the
+component was successfully created. If the status is \c Component.Error, 
+see \l Component::errorString() for an error description.
 
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Notice it checks whether the component \l{Component::status}{status} is
-\c Component.Ready before calling \l {Component::createObject()}{createObject()}
-in case the QML file is loaded over a network and thus is not ready immediately.
+For example:
 
-\snippet doc/src/snippets/declarative/componentCreation.js 0
-\codeline
-\snippet doc/src/snippets/declarative/componentCreation.js 1
+\snippet doc/src/snippets/declarative/createComponent-simple.qml 0
 
-If you are certain the files will be local, you could simplify to:
-
-\snippet doc/src/snippets/declarative/componentCreation.js 2
+See \l {Dynamic Object Management} for more information on using this function.
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
-
-\sa {Dynamic Object Management}
 */
 
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1140,7 +1171,7 @@ Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
 
-\sa {Dynamic Object Management}
+See \l {Dynamic Object Management} for more information on using this function.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1265,7 +1296,7 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
 \qmlmethod string Qt::formatDate(datetime date, variant format)
 Returns the string representation of \c date, formatted according to \c format.
 */
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
@@ -1406,7 +1437,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
     }
     return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
-#endif // QT_NO_TEXTDATE
+#endif // QT_NO_DATESTRING
 
 /*!
 \qmlmethod color Qt::rgba(real red, real green, real blue, real alpha)

@@ -64,7 +64,7 @@ static const char docTypeHeader[] =
 
 // in qdbusxmlgenerator.cpp
 QT_BEGIN_NAMESPACE
-extern QDBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
+extern Q_DBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const QMetaObject *mo,
                                                        const QMetaObject *base, int flags);
 QT_END_NAMESPACE
 

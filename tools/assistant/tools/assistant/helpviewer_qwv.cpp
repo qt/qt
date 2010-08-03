@@ -101,7 +101,7 @@ qint64 HelpNetworkReply::readData(char *buffer, qint64 maxlen)
     TRACE_OBJ
     qint64 len = qMin(qint64(data.length()), maxlen);
     if (len) {
-        qMemCopy(buffer, data.constData(), len);
+        memcpy(buffer, data.constData(), len);
         data.remove(0, len);
     }
     if (!data.length())

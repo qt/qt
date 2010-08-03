@@ -45,6 +45,7 @@
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qlistview.h>
+#include <qlistwidget.h>
 #include <qitemdelegate.h>
 #include <qstandarditemmodel.h>
 #include <qstringlistmodel.h>
@@ -125,6 +126,8 @@ private slots:
     void taskQTBUG_5877_skippingItemInPageDownUp();
     void taskQTBUG_9455_wrongScrollbarRanges();
     void styleOptionViewItem();
+    void taskQTBUG_12308_artihmeticException();
+    void taskQTBUG_12308_wrongFlowLayout();
 };
 
 // Testing get/set functions
@@ -1653,8 +1656,8 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
     //we'll make sure the item is repainted
     delegate.numPaints = 0;
     QApplication::processEvents();
+    QTRY_COMPARE(delegate.numPaints, 1);
     QCOMPARE(list.visualRect(index).topLeft(), topLeft);
-    QCOMPARE(delegate.numPaints, 1);
 }
 
 
@@ -2000,6 +2003,54 @@ void tst_QListView::styleOptionViewItem()
     // Run test
     view.showMaximized();
     QApplication::processEvents();
+}
+
+void tst_QListView::taskQTBUG_12308_artihmeticException()
+{
+    QListWidget lw;
+    lw.setLayoutMode(QListView::Batched);
+    lw.setViewMode(QListView::IconMode);
+    for (int i = 0; i < lw.batchSize() + 1; i++) {
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(QString("Item %L1").arg(i));
+        lw.addItem(item);
+        item->setHidden(true);
+    }
+    lw.show();
+    QTest::qWaitForWindowShown(&lw);
+    // No crash, it's all right.
+}
+
+class Delegate12308 : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    Delegate12308(QObject *parent = 0) : QStyledItemDelegate(parent)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+    {
+        QVERIFY(option.rect.topLeft() != QPoint(-1, -1));
+        QStyledItemDelegate::paint(painter, option, index);
+    }
+};
+
+void tst_QListView::taskQTBUG_12308_wrongFlowLayout()
+{
+    QListWidget lw;
+    Delegate12308 delegate;
+    lw.setLayoutMode(QListView::Batched);
+    lw.setViewMode(QListView::IconMode);
+    lw.setItemDelegate(&delegate);
+    for (int i = 0; i < lw.batchSize() + 1; i++) {
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(QString("Item %L1").arg(i));
+        lw.addItem(item);
+        if (!item->text().contains(QString::fromAscii("1")))
+            item->setHidden(true);
+    }
+    lw.show();
+    QTest::qWaitForWindowShown(&lw);
 }
 
 QTEST_MAIN(tst_QListView)

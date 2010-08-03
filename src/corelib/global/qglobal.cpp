@@ -2383,7 +2383,7 @@ void qDebug(const char *msg, ...)
     This syntax inserts a space between each item, and
     appends a newline at the end.
 
-    To supress the output at runtime, install your own message handler
+    To suppress the output at runtime, install your own message handler
     with qInstallMsgHandler().
 
     \sa qDebug(), qCritical(), qFatal(), qInstallMsgHandler(),
@@ -2419,7 +2419,7 @@ void qWarning(const char *msg, ...)
     A space is inserted between the items, and a newline is
     appended at the end.
 
-    To supress the output at runtime, install your own message handler
+    To suppress the output at runtime, install your own message handler
     with qInstallMsgHandler().
 
     \sa qDebug(), qWarning(), qFatal(), qInstallMsgHandler(),
@@ -2484,7 +2484,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     Example:
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 30
 
-    To supress the output at runtime, install your own message handler
+    To suppress the output at runtime, install your own message handler
     with qInstallMsgHandler().
 
     \sa qDebug(), qCritical(), qWarning(), qInstallMsgHandler(),
@@ -2613,55 +2613,6 @@ void qsrand(uint seed)
     // this is also valid for QT_NO_THREAD
     srand(seed);
 #endif
-}
-
-/*! \internal
-    \relates <QtGlobal>
-    \since 4.6
-
-    Seed the PRNG, but only if it has not already been seeded.
-
-    The default seed is a combination of current time, a stack address and a
-    serial counter (since thread stack addresses are re-used).
-*/
-void qsrand()
-{
-#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
-    SeedStorage *seedStorage = randTLS();
-    if (seedStorage) {
-        SeedStorageType *pseed = seedStorage->localData();
-        if (pseed) {
-            // already seeded
-            return;
-        }
-        seedStorage->setLocalData(pseed = new SeedStorageType);
-        // start beyond 1 to avoid the sequence reset
-        static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-        *pseed = QDateTime::currentDateTime().toTime_t()
-                 + quintptr(&pseed)
-                 + serial.fetchAndAddRelaxed(1);
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-        // for Windows and Symbian the srand function must still be called.
-        srand(*pseed);
-#endif
-    }
-
-//QT_NO_THREAD implementations
-#else
-    static unsigned int seed = 0;
-
-    if (seed)
-        return;
-
-#if defined(Q_OS_SYMBIAN)
-    seed = Math::Random();
-#elif defined(Q_OS_WIN)
-    seed = GetTickCount();
-#else
-    seed = quintptr(&seed) + QDateTime::currentDateTime().toTime_t();
-#endif
-    srand(seed);
-#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD)
 }
 
 /*!

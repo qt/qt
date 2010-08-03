@@ -343,8 +343,8 @@
 /*!
     \page examples-draganddrop.html
     \ingroup all-examples
-    \title Drag &amp Drop Examples
-    \brief How to access your platform's native darg &amp drop functionality
+    \title Drag &amp; Drop Examples
+    \brief How to access your platform's native darg &amp; drop functionality
 
     \image draganddrop-examples.png
 
@@ -837,19 +837,19 @@
 */
 
 /*!
-    \page examples-multitouch.html
+    \page examples-touch.html
     \ingroup all-examples
-    \title Multi-Touch Examples
-    \brief Using Qt's multi-touch input capability
+    \title Touch Input Examples
+    \brief Using Qt's touch input capability
 
-    Support for multi-touch input makes it possible for developers to create
+    Support for touch input makes it possible for developers to create
     extensible and intuitive user interfaces.
 
     \list
-    \o \l{multitouch/dials}{Multi-Touch Dials}
-    \o \l{multitouch/fingerpaint}{Finger Paint}
-    \o \l{multitouch/knobs}{Multi-Touch Knobs}
-    \o \l{multitouch/pinchzoom}{Pinch Zoom}
+    \o \l{touch/dials}{Touch Dials}
+    \o \l{touch/fingerpaint}{Finger Paint}
+    \o \l{touch/knobs}{Touch Knobs}
+    \o \l{touch/pinchzoom}{Pinch Zoom}
     \endlist
 */
 

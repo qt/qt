@@ -90,7 +90,7 @@ void QDeclarativeTranslate::setX(qreal x)
         return;
     d->x = x;
     update();
-    emit positionChanged();
+    emit xChanged();
 }
 
 /*!
@@ -113,11 +113,11 @@ void QDeclarativeTranslate::setY(qreal y)
         return;
     d->y = y;
     update();
-    emit positionChanged();
+    emit yChanged();
 }
 
 /*!
-    \reimp
+    \internal
 */
 void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
 {

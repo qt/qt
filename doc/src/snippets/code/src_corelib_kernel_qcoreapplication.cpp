@@ -51,7 +51,7 @@ connect(quitButton, SIGNAL(clicked()), &app, SLOT(quit()));
 
 
 //! [2]
-foreach (QString path, app.libraryPaths())
+foreach (const QString &path, app.libraryPaths())
     do_something(path);
 //! [2]
 

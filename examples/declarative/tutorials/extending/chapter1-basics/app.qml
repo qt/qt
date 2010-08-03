@@ -38,21 +38,23 @@
 **
 ****************************************************************************/
 //![0]
-import Music 1.0
+import Charts 1.0
 import Qt 4.7
 
-Rectangle {
+Item {
     width: 300; height: 200
 
-    Musician {
-        id: aMusician
-        name: "Reddy the Rocker"
-        instrument: "Guitar"
+    PieChart {
+        id: aPieChart
+        anchors.centerIn: parent
+        width: 100; height: 100
+        name: "A simple pie chart"
+        color: "red"
     }
 
     Text {
-        anchors.fill: parent
-        text: aMusician.name + " plays the " + aMusician.instrument
+        anchors { bottom: parent.bottom; horizontalCenter: parent.horizontalCenter; bottomMargin: 20 }
+        text: aPieChart.name
     }
 }
 //![0]

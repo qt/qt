@@ -2,11 +2,11 @@
 INCLUDEPATH += $$PWD
 contains(QT_CONFIG, script): QT += script
 
-include($$QT_SOURCE_TREE/tools/shared/qtpropertybrowser/qtpropertybrowser.pri)
-include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
-include($$QT_SOURCE_TREE/src/tools/rcc/rcc.pri)
-include($$QT_SOURCE_TREE/tools/shared/findwidget/findwidget.pri)
-include($$QT_SOURCE_TREE/tools/shared/qtgradienteditor/qtgradienteditor.pri)
+include(../../../../shared/qtpropertybrowser/qtpropertybrowser.pri)
+include(../../../../shared/deviceskin/deviceskin.pri)
+include(../../../../../src/tools/rcc/rcc.pri)
+include(../../../../shared/findwidget/findwidget.pri)
+include(../../../../shared/qtgradienteditor/qtgradienteditor.pri)
 
 # Input
 FORMS += $$PWD/addlinkdialog.ui \

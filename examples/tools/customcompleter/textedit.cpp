@@ -141,7 +141,7 @@ void TextEdit::keyPressEvent(QKeyEvent *e)
     }
 
     bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
-    if (!c || !isShortcut) // dont process the shortcut when we have a completer
+    if (!c || !isShortcut) // do not process the shortcut when we have a completer
         QTextEdit::keyPressEvent(e);
 //! [7]
 

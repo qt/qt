@@ -62,7 +62,7 @@ class QByteArray;
 /*
  * Proxy class for interface org.freedesktop.DBus
  */
-class QDBUS_EXPORT QDBusConnectionInterface: public QDBusAbstractInterface
+class Q_DBUS_EXPORT QDBusConnectionInterface: public QDBusAbstractInterface
 {
     Q_OBJECT
     Q_ENUMS(ServiceQueueOptions ServiceReplacementOptions RegisterServiceReply)

@@ -67,7 +67,9 @@ A property animation can also be specified as a resource that is manipulated fro
 \snippet doc/src/snippets/declarative/animation.qml property-anim-3
 
 As can be seen, when an animation is used like this (as opposed to as a value source) you will need
-to explicitly set the \c target and \c property to animate.
+to explicitly set the \c target and \c property to animate.  This also the only case where
+an animation needs to be started explictly by either setting the \c running property to
+true or calling the \c start() method.
 
 Animations can be joined into a group using SequentialAnimation and ParallelAnimation.
 

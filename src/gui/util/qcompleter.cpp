@@ -154,6 +154,7 @@
 #include "QtGui/qevent.h"
 #include "QtGui/qheaderview.h"
 #include "QtGui/qdesktopwidget.h"
+#include "QtGui/qlineedit.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -920,8 +921,9 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(widget);
     //the path given by QFileSystemModel does not end with /
-    if (!q->completionPrefix().isEmpty() && q->completionPrefix() != path + QLatin1Char('/'))
+    if (lineEdit && !lineEdit->text().isEmpty() && !q->completionPrefix().isEmpty() && q->completionPrefix() != path + QLatin1Char('/'))
         q->complete();
 }
 

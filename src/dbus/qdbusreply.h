@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(DBus)
 
-QDBUS_EXPORT void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data);
+Q_DBUS_EXPORT void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data);
 
 template<typename T>
 class QDBusReply

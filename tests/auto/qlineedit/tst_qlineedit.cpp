@@ -66,7 +66,6 @@
 #include <qspinbox.h>
 #include <qdebug.h>
 
-
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -275,6 +274,7 @@ private slots:
     void taskQTBUG_7902_contextMenuCrash();
 #endif
     void taskQTBUG_7395_readOnlyShortcut();
+    void QTBUG697_paletteCurrentColorGroup();
 
 #ifdef QT3_SUPPORT
     void validateAndSet_data();
@@ -3712,6 +3712,33 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
     QTest::keyClick(0, Qt::Key_P);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
+{
+#ifndef Q_WS_X11
+    QSKIP("Only tested on X11", SkipAll);
+#endif
+    QLineEdit le;
+    le.setText("               ");
+    QPalette p = le.palette();
+    p.setBrush(QPalette::Active, QPalette::Highlight, Qt::green);
+    p.setBrush(QPalette::Inactive, QPalette::Highlight, Qt::red);
+    le.setPalette(p);
+
+    le.show();
+    QApplication::setActiveWindow(&le);
+    QTest::qWaitForWindowShown(&le);
+    le.setFocus();
+    QTRY_VERIFY(le.hasFocus());
+    le.selectAll();
+
+    QImage img(le.size(),QImage::Format_ARGB32 );
+    le.render(&img);
+    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::green).rgb());
+    QApplication::setActiveWindow(0);
+    le.render(&img);
+    QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
 
 QTEST_MAIN(tst_QLineEdit)

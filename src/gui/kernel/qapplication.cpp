@@ -5313,6 +5313,7 @@ bool QApplication::keypadNavigationEnabled()
     \sa QCoreApplication::instance()
 */
 
+#ifndef QT_NO_IM
 // ************************************************************************
 // Input Method support
 // ************************************************************************
@@ -5378,6 +5379,7 @@ QInputContext *QApplication::inputContext() const
 #endif
     return d->inputContext;
 }
+#endif // QT_NO_IM
 
 //Returns the current platform used by keyBindings
 uint QApplicationPrivate::currentPlatform(){
@@ -5808,10 +5810,12 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
 #ifndef QT_NO_GESTURES
 QGestureManager* QGestureManager::instance()
 {
-    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    if (!qAppPriv->gestureManager)
-        qAppPriv->gestureManager = new QGestureManager(qApp);
-    return qAppPriv->gestureManager;
+    if (QApplicationPrivate *qAppPriv = QApplicationPrivate::instance()) {
+        if (!qAppPriv->gestureManager)
+            qAppPriv->gestureManager = new QGestureManager(qApp);
+        return qAppPriv->gestureManager;
+    }
+    return 0;
 }
 #endif // QT_NO_GESTURES
 

@@ -1279,6 +1279,11 @@ class QDataStream;
 #    else
 #      define Q_COMPAT_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_DBUS_LIB)
+#      define Q_DBUS_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_DBUS_EXPORT Q_DECL_IMPORT
+#    endif
 #    define Q_TEMPLATEDLL
 #  elif defined(QT_DLL) /* use a Qt DLL library */
 #    define Q_CORE_EXPORT Q_DECL_IMPORT
@@ -1296,6 +1301,7 @@ class QDataStream;
 #    define Q_SCRIPT_EXPORT Q_DECL_IMPORT
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_IMPORT
 #    define Q_COMPAT_EXPORT Q_DECL_IMPORT
+#    define Q_DBUS_EXPORT Q_DECL_IMPORT
 #    define Q_TEMPLATEDLL
 #  endif
 #  define Q_NO_DECLARED_NOT_DEFINED
@@ -1324,6 +1330,7 @@ class QDataStream;
 #    define Q_SCRIPT_EXPORT Q_DECL_EXPORT
 #    define Q_SCRIPTTOOLS_EXPORT Q_DECL_EXPORT
 #    define Q_COMPAT_EXPORT Q_DECL_EXPORT
+#    define Q_DBUS_EXPORT Q_DECL_EXPORT
 #  else
 #    define Q_CORE_EXPORT
 #    define Q_GUI_EXPORT
@@ -1338,6 +1345,7 @@ class QDataStream;
 #    define Q_SCRIPT_EXPORT
 #    define Q_SCRIPTTOOLS_EXPORT
 #    define Q_COMPAT_EXPORT
+#    define Q_DBUS_EXPORT
 #  endif
 #endif
 

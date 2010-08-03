@@ -46,14 +46,6 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qvariant.h>
 
-#if defined(QDBUS_MAKEDLL)
-# define QDBUS_EXPORT Q_DECL_EXPORT
-#elif defined(QT_SHARED)
-# define QDBUS_EXPORT Q_DECL_IMPORT
-#else
-# define QDBUS_EXPORT
-#endif
-
 #ifndef Q_MOC_RUN
 # define Q_NOREPLY
 #endif

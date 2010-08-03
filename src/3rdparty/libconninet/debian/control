@@ -1,0 +1,39 @@
+Source: libconninet
+Priority: optional
+Maintainer: Jukka Rissanen <jukka.rissanen@nokia.com>
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, libglib2.0-dev (>= 2.8),
+ libdbus-1-dev (>= 0.60), libconnsettings0-dev (>= 0.4), icd2-osso-ic-dev,
+ icd2-dev, libqt4-dev, libgconf2-dev (>> 2.6.4), libgq-gconf-dev
+Standards-Version: 3.6.2
+Section: libs
+
+Package: libconninet0-dev
+Section: libdevel
+Architecture: any
+Depends: libconninet0 (= ${Source-Version}), libdbus-1-dev (>= 0.60),
+ libglib2.0-dev (>= 2.8), libconnsettings0-dev (>= 0.4), libqt4-dev,
+ icd2-osso-ic-dev, icd2-dev, libgconf2-dev (>> 2.6.4), libgq-gconf-dev
+Description: Internet Connectivity support library development files
+ Internet Connectivity support library (libconninet) provides common
+ support functions for connecting to icd2 and accessing configuration
+ data.
+ .
+ This package contains the header files.
+
+Package: libconninet0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Internet Connectivity support library
+ Internet Connectivity support library (libconninet) provides common
+ support functions for connecting to icd2 and accessing configuration
+ data.
+ .
+ This package contains the shared libraries.
+
+Package: libconninet0-dbg
+Section: libs
+Architecture: any
+Depends: libconninet0 (= ${Source-Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Debug symbols for the Internet Connectivity support library
+ Internet Connectivity support library (libconninet) debug symbols.

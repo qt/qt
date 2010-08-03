@@ -88,6 +88,7 @@ void DeclarativeObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
                                     JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
+    QScript::SaveFrameHelper saveFrame(engine, exec);
     QScriptDeclarativeClass::Identifier identifier = (void *)propertyName.ustring().rep();
 
     QScriptDeclarativeClassPrivate *p = QScriptDeclarativeClassPrivate::get(m_class);
@@ -144,7 +145,7 @@ JSC::JSValue DeclarativeObjectDelegate::call(JSC::ExecState *exec, JSC::JSObject
     QScriptDeclarativeClass *scriptClass = static_cast<DeclarativeObjectDelegate*>(delegate)->m_class;
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
 
-    JSC::ExecState *oldFrame = eng_p->currentFrame;
+    QScript::SaveFrameHelper saveFrame(eng_p, exec);
     eng_p->pushContext(exec, thisValue, args, callee);
     QScriptContext *ctxt = eng_p->contextForFrame(eng_p->currentFrame);
 
@@ -153,7 +154,6 @@ JSC::JSValue DeclarativeObjectDelegate::call(JSC::ExecState *exec, JSC::JSObject
         scriptClass->call(static_cast<DeclarativeObjectDelegate*>(delegate)->m_object, ctxt);
 
     eng_p->popContext();
-    eng_p->currentFrame = oldFrame;
     return (JSC::JSValue &)(result);
 }
 

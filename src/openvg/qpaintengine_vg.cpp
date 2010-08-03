@@ -55,6 +55,7 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
 #include <QtGui/private/qstatictext_p.h>
+#include <QtCore/qmath.h>
 #include <QDebug>
 #include <QSet>
 
@@ -1610,7 +1611,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     // Try converting the path into a QRegion that tightly follows
     // the outline of the path we want to clip with.
-    QRegion region(path.convertToPainterPath().toFillPolygon(QTransform()).toPolygon());
+    QRegion region;
+    if (!path.isEmpty())
+        region = QRegion(path.convertToPainterPath().toFillPolygon(QTransform()).toPolygon());
+
     switch (op) {
         case Qt::NoClip:
         {
@@ -3427,7 +3431,13 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 
     // Set the transformation to use for drawing the current glyphs.
     QTransform glyphTransform(d->pathTransform);
-    glyphTransform.translate(p.x(), p.y());
+    if (d->transform.type() <= QTransform::TxTranslate) {
+        // Prevent blurriness of unscaled, unrotated text by using integer coordinates.
+        // Using ceil(x-0.5) instead of qRound() or int-cast, behave like other paint engines.
+        glyphTransform.translate(ceil(p.x() - 0.5), ceil(p.y() - 0.5));
+    } else {
+        glyphTransform.translate(p.x(), p.y());
+    }
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
 #endif

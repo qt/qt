@@ -132,7 +132,7 @@ class QDeclarativeViewPrivate : public QGraphicsViewPrivate, public QDeclarative
 public:
     QDeclarativeViewPrivate()
         : root(0), declarativeItemRoot(0), graphicsWidgetRoot(0), component(0), resizeMode(QDeclarativeView::SizeViewToRootObject), initialSize(0,0) {}
-    ~QDeclarativeViewPrivate() { delete root; }
+    ~QDeclarativeViewPrivate() { delete root; delete engine; }
     void execute();
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void initResize();
@@ -145,7 +145,7 @@ public:
 
     QUrl source;
 
-    QDeclarativeEngine engine;
+    QDeclarativeEngine* engine;
     QDeclarativeComponent *component;
     QBasicTimer resizetimer;
 
@@ -170,7 +170,7 @@ void QDeclarativeViewPrivate::execute()
         component = 0;
     }
     if (!source.isEmpty()) {
-        component = new QDeclarativeComponent(&engine, source, q);
+        component = new QDeclarativeComponent(engine, source, q);
         if (!component->isLoading()) {
             q->continueExecute();
         } else {
@@ -275,6 +275,7 @@ QDeclarativeView::QDeclarativeView(const QUrl &source, QWidget *parent)
 void QDeclarativeViewPrivate::init()
 {
     Q_Q(QDeclarativeView);
+    engine = new QDeclarativeEngine();
     q->setScene(&scene);
 
     q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
@@ -338,10 +339,10 @@ QUrl QDeclarativeView::source() const
   Returns a pointer to the QDeclarativeEngine used for instantiating
   QML Components.
  */
-QDeclarativeEngine* QDeclarativeView::engine()
+QDeclarativeEngine* QDeclarativeView::engine() const
 {
-    Q_D(QDeclarativeView);
-    return &d->engine;
+    Q_D(const QDeclarativeView);
+    return d->engine;
 }
 
 /*!
@@ -351,10 +352,10 @@ QDeclarativeEngine* QDeclarativeView::engine()
   arranged hierarchically and this hierarchy is managed by the
   QDeclarativeEngine.
  */
-QDeclarativeContext* QDeclarativeView::rootContext()
+QDeclarativeContext* QDeclarativeView::rootContext() const
 {
-    Q_D(QDeclarativeView);
-    return d->engine.rootContext();
+    Q_D(const QDeclarativeView);
+    return d->engine->rootContext();
 }
 
 /*!
@@ -364,7 +365,7 @@ QDeclarativeContext* QDeclarativeView::rootContext()
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occured.  Call errorDescription() to retrieve a description.
+    \value Error An error has occurred.  Call errorDescription() to retrieve a description.
 */
 
 /*! \enum QDeclarativeView::ResizeMode
@@ -390,7 +391,7 @@ QDeclarativeView::Status QDeclarativeView::status() const
 }
 
 /*!
-    Return the list of errors that occured during the last compile or create
+    Return the list of errors that occurred during the last compile or create
     operation.  An empty list is returned if isError() is not set.
 */
 QList<QDeclarativeError> QDeclarativeView::errors() const

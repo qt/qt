@@ -96,11 +96,13 @@ private:
     QBasicTimer timer;
 };
 
+//![0]
 class TimeModel : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int hour READ hour NOTIFY timeChanged)
     Q_PROPERTY(int minute READ minute NOTIFY timeChanged)
+//![0]
 
 public:
     TimeModel(QObject *parent=0) : QObject(parent)
@@ -135,6 +137,7 @@ private:
 int TimeModel::instances=0;
 MinuteTimer *TimeModel::timer=0;
 
+//![plugin]
 class QExampleQmlPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
@@ -145,7 +148,10 @@ public:
         qmlRegisterType<TimeModel>(uri, 1, 0, "Time");
     }
 };
+//![plugin]
 
 #include "plugin.moc"
 
+//![export]
 Q_EXPORT_PLUGIN2(qmlqtimeexampleplugin, QExampleQmlPlugin);
+//![export]

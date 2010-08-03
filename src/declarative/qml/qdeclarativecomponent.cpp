@@ -115,24 +115,10 @@ class QByteArray;
     a small component within a QML file, or for defining a component that logically 
     belongs with other QML components within a file.
 
-    For example, here is a component that is used by multiple \l Loader objects:
+    For example, here is a component that is used by multiple \l Loader objects.
+    It contains a top level \l Rectangle item:
 
-    \qml
-    Item {
-        Component {
-            id: redSquare
-
-            Rectangle {
-                color: "red"
-                width: 10
-                height: 10
-            }
-        }
-
-        Loader { sourceComponent: redSquare }
-        Loader { sourceComponent: redSquare; x: 20 }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/component.qml 0
 
     Notice that while a \l Rectangle by itself would be automatically 
     rendered and displayed, this is not the case for the above rectangle
@@ -141,12 +127,16 @@ class QByteArray;
     file, and is not loaded until requested (in this case, by the
     two \l Loader objects).
 
+    A Component cannot contain anything other
+    than an \c id and a single top level item. While the \c id is optional,
+    the top level item is not; you cannot define an empty component.
+
     The Component element is commonly used to provide graphical components
     for views. For example, the ListView::delegate property requires a Component
     to specify how each list item is to be displayed.
 
-    Component objects can also be dynamically generated using
-    \l{Qt::createComponent}{Qt.createComponent()}.
+    Component objects can also be dynamically created using
+    \l{QML:Qt::createComponent()}{Qt.createComponent()}.
 */
 
 /*!
@@ -607,6 +597,9 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     the \a parent value. Note that if the returned object is to be displayed, you 
     must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
     property, or else the object will not be visible.
+
+    Dynamically created instances can be deleted with the \c destroy() method.
+    See \l {Dynamic Object Management} for more information.
 */
 
 /*!

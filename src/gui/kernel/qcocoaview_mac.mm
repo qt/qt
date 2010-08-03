@@ -269,6 +269,28 @@ static int qCocoaViewCount = 0;
     dropData = new QCocoaDropData(dropPasteboard);
 }
 
+- (void)changeDraggingCursor:(NSDragOperation)newOperation
+{
+    static SEL action = nil;
+    static bool operationSupported = false;
+    if (action == nil) {
+        action = NSSelectorFromString(@"operationNotAllowedCursor");
+        if ([NSCursor respondsToSelector:action]) {
+            operationSupported = true;
+        }
+    }
+    if (operationSupported) {
+        NSCursor *notAllowedCursor = [NSCursor performSelector:action];
+        bool isNotAllowedCursor = ([NSCursor currentCursor] == notAllowedCursor);
+        if (newOperation == NSDragOperationNone && !isNotAllowedCursor) {
+            [notAllowedCursor push];
+        } else if (newOperation != NSDragOperationNone && isNotAllowedCursor) {
+            [notAllowedCursor pop];
+        }
+
+    }
+}
+
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
     // NB: This function is called from QCoocaWindow/QCocoaPanel rather than directly
@@ -300,6 +322,7 @@ static int qCocoaViewCount = 0;
     if (!qDEEvent.isAccepted()) {
         // widget is not interested in this drag, so ignore this drop data.
         [self removeDropData];
+        [self changeDraggingCursor:NSDragOperationNone];
         return NSDragOperationNone;
     } else {
         // save the mouse position, used by draggingExited handler.
@@ -321,6 +344,7 @@ static int qCocoaViewCount = 0;
             nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDMEvent.dropAction());
         }
         QT_PREPEND_NAMESPACE(qt_mac_copy_answer_rect)(qDMEvent);
+        [self changeDraggingCursor:nsActions];
         return nsActions;
     }
  }
@@ -335,16 +359,21 @@ static int qCocoaViewCount = 0;
     if (dragEnterSequence != [sender draggingSequenceNumber])
         [self draggingEntered:sender];
     // drag enter event was rejected, so ignore the move event.
-    if (dropData == 0)
+    if (dropData == 0) {
+        [self changeDraggingCursor:NSDragOperationNone];
         return NSDragOperationNone;
+    }
     // return last value, if we are still in the answerRect.
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
     if (qt_mac_mouse_inside_answer_rect(posDrag)
-        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
-        return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions) {
+        NSDragOperation operation = QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
+        [self changeDraggingCursor:operation];
+        return operation;
+    }
     // send drag move event to the widget
     QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
@@ -361,7 +390,10 @@ static int qCocoaViewCount = 0;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
     QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
-    qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
+    if (QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction != Qt::IgnoreAction
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).buttons == qDMEvent.mouseButtons()
+        && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).modifiers == qDMEvent.keyboardModifiers())
+        qDMEvent.setDropAction(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec).lastAction);
     qDMEvent.accept();
     QApplication::sendEvent(qwidget, &qDMEvent);
 
@@ -373,6 +405,7 @@ static int qCocoaViewCount = 0;
         qDMEvent.setDropAction(Qt::IgnoreAction);
     }
     qt_mac_copy_answer_rect(qDMEvent);
+    [self changeDraggingCursor:operation];
     return operation;
 }
 
@@ -388,6 +421,8 @@ static int qCocoaViewCount = 0;
         QApplication::sendEvent(qwidget, &de);
         [self removeDropData];
     }
+    [self changeDraggingCursor:NSDragOperationEvery];
+
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender

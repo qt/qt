@@ -337,9 +337,26 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
     </message>
     <message numerus="yes">
         <location line="+8"/>
+        <source>    Generated %n translation(s) (%1 finished and %2 unfinished)</source>
+        <translation>
+            <numerusform>    Wygenerowano %n tłumaczenie (przetłumaczonych %1, nieprzetłumaczonych %2)</numerusform>
+            <numerusform>    Wygenerowano %n tłumaczenia (przetłumaczonych %1, nieprzetłumaczonych %2)</numerusform>
+            <numerusform>    Wygenerowano %n tłumaczeń (przetłumaczonych %1, nieprzetłumaczonych %2)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+4"/>
+        <source>    Ignored %n untranslated source text(s)</source>
+        <translation>
+            <numerusform>    Pominięto %n nieprzetłumaczony tekst źródłowy￼</numerusform>
+            <numerusform>    Pominięto %n nieprzetłumaczone teksty źródłowe</numerusform>
+            <numerusform>    Pominięto %n nieprzetłumaczonych tekstów źródłowy￼ch</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
         <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
 </source>
-        <translation>
+        <translation type="obsolete">
             <numerusform>Wygenerowano %n tłumaczenie (przetłumaczonych %1, nieprzetłumaczonych %2)
 </numerusform>
             <numerusform>Wygenerowano %n tłumaczenia (przetłumaczonych %1, nieprzetłumaczonych %2)
@@ -349,10 +366,9 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location line="+4"/>
         <source>    Ignored %n untranslated source text(s)
 </source>
-        <translation>
+        <translation type="obsolete">
             <numerusform>Pominięto %n nieprzetłumaczony tekst źródłowy￼
 </numerusform>
             <numerusform>Pominięto %n nieprzetłumaczone teksty źródłowe
@@ -1828,7 +1844,7 @@ Linia: %2</translation>
         <translation>Qt Linguist</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+817"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+870"/>
         <source>GNU Gettext localization files</source>
         <translation>Pliki GNU Gettext</translation>
     </message>

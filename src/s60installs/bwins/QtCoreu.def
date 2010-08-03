@@ -3122,7 +3122,7 @@ EXPORTS
 	?reset@QIODevice@@UAE_NXZ @ 3121 NONAME ; bool QIODevice::reset(void)
 	?reset@QMetaProperty@@QBE_NPAVQObject@@@Z @ 3122 NONAME ; bool QMetaProperty::reset(class QObject *) const
 	?reset@QTextStream@@QAEXXZ @ 3123 NONAME ; void QTextStream::reset(void)
-	?resetCurrentSender@QObjectPrivate@@SAXPAVQObject@@PAUSender@1@1@Z @ 3124 NONAME ABSENT ; void QObjectPrivate::resetCurrentSender(class QObject *, struct QObjectPrivate::Sender *, struct QObjectPrivate::Sender *)
+	?resetCurrentSender@QObjectPrivate@@SAXPAVQObject@@PAUSender@1@1@Z @ 3124 NONAME ; void QObjectPrivate::resetCurrentSender(class QObject *, struct QObjectPrivate::Sender *, struct QObjectPrivate::Sender *)
 	?resetDeleteWatch@QObjectPrivate@@SAXPAV1@PAHH@Z @ 3125 NONAME ; void QObjectPrivate::resetDeleteWatch(class QObjectPrivate *, int *, int)
 	?resetStatus@QDataStream@@QAEXXZ @ 3126 NONAME ; void QDataStream::resetStatus(void)
 	?resetStatus@QTextStream@@QAEXXZ @ 3127 NONAME ; void QTextStream::resetStatus(void)
@@ -3281,7 +3281,7 @@ EXPORTS
 	?setCoords@QRectF@@QAEXMMMM@Z @ 3280 NONAME ; void QRectF::setCoords(float, float, float, float)
 	?setCurrent@QDir@@SA_NABVQString@@@Z @ 3281 NONAME ; bool QDir::setCurrent(class QString const &)
 	?setCurrentPath@QFSFileEngine@@SA_NABVQString@@@Z @ 3282 NONAME ; bool QFSFileEngine::setCurrentPath(class QString const &)
-	?setCurrentSender@QObjectPrivate@@SAPAUSender@1@PAVQObject@@PAU21@@Z @ 3283 NONAME ABSENT ; struct QObjectPrivate::Sender * QObjectPrivate::setCurrentSender(class QObject *, struct QObjectPrivate::Sender *)
+	?setCurrentSender@QObjectPrivate@@SAPAUSender@1@PAVQObject@@PAU21@@Z @ 3283 NONAME ; struct QObjectPrivate::Sender * QObjectPrivate::setCurrentSender(class QObject *, struct QObjectPrivate::Sender *)
 	?setCurrentTime@QAbstractAnimation@@QAEXH@Z @ 3284 NONAME ; void QAbstractAnimation::setCurrentTime(int)
 	?setCurrentTime@QTimeLine@@QAEXH@Z @ 3285 NONAME ; void QTimeLine::setCurrentTime(int)
 	?setCurveShape@QTimeLine@@QAEXW4CurveShape@1@@Z @ 3286 NONAME ; void QTimeLine::setCurveShape(enum QTimeLine::CurveShape)
@@ -4417,71 +4417,69 @@ EXPORTS
 	?QBasicAtomicInt_testAndSetRelease@@YA_NPCHHH@Z @ 4416 NONAME ; bool QBasicAtomicInt_testAndSetRelease(int volatile *, int, int)
 	?QBasicAtomicInt_fetchAndStoreAcquire@@YAHPCHH@Z @ 4417 NONAME ; int QBasicAtomicInt_fetchAndStoreAcquire(int volatile *, int)
 	?QBasicAtomicInt_fetchAndAddAcquire@@YAHPCHH@Z @ 4418 NONAME ; int QBasicAtomicInt_fetchAndAddAcquire(int volatile *, int)
-	??0QString@@QAE@PBVQChar@@@Z @ 4419 NONAME ; QString::QString(class QChar const *)
-	??0QTextDecoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4420 NONAME ; QTextDecoder::QTextDecoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
-	??0QTextEncoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4421 NONAME ; QTextEncoder::QTextEncoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
-	??0QVariant@@QAE@ABVQEasingCurve@@@Z @ 4422 NONAME ; QVariant::QVariant(class QEasingCurve const &)
-	??5@YAAAVQDataStream@@AAV0@AAVQEasingCurve@@@Z @ 4423 NONAME ; class QDataStream & operator>>(class QDataStream &, class QEasingCurve &)
-	??6@YAAAVQDataStream@@AAV0@ABVQEasingCurve@@@Z @ 4424 NONAME ; class QDataStream & operator<<(class QDataStream &, class QEasingCurve const &)
-	??8QElapsedTimer@@QBE_NABV0@@Z @ 4425 NONAME ; bool QElapsedTimer::operator==(class QElapsedTimer const &) const
-	??9QElapsedTimer@@QBE_NABV0@@Z @ 4426 NONAME ; bool QElapsedTimer::operator!=(class QElapsedTimer const &) const
-	??M@YA_NABVQElapsedTimer@@0@Z @ 4427 NONAME ; bool operator<(class QElapsedTimer const &, class QElapsedTimer const &)
-	?append@QListData@@QAEPAPAXH@Z @ 4428 NONAME ; void * * QListData::append(int)
-	?clearHistory@QStateMachinePrivate@@QAEXXZ @ 4429 NONAME ; void QStateMachinePrivate::clearHistory(void)
-	?clockType@QElapsedTimer@@SA?AW4ClockType@1@XZ @ 4430 NONAME ; enum QElapsedTimer::ClockType QElapsedTimer::clockType(void)
-	?currentDateTimeUtc@QDateTime@@SA?AV1@XZ @ 4431 NONAME ; class QDateTime QDateTime::currentDateTimeUtc(void)
-	?currentMSecsSinceEpoch@QDateTime@@SA_JXZ @ 4432 NONAME ; long long QDateTime::currentMSecsSinceEpoch(void)
-	?detach@QListData@@QAEPAUData@1@H@Z @ 4433 NONAME ; struct QListData::Data * QListData::detach(int)
-	?detach_grow@QListData@@QAEPAUData@1@PAHH@Z @ 4434 NONAME ; struct QListData::Data * QListData::detach_grow(int *, int)
-	?elapsed@QElapsedTimer@@QBE_JXZ @ 4435 NONAME ; long long QElapsedTimer::elapsed(void) const
-	?fromMSecsSinceEpoch@QDateTime@@SA?AV1@_J@Z @ 4436 NONAME ; class QDateTime QDateTime::fromMSecsSinceEpoch(long long)
-	?hasExpired@QElapsedTimer@@QBE_N_J@Z @ 4437 NONAME ; bool QElapsedTimer::hasExpired(long long) const
-	?invalidate@QElapsedTimer@@QAEXXZ @ 4438 NONAME ; void QElapsedTimer::invalidate(void)
-	?isMonotonic@QElapsedTimer@@SA_NXZ @ 4439 NONAME ; bool QElapsedTimer::isMonotonic(void)
-	?isSharedWith@QByteArray@@QBE_NABV1@@Z @ 4440 NONAME ; bool QByteArray::isSharedWith(class QByteArray const &) const
-	?isSharedWith@QString@@QBE_NABV1@@Z @ 4441 NONAME ; bool QString::isSharedWith(class QString const &) const
-	?isValid@QElapsedTimer@@QBE_NXZ @ 4442 NONAME ; bool QElapsedTimer::isValid(void) const
-	?makeDecoder@QTextCodec@@QBEPAVQTextDecoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4443 NONAME ; class QTextDecoder * QTextCodec::makeDecoder(class QFlags<enum QTextCodec::ConversionFlag>) const
-	?makeEncoder@QTextCodec@@QBEPAVQTextEncoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4444 NONAME ; class QTextEncoder * QTextCodec::makeEncoder(class QFlags<enum QTextCodec::ConversionFlag>) const
-	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4445 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
-	?msecsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4446 NONAME ; long long QElapsedTimer::msecsTo(class QElapsedTimer const &) const
-	?qDecodeDataUrl@@YA?AU?$QPair@VQString@@VQByteArray@@@@ABVQUrl@@@Z @ 4447 NONAME ; struct QPair<class QString, class QByteArray> qDecodeDataUrl(class QUrl const &)
-	?qDetectCPUFeatures@@YAIXZ @ 4448 NONAME ; unsigned int qDetectCPUFeatures(void)
+	?validCodecs@QTextCodec@@CA_NXZ @ 4419 NONAME ; bool QTextCodec::validCodecs(void)
+	?clearHistory@QStateMachinePrivate@@QAEXXZ @ 4420 NONAME ; void QStateMachinePrivate::clearHistory(void)
+	?nativeArguments@QProcess@@QBE?AVQString@@XZ @ 4421 NONAME ; class QString QProcess::nativeArguments(void) const
+	?detach@QListData@@QAEPAUData@1@H@Z @ 4422 NONAME ; struct QListData::Data * QListData::detach(int)
+	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4423 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *, int)
+	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4424 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
+	??M@YA_NABVQElapsedTimer@@0@Z @ 4425 NONAME ; bool operator<(class QElapsedTimer const &, class QElapsedTimer const &)
+	?clockType@QElapsedTimer@@SA?AW4ClockType@1@XZ @ 4426 NONAME ; enum QElapsedTimer::ClockType QElapsedTimer::clockType(void)
+	?isHighSurrogate@QChar@@SA_NI@Z @ 4427 NONAME ; bool QChar::isHighSurrogate(unsigned int)
+	?start@QElapsedTimer@@QAEXXZ @ 4428 NONAME ; void QElapsedTimer::start(void)
+	??0QVariant@@QAE@ABVQEasingCurve@@@Z @ 4429 NONAME ; QVariant::QVariant(class QEasingCurve const &)
+	?isValid@QElapsedTimer@@QBE_NXZ @ 4430 NONAME ; bool QElapsedTimer::isValid(void) const
+	?qt_metacast@QEventDispatcherSymbian@@UAEPAXPBD@Z @ 4431 NONAME ; void * QEventDispatcherSymbian::qt_metacast(char const *)
+	?toMSecsSinceEpoch@QDateTime@@QBE_JXZ @ 4432 NONAME ; long long QDateTime::toMSecsSinceEpoch(void) const
+	?hasExpired@QElapsedTimer@@QBE_N_J@Z @ 4433 NONAME ; bool QElapsedTimer::hasExpired(long long) const
+	?makeEncoder@QTextCodec@@QBEPAVQTextEncoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4434 NONAME ; class QTextEncoder * QTextCodec::makeEncoder(class QFlags<enum QTextCodec::ConversionFlag>) const
+	??9QElapsedTimer@@QBE_NABV0@@Z @ 4435 NONAME ; bool QElapsedTimer::operator!=(class QElapsedTimer const &) const
+	?setRawData@QString@@QAEAAV1@PBVQChar@@H@Z @ 4436 NONAME ; class QString & QString::setRawData(class QChar const *, int)
+	?registerTypedef@QMetaType@@SAHPBDH@Z @ 4437 NONAME ; int QMetaType::registerTypedef(char const *, int)
+	??8QElapsedTimer@@QBE_NABV0@@Z @ 4438 NONAME ; bool QElapsedTimer::operator==(class QElapsedTimer const &) const
+	?makeDecoder@QTextCodec@@QBEPAVQTextDecoder@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4439 NONAME ; class QTextDecoder * QTextCodec::makeDecoder(class QFlags<enum QTextCodec::ConversionFlag>) const
+	?metaObject@QEventDispatcherSymbian@@UBEPBUQMetaObject@@XZ @ 4440 NONAME ; struct QMetaObject const * QEventDispatcherSymbian::metaObject(void) const
+	?transitions@QState@@QBE?AV?$QList@PAVQAbstractTransition@@@@XZ @ 4441 NONAME ; class QList<class QAbstractTransition *> QState::transitions(void) const
+	?qDetectCPUFeatures@@YAIXZ @ 4442 NONAME ; unsigned int qDetectCPUFeatures(void)
+	?isSharedWith@QString@@QBE_NABV1@@Z @ 4443 NONAME ; bool QString::isSharedWith(class QString const &) const
+	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4444 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
+	?currentMSecsSinceEpoch@QDateTime@@SA_JXZ @ 4445 NONAME ; long long QDateTime::currentMSecsSinceEpoch(void)
+	?staticMetaObject@QEventDispatcherSymbian@@2UQMetaObject@@B @ 4446 NONAME ; struct QMetaObject const QEventDispatcherSymbian::staticMetaObject
+	?msecsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4447 NONAME ; long long QElapsedTimer::msecsTo(class QElapsedTimer const &) const
+	?toEasingCurve@QVariant@@QBE?AVQEasingCurve@@XZ @ 4448 NONAME ; class QEasingCurve QVariant::toEasingCurve(void) const
 	?registerStreamOperators@QMetaType@@SAXHP6AXAAVQDataStream@@PBX@ZP6AX0PAX@Z@Z @ 4449 NONAME ; void QMetaType::registerStreamOperators(int, void (*)(class QDataStream &, void const *), void (*)(class QDataStream &, void *))
-	?registerTypedef@QMetaType@@SAHPBDH@Z @ 4450 NONAME ; int QMetaType::registerTypedef(char const *, int)
-	?replace@QByteArray@@QAEAAV1@HHPBDH@Z @ 4451 NONAME ; class QByteArray & QByteArray::replace(int, int, char const *, int)
-	?restart@QElapsedTimer@@QAE_JXZ @ 4452 NONAME ; long long QElapsedTimer::restart(void)
-	?secsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4453 NONAME ; long long QElapsedTimer::secsTo(class QElapsedTimer const &) const
-	?setMSecsSinceEpoch@QDateTime@@QAEX_J@Z @ 4454 NONAME ; void QDateTime::setMSecsSinceEpoch(long long)
-	?start@QElapsedTimer@@QAEXXZ @ 4455 NONAME ; void QElapsedTimer::start(void)
-	?toEasingCurve@QVariant@@QBE?AVQEasingCurve@@XZ @ 4456 NONAME ; class QEasingCurve QVariant::toEasingCurve(void) const
-	?toMSecsSinceEpoch@QDateTime@@QBE_JXZ @ 4457 NONAME ; long long QDateTime::toMSecsSinceEpoch(void) const
-	?transitions@QState@@QBE?AV?$QList@PAVQAbstractTransition@@@@XZ @ 4458 NONAME ; class QList<class QAbstractTransition *> QState::transitions(void) const
-	?validCodecs@QTextCodec@@CA_NXZ @ 4459 NONAME ; bool QTextCodec::validCodecs(void)
-	?destroyed@QDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4460 NONAME ABSENT ; void (*QDeclarativeData::destroyed)(class QDeclarativeData *, class QObject *)
-	?parentChanged@QDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4461 NONAME ABSENT ; void (*QDeclarativeData::parentChanged)(class QDeclarativeData *, class QObject *, class QObject *)
-	?parentChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@1@ZA @ 4462 NONAME ; void (*QAbstractDeclarativeData::parentChanged)(class QAbstractDeclarativeData *, class QObject *, class QObject *)
-	?destroyed@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4463 NONAME ; void (*QAbstractDeclarativeData::destroyed)(class QAbstractDeclarativeData *, class QObject *)
-	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4464 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
-	?setRawData@QByteArray@@QAEAAV1@PBDI@Z @ 4465 NONAME ; class QByteArray & QByteArray::setRawData(char const *, unsigned int)
-	?setRawData@QString@@QAEAAV1@PBVQChar@@H@Z @ 4466 NONAME ; class QString & QString::setRawData(class QChar const *, int)
-	?getStaticMetaObject@QEventDispatcherSymbian@@SAABUQMetaObject@@XZ @ 4467 NONAME ; struct QMetaObject const & QEventDispatcherSymbian::getStaticMetaObject(void)
-	?isHighSurrogate@QChar@@SA_NI@Z @ 4468 NONAME ; bool QChar::isHighSurrogate(unsigned int)
-	?isLowSurrogate@QChar@@SA_NI@Z @ 4469 NONAME ; bool QChar::isLowSurrogate(unsigned int)
-	?metaObject@QEventDispatcherSymbian@@UBEPBUQMetaObject@@XZ @ 4470 NONAME ; struct QMetaObject const * QEventDispatcherSymbian::metaObject(void) const
-	?msecsTo@QDateTime@@QBE_JABV1@@Z @ 4471 NONAME ; long long QDateTime::msecsTo(class QDateTime const &) const
-	?qt_metacall@QEventDispatcherSymbian@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4472 NONAME ; int QEventDispatcherSymbian::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?qt_metacast@QEventDispatcherSymbian@@UAEPAXPBD@Z @ 4473 NONAME ; void * QEventDispatcherSymbian::qt_metacast(char const *)
-	?requiresSurrogates@QChar@@SA_NI@Z @ 4474 NONAME ; bool QChar::requiresSurrogates(unsigned int)
-	?symbianInit@QCoreApplicationPrivate@@QAEXXZ @ 4475 NONAME ; void QCoreApplicationPrivate::symbianInit(void)
-	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4476 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *)
-	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4477 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *, int)
-	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4478 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *)
-	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4479 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *, int)
-	?staticMetaObject@QEventDispatcherSymbian@@2UQMetaObject@@B @ 4480 NONAME ; struct QMetaObject const QEventDispatcherSymbian::staticMetaObject
+	?replace@QByteArray@@QAEAAV1@HHPBDH@Z @ 4450 NONAME ; class QByteArray & QByteArray::replace(int, int, char const *, int)
+	?elapsed@QElapsedTimer@@QBE_JXZ @ 4451 NONAME ; long long QElapsedTimer::elapsed(void) const
+	??0QTextEncoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4452 NONAME ; QTextEncoder::QTextEncoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
+	??6@YAAAVQDataStream@@AAV0@ABVQEasingCurve@@@Z @ 4453 NONAME ; class QDataStream & operator<<(class QDataStream &, class QEasingCurve const &)
+	?qDecodeDataUrl@@YA?AU?$QPair@VQString@@VQByteArray@@@@ABVQUrl@@@Z @ 4454 NONAME ; struct QPair<class QString, class QByteArray> qDecodeDataUrl(class QUrl const &)
+	?trUtf8@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4455 NONAME ; class QString QEventDispatcherSymbian::trUtf8(char const *, char const *)
+	?setNativeArguments@QProcess@@QAEXABVQString@@@Z @ 4456 NONAME ; void QProcess::setNativeArguments(class QString const &)
+	?msecsTo@QDateTime@@QBE_JABV1@@Z @ 4457 NONAME ; long long QDateTime::msecsTo(class QDateTime const &) const
+	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0H@Z @ 4458 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *, int)
+	?setMSecsSinceEpoch@QDateTime@@QAEX_J@Z @ 4459 NONAME ; void QDateTime::setMSecsSinceEpoch(long long)
+	?tr@QEventDispatcherSymbian@@SA?AVQString@@PBD0@Z @ 4460 NONAME ; class QString QEventDispatcherSymbian::tr(char const *, char const *)
+	?isSharedWith@QByteArray@@QBE_NABV1@@Z @ 4461 NONAME ; bool QByteArray::isSharedWith(class QByteArray const &) const
+	?secsTo@QElapsedTimer@@QBE_JABV1@@Z @ 4462 NONAME ; long long QElapsedTimer::secsTo(class QElapsedTimer const &) const
+	??5@YAAAVQDataStream@@AAV0@AAVQEasingCurve@@@Z @ 4463 NONAME ; class QDataStream & operator>>(class QDataStream &, class QEasingCurve &)
+	??0QString@@QAE@PBVQChar@@@Z @ 4464 NONAME ; QString::QString(class QChar const *)
+	?append@QListData@@QAEPAPAXH@Z @ 4465 NONAME ; void * * QListData::append(int)
+	?getStaticMetaObject@QEventDispatcherSymbian@@SAABUQMetaObject@@XZ @ 4466 NONAME ; struct QMetaObject const & QEventDispatcherSymbian::getStaticMetaObject(void)
+	?peek@QIODevicePrivate@@UAE?AVQByteArray@@_J@Z @ 4467 NONAME ; class QByteArray QIODevicePrivate::peek(long long)
+	?detach_grow@QListData@@QAEPAUData@1@PAHH@Z @ 4468 NONAME ; struct QListData::Data * QListData::detach_grow(int *, int)
+	?symbianInit@QCoreApplicationPrivate@@QAEXXZ @ 4469 NONAME ; void QCoreApplicationPrivate::symbianInit(void)
+	??0QTextDecoder@@QAE@PBVQTextCodec@@V?$QFlags@W4ConversionFlag@QTextCodec@@@@@Z @ 4470 NONAME ; QTextDecoder::QTextDecoder(class QTextCodec const *, class QFlags<enum QTextCodec::ConversionFlag>)
+	?requiresSurrogates@QChar@@SA_NI@Z @ 4471 NONAME ; bool QChar::requiresSurrogates(unsigned int)
+	?isLowSurrogate@QChar@@SA_NI@Z @ 4472 NONAME ; bool QChar::isLowSurrogate(unsigned int)
+	?qt_metacall@QEventDispatcherSymbian@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4473 NONAME ; int QEventDispatcherSymbian::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?setRawData@QByteArray@@QAEAAV1@PBDI@Z @ 4474 NONAME ; class QByteArray & QByteArray::setRawData(char const *, unsigned int)
+	?fromMSecsSinceEpoch@QDateTime@@SA?AV1@_J@Z @ 4475 NONAME ; class QDateTime QDateTime::fromMSecsSinceEpoch(long long)
+	?invalidate@QElapsedTimer@@QAEXXZ @ 4476 NONAME ; void QElapsedTimer::invalidate(void)
+	?restart@QElapsedTimer@@QAE_JXZ @ 4477 NONAME ; long long QElapsedTimer::restart(void)
+	?currentDateTimeUtc@QDateTime@@SA?AV1@XZ @ 4478 NONAME ; class QDateTime QDateTime::currentDateTimeUtc(void)
+	?isMonotonic@QElapsedTimer@@SA_NXZ @ 4479 NONAME ; bool QElapsedTimer::isMonotonic(void)
+	?peek@QIODevicePrivate@@UAE_JPAD_J@Z @ 4480 NONAME ; long long QIODevicePrivate::peek(char *, long long)
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
-	?peek@QIODevicePrivate@@UAE_JPAD_J@Z @ 4482 NONAME ; long long QIODevicePrivate::peek(char *, long long)
-	?peek@QIODevicePrivate@@UAE?AVQByteArray@@_J@Z @ 4483 NONAME ; class QByteArray QIODevicePrivate::peek(long long)
-	?nativeArguments@QProcess@@QBE?AVQString@@XZ @ 4484 NONAME ; class QString QProcess::nativeArguments(void) const
-	?setNativeArguments@QProcess@@QAEXABVQString@@@Z @ 4485 NONAME ; void QProcess::setNativeArguments(class QString const &)
+	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4482 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
+	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
 

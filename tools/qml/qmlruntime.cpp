@@ -98,9 +98,56 @@
 #include <QGLWidget>
 #endif
 
+#if defined(Q_WS_S60)
+#include <aknappui.h> // For locking app orientation
+#endif
+
 #include <qdeclarativetester.h>
 
 QT_BEGIN_NAMESPACE
+
+class DragAndDropView : public QDeclarativeView
+{
+    Q_OBJECT
+public:
+    DragAndDropView(QDeclarativeViewer *parent = 0)
+    : QDeclarativeView(parent)
+    {
+        setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event)
+    {
+        const QMimeData *mimeData = event->mimeData();
+        if (mimeData->hasUrls())
+            event->acceptProposedAction();
+    }
+
+    void dragMoveEvent(QDragMoveEvent *event)
+    {
+        event->acceptProposedAction();
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent *event)
+    {
+        event->accept();
+    }
+
+    void dropEvent(QDropEvent *event)
+    {
+        const QMimeData *mimeData = event->mimeData();
+        if (!mimeData->hasUrls())
+            return;
+        const QList<QUrl> urlList = mimeData->urls();
+        foreach (const QUrl &url, urlList) {
+            if (url.scheme() == QLatin1String("file")) {
+                static_cast<QDeclarativeViewer *>(parent())->open(url.toLocalFile());
+                event->accept();
+                return;
+            }
+        }
+    }
+};
 
 class Runtime : public QObject
 {
@@ -557,6 +604,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
       , loggerWindow(new LoggerWidget(this))
       , frame_stream(0)
+      , rotateAction(0)
       , orientation(0)
       , showWarningsWindow(0)
       , m_scriptOptions(0)
@@ -596,7 +644,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
         recdlg->warning->hide();
     }
 
-    canvas = new QDeclarativeView(this);
+    canvas = new DragAndDropView(this);
 
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
@@ -605,7 +653,7 @@ QDeclarativeViewer::QDeclarativeViewer(QWidget *parent, Qt::WindowFlags flags)
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
     QObject::connect(canvas, SIGNAL(statusChanged(QDeclarativeView::Status)), this, SLOT(statusChanged()));
-    QObject::connect(canvas->engine(), SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
+    QObject::connect(canvas->engine(), SIGNAL(quit()), this, SLOT(close()));
 
     QObject::connect(warningsWidget(), SIGNAL(opened()), this, SLOT(warningsWidgetOpened()));
     QObject::connect(warningsWidget(), SIGNAL(closed()), this, SLOT(warningsWidgetClosed()));
@@ -664,11 +712,11 @@ LoggerWidget *QDeclarativeViewer::warningsWidget() const
 void QDeclarativeViewer::createMenu()
 {
     QAction *openAction = new QAction(tr("&Open..."), this);
-    openAction->setShortcut(QKeySequence("Ctrl+O"));
+    openAction->setShortcuts(QKeySequence::Open);
     connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
     QAction *reloadAction = new QAction(tr("&Reload"), this);
-    reloadAction->setShortcut(QKeySequence("Ctrl+R"));
+    reloadAction->setShortcuts(QKeySequence::Refresh);
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
 
     QAction *snapshotAction = new QAction(tr("&Take Snapshot"), this);
@@ -699,28 +747,40 @@ void QDeclarativeViewer::createMenu()
     fullscreenAction->setCheckable(true);
     connect(fullscreenAction, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
 
-    QAction *rotateOrientation = new QAction(tr("Rotate orientation"), this);
-    rotateOrientation->setShortcut(QKeySequence("Ctrl+T"));
-    connect(rotateOrientation, SIGNAL(triggered()), this, SLOT(rotateOrientation()));
+    rotateAction = new QAction(tr("Rotate orientation"), this);
+    rotateAction->setShortcut(QKeySequence("Ctrl+T"));
+    connect(rotateAction, SIGNAL(triggered()), this, SLOT(rotateOrientation()));
 
     orientation = new QActionGroup(this);
     orientation->setExclusive(true);
     connect(orientation, SIGNAL(triggered(QAction*)), this, SLOT(changeOrientation(QAction*)));
 
+#if defined(Q_OS_SYMBIAN)
+    QAction *autoOrientationAction = new QAction(tr("Auto-orientation"), this);
+    autoOrientationAction->setCheckable(true);
+#endif
     QAction *portraitAction = new QAction(tr("Portrait"), this);
     portraitAction->setCheckable(true);
     QAction *landscapeAction = new QAction(tr("Landscape"), this);
     landscapeAction->setCheckable(true);
+#if !defined(Q_OS_SYMBIAN)
     QAction *portraitInvAction = new QAction(tr("Portrait (inverted)"), this);
     portraitInvAction->setCheckable(true);
     QAction *landscapeInvAction = new QAction(tr("Landscape (inverted)"), this);
     landscapeInvAction->setCheckable(true);
+#endif
 
     QAction *aboutAction = new QAction(tr("&About Qt..."), this);
+    aboutAction->setMenuRole(QAction::AboutQtRole);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+    QAction *closeAction = new QAction(tr("&Close"), this);
+    closeAction->setShortcuts(QKeySequence::Close);
+    connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+
     QAction *quitAction = new QAction(tr("&Quit"), this);
-    quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+    quitAction->setMenuRole(QAction::QuitRole);
+    quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QMenuBar *menu = menuBar();
@@ -751,9 +811,10 @@ void QDeclarativeViewer::createMenu()
     fileMenu->addAction(openAction);
     fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
+    fileMenu->addAction(closeAction);
+#if !defined(Q_OS_SYMBIAN)    
     fileMenu->addAction(quitAction);
 
-#if !defined(Q_OS_SYMBIAN)
     QMenu *recordMenu = menu->addMenu(tr("&Recording"));
     recordMenu->addAction(snapshotAction);
     recordMenu->addAction(recordAction);
@@ -763,22 +824,27 @@ void QDeclarativeViewer::createMenu()
     debugMenu->addAction(showWarningsWindow);
 #endif // ! Q_OS_SYMBIAN
 
-    QMenu *settingsMenu = menu->addMenu(tr("S&ettings"));
+    QMenu *settingsMenu = menu->addMenu(tr("&Settings"));
     settingsMenu->addAction(proxyAction);
-#if !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN)
+    settingsMenu->addAction(fullscreenAction);
+#else 
     settingsMenu->addAction(recordOptions);
     settingsMenu->addMenu(loggerWindow->preferencesMenu());
-#else // ! Q_OS_SYMBIAN
-    settingsMenu->addAction(fullscreenAction);
-#endif // Q_OS_SYMBIAN
-    settingsMenu->addAction(rotateOrientation);
+#endif // !Q_OS_SYMBIAN
+    settingsMenu->addAction(rotateAction);
 
     QMenu *propertiesMenu = settingsMenu->addMenu(tr("Properties"));
 
+#if defined(Q_OS_SYMBIAN)
+    orientation->addAction(autoOrientationAction);
+#endif
     orientation->addAction(portraitAction);
     orientation->addAction(landscapeAction);
+#if !defined(Q_OS_SYMBIAN)
     orientation->addAction(portraitInvAction);
     orientation->addAction(landscapeInvAction);
+#endif
     propertiesMenu->addActions(orientation->actions());
 
     QMenu *helpMenu = menu->addMenu(tr("&Help"));
@@ -802,6 +868,23 @@ void QDeclarativeViewer::proxySettingsChanged()
 
 void QDeclarativeViewer::rotateOrientation()
 {
+#if defined(Q_WS_S60)
+    CAknAppUi *appUi = static_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+    if (appUi) {
+        CAknAppUi::TAppUiOrientation oldOrientation = appUi->Orientation();
+        QString newOrientation;
+        if (oldOrientation == CAknAppUi::EAppUiOrientationPortrait) {
+            newOrientation = QLatin1String("Landscape");
+        } else {
+            newOrientation = QLatin1String("Portrait");
+        }
+        foreach (QAction *action, orientation->actions()) {
+            if (action->text() == newOrientation) {
+                changeOrientation(action);
+            }
+        }
+    }
+#else
     QAction *current = orientation->checkedAction();
     QList<QAction *> actions = orientation->actions();
     int index = actions.indexOf(current);
@@ -810,6 +893,7 @@ void QDeclarativeViewer::rotateOrientation()
 
     QAction *newOrientation = actions[(index + 1) % actions.count()];
     changeOrientation(newOrientation);
+#endif
 }
 
 void QDeclarativeViewer::toggleFullScreen()
@@ -927,7 +1011,7 @@ void QDeclarativeViewer::openFile()
 {
     QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
-        open("qrc:/content/Browser.qml");
+        open("qrc:/browser/Browser.qml");
     } else {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
         if (!fileName.isEmpty()) {
@@ -1319,9 +1403,24 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
 {
     if (!action)
         return;
-    action->setChecked(true);
-
     QString o = action->text();
+    action->setChecked(true);
+#if defined(Q_WS_S60)
+    CAknAppUi *appUi = static_cast<CAknAppUi *>(CEikonEnv::Static()->AppUi());
+    if (appUi) {
+        CAknAppUi::TAppUiOrientation orientation = appUi->Orientation();
+        if (o == QLatin1String("Auto-orientation")) {
+            appUi->SetOrientationL(CAknAppUi::EAppUiOrientationAutomatic);
+            rotateAction->setVisible(false);
+        } else if (o == QLatin1String("Portrait")) {
+            appUi->SetOrientationL(CAknAppUi::EAppUiOrientationPortrait);
+            rotateAction->setVisible(true);
+        } else if (o == QLatin1String("Landscape")) {
+            appUi->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape);
+            rotateAction->setVisible(true);
+        }
+    }
+#else
     if (o == QLatin1String("Portrait"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::Portrait);
     else if (o == QLatin1String("Landscape"))
@@ -1330,6 +1429,7 @@ void QDeclarativeViewer::changeOrientation(QAction *action)
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::PortraitInverted);
     else if (o == QLatin1String("Landscape (inverted)"))
         DeviceOrientation::instance()->setOrientation(DeviceOrientation::LandscapeInverted);
+#endif
 }
 
 void QDeclarativeViewer::orientationChanged()

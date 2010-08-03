@@ -1599,12 +1599,14 @@ void QWidgetPrivate::toggleDrawers(bool visible)
             continue;
         QWidget *widget = static_cast<QWidget*>(object);
         if(qt_mac_is_macdrawer(widget)) {
+            bool oldState = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
             if(visible) {
                 if (!widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
                     widget->show();
             } else {
                 widget->hide();
-                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+                if(!oldState)
+                    widget->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
             }
         }
     }
@@ -4389,6 +4391,13 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         data.window_state = data.window_state & ~Qt::WindowMaximized;
 
     const bool visible = q->isVisible();
+    // Apply size restrictions, applicable for Windows & Widgets.
+    if (QWExtra *extra = extraData()) {
+        w = qMin(w, extra->maxw);
+        h = qMin(h, extra->maxh);
+        w = qMax(w, extra->minw);
+        h = qMax(h, extra->minh);
+    }
     data.crect = QRect(x, y, w, h);
 
     if (realWindow) {

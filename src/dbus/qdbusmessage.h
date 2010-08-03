@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(DBus)
 
 class QDBusMessagePrivate;
-class QDBUS_EXPORT QDBusMessage
+class Q_DBUS_EXPORT QDBusMessage
 {
 public:
     enum MessageType {
@@ -120,7 +120,7 @@ private:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-QDBUS_EXPORT QDebug operator<<(QDebug, const QDBusMessage &);
+Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusMessage &);
 #endif
 
 QT_END_NAMESPACE

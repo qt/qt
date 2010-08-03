@@ -102,6 +102,7 @@ private slots:
     void layoutDirection();
     void removeLayout();
     void avoidRecursionInInsertItem();
+    void styleInfoLeak();
 
     // Task specific tests
     void task218400_insertStretchCrash();
@@ -1441,6 +1442,12 @@ void tst_QGraphicsLinearLayout::avoidRecursionInInsertItem()
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::insertItem: cannot insert itself");
     layout->insertItem(0, layout);
     QCOMPARE(layout->count(), 0);
+}
+
+void tst_QGraphicsLinearLayout::styleInfoLeak()
+{
+    QGraphicsLinearLayout layout;
+    layout.spacing();
 }
 
 void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()

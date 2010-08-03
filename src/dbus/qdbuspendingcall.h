@@ -62,7 +62,7 @@ class QDBusError;
 class QDBusPendingCallWatcher;
 
 class QDBusPendingCallPrivate;
-class QDBUS_EXPORT QDBusPendingCall
+class Q_DBUS_EXPORT QDBusPendingCall
 {
 public:
     QDBusPendingCall(const QDBusPendingCall &other);
@@ -96,7 +96,7 @@ private:
 };
 
 class QDBusPendingCallWatcherPrivate;
-class QDBUS_EXPORT QDBusPendingCallWatcher: public QObject, public QDBusPendingCall
+class Q_DBUS_EXPORT QDBusPendingCallWatcher: public QObject, public QDBusPendingCall
 {
     Q_OBJECT
 public:

@@ -123,6 +123,12 @@ class HtmlGenerator : public PageGenerator
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
+    enum ExtractionMarkType {
+        BriefMark,
+        DetailedDescriptionMark,
+        MemberMark,
+        EndMark
+    };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
     const Node *findNodeForTarget(const QString &target, 
@@ -210,9 +216,10 @@ class HtmlGenerator : public PageGenerator
                                       const Node *relative,
                                       CodeMarker *marker);
     QString highlightedCode(const QString& markedCode, 
-                            CodeMarker *marker, 
-                            const Node *relative,
-                            bool alignNames = false);
+                            CodeMarker* marker, 
+                            const Node* relative,
+                            bool alignNames = false,
+                            const Node* self = 0);
 
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
@@ -236,9 +243,6 @@ class HtmlGenerator : public PageGenerator
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
-#ifdef ZZZ_QDOC_QML    
-    void findAllQmlClasses(const InnerNode *node);
-#endif
     void findAllSince(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
@@ -268,6 +272,7 @@ class HtmlGenerator : public PageGenerator
                               CodeMarker* marker) const;
     void generatePageIndex(const QString& fileName, 
                            CodeMarker* marker) const;
+    void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
 #if 0
     NavigationBar currentNavigationBar;
@@ -289,13 +294,17 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
+    bool onlineDocs;
     bool offlineDocs;
+    bool creatorDocs;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
     QString style;
     QString postHeader;
     QString postPostHeader;
+    QString creatorPostHeader;
+    QString creatorPostPostHeader;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -316,9 +325,6 @@ class HtmlGenerator : public PageGenerator
     NodeMap obsoleteClasses;
     NodeMap namespaceIndex;
     NodeMap serviceClasses;
-#ifdef QDOC_QML    
-    NodeMap qmlClasses;
-#endif
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
     NewSinceMaps newSinceMaps;
@@ -328,6 +334,7 @@ class HtmlGenerator : public PageGenerator
     static int id;
  public:
     static bool debugging_on;
+    static QString divNavTop;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"
@@ -335,6 +342,8 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
+#define HTMLGENERATOR_CREATORPOSTHEADER        "postheader"
+#define HTMLGENERATOR_CREATORPOSTPOSTHEADER    "postpostheader"
 #define HTMLGENERATOR_STYLE             "style"
 #define HTMLGENERATOR_STYLESHEETS       "stylesheets"
 #define HTMLGENERATOR_CUSTOMHEADELEMENTS "customheadelements"

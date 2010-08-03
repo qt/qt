@@ -69,6 +69,10 @@
 #include <winnls.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include <e32cmn.h>
+#endif
+
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6156,18 +6160,18 @@ QString QString::repeated(int times) const
     if (result.d->alloc != resultSize)
         return QString(); // not enough memory
 
-    qMemCopy(result.d->data, d->data, d->size * sizeof(ushort));
+    memcpy(result.d->data, d->data, d->size * sizeof(ushort));
 
     int sizeSoFar = d->size;
     ushort *end = result.d->data + sizeSoFar;
 
     const int halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
-        qMemCopy(end, result.d->data, sizeSoFar * sizeof(ushort));
+        memcpy(end, result.d->data, sizeSoFar * sizeof(ushort));
         end += sizeSoFar;
         sizeSoFar <<= 1;
     }
-    qMemCopy(end, result.d->data, (resultSize - sizeSoFar) * sizeof(ushort));
+    memcpy(end, result.d->data, (resultSize - sizeSoFar) * sizeof(ushort));
     result.d->data[resultSize] = '\0';
     result.d->size = resultSize;
     return result;
@@ -6954,7 +6958,7 @@ bool QString::isRightToLeft() const
 
 /*! \fn bool QString::isRightToLeft() const
 
-    \internal
+    Returns true if the string is read right to left.
 */
 
 

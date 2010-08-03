@@ -53,8 +53,7 @@ QT_BEGIN_NAMESPACE
   current statement.
 
   If the called function is executing Qt Script code, you can obtain
-  the script location with the functions fileName(), lineNumber() and
-  columnNumber().
+  the script location with the functions fileName() and lineNumber().
 
   You can obtain the starting line number and ending line number of a
   Qt Script function definition with functionStartLineNumber() and
@@ -317,13 +316,7 @@ int QScriptContextInfo::lineNumber() const
 }
 
 /*!
-  Returns the column number corresponding to the statement being
-  executed, or -1 if the column number is not available.
-
-  The column number is only available if Qt Script code is being
-  executed.
-
-  \sa lineNumber(), fileName()
+  \obsolete
 */
 int QScriptContextInfo::columnNumber() const
 {

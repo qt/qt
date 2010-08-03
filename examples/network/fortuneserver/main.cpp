@@ -45,15 +45,8 @@
 
 #include "server.h"
 
-#ifdef Q_OS_SYMBIAN
-#include "sym_iap_util.h"
-#endif
-
 int main(int argc, char *argv[])
 {
-#ifdef Q_OS_SYMBIAN
-    qt_SetDefaultIap();
-#endif
     QApplication app(argc, argv);
     Server server;
 #ifdef Q_OS_SYMBIAN
