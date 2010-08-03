@@ -219,7 +219,8 @@ HtmlGenerator::HtmlGenerator()
       inTableHeader(false),
       numTableRows(0),
       threeColumnEnumValueTable(true),
-      offlineDocs(true),
+      offlineDocs(false),
+      onlineDocs(false),
       creatorDocs(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
@@ -271,6 +272,12 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     postPostHeader = config.getString(HtmlGenerator::format() +
                                       Config::dot +
                                       HTMLGENERATOR_POSTPOSTHEADER);
+    creatorPostHeader = config.getString(HtmlGenerator::format() +
+                                  Config::dot +
+                                  HTMLGENERATOR_CREATORPOSTHEADER);
+    creatorPostPostHeader = config.getString(HtmlGenerator::format() +
+                                      Config::dot +
+                                      HTMLGENERATOR_CREATORPOSTPOSTHEADER);
     footer = config.getString(HtmlGenerator::format() +
                               Config::dot +
                               HTMLGENERATOR_FOOTER);
@@ -282,8 +289,13 @@ void HtmlGenerator::initializeGenerator(const Config &config)
                                           HTMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
-    offlineDocs = !config.getBool(CONFIG_ONLINE);
-    creatorDocs = !config.getBool(CONFIG_CREATOR);
+
+    onlineDocs = config.getBool(CONFIG_ONLINE);
+
+    offlineDocs = config.getBool(CONFIG_OFFLINE);
+
+    creatorDocs = config.getBool(CONFIG_CREATOR);
+
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
@@ -1256,20 +1268,18 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker);
     sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
     generateTableOfContents(inner,marker,&sections);
-    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
-
-#ifdef QDOC_QML
-    if (classe && !classe->qmlElement().isEmpty()) {
-        generateInstantiatedBy(classe,marker);
-    }
-#endif
-    
+    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);    
     generateBrief(inner, marker);
     generateIncludes(inner, marker);
     generateStatus(inner, marker);
     if (classe) {
         generateInherits(classe, marker);
         generateInheritedBy(classe, marker);
+#ifdef QDOC_QML
+        if (!classe->qmlElement().isEmpty()) {
+            generateInstantiatedBy(classe,marker);
+        }
+#endif
     }
     generateThreadSafeness(inner, marker);
     generateSince(inner, marker);
@@ -1352,12 +1362,14 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     out() << "<a name=\"" << registerRef("details") << "\"></a>" << divNavTop << "\n";
 
     if (!inner->doc().isEmpty()) {
+        generateExtractionMark(inner, DetailedDescriptionMark);
         //out() << "<hr />\n"
         out() << "<div class=\"descr\">\n" // QTBUG-9504
               << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(inner, marker);
         out() << "</div>\n"; // QTBUG-9504
         generateAlsoList(inner, marker);
+        generateExtractionMark(inner, EndMark);
     }
 
     sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
@@ -1474,7 +1486,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
     */
-    if (fake->name() != QString("index.html"))
+    const QmlClassNode* qml_cn = 0;
+    if (fake->subType() == Node::QmlClass) {
+        qml_cn = static_cast<const QmlClassNode*>(fake);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        generateTableOfContents(fake,marker,&sections);
+    }
+    else if (fake->name() != QString("index.html"))
         generateTableOfContents(fake,marker,0);
 
     generateTitle(fullTitle,
@@ -1548,27 +1566,28 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 #ifdef QDOC_QML
     else if (fake->subType() == Node::QmlClass) {
-        const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
-        generateQmlInherits(qml_cn, marker);
-        generateQmlInstantiates(qml_cn, marker);
         generateBrief(qml_cn, marker);
+        generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        generateQmlInstantiates(qml_cn, marker);
         s = sections.begin();
         while (s != sections.end()) {
-            out() << "<a name=\"" << registerRef((*s).name) << "\"></a>" << divNavTop << "\n";
+            out() << "<a name=\"" << registerRef((*s).name.toLower())
+                  << "\"></a>" << divNavTop << "\n";
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
             generateQmlSummary(*s,fake,marker);
             ++s;
         }
 
+        generateExtractionMark(fake, DetailedDescriptionMark);
         out() << "<a name=\"" << registerRef("details") << "\"></a>" << divNavTop << "\n";
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
         generateBody(fake, marker);
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, fake->name());
         generateAlsoList(fake, marker);
+        generateExtractionMark(fake, EndMark);
         //out() << "<hr />\n";
 
         sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
@@ -1601,16 +1620,20 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 
     Text brief = fake->doc().briefText();
     if (fake->subType() == Node::Module && !brief.isEmpty()) {
+        generateExtractionMark(fake, DetailedDescriptionMark);
         out() << "<a name=\"" << registerRef("details") << "\"></a>" << divNavTop << "\n";
         out() << "<div class=\"descr\">\n"; // QTBUG-9504
         out() << "<h2>" << "Detailed Description" << "</h2>\n";
     }
-    else
-        out() << "<div class=\"descr\">\n"; // QTBUG-9504
+    else {
+        generateExtractionMark(fake, DetailedDescriptionMark);
+        out() << "<div class=\"descr\"> <a name=\"" << registerRef("details") << "\"></a>\n"; // QTBUG-9504
+    }
 
     generateBody(fake, marker);
     out() << "</div>\n"; // QTBUG-9504
     generateAlsoList(fake, marker);
+    generateExtractionMark(fake, EndMark);
 
     if (!fake->groupMembers().isEmpty()) {
         NodeMap groupMembersMap;
@@ -1770,64 +1793,94 @@ void HtmlGenerator::generateHeader(const QString& title,
         else
             shortVersion = "Qt " + shortVersion + ": ";
     }
-	// Generating page title
+
+    // Generating page title
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
-	// Adding style sheet
-	out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />";
-	// Adding jquery and functions - providing online tools and search features
-	out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-	out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-	// Adding style and js for small windows
-	out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
-	out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
-	out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
-	out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />";
+    // Adding style sheet
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
+    // Adding jquery and functions - providing online tools and search features
+    out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
+    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+    // Adding style and js for small windows
+    out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
+    out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";
 	
-	// Adding syntax highlighter 	// future release
+    // Adding syntax highlighter 	// future release
 	
-	// Setting assistant configuration
-    if (offlineDocs)
-	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Only for Qt Creator
-		out() << "</head>\n";
-		out() << "<body class=\"offline \">\n"; // offline for  Assistant
-	}	
-    if (creatorDocs)
-	{
-		out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />"; // Only for Qt Creator
-		out() << "</head>\n";
-		out() << "<body class=\"offline creator\">\n"; // offline for Creator
-	}	
-	// Setting online doc configuration
-    else
-		{
-		// Browser spec styles
-		out() << "  <!--[if IE]>\n";
-		out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
-		out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
-		out() << "<![endif]-->\n";
-		out() << "<!--[if lt IE 7]>\n";
-		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
-		out() << "<![endif]-->\n";
-		out() << "<!--[if IE 7]>\n";
-		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
-		out() << "<![endif]-->\n";
-		out() << "<!--[if IE 8]>\n";
-		out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
-		out() << "<![endif]-->\n";
+    // Setting some additional style sheet related details depending on configuration (e.g. online/offline)
+
+    
+    if(onlineDocs==true) // onlineDocs is for the web
+    {
+        // Browser spec styles
+	out() << "  <!--[if IE]>\n";
+	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
+	out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
+	out() << "<![endif]-->\n";
+	out() << "<!--[if lt IE 7]>\n";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
+	out() << "<![endif]-->\n";
+	out() << "<!--[if IE 7]>\n";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
+	out() << "<![endif]-->\n";
+	out() << "<!--[if IE 8]>\n";
+	out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
+	out() << "<![endif]-->\n";
 		
-		out() << "</head>\n";
-		// CheckEmptyAndLoadList activating search
-		out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
-		}
+	out() << "</head>\n";
+	// CheckEmptyAndLoadList activating search
+	out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
+    }   
+    else if (offlineDocs == true) // offlineDocs is for ???
+    {
+	out() << "</head>\n";
+	out() << "<body class=\"offline \">\n"; // offline		
+    }	  
+    else if (creatorDocs == true) // creatorDocs is for Assistant/Creator
+    {
+	out() << "</head>\n";
+	out() << "<body class=\"offline narrow creator\">\n"; // offline narrow
+    }	
+    // default -- not used except if one forgets to set any of the above settings to true
+    else
+    {
+	out() << "</head>\n";
+	out() << "<body>\n";		
+    }
 
 #ifdef GENERATE_MAC_REFS    
     if (mainPage)
         generateMacRef(node, marker);
-#endif    
-    out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-    generateBreadCrumbs(title,node,marker);
-    out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+#endif   
+ 
+
+    if(onlineDocs==true) // onlineDocs is for the web
+    {
+        out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        generateBreadCrumbs(title,node,marker);
+        out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+    }   
+    else if (offlineDocs == true) // offlineDocs is for ???
+    {
+        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        generateBreadCrumbs(title,node,marker);
+        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
+    }	  
+    else if (creatorDocs == true) // creatorDocs is for Assistant/Creator
+    {
+        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        generateBreadCrumbs(title,node,marker);
+        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
+    }	
+    // default -- not used except if one forgets to set any of the above settings to true
+    else
+    {
+        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        generateBreadCrumbs(title,node,marker);
+        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
+    }
 
 #if 0 // Removed for new doc format. MWS
     if (node && !node->links().empty())
@@ -1862,29 +1915,33 @@ void HtmlGenerator::generateFooter(const Node *node)
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
 	
-	    if (offlineDocs)
-		{
-          out() << "</body>\n";
-		}
-	    if (creatorDocs)
-		{
-          out() << "</body>\n";
-		}
-		else
-		{
-			out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-			out() << "  <!-- <script type=\"text/javascript\">\n";
-			out() << "  var _gaq = _gaq || [];\n";
-			out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
-			out() << "  _gaq.push(['_trackPageview']);\n";
-			out() << "  (function() {\n";
-			out() << "  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;\n";
-			out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';\n";
-			out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
-			out() << "  })();\n";
-			out() << "  </script> -->\n";
-			out() << "</body>\n";
-		}
+	    if (onlineDocs == true)
+	    {
+	    	    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+	    	    out() << "  <!-- <script type=\"text/javascript\">\n";
+	    	    out() << "  var _gaq = _gaq || [];\n";
+	    	    out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
+	    	    out() << "  _gaq.push(['_trackPageview']);\n";
+	    	    out() << "  (function() {\n";
+	    	    out() << "  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;\n";
+	    	    out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';\n";
+	    	    out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
+	    	    out() << "  })();\n";
+	    	    out() << "  </script> -->\n";
+	    	    out() << "</body>\n";
+	    }	
+	    else if (offlineDocs == true)
+	    {
+	    	    out() << "</body>\n";
+	    }
+	    else if (creatorDocs == true)
+	    {
+	    	    out() << "</body>\n";
+	    }
+	    else
+	    {
+	    	    out() << "</body>\n";
+	    }
           out() <<   "</html>\n";
 }
 
@@ -1893,13 +1950,18 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 {
     Text brief = node->doc().briefText();
     if (!brief.isEmpty()) {
+        generateExtractionMark(node, BriefMark);
         out() << "<p>";
         generateText(brief, node, marker);
+
         if (!relative || node == relative)
             out() << " <a href=\"#";
         else
             out() << " <a href=\"" << linkForNode(node, relative) << "#";
         out() << registerRef("details") << "\">More...</a></p>\n";
+
+
+        generateExtractionMark(node, EndMark);
     }
 }
 
@@ -2053,7 +2115,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
         }
     }
     else if (sections && ((node->type() == Node::Class) ||
-                          (node->type() == Node::Namespace))) {
+                          (node->type() == Node::Namespace) ||
+                          (node->subType() == Node::QmlClass))) {
         QList<Section>::ConstIterator s = sections->begin();
         while (s != sections->end()) {
             if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
@@ -3468,6 +3531,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
 #ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
 #endif    
+    generateExtractionMark(node, MemberMark);
     if (node->type() == Node::Enum
             && (enume = static_cast<const EnumNode *>(node))->flagsType()) {
 #ifdef GENERATE_MAC_REFS    
@@ -3530,6 +3594,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         }
     }
     generateAlsoList(node, marker);
+    generateExtractionMark(node, EndMark);
 }
 
 void HtmlGenerator::findAllClasses(const InnerNode *node)
@@ -4076,6 +4141,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
 #ifdef GENERATE_MAC_REFS    
     generateMacRef(node, marker);
 #endif    
+    generateExtractionMark(node, MemberMark);
     out() << "<div class=\"qmlitem\">";
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
@@ -4096,7 +4162,6 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
 
                 if (!qpn->isWritable(myTree)) {
-                    qDebug() << "QPN:" << qpn->name();
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
                 }
                 if (qpgn->isDefault())
@@ -4150,6 +4215,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
     generateAlsoList(node, marker);
     out() << "</div>";
     out() << "</div>";
+    generateExtractionMark(node, EndMark);
 }
 
 /*!
@@ -4167,16 +4233,14 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             const Node* n = myTree->findNode(strList,Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
-                out() << "<p class=\"centerAlign\">";
                 Text text;
-                text << "[Inherits ";
+                text << Atom::ParaLeft << "Inherits ";
                 text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
                 text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
                 text << Atom(Atom::String, linkPair.second);
                 text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-                text << "]";
+                text << Atom::ParaRight;
                 generateText(text, cn, marker);
-                out() << "</p>";
             }
         }
     }
@@ -4214,9 +4278,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 {
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        out() << "<p class=\"centerAlign\">";
         Text text;
-        text << "[";
+        text << Atom::ParaLeft;
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         QString name = qcn->name();
@@ -4229,9 +4292,8 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
         text << Atom(Atom::String, cn->name());
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-        text << "]";
+        text << Atom::ParaRight;
         generateText(text, qcn, marker);
-        out() << "</p>";
     }
 }
 
@@ -4248,9 +4310,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
-            out() << "<p class=\"centerAlign\">";
             Text text;
-            text << "[";
+            text << Atom::ParaLeft;
             text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, cn->name());
@@ -4260,9 +4321,8 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
             text << Atom(Atom::String, n->name());
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-            text << "]";
+            text << Atom::ParaRight;
             generateText(text, cn, marker);
-            out() << "</p>";
         }
     }
 }
@@ -4389,6 +4449,44 @@ void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marke
     writer.writeEndElement(); // qtPageIndex
     writer.writeEndDocument();
     file.close();
+}
+
+void HtmlGenerator::generateExtractionMark(const Node *node, ExtractionMarkType markType)
+{
+    if (markType != EndMark) {
+        out() << "<!-- $$$" + node->name();
+        if (markType == MemberMark) {
+            if (node->type() == Node::Function) {
+                const FunctionNode *func = static_cast<const FunctionNode *>(node);
+                if (!func->associatedProperty()) {
+                    if (func->overloadNumber() == 1)
+                        out() << "[overload1]";
+                    out() << "$$$" + func->name() + func->rawParameters().remove(' ');
+                }
+            } else if (node->type() == Node::Property) {
+                out() << "-prop";
+                const PropertyNode *prop = static_cast<const PropertyNode *>(node);
+                const NodeList &list = prop->functions();
+                foreach (const Node *propFuncNode, list) {
+                    if (propFuncNode->type() == Node::Function) {
+                        const FunctionNode *func = static_cast<const FunctionNode *>(propFuncNode);
+                        out() << "$$$" + func->name() + func->rawParameters().remove(' ');
+                    }
+                }
+            } else if (node->type() == Node::Enum) {
+                const EnumNode *enumNode = static_cast<const EnumNode *>(node);
+                foreach (const EnumItem &item, enumNode->items())
+                    out() << "$$$" + item.name();
+            }
+        } else if (markType == BriefMark) {
+            out() << "-brief";
+        } else if (markType == DetailedDescriptionMark) {
+            out() << "-description";
+        }
+        out() << " -->\n";
+    } else {
+        out() << "<!-- @@@" + node->name() + " -->\n";
+    }
 }
 
 #endif

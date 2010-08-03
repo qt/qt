@@ -624,6 +624,7 @@ class FunctionNode : public LeafNode
     int numOverloads() const;
     const QList<Parameter>& parameters() const { return params; }
     QStringList parameterNames() const;
+    QString rawParameters(bool names = false, bool values = false) const;
     const FunctionNode* reimplementedFrom() const { return rf; }
     const QList<FunctionNode*> &reimplementedBy() const { return rb; }
     const PropertyNode* associatedProperty() const { return ap; }

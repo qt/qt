@@ -123,6 +123,12 @@ class HtmlGenerator : public PageGenerator
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
+    enum ExtractionMarkType {
+        BriefMark,
+        DetailedDescriptionMark,
+        MemberMark,
+        EndMark
+    };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
     const Node *findNodeForTarget(const QString &target, 
@@ -266,6 +272,7 @@ class HtmlGenerator : public PageGenerator
                               CodeMarker* marker) const;
     void generatePageIndex(const QString& fileName, 
                            CodeMarker* marker) const;
+    void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
 #if 0
     NavigationBar currentNavigationBar;
@@ -287,6 +294,7 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
+    bool onlineDocs;
     bool offlineDocs;
     bool creatorDocs;
     QString link;
@@ -295,6 +303,8 @@ class HtmlGenerator : public PageGenerator
     QString style;
     QString postHeader;
     QString postPostHeader;
+    QString creatorPostHeader;
+    QString creatorPostPostHeader;
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
@@ -332,6 +342,8 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
+#define HTMLGENERATOR_CREATORPOSTHEADER        "postheader"
+#define HTMLGENERATOR_CREATORPOSTPOSTHEADER    "postpostheader"
 #define HTMLGENERATOR_STYLE             "style"
 #define HTMLGENERATOR_STYLESHEETS       "stylesheets"
 #define HTMLGENERATOR_CUSTOMHEADELEMENTS "customheadelements"
