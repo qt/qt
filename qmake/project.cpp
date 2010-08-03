@@ -87,7 +87,7 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
     if(!qmake_expand_functions) {
         qmake_expand_functions = new QMap<QString, ExpandFunc>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QMapStringInt, (void**)&qmake_expand_functions);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QMap<QString, ExpandFunc> >, (void**)&qmake_expand_functions);
         qmake_expand_functions->insert("member", E_MEMBER);
         qmake_expand_functions->insert("first", E_FIRST);
         qmake_expand_functions->insert("last", E_LAST);
@@ -1631,7 +1631,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             if(!feature_roots) {
                 validateModes();
                 feature_roots = new QStringList(qmake_feature_paths(prop));
-                qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
+                qmakeAddCacheClear(qmakeDeleteCacheClear<QStringList>, (void**)&feature_roots);
             }
             debug_msg(2, "Looking for feature '%s' in (%s)", file.toLatin1().constData(),
 			feature_roots->join("::").toLatin1().constData());
