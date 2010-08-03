@@ -7511,6 +7511,7 @@ void tst_QGraphicsItem::update()
     QWidget topLevel;
     MyGraphicsView view(&scene,&topLevel);
 
+    topLevel.resize(300, 300);
     topLevel.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -8135,6 +8136,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QWidget toplevel;
 
     QGraphicsView view(&scene, &toplevel);
+    toplevel.resize(300, 300);
     toplevel.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&toplevel);
