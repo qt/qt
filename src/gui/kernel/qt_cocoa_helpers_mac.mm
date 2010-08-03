@@ -685,9 +685,11 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     unsigned int info = 0;
     if ([event type] == NSKeyDown) {
         NSString *characters = [event characters];
-        unichar value = [characters characterAtIndex:0];
-        qt_keymapper_private()->updateKeyMap(0, key_event, (void *)&value);
-        info = value;
+        if ([characters length]) {
+            unichar value = [characters characterAtIndex:0];
+            qt_keymapper_private()->updateKeyMap(0, key_event, (void *)&value);
+            info = value;
+        }
     }
 
     // Redirect keys to alien widgets.
