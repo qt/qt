@@ -823,6 +823,7 @@ QT_LFLAGS_MYSQL_R=
 QT_CFLAGS_SQLITE=
 QT_LFLAGS_SQLITE=
 QT_LFLAGS_ODBC="-lodbc"
+QT_LFLAGS_TDS=
 
 # flags for libdbus-1
 QT_CFLAGS_DBUS=
@@ -5119,7 +5120,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         tds)
             if [ "$CFG_SQL_tds" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                [ -z "$SYBASE" ] || QT_LFLAGS_TDS="-L$SYBASE/lib"
+                [ -z "$SYBASE_LIBS" ] || QT_LFLAGS_TDS="$QT_LFLAGS_TDS $SYBASE_LIBS"
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $QT_LFLAGS_TDS $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_tds" = "auto" ]; then
                         CFG_SQL_tds=plugin
                     fi
@@ -7927,6 +7930,9 @@ if [ -n "$QT_LFLAGS_SQLITE" ]; then
 fi
 if [ -n "$QT_LFLAGS_ODBC" ]; then
     echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
+fi
+if [ -n "$QT_LFLAGS_TDS" ]; then
+    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$CACHEFILE.tmp"
 fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
