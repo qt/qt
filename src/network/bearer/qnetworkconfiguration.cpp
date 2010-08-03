@@ -506,7 +506,7 @@ QString QNetworkConfiguration::bearerTypeName() const
         return QLatin1String("WiMAX");
     }
 
-    return QString();
+    return QLatin1String("Unknown");
 }
 
 QT_END_NAMESPACE

@@ -81,7 +81,7 @@ public:
 
     virtual QString bearerTypeName() const
     {
-        return QString();
+        return QLatin1String("Unknown");
     }
 
     QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;

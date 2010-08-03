@@ -26,8 +26,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractvideooutput.h"
 
-class RFile;
-
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -54,7 +52,7 @@ class AbstractPlayer : public QObject
 public:
     AbstractPlayer(const AbstractPlayer *player);
 
-    virtual void open(const Phonon::MediaSource&, RFile&) = 0;
+    virtual void open() = 0;
     virtual void close() = 0;
 
     // MediaObjectInterface (implemented)

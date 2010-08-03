@@ -110,22 +110,27 @@ private:
 
     void DataReceived(CSensrvChannel &channel, TInt count, TInt dataLost)
     {
+        Q_UNUSED(dataLost)
         if (channel.GetChannelInfo().iChannelType == KSensrvChannelTypeIdOrientationData) {
             TSensrvOrientationData data;
             for (int i = 0; i < count; ++i) {
                 TPckgBuf<TSensrvOrientationData> dataBuf;
                 channel.GetData(dataBuf);
                 data = dataBuf();
-                Orientation o = UnknownOrientation;
+                Orientation orientation = UnknownOrientation;
                 switch (data.iDeviceOrientation) {
                 case TSensrvOrientationData::EOrientationDisplayUp:
-                    o = Portrait;
+                    orientation = Portrait;
                     break;
                 case TSensrvOrientationData::EOrientationDisplayRightUp:
-                    o = Landscape;
+                    orientation = Landscape;
                     break;
                 case TSensrvOrientationData::EOrientationDisplayLeftUp:
+                    orientation = LandscapeInverted;
+                    break;
                 case TSensrvOrientationData::EOrientationDisplayDown:
+                    orientation = PortraitInverted;
+                    break;
                 case TSensrvOrientationData::EOrientationUndefined:
                 case TSensrvOrientationData::EOrientationDisplayUpwards:
                 case TSensrvOrientationData::EOrientationDisplayDownwards:
@@ -133,8 +138,8 @@ private:
                     break;
                 }
 
-                if (m_current != o && o != UnknownOrientation) {
-                    m_current = o;
+                if (m_current != orientation && orientation != UnknownOrientation) {
+                    m_current = orientation;
                     emit orientationChanged();
                 }
            }

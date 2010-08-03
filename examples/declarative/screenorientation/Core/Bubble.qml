@@ -38,24 +38,54 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
+
 import Qt 4.7
- 
+
 Rectangle {
-    id: myRect
-    width: 200; height: 200
-    color: "red"
+    property bool rising: false
+    property bool verticalRise: true
+    property real xAttractor: 0
+    property real yAttractor: 0
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: myRect.state = 'moved'
+    width: 5 + 10*Math.random()
+    height: width
+    radius: Math.floor(width/2)-1
+    property real amountOfGray: Math.random()
+    color: Qt.rgba(amountOfGray,amountOfGray,amountOfGray,1)
+
+    y: (rising && verticalRise) ? yAttractor : Math.random()*(main.inPortrait ? main.baseHeight : main.baseWidth)
+    x: (rising && !verticalRise) ? xAttractor : Math.random()*(main.inPortrait ? main.baseWidth : main.baseHeight)
+    Behavior on x {
+        id: xBehavior
+        SmoothedAnimation { 
+            velocity: 100+Math.random()*100 
+        } 
     }
-
-    states: [
-        State {
-            name: "moved"
-            PropertyChanges { target: myRect; x: 50; y: 50 }
+    Behavior on y { 
+        id: yBehavior
+        SmoothedAnimation { 
+            velocity: 100+Math.random()*100 
+        } 
+    }
+    Timer {
+       interval: 80+Math.random()*40 
+        repeat: true
+        running: true
+        onTriggered: {
+            if (rising) {
+                if (x > main.width || x < 0) {
+                    xBehavior.enabled = false;
+                    rising = false;
+                    xBehavior.enabled = true;
+                    rising = true;
+                }
+                if (y > main.height || y < 0) {
+                    yBehavior.enabled = false;
+                    rising = false;
+                    yBehavior.enabled = true;
+                    rising = true;
+                }  
+            }
         }
-    ]
+    }
 }
-//![0]

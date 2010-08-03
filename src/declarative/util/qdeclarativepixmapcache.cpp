@@ -70,6 +70,16 @@
 
 QT_BEGIN_NAMESPACE
 
+// The cache limit describes the maximum "junk" in the cache.
+// These are the same defaults as QPixmapCache
+#if defined(Q_OS_SYMBIAN)
+static int cache_limit = 1024 * 1024; // 1048 KB cache limit for symbian
+#elif defined(Q_WS_QWS) || defined(Q_WS_WINCE)
+static int cache_limit = 2048 * 1024; // 2048 KB cache limit for embedded
+#else
+static int cache_limit = 10240 * 1024; // 10 MB cache limit for desktop
+#endif
+
 class QDeclarativePixmapReader;
 class QDeclarativePixmapData;
 class QDeclarativePixmapReply : public QObject
@@ -580,6 +590,8 @@ public:
     QHash<QDeclarativePixmapKey, QDeclarativePixmapData *> m_cache;
 
 private:
+    void shrinkCache(int remove);
+
     QDeclarativePixmapData *m_unreferencedPixmaps;
     QDeclarativePixmapData *m_lastUnreferencedPixmap;
 
@@ -613,7 +625,9 @@ void QDeclarativePixmapStore::unreferencePixmap(QDeclarativePixmapData *data)
 
     m_unreferencedCost += data->cost();
 
-    if (m_timerId == -1)
+    shrinkCache(-1); // Shrink the cache incase it has become larger than cache_limit
+
+    if (m_timerId == -1 && m_unreferencedPixmaps) 
         m_timerId = startTimer(CACHE_EXPIRE_TIME * 1000);
 }
 
@@ -636,11 +650,9 @@ void QDeclarativePixmapStore::referencePixmap(QDeclarativePixmapData *data)
     m_unreferencedCost -= data->cost();
 }
 
-void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
+void QDeclarativePixmapStore::shrinkCache(int remove)
 {
-    int removalCost = m_unreferencedCost / CACHE_REMOVAL_FRACTION;
-
-    while (removalCost > 0 && m_lastUnreferencedPixmap) {
+    while ((remove > 0 || m_unreferencedCost > cache_limit) && m_lastUnreferencedPixmap) {
         QDeclarativePixmapData *data = m_lastUnreferencedPixmap;
         Q_ASSERT(data->nextUnreferenced == 0);
 
@@ -649,10 +661,17 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
         data->prevUnreferencedPtr = 0;
         data->prevUnreferenced = 0;
 
-        removalCost -= data->cost();
+        remove -= data->cost();
         data->removeFromCache();
         delete data;
     }
+}
+
+void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
+{
+    int removalCost = m_unreferencedCost / CACHE_REMOVAL_FRACTION;
+
+    shrinkCache(removalCost);
 
     if (m_unreferencedPixmaps == 0) {
         killTimer(m_timerId);
@@ -702,7 +721,7 @@ bool QDeclarativePixmapReply::event(QEvent *event)
 
 int QDeclarativePixmapData::cost() const
 {
-    return pixmap.width() * pixmap.height() * pixmap.depth();
+    return (pixmap.width() * pixmap.height() * pixmap.depth()) / 8;
 }
 
 void QDeclarativePixmapData::addref()

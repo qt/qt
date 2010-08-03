@@ -472,7 +472,7 @@
     \section1 Explicit Sharing
 
     Qt 4 is the first version of Qt that contains no \link
-    http://qt.nokia.com/doc/3.3/shclass.html explicitly shared
+    http://doc.qt.nokia.com/3.3/shclass.html explicitly shared
     \endlink classes. All classes that were explicitly shared in Qt 3
     are \e implicitly shared in Qt 4:
 
@@ -1079,7 +1079,7 @@
     ensuring that the string is '\\0'-terminated. Another important
     issue was that conversions between \c QCString and QByteArray often
     gave confusing results. (See the
-    \l{http://qt.nokia.com/doc/qq/qq05-achtung.html#qcstringisastringofchars}{Achtung!
+    \l{http://doc.qt.nokia.com/qq/qq05-achtung.html#qcstringisastringofchars}{Achtung!
     Binary and Character Data} article in \e{Qt Quarterly} for an
     overview of the pitfalls.)
 
@@ -2440,13 +2440,13 @@
     that provides the old semantics. See the Q3Painter documentation
     for details and for the reasons why we had to make this change.
 
-    The \l{http://qt.nokia.com/doc/3.3/qpainter.html#CoordinateMode-enum}{QPainter::CoordinateMode}
+    The \l{http://doc.qt.nokia.com/3.3/qpainter.html#CoordinateMode-enum}{QPainter::CoordinateMode}
     enum has been removed in Qt 4. All clipping
     operations are now defined using logical coordinates and are subject
     to transformation operations.
 
     The
-    \l{http://qt.nokia.com/doc/3.3/qpainter.html#RasterOP-enum}{QPainter::RasterOP}
+    \l{http://doc.qt.nokia.com/3.3/qpainter.html#RasterOP-enum}{QPainter::RasterOP}
     enum has been replaced with QPainter::CompositionMode.
 
     \section1 QPicture
@@ -3258,7 +3258,7 @@
 
     \list \o If you use Q3SocketDevice in a thread to perform blocking
     network I/O (a technique encouraged by the \e{Qt Quarterly}
-    article \l{http://qt.nokia.com/doc/qq/qq09-networkthread.html}
+    article \l{http://doc.qt.nokia.com/qq/qq09-networkthread.html}
     {Unblocking Networking}), you can now use QTcpSocket, QFtp, or
     QNetworkAccessManager, which can be used from non-GUI threads.
 
@@ -4052,7 +4052,7 @@
 
     Sample code on how to do obtain similar behavior from Qt 4, previously
     handled by some of the above functions can be found in the
-    \l{http://qt.nokia.com/doc/qwidget-qt3.html}{Qt 3 Support Members for QWidget}
+    \l{http://doc.qt.nokia.com/qwidget-qt3.html}{Qt 3 Support Members for QWidget}
     page.
 
     A widget now receives change events in its QWidget::changeEvent()
@@ -4150,7 +4150,7 @@
     clearWFlags() has no direct replacement. You can use
     QWidget::setAttribute() instead. For example,
     \c{setAttribute(..., false)} to clear an attribute. More information
-    is available \l{http://qt.nokia.com/doc/qwidget.html#setAttribute}{here}.
+    is available \l{http://doc.qt.nokia.com/qwidget.html#setAttribute}{here}.
 
     testWFlags() was renamed to \l{QWidget::testAttribute()}{testAttribute()}.
 

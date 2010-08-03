@@ -38,24 +38,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
 import Qt 4.7
- 
+//![0]
 Rectangle {
     id: myRect
-    width: 200; height: 200
+    width: 100; height: 100
     color: "red"
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: myRect.state = 'moved'
-    }
+    MouseArea { id: mouseArea; anchors.fill: parent }
 
-    states: [
-        State {
-            name: "moved"
-            PropertyChanges { target: myRect; x: 50; y: 50 }
-        }
-    ]
+    states: State {
+        name: "hidden"; when: mouseArea.pressed
+        PropertyChanges { target: myRect; opacity: 0 }
+    }
 }
 //![0]
