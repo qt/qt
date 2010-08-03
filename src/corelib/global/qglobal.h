@@ -1952,8 +1952,6 @@ static inline bool qIsNull(float f)
    qIsDetached   - data sharing functionality
 */
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
-
 /*
   The catch-all template.
 */
@@ -1985,28 +1983,6 @@ public:
         isDummy = false
     };
 };
-
-#else
-
-template <typename T> char QTypeInfoHelper(T*(*)());
-void* QTypeInfoHelper(...);
-
-template <typename T> inline bool qIsDetached(T &) { return true; }
-
-template <typename T>
-class QTypeInfo
-{
-public:
-    enum {
-        isPointer = (1 == sizeof(QTypeInfoHelper((T(*)())0))),
-        isComplex = !isPointer,
-        isStatic = !isPointer,
-        isLarge = (sizeof(T)>sizeof(void*)),
-        isDummy = false
-    };
-};
-
-#endif /* QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION */
 
 /*
    Specialize a specific type with:

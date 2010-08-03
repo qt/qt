@@ -107,7 +107,6 @@ template <class Key> inline bool qMapLessThanKey(const Key &key1, const Key &key
     return key1 < key2;
 }
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
 template <class Ptr> inline bool qMapLessThanKey(Ptr *key1, Ptr *key2)
 {
     Q_ASSERT(sizeof(quintptr) == sizeof(Ptr *));
@@ -119,7 +118,6 @@ template <class Ptr> inline bool qMapLessThanKey(const Ptr *key1, const Ptr *key
     Q_ASSERT(sizeof(quintptr) == sizeof(const Ptr *));
     return quintptr(key1) < quintptr(key2);
 }
-#endif // QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 template <class Key, class T>
 struct QMapNode {
