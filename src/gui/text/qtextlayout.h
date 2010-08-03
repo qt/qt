@@ -239,9 +239,10 @@ public:
 private:
     QTextLine(int line, QTextEngine *e) : i(line), eng(e) {}
     void layout_helper(int numGlyphs);
-    QList<QGlyphs> glyphs() const;
+    QList<QGlyphs> glyphs(int from, int length) const;
 
     friend class QTextLayout;
+    friend class QTextFragment;
     int i;
     QTextEngine *eng;
 };
