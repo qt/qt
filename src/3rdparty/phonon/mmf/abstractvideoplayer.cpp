@@ -144,6 +144,12 @@ int MMF::AbstractVideoPlayer::openUrl(const QString &url)
     return err;
 }
 
+int MMF::AbstractVideoPlayer::openDescriptor(const TDesC8 &des)
+{
+    TRAPD(err, m_player->OpenDesL(des));
+    return err;
+}
+
 int MMF::AbstractVideoPlayer::bufferStatus() const
 {
     int result = 0;
