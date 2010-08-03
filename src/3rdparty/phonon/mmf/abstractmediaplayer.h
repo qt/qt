@@ -47,7 +47,7 @@ protected:
     AbstractMediaPlayer(MediaObject *parent, const AbstractPlayer *player);
 
 public:
-    virtual void open(const Phonon::MediaSource&, RFile&);
+    virtual void open();
 
     // MediaObjectInterface
     virtual void play();
@@ -70,6 +70,7 @@ protected:
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(RFile& file) = 0;
     virtual int openUrl(const QString& url) = 0;
+    virtual int openDescriptor(const TDesC8 &des) = 0;
     virtual int bufferStatus() const = 0;
 
     void updateMetaData();
@@ -122,6 +123,9 @@ private:
 
     bool                        m_prefinishMarkSent;
     bool                        m_aboutToFinishSent;
+
+    // Used for playback of resource files
+    TPtrC8                      m_buffer;
 
     QMultiMap<QString, QString> m_metaData;
 
