@@ -69,7 +69,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_NETWORKINTERFACE
-static QString qGetInterfaceType(const QString &interface)
+static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
 #ifdef Q_OS_WIN32
     unsigned long oid;
@@ -78,10 +78,10 @@ static QString qGetInterfaceType(const QString &interface)
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-    HANDLE handle = CreateFile((TCHAR *)QString("\\\\.\\%1").arg(interface).utf16(), 0,
+    HANDLE handle = CreateFile((TCHAR *)QString::fromLatin1("\\\\.\\%1").arg(interface).utf16(), 0,
                                FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
-        return QLatin1String("Unknown");
+        return QNetworkConfiguration::BearerUnknown;
 
     oid = OID_GEN_MEDIA_SUPPORTED;
     bytesWritten = 0;
@@ -89,7 +89,7 @@ static QString qGetInterfaceType(const QString &interface)
                                   &medium, sizeof(medium), &bytesWritten, 0);
     if (!result) {
         CloseHandle(handle);
-        return QLatin1String("Unknown");
+        return QNetworkConfiguration::BearerUnknown;
     }
 
     oid = OID_GEN_PHYSICAL_MEDIUM;
@@ -100,9 +100,9 @@ static QString qGetInterfaceType(const QString &interface)
         CloseHandle(handle);
 
         if (medium == NdisMedium802_3)
-            return QLatin1String("Ethernet");
+            return QNetworkConfiguration::BearerEthernet;
         else
-            return QLatin1String("Unknown");
+            return QNetworkConfiguration::BearerUnknown;
     }
 
     CloseHandle(handle);
@@ -110,16 +110,16 @@ static QString qGetInterfaceType(const QString &interface)
     if (medium == NdisMedium802_3) {
         switch (physicalMedium) {
         case NdisPhysicalMediumWirelessLan:
-            return QLatin1String("WLAN");
+            return QNetworkConfiguration::BearerWLAN;
         case NdisPhysicalMediumBluetooth:
-            return QLatin1String("Bluetooth");
+            return QNetworkConfiguration::BearerBluetooth;
         case NdisPhysicalMediumWiMax:
-            return QLatin1String("WiMAX");
+            return QNetworkConfiguration::BearerWiMAX;
         default:
 #ifdef BEARER_MANAGEMENT_DEBUG
             qDebug() << "Physical Medium" << physicalMedium;
 #endif
-            return QLatin1String("Ethernet");
+            return QNetworkConfiguration::BearerEthernet;
         }
     }
 
@@ -135,12 +135,12 @@ static QString qGetInterfaceType(const QString &interface)
     close(sock);
 
     if (result >= 0 && request.ifr_hwaddr.sa_family == ARPHRD_ETHER)
-        return QLatin1String("Ethernet");
+        return QNetworkConfiguration::BearerEthernet;
 #else
     Q_UNUSED(interface);
 #endif
 
-    return QLatin1String("Unknown");
+    return QNetworkConfiguration::BearerUnknown;
 }
 #endif
 
@@ -214,7 +214,7 @@ void QGenericEngine::doRequestUpdate()
             continue;
 
         // ignore WLAN interface handled in separate engine
-        if (qGetInterfaceType(interface.name()) == QLatin1String("WLAN"))
+        if (qGetInterfaceType(interface.name()) == QNetworkConfiguration::BearerWLAN)
             continue;
 
         uint identifier;
@@ -277,7 +277,7 @@ void QGenericEngine::doRequestUpdate()
             ptr->id = id;
             ptr->state = state;
             ptr->type = QNetworkConfiguration::InternetAccessPoint;
-            ptr->bearer = qGetInterfaceType(interface.name());
+            ptr->bearerType = qGetInterfaceType(interface.name());
 
             accessPointConfigurations.insert(id, ptr);
             configurationInterface.insert(id, interface.name());

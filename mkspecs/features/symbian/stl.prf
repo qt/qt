@@ -15,18 +15,24 @@ INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE
 INCLUDEPATH -= $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/stl-off
 
 # libstdcppv5 is preferred over libstdcpp as it has/uses the throwing version of operator new
-STL_LIB = -llibstdcppv5.dll
-
 # STDCPP turns on standard C++ new behaviour (ie. throwing new)
-STL_MMP_RULE = "STDCPP"
+use_libstdcppv5 = true
 
 # Fall back to old implementation if that is the only one that is found
 exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcpp.dso)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcpp.dll) {
     !exists($${EPOCROOT}epoc32/release/armv5/lib/libstdcppv5.dso):!exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
-        STL_LIB = -llibstdcpp.dll
-        STL_MMP_RULE =
+        use_libstdcppv5 = false
     }
 }
 
-LIBS *= $$STL_LIB
-MMP_RULES *= $$STL_MMP_RULE
+equals(use_libstdcppv5, true) {
+    LIBS *= -llibstdcppv5.dll
+    symbian-abld|symbian-sbsv2 {
+        MMP_RULES *= "STDCPP"
+    } else {
+        DEFINES *= __SYMBIAN_STDCPP_SUPPORT__
+        LIBS *= -lstdnew.dll
+    }
+} else {
+    LIBS *= -llibstdcpp.dll
+}

@@ -197,10 +197,10 @@ Rectangle {
 \o \c runtime.orientation
 
 \o This property indicates the current orientation of the QML Viewer. On the
-N900 platform, this property automatically updates to reflect the device's 
-actual orientation; on other platforms, this indicates the orientation currently
-selected in the QML Viewer's \e {Settings -> Properties} menu. The
-\c orientation value can be one of the following:
+N900 platform and most S60 5.0-based or newer Symbian devices, this property 
+automatically updates to reflect the device's actual orientation; on other platforms, 
+this indicates the orientation currently selected in the QML Viewer's 
+\e {Settings -> Properties} menu. The \c orientation value can be one of the following:
 
 \list
 \o \c Orientation.Portrait
