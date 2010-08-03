@@ -202,7 +202,12 @@ void tst_MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstat
 void tst_MediaObject::testPlayFromResource()
 {
     MediaObject media;
+#ifdef Q_OS_SYMBIAN
     media.setCurrentSource(Phonon::MediaSource(MEDIA_FILEPATH));
+#else
+    QFile file(MEDIA_FILEPATH);
+    media.setCurrentSource(&file);
+#endif
     QVERIFY(media.state() != Phonon::ErrorState);
     if (media.state() != Phonon::StoppedState)
         QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);
