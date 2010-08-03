@@ -263,7 +263,6 @@ void VcxprojGenerator::initConfiguration()
     }
 }
 
-
 void VcxprojGenerator::initCompilerTool()
 {
     QString placement = project->first("OBJECTS_DIR");
@@ -296,11 +295,6 @@ void VcxprojGenerator::initCompilerTool()
     // Common for both release and debug
     if(project->isActiveConfig("windows"))
         conf.compiler.PreprocessorDefinitions += project->values("MSVCPROJ_WINCONDEF");
-
-    // Can this be set for ALL configs?
-    // If so, use qmake.conf!
-    if(projectTarget == SharedLib)
-        conf.compiler.PreprocessorDefinitions += "_WINDOWS";
 
     conf.compiler.PreprocessorDefinitions += project->values("DEFINES");
     conf.compiler.PreprocessorDefinitions += project->values("PRL_EXPORT_DEFINES");
