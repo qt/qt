@@ -79,6 +79,8 @@ private:
     QVector<EGLint> m_eglContextAttrs;
     EGLenum m_eglApi;
     QEGLPlatformContext *m_platformGlContext;
+
+    bool isFullScreen;
 };
 
 QT_END_NAMESPACE
