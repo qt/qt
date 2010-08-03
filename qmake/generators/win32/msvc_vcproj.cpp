@@ -1260,7 +1260,6 @@ void VcprojGenerator::initTranslationFiles()
     vcProject.TranslationFiles.CustomBuild = none;
 }
 
-
 void VcprojGenerator::initFormFiles()
 {
     vcProject.FormFiles.Name = "Form Files";
@@ -1275,7 +1274,6 @@ void VcprojGenerator::initFormFiles()
     vcProject.FormFiles.Config = &(vcProject.Configuration);
     vcProject.FormFiles.CustomBuild = none;
 }
-
 
 void VcprojGenerator::initResourceFiles()
 {

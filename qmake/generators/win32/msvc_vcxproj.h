@@ -66,7 +66,6 @@ protected:
 
     void initConfiguration();
     void initCompilerTool();
-    void initDeploymentTool();
     void initLinkerTool();
     void initPreLinkEventTools();
     void initPostBuildEventTools();

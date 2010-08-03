@@ -112,13 +112,9 @@ void VcxprojGenerator::initProject()
     vcxProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
 
     vcxProject.Keyword = project->first("VCPROJ_KEYWORD");
-    if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        vcxProject.PlatformName = vcxProject.Configuration.idl.TargetEnvironment;
-        if ( vcxProject.Configuration.idl.TargetEnvironment.isEmpty() )
-            vcxProject.PlatformName = "Win32";
-    } else {
-        vcxProject.PlatformName = project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-    }
+    vcxProject.PlatformName = vcxProject.Configuration.idl.TargetEnvironment;
+    if (vcxProject.Configuration.idl.TargetEnvironment.isEmpty())
+        vcxProject.PlatformName = "Win32";
     // These are not used by Qt, but may be used by customers
     vcxProject.SccProjectName = project->first("SCCPROJECTNAME");
     vcxProject.SccLocalPath = project->first("SCCLOCALPATH");
@@ -179,11 +175,7 @@ void VcxprojGenerator::initConfiguration()
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
-    if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
-        conf.Name += (conf.idl.TargetEnvironment == "Win64" ? "|Win64" : "|Win32");
-    } else {
-        conf.Name += "|" + project->values("CE_SDK").join(" ") + " (" + project->first("CE_ARCH") + ")";
-    }
+    conf.Name += (conf.idl.TargetEnvironment == "Win64" ? "|Win64" : "|Win32");
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
     temp = project->first("CharacterSet");
@@ -250,9 +242,6 @@ void VcxprojGenerator::initConfiguration()
     initCustomBuildTool();
     initPreBuildEventTools();
     initPostBuildEventTools();
-    // Only deploy for CE projects
-    if (!project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
-        initDeploymentTool();
     initPreLinkEventTools();
 
     // Set definite values in both configurations
@@ -360,143 +349,12 @@ void VcxprojGenerator::initPostBuildEventTools()
         conf.postBuild.UseInBuild = _True;
     }
 
-    QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
-    bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
-                        !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
-    if(useSignature) {
-         conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
-             (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
-        conf.postBuild.UseInBuild = _True;
-    }
-
     if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
         if(!conf.postBuild.CommandLine.isEmpty())
             conf.postBuild.CommandLine += " && ";
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
         conf.postBuild.UseInBuild = _True;
-    }
-}
-
-
-void VcxprojGenerator::initDeploymentTool()
-{
-    VCXConfiguration &conf = vcxProject.Configuration;
-    QString targetPath = project->values("deploy.path").join(" ");
-    if (targetPath.isEmpty())
-        targetPath = QString("%CSIDL_PROGRAM_FILES%\\") + project->first("TARGET");
-    if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
-        targetPath.chop(1);
-
-    // Only deploy Qt libs for shared build
-    if (!project->values("QMAKE_QT_DLL").isEmpty()) {
-        QStringList& arg = project->values("MSVCPROJ_LIBS");
-        for (QStringList::ConstIterator it = arg.constBegin(); it != arg.constEnd(); ++it) {
-            if (it->contains(project->first("QMAKE_LIBDIR"))) {
-                QString dllName = *it;
-
-                if (dllName.contains(QLatin1String("QAxContainer"))
-                    || dllName.contains(QLatin1String("qtmain"))
-                    || dllName.contains(QLatin1String("QtUiTools")))
-                    continue;
-                dllName.replace(QLatin1String(".lib") , QLatin1String(".dll"));
-                QFileInfo info(dllName);
-                conf.deployment.AdditionalFiles += info.fileName()
-                                                + "|" + QDir::toNativeSeparators(info.absolutePath())
-                                                + "|" + targetPath
-                                                + "|0;";
-            }
-        }
-    }
-
-    // C-runtime deployment
-    QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1String(" "));
-    if (!runtime.isEmpty() && (runtime != QLatin1String("no"))) {
-        QString runtimeVersion = QLatin1String("msvcr");
-        QString mkspec = project->first("QMAKESPEC");
-        // If no .qmake.cache has been found, we fallback to the original mkspec
-        if (mkspec.isEmpty())
-            mkspec = project->first("QMAKESPEC_ORIGINAL");
-
-        if (!mkspec.isEmpty()) {
-            if (mkspec.endsWith("2010"))
-                runtimeVersion.append("100");
-            else if (mkspec.endsWith("2008"))
-                runtimeVersion.append("90");
-            else
-                runtimeVersion.append("80");
-            if (project->isActiveConfig("debug"))
-                runtimeVersion.append("d");
-            runtimeVersion.append(".dll");
-
-            if (runtime == "yes") {
-                // Auto-find C-runtime
-                QString vcInstallDir = qgetenv("VCINSTALLDIR");
-                if (!vcInstallDir.isEmpty()) {
-                    vcInstallDir += "\\ce\\dll\\";
-                    vcInstallDir += project->values("CE_ARCH").join(QLatin1String(" "));
-                    if (!QFileInfo(vcInstallDir + QDir::separator() + runtimeVersion).exists())
-                        runtime.clear();
-                    else
-                        runtime = vcInstallDir;
-                }
-            }
-        }
-
-        if (!runtime.isEmpty() && runtime != QLatin1String("yes")) {
-            conf.deployment.AdditionalFiles += runtimeVersion
-                                            + "|" + QDir::toNativeSeparators(runtime)
-                                            + "|" + targetPath
-                                            + "|0;";
-        }
-    }
-
-    // foreach item in DEPLOYMENT
-    foreach(QString item, project->values("DEPLOYMENT")) {
-        // get item.path
-        QString devicePath = project->first(item + ".path");
-        if (devicePath.isEmpty())
-            devicePath = targetPath;
-        // check if item.path is relative (! either /,\ or %)
-        if (!(devicePath.at(0) == QLatin1Char('/')
-            || devicePath.at(0) == QLatin1Char('\\')
-            || devicePath.at(0) == QLatin1Char('%'))) {
-            // create output path
-            devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
-        }
-        // foreach d in item.sources
-        foreach(QString source, project->values(item + ".sources")) {
-            QString itemDevicePath = devicePath;
-            source = Option::fixPathToLocalOS(source);
-            QString nameFilter;
-            QFileInfo info(source);
-            QString searchPath;
-            if (info.isDir()) {
-                nameFilter = QLatin1String("*");
-                itemDevicePath += "\\" + info.fileName();
-                searchPath = info.absoluteFilePath();
-            } else {
-                nameFilter = source.split('\\').last();
-                searchPath = info.absolutePath();
-            }
-
-            int pathSize = searchPath.size();
-            QDirIterator iterator(searchPath, QStringList() << nameFilter
-                                  , QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks
-                                  , QDirIterator::Subdirectories);
-            // foreach dirIterator-entry in d
-            while(iterator.hasNext()) {
-                iterator.next();
-                QString absoluteItemPath = Option::fixPathToLocalOS(QFileInfo(iterator.filePath()).absolutePath());
-                // Identify if it is just another subdir
-                int diffSize = absoluteItemPath.size() - pathSize;
-                // write out rules
-                conf.deployment.AdditionalFiles += iterator.fileName()
-                    + "|" + absoluteItemPath
-                    + "|" + itemDevicePath + (diffSize ? (absoluteItemPath.right(diffSize)) : QLatin1String(""))
-                    + "|0;";
-            }
-        }
     }
 }
 
