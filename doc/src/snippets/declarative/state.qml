@@ -44,13 +44,19 @@ import Qt 4.7
 Rectangle {
     id: myRect
     width: 100; height: 100
-    color: "red"
+    color: "black"
 
-    MouseArea { id: mouseArea; anchors.fill: parent }
-
-    states: State {
-        name: "hidden"; when: mouseArea.pressed
-        PropertyChanges { target: myRect; opacity: 0 }
+    MouseArea { 
+        id: mouseArea
+        anchors.fill: parent 
+        onClicked: myRect.state == 'clicked' ? myRect.state = "" : myRect.state = 'clicked';
     }
+
+    states: [
+        State {
+            name: "clicked"
+            PropertyChanges { target: myRect; color: "red" }
+        }
+    ]
 }
 //![0]

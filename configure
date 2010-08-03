@@ -8446,7 +8446,7 @@ for file in .projects .projects.3; do
         *winmain/winmain.pro)
             [ "$XPLATFORM_MINGW" = "yes" ] || continue
             SPEC=$XQMAKESPEC ;;
-        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`"]; then
+        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`" ]; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;

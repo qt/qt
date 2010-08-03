@@ -137,6 +137,12 @@ int MMF::AudioPlayer::openUrl(const QString& /*url*/)
     return 0;
 }
 
+int MMF::AudioPlayer::openDescriptor(const TDesC8 &des)
+{
+    TRAPD(err, m_player->OpenDesL(des));
+    return err;
+}
+
 int MMF::AudioPlayer::bufferStatus() const
 {
     int result = 0;
