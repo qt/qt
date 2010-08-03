@@ -203,6 +203,11 @@ The examples can be found in Qt's \c examples/declarative directory.
 \o \l{declarative/threading/workerscript}{WorkerScript}
 \endlist
 
+\section2 Screen orientation
+\list
+\o \l{declarative/screenorientation}{Example}
+\endlist
+
 \section2 SQL Local Storage
 \list
 \o \l{declarative/sqllocalstorage}{Example}
