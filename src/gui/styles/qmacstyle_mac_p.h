@@ -150,6 +150,8 @@ enum QAquaWidgetSize { QAquaSizeLarge = 0, QAquaSizeSmall = 1, QAquaSizeMini = 2
         return sizes[controlSize]; \
     } while (0)
 
+bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
+
 class QMacStylePrivate : public QObject
 {
     Q_OBJECT
