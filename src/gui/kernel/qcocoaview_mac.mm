@@ -532,9 +532,23 @@ static int qCocoaViewCount = 0;
     if (!qwidget)
         return;
 
+    // We use a different graphics system.
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        qwidget->update(qwidget->rect());
-        qwidgetprivate->syncBackingStore(qwidget->rect());
+
+        // Qt handles the painting occuring inside the window.
+        // Cocoa also keeps track of all widgets as NSView and therefore might
+        // ask for a repainting of a widget even if Qt is already taking care of it.
+        //
+        // The only valid reason for Cocoa to call drawRect: is for window manipulation
+        // (ie. resize, ...).
+        //
+        // Qt will then forward the update to the children.
+        if (qwidget->isWindow()) {
+            qwidget->update(qwidget->rect());
+            qwidgetprivate->syncBackingStore(qwidget->rect());
+        }
+
+        // Since we don't want to use the native engine, we must exit.
         return;
     }
 
