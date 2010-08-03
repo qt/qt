@@ -916,8 +916,6 @@ void VcprojGenerator::initCompilerTool()
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));
-    if(project->isActiveConfig("release"))
-        conf.compiler.PreprocessorDefinitions += "NDEBUG";
 
     // Common for both release and debug
     if(project->isActiveConfig("windows"))
