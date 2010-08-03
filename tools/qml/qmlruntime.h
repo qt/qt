@@ -170,8 +170,6 @@ private:
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
-    QString currentSkin;
-    bool scaleSkin;
     RecordingDialog *recdlg;
 
     void senseImageMagick();
@@ -180,6 +178,7 @@ private:
     bool ffmpegAvailable;
     bool convertAvailable;
 
+    QAction *rotateAction;
     QActionGroup *orientation;
     QAction *showWarningsWindow;
 
