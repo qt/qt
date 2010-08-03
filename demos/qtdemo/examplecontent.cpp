@@ -91,8 +91,8 @@ QString ExampleContent::loadDescription()
     if (paragraphs.length() < 1 && Colors::verbose)
         qDebug() << "- ExampleContent::loadDescription(): Could not load description:"
                  << MenuManager::instance()->info[this->name]["docfile"];
-    QString description = Colors::contentColor +
-        QLatin1String("Could not load description. Ensure that the documentation for Qt is built.");
+    QString description = Colors::contentColor + QLatin1String(""); 
+    //QLatin1String("Could not load description. Ensure that the documentation for Qt is built."); // QTBUG-12522: If there is no description why show an error to the user when qDebug above communications the issue (if it is indeed an issue at all) when demos are built?
     for (int p = 0; p < int(paragraphs.length()); ++p) {
         description = this->extractTextFromParagraph(paragraphs.item(p));
         if (this->isSummary(description)) {

@@ -242,7 +242,7 @@
 
     For further guidance when implementing these functions, see the
     \e{Qt Quarterly} article
-    \l{http://qt.nokia.com/doc/qq/qq04-height-for-width.html}
+    \l{http://doc.qt.nokia.com/qq/qq04-height-for-width.html}
     {Trading Height for Width}.
 
 

@@ -75,38 +75,12 @@ QT_BEGIN_NAMESPACE
 static const int KUserChoiceIAPId = 0;
 
 SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
-:   bearer(BearerUnknown), numericId(0), connectionId(0)
+:   numericId(0), connectionId(0)
 {
 }
 
 SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 {
-}
-
-QString SymbianNetworkConfigurationPrivate::bearerName() const
-{
-    QMutexLocker locker(&mutex);
-
-    switch (bearer) {
-    case BearerEthernet:
-        return QLatin1String("Ethernet");
-    case BearerWLAN:
-        return QLatin1String("WLAN");
-    case Bearer2G:
-        return QLatin1String("2G");
-    case BearerCDMA2000:
-        return QLatin1String("CDMA2000");
-    case BearerWCDMA:
-        return QLatin1String("WCDMA");
-    case BearerHSPA:
-        return QLatin1String("HSPA");
-    case BearerBluetooth:
-        return QLatin1String("Bluetooth");
-    case BearerWiMAX:
-        return QLatin1String("WiMAX");
-    default:
-        return QString();
-    }
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
@@ -146,7 +120,7 @@ void SymbianEngine::initialize()
 
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
-    cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+    cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
     cpPriv->state = QNetworkConfiguration::Discovered;
     cpPriv->isValid = true;
     cpPriv->id = QString::number(qHash(KUserChoiceIAPId));
@@ -517,25 +491,25 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
     TUint32 bearerId = connectionMethod.GetIntAttributeL(CMManager::ECmCommsDBBearerType);
     switch (bearerId) {
     case KCommDbBearerCSD:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case KCommDbBearerWcdma:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+        cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA;
         break;
     case KCommDbBearerLAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     case KCommDbBearerVirtual:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     case KCommDbBearerPAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     case KCommDbBearerWLAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
+        cpPriv->bearerType = QNetworkConfiguration::BearerWLAN;
         break;
     default:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
     
@@ -619,28 +593,28 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
     apNetworkConfiguration->roamingSupported = false;
     switch (pAPItem->BearerTypeL()) {
     case EApBearerTypeCSD:      
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case EApBearerTypeGPRS:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case EApBearerTypeHSCSD:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerHSPA;
         break;
     case EApBearerTypeCDMA:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerCDMA2000;
         break;
     case EApBearerTypeWLAN:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerWLAN;
         break;
     case EApBearerTypeLAN:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     case EApBearerTypeLANModem:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     default:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
     
@@ -870,38 +844,38 @@ void SymbianEngine::updateMobileBearerToConfigs(TConnMonBearerInfo bearerInfo)
 
         SymbianNetworkConfigurationPrivate *p = toSymbianConfig(ptr);
 
-        if (p->bearer >= SymbianNetworkConfigurationPrivate::Bearer2G &&
-            p->bearer <= SymbianNetworkConfigurationPrivate::BearerHSPA) {
+        if (p->bearerType >= QNetworkConfiguration::Bearer2G &&
+            p->bearerType <= QNetworkConfiguration::BearerHSPA) {
             switch (bearerInfo) {
             case EBearerInfoCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoWCDMA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                p->bearerType = QNetworkConfiguration::BearerWCDMA;
                 break;
             case EBearerInfoCDMA2000:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
+                p->bearerType = QNetworkConfiguration::BearerCDMA2000;
                 break;
             case EBearerInfoGPRS:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoHSCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoEdgeGPRS:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoWcdmaCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                p->bearerType = QNetworkConfiguration::BearerWCDMA;
                 break;
             case EBearerInfoHSDPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             case EBearerInfoHSUPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             case EBearerInfoHSxPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             }
         }
