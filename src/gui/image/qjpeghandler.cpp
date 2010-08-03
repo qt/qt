@@ -807,10 +807,10 @@ QJpegHandler::QJpegHandler()
     const uint features = qDetectCPUFeatures();
 
     // from qimage_ssse3.cpp
-    Q_GUI_EXPORT void QT_FASTCALL convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
+    Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
 
     if (features & SSSE3)
-        rgb888ToRgb32ConverterPtr = convert_rgb888_to_rgb32_ssse3;
+        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
 #endif // QT_HAVE_SSSE3
 }
 
