@@ -334,7 +334,8 @@ void MainWindow::lookForNewQtDocumentation()
         << QLatin1String("designer")
         << QLatin1String("linguist")
         << QLatin1String("qmake")
-        << QLatin1String("qt");
+        << QLatin1String("qt")
+        << QLatin1String("qml");
     QList<QtDocInstaller::DocInfo> qtDocInfos;
     foreach (const QString &doc, docs)
         qtDocInfos.append(QtDocInstaller::DocInfo(doc, helpEngine.qtDocInfo(doc)));
