@@ -129,8 +129,10 @@ QVariant QConnmanManagerInterface::getProperty(const QString &property)
 
 QVariantMap QConnmanManagerInterface::getProperties()
 {
-    QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    } else return QVariantMap();
 }
 
 QString QConnmanManagerInterface::getState()
@@ -551,8 +553,12 @@ void QConnmanServiceInterface::disconnectNotify(const char *signal)
 
 QVariantMap QConnmanServiceInterface::getProperties()
 {
-    QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    }
+    else
+        return QVariantMap();
 }
 
 QVariant QConnmanServiceInterface::getProperty(const QString &property)
@@ -724,6 +730,99 @@ QVariantMap QConnmanServiceInterface::getEthernet()
     QVariant var = getProperty("Ethernet");
     return qdbus_cast<QVariantMap >(var);
 }
+
+QString QConnmanServiceInterface::getMethod()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Method") {
+            return it.value().toString();
+        }
+    }
+ return QString();
+}
+
+QString QConnmanServiceInterface::getInterface()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Interface") {
+            return it.value().toString();
+        }
+    }
+
+    return QString();
+}
+
+QString QConnmanServiceInterface::getMacAddress()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Address") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
+quint16 QConnmanServiceInterface::getMtu()
+{
+    quint16 mtu=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "MTU") {
+            return it.value().toUInt();
+        }
+    }
+    return mtu;
+}
+
+quint16 QConnmanServiceInterface::getSpeed()
+{
+    quint16 speed=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Speed") {
+            return it.value().toUInt();
+        }
+    }
+    return speed;
+}
+
+QString QConnmanServiceInterface::getDuplex()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Duplex") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
 
 bool QConnmanServiceInterface::isOfflineMode()
 {

@@ -116,8 +116,6 @@ private Q_SLOTS:
     void removeAccessPoint(const QString &path, const QDBusObjectPath &objectPath);
     void updateAccessPoint(const QMap<QString, QVariant> &map);
 
-    void doRequestUpdate();
-
 private:
     QNetworkConfigurationPrivate *parseConnection(const QString &service,
                                                   const QString &settingsPath,
