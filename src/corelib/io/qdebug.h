@@ -283,9 +283,6 @@ Q_CORE_EXPORT_INLINE QDebug qDebug() { return QDebug(QtDebugMsg); }
 inline QNoDebug qDebug() { return QNoDebug(); }
 #define qDebug QT_NO_QDEBUG_MACRO
 
-template<typename T>
-inline QNoDebug operator<<(QNoDebug debug, const T &) { return debug; }
-
 #endif
 
 #if !defined(QT_NO_WARNING_OUTPUT)
