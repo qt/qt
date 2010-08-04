@@ -765,7 +765,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         ptr = qobject_cast<QSharedPointer<const OtherObject> >(baseptr);
         QVERIFY(ptr == data);
-#endif
     }
     check();
 
@@ -806,7 +805,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         otherptr = qobject_cast<QSharedPointer<OtherObject> >(weakptr);
         QVERIFY(otherptr.isNull());
-#endif
     }
     check();
 }
