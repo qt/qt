@@ -83,6 +83,8 @@ private slots:
     void convertToFormat_data();
     void convertToFormat();
 
+    void convertToFormatRgb888ToRGB32();
+
     void createAlphaMask_data();
     void createAlphaMask();
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
@@ -137,6 +139,9 @@ private slots:
     void premultipliedAlphaConsistency();
 
     void compareIndexed();
+
+    void rgbSwapped_data();
+    void rgbSwapped();
 };
 
 tst_QImage::tst_QImage()
@@ -797,6 +802,26 @@ void tst_QImage::convertToFormat()
     QCOMPARE(result2, expected2);
     QFile::remove(QLatin1String("result2.xpm"));
     QFile::remove(QLatin1String("expected2.xpm"));
+}
+
+void tst_QImage::convertToFormatRgb888ToRGB32()
+{
+    // 545 so width % 4 != 0. This ensure there is padding at the end of the scanlines
+    const int height = 545;
+    const int width = 545;
+    QImage source(width, height, QImage::Format_RGB888);
+    for (int y = 0; y < height; ++y) {
+        uchar *srcPixels = source.scanLine(y);
+        for (int x = 0; x < width * 3; ++x)
+            srcPixels[x] = x;
+    }
+
+    QImage rgb32Image = source.convertToFormat(QImage::Format_RGB888);
+    QCOMPARE(rgb32Image.format(), QImage::Format_RGB888);
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y)
+            QCOMPARE(rgb32Image.pixel(x, y), source.pixel(x, y));
+    }
 }
 
 void tst_QImage::createAlphaMask_data()
@@ -1796,6 +1821,69 @@ void tst_QImage::compareIndexed()
     }
 
     QCOMPARE(img, imgInverted);
+}
+
+void tst_QImage::rgbSwapped_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("Format_Indexed8") << QImage::Format_Indexed8;
+    QTest::newRow("Format_RGB32") << QImage::Format_RGB32;
+    QTest::newRow("Format_ARGB32") << QImage::Format_ARGB32;
+    QTest::newRow("Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
+    QTest::newRow("Format_ARGB8565_Premultiplied") << QImage::Format_ARGB8565_Premultiplied;
+    QTest::newRow("Format_ARGB6666_Premultiplied") << QImage::Format_ARGB6666_Premultiplied;
+    QTest::newRow("Format_ARGB4444_Premultiplied") << QImage::Format_ARGB4444_Premultiplied;
+    QTest::newRow("Format_RGB666") << QImage::Format_RGB666;
+    QTest::newRow("Format_RGB555") << QImage::Format_RGB555;
+    QTest::newRow("Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
+    QTest::newRow("Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Format_RGB444") << QImage::Format_RGB444;
+}
+
+void tst_QImage::rgbSwapped()
+{
+    QFETCH(QImage::Format, format);
+
+    QImage image(100, 1, format);
+    image.fill(0);
+
+    QVector<QColor> testColor(image.width());
+
+    for (int i = 0; i < image.width(); ++i)
+        testColor[i] = QColor(i, 10 + i, 20 + i * 2, 30 + i);
+
+    if (format != QImage::Format_Indexed8) {
+        QPainter p(&image);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        for (int i = 0; i < image.width(); ++i)
+            p.fillRect(QRect(i, 0, 1, 1), testColor[i].rgb());
+    } else {
+        image.setColorCount(image.width());
+        for (int i = 0; i < image.width(); ++i) {
+            image.setColor(0, testColor[i].rgba());
+            image.setPixel(i, 0, i);
+        }
+    }
+
+    QImage imageSwapped = image.rgbSwapped();
+
+    for (int i = 0; i < image.width(); ++i) {
+        QColor referenceColor = QColor(image.pixel(i, 0));
+        QColor swappedColor = QColor(imageSwapped.pixel(i, 0));
+
+        QCOMPARE(swappedColor.alpha(), referenceColor.alpha());
+        QCOMPARE(swappedColor.red(), referenceColor.blue());
+        QCOMPARE(swappedColor.green(), referenceColor.green());
+        QCOMPARE(swappedColor.blue(), referenceColor.red());
+    }
+
+    QImage imageSwappedTwice = imageSwapped.rgbSwapped();
+
+    QCOMPARE(image, imageSwappedTwice);
+
+    QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.numBytes()), 0);
 }
 
 QTEST_MAIN(tst_QImage)

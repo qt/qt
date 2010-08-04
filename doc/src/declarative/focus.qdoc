@@ -73,12 +73,12 @@ See also the \l {Keys}{Keys attached property} and \l {KeyNavigation}{KeyNavigat
 \section1 Querying the Active Focus Item
 
 Whether or not an \l Item has \e {active focus} can be queried through the
-property \c {Item::focus}.  For example, here we have a \l Text
+property \c {Item::activeFocus}.  For example, here we have a \l Text
 element whose text is determined by whether or not it has \e {active focus}.
 
 \code
 Text {
-    text: focus ? "I have active focus!" : "I do not have active focus"
+    text: activeFocus ? "I have active focus!" : "I do not have active focus"
 }
 \endcode
 
@@ -174,7 +174,7 @@ Rectangle {
 The right hand side of the example shows the expanded code - the equivalent QML
 without the use of the component \c {MyWidget}.  From this, the problem is
 evident - there are no less than three elements that have the \c {Item::focus}
-property set to true.  Ultimately only one element can have focus, and the
+property set to true.  Ultimately only one element can have keyboard focus, and the
 system has to decide which on.  In this case the first appearance of the
 \c {Item::focus} property being set to true on line 4 is selected, and the value
 of \c {Item::focus} in the other two instances is reverted back to false.  This
@@ -233,7 +233,7 @@ and the others are unset, just like when there are no \e {focus scopes}.
 \o When a \e {focus scope} receives \e {active focus}, the contained element with
 \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
 also a \l FocusScope, the proxying behaviour continues.  Both the
-\e {focus scope} and the sub-focused item will have \c {Item::focus} set.
+\e {focus scope} and the sub-focused item will have \c {Item::activeFocus} set.
 \endlist
 
 So far the example has the second component statically selected.  It is trivial
@@ -266,7 +266,7 @@ When a QML item explicitly relinquishes focus (by setting its
 does not automatically select another element to receive focus.  That is, it
 is possible for there to be no currently \e {active focus}.
 
-See the {declarative/keyinteraction/focus}{Keyboard Focus example} for a 
+See the \l{declarative/keyinteraction/focus}{Keyboard Focus example} for a 
 demonstration of moving keyboard focus between multiple areas using FocusScope
 elements.
 

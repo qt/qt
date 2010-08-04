@@ -58,6 +58,8 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_XMLSTREAMREADER
+
 // From DOM-Level-3-Core spec
 // http://www.w3.org/TR/DOM-Level-3-Core/core.html
 #define INDEX_SIZE_ERR 1
@@ -1304,10 +1306,11 @@ QString QDeclarativeXMLHttpRequest::responseBody() const
 {
     QXmlStreamReader reader(m_responseEntityBody);
     reader.readNext();
+#ifndef QT_NO_TEXTCODEC
     QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
     if (codec)
         return codec->toUnicode(m_responseEntityBody);
-
+#endif
     return QString::fromUtf8(m_responseEntityBody);
 }
 
@@ -1661,5 +1664,7 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_XMLSTREAMREADER
 
 #include <qdeclarativexmlhttprequest.moc>

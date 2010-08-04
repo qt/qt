@@ -212,9 +212,6 @@ QImage QDeclarativeImageProvider::requestImage(const QString &id, QSize *size, c
     In all cases, \a size must be set to the original size of the image. This
     is used to set the \l {Item::}{width} and \l {Item::}{height} of image
     elements that should be automatically sized to the loaded image.
-
-    \note this method may be called by multiple threads, so ensure the
-    implementation of this method is reentrant.
 */
 QPixmap QDeclarativeImageProvider::requestPixmap(const QString &id, QSize *size, const QSize& requestedSize)
 {

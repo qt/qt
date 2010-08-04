@@ -77,8 +77,8 @@ public:
     QDeclarativeVisualItemModelPrivate() : QObjectPrivate() {}
 
     static void children_append(QDeclarativeListProperty<QDeclarativeItem> *prop, QDeclarativeItem *item) {
-        item->QObject::setParent(prop->object);
-        static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.append(item);
+        QDeclarative_setParent_noEvent(item, prop->object);
+        static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.append(Item(item));
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->itemAppended();
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->emitChildrenChanged();
     }
@@ -88,12 +88,12 @@ public:
     }
 
     static QDeclarativeItem *children_at(QDeclarativeListProperty<QDeclarativeItem> *prop, int index) {
-        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.at(index);
+        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.at(index).item;
     }
 
     void itemAppended() {
         Q_Q(QDeclarativeVisualItemModel);
-        QDeclarativeVisualItemModelAttached *attached = QDeclarativeVisualItemModelAttached::properties(children.last());
+        QDeclarativeVisualItemModelAttached *attached = QDeclarativeVisualItemModelAttached::properties(children.last().item);
         attached->setIndex(children.count()-1);
         emit q->itemsInserted(children.count()-1, 1);
         emit q->countChanged();
@@ -104,7 +104,25 @@ public:
         emit q->childrenChanged();
     }
 
-    QList<QDeclarativeItem *> children;
+    int indexOf(QDeclarativeItem *item) const {
+        for (int i = 0; i < children.count(); ++i)
+            if (children.at(i).item == item)
+                return i;
+        return -1;
+    }
+
+    class Item {
+    public:
+        Item(QDeclarativeItem *i) : item(i), ref(0) {}
+
+        void addRef() { ++ref; }
+        bool deref() { return --ref == 0; }
+
+        QDeclarativeItem *item;
+        int ref;
+    };
+
+    QList<Item> children;
 };
 
 
@@ -182,12 +200,22 @@ bool QDeclarativeVisualItemModel::isValid() const
 QDeclarativeItem *QDeclarativeVisualItemModel::item(int index, bool)
 {
     Q_D(QDeclarativeVisualItemModel);
-    return d->children.at(index);
+    QDeclarativeVisualItemModelPrivate::Item &item = d->children[index];
+    item.addRef();
+    return item.item;
 }
 
-QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDeclarativeItem *)
+QDeclarativeVisualModel::ReleaseFlags QDeclarativeVisualItemModel::release(QDeclarativeItem *item)
 {
-    // Nothing to do
+    Q_D(QDeclarativeVisualItemModel);
+    int idx = d->indexOf(item);
+    if (idx >= 0) {
+        if (d->children[idx].deref()) {
+            if (item->scene())
+                item->scene()->removeItem(item);
+            QDeclarative_setParent_noEvent(item, this);
+        }
+    }
     return 0;
 }
 
@@ -206,7 +234,7 @@ QString QDeclarativeVisualItemModel::stringValue(int index, const QString &name)
     Q_D(QDeclarativeVisualItemModel);
     if (index < 0 || index >= d->children.count())
         return QString();
-    return QDeclarativeEngine::contextForObject(d->children.at(index))->contextProperty(name).toString();
+    return QDeclarativeEngine::contextForObject(d->children.at(index).item)->contextProperty(name).toString();
 }
 
 QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
@@ -216,7 +244,7 @@ QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &express
         return QVariant();
     QDeclarativeContext *ccontext = qmlContext(this);
     QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
-    ctxt->setContextObject(d->children.at(index));
+    ctxt->setContextObject(d->children.at(index).item);
     QDeclarativeExpression e(ctxt, objectContext, expression);
     QVariant value = e.evaluate();
     delete ctxt;
@@ -226,7 +254,7 @@ QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &express
 int QDeclarativeVisualItemModel::indexOf(QDeclarativeItem *item, QObject *) const
 {
     Q_D(const QDeclarativeVisualItemModel);
-    return d->children.indexOf(item);
+    return d->indexOf(item);
 }
 
 QDeclarativeVisualItemModelAttached *QDeclarativeVisualItemModel::qmlAttachedProperties(QObject *obj)
@@ -416,6 +444,9 @@ public:
 
     int propForRole(int) const;
     void setValue(int, const QVariant &);
+    bool hasValue(int id) const {
+        return m_meta->hasValue(id);
+    }
 
     void ensureProperties();
 
@@ -1089,6 +1120,11 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
     if (d->m_visualItemModel)
         return d->m_visualItemModel->stringValue(index, name);
 
+    if ((!d->m_listModelInterface || !d->m_abstractItemModel) && d->m_listAccessor) {
+        if (QObject *object = d->m_listAccessor->at(index).value<QObject*>())
+            return object->property(name.toUtf8()).toString();
+    }
+
     if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
         return QString();
 
@@ -1183,11 +1219,13 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                 int role = roles.at(roleIdx);
                 int propId = data->propForRole(role);
                 if (propId != -1) {
-                    if (d->m_listModelInterface) {
-                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
-                    } else if (d->m_abstractItemModel) {
-                        QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
-                        data->setValue(propId, d->m_abstractItemModel->data(index, role));
+                    if (data->hasValue(propId)) {
+                        if (d->m_listModelInterface) {
+                            data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
+                        } else if (d->m_abstractItemModel) {
+                            QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
+                            data->setValue(propId, d->m_abstractItemModel->data(index, role));
+                        }
                     }
                 } else {
                     QString roleName;

@@ -90,6 +90,8 @@ QT_BEGIN_NAMESPACE
 static int inpaint=0;
 static int inpaint_clearcache=0;
 
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
+
 /*!
     Marks areas of the cache that intersect with the given \a rect as dirty and
     in need of being refreshed.
@@ -287,7 +289,14 @@ void QDeclarativePaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem 
             QRectF target(area.x(), area.y(), area.width(), area.height());
             if (!d->cachefrozen) {
                 if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
+#ifdef Q_WS_MAC
+                    bool oldSmooth = qt_applefontsmoothing_enabled;
+                    qt_applefontsmoothing_enabled = false;
+#endif
                     QPainter qp(&d->imagecache[i]->image);
+#ifdef Q_WS_MAC
+                    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
                     qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
                     qp.translate(-area.x(), -area.y());
                     qp.scale(d->contentsScale,d->contentsScale);
@@ -349,7 +358,14 @@ void QDeclarativePaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem 
                 if (d->fillColor.isValid())
                     img.fill(d->fillColor);
                 {
+#ifdef Q_WS_MAC
+                    bool oldSmooth = qt_applefontsmoothing_enabled;
+                    qt_applefontsmoothing_enabled = false;
+#endif
                     QPainter qp(&img);
+#ifdef Q_WS_MAC
+                    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
                     qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
 
                     qp.translate(-r.x(),-r.y());

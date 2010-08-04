@@ -40,12 +40,12 @@
 
 //![0]
 import Qt 4.7
-import "componentCreation.js" as MyModule
+import "componentCreation.js" as MyScript
 
 Rectangle {
     id: appWindow
     width: 300; height: 300
 
-    Component.onCompleted: MyModule.createSpriteObjects();
+    Component.onCompleted: MyScript.createSpriteObjects();
 }
 //![0]

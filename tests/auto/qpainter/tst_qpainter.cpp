@@ -118,10 +118,12 @@ private slots:
     void drawLine_task190634();
     void drawLine_task229459();
     void drawLine_task234891();
+    void drawHorizontalLineF();
 
     void drawRect_data() { fillData(); }
     void drawRect();
     void drawRect2();
+    void drawRectFHorizontalLine();
 
     void fillRect();
     void fillRect2();
@@ -251,6 +253,7 @@ private slots:
     void setPenColorOnPixmap();
 
     void QTBUG5939_attachPainterPrivate();
+    void drawHorizontalLine();
 
 private:
     void fillData();
@@ -1218,6 +1221,26 @@ void tst_QPainter::drawLine_task234891()
     QCOMPARE(expected, img);
 }
 
+void tst_QPainter::drawHorizontalLineF()
+{
+    QPixmap pixmap(100, 3);
+    pixmap.fill();
+
+    {
+        QPainter painter(&pixmap);
+        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
+    }
+
+    QImage refImage(100, 3, QImage::Format_ARGB32);
+    refImage.fill(0xFFFFFFFF);
+    {
+        QPainter painter(&refImage);
+        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
+    }
+
+    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
+}
+
 void tst_QPainter::drawLine_task216948()
 {
     QImage img(1, 10, QImage::Format_ARGB32_Premultiplied);
@@ -1300,6 +1323,26 @@ void tst_QPainter::drawRect2()
         QRect stroke = getPaintedSize(image, Qt::white);
         QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(0, 0, 1, 1));
     }
+}
+
+void tst_QPainter::drawRectFHorizontalLine()
+{
+    QPixmap pixmap(100, 3);
+    pixmap.fill();
+
+    {
+        QPainter painter(&pixmap);
+        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
+    }
+
+    QImage refImage(100, 3, QImage::Format_ARGB32);
+    refImage.fill(0xFFFFFFFF);
+    {
+        QPainter painter(&refImage);
+        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
+    }
+
+    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
 }
 
 void tst_QPainter::fillRect()
@@ -4176,14 +4219,18 @@ void tst_QPainter::inactivePainter()
     p.setWorldTransform(QTransform().scale(0.5, 0.5), true);
 }
 
-bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMode op)
+bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMode op, qreal opacity = 1.0)
 {
-    QImage actual(1, 1, QImage::Format_ARGB32_Premultiplied);
+    // The test image needs to be large enough to test SIMD code
+    const QSize imageSize(100, 100);
+
+    QImage actual(imageSize, QImage::Format_ARGB32_Premultiplied);
     actual.fill(QColor(dst, dst, dst).rgb());
 
     QPainter p(&actual);
     p.setCompositionMode(op);
-    p.fillRect(0, 0, 1, 1, QColor(src, src, src));
+    p.setOpacity(opacity);
+    p.fillRect(QRect(QPoint(), imageSize), QColor(src, src, src));
     p.end();
 
     if (qRed(actual.pixel(0, 0)) != expected) {
@@ -4191,7 +4238,9 @@ bool testCompositionMode(int src, int dst, int expected, QPainter::CompositionMo
                src, dst, qRed(actual.pixel(0, 0)), expected);
         return false;
     } else {
-        return true;
+        QImage refImage(imageSize, QImage::Format_ARGB32_Premultiplied);
+        refImage.fill(QColor(expected, expected, expected).rgb());
+        return actual == refImage;
     }
 }
 
@@ -4205,6 +4254,16 @@ void tst_QPainter::extendedBlendModes()
     QVERIFY(testCompositionMode(255,   0, 255, QPainter::CompositionMode_Plus));
     QVERIFY(testCompositionMode(  0, 255, 255, QPainter::CompositionMode_Plus));
     QVERIFY(testCompositionMode(128, 128, 255, QPainter::CompositionMode_Plus));
+
+    QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(127, 128, 165, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(127,   0,  37, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0, 127, 127, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(255,   0,  75, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(  0, 255, 255, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(128, 128, 166, QPainter::CompositionMode_Plus, 0.3));
+    QVERIFY(testCompositionMode(186, 200, 255, QPainter::CompositionMode_Plus, 0.3));
 
     QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_Multiply));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Multiply));
@@ -4504,6 +4563,28 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
 
     QVERIFY(widget->worldTransform.isIdentity());
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
+}
+
+void tst_QPainter::drawHorizontalLine()
+{
+    QPixmap pixmap(100, 3);
+    pixmap.fill();
+
+    {
+        QPainter painter(&pixmap);
+        painter.translate(0.3, 0.3);
+        painter.drawLine(QLine(1, 1, 99, 1));
+    }
+
+    QImage refImage(100, 3, QImage::Format_ARGB32);
+    refImage.fill(0xFFFFFFFF);
+    {
+        QPainter painter(&refImage);
+        painter.translate(0.3, 0.3);
+        painter.drawLine(QLine(1, 1, 99, 1));
+    }
+
+    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
 }
 
 QTEST_MAIN(tst_QPainter)

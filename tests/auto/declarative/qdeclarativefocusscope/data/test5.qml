@@ -20,13 +20,13 @@ Rectangle {
 
             color: "transparent"
             border.width: 5
-            border.color: myScope.wantsFocus?"blue":"black"
+            border.color: myScope.activeFocus?"blue":"black"
 
             Rectangle {
                 x: 10; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
-                border.color: item1.wantsFocus?"blue":"black"
+                border.color: item1.activeFocus?"blue":"black"
             }
 
             TextEdit {
@@ -47,13 +47,13 @@ Rectangle {
                 x: 310; y: 10
                 width: 100; height: 100; color: "green"
                 border.width: 5
-                border.color: wantsFocus?"blue":"black"
+                border.color: activeFocus?"blue":"black"
                 KeyNavigation.left: item1
                 Keys.onReturnPressed: console.log("Top Right");
 
                 Rectangle {
                     width: 50; height: 50; anchors.centerIn: parent
-                    color: parent.focus?"red":"transparent"
+                    color: parent.activeFocus?"red":"transparent"
                 }
             }
         }
@@ -66,7 +66,7 @@ Rectangle {
         x: 10; y: 300
         width: 100; height: 100; color: "green"
         border.width: 5
-        border.color: item3.wantsFocus?"blue":"black"
+        border.color: item3.activeFocus?"blue":"black"
     }
 
     TextEdit {

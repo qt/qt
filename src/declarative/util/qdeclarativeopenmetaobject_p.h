@@ -91,6 +91,7 @@ public:
     void setValue(int, const QVariant &);
     QVariant &operator[](const QByteArray &);
     QVariant &operator[](int);
+    bool hasValue(int) const;
 
     int count() const;
     QByteArray name(int) const;

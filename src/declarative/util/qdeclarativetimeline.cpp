@@ -524,7 +524,7 @@ int QDeclarativeTimeLine::duration() const
 
     Following operations on \a timeLineValue in this timeline will be scheduled after
     all the currently scheduled actions on \a syncTo are complete.  In
-    psuedo-code this is equivalent to:
+    pseudo-code this is equivalent to:
     \code
     QDeclarativeTimeLine::pause(timeLineValue, min(0, length_of(syncTo) - length_of(timeLineValue)))
     \endcode
@@ -549,7 +549,7 @@ void QDeclarativeTimeLine::sync(QDeclarativeTimeLineValue &timeLineValue, QDecla
     Synchronize the end point of \a timeLineValue to the endpoint of the longest
     action cursrently scheduled in the timeline.
 
-    In psuedo-code, this is equivalent to:
+    In pseudo-code, this is equivalent to:
     \code
     QDeclarativeTimeLine::pause(timeLineValue, length_of(timeline) - length_of(timeLineValue))
     \endcode

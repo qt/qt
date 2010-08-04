@@ -15,7 +15,12 @@
     }
 
     .narrow .footer {
-      margin: 0;
+      margin: 0px;
+    }
+
+    .creator .header, .creator .header .content, .creator .footer, .creator .wrapper {
+      margin: 0px;
+      min-width: 300px;
     }
     .narrow .header
     {
@@ -126,6 +131,11 @@
         margin: 0 5px 0 5px;
     }
 
+    .creator .wrap
+    {
+        margin: 0px;
+		background:#FFFFFF;
+    }
     .narrow .wrap .toolbar
     {
       border-bottom: none;
@@ -135,7 +145,14 @@
     {
         padding-top: 15px;
     }
-
+    .creator .wrap .content
+    {
+        padding-top: 10px;
+    }
+    .creator .wrap .content .guide
+    {
+        padding-top: 15px;
+    }
     .narrow .wrap .feedback
     {
         display: none;

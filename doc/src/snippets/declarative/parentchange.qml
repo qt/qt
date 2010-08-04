@@ -41,9 +41,8 @@
 //![0]
 import Qt 4.7
 
-Rectangle {
-    width: 200
-    height: 100
+Item {
+    width: 200; height: 100
 
     Rectangle { 
         id: redRect

@@ -782,9 +782,11 @@ void QFileDialogPrivate::qt_mac_filedialog_event_proc(const NavEventCallbackMess
             const QtMacFilterName &fn = fileDialogPrivate->filterInfo.filters.at(
                                                        fileDialogPrivate->filterInfo.currentSelection);
             QStringList reg = fn.regexp.split(QLatin1String(";"), QString::SkipEmptyParts);
-            QString r = reg.first();
-            r  = r.right(r.length()-1);      // Strip the *
-            base += r;                        //"." + QString::number(s->menuType);
+            if (reg.count()) {
+                QString r = reg.first();
+                r  = r.right(r.length()-1);      // Strip the *
+                base += r;                        //"." + QString::number(s->menuType);
+            }
             NavDialogSetSaveFileName(p->context, QCFString::toCFStringRef(base));
         }
 #ifdef DEBUG_FILEDIALOG_FILTERS

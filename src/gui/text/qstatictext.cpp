@@ -148,9 +148,7 @@ QStaticText::QStaticText()
 }
 
 /*!
-    Constructs a QStaticText object with the given \a text and bounded by the given \a size.
-
-    If an invalid size is passed for \a size the text will be unbounded.
+    Constructs a QStaticText object with the given \a text.
 */
 QStaticText::QStaticText(const QString &text)
     : data(new QStaticTextPrivate)
@@ -465,16 +463,21 @@ namespace {
             m_chars.resize(m_chars.size() + ti.num_chars);
 
             glyph_t *glyphsDestination = m_glyphs.data() + currentItem.glyphOffset;
-            qMemCopy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
+            memcpy(glyphsDestination, glyphs.constData(), sizeof(glyph_t) * currentItem.numGlyphs);
 
             QFixedPoint *positionsDestination = m_positions.data() + currentItem.positionOffset;
-            qMemCopy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
+            memcpy(positionsDestination, positions.constData(), sizeof(QFixedPoint) * currentItem.numGlyphs);
 
             QChar *charsDestination = m_chars.data() + currentItem.charOffset;
-            qMemCopy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
+            memcpy(charsDestination, ti.chars, sizeof(QChar) * currentItem.numChars);
 
             m_items.append(currentItem);
-        }                
+        }
+
+        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode )
+        {
+            /* intentionally empty */
+        }
 
         virtual bool begin(QPaintDevice *)  { return true; }
         virtual bool end() { return true; }
@@ -681,13 +684,13 @@ void QStaticTextPrivate::init()
     items = new QStaticTextItem[itemCount];
 
     glyphPool = new glyph_t[glyphs.size()];
-    qMemCopy(glyphPool, glyphs.constData(), glyphs.size() * sizeof(glyph_t));
+    memcpy(glyphPool, glyphs.constData(), glyphs.size() * sizeof(glyph_t));
 
     positionPool = new QFixedPoint[positions.size()];
-    qMemCopy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
+    memcpy(positionPool, positions.constData(), positions.size() * sizeof(QFixedPoint));
 
     charPool = new QChar[chars.size()];
-    qMemCopy(charPool, chars.constData(), chars.size() * sizeof(QChar));
+    memcpy(charPool, chars.constData(), chars.size() * sizeof(QChar));
 
     for (int i=0; i<itemCount; ++i) {
         items[i] = deviceItems.at(i);

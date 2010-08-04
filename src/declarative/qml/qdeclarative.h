@@ -116,7 +116,7 @@ int qmlRegisterType()
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 int qmlRegisterTypeNotAvailable(const char *uri, int versionMajor, int versionMinor, const char *qmlName, const QString& message);
@@ -151,7 +151,7 @@ int qmlRegisterUncreatableType(const char *uri, int versionMajor, int versionMin
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 template<typename T>
@@ -184,7 +184,7 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 template<typename T, typename E>
@@ -217,7 +217,7 @@ int qmlRegisterExtendedType()
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 template<typename T, typename E>
@@ -258,7 +258,7 @@ int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor,
         0
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 template<typename T>
@@ -278,7 +278,7 @@ int qmlRegisterInterface(const char *typeName)
         qobject_interface_iid<T *>()
     };
 
-    return QDeclarativePrivate::registerType(interface);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::InterfaceRegistration, &interface);
 }
 
 template<typename T>
@@ -312,7 +312,7 @@ int qmlRegisterCustomType(const char *uri, int versionMajor, int versionMinor,
         parser
     };
 
-    return QDeclarativePrivate::registerType(type);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::TypeRegistration, &type);
 }
 
 class QDeclarativeContext;

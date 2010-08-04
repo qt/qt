@@ -1150,6 +1150,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
             if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
                 parentFocusScopeItem = fsi;
                 p->d_ptr->focusScopeItem = 0;
+                fsi->d_ptr->focusScopeItemChange(false);
             }
             break;
         }
@@ -1182,6 +1183,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
+                newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
                 // only way to set focus on a child of a focus scope is
                 // by setting focus on the scope itself.
@@ -1270,8 +1272,14 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
 
     Returns the bounding rect of this item's children (excluding itself).
 */
-void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect, bool doClip)
 {
+    Q_Q(QGraphicsItem);
+
+    QRectF childrenRect;
+    QRectF *result = rect;
+    rect = &childrenRect;
+
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr.data();
@@ -1293,6 +1301,15 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
                 childd->childrenBoundingRectHelper(x, rect);
         }
     }
+
+    if (doClip && (flags & QGraphicsItem::ItemClipsChildrenToShape)){
+        if (x)
+            *rect &= x->mapRect(q->boundingRect());
+        else
+            *rect &= q->boundingRect();
+    }
+
+    *result |= *rect;
 }
 
 void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
@@ -1436,9 +1453,10 @@ QGraphicsItem::~QGraphicsItem()
 #ifndef QT_NO_GESTURES
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
-        QGestureManager *manager = QGestureManager::instance();
-        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
-            manager->cleanupCachedGestures(o, type);
+        if (QGestureManager *manager = QGestureManager::instance()) {
+            foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+                manager->cleanupCachedGestures(o, type);
+        }
     }
 #endif
 
@@ -3913,7 +3931,7 @@ void QGraphicsItem::setScale(qreal factor)
     Returns a list of graphics transforms that currently apply to this item.
 
     QGraphicsTransform is for applying and controlling a chain of individual
-    transformation operations on an item. It's particularily useful in
+    transformation operations on an item. It's particularly useful in
     animations, where each transform operation needs to be interpolated
     independently, or differently.
 
@@ -3940,7 +3958,7 @@ QList<QGraphicsTransform *> QGraphicsItem::transformations() const
     an item, you can call setTransform().
 
     QGraphicsTransform is for applying and controlling a chain of individual
-    transformation operations on an item. It's particularily useful in
+    transformation operations on an item. It's particularly useful in
     animations, where each transform operation needs to be interpolated
     independently, or differently.
 
@@ -5134,7 +5152,7 @@ QPainterPath QGraphicsItem::opaqueArea() const
     The bounding region describes a coarse outline of the item's visual
     contents. Although it's expensive to calculate, it's also more precise
     than boundingRect(), and it can help to avoid unnecessary repainting when
-    an item is updated. This is particularily efficient for thin items (e.g.,
+    an item is updated. This is particularly efficient for thin items (e.g.,
     lines or simple polygons). You can tune the granularity for the bounding
     region by calling setBoundingRegionGranularity(). The default granularity
     is 0; in which the item's bounding region is the same as its bounding
@@ -5566,6 +5584,16 @@ void QGraphicsItemPrivate::resetFocusProxy()
     changes.
 */
 void QGraphicsItemPrivate::subFocusItemChange()
+{
+}
+
+/*!
+    \internal
+
+    Subclasses can reimplement this function to be notified when an item
+    becomes a focusScopeItem (or is no longer a focusScopeItem).
+*/
+void QGraphicsItemPrivate::focusScopeItemChange(bool isSubFocusItem)
 {
 }
 
@@ -7930,6 +7958,7 @@ void QGraphicsItemPrivate::resetHeight()
 
 /*!
   \property QGraphicsObject::effect
+  \since 4.7
   \brief the effect attached to this item
 
   \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
@@ -11111,8 +11140,14 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem syste
     }
 
     QRectF rect = item->boundingRect();
-    if (!item->d_ptr->children.isEmpty())
-        rect |= item->childrenBoundingRect();
+    if (!item->d_ptr->children.isEmpty()) {
+        if (dirtyChildrenBoundingRect) {
+            childrenBoundingRect = QRectF();
+            item->d_ptr->childrenBoundingRectHelper(0, &childrenBoundingRect, true);
+            dirtyChildrenBoundingRect = false;
+        }
+        rect |= childrenBoundingRect;
+    }
 
     if (deviceCoordinates) {
         Q_ASSERT(info->painter);

@@ -80,7 +80,7 @@ Item {
         },
         State {
             name: "Focused"
-            when: container.focus == true
+            when: container.activeFocus == true
             PropertyChanges { target: btnText; color: "#FFFFFF" }
         }
     ]

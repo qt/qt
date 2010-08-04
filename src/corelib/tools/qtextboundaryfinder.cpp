@@ -244,7 +244,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
   data required, it will use this instead of allocating its own buffer.
 
   \warning QTextBoundaryFinder does not create a copy of \a chars. It is the
-  application programmer's responsability to ensure the array is allocated for
+  application programmer's responsibility to ensure the array is allocated for
   as long as the QTextBoundaryFinder object stays alive. The same applies to
   \a buffer.
 */

@@ -1512,10 +1512,14 @@ QString QAccessibleTabBar::text(Text t, int child) const
         default:
             break;
         }
-    } else if (child > 0) {
+    } else {
         switch (t) {
         case Name:
-            return qt_accStripAmp(tabBar()->tabText(child - 1));
+            if (child > 0)
+                return qt_accStripAmp(tabBar()->tabText(child - 1));
+            else if (tabBar()->currentIndex() != -1)
+                return qt_accStripAmp(tabBar()->tabText(tabBar()->currentIndex()));
+            break;
         default:
             break;
         }

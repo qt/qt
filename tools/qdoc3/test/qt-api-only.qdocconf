@@ -5,6 +5,9 @@ include(qt-build-docs.qdocconf)
 # qmake.qdocconf).
 
 url                     = ./
+online                  = false
+offline                 = false
+creator                 = true
 
 # Ensures that the documentation for the tools is not included in the generated
 # .qhp file.
@@ -24,6 +27,10 @@ qhp.Qt.excluded  += $QT_SOURCE_TREE/doc/src/development/assistant-manual.qdoc \
                     $QT_SOURCE_TREE/doc/src/examples/arrowpad.qdoc \
                     $QT_SOURCE_TREE/doc/src/examples/trollprint.qdoc \
                     $QT_SOURCE_TREE/doc/src/development/qmake-manual.qdoc
+
+# Remove the QML documentation from the Qt-only documentation.
+
+excludedirs += $QT_SOURCE_TREE/src/imports
 
 outputdir         = $QT_BUILD_TREE/doc-build/html-qt
 tagfile           = $QT_BUILD_TREE/doc-build/html-qt/qt.tags

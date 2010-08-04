@@ -73,50 +73,60 @@ document - such as \c Rectangle and \c ListView - including those made within an
 import statements.  QML does not import any modules by default, so at least one \c import
 statement must be present or no elements will be available!
 
+Each \c id value in a QML document must be unique within that document. They
+do not need to be unique across different documents as id values are
+resolved according to the document scope.
+
+
+\section1 Documents as Component Definitions
+
 A QML document defines a single, top-level \l {QDeclarativeComponent}{QML component}.  A QML component 
 is a template that is interpreted by the QML runtime to create an object with some predefined 
 behaviour.  As it is a template, a single QML component can be "run" multiple times to 
 produce several objects, each of which are said to be \e instances of the component.  
 
 Once created, instances are not dependent on the component that created them, so they can 
-operate on independent data.  Here is an example of a simple "Button" component that is 
-instantiated four times, each with a different value for its \c text property.
+operate on independent data.  Here is an example of a simple "Button" component (defined
+in a \c Button.qml file) that is instantiated four times by \c application.qml.
+Each instance is created with a different value for its \c text property:
 
-\raw HTML
-<table><tr><td>
-\endraw
-\code
+\table
+\row
+\o Button.qml
+\o application.qml
+
+\row
+\o \snippet doc/src/snippets/declarative/qmldocuments.qml 0
+\o 
+\qml
 import Qt 4.7
 
-BorderImage {
-    property alias text: textElement.text
-    width: 100; height: 30; source: "images/toolbutton.sci"
+Column {
+    spacing: 10
 
-    Text {
-        id: textElement
-        anchors.centerIn: parent
-        font.pointSize: 20
-        style: Text.Raised
-        color: "white"
-    }
+    Button { text: "Apple" }
+    Button { text: "Orange" }
+    Button { text: "Pear" }
+    Button { text: "Grape" }
 }
-\endcode
-\raw HTML
-</td> <td>
-\endraw
+\endqml
+
 \image anatomy-component.png
-\raw HTML
-</td> </tr> </table>
-\endraw
+
+\endtable
 
 Any snippet of QML code can become a component, just by placing it in the file "<Name>.qml"
-where <Name> is the new element name, and begins with an uppercase letter.  Note that
+where <Name> is the new element name, and begins with an \bold uppercase letter.  Note that
 the case of all characters in the <Name> are significant on some filesystems, notably
 UNIX filesystems.  It is recommended that the case of the filename matches the case of
 the component name in QML exactly, regardless of the platform the QML will be deployed to.
 
-These QML files automatically become available as new QML element types
+These QML component files automatically become available as new QML element types
 to other QML components and applications in the same directory.
+
+
+
+\section1 Inline Components
 
 In addition to the top-level component that all QML documents define, and any reusable
 components placed in separate files, documents may also 

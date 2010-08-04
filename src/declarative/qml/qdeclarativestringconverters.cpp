@@ -106,14 +106,14 @@ QVariant QDeclarativeStringConverters::variantFromString(const QString &s, int p
         return QVariant(uint(qRound(s.toDouble(ok))));
     case QMetaType::QColor:
         return QVariant::fromValue(colorFromString(s, ok));
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
     case QMetaType::QDate:
         return QVariant::fromValue(dateFromString(s, ok));
     case QMetaType::QTime:
         return QVariant::fromValue(timeFromString(s, ok));
     case QMetaType::QDateTime:
         return QVariant::fromValue(dateTimeFromString(s, ok));
-#endif // QT_NO_TEXTDATE
+#endif // QT_NO_DATESTRING
     case QMetaType::QPointF:
         return QVariant::fromValue(pointFFromString(s, ok));
     case QMetaType::QPoint:
@@ -152,7 +152,7 @@ QColor QDeclarativeStringConverters::colorFromString(const QString &s, bool *ok)
     }
 }
 
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
 QDate QDeclarativeStringConverters::dateFromString(const QString &s, bool *ok)
 {
     QDate d = QDate::fromString(s, Qt::ISODate);
@@ -173,7 +173,7 @@ QDateTime QDeclarativeStringConverters::dateTimeFromString(const QString &s, boo
     if (ok) *ok =  d.isValid();
     return d;
 }
-#endif // QT_NO_TEXTDATE
+#endif // QT_NO_DATESTRING
 
 //expects input of "x,y"
 QPointF QDeclarativeStringConverters::pointFFromString(const QString &s, bool *ok)

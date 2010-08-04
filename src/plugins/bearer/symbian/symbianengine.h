@@ -73,22 +73,8 @@ class AccessPointsAvailabilityScanner;
 class SymbianNetworkConfigurationPrivate : public QNetworkConfigurationPrivate
 {
 public:
-    enum Bearer {
-        BearerEthernet,
-        BearerWLAN,
-        Bearer2G,
-        BearerCDMA2000,
-        BearerWCDMA,
-        BearerHSPA,
-        BearerBluetooth,
-        BearerWiMAX,
-        BearerUnknown = -1
-    };
-
     SymbianNetworkConfigurationPrivate();
     ~SymbianNetworkConfigurationPrivate();
-
-    QString bearerName() const;
 
     inline TUint32 numericIdentifier() const
     {
@@ -109,8 +95,6 @@ public:
     }
 
     QString mappingName;
-
-    Bearer bearer;
 
     // So called IAP id from the platform. Remains constant as long as the
     // platform is aware of the configuration ie. it is stored in the databases
@@ -208,6 +192,7 @@ private:
                                    QNetworkSession::State newState);
 #ifdef OCC_FUNCTIONALITY_AVAILABLE
     QNetworkConfigurationPrivatePointer configurationFromEasyWlan(TUint32 apId, TUint connectionId);
+    bool easyWlanTrueIapId(TUint32& trueIapId);
 #endif
 
 private: // Data

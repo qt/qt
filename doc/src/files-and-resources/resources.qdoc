@@ -54,7 +54,7 @@
     The resource system is based on tight cooperation between \l qmake,
     \l rcc (Qt's resource compiler), and QFile. It obsoletes Qt 3's
     \c qembed tool and the
-    \l{http://qt.nokia.com/doc/qq/qq05-iconography.html#imagestorage}{image
+    \l{http://doc.qt.nokia.com/qq/qq05-iconography.html}{image
     collection} mechanism.
 
     \section1 Resource Collection Files (\c{.qrc})

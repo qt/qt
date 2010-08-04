@@ -90,7 +90,7 @@ void QDeclarativeTranslate::setX(qreal x)
         return;
     d->x = x;
     update();
-    emit positionChanged();
+    emit xChanged();
 }
 
 /*!
@@ -113,24 +113,16 @@ void QDeclarativeTranslate::setY(qreal y)
         return;
     d->y = y;
     update();
-    emit positionChanged();
+    emit yChanged();
 }
 
 /*!
-    \reimp
+    \internal
 */
 void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
 {
     Q_D(const QDeclarativeTranslate);
     matrix->translate(d->x, d->y, 0);
 }
-
-/*!
-    \fn QDeclarativeTranslate::positionChanged()
-
-    QDeclarativeTranslate emits this signal when its position changes.
-
-    \sa QDeclarativeTranslate::x, QDeclarativeTranslate::y
-*/
 
 QT_END_NAMESPACE
