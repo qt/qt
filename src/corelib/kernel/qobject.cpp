@@ -1746,7 +1746,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 11
 
-    \sa findChildren(), qFindChild()
+    \sa findChildren()
 */
 
 /*!
@@ -1766,7 +1766,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 13
 
-    \sa findChild(), qFindChildren()
+    \sa findChild()
 */
 
 /*!
@@ -1782,6 +1782,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
+    \obsolete
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
@@ -1796,6 +1797,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
+    \obsolete
 
     This function is equivalent to
     \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).

@@ -77,11 +77,9 @@ class QObjectUserData;
 
 typedef QList<QObject*> QObjectList;
 
-template<typename T> inline T qFindChild(const QObject *, const QString & = QString());
-template<typename T> inline QList<T> qFindChildren(const QObject *, const QString & = QString());
-#ifndef QT_NO_REGEXP
-template<typename T> inline QList<T> qFindChildren(const QObject *, const QRegExp &);
-#endif
+Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
+                                           const QMetaObject &mo, QList<void *> *list);
+Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo);
 
 class
 #if defined(__INTEL_COMPILER) && defined(Q_OS_WIN)
@@ -158,16 +156,34 @@ public:
 
     template<typename T>
     inline T findChild(const QString &aName = QString()) const
-    { return qFindChild<T>(this, aName); }
+    { return static_cast<T>(qt_qFindChild_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject)); }
 
     template<typename T>
     inline QList<T> findChildren(const QString &aName = QString()) const
-    { return qFindChildren<T>(this, aName); }
+    {
+        QList<T> list;
+        union {
+            QList<T> *typedList;
+            QList<void *> *voidList;
+        } u;
+        u.typedList = &list;
+        qt_qFindChildren_helper(this, aName, 0, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
+        return list;
+    }
 
 #ifndef QT_NO_REGEXP
     template<typename T>
     inline QList<T> findChildren(const QRegExp &re) const
-    { return qFindChildren<T>(this, re); }
+    {
+        QList<T> list;
+        union {
+            QList<T> *typedList;
+            QList<void *> *voidList;
+        } u;
+        u.typedList = &list;
+        qt_qFindChildren_helper(this, QString(), &re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
+        return list;
+    }
 #endif
 
 #ifdef QT3_SUPPORT
@@ -328,41 +344,26 @@ public:
 };
 #endif
 
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QRegExp *re,
-                                           const QMetaObject &mo, QList<void *> *list);
-Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo);
+#ifdef QT_DEPRECATED
+template<typename T>
+inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QString())
+{ return o->findChild<T>(name); }
 
 template<typename T>
-inline T qFindChild(const QObject *o, const QString &name)
-{ return static_cast<T>(qt_qFindChild_helper(o, name, reinterpret_cast<T>(0)->staticMetaObject)); }
-
-template<typename T>
-inline QList<T> qFindChildren(const QObject *o, const QString &name)
+inline QList<T> qFindChildren(const QObject *o, const QString &name = QString())
 {
-    QList<T> list;
-    union {
-        QList<T> *typedList;
-        QList<void *> *voidList;
-    } u;
-    u.typedList = &list;
-    qt_qFindChildren_helper(o, name, 0, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
-    return list;
+    return o->findChildren<T>(name);
 }
 
 #ifndef QT_NO_REGEXP
 template<typename T>
-inline QList<T> qFindChildren(const QObject *o, const QRegExp &re)
+inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
 {
-    QList<T> list;
-    union {
-        QList<T> *typedList;
-        QList<void *> *voidList;
-    } u;
-    u.typedList = &list;
-    qt_qFindChildren_helper(o, QString(), &re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList);
-    return list;
+    return o->findChildren<T>(re);
 }
 #endif
+
+#endif //QT_DEPRECATED
 
 template <class T>
 inline T qobject_cast(QObject *object)
