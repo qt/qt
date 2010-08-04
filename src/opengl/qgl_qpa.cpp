@@ -297,6 +297,7 @@ void QGLWidget::resizeEvent(QResizeEvent *e)
     Q_D(QGLWidget);
     if (!isValid())
         return;
+    makeCurrent();
     if (!d->glcx->initialized())
         glInit();
     resizeGL(width(), height());
