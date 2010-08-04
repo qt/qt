@@ -2022,6 +2022,88 @@ void QImage::fill(uint pixel)
                       0, 0, d->width, d->height, d->bytes_per_line);
 }
 
+
+/*!
+    \fn void QImage::fill(Qt::GlobalColor color)
+
+    \overload
+
+    \since 4.8
+ */
+
+void QImage::fill(Qt::GlobalColor color)
+{
+    fill(QColor(color));
+}
+
+
+
+/*!
+    \fn void QImage::fill(Qt::GlobalColor color)
+
+    \overload
+
+    Fills the entire image with the given \a color.
+
+    If the depth of the image is 1, the image will be filled with 1 if
+    \a color equals Qt::color0; it will otherwise be filled with 0.
+
+    If the depth of the image is 8, the image will be filled with the
+    index corresponding the \a color in the color table if present; it
+    will otherwise be filled with 0.|
+
+    \since 4.8
+*/
+
+void QImage::fill(const QColor &color)
+{
+    if (!d)
+        return;
+    detach();
+
+    // In case we run out of memory
+    if (!d)
+        return;
+
+    if (d->depth == 32) {
+        uint pixel = color.rgba();
+        if (d->format == QImage::Format_ARGB32_Premultiplied)
+            pixel = PREMUL(pixel);
+        fill((uint) pixel);
+
+    } else if (d->depth == 16 && d->format == QImage::Format_RGB16) {
+        qrgb565 p(color.rgba());
+        fill((uint) p.rawValue());
+
+    } else if (d->depth == 1) {
+        if (color == Qt::color1)
+            fill((uint) 1);
+        else
+            fill((uint) 0);
+
+    } else if (d->depth == 8) {
+        uint pixel = 0;
+        for (int i=0; i<d->colortable.size(); ++i) {
+            if (color.rgba() == d->colortable.at(i)) {
+                pixel = i;
+                break;
+            }
+        }
+        fill(pixel);
+
+    } else {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(rect(), color);
+    }
+
+}
+
+
+
+
+
+
 /*!
     Inverts all pixel values in the image.
 
