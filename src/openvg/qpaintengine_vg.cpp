@@ -76,6 +76,9 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
+// use the same rounding as in qrasterizer.cpp (6 bit fixed point)
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
 Q_DECL_IMPORT extern int qt_defaultDpiX();
 Q_DECL_IMPORT extern int qt_defaultDpiY();
 
@@ -3439,9 +3442,10 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Set the transformation to use for drawing the current glyphs.
     QTransform glyphTransform(d->pathTransform);
     if (d->transform.type() <= QTransform::TxTranslate) {
-        // Prevent blurriness of unscaled, unrotated text by using integer coordinates.
-        // Using ceil(x-0.5) instead of qRound() or int-cast, behave like other paint engines.
-        glyphTransform.translate(ceil(p.x() - 0.5), ceil(p.y() - 0.5));
+        // Prevent blurriness of unscaled, unrotated text by forcing integer coordinates.
+        glyphTransform.translate(
+                floor(p.x() + glyphTransform.dx() + aliasedCoordinateDelta) - glyphTransform.dx(),
+                floor(p.y() - glyphTransform.dy() + aliasedCoordinateDelta) + glyphTransform.dy());
     } else {
         glyphTransform.translate(p.x(), p.y());
     }
