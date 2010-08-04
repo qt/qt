@@ -206,11 +206,11 @@ QTestLiteWindow::~QTestLiteWindow()
 #ifdef MYX11_DEBUG
     qDebug() << "~QTestLiteWindow" << hex << x_window;
 #endif
+    delete mGLContext;
     XFreeGC(xd->display, gc);
     XDestroyWindow(xd->display, x_window);
 
     xd->windowList.removeAll(this);
-    delete mGLContext;
 }
 
 

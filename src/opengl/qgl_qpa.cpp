@@ -129,11 +129,15 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (!widget->platformWindow()){
             QGLFormat glformat = format();
             QPlatformWindowFormat winFormat = qt_glformat_to_platformwindowformat(glformat);
+            if (shareContext) {
+                winFormat.setSharedContext(shareContext->d_func()->platformContext);
+            }
             winFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
             widget->setPlatformWindowFormat(winFormat);
             widget->winId();//make window
         }
         d->platformContext = widget->platformWindow()->glContext();
+        Q_ASSERT(d->platformContext);
         d->glFormat = qt_platformwindowformat_to_glformat(d->platformContext->platformWindowFormat());
         d->valid =(bool) d->platformContext;
     }
@@ -147,14 +151,6 @@ void QGLContext::reset()
     if (!d->valid)
         return;
     d->cleanup();
-    doneCurrent();
-
-    if (d->platformContext) {
-        if (d->paintDevice && d->paintDevice->devType() == QInternal::Widget) {
-            QWidget *widget = static_cast<QWidget *>(d->paintDevice);
-            widget->destroy();
-        }
-    }
 
     d->crWin = false;
     d->sharing = false;
@@ -204,8 +200,6 @@ void QGLWidget::setContext(QGLContext *context,
         return;
     }
 
-    if (d->glcx)
-        d->glcx->doneCurrent();
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
@@ -286,11 +280,26 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
+    Q_D(QGLWidget);
+    if (e->type() == QEvent::WinIdChange) {
+        if (d->glcx->isValid()) {
+            if (QGLContext::currentContext() == d->glcx)
+                QGLContextPrivate::setCurrentContext(0); //Its not valid anymore
+            setContext(new QGLContext(d->glcx->requestedFormat(), this));
+
+        }
+    }
     return QWidget::event(e);
 }
 
 void QGLWidget::resizeEvent(QResizeEvent *e)
 {
+    Q_D(QGLWidget);
+    if (!isValid())
+        return;
+    if (!d->glcx->initialized())
+        glInit();
+    resizeGL(width(), height());
     return QWidget::resizeEvent(e);
 }
 
