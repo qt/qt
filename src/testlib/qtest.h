@@ -159,7 +159,7 @@ template<> inline char *toString(const QVariant &v)
         if (!v.isNull()) {
             vstring.append(',');
             if (v.canConvert(QVariant::String)) {
-                vstring.append(qVariantValue<QString>(v).toLatin1());
+                vstring.append(qvariant_cast<QString>(v).toLatin1());
             }
             else {
                 vstring.append("<value not representable as string>");

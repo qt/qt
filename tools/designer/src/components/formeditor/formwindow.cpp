@@ -1523,7 +1523,7 @@ void ArrowKeyPropertyCommand::init(QWidgetList &l, const ArrowKeyOperation &op)
     QObjectList ol;
     foreach(QWidget *w, l)
         ol.push_back(w);
-    SetPropertyCommand::init(ol, QLatin1String("geometry"), qVariantFromValue(op));
+    SetPropertyCommand::init(ol, QLatin1String("geometry"), QVariant::fromValue(op));
 
     setText(op.resize ? FormWindow::tr("Key Resize") : FormWindow::tr("Key Move"));
 }
@@ -1531,14 +1531,14 @@ void ArrowKeyPropertyCommand::init(QWidgetList &l, const ArrowKeyOperation &op)
 QVariant ArrowKeyPropertyCommand::mergeValue(const QVariant &newMergeValue)
 {
     // Merge move operations of the same arrow key
-    if (!qVariantCanConvert<ArrowKeyOperation>(newMergeValue))
+    if (!newMergeValue.canConvert<ArrowKeyOperation>())
         return QVariant();
     ArrowKeyOperation mergedOperation = qvariant_cast<ArrowKeyOperation>(newValue());
     const ArrowKeyOperation newMergeOperation = qvariant_cast<ArrowKeyOperation>(newMergeValue);
     if (mergedOperation.resize != newMergeOperation.resize || mergedOperation.arrowKey != newMergeOperation.arrowKey)
         return QVariant();
     mergedOperation.distance += newMergeOperation.distance;
-    return qVariantFromValue(mergedOperation);
+    return QVariant::fromValue(mergedOperation);
 }
 
 void FormWindow::handleArrowKeyEvent(int key, Qt::KeyboardModifiers modifiers)
@@ -2241,7 +2241,7 @@ QAction *FormWindow::createSelectAncestorSubMenu(QWidget *w)
     for (int i = 0; i < size; i++) {
         QWidget *w = parents.at(i);
         QAction *a = ag->addAction(objectNameOf(w));
-        a->setData(qVariantFromValue(w));
+        a->setData(QVariant::fromValue(w));
         menu->addAction(a);
     }
     QAction *ma = new QAction(tr("Select Ancestor"), 0);
@@ -2796,7 +2796,7 @@ bool FormWindow::dropDockWidget(QDesignerDnDItemInterface *item, const QPoint &g
         PropertySheetEnumValue e = qvariant_cast<PropertySheetEnumValue>(propertySheet->property(propertySheet->indexOf(dockWidgetAreaName)));
         e.value = area;
         QVariant v;
-        qVariantSetValue(v, e);
+        v.setValue(e);
         SetPropertyCommand *cmd = new SetPropertyCommand(this);
         cmd->init(widget, dockWidgetAreaName, v);
         m_undoStack.push(cmd);

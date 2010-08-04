@@ -2583,7 +2583,7 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
     }
     QVariant oldFont = w->property("_q_styleSheetWidgetFont");
     if (oldFont.isValid()) {
-        w->setFont(qVariantValue<QFont>(oldFont));
+        w->setFont(qvariant_cast<QFont>(oldFont));
     }
     if (autoFillDisabledWidgets->contains(w)) {
         embeddedWidget(w)->setAutoFillBackground(true);
@@ -5067,7 +5067,7 @@ QIcon QStyleSheetStyle::standardIconImplementation(StandardPixmap standardIcon, 
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s))
-            return qVariantValue<QIcon>(rule.styleHint(s));
+            return qvariant_cast<QIcon>(rule.styleHint(s));
     }
     return baseStyle()->standardIcon(standardIcon, opt, w);
 }
@@ -5085,7 +5085,7 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s)) {
-            QIcon icon = qVariantValue<QIcon>(rule.styleHint(s));
+            QIcon icon = qvariant_cast<QIcon>(rule.styleHint(s));
             return icon.pixmap(16, 16); // ###: unhard-code this if someone complains
         }
     }

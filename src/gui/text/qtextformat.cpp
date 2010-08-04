@@ -925,7 +925,7 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     const QVariant prop = d->property(propertyId);
     if (prop.userType() != QVariant::Double && prop.userType() != QMetaType::Float)
         return 0.;
-    return qVariantValue<qreal>(prop);
+    return qvariant_cast<qreal>(prop);
 }
 
 /*!
@@ -1895,7 +1895,7 @@ void QTextBlockFormat::setTabPositions(const QList<QTextOption::Tab> &tabs)
     QList<QTextOption::Tab>::ConstIterator iter = tabs.constBegin();
     while (iter != tabs.constEnd()) {
         QVariant v;
-        qVariantSetValue<QTextOption::Tab>(v, *iter);
+        v.setValue<QTextOption::Tab>(*iter);
         list.append(v);
         ++iter;
     }
@@ -1917,7 +1917,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     QList<QVariant> variantsList = qvariant_cast<QList<QVariant> >(variant);
     QList<QVariant>::Iterator iter = variantsList.begin();
     while(iter != variantsList.end()) {
-        answer.append( qVariantValue<QTextOption::Tab>(*iter));
+        answer.append( qvariant_cast<QTextOption::Tab>(*iter));
         ++iter;
     }
     return answer;

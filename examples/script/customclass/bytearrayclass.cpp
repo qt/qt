@@ -204,7 +204,7 @@ QScriptValue ByteArrayClass::newInstance(int size)
 //! [1]
 QScriptValue ByteArrayClass::newInstance(const QByteArray &ba)
 {
-    QScriptValue data = engine()->newVariant(qVariantFromValue(ba));
+    QScriptValue data = engine()->newVariant(QVariant::fromValue(ba));
     return engine()->newObject(this, data);
 }
 //! [1]
@@ -228,7 +228,7 @@ QScriptValue ByteArrayClass::toScriptValue(QScriptEngine *eng, const QByteArray 
     QScriptValue ctor = eng->globalObject().property("ByteArray");
     ByteArrayClass *cls = qscriptvalue_cast<ByteArrayClass*>(ctor.data());
     if (!cls)
-        return eng->newVariant(qVariantFromValue(ba));
+        return eng->newVariant(QVariant::fromValue(ba));
     return cls->newInstance(ba);
 }
 

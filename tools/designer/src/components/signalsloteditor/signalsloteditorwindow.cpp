@@ -473,7 +473,7 @@ void InlineEditorModel::addTextList(const QMap<QString, bool> &text_list)
     insertRows(cnt, text_list.size());
     QFont font = QApplication::font();
     font.setItalic(true);
-    QVariant fontVariant = qVariantFromValue(font);
+    QVariant fontVariant = QVariant::fromValue(font);
     QMap<QString, bool>::ConstIterator it = text_list.constBegin();
     const QMap<QString, bool>::ConstIterator itEnd = text_list.constEnd();
     while (it != itEnd) {

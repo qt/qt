@@ -664,7 +664,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         if (actual.isNumber()) {
                             int ival = QScriptEnginePrivate::toInt32(exec, actual);
                             if (m.valueToKey(ival) != 0) {
-                                qVariantSetValue(v, ival);
+                                v.setValue(ival);
                                 converted = true;
                                 matchDistance += 10;
                             }
@@ -672,7 +672,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                             JSC::UString sval = QScriptEnginePrivate::toString(exec, actual);
                             int ival = m.keyToValue(convertToLatin1(sval));
                             if (ival != -1) {
-                                qVariantSetValue(v, ival);
+                                v.setValue(ival);
                                 converted = true;
                                 matchDistance += 10;
                             }

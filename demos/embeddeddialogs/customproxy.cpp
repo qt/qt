@@ -113,7 +113,7 @@ QVariant CustomProxy::itemChange(GraphicsItemChange change, const QVariant &valu
 {
     if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
         if (change == ItemChildAddedChange) {
-            currentPopup = qVariantValue<QGraphicsItem *>(value);
+            currentPopup = qvariant_cast<QGraphicsItem *>(value);
             currentPopup->setCacheMode(ItemCoordinateCache);
             if (scene())
                 currentPopup->installSceneEventFilter(this);

@@ -283,7 +283,7 @@ void BookmarkManager::buildBookmarksMenu(const QModelIndex &index, QMenu* menu)
         return;
 
     const QString &text = index.data().toString();
-    const QIcon &icon = qVariantValue<QIcon>(index.data(Qt::DecorationRole));
+    const QIcon &icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
     if (index.data(UserRoleFolder).toBool()) {
         if (QMenu* subMenu = menu->addMenu(icon, text)) {
             for (int i = 0; i < bookmarkModel->rowCount(index); ++i)

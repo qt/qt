@@ -432,16 +432,16 @@ static QPair<QWidget *,QWidget *>
     const QString objectNameProperty = QLatin1String("objectName");
     QDesignerPropertySheetExtension *labelSheet = qt_extension<QDesignerPropertySheetExtension*>(core->extensionManager(), rc.first);
     int nameIndex = labelSheet->indexOf(objectNameProperty);
-    labelSheet->setProperty(nameIndex, qVariantFromValue(PropertySheetStringValue(row.labelName)));
+    labelSheet->setProperty(nameIndex, QVariant::fromValue(PropertySheetStringValue(row.labelName)));
     labelSheet->setChanged(nameIndex, true);
     formWindow->ensureUniqueObjectName(rc.first);
     const int textIndex = labelSheet->indexOf(QLatin1String("text"));
-    labelSheet->setProperty(textIndex, qVariantFromValue(PropertySheetStringValue(row.labelText)));
+    labelSheet->setProperty(textIndex, QVariant::fromValue(PropertySheetStringValue(row.labelText)));
     labelSheet->setChanged(textIndex, true);
     // Set up properties of the control
     QDesignerPropertySheetExtension *controlSheet = qt_extension<QDesignerPropertySheetExtension*>(core->extensionManager(), rc.second);
     nameIndex = controlSheet->indexOf(objectNameProperty);
-    controlSheet->setProperty(nameIndex, qVariantFromValue(PropertySheetStringValue(row.fieldName)));
+    controlSheet->setProperty(nameIndex, QVariant::fromValue(PropertySheetStringValue(row.fieldName)));
     controlSheet->setChanged(nameIndex, true);
     formWindow->ensureUniqueObjectName(rc.second);
     return rc;

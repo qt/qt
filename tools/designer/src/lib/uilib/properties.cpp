@@ -78,7 +78,7 @@ QVariant domPropertyToVariant(QAbstractFormBuilder *afb,const QMetaObject *meta,
     case DomProperty::String: {
         const int index = meta->indexOfProperty(p->attributeName().toUtf8());
         if (index != -1 && meta->property(index).type() == QVariant::KeySequence)
-            return qVariantFromValue(QKeySequence(p->elementString()->text()));
+            return QVariant::fromValue(QKeySequence(p->elementString()->text()));
     }
         break;
 
@@ -96,7 +96,7 @@ QVariant domPropertyToVariant(QAbstractFormBuilder *afb,const QMetaObject *meta,
             afb->setupColorGroup(palette, QPalette::Disabled, dom->elementDisabled());
 
         palette.setCurrentColorGroup(QPalette::Active);
-        return qVariantFromValue(palette);
+        return QVariant::fromValue(palette);
     }
 
     case DomProperty::Set: {
@@ -135,7 +135,7 @@ QVariant domPropertyToVariant(QAbstractFormBuilder *afb,const QMetaObject *meta,
         return QVariant(e.keyToValue(enumValue.toUtf8()));
     }
     case DomProperty::Brush:
-        return qVariantFromValue(afb->setupBrush(p->elementBrush()));
+        return QVariant::fromValue(afb->setupBrush(p->elementBrush()));
     default:
         if (afb->resourceBuilder()->isResourceProperty(p)) {
             return afb->resourceBuilder()->loadResource(afb->workingDirectory(), p);
@@ -212,7 +212,7 @@ QVariant domPropertyToVariant(const DomProperty *p)
     case DomProperty::Char: {
         const DomChar *character = p->elementChar();
         const QChar c(character->elementUnicode());
-        return qVariantFromValue(c);
+        return QVariant::fromValue(c);
     }
 
     case DomProperty::Color: {
@@ -220,7 +220,7 @@ QVariant domPropertyToVariant(const DomProperty *p)
         QColor c(color->elementRed(), color->elementGreen(), color->elementBlue());
         if (color->hasAttributeAlpha())
             c.setAlpha(color->attributeAlpha());
-        return qVariantFromValue(c);
+        return QVariant::fromValue(c);
     }
 
     case DomProperty::Font: {
@@ -248,7 +248,7 @@ QVariant domPropertyToVariant(const DomProperty *p)
         if (font->hasElementStyleStrategy()) {
             f.setStyleStrategy(enumKeyOfObjectToValue<QAbstractFormBuilderGadget, QFont::StyleStrategy>("styleStrategy", font->elementStyleStrategy().toLatin1()));
         }
-        return qVariantFromValue(f);
+        return QVariant::fromValue(f);
     }
 
     case DomProperty::Date: {
@@ -275,15 +275,15 @@ QVariant domPropertyToVariant(const DomProperty *p)
 
 #ifndef QT_NO_CURSOR
     case DomProperty::Cursor:
-        return qVariantFromValue(QCursor(static_cast<Qt::CursorShape>(p->elementCursor())));
+        return QVariant::fromValue(QCursor(static_cast<Qt::CursorShape>(p->elementCursor())));
 
     case DomProperty::CursorShape:
-        return qVariantFromValue(QCursor(enumKeyOfObjectToValue<QAbstractFormBuilderGadget, Qt::CursorShape>("cursorShape", p->elementCursorShape().toLatin1())));
+        return QVariant::fromValue(QCursor(enumKeyOfObjectToValue<QAbstractFormBuilderGadget, Qt::CursorShape>("cursorShape", p->elementCursorShape().toLatin1())));
 #endif
 
     case DomProperty::Locale: {
         const DomLocale *locale = p->elementLocale();
-        return qVariantFromValue(QLocale(enumKeyOfObjectToValue<QAbstractFormBuilderGadget, QLocale::Language>("language", locale->attributeLanguage().toLatin1()),
+        return QVariant::fromValue(QLocale(enumKeyOfObjectToValue<QAbstractFormBuilderGadget, QLocale::Language>("language", locale->attributeLanguage().toLatin1()),
                     enumKeyOfObjectToValue<QAbstractFormBuilderGadget, QLocale::Country>("country", locale->attributeCountry().toLatin1())));
     }
     case DomProperty::SizePolicy: {
@@ -309,7 +309,7 @@ QVariant domPropertyToVariant(const DomProperty *p)
             sizePolicy.setVerticalPolicy(sp);
         }
 
-        return qVariantFromValue(sizePolicy);
+        return QVariant::fromValue(sizePolicy);
     }
 
     case DomProperty::StringList:

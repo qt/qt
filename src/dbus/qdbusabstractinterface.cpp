@@ -208,7 +208,7 @@ bool QDBusAbstractInterfacePrivate::setProperty(const QMetaProperty &mp, const Q
                                                 QLatin1String(DBUS_INTERFACE_PROPERTIES),
                                                 QLatin1String("Set"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
-    msg << interface << QString::fromUtf8(mp.name()) << qVariantFromValue(QDBusVariant(value));
+    msg << interface << QString::fromUtf8(mp.name()) << QVariant::fromValue(QDBusVariant(value));
     QDBusMessage reply = connection.call(msg, QDBus::Block);
 
     if (reply.type() != QDBusMessage::ReplyMessage) {

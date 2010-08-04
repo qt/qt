@@ -477,7 +477,7 @@ bool QDesignerMenu::handleContextMenuEvent(QWidget *, QContextMenuEvent *event)
 
     QMenu menu;
     QVariant itemData;
-    qVariantSetValue(itemData, action);
+    itemData.setValue(action);
 
     QAction *addSeparatorAction = menu.addAction(tr("Insert separator"));
     addSeparatorAction->setData(itemData);

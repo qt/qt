@@ -768,7 +768,7 @@ static QVariant parseCookieHeader(const QByteArray &raw)
         result += parsed;
     }
 
-    return qVariantFromValue(result);
+    return QVariant::fromValue(result);
 }
 
 static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QByteArray &value)
@@ -801,7 +801,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
         return parseCookieHeader(value);
 
     case QNetworkRequest::SetCookieHeader:
-        return qVariantFromValue(QNetworkCookie::parseCookies(value));
+        return QVariant::fromValue(QNetworkCookie::parseCookies(value));
 
     default:
         Q_ASSERT(0);

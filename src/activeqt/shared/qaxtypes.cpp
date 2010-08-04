@@ -954,20 +954,20 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
         break;
     case VT_I4:
         if (type == QVariant::Color || (!type && typeName == "QColor"))
-            var = qVariantFromValue(OLEColorToQColor(arg.lVal));
+            var = QVariant::fromValue(OLEColorToQColor(arg.lVal));
 #ifndef QT_NO_CURSOR
         else if (type == QVariant::Cursor || (!type && (typeName == "QCursor" || typeName == "QCursor*")))
-            var = qVariantFromValue(QCursor(static_cast<Qt::CursorShape>(arg.lVal)));
+            var = QVariant::fromValue(QCursor(static_cast<Qt::CursorShape>(arg.lVal)));
 #endif
         else
             var = (int)arg.lVal;
         break;
     case VT_I4|VT_BYREF:
         if (type == QVariant::Color || (!type && typeName == "QColor"))
-            var = qVariantFromValue(OLEColorToQColor((int)*arg.plVal));
+            var = QVariant::fromValue(OLEColorToQColor((int)*arg.plVal));
 #ifndef QT_NO_CURSOR
         else if (type == QVariant::Cursor || (!type && (typeName == "QCursor" || typeName == "QCursor*")))
-            var = qVariantFromValue(QCursor(static_cast<Qt::CursorShape>(*arg.plVal)));
+            var = QVariant::fromValue(QCursor(static_cast<Qt::CursorShape>(*arg.plVal)));
 #endif
         else
             var = (int)*arg.plVal;
@@ -992,20 +992,20 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
         break;
     case VT_UI4:
         if (type == QVariant::Color || (!type && typeName == "QColor"))
-            var = qVariantFromValue(OLEColorToQColor(arg.ulVal));
+            var = QVariant::fromValue(OLEColorToQColor(arg.ulVal));
 #ifndef QT_NO_CURSOR
         else if (type == QVariant::Cursor || (!type && (typeName == "QCursor" || typeName == "QCursor*")))
-            var = qVariantFromValue(QCursor(static_cast<Qt::CursorShape>(arg.ulVal)));
+            var = QVariant::fromValue(QCursor(static_cast<Qt::CursorShape>(arg.ulVal)));
 #endif
         else
             var = (int)arg.ulVal;
         break;
     case VT_UI4|VT_BYREF:
         if (type == QVariant::Color || (!type && typeName == "QColor"))
-            var = qVariantFromValue(OLEColorToQColor((uint)*arg.pulVal));
+            var = QVariant::fromValue(OLEColorToQColor((uint)*arg.pulVal));
 #ifndef QT_NO_CURSOR
         else if (type == QVariant::Cursor || (!type && (typeName == "QCursor" || typeName == "QCursor*")))
-            var = qVariantFromValue(QCursor(static_cast<Qt::CursorShape>(*arg.pulVal)));
+            var = QVariant::fromValue(QCursor(static_cast<Qt::CursorShape>(*arg.pulVal)));
 #endif
         else
             var = (int)*arg.pulVal;
@@ -1084,20 +1084,20 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
                 if (disp)
                     disp->QueryInterface(IID_IFont, (void**)&ifont);
                 if (ifont) {
-                    var = qVariantFromValue(IFontToQFont(ifont));
+                    var = QVariant::fromValue(IFontToQFont(ifont));
                     ifont->Release();
                 } else {
-                    var = qVariantFromValue(QFont());
+                    var = QVariant::fromValue(QFont());
                 }
             } else if (type == QVariant::Pixmap || (!type && (typeName == "QPixmap" || typeName == "QPixmap*"))) {
                 IPicture *ipic = 0;
                 if (disp)
                     disp->QueryInterface(IID_IPicture, (void**)&ipic);
                 if (ipic) {
-                    var = qVariantFromValue(IPictureToQPixmap(ipic));
+                    var = QVariant::fromValue(IPictureToQPixmap(ipic));
                     ipic->Release();
                 } else {
-                    var = qVariantFromValue(QPixmap());
+                    var = QVariant::fromValue(QPixmap());
                 }
             } else {
 #ifdef QAX_SERVER
@@ -1118,7 +1118,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
 #ifndef QAX_SERVER
                             if (typeName == "QVariant") {
                                 QAxObject *object = new QAxObject(disp);
-                                var = qVariantFromValue<QAxObject*>(object);
+                                var = QVariant::fromValue<QAxObject*>(object);
                             } else if (typeName != "IDispatch*" && QMetaType::type(typeName)) {
                                 QByteArray typeNameStr = QByteArray(typeName);
                                 int pIndex = typeName.lastIndexOf('*');
@@ -1145,7 +1145,7 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
                 unkn = *arg.ppunkVal;
             else
                 unkn = arg.punkVal;
-            qVariantSetValue(var, unkn);
+            var.setValue(unkn);
         }
         break;
     case VT_ARRAY|VT_VARIANT:

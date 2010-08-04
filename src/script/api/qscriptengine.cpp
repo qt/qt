@@ -1711,7 +1711,7 @@ QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue valu
             return variantValue(value);
 #ifndef QT_NO_QOBJECT
         else if (isQObject(value))
-            return qVariantFromValue(toQObject(exec, value));
+            return QVariant::fromValue(toQObject(exec, value));
 #endif
         else if (isDate(value))
             return QVariant(toDateTime(exec, value));

@@ -459,9 +459,9 @@ void ActionEditor::slotNewAction()
             setInitialProperty(sheet, QLatin1String(checkablePropertyC), QVariant(true));
 
         if (!actionData.keysequence.value().isEmpty())
-            setInitialProperty(sheet, QLatin1String(shortcutPropertyC), qVariantFromValue(actionData.keysequence));
+            setInitialProperty(sheet, QLatin1String(shortcutPropertyC), QVariant::fromValue(actionData.keysequence));
 
-        sheet->setProperty(sheet->indexOf(QLatin1String(iconPropertyC)), qVariantFromValue(actionData.icon));
+        sheet->setProperty(sheet->indexOf(QLatin1String(iconPropertyC)), QVariant::fromValue(actionData.icon));
 
         AddActionCommand *cmd = new AddActionCommand(formWindow());
         cmd->init(action);
@@ -486,7 +486,7 @@ static QDesignerFormWindowCommand *setIconPropertyCommand(const PropertySheetIco
         return cmd;
     }
     SetPropertyCommand *cmd = new SetPropertyCommand(fw);
-    cmd->init(action, iconProperty, qVariantFromValue(newIcon));
+    cmd->init(action, iconProperty, QVariant::fromValue(newIcon));
     return cmd;
 }
 
@@ -502,7 +502,7 @@ static QDesignerFormWindowCommand *setKeySequencePropertyCommand(const PropertyS
         return cmd;
     }
     SetPropertyCommand *cmd = new SetPropertyCommand(fw);
-    cmd->init(action, shortcutProperty, qVariantFromValue(ks));
+    cmd->init(action, shortcutProperty, QVariant::fromValue(ks));
     return cmd;
 }
 
@@ -528,7 +528,7 @@ static inline QString textPropertyValue(const QDesignerPropertySheetExtension *s
 {
     const int index = sheet->indexOf(name);
     Q_ASSERT(index != -1);
-    const PropertySheetStringValue ps = qVariantValue<PropertySheetStringValue>(sheet->property(index));
+    const PropertySheetStringValue ps = qvariant_cast<PropertySheetStringValue>(sheet->property(index));
     return ps.value();
 }
 
@@ -545,7 +545,7 @@ void ActionEditor::editAction(QAction *action)
     oldActionData.name = action->objectName();
     oldActionData.text = action->text();
     oldActionData.toolTip = textPropertyValue(sheet, QLatin1String(toolTipPropertyC));
-    oldActionData.icon = qVariantValue<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String(iconPropertyC))));
+    oldActionData.icon = qvariant_cast<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String(iconPropertyC))));
     oldActionData.keysequence = ActionModel::actionShortCut(sheet);
     oldActionData.checkable =  action->isCheckable();
     dlg.setActionData(oldActionData);
@@ -677,7 +677,7 @@ void  ActionEditor::resourceImageDropped(const QString &path, QAction *action)
 
     QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(core()->extensionManager(), action);
     const PropertySheetIconValue oldIcon =
-            qVariantValue<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String(iconPropertyC))));
+            qvariant_cast<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String(iconPropertyC))));
     PropertySheetIconValue newIcon;
     newIcon.setPixmap(QIcon::Normal, QIcon::Off, PropertySheetPixmapValue(path));
     if (newIcon.paths().isEmpty() || newIcon.paths() == oldIcon.paths())

@@ -348,7 +348,7 @@ QVariant QAccessibleTextEdit::invokeMethodEx(QAccessible::Method method, int chi
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods << SetCursorPosition << GetCursorPosition;
-        return qVariantFromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
+        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
                     QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
     }
     case SetCursorPosition:

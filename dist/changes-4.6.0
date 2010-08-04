@@ -177,7 +177,7 @@ QtCore
     * Many optimisations.
     * Added QVariant::toFloat() and QVariant::toReal().
     * Added QVariant(float) constructor.
-    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
+    * qvariant_cast<QVariant> and QVariant::fromValue<QVariant> are now
       identity functions.
     * Added support for math3d types.
 

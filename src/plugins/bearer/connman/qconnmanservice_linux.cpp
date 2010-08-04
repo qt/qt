@@ -953,10 +953,10 @@ bool QConnmanDeviceInterface::setProperty(const QString &name, const QDBusVarian
 
 //    QList<QVariant> args;
     qWarning() << __FUNCTION__ << name << value.variant();
-//    args << qVariantFromValue(name);
-//    args << qVariantFromValue(value);
+//    args << QVariant::fromValue(name);
+//    args << QVariant::fromValue(value);
 
-    QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, qVariantFromValue(value));
+    QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, QVariant::fromValue(value));
 qWarning() << reply.errorMessage();
 
     return true;
@@ -1020,7 +1020,7 @@ quint16 QConnmanDeviceInterface::getScanInterval()
 bool QConnmanDeviceInterface::setScanInterval(const QString & interval)
 {
 //    QList<QVariant> args;
-//    args << qVariantFromValue(name)
+//    args << QVariant::fromValue(name)
 //    << value.variant();
 
 //    QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
@@ -1043,8 +1043,8 @@ QStringList QConnmanDeviceInterface::getNetworks()
 bool QConnmanDeviceInterface::setEnabled(bool powered)
 {
     QList<QVariant> args;
-    args << qVariantFromValue(QString("Powered"))
-    << qVariantFromValue(QDBusVariant(powered));
+    args << QVariant::fromValue(QString("Powered"))
+    << QVariant::fromValue(QDBusVariant(powered));
 
     QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
     qWarning() << reply.errorMessage() << reply.errorName();

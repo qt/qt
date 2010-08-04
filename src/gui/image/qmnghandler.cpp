@@ -481,7 +481,7 @@ void QMngHandler::setOption(ImageOption option, const QVariant & value)
 {
     Q_D(QMngHandler);
     if (option == QImageIOHandler::BackgroundColor)
-        d->setBackgroundColor(qVariantValue<QColor>(value));
+        d->setBackgroundColor(qvariant_cast<QColor>(value));
 }
 
 /*! \reimp */

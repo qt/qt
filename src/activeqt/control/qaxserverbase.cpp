@@ -2047,10 +2047,10 @@ int QAxServerBase::qt_metacall(QMetaObject::Call call, int index, void **argv)
                         if (vt == QVariant::UserType) {
                             if (ptype.endsWith('*')) {
                                 variant = QVariant(QMetaType::type(ptype), (void**)argv[p+1]);
-                                // qVariantSetValue(variant, *(void**)(argv[p + 1]), ptype);
+                                // variant.setValue(*(void**)(argv[p + 1]), ptype);
                             } else {
                                 variant = QVariant(QMetaType::type(ptype), argv[p+1]);
-                                // qVariantSetValue(variant, argv[p + 1], ptype);
+                                // variant.setValue(argv[p + 1], ptype);
                             }
                         } else {
                             variant = QVariant(vt, argv[p + 1]);
@@ -2537,7 +2537,7 @@ HRESULT WINAPI QAxServerBase::Invoke(DISPID dispidMember, REFIID riid,
                 if (!type.isEmpty() && pvarResult) {
                     if (!varp[0].isValid() && type != "QVariant")
                         varp[0] = QVariant(QMetaType::type(type), argv_pointer);
-//                        qVariantSetValue(varp[0], argv_pointer[0], type);
+//                        varp[0].setValue(argv_pointer[0], type);
 		    ok = QVariantToVARIANT(varp[0], *pvarResult, type);
                 }
 	    }
@@ -3312,7 +3312,7 @@ HRESULT WINAPI QAxServerBase::OnAmbientPropertyChange(DISPID dispID)
 	    break;
 	{
             QVariant qvar = VARIANTToQVariant(var, "QFont", QVariant::Font);
-            QFont qfont = qVariantValue<QFont>(qvar);
+            QFont qfont = qvariant_cast<QFont>(qvar);
             qt.widget->setFont(qfont);
 	}
 	break;

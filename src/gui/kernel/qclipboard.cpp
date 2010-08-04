@@ -631,7 +631,7 @@ QByteArray QMimeDataWrapper::encodedData(const char *format) const
         return data->data(QLatin1String(format));
     } else{
         QVariant variant = data->imageData();
-        QImage img = qVariantValue<QImage>(variant);
+        QImage img = qvariant_cast<QImage>(variant);
         QByteArray ba;
         QBuffer buffer(&ba);
         buffer.open(QIODevice::WriteOnly);

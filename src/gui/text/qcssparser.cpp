@@ -403,7 +403,7 @@ int ValueExtractor::lengthValue(const Declaration &decl)
     if (decl.d->values.count() < 1)
         return 0;
     LengthData data = lengthValue(decl.d->values.at(0));
-    decl.d->parsed = qVariantFromValue<LengthData>(data);
+    decl.d->parsed = QVariant::fromValue<LengthData>(data);
     return lengthValueFromData(data,f);
 }
 
@@ -435,7 +435,7 @@ void ValueExtractor::lengthValues(const Declaration &decl, int *m)
 
     QList<QVariant> v;
     for (i = 0; i < 4; i++) {
-        v += qVariantFromValue<LengthData>(datas[i]);
+        v += QVariant::fromValue<LengthData>(datas[i]);
         m[i] = lengthValueFromData(datas[i], f);
     }
     decl.d->parsed = v;
@@ -541,7 +541,7 @@ QSize ValueExtractor::sizeValue(const Declaration &decl)
     else
         x[1] = x[0];
     QList<QVariant> v;
-    v << qVariantFromValue<LengthData>(x[0]) << qVariantFromValue<LengthData>(x[1]);
+    v << QVariant::fromValue<LengthData>(x[0]) << qVariantFromValue<LengthData>(x[1]);
     decl.d->parsed = v;
     return QSize(lengthValueFromData(x[0], f), lengthValueFromData(x[1], f));
 }
@@ -916,7 +916,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
         data.width = lengthValue(decl.d->values.at(i));
         *width = lengthValueFromData(data.width, f);
         if (++i >= decl.d->values.count()) {
-            decl.d->parsed = qVariantFromValue<BorderData>(data);
+            decl.d->parsed = QVariant::fromValue<BorderData>(data);
             return;
         }
     }
@@ -925,7 +925,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
     if (data.style != BorderStyle_Unknown) {
         *style = data.style;
         if (++i >= decl.d->values.count()) {
-            decl.d->parsed = qVariantFromValue<BorderData>(data);
+            decl.d->parsed = QVariant::fromValue<BorderData>(data);
             return;
         }
     } else {
@@ -935,7 +935,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
      data.color = parseBrushValue(decl.d->values.at(i), pal);
      *color = brushFromData(data.color, pal);
      if (data.color.type != BrushData::DependsOnThePalette)
-         decl.d->parsed = qVariantFromValue<BorderData>(data);
+         decl.d->parsed = QVariant::fromValue<BorderData>(data);
 }
 
 static void parseShorthandBackgroundProperty(const QVector<Value> &values, BrushData *brush, QString *image, Repeat *repeat, Qt::Alignment *alignment, const QPalette &pal)
@@ -1033,7 +1033,7 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                     *brush = brushFromData(brushData, pal);
                     if (brushData.type != BrushData::DependsOnThePalette) {
                         BackgroundData data = { brushData, *image, *repeat, *alignment };
-                        decl.d->parsed = qVariantFromValue<BackgroundData>(data);
+                        decl.d->parsed = QVariant::fromValue<BackgroundData>(data);
                     }
                 }
                 break;
@@ -1311,10 +1311,10 @@ QColor Declaration::colorValue(const QPalette &pal) const
 
     ColorData color = parseColorValue(d->values.at(0));
     if(color.type == ColorData::Role) {
-        d->parsed = qVariantFromValue<int>(color.role);
+        d->parsed = QVariant::fromValue<int>(color.role);
         return pal.color((QPalette::ColorRole)(color.role));
     } else {
-        d->parsed = qVariantFromValue<QColor>(color.color);
+        d->parsed = QVariant::fromValue<QColor>(color.color);
         return color.color;
     }
 }
@@ -1334,11 +1334,11 @@ QBrush Declaration::brushValue(const QPalette &pal) const
     BrushData data = parseBrushValue(d->values.at(0), pal);
 
     if(data.type == BrushData::Role) {
-        d->parsed = qVariantFromValue<int>(data.role);
+        d->parsed = QVariant::fromValue<int>(data.role);
         return pal.color((QPalette::ColorRole)(data.role));
     } else {
         if (data.type != BrushData::DependsOnThePalette)
-            d->parsed = qVariantFromValue<QBrush>(data.brush);
+            d->parsed = QVariant::fromValue<QBrush>(data.brush);
         return data.brush;
     }
 }
@@ -1368,11 +1368,11 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
                 continue;
             BrushData data = parseBrushValue(d->values.at(i), pal);
             if(data.type == BrushData::Role) {
-                v += qVariantFromValue<int>(data.role);
+                v += QVariant::fromValue<int>(data.role);
                 c[i] = pal.color((QPalette::ColorRole)(data.role));
             } else {
                 if (data.type != BrushData::DependsOnThePalette) {
-                    v += qVariantFromValue<QBrush>(data.brush);
+                    v += QVariant::fromValue<QBrush>(data.brush);
                 } else {
                     v += QVariant();
                 }
@@ -1445,7 +1445,7 @@ QSize Declaration::sizeValue() const
     else
         x[1] = x[0];
     QSize size(x[0], x[1]);
-    d->parsed = qVariantFromValue<QSize>(size);
+    d->parsed = QVariant::fromValue<QSize>(size);
     return size;
 }
 
@@ -1467,7 +1467,7 @@ QRect Declaration::rectValue() const
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
-    d->parsed = qVariantFromValue<QRect>(rect);
+    d->parsed = QVariant::fromValue<QRect>(rect);
     return rect;
 }
 
@@ -1488,10 +1488,10 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
         for (i = 0; i < qMin(d->values.count(), 4); i++) {
             ColorData color = parseColorValue(d->values.at(i));
             if(color.type == ColorData::Role) {
-                v += qVariantFromValue<int>(color.role);
+                v += QVariant::fromValue<int>(color.role);
                 c[i] = pal.color((QPalette::ColorRole)(color.role));
             } else {
-                v += qVariantFromValue<QColor>(color.color);
+                v += QVariant::fromValue<QColor>(color.color);
                 c[i] = color.color;
             }
         }
@@ -1683,7 +1683,7 @@ QIcon Declaration::iconValue() const
             i++;
     }
 
-    d->parsed = qVariantFromValue<QIcon>(icon);
+    d->parsed = QVariant::fromValue<QIcon>(icon);
     return icon;
 }
 

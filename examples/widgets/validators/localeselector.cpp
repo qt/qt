@@ -294,7 +294,7 @@ LocaleSelector::LocaleSelector(QWidget *parent)
         QString text = QLocale::languageToString(QLocale::Language(l.lang))
                         + QLatin1Char('/')
                         + QLocale::countryToString(QLocale::Country(l.country));
-        addItem(text, qVariantFromValue(l));
+        addItem(text, QVariant::fromValue(l));
     }
 
     setCurrentIndex(curIndex);
@@ -307,6 +307,6 @@ void LocaleSelector::emitLocaleSelected(int index)
     QVariant v = itemData(index);
     if (!v.isValid())
         return;
-    SupportedLocale l = qVariantValue<SupportedLocale>(v);
+    SupportedLocale l = qvariant_cast<SupportedLocale>(v);
     emit localeSelected(QLocale(QLocale::Language(l.lang), QLocale::Country(l.country)));
 }

@@ -508,7 +508,7 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
     node.d = data;
     if (data) A(data);
 
-    return engine->newVariant(instance, qVariantFromValue(node));
+    return engine->newVariant(instance, QVariant::fromValue(node));
 }
 
 QScriptValue Element::prototype(QScriptEngine *engine)
@@ -708,7 +708,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QByteArray &data)
     instance.setPrototype(Document::prototype(engine));
     Node documentNode;
     documentNode.d = document;
-    return engine->newVariant(instance, qVariantFromValue(documentNode));
+    return engine->newVariant(instance, QVariant::fromValue(documentNode));
 }
 
 Node::Node()
@@ -759,7 +759,7 @@ QScriptValue NamedNodeMap::create(QScriptEngine *engine, NodeImpl *data, QList<N
     map.list = list;
     if (data) A(data);
 
-    instance.setData(engine->newVariant(qVariantFromValue(map)));
+    instance.setData(engine->newVariant(QVariant::fromValue(map)));
 
     if (!QDeclarativeScriptEngine::get(engine)->namedNodeMapClass)
         QDeclarativeScriptEngine::get(engine)->namedNodeMapClass= new NamedNodeMapClass(engine);
@@ -816,7 +816,7 @@ QScriptValue NodeList::create(QScriptEngine *engine, NodeImpl *data)
     list.d = data;
     if (data) A(data);
 
-    instance.setData(engine->newVariant(qVariantFromValue(list)));
+    instance.setData(engine->newVariant(QVariant::fromValue(list)));
 
     if (!QDeclarativeScriptEngine::get(engine)->nodeListClass)
         QDeclarativeScriptEngine::get(engine)->nodeListClass= new NodeListClass(engine);

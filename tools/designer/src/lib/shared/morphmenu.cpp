@@ -256,11 +256,11 @@ static void replaceWidgetListDynamicProperty(QWidget *parentWidget,
                                              QWidget *oldWidget, QWidget *newWidget,
                                              const char *name)
 {
-    QWidgetList list = qVariantValue<QWidgetList>(parentWidget->property(name));
+    QWidgetList list = qvariant_cast<QWidgetList>(parentWidget->property(name));
     const int index = list.indexOf(oldWidget);
     if (index != -1) {
         list.replace(index, newWidget);
-         parentWidget->setProperty(name, qVariantFromValue(list));
+         parentWidget->setProperty(name, QVariant::fromValue(list));
     }
 }
 
