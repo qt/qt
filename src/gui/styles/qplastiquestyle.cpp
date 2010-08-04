@@ -1054,7 +1054,7 @@ void QPlastiqueStylePrivate::drawPartialFrame(QPainter *painter, const QStyleOpt
     bool reverse = option->direction == Qt::RightToLeft;
     QStyleOptionFrame frameOpt;
 #ifndef QT_NO_LINEEDIT
-    if (QLineEdit *lineedit = qFindChild<QLineEdit *>(widget))
+    if (QLineEdit *lineedit = widget->findChild<QLineEdit *>())
         frameOpt.initFrom(lineedit);
 #else
     Q_UNUSED(widget)

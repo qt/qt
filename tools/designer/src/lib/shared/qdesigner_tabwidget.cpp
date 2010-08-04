@@ -134,7 +134,7 @@ QTabBar *QTabWidgetEventFilter::tabBar() const
 {
     // QTabWidget::tabBar() accessor is protected, grmbl...
     if (!m_cachedTabBar) {
-        const QList<QTabBar *> tabBars = qFindChildren<QTabBar *>(m_tabWidget);
+        const QList<QTabBar *> tabBars = m_tabWidget->findChildren<QTabBar *>();
         Q_ASSERT(tabBars.size() == 1);
         m_cachedTabBar = tabBars.front();
     }

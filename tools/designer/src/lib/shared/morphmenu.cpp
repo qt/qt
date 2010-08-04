@@ -240,7 +240,7 @@ static QString suggestObjectName(const QString &oldClassName, const QString &new
 QLabel *buddyLabelOf(QDesignerFormWindowInterface *fw, QWidget *w)
 {
     typedef QList<QLabel*> LabelList;
-    const LabelList labelList = qFindChildren<QLabel*>(fw);
+    const LabelList labelList = fw->findChildren<QLabel*>();
     if (labelList.empty())
         return 0;
     const LabelList::const_iterator cend = labelList.constEnd();

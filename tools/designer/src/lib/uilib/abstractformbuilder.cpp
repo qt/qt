@@ -341,7 +341,7 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
                 w->addAction(a);
             } else if (QActionGroup *g = m_actionGroups.value(name)) {
                 w->addActions(g->actions());
-            } else if (QMenu *menu = qFindChild<QMenu*>(w, name)) {
+            } else if (QMenu *menu = w->findChild<QMenu*>(name)) {
                 w->addAction(menu->menuAction());
                 addMenuAction(menu->menuAction());
             }
@@ -365,7 +365,7 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
     if (!zOrderNames.isEmpty()) {
         QList<QWidget *> zOrder = qVariantValue<QWidgetList>(w->property("_q_zOrder"));
         foreach (const QString &widgetName, zOrderNames) {
-            if (QWidget *child = qFindChild<QWidget*>(w, widgetName)) {
+            if (QWidget *child = w->findChild<QWidget*>(widgetName)) {
                 if (child->parentWidget() == w) {
                     zOrder.removeAll(child);
                     zOrder.append(child);
@@ -1603,14 +1603,14 @@ void QAbstractFormBuilder::applyTabStops(QWidget *widget, DomTabStops *tabStops)
     for (int i=0; i<l.size(); ++i) {
         const QString name = l.at(i);
 
-        QWidget *child = qFindChild<QWidget*>(widget, name);
+        QWidget *child = widget->findChild<QWidget*>(name);
         if (!child) {
             uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "While applying tab stops: The widget '%1' could not be found.").arg(name));
             continue;
         }
 
         if (i == 0) {
-            lastWidget = qFindChild<QWidget*>(widget, name);
+            lastWidget = widget->findChild<QWidget*>(name);
             continue;
         } else if (!child || !lastWidget) {
             continue;
@@ -1618,7 +1618,7 @@ void QAbstractFormBuilder::applyTabStops(QWidget *widget, DomTabStops *tabStops)
 
         QWidget::setTabOrder(lastWidget, child);
 
-        lastWidget = qFindChild<QWidget*>(widget, name);
+        lastWidget = widget->findChild<QWidget*>(name);
     }
 }
 

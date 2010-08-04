@@ -49,9 +49,9 @@ TextFinder::TextFinder(QWidget *parent)
     QWidget *formWidget = loadUiFile();
 
 //! [1]
-    ui_findButton = qFindChild<QPushButton*>(this, "findButton");
-    ui_textEdit = qFindChild<QTextEdit*>(this, "textEdit");
-    ui_lineEdit = qFindChild<QLineEdit*>(this, "lineEdit");
+    ui_findButton = findChild<QPushButton*>("findButton");
+    ui_textEdit = findChild<QTextEdit*>("textEdit");
+    ui_lineEdit = findChild<QLineEdit*>("lineEdit");
 //! [0] //! [1]
 
 //! [2]

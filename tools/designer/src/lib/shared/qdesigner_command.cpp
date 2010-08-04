@@ -247,7 +247,7 @@ void InsertWidgetCommand::refreshBuddyLabels()
 {
     typedef QList<QLabel*> LabelList;
 
-    const LabelList label_list = qFindChildren<QLabel*>(formWindow());
+    const LabelList label_list = formWindow()->findChildren<QLabel*>();
     if (label_list.empty())
         return;
 
@@ -365,7 +365,7 @@ void ManageWidgetCommandHelper::init(const QDesignerFormWindowInterface *fw, QWi
     m_widget = widget;
     m_managedChildren.clear();
 
-    const QWidgetList children = qFindChildren<QWidget *>(m_widget);
+    const QWidgetList children = m_widget->findChildren<QWidget *>();
     if (children.empty())
         return;
 

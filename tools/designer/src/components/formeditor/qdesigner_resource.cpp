@@ -946,7 +946,7 @@ QWidget *QDesignerResource::create(DomWidget *ui_widget, QWidget *parentWidget)
             w->addAction(a);
         } else if (QActionGroup *g = m_actionGroups.value(name)) {
             w->addActions(g->actions());
-        } else if (QMenu *menu = qFindChild<QMenu*>(w, name)) {
+        } else if (QMenu *menu = w->findChild<QMenu*>(name)) {
             w->addAction(menu->menuAction());
             addMenuAction(menu->menuAction());
         }
@@ -1320,7 +1320,7 @@ DomLayout *QDesignerResource::createDom(QLayout *layout, DomLayout *ui_parentLay
     QDesignerMetaDataBaseItemInterface *item = core()->metaDataBase()->item(layout);
 
     if (item == 0) {
-        layout = qFindChild<QLayout*>(layout);
+        layout = layout->findChild<QLayout*>();
         // refresh the meta database item
         item = core()->metaDataBase()->item(layout);
     }
@@ -1440,7 +1440,7 @@ void QDesignerResource::applyTabStops(QWidget *widget, DomTabStops *tabStops)
 
     QList<QWidget*> tabOrder;
     foreach (const QString &widgetName, tabStops->elementTabStop()) {
-        if (QWidget *w = qFindChild<QWidget*>(widget, widgetName)) {
+        if (QWidget *w = widget->findChild<QWidget*>(widgetName)) {
             tabOrder.append(w);
         }
     }

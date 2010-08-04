@@ -44,7 +44,7 @@ Window::Window(QWidget *parent)
     : QWidget(parent), m_iconSize(64, 64)
 {
     m_ui.setupUi(this);
-    QButtonGroup *buttonGroup = qFindChild<QButtonGroup *>(this);     // ### workaround for uic in 4.4
+    QButtonGroup *buttonGroup = findChild<QButtonGroup *>();     // ### workaround for uic in 4.4
     m_ui.easingCurvePicker->setIconSize(m_iconSize);
     m_ui.easingCurvePicker->setMinimumHeight(m_iconSize.height() + 50);
     buttonGroup->setId(m_ui.lineRadio, 0);

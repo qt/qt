@@ -387,7 +387,7 @@ void FormWindow::setCursorToAll(const QCursor &c, QWidget *start)
 {
 #ifndef QT_NO_CURSOR
     start->setCursor(c);
-    const QWidgetList widgets = qFindChildren<QWidget*>(start);
+    const QWidgetList widgets = start->findChildren<QWidget*>();
     foreach (QWidget *widget, widgets) {
         if (!qobject_cast<WidgetHandle*>(widget)) {
             widget->setCursor(c);
@@ -945,7 +945,7 @@ bool FormWindow::isMainContainer(const QWidget *w) const
 
 void FormWindow::updateChildSelections(QWidget *w)
 {
-    const QWidgetList l = qFindChildren<QWidget*>(w);
+    const QWidgetList l = w->findChildren<QWidget*>();
     if (!l.empty()) {
         const QWidgetList::const_iterator lcend = l.constEnd();
         for (QWidgetList::const_iterator it = l.constBegin(); it != lcend; ++it) {
@@ -1155,19 +1155,19 @@ bool FormWindow::unify(QObject *w, QString &s, bool changeIt)
         existingNames.insert(main->objectName());
 
     const QDesignerMetaDataBaseInterface *metaDataBase = core()->metaDataBase();
-    const QWidgetList widgetChildren = qFindChildren<QWidget*>(main);
+    const QWidgetList widgetChildren = main->findChildren<QWidget*>();
     if (!widgetChildren.empty())
         insertNames(metaDataBase, widgetChildren.constBegin(), widgetChildren.constEnd(), w, existingNames);
 
-    const QList<QLayout *> layoutChildren = qFindChildren<QLayout*>(main);
+    const QList<QLayout *> layoutChildren = main->findChildren<QLayout*>();
     if (!layoutChildren.empty())
         insertNames(metaDataBase, layoutChildren.constBegin(), layoutChildren.constEnd(), w, existingNames);
 
-    const QList<QAction *> actionChildren = qFindChildren<QAction*>(main);
+    const QList<QAction *> actionChildren = main->findChildren<QAction*>();
     if (!actionChildren.empty())
         insertNames(metaDataBase, actionChildren.constBegin(), actionChildren.constEnd(), w, existingNames);
 
-    const QList<QButtonGroup *> buttonGroupChildren = qFindChildren<QButtonGroup*>(main);
+    const QList<QButtonGroup *> buttonGroupChildren = main->findChildren<QButtonGroup*>();
     if (!buttonGroupChildren.empty())
         insertNames(metaDataBase, buttonGroupChildren.constBegin(), buttonGroupChildren.constEnd(), w, existingNames);
 
@@ -1283,7 +1283,7 @@ void FormWindow::resizeWidget(QWidget *widget, const QRect &geometry)
 
 void FormWindow::raiseChildSelections(QWidget *w)
 {
-    const QWidgetList l = qFindChildren<QWidget*>(w);
+    const QWidgetList l = w->findChildren<QWidget*>();
     if (l.isEmpty())
         return;
     m_selection->raiseList(l);
@@ -1344,7 +1344,7 @@ QWidgetList FormWindow::selectedWidgets() const
 void FormWindow::selectWidgets()
 {
     bool selectionChanged = false;
-    const QWidgetList l = qFindChildren<QWidget*>(mainContainer());
+    const QWidgetList l = mainContainer()->findChildren<QWidget*>();
     QListIterator <QWidget*> it(l);
     const QRect selRect(mapToGlobal(m_currRect.topLeft()), m_currRect.size());
     while (it.hasNext()) {

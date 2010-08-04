@@ -288,7 +288,7 @@ void ActionEditor::setFormWindow(QDesignerFormWindowInterface *formWindow)
         return;
 
     if (m_formWindow != 0) {
-        const ActionList actionList = qFindChildren<QAction*>(m_formWindow->mainContainer());
+        const ActionList actionList = m_formWindow->mainContainer()->findChildren<QAction*>();
         foreach (QAction *action, actionList)
             disconnect(action, SIGNAL(changed()), this, SLOT(slotActionChanged()));
     }
@@ -311,7 +311,7 @@ void ActionEditor::setFormWindow(QDesignerFormWindowInterface *formWindow)
     m_actionNew->setEnabled(true);
     m_filterWidget->setEnabled(true);
 
-    const ActionList actionList = qFindChildren<QAction*>(formWindow->mainContainer());
+    const ActionList actionList = formWindow->mainContainer()->findChildren<QAction*>();
     foreach (QAction *action, actionList)
         if (!action->isSeparator() && core()->metaDataBase()->item(action) != 0) {
             // Show unless it has a menu. However, listen for change on menu actions also as it might be removed

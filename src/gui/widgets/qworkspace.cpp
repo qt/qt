@@ -2923,7 +2923,7 @@ void QWorkspaceChild::setActive(bool b)
         iconw->setActive(act);
     update();
 
-    QList<QWidget*> wl = qFindChildren<QWidget*>(childWidget);
+    QList<QWidget*> wl = childWidget->findChildren<QWidget*>();
     if (act) {
         for (int i = 0; i < wl.size(); ++i) {
             QWidget *w = wl.at(i);

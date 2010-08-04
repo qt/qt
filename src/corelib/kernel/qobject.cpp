@@ -3314,7 +3314,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
         return;
     const QMetaObject *mo = o->metaObject();
     Q_ASSERT(mo);
-    const QObjectList list = qFindChildren<QObject *>(o, QString());
+    const QObjectList list = o->findChildren<QObject *>(QString());
     for (int i = 0; i < mo->methodCount(); ++i) {
         const char *slot = mo->method(i).signature();
         Q_ASSERT(slot);

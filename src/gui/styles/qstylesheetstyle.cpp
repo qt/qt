@@ -2342,7 +2342,7 @@ static QWidget *embeddedWidget(QWidget *w)
 
 #ifndef QT_NO_SPINBOX
     if (QAbstractSpinBox *sb = qobject_cast<QAbstractSpinBox *>(w))
-        return qFindChild<QLineEdit *>(sb);
+        return sb->findChild<QLineEdit *>();
 #endif
 
 #ifndef QT_NO_SCROLLAREA
@@ -2795,7 +2795,7 @@ void QStyleSheetStyle::polish(QPalette &pal)
 
 void QStyleSheetStyle::repolish(QWidget *w)
 {
-    QList<const QWidget *> children = qFindChildren<const QWidget *>(w, QString());
+    QList<const QWidget *> children = w->findChildren<const QWidget *>(QString());
     children.append(w);
     styleSheetCache->remove(w);
     updateWidgets(children);
@@ -5179,7 +5179,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ComboBox_PopupFrameStyle:
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
-                QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
+                QAbstractItemView *view = w->findChild<QAbstractItemView *>();
                 if (view) {
                     view->ensurePolished();
                     QRenderRule subRule = renderRule(view, PseudoElement_None);

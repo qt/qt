@@ -1412,7 +1412,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             bool isScrollBarVisible = false;
             int scrollBarWidth = 0;
-            QList<QScrollBar *> scrollBars = qFindChildren<QScrollBar *>(widget);
+            QList<QScrollBar *> scrollBars = widget->findChildren<QScrollBar *>();
             for (int i = 0; i < scrollBars.size(); ++i) {
                 QScrollBar *scrollBar = scrollBars.at(i);
                 if (scrollBar && scrollBar->orientation() == Qt::Vertical) {

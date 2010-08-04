@@ -319,7 +319,7 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    QList<QAbstractButton*>candidates = qFindChildren<QAbstractButton *>(parent);
+    QList<QAbstractButton*>candidates = parent->findChildren<QAbstractButton *>();
     if (autoExclusive) {
         for (int i = candidates.count() - 1; i >= 0; --i) {
             QAbstractButton *candidate = candidates.at(i);
