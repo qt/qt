@@ -224,7 +224,18 @@ void tst_QGraphicsSceneIndex::connectedToSceneRectChanged()
 {
 
     class MyScene : public QGraphicsScene
-    { public: using QGraphicsScene::receivers; };
+    {
+    public:
+#ifdef Q_CC_RVCT
+        //using keyword doesn't change visibility to public in RVCT2.2 compiler
+        inline int receivers(const char* signal) const
+        {
+            return QGraphicsScene::receivers(signal);
+        }
+#else
+        using QGraphicsScene::receivers;
+#endif
+    };
 
     MyScene scene; // Uses QGraphicsSceneBspTreeIndex by default.
     QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);

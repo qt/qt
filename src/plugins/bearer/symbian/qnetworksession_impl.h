@@ -64,7 +64,7 @@
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <comms-infras/cs_mobility_apiext.h>
 #endif
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
     #include <extendedconnpref.h>
 #endif
 
@@ -134,7 +134,8 @@ protected: // From CActive
 private Q_SLOTS:
     void configurationStateChanged(TUint32 accessPointId, TUint32 connMonId, QNetworkSession::State newState);
     void configurationRemoved(QNetworkConfigurationPrivatePointer config);
-    
+    void configurationAdded(QNetworkConfigurationPrivatePointer config);
+
 private:
     TUint iapClientCount(TUint aIAPId) const;
     quint64 transferredData(TUint dataType) const;

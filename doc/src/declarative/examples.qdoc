@@ -175,6 +175,7 @@ The examples can be found in Qt's \c examples/declarative directory.
 \list
 \o \l{declarative/modelviews/gridview}{GridView}
 \o \l{declarative/modelviews/listview}{ListView}
+\o \l{declarative/modelviews/pathview}{PathView}
 \o \l{declarative/modelviews/package}{Package}
 \o \l{declarative/modelviews/parallax}{Parallax}
 \o \l{declarative/modelviews/visualitemmodel}{VisualItemModel}
@@ -200,6 +201,11 @@ The examples can be found in Qt's \c examples/declarative directory.
 \list
 \o \l{declarative/threading/threadedlistmodel}{Threaded ListModel}
 \o \l{declarative/threading/workerscript}{WorkerScript}
+\endlist
+
+\section2 Screen orientation
+\list
+\o \l{declarative/screenorientation}{Example}
 \endlist
 
 \section2 SQL Local Storage

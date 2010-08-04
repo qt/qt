@@ -57,7 +57,7 @@ QT_MODULE(DBus)
 
 class QDBusMessage;
 
-class QDBUS_EXPORT QDBusError
+class Q_DBUS_EXPORT QDBusError
 {
 public:
     enum ErrorType {
@@ -115,7 +115,7 @@ private:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-QDBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
+Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
 #endif
 
 QT_END_NAMESPACE

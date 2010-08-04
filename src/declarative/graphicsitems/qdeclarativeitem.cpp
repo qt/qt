@@ -63,11 +63,9 @@
 #include <QtGui/qgraphicstransform.h>
 #include <qlistmodelinterface_p.h>
 
-QT_BEGIN_NAMESPACE
+#include <float.h>
 
-#ifndef FLT_MAX
-#define FLT_MAX 1E+37
-#endif
+QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transform QGraphicsTransform
@@ -91,7 +89,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlclass Translate QGraphicsTranslate
+    \qmlclass Translate QDeclarativeTranslate
     \since 4.7
     \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
@@ -420,12 +418,12 @@ void QDeclarativeItemKeyFilter::componentComplete()
 
 
 /*!
-    \qmlclass KeyNavigation
+    \qmlclass KeyNavigation QDeclarativeKeyNavigationAttached
     \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
     It is common in key-based UIs to use arrow keys to navigate
-    between focussed items.  The KeyNavigation property provides a
+    between focused items.  The KeyNavigation property provides a
     convenient way of specifying which item will gain focus
     when an arrow key is pressed.  The following example provides
     key navigation for a 2x2 grid of items.
@@ -513,8 +511,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::left() const
 void QDeclarativeKeyNavigationAttached::setLeft(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->left == i)
+        return;
     d->left = i;
-    emit changed();
+    emit leftChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::right() const
@@ -526,8 +526,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::right() const
 void QDeclarativeKeyNavigationAttached::setRight(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->right == i)
+        return;
     d->right = i;
-    emit changed();
+    emit rightChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::up() const
@@ -539,8 +541,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::up() const
 void QDeclarativeKeyNavigationAttached::setUp(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->up == i)
+        return;
     d->up = i;
-    emit changed();
+    emit upChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::down() const
@@ -552,8 +556,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::down() const
 void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->down == i)
+        return;
     d->down = i;
-    emit changed();
+    emit downChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
@@ -565,8 +571,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
 void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->tab == i)
+        return;
     d->tab = i;
-    emit changed();
+    emit tabChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
@@ -578,8 +586,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
 void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->backtab == i)
+        return;
     d->backtab = i;
-    emit changed();
+    emit backtabChanged();
 }
 
 /*!
@@ -714,7 +724,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 }
 
 /*!
-    \qmlclass Keys
+    \qmlclass Keys QDeclarativeKeysAttached
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
@@ -1422,17 +1432,12 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenChanged()
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
 
 /*!
-    \fn void QDeclarativeItem::wantsFocusChanged(bool)
+    \fn void QDeclarativeItem::activeFocusChanged(bool)
     \internal
 */
 
@@ -1514,6 +1519,9 @@ QDeclarativeItem::~QDeclarativeItem()
     \endqml
 
     The default transform origin is \c Item.Center.
+
+    To set an arbitrary transform origin point use the \l Scale or \l Rotation
+    transform elements.
 */
 
 /*!
@@ -2047,20 +2055,6 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 }
 
 /*!
-  \qmlproperty AnchorLine Item::top
-  \qmlproperty AnchorLine Item::bottom
-  \qmlproperty AnchorLine Item::left
-  \qmlproperty AnchorLine Item::right
-  \qmlproperty AnchorLine Item::horizontalCenter
-  \qmlproperty AnchorLine Item::verticalCenter
-  \qmlproperty AnchorLine Item::baseline
-
-  The anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
-*/
-
-/*!
   \qmlproperty AnchorLine Item::anchors.top
   \qmlproperty AnchorLine Item::anchors.bottom
   \qmlproperty AnchorLine Item::anchors.left
@@ -2192,6 +2186,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Rotation
 */
 
 /*!
@@ -2228,6 +2224,8 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
   }
   \endqml
   \endtable
+
+  \sa transform, Scale
 */
 
 /*!
@@ -2365,12 +2363,12 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
 }
 
 /*!
-    \qmlmethod Item::forceFocus()
+    \qmlmethod Item::forceActiveFocus()
 
-    Force the focus on the item.
-    This method sets the focus on the item and makes sure that all the focus scopes higher in the object hierarchy are given focus.
+    Force active focus on the item.
+    This method sets focus on the item and makes sure that all the focus scopes higher in the object hierarchy are also given focus.
 */
-void QDeclarativeItem::forceFocus()
+void QDeclarativeItem::forceActiveFocus()
 {
     setFocus(true);
     QGraphicsItem *parent = parentItem();
@@ -2407,8 +2405,19 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
     Q_Q(QDeclarativeItem);
     if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
-        emit q->wantsFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
-    emit q->focusChanged(flag);
+        emit q->activeFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
+
+    bool inScope = false;
+    QGraphicsItem *p = parent;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            inScope = true;
+            break;
+        }
+        p = p->parentItem();
+    }
+    if (!inScope)
+        emit q->focusChanged(flag);
 }
 
 /*! \internal */
@@ -2480,7 +2489,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   Item {
     filter: [
       Blur { ... },
-      Relection { ... }
+      Reflection { ... }
       ...
     ]
   }
@@ -2685,14 +2694,14 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
 
         if (event->type() == QEvent::FocusIn ||
             event->type() == QEvent::FocusOut) {
-            d->focusChanged(hasFocus());
+            d->focusChanged(hasActiveFocus());
         }
         return rv;
     }
 }
 
 /*!
-    \reimp
+    \internal
 
     Note that unlike QGraphicsItems, QDeclarativeItem::itemChange() is \e not called
     during initial widget polishing. Items wishing to optimize start-up construction
@@ -2841,6 +2850,41 @@ void QDeclarativeItem::setSmooth(bool smooth)
 }
 
 /*!
+  \property QDeclarativeItem::anchors
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::left
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::right
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::horizontalCenter
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::top
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::bottom
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::verticalCenter
+  \internal
+*/
+
+/*!
   \property QDeclarativeItem::focus
   \internal
 */
@@ -2856,7 +2900,42 @@ void QDeclarativeItem::setSmooth(bool smooth)
 */
 
 /*!
-  \property QDeclarativeItem::wantsFocus
+  \property QDeclarativeItem::activeFocus
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::baseline
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::data
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::resources
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::state
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::states
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transformOriginPoint
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transitions
   \internal
 */
 
@@ -3099,15 +3178,32 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 }
 
 /*!
-  \qmlproperty bool Item::wantsFocus
+  \qmlproperty bool Item::activeFocus
 
-  This property indicates whether the item has has an active focus request.
+  This property indicates whether the item has active focus.
 
-  \sa {qmlfocus}{Keyboard Focus}
+  An item with active focus will receive keyboard input,
+  or is a FocusScope ancestor of the item that will receive keyboard input.
+
+  Usually, activeFocus is gained by setting focus on an item and its enclosing
+  FocusScopes. In the following example \c input will have activeFocus.
+  \qml
+  Rectangle {
+      FocusScope {
+          focus: true
+          TextInput {
+              id: input
+              focus: true
+          }
+      }
+  }
+  \endqml
+
+  \sa focus, {qmlfocus}{Keyboard Focus}
 */
 
 /*! \internal */
-bool QDeclarativeItem::wantsFocus() const
+bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
     return focusItem() == this ||
@@ -3117,16 +3213,51 @@ bool QDeclarativeItem::wantsFocus() const
 
 /*!
   \qmlproperty bool Item::focus
-  This property indicates whether the item has keyboard input focus. Set this
-  property to true to request focus.
+  This property indicates whether the item has focus within the enclosing focus scope. If true, this item
+  will gain active focus when the enclosing focus scope gains active focus.
+  In the following example, \c input will be given active focus when \c scope gains active focus.
+  \qml
+  Rectangle {
+      FocusScope {
+          id: scope
+          TextInput {
+              id: input
+              focus: true
+          }
+      }
+  }
+  \endqml
 
-  \sa {qmlfocus}{Keyboard Focus}
+  For the purposes of this property, the top level item in the scene
+  is assumed to act like a focus scope, and to always have active focus
+  when the scene has focus. On a practical level, that means the following
+  QML will give active focus to \c input on startup.
+
+  \qml
+  Rectangle {
+      TextInput {
+          id: input
+          focus: true
+      }
+  }
+  \endqml
+
+  \sa activeFocus, {qmlfocus}{Keyboard Focus}
 */
 
 /*! \internal */
 bool QDeclarativeItem::hasFocus() const
 {
-    return QGraphicsItem::hasFocus();
+    Q_D(const QDeclarativeItem);
+    QGraphicsItem *p = d->parent;
+    while (p) {
+        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            return p->focusScopeItem() == this;
+        }
+        p = p->parentItem();
+    }
+
+    return hasActiveFocus() ? true : (!QGraphicsItem::parentItem() ? true : false);
 }
 
 /*! \internal */

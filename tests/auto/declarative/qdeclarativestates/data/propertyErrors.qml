@@ -5,6 +5,6 @@ Rectangle {
     color: "red"
     states: State {
         name: "blue"
-        PropertyChanges { target: myRectangle; colr: "blue"; wantsFocus: true }
+        PropertyChanges { target: myRectangle; colr: "blue"; activeFocus: true }
     }
 }

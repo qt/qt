@@ -78,6 +78,9 @@ void QDeclarativeDebugTrace::endRange(RangeType t)
 
 void QDeclarativeDebugTrace::addEventImpl(EventType event)
 {
+    if (!isEnabled())
+        return;
+
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)Event << (int)event;
@@ -86,6 +89,9 @@ void QDeclarativeDebugTrace::addEventImpl(EventType event)
 
 void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
 {
+    if (!isEnabled())
+        return;
+
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeStart << (int)range;
@@ -94,6 +100,9 @@ void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
 
 void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
 {
+    if (!isEnabled())
+        return;
+
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeData << (int)range << (QString)u.toString();
@@ -102,6 +111,9 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
 
 void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
 {
+    if (!isEnabled())
+        return;
+
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeEnd << (int)range;

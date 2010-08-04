@@ -1,3 +1,11 @@
+linux-armcc {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS.ARMCC
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.ARMCC
+} else:linux-gcce {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS.GCCE
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS.GCCE
+}
+
 # We need a target name without the INFIX'ed part, since flags are not infixed.
 equals(QMAKE_TARGET_PRODUCT, Qt4):clean_TARGET = $$replace(TARGET, "$${QT_LIBINFIX}$", "")
 else:clean_TARGET = $$TARGET
@@ -34,29 +42,31 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(Q
     DEFINES += __MARM_THUMB__
 }
 
-defineReplace(processSymbianLibraries) {
-    library = $$replace(1, "\\.dll$", ".dso")
-    library = $$replace(library, "^-l", "")
-    isFullName = $$find(library, \\.)
-    isEmpty(isFullName):library="$${library}.dso"
-    linux-gcce {
-        newLIB = "-l:$${library}"
-    } else {
-        newLIB = "$${library}"
-    }
-    contains(library, "\\.dso$")|contains(library, "\\.lib$"):PRE_TARGETDEPS += $$library
-    return($$newLIB)
+defineReplace(processSymbianLibrary) {
+    qt_library = $$replace(1, "\\.dll$", ".dso")
+    qt_library = $$replace(qt_library, "^-l", "")
+    isFullName = $$find(qt_library, \\.)
+    isEmpty(isFullName):qt_library="$${qt_library}.dso"
+    return($$qt_library)
 }
 
-for(libraries, LIBS) {
-    newLIBS += $$processSymbianLibraries($$libraries)
+qt_libraries = $$split(LIBS, " ")
+LIBS =
+for(qt_library, qt_libraries) {
+    qt_newLib = $$processSymbianLibrary($$qt_library)
+    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+    linux-gcce:qt_newLib = "-l:$$qt_newLib"
+    LIBS += $$qt_newLib
 }
-LIBS = $$newLIBS
-newLIBS =
-for(libraries, QMAKE_LIBS) {
-    newLIBS += $$processSymbianLibraries($$libraries)
+
+qt_libraries = $$split(QMAKE_LIBS, " ")
+QMAKE_LIBS =
+for(qt_library, qt_libraries) {
+    qt_newLib = $$processSymbianLibrary($$qt_library)
+    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+    linux-gcce:qt_newLib = "-l:$$qt_newLib"
+    QMAKE_LIBS += $$qt_newLib
 }
-QMAKE_LIBS = $$newLIBS
 
 elf2e32_LIBPATH =
 for(libPath, QMAKE_LIBDIR) {
@@ -131,6 +141,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
                       $$QMAKE_POST_LINK
+    silent:QMAKE_POST_LINK = @echo postlinking $@ && $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${baseTarget}.dso
@@ -154,7 +165,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     DEFINES += __DLL__
 }
 
-contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
+contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
     !isEmpty(QMAKE_POST_LINK) {
         # No way to honor the '@' :-(
         QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
@@ -175,8 +186,9 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
-                      && ln "$${symbianDestdir}/$${baseTarget}.exe" "$${symbianDestdir}/$${baseTarget}" \
+                      && $$QMAKE_COPY "$${symbianDestdir}/$${baseTarget}.exe" "$${symbianDestdir}/$${baseTarget}" \
                       $$QMAKE_POST_LINK
+    silent:QMAKE_POST_LINK = @echo postlinking $@ && $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.exe
     QMAKE_CLEAN += $${symbianDestdir}/$${baseTarget}
@@ -243,6 +255,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o$${symbianDestdir}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsg \
                             -i${QMAKE_FILE_NAME}
+silent:symbianresources.commands = @echo rcomp $< && $$symbianresources.commands
 symbianresources.dependency_type = TYPE_C
 symbianresources.CONFIG = no_link target_predeps
 
@@ -266,6 +279,7 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                   -o$${symbianDestdir}/$${baseResourceTarget}.rsc \
                                   -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg \
                                   -i$${baseResourceTarget}.rss
+    silent:symbianGenResource.commands = @echo rcomp $${baseResourceTarget}.rss && $$symbianGenResource.commands
     symbianGenResource.depends = $${baseResourceTarget}.rss
     PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
@@ -284,6 +298,7 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                      -o$${symbianDestdir}/$${baseResourceTarget}_reg.rsc \
                                      -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg \
                                      -i$${baseResourceTarget}_reg.rss
+    silent:symbianGenRegResource.commands = @echo rcomp $${baseResourceTarget}_reg.rss && $$symbianGenRegResource.commands
     symbianGenRegResource.depends = $${baseResourceTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
     PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg

@@ -63,9 +63,9 @@
     #include <cmpluginpacketdatadef.h>
     #include <cmplugindialcommondefs.h>
 #else
-    #include <apaccesspointitem.h>
-    #include <apdatahandler.h>
-    #include <aputils.h> 
+    #include <ApAccessPointItem.h>
+    #include <ApDataHandler.h>
+    #include <ApUtils.h>
 #endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -75,38 +75,12 @@ QT_BEGIN_NAMESPACE
 static const int KUserChoiceIAPId = 0;
 
 SymbianNetworkConfigurationPrivate::SymbianNetworkConfigurationPrivate()
-:   bearer(BearerUnknown), numericId(0), connectionId(0)
+:   numericId(0), connectionId(0)
 {
 }
 
 SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 {
-}
-
-QString SymbianNetworkConfigurationPrivate::bearerName() const
-{
-    QMutexLocker locker(&mutex);
-
-    switch (bearer) {
-    case BearerEthernet:
-        return QLatin1String("Ethernet");
-    case BearerWLAN:
-        return QLatin1String("WLAN");
-    case Bearer2G:
-        return QLatin1String("2G");
-    case BearerCDMA2000:
-        return QLatin1String("CDMA2000");
-    case BearerWCDMA:
-        return QLatin1String("WCDMA");
-    case BearerHSPA:
-        return QLatin1String("HSPA");
-    case BearerBluetooth:
-        return QLatin1String("Bluetooth");
-    case BearerWiMAX:
-        return QLatin1String("WiMAX");
-    default:
-        return QString();
-    }
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
@@ -146,7 +120,7 @@ void SymbianEngine::initialize()
 
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     cpPriv->name = "UserChoice";
-    cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+    cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
     cpPriv->state = QNetworkConfiguration::Discovered;
     cpPriv->isValid = true;
     cpPriv->id = QString::number(qHash(KUserChoiceIAPId));
@@ -270,7 +244,7 @@ void SymbianEngine::updateConfigurationsL()
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
 
-#ifdef SNAP_FUNCTIONALITY_AVAILABLE    
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
     // S60 version is >= Series60 3rd Edition Feature Pack 2
     TInt error = KErrNone;
     
@@ -291,14 +265,17 @@ void SymbianEngine::updateConfigurationsL()
             if (error == KErrNone) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ptr->id, ptr);
-
-                mutex.unlock();
-                // Emit configuration added. Connected slots may throw execptions
-                // which propagate here --> must be converted to leaves (standard
-                // std::exception would cause any TRAP trapping this function to terminate
-                // program).
-                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                mutex.lock();
+                if (!iFirstUpdate) {
+                    // Emit configuration added. Connected slots may throw execptions
+                    // which propagate here --> must be converted to leaves (standard
+                    // std::exception would cause any TRAP trapping this function to terminate
+                    // program).
+                    QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                    updateStatesToSnaps();
+                    mutex.unlock();
+                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                    mutex.lock();
+                }
             }
         }
         CleanupStack::PopAndDestroy(&connectionMethod);
@@ -311,7 +288,17 @@ void SymbianEngine::updateConfigurationsL()
     iCmManager.AllDestinationsL(destinations);
     for(int i = 0; i < destinations.Count(); i++) {
         RCmDestination destination;
-        destination = iCmManager.DestinationL(destinations[i]);
+
+        // Some destinatsions require ReadDeviceData -capability (MMS/WAP)
+        // The below function will leave in these cases. Don't. Proceed to
+        // next destination (if any).
+        TRAPD(error, destination = iCmManager.DestinationL(destinations[i]));
+        if (error == KErrPermissionDenied) {
+            continue;
+        } else {
+            User::LeaveIfError(error);
+        }
+
         CleanupClosePushL(destination);
         QString ident = QT_BEARERMGMT_CONFIGURATION_SNAP_PREFIX +
                         QString::number(qHash(destination.Id()));
@@ -319,12 +306,12 @@ void SymbianEngine::updateConfigurationsL()
             knownSnapConfigs.removeOne(ident);
         } else {
             SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
-    
+
             HBufC *pName = destination.NameLC();
             QT_TRYCATCH_LEAVING(cpPriv->name = QString::fromUtf16(pName->Ptr(),pName->Length()));
             CleanupStack::PopAndDestroy(pName);
             pName = NULL;
-    
+
             cpPriv->isValid = true;
             cpPriv->id = ident;
             cpPriv->numericId = destination.Id();
@@ -336,64 +323,75 @@ void SymbianEngine::updateConfigurationsL()
 
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             snapConfigurations.insert(ident, ptr);
-
-            mutex.unlock();
-            QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-            mutex.lock();
+            if (!iFirstUpdate) {
+                QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                updateStatesToSnaps();
+                mutex.unlock();
+                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                mutex.lock();
+            }
         }
-        QNetworkConfigurationPrivatePointer privSNAP = snapConfigurations.value(ident);
-            
+
+        // Loop through all connection methods in this SNAP
+        QMap<unsigned int, QNetworkConfigurationPrivatePointer> connections;
         for (int j=0; j < destination.ConnectionMethodCount(); j++) {
             RCmConnectionMethod connectionMethod = destination.ConnectionMethodL(j);
             CleanupClosePushL(connectionMethod);
-            
+
             TUint32 iapId = connectionMethod.GetIntAttributeL(CMManager::ECmIapId);
             QString iface = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(iapId));
             // Check that IAP can be found from accessPointConfigurations list
-            QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.value(iface);
-            if (!priv) {
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(iface);
+            if (!ptr) {
                 SymbianNetworkConfigurationPrivate *cpPriv = NULL;
                 TRAP(error, cpPriv = configFromConnectionMethodL(connectionMethod));
                 if (error == KErrNone) {
-                    QNetworkConfigurationPrivatePointer ptr(cpPriv);
+                    ptr = QNetworkConfigurationPrivatePointer(cpPriv);
                     accessPointConfigurations.insert(ptr->id, ptr);
 
-                    mutex.unlock();
-                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                    mutex.lock();
-
-                    QMutexLocker configLocker(&privSNAP->mutex);
-                    privSNAP->serviceNetworkMembers.append(ptr);
+                    if (!iFirstUpdate) {
+                        QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                        updateStatesToSnaps();
+                        mutex.unlock();
+                        QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                        mutex.lock();
+                    }
                 }
             } else {
                 knownConfigs.removeOne(iface);
-                // Check that IAP can be found from related SNAP's configuration list
-                bool iapFound = false;
-                QMutexLocker snapConfigLocker(&privSNAP->mutex);
-                for (int i = 0; i < privSNAP->serviceNetworkMembers.count(); i++) {
-                    if (toSymbianConfig(privSNAP->serviceNetworkMembers[i])->numericIdentifier() ==
-                        iapId) {
-                        iapFound = true;
-                        break;
-                    }
-                }
-                if (!iapFound)
-                    privSNAP->serviceNetworkMembers.append(priv);
             }
-            
+
+            if (ptr) {
+                unsigned int priority;
+                TRAPD(error, priority = destination.PriorityL(connectionMethod));
+                if (!error)
+                    connections.insert(priority, ptr);
+            }
+
             CleanupStack::PopAndDestroy(&connectionMethod);
         }
-        
+
+        QNetworkConfigurationPrivatePointer privSNAP = snapConfigurations.value(ident);
         QMutexLocker snapConfigLocker(&privSNAP->mutex);
-        if (privSNAP->serviceNetworkMembers.count() > 1) {
+
+        if (privSNAP->serviceNetworkMembers != connections) {
+            privSNAP->serviceNetworkMembers = connections;
+
             // Roaming is supported only if SNAP contains more than one IAP
-            privSNAP->roamingSupported = true;
+            privSNAP->roamingSupported = privSNAP->serviceNetworkMembers.count() > 1;
+
+            snapConfigLocker.unlock();
+
+            updateStatesToSnaps();
+
+            mutex.unlock();
+            QT_TRYCATCH_LEAVING(emit configurationChanged(privSNAP));
+            mutex.lock();
         }
-        
+
         CleanupStack::PopAndDestroy(&destination);
     }
     CleanupStack::PopAndDestroy(&destinations);
-    
 #else
     // S60 version is < Series60 3rd Edition Feature Pack 2
     CCommsDbTableView* pDbTView = ipCommsDB->OpenTableLC(TPtrC(IAP));
@@ -411,10 +409,13 @@ void SymbianEngine::updateConfigurationsL()
             if (readNetworkConfigurationValuesFromCommsDb(apId, cpPriv)) {
                 QNetworkConfigurationPrivatePointer ptr(cpPriv);
                 accessPointConfigurations.insert(ident, ptr);
-
-                mutex.unlock();
-                QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
-                mutex.lock();
+                if (!iFirstUpdate) {
+                    QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
+                    updateStatesToSnaps();
+                    mutex.unlock();
+                    QT_TRYCATCH_LEAVING(emit configurationAdded(ptr));
+                    mutex.lock();
+                }
             } else {
                 delete cpPriv;
             }
@@ -423,8 +424,9 @@ void SymbianEngine::updateConfigurationsL()
     }
     CleanupStack::PopAndDestroy(pDbTView);
 #endif
+
     QT_TRYCATCH_LEAVING(updateActiveAccessPoints());
-    
+
     foreach (const QString &oldIface, knownConfigs) {
         //remove non existing IAP
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
@@ -439,10 +441,13 @@ void SymbianEngine::updateConfigurationsL()
             QNetworkConfigurationPrivatePointer ptr2 = snapConfigurations.value(iface);
             // => Check if one of the IAPs of the SNAP is active
             QMutexLocker snapConfigLocker(&ptr2->mutex);
-            for (int i = 0; i < ptr2->serviceNetworkMembers.count(); ++i) {
-                if (toSymbianConfig(ptr2->serviceNetworkMembers[i])->numericIdentifier() ==
+            QMutableMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(ptr2->serviceNetworkMembers);
+            while (i.hasNext()) {
+                i.next();
+
+                if (toSymbianConfig(i.value())->numericIdentifier() ==
                     toSymbianConfig(ptr)->numericIdentifier()) {
-                    ptr2->serviceNetworkMembers.removeAt(i);
+                    i.remove();
                     break;
                 }
             }
@@ -463,6 +468,10 @@ void SymbianEngine::updateConfigurationsL()
     stopCommsDatabaseNotifications();
     TRAP_IGNORE(defaultConfig = defaultConfigurationL());
     startCommsDatabaseNotifications();
+
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+    updateStatesToSnaps();
+#endif
 }
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -482,25 +491,25 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
     TUint32 bearerId = connectionMethod.GetIntAttributeL(CMManager::ECmCommsDBBearerType);
     switch (bearerId) {
     case KCommDbBearerCSD:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case KCommDbBearerWcdma:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+        cpPriv->bearerType = QNetworkConfiguration::BearerWCDMA;
         break;
     case KCommDbBearerLAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     case KCommDbBearerVirtual:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     case KCommDbBearerPAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     case KCommDbBearerWLAN:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
+        cpPriv->bearerType = QNetworkConfiguration::BearerWLAN;
         break;
     default:
-        cpPriv->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        cpPriv->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
     
@@ -584,28 +593,28 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
     apNetworkConfiguration->roamingSupported = false;
     switch (pAPItem->BearerTypeL()) {
     case EApBearerTypeCSD:      
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case EApBearerTypeGPRS:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::Bearer2G;
         break;
     case EApBearerTypeHSCSD:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerHSPA;
         break;
     case EApBearerTypeCDMA:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerCDMA2000;
         break;
     case EApBearerTypeWLAN:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerWLAN;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerWLAN;
         break;
     case EApBearerTypeLAN:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     case EApBearerTypeLANModem:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerEthernet;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerEthernet;
         break;
     default:
-        apNetworkConfiguration->bearer = SymbianNetworkConfigurationPrivate::BearerUnknown;
+        apNetworkConfiguration->bearerType = QNetworkConfiguration::BearerUnknown;
         break;
     }
     
@@ -683,15 +692,21 @@ void SymbianEngine::updateActiveAccessPoints()
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // If IAP was not found, check if the update was about EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
+                // Change the ident correspondingly
+                if (ptr) {
+                    ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX +
+                            QString::number(qHash(toSymbianConfig(ptr)->numericIdentifier()));
+                }
             }
 #endif
             if (ptr) {
                 iConnectionMonitor.GetIntAttribute(connectionId, subConnectionCount, KConnectionStatus, connectionStatus, status);
-                User::WaitForRequest(status);          
+                User::WaitForRequest(status);
+
                 if (connectionStatus == KLinkLayerOpen) {
                     online = true;
                     inactiveConfigs.removeOne(ident);
@@ -791,15 +806,19 @@ void SymbianEngine::updateStatesToSnaps()
         // => Check if one of the IAPs of the SNAP is discovered or active
         //    => If one of IAPs is active, also SNAP is active
         //    => If one of IAPs is discovered but none of the IAPs is active, SNAP is discovered
-        for (int i=0; i<ptr->serviceNetworkMembers.count(); i++) {
-            QMutexLocker configLocker(&ptr->serviceNetworkMembers[i]->mutex);
+        QMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(ptr->serviceNetworkMembers);
+        while (i.hasNext()) {
+            i.next();
 
-            if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Active)
-                    == QNetworkConfiguration::Active) {
+            const QNetworkConfigurationPrivatePointer child = i.value();
+
+            QMutexLocker configLocker(&child->mutex);
+
+            if ((child->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
                 active = true;
                 break;
-            } else if ((ptr->serviceNetworkMembers[i]->state & QNetworkConfiguration::Discovered)
-                        == QNetworkConfiguration::Discovered) {
+            } else if ((child->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
                 discovered = true;
             }
         }
@@ -825,38 +844,38 @@ void SymbianEngine::updateMobileBearerToConfigs(TConnMonBearerInfo bearerInfo)
 
         SymbianNetworkConfigurationPrivate *p = toSymbianConfig(ptr);
 
-        if (p->bearer >= SymbianNetworkConfigurationPrivate::Bearer2G &&
-            p->bearer <= SymbianNetworkConfigurationPrivate::BearerHSPA) {
+        if (p->bearerType >= QNetworkConfiguration::Bearer2G &&
+            p->bearerType <= QNetworkConfiguration::BearerHSPA) {
             switch (bearerInfo) {
             case EBearerInfoCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoWCDMA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                p->bearerType = QNetworkConfiguration::BearerWCDMA;
                 break;
             case EBearerInfoCDMA2000:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerCDMA2000;
+                p->bearerType = QNetworkConfiguration::BearerCDMA2000;
                 break;
             case EBearerInfoGPRS:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoHSCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoEdgeGPRS:
-                p->bearer = SymbianNetworkConfigurationPrivate::Bearer2G;
+                p->bearerType = QNetworkConfiguration::Bearer2G;
                 break;
             case EBearerInfoWcdmaCSD:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerWCDMA;
+                p->bearerType = QNetworkConfiguration::BearerWCDMA;
                 break;
             case EBearerInfoHSDPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             case EBearerInfoHSUPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             case EBearerInfoHSxPA:
-                p->bearer = SymbianNetworkConfigurationPrivate::BearerHSPA;
+                p->bearerType = QNetworkConfiguration::BearerHSPA;
                 break;
             }
         }
@@ -1035,7 +1054,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // Check if status was regarding EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1060,7 +1079,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
             if (!ptr) {
                 // Check for EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1152,6 +1171,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
                 QT_TRYCATCH_LEAVING(changeConfigurationStateAtMaxTo(ptr, QNetworkConfiguration::Defined));
             }
         }
+        // Something has in IAPs, update states to SNAPs
+        updateStatesToSnaps();
         }
         break;
 
@@ -1168,7 +1189,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         User::WaitForRequest(status);
         QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
         if (!ptr) {
             // If IAP was not found, check if the update was about EasyWLAN
             ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1189,7 +1210,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
     }
 }
 
-#ifdef OCC_FUNCTIONALITY_AVAILABLE
+#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
 // Tries to derive configuration from EasyWLAN.
 // First checks if the interface brought up was EasyWLAN, then derives the real SSID,
 // and looks up configuration based on that one.
@@ -1224,6 +1245,45 @@ QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUi
     }
     return QNetworkConfigurationPrivatePointer();
 }
+
+bool SymbianEngine::easyWlanTrueIapId(TUint32& trueIapId)
+{
+    // Check if this is easy wlan id in the first place
+    if (trueIapId != iCmManager.EasyWlanIdL())
+        return false;
+
+    // Loop through all connections that connection monitor is aware
+    // and check for IAPs based on easy WLAN
+    TRequestStatus status;
+    TUint connectionCount;
+    iConnectionMonitor.GetConnectionCount(connectionCount, status);
+    User::WaitForRequest(status);
+    TUint connectionId;
+    TUint subConnectionCount;
+    TUint apId;
+    if (status.Int() == KErrNone) {
+        for (TUint i = 1; i <= connectionCount; i++) {
+            iConnectionMonitor.GetConnectionInfo(i, connectionId, subConnectionCount);
+            iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount,
+                                                KIAPId, apId, status);
+            User::WaitForRequest(status);
+            if (apId == trueIapId) {
+                QNetworkConfigurationPrivatePointer ptr =
+                    configurationFromEasyWlan(apId, connectionId);
+                if (ptr) {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+                    qDebug() << "QNCM easyWlanTrueIapId(), found true IAP ID: "
+                             << toSymbianConfig(ptr)->numericIdentifier();
+#endif
+                    trueIapId = toSymbianConfig(ptr)->numericIdentifier();
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 #endif
 
 // Sessions may use this function to report configuration state changes,

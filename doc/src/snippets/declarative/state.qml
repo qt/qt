@@ -46,24 +46,17 @@ Rectangle {
     width: 100; height: 100
     color: "black"
 
+    MouseArea { 
+        id: mouseArea
+        anchors.fill: parent 
+        onClicked: myRect.state == 'clicked' ? myRect.state = "" : myRect.state = 'clicked';
+    }
+
     states: [
         State {
             name: "clicked"
-            PropertyChanges {
-                target: myRect
-                color: "red"
-            }
+            PropertyChanges { target: myRect; color: "red" }
         }
     ]
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            if (myRect.state == "")     // i.e. the default state
-                myRect.state = "clicked";
-            else
-                myRect.state = "";
-        }
-    }
 }
 //![0]

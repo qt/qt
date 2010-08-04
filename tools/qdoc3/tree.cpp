@@ -469,8 +469,9 @@ void Tree::resolveInheritance(NamespaceNode *rootNode)
     for (int pass = 0; pass < 2; pass++) {
         NodeList::ConstIterator c = rootNode->childNodes().begin();
         while (c != rootNode->childNodes().end()) {
-            if ((*c)->type() == Node::Class)
+            if ((*c)->type() == Node::Class) {
                 resolveInheritance(pass, (ClassNode *) *c);
+            }
             else if ((*c)->type() == Node::Namespace) {
                 NamespaceNode *ns = static_cast<NamespaceNode*>(*c);
                 resolveInheritance(ns);
@@ -542,14 +543,16 @@ void Tree::resolveInheritance(int pass, ClassNode *classe)
 	while (b != bounds.end()) {
 	    ClassNode *baseClass = (ClassNode*)findNode((*b).basePath,
                                                         Node::Class);
-            if (!baseClass && (*b).parent)
+            if (!baseClass && (*b).parent) {
                 baseClass = (ClassNode*)findNode((*b).basePath,
                                                  Node::Class,
                                                  (*b).parent);
-	    if (baseClass)
+            }
+	    if (baseClass) {
 		classe->addBaseClass((*b).access,
                                      baseClass,
                                      (*b).dataTypeWithTemplateArgs);
+            }
 	    ++b;
 	}
     }

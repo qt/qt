@@ -74,7 +74,7 @@ public:
     QDeclarativeEngine(QObject *p = 0);
     virtual ~QDeclarativeEngine();
 
-    QDeclarativeContext *rootContext();
+    QDeclarativeContext *rootContext() const;
 
     void clearComponentCache();
 

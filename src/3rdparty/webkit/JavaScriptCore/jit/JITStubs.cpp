@@ -1330,17 +1330,18 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_get_by_id_self_fail)
         if (stubInfo->accessType == access_get_by_id_self) {
             ASSERT(!stubInfo->stubRoutine);
             polymorphicStructureList = new PolymorphicAccessStructureList(CodeLocationLabel(), stubInfo->u.getByIdSelf.baseObjectStructure);
-            stubInfo->initGetByIdSelfList(polymorphicStructureList, 2);
+            stubInfo->initGetByIdSelfList(polymorphicStructureList, 1);
         } else {
             polymorphicStructureList = stubInfo->u.getByIdSelfList.structureList;
             listIndex = stubInfo->u.getByIdSelfList.listSize;
-            stubInfo->u.getByIdSelfList.listSize++;
         }
+        if (listIndex < POLYMORPHIC_LIST_CACHE_SIZE) {
+            stubInfo->u.getByIdSelfList.listSize++;
+            JIT::compileGetByIdSelfList(callFrame->scopeChain()->globalData, codeBlock, stubInfo, polymorphicStructureList, listIndex, asCell(baseValue)->structure(), ident, slot, slot.cachedOffset());
 
-        JIT::compileGetByIdSelfList(callFrame->scopeChain()->globalData, codeBlock, stubInfo, polymorphicStructureList, listIndex, asCell(baseValue)->structure(), ident, slot, slot.cachedOffset());
-
-        if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
-            ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_generic));
+            if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
+                ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_generic));
+        }
     } else
         ctiPatchCallByReturnAddress(callFrame->codeBlock(), STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_generic));
     return JSValue::encode(result);
@@ -1365,13 +1366,14 @@ static PolymorphicAccessStructureList* getPolymorphicAccessStructureListSlot(Str
     case access_get_by_id_proto_list:
         prototypeStructureList = stubInfo->u.getByIdProtoList.structureList;
         listIndex = stubInfo->u.getByIdProtoList.listSize;
-        stubInfo->u.getByIdProtoList.listSize++;
+        if (listIndex < POLYMORPHIC_LIST_CACHE_SIZE)
+            stubInfo->u.getByIdProtoList.listSize++;
         break;
     default:
         ASSERT_NOT_REACHED();
     }
     
-    ASSERT(listIndex < POLYMORPHIC_LIST_CACHE_SIZE);
+    ASSERT(listIndex <= POLYMORPHIC_LIST_CACHE_SIZE);
     return prototypeStructureList;
 }
 
@@ -1446,21 +1448,24 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_get_by_id_proto_list)
 
         int listIndex;
         PolymorphicAccessStructureList* prototypeStructureList = getPolymorphicAccessStructureListSlot(stubInfo, listIndex);
+        if (listIndex < POLYMORPHIC_LIST_CACHE_SIZE) {
+            JIT::compileGetByIdProtoList(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, prototypeStructureList, listIndex, structure, slotBaseObject->structure(), propertyName, slot, offset);
 
-        JIT::compileGetByIdProtoList(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, prototypeStructureList, listIndex, structure, slotBaseObject->structure(), propertyName, slot, offset);
-
-        if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
-            ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_list_full));
+            if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
+                ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_list_full));
+        }
     } else if (size_t count = normalizePrototypeChain(callFrame, baseValue, slot.slotBase(), propertyName, offset)) {
         ASSERT(!asCell(baseValue)->structure()->isDictionary());
         int listIndex;
         PolymorphicAccessStructureList* prototypeStructureList = getPolymorphicAccessStructureListSlot(stubInfo, listIndex);
+        
+        if (listIndex < POLYMORPHIC_LIST_CACHE_SIZE) {
+            StructureChain* protoChain = structure->prototypeChain(callFrame);
+            JIT::compileGetByIdChainList(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, prototypeStructureList, listIndex, structure, protoChain, count, propertyName, slot, offset);
 
-        StructureChain* protoChain = structure->prototypeChain(callFrame);
-        JIT::compileGetByIdChainList(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, prototypeStructureList, listIndex, structure, protoChain, count, propertyName, slot, offset);
-
-        if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
-            ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_list_full));
+            if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
+                ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_list_full));
+        }
     } else
         ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_fail));
 
@@ -2129,6 +2134,7 @@ DEFINE_STUB_FUNCTION(int, op_load_varargs)
     if (!arguments) {
         int providedParams = callFrame->registers()[RegisterFile::ArgumentCount].i() - 1;
         argCount = providedParams;
+        argCount = min(argCount, static_cast<uint32_t>(Arguments::MaxArguments));
         int32_t sizeDelta = argsOffset + argCount + RegisterFile::CallFrameHeaderSize;
         Register* newEnd = callFrame->registers() + sizeDelta;
         if (!registerFile->grow(newEnd) || ((newEnd - callFrame->registers()) != sizeDelta)) {
@@ -2164,6 +2170,7 @@ DEFINE_STUB_FUNCTION(int, op_load_varargs)
         if (asObject(arguments)->classInfo() == &Arguments::info) {
             Arguments* argsObject = asArguments(arguments);
             argCount = argsObject->numProvidedArguments(callFrame);
+            argCount = min(argCount, static_cast<uint32_t>(Arguments::MaxArguments));
             int32_t sizeDelta = argsOffset + argCount + RegisterFile::CallFrameHeaderSize;
             Register* newEnd = callFrame->registers() + sizeDelta;
             if (!registerFile->grow(newEnd) || ((newEnd - callFrame->registers()) != sizeDelta)) {
@@ -2174,6 +2181,7 @@ DEFINE_STUB_FUNCTION(int, op_load_varargs)
         } else if (isJSArray(&callFrame->globalData(), arguments)) {
             JSArray* array = asArray(arguments);
             argCount = array->length();
+            argCount = min(argCount, static_cast<uint32_t>(Arguments::MaxArguments));
             int32_t sizeDelta = argsOffset + argCount + RegisterFile::CallFrameHeaderSize;
             Register* newEnd = callFrame->registers() + sizeDelta;
             if (!registerFile->grow(newEnd) || ((newEnd - callFrame->registers()) != sizeDelta)) {
@@ -2184,6 +2192,7 @@ DEFINE_STUB_FUNCTION(int, op_load_varargs)
         } else if (asObject(arguments)->inherits(&JSArray::info)) {
             JSObject* argObject = asObject(arguments);
             argCount = argObject->get(callFrame, callFrame->propertyNames().length).toUInt32(callFrame);
+            argCount = min(argCount, static_cast<uint32_t>(Arguments::MaxArguments));
             int32_t sizeDelta = argsOffset + argCount + RegisterFile::CallFrameHeaderSize;
             Register* newEnd = callFrame->registers() + sizeDelta;
             if (!registerFile->grow(newEnd) || ((newEnd - callFrame->registers()) != sizeDelta)) {

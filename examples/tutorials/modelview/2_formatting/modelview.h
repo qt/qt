@@ -43,7 +43,7 @@
 
 #include <QtGui/QMainWindow>
 
-class QTableView; //forward declaration
+QT_FORWARD_DECLARE_CLASS(QTableView)
 
 class ModelView : public QMainWindow
 {

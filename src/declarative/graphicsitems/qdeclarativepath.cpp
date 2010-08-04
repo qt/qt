@@ -474,6 +474,7 @@ void QDeclarativeCurve::setX(qreal x)
 {
     if (_x != x) {
         _x = x;
+        emit xChanged();
         emit changed();
     }
 }
@@ -487,6 +488,7 @@ void QDeclarativeCurve::setY(qreal y)
 {
     if (_y != y) {
         _y = y;
+        emit yChanged();
         emit changed();
     }
 }
@@ -533,6 +535,13 @@ void QDeclarativeCurve::setY(qreal y)
 /*!
     \qmlproperty string PathAttribute::name
     the name of the attribute to change.
+
+    This attribute will be available to the delegate as PathView.<name>
+
+    Note that using an existing Item property name such as "opacity" as an
+    attribute is allowed.  This is because path attributes add a new
+    \l{qdeclarativeintroduction.html#attached-properties} {Attached Property}
+    which in no way clashes with existing properties.
 */
 
 /*!
@@ -569,6 +578,7 @@ void QDeclarativePathAttribute::setValue(qreal value)
 {
     if (_value != value) {
         _value = value;
+        emit valueChanged();
         emit changed();
     }
 }
@@ -671,6 +681,7 @@ void QDeclarativePathQuad::setControlX(qreal x)
 {
     if (_controlX != x) {
         _controlX = x;
+        emit controlXChanged();
         emit changed();
     }
 }
@@ -688,6 +699,7 @@ void QDeclarativePathQuad::setControlY(qreal y)
 {
     if (_controlY != y) {
         _controlY = y;
+        emit controlYChanged();
         emit changed();
     }
 }
@@ -754,6 +766,7 @@ void QDeclarativePathCubic::setControl1X(qreal x)
 {
     if (_control1X != x) {
         _control1X = x;
+        emit control1XChanged();
         emit changed();
     }
 }
@@ -767,6 +780,7 @@ void QDeclarativePathCubic::setControl1Y(qreal y)
 {
     if (_control1Y != y) {
         _control1Y = y;
+        emit control1YChanged();
         emit changed();
     }
 }
@@ -786,6 +800,7 @@ void QDeclarativePathCubic::setControl2X(qreal x)
 {
     if (_control2X != x) {
         _control2X = x;
+        emit control2XChanged();
         emit changed();
     }
 }
@@ -799,6 +814,7 @@ void QDeclarativePathCubic::setControl2Y(qreal y)
 {
     if (_control2Y != y) {
         _control2Y = y;
+        emit control2YChanged();
         emit changed();
     }
 }

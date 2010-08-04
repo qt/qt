@@ -95,3 +95,4 @@ contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
 
 # SIMD
 SSE2_SOURCES += image/qimage_sse2.cpp
+SSSE3_SOURCES += image/qimage_ssse3.cpp

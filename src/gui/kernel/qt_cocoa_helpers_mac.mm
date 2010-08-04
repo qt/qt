@@ -685,9 +685,11 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     unsigned int info = 0;
     if ([event type] == NSKeyDown) {
         NSString *characters = [event characters];
-        unichar value = [characters characterAtIndex:0];
-        qt_keymapper_private()->updateKeyMap(0, key_event, (void *)&value);
-        info = value;
+        if ([characters length]) {
+            unichar value = [characters characterAtIndex:0];
+            qt_keymapper_private()->updateKeyMap(0, key_event, (void *)&value);
+            info = value;
+        }
     }
 
     // Redirect keys to alien widgets.
@@ -1527,6 +1529,22 @@ void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window)
         [theWindow display];
     }
 }
+
+void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
+{
+    if (!childWidget)
+        return;
+
+    QWidget *parent = childWidget->parentWidget();
+    if (childWidget->isWindow() && parent) {
+        if ([[qt_mac_window_for(parent) childWindows] containsObject:qt_mac_window_for(childWidget)]) {
+            QWidgetPrivate *d = qt_widget_private(childWidget);
+            d->setSubWindowStacking(false);
+            d->setSubWindowStacking(true);
+        }
+    }
+}
+
 #endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE

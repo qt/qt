@@ -53,24 +53,6 @@ symbian: {
     DEPLOYMENT = partial_upgrade $$DEPLOYMENT
 }
 
-mmx {
-    DEFINES += QT_HAVE_MMX
-}
-3dnow {
-    DEFINES += QT_HAVE_3DNOW
-}
-sse {
-    DEFINES += QT_HAVE_SSE
-    DEFINES += QT_HAVE_MMXEXT
-}
-sse2 {
-    DEFINES += QT_HAVE_SSE2
-}
-iwmmxt {
-    DEFINES += QT_HAVE_IWMMXT
-}
-neon {
-    DEFINES += QT_HAVE_NEON
-    QMAKE_CXXFLAGS *= -mfpu=neon
-}
+neon: QMAKE_CXXFLAGS *= -mfpu=neon
+
 

@@ -264,7 +264,7 @@ QStringList QScanThread::foundNetwork(const QString &id, const QString &name, co
         ptr->id = id;
         ptr->state = state;
         ptr->type = QNetworkConfiguration::InternetAccessPoint;
-        ptr->bearer = QLatin1String("WLAN");
+        ptr->bearerType = QNetworkConfiguration::BearerWLAN;
         ptr->purpose = purpose;
 
         fetchedConfigurations.append( ptr);
@@ -789,8 +789,8 @@ void QCoreWlanEngine::networksChanged()
                 changed = true;
             }
 
-            if (ptr->bearer != cpPriv->bearer) {
-                ptr->bearer = cpPriv->bearer;
+            if (ptr->bearerType != cpPriv->bearerType) {
+                ptr->bearerType = cpPriv->bearerType;
                 changed = true;
             }
 

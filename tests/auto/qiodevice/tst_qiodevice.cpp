@@ -72,6 +72,7 @@ private slots:
     void read_QByteArray();
     void unget();
     void peek();
+    void peekAndRead();
     void getch();
     void putch();
 
@@ -350,6 +351,31 @@ void tst_QIODevice::peek()
 	device->read(buf, 4);
 	QCOMPARE(static_cast<const char *>(buf), "ZXCV");
 	QCOMPARE(device->pos(), qint64(4));
+    }
+    QFile::remove("peektestfile");
+}
+
+void tst_QIODevice::peekAndRead()
+{
+    QByteArray originalData;
+    for (int i=0;i<1000;i++)
+        originalData += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    QBuffer buffer;
+    QFile::remove("peektestfile");
+    QFile file("peektestfile");
+
+    for (int i = 0; i < 2; ++i) {
+        QByteArray readData;
+        QIODevice *device = i ? (QIODevice *)&file : (QIODevice *)&buffer;
+        device->open(QBuffer::ReadWrite);
+        device->write(originalData);
+        device->seek(0);
+        while (!device->atEnd()) {
+            char peekIn[26];
+            device->peek(peekIn, 26);
+            readData += device->read(26);
+        }
+        QCOMPARE(readData, originalData);
     }
     QFile::remove("peektestfile");
 }

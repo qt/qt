@@ -70,7 +70,7 @@ int main(int argc, char ** argv)
         for (int ii = 0; ii < party->guestCount(); ++ii)
             qWarning() << "   " << party->guest(ii)->name();
     } else {
-        qWarning() << "An error occured";
+        qWarning() << "An error occurred";
     }
 
     return 0;

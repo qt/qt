@@ -1,3 +1,90 @@
+2010-07-02  Peter Varga  <pvarga@inf.u-szeged.hu>
+
+        Reviewed by Oliver Hunt.
+
+        The alternativeFrameLocation value is wrong in the emitDisjunction function in
+        case of PatternTerm::TypeParentheticalAssertion. This value needs to be
+        computed from term.frameLocation instead of term.inputPosition. This mistake caused glibc
+        memory corruption in some cases.
+        Layout test added for checking of TypeParentheticalAssertion case.
+        https://bugs.webkit.org/show_bug.cgi?id=41458
+
+        * yarr/RegexInterpreter.cpp:
+        (JSC::Yarr::ByteCompiler::emitDisjunction):
+
+2010-07-03  Yong Li  <yoli@rim.com>
+
+        Reviewed by Darin Adler.
+
+        Make Arguments::MaxArguments clamping work for numbers >= 0x80000000 in
+        the interpreter as well as the JIT.
+
+        https://bugs.webkit.org/show_bug.cgi?id=41351
+        rdar://problem/8142141
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute): Fix signed integer overflow problem
+        in op_load_varargs handling. 0xFFFFFFFF was read as -1.
+
+2010-07-04  Mark Rowe  <mrowe@apple.com>
+
+        Build fix after r62456.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute): Be slightly more consistent in using uint32_t to prevent
+        warnings about comparisons between signed and unsigned types, and attempts to call an overload
+        of std::min that doesn't exist.
+
+2010-07-02  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Gavin Barraclough.
+
+        Clamp the number of arguments supported by function.apply
+        https://bugs.webkit.org/show_bug.cgi?id=41351
+        <rdar://problem/8142141>
+
+        Add clamping logic to function.apply similar to that
+        enforced by firefox.  We have a smaller clamp than
+        firefox as our calling convention means that stack
+        usage is proportional to argument count -- the firefox
+        limit is larger than you could actually call.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute):
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        * runtime/Arguments.h:
+        (JSC::Arguments::):
+
+2010-07-01  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Improve reentrancy logic in polymorphic cache stubs
+        <https://bugs.webkit.org/show_bug.cgi?id=41482>
+        <rdar://problem/8094380>
+
+        Make the polymorphic cache stubs handle reentrancy
+        better.
+
+        * jit/JITStubs.cpp:
+        (JSC::DEFINE_STUB_FUNCTION):
+        (JSC::getPolymorphicAccessStructureListSlot):
+
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * runtime/TimeoutChecker.h: Add getter for the timeout interval
+
 2010-05-18  Anders Carlsson  <andersca@apple.com>
 
         Reviewed by Sam Weinig.

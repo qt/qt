@@ -213,8 +213,7 @@ QString QDeclarativeTextEdit::text() const
     Sets the letter spacing for the font.
 
     Letter spacing changes the default spacing between individual letters in the font.
-    A value of 100 will keep the spacing unchanged; a value of 200 will enlarge the spacing after a character by
-    the width of the character itself.
+    A positive value increases the letter spacing by the corresponding pixels; a negative value decreases the spacing.
 */
 
 /*!
@@ -257,7 +256,6 @@ void QDeclarativeTextEdit::setText(const QString &text)
     Q_D(QDeclarativeTextEdit);
     if (QDeclarativeTextEdit::text() == text)
         return;
-    d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -625,7 +623,7 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos)
     \qmlproperty bool TextEdit::cursorVisible
     If true the text edit shows a cursor.
 
-    This property is set and unset when the text edit gets focus, but it can also
+    This property is set and unset when the text edit gets active focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
 */
 bool QDeclarativeTextEdit::isCursorVisible() const
@@ -784,9 +782,9 @@ QString QDeclarativeTextEdit::selectedText() const
 }
 
 /*!
-    \qmlproperty bool TextEdit::focusOnPress
+    \qmlproperty bool TextEdit::activeFocusOnPress
 
-    Whether the TextEdit should gain focus on a mouse press. By default this is
+    Whether the TextEdit should gain active focus on a mouse press. By default this is
     set to true.
 */
 bool QDeclarativeTextEdit::focusOnPress() const
@@ -801,13 +799,13 @@ void QDeclarativeTextEdit::setFocusOnPress(bool on)
     if (d->focusOnPress == on)
         return;
     d->focusOnPress = on;
-    emit focusOnPressChanged(d->focusOnPress);
+    emit activeFocusOnPressChanged(d->focusOnPress);
 }
 
 /*!
     \qmlproperty bool TextEdit::persistentSelection
 
-    Whether the TextEdit should keep the selection visible when it loses focus to another
+    Whether the TextEdit should keep the selection visible when it loses active focus to another
     item in the scene. By default this is set to true;
 */
 bool QDeclarativeTextEdit::persistentSelection() const
@@ -1107,15 +1105,15 @@ void QDeclarativeTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeTextEdit);
     if (d->focusOnPress){
-        bool hadFocus = hasFocus();
-        forceFocus();
+        bool hadActiveFocus = hasActiveFocus();
+        forceActiveFocus();
         if (d->showInputPanelOnFocus) {
-            if (hasFocus() && hadFocus && !isReadOnly()) {
+            if (hasActiveFocus() && hadActiveFocus && !isReadOnly()) {
                 // re-open input panel on press if already focused
                 openSoftwareInputPanel();
             }
         } else { // show input panel on click
-            if (hasFocus() && !hadFocus) {
+            if (hasActiveFocus() && !hadActiveFocus) {
                 d->clickCausedFocus = true;
             }
         }
@@ -1292,9 +1290,11 @@ void QDeclarativeTextEditPrivate::init()
 
 void QDeclarativeTextEdit::q_textChanged()
 {
+    Q_D(QDeclarativeTextEdit);
+    d->text = text();
     updateSize();
     updateMicroFocus();
-    emit textChanged(text());
+    emit textChanged(d->text);
 }
 
 void QDeclarativeTextEdit::moveCursorDelegate()
@@ -1428,10 +1428,10 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
     Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
-    the panels are automatically opened when TextEdit element gains focus. Input panels are
-    always closed if no editor owns focus.
+    the panels are automatically opened when TextEdit element gains active focus. Input panels are
+    always closed if no editor has active focus.
 
-    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    You can disable the automatic behavior by setting the property \c activeFocusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
     the behavior you want.
 
@@ -1442,12 +1442,12 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            focusOnPress: false
+            activeFocusOnPress: false
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (!textEdit.focus) {
-                        textEdit.focus = true;
+                    if (!textEdit.activeFocus) {
+                        textEdit.forceActiveFocus();
                         textEdit.openSoftwareInputPanel();
                     } else {
                         textEdit.focus = false;
@@ -1479,10 +1479,10 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
 
     By default the opening of input panels follows the platform style. On Symbian^1 and
     Symbian^3 -based devices the panels are opened by clicking TextEdit. On other platforms
-    the panels are automatically opened when TextEdit element gains focus. Input panels are
-    always closed if no editor owns focus.
+    the panels are automatically opened when TextEdit element gains active focus. Input panels are
+    always closed if no editor has active focus.
 
-    You can disable the automatic behavior by setting the property \c focusOnPress to false
+    You can disable the automatic behavior by setting the property \c activeFocusOnPress to false
     and use functions openSoftwareInputPanel() and closeSoftwareInputPanel() to implement
     the behavior you want.
 
@@ -1493,12 +1493,12 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
         TextEdit {
             id: textEdit
             text: "Hello world!"
-            focusOnPress: false
+            activeFocusOnPress: false
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    if (!textEdit.focus) {
-                        textEdit.focus = true;
+                    if (!textEdit.activeFocus) {
+                        textEdit.forceActiveFocus();
                         textEdit.openSoftwareInputPanel();
                     } else {
                         textEdit.focus = false;

@@ -44,7 +44,6 @@
 
 #include "CodeBlock.h"
 #include "Error.h"
-#include "JSLock.h"
 #include "Interpreter.h"
 
 #include "PrototypeFunction.h"
@@ -152,8 +151,7 @@ QT_BEGIN_NAMESPACE
   evaluation caused an exception by calling hasUncaughtException(). In
   that case, you can call toString() on the error object to obtain an
   error message. The current uncaught exception is also available
-  through uncaughtException(). You can obtain a human-readable
-  backtrace of the exception with uncaughtExceptionBacktrace().
+  through uncaughtException().
   Calling clearExceptions() will cause any uncaught exceptions to be
   cleared.
 
@@ -1003,7 +1001,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
-    JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
     while (freeScriptValues) {
@@ -1292,7 +1289,6 @@ bool QScriptEnginePrivate::isCollecting() const
 
 void QScriptEnginePrivate::collectGarbage()
 {
-    JSC::JSLock lock(false);
     QScript::APIShim shim(this);
     globalData->heap.collectAllGarbage();
 }
@@ -1322,7 +1318,6 @@ JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t
                                                   bool &compile)
 {
     Q_Q(QScriptEngine);
-    JSC::JSLock lock(false); // ### hmmm
     QBoolBlocker inEvalBlocker(inEval, true);
     q->currentContext()->activationObject(); //force the creation of a context for native function;
 
@@ -2800,8 +2795,7 @@ void QScriptEnginePrivate::popContext()
 
   The exception state is cleared when evaluate() is called.
 
-  \sa uncaughtException(), uncaughtExceptionLineNumber(),
-      uncaughtExceptionBacktrace()
+  \sa uncaughtException(), uncaughtExceptionLineNumber()
 */
 bool QScriptEngine::hasUncaughtException() const
 {
@@ -2819,7 +2813,6 @@ bool QScriptEngine::hasUncaughtException() const
   message.
 
   \sa hasUncaughtException(), uncaughtExceptionLineNumber(),
-      uncaughtExceptionBacktrace()
 */
 QScriptValue QScriptEngine::uncaughtException() const
 {
@@ -2839,7 +2832,7 @@ QScriptValue QScriptEngine::uncaughtException() const
   Line numbers are 1-based, unless a different base was specified as
   the second argument to evaluate().
 
-  \sa hasUncaughtException(), uncaughtExceptionBacktrace()
+  \sa hasUncaughtException()
 */
 int QScriptEngine::uncaughtExceptionLineNumber() const
 {
@@ -2851,7 +2844,7 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 /*!
   Returns a human-readable backtrace of the last uncaught exception.
 
-  Each line is of the form \c{<function-name>(<arguments>)@<file-name>:<line-number>}.
+  It is in the form \c{<function-name>()@<file-name>:<line-number>}.
 
   \sa uncaughtException()
 */
@@ -4196,6 +4189,7 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
                  "cannot set agent belonging to different engine");
         return;
     }
+    QScript::APIShim shim(d);
     if (d->activeAgent)
         QScriptEngineAgentPrivate::get(d->activeAgent)->detach();
     d->activeAgent = agent;

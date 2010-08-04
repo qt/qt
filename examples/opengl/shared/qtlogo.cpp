@@ -327,7 +327,7 @@ RectTorus::RectTorus(Geometry *g, qreal iRad, qreal oRad, qreal depth, int k)
     QVector<QVector3D> in_back = extrude(inside, depth);
     QVector<QVector3D> out_back = extrude(outside, depth);
 
-    // Create front, back and sides as seperate patches so that smooth normals
+    // Create front, back and sides as separate patches so that smooth normals
     // are generated for the curving sides, but a faceted edge is created between
     // sides and front/back
     Patch *front = new Patch(g);

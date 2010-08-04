@@ -53,8 +53,8 @@ QT_MODULE(Declarative)
 class Q_AUTOTEST_EXPORT QDeclarativeViewSection : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY changed)
-    Q_PROPERTY(SectionCriteria criteria READ criteria WRITE setCriteria NOTIFY changed)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY propertyChanged)
+    Q_PROPERTY(SectionCriteria criteria READ criteria WRITE setCriteria NOTIFY criteriaChanged)
     Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_ENUMS(SectionCriteria)
 public:
@@ -73,7 +73,8 @@ public:
     QString sectionString(const QString &value);
 
 Q_SIGNALS:
-    void changed();
+    void propertyChanged();
+    void criteriaChanged();
     void delegateChanged();
 
 private:

@@ -60,16 +60,11 @@ IcdNetworkConfigurationPrivate::~IcdNetworkConfigurationPrivate()
 {
 }
 
-QString IcdNetworkConfigurationPrivate::bearerName() const
+QString IcdNetworkConfigurationPrivate::bearerTypeName() const
 {
-    if (iap_type == QLatin1String("WLAN_INFRA") ||
-        iap_type == QLatin1String("WLAN_ADHOC")) {
-        return QLatin1String("WLAN");
-    } else if (iap_type == QLatin1String("GPRS")) {
-        return QLatin1String("HSPA");
-    } else {
-        return iap_type;
-    }
+    QMutexLocker locker(&mutex);
+
+    return iap_type;
 }
 
 /* The IapAddTimer is a helper class that makes sure we update
@@ -222,7 +217,7 @@ void IapMonitor::iapRemoved(const QString &iap_id)
 }
 
 QIcdEngine::QIcdEngine(QObject *parent)
-:   QBearerEngine(parent), iapMonitor(new IapMonitor), m_dbusInterface(0),
+:   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0),
     firstUpdate(true), m_scanGoingOn(false)
 {
 }
@@ -263,6 +258,7 @@ void QIcdEngine::initialize()
     startListeningStateSignalsForAllConnections();
 
     /* Turn on IAP add/remove monitoring */
+    iapMonitor = new IapMonitor;
     iapMonitor->setup(this);
 
     /* We create a default configuration which is a pseudo config */
@@ -400,6 +396,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
                     ptr->mutex.lock();
                     ptr->id = iap_id;
                     toIcdConfig(ptr)->iap_type = iap_type;
+                    ptr->bearerType = bearerTypeFromIapType(iap_type);
                     toIcdConfig(ptr)->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
                     toIcdConfig(ptr)->network_id = ssid;
                     toIcdConfig(ptr)->service_id = saved_iap.value("service_id").toString();
@@ -424,6 +421,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
                 cpPriv->isValid = true;
                 cpPriv->id = iap_id;
                 cpPriv->iap_type = iap_type;
+                cpPriv->bearerType = bearerTypeFromIapType(iap_type);
                 cpPriv->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
                 cpPriv->service_id = saved_iap.value("service_id").toString();
                 cpPriv->service_type = saved_iap.value("service_type").toString();
@@ -480,6 +478,7 @@ void QIcdEngine::addConfiguration(QString& iap_id)
             ptr->isValid = true;
             if (toIcdConfig(ptr)->iap_type != iap_type) {
                 toIcdConfig(ptr)->iap_type = iap_type;
+                ptr->bearerType = bearerTypeFromIapType(iap_type);
                 update_needed = true;
             }
             if (iap_type.startsWith(QLatin1String("WLAN"))) {
@@ -522,8 +521,6 @@ void QIcdEngine::addConfiguration(QString& iap_id)
 
 void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
 {
-    QMutexLocker locker(&mutex);
-
     /* Contains all known iap_ids from storage */
     QList<QString> knownConfigs = accessPointConfigurations.keys();
 
@@ -580,6 +577,7 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
             cpPriv->network_id = ssid;
             cpPriv->network_attrs = getNetworkAttrs(true, iap_id, iap_type, QString());
             cpPriv->iap_type = iap_type;
+            cpPriv->bearerType = bearerTypeFromIapType(iap_type);
             cpPriv->service_id = saved_ap.value("service_id").toString();
             cpPriv->service_type = saved_ap.value("service_type").toString();
             cpPriv->type = QNetworkConfiguration::InternetAccessPoint;
@@ -588,9 +586,9 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             accessPointConfigurations.insert(iap_id, ptr);
 
-            locker.unlock();
+            mutex.unlock();
             emit configurationAdded(ptr);
-            locker.relock();
+            mutex.lock();
 
 #ifdef BEARER_MANAGEMENT_DEBUG
             qDebug("IAP: %s, name: %s, ssid: %s, added to known list",
@@ -643,9 +641,9 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
                     ptr->mutex.unlock();
 
                     if (changed) {
-                        locker.unlock();
+                        mutex.unlock();
                         emit configurationChanged(ptr);
-                        locker.relock();
+                        mutex.lock();
                     }
 
                     if (!ap.scan.network_type.startsWith(QLatin1String("WLAN")))
@@ -688,6 +686,7 @@ rescan_list:
                     cpPriv->id = scanned_ssid.data();  // Note: id is now ssid, it should be set to IAP id if the IAP is saved
                     cpPriv->network_id = scanned_ssid;
                     cpPriv->iap_type = ap.scan.network_type;
+                    cpPriv->bearerType = bearerTypeFromIapType(cpPriv->iap_type);
                     cpPriv->network_attrs = ap.scan.network_attrs;
                     cpPriv->service_id = ap.scan.service_id;
                     cpPriv->service_type = ap.scan.service_type;
@@ -703,9 +702,9 @@ rescan_list:
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
                     accessPointConfigurations.insert(ptr->id, ptr);
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationAdded(ptr);
-                    locker.relock();
+                    mutex.lock();
                 } else {
                     knownConfigs.removeOne(scanned_ssid);
                 }
@@ -733,9 +732,9 @@ rescan_list:
                     ptr->state = QNetworkConfiguration::Defined;
 
                     configLocker.unlock();
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationChanged(ptr);
-                    locker.relock();
+                    mutex.lock();
                 }
             }
         }
@@ -744,9 +743,9 @@ rescan_list:
         foreach (const QString &oldIface, knownConfigs) {
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
             if (ptr) {
-                locker.unlock();
+                mutex.unlock();
                 emit configurationRemoved(ptr);
-                locker.relock();
+                mutex.lock();
                 //if we would have SNAP support we would have to remove the references
                 //from existing ServiceNetworks to the removed access point configuration
             }
@@ -762,9 +761,9 @@ rescan_list:
     }
 
     if (!firstUpdate) {
-        locker.unlock();
+        mutex.unlock();
         emit updateCompleted();
-        locker.relock();
+        mutex.lock();
     }
 
     if (firstUpdate)
@@ -781,8 +780,6 @@ QNetworkConfigurationPrivatePointer QIcdEngine::defaultConfiguration()
 
 void QIcdEngine::startListeningStateSignalsForAllConnections()
 {
-    QMutexLocker locker(&mutex);
-
     // Start listening ICD_DBUS_API_STATE_SIG signals
     m_dbusInterface->connection().connect(ICD_DBUS_API_INTERFACE,
                                           ICD_DBUS_API_PATH,
@@ -906,8 +903,6 @@ void QIcdEngine::requestUpdate()
 
 void QIcdEngine::cancelAsyncConfigurationUpdate()
 {
-    QMutexLocker locker(&mutex);
-
     if (!m_scanGoingOn) {
         return;
     }
@@ -947,7 +942,9 @@ void QIcdEngine::asyncUpdateConfigurationsSlot(QDBusMessage msg)
     if (icd_scan_status == ICD_SCAN_COMPLETE) {
         m_typesToBeScanned.removeOne(arguments[6].toString());
         if (!m_typesToBeScanned.count()) {
+            locker.unlock();
             finishAsyncConfigurationUpdate();
+            locker.relock();
         }
     } else {
         Maemo::IcdScanResult scanResult;
@@ -977,7 +974,8 @@ void QIcdEngine::cleanup()
         m_scanTimer.stop();
         m_dbusInterface->call(ICD_DBUS_API_SCAN_CANCEL);
     }
-    iapMonitor->cleanup();
+    if (iapMonitor)
+        iapMonitor->cleanup();
 }
 
 bool QIcdEngine::hasIdentifier(const QString &id)

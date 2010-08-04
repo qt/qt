@@ -125,7 +125,7 @@ void ContentTab::keyPressEvent(QKeyEvent *event)
 void ContentTab::handleErrorInOpen(QListWidgetItem *item)
 {
     Q_UNUSED(item);
-    QMessageBox::warning(this, tr("Operation Failed"), tr("Unkown error!"), QMessageBox::Close);
+    QMessageBox::warning(this, tr("Operation Failed"), tr("Unknown error!"), QMessageBox::Close);
 }
 
 // NEW SLOTS

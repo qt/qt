@@ -5,7 +5,7 @@ HEADERS += addtorrentdialog.h \
            metainfo.h \
            peerwireclient.h \
            ratecontroller.h \
-           filemanager.h \  
+           filemanager.h \
            torrentclient.h \
            torrentserver.h \
            trackerclient.h

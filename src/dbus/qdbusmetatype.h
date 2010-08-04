@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(DBus)
 
-class QDBUS_EXPORT QDBusMetaType
+class Q_DBUS_EXPORT QDBusMetaType
 {
 public:
     typedef void (*MarshallFunction)(QDBusArgument &, const void *);

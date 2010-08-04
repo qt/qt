@@ -389,7 +389,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
 
     while (num_text--) {
         QString key, value;
-#if defined(PNG_iTXt_SUPPORTED)
+#if defined(PNG_iTXt_SUPPORTED) && !defined(QT_NO_TEXTCODEC)
         if (text_ptr->lang) {
             QTextCodec *codec = QTextCodec::codecForName(text_ptr->lang);
             if (codec) {

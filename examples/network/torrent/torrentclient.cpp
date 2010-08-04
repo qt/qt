@@ -1243,8 +1243,8 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
             // depending on the state we're in.
             int pieceIndex = 0;
             if (d->state == WarmingUp || (qrand() & 4) == 0) {
-                int *occurrances = new int[d->pieceCount];
-                memset(occurrances, 0, d->pieceCount * sizeof(int));
+                int *occurrences = new int[d->pieceCount];
+                memset(occurrences, 0, d->pieceCount * sizeof(int));
                 
                 // Count how many of each piece are available.
                 foreach (PeerWireClient *peer, d->connections) {
@@ -1252,38 +1252,38 @@ void TorrentClient::schedulePieceForClient(PeerWireClient *client)
                     int peerPiecesSize = peerPieces.size();
                     for (int i = 0; i < peerPiecesSize; ++i) {
                         if (peerPieces.testBit(i))
-                            ++occurrances[i];
+                            ++occurrences[i];
                     }
                 }
 
                 // Find the rarest or most common pieces.
-                int numOccurrances = d->state == WarmingUp ? 0 : 99999;
+                int numOccurrences = d->state == WarmingUp ? 0 : 99999;
                 QList<int> piecesReadyForDownload;
                 for (int i = 0; i < d->pieceCount; ++i) {
                     if (d->state == WarmingUp) {
                         // Add common pieces
-                        if (occurrances[i] >= numOccurrances
+                        if (occurrences[i] >= numOccurrences
                             && incompletePiecesAvailableToClient.testBit(i)) {
-                            if (occurrances[i] > numOccurrances)
+                            if (occurrences[i] > numOccurrences)
                                 piecesReadyForDownload.clear();
                             piecesReadyForDownload.append(i);
-                            numOccurrances = occurrances[i];
+                            numOccurrences = occurrences[i];
                         }
                     } else {
                         // Add rare pieces
-                        if (occurrances[i] <= numOccurrances
+                        if (occurrences[i] <= numOccurrences
                             && incompletePiecesAvailableToClient.testBit(i)) {
-                            if (occurrances[i] < numOccurrances)
+                            if (occurrences[i] < numOccurrences)
                                 piecesReadyForDownload.clear();
                             piecesReadyForDownload.append(i);
-                            numOccurrances = occurrances[i];
+                            numOccurrences = occurrences[i];
                         }
                     }
                 }
 
                 // Select one piece randomly
                 pieceIndex = piecesReadyForDownload.at(qrand() % piecesReadyForDownload.size());
-                delete [] occurrances;
+                delete [] occurrences;
             } else {
                 // Make up a list of available piece indices, and pick
                 // a random one.

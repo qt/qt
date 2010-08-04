@@ -1871,7 +1871,7 @@ void QHeaderViewPrivate::_q_layoutChanged()
 
     for (int i = 0; i < oldSectionHidden.count(); ++i) {
         if (oldSectionHidden.testBit(i))
-            q->setSectionHidden(logicalIndex(i), false);
+            q->setSectionHidden(i, false);
     }
 
     // the number of sections changed; we need to reread the state of the model

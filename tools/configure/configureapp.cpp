@@ -581,6 +581,8 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
+        else if (configCmdLine.at(i) == "-qt-gif")
+            dictionary[ "GIF" ] = "plugin";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";
@@ -1027,6 +1029,10 @@ void Configure::parseCmdLine()
             opensslLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
+            sybase = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
+            sybaseLibs = configCmdLine.at(i);
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -1741,7 +1747,7 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler.h\n");
+        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler_p.h\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
@@ -2745,6 +2751,17 @@ void Configure::generateOutputVars()
         }
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
+
+    {
+        QStringList lflagsTDS;
+        if (!sybase.isEmpty())
+            lflagsTDS += QString("-L") + fixSeparators(sybase.section("=", 1) + "/lib");
+        if (!sybaseLibs.isEmpty())
+            lflagsTDS += sybaseLibs.section("=", 1);
+        if (!lflagsTDS.isEmpty())
+            qmakeVars += QString("QT_LFLAGS_TDS=") + lflagsTDS.join(" ");
+    }
+
     if (!qmakeSql.isEmpty())
         qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(" ");
     if (!qmakeSqlPlugins.isEmpty())
@@ -2922,6 +2939,8 @@ void Configure::generateCachefile()
         if (!dictionary["QT_NAMESPACE"].isEmpty()) {
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
+
+        configStream << "#modules" << endl << "for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)" << endl;
 
         configStream.flush();
         configFile.close();

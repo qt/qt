@@ -935,12 +935,13 @@ void QTextTable::removeColumns(int pos, int num)
     for (int r = 0; r < d->nRows; ++r) {
         for (int c = pos; c < pos + num; ++c) {
             int cell = d->grid[r*d->nCols + c];
-            if (touchedCells.contains(cell))
-                continue;
-            touchedCells << cell;
             QTextDocumentPrivate::FragmentIterator it(&p->fragmentMap(), cell);
             QTextCharFormat fmt = collection->charFormat(it->format);
             int span = fmt.tableCellColumnSpan();
+            if (touchedCells.contains(cell) && span <= 1)
+                continue;
+            touchedCells << cell;
+
             if (span > 1) {
                 fmt.setTableCellColumnSpan(span - 1);
                 p->setCharFormat(it.position(), 1, fmt);

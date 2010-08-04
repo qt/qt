@@ -144,7 +144,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     can, for example, be used to apply different sets of property values or execute
     different scripts.
 
-    The following example displays a single Rectangle. In the default state, the rectangle
+    The following example displays a single \l Rectangle. In the default state, the rectangle
     is colored black. In the "clicked" state, a PropertyChanges element changes the
     rectangle's color to red. Clicking within the MouseArea toggles the rectangle's state
     between the default state and the "clicked" state, thus toggling the color of the
@@ -157,7 +157,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     States are commonly used together with \l {state-transitions}{Transitions} to provide
     animations when state changes occur.
 
-    \note setting the state of an object from within another state of the same object is
+    \note Setting the state of an object from within another state of the same object is
     not allowed.
 
     \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, QtDeclarative
@@ -194,7 +194,7 @@ QDeclarativeState::~QDeclarativeState()
     \qmlproperty string State::name
     This property holds the name of the state.
 
-    Each state should have a unique name.
+    Each state should have a unique name within its item.
 */
 QString QDeclarativeState::name() const
 {
@@ -226,7 +226,10 @@ bool QDeclarativeState::isWhenKnown() const
     This property holds when the state should be applied.
 
     This should be set to an expression that evaluates to \c true when you want the state to
-    be applied.
+    be applied. For example, the following \l Rectangle changes in and out of the "hidden"
+    state when the \l MouseArea is pressed:
+
+    \snippet doc/src/snippets/declarative/state-when.qml 0
 
     If multiple states in a group have \c when clauses that evaluate to \c true at the same time,
     the first matching state will be applied. For example, in the following snippet
@@ -342,8 +345,10 @@ QDeclarativeStatePrivate::generateActionList(QDeclarativeStateGroup *group) cons
     if (!extends.isEmpty()) {
         QList<QDeclarativeState *> states = group->states();
         for (int ii = 0; ii < states.count(); ++ii)
-            if (states.at(ii)->name() == extends)
+            if (states.at(ii)->name() == extends) {
+                qmlExecuteDeferred(states.at(ii));
                 applyList = static_cast<QDeclarativeStatePrivate*>(states.at(ii)->d_func())->generateActionList(group);
+            }
     }
 
     foreach(QDeclarativeStateOperation *op, operations)

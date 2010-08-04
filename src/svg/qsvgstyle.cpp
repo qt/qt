@@ -241,7 +241,7 @@ void QSvgFontStyle::apply(QPainter *p, const QSvgNode *, QSvgExtraStates &states
     }
 
     if (m_sizeSet)
-        font.setPointSize(m_qfont.pointSizeF());
+        font.setPointSizeF(m_qfont.pointSizeF());
 
     if (m_styleSet)
         font.setStyle(m_qfont.style());

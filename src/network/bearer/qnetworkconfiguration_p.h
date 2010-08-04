@@ -57,6 +57,7 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,7 @@ public:
     QNetworkConfigurationPrivate ()
     :   mutex(QMutex::Recursive), type(QNetworkConfiguration::Invalid),
         purpose(QNetworkConfiguration::UnknownPurpose),
+        bearerType(QNetworkConfiguration::BearerUnknown),
         isValid(false), roamingSupported(false)
     {
     }
@@ -77,24 +79,22 @@ public:
         serviceNetworkMembers.clear(); 
     }
 
-    virtual QString bearerName() const
+    virtual QString bearerTypeName() const
     {
-        QMutexLocker locker(&mutex);
-
-        return bearer;
+        return QLatin1String("Unknown");
     }
 
-    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
+    QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
     mutable QMutex mutex;
 
-    QString bearer;
     QString name;
     QString id;
 
     QNetworkConfiguration::StateFlags state;
     QNetworkConfiguration::Type type;
     QNetworkConfiguration::Purpose purpose;
+    QNetworkConfiguration::BearerType bearerType;
 
     bool isValid;
     bool roamingSupported;

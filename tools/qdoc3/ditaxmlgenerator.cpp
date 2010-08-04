@@ -4210,7 +4210,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node *node,
 				out() << "<td><p>";
                 //out() << "<tr><td>"; // old
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
-                if (!qpn->isWritable())
+                if (!qpn->isWritable(myTree))
                     out() << "<span class=\"qmlreadonly\">read-only</span>";
                 if (qpgn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";

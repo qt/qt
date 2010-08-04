@@ -69,12 +69,12 @@ Item {
 
         onClicked: {
             ListView.view.currentIndex = index
-            container.forceFocus()
+            container.forceActiveFocus()
         }
     }
 
     states: State {
-        name: "active"; when: container.focus == true
+        name: "active"; when: container.activeFocus
         PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
         PropertyChanges { target: label; font.pixelSize: 16 }
     }

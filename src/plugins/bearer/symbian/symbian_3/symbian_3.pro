@@ -6,13 +6,17 @@ symbian {
         DEFINES += SNAP_FUNCTIONALITY_AVAILABLE
         LIBS += -lcmmanager
 
-        exists($$MW_LAYER_PUBLIC_EXPORT_PATH(extendedconnpref.h)) {
+        exists($$prependEpocroot($$MW_LAYER_PUBLIC_EXPORT_PATH(extendedconnpref.h))) {
             DEFINES += OCC_FUNCTIONALITY_AVAILABLE
             LIBS += -lextendedconnpref
         }
     } else {
         # Fall back to 3_1 implementation on platforms that do not have cmmanager
-        LIBS += -lapengine
+        is_using_gnupoc {
+            LIBS += -lapengine
+        } else {
+            LIBS += -lAPEngine
+        }
     }
 }
 

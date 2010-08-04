@@ -103,7 +103,7 @@ Lexer::Lexer(Engine *eng, bool tokenizeComments)
       prohibitAutomaticSemicolon(false),
       tokenizeComments(tokenizeComments)
 {
-    driver->setLexer(this);
+    if (driver) driver->setLexer(this);
     // allocate space for read buffers
     buffer8 = new char[size8];
     buffer16 = new QChar[size16];
@@ -677,9 +677,9 @@ int Lexer::lex()
                     setDone(Other);
                 } else
                     state = Start;
-                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
+                if (driver) driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (current == 0) {
-                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
+                if (driver) driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
                 setDone(Eof);
             }
 
@@ -689,14 +689,14 @@ int Lexer::lex()
                 setDone(Bad);
                 err = UnclosedComment;
                 errmsg = QCoreApplication::translate("QDeclarativeParser", "Unclosed comment at end of file");
-                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
+                if (driver) driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (isLineTerminator()) {
                 shiftWindowsLineBreak();
                 yylineno++;
             } else if (current == '*' && next1 == '/') {
                 state = Start;
                 shift(1);
-                driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
+                if (driver) driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             }
 
             break;

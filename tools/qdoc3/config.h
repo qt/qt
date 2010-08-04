@@ -119,6 +119,7 @@ class Config
 };
 
 #define CONFIG_ALIAS                    "alias"
+#define CONFIG_APPLICATION		"application"
 #define CONFIG_BASE                     "base"      // ### don't document for now
 #define CONFIG_CODEINDENT               "codeindent"
 #define CONFIG_DEFINES                  "defines"
@@ -143,6 +144,7 @@ class Config
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"
 #define CONFIG_ONLINE                   "online"
+#define CONFIG_OFFLINE                  "offline"
 #define CONFIG_CREATOR                  "creator"
 #define CONFIG_OUTPUTDIR                "outputdir"
 #define CONFIG_OUTPUTENCODING           "outputencoding"
