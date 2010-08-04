@@ -208,17 +208,30 @@ Rectangle {
     Keys.onUpPressed: if (state == "starting" || direction != 2) Logic.scheduleDirection(0);
     Keys.onDownPressed: if (state == "starting" || direction != 0) Logic.scheduleDirection(2);
 
+    Connections {
+        target: startHeartbeatTimer
+        onRunningChanged: {
+            if (startHeartbeatTimer.running)
+                screen.state = "starting";
+            else
+                screen.state = "running"
+        }
+    }
+    Connections {
+        target: heartbeat
+        onRunningChanged: if (!heartbeat.running) screen.state = "";
+    }
+
+
     states: [
         State {
             name: "starting"
-            when: startHeartbeatTimer.running
             PropertyChanges {target: progressIndicator; width: 200}
             PropertyChanges {target: title; opacity: 0}
             PropertyChanges {target: progressBar; opacity: 1}
         },
         State {
             name: "running"
-            when: (heartbeat.running && !startHeartbeatTimer.running)
             PropertyChanges {target: progressIndicator; width: 200}
             PropertyChanges {target: title; opacity: 0}
             PropertyChanges {target: skull; row: 0; column: 0; }
