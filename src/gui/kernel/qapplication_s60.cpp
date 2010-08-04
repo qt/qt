@@ -1953,13 +1953,6 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             if (switchToSwRendering) {
                 QRuntimeGraphicsSystem *gs =
                    static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
-
-                uint memoryUsage = gs->memoryUsage();
-                uint memoryForFullscreen = ( S60->screenDepth / 8 )
-                                           * S60->screenWidthInPixels
-                                           * S60->screenHeightInPixels;
-
-                S60->memoryLimitForHwRendering = memoryUsage - memoryForFullscreen;
                 gs->setGraphicsSystem(QLatin1String("raster"));
             }
         }
@@ -1975,8 +1968,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         if(QApplicationPrivate::runtime_graphics_system) {
             QRuntimeGraphicsSystem *gs =
                    static_cast<QRuntimeGraphicsSystem*>(QApplicationPrivate::graphics_system);
-            gs->setGraphicsSystem(QLatin1String("openvg"), S60->memoryLimitForHwRendering);
-            S60->memoryLimitForHwRendering = 0;
+            gs->setGraphicsSystem(QLatin1String("openvg"));
         }
 #endif
         break;
