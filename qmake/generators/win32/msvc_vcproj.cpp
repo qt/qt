@@ -763,11 +763,16 @@ void VcprojGenerator::init()
 
 bool VcprojGenerator::mergeBuildProject(MakefileGenerator *other)
 {
-    VcprojGenerator *otherVC = static_cast<VcprojGenerator*>(other);
-    if (!otherVC) {
+    if (!other || !other->projectFile()) {
+        warn_msg(WarnLogic, "VcprojGenerator: Cannot merge null project.");
+        return false;
+    }
+    if (other->projectFile()->first("MAKEFILE_GENERATOR") != "MSVC.NET") {
         warn_msg(WarnLogic, "VcprojGenerator: Cannot merge other types of projects! (ignored)");
         return false;
     }
+
+    VcprojGenerator *otherVC = static_cast<VcprojGenerator*>(other);
     mergedProjects += otherVC;
     return true;
 }
