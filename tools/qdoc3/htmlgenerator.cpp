@@ -1756,10 +1756,10 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             if (sl.contains("declarative"))
                 out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples & Demos</a></li>";
             else {
-                QString name = "examples-" + sl.at(0) + ".html";
+                QString name = "examples-" + sl.at(0) + ".html"; // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
-                out() << "              <li><a href=\"" << name << "\">"
-                      << t << "</a></li>";
+             //   out() << "              <li>  <a href=\"" << name << "\">"
+             //       << t << "</a></li>";
             }
             out() << "              <li>" << title << "</li>";
         }

@@ -249,6 +249,13 @@ public:
     QVariantMap getProxy();
     QVariantMap getEthernet();
 
+    QString getMethod();
+    QString getInterface();
+    QString getMacAddress();
+    quint16 getMtu();
+    quint16 getSpeed();
+    QString getDuplex();
+
     bool isOfflineMode();
     QStringList getServices();
 
