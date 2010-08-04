@@ -50,26 +50,14 @@ QT_BEGIN_NAMESPACE
 
 // XML Tags ---------------------------------------------------------
 const char _CLCompile[]                         = "ClCompile";
-const char _Configuration[]                     = "Configuration";
-const char _Configurations[]                    = "Configurations";
-const char q_File[]                             = "File";
-const char _FileConfiguration[]                 = "FileConfiguration";
-const char q_Files[]                            = "Files";
-const char _Filter[]                            = "Filter";
-const char _Globals[]                           = "Globals";
 const char _ItemGroup[]                         = "ItemGroup";
 const char _Link[]                              = "Link";
 const char _Midl[]                              = "Midl";
-const char _Platform[]                          = "Platform";
-const char _Platforms[]                         = "Platforms";
 const char _ResourceCompile[]                   = "ResourceCompile";
-const char _Tool[]                              = "Tool";
-const char _VisualStudioProject[]               = "VisualStudioProject";
 
 // XML Properties ---------------------------------------------------
 const char _AddModuleNamesToAssembly[]          = "AddModuleNamesToAssembly";
 const char _AdditionalDependencies[]            = "AdditionalDependencies";
-const char _AdditionalFiles[]                   = "AdditionalFiles";
 const char _AdditionalIncludeDirectories[]      = "AdditionalIncludeDirectories";
 const char _AdditionalLibraryDirectories[]      = "AdditionalLibraryDirectories";
 const char _AdditionalManifestDependencies[]    = "AdditionalManifestDependencies";
@@ -97,11 +85,8 @@ const char _CLRSupportLastError[]               = "CLRSupportLastError";
 const char _CLRThreadAttribute[]                = "CLRThreadAttribute";
 const char _CLRUnmanagedCodeCheck[]             = "CLRUnmanagedCodeCheck";
 const char _Command[]                           = "Command";
-const char _CommandLine[]                       = "CommandLine";
 const char _CompileAs[]                         = "CompileAs";
 const char _CompileAsManaged[]                  = "CompileAsManaged";
-const char _CompileForArchitecture[]            = "CompileForArchitecture";
-const char _CompileOnly[]                       = "CompileOnly";
 const char _ConfigurationType[]                 = "ConfigurationType";
 const char _CPreprocessOptions[]                = "CPreprocessOptions";
 const char _CreateHotpatchableImage[]           = "CreateHotpatchableImage";
@@ -109,13 +94,10 @@ const char _CreateHotPatchableImage[]           = "CreateHotPatchableImage";
 const char _Culture[]                           = "Culture";
 const char _DataExecutionPrevention[]           = "DataExecutionPrevention";
 const char _DebugInformationFormat[]            = "DebugInformationFormat";
-const char _DefaultCharIsUnsigned[]             = "DefaultCharIsUnsigned";
 const char _DefaultCharType[]                   = "DefaultCharType";
 const char _DelayLoadDLLs[]                     = "DelayLoadDLLs";
 const char _DelaySign[]                         = "DelaySign";
 const char _DeleteExtensionsOnClean[]           = "DeleteExtensionsOnClean";
-const char _Description[]                       = "Description";
-const char _Detect64BitPortabilityProblems[]    = "Detect64BitPortabilityProblems";
 const char _DisableLanguageExtensions[]         = "DisableLanguageExtensions";
 const char _DisableSpecificWarnings[]           = "DisableSpecificWarnings";
 const char _DisplayLibrary[]                    = "DisplayLibrary";
@@ -127,8 +109,6 @@ const char _EnableUAC[]                         = "EnableUAC";
 const char _EnableErrorChecks[]                 = "EnableErrorChecks";
 const char _EnableEnhancedInstructionSet[]      = "EnableEnhancedInstructionSet";
 const char _EnableFiberSafeOptimizations[]      = "EnableFiberSafeOptimizations";
-const char _EnableFunctionLevelLinking[]        = "EnableFunctionLevelLinking";
-const char _EnableIntrinsicFunctions[]          = "EnableIntrinsicFunctions";
 const char _EnablePREfast[]                     = "EnablePREfast";
 const char _EntryPointSymbol[]                  = "EntryPointSymbol";
 const char _ErrorCheckAllocations[]             = "ErrorCheckAllocations";
@@ -138,7 +118,6 @@ const char _ErrorCheckRefPointers[]             = "ErrorCheckRefPointers";
 const char _ErrorCheckStubData[]                = "ErrorCheckStubData";
 const char _ErrorReporting[]                    = "ErrorReporting";
 const char _ExceptionHandling[]                 = "ExceptionHandling";
-const char _ExcludedFromBuild[]                 = "ExcludedFromBuild";
 const char _ExpandAttributedSource[]            = "ExpandAttributedSource";
 const char _ExportNamedFunctions[]              = "ExportNamedFunctions";
 const char _FavorSizeOrSpeed[]                  = "FavorSizeOrSpeed";
@@ -150,52 +129,42 @@ const char _ForceFileOutput[]                   = "ForceFileOutput";
 const char _ForceSymbolReferences[]             = "ForceSymbolReferences";
 const char _ForcedIncludeFiles[]                = "ForcedIncludeFiles";
 const char _ForcedUsingFiles[]                  = "ForcedUsingFiles";
-const char _FullIncludePath[]                   = "FullIncludePath";
 const char _FunctionLevelLinking[]              = "FunctionLevelLinking";
 const char _FunctionOrder[]                     = "FunctionOrder";
 const char _GenerateClientFiles[]               = "GenerateClientFiles";
 const char _GenerateDebugInformation[]          = "GenerateDebugInformation";
 const char _GenerateManifest[]                  = "GenerateManifest";
 const char _GenerateMapFile[]                   = "GenerateMapFile";
-const char _GeneratePreprocessedFile[]          = "GeneratePreprocessedFile";
 const char _GenerateServerFiles[]               = "GenerateServerFiles";
 const char _GenerateStublessProxies[]           = "GenerateStublessProxies";
 const char _GenerateTypeLibrary[]               = "GenerateTypeLibrary";
 const char _GenerateXMLDocumentationFiles[]     = "GenerateXMLDocumentationFiles";
-const char _GlobalOptimizations[]               = "GlobalOptimizations";
 const char _HeaderFileName[]                    = "HeaderFileName";
 const char _HeapCommitSize[]                    = "HeapCommitSize";
 const char _HeapReserveSize[]                   = "HeapReserveSize";
 const char _IgnoreAllDefaultLibraries[]         = "IgnoreAllDefaultLibraries";
-const char _IgnoreDefaultLibraryNames[]         = "IgnoreDefaultLibraryNames";
 const char _IgnoreEmbeddedIDL[]                 = "IgnoreEmbeddedIDL";
 const char _IgnoreImportLibrary[]               = "IgnoreImportLibrary";
 const char _IgnoreSpecificDefaultLibraries[]    = "IgnoreSpecificDefaultLibraries";
 const char _IgnoreStandardIncludePath[]         = "IgnoreStandardIncludePath";
 const char _ImageHasSafeExceptionHandlers[]     = "ImageHasSafeExceptionHandlers";
 const char _ImportLibrary[]                     = "ImportLibrary";
-const char _ImproveFloatingPointConsistency[]   = "ImproveFloatingPointConsistency";
 const char _InlineFunctionExpansion[]           = "InlineFunctionExpansion";
 const char _IntrinsicFunctions[]                = "IntrinsicFunctions";
 const char _InterfaceIdentifierFileName[]       = "InterfaceIdentifierFileName";
 const char _IntermediateDirectory[]             = "IntermediateDirectory";
-const char _InterworkCalls[]                    = "InterworkCalls";
 const char _KeyContainer[]                      = "KeyContainer";
 const char _KeyFile[]                           = "KeyFile";
-const char _Keyword[]                           = "Keyword";
-const char _KeepComments[]                      = "KeepComments";
 const char _LargeAddressAware[]                 = "LargeAddressAware";
 const char _LinkDLL[]                           = "LinkDLL";
 const char _LinkErrorReporting[]                = "LinkErrorReporting";
 const char _LinkIncremental[]                   = "LinkIncremental";
 const char _LinkStatus[]                        = "LinkStatus";
 const char _LinkTimeCodeGeneration[]            = "LinkTimeCodeGeneration";
-const char _LinkToManagedResourceFile[]         = "LinkToManagedResourceFile";
 const char _LocaleID[]                          = "LocaleID";
 const char _ManifestFile[]                      = "ManifestFile";
 const char _MapExports[]                        = "MapExports";
 const char _MapFileName[]                       = "MapFileName";
-const char _MapLines[]                          = "MapLines ";
 const char _MergedIDLBaseFileName[]             = "MergedIDLBaseFileName";
 const char _MergeSections[]                     = "MergeSections";
 const char _Message[]                           = "Message";
@@ -208,27 +177,18 @@ const char _MultiProcessorCompilation[]         = "MultiProcessorCompilation";
 const char _Name[]                              = "Name";
 const char _NoEntryPoint[]                      = "NoEntryPoint";
 const char _NullTerminateStrings[]              = "NullTerminateStrings";
-const char _ObjectFile[]                        = "ObjectFile";
 const char _ObjectFiles[]                       = "ObjectFiles";
 const char _ObjectFileName[]                    = "ObjectFileName";
 const char _OmitDefaultLibName[]                = "OmitDefaultLibName";
 const char _OmitFramePointers[]                 = "OmitFramePointers";
-const char _OpenMP[]                            = "OpenMP";
 const char _OpenMPSupport[]                     = "OpenMPSupport";
 const char _Optimization[]                      = "Optimization";
-const char _OptimizeForProcessor[]              = "OptimizeForProcessor";
-const char _OptimizeForWindows98[]              = "OptimizeForWindows98";
-const char _OptimizeForWindowsApplication[]     = "OptimizeForWindowsApplication";
 const char _OptimizeReferences[]                = "OptimizeReferences";
 const char _OutputDirectory[]                   = "OutputDirectory";
 const char _OutputFile[]                        = "OutputFile";
-const char _Outputs[]                           = "Outputs";
-const char _ParseFiles[]                        = "ParseFiles";
-const char _Path[]                              = "Path";
 const char _PrecompiledHeader[]                 = "PrecompiledHeader";
 const char _PrecompiledHeaderFile[]             = "PrecompiledHeaderFile";
 const char _PrecompiledHeaderOutputFile[]       = "PrecompiledHeaderOutputFile";
-const char _PrecompiledHeaderThrough[]          = "PrecompiledHeaderThrough";
 const char _PreprocessorDefinitions[]           = "PreprocessorDefinitions";
 const char _PreprocessKeepComments[]            = "PreprocessKeepComments";
 const char _PreprocessOutputPath[]              = "PreprocessOutputPath";
@@ -238,9 +198,7 @@ const char _PreventDllBinding[]                 = "PreventDllBinding";
 const char _PrimaryOutput[]                     = "PrimaryOutput";
 const char _Profile[]                           = "Profile";
 const char _ProfileGuidedDatabase[]             = "ProfileGuidedDatabase";
-const char _ProjectGUID[]                       = "ProjectGUID";
 const char _ProcessorNumber[]                   = "ProcessorNumber";
-const char _ProjectType[]                       = "ProjectType";
 const char _ProgramDatabase[]                   = "ProgramDatabase";
 const char _ProgramDataBaseFileName[]           = "ProgramDataBaseFileName";
 const char _ProgramDatabaseFile[]               = "ProgramDatabaseFile";
@@ -248,15 +206,10 @@ const char _ProxyFileName[]                     = "ProxyFileName";
 const char _RandomizedBaseAddress[]             = "RandomizedBaseAddress";
 const char _RedirectOutputAndErrors[]           = "RedirectOutputAndErrors";
 const char _RegisterOutput[]                    = "RegisterOutput";
-const char _RelativePath[]                      = "RelativePath";
-const char _RemoteDirectory[]                   = "RemoteDirectory";
 const char _RemoveObjects[]                     = "RemoveObjects";
-const char _ResourceOnlyDLL[]                   = "ResourceOnlyDLL";
 const char _ResourceOutputFileName[]            = "ResourceOutputFileName";
 const char _RuntimeLibrary[]                    = "RuntimeLibrary";
 const char _RuntimeTypeInfo[]                   = "RuntimeTypeInfo";
-const char _SccProjectName[]                    = "SccProjectName";
-const char _SccLocalPath[]                      = "SccLocalPath";
 const char _SectionAlignment[]                  = "SectionAlignment";
 const char _ServerStubFile[]                    = "ServerStubFile";
 const char _SetChecksum[]                       = "SetChecksum";
@@ -294,19 +247,12 @@ const char _UACExecutionLevel[]                 = "UACExecutionLevel";
 const char _UACUIAccess[]                       = "UACUIAccess";
 const char _UndefineAllPreprocessorDefinitions[]= "UndefineAllPreprocessorDefinitions";
 const char _UndefinePreprocessorDefinitions[]   = "UndefinePreprocessorDefinitions";
-const char _UniqueIdentifier[]                  = "UniqueIdentifier";
 const char _UseFullPaths[]                      = "UseFullPaths";
 const char _UseOfATL[]                          = "UseOfATL";
 const char _UseOfMfc[]                          = "UseOfMfc";
-const char _UsePrecompiledHeader[]              = "UsePrecompiledHeader";
 const char _UseUnicodeForAssemblerListing[]     = "UseUnicodeForAssemblerListing";
 const char _ValidateAllParameters[]             = "ValidateAllParameters";
-const char _VCCLCompilerTool[]                  = "VCCLCompilerTool";
-const char _VCLibrarianTool[]                   = "VCLibrarianTool";
-const char _VCLinkerTool[]                      = "VCLinkerTool";
 const char _VCCustomBuildTool[]                 = "VCCustomBuildTool";
-const char _VCResourceCompilerTool[]            = "VCResourceCompilerTool";
-const char _VCMIDLTool[]                        = "VCMIDLTool";
 const char _Verbose[]                           = "Verbose";
 const char _Version[]                           = "Version";
 const char _WarnAsError[]                       = "WarnAsError";
@@ -342,7 +288,6 @@ inline XmlOutput::xml_output attrTagS(const char *name, const QString &v)
         return noxml();
     return tagValue(name, v);
 }
-
 
 inline XmlOutput::xml_output attrTagX(const char *name, const QStringList &v, const char *s = ",")
 {
@@ -2196,175 +2141,6 @@ bool VCXFilter::addExtraCompiler(const VCXFilterFile &info)
     return useCustomBuildTool;
 }
 
-bool VCXFilter::outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded)
-{
-    bool fileAdded = false;
-
-    // Clearing each filter tool
-    useCustomBuildTool = false;
-    useCompilerTool = false;
-    CustomBuildTool = VCXCustomBuildTool();
-    CompilerTool = VCXCLCompilerTool();
-
-    // Unset some default options
-    CompilerTool.BufferSecurityCheck = unset;
-    CompilerTool.DebugInformationFormat = "";
-    CompilerTool.ExceptionHandling = "";
-    //CompilerTool.Optimization = optimizeDefault;
-    CompilerTool.ProgramDataBaseFileName.clear();
-    CompilerTool.RuntimeLibrary = "";
-    //CompilerTool.WarningLevel = warningLevelUnknown;
-    CompilerTool.config = Config;
-
-    bool inBuild = false;
-    VCXFilterFile info;
-    for (int i = 0; i < Files.count(); ++i) {
-        if (Files.at(i).file == filename) {
-            info = Files.at(i);
-            inBuild = true;
-        }
-    }
-    inBuild &= !info.excludeFromBuild;
-
-    if (inBuild) {
-        addExtraCompiler(info);
-        if(Project->usePCH)
-            modifyPCHstage(info.file);
-    } else {
-        // Excluded files uses an empty compiler stage
-        if(info.excludeFromBuild)
-            useCompilerTool = true;
-    }
-
-    // Actual XML output ----------------------------------
-    if(useCustomBuildTool || useCompilerTool || !inBuild) {
-
-        if (useCustomBuildTool)
-        {
-            CustomBuildTool.ConfigName = (*Config).Name;
-
-            if ( !fileAllreadyAdded ) {
-
-                fileAdded = true;
-
-                xmlFilter << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename))
-                    << attrTagS("Filter", filtername);
-
-                xml << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-
-                if ( filtername == "Form Files" || filtername == "Generated Files" || filtername == "Resource Files" )
-                    xml << attrTagS("FileType", "Document");
-            }
-
-            Project->projectWriter->write(xml, CustomBuildTool);
-        }
-
-        if ( !fileAdded && !fileAllreadyAdded )
-        {
-            fileAdded = true;
-
-            if (filtername == "Source Files") {
-
-                xmlFilter << tag("ClCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(filename))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-
-            } else if(filtername == "Header Files") {
-
-                xmlFilter << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename))
-                    << attrTagS("Filter", filtername);
-
-                xml << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(filename));
-            } else if(filtername == "Generated Files" || filtername == "Form Files") {
-
-                if (filename.endsWith(".h")) {
-
-                    xmlFilter << tag("ClInclude")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("ClInclude")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else if(filename.endsWith(".cpp")) {
-
-                    xmlFilter << tag("ClCompile")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("ClCompile")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else if(filename.endsWith(".res")) {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                } else {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                }
-            } else if(filtername == "Root Files") {
-
-                if (filename.endsWith(".rc")) {
-
-                    xmlFilter << tag("ResourceCompile")
-                              << attrTag("Include",Option::fixPathToLocalOS(filename));
-
-                    xml << tag("ResourceCompile")
-                        << attrTag("Include",Option::fixPathToLocalOS(filename));
-                }
-            }
-        }
-
-        if(!inBuild) {
-
-            xml << tag("ExcludedFromBuild")
-                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg((*Config).Name))
-                << valueTag("true");
-        }
-
-        if (useCompilerTool) {
-
-            if ( !CompilerTool.ForcedIncludeFiles.isEmpty() ) {
-                xml << tag("ForcedIncludeFiles")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg((*Config).Name))
-                    << valueTagX(CompilerTool.ForcedIncludeFiles);
-            }
-
-            if ( !CompilerTool.PrecompiledHeaderFile.isEmpty() ) {
-
-                xml << tag("PrecompiledHeaderFile")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg((*Config).Name))
-                    << valueTag(CompilerTool.PrecompiledHeaderFile);
-            }
-
-            if ( !CompilerTool.PrecompiledHeader.isEmpty() ) {
-
-                xml << tag("PrecompiledHeader")
-                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg((*Config).Name))
-                    << valueTag(CompilerTool.PrecompiledHeader);
-            }
-        }
-    }
-
-    return fileAdded;
-}
-
-
 // VCXProjectSingleConfig --------------------------------------------
 VCXFilter nullVCXFilter;
 VCXFilter& VCXProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
@@ -2399,7 +2175,7 @@ void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString 
             xml << closetag("Filter");
     } else {
         // Leaf
-        tool.outputFileConfigs(xml, xmlFilter, info, filter);
+        VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, info, filter);
     }
 }
 
@@ -2412,228 +2188,10 @@ void XFlatNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString 
         xml << tag(_ItemGroup);
         xmlFilter << tag(_ItemGroup);
         for (; it != end; ++it) {
-            tool.outputFileConfigs(xml, xmlFilter, (*it), filter);
+            VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, (*it), filter);
         }
         xml << closetag();
         xmlFilter << closetag();
-    }
-}
-
-
-// VCXProject --------------------------------------------------------
-// Output all configurations (by filtername) for a file (by info)
-// A filters config output is in VCXFilter.outputFileConfig()
-void VCXProject::outputFileConfigs(XmlOutput &xml,
-                                  XmlOutput &xmlFilter,
-                                  const VCXFilterFile &info,
-                                  const QString &filtername)
-{
-    // We need to check if the file has any custom build step.
-    // If there is one then it has to be included with "CustomBuild Include"
-    bool fileAdded = false;
-
-    for (int i = 0; i < SingleProjects.count(); ++i) {
-        VCXFilter filter;
-        if (filtername == "Root Files") {
-            filter = SingleProjects.at(i).RootFiles;
-        } else if (filtername == "Source Files") {
-            filter = SingleProjects.at(i).SourceFiles;
-        } else if (filtername == "Header Files") {
-            filter = SingleProjects.at(i).HeaderFiles;
-        } else if (filtername == "Generated Files") {
-            filter = SingleProjects.at(i).GeneratedFiles;
-        } else if (filtername == "LexYacc Files") {
-            filter = SingleProjects.at(i).LexYaccFiles;
-        } else if (filtername == "Translation Files") {
-            filter = SingleProjects.at(i).TranslationFiles;
-        } else if (filtername == "Form Files") {
-            filter = SingleProjects.at(i).FormFiles;
-        } else if (filtername == "Resource Files") {
-            filter = SingleProjects.at(i).ResourceFiles;
-        } else {
-            // ExtraCompilers
-            filter = SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
-        if (filter.Config) // only if the filter is not empty
-            if (filter.outputFileConfig(xml, xmlFilter, info.file, filtername, fileAdded)) // only add it once.
-                fileAdded = true;
-    }
-
-    if ( !fileAdded )
-    {
-        if (filtername == "Source Files") {
-
-            xmlFilter << tag("ClCompile")
-                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                      << attrTagS("Filter", filtername);
-
-            xml << tag("ClCompile")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file));
-
-        } else if(filtername == "Header Files") {
-
-            xmlFilter << tag("ClInclude")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                << attrTagS("Filter", filtername);
-
-            xml << tag("ClInclude")
-                << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        } else if(filtername == "Generated Files" || filtername == "Form Files") {
-
-            if (info.file.endsWith(".h")) {
-
-                xmlFilter << tag("ClInclude")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClInclude")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else if(info.file.endsWith(".cpp")) {
-
-                xmlFilter << tag("ClCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("ClCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else if(info.file.endsWith(".res")) {
-
-                    xmlFilter << tag("CustomBuild")
-                              << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                              << attrTagS("Filter", filtername);
-
-                    xml << tag("CustomBuild")
-                        << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            } else {
-
-                xmlFilter << tag("CustomBuild")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                          << attrTagS("Filter", filtername);
-
-                xml << tag("CustomBuild")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            }
-
-        } else if(filtername == "Root Files") {
-
-            if (info.file.endsWith(".rc")) {
-
-                xmlFilter << tag("ResourceCompile")
-                          << attrTag("Include",Option::fixPathToLocalOS(info.file));
-
-                xml << tag("ResourceCompile")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-            }
-        } else {
-
-            xmlFilter << tag("None")
-                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
-                      << attrTagS("Filter", filtername);
-
-                xml << tag("None")
-                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
-        }
-    }
-
-    xml << closetag();
-    xmlFilter << closetag();
-}
-
-// outputs a given filter for all existing configurations of a project
-void VCXProject::outputFilter(XmlOutput &xml,
-                              XmlOutput &xmlFilter,
-                              const QString &filtername)
-{
-    XNode *root;
-    if (SingleProjects.at(0).flat_files)
-        root = new XFlatNode;
-    else
-        root = new XTreeNode;
-
-    QString name, extfilter;
-    triState parse;
-
-    for (int i = 0; i < SingleProjects.count(); ++i) {
-        VCXFilter filter;
-        if (filtername == "Root Files") {
-            filter = SingleProjects.at(i).RootFiles;
-        } else if (filtername == "Source Files") {
-            filter = SingleProjects.at(i).SourceFiles;
-        } else if (filtername == "Header Files") {
-            filter = SingleProjects.at(i).HeaderFiles;
-        } else if (filtername == "Generated Files") {
-            filter = SingleProjects.at(i).GeneratedFiles;
-        } else if (filtername == "LexYacc Files") {
-            filter = SingleProjects.at(i).LexYaccFiles;
-        } else if (filtername == "Translation Files") {
-            filter = SingleProjects.at(i).TranslationFiles;
-        } else if (filtername == "Form Files") {
-            filter = SingleProjects.at(i).FormFiles;
-        } else if (filtername == "Resource Files") {
-            filter = SingleProjects.at(i).ResourceFiles;
-        } else {
-            // ExtraCompilers
-            filter = SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
-        // Merge all files in this filter to root tree
-        for (int x = 0; x < filter.Files.count(); ++x)
-            root->addElement(filter.Files.at(x));
-
-        // Save filter setting from first filter. Next filters
-        // may differ but we cannot handle that. (ex. extfilter)
-        if (name.isEmpty()) {
-            name = filter.Name;
-            extfilter = filter.Filter;
-            parse = filter.ParseFiles;
-        }
-    }
-
-    if (!root->hasElements())
-        return;
-
-    root->generateXML(xml, xmlFilter, "", *this, filtername); // output root tree
-}
-
-
-void VCXProject::addFilters(XmlOutput &xmlFilter,
-                            const QString &filtername)
-{
-    bool added = false;
-
-    for (int i = 0; i < SingleProjects.count(); ++i) {
-        VCXFilter filter;
-        if (filtername == "Root Files") {
-            filter = SingleProjects.at(i).RootFiles;
-        } else if (filtername == "Source Files") {
-            filter = SingleProjects.at(i).SourceFiles;
-        } else if (filtername == "Header Files") {
-            filter = SingleProjects.at(i).HeaderFiles;
-        } else if (filtername == "Generated Files") {
-            filter = SingleProjects.at(i).GeneratedFiles;
-        } else if (filtername == "LexYacc Files") {
-            filter = SingleProjects.at(i).LexYaccFiles;
-        } else if (filtername == "Translation Files") {
-            filter = SingleProjects.at(i).TranslationFiles;
-        } else if (filtername == "Form Files") {
-            filter = SingleProjects.at(i).FormFiles;
-        } else if (filtername == "Resource Files") {
-            filter = SingleProjects.at(i).ResourceFiles;
-        } else {
-            // ExtraCompilers
-            filter = SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
-        if(!filter.Files.isEmpty() && !added) {
-            added = true;
-            xmlFilter << tag("Filter")
-                      << attrTag("Include", filtername)
-                      << attrTagS("UniqueIdentifier", filter.Guid)
-                      << attrTagS("Extensions", filter.Filter)
-                      << attrTagT("ParseFiles", filter.ParseFiles)
-                      << closetag();
-        }
     }
 }
 
@@ -2791,25 +2349,25 @@ void VCXProjectWriter::write(XmlOutput &xml, VCXProjectSingleConfig &tool)
     VCXProject tempProj;
     tempProj.SingleProjects += tool;
 
-    tempProj.addFilters(xmlFilter, "Form Files");
-    tempProj.addFilters(xmlFilter, "Generated Files");
-    tempProj.addFilters(xmlFilter, "Header Files");
-    tempProj.addFilters(xmlFilter, "LexYacc Files");
-    tempProj.addFilters(xmlFilter, "Resource Files");
-    tempProj.addFilters(xmlFilter, "Source Files");
-    tempProj.addFilters(xmlFilter, "Translation Files");
+    addFilters(tempProj, xmlFilter, "Form Files");
+    addFilters(tempProj, xmlFilter, "Generated Files");
+    addFilters(tempProj, xmlFilter, "Header Files");
+    addFilters(tempProj, xmlFilter, "LexYacc Files");
+    addFilters(tempProj, xmlFilter, "Resource Files");
+    addFilters(tempProj, xmlFilter, "Source Files");
+    addFilters(tempProj, xmlFilter, "Translation Files");
     xmlFilter << closetag();
 
-    tempProj.outputFilter(xml, xmlFilter, "Source Files");
-    tempProj.outputFilter(xml, xmlFilter, "Header Files");
-    tempProj.outputFilter(xml, xmlFilter, "Generated Files");
-    tempProj.outputFilter(xml, xmlFilter, "LexYacc Files");
-    tempProj.outputFilter(xml, xmlFilter, "Translation Files");
-    tempProj.outputFilter(xml, xmlFilter, "Form Files");
-    tempProj.outputFilter(xml, xmlFilter, "Resource Files");
+    outputFilter(tempProj, xml, xmlFilter, "Source Files");
+    outputFilter(tempProj, xml, xmlFilter, "Header Files");
+    outputFilter(tempProj, xml, xmlFilter, "Generated Files");
+    outputFilter(tempProj, xml, xmlFilter, "LexYacc Files");
+    outputFilter(tempProj, xml, xmlFilter, "Translation Files");
+    outputFilter(tempProj, xml, xmlFilter, "Form Files");
+    outputFilter(tempProj, xml, xmlFilter, "Resource Files");
 
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
-        tempProj.outputFilter(xml, xmlFilter, tempProj.ExtraCompilers.at(x));
+        outputFilter(tempProj, xml, xmlFilter, tempProj.ExtraCompilers.at(x));
     }
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
@@ -2982,26 +2540,26 @@ void VCXProjectWriter::write(XmlOutput &xml, VCXProject &tool)
 
     xmlFilter << tag("ItemGroup");
 
-    tool.addFilters(xmlFilter, "Form Files");
-    tool.addFilters(xmlFilter, "Generated Files");
-    tool.addFilters(xmlFilter, "Header Files");
-    tool.addFilters(xmlFilter, "LexYacc Files");
-    tool.addFilters(xmlFilter, "Resource Files");
-    tool.addFilters(xmlFilter, "Source Files");
-    tool.addFilters(xmlFilter, "Translation Files");
+    addFilters(tool, xmlFilter, "Form Files");
+    addFilters(tool, xmlFilter, "Generated Files");
+    addFilters(tool, xmlFilter, "Header Files");
+    addFilters(tool, xmlFilter, "LexYacc Files");
+    addFilters(tool, xmlFilter, "Resource Files");
+    addFilters(tool, xmlFilter, "Source Files");
+    addFilters(tool, xmlFilter, "Translation Files");
     xmlFilter << closetag();
 
-    tool.outputFilter(xml, xmlFilter, "Source Files");
-    tool.outputFilter(xml, xmlFilter, "Header Files");
-    tool.outputFilter(xml, xmlFilter, "Generated Files");
-    tool.outputFilter(xml, xmlFilter, "LexYacc Files");
-    tool.outputFilter(xml, xmlFilter, "Translation Files");
-    tool.outputFilter(xml, xmlFilter, "Form Files");
-    tool.outputFilter(xml, xmlFilter, "Resource Files");
+    outputFilter(tool, xml, xmlFilter, "Source Files");
+    outputFilter(tool, xml, xmlFilter, "Header Files");
+    outputFilter(tool, xml, xmlFilter, "Generated Files");
+    outputFilter(tool, xml, xmlFilter, "LexYacc Files");
+    outputFilter(tool, xml, xmlFilter, "Translation Files");
+    outputFilter(tool, xml, xmlFilter, "Form Files");
+    outputFilter(tool, xml, xmlFilter, "Resource Files");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
-        tool.outputFilter(xml, xmlFilter, tool.ExtraCompilers.at(x));
+        outputFilter(tool, xml, xmlFilter, tool.ExtraCompilers.at(x));
     }
-    tool.outputFilter(xml, xmlFilter, "Root Files");
+    outputFilter(tool, xml, xmlFilter, "Root Files");
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
@@ -3362,6 +2920,386 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCXConfiguration &tool)
 
 void VCXProjectWriter::write(XmlOutput &xml, VCFilter &tool)
 {
+    Q_UNUSED(xml);
+    Q_UNUSED(tool);
+    // unused in this generator
+}
+
+void VCXProjectWriter::addFilters(VCXProject &project, XmlOutput &xmlFilter, const QString &filtername)
+{
+    bool added = false;
+
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        VCXFilter filter;
+        const VCXProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
+        if (filtername == "Root Files") {
+            filter = singleCfg.RootFiles;
+        } else if (filtername == "Source Files") {
+            filter = singleCfg.SourceFiles;
+        } else if (filtername == "Header Files") {
+            filter = singleCfg.HeaderFiles;
+        } else if (filtername == "Generated Files") {
+            filter = singleCfg.GeneratedFiles;
+        } else if (filtername == "LexYacc Files") {
+            filter = singleCfg.LexYaccFiles;
+        } else if (filtername == "Translation Files") {
+            filter = singleCfg.TranslationFiles;
+        } else if (filtername == "Form Files") {
+            filter = singleCfg.FormFiles;
+        } else if (filtername == "Resource Files") {
+            filter = singleCfg.ResourceFiles;
+        } else {
+            // ExtraCompilers
+            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
+        }
+
+        if(!filter.Files.isEmpty() && !added) {
+            xmlFilter << tag("Filter")
+                      << attrTag("Include", filtername)
+                      << attrTagS("UniqueIdentifier", filter.Guid)
+                      << attrTagS("Extensions", filter.Filter)
+                      << attrTagT("ParseFiles", filter.ParseFiles)
+                      << closetag();
+        }
+    }
+}
+
+// outputs a given filter for all existing configurations of a project
+void VCXProjectWriter::outputFilter(VCXProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filtername)
+{
+    XNode *root;
+    if (project.SingleProjects.at(0).flat_files)
+        root = new XFlatNode;
+    else
+        root = new XTreeNode;
+
+    QString name, extfilter;
+    triState parse;
+
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        VCXFilter filter;
+        const VCXProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
+        if (filtername == "Root Files") {
+            filter = singleCfg.RootFiles;
+        } else if (filtername == "Source Files") {
+            filter = singleCfg.SourceFiles;
+        } else if (filtername == "Header Files") {
+            filter = singleCfg.HeaderFiles;
+        } else if (filtername == "Generated Files") {
+            filter = singleCfg.GeneratedFiles;
+        } else if (filtername == "LexYacc Files") {
+            filter = singleCfg.LexYaccFiles;
+        } else if (filtername == "Translation Files") {
+            filter = singleCfg.TranslationFiles;
+        } else if (filtername == "Form Files") {
+            filter = singleCfg.FormFiles;
+        } else if (filtername == "Resource Files") {
+            filter = singleCfg.ResourceFiles;
+        } else {
+            // ExtraCompilers
+            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
+        }
+
+        // Merge all files in this filter to root tree
+        for (int x = 0; x < filter.Files.count(); ++x)
+            root->addElement(filter.Files.at(x));
+
+        // Save filter setting from first filter. Next filters
+        // may differ but we cannot handle that. (ex. extfilter)
+        if (name.isEmpty()) {
+            name = filter.Name;
+            extfilter = filter.Filter;
+            parse = filter.ParseFiles;
+        }
+    }
+
+    if (!root->hasElements())
+        return;
+
+    root->generateXML(xml, xmlFilter, "", project, filtername); // output root tree
+}
+
+// Output all configurations (by filtername) for a file (by info)
+// A filters config output is in VCXFilter.outputFileConfig()
+void VCXProjectWriter::outputFileConfigs(VCXProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCXFilterFile &info, const QString &filtername)
+{
+    // We need to check if the file has any custom build step.
+    // If there is one then it has to be included with "CustomBuild Include"
+    bool fileAdded = false;
+
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        VCXFilter filter;
+        const VCXProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
+        if (filtername == "Root Files") {
+            filter = singleCfg.RootFiles;
+        } else if (filtername == "Source Files") {
+            filter = singleCfg.SourceFiles;
+        } else if (filtername == "Header Files") {
+            filter = singleCfg.HeaderFiles;
+        } else if (filtername == "Generated Files") {
+            filter = singleCfg.GeneratedFiles;
+        } else if (filtername == "LexYacc Files") {
+            filter = singleCfg.LexYaccFiles;
+        } else if (filtername == "Translation Files") {
+            filter = singleCfg.TranslationFiles;
+        } else if (filtername == "Form Files") {
+            filter = singleCfg.FormFiles;
+        } else if (filtername == "Resource Files") {
+            filter = singleCfg.ResourceFiles;
+        } else {
+            // ExtraCompilers
+            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
+        }
+
+        if (filter.Config) // only if the filter is not empty
+            if (outputFileConfig(filter, xml, xmlFilter, info.file, filtername, fileAdded)) // only add it once.
+                fileAdded = true;
+    }
+
+    if ( !fileAdded )
+    {
+        if (filtername == "Source Files") {
+
+            xmlFilter << tag("ClCompile")
+                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                      << attrTagS("Filter", filtername);
+
+            xml << tag("ClCompile")
+                << attrTag("Include",Option::fixPathToLocalOS(info.file));
+
+        } else if(filtername == "Header Files") {
+
+            xmlFilter << tag("ClInclude")
+                << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                << attrTagS("Filter", filtername);
+
+            xml << tag("ClInclude")
+                << attrTag("Include",Option::fixPathToLocalOS(info.file));
+        } else if(filtername == "Generated Files" || filtername == "Form Files") {
+
+            if (info.file.endsWith(".h")) {
+
+                xmlFilter << tag("ClInclude")
+                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                          << attrTagS("Filter", filtername);
+
+                xml << tag("ClInclude")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            } else if(info.file.endsWith(".cpp")) {
+
+                xmlFilter << tag("ClCompile")
+                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                          << attrTagS("Filter", filtername);
+
+                xml << tag("ClCompile")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            } else if(info.file.endsWith(".res")) {
+
+                    xmlFilter << tag("CustomBuild")
+                              << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            } else {
+
+                xmlFilter << tag("CustomBuild")
+                          << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                          << attrTagS("Filter", filtername);
+
+                xml << tag("CustomBuild")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            }
+
+        } else if(filtername == "Root Files") {
+
+            if (info.file.endsWith(".rc")) {
+
+                xmlFilter << tag("ResourceCompile")
+                          << attrTag("Include",Option::fixPathToLocalOS(info.file));
+
+                xml << tag("ResourceCompile")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+            }
+        } else {
+
+            xmlFilter << tag("None")
+                      << attrTag("Include",Option::fixPathToLocalOS(info.file))
+                      << attrTagS("Filter", filtername);
+
+                xml << tag("None")
+                    << attrTag("Include",Option::fixPathToLocalOS(info.file));
+        }
+    }
+
+    xml << closetag();
+    xmlFilter << closetag();
+}
+
+bool VCXProjectWriter::outputFileConfig(VCXFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded)
+{
+    bool fileAdded = false;
+
+    // Clearing each filter tool
+    filter.useCustomBuildTool = false;
+    filter.useCompilerTool = false;
+    filter.CustomBuildTool = VCXCustomBuildTool();
+    filter.CompilerTool = VCXCLCompilerTool();
+
+    // Unset some default options
+    filter.CompilerTool.BufferSecurityCheck = unset;
+    filter.CompilerTool.DebugInformationFormat = "";
+    filter.CompilerTool.ExceptionHandling = "";
+    filter.CompilerTool.ProgramDataBaseFileName.clear();
+    filter.CompilerTool.RuntimeLibrary = "";
+    filter.CompilerTool.config = filter.Config;
+
+    bool inBuild = false;
+    VCXFilterFile info;
+    for (int i = 0; i < filter.Files.count(); ++i) {
+        if (filter.Files.at(i).file == filename) {
+            info = filter.Files.at(i);
+            inBuild = true;
+        }
+    }
+    inBuild &= !info.excludeFromBuild;
+
+    if (inBuild) {
+        filter.addExtraCompiler(info);
+        if (filter.Project->usePCH)
+            filter.modifyPCHstage(info.file);
+    } else {
+        // Excluded files uses an empty compiler stage
+        if(info.excludeFromBuild)
+            filter.useCompilerTool = true;
+    }
+
+    // Actual XML output ----------------------------------
+    if (filter.useCustomBuildTool || filter.useCompilerTool || !inBuild) {
+
+        if (filter.useCustomBuildTool)
+        {
+            filter.CustomBuildTool.ConfigName = (*filter.Config).Name;
+
+            if ( !fileAllreadyAdded ) {
+
+                fileAdded = true;
+
+                xmlFilter << tag("CustomBuild")
+                    << attrTag("Include",Option::fixPathToLocalOS(filename))
+                    << attrTagS("Filter", filtername);
+
+                xml << tag("CustomBuild")
+                    << attrTag("Include",Option::fixPathToLocalOS(filename));
+
+                if ( filtername == "Form Files" || filtername == "Generated Files" || filtername == "Resource Files" )
+                    xml << attrTagS("FileType", "Document");
+            }
+
+            filter.Project->projectWriter->write(xml, filter.CustomBuildTool);
+        }
+
+        if ( !fileAdded && !fileAllreadyAdded )
+        {
+            fileAdded = true;
+
+            if (filtername == "Source Files") {
+
+                xmlFilter << tag("ClCompile")
+                          << attrTag("Include",Option::fixPathToLocalOS(filename))
+                          << attrTagS("Filter", filtername);
+
+                xml << tag("ClCompile")
+                    << attrTag("Include",Option::fixPathToLocalOS(filename));
+
+            } else if(filtername == "Header Files") {
+
+                xmlFilter << tag("ClInclude")
+                    << attrTag("Include",Option::fixPathToLocalOS(filename))
+                    << attrTagS("Filter", filtername);
+
+                xml << tag("ClInclude")
+                    << attrTag("Include",Option::fixPathToLocalOS(filename));
+            } else if(filtername == "Generated Files" || filtername == "Form Files") {
+
+                if (filename.endsWith(".h")) {
+
+                    xmlFilter << tag("ClInclude")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("ClInclude")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                } else if(filename.endsWith(".cpp")) {
+
+                    xmlFilter << tag("ClCompile")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("ClCompile")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                } else if(filename.endsWith(".res")) {
+
+                    xmlFilter << tag("CustomBuild")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                } else {
+
+                    xmlFilter << tag("CustomBuild")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename))
+                              << attrTagS("Filter", filtername);
+
+                    xml << tag("CustomBuild")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                }
+            } else if(filtername == "Root Files") {
+
+                if (filename.endsWith(".rc")) {
+
+                    xmlFilter << tag("ResourceCompile")
+                              << attrTag("Include",Option::fixPathToLocalOS(filename));
+
+                    xml << tag("ResourceCompile")
+                        << attrTag("Include",Option::fixPathToLocalOS(filename));
+                }
+            }
+        }
+
+        if(!inBuild) {
+
+            xml << tag("ExcludedFromBuild")
+                << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                << valueTag("true");
+        }
+
+        if (filter.useCompilerTool) {
+
+            if ( !filter.CompilerTool.ForcedIncludeFiles.isEmpty() ) {
+                xml << tag("ForcedIncludeFiles")
+                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << valueTagX(filter.CompilerTool.ForcedIncludeFiles);
+            }
+
+            if ( !filter.CompilerTool.PrecompiledHeaderFile.isEmpty() ) {
+
+                xml << tag("PrecompiledHeaderFile")
+                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << valueTag(filter.CompilerTool.PrecompiledHeaderFile);
+            }
+
+            if ( !filter.CompilerTool.PrecompiledHeader.isEmpty() ) {
+
+                xml << tag("PrecompiledHeader")
+                    << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
+                    << valueTag(filter.CompilerTool.PrecompiledHeader);
+            }
+        }
+    }
+
+    return fileAdded;
 }
 
 QT_END_NAMESPACE

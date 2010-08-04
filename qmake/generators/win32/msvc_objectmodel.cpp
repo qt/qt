@@ -2071,12 +2071,13 @@ void VCFilter::outputFileConfig(XmlOutput &xml, const QString &filename)
 }
 
 // VCProjectSingleConfig --------------------------------------------
-VCFilter nullFilter;
 VCFilter& VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
 {
     for (int i = 0; i < ExtraCompilersFiles.count(); ++i)
         if (ExtraCompilersFiles.at(i).Name == compilerName)
             return ExtraCompilersFiles[i];
+
+    static VCFilter nullFilter;
     return nullFilter;
 }
 

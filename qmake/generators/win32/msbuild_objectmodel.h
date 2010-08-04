@@ -476,12 +476,11 @@ public:
     VCXFilter();
     ~VCXFilter(){};
 
-    void addFile(const QString& filename);
-    void addFile(const VCXFilterFile& fileInfo);
-    void addFiles(const QStringList& fileList);
-    bool addExtraCompiler(const VCXFilterFile &info);
-    void modifyPCHstage(QString str);
-    bool outputFileConfig(XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded);
+    void addFile(const QString& filename);  // equal
+    void addFile(const VCXFilterFile& fileInfo);// equal
+    void addFiles(const QStringList& fileList);// equal
+    bool addExtraCompiler(const VCXFilterFile &info); //equal
+    void modifyPCHstage(QString str); //almost equal -> file comment .vcxproj, PrecompiledHeader property
 
     // Variables
     QString                 Name;
@@ -544,6 +543,7 @@ public:
 
     // Accessor for extracompilers
     VCXFilter               &filterForExtraCompiler(const QString &compilerName);
+    // ### this function is the same as in VCProjectSingleConfig ----> DIE DIE DIE
 };
 
 
@@ -673,26 +673,12 @@ public:
 
     // List of all extracompilers
     QStringList             ExtraCompilers;
-
-    // Functions
-    void                    outputFilter(XmlOutput &xml,
-                                         XmlOutput &xmlFilter,
-                                         const QString &filtername);
-
-    void                    outputFileConfigs(XmlOutput &xml,
-                                              XmlOutput &xmlFilter,
-                                              const VCXFilterFile &info,
-                                              const QString &filtername);
-
-    void                    addFilters(XmlOutput &xmlFilter,
-                                       const QString &filtername);
-
 };
 
 class VCXProjectWriter : public VCProjectWriter
 {
 public:
-    // ### replace the X classes by the standard names!
+    // ### replace the X classes with the standard names!
     void write(XmlOutput &, VCXProjectSingleConfig &);
     void write(XmlOutput &, VCXProject &);
 
@@ -706,6 +692,15 @@ public:
     void write(XmlOutput &, const VCDeploymentTool &);
     void write(XmlOutput &, const VCXConfiguration &);
     void write(XmlOutput &, VCFilter &);
+
+private:
+    static void addFilters(VCXProject &project, XmlOutput &xmlFilter, const QString &filterName);
+    static void outputFilter(VCXProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filtername);
+    static void outputFileConfigs(VCXProject &project, XmlOutput &xml, XmlOutput &xmlFilter, const VCXFilterFile &info, const QString &filtername);
+    static bool outputFileConfig(VCXFilter &filter, XmlOutput &xml, XmlOutput &xmlFilter, const QString &filename, const QString &filtername, bool fileAllreadyAdded);
+
+    friend class XTreeNode;
+    friend class XFlatNode;
 };
 
 QT_END_NAMESPACE
