@@ -1062,18 +1062,23 @@ public:
                                               const QString &filtername);
 };
 
-XmlOutput &operator<<(XmlOutput &, const VCCLCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCLinkerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCMIDLTool &);
-XmlOutput &operator<<(XmlOutput &, const VCCustomBuildTool &);
-XmlOutput &operator<<(XmlOutput &, const VCLibrarianTool &);
-XmlOutput &operator<<(XmlOutput &, const VCResourceCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCEventTool &);
-XmlOutput &operator<<(XmlOutput &, const VCDeploymentTool &);
-XmlOutput &operator<<(XmlOutput &, const VCConfiguration &);
-XmlOutput &operator<<(XmlOutput &, VCFilter &);
-XmlOutput &operator<<(XmlOutput &, const VCProjectSingleConfig &);
-XmlOutput &operator<<(XmlOutput &, VCProject &);
+class VCProjectWriter
+{
+public:
+    virtual void write(XmlOutput &, VCProjectSingleConfig &);
+    virtual void write(XmlOutput &, VCProject &);
+
+    virtual void write(XmlOutput &, const VCCLCompilerTool &);
+    virtual void write(XmlOutput &, const VCLinkerTool &);
+    virtual void write(XmlOutput &, const VCMIDLTool &);
+    virtual void write(XmlOutput &, const VCCustomBuildTool &);
+    virtual void write(XmlOutput &, const VCLibrarianTool &);
+    virtual void write(XmlOutput &, const VCResourceCompilerTool &);
+    virtual void write(XmlOutput &, const VCEventTool &);
+    virtual void write(XmlOutput &, const VCDeploymentTool &);
+    virtual void write(XmlOutput &, const VCConfiguration &);
+    virtual void write(XmlOutput &, VCFilter &);
+};
 
 QT_END_NAMESPACE
 

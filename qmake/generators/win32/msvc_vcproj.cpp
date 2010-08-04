@@ -205,8 +205,17 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
                                   "\n\tEndGlobalSection";
 // ------------------------------------------------------------------
 
-VcprojGenerator::VcprojGenerator() : Win32MakefileGenerator(), init_flag(false)
+VcprojGenerator::VcprojGenerator()
+    : Win32MakefileGenerator(),
+      init_flag(false),
+      projectWriter(0)
 {
+    projectWriter = new VCProjectWriter;
+}
+
+VcprojGenerator::~VcprojGenerator()
+{
+    delete projectWriter;
 }
 
 bool VcprojGenerator::writeMakefile(QTextStream &t)
@@ -229,7 +238,7 @@ bool VcprojGenerator::writeMakefile(QTextStream &t)
         if(!project->isActiveConfig("build_pass")) {
             debug_msg(1, "Generator: MSVC.NET: Writing single configuration project file");
             XmlOutput xmlOut(t);
-            xmlOut << vcProject;
+            projectWriter->write(xmlOut, vcProject);
         }
         return true;
     }
@@ -281,7 +290,7 @@ bool VcprojGenerator::writeProjectMakefile()
         mergedProject.PlatformName = mergedProjects.at(0)->vcProject.PlatformName;
 
         XmlOutput xmlOut(t);
-        xmlOut << mergedProject;
+        projectWriter->write(xmlOut, mergedProject);
         return true;
     } else if(project->first("TEMPLATE") == "vcsubdirs") {
         return writeMakefile(t);

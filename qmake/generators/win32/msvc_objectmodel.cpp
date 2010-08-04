@@ -369,82 +369,6 @@ inline XmlOutput::xml_output xformExceptionHandlingNET2005(exceptionHandling eh,
     return attrS(_ExceptionHandling, (eh == ehNoSEH ? "true" : "false"));
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCCLCompilerTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, _VCCLCompilerTool)
-            << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
-            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
-            << attrX(_AdditionalUsingDirectories, tool.AdditionalUsingDirectories)
-            << attrS(_AssemblerListingLocation, tool.AssemblerListingLocation)
-            << attrE(_AssemblerOutput, tool.AssemblerOutput, /*ifNot*/ asmListingNone)
-            << attrE(_BasicRuntimeChecks, tool.BasicRuntimeChecks, /*ifNot*/ runtimeBasicCheckNone)
-            << attrE(_BrowseInformation, tool.BrowseInformation, /*ifNot*/ brInfoNone)
-            << attrS(_BrowseInformationFile, tool.BrowseInformationFile)
-            << attrT(_BufferSecurityCheck, tool.BufferSecurityCheck)
-            << attrE(_CallingConvention, tool.CallingConvention, /*ifNot*/ callConventionDefault)
-            << attrE(_CompileAs, tool.CompileAs, compileAsDefault)
-            << attrE(_CompileAsManaged, tool.CompileAsManaged, /*ifNot*/ managedDefault)
-            << attrT(_CompileOnly, tool.CompileOnly)
-            << attrE(_DebugInformationFormat, tool.DebugInformationFormat, /*ifNot*/ debugUnknown)
-            << attrT(_DefaultCharIsUnsigned, tool.DefaultCharIsUnsigned)
-            << attrT(_Detect64BitPortabilityProblems, tool.Detect64BitPortabilityProblems)
-            << attrT(_DisableLanguageExtensions, tool.DisableLanguageExtensions)
-            << attrX(_DisableSpecificWarnings, tool.DisableSpecificWarnings)
-            << attrE(_EnableEnhancedInstructionSet, tool.EnableEnhancedInstructionSet, /*ifnot*/ archNotSet)
-            << attrT(_EnableFiberSafeOptimizations, tool.EnableFiberSafeOptimizations)
-            << attrT(_EnableFunctionLevelLinking, tool.EnableFunctionLevelLinking)
-            << attrT(_EnableIntrinsicFunctions, tool.EnableIntrinsicFunctions)
-            << xformExceptionHandlingNET2005(tool.ExceptionHandling, tool.config->CompilerVersion)
-            << attrT(_ExpandAttributedSource, tool.ExpandAttributedSource)
-            << attrE(_FavorSizeOrSpeed, tool.FavorSizeOrSpeed, /*ifNot*/ favorNone)
-
-            << attrE(_FloatingPointModel, tool.FloatingPointModel, /*ifNot*/ floatingPointNotSet)
-            << attrT(_FloatingPointExceptions, tool.FloatingPointExceptions)
-
-            << attrT(_ForceConformanceInForLoopScope, tool.ForceConformanceInForLoopScope)
-            << attrX(_ForcedIncludeFiles, tool.ForcedIncludeFiles)
-            << attrX(_ForcedUsingFiles, tool.ForcedUsingFiles)
-            << attrE(_GeneratePreprocessedFile, tool.GeneratePreprocessedFile, /*ifNot*/ preprocessUnknown)
-            << attrT(_GlobalOptimizations, tool.GlobalOptimizations)
-            << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
-            << attrT(_ImproveFloatingPointConsistency, tool.ImproveFloatingPointConsistency)
-            << attrE(_InlineFunctionExpansion, tool.InlineFunctionExpansion, /*ifNot*/ expandDefault)
-            << attrT(_KeepComments, tool.KeepComments)
-            << attrT(_MinimalRebuild, tool.MinimalRebuild)
-            << attrS(_ObjectFile, tool.ObjectFile)
-            << attrT(_OmitFramePointers, tool.OmitFramePointers)
-            << attrT(_OpenMP, tool.OpenMP)
-            << attrE(_Optimization, tool.Optimization, /*ifNot*/ optimizeDefault)
-            << attrE(_OptimizeForProcessor, tool.OptimizeForProcessor, /*ifNot*/ procOptimizeBlended)
-            << attrT(_OptimizeForWindowsApplication, tool.OptimizeForWindowsApplication)
-            << attrS(_OutputFile, tool.OutputFile)
-            << attrS(_PrecompiledHeaderFile, tool.PrecompiledHeaderFile)
-            << attrS(_PrecompiledHeaderThrough, tool.PrecompiledHeaderThrough)
-            << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
-            << (tool.ProgramDataBaseFileName.isNull() ? noxml() : attr(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName))
-            << attrE(_RuntimeLibrary, tool.RuntimeLibrary, /*ifNot*/ rtUnknown)
-            << attrT(_RuntimeTypeInfo, tool.RuntimeTypeInfo)
-            << attrT(_ShowIncludes, tool.ShowIncludes)
-            << attrT(_SmallerTypeCheck, tool.SmallerTypeCheck)
-            << attrT(_StringPooling, tool.StringPooling)
-            << attrE(_StructMemberAlignment, tool.StructMemberAlignment, /*ifNot*/ alignNotSet)
-            << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-            << attrT(_TreatWChar_tAsBuiltInType, tool.TreatWChar_tAsBuiltInType)
-            << attrT(_TurnOffAssemblyGeneration, tool.TurnOffAssemblyGeneration)
-            << attrT(_UndefineAllPreprocessorDefinitions, tool.UndefineAllPreprocessorDefinitions)
-            << attrX(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
-            << (!tool.PrecompiledHeaderFile.isEmpty() || !tool.PrecompiledHeaderThrough.isEmpty() ? xformUsePrecompiledHeaderForNET2005(tool.UsePrecompiledHeader, tool.config->CompilerVersion) : noxml())
-            << attrT(_WarnAsError, tool.WarnAsError)
-            << attrE(_WarningLevel, tool.WarningLevel, /*ifNot*/ warningLevelUnknown)
-            << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization)
-            << attrE(_CompileForArchitecture, tool.CompileForArchitecture, /*ifNot*/ archUnknown)
-            << attrT(_InterworkCalls, tool.InterworkCalls)
-
-        << closetag(_Tool);
-}
-
 bool VCCLCompilerTool::parseOption(const char* option)
 {
     // skip index 0 ('/' or '-')
@@ -1149,67 +1073,6 @@ VCLinkerTool::VCLinkerTool()
 {
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCLinkerTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, _VCLinkerTool)
-            << attrX(_AdditionalDependencies, tool.AdditionalDependencies, " ")
-            << attrX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories)
-            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
-            << attrX(_AddModuleNamesToAssembly, tool.AddModuleNamesToAssembly)
-            << attrS(_BaseAddress, tool.BaseAddress)
-            << attrX(_DelayLoadDLLs, tool.DelayLoadDLLs)
-            << attrE(_EnableCOMDATFolding, tool.EnableCOMDATFolding, /*ifNot*/ optFoldingDefault)
-            << attrS(_EntryPointSymbol, tool.EntryPointSymbol)
-            << attrX(_ForceSymbolReferences, tool.ForceSymbolReferences)
-            << attrS(_FunctionOrder, tool.FunctionOrder)
-            << attrT(_GenerateDebugInformation, tool.GenerateDebugInformation)
-            << attrT(_GenerateMapFile, tool.GenerateMapFile)
-            << attrL(_HeapCommitSize, tool.HeapCommitSize, /*ifNot*/ -1)
-            << attrL(_HeapReserveSize, tool.HeapReserveSize, /*ifNot*/ -1)
-            << attrT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
-            << attrX(_IgnoreDefaultLibraryNames, tool.IgnoreDefaultLibraryNames)
-            << attrT(_IgnoreEmbeddedIDL, tool.IgnoreEmbeddedIDL)
-            << attrT(_IgnoreImportLibrary, tool.IgnoreImportLibrary)
-            << attrS(_ImportLibrary, tool.ImportLibrary)
-            << attrE(_LargeAddressAware, tool.LargeAddressAware, /*ifNot*/ addrAwareDefault)
-            << attrT(_LinkDLL, tool.LinkDLL)
-            << attrE(_LinkIncremental, tool.LinkIncremental, /*ifNot*/ linkIncrementalDefault)
-            << attrE(_LinkTimeCodeGeneration, tool.LinkTimeCodeGeneration)
-            << attrS(_LinkToManagedResourceFile, tool.LinkToManagedResourceFile)
-            << attrT(_MapExports, tool.MapExports)
-            << attrS(_MapFileName, tool.MapFileName)
-            << attrT(_MapLines, tool.MapLines)
-            << attrS(_MergedIDLBaseFileName, tool.MergedIDLBaseFileName)
-            << attrS(_MergeSections, tool.MergeSections)
-            << attrS(_MidlCommandFile, tool.MidlCommandFile)
-            << attrS(_ModuleDefinitionFile, tool.ModuleDefinitionFile)
-            << attrE(_OptimizeForWindows98, tool.OptimizeForWindows98, /*ifNot*/ optWin98Default)
-            << attrE(_OptimizeReferences, tool.OptimizeReferences, /*ifNot*/ optReferencesDefault)
-            << attrS(_OutputFile, tool.OutputFile)
-            << attr(_ProgramDatabaseFile, tool.ProgramDatabaseFile)
-            << attrT(_RegisterOutput, tool.RegisterOutput)
-            << attrT(_ResourceOnlyDLL, tool.ResourceOnlyDLL)
-            << attrT(_SetChecksum, tool.SetChecksum)
-            << attrE(_ShowProgress, tool.ShowProgress, /*ifNot*/ linkProgressNotSet)
-            << attrL(_StackCommitSize, tool.StackCommitSize, /*ifNot*/ -1)
-            << attrL(_StackReserveSize, tool.StackReserveSize, /*ifNot*/ -1)
-            << attrS(_StripPrivateSymbols, tool.StripPrivateSymbols)
-            << attrE(_SubSystem, tool.SubSystem)
-            << attrT(_SupportUnloadOfDelayLoadedDLL, tool.SupportUnloadOfDelayLoadedDLL)
-            << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-            << attrT(_SwapRunFromCD, tool.SwapRunFromCD)
-            << attrT(_SwapRunFromNet, tool.SwapRunFromNet)
-            << attrE(_TargetMachine, tool.TargetMachine, /*ifNot*/ machineNotSet)
-            << attrE(_TerminalServerAware, tool.TerminalServerAware, /*ifNot*/ termSvrAwareDefault)
-            << attrT(_TurnOffAssemblyGeneration, tool.TurnOffAssemblyGeneration)
-            << attrS(_TypeLibraryFile, tool.TypeLibraryFile)
-            << attrL(_TypeLibraryResourceID, tool.TypeLibraryResourceID, /*ifNot*/ rcUseDefault)
-            << attrS(_Version, tool.Version)
-        << closetag(_Tool);
-}
-
 // Hashing routine to do fast option lookups ----
 // Slightly rewritten to stop on ':' ',' and '\0'
 // Original routine in qtranslator.cpp ----------
@@ -1608,44 +1471,6 @@ VCMIDLTool::VCMIDLTool()
 {
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCMIDLTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, _VCMIDLTool)
-            << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
-            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
-            << attrX(_CPreprocessOptions, tool.CPreprocessOptions)
-            << attrE(_DefaultCharType, tool.DefaultCharType)
-            << attrS(_DLLDataFileName, tool.DLLDataFileName)
-            << attrE(_EnableErrorChecks, tool.EnableErrorChecks)
-            << attrT(_ErrorCheckAllocations, tool.ErrorCheckAllocations)
-            << attrT(_ErrorCheckBounds, tool.ErrorCheckBounds)
-            << attrT(_ErrorCheckEnumRange, tool.ErrorCheckEnumRange)
-            << attrT(_ErrorCheckRefPointers, tool.ErrorCheckRefPointers)
-            << attrT(_ErrorCheckStubData, tool.ErrorCheckStubData)
-            << attrX(_FullIncludePath, tool.FullIncludePath)
-            << attrT(_GenerateStublessProxies, tool.GenerateStublessProxies)
-            << attrT(_GenerateTypeLibrary, tool.GenerateTypeLibrary)
-            << attrS(_HeaderFileName, tool.HeaderFileName)
-            << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
-            << attrS(_InterfaceIdentifierFileName, tool.InterfaceIdentifierFileName)
-            << attrT(_MkTypLibCompatible, tool.MkTypLibCompatible)
-            << attrS(_OutputDirectory, tool.OutputDirectory)
-            << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
-            << attrS(_ProxyFileName, tool.ProxyFileName)
-            << attrS(_RedirectOutputAndErrors, tool.RedirectOutputAndErrors)
-            << attrE(_StructMemberAlignment, tool.StructMemberAlignment, /*ifNot*/ midlAlignNotSet)
-            << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-            << attrE(_TargetEnvironment, tool.TargetEnvironment, /*ifNot*/ midlTargetNotSet)
-            << attrS(_TypeLibraryName, tool.TypeLibraryName)
-            << attrX(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
-            << attrT(_ValidateParameters, tool.ValidateParameters)
-            << attrT(_WarnAsError, tool.WarnAsError)
-            << attrE(_WarningLevel, tool.WarningLevel)
-        << closetag(_Tool);
-}
-
 bool VCMIDLTool::parseOption(const char* option)
 {
 #ifdef USE_DISPLAY_HASH
@@ -1886,66 +1711,10 @@ VCLibrarianTool::VCLibrarianTool()
 {
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCLibrarianTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, _VCLibrarianTool)
-            << attrX(_AdditionalDependencies, tool.AdditionalDependencies)
-            << attrX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories)
-            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
-            << attrX(_ExportNamedFunctions, tool.ExportNamedFunctions)
-            << attrX(_ForceSymbolReferences, tool.ForceSymbolReferences)
-            << attrT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
-            << attrX(_IgnoreDefaultLibraryNames, tool.IgnoreDefaultLibraryNames)
-            << attrS(_ModuleDefinitionFile, tool.ModuleDefinitionFile)
-            << attrS(_OutputFile, tool.OutputFile)
-            << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-        << closetag(_Tool);
-}
-
 // VCCustomBuildTool ------------------------------------------------
 VCCustomBuildTool::VCCustomBuildTool()
 {
     ToolName = "VCCustomBuildTool";
-}
-
-XmlOutput &operator<<(XmlOutput &xml, const VCCustomBuildTool &tool)
-{
-    // The code below offers two ways to split custom build step commands.
-    // Normally the $$escape_expand(\n\t) is used in a project file, which is correctly translated
-    // in all generators. However, if you use $$escape_expand(\n\r) (or \n\h) instead, the VCPROJ
-    // generator will instead of binding the commands with " && " will insert a proper newline into
-    // the VCPROJ file. We sometimes use this method of splitting commands if the custom buildstep
-    // contains a command-line which is too big to run on certain OS.
-    QString cmds;
-    int end = tool.CommandLine.count();
-    for(int i = 0; i < end; ++i) {
-        QString cmdl = tool.CommandLine.at(i);
-        if (cmdl.contains("\r\t")) {
-            if (i == end - 1)
-                cmdl = cmdl.trimmed();
-            cmdl.replace("\r\t", " && ");
-        } else if (cmdl.contains("\r\n")) {
-            ;
-        } else if (cmdl.contains("\r\\h")) {
-            // The above \r\n should work, but doesn't, so we have this hack
-            cmdl.replace("\r\\h", "\r\n");
-        } else {
-            if (i < end - 1)
-                cmdl += " && ";
-        }
-        cmds += cmdl;
-    }
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, tool.ToolName)
-            << attrX(_AdditionalDependencies, tool.AdditionalDependencies, ";")
-            << attrS(_CommandLine, cmds)
-            << attrS(_Description, tool.Description)
-            << attrX(_Outputs, tool.Outputs, ";")
-            << attrS(_Path, tool.ToolPath)
-        << closetag(_Tool);
 }
 
 // VCResourceCompilerTool -------------------------------------------
@@ -1957,54 +1726,12 @@ VCResourceCompilerTool::VCResourceCompilerTool()
     PreprocessorDefinitions = QStringList("NDEBUG");
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCResourceCompilerTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, _VCResourceCompilerTool)
-            << attrS(_Path, tool.ToolPath)
-            << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
-            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
-            << attrE(_Culture, tool.Culture, /*ifNot*/ rcUseDefault)
-            << attrX(_FullIncludePath, tool.FullIncludePath)
-            << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
-            << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
-            << attrS(_ResourceOutputFileName, tool.ResourceOutputFileName)
-            << attrE(_ShowProgress, tool.ShowProgress, /*ifNot*/ linkProgressNotSet)
-        << closetag(_Tool);
-}
-
 // VCDeploymentTool --------------------------------------------
 VCDeploymentTool::VCDeploymentTool()
     :   RegisterOutput(registerNo)
 {
     DeploymentTag = "DeploymentTool";
     RemoteDirectory = "";
-}
-
-XmlOutput &operator<<(XmlOutput &xml, const VCDeploymentTool &tool)
-{
-    if (tool.AdditionalFiles.isEmpty())
-        return xml;
-    return xml
-        << tag(tool.DeploymentTag)
-        << attrS(_RemoteDirectory, tool.RemoteDirectory)
-        << attrE(_RegisterOutput, tool.RegisterOutput)
-        << attrS(_AdditionalFiles, tool.AdditionalFiles)
-        << closetag(tool.DeploymentTag);
-}
-
-// VCEventTool -------------------------------------------------
-XmlOutput &operator<<(XmlOutput &xml, const VCEventTool &tool)
-{
-    return xml
-        << tag(_Tool)
-            << attrS(_Name, tool.ToolName)
-            << attrS(_Path, tool.ToolPath)
-            << attrS(_CommandLine, tool.CommandLine)
-            << attrS(_Description, tool.Description)
-            << attrT(_ExcludedFromBuild, tool.ExcludedFromBuild)
-        << closetag(_Tool);
 }
 
 // VCPostBuildEventTool ---------------------------------------------
@@ -2042,39 +1769,6 @@ VCConfiguration::VCConfiguration()
     idl.config = this;
 }
 
-XmlOutput &operator<<(XmlOutput &xml, const VCConfiguration &tool)
-{
-    xml << tag(_Configuration)
-            << attrS(_Name, tool.Name)
-            << attrS(_OutputDirectory, tool.OutputDirectory)
-            << attrT(_ATLMinimizesCRunTimeLibraryUsage, tool.ATLMinimizesCRunTimeLibraryUsage)
-            << attrT(_BuildBrowserInformation, tool.BuildBrowserInformation)
-            << attrE(_CharacterSet, tool.CharacterSet, /*ifNot*/ charSetNotSet)
-            << attrE(_ConfigurationType, tool.ConfigurationType)
-            << attrS(_DeleteExtensionsOnClean, tool.DeleteExtensionsOnClean)
-            << attrS(_ImportLibrary, tool.ImportLibrary)
-            << attrS(_IntermediateDirectory, tool.IntermediateDirectory)
-            << attrS(_PrimaryOutput, tool.PrimaryOutput)
-            << attrS(_ProgramDatabase, tool.ProgramDatabase)
-            << attrT(_RegisterOutput, tool.RegisterOutput)
-            << attrE(_UseOfATL, tool.UseOfATL, /*ifNot*/ useATLNotSet)
-            << attrE(_UseOfMfc, tool.UseOfMfc)
-            << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization)
-            << tool.compiler
-            << tool.custom;
-    if (tool.ConfigurationType == typeStaticLibrary)
-        xml << tool.librarian;
-    else
-        xml << tool.linker;
-    xml     << tool.idl
-            << tool.postBuild
-            << tool.preBuild
-            << tool.preLink
-            << tool.resource
-            << tool.deployment
-        << closetag(_Configuration);
-    return xml;
-}
 // VCFilter ---------------------------------------------------------
 VCFilter::VCFilter()
     :   ParseFiles(unset),
@@ -2369,36 +2063,11 @@ void VCFilter::outputFileConfig(XmlOutput &xml, const QString &filename)
                 << attr(_Name, (*Config).Name)
                 << (!inBuild ? attrS(_ExcludedFromBuild, "true") : noxml());
         if (useCustomBuildTool)
-            xml << CustomBuildTool;
+            Project->projectWriter->write(xml, CustomBuildTool);
         if (useCompilerTool)
-            xml << CompilerTool;
+            Project->projectWriter->write(xml, CompilerTool);
         xml << closetag(_FileConfiguration);
     }
-}
-
-XmlOutput &operator<<(XmlOutput &xml, VCFilter &tool)
-{
-    if(!tool.Files.count())
-        return xml;
-
-    if (!tool.Name.isEmpty()) {
-        xml << tag(_Filter)
-                << attrS(_Name, tool.Name)
-                << attrS(_Filter, tool.Filter)
-                << attrS(_UniqueIdentifier, tool.Guid)
-                << attrT(_ParseFiles, tool.ParseFiles);
-    }
-    for (int i = 0; i < tool.Files.count(); ++i) {
-        const VCFilterFile &info = tool.Files.at(i);
-        xml << tag(q_File)
-                << attrS(_RelativePath, Option::fixPathToLocalOS(info.file))
-            << data(); // In case no custom builds, to avoid "/>" endings
-        tool.outputFileConfig(xml, tool.Files.at(i).file);
-        xml << closetag(q_File);
-    }
-    if (!tool.Name.isEmpty())
-        xml << closetag(_Filter);
-    return xml;
 }
 
 // VCProjectSingleConfig --------------------------------------------
@@ -2410,48 +2079,6 @@ VCFilter& VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerN
             return ExtraCompilersFiles[i];
     return nullFilter;
 }
-
-
-XmlOutput &operator<<(XmlOutput &xml, const VCProjectSingleConfig &tool)
-{
-    xml << decl("1.0", "Windows-1252")
-        << tag(_VisualStudioProject)
-            << attrS(_ProjectType, "Visual C++")
-            << attrS(_Version, tool.Version)
-            << attrS(_Name, tool.Name)
-            << attrS(_ProjectGUID, tool.ProjectGUID)
-            << attrS(_Keyword, tool.Keyword)
-            << attrS(_SccProjectName, tool.SccProjectName)
-            << attrS(_SccLocalPath, tool.SccLocalPath)
-            << tag(_Platforms)
-                << tag(_Platform)
-                    << attrS(_Name, tool.PlatformName)
-            << closetag(_Platforms)
-            << tag(_Configurations)
-            << tool.Configuration;
-    xml     << closetag(_Configurations)
-            << tag(q_Files);
-    // Add this configuration into a multi-config project, since that's where we have the flat/tree
-    // XML output functionality
-    VCProject tempProj;
-    tempProj.SingleProjects += tool;
-    tempProj.outputFilter(xml, "Sources");
-    tempProj.outputFilter(xml, "Headers");
-    tempProj.outputFilter(xml, "GeneratedFiles");
-    tempProj.outputFilter(xml, "LexYaccFiles");
-    tempProj.outputFilter(xml, "TranslationFiles");
-    tempProj.outputFilter(xml, "FormFiles");
-    tempProj.outputFilter(xml, "ResourceFiles");
-    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
-        tempProj.outputFilter(xml, tempProj.ExtraCompilers.at(x));
-    }
-    tempProj.outputFilter(xml, "RootFiles");
-    xml     << closetag(q_Files)
-            << tag(_Globals)
-                << data(); // No "/>" end tag
-    return xml;
-}
-
 
 // Tree file generation ---------------------------------------------
 void TreeNode::generateXML(XmlOutput &xml, const QString &tagName, VCProject &tool, const QString &filter) {
@@ -2599,11 +2226,50 @@ void VCProject::outputFilter(XmlOutput &xml,
         xml << closetag(_Filter);
 }
 
-XmlOutput &operator<<(XmlOutput &xml, VCProject &tool)
+void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
+{
+    xml << decl("1.0", "Windows-1252")
+        << tag(_VisualStudioProject)
+        << attrS(_ProjectType, "Visual C++")
+        << attrS(_Version, tool.Version)
+        << attrS(_Name, tool.Name)
+        << attrS(_ProjectGUID, tool.ProjectGUID)
+        << attrS(_Keyword, tool.Keyword)
+        << attrS(_SccProjectName, tool.SccProjectName)
+        << attrS(_SccLocalPath, tool.SccLocalPath)
+        << tag(_Platforms)
+        << tag(_Platform)
+        << attrS(_Name, tool.PlatformName)
+        << closetag(_Platforms)
+        << tag(_Configurations);
+    write(xml, tool.Configuration);
+    xml << closetag(_Configurations)
+        << tag(q_Files);
+    // Add this configuration into a multi-config project, since that's where we have the flat/tree
+    // XML output functionality
+    VCProject tempProj;
+    tempProj.SingleProjects += tool;
+    tempProj.outputFilter(xml, "Sources");
+    tempProj.outputFilter(xml, "Headers");
+    tempProj.outputFilter(xml, "GeneratedFiles");
+    tempProj.outputFilter(xml, "LexYaccFiles");
+    tempProj.outputFilter(xml, "TranslationFiles");
+    tempProj.outputFilter(xml, "FormFiles");
+    tempProj.outputFilter(xml, "ResourceFiles");
+    for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
+        tempProj.outputFilter(xml, tempProj.ExtraCompilers.at(x));
+    }
+    tempProj.outputFilter(xml, "RootFiles");
+    xml     << closetag(q_Files)
+            << tag(_Globals)
+                << data(); // No "/>" end tag
+}
+
+void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
 {
     if (tool.SingleProjects.count() == 0) {
         warn_msg(WarnLogic, "Generator: .NET: no single project in merge project, no output");
-        return xml;
+        return;
     }
 
     xml << decl("1.0", "Windows-1252")
@@ -2622,7 +2288,7 @@ XmlOutput &operator<<(XmlOutput &xml, VCProject &tool)
             << tag(_Configurations);
     // Output each configuration
     for (int i = 0; i < tool.SingleProjects.count(); ++i)
-        xml     << tool.SingleProjects.at(i).Configuration;
+        write(xml, tool.SingleProjects.at(i).Configuration);
     xml     << closetag(_Configurations)
             << tag(q_Files);
     tool.outputFilter(xml, "Sources");
@@ -2639,7 +2305,330 @@ XmlOutput &operator<<(XmlOutput &xml, VCProject &tool)
     xml     << closetag(q_Files)
             << tag(_Globals)
             << data(); // No "/>" end tag
-    return xml;
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
+{
+    xml << tag(_Tool)
+        << attrS(_Name, _VCCLCompilerTool)
+        << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
+        << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
+        << attrX(_AdditionalUsingDirectories, tool.AdditionalUsingDirectories)
+        << attrS(_AssemblerListingLocation, tool.AssemblerListingLocation)
+        << attrE(_AssemblerOutput, tool.AssemblerOutput, /*ifNot*/ asmListingNone)
+        << attrE(_BasicRuntimeChecks, tool.BasicRuntimeChecks, /*ifNot*/ runtimeBasicCheckNone)
+        << attrE(_BrowseInformation, tool.BrowseInformation, /*ifNot*/ brInfoNone)
+        << attrS(_BrowseInformationFile, tool.BrowseInformationFile)
+        << attrT(_BufferSecurityCheck, tool.BufferSecurityCheck)
+        << attrE(_CallingConvention, tool.CallingConvention, /*ifNot*/ callConventionDefault)
+        << attrE(_CompileAs, tool.CompileAs, compileAsDefault)
+        << attrE(_CompileAsManaged, tool.CompileAsManaged, /*ifNot*/ managedDefault)
+        << attrT(_CompileOnly, tool.CompileOnly)
+        << attrE(_DebugInformationFormat, tool.DebugInformationFormat, /*ifNot*/ debugUnknown)
+        << attrT(_DefaultCharIsUnsigned, tool.DefaultCharIsUnsigned)
+        << attrT(_Detect64BitPortabilityProblems, tool.Detect64BitPortabilityProblems)
+        << attrT(_DisableLanguageExtensions, tool.DisableLanguageExtensions)
+        << attrX(_DisableSpecificWarnings, tool.DisableSpecificWarnings)
+        << attrE(_EnableEnhancedInstructionSet, tool.EnableEnhancedInstructionSet, /*ifnot*/ archNotSet)
+        << attrT(_EnableFiberSafeOptimizations, tool.EnableFiberSafeOptimizations)
+        << attrT(_EnableFunctionLevelLinking, tool.EnableFunctionLevelLinking)
+        << attrT(_EnableIntrinsicFunctions, tool.EnableIntrinsicFunctions)
+        << xformExceptionHandlingNET2005(tool.ExceptionHandling, tool.config->CompilerVersion)
+        << attrT(_ExpandAttributedSource, tool.ExpandAttributedSource)
+        << attrE(_FavorSizeOrSpeed, tool.FavorSizeOrSpeed, /*ifNot*/ favorNone)
+
+        << attrE(_FloatingPointModel, tool.FloatingPointModel, /*ifNot*/ floatingPointNotSet)
+        << attrT(_FloatingPointExceptions, tool.FloatingPointExceptions)
+
+        << attrT(_ForceConformanceInForLoopScope, tool.ForceConformanceInForLoopScope)
+        << attrX(_ForcedIncludeFiles, tool.ForcedIncludeFiles)
+        << attrX(_ForcedUsingFiles, tool.ForcedUsingFiles)
+        << attrE(_GeneratePreprocessedFile, tool.GeneratePreprocessedFile, /*ifNot*/ preprocessUnknown)
+        << attrT(_GlobalOptimizations, tool.GlobalOptimizations)
+        << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
+        << attrT(_ImproveFloatingPointConsistency, tool.ImproveFloatingPointConsistency)
+        << attrE(_InlineFunctionExpansion, tool.InlineFunctionExpansion, /*ifNot*/ expandDefault)
+        << attrT(_KeepComments, tool.KeepComments)
+        << attrT(_MinimalRebuild, tool.MinimalRebuild)
+        << attrS(_ObjectFile, tool.ObjectFile)
+        << attrT(_OmitFramePointers, tool.OmitFramePointers)
+        << attrT(_OpenMP, tool.OpenMP)
+        << attrE(_Optimization, tool.Optimization, /*ifNot*/ optimizeDefault)
+        << attrE(_OptimizeForProcessor, tool.OptimizeForProcessor, /*ifNot*/ procOptimizeBlended)
+        << attrT(_OptimizeForWindowsApplication, tool.OptimizeForWindowsApplication)
+        << attrS(_OutputFile, tool.OutputFile)
+        << attrS(_PrecompiledHeaderFile, tool.PrecompiledHeaderFile)
+        << attrS(_PrecompiledHeaderThrough, tool.PrecompiledHeaderThrough)
+        << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
+        << (tool.ProgramDataBaseFileName.isNull() ? noxml() : attr(_ProgramDataBaseFileName, tool.ProgramDataBaseFileName))
+        << attrE(_RuntimeLibrary, tool.RuntimeLibrary, /*ifNot*/ rtUnknown)
+        << attrT(_RuntimeTypeInfo, tool.RuntimeTypeInfo)
+        << attrT(_ShowIncludes, tool.ShowIncludes)
+        << attrT(_SmallerTypeCheck, tool.SmallerTypeCheck)
+        << attrT(_StringPooling, tool.StringPooling)
+        << attrE(_StructMemberAlignment, tool.StructMemberAlignment, /*ifNot*/ alignNotSet)
+        << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
+        << attrT(_TreatWChar_tAsBuiltInType, tool.TreatWChar_tAsBuiltInType)
+        << attrT(_TurnOffAssemblyGeneration, tool.TurnOffAssemblyGeneration)
+        << attrT(_UndefineAllPreprocessorDefinitions, tool.UndefineAllPreprocessorDefinitions)
+        << attrX(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
+        << (!tool.PrecompiledHeaderFile.isEmpty() || !tool.PrecompiledHeaderThrough.isEmpty() ? xformUsePrecompiledHeaderForNET2005(tool.UsePrecompiledHeader, tool.config->CompilerVersion) : noxml())
+        << attrT(_WarnAsError, tool.WarnAsError)
+        << attrE(_WarningLevel, tool.WarningLevel, /*ifNot*/ warningLevelUnknown)
+        << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization)
+        << attrE(_CompileForArchitecture, tool.CompileForArchitecture, /*ifNot*/ archUnknown)
+        << attrT(_InterworkCalls, tool.InterworkCalls)
+
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
+{
+    xml << tag(_Tool)
+        << attrS(_Name, _VCLinkerTool)
+        << attrX(_AdditionalDependencies, tool.AdditionalDependencies, " ")
+        << attrX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories)
+        << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
+        << attrX(_AddModuleNamesToAssembly, tool.AddModuleNamesToAssembly)
+        << attrS(_BaseAddress, tool.BaseAddress)
+        << attrX(_DelayLoadDLLs, tool.DelayLoadDLLs)
+        << attrE(_EnableCOMDATFolding, tool.EnableCOMDATFolding, /*ifNot*/ optFoldingDefault)
+        << attrS(_EntryPointSymbol, tool.EntryPointSymbol)
+        << attrX(_ForceSymbolReferences, tool.ForceSymbolReferences)
+        << attrS(_FunctionOrder, tool.FunctionOrder)
+        << attrT(_GenerateDebugInformation, tool.GenerateDebugInformation)
+        << attrT(_GenerateMapFile, tool.GenerateMapFile)
+        << attrL(_HeapCommitSize, tool.HeapCommitSize, /*ifNot*/ -1)
+        << attrL(_HeapReserveSize, tool.HeapReserveSize, /*ifNot*/ -1)
+        << attrT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
+        << attrX(_IgnoreDefaultLibraryNames, tool.IgnoreDefaultLibraryNames)
+        << attrT(_IgnoreEmbeddedIDL, tool.IgnoreEmbeddedIDL)
+        << attrT(_IgnoreImportLibrary, tool.IgnoreImportLibrary)
+        << attrS(_ImportLibrary, tool.ImportLibrary)
+        << attrE(_LargeAddressAware, tool.LargeAddressAware, /*ifNot*/ addrAwareDefault)
+        << attrT(_LinkDLL, tool.LinkDLL)
+        << attrE(_LinkIncremental, tool.LinkIncremental, /*ifNot*/ linkIncrementalDefault)
+        << attrE(_LinkTimeCodeGeneration, tool.LinkTimeCodeGeneration)
+        << attrS(_LinkToManagedResourceFile, tool.LinkToManagedResourceFile)
+        << attrT(_MapExports, tool.MapExports)
+        << attrS(_MapFileName, tool.MapFileName)
+        << attrT(_MapLines, tool.MapLines)
+        << attrS(_MergedIDLBaseFileName, tool.MergedIDLBaseFileName)
+        << attrS(_MergeSections, tool.MergeSections)
+        << attrS(_MidlCommandFile, tool.MidlCommandFile)
+        << attrS(_ModuleDefinitionFile, tool.ModuleDefinitionFile)
+        << attrE(_OptimizeForWindows98, tool.OptimizeForWindows98, /*ifNot*/ optWin98Default)
+        << attrE(_OptimizeReferences, tool.OptimizeReferences, /*ifNot*/ optReferencesDefault)
+        << attrS(_OutputFile, tool.OutputFile)
+        << attr(_ProgramDatabaseFile, tool.ProgramDatabaseFile)
+        << attrT(_RegisterOutput, tool.RegisterOutput)
+        << attrT(_ResourceOnlyDLL, tool.ResourceOnlyDLL)
+        << attrT(_SetChecksum, tool.SetChecksum)
+        << attrE(_ShowProgress, tool.ShowProgress, /*ifNot*/ linkProgressNotSet)
+        << attrL(_StackCommitSize, tool.StackCommitSize, /*ifNot*/ -1)
+        << attrL(_StackReserveSize, tool.StackReserveSize, /*ifNot*/ -1)
+        << attrS(_StripPrivateSymbols, tool.StripPrivateSymbols)
+        << attrE(_SubSystem, tool.SubSystem)
+        << attrT(_SupportUnloadOfDelayLoadedDLL, tool.SupportUnloadOfDelayLoadedDLL)
+        << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
+        << attrT(_SwapRunFromCD, tool.SwapRunFromCD)
+        << attrT(_SwapRunFromNet, tool.SwapRunFromNet)
+        << attrE(_TargetMachine, tool.TargetMachine, /*ifNot*/ machineNotSet)
+        << attrE(_TerminalServerAware, tool.TerminalServerAware, /*ifNot*/ termSvrAwareDefault)
+        << attrT(_TurnOffAssemblyGeneration, tool.TurnOffAssemblyGeneration)
+        << attrS(_TypeLibraryFile, tool.TypeLibraryFile)
+        << attrL(_TypeLibraryResourceID, tool.TypeLibraryResourceID, /*ifNot*/ rcUseDefault)
+        << attrS(_Version, tool.Version)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
+{
+    xml << tag(_Tool)
+        << attrS(_Name, _VCMIDLTool)
+        << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
+        << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
+        << attrX(_CPreprocessOptions, tool.CPreprocessOptions)
+        << attrE(_DefaultCharType, tool.DefaultCharType)
+        << attrS(_DLLDataFileName, tool.DLLDataFileName)
+        << attrE(_EnableErrorChecks, tool.EnableErrorChecks)
+        << attrT(_ErrorCheckAllocations, tool.ErrorCheckAllocations)
+        << attrT(_ErrorCheckBounds, tool.ErrorCheckBounds)
+        << attrT(_ErrorCheckEnumRange, tool.ErrorCheckEnumRange)
+        << attrT(_ErrorCheckRefPointers, tool.ErrorCheckRefPointers)
+        << attrT(_ErrorCheckStubData, tool.ErrorCheckStubData)
+        << attrX(_FullIncludePath, tool.FullIncludePath)
+        << attrT(_GenerateStublessProxies, tool.GenerateStublessProxies)
+        << attrT(_GenerateTypeLibrary, tool.GenerateTypeLibrary)
+        << attrS(_HeaderFileName, tool.HeaderFileName)
+        << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
+        << attrS(_InterfaceIdentifierFileName, tool.InterfaceIdentifierFileName)
+        << attrT(_MkTypLibCompatible, tool.MkTypLibCompatible)
+        << attrS(_OutputDirectory, tool.OutputDirectory)
+        << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
+        << attrS(_ProxyFileName, tool.ProxyFileName)
+        << attrS(_RedirectOutputAndErrors, tool.RedirectOutputAndErrors)
+        << attrE(_StructMemberAlignment, tool.StructMemberAlignment, /*ifNot*/ midlAlignNotSet)
+        << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
+        << attrE(_TargetEnvironment, tool.TargetEnvironment, /*ifNot*/ midlTargetNotSet)
+        << attrS(_TypeLibraryName, tool.TypeLibraryName)
+        << attrX(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
+        << attrT(_ValidateParameters, tool.ValidateParameters)
+        << attrT(_WarnAsError, tool.WarnAsError)
+        << attrE(_WarningLevel, tool.WarningLevel)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
+{
+    // The code below offers two ways to split custom build step commands.
+    // Normally the $$escape_expand(\n\t) is used in a project file, which is correctly translated
+    // in all generators. However, if you use $$escape_expand(\n\r) (or \n\h) instead, the VCPROJ
+    // generator will instead of binding the commands with " && " will insert a proper newline into
+    // the VCPROJ file. We sometimes use this method of splitting commands if the custom buildstep
+    // contains a command-line which is too big to run on certain OS.
+    QString cmds;
+    int end = tool.CommandLine.count();
+    for(int i = 0; i < end; ++i) {
+        QString cmdl = tool.CommandLine.at(i);
+        if (cmdl.contains("\r\t")) {
+            if (i == end - 1)
+                cmdl = cmdl.trimmed();
+            cmdl.replace("\r\t", " && ");
+        } else if (cmdl.contains("\r\n")) {
+            ;
+        } else if (cmdl.contains("\r\\h")) {
+            // The above \r\n should work, but doesn't, so we have this hack
+            cmdl.replace("\r\\h", "\r\n");
+        } else {
+            if (i < end - 1)
+                cmdl += " && ";
+        }
+        cmds += cmdl;
+    }
+    xml << tag(_Tool)
+            << attrS(_Name, tool.ToolName)
+            << attrX(_AdditionalDependencies, tool.AdditionalDependencies, ";")
+            << attrS(_CommandLine, cmds)
+            << attrS(_Description, tool.Description)
+            << attrX(_Outputs, tool.Outputs, ";")
+            << attrS(_Path, tool.ToolPath)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCLibrarianTool &tool)
+{
+    xml
+        << tag(_Tool)
+            << attrS(_Name, _VCLibrarianTool)
+            << attrX(_AdditionalDependencies, tool.AdditionalDependencies)
+            << attrX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories)
+            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
+            << attrX(_ExportNamedFunctions, tool.ExportNamedFunctions)
+            << attrX(_ForceSymbolReferences, tool.ForceSymbolReferences)
+            << attrT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
+            << attrX(_IgnoreDefaultLibraryNames, tool.IgnoreDefaultLibraryNames)
+            << attrS(_ModuleDefinitionFile, tool.ModuleDefinitionFile)
+            << attrS(_OutputFile, tool.OutputFile)
+            << attrT(_SuppressStartupBanner, tool.SuppressStartupBanner)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCResourceCompilerTool &tool)
+{
+    xml
+        << tag(_Tool)
+            << attrS(_Name, _VCResourceCompilerTool)
+            << attrS(_Path, tool.ToolPath)
+            << attrX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories)
+            << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
+            << attrE(_Culture, tool.Culture, /*ifNot*/ rcUseDefault)
+            << attrX(_FullIncludePath, tool.FullIncludePath)
+            << attrT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
+            << attrX(_PreprocessorDefinitions, tool.PreprocessorDefinitions)
+            << attrS(_ResourceOutputFileName, tool.ResourceOutputFileName)
+            << attrE(_ShowProgress, tool.ShowProgress, /*ifNot*/ linkProgressNotSet)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
+{
+    xml
+        << tag(_Tool)
+            << attrS(_Name, tool.ToolName)
+            << attrS(_Path, tool.ToolPath)
+            << attrS(_CommandLine, tool.CommandLine)
+            << attrS(_Description, tool.Description)
+            << attrT(_ExcludedFromBuild, tool.ExcludedFromBuild)
+        << closetag(_Tool);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCDeploymentTool &tool)
+{
+    if (tool.AdditionalFiles.isEmpty())
+        return;
+    xml << tag(tool.DeploymentTag)
+        << attrS(_RemoteDirectory, tool.RemoteDirectory)
+        << attrE(_RegisterOutput, tool.RegisterOutput)
+        << attrS(_AdditionalFiles, tool.AdditionalFiles)
+        << closetag(tool.DeploymentTag);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
+{
+    xml << tag(_Configuration)
+            << attrS(_Name, tool.Name)
+            << attrS(_OutputDirectory, tool.OutputDirectory)
+            << attrT(_ATLMinimizesCRunTimeLibraryUsage, tool.ATLMinimizesCRunTimeLibraryUsage)
+            << attrT(_BuildBrowserInformation, tool.BuildBrowserInformation)
+            << attrE(_CharacterSet, tool.CharacterSet, /*ifNot*/ charSetNotSet)
+            << attrE(_ConfigurationType, tool.ConfigurationType)
+            << attrS(_DeleteExtensionsOnClean, tool.DeleteExtensionsOnClean)
+            << attrS(_ImportLibrary, tool.ImportLibrary)
+            << attrS(_IntermediateDirectory, tool.IntermediateDirectory)
+            << attrS(_PrimaryOutput, tool.PrimaryOutput)
+            << attrS(_ProgramDatabase, tool.ProgramDatabase)
+            << attrT(_RegisterOutput, tool.RegisterOutput)
+            << attrE(_UseOfATL, tool.UseOfATL, /*ifNot*/ useATLNotSet)
+            << attrE(_UseOfMfc, tool.UseOfMfc)
+            << attrT(_WholeProgramOptimization, tool.WholeProgramOptimization);
+    write(xml, tool.compiler);
+    write(xml, tool.custom);
+    if (tool.ConfigurationType == typeStaticLibrary)
+        write(xml, tool.librarian);
+    else
+        write(xml, tool.linker);
+    write(xml, tool.idl);
+    write(xml, tool.postBuild);
+    write(xml, tool.preBuild);
+    write(xml, tool.preLink);
+    write(xml, tool.resource);
+    write(xml, tool.deployment);
+    xml << closetag(_Configuration);
+}
+
+void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
+{
+    if(!tool.Files.count())
+        return;
+
+    if (!tool.Name.isEmpty()) {
+        xml << tag(_Filter)
+                << attrS(_Name, tool.Name)
+                << attrS(_Filter, tool.Filter)
+                << attrS(_UniqueIdentifier, tool.Guid)
+                << attrT(_ParseFiles, tool.ParseFiles);
+    }
+    for (int i = 0; i < tool.Files.count(); ++i) {
+        const VCFilterFile &info = tool.Files.at(i);
+        xml << tag(q_File)
+                << attrS(_RelativePath, Option::fixPathToLocalOS(info.file))
+            << data(); // In case no custom builds, to avoid "/>" endings
+        tool.outputFileConfig(xml, tool.Files.at(i).file);
+        xml << closetag(q_File);
+    }
+    if (!tool.Name.isEmpty())
+        xml << closetag(_Filter);
 }
 
 QT_END_NAMESPACE

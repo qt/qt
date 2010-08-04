@@ -78,6 +78,7 @@ public:
     QMap<QString, QStringList> extraCompilerSources;
     QMap<QString, QStringList> extraCompilerOutputs;
     bool usePCH;
+    VCProjectWriter *projectWriter;
 
 protected:
     virtual bool doDepends() const { return false; } //never necesary
@@ -134,9 +135,6 @@ private:
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };
-
-inline VcprojGenerator::~VcprojGenerator()
-{ }
 
 inline QString VcprojGenerator::defaultMakefile() const
 {
