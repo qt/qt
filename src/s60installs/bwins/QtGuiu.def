@@ -12832,7 +12832,7 @@ EXPORTS
 	?readBackInfo@QRuntimePixmapData@@QAEXXZ @ 12831 NONAME ; void QRuntimePixmapData::readBackInfo(void)
 	??_EQRuntimePixmapData@@UAE@I@Z @ 12832 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(unsigned int)
 	?paintEngine@QRuntimePixmapData@@UBEPAVQPaintEngine@@XZ @ 12833 NONAME ; class QPaintEngine * QRuntimePixmapData::paintEngine(void) const
-	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ; unsigned int QRuntimePixmapData::memoryUsage(void) const
+	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ABSENT ; unsigned int QRuntimePixmapData::memoryUsage(void) const
 	?toImage@QRasterPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12835 NONAME ; class QImage QRasterPixmapData::toImage(class QRect const &) const
 	?fromImageReader@QRasterPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12836 NONAME ; void QRasterPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
 	?fill@QRuntimePixmapData@@UAEXABVQColor@@@Z @ 12837 NONAME ; void QRuntimePixmapData::fill(class QColor const &)

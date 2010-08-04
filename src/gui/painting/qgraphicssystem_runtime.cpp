@@ -53,10 +53,8 @@ QT_BEGIN_NAMESPACE
 static int qt_pixmap_serial = 0;
 
 #define READBACK(f)                                         \
-    m_graphicsSystem->decreaseMemoryUsage(memoryUsage());   \
     f                                                       \
-    readBackInfo();                                         \
-    m_graphicsSystem->increaseMemoryUsage(memoryUsage());   \
+    readBackInfo();
 
 
 class QDeferredGraphicsSystemChange : public QObject
@@ -252,14 +250,6 @@ QPixmapData* QRuntimePixmapData::runtimeData() const
     return m_data;
 }
 
-uint QRuntimePixmapData::memoryUsage() const
-{
-    if(is_null || d == 0)
-        return 0;
-    return w * h * (d / 8);
-}
-
-
 QRuntimeWindowSurface::QRuntimeWindowSurface(const QRuntimeGraphicsSystem *gs, QWidget *window)
     : QWindowSurface(window), m_windowSurface(0), m_pendingWindowSurface(0), m_graphicsSystem(gs)
 {
@@ -295,9 +285,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 
 void QRuntimeWindowSurface::setGeometry(const QRect &rect)
 {
-    m_graphicsSystem->decreaseMemoryUsage(memoryUsage());
     m_windowSurface->setGeometry(rect);
-    m_graphicsSystem->increaseMemoryUsage(memoryUsage());
 }
 
 bool QRuntimeWindowSurface::scroll(const QRegion &area, int dx, int dy)
@@ -330,18 +318,9 @@ QPoint QRuntimeWindowSurface::offset(const QWidget *widget) const
     return m_windowSurface->offset(widget);
 }
 
-uint QRuntimeWindowSurface::memoryUsage() const
-{
-    QPaintDevice *pdev = m_windowSurface->paintDevice();
-    if (pdev && pdev->depth() != 0)
-        return pdev->width() * pdev->height() * (pdev->depth()/8);
-
-    return 0;
-}
-
 QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
-    : m_memoryUsage(0), m_windowSurfaceDestroyPolicy(DestroyImmediately),
-	m_graphicsSystem(0), m_graphicsSystemChangeMemoryLimit(0)
+    : m_windowSurfaceDestroyPolicy(DestroyImmediately),
+      m_graphicsSystem(0)
 {
     QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
     QApplicationPrivate::runtime_graphics_system = true;
@@ -376,25 +355,7 @@ QWindowSurface *QRuntimeGraphicsSystem::createWindowSurface(QWidget *widget) con
     rtSurface->m_windowSurface = m_graphicsSystem->createWindowSurface(widget);
     widget->setWindowSurface(rtSurface);
     m_windowSurfaces << rtSurface;
-    increaseMemoryUsage(rtSurface->memoryUsage());
     return rtSurface;
-}
-
-/*!
-    Sets graphics system when resource memory consumption is under /a memoryUsageLimit.
-*/
-void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name, uint memoryUsageLimit)
-{
-#ifdef QT_DEBUG
-    qDebug() << "QRuntimeGraphicsSystem::setGraphicsSystem( "<< name <<", " << memoryUsageLimit << ")";
-    qDebug() << "        current approximated graphics system memory usage " << memoryUsage() << " bytes";
-#endif
-    if (memoryUsage() >= memoryUsageLimit) {
-        m_graphicsSystemChangeMemoryLimit = memoryUsageLimit;
-        m_pendingGraphicsSystemName = name;
-    } else {
-        setGraphicsSystem(name);
-    }
 }
 
 void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
@@ -403,7 +364,6 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         return;
 #ifdef QT_DEBUG
     qDebug() << "QRuntimeGraphicsSystem::setGraphicsSystem( " << name << " )";
-    qDebug() << "        current approximated graphics system memory usage "<< memoryUsage() << " bytes";
 #endif
     delete m_graphicsSystem;
     m_graphicsSystem = QGraphicsSystemFactory::create(name);
@@ -411,7 +371,6 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
 
     Q_ASSERT(m_graphicsSystem);
 
-    m_graphicsSystemChangeMemoryLimit = 0;
     m_pendingGraphicsSystemName = QString();
 
     for (int i = 0; i < m_pixmapDatas.size(); ++i) {
@@ -444,42 +403,12 @@ void QRuntimeGraphicsSystem::removePixmapData(QRuntimePixmapData *pixmapData) co
 {
     int index = m_pixmapDatas.lastIndexOf(pixmapData);
     m_pixmapDatas.removeAt(index);
-    decreaseMemoryUsage(pixmapData->memoryUsage(), true);
 }
 
 void QRuntimeGraphicsSystem::removeWindowSurface(QRuntimeWindowSurface *windowSurface) const
 {
     int index = m_windowSurfaces.lastIndexOf(windowSurface);
     m_windowSurfaces.removeAt(index);
-    decreaseMemoryUsage(windowSurface->memoryUsage(), true);
-}
-
-void QRuntimeGraphicsSystem::increaseMemoryUsage(uint amount) const
-{
-    m_memoryUsage += amount;
-
-    if (m_graphicsSystemChangeMemoryLimit &&
-        m_memoryUsage < m_graphicsSystemChangeMemoryLimit) {
-
-        QRuntimeGraphicsSystem *gs = const_cast<QRuntimeGraphicsSystem*>(this);
-        QDeferredGraphicsSystemChange *deferredChange =
-                    new QDeferredGraphicsSystemChange(gs, m_pendingGraphicsSystemName);
-        deferredChange->launch();
-    }
-}
-
-void QRuntimeGraphicsSystem::decreaseMemoryUsage(uint amount, bool persistent) const
-{
-    m_memoryUsage -= amount;
-
-    if (persistent && m_graphicsSystemChangeMemoryLimit &&
-        m_memoryUsage < m_graphicsSystemChangeMemoryLimit) {
-
-        QRuntimeGraphicsSystem *gs = const_cast<QRuntimeGraphicsSystem*>(this);
-        QDeferredGraphicsSystemChange *deferredChange =
-                    new QDeferredGraphicsSystemChange(gs, m_pendingGraphicsSystemName);
-        deferredChange->launch();
-    }
 }
 
 #include "qgraphicssystem_runtime.moc"
