@@ -69,7 +69,7 @@ Item {
     TextInput {
         id: urlText
         horizontalAlignment: TextEdit.AlignLeft
-        font.pixelSize: 14; focusOnPress: true
+        font.pixelSize: 14;
 
         onTextChanged: container.urlChanged()
 

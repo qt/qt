@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//![0]
 import com.nokia.TimeExample 1.0 // import types from the plugin
 
 Clock { // this class is defined in QML (com/nokia/TimeExample/Clock.qml)
@@ -49,3 +49,4 @@ Clock { // this class is defined in QML (com/nokia/TimeExample/Clock.qml)
     hours: time.hour
     minutes: time.minute
 }
+//![0]

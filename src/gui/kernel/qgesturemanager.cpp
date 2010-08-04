@@ -71,7 +71,7 @@
 QT_BEGIN_NAMESPACE
 
 QGestureManager::QGestureManager(QObject *parent)
-    : QObject(parent), state(NotGesture), m_lastCustomGestureId(0)
+    : QObject(parent), state(NotGesture), m_lastCustomGestureId(Qt::CustomGesture)
 {
     qRegisterMetaType<Qt::GestureState>();
 
@@ -119,7 +119,7 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
     if (type == Qt::CustomGesture) {
         // generate a new custom gesture id
         ++m_lastCustomGestureId;
-        type = Qt::GestureType(Qt::CustomGesture + m_lastCustomGestureId);
+        type = Qt::GestureType(m_lastCustomGestureId);
     }
     m_recognizers.insertMulti(type, recognizer);
     delete dummy;

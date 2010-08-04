@@ -56,7 +56,7 @@ QT_MODULE(DBus)
 class QDBusConnection;
 
 class QDBusServiceWatcherPrivate;
-class QDBUS_EXPORT QDBusServiceWatcher: public QObject
+class Q_DBUS_EXPORT QDBusServiceWatcher: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QStringList watchedServices READ watchedServices WRITE setWatchedServices)

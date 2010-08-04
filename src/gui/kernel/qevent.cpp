@@ -3627,7 +3627,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
     \ingroup events
-    \ingroup multitouch
+    \ingroup touch
 
     \section1 Enabling Touch Events
 
@@ -3641,7 +3641,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
     Similarly to QMouseEvent, Qt automatically grabs each touch point on the first press inside a
     widget, and the widget will receive all updates for the touch point until it is released.
-    Note that it is possible for a widget to receive events for multiple touch points, and that
+    Note that it is possible for a widget to receive events for numerous touch points, and that
     multiple widgets may be receiving touch events at the same time.
 
     \section1 Event Handling
@@ -3717,7 +3717,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
     \i As mentioned above, enabling touch events means multiple widgets can be receiving touch
     events simultaneously. Combined with the default QWidget::event() handling for QTouchEvents,
-    this gives you great flexibility in designing multi-touch user interfaces. Be aware of the
+    this gives you great flexibility in designing touch user interfaces. Be aware of the
     implications. For example, it is possible that the user is moving a QSlider with one finger and
     pressing a QPushButton with another. The signals emitted by these widgets will be
     interleaved.
@@ -3729,7 +3729,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
     \i QTouchEvents are not affected by a \l{QWidget::grabMouse()}{mouse grab} or an
     \l{QApplication::activePopupWidget()}{active pop-up widget}. The behavior of QTouchEvents is
-    undefined when opening a pop-up or grabbing the mouse while there are multiple active touch
+    undefined when opening a pop-up or grabbing the mouse while there are more than one active touch
     points.
 
     \endlist

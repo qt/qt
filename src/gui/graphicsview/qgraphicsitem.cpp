@@ -133,7 +133,8 @@
 
     \img graphicsview-parentchild.png
 
-    \section1 Transformation
+    \target Transformations
+    \section1 Transformations
 
     QGraphicsItem supports projective transformations in addition to its base
     position, pos(). There are several ways to change an item's transformation.
@@ -1149,6 +1150,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
             if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
                 parentFocusScopeItem = fsi;
                 p->d_ptr->focusScopeItem = 0;
+                fsi->d_ptr->focusScopeItemChange(false);
             }
             break;
         }
@@ -1181,6 +1183,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
         while (p) {
             if (p->d_ptr->flags & QGraphicsItem::ItemIsFocusScope) {
                 p->d_ptr->focusScopeItem = newFocusScopeItem;
+                newFocusScopeItem->d_ptr->focusScopeItemChange(true);
                 // Ensure the new item is no longer the subFocusItem. The
                 // only way to set focus on a child of a focus scope is
                 // by setting focus on the scope itself.
@@ -1269,8 +1272,14 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
 
     Returns the bounding rect of this item's children (excluding itself).
 */
-void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect, bool doClip)
 {
+    Q_Q(QGraphicsItem);
+
+    QRectF childrenRect;
+    QRectF *result = rect;
+    rect = &childrenRect;
+
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr.data();
@@ -1292,6 +1301,15 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
                 childd->childrenBoundingRectHelper(x, rect);
         }
     }
+
+    if (doClip && (flags & QGraphicsItem::ItemClipsChildrenToShape)){
+        if (x)
+            *rect &= x->mapRect(q->boundingRect());
+        else
+            *rect &= q->boundingRect();
+    }
+
+    *result |= *rect;
 }
 
 void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
@@ -1435,9 +1453,10 @@ QGraphicsItem::~QGraphicsItem()
 #ifndef QT_NO_GESTURES
     if (d_ptr->isObject && !d_ptr->gestureContext.isEmpty()) {
         QGraphicsObject *o = static_cast<QGraphicsObject *>(this);
-        QGestureManager *manager = QGestureManager::instance();
-        foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
-            manager->cleanupCachedGestures(o, type);
+        if (QGestureManager *manager = QGestureManager::instance()) {
+            foreach (Qt::GestureType type, d_ptr->gestureContext.keys())
+                manager->cleanupCachedGestures(o, type);
+        }
     }
 #endif
 
@@ -5571,6 +5590,16 @@ void QGraphicsItemPrivate::subFocusItemChange()
 /*!
     \internal
 
+    Subclasses can reimplement this function to be notified when an item
+    becomes a focusScopeItem (or is no longer a focusScopeItem).
+*/
+void QGraphicsItemPrivate::focusScopeItemChange(bool isSubFocusItem)
+{
+}
+
+/*!
+    \internal
+
     Subclasses can reimplement this function to be notified when its
     siblingIndex order is changed.
 */
@@ -7929,6 +7958,7 @@ void QGraphicsItemPrivate::resetHeight()
 
 /*!
   \property QGraphicsObject::effect
+  \since 4.7
   \brief the effect attached to this item
 
   \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
@@ -11116,8 +11146,14 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem syste
     }
 
     QRectF rect = item->boundingRect();
-    if (!item->d_ptr->children.isEmpty())
-        rect |= item->childrenBoundingRect();
+    if (!item->d_ptr->children.isEmpty()) {
+        if (dirtyChildrenBoundingRect) {
+            childrenBoundingRect = QRectF();
+            item->d_ptr->childrenBoundingRectHelper(0, &childrenBoundingRect, true);
+            dirtyChildrenBoundingRect = false;
+        }
+        rect |= childrenBoundingRect;
+    }
 
     if (deviceCoordinates) {
         Q_ASSERT(info->painter);

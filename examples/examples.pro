@@ -26,7 +26,7 @@ SUBDIRS       = \
                 tutorials \
                 widgets \
                 uitools \
-                multitouch \
+                touch \
                 gestures
 }
 

@@ -629,8 +629,10 @@ void QNetworkSession::reject()
     If the session is based on a service network configuration the number of 
     sent bytes across all active member configurations are returned.
 
-    This function may not always be supported on all platforms and returns
-    0. The platform capability can be detected via QNetworkConfigurationManager::DataStatistics.
+    This function may not always be supported on all platforms and returns 0.
+    The platform capability can be detected via QNetworkConfigurationManager::DataStatistics.
+
+    \note On some platforms this function may run the main event loop.
 */
 quint64 QNetworkSession::bytesWritten() const
 {
@@ -646,8 +648,10 @@ quint64 QNetworkSession::bytesWritten() const
     If the session is based on a service network configuration the number of 
     sent bytes across all active member configurations are returned.
 
-    This function may not always be supported on all platforms and returns
-    0. The platform capability can be detected via QNetworkConfigurationManager::DataStatistics.
+    This function may not always be supported on all platforms and returns 0.
+    The platform capability can be detected via QNetworkConfigurationManager::DataStatistics.
+
+    \note On some platforms this function may run the main event loop.
 */
 quint64 QNetworkSession::bytesReceived() const
 {

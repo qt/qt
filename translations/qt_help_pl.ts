@@ -30,6 +30,14 @@
     </message>
 </context>
 <context>
+    <name>QHelp</name>
+    <message>
+        <location filename="../tools/assistant/lib/qhelp_global.cpp" line="+64"/>
+        <source>Untitled</source>
+        <translation>Nienazwany</translation>
+    </message>
+</context>
+<context>
     <name>QHelpCollectionHandler</name>
     <message>
         <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
@@ -306,7 +314,7 @@
         <translation>Brak atrybutu w słowie kluczowym w linii %1.</translation>
     </message>
     <message>
-        <location line="+141"/>
+        <location line="+143"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Nie można otworzyć pliku wejściowego %1!</translation>
     </message>

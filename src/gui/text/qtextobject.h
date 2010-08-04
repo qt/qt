@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtGui/qtextformat.h>
+#include <QtGui/qglyphs.h>
 
 QT_BEGIN_HEADER
 
@@ -314,6 +315,8 @@ public:
     QTextCharFormat charFormat() const;
     int charFormatIndex() const;
     QString text() const;
+
+    QList<QGlyphs> glyphs() const;
 
 private:
     const QTextDocumentPrivate *p;

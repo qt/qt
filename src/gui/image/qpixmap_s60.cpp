@@ -157,10 +157,10 @@ class QSymbianBitmapDataAccess
 {
 public:
 
-    bool heapWasLocked;
+    static int heapRefCount;
     QSysInfo::SymbianVersion symbianVersion;
 
-    explicit QSymbianBitmapDataAccess() : heapWasLocked(false)
+    explicit QSymbianBitmapDataAccess()
     {
         symbianVersion = QSysInfo::symbianVersion();
     };
@@ -169,22 +169,30 @@ public:
 
     inline void beginDataAccess(CFbsBitmap *bitmap)
     {
-        if (symbianVersion == QSysInfo::SV_9_2)
-            heapWasLocked = qt_symbianFbsClient()->lockHeap();
-        else
+        if (symbianVersion == QSysInfo::SV_9_2) {
+            if (heapRefCount == 0)
+                qt_symbianFbsClient()->lockHeap();
+        } else {
             bitmap->LockHeap(ETrue);
+        }
+
+        heapRefCount++;
     }
 
     inline void endDataAccess(CFbsBitmap *bitmap)
     {
+        heapRefCount--;
+
         if (symbianVersion == QSysInfo::SV_9_2) {
-            if (!heapWasLocked)
+            if (heapRefCount == 0)
                 qt_symbianFbsClient()->unlockHeap();
         } else {
             bitmap->UnlockHeap(ETrue);
         }
     }
 };
+
+int QSymbianBitmapDataAccess::heapRefCount = 0;
 
 
 #define UPDATE_BUFFER()     \

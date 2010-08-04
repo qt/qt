@@ -161,6 +161,7 @@ private slots:
     void draw();
     void update();
     void boundingRect();
+    void clippedBoundingRect();
     void deviceRect();
     void pixmap();
 
@@ -280,6 +281,20 @@ void tst_QGraphicsEffectSource::boundingRect()
     QTRY_COMPARE(effect->source()->boundingRect(Qt::LogicalCoordinates), itemBoundingRect);
     // Make sure default value is Qt::LogicalCoordinates.
     QTRY_COMPARE(effect->source()->boundingRect(), itemBoundingRect);
+}
+
+void tst_QGraphicsEffectSource::clippedBoundingRect()
+{
+    QRectF itemBoundingRect = item->boundingRect();
+    item->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QGraphicsRectItem *child = new QGraphicsRectItem(-1000, -1000, 2000, 2000);
+    child->setBrush(Qt::red);
+    child->setParentItem(item);
+
+    effect->storeDeviceDependentStuff = true;
+    effect->source()->update();
+    QTRY_COMPARE(effect->source()->boundingRect(Qt::LogicalCoordinates), itemBoundingRect);
 }
 
 void tst_QGraphicsEffectSource::deviceRect()

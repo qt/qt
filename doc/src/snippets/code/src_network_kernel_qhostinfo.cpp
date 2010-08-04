@@ -68,7 +68,7 @@ void MyWidget::lookedUp(const QHostInfo &host)
         return;
     }
 
-    foreach (QHostAddress address, host.addresses())
+    foreach (const QHostAddress &address, host.addresses())
         qDebug() << "Found address:" << address.toString();
 }
 //! [3]

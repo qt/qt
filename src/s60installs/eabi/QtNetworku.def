@@ -1164,4 +1164,7 @@ EXPORTS
 	_ZTV35QNetworkConfigurationManagerPrivate @ 1163 NONAME
 	_ZThn8_N19QBearerEnginePluginD0Ev @ 1164 NONAME
 	_ZThn8_N19QBearerEnginePluginD1Ev @ 1165 NONAME
+	_ZN14QAuthenticator9setOptionERK7QStringRK8QVariant @ 1166 NONAME
+	_ZNK14QAuthenticator6optionERK7QString @ 1167 NONAME
+	_ZNK14QAuthenticator7optionsEv @ 1168 NONAME
 

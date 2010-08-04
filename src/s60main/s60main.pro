@@ -29,6 +29,7 @@ symbian {
     # Having MMP_RULES_DONT_EXPORT_ALL_CLASS_IMPEDIMENTA will cause s60main.lib be unlinkable
     # against GCCE apps, so remove it
     MMP_RULES -= $$MMP_RULES_DONT_EXPORT_ALL_CLASS_IMPEDIMENTA
+    linux-armcc:QMAKE_CXXFLAGS *= --export_all_vtbl
 } else {
     error("$$_FILE_ is intended only for Symbian!")
 }

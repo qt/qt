@@ -219,6 +219,7 @@ private slots:
     void update2_data();
     void update2();
     void update_ancestorClipsChildrenToShape();
+    void update_ancestorClipsChildrenToShape2();
     void inputMethodSensitivity();
     void inputContextReset();
     void indirectPainting();
@@ -3807,6 +3808,78 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape()
 
     child->update();
     QTRY_VERIFY(view.painted);
+
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
+#endif
+}
+
+void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
+{
+    QGraphicsScene scene(-150, -150, 300, 300);
+
+    /*
+    Add two rects:
+
+    +------------------+
+    | child            |
+    | +--------------+ |
+    | | parent       | |
+    | |              | |
+    | |              | |
+    | |              | |
+    | +--------------+ |
+    +------------------+
+
+    ... where the parent has no contents and clips the child to shape.
+    */
+    QApplication::processEvents(); // Get rid of pending update.
+
+    QGraphicsRectItem *parent = static_cast<QGraphicsRectItem *>(scene.addRect(-50, -50, 100, 100));
+    parent->setBrush(QColor(0, 0, 255, 125));
+    parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    parent->setFlag(QGraphicsItem::ItemHasNoContents);
+
+    QGraphicsRectItem *child = static_cast<QGraphicsRectItem *>(scene.addRect(-100, -100, 200, 200));
+    child->setBrush(QColor(255, 0, 0, 125));
+    child->setParentItem(parent);
+
+    CustomView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.painted);
+
+    view.lastUpdateRegions.clear();
+    view.painted = false;
+
+    // Call child->update() and make sure the updated area is within its parent's clip.
+    QRectF expected = child->deviceTransform(view.viewportTransform()).mapRect(child->boundingRect());
+    expected &= parent->deviceTransform(view.viewportTransform()).mapRect(parent->boundingRect());
+
+    child->update();
+    QTRY_VERIFY(view.painted);
+
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
+    QTRY_VERIFY(view.painted);
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), QRegion(expected.toAlignedRect()));
+#endif
+
+    QTest::qWait(50);
+
+    view.lastUpdateRegions.clear();
+    view.painted = false;
+
+    // Invalidate the parent's geometry and trigger an update.
+    // The update area should be clipped to the parent's bounding rect for 'normal' items,
+    // but in this case the item has no contents (ItemHasNoContents) and its geometry
+    // is invalidated, which means we cannot clip the child update. So, the expected
+    // area is exactly the same as the child's bounding rect (adjusted for antialiasing).
+    parent->setRect(parent->rect().adjusted(-10, -10, -10, -10));
+    expected = child->deviceTransform(view.viewportTransform()).mapRect(child->boundingRect());
+    expected.adjust(-2, -2, 2, 2); // Antialiasing
 
 #ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
     QTRY_VERIFY(view.painted);

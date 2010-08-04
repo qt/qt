@@ -83,6 +83,8 @@ private slots:
     void convertToFormat_data();
     void convertToFormat();
 
+    void convertToFormatRgb888ToRGB32();
+
     void createAlphaMask_data();
     void createAlphaMask();
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
@@ -797,6 +799,26 @@ void tst_QImage::convertToFormat()
     QCOMPARE(result2, expected2);
     QFile::remove(QLatin1String("result2.xpm"));
     QFile::remove(QLatin1String("expected2.xpm"));
+}
+
+void tst_QImage::convertToFormatRgb888ToRGB32()
+{
+    // 545 so width % 4 != 0. This ensure there is padding at the end of the scanlines
+    const int height = 545;
+    const int width = 545;
+    QImage source(width, height, QImage::Format_RGB888);
+    for (int y = 0; y < height; ++y) {
+        uchar *srcPixels = source.scanLine(y);
+        for (int x = 0; x < width * 3; ++x)
+            srcPixels[x] = x;
+    }
+
+    QImage rgb32Image = source.convertToFormat(QImage::Format_RGB888);
+    QCOMPARE(rgb32Image.format(), QImage::Format_RGB888);
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y)
+            QCOMPARE(rgb32Image.pixel(x, y), source.pixel(x, y));
+    }
 }
 
 void tst_QImage::createAlphaMask_data()

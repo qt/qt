@@ -66,6 +66,11 @@ private slots:
     void floatVariantAssignment();
     void rectVariantAssignment();
     void stringVariantAssignment();
+
+    void doubleVariantValue();
+    void floatVariantValue();
+    void rectVariantValue();
+    void stringVariantValue();
 };
 
 void tst_qvariant::testBound()
@@ -173,6 +178,46 @@ void tst_qvariant::rectVariantAssignment()
 void tst_qvariant::stringVariantAssignment()
 {
     variantAssignment<QString>(QString());
+}
+
+void tst_qvariant::doubleVariantValue()
+{
+    QVariant v(0.0);
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            v.toDouble();
+        }
+    }
+}
+
+void tst_qvariant::floatVariantValue()
+{
+    QVariant v(0.0f);
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            v.toFloat();
+        }
+    }
+}
+
+void tst_qvariant::rectVariantValue()
+{
+    QVariant v(QRect(1,2,3,4));
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            v.toRect();
+        }
+    }
+}
+
+void tst_qvariant::stringVariantValue()
+{
+    QVariant v = QString();
+    QBENCHMARK {
+        for(int i = 0; i < ITERATION_COUNT; ++i) {
+            v.toString();
+        }
+    }
 }
 
 QTEST_MAIN(tst_qvariant)

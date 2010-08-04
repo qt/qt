@@ -485,24 +485,22 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
 
     if (object && context) {
 
+        QDeclarativeProperty property(object, propertyName, context);
         if (isLiteralValue) {
-            QDeclarativeProperty literalProperty(object, propertyName, context);
-            literalProperty.write(expression);
+            property.write(expression);
+        } else if (hasValidSignal(object, propertyName)) {
+            QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
+            QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+        } else if (property.isProperty()) {
+            QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
+            binding->setTarget(property);
+            binding->setNotifyOnValueChanged(true);
+            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
+            if (oldBinding)
+                oldBinding->destroy();
+            binding->update();
         } else {
-            if (hasValidSignal(object, propertyName)) {
-                QDeclarativeProperty property(object, propertyName);
-                QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
-                QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
-            } else {
-                QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
-                QDeclarativeProperty property(object, propertyName);
-                binding->setTarget(property);
-                binding->setNotifyOnValueChanged(true);
-                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, binding);
-                if (oldBinding)
-                    oldBinding->destroy();
-                binding->update();
-            }
+            qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
         }
     }
 }

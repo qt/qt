@@ -191,10 +191,13 @@ bool QTestResult::expectFail(const char *dataIndex, const char *comment,
     QTEST_ASSERT(comment);
     QTEST_ASSERT(mode > 0);
 
-    if (!isExpectFailData(dataIndex))
+    if (!isExpectFailData(dataIndex)) {
+        delete[] comment;
         return true; // we don't care
+    }
 
     if (QTest::expectFailMode) {
+        delete[] comment;
         clearExpectFail();
         addFailure("Already expecting a fail", file, line);
         return false;

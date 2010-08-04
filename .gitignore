@@ -114,6 +114,7 @@ tools/qtestlib/chart/chart*
 tools/qtestlib/updater/updater*
 tools/activeqt/testcon/testcon.tlb
 translations/*.qm
+translations/*_untranslated.ts
 qrc_*.cpp
 
 # xemacs temporary files

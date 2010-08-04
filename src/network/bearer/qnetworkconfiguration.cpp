@@ -343,9 +343,11 @@ bool QNetworkConfiguration::isRoamingAvailable() const
 }
 
 /*!
-    Returns all sub configurations of this network configuration.
-    Only network configurations of type \l ServiceNetwork can have children. Otherwise
-    this function returns an empty list.
+    Returns all sub configurations of this network configuration in priority order. The first sub
+    configuration in the list has the highest priority.
+
+    Only network configurations of type \l ServiceNetwork can have children. Otherwise this
+    function returns an empty list.
 */
 QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 {
@@ -356,16 +358,18 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 
     QMutexLocker locker(&d->mutex);
 
-    QMutableListIterator<QNetworkConfigurationPrivatePointer> iter(d->serviceNetworkMembers);
-    while (iter.hasNext()) {
-        QNetworkConfigurationPrivatePointer p = iter.next();
+    QMutableMapIterator<unsigned int, QNetworkConfigurationPrivatePointer> i(d->serviceNetworkMembers);
+    while (i.hasNext()) {
+        i.next();
+
+        QNetworkConfigurationPrivatePointer p = i.value();
 
         //if we have an invalid member get rid of it -> was deleted earlier on
         {
             QMutexLocker childLocker(&p->mutex);
 
             if (!p->isValid) {
-                iter.remove();
+                i.remove();
                 continue;
             }
         }
@@ -427,7 +431,6 @@ QString QNetworkConfiguration::bearerName() const
 
     return d->bearerName();
 }
-
 
 QT_END_NAMESPACE
 

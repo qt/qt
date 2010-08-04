@@ -106,6 +106,7 @@ Q_GUI_EXPORT
 - (void) qt_clearQWidget;
 - (BOOL)qt_leftButtonIsRightButton;
 - (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
+- (void)changeDraggingCursor:(NSDragOperation)newOperation;
 + (DnDParams*)currentMouseEvent;
 
 @end

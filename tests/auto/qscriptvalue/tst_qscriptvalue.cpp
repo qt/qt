@@ -2123,6 +2123,10 @@ void tst_QScriptValue::getSetProperty()
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
     QVERIFY(object.propertyFlags(foo) == 0);
+
+    // Setting index property on non-Array
+    object.setProperty(13, num);
+    QVERIFY(object.property(13).equals(num));
 }
 
 void tst_QScriptValue::arrayElementGetterSetter()
@@ -2234,19 +2238,36 @@ void tst_QScriptValue::getSetScope()
 void tst_QScriptValue::getSetData()
 {
     QScriptEngine eng;
-    QScriptValue object = eng.newObject();
-    QVERIFY(!object.data().isValid());
-    QScriptValue v1(true);
-    object.setData(v1);
-    QVERIFY(object.data().strictlyEquals(v1));
-    QScriptValue v2(123);
-    object.setData(v2);
-    QVERIFY(object.data().strictlyEquals(v2));
-    QScriptValue v3 = eng.newObject();
-    object.setData(v3);
-    QVERIFY(object.data().strictlyEquals(v3));
-    object.setData(QScriptValue());
-    QVERIFY(!object.data().isValid());
+    {
+        QScriptValue object = eng.newObject();
+        QVERIFY(!object.data().isValid());
+        QScriptValue v1(true);
+        object.setData(v1);
+        QVERIFY(object.data().strictlyEquals(v1));
+        QScriptValue v2(123);
+        object.setData(v2);
+        QVERIFY(object.data().strictlyEquals(v2));
+        QScriptValue v3 = eng.newObject();
+        object.setData(v3);
+        QVERIFY(object.data().strictlyEquals(v3));
+        object.setData(QScriptValue());
+        QVERIFY(!object.data().isValid());
+    }
+    {
+        QScriptValue value = eng.undefinedValue();
+        QVERIFY(!value.data().isValid());
+        QScriptValue v1(true);
+        value.setData(v1);
+        QVERIFY(!value.data().isValid());
+        QScriptValue v2(123);
+        value.setData(v2);
+        QVERIFY(!value.data().isValid());
+        QScriptValue v3 = eng.newObject();
+        value.setData(v3);
+        QVERIFY(!value.data().isValid());
+        value.setData(QScriptValue());
+        QVERIFY(!value.data().isValid());
+    }
 }
 
 class TestScriptClass : public QScriptClass
