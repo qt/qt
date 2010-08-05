@@ -169,7 +169,7 @@ void tst_QPluginLoader::errorString()
     QCOMPARE(loader.errorString(), unknown);
     }
     {
-    QPluginLoader loader( sys_qualifiedLibraryName("mylib"));     //not a plugin
+    QPluginLoader loader( sys_qualifiedLibraryName("tst_qpluginloaderlib"));     //not a plugin
     bool loaded = loader.load();
 #ifdef SHOW_ERRORS
     qDebug() << loader.errorString();
