@@ -43,7 +43,10 @@ import Qt 4.7
 FocusScope {
     clip: true
 
-    onActiveFocusChanged: if (activeFocus) mainView.state = "showListViews"
+    onActiveFocusChanged: {
+        if (activeFocus) 
+            mainView.state = "showListViews"
+    }
 
     ListView {
         id: list1
