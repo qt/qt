@@ -873,9 +873,27 @@ void VcprojGenerator::initConfiguration()
         break;
     }
 
+    if (conf.CompilerVersion >= NET2010) {
+        conf.OutputDirectory = project->first("DESTDIR");
+
+        if(conf.OutputDirectory.isEmpty())
+            conf.OutputDirectory = ".\\";
+
+        if(!conf.OutputDirectory.endsWith("\\"))
+            conf.OutputDirectory += '\\';
+
+        // The target name could have been changed.
+        conf.PrimaryOutput = project->first("TARGET");
+        if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
+            conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
+    } else {
+        conf.PrimaryOutput = project->first("PrimaryOutput");
+    }
+
     conf.Name = project->values("BUILD_NAME").join(" ");
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
+    conf.ConfigurationName = conf.Name;
     if (project->isEmpty("CE_SDK") || project->isEmpty("CE_ARCH")) {
         conf.Name += (conf.idl.TargetEnvironment == midlTargetWin64 ? "|Win64" : "|Win32");
     } else {
@@ -889,7 +907,6 @@ void VcprojGenerator::initConfiguration()
     conf.ImportLibrary = conf.linker.ImportLibrary;
     conf.IntermediateDirectory = project->first("OBJECTS_DIR");
     conf.OutputDirectory = ".";
-    conf.PrimaryOutput = project->first("PrimaryOutput");
     conf.WholeProgramOptimization = conf.compiler.WholeProgramOptimization;
     temp = project->first("UseOfATL");
     if(!temp.isEmpty())
@@ -933,13 +950,16 @@ void VcprojGenerator::initCompilerTool()
         conf.compiler.PrecompiledHeaderFile    = "$(IntDir)\\" + precompPch;
         conf.compiler.PrecompiledHeaderThrough = project->first("PRECOMPILED_HEADER");
         conf.compiler.ForcedIncludeFiles       = project->values("PRECOMPILED_HEADER");
-        // Minimal build option triggers an Internal Compiler Error
-        // when used in conjunction with /FI and /Yu, so remove it
-        // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
-        project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
-        project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
-        project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
-        project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("/Gm");
+
+        if (conf.CompilerVersion <= NET2003) {
+            // Minimal build option triggers an Internal Compiler Error
+            // when used in conjunction with /FI and /Yu, so remove it
+            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
+            project->values("QMAKE_CFLAGS_DEBUG").removeAll("-Gm");
+            project->values("QMAKE_CFLAGS_DEBUG").removeAll("/Gm");
+            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("-Gm");
+            project->values("QMAKE_CXXFLAGS_DEBUG").removeAll("/Gm");
+        }
     }
 
     conf.compiler.parseOptions(project->values("QMAKE_CXXFLAGS"));

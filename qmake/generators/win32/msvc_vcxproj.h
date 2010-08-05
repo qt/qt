@@ -50,42 +50,12 @@ QT_BEGIN_NAMESPACE
 
 class VcxprojGenerator : public VcprojGenerator
 {
-    bool writeMakefile(QTextStream &);
-    bool writeProjectMakefile();
-
 public:
     VcxprojGenerator();
     ~VcxprojGenerator();
 
 protected:
     virtual VCProjectWriter *createProjectWriter();
-    virtual bool supportsMetaBuild() { return true; }
-    virtual bool supportsMergedBuilds() { return true; }
-    virtual bool mergeBuildProject(MakefileGenerator *other);
-
-    virtual void initProject();
-
-    void initConfiguration();
-    void initCompilerTool();
-    void initLinkerTool();
-    void initPreLinkEventTools();
-    void initPostBuildEventTools();
-    void initRootFiles();
-    void initResourceTool();
-    void initSourceFiles();
-    void initHeaderFiles();
-    void initGeneratedFiles();
-    void initTranslationFiles();
-    void initFormFiles();
-    void initResourceFiles();
-    void initLexYaccFiles();
-    void initExtraCompilerOutputs();
-
-    // Used for single project
-    VCProjectSingleConfig vcxProject;
-
-    // Holds all configurations for glue (merged) project
-    QList<VcxprojGenerator*> mergedProjects;
 
 private:
     friend class VCFilter;
