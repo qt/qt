@@ -1523,7 +1523,7 @@ ushort QXmlStreamReaderPrivate::getChar_helper()
         decoder = codec->makeDecoder();
     }
 
-    decoder->toUnicode(&readBuffer, rawReadBuffer.data(), nbytesread);
+    decoder->toUnicode(&readBuffer, rawReadBuffer.constData(), nbytesread);
 
     if(lockEncoding && decoder->hasFailure()) {
         raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
