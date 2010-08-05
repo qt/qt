@@ -65,6 +65,9 @@
 #include <QtDBus/QDBusContext>
 #include <QMap>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
+
 #ifndef __CONNMAN_DBUS_H
 
 #define	CONNMAN_SERVICE     "org.moblin.connman"
@@ -249,6 +252,13 @@ public:
     QVariantMap getProxy();
     QVariantMap getEthernet();
 
+    QString getMethod();
+    QString getInterface();
+    QString getMacAddress();
+    quint16 getMtu();
+    quint16 getSpeed();
+    QString getDuplex();
+
     bool isOfflineMode();
     QStringList getServices();
 
@@ -377,5 +387,8 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif //QCONNMANSERVICE_H

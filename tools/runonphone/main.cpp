@@ -51,6 +51,7 @@
 
 #include "trksignalhandler.h"
 #include "serenum.h"
+#include "ossignalconverter.h"
 
 void printUsage(QTextStream& outstream, QString exeName)
 {
@@ -234,6 +235,8 @@ int main(int argc, char *argv[])
     QObject::connect(&handler, SIGNAL(terminate()), launcher.data(), SLOT(terminate()));
     QObject::connect(&handler, SIGNAL(getRegistersAndCallStack(uint,uint)), launcher.data(), SLOT(getRegistersAndCallStack(uint,uint)));
     QObject::connect(launcher.data(), SIGNAL(finished()), &handler, SLOT(finished()));
+
+    QObject::connect(OsSignalConverter::instance(), SIGNAL(terminate()), launcher.data(), SLOT(terminate()), Qt::QueuedConnection);
 
     QTimer timer;
     timer.setSingleShot(true);

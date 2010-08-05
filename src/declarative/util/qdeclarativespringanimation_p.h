@@ -54,14 +54,12 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeSpringAnimationPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeSpringAnimation : public QDeclarativeAbstractAnimation
+class Q_AUTOTEST_EXPORT QDeclarativeSpringAnimation : public QDeclarativeNumberAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeSpringAnimation)
     Q_INTERFACES(QDeclarativePropertyValueSource)
 
-    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
-    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
     Q_PROPERTY(qreal spring READ spring WRITE setSpring)
     Q_PROPERTY(qreal damping READ damping WRITE setDamping)
@@ -72,14 +70,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeSpringAnimation : public QDeclarativeAbstrac
 public:
     QDeclarativeSpringAnimation(QObject *parent=0);
     ~QDeclarativeSpringAnimation();
-
-    virtual void setTarget(const QDeclarativeProperty &);
-
-    qreal to() const;
-    void setTo(qreal value);
-
-    qreal from() const;
-    void setFrom(qreal value);
 
     qreal velocity() const;
     void setVelocity(qreal velocity);
@@ -99,9 +89,6 @@ public:
     qreal modulus() const;
     void setModulus(qreal modulus);
 
-    bool enabled() const;
-    void setEnabled(bool enabled);
-
     virtual void transition(QDeclarativeStateActions &actions,
                             QDeclarativeProperties &modified,
                             TransitionDirection direction);
@@ -110,8 +97,6 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
 
 Q_SIGNALS:
-    void toChanged(qreal);
-    void fromChanged(qreal);
     void modulusChanged();
     void massChanged();
     void syncChanged();

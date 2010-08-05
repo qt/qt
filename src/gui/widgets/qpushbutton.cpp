@@ -687,11 +687,11 @@ bool QPushButton::event(QEvent *e)
 /*! \reimp */
 bool QPushButton::hitButton(const QPoint &pos) const
 {
-    // This is only required if we are using the native style, so check that first.
-        QMacStyle *macStyle = qobject_cast<QMacStyle *>(style());
-    // If this is a flat button we just bail out.
-    if(isFlat() || (0 == macStyle))
+    QStyleOptionButton opt;
+    initStyleOption(&opt);
+    if (qt_mac_buttonIsRenderedFlat(this, &opt))
         return QAbstractButton::hitButton(pos);
+
     // Now that we know we are using the native style, let's proceed.
     Q_D(const QPushButton);
     QPushButtonPrivate *nonConst = const_cast<QPushButtonPrivate *>(d);

@@ -7,10 +7,13 @@ CONFIG -= app_bundle
 include(symbianutils/symbianutils.pri)
 
 SOURCES += main.cpp \
-    trksignalhandler.cpp
+    trksignalhandler.cpp \
+    ossignalconverter.cpp
 
 HEADERS += trksignalhandler.h \
-    serenum.h
+    serenum.h \
+    ossignalconverter.h \
+    ossignalconverter_p.h
 
 DEFINES += SYMBIANUTILS_INCLUDE_PRI
 

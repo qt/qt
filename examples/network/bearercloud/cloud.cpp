@@ -323,6 +323,17 @@ void Cloud::newConfigurationActivated()
         case QNetworkConfiguration::BearerEthernet:
             renderer = new QSvgRenderer(QLatin1String(":lan.svg"));
             break;
+        case QNetworkConfiguration::Bearer2G:
+            renderer = new QSvgRenderer(QLatin1String(":cell.svg"));
+            break;
+        case QNetworkConfiguration::BearerBluetooth:
+            renderer = new QSvgRenderer(QLatin1String(":bluetooth.svg"));
+            break;
+        case QNetworkConfiguration::BearerCDMA2000:
+        case QNetworkConfiguration::BearerWCDMA:
+        case QNetworkConfiguration::BearerHSPA:
+            renderer = new QSvgRenderer(QLatin1String(":umts.svg"));
+            break;
         default:
             renderer = new QSvgRenderer(QLatin1String(":unknown.svg"));
         }
