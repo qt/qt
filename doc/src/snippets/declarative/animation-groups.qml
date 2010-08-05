@@ -37,69 +37,68 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 
-FocusScope {
-    property alias interactive: gridView.interactive
+Row {
 
-    onActiveFocusChanged: {
-        if (activeFocus) 
-            mainView.state = ""
+//![0]
+Rectangle {
+    id: rect
+    width: 120; height: 200
+
+    Image {
+        id: img
+        source: "pics/qt.png"
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 0
+
+        SequentialAnimation on y {
+            loops: Animation.Infinite
+            NumberAnimation { to: rect.height - img.height; easing.type: Easing.OutBounce; duration: 2000 }
+            PauseAnimation { duration: 1000 }
+            NumberAnimation { to: 0; easing.type: Easing.OutQuad; duration: 1000 }
+        }
+    }
+}
+//![0]
+
+//![1]
+Rectangle {
+    id: redRect
+    width: 100; height: 100
+    color: "red"
+
+    MouseArea { id: mouseArea; anchors.fill: parent }
+
+    states: State {
+        name: "pressed"; when: mouseArea.pressed
+        PropertyChanges { target: redRect; color: "blue"; y: mouseArea.mouseY; width: mouseArea.mouseX }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        clip: true
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#193441" }
-            GradientStop { position: 1.0; color: Qt.darker("#193441") }
-        }
+    transitions: Transition {
 
-        GridView {
-            id: gridView
-            anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
-            cellWidth: 152; cellHeight: 152
-            focus: true
-            model: 12
+        SequentialAnimation {
+            ColorAnimation { duration: 200 }
+            PauseAnimation { duration: 100 }
 
-            KeyNavigation.down: listMenu
-            KeyNavigation.left: contextMenu
-
-            delegate: Item {
-                id: container
-                width: GridView.view.cellWidth; height: GridView.view.cellHeight
-
-                Rectangle {
-                    id: content
-                    color: "transparent"
-                    smooth: true
-                    anchors.fill: parent; anchors.margins: 20; radius: 10
-
-                    Rectangle { color: "#91AA9D"; anchors.fill: parent; anchors.margins: 3; radius: 8; smooth: true }
-                    Image { source: "images/qt-logo.png"; anchors.centerIn: parent; smooth: true }
+            ParallelAnimation {
+                NumberAnimation {
+                    duration: 500
+                    easing.type: Easing.OutBounce
+                    targets: redRect
+                    properties: "y"
                 }
 
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        GridView.view.currentIndex = index
-                        container.forceActiveFocus()
-                    }
-                }
-
-                states: State {
-                    name: "active"; when: container.activeFocus
-                    PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
-                }
-
-                transitions: Transition {
-                    NumberAnimation { properties: "scale"; duration: 100 }
+                NumberAnimation {
+                    duration: 800
+                    easing.type: Easing.InOutQuad
+                    targets: redRect
+                    properties: "width"
                 }
             }
         }
     }
+}
+//![1]
+
 }

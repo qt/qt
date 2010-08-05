@@ -287,7 +287,7 @@ void QSmoothedAnimation::init()
 
     Like any other animation element, a SmoothedAnimation can be applied in a
     number of ways, including transitions, behaviors and property value 
-    sources. The \l PropertyAnimation documentation shows a variety of methods
+    sources. The \l {QML Animation} documentation shows a variety of methods
     for creating animations.
 
     \sa SpringAnimation, NumberAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}

@@ -41,65 +41,65 @@
 import Qt 4.7
 
 FocusScope {
-    property alias interactive: gridView.interactive
+    clip: true
 
     onActiveFocusChanged: {
         if (activeFocus) 
-            mainView.state = ""
+            mainView.state = "showListViews"
+    }
+
+    ListView {
+        id: list1
+        y: activeFocus ? 10 : 40; width: parent.width / 3; height: parent.height - 20
+        focus: true
+        KeyNavigation.up: gridMenu; KeyNavigation.left: contextMenu; KeyNavigation.right: list2
+        model: 10; cacheBuffer: 200
+        delegate: ListViewDelegate {}
+
+        Behavior on y {
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+        }
+    }
+
+    ListView {
+        id: list2
+        y: activeFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
+        KeyNavigation.up: gridMenu; KeyNavigation.left: list1; KeyNavigation.right: list3
+        model: 10; cacheBuffer: 200
+        delegate: ListViewDelegate {}
+
+        Behavior on y {
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+        }
+    }
+
+    ListView {
+        id: list3
+        y: activeFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
+        KeyNavigation.up: gridMenu; KeyNavigation.left: list2
+        model: 10; cacheBuffer: 200
+        delegate: ListViewDelegate {}
+
+        Behavior on y {
+            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+        }
+    }
+
+    Rectangle { width: parent.width; height: 1; color: "#D1DBBD" }
+
+    Rectangle {
+        y: 1; width: parent.width; height: 10
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#3E606F" }
+            GradientStop { position: 1.0; color: "transparent" }
+        }
     }
 
     Rectangle {
-        anchors.fill: parent
-        clip: true
+        y: parent.height - 10; width: parent.width; height: 10
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#193441" }
-            GradientStop { position: 1.0; color: Qt.darker("#193441") }
-        }
-
-        GridView {
-            id: gridView
-            anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
-            cellWidth: 152; cellHeight: 152
-            focus: true
-            model: 12
-
-            KeyNavigation.down: listMenu
-            KeyNavigation.left: contextMenu
-
-            delegate: Item {
-                id: container
-                width: GridView.view.cellWidth; height: GridView.view.cellHeight
-
-                Rectangle {
-                    id: content
-                    color: "transparent"
-                    smooth: true
-                    anchors.fill: parent; anchors.margins: 20; radius: 10
-
-                    Rectangle { color: "#91AA9D"; anchors.fill: parent; anchors.margins: 3; radius: 8; smooth: true }
-                    Image { source: "images/qt-logo.png"; anchors.centerIn: parent; smooth: true }
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        GridView.view.currentIndex = index
-                        container.forceActiveFocus()
-                    }
-                }
-
-                states: State {
-                    name: "active"; when: container.activeFocus
-                    PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
-                }
-
-                transitions: Transition {
-                    NumberAnimation { properties: "scale"; duration: 100 }
-                }
-            }
+            GradientStop { position: 1.0; color: "#3E606F" }
+            GradientStop { position: 0.0; color: "transparent" }
         }
     }
 }
