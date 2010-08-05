@@ -3324,7 +3324,7 @@ if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>
 fi
 
 # If -opengl wasn't specified, don't try to auto-detect
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
+if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
         CFG_OPENGL=no
 fi
 
