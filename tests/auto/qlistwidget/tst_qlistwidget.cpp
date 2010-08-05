@@ -1523,6 +1523,7 @@ void tst_QListWidget::fastScroll()
     for (int i = 0; i < 50; ++i)
         widget.addItem(QString("Item %1").arg(i));
 
+    topLevel.resize(300, 300); // toplevel needs to be wide enough for the item
     topLevel.show();
     // Make sure the widget gets the first full repaint. On
     // some WMs, we'll get two (first inactive exposure, then
