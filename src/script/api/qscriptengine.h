@@ -69,7 +69,7 @@ template <typename T>
 inline QScriptValue qScriptValueFromValue(QScriptEngine *, const T &);
 
 template <typename T>
-inline T qScriptValueToValue(const QScriptValue &);
+inline T qscriptvalue_cast(const QScriptValue &);
 
 class QScriptSyntaxCheckResultPrivate;
 class Q_SCRIPT_EXPORT QScriptSyntaxCheckResult
@@ -217,7 +217,7 @@ public:
     template <typename T>
     inline T fromScriptValue(const QScriptValue &value)
     {
-        return qScriptValueToValue<T>(value);
+        return qscriptvalue_cast<T>(value);
     }
 
     void installTranslatorFunctions(const QScriptValue &object = QScriptValue());
@@ -279,19 +279,6 @@ private:
 };
 
 #ifndef QT_NO_QOBJECT
-template <class T>
-inline QScriptValue qScriptValueFromQMetaObject(
-    QScriptEngine *engine
-#ifndef qdoc
-    , T * /* dummy */ = 0
-#endif
-    )
-{
-    typedef QScriptValue(*ConstructPtr)(QScriptContext *, QScriptEngine *, T *);
-    ConstructPtr cptr = qscriptQMetaObjectConstructor<T>;
-    return engine->newQMetaObject(&T::staticMetaObject,
-                                  engine->newFunction(reinterpret_cast<QScriptEngine::FunctionWithArgSignature>(cptr), 0));
-}
 
 #define Q_SCRIPT_DECLARE_QMETAOBJECT(T, _Arg1) \
 template<> inline QScriptValue qscriptQMetaObjectConstructor<T>(QScriptContext *ctx, QScriptEngine *eng, T *) \
@@ -305,10 +292,26 @@ template<> inline QScriptValue qscriptQMetaObjectConstructor<T>(QScriptContext *
     return o; \
 }
 
-    template <class T> QScriptValue QScriptEngine::scriptValueFromQMetaObject()
-    {
-        return qScriptValueFromQMetaObject<T>(this);
-    }
+template <class T> QScriptValue QScriptEngine::scriptValueFromQMetaObject()
+{
+    typedef QScriptValue(*ConstructPtr)(QScriptContext *, QScriptEngine *, T *);
+    ConstructPtr cptr = qscriptQMetaObjectConstructor<T>;
+    return newQMetaObject(&T::staticMetaObject,
+                            newFunction(reinterpret_cast<FunctionWithArgSignature>(cptr), 0));
+}
+
+#ifdef QT_DEPRECATED
+template <class T>
+inline QT_DEPRECATED QScriptValue qScriptValueFromQMetaObject(
+    QScriptEngine *engine
+#ifndef qdoc
+    , T * /* dummy */ = 0
+#endif
+    )
+{
+    return engine->scriptValueFromQMetaObject<T>();
+}
+#endif
 
 #endif // QT_NO_QOBJECT
 
@@ -360,11 +363,13 @@ inline QVariant qscriptvalue_cast<QVariant>(const QScriptValue &value)
     return value.toVariant();
 }
 
+#ifdef QT_DEPRECATED
 template <typename T>
-inline T qScriptValueToValue(const QScriptValue &value)
+inline QT_DEPRECATED T qScriptValueToValue(const QScriptValue &value)
 {
     return qscriptvalue_cast<T>(value);
 }
+#endif
 
 inline void qScriptRegisterMetaType_helper(QScriptEngine *eng, int type,
                                            QScriptEngine::MarshalFunction mf,

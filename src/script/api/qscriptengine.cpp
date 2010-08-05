@@ -2442,6 +2442,7 @@ QScriptValue QScriptEngine::newQMetaObject(
   \fn QScriptValue qScriptValueFromQMetaObject(QScriptEngine *engine)
   \since 4.3
   \relates QScriptEngine
+  \obsolete
 
   Uses \a engine to create a QScriptValue that represents the Qt class
   \c{T}.
@@ -3762,6 +3763,7 @@ QStringList QScriptEngine::importedExtensions() const
     \fn QScriptValue qScriptValueFromValue(QScriptEngine *engine, const T &value)
     \since 4.3
     \relates QScriptEngine
+    \obsolete
 
     Creates a QScriptValue using the given \a engine with the given \a
     value of template type \c{T}.
@@ -3772,13 +3774,14 @@ QStringList QScriptEngine::importedExtensions() const
     which did not support member template functions. It is advised
     to use the other form in new code.
 
-    \sa qScriptValueToValue()
+    \sa QScriptEngine::toScriptValue(), qscriptvalue_cast
 */
 
 /*!
     \fn T qScriptValueToValue(const QScriptValue &value)
     \since 4.3
     \relates QScriptEngine
+    \obsolete
 
     Returns the given \a value converted to the template type \c{T}.
 
@@ -3788,7 +3791,7 @@ QStringList QScriptEngine::importedExtensions() const
     which did not support member template functions. It is advised
     to use the other form in new code.
 
-    \sa qScriptValueFromValue()
+    \sa QScriptEngine::fromScriptValue()
 */
 
 /*!
@@ -3807,7 +3810,7 @@ QStringList QScriptEngine::importedExtensions() const
     \l{Conversion Between QtScript and C++ Types} for more information
     about the restrictions on types that can be used with QScriptValue.
 
-    \sa qScriptValueFromValue()
+    \sa QScriptEngine::fromScriptValue()
 */
 
 /*!
