@@ -280,6 +280,14 @@ inline XmlOutput::xml_output attrX(const char *name, const QStringList &v, const
     return attr(name, v.join(s));
 }
 
+triState operator!(const triState &rhs)
+{
+    if (rhs == unset)
+        return rhs;
+    triState lhs = (rhs == _True ? _False : _True);
+    return lhs;
+}
+
 // VCCLCompilerTool -------------------------------------------------
 VCCLCompilerTool::VCCLCompilerTool()
     :        AssemblerOutput(asmListingNone),
@@ -305,12 +313,14 @@ VCCLCompilerTool::VCCLCompilerTool()
         FloatingPointExceptions(unset),
         ForceConformanceInForLoopScope(unset),
         GeneratePreprocessedFile(preprocessNo),
+        PreprocessSuppressLineNumbers(unset),
         GlobalOptimizations(unset),
         IgnoreStandardIncludePath(unset),
         ImproveFloatingPointConsistency(unset),
         InlineFunctionExpansion(expandDefault),
         KeepComments(unset),
         MinimalRebuild(unset),
+        OmitDefaultLibName(unset),
         OmitFramePointers(unset),
         OpenMP(unset),
         Optimization(optimizeCustom),
@@ -328,11 +338,17 @@ VCCLCompilerTool::VCCLCompilerTool()
         TurnOffAssemblyGeneration(unset),
         UndefineAllPreprocessorDefinitions(unset),
         UsePrecompiledHeader(pchNone),
+        UseUnicodeForAssemblerListing(unset),
         WarnAsError(unset),
         WarningLevel(warningLevel_0),
         WholeProgramOptimization(unset),
         CompileForArchitecture(archUnknown),
-        InterworkCalls(unset)
+        InterworkCalls(unset),
+        EnablePREfast(unset),
+        DisplayFullPaths(unset),
+        MultiProcessorCompilation(unset),
+        GenerateXMLDocumentationFiles(unset),
+        CreateHotpatchableImage(unset)
 {
 }
 
@@ -381,6 +397,10 @@ bool VCCLCompilerTool::parseOption(const char* option)
     switch (first) {
     case '?':
     case 'h':
+        if(second == 'o' && third == 't' && fourth == 'p') {
+            CreateHotpatchableImage = _True;
+            break;
+        }
         qWarning("Generator: Option '/?', '/help': MSVC.NET projects do not support outputting help info");
         found = false;
         break;
@@ -406,7 +426,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
         break;
     case 'E':
         if(second == 'H') {
-            QString opt(option);
+            QByteArray opt(option + 2);
             if (opt.contains('a') && !opt.contains('s') && !opt.contains('c'))
                 ExceptionHandling = ehSEH;
             else if (!opt.contains('a') && opt.contains("s-") && opt.contains("c-"))
@@ -425,6 +445,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 AdditionalOptions += option;
             }
             break;
+        } else if (second == 'P') {
+            PreprocessSuppressLineNumbers = _True;
         }
         GeneratePreprocessedFile = preprocessYes;
         break;
@@ -441,15 +463,23 @@ bool VCCLCompilerTool::parseOption(const char* option)
                         AssemblerOutput = asmListingAsmMachineSrc;
                 } else if(third == 's') {
                     AssemblerOutput = asmListingAsmSrc;
+                } else if (third == 'u') {
+                    UseUnicodeForAssemblerListing = _True;
                 } else {
                     AssemblerOutput = asmListingAssemblyOnly;
                 }
+                break;
+            case 'C':
+                DisplayFullPaths = _True;
                 break;
             case 'a':
                 AssemblerListingLocation = option+3;
                 break;
             case 'I':
                 ForcedIncludeFiles += option+3;
+                break;
+            case 'i':
+                PreprocessOutputPath += option+3;
                 break;
             case 'R':
                 BrowseInformation = brAllInfo;
@@ -522,6 +552,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
             break;
         case 'S':
             BufferSecurityCheck = _True;
+            if(third == '-')
+                BufferSecurityCheck = _False;
             break;
         case 'T':
             EnableFiberSafeOptimizations = _True;
@@ -599,10 +631,14 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 RuntimeLibrary = rtMultiThreadedDebug;
             break;
         } else if (second == 'P') {
-            if (config->CompilerVersion >= NET2005)
+            if (config->CompilerVersion >= NET2005) {
                 AdditionalOptions += option;
-            else
+            } else if (config->CompilerVersion >= NET2010) {
+                MultiProcessorCompilation = _True;
+                MultiProcessorCompilationProcessorCount = option+3;
+            } else {
                 warn_msg(WarnLogic, "/MP option is not supported in Visual C++ < 2005, ignoring.");
+            }
             break;
         }
         found = false; break;
@@ -779,7 +815,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
             break;
         case 'p':
             if(third == '6' && fourth == '4') {
-                Detect64BitPortabilityProblems = _True;
+                if (config->CompilerVersion >= NET2010) {
+                     // Deprecated for VS2010 but can be used under Additional Options.
+                    AdditionalOptions += option;
+                } else {
+                   Detect64BitPortabilityProblems = _True;
+                }
                 break;
             }
             // Fallthrough
@@ -831,7 +872,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
             DebugInformationFormat = debugEnabled;
             break;
         case 'l':
-            DebugInformationFormat = debugEditAndContinue;
+            OmitDefaultLibName = _True;
             break;
         case 'a':
             DisableLanguageExtensions = _True;
@@ -895,6 +936,9 @@ bool VCCLCompilerTool::parseOption(const char* option)
                     break;
                 }
             }
+        } else if (second == 'n' && third == 'a' && fourth == 'l') {
+            EnablePREfast = _True;
+            break;
         }
         found = false;
         break;
@@ -953,10 +997,34 @@ bool VCCLCompilerTool::parseOption(const char* option)
         }
         break;
     case 'd':
-        if(second != 'r') {
-            found = false; break;
+        if (second == 'r') {
+            CompileAsManaged = managedAssembly;
+            break;
+        } else if (second != 'o' && third == 'c') {
+            GenerateXMLDocumentationFiles = _True;
+            XMLDocumentationFileName += option+4;
+            break;
         }
-        CompileAsManaged = managedAssembly;
+        found = false;
+        break;
+    case 'e':
+        if (second == 'r' && third == 'r' && fourth == 'o') {
+            if (option[12] == ':') {
+                if ( option[13] == 'n') {
+                    ErrorReporting = "None";
+                } else if (option[13] == 'p') {
+                    ErrorReporting = "Prompt";
+                } else if (option[13] == 'q') {
+                    ErrorReporting = "Queue";
+                } else if (option[13] == 's') {
+                    ErrorReporting = "Send";
+                } else {
+                    found = false;
+                }
+                break;
+            }
+        }
+        found = false;
         break;
     case 'f':
         if(second == 'p' && third == ':') {
@@ -1039,7 +1107,8 @@ bool VCCLCompilerTool::parseOption(const char* option)
 
 // VCLinkerTool -----------------------------------------------------
 VCLinkerTool::VCLinkerTool()
-    :        EnableCOMDATFolding(optFoldingDefault),
+    :   DataExecutionPrevention(unset),
+        EnableCOMDATFolding(optFoldingDefault),
         GenerateDebugInformation(unset),
         GenerateMapFile(unset),
         HeapCommitSize(-1),
@@ -1055,6 +1124,7 @@ VCLinkerTool::VCLinkerTool()
         MapLines(unset),
         OptimizeForWindows98(optWin98Default),
         OptimizeReferences(optReferencesDefault),
+        RandomizedBaseAddress(unset),
         RegisterOutput(unset),
         ResourceOnlyDLL(unset),
         SetChecksum(unset),
@@ -1068,8 +1138,18 @@ VCLinkerTool::VCLinkerTool()
         SwapRunFromNet(unset),
         TargetMachine(machineNotSet),
         TerminalServerAware(termSvrAwareDefault),
+        TreatWarningsAsErrors(unset),
         TurnOffAssemblyGeneration(unset),
-        TypeLibraryResourceID(0)
+        TypeLibraryResourceID(0),
+        GenerateManifest(unset),
+        EnableUAC(unset),
+        UACUIAccess(unset),
+        SectionAlignment(-1),
+        PreventDllBinding(unset),
+        AllowIsolation(unset),
+        AssemblyDebug(unset),
+        CLRUnmanagedCodeCheck(unset),
+        DelaySign(unset)
 {
 }
 
@@ -1142,25 +1222,56 @@ bool VCLinkerTool::parseOption(const char* option)
     displayHash("POSIX"); displayHash("WINDOWS"); displayHash("WINDOWSCE"); displayHash("NET"); displayHash("CD"); displayHash("NO");
 #endif
     bool found = true;
-    switch (elfHash(option)) {
-    case 0x3360dbe: // /ALIGN[:number]
-    case 0x1485c34: // /ALLOWBIND[:NO]
+    const uint optionHash = elfHash(option);
+    if (config->CompilerVersion < NET2010) {
+        switch (optionHash) {
+        case 0x3360dbe: // /ALIGN[:number]
+        case 0x1485c34: // /ALLOWBIND[:NO]
+        case 0x33aec94: // /FIXED[:NO]
+        case 0x7988f7e: // /SECTION:name,[E][R][W][S][D][K][L][P][X][,ALIGN=#]
+        case 0x0348992: // /STUB:filename
+            AdditionalOptions += option;
+            return true;
+        }
+    }
+
+    switch (optionHash) {
     case 0x6b21972: // /DEFAULTLIB:library
     case 0x396ea92: // /DRIVER[:UPONLY | :WDM]
     case 0xaca9d75: // /EXETYPE[:DYNAMIC | :DEV386]
     case 0x3ad5444: // /EXPORT:entryname[,@ordinal[,NONAME]][,DATA]
-    case 0x33aec94: // /FIXED[:NO]
     case 0x33b4675: // /FORCE:[MULTIPLE|UNRESOLVED]
     case 0x3dc3455: // /IGNORE:number,number,number,number  ### NOTE: This one is undocumented, but it is even used by Microsoft.
                     //                                      In recent versions of the Microsoft linker they have disabled this undocumented feature.
-    case 0x7988f7e: // /SECTION:name,[E][R][W][S][D][K][L][P][X][,ALIGN=#]
-    case 0x0348992: // /STUB:filename
     case 0x0034bc4: // /VXD
-    case 0x0034c50: // /WS
         AdditionalOptions += option;
+        break;
+    case 0x3360dbe: // /ALIGN[:number]
+        SectionAlignment = QString(option+7).toLongLong();
+        break;
+    case 0x1485c34: // /ALLOWBIND[:NO]
+        if(*(option+10) == ':' && (*(option+11) == 'n' || *(option+11) == 'N'))
+            PreventDllBinding = _False;
+        else
+            PreventDllBinding = _True;
+        break;
+    case 0x312011e: // /ALLOWISOLATION[:NO]
+        if(*(option+15) == ':' && (*(option+16) == 'n' || *(option+16) == 'N'))
+            AllowIsolation = _False;
+        else
+            AllowIsolation = _True;
         break;
     case 0x679c075: // /ASSEMBLYMODULE:filename
         AddModuleNamesToAssembly += option+15;
+        break;
+    case 0x75f35f7: // /ASSEMBLYDEBUG[:DISABLE]
+        if(*(option+14) == ':' && (*(option+15) == 'D'))
+            AssemblyDebug = _False;
+        else
+            AssemblyDebug = _True;
+        break;
+    case 0x43294a5: // /ASSEMBLYLINKRESOURCE:filename
+            AssemblyLinkResource += option+22;
         break;
     case 0x062d065: // /ASSEMBLYRESOURCE:filename
         LinkToManagedResourceFile = option+18;
@@ -1170,6 +1281,71 @@ bool VCLinkerTool::parseOption(const char* option)
         // Seems BaseAddress only can contain the location...
         // We don't use it in Qt, so keep it simple for now
         BaseAddress = option+6;
+        break;
+    case 0x63bf065: // /CLRIMAGETYPE:{IJW|PURE|SAFE}
+        if(*(option+14) == 'I')
+            CLRImageType = "ForceIJWImage";
+        else if(*(option+14) == 'P')
+            CLRImageType = "ForcePureILImage";
+        else if(*(option+14) == 'S')
+            CLRImageType = "ForceSafeILImage";
+        break;
+    case 0x5f2a6a2: // /CLRSUPPORTLASTERROR{:NO | SYSTEMDLL}
+        if(*(option+20) == ':') {
+            if(*(option+21) == 'N') {
+                CLRSupportLastError = "Disabled";
+            } else if(*(option+21) == 'S') {
+                CLRSupportLastError = "SystemDlls";
+            }
+        } else {
+            CLRSupportLastError = "Enabled";
+        }
+        break;
+    case 0xc7984f5: // /CLRTHREADATTRIBUTE:{STA|MTA|NONE}
+        if(*(option+20) == 'N')
+            CLRThreadAttribute = "DefaultThreadingAttribute";
+        else if(*(option+20) == 'M')
+            CLRThreadAttribute = "MTAThreadingAttribute";
+        else if(*(option+20) == 'S')
+            CLRThreadAttribute = "STAThreadingAttribute";
+        break;
+    case 0xa8c637b: // /CLRUNMANAGEDCODECHECK[:NO]
+        if(*(option+23) == 'N')
+            CLRUnmanagedCodeCheck = _False;
+        else
+            CLRUnmanagedCodeCheck = _True;
+        break;
+    case 0x62d9e94: // /MANIFEST[:NO]
+        if ((*(option+9) == ':' && (*(option+10) == 'N' || *(option+10) == 'n')))
+            GenerateManifest = _False;
+        else
+            GenerateManifest = _True;
+        break;
+    case 0x8b64559: // /MANIFESTDEPENDENCY:manifest_dependency
+        AdditionalManifestDependencies += option+20;
+        break;
+    case 0xe9e8195: // /MANIFESTFILE:filename
+        ManifestFile = option+14;
+        break;
+    case 0x9e9fb83: // /MANIFESTUAC http://msdn.microsoft.com/en-us/library/bb384691%28VS.100%29.aspx
+        if ((*(option+12) == ':' && (*(option+13) == 'N' || *(option+13) == 'n')))
+            EnableUAC = _False;
+        else if((*(option+12) == ':' && (*(option+13) == 'l' || *(option+14) == 'e'))) { // level
+            if(*(option+20) == 'a')
+                UACExecutionLevel = "AsInvoker";
+            else if(*(option+20) == 'h')
+                UACExecutionLevel = "HighestAvailable";
+            else if(*(option+20) == 'r')
+                UACExecutionLevel = "RequireAdministrator";
+        } else if((*(option+12) == ':' && (*(option+13) == 'u' || *(option+14) == 'i'))) { // uiAccess
+            if(*(option+22) == 't')
+                UACUIAccess = _True;
+            else
+                UACUIAccess = _False;
+        } else if((*(option+12) == ':' && (*(option+13) == 'f' || *(option+14) == 'r'))) { // fragment
+            AdditionalOptions += option;
+        }else
+            EnableUAC = _True;
         break;
     case 0x3389797: // /DEBUG
         GenerateDebugInformation = _True;
@@ -1185,11 +1361,35 @@ bool VCLinkerTool::parseOption(const char* option)
     case 0x06f4bf4: // /DELAYLOAD:dllname
         DelayLoadDLLs += option+11;
         break;
+    case 0x06d451e: // /DELAYSIGN[:NO]
+        if(*(option+10) == ':' && (*(option+11) == 'n' || *(option+11) == 'N'))
+            DelaySign = _False;
+        else
+            DelaySign = _True;
+        break;
     case 0x003390c: // /DLL
         // This option is not used for vcproj files
         break;
+    case 0x2ee8415: // /DYNAMICBASE[:NO]
+        if(*(option+12) == ':' && (*(option+13) == 'n' || *(option+13) == 'N'))
+            RandomizedBaseAddress = _False;
+        else
+            RandomizedBaseAddress = _True;
+        break;
     case 0x33a3979: // /ENTRY:function
         EntryPointSymbol = option+7;
+        break;
+    case 0x4504334: // /ERRORREPORT:[ NONE | PROMPT | QUEUE | SEND ]
+        if(*(option+12) == ':' ) {
+            if(*(option+13) == 'N')
+                LinkErrorReporting = "NoErrorReport";
+            else if(*(option+13) == 'P')
+                LinkErrorReporting = "PromptImmediately";
+            else if(*(option+13) == 'Q')
+                LinkErrorReporting = "QueueForNextLogin";
+            else if(*(option+13) == 'S')
+                LinkErrorReporting = "SendErrorReport";
+        }
         break;
     case 0x033c960: // /HEAP:reserve[,commit]
         {
@@ -1217,6 +1417,12 @@ bool VCLinkerTool::parseOption(const char* option)
             LinkIncremental = linkIncrementalNo;
         else
             LinkIncremental = linkIncrementalYes;
+        break;
+    case 0x07f1ab2: // /KEYCONTAINER:name
+        KeyContainer = option+14;
+        break;
+    case 0xfadaf35: // /KEYFILE:filename
+        KeyFile = option+9;
         break;
     case 0x26e4675: // /LARGEADDRESSAWARE[:no]
         if(*(option+18) == ':' &&
@@ -1322,6 +1528,12 @@ bool VCLinkerTool::parseOption(const char* option)
     case 0x434138f: // /NOLOGO
         SuppressStartupBanner = _True;
         break;
+    case 0xc841054: // /NXCOMPAT[:NO]
+        if ((*(option+9) == ':' && (*(option+10) == 'N' || *(option+10) == 'n')))
+            DataExecutionPrevention = _False;
+        else
+            DataExecutionPrevention = _True;
+        break;
     case 0x0034454: // /OPT:{REF | NOREF | ICF[=iterations] | NOICF | WIN98 | NOWIN98}
         {
             char third = *(option+7);
@@ -1399,7 +1611,7 @@ bool VCLinkerTool::parseOption(const char* option)
             case 0x5268ea5: // NATIVE
             case 0x05547e8: // POSIX
             case 0x2949c95: // WINDOWSCE
-			case 0x4B69795: // windowsce
+            case 0x4B69795: // windowsce
                 AdditionalOptions += option;
                 break;
             default:
@@ -1438,6 +1650,16 @@ bool VCLinkerTool::parseOption(const char* option)
     case 0xaa77f7e: // /VERSION:major[.minor]
         Version = option+9;
         break;
+    case 0x0034c50: // /WS[:NO]
+        if (config->CompilerVersion >= NET2010) {
+            if(*(option+3) == ':')
+                TreatWarningsAsErrors = _False;
+            else
+                TreatWarningsAsErrors = _True;
+        } else {
+            AdditionalOptions += option;
+        }
+        break;
     default:
         AdditionalOptions += option;
         break;
@@ -1467,7 +1689,11 @@ VCMIDLTool::VCMIDLTool()
         TargetEnvironment(midlTargetNotSet),
         ValidateParameters(unset),
         WarnAsError(unset),
-        WarningLevel(midlWarningLevel_0)
+        WarningLevel(midlWarningLevel_0),
+        ApplicationConfigurationMode(unset),
+        ValidateAllParameters(unset),
+        SuppressCompilerWarnings(unset),
+        LocaleID(-1)
 {
 }
 
@@ -1503,7 +1729,25 @@ bool VCMIDLTool::parseOption(const char* option)
 #endif
     bool found = true;
     int offset = 0;
-    switch(elfHash(option)) {
+
+    const uint optionHash = elfHash(option);
+
+    if (config->CompilerVersion < NET2010) {
+        switch (optionHash) {
+        case 0x5b1cb97: // /app_config
+        case 0x5a2fc64: // /client {none|stub}
+        case 0x35aabb2: // /cstub filename
+        case 0x64ceb12: // /newtlb
+        case 0x556dbee: // /no_warn
+        case 0x662bb12: // /oldtlb
+        case 0x69c9cf2: // /server {none|stub}
+        case 0x36aabb2: // /sstub filename
+            AdditionalOptions += option;
+            return true;
+        }
+    }
+
+    switch(optionHash) {
     case 0x0000334: // /D name[=def]
         PreprocessorDefinitions += option+3;
         break;
@@ -1540,6 +1784,9 @@ bool VCMIDLTool::parseOption(const char* option)
             found = false;
         }
         break;
+    case 0x5b1cb97: // /app_config
+        ApplicationConfigurationMode = _True;
+        break;
     case 0x0359e82: // /char {ascii7|signed|unsigned}
         switch(*(option+6)) {
         case 'a':
@@ -1555,8 +1802,17 @@ bool VCMIDLTool::parseOption(const char* option)
             found = false;
         }
         break;
+    case 0x5a2fc64: // /client {none|stub}
+        if(*(option+8) == 's')
+            GenerateClientFiles = "Stub";
+        else
+            GenerateClientFiles = "None";
+        break;
     case 0xa766524: // /cpp_opt options
         CPreprocessOptions += option+9;
+        break;
+    case 0x35aabb2: // /cstub filename
+        ClientStubFile = option+7;
         break;
     case 0xb32abf1: // /dlldata filename
         DLLDataFileName = option + 9;
@@ -1603,17 +1859,29 @@ bool VCMIDLTool::parseOption(const char* option)
     case 0x64b7933: // /mktyplib203
         MkTypLibCompatible = _True;
         break;
+    case 0x64ceb12: // /newtlb
+        TypeLibFormat = "NewFormat";
+        break;
     case 0x8e0b0a2: // /no_def_idir
         IgnoreStandardIncludePath = _True;
         break;
     case 0x65635ef: // /nologo
         SuppressStartupBanner = _True;
         break;
+    case 0x695e9f4: // /no_robust
+        ValidateAllParameters = _False;
+        break;
     case 0x3656b22: // /notlb
         GenerateTypeLibrary = _True;
         break;
+    case 0x556dbee: // /no_warn
+        SuppressCompilerWarnings = _True;
+        break;
     case 0x000035f: // /o filename
         RedirectOutputAndErrors = option+3;
+        break;
+    case 0x662bb12: // /oldtlb
+        TypeLibFormat = "OldFormat";
         break;
     case 0x00366c4: // /out directory
         OutputDirectory = option+5;
@@ -1630,6 +1898,15 @@ bool VCMIDLTool::parseOption(const char* option)
         else
             TargetEnvironment = midlTargetWin32;
         break;
+    case 0x69c9cf2: // /server {none|stub}
+        if(*(option+8) == 's')
+            GenerateServerFiles = "Stub";
+        else
+            GenerateServerFiles = "None";
+        break;
+    case 0x36aabb2: // /sstub filename
+        ServerStubFile = option+7;
+        break;
     case 0x0036b22: // /tlb filename
         TypeLibraryName = option+5;
         break;
@@ -1644,32 +1921,24 @@ bool VCMIDLTool::parseOption(const char* option)
     case 0x0003463: // /Os
     case 0x0003513: // /Zs
     case 0x0035796: // /acf filename
-    case 0x5b1cb97: // /app_config
     case 0x3595cf4: // /c_ext
-    case 0x5a2fc64: // /client {none|stub}
     case 0xa64d3dd: // /confirm
     case 0xa765b64: // /cpp_cmd cmd_line
-    case 0x35aabb2: // /cstub filename
     case 0x03629f4: // /lcid
     case 0x6495cc4: // /ms_ext
     case 0x96c7a1e: // /ms_union
     case 0x4996fa2: // /msc_ver <nnnn>
-    case 0x64ceb12: // /newtlb
     case 0x6555a40: // /no_cpp
     case 0xf64d6a6: // /no_default_epv
     case 0x6dd9384: // /no_format_opt
-    case 0x556dbee: // /no_warn
     case 0x3655a70: // /nocpp
     case 0x2b455a3: // /oldnames
-    case 0x662bb12: // /oldtlb
     case 0x0036696: // /osf
     case 0x036679b: // /pack {N}
     case 0x678bd38: // /prefix {all|client|server|switch}
     case 0x96b702c: // /protocol {all|dce|ndr64}
     case 0x3696aa3: // /rpcss
     case 0x698ca60: // /savePP
-    case 0x69c9cf2: // /server {none|stub}
-    case 0x36aabb2: // /sstub filename
     case 0xce9b12b: // /syntax_check
     case 0xc9b5f16: // /use_epv
         AdditionalOptions += option;
@@ -1721,7 +1990,8 @@ VCCustomBuildTool::VCCustomBuildTool()
 VCResourceCompilerTool::VCResourceCompilerTool()
     :   Culture(rcUseDefault),
         IgnoreStandardIncludePath(unset),
-        ShowProgress(linkProgressNotSet)
+        ShowProgress(linkProgressNotSet),
+        SuppressStartupBanner(unset)
 {
     PreprocessorDefinitions = QStringList("NDEBUG");
 }
@@ -1734,22 +2004,31 @@ VCDeploymentTool::VCDeploymentTool()
     RemoteDirectory = "";
 }
 
+VCEventTool::VCEventTool(const QString &eventName)
+    : ExcludedFromBuild(unset)
+{
+    EventName = eventName;
+    ToolName = "VC";
+    ToolName += eventName;
+    ToolName += "Tool";
+}
+
 // VCPostBuildEventTool ---------------------------------------------
 VCPostBuildEventTool::VCPostBuildEventTool()
+    : VCEventTool("PostBuildEvent")
 {
-    ToolName = "VCPostBuildEventTool";
 }
 
 // VCPreBuildEventTool ----------------------------------------------
 VCPreBuildEventTool::VCPreBuildEventTool()
+    : VCEventTool("PreBuildEvent")
 {
-    ToolName = "VCPreBuildEventTool";
 }
 
 // VCPreLinkEventTool -----------------------------------------------
 VCPreLinkEventTool::VCPreLinkEventTool()
+    : VCEventTool("PreLinkEvent")
 {
-    ToolName = "VCPreLinkEventTool";
 }
 
 // VCConfiguration --------------------------------------------------
@@ -1767,6 +2046,7 @@ VCConfiguration::VCConfiguration()
     compiler.config = this;
     linker.config = this;
     idl.config = this;
+    custom.config = this;
 }
 
 // VCFilter ---------------------------------------------------------
@@ -1830,7 +2110,9 @@ void VCFilter::modifyPCHstage(QString str)
             lines << "*";
             lines << "* This file is auto-generated by qmake since no PRECOMPILED_SOURCE was";
             lines << "* specified, and is used as the common stdafx.cpp. The file is only";
-            lines << "* generated when creating .vcproj project files, and is not used for";
+            lines << "* generated when creating ";
+            lines << (Config->CompilerVersion < NET2010 ? ".vcproj" : ".vcxproj");
+            lines << " project files, and is not used for";
             lines << "* command line compilations by nmake.";
             lines << "*";
             lines << "* WARNING: All changes made in this file will be lost.";

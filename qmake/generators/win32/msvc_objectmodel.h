@@ -86,6 +86,9 @@ enum triState {
     _False = 0,
     _True = 1
 };
+
+triState operator!(const triState &rhs);
+
 enum addressAwarenessType {
     addrAwareDefault,
     addrAwareNoLarge,
@@ -520,6 +523,7 @@ public:
     QStringList             ForcedIncludeFiles;
     QStringList             ForcedUsingFiles;
     preprocessOption        GeneratePreprocessedFile;
+    triState                PreprocessSuppressLineNumbers;
     triState                GlobalOptimizations;
     triState                IgnoreStandardIncludePath;
     triState                ImproveFloatingPointConsistency;
@@ -527,6 +531,7 @@ public:
     triState                KeepComments;
     triState                MinimalRebuild;
     QString                 ObjectFile;
+    triState                OmitDefaultLibName;
     triState                OmitFramePointers;
     triState                OpenMP;
     optimizeOption          Optimization;
@@ -549,11 +554,24 @@ public:
     triState                UndefineAllPreprocessorDefinitions;
     QStringList             UndefinePreprocessorDefinitions;
     pchOption               UsePrecompiledHeader;
+    triState                UseUnicodeForAssemblerListing;
     triState                WarnAsError;
     warningLevelOption      WarningLevel;
     triState                WholeProgramOptimization;
     useOfArchitecture       CompileForArchitecture;
     triState                InterworkCalls;
+
+    // VS2010
+    triState                EnablePREfast;
+    triState                DisplayFullPaths;
+    triState                MultiProcessorCompilation;
+    QString                 MultiProcessorCompilationProcessorCount;
+    triState                GenerateXMLDocumentationFiles;
+    QString                 XMLDocumentationFileName;
+    QString                 ErrorReporting;
+    triState                CreateHotpatchableImage;
+    QString                 PreprocessOutputPath;
+
     VCConfiguration*        config;
 };
 
@@ -571,6 +589,7 @@ public:
     QStringList             AdditionalOptions;
     QStringList             AddModuleNamesToAssembly;
     QString                 BaseAddress;
+    triState                DataExecutionPrevention;
     QStringList             DelayLoadDLLs;
     optFoldingType          EnableCOMDATFolding;
     QString                 EntryPointSymbol;
@@ -601,6 +620,7 @@ public:
     optRefType              OptimizeReferences;
     QString                 OutputFile;
     QString                 ProgramDatabaseFile;
+    triState                RandomizedBaseAddress;
     triState                RegisterOutput;
     triState                ResourceOnlyDLL;
     triState                SetChecksum;
@@ -615,10 +635,33 @@ public:
     triState                SwapRunFromNet;
     machineTypeOption       TargetMachine;
     termSvrAwarenessType    TerminalServerAware;
+    triState                TreatWarningsAsErrors;
     triState                TurnOffAssemblyGeneration;
     QString                 TypeLibraryFile;
     qlonglong               TypeLibraryResourceID;
     QString                 Version;
+
+    // VS2010
+    triState                GenerateManifest;
+    QStringList             AdditionalManifestDependencies;
+    QString                 ManifestFile;
+    triState                EnableUAC;
+    QString                 UACExecutionLevel;
+    triState                UACUIAccess;
+    qlonglong               SectionAlignment;
+    triState                PreventDllBinding;
+    triState                AllowIsolation;
+    triState                AssemblyDebug;
+    QStringList             AssemblyLinkResource;
+    QString                 CLRImageType;
+    QString                 CLRSupportLastError;
+    QString                 CLRThreadAttribute;
+    triState                CLRUnmanagedCodeCheck;
+    triState                DelaySign;
+    QString                 KeyContainer;
+    QString                 KeyFile;
+    QString                 LinkErrorReporting;
+
     VCConfiguration*        config;
 };
 
@@ -661,6 +704,18 @@ public:
     triState                ValidateParameters;
     triState                WarnAsError;
     midlWarningLevelOption  WarningLevel;
+
+    // VS 2010
+    triState                ApplicationConfigurationMode;
+    QString                 GenerateClientFiles;
+    QString                 ClientStubFile;
+    QString                 TypeLibFormat;
+    triState                ValidateAllParameters;
+    triState                SuppressCompilerWarnings;
+    QString                 GenerateServerFiles;
+    QString                 ServerStubFile;
+    qlonglong               LocaleID;
+
     VCConfiguration*        config;
 };
 
@@ -700,6 +755,8 @@ public:
     QStringList             Outputs;
     QString                 ToolName;
     QString                 ToolPath;
+
+    VCConfiguration*        config;
 };
 
 class VCResourceCompilerTool : public VCToolBase
@@ -720,6 +777,7 @@ public:
     QString                 ResourceOutputFileName;
     linkProgressOption      ShowProgress;
     QString                 ToolPath;
+    triState                SuppressStartupBanner;
 };
 
 class VCDeploymentTool
@@ -740,15 +798,16 @@ class VCEventTool : public VCToolBase
 {
 protected:
     // Functions
-    VCEventTool() : ExcludedFromBuild(unset){};
+    VCEventTool(const QString &eventName);
     virtual ~VCEventTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
 public:
     // Variables
     QString                 CommandLine;
     QString                 Description;
     triState                ExcludedFromBuild;
+    QString                 EventName;
     QString                 ToolName;
     QString                 ToolPath;
 };
@@ -791,7 +850,8 @@ public:
     QString                 DeleteExtensionsOnClean;
     QString                 ImportLibrary;
     QString                 IntermediateDirectory;
-    QString                 Name;
+    QString                 Name;   // "ConfigurationName|PlatformName"
+    QString                 ConfigurationName;
     QString                 OutputDirectory;
     QString                 PrimaryOutput;
     QString                 ProgramDatabase;

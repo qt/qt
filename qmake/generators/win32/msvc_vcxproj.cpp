@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 
 VcxprojGenerator::VcxprojGenerator() : VcprojGenerator()
 {
-    projectWriter = new VCXProjectWriter;
 }
 
 VCProjectWriter *VcxprojGenerator::createProjectWriter()
@@ -120,7 +119,7 @@ void VcxprojGenerator::initProject()
 
     vcxProject.Keyword = project->first("VCPROJ_KEYWORD");
     vcxProject.PlatformName = vcxProject.Configuration.idl.TargetEnvironment;
-    if (vcxProject.Configuration.idl.TargetEnvironment.isEmpty())
+    if (vcxProject.Configuration.idl.TargetEnvironment == midlTargetNotSet)
         vcxProject.PlatformName = "Win32";
     // These are not used by Qt, but may be used by customers
     vcxProject.SccProjectName = project->first("SCCPROJECTNAME");
@@ -134,7 +133,7 @@ void VcxprojGenerator::initConfiguration()
     // Initialize XML sub elements
     // - Do this first since main configuration elements may need
     // - to know of certain compiler/linker options
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
 
     initCompilerTool();
 
@@ -154,14 +153,14 @@ void VcxprojGenerator::initConfiguration()
     QString temp = project->first("BuildBrowserInformation");
     switch (projectTarget) {
     case SharedLib:
-        conf.ConfigurationType = "DynamicLibrary";
+        conf.ConfigurationType = typeDynamicLibrary;
         break;
     case StaticLib:
-        conf.ConfigurationType = "StaticLibrary";
+        conf.ConfigurationType = typeStaticLibrary;
         break;
     case Application:
     default:
-        conf.ConfigurationType = "Application";
+        conf.ConfigurationType = typeApplication;
         break;
     }
 
@@ -174,35 +173,19 @@ void VcxprojGenerator::initConfiguration()
         conf.OutputDirectory += '\\';
 
     // The target name could have been changed.
-    conf.TargetName = project->first("TARGET");
-    if ( !conf.TargetName.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
-        conf.TargetName.append(project->first("TARGET_VERSION_EXT"));
+    conf.PrimaryOutput = project->first("TARGET");
+    if ( !conf.PrimaryOutput.isEmpty() && !project->first("TARGET_VERSION_EXT").isEmpty() && project->isActiveConfig("shared"))
+        conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
 
     conf.Name = project->values("BUILD_NAME").join(" ");
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
     conf.ConfigurationName = conf.Name;
-    conf.Name += (conf.idl.TargetEnvironment == "Win64" ? "|Win64" : "|Win32");
+    conf.Name += (conf.idl.TargetEnvironment == midlTargetWin64 ? "|Win64" : "|Win32");
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
     temp = project->first("CharacterSet");
-    if (!temp.isEmpty())
-    {
-        switch (charSet(temp.toShort())) {
-
-            case charSetMBCS:
-                conf.CharacterSet = "MultiByte";
-                break;
-            case charSetUnicode:
-                conf.CharacterSet = "Unicode";
-                break;
-            case charSetNotSet:
-            default:
-                conf.CharacterSet = "NotSet";
-                break;
-        }
-        conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
-    }
+    conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
     conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean");
     conf.ImportLibrary = conf.linker.ImportLibrary;
     conf.IntermediateDirectory = project->first("OBJECTS_DIR");
@@ -211,38 +194,10 @@ void VcxprojGenerator::initConfiguration()
     conf.WholeProgramOptimization = conf.compiler.WholeProgramOptimization;
     temp = project->first("UseOfATL");
     if(!temp.isEmpty())
-    {
-        switch (useOfATL(temp.toShort())) {
-
-            case useATLStatic:
-                conf.UseOfATL = "Static";
-                break;
-            case useATLDynamic:
-                conf.UseOfATL = "Dynamic";
-                break;
-            case useATLNotSet:
-            default:
-                conf.UseOfATL = "false";
-                break;
-        }
-    }
+        conf.UseOfATL = useOfATL(temp.toShort());
     temp = project->first("UseOfMfc");
     if(!temp.isEmpty())
-    {
-        switch (useOfMfc(temp.toShort())) {
-
-            case useMfcStatic:
-                conf.UseOfMfc = "Static";
-                break;
-            case useMfcDynamic:
-                conf.UseOfMfc = "Dynamic";
-                break;
-            case useMfcStdWin:
-            default:
-                conf.UseOfMfc = "false";
-                break;
-        }
-    }
+        conf.UseOfMfc = useOfMfc(temp.toShort());
 
     // Configuration does not need parameters from
     // these sub XML items;
@@ -265,18 +220,18 @@ void VcxprojGenerator::initCompilerTool()
     if(placement.isEmpty())
         placement = ".\\";
 
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
     conf.compiler.AssemblerListingLocation = placement ;
     conf.compiler.ProgramDataBaseFileName = ".\\" ;
-    conf.compiler.ObjectFileName = placement ;
-    conf.compiler.ExceptionHandling = "false";
+    conf.compiler.ObjectFile = placement ;
+    conf.compiler.ExceptionHandling = ehNone;
     // PCH
     if (usePCH) {
-        conf.compiler.PrecompiledHeader             = "Use";
-        conf.compiler.PrecompiledHeaderOutputFile   = "$(IntDir)\\" + precompPch;
-        conf.compiler.PrecompiledHeaderFile         = project->first("PRECOMPILED_HEADER");
+        conf.compiler.UsePrecompiledHeader             = pchUseUsingSpecific;
+        conf.compiler.PrecompiledHeaderFile            = "$(IntDir)\\" + precompPch;
+        conf.compiler.PrecompiledHeaderThrough         = project->first("PRECOMPILED_HEADER");
         conf.compiler.ForcedIncludeFiles            = project->values("PRECOMPILED_HEADER");
-        conf.compiler.PreprocessToFile              = _False;
+        conf.compiler.GeneratePreprocessedFile      = preprocessNo;
         conf.compiler.PreprocessSuppressLineNumbers = _False;
     }
 
@@ -295,7 +250,7 @@ void VcxprojGenerator::initCompilerTool()
 void VcxprojGenerator::initLinkerTool()
 {
     findLibraries(); // Need to add the highest version of the libs
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
     conf.linker.parseOptions(project->values("MSVCPROJ_LFLAGS"));
 
     foreach(QString libs, project->values("MSVCPROJ_LIBS")) {
@@ -334,7 +289,7 @@ void VcxprojGenerator::initLinkerTool()
 
 void VcxprojGenerator::initResourceTool()
 {
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
     conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
 
     // We need to add _DEBUG for the debug version of the project, since the normal compiler defines
@@ -349,12 +304,12 @@ void VcxprojGenerator::initResourceTool()
 
 void VcxprojGenerator::initPostBuildEventTools()
 {
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
     if(!project->values("QMAKE_POST_LINK").isEmpty()) {
         QString cmdline = var("QMAKE_POST_LINK");
         conf.postBuild.CommandLine = cmdline;
         conf.postBuild.Description = cmdline;
-        conf.postBuild.UseInBuild = _True;
+        conf.postBuild.ExcludedFromBuild = _False;
     }
 
     if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
@@ -362,18 +317,18 @@ void VcxprojGenerator::initPostBuildEventTools()
             conf.postBuild.CommandLine += " && ";
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
-        conf.postBuild.UseInBuild = _True;
+        conf.postBuild.ExcludedFromBuild = _False;
     }
 }
 
 void VcxprojGenerator::initPreLinkEventTools()
 {
-    VCXConfiguration &conf = vcxProject.Configuration;
+    VCConfiguration &conf = vcxProject.Configuration;
     if(!project->values("QMAKE_PRE_LINK").isEmpty()) {
         QString cmdline = var("QMAKE_PRE_LINK");
         conf.preLink.Description = cmdline;
         conf.preLink.CommandLine = cmdline;
-        conf.preLink.UseInBuild = _True;
+        conf.preLink.ExcludedFromBuild = _False;
     }
 }
 
@@ -548,7 +503,7 @@ void VcxprojGenerator::initExtraCompilerOutputs()
             extracompilerName = (*it);
 
         // Create an extra compiler filter and add the files
-        VCXFilter extraCompile;
+        VCFilter extraCompile;
         extraCompile.Name = extracompilerName;
         extraCompile.ParseFiles = _False;
         extraCompile.Filter = "";
@@ -626,9 +581,9 @@ bool VcxprojGenerator::writeProjectMakefile()
         }
 
         debug_msg(1, "Generator: MSVC.NET: Writing project file");
-        VCXProject mergedProject;
+        VCProject mergedProject;
         for (int i = 0; i < mergedProjects.count(); ++i) {
-            VCXProjectSingleConfig *singleProject = &(mergedProjects.at(i)->vcxProject);
+            VCProjectSingleConfig *singleProject = &(mergedProjects.at(i)->vcxProject);
             mergedProject.SingleProjects += *singleProject;
             for (int j = 0; j < singleProject->ExtraCompilersFiles.count(); ++j) {
                 const QString &compilerName = singleProject->ExtraCompilersFiles.at(j).Name;

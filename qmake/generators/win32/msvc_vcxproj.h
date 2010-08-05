@@ -56,7 +56,6 @@ class VcxprojGenerator : public VcprojGenerator
 public:
     VcxprojGenerator();
     ~VcxprojGenerator();
-    VCXProjectWriter *projectWriter; // ### remove, once we've killed the VCX classes
 
 protected:
     virtual VCProjectWriter *createProjectWriter();
@@ -83,13 +82,13 @@ protected:
     void initExtraCompilerOutputs();
 
     // Used for single project
-    VCXProjectSingleConfig vcxProject;
+    VCProjectSingleConfig vcxProject;
 
     // Holds all configurations for glue (merged) project
     QList<VcxprojGenerator*> mergedProjects;
 
 private:
-    friend class VCXFilter;
+    friend class VCFilter;
 
 };
 
