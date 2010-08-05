@@ -216,6 +216,12 @@ void tst_XmlPatternsValidator::xsdSupport_data() const
         << 0
         << (QStringList() << QLatin1String("files/complex-type-including-anonymous-type.xsd"))
         << QString();
+
+    QTest::newRow("QTBUG-11559 A schema and instance with a dateTime containing microseconds")
+        << 0
+        << (QStringList() << QLatin1String("files/dateTime-with-microseconds.xml")
+                          << QLatin1String("files/dateTime-with-microseconds.xsd"))
+        << QString();
 }
 
 QTEST_MAIN(tst_XmlPatternsValidator)

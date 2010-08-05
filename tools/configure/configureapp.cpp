@@ -1163,6 +1163,13 @@ void Configure::parseCmdLine()
                 dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-runtimegraphicssystem") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary["RUNTIME_SYSTEM"] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i).indexOf(QRegExp("^-(en|dis)able-")) != -1) {
             // Scan to see if any specific modules and drivers are enabled or disabled
             for (QStringList::Iterator module = modules.begin(); module != modules.end(); ++module) {
@@ -1628,7 +1635,7 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg|runtime]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1733,9 +1740,7 @@ bool Configure::displayHelp()
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "",  "  raster - Software rasterizer", ' ');
         desc("GRAPHICS_SYSTEM", "opengl", "",  "  opengl - Using OpenGL acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "runtime", "", "  runtime - Runtime switching of graphics sytems", ' ');
-
+        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!\n", ' ');
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
@@ -3040,6 +3045,9 @@ void Configure::generateConfigfiles()
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
+        if (dictionary["GRAPHICS_SYSTEM"] == "runtime" && dictionary["RUNTIME_SYSTEM"] != "runtime")
+            tmpStream << "#define QT_DEFAULT_RUNTIME_SYSTEM \"" << dictionary["RUNTIME_SYSTEM"] << "\"" << endl;
+
         QStringList qconfigList;
         if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";
