@@ -125,6 +125,8 @@ public:
                                     const QNetworkInterface &iface) = 0;
     virtual bool leaveMulticastGroup(const QHostAddress &groupAddress,
                                      const QNetworkInterface &iface) = 0;
+    virtual QNetworkInterface multicastInterface() const = 0;
+    virtual bool setMulticastInterface(const QNetworkInterface &iface) = 0;
 
     virtual qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
                                 quint16 *port = 0) = 0;

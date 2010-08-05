@@ -77,11 +77,12 @@
 
     \snippet doc/src/snippets/code/src_network_socket_qudpsocket.cpp 0
 
-    QUdpSocket also supports UDP multicast. Use the joinMulticastGroup() and
-    leaveMulticastGroup() to control group membership, and the
+    QUdpSocket also supports UDP multicast. Use joinMulticastGroup() and
+    leaveMulticastGroup() to control group membership, and
     QAbstractSocket::MulticastTtlOption and
     QAbstractSocket::MulticastLoopbackOption to set the TTL and loopback socket
-    options.
+    options. Use setMulticastInterface() to control the outgoing interface for
+    multicast datagrams, and multicastInterface() to query it.
 
     With QUdpSocket, you can also establish a virtual connection to a
     UDP server using connectToHost() and then use read() and write()
@@ -402,6 +403,45 @@ bool QUdpSocket::leaveMulticastGroup(const QHostAddress &groupAddress,
 {
     QT_CHECK_BOUND("QUdpSocket::leaveMulticastGroup()", false);
     return d_func()->socketEngine->leaveMulticastGroup(groupAddress, iface);
+}
+
+/*!
+    \since 4.8
+
+    Returns the interface for the outgoing interface for multicast datagrams.
+    This corresponds to the IP_MULTICAST_IF socket option for IPv4 sockets and
+    the IPV6_MULTICAST_IF socket option for IPv6 sockets. If no interface has
+    been previously set, this function returns an invalid QNetworkInterface.
+    The socket must be in BoundState, otherwise an invalid QNetworkInterface is
+    returned.
+
+    \sa setMulticastInterface()
+*/
+QNetworkInterface QUdpSocket::multicastInterface() const
+{
+    Q_D(const QUdpSocket);
+    QT_CHECK_BOUND("QUdpSocket::multicastInterface()", QNetworkInterface());
+    return d->socketEngine->multicastInterface();
+}
+
+/*!
+    \since 4.8
+
+    Sets the outgoing interface for multicast datagrams to the interface \a
+    iface. This corresponds to the IP_MULTICAST_IF socket option for IPv4
+    sockets and the IPV6_MULTICAST_IF socket option for IPv6 sockets. The
+    socket must be in BoundState, otherwise this function does nothing.
+
+    \sa multicastInterface(), joinMulticastGroup(), leaveMulticastGroup()
+*/
+void QUdpSocket::setMulticastInterface(const QNetworkInterface &iface)
+{
+    Q_D(QUdpSocket);
+    if (!isValid()) {
+        qWarning("QUdpSocket::setMulticastInterface() called on a QUdpSocket when not in QUdpSocket::BoundState");
+        return;
+    }
+    d->socketEngine->setMulticastInterface(iface);
 }
 
 /*!

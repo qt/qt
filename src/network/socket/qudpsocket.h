@@ -84,6 +84,9 @@ public:
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);
 
+    QNetworkInterface multicastInterface() const;
+    void setMulticastInterface(const QNetworkInterface &iface);
+
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
     qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *host = 0, quint16 *port = 0);

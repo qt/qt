@@ -45,6 +45,7 @@
 #include "qurl.h"
 #include "qhttp.h"
 #include "qelapsedtimer.h"
+#include "qnetworkinterface.h"
 
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 #include <qdebug.h>
@@ -249,6 +250,18 @@ bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
 
 bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
                                             const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+QNetworkInterface QHttpSocketEngine::multicastInterface() const
+{
+    return QNetworkInterface();
+}
+
+bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
 {
     setError(QAbstractSocket::UnsupportedSocketOperationError,
              QLatin1String("Operation on socket is not supported"));

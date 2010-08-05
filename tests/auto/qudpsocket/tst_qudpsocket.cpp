@@ -50,11 +50,13 @@
 #include <qhostinfo.h>
 #include <qmap.h>
 #include <QNetworkProxy>
+#include <QNetworkInterface>
 
 #include <qstringlist.h>
 #include "../network-settings.h"
 
 Q_DECLARE_METATYPE(QHostAddress)
+Q_DECLARE_METATYPE(QNetworkInterface)
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -102,6 +104,8 @@ private slots:
     void multicastJoinBeforeBind();
     void multicastLeaveAfterClose_data();
     void multicastLeaveAfterClose();
+    void setMulticastInterface_data();
+    void setMulticastInterface();
     void multicast_data();
     void multicast();
 
@@ -952,6 +956,46 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
     udpSocket.close();
     QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::leaveMulticastGroup() called on a QUdpSocket when not in QUdpSocket::BoundState");
     QVERIFY(!udpSocket.leaveMulticastGroup(groupAddress));
+}
+
+void tst_QUdpSocket::setMulticastInterface_data()
+{
+    QTest::addColumn<QNetworkInterface>("iface");
+    QTest::addColumn<QHostAddress>("address");
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    foreach (const QNetworkInterface &iface, interfaces) {
+        foreach (const QNetworkAddressEntry &entry, iface.addressEntries()) {
+            QTest::newRow(QString("%1:%2").arg(iface.name()).arg(entry.ip().toString()).toAscii())
+                    << iface
+                    << entry.ip();
+        }
+    }
+}
+
+void tst_QUdpSocket::setMulticastInterface()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    QFETCH(QNetworkInterface, iface);
+    QFETCH(QHostAddress, address);
+
+    QUdpSocket udpSocket;
+    // bind initializes the socket
+    bool bound = udpSocket.bind((address.protocol() == QAbstractSocket::IPv6Protocol
+                                 ? QHostAddress(QHostAddress::AnyIPv6)
+                                 : QHostAddress(QHostAddress::Any)),
+                                0);
+    if (!bound)
+        QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::setMulticastInterface() called on a QUdpSocket when not in QUdpSocket::BoundState");
+    udpSocket.setMulticastInterface(iface);
+    if (!bound)
+        QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::multicastInterface() called on a QUdpSocket when not in QUdpSocket::BoundState");
+    QNetworkInterface iface2 = udpSocket.multicastInterface();
+    if (!setProxy) {
+        QVERIFY(iface2.isValid());
+        QCOMPARE(iface.name(), iface2.name());
+    } else {
+        QVERIFY(!iface2.isValid());
+    }
 }
 
 void tst_QUdpSocket::multicast_data()

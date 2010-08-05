@@ -128,6 +128,8 @@ public:
                             const QNetworkInterface &iface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &iface);
+    QNetworkInterface multicastInterface() const;
+    bool setMulticastInterface(const QNetworkInterface &iface);
 
     qint64 bytesAvailable() const;
 
@@ -247,6 +249,8 @@ public:
                                   const QNetworkInterface &iface);
     bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
                                    const QNetworkInterface &iface);
+    QNetworkInterface nativeMulticastInterface() const;
+    bool nativeSetMulticastInterface(const QNetworkInterface &iface);
     qint64 nativeBytesAvailable() const;
 
     bool nativeHasPendingDatagrams() const;

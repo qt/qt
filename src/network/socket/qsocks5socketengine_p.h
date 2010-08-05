@@ -96,6 +96,8 @@ public:
                             const QNetworkInterface &interface);
     bool leaveMulticastGroup(const QHostAddress &groupAddress,
                              const QNetworkInterface &interface);
+    QNetworkInterface multicastInterface() const;
+    bool setMulticastInterface(const QNetworkInterface &iface);
 
     qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *addr = 0,
         quint16 *port = 0);
