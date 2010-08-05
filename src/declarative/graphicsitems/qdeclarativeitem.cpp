@@ -2406,18 +2406,7 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     Q_Q(QDeclarativeItem);
     if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
         emit q->activeFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
-
-    bool inScope = false;
-    QGraphicsItem *p = parent;
-    while (p) {
-        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-            inScope = true;
-            break;
-        }
-        p = p->parentItem();
-    }
-    if (!inScope)
-        emit q->focusChanged(flag);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
