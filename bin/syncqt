@@ -691,7 +691,10 @@ my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dis
 my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
 my %colliding_headers = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "*qconfig.h" ) );
+my %inject_headers;
+# Force generation of forwarding header for qconfig.h if (and only if) we can't
+# find the header by normal means.
+%inject_headers = ( "$basedir/src/corelib/global" => ( "*qconfig.h" ) ) unless (-e "$basedir/src/corelib/global/qconfig.h");
 
 foreach (@modules_to_sync) {
     #iteration info
