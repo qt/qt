@@ -474,7 +474,7 @@ int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
 #ifdef Q_OS_SYMBIAN
 // The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
-static int drag_distance = 8;
+static int drag_distance = 12;
 #else
 static int drag_distance = 4;
 #endif
