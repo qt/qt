@@ -116,9 +116,9 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     QPlatformWindowFormat platformFormat;
     platformFormat.setDepth(16);
     platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
-    platformFormat.setRedBufferSize(8);
-    platformFormat.setGreenBufferSize(8);
-    platformFormat.setBlueBufferSize(8);
+    platformFormat.setRedBufferSize(5);
+    platformFormat.setGreenBufferSize(6);
+    platformFormat.setBlueBufferSize(5);
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
 
     EGLNativeWindowType eglWindow = 0;
