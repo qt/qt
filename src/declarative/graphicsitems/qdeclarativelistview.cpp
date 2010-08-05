@@ -1021,7 +1021,7 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
     if (currentItem) {
-        if (modelIndex == visibleIndex - 1) {
+        if (modelIndex == visibleIndex - 1 && visibleItems.count()) {
             // We can calculate exact postion in this case
             currentItem->setPosition(visibleItems.first()->position() - currentItem->size() - spacing);
         } else {
