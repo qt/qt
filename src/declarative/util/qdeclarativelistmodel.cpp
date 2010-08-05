@@ -864,7 +864,7 @@ QScriptValue FlatListModel::get(int index) const
 
     QHash<int, QVariant> row = m_values.at(index);
     for (QHash<int, QVariant>::ConstIterator iter = row.begin(); iter != row.end(); ++iter)
-        rv.setProperty(m_roles.value(iter.key()), qScriptValueFromValue(scriptEngine, iter.value()));
+        rv.setProperty(m_roles.value(iter.key()), scriptEngine->toScriptValue(iter.value()));
 
     return rv;
 }

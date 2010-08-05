@@ -88,7 +88,7 @@ ByteArrayClass::ByteArrayClass(QScriptEngine *engine)
     proto.setPrototype(global.property("Object").property("prototype"));
 
     ctor = engine->newFunction(construct, proto);
-    ctor.setData(qScriptValueFromValue(engine, this));
+    ctor.setData(engine->toScriptValue(this));
 }
 //! [0]
 

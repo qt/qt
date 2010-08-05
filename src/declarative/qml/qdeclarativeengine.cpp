@@ -1469,7 +1469,7 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, QVariant::fromValue(QColor::fromRgbF(r, g, b, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromRgbF(r, g, b, a)));
 }
 
 /*!
@@ -1497,7 +1497,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, QVariant::fromValue(QColor::fromHslF(h, s, l, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromHslF(h, s, l, a)));
 }
 
 /*!
@@ -1582,7 +1582,7 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.lighter(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, QVariant::fromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1619,7 +1619,7 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.darker(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, QVariant::fromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1854,7 +1854,7 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
                            a + inv_a * color.alphaF());
     }
 
-    return qScriptValueFromValue(engine, QVariant::fromValue(finalColor));
+    return engine->toScriptValue(QVariant::fromValue(finalColor));
 }
 
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
@@ -1884,7 +1884,7 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     if (objOk) {
         return objectClass->newQObject(obj);
     } else {
-        return qScriptValueFromValue(&scriptEngine, val);
+        return scriptEngine.toScriptValue(val);
     }
 }
 

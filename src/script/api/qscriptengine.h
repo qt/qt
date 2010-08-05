@@ -212,7 +212,7 @@ public:
     template <typename T>
     inline QScriptValue toScriptValue(const T &value)
     {
-        return qScriptValueFromValue(this, value);
+        return toScriptValue(value);
     }
     template <typename T>
     inline T fromScriptValue(const QScriptValue &value)
@@ -409,7 +409,7 @@ QScriptValue qScriptValueFromSequence(QScriptEngine *eng, const Container &cont)
     typename Container::const_iterator it;
     quint32 i;
     for (it = begin, i = 0; it != end; ++it, ++i)
-        a.setProperty(i, qScriptValueFromValue(eng, *it));
+        a.setProperty(i, eng->toScriptValue(*it));
     return a;
 }
 
