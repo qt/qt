@@ -217,7 +217,7 @@ void IapMonitor::iapRemoved(const QString &iap_id)
 }
 
 QIcdEngine::QIcdEngine(QObject *parent)
-:   QBearerEngine(parent), iapMonitor(new IapMonitor), m_dbusInterface(0),
+:   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0),
     firstUpdate(true), m_scanGoingOn(false)
 {
 }
@@ -258,6 +258,7 @@ void QIcdEngine::initialize()
     startListeningStateSignalsForAllConnections();
 
     /* Turn on IAP add/remove monitoring */
+    iapMonitor = new IapMonitor;
     iapMonitor->setup(this);
 
     /* We create a default configuration which is a pseudo config */
@@ -520,8 +521,6 @@ void QIcdEngine::addConfiguration(QString& iap_id)
 
 void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
 {
-    QMutexLocker locker(&mutex);
-
     /* Contains all known iap_ids from storage */
     QList<QString> knownConfigs = accessPointConfigurations.keys();
 
@@ -587,9 +586,9 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
             QNetworkConfigurationPrivatePointer ptr(cpPriv);
             accessPointConfigurations.insert(iap_id, ptr);
 
-            locker.unlock();
+            mutex.unlock();
             emit configurationAdded(ptr);
-            locker.relock();
+            mutex.lock();
 
 #ifdef BEARER_MANAGEMENT_DEBUG
             qDebug("IAP: %s, name: %s, ssid: %s, added to known list",
@@ -642,9 +641,9 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
                     ptr->mutex.unlock();
 
                     if (changed) {
-                        locker.unlock();
+                        mutex.unlock();
                         emit configurationChanged(ptr);
-                        locker.relock();
+                        mutex.lock();
                     }
 
                     if (!ap.scan.network_type.startsWith(QLatin1String("WLAN")))
@@ -703,9 +702,9 @@ rescan_list:
                     QNetworkConfigurationPrivatePointer ptr(cpPriv);
                     accessPointConfigurations.insert(ptr->id, ptr);
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationAdded(ptr);
-                    locker.relock();
+                    mutex.lock();
                 } else {
                     knownConfigs.removeOne(scanned_ssid);
                 }
@@ -733,9 +732,9 @@ rescan_list:
                     ptr->state = QNetworkConfiguration::Defined;
 
                     configLocker.unlock();
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationChanged(ptr);
-                    locker.relock();
+                    mutex.lock();
                 }
             }
         }
@@ -744,9 +743,9 @@ rescan_list:
         foreach (const QString &oldIface, knownConfigs) {
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(oldIface);
             if (ptr) {
-                locker.unlock();
+                mutex.unlock();
                 emit configurationRemoved(ptr);
-                locker.relock();
+                mutex.lock();
                 //if we would have SNAP support we would have to remove the references
                 //from existing ServiceNetworks to the removed access point configuration
             }
@@ -762,9 +761,9 @@ rescan_list:
     }
 
     if (!firstUpdate) {
-        locker.unlock();
+        mutex.unlock();
         emit updateCompleted();
-        locker.relock();
+        mutex.lock();
     }
 
     if (firstUpdate)
@@ -781,8 +780,6 @@ QNetworkConfigurationPrivatePointer QIcdEngine::defaultConfiguration()
 
 void QIcdEngine::startListeningStateSignalsForAllConnections()
 {
-    QMutexLocker locker(&mutex);
-
     // Start listening ICD_DBUS_API_STATE_SIG signals
     m_dbusInterface->connection().connect(ICD_DBUS_API_INTERFACE,
                                           ICD_DBUS_API_PATH,
@@ -906,8 +903,6 @@ void QIcdEngine::requestUpdate()
 
 void QIcdEngine::cancelAsyncConfigurationUpdate()
 {
-    QMutexLocker locker(&mutex);
-
     if (!m_scanGoingOn) {
         return;
     }
@@ -947,7 +942,9 @@ void QIcdEngine::asyncUpdateConfigurationsSlot(QDBusMessage msg)
     if (icd_scan_status == ICD_SCAN_COMPLETE) {
         m_typesToBeScanned.removeOne(arguments[6].toString());
         if (!m_typesToBeScanned.count()) {
+            locker.unlock();
             finishAsyncConfigurationUpdate();
+            locker.relock();
         }
     } else {
         Maemo::IcdScanResult scanResult;
@@ -977,7 +974,8 @@ void QIcdEngine::cleanup()
         m_scanTimer.stop();
         m_dbusInterface->call(ICD_DBUS_API_SCAN_CANCEL);
     }
-    iapMonitor->cleanup();
+    if (iapMonitor)
+        iapMonitor->cleanup();
 }
 
 bool QIcdEngine::hasIdentifier(const QString &id)

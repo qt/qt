@@ -229,6 +229,39 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
     }
 }
 
+void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        ::memcpy(dst, src, length * sizeof(uint));
+    } else {
+        const int ialpha = 255 - const_alpha;
+
+        int x = 0;
+
+        // 1) prologue, align on 16 bytes
+        const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
+        const int prologLength = qMin(length, offsetToAlignOn16Bytes);
+        for (; x < prologLength; ++x)
+            dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
+
+        // 2) interpolate pixels with SSE2
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        const __m128i oneMinusConstAlpha =  _mm_set1_epi16(ialpha);
+        for (; x < length - 3; x += 4) {
+            const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
+            INTERPOLATE_PIXEL_255_SSE2(dstVector, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half)
+            _mm_store_si128((__m128i *)&dst[x], dstVector);
+        }
+
+        // 3) Epilogue
+        for (; x < length; ++x)
+            dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
+    }
+}
+
 void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 {
     if (count < 7) {

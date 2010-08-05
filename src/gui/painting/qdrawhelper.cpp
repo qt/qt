@@ -7820,8 +7820,10 @@ void qInitDrawhelperAsm()
                                                   uint const_alpha);
             extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
             extern void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha);
+            extern void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, uint const_alpha);
 
             functionForModeAsm[0] = comp_func_SourceOver_sse2;
+            functionForModeAsm[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
             functionForModeAsm[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
             functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
 

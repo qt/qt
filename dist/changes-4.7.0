@@ -474,6 +474,9 @@ QtCore:
     ABIs, but it also allowed for unaligned access. Qt never generates
     or uses unaligned access and the new EABI aligns as expected, so
     the flag was removed.
+  - QTextBoundaryFinder is now consistent with ICU when it comes to
+    line breaking, reporting the index of the boundary at which the line
+    break should occur rather than the index of the character.
 
 QtNetwork:
   - Qt does no longer provide its own CA bundle, but uses system APIs for

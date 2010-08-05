@@ -126,13 +126,13 @@ public:
         QMutexLocker locker(&mutex);
 
         accessPointConfigurations.insert(ptr->id, ptr);
+
+        locker.unlock();
         emit configurationAdded(ptr);
     }
 
     inline void changedSessionConfiguration(QNetworkConfigurationPrivatePointer ptr)
     {
-        QMutexLocker locker(&mutex);
-
         emit configurationChanged(ptr);
     }
 
@@ -144,14 +144,14 @@ Q_SIGNALS:
     void iapStateChanged(const QString& iapid, uint icd_connection_state);
 
 private Q_SLOTS:
-    void doRequestUpdate(QList<Maemo::IcdScanResult> scanned = QList<Maemo::IcdScanResult>());
-    void cancelAsyncConfigurationUpdate();
     void finishAsyncConfigurationUpdate();
     void asyncUpdateConfigurationsSlot(QDBusMessage msg);
     void connectionStateSignalsSlot(QDBusMessage msg);
 
 private:
     void startListeningStateSignalsForAllConnections();
+    void doRequestUpdate(QList<Maemo::IcdScanResult> scanned = QList<Maemo::IcdScanResult>());
+    void cancelAsyncConfigurationUpdate();
 
 private:
     IapMonitor *iapMonitor;

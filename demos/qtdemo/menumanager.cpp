@@ -313,7 +313,7 @@ void MenuManager::showDocInAssistant(const QString &name)
     // Send command through remote control even if the process
     // was started to activate assistant and bring it to front:
     QTextStream str(&this->assistantProcess);
-    str << "SetSource " << url << QLatin1Char('\0') << endl;
+    str << "SetSource " << url << QLatin1Char('\n') << endl;
 }
 
 void MenuManager::launchExample(const QString &name)
