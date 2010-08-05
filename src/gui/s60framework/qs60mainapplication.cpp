@@ -141,11 +141,17 @@ void QS60MainApplication::PreDocConstructL()
     QS60MainApplicationBase::PreDocConstructL();
 }
 
+/*!
+    \internal
+*/
 CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 {
     return QS60MainApplicationBase::OpenIniFileLC(aFs);
 }
 
+/*!
+    \internal
+*/
 void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
 {
     QS60MainApplicationBase::NewAppServerL(aAppServer);

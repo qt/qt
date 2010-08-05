@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
 
     For example, the following \l Rectangle has two states: the default state, and
     an added "moved" state. In the "moved state, the rectangle's position changes 
-    to (50, 50).  The added \l Transition specifies that when the rectangle
+    to (50, 50).  The added Transition specifies that when the rectangle
     changes between the default and the "moved" state, any changes
     to the \c x and \c y properties should be animated, using an \c Easing.InOutQuad.
-   
+
     \snippet doc/src/snippets/declarative/transition.qml 0
 
     To define multiple transitions, specify \l Item::transitions as a list:

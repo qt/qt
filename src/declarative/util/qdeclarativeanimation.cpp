@@ -1323,7 +1323,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     \snippet doc/src/snippets/declarative/rotationanimation.qml 0
     
-    Notice the RotationAnimation did not need to set a \l {RotationAnimation::}{target}
+    Notice the RotationAnimation did not need to set a \l target
     value. As a convenience, when used in a transition, RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing
     your own properties via \l {PropertyAnimation::properties}{properties} or 

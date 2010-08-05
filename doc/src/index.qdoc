@@ -65,7 +65,6 @@
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-                 <!--   <li><a href="qt-basic-concepts.html">Programming with Qt</a></li> -->
                     <li><a href="qt-basic-concepts.html">Basic Qt Architecture</a></li>
                     <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific Development</a></li>
                     <li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
@@ -74,11 +73,10 @@
               </div>
               <div class="sectionlist">
                 <ul>
-                    <li><a href="declarativeui.html">Qt Quick</a></li>
+                    <li><a href="qtquick.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
                     <li><a href="qt-gui-concepts.html">UI components</a></li>
-                <!--    <li><a href="declarativeui.html">Qt & GUI design</a></li> -->
                 </ul>
               </div>
             </div>
@@ -94,12 +92,12 @@
               </div>
               <div class="section sectionlist">
                 <ul>
-                  <li><a href="http://doc.qt.nokia.com/qtcreator-2.0/index.html">Qt Creator</a> (online document)</li>
+                  <li><a href="http://doc.qt.nokia.com/qtcreator-2.0/index.html">Qt Creator</a></li>
                   <li><a href="designer-manual.html">Qt Designer</a></li>
                   <li><a href="linguist-manual.html">Qt Linguist</a></li>
                   <li><a href="assistant-manual.html">Qt Assistant</a></li>
-                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a> (online document)</li>
-                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Integration</a> (online document) and <a href="http://qt.nokia.com/products/appdev">add-ins</a> (online document)</li>
+                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a></li>
+                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Integration</a> and <a href="http://qt.nokia.com/products/appdev">add-ins</a></li>
                   <li><a href="qvfb.html">Virtual Framebuffer</a></li>
                 </ul>
               </div>
