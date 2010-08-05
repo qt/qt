@@ -128,6 +128,7 @@ QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
         config->bearerType = cpPriv->bearerType;
 
         fetchedConfigurations.append(config);
+        delete config;
     }
     return fetchedConfigurations;
 //    return foundConfigurations;
