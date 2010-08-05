@@ -429,6 +429,8 @@ void tst_QColumnView::scrollTo()
         view.setFocus(Qt::OtherFocusReason);
     else
         view.clearFocus();
+
+    qApp->processEvents();
     QTRY_COMPARE(view.hasFocus(), giveFocus);
     // scroll to the right
     int level = 0;
