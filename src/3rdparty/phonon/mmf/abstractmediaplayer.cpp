@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <QResource>
 #include <QUrl>
 
 #include "abstractmediaplayer.h"
@@ -216,9 +217,10 @@ void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
     TRACE_EXIT_0();
 }
 
-void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
+void MMF::AbstractMediaPlayer::open()
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::setFileSource, EAudioApi);
+    TRACE_CONTEXT(AbstractMediaPlayer::open, EAudioApi);
+    const MediaSource source = m_parent->source();
     TRACE_ENTRY("state %d source.type %d", privateState(), source.type());
 
     close();
@@ -229,7 +231,9 @@ void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
 
     switch (source.type()) {
     case MediaSource::LocalFile: {
-        symbianErr = openFile(file);
+        RFile *const file = m_parent->file();
+        Q_ASSERT(file);
+        symbianErr = openFile(*file);
         if (KErrNone != symbianErr)
             errorMessage = tr("Error opening file");
         break;
@@ -237,9 +241,10 @@ void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
 
     case MediaSource::Url: {
         const QUrl url(source.url());
-
         if (url.scheme() == QLatin1String("file")) {
-            symbianErr = openFile(file);
+            RFile *const file = m_parent->file();
+            Q_ASSERT(file);
+            symbianErr = openFile(*file);
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening file");
         } else {
@@ -248,6 +253,19 @@ void MMF::AbstractMediaPlayer::open(const MediaSource &source, RFile& file)
                 errorMessage = tr("Error opening URL");
         }
 
+        break;
+    }
+
+    case MediaSource::Stream: {
+        QResource *const resource = m_parent->resource();
+        if (resource) {
+            m_buffer.Set(resource->data(), resource->size());
+            symbianErr = openDescriptor(m_buffer);
+            if (KErrNone != symbianErr)
+                errorMessage = tr("Error opening resource");
+        } else {
+            errorMessage = tr("Error opening source: resource not opened");
+        }
         break;
     }
 

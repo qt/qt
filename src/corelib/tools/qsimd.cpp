@@ -46,6 +46,10 @@
 #include <windows.h>
 #endif
 
+#if defined(Q_OS_WIN64) && !defined(Q_CC_GNU)
+#include <intrin.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 uint qDetectCPUFeatures()
@@ -266,31 +270,10 @@ uint qDetectCPUFeatures()
         : "%eax", "%ecx", "%edx"
         );
 #elif defined (Q_OS_WIN64)
-    _asm {
-        push rax
-        push rbx
-        push rcx
-        push rdx
-        pushfd
-        pop rax
-        mov ebx, eax
-        xor eax, 00200000h
-        push rax
-        popfd
-        pushfd
-        pop rax
-        mov edx, 0
-        xor eax, ebx
-        jz skip
-
-        mov eax, 1
-        cpuid
-        mov feature_result, ecx
-    skip:
-        pop rdx
-        pop rcx
-        pop rbx
-        pop rax
+    {
+       int info[4];
+       __cpuid(info, 1);
+       feature_result = info[2];
     }
 #endif
 

@@ -51,6 +51,10 @@ Rectangle {
 var newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
     parentItem, "dynamicSnippet1");
 //![0]
+
+//![destroy]
+newObject.destroy(1000);
+//![destroy]
     }
 
     Component.onCompleted: createIt()

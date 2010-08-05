@@ -59,7 +59,7 @@ public:
     virtual ~QPlatformScreen() { }
 
     virtual QRect geometry() const = 0;
-    virtual QRect availableGeometry() const {return geometry();};
+    virtual QRect availableGeometry() const {return geometry();}
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
     virtual QSize physicalSize() const;

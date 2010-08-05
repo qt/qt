@@ -56,8 +56,8 @@ class Q_AUTOTEST_EXPORT QDeclarativeTranslate : public QGraphicsTransform
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY positionChanged)
-    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY positionChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
 
 public:
     QDeclarativeTranslate(QObject *parent = 0);
@@ -72,7 +72,8 @@ public:
     void applyTo(QMatrix4x4 *matrix) const;
 
 Q_SIGNALS:
-    void positionChanged();
+    void xChanged();
+    void yChanged();
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeTranslate)

@@ -175,6 +175,9 @@
     \l{http://developer.apple.com/documentation/CoreFoundation/Reference/CFBundleRef/index.html}
     {Apple's Developer Website}.
 
+    Note: QCoreApplication::applicationDirPath() can be used to determine
+    the path of the binary within the bundle.
+
     \section2 Translating the Application Menu and Native Dialogs
 
     The items in the Application Menu will be merged correctly for

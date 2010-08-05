@@ -50,7 +50,8 @@ public:
         : ref(1)
         , opts(QPlatformWindowFormat::DoubleBuffer | QPlatformWindowFormat::DepthBuffer
              | QPlatformWindowFormat::Rgba | QPlatformWindowFormat::DirectRendering
-             | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions)
+             | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions
+             | QPlatformWindowFormat::UseDefaultSharedContext)
         , depthSize(-1)
         , accumSize(-1)
         , stencilSize(-1)
@@ -60,9 +61,8 @@ public:
         , alphaSize(-1)
         , numSamples(-1)
         , swapInterval(-1)
-        , majorVersion(1)
-        , minorVersion(0)
         , windowApi(QPlatformWindowFormat::Raster)
+        , sharedContext(0)
     {
     }
 
@@ -78,9 +78,8 @@ public:
           alphaSize(other->alphaSize),
           numSamples(other->numSamples),
           swapInterval(other->swapInterval),
-          majorVersion(other->majorVersion),
-          minorVersion(other->minorVersion),
-          windowApi(other->windowApi)
+          windowApi(other->windowApi),
+          sharedContext(other->sharedContext)
     {
     }
     QAtomicInt ref;
@@ -94,14 +93,13 @@ public:
     int alphaSize;
     int numSamples;
     int swapInterval;
-    int majorVersion;
-    int minorVersion;
     QPlatformWindowFormat::WindowApi windowApi;
+    QPlatformGLContext *sharedContext;
 };
 
 /*!
-    \class QGLFormat
-    \brief The QGLFormat class specifies the display format of an OpenGL
+    \class QPlatformWindowFormat
+    \brief The QPlatformWindowFormat class specifies the display format of an OpenGL
     rendering context.
 
     \ingroup painting-3D
@@ -135,7 +133,7 @@ public:
     different platforms, and some format options may have higher
     precedence than others.
 
-    You create and tell a QGLFormat object what rendering options you
+    You create and tell a QPlatformWindowFormat object what rendering options you
     want from an OpenGL rendering context.
 
     OpenGL drivers or accelerated hardware may or may not support
@@ -145,7 +143,7 @@ public:
     context with the nearest subset of features.
 
     There are different ways to define the display characteristics of
-    a rendering context. One is to create a QGLFormat and make it the
+    a rendering context. One is to create a QPlatformWindowFormat and make it the
     default for the entire application:
     \snippet doc/src/snippets/code/src_opengl_qgl.cpp 0
 
@@ -166,7 +164,7 @@ public:
 */
 
 /*!
-    Constructs a QGLFormat object with the following default settings:
+    Constructs a QPlatformWindowFormat object with the following default settings:
     \list
     \i \link setDoubleBuffer() Double buffer:\endlink Enabled.
     \i \link setDepth() Depth buffer:\endlink Enabled.
@@ -189,7 +187,7 @@ QPlatformWindowFormat::QPlatformWindowFormat()
 
 
 /*!
-    Creates a QGLFormat object that is a copy of the current
+    Creates a QPlatformWindowFormat object that is a copy of the current
     defaultFormat().
 
     If \a options is not 0, the default format is modified by the
@@ -259,7 +257,7 @@ QPlatformWindowFormat &QPlatformWindowFormat::operator=(const QPlatformWindowFor
 }
 
 /*!
-    Destroys the QGLFormat.
+    Destroys the QPlatformWindowFormat.
 */
 QPlatformWindowFormat::~QPlatformWindowFormat()
 {
@@ -268,7 +266,7 @@ QPlatformWindowFormat::~QPlatformWindowFormat()
 }
 
 /*!
-    \fn bool QGLFormat::doubleBuffer() const
+    \fn bool QPlatformWindowFormat::doubleBuffer() const
 
     Returns true if double buffering is enabled; otherwise returns
     false. Double buffering is enabled by default.
@@ -299,7 +297,7 @@ void QPlatformWindowFormat::setDoubleBuffer(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::depth() const
+    \fn bool QPlatformWindowFormat::depth() const
 
     Returns true if the depth buffer is enabled; otherwise returns
     false. The depth buffer is enabled by default.
@@ -329,7 +327,7 @@ void QPlatformWindowFormat::setDepth(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::rgba() const
+    \fn bool QPlatformWindowFormat::rgba() const
 
     Returns true if RGBA color mode is set. Returns false if color
     index mode is set. The default color mode is RGBA.
@@ -360,7 +358,7 @@ void QPlatformWindowFormat::setRgba(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::alpha() const
+    \fn bool QPlatformWindowFormat::alpha() const
 
     Returns true if the alpha buffer in the framebuffer is enabled;
     otherwise returns false. The alpha buffer is disabled by default.
@@ -388,7 +386,7 @@ void QPlatformWindowFormat::setAlpha(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::accum() const
+    \fn bool QPlatformWindowFormat::accum() const
 
     Returns true if the accumulation buffer is enabled; otherwise
     returns false. The accumulation buffer is disabled by default.
@@ -415,7 +413,7 @@ void QPlatformWindowFormat::setAccum(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::stencil() const
+    \fn bool QPlatformWindowFormat::stencil() const
 
     Returns true if the stencil buffer is enabled; otherwise returns
     false. The stencil buffer is enabled by default.
@@ -442,7 +440,7 @@ void QPlatformWindowFormat::setStencil(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::stereo() const
+    \fn bool QPlatformWindowFormat::stereo() const
 
     Returns true if stereo buffering is enabled; otherwise returns
     false. Stereo buffering is disabled by default.
@@ -469,7 +467,7 @@ void QPlatformWindowFormat::setStereo(bool enable)
 
 
 /*!
-    \fn bool QGLFormat::directRendering() const
+    \fn bool QPlatformWindowFormat::directRendering() const
 
     Returns true if direct rendering is enabled; otherwise returns
     false.
@@ -498,7 +496,7 @@ void QPlatformWindowFormat::setDirectRendering(bool enable)
 }
 
 /*!
-    \fn bool QGLFormat::sampleBuffers() const
+    \fn bool QPlatformWindowFormat::sampleBuffers() const
 
     Returns true if multisample buffer support is enabled; otherwise
     returns false.
@@ -517,6 +515,16 @@ void QPlatformWindowFormat::setDirectRendering(bool enable)
 void QPlatformWindowFormat::setSampleBuffers(bool enable)
 {
     setOption(enable ? QPlatformWindowFormat::SampleBuffers : QPlatformWindowFormat::NoSampleBuffers);
+}
+
+void QPlatformWindowFormat::setUseDefaultSharedContext(bool enable)
+{
+    if (enable) {
+        setOption(QPlatformWindowFormat::UseDefaultSharedContext);
+        d->sharedContext = 0;
+    } else {
+        setOption(QPlatformWindowFormat::NoDefaultSharedContext);
+    }
 }
 
 /*!
@@ -542,7 +550,7 @@ void QPlatformWindowFormat::setSamples(int numSamples)
 {
     detach();
     if (numSamples < 0) {
-        qWarning("QGLFormat::setSamples: Cannot have negative number of samples per pixel %d", numSamples);
+        qWarning("QPlatformWindowFormat::setSamples: Cannot have negative number of samples per pixel %d", numSamples);
         return;
     }
     d->numSamples = numSamples;
@@ -595,8 +603,19 @@ QPlatformWindowFormat::WindowApi QPlatformWindowFormat::windowApi() const
     return d->windowApi;
 }
 
+void QPlatformWindowFormat::setSharedContext(QPlatformGLContext *context)
+{
+    setUseDefaultSharedContext(false);
+    d->sharedContext = context;
+}
+
+QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
+{
+    return d->sharedContext;
+}
+
 ///*!
-//    \fn bool QGLFormat::hasOverlay() const
+//    \fn bool QPlatformWindowFormat::hasOverlay() const
 
 //    Returns true if overlay plane is enabled; otherwise returns false.
 
@@ -661,7 +680,7 @@ void QPlatformWindowFormat::setDepthBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setDepthBufferSize: Cannot set negative depth buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setDepthBufferSize: Cannot set negative depth buffer size %d", size);
         return;
     }
     d->depthSize = size;
@@ -689,7 +708,7 @@ void QPlatformWindowFormat::setRedBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setRedBufferSize: Cannot set negative red buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setRedBufferSize: Cannot set negative red buffer size %d", size);
         return;
     }
     d->redSize = size;
@@ -718,7 +737,7 @@ void QPlatformWindowFormat::setGreenBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setGreenBufferSize: Cannot set negative green buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setGreenBufferSize: Cannot set negative green buffer size %d", size);
         return;
     }
     d->greenSize = size;
@@ -747,7 +766,7 @@ void QPlatformWindowFormat::setBlueBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setBlueBufferSize: Cannot set negative blue buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setBlueBufferSize: Cannot set negative blue buffer size %d", size);
         return;
     }
     d->blueSize = size;
@@ -775,7 +794,7 @@ void QPlatformWindowFormat::setAlphaBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setAlphaBufferSize: Cannot set negative alpha buffer size %d", size);
         return;
     }
     d->alphaSize = size;
@@ -802,7 +821,7 @@ void QPlatformWindowFormat::setAccumBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setAccumBufferSize: Cannot set negative accumulate buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setAccumBufferSize: Cannot set negative accumulate buffer size %d", size);
         return;
     }
     d->accumSize = size;
@@ -828,7 +847,7 @@ void QPlatformWindowFormat::setStencilBufferSize(int size)
 {
     detach();
     if (size < 0) {
-        qWarning("QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size %d", size);
+        qWarning("QPlatformWindowFormat::setStencilBufferSize: Cannot set negative stencil buffer size %d", size);
         return;
     }
     d->stencilSize = size;
@@ -846,13 +865,13 @@ int QPlatformWindowFormat::stencilBufferSize() const
 }
 
 /*!
-    Returns the default QGLFormat for the application. All QGLWidget
+    Returns the default QPlatformWindowFormat for the application. All QGLWidget
     objects that are created use this format unless another format is
     specified, e.g. when they are constructed.
 
     If no special default format has been set using
     setDefaultFormat(), the default format is the same as that created
-    with QGLFormat().
+    with QPlatformWindowFormat().
 
     \sa setDefaultFormat()
 */
@@ -863,7 +882,7 @@ QPlatformWindowFormat QPlatformWindowFormat::defaultFormat()
 }
 
 /*!
-    Sets a new default QGLFormat for the application to \a f. For
+    Sets a new default QPlatformWindowFormat for the application to \a f. For
     example, to set single buffering as the default instead of double
     buffering, your main() might contain code like this:
     \snippet doc/src/snippets/code/src_opengl_qgl.cpp 4
@@ -878,7 +897,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 
 
 /*!
-    Returns the default QGLFormat for overlay contexts.
+    Returns the default QPlatformWindowFormat for overlay contexts.
 
     The default overlay format is:
     \list
@@ -904,7 +923,7 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 //}
 
 ///*!
-//    Sets a new default QGLFormat for overlay contexts to \a f. This
+//    Sets a new default QPlatformWindowFormat for overlay contexts to \a f. This
 //    format is used whenever a QGLWidget is created with a format that
 //    hasOverlay() enabled.
 
@@ -934,10 +953,10 @@ void QPlatformWindowFormat::setDefaultFormat(const QPlatformWindowFormat &f)
 
 
 /*!
-    Returns true if all the options of the two QGLFormat objects
+    Returns true if all the options of the two QPlatformWindowFormat objects
     \a a and \a b are equal; otherwise returns false.
 
-    \relates QGLFormat
+    \relates QPlatformWindowFormat
 */
 
 bool operator==(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
@@ -952,17 +971,15 @@ bool operator==(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
         && a.d->swapInterval == b.d->swapInterval
-        && a.d->majorVersion == b.d->majorVersion
-        && a.d->minorVersion == b.d->minorVersion
         && a.d->windowApi == b.d->windowApi);
 }
 
 
 /*!
-    Returns false if all the options of the two QGLFormat objects
+    Returns false if all the options of the two QPlatformWindowFormat objects
     \a a and \a b are equal; otherwise returns true.
 
-    \relates QGLFormat
+    \relates QPlatformWindowFormat
 */
 
 bool operator!=(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)

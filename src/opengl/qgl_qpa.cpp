@@ -52,6 +52,67 @@
 
 QT_BEGIN_NAMESPACE
 
+static QGLFormat qt_platformwindowformat_to_glformat(const QPlatformWindowFormat &format)
+{
+    QGLFormat retFormat;
+    retFormat.setAccum(format.accum());
+    if (format.accumBufferSize() >= 0)
+        retFormat.setAccumBufferSize(format.accumBufferSize());
+    retFormat.setAlpha(format.alpha());
+    if (format.alphaBufferSize() >= 0)
+        retFormat.setAlphaBufferSize(format.alphaBufferSize());
+    if (format.blueBufferSize() >= 0)
+        retFormat.setBlueBufferSize(format.blueBufferSize());
+    retFormat.setDepth(format.depth());
+    if (format.depthBufferSize() >= 0)
+        retFormat.setDepthBufferSize(format.depthBufferSize());
+    retFormat.setDirectRendering(format.directRendering());
+    retFormat.setDoubleBuffer(format.doubleBuffer());
+    if (format.greenBufferSize() >= 0)
+        retFormat.setGreenBufferSize(format.greenBufferSize());
+    if (format.redBufferSize() >= 0)
+        retFormat.setRedBufferSize(format.redBufferSize());
+    retFormat.setRgba(format.rgba());
+    retFormat.setSampleBuffers(format.sampleBuffers());
+    retFormat.setSamples(format.sampleBuffers());
+    retFormat.setStencil(format.stencil());
+    if (format.stencilBufferSize() >= 0)
+        retFormat.setStencilBufferSize(format.stencilBufferSize());
+    retFormat.setStereo(format.stereo());
+    retFormat.setSwapInterval(format.swapInterval());
+    return retFormat;
+}
+
+static QPlatformWindowFormat qt_glformat_to_platformwindowformat(const QGLFormat &format)
+{
+    QPlatformWindowFormat retFormat;
+    retFormat.setAccum(format.accum());
+    if (format.accumBufferSize() >= 0)
+        retFormat.setAccumBufferSize(format.accumBufferSize());
+    retFormat.setAlpha(format.alpha());
+    if (format.alphaBufferSize() >= 0)
+        retFormat.setAlphaBufferSize(format.alphaBufferSize());
+    if (format.blueBufferSize() >= 0)
+        retFormat.setBlueBufferSize(format.blueBufferSize());
+    retFormat.setDepth(format.depth());
+    if (format.depthBufferSize() >= 0)
+        retFormat.setDepthBufferSize(format.depthBufferSize());
+    retFormat.setDirectRendering(format.directRendering());
+    retFormat.setDoubleBuffer(format.doubleBuffer());
+    if (format.greenBufferSize() >= 0)
+        retFormat.setGreenBufferSize(format.greenBufferSize());
+    if (format.redBufferSize() >= 0)
+        retFormat.setRedBufferSize(format.redBufferSize());
+    retFormat.setRgba(format.rgba());
+    retFormat.setSampleBuffers(format.sampleBuffers());
+    retFormat.setSamples(format.sampleBuffers());
+    retFormat.setStencil(format.stencil());
+    if (format.stencilBufferSize() >= 0)
+        retFormat.setStencilBufferSize(format.stencilBufferSize());
+    retFormat.setStereo(format.stereo());
+    retFormat.setSwapInterval(format.swapInterval());
+    return retFormat;
+}
 
 bool QGLFormat::hasOpenGL()
 {
@@ -61,14 +122,23 @@ bool QGLFormat::hasOpenGL()
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
-    if (!d->paintDevice && d->paintDevice->devType() != QInternal::Widget) {
+    if (!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
         d->valid = false;
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
         if (!widget->platformWindow()){
+            QGLFormat glformat = format();
+            QPlatformWindowFormat winFormat = qt_glformat_to_platformwindowformat(glformat);
+            if (shareContext) {
+                winFormat.setSharedContext(shareContext->d_func()->platformContext);
+            }
+            winFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
+            widget->setPlatformWindowFormat(winFormat);
             widget->winId();//make window
         }
         d->platformContext = widget->platformWindow()->glContext();
+        Q_ASSERT(d->platformContext);
+        d->glFormat = qt_platformwindowformat_to_glformat(d->platformContext->platformWindowFormat());
         d->valid =(bool) d->platformContext;
     }
 
@@ -81,12 +151,6 @@ void QGLContext::reset()
     if (!d->valid)
         return;
     d->cleanup();
-    doneCurrent();
-
-    if (d->platformContext) {
-        //dont delete. This will be done by the platform
-        d->platformContext = 0;
-    }
 
     d->crWin = false;
     d->sharing = false;
@@ -136,8 +200,6 @@ void QGLWidget::setContext(QGLContext *context,
         return;
     }
 
-    if (d->glcx)
-        d->glcx->doneCurrent();
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
@@ -218,11 +280,27 @@ void QGLWidget::setMouseTracking(bool enable)
 
 bool QGLWidget::event(QEvent *e)
 {
+    Q_D(QGLWidget);
+    if (e->type() == QEvent::WinIdChange) {
+        if (d->glcx->isValid()) {
+            if (QGLContext::currentContext() == d->glcx)
+                QGLContextPrivate::setCurrentContext(0); //Its not valid anymore
+            setContext(new QGLContext(d->glcx->requestedFormat(), this));
+
+        }
+    }
     return QWidget::event(e);
 }
 
 void QGLWidget::resizeEvent(QResizeEvent *e)
 {
+    Q_D(QGLWidget);
+    if (!isValid())
+        return;
+    makeCurrent();
+    if (!d->glcx->initialized())
+        glInit();
+    resizeGL(width(), height());
     return QWidget::resizeEvent(e);
 }
 

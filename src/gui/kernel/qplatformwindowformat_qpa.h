@@ -64,6 +64,7 @@ public:
         HasOverlay              = 0x0100,
         SampleBuffers           = 0x0200,
         DeprecatedFunctions     = 0x0400,
+        UseDefaultSharedContext = 0x0800,
         SingleBuffer            = DoubleBuffer    << 16,
         NoDepthBuffer           = DepthBuffer     << 16,
         ColorIndex              = Rgba            << 16,
@@ -74,7 +75,9 @@ public:
         IndirectRendering       = DirectRendering << 16,
         NoOverlay               = HasOverlay      << 16,
         NoSampleBuffers         = SampleBuffers   << 16,
-        NoDeprecatedFunctions   = DeprecatedFunctions << 16
+        NoDeprecatedFunctions   = DeprecatedFunctions << 16,
+        NoDefaultSharedContext  = UseDefaultSharedContext << 16
+
     };
     Q_DECLARE_FLAGS(FormatOptions, FormatOption)
 
@@ -123,6 +126,9 @@ public:
     void setWindowApi(QPlatformWindowFormat::WindowApi api);
     WindowApi windowApi() const;
 
+    void setSharedContext(QPlatformGLContext *context);
+    QPlatformGLContext *sharedGLContext() const;
+
     bool doubleBuffer() const;
     void setDoubleBuffer(bool enable);
     bool depth() const;
@@ -139,6 +145,8 @@ public:
     void setStereo(bool enable);
     bool directRendering() const;
     void setDirectRendering(bool enable);
+    bool useDefaultSharedContext() const;
+    void setUseDefaultSharedContext(bool enable);
 //    bool hasOverlay() const;
 //    void setOverlay(bool enable);
 
@@ -147,9 +155,6 @@ public:
 
     static QPlatformWindowFormat defaultFormat();
     static void setDefaultFormat(const QPlatformWindowFormat& f);
-
-//    static QPlatformWindowFormat defaultOverlayFormat();
-//    static void setDefaultOverlayFormat(const QPlatformWindowFormat& f);
 
 private:
     QPlatformWindowFormatPrivate *d;
@@ -215,6 +220,10 @@ inline bool QPlatformWindowFormat::sampleBuffers() const
     return testOption(QPlatformWindowFormat::SampleBuffers);
 }
 
+inline bool QPlatformWindowFormat::useDefaultSharedContext() const
+{
+    return testOption(QPlatformWindowFormat::UseDefaultSharedContext);
+}
 
 QT_END_NAMESPACE
 

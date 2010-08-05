@@ -63,9 +63,6 @@ QGraphicsSystem::~QGraphicsSystem()
 {
 }
 
-QBlittable *QGraphicsSystem::createBlittable(const QSize &) const
-{ return 0; }
-
 QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType type)
 {
 #ifdef Q_WS_QWS

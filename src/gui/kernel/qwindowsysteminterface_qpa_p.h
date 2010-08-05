@@ -53,8 +53,7 @@ public:
 
     enum EventType {
         Close,
-        Resize,
-        Move,
+        GeometryChange,
         Enter,
         Leave,
         Mouse,
@@ -80,22 +79,13 @@ public:
         QWeakPointer<QWidget> topLevel;
     };
 
-    class ResizeEvent : public WindowSystemEvent {
+    class GeometryChangeEvent : public WindowSystemEvent {
     public:
-        ResizeEvent(QWidget *sizeChanged, const QSize &newSize)
-            : WindowSystemEvent(Resize), sizeChanged(sizeChanged), newSize(newSize)
+        GeometryChangeEvent(QWidget *tlw, const QRect &newGeometry)
+            : WindowSystemEvent(GeometryChange), tlw(tlw), newGeometry(newGeometry)
         { }
-        QWeakPointer<QWidget> sizeChanged;
-        QSize newSize;
-    };
-
-    class MoveEvent : public WindowSystemEvent {
-    public:
-        MoveEvent(QWidget *moved, const QPoint &newPos)
-            : WindowSystemEvent(Move), moved(moved), newPos(newPos)
-        { }
-        QWeakPointer<QWidget> moved;
-        QPoint newPos;
+        QWeakPointer<QWidget> tlw;
+        QRect newGeometry;
     };
 
     class EnterEvent : public WindowSystemEvent {

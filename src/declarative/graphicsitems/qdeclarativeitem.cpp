@@ -423,7 +423,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
     It is common in key-based UIs to use arrow keys to navigate
-    between focussed items.  The KeyNavigation property provides a
+    between focused items.  The KeyNavigation property provides a
     convenient way of specifying which item will gain focus
     when an arrow key is pressed.  The following example provides
     key navigation for a 2x2 grid of items.
@@ -511,8 +511,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::left() const
 void QDeclarativeKeyNavigationAttached::setLeft(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->left == i)
+        return;
     d->left = i;
-    emit changed();
+    emit leftChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::right() const
@@ -524,8 +526,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::right() const
 void QDeclarativeKeyNavigationAttached::setRight(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->right == i)
+        return;
     d->right = i;
-    emit changed();
+    emit rightChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::up() const
@@ -537,8 +541,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::up() const
 void QDeclarativeKeyNavigationAttached::setUp(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->up == i)
+        return;
     d->up = i;
-    emit changed();
+    emit upChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::down() const
@@ -550,8 +556,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::down() const
 void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->down == i)
+        return;
     d->down = i;
-    emit changed();
+    emit downChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
@@ -563,8 +571,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
 void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->tab == i)
+        return;
     d->tab = i;
-    emit changed();
+    emit tabChanged();
 }
 
 QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
@@ -576,8 +586,10 @@ QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
 void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
+    if (d->backtab == i)
+        return;
     d->backtab = i;
-    emit changed();
+    emit backtabChanged();
 }
 
 /*!
@@ -2482,7 +2494,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   Item {
     filter: [
       Blur { ... },
-      Relection { ... }
+      Reflection { ... }
       ...
     ]
   }

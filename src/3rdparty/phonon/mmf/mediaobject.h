@@ -33,6 +33,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 QT_BEGIN_NAMESPACE
 
+class QResource;
+
 namespace Phonon
 {
 namespace MMF
@@ -87,6 +89,9 @@ public:
 
     void setVideoOutput(AbstractVideoOutput* videoOutput);
 
+    RFile* file() const;
+    QResource* resource() const;
+
 public Q_SLOTS:
     void volumeChanged(qreal volume);
     void switchToNextSource();
@@ -117,6 +122,7 @@ private:
 
     // Audio / video media type recognition
     MediaType fileMediaType(const QString& fileName);
+    MediaType bufferMediaType(const uchar *data, qint64 size);
     // TODO: urlMediaType function
 
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
@@ -132,9 +138,8 @@ private:
     MediaSource                         m_nextSource;
     bool                                m_nextSourceSet;
 
-    // Storing the file handle here to work around KErrInUse error
-    // from MMF player utility OpenFileL functions
-    RFile                               m_file;
+    RFile*                              m_file;
+    QResource*                          m_resource;
 
     QScopedPointer<AbstractPlayer>      m_player;
 

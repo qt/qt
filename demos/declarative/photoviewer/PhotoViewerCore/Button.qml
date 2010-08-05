@@ -45,7 +45,7 @@ Item {
     id: container
 
     property alias label: labelText.text
-    property string tint: ""
+    property color tint: "transparent"
     signal clicked
 
     width: labelText.width + 70 ; height: labelText.height + 18

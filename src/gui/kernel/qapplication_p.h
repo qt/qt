@@ -432,8 +432,10 @@ public:
     static QPalette *set_pal;
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
-    static QPlatformIntegration *platform_integration;
     static bool runtime_graphics_system;
+#ifdef Q_WS_QPA
+    static QPlatformIntegration *platform_integration;
+#endif
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
@@ -498,8 +500,7 @@ public:
 
     static void processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e);
 
-    static void processMoveEvent(QWindowSystemInterfacePrivate::MoveEvent *e);
-    static void processResizeEvent(QWindowSystemInterfacePrivate::ResizeEvent *e);
+    static void processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e);
 
     static void processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e);
     static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
@@ -642,7 +643,7 @@ private:
 #endif
 
 #ifdef Q_OS_SYMBIAN
-    static QHash<TInt, TUint> scanCodeCache;
+    QHash<TInt, TUint> scanCodeCache;
 #endif
 
     static QApplicationPrivate *self;

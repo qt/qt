@@ -118,7 +118,7 @@ QPixmapData *QDirectFbIntegration::createPixmapData(QPixmapData::PixelType type)
     if (type == QPixmapData::BitmapType)
         return new QRasterPixmapData(type);
     else
-        return new QBlittablePixmapData(type);
+        return new QDirectFbBlitterPixmapData;
 }
 
 QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWidget *widget, WId winId) const

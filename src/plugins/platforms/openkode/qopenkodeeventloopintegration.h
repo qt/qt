@@ -4,14 +4,25 @@
 #include <QtGui/QPlatformEventLoopIntegration>
 
 class KDThread;
+class KDEvent;
+
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+
 class QOpenKODEEventLoopIntegration : public QPlatformEventLoopIntegration
 {
 public:
     QOpenKODEEventLoopIntegration();
     void processEvents(qint64 msec);
     void wakeup();
+
+    void processInputEvent(const KDEvent *event);
 private:
+
     KDThread *m_kdThread;
 };
+
+QT_END_NAMESPACE
+QT_END_HEADER
 
 #endif // QOPENKODEEVENTLOOPINTEGRATION_H

@@ -916,7 +916,7 @@ QString QDBusConnection::name() const
 
 /*!
     Attempts to register the \a serviceName on the D-Bus server and
-    returns true if the registration succeded. The registration will
+    returns true if the registration succeeded. The registration will
     fail if the name is already registered by another application.
 
     \sa unregisterService(), QDBusConnectionInterface::registerService()

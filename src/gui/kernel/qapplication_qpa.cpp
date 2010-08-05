@@ -102,11 +102,8 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
     case QWindowSystemInterfacePrivate::Touch:
         QApplicationPrivate::processTouchEvent(static_cast<QWindowSystemInterfacePrivate::TouchEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::Move:
-        QApplicationPrivate::processMoveEvent(static_cast<QWindowSystemInterfacePrivate::MoveEvent *>(e));
-        break;
-    case QWindowSystemInterfacePrivate::Resize:
-        QApplicationPrivate::processResizeEvent(static_cast<QWindowSystemInterfacePrivate::ResizeEvent *>(e));
+    case QWindowSystemInterfacePrivate::GeometryChange:
+        QApplicationPrivate::processGeometryChangeEvent(static_cast<QWindowSystemInterfacePrivate::GeometryChangeEvent*>(e));
         break;
     case QWindowSystemInterfacePrivate::Enter:
         QApplicationPrivate::processEnterEvent(static_cast<QWindowSystemInterfacePrivate::EnterEvent *>(e));
@@ -513,7 +510,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
-    QString platformName = qgetenv("QT_QPA_PLATFORM");
+    QString platformName = QLatin1String(qgetenv("QT_QPA_PLATFORM"));
 
     // Get command line params
 
@@ -529,7 +526,7 @@ void qt_init(QApplicationPrivate *priv, int type)
                 appFont = argv[i];
         } else if (arg == "-platform") {
             if (++i < argc)
-                platformName = argv[i];
+                platformName = QLatin1String(argv[i]);
         } else if (arg == "-plugin") {
             if (++i < argc)
                 pluginList << argv[i];
@@ -805,6 +802,9 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 
+    if (!focusW->isWindow())
+        focusW = focusW->window();
+
     modifiers = e->modifiers;
     QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
     QApplication::sendSpontaneousEvent(focusW, &ev);
@@ -826,21 +826,41 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 }
 
-void QApplicationPrivate::processMoveEvent(QWindowSystemInterfacePrivate::MoveEvent *moveEvent)
-{
-        QMoveEvent e(moveEvent->moved.data()->geometry().topLeft(), moveEvent->newPos);
-        QApplication::sendSpontaneousEvent(moveEvent->moved.data(), &e);
-}
 
-void QApplicationPrivate::processResizeEvent(QWindowSystemInterfacePrivate::ResizeEvent *e)
+void QApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {
-    QResizeEvent resizeEvent(e->sizeChanged.data()->data->crect.size(), e->newSize);
-    QApplication::sendSpontaneousEvent(e->sizeChanged.data(), &resizeEvent);
-    e->sizeChanged.data()->update();
+    if (e->tlw.isNull())
+       return;
+    QWidget *tlw = e->tlw.data();
+    if (!tlw->isWindow())
+        return; //geo of native child widgets is controlled by lighthouse
+                //so we already have sent the events; besides this new rect
+                //is not mapped to parent
+
+    QRect newRect = e->newGeometry;
+    QRect cr(tlw->geometry());
+    bool isResize = cr.size() != newRect.size();
+    bool isMove = cr.topLeft() != newRect.topLeft();
+    tlw->data->crect = newRect;
+    if (isResize) {
+        QResizeEvent e(tlw->data->crect.size(), cr.size());
+        QApplication::sendSpontaneousEvent(tlw, &e);
+        tlw->update();
+    }
+
+    if (isMove) {
+        //### frame geometry
+        QMoveEvent e(tlw->data->crect.topLeft(), cr.topLeft());
+        QApplication::sendSpontaneousEvent(tlw, &e);
+    }
 }
 
 void QApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e)
 {
+    if (e->topLevel.isNull()) {
+        //qDebug() << "QApplicationPrivate::processCloseEvent NULL";
+        return;
+    }
     e->topLevel.data()->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 

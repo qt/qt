@@ -4283,6 +4283,13 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         }
     break;
 
+    case PE_FrameMenu:
+        if (rule.hasDrawable()) {
+            // Drawn by PE_PanelMenu
+            return;
+        }
+        break;
+
     case PE_PanelMenuBar:
     if (rule.hasDrawable()) {
         // Drawn by PE_Widget

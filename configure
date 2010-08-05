@@ -881,9 +881,9 @@ QT_LIBS_GLIB=
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
-# flags for icd (Maemo Internet Connection Daemon)
-QT_CFLAGS_ICD=
-QT_LIBS_ICD=
+# flags for libconnsettings0 (used for Maemo ICD bearer management plugin)
+QT_CFLAGS_CONNSETTINGS=
+QT_LIBS_CONNSETTINGS=
 
 #-------------------------------------------------------------------------------
 # check SQL drivers, mouse drivers and decorations available in this package
@@ -3324,7 +3324,7 @@ if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>
 fi
 
 # If -opengl wasn't specified, don't try to auto-detect
-if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
+if [ "$PLATFORM_QWS" = "yes" ] && [ "$CFG_OPENGL" = "auto" ]; then
         CFG_OPENGL=no
 fi
 
@@ -5559,49 +5559,21 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
 
     # auto-detect icd support
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
-        # ICD support has a cyclic dependency on Qt.
         if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_ICD=`$PKG_CONFIG --cflags osso-ic conninet 2>/dev/null`
-            QT_LIBS_ICD=`$PKG_CONFIG --libs osso-ic conninet 2>/dev/null`
-            QT_CFLAGS_QTNETWORK=`$PKG_CONFIG --cflags QtNetwork 2>/dev/null`
-            QT_LIBS_QTNETWORK=`$PKG_CONFIG --libs QtNetwork 2>/dev/null`
-        else
-            QT_CFLAGS_QTNETWORK=
-            QT_LIBS_QTNETWORK=
+            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings 2>/dev/null`
+            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings 2>/dev/null`
         fi
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_ICD $QT_LIBS_ICD $QT_CFLAGS_QTNETWORK $QT_LIBS_QTNETWORK; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_CONNSETTINGS $QT_LIBS_CONNSETTINGS; then
             [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
-            # remove system Qt includes and libraries
-            QT_CFLAGS_ICD_TRIMMED=
-            for i in $QT_CFLAGS_ICD; do
-                case $i in
-                    *qt*)
-                        ;;
-                    *)
-                        QT_CFLAGS_ICD_TRIMMED="$QT_CFLAGS_ICD_TRIMMED $i"
-                        ;;
-                esac
-            done
-            QT_LIBS_ICD_TRIMMED=
-            for i in $QT_LIBS_ICD; do
-                case $i in
-                    *qt*|-lQt*)
-                        ;;
-                    *)
-                        QT_LIBS_ICD_TRIMMED="$QT_LIBS_ICD_TRIMMED $i"
-                        ;;
-                esac
-            done
-
-            QMakeVar set QT_CFLAGS_ICD "$QT_CFLAGS_ICD_TRIMMED"
-            QMakeVar set QT_LIBS_ICD "$QT_LIBS_ICD_TRIMMED"
+            QMakeVar set QT_CFLAGS_CONNSETTINGS "$QT_CFLAGS_CONNSETTINGS"
+            QMakeVar set QT_LIBS_CONNSETTINGS "$QT_LIBS_CONNSETTINGS"
         else
             if [ "$CFG_ICD" = "auto" ]; then
                 CFG_ICD=no
             elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
                 # CFG_ICD is "yes"
 
-                echo "The ICD Bearer Management plugin cannot be enabled because osso-ic or conninet was not found."
+                echo "The ICD Bearer Management plugin cannot be enabled because connsettings was not found."
                 echo " Turn on verbose messaging (-v) to $0 to see the final report."
                 echo " If you believe this message is in error you may use the continue"
                 echo " switch (-continue) to $0 to continue."
@@ -8688,7 +8660,7 @@ for file in .projects .projects.3; do
         *winmain/winmain.pro)
             [ "$XPLATFORM_MINGW" = "yes" ] || continue
             SPEC=$XQMAKESPEC ;;
-        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`"]; then
+        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`" ]; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;

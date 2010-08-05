@@ -939,7 +939,7 @@ void QDeclarativePropertyAction::setTarget(QObject *o)
     if (d->target == o)
         return;
     d->target = o;
-    emit targetChanged(d->target, d->propertyName);
+    emit targetChanged();
 }
 
 QString QDeclarativePropertyAction::property() const
@@ -954,7 +954,7 @@ void QDeclarativePropertyAction::setProperty(const QString &n)
     if (d->propertyName == n)
         return;
     d->propertyName = n;
-    emit targetChanged(d->target, d->propertyName);
+    emit propertyChanged();
 }
 
 /*!
@@ -1937,15 +1937,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
         \o \inlineimage qeasingcurve-inquart.png
     \row
         \o \c Easing.OutQuart
-        \o Easing curve for a cubic (t^4) function: decelerating from zero velocity.
+        \o Easing curve for a quartic (t^4) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outquart.png
     \row
         \o \c Easing.InOutQuart
-        \o Easing curve for a cubic (t^4) function: acceleration until halfway, then deceleration.
+        \o Easing curve for a quartic (t^4) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutquart.png
     \row
         \o \c Easing.OutInQuart
-        \o Easing curve for a cubic (t^4) function: deceleration until halfway, then acceleration.
+        \o Easing curve for a quartic (t^4) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinquart.png
     \row
         \o \c Easing.InQuint
@@ -1953,15 +1953,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
         \o \inlineimage qeasingcurve-inquint.png
     \row
         \o \c Easing.OutQuint
-        \o Easing curve for a cubic (t^5) function: decelerating from zero velocity.
+        \o Easing curve for a quintic (t^5) function: decelerating from zero velocity.
         \o \inlineimage qeasingcurve-outquint.png
     \row
         \o \c Easing.InOutQuint
-        \o Easing curve for a cubic (t^5) function: acceleration until halfway, then deceleration.
+        \o Easing curve for a quintic (t^5) function: acceleration until halfway, then deceleration.
         \o \inlineimage qeasingcurve-inoutquint.png
     \row
         \o \c Easing.OutInQuint
-        \o Easing curve for a cubic (t^5) function: deceleration until halfway, then acceleration.
+        \o Easing curve for a quintic (t^5) function: deceleration until halfway, then acceleration.
         \o \inlineimage qeasingcurve-outinquint.png
     \row
         \o \c Easing.InSine
@@ -2104,7 +2104,7 @@ void QDeclarativePropertyAnimation::setTarget(QObject *o)
     if (d->target == o)
         return;
     d->target = o;
-    emit targetChanged(d->target, d->propertyName);
+    emit targetChanged();
 }
 
 QString QDeclarativePropertyAnimation::property() const
@@ -2119,7 +2119,7 @@ void QDeclarativePropertyAnimation::setProperty(const QString &n)
     if (d->propertyName == n)
         return;
     d->propertyName = n;
-    emit targetChanged(d->target, d->propertyName);
+    emit propertyChanged();
 }
 
 QString QDeclarativePropertyAnimation::properties() const
@@ -2416,7 +2416,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     enabled. Such an item can be set using the \l via property.
 
     By default, when used in a transition, ParentAnimation animates all parent 
-    changes. This can be overriden by setting a specific target item using the
+    changes. This can be overridden by setting a specific target item using the
     \l target property.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}

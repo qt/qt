@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \title Animation: Basics
+    \title Animation: Basics Example
     \example declarative/animation/basics
 
     This example shows how to create and combine \l{QML Animation}{animations} in QML.
@@ -47,7 +47,7 @@
 */
 
 /*!
-    \title Animation: Behaviors
+    \title Animation: Behavior Examples
     \example declarative/animation/behaviors
 
     This example shows how to use QML behaviors. 
@@ -56,7 +56,7 @@
 */
 
 /*!
-    \title Animation: Easing 
+    \title Animation: Easing Example 
     \example declarative/animation/easing
 
     This example shows the different easing modes available for \l{QML Animation}{animations}.
@@ -65,7 +65,7 @@
 */
 
 /*!
-    \title Animation: States
+    \title Animation: States Example
     \example declarative/animation/states
 
     These examples show how to use \l{States}{states} and \l{Transitions}{transitions}.
@@ -89,7 +89,7 @@
 */
 
 /*!
-    \title Image Elements: Border Image
+    \title Image Elements: Border Image Example
     \example declarative/imageelements/borderimage
 
     These examples show how to use the BorderImage element.
@@ -110,7 +110,7 @@
 */
 
 /*!
-    \title Image Elements: Image
+    \title Image Elements: Image Example
     \example declarative/imageelements/image
 
     This example shows how to use the \l Image element and its \l{Image::fillMode}{fillModes}.
@@ -147,7 +147,7 @@
 */
 
 /*!
-    \title C++ Extensions: Plugins
+    \title C++ Extensions: Plugins Example
     \example declarative/cppextensions/plugins
 
     This example shows how to create a C++ plugin extension by subclassing QDeclarativeExtensionPlugin.
@@ -156,7 +156,7 @@
 */
 
 /*!
-    \title LayoutItem
+    \title LayoutItem Example
     \example declarative/cppextensions/qgraphicslayouts/layoutitem
 
     This example show how to use the LayoutItem element to integrate QML items into an existing 
@@ -165,7 +165,7 @@
     \image qml-layoutitem-example.png
 */
 /*!
-    \title QGraphicsGridLayout
+    \title QGraphicsGridLayout Example
     \example declarative/cppextensions/qgraphicslayouts/qgraphicsgridlayout
 
     This example shows how to use QGraphicsGridLayout to lay out QML items. This is 
@@ -175,7 +175,7 @@
     \image qml-qgraphicsgridlayout-example.png
 */
 /*!
-    \title QGraphicsLinearLayout
+    \title QGraphicsLinearLayout Example
     \example declarative/cppextensions/qgraphicslayouts/qgraphicslinearlayout
 
     This example shows how to use QGraphicsLinearLayout to lay out QML items. This is 
@@ -185,8 +185,8 @@
     \image qml-qgraphicslinearlayout-example.png
 */
 /*!
+    \title C++ Extensions: QGraphicsLayouts examples
     \page declarative-cppextensions-qgraphicslayouts.html
-    \title C++ Extensions: QGraphicsLayouts
 
     These examples show how to integrate \l{Graphics View Framework}{Graphics View}
     layout components with QML:
@@ -202,7 +202,7 @@
 */
 
 /*!
-    \title C++ Extensions: QWidgets
+    \title C++ Extensions: QWidgets Example
     \example declarative/cppextensions/qwidgets
 
     This example shows how to embed QWidget-based objects into QML using QGraphicsProxyWidget.
@@ -211,7 +211,7 @@
 */
 
 /*!
-    \title C++ Extensions: Image Provider
+    \title C++ Extensions: Image Provider Example
     \example declarative/cppextensions/imageprovider
 
     This examples shows how to use QDeclarativeImageProvider to serve images 
@@ -221,7 +221,7 @@
 */
 
 /*!
-    \title C++ Extensions: Network access manager factory
+    \title C++ Extensions: Network Access Manager Factory Example
     \example declarative/cppextensions/networkaccessmanagerfactory
 
     This example shows how to use QDeclarativeNetworkAccessManagerFactory to create a QNetworkAccessManager
@@ -229,7 +229,7 @@
 */
 
 /*!
-    \title Internationlization
+    \title Internationlization Example
     \example declarative/i18n
 
     This example shows how to enable text translation in QML.
@@ -238,7 +238,7 @@
 */
 
 /*!
-    \title Positioners
+    \title Positioners Example
     \example declarative/positioners
 
     This example shows how to use positioner elements such as \l Row, \l Column,
@@ -248,7 +248,7 @@
 */
 
 /*!
-    \title Key Interaction: Focus
+    \title Key Interaction: Focus Example
     \example declarative/keyinteraction/focus
 
     This example shows how to handle keyboard input and focus in QML.
@@ -257,7 +257,7 @@
 */
 
 /*!
-    \title Models and Views: AbstractItemModel
+    \title Models and Views: AbstractItemModel Example
     \example declarative/modelviews/abstractitemmodel
 
     This example shows how to use a QAbstractItemModel subclass as a model in QML.
@@ -266,7 +266,7 @@
 */
 
 /*!
-    \title Models and Views: GridView
+    \title Models and Views: GridView Example
     \example declarative/modelviews/gridview
 
     This example shows how to use the GridView element.
@@ -275,7 +275,7 @@
 */
 
 /*!
-    \title Models and Views: ListView
+    \title Models and Views: ListView Example
     \example declarative/modelviews/listview
 
     These examples show how to use the ListView element.
@@ -317,7 +317,7 @@
 */
 
 /*!
-    \title Models and Views: PathView
+    \title Models and Views: PathView Example
     \example declarative/modelviews/pathview
 
     This example shows how to use the PathView element.
@@ -326,7 +326,7 @@
 */
 
 /*!
-    \title Models and Views: Object ListModel
+    \title Models and Views: Object ListModel Example
     \example declarative/modelviews/objectlistmodel
 
     This example shows how to use a QList<QObject*> as a model in QML.
@@ -335,7 +335,7 @@
 */
 
 /*!
-    \title Models and Views: Package
+    \title Models and Views: Package Example
     \example declarative/modelviews/package
 
     This example shows how to use the \l Package element.
@@ -344,7 +344,7 @@
 */
 
 /*!
-    \title Models and Views: Parallax
+    \title Models and Views: Parallax Example
     \example declarative/modelviews/parallax
 
     This example shows how to combine and switch between views.
@@ -353,7 +353,7 @@
 */
 
 /*!
-    \title Models and Views: String ListModel
+    \title Models and Views: String ListModel Example
     \example declarative/modelviews/stringlistmodel
 
     This example shows how to use a QStringList as a model in QML.
@@ -362,7 +362,7 @@
 */
 
 /*!
-    \title Models and Views: VisualItemModel
+    \title Models and Views: VisualItemModel Example
     \example declarative/modelviews/visualitemmodel
 
     This example shows how to use the VisualItemModel element.
@@ -371,7 +371,7 @@
 */
 
 /*!
-    \title Models and Views: WebView
+    \title Models and Views: WebView Example
     \example declarative/modelviews/webview
 
     These examples shows how to use the WebView element.
@@ -412,15 +412,23 @@
     \endtable
 */
 
+
 /*!
-    \title SQL Local Storage
+    \title Screen orientation
+    \example declarative/screenorientation
+
+    This example shows how to implement screen orientation support for your application.
+*/
+
+/*!
+    \title SQL Local Storage Example
     \example declarative/sqllocalstorage
 
     This example shows how to use the SQL Local Storage API in QML.
 */
 
 /*!
-    \title Text: Fonts
+    \title Text: Fonts Example
     \example declarative/text/fonts
 
     These examples show how to discover available fonts from QML and manipulate
@@ -456,7 +464,7 @@
 */
 
 /*!
-    \title Text: Text Selection
+    \title Text: Text Selection Example
     \example declarative/text/textselection
 
     This example shows how text selection, copy and paste operations
@@ -466,7 +474,7 @@
 */
 
 /*!
-    \title Threading: Threaded ListModel
+    \title Threading: Threaded ListModel Example
     \example declarative/threading/threadedlistmodel
 
     This example shows how to use a ListModel from multiple threads using
@@ -474,14 +482,14 @@
 */
 
 /*!
-    \title Threading: WorkerScript
+    \title Threading: WorkerScript Example
     \example declarative/threading/workerscript
 
     This example shows how to use the WorkerScript element for threading in QML.
 */
 
 /*!
-    \title Toys: Clocks
+    \title Toys: Clocks Example
     \example declarative/toys/clocks
 
     This example displays a set of clocks with different times for different cities.
@@ -492,7 +500,7 @@
 */
 
 /*!
-    \title Toys: Corkboards
+    \title Toys: Corkboards Example
     \example declarative/toys/corkboards
 
     This example presents a flickable set of interactive corkboards. It is created
@@ -503,7 +511,7 @@
 */
 
 /*!
-    \title Toys: Dynamic Scene
+    \title Toys: Dynamic Scene Example
     \example declarative/toys/dynamicscene
 
     This example presents an interactive drag-and-drop scene. It demonstrates
@@ -514,7 +522,7 @@
 */
 
 /*!
-    \title Toys: Tic-Tac-Toe
+    \title Toys: Tic-Tac-Toe Example
     \example declarative/toys/tic-tac-toe
 
     This example presents a simple implementation of Tic Tac Toe.
@@ -523,7 +531,7 @@
 */
 
 /*!
-    \title Toys: TV Tennis
+    \title Toys: TV Tennis Example
     \example declarative/toys/tvtennis
 
     This example shows how to use animation components such as \l SpringAnimation,
@@ -533,14 +541,14 @@
 */
 
 /*!
-    \title Touch Interaction: Gestures
+    \title Touch Interaction: Gestures Example
     \example declarative/touchinteraction/gestures
 
     This example shows how to use the GestureArea element.
 */
 
 /*!
-    \title Touch Interaction: MouseArea
+    \title Touch Interaction: MouseArea Example
     \example declarative/touchinteraction/mousearea
 
     This example shows how to use the MouseArea element to access information
@@ -550,7 +558,7 @@
 */
 
 /*!
-    \title UI Components: Dial
+    \title UI Components: Dial Control Example
     \example declarative/ui-components/dialcontrol
 
     This example shows how to create a dial-type control. It combines
@@ -562,7 +570,7 @@
 
 
 /*!
-    \title UI Components: Flipable
+    \title UI Components: Flipable Example
     \example declarative/ui-components/flipable
 
     This example shows how to use the \l Flipable element.
@@ -571,7 +579,7 @@
 */
 
 /*!
-    \title UI Components: Progress Bars
+    \title UI Components: Progress Bars Example
     \example declarative/ui-components/progressbar
 
     This example shows how to create a progress bar.
@@ -580,7 +588,7 @@
 */
 
 /*!
-    \title UI Components: Scroll Bar
+    \title UI Components: Scroll Bar Example
     \example declarative/ui-components/scrollbar
 
     This example shows how to create scroll bars for a \l Flickable element
@@ -591,7 +599,7 @@
 */
 
 /*!
-    \title UI Components: Search Box
+    \title UI Components: Search Box Example
     \example declarative/ui-components/searchbox
 
     This example shows how to combine TextInput, FocusScope and BorderImage
@@ -601,7 +609,7 @@
 */
 
 /*!
-    \title UI Components: Slide Switch
+    \title UI Components: Slide Switch Example
     \example declarative/ui-components/slideswitch
 
     This example shows how to create a slide switch control.
@@ -610,7 +618,7 @@
 */
 
 /*!
-    \title UI Components: Spinner
+    \title UI Components: Spinner Example
     \example declarative/ui-components/spinner
 
     This example shows how to create a spinner-type component using the PathView element.
@@ -619,7 +627,7 @@
 */
 
 /*!
-    \title UI Components: Tab Widget
+    \title UI Components: Tab Widget Example
     \example declarative/ui-components/tabwidget
 
     This example shows how to create a tab widget. It also demonstrates how
@@ -630,7 +638,7 @@
 */
 
 /*!
-    \title XML: XMLHttpRequest
+    \title XML: XMLHttpRequest Example
     \example declarative/xml/xmlhttprequest
 
     This example shows how to use the \l XmlHttpRequest API in QML.

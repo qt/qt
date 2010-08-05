@@ -2,7 +2,8 @@
 #define QBLITTABLE_P_H
 
 #include <QtCore/qsize.h>
-#include <QtGui/qpixmap.h>
+#include <QtGui/private/qpixmap_blitter_p.h>
+
 
 #ifndef QT_NO_BLITTABLE
 QT_BEGIN_NAMESPACE

@@ -241,7 +241,8 @@ qpa {
                 kernel/qplatformintegrationplugin_qpa.cpp \
                 kernel/qplatformwindow_qpa.cpp \
                 kernel/qplatformwindowformat_qpa.cpp \
-                kernel/qplatformeventloopintegration_qpa.cpp
+                kernel/qplatformeventloopintegration_qpa.cpp \
+                kernel/qplatformglcontext_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

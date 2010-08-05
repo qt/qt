@@ -42,29 +42,31 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(Q
     DEFINES += __MARM_THUMB__
 }
 
-defineReplace(processSymbianLibraries) {
-    library = $$replace(1, "\\.dll$", ".dso")
-    library = $$replace(library, "^-l", "")
-    isFullName = $$find(library, \\.)
-    isEmpty(isFullName):library="$${library}.dso"
-    linux-gcce {
-        newLIB = "-l:$${library}"
-    } else {
-        newLIB = "$${library}"
-    }
-    contains(library, "\\.dso$")|contains(library, "\\.lib$"):PRE_TARGETDEPS += $$library
-    return($$newLIB)
+defineReplace(processSymbianLibrary) {
+    qt_library = $$replace(1, "\\.dll$", ".dso")
+    qt_library = $$replace(qt_library, "^-l", "")
+    isFullName = $$find(qt_library, \\.)
+    isEmpty(isFullName):qt_library="$${qt_library}.dso"
+    return($$qt_library)
 }
 
-for(libraries, LIBS) {
-    newLIBS += $$processSymbianLibraries($$libraries)
+qt_libraries = $$split(LIBS, " ")
+LIBS =
+for(qt_library, qt_libraries) {
+    qt_newLib = $$processSymbianLibrary($$qt_library)
+    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+    linux-gcce:qt_newLib = "-l:$$qt_newLib"
+    LIBS += $$qt_newLib
 }
-LIBS = $$newLIBS
-newLIBS =
-for(libraries, QMAKE_LIBS) {
-    newLIBS += $$processSymbianLibraries($$libraries)
+
+qt_libraries = $$split(QMAKE_LIBS, " ")
+QMAKE_LIBS =
+for(qt_library, qt_libraries) {
+    qt_newLib = $$processSymbianLibrary($$qt_library)
+    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+    linux-gcce:qt_newLib = "-l:$$qt_newLib"
+    QMAKE_LIBS += $$qt_newLib
 }
-QMAKE_LIBS = $$newLIBS
 
 elf2e32_LIBPATH =
 for(libPath, QMAKE_LIBDIR) {

@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn QHash<int,QVariant> QListModelInterface::data(int index, const QList<int>& roles) const
-  Returns the data at the given \a index for the specifed \a roles.
+  Returns the data at the given \a index for the specified \a roles.
 */
 
 /*! \fn bool QListModelInterface::setData(int index, const QHash<int,QVariant>& values)

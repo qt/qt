@@ -993,14 +993,12 @@ if($check_includes) {
     for (keys(%modules)) {
         #iteration info
         my $lib = $_;
-        my $dir = "$modules{$lib}";
-	{
-            my $current_dir = "$_";
+        {
             #calc subdirs
-            my @subdirs = ($current_dir);
+            my @subdirs = ($modules{$lib});
             foreach (@subdirs) {
                 my $subdir = "$_";
-                opendir DIR, "$subdir";
+                opendir DIR, "$subdir" or die "Huh, directory ".$subdir." cannot be opened.";
                 while(my $t = readdir(DIR)) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                    !($t eq "..") && !($t eq ".obj") &&

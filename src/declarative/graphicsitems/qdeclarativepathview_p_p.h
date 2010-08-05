@@ -78,6 +78,7 @@ public:
         , lastElapsed(0), mappedRange(1.0)
         , stealMouse(false), ownModel(false), interactive(true), haveHighlightRange(true)
         , autoHighlight(true), highlightUp(false), layoutScheduled(false)
+        , moving(false), flicking(false)
         , dragMargin(0), deceleration(100)
         , moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
         , firstIndex(-1), pathItems(-1), requestedIndex(-1)
@@ -90,15 +91,7 @@ public:
     {
     }
 
-    void init() {
-        Q_Q(QDeclarativePathView);
-        offset = 0;
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setFlag(QGraphicsItem::ItemIsFocusScope);
-        q->setFiltersChildEvents(true);
-        q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
-        lastPosTime.invalidate();
-    }
+    void init();
 
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         if ((newGeometry.size() != oldGeometry.size())
@@ -155,6 +148,8 @@ public:
     bool autoHighlight : 1;
     bool highlightUp : 1;
     bool layoutScheduled : 1;
+    bool moving : 1;
+    bool flicking : 1;
     QElapsedTimer lastPosTime;
     QPointF lastPos;
     qreal dragMargin;

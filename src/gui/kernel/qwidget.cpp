@@ -2401,7 +2401,9 @@ WId QWidget::winId() const
         qDebug() << "QWidget::winId: creating native window for" << this;
 #endif
         QWidget *that = const_cast<QWidget*>(this);
+#ifndef Q_WS_QPA
         that->setAttribute(Qt::WA_NativeWindow);
+#endif
         that->d_func()->createWinId();
         return that->data->winid;
     }

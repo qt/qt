@@ -57,8 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
-GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, int drawableType)
+QMutex QGLXGLContext::m_defaultSharedContextMutex(QMutex::Recursive);
+
+QVector<int> QGLXGLContext::buildSpec(const QPlatformWindowFormat &format)
 {
+    QVector<int> spec(48);
+    int i = 0;
     int depthSize = 0;
     int stencilSize = 0;
     int sampleSize = 0;
@@ -70,33 +74,30 @@ GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, i
     if (format.sampleBuffers())
         sampleSize = (format.samples() == -1) ? 1 : format.samples();
 
-    int configAttribs[] = {
-        GLX_DRAWABLE_TYPE, drawableType,
-        GLX_LEVEL, format.plane(),
-        GLX_RENDER_TYPE, GLX_RGBA_BIT,
-        GLX_DOUBLEBUFFER, format.doubleBuffer() ? True : False,
-        GLX_STEREO, format.stereo() ? True : False,
+    spec[i++] = GLX_DRAWABLE_TYPE; spec[i++] = GLX_WINDOW_BIT;
+    spec[i++] = GLX_RENDER_TYPE; spec[i++] = GLX_RGBA_BIT;
+    spec[i++] = GLX_DOUBLEBUFFER; spec[i++] = format.doubleBuffer() ? True : False;
+    spec[i++] = GLX_STEREO; spec[i++] =  format.stereo() ? True : False;
 
-        GLX_DEPTH_SIZE, depthSize,
-        GLX_STENCIL_SIZE, stencilSize,
-        GLX_SAMPLE_BUFFERS_ARB, sampleSize,
+    spec[i++] = GLX_DEPTH_SIZE; spec[i++] = depthSize;
+    spec[i++] = GLX_STENCIL_SIZE; spec[i++] =  stencilSize;
+    spec[i++] = GLX_SAMPLE_BUFFERS_ARB; spec[i++] = sampleSize;
 
-        GLX_RED_SIZE, (format.redBufferSize() == -1) ? 1 : format.redBufferSize(),
-        GLX_GREEN_SIZE, (format.greenBufferSize() == -1) ? 1 : format.greenBufferSize(),
-        GLX_BLUE_SIZE, (format.blueBufferSize() == -1) ? 1 : format.blueBufferSize(),
-        GLX_ALPHA_SIZE, (format.alphaBufferSize() == -1) ? 0 : format.alphaBufferSize(),
+    spec[i++] = GLX_RED_SIZE; spec[i++] = (format.redBufferSize() == -1) ? 1 : format.redBufferSize();
+    spec[i++] = GLX_GREEN_SIZE; spec[i++] =  (format.greenBufferSize() == -1) ? 1 : format.greenBufferSize();
+    spec[i++] = GLX_BLUE_SIZE; spec[i++] = (format.blueBufferSize() == -1) ? 1 : format.blueBufferSize();
+    spec[i++] = GLX_ALPHA_SIZE; spec[i++] = (format.alphaBufferSize() == -1) ? 0 : format.alphaBufferSize();
 
-        GLX_ACCUM_RED_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
-        GLX_ACCUM_GREEN_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
-        GLX_ACCUM_BLUE_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
-        GLX_ACCUM_ALPHA_SIZE, (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize(),
-        XNone
-    };
+    spec[i++] = GLX_ACCUM_RED_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize();
+    spec[i++] = GLX_ACCUM_GREEN_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize();
+    spec[i++] = GLX_ACCUM_BLUE_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize();
+    spec[i++] = GLX_ACCUM_ALPHA_SIZE; spec[i++] = (format.accumBufferSize() == -1) ? 0 : format.accumBufferSize();
+    spec[i++] = XNone;
+    return spec;
+}
 
-    GLXFBConfig *configs;
-    int configCount = 0;
-    configs = glXChooseFBConfig(xd->display, xd->screen, configAttribs, &configCount);
-
+GLXFBConfig QGLXGLContext::findConfig(const GLXFBConfig *configs, int configCount, const QPlatformWindowFormat &format, const MyDisplay *xd)
+{
     if (!configs)
         return 0;
 
@@ -121,39 +122,143 @@ GLXFBConfig qt_glx_integration_choose_config(MyDisplay* xd, QGLFormat& format, i
         } else
             break; // Just choose the first in the list if there's no alpha requested
     }
-
-    // TODO: Populate the QGLFormat with the values of the GLXFBConfig
-
-    XFree(configs);
     return chosenConfig;
 }
 
-QGLXGLContext::QGLXGLContext(WId winId, MyDisplay *xd, QGLFormat& format, QPlatformGLContext* shareContext)
+QPlatformWindowFormat QGLXGLContext::platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config)
+{
+    QPlatformWindowFormat format;
+    int redSize     = 0;
+    int greenSize   = 0;
+    int blueSize    = 0;
+    int alphaSize   = 0;
+    int depthSize   = 0;
+    int stencilSize = 0;
+    int sampleCount = 0;
+    int level       = 0;
+    int rgba        = 0;
+    int stereo      = 0;
+    int accumSizeA  = 0;
+    int accumSizeR  = 0;
+    int accumSizeG  = 0;
+    int accumSizeB  = 0;
+
+    glXGetFBConfigAttrib(display, config, GLX_RED_SIZE,     &redSize);
+    glXGetFBConfigAttrib(display, config, GLX_GREEN_SIZE,   &greenSize);
+    glXGetFBConfigAttrib(display, config, GLX_BLUE_SIZE,    &blueSize);
+    glXGetFBConfigAttrib(display, config, GLX_ALPHA_SIZE,   &alphaSize);
+    glXGetFBConfigAttrib(display, config, GLX_DEPTH_SIZE,   &depthSize);
+    glXGetFBConfigAttrib(display, config, GLX_STENCIL_SIZE, &stencilSize);
+    glXGetFBConfigAttrib(display, config, GLX_SAMPLES,      &sampleCount);
+    glXGetFBConfigAttrib(display, config, GLX_LEVEL,        &level);
+    glXGetFBConfigAttrib(display, config, GLX_RGBA,         &rgba);
+    glXGetFBConfigAttrib(display, config, GLX_STEREO,       &stereo);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_ALPHA_SIZE, &accumSizeA);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_RED_SIZE, &accumSizeR);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_GREEN_SIZE, &accumSizeG);
+    glXGetFBConfigAttrib(display, config, GLX_ACCUM_BLUE_SIZE, &accumSizeB);
+
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    format.setAlphaBufferSize(alphaSize);
+    format.setDepthBufferSize(depthSize);
+    format.setStencilBufferSize(stencilSize);
+    format.setSamples(sampleCount);
+    format.setDirectRendering(true); // We don't support anything else for now.
+    format.setRgba(rgba);
+    format.setStereo(stereo);
+    format.setAccumBufferSize(accumSizeA + accumSizeB + accumSizeG + accumSizeR);
+
+    return format;
+}
+
+QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , m_xd(xd)
-    , m_drawable((Drawable)winId)
-    , m_config(0)
+    , m_drawable((Drawable)window)
     , m_context(0)
 {
+    if (!QPlatformGLContext::defaultSharedContext()) {
+        if (m_defaultSharedContextMutex.tryLock()){
+            createDefaultSharedContex(xd);
+            m_defaultSharedContextMutex.unlock();
+        } else {
+            m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
+            m_defaultSharedContextMutex.unlock();
+        }
+    }
+
+    QPlatformGLContext *sharePlatformContext;
+    if (format.useDefaultSharedContext()) {
+        sharePlatformContext = QPlatformGLContext::defaultSharedContext();
+    } else {
+        sharePlatformContext = format.sharedGLContext();
+    }
     GLXContext shareGlxContext = 0;
-    if (shareContext)
-        shareGlxContext = static_cast<QGLXGLContext*>(shareContext)->glxContext();
+    if (sharePlatformContext)
+        shareGlxContext = static_cast<QGLXGLContext*>(sharePlatformContext)->glxContext();
 
-    m_config = qt_glx_integration_choose_config(m_xd, format, GLX_WINDOW_BIT);
+    QVector<int> spec = buildSpec(format);
+    int confcount = 0;
+    GLXFBConfig *configs;
+    configs = glXChooseFBConfig(xd->display,xd->screen,spec.constData(),&confcount);
+    if (confcount)
+    {
+        GLXFBConfig config = findConfig(configs,confcount,format,xd);
+        m_context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
+        m_windowFormat = QGLXGLContext::platformWindowFromGLXFBConfig(xd->display,config);
+        XFree(configs);
+    } else {
+        qFatal("Warning no context created");
+    }
 
-    m_context = glXCreateNewContext(m_xd->display, m_config, GLX_RGBA_TYPE, shareGlxContext, True);
 #ifdef MYX11_DEBUG
     qDebug() << "QGLXGLContext::create context" << m_context;
 #endif
+}
+
+QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext context)
+    : QPlatformGLContext(), m_xd(display), m_drawable(drawable), m_context(context)
+{
 
 }
 
 QGLXGLContext::~QGLXGLContext()
 {
     if (m_context) {
-        qDebug("Destroying GLX context 0x%x", m_context);
+        qDebug("Destroying GLX context 0x%p", m_context);
         glXDestroyContext(m_xd->display, m_context);
     }
+}
+
+void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
+{
+    int x = 0;
+    int y = 0;
+    int w = 3;
+    int h = 3;
+
+    Window sharedWindow = XCreateSimpleWindow(xd->display, xd->rootWindow(),
+                                   x, y, w, h, 0 /*border_width*/,
+                                   xd->blackPixel(), xd->whitePixel());
+    GLXContext context;
+    QPlatformWindowFormat format;
+    QVector<int> spec = buildSpec(format);
+    int confcount = 0;
+    GLXFBConfig *configs;
+    configs = glXChooseFBConfig(xd->display,xd->screen,spec.constData(),&confcount);
+    if (confcount)
+    {
+        GLXFBConfig config = findConfig(configs,confcount,format,xd);
+        context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,0,TRUE);
+        XFree(configs);
+        QPlatformGLContext *sharedContext = new QGLXGLContext(xd,sharedWindow,context);
+        QPlatformGLContext::setDefaultSharedContext(sharedContext);
+    } else {
+        qFatal("Warning no shared context created");
+    }
+
 }
 
 void QGLXGLContext::makeCurrent()
@@ -205,6 +310,11 @@ void* QGLXGLContext::getProcAddress(const QString& procName)
     if (!glXGetProcAddressARB)
         return 0;
     return glXGetProcAddressARB(reinterpret_cast<const GLubyte *>(procName.toLatin1().data()));
+}
+
+QPlatformWindowFormat QGLXGLContext::platformWindowFormat() const
+{
+    return m_windowFormat;
 }
 
 QT_END_NAMESPACE

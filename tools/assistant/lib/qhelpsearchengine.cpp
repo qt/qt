@@ -263,17 +263,17 @@ private:
     engines setupFinished() signal to know when it can start to index documentation.
 
     After starting the indexing process the signal indexingStarted() is emitted and
-    on the end of the indexing process the indexingFinished() is emited. To stop
+    on the end of the indexing process the indexingFinished() is emitted. To stop
     the indexing one can call cancelIndexing().
 
     While the indexing process has finished, the search engine can now be used to search
     thru its index for a given term. To do this one may use the possibility of creating the
     QHelpSearchQuery list by self or reuse the QHelpSearchQueryWidget which has the inbuild
-    functionality to set up a proper search querys list that get's passed to the search engines
+    functionality to set up a proper search queries list that get's passed to the search engines
     search() function.
 
     After the list of querys has been passed to the search engine, the signal searchingStarted()
-    is emited and after the search has finished the searchingFinished() signal is emited. The
+    is emitted and after the search has finished the searchingFinished() signal is emitted. The
     search process can be stopped by calling cancelSearching().
 
     If the search succeeds, the searchingFinished() will be called with the search hits count,
@@ -318,7 +318,7 @@ private:
     uses the given \a helpEngine to access the documentation that needs to be indexed.
     The QHelpEngine's setupFinished() signal is automatically connected to the
     QHelpSearchEngine's indexing function, so that new documentation will be indexed
-    after the signal is emited.
+    after the signal is emitted.
 */
 QHelpSearchEngine::QHelpSearchEngine(QHelpEngineCore *helpEngine, QObject *parent)
     : QObject(parent)
@@ -434,7 +434,7 @@ void QHelpSearchEngine::cancelSearching()
 }
 
 /*!
-    Starts the search process using the given list of querys \a queryList
+    Starts the search process using the given list of queries \a queryList
     build by the search field name and the values to search for.
 */
 void QHelpSearchEngine::search(const QList<QHelpSearchQuery> &queryList)

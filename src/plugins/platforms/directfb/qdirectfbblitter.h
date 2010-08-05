@@ -26,4 +26,10 @@ protected:
     friend class QDirectFbConvenience;
 };
 
+class QDirectFbBlitterPixmapData : public QBlittablePixmapData
+{
+public:
+    QBlittable *createBlittable(const QSize &size) const { return new QDirectFbBlitter(size); }
+};
+
 #endif // QDIRECTFBBLITTER_H

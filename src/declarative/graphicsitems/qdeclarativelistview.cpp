@@ -60,7 +60,7 @@ void QDeclarativeViewSection::setProperty(const QString &property)
 {
     if (property != m_property) {
         m_property = property;
-        emit changed();
+        emit propertyChanged();
     }
 }
 
@@ -68,7 +68,7 @@ void QDeclarativeViewSection::setCriteria(QDeclarativeViewSection::SectionCriter
 {
     if (criteria != m_criteria) {
         m_criteria = criteria;
-        emit changed();
+        emit criteriaChanged();
     }
 }
 
@@ -575,9 +575,11 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
+            }
+            if (modelIndex < model->count()-1) {
                 if (FxListItem *item = visibleItem(modelIndex+1))
                     listItem->attached->m_nextSection = item->attached->section();
-                else if (modelIndex < model->count()-1)
+                else
                     listItem->attached->m_nextSection = sectionAt(modelIndex+1);
             }
         }
@@ -1385,14 +1387,16 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     the delegate is able to access the model's \c name and \c number data directly.
 
     An improved list view is shown below. The delegate is visually improved and is moved 
-    into a separate \c contactDelegate component. Also, the currently selected item is highlighted
-    with a blue \l Rectangle using the \l highlight property, and \c focus is set to \c true
-    to enable keyboard navigation for the list view.
+    into a separate \c contactDelegate component.
     
     \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
     \image listview-highlight.png
 
-    In a GridView, delegates are instantiated as needed and may be destroyed at any time.
+    The currently selected item is highlighted with a blue \l Rectangle using the \l highlight property,
+    and \c focus is set to \c true to enable keyboard navigation for the list view.
+    The list view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
+
+    Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
     \note Views do not enable \e clip automatically.  If the view
@@ -1616,6 +1620,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             for (int i = 0; i < d->visibleItems.count(); ++i)
                 d->releaseItem(d->visibleItems.at(i));
             d->visibleItems.clear();
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             refill();
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
