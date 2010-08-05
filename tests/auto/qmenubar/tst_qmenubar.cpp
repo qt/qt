@@ -1702,8 +1702,8 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QAction * a = menubar.addAction( "&a" );
 
     menubar.show();
-    QApplication::setActiveWindow(&menubar);
     QTest::qWaitForWindowShown(&menubar);
+    QApplication::setActiveWindow(&menubar);
     menubar.setActiveAction(m);
     QCOMPARE(menubar.activeAction(), m);
     QTest::keyClick(0, Qt::Key_Right);
