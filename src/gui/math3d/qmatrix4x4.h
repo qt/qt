@@ -986,14 +986,15 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QMatrix4x4 &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QMatrix4x4 &);
 #endif
 
+#ifdef QT_DEPRECATED
 template <int N, int M>
-QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
+QT_DEPRECATED QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
 {
     return QMatrix4x4(matrix.constData(), N, M);
 }
 
 template <int N, int M>
-QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
+QT_DEPRECATED QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
 {
     QGenericMatrix<N, M, qreal> result;
     const qreal *m = matrix.constData();
@@ -1010,6 +1011,7 @@ QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix
     }
     return result;
 }
+#endif
 
 #endif
 
