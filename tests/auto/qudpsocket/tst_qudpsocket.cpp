@@ -860,19 +860,28 @@ void tst_QUdpSocket::zeroLengthDatagram()
 
 void tst_QUdpSocket::multicastTtlOption_data()
 {
+    QTest::addColumn<QHostAddress>("bindAddress");
     QTest::addColumn<int>("ttl");
     QTest::addColumn<int>("expected");
-    QTest::newRow("0") << 0 << 0;
-    QTest::newRow("1") << 1 << 1;
-    QTest::newRow("2") << 2 << 2;
-    QTest::newRow("128") << 128 << 128;
-    QTest::newRow("255") << 255 << 255;
-    QTest::newRow("1024") << 1024 << 1;
+
+    QList<QHostAddress> addresses;
+    addresses += QHostAddress(QHostAddress::Any);
+    addresses += QHostAddress(QHostAddress::AnyIPv6);
+
+    foreach (const QHostAddress &address, addresses) {
+        QTest::newRow("0") << address << 0 << 0;
+        QTest::newRow("1") << address << 1 << 1;
+        QTest::newRow("2") << address << 2 << 2;
+        QTest::newRow("128") << address << 128 << 128;
+        QTest::newRow("255") << address << 255 << 255;
+        QTest::newRow("1024") << address << 1024 << 1;
+    }
 }
 
 void tst_QUdpSocket::multicastTtlOption()
 {
     QFETCH_GLOBAL(bool, setProxy);
+    QFETCH(QHostAddress, bindAddress);
     QFETCH(int, ttl);
     QFETCH(int, expected);
     if (setProxy) {
@@ -881,28 +890,37 @@ void tst_QUdpSocket::multicastTtlOption()
     }
 
     QUdpSocket udpSocket;
-    QVERIFY2(udpSocket.bind(),
-             qPrintable(udpSocket.errorString()));
+    // bind, but ignore the result, we are only interested in initializing the socket
+    (void) udpSocket.bind(bindAddress, 0);
     udpSocket.setSocketOption(QUdpSocket::MulticastTtlOption, ttl);
     QCOMPARE(udpSocket.socketOption(QUdpSocket::MulticastTtlOption).toInt(), expected);
 }
 
 void tst_QUdpSocket::multicastLoopbackOption_data()
 {
+    QTest::addColumn<QHostAddress>("bindAddress");
     QTest::addColumn<int>("loopback");
     QTest::addColumn<int>("expected");
-    QTest::newRow("0") << 0 << 0;
-    QTest::newRow("1") << 1 << 1;
-    QTest::newRow("2") << 2 << 1;
-    QTest::newRow("0 again") << 0 << 0;
-    QTest::newRow("2 again") << 2 << 1;
-    QTest::newRow("0 last time") << 0 << 0;
-    QTest::newRow("1 again") << 1 << 1;
+
+    QList<QHostAddress> addresses;
+    addresses += QHostAddress(QHostAddress::Any);
+    addresses += QHostAddress(QHostAddress::AnyIPv6);
+
+    foreach (const QHostAddress &address, addresses) {
+        QTest::newRow("0") << address << 0 << 0;
+        QTest::newRow("1") << address << 1 << 1;
+        QTest::newRow("2") << address << 2 << 1;
+        QTest::newRow("0 again") << address << 0 << 0;
+        QTest::newRow("2 again") << address << 2 << 1;
+        QTest::newRow("0 last time") << address << 0 << 0;
+        QTest::newRow("1 again") << address << 1 << 1;
+    }
 }
 
 void tst_QUdpSocket::multicastLoopbackOption()
 {
     QFETCH_GLOBAL(bool, setProxy);
+    QFETCH(QHostAddress, bindAddress);
     QFETCH(int, loopback);
     QFETCH(int, expected);
     if (setProxy) {
@@ -911,8 +929,8 @@ void tst_QUdpSocket::multicastLoopbackOption()
     }
 
     QUdpSocket udpSocket;
-    QVERIFY2(udpSocket.bind(),
-             qPrintable(udpSocket.errorString()));
+    // bind, but ignore the result, we are only interested in initializing the socket
+    (void) udpSocket.bind(bindAddress, 0);
     udpSocket.setSocketOption(QUdpSocket::MulticastLoopbackOption, loopback);
     QCOMPARE(udpSocket.socketOption(QUdpSocket::MulticastLoopbackOption).toInt(), expected);
 }
@@ -920,8 +938,10 @@ void tst_QUdpSocket::multicastLoopbackOption()
 void tst_QUdpSocket::multicastJoinBeforeBind_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("valid group address") << QHostAddress("239.255.118.62");
-    QTest::newRow("invalid group address") << QHostAddress(QHostAddress::Broadcast);
+    QTest::newRow("valid ipv4 group address") << QHostAddress("239.255.118.62");
+    QTest::newRow("invalid ipv4 group address") << QHostAddress(QHostAddress::Broadcast);
+    QTest::newRow("valid ipv6 group address") << QHostAddress("FF01::114");
+    QTest::newRow("invalid ipv6 group address") << QHostAddress(QHostAddress::AnyIPv6);
 }
 
 void tst_QUdpSocket::multicastJoinBeforeBind()
@@ -937,7 +957,8 @@ void tst_QUdpSocket::multicastJoinBeforeBind()
 void tst_QUdpSocket::multicastLeaveAfterClose_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("valid group address") << QHostAddress("239.255.118.62");
+    QTest::newRow("valid ipv4 group address") << QHostAddress("239.255.118.62");
+    QTest::newRow("valid ipv6 group address") << QHostAddress("FF01::114");
 }
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
@@ -949,7 +970,7 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
     }
 
     QUdpSocket udpSocket;
-    QVERIFY2(udpSocket.bind(),
+    QVERIFY2(udpSocket.bind(groupAddress, 0),
              qPrintable(udpSocket.errorString()));
     QVERIFY2(udpSocket.joinMulticastGroup(groupAddress),
              qPrintable(udpSocket.errorString()));
@@ -1002,13 +1023,17 @@ void tst_QUdpSocket::multicast_data()
 {
     QHostAddress anyAddress = QHostAddress(QHostAddress::Any);
     QHostAddress groupAddress = QHostAddress("239.255.118.62");
+    QHostAddress any6Address = QHostAddress(QHostAddress::AnyIPv6);
+    QHostAddress group6Address = QHostAddress("FF01::114");
 
     QTest::addColumn<QHostAddress>("bindAddress");
     QTest::addColumn<bool>("bindResult");
     QTest::addColumn<QHostAddress>("groupAddress");
     QTest::addColumn<bool>("joinResult");
-    QTest::newRow("valid bind, group address") << anyAddress << true << groupAddress << true;
-    QTest::newRow("same bind, group address") << groupAddress << true << groupAddress << true;
+    QTest::newRow("valid bind, group ipv4 address") << anyAddress << true << groupAddress << true;
+    QTest::newRow("same bind, group ipv4 address") << groupAddress << true << groupAddress << true;
+    QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
+    QTest::newRow("same bind, group ipv6 address") << group6Address << true << group6Address << true;
 }
 
 void tst_QUdpSocket::multicast()
@@ -1020,8 +1045,9 @@ void tst_QUdpSocket::multicast()
     QFETCH(bool, joinResult);
     if (setProxy) {
         // UDP multicast does not work with proxies
-        if ((bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000) {
-            // proxy cannot bind to a multicast address
+        if ((bindAddress.protocol() == QAbstractSocket::IPv4Protocol && (bindAddress.toIPv4Address() & 0xffff0000) == 0xefff0000)
+            || bindAddress.protocol() == QAbstractSocket::IPv6Protocol) {
+            // proxy cannot bind to IPv6 or multicast addresses
             bindResult = false;
         }
         joinResult = false;
