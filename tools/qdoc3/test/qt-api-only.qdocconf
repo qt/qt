@@ -5,9 +5,6 @@ include(qt-build-docs.qdocconf)
 # qmake.qdocconf).
 
 url                     = ./
-online                  = false
-offline                 = false
-creator                 = true
 
 # Ensures that the documentation for the tools is not included in the generated
 # .qhp file.
