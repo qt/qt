@@ -101,7 +101,7 @@
                   <li><a href="qmake-manual.html">Qt qmake</a></li>
                   <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a> (online)</li>
                   <li><a href="http://qt.nokia.com/developer/eclipse-integration">Eclipse Integration</a> (online)</li>
-		  <li><a href="http://qt.nokia.com/products/appdev">Add-On Products and Services</a> (online)</li>
+                  <li><a href="http://qt.nokia.com/products/appdev">Add-On Products and Services</a> (online)</li>
                   <li><a href="qvfb.html">Virtual Framebuffer</a></li>
                 </ul>
               </div>
