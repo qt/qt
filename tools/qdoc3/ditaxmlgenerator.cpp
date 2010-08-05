@@ -440,7 +440,6 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                           DITAXMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
-    offlineDocs = !config.getBool(CONFIG_ONLINE);
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
