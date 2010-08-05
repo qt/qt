@@ -9,7 +9,9 @@ wince*|symbian: {
    addFiles.path = .
    DEPLOYMENT += addFiles
 
-   DEPLOYMENT_PLUGIN += qcncodecs qjpcodecs qkrcodecs qtwcodecs
+   wince*|qt_not_deployed {
+       DEPLOYMENT_PLUGIN += qcncodecs qjpcodecs qkrcodecs qtwcodecs
+   }
    !symbian:DEFINES += SRCDIR=\\\"\\\"
 }
 else {
