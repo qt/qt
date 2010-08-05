@@ -183,6 +183,23 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QNetworkConfiguration::BearerType
+
+    Specifies the type of bearer used by a configuration.
+
+    \value BearerUnknown    The type of bearer is unknown or unspecified. The bearerTypeName()
+                            function may return additional information.
+    \value BearerEthernet   The configuration is for an Ethernet interfaces.
+    \value BearerWLAN       The configuration is for a Wireless LAN interface.
+    \value Bearer2G         The configuration is for a CSD, GPRS, HSCSD, EDGE or cdmaOne interface.
+    \value BearerCDMA2000   The configuration is for CDMA interface.
+    \value BearerWCDMA      The configuration is for W-CDMA/UMTS interface.
+    \value BearerHSPA       The configuration is for High Speed Packet Access (HSPA) interface.
+    \value BearerBluetooth  The configuration is for a Bluetooth interface.
+    \value BearerWiMAX      The configuration is for a WiMAX interface.
+*/
+
+/*!
     Constructs an invalid configuration object.
 
     \sa isValid()
@@ -383,53 +400,113 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
 }
 
 /*!
-    Returns the type of bearer. The string is not translated and
-    therefore can not be shown to the user. The subsequent table presents the currently known
-    bearer types:
+    \fn QString QNetworkConfiguration::bearerName() const
+    \deprecated
+
+    This function is deprecated.  It is equivalent to calling bearerTypeName(), however
+    bearerType() should be used in preference.
+*/
+
+/*!
+    Returns the type of bearer used by this network configuration.
+
+    If the bearer type is \l {QNetworkConfiguration::BearerUnknown}{unknown} the bearerTypeName()
+    function can be used to retrieve a textural type name for the bearer.
+
+    An invalid network configuration always returns the BearerUnknown value.
+*/
+QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
+{
+    if (!isValid())
+        return BearerUnknown;
+
+    QMutexLocker locker(&d->mutex);
+
+    return d->bearerType;
+}
+
+/*!
+    Returns the type of bearer used by this network configuration as a string.
+
+    The string is not translated and therefore can not be shown to the user. The subsequent table
+    shows the fixed mappings between BearerType and the bearer type name for known types.  If the
+    BearerType is unknown this function may return additional information if it is available;
+    otherwise an empty string will be returned.
 
     \table
-        \header 
+        \header
+            \o BearerType
             \o Value
-            \o Description
         \row
-            \o Unknown
-            \o The session is based on an unknown or unspecified bearer type.
+            \o BearerUnknown
+            \o
+            \o The session is based on an unknown or unspecified bearer type. The value of the
+               string returned describes the bearer type.
         \row
+            \o BearerEthernet
             \o Ethernet
-            \o The session is based on Ethernet.
         \row
+            \o BearerWLAN
             \o WLAN
-            \o The session is based on Wireless LAN.
         \row
+            \o Bearer2G
             \o 2G
-            \o The session uses CSD, GPRS, HSCSD, EDGE or cdmaOne.
-        \row 
+        \row
+            \o BearerCDMA2000
             \o CDMA2000
-            \o The session uses CDMA.
         \row
+            \o BearerWCDMA
             \o WCDMA
-            \o The session uses W-CDMA/UMTS.
         \row
+            \o BearerHSPA
             \o HSPA
-            \o The session uses High Speed Packet Access.
         \row
+            \o BearerBluetooth
             \o Bluetooth
-            \o The session uses Bluetooth.
         \row
+            \o BearerWiMAX
             \o WiMAX
-            \o The session uses WiMAX.
     \endtable
 
-    This function returns an empty string if this is an invalid configuration,
-    a network configuration of type \l QNetworkConfiguration::ServiceNetwork or
+    This function returns an empty string if this is an invalid configuration, a network
+    configuration of type \l QNetworkConfiguration::ServiceNetwork or
     \l QNetworkConfiguration::UserChoice.
+
+    \sa bearerType()
 */
-QString QNetworkConfiguration::bearerName() const
+QString QNetworkConfiguration::bearerTypeName() const
 {
     if (!isValid())
         return QString();
 
-    return d->bearerName();
+    QMutexLocker locker(&d->mutex);
+
+    if (d->type == QNetworkConfiguration::ServiceNetwork ||
+        d->type == QNetworkConfiguration::UserChoice)
+        return QString();
+
+    switch (d->bearerType) {
+    case BearerUnknown:
+        return d->bearerTypeName();
+    case BearerEthernet:
+        return QLatin1String("Ethernet");
+    case BearerWLAN:
+        return QLatin1String("WLAN");
+    case Bearer2G:
+        return QLatin1String("2G");
+    case BearerCDMA2000:
+        return QLatin1String("CDMA2000");
+    case BearerWCDMA:
+        return QLatin1String("WCDMA");
+    case BearerHSPA:
+        return QLatin1String("HSPA");
+    case BearerBluetooth:
+        return QLatin1String("Bluetooth");
+    case BearerWiMAX:
+        return QLatin1String("WiMAX");
+    }
+
+    return QLatin1String("Unknown");
 }
 
 QT_END_NAMESPACE

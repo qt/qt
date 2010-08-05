@@ -794,6 +794,7 @@ OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
+CFG_RUNTIME_SYSTEM=
 CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
@@ -823,6 +824,7 @@ QT_LFLAGS_MYSQL_R=
 QT_CFLAGS_SQLITE=
 QT_LFLAGS_SQLITE=
 QT_LFLAGS_ODBC="-lodbc"
+QT_LFLAGS_TDS=
 
 # flags for libdbus-1
 QT_CFLAGS_DBUS=
@@ -1033,6 +1035,11 @@ while [ "$#" -gt 0 ]; do
         ;;
     -graphicssystem)
 	VAR="graphicssystem"
+	shift
+	VAL=$1
+	;;
+    -runtimegraphicssystem)
+	VAR="runtimegraphicssystem"
 	shift
 	VAL=$1
 	;;
@@ -1280,9 +1287,16 @@ while [ "$#" -gt 0 ]; do
                 CFG_GRAPHICS_SYSTEM="openvg"
             elif [ "$VAL" = "raster" ]; then
                 CFG_GRAPHICS_SYSTEM="raster"
+            elif [ "$VAL" = "runtime" ]; then
+                CFG_GRAPHICS_SYSTEM="runtime"
             else
                 UNKNOWN_OPT=yes
             fi
+        fi
+	;;
+    runtimegraphicssystem)
+        if  [ "$VAL" != "runtime" ]; then
+            CFG_RUNTIME_SYSTEM="$VAL"
         fi
 	;;
 
@@ -2087,7 +2101,7 @@ while [ "$#" -gt 0 ]; do
                 [ "$VAR" = "decoration" ] && QMakeVar del "${VAR}s" "$VAL"
                 [ "$VAR" = "decoration" ] && CFG_DECORATION_ON=`echo "${CFG_DECORATION_ON} " | sed "s,${VAL} ,,g"` && CFG_DECORATION_PLUGIN="$CFG_DECORATION_PLUGIN ${VAL}"
                 [ "$VAR" = "kbd" ] && QMakeVar del "${VAR}s" "$VAL"
-                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
+                [ "$VAR" = "kbd" ] && CFG_KBD_ON=`echo "${CFG_KBD_ON} " | sed "s,${VAL} ,,g"` && CFG_KBD_PLUGIN="$CFG_KBD_PLUGIN ${VAL}"
                 [ "$VAR" = "mouse" ] && QMakeVar del "${VAR}s" "$VAL"
                 [ "$VAR" = "mouse" ] && CFG_MOUSE_ON=`echo "${CFG_MOUSE_ON} " | sed "s,${VAL} ,,g"` && CFG_MOUSE_PLUGIN="$CFG_MOUSE_PLUGIN ${VAL}"
                 [ "$VAR" = "gfx" ] && QMakeVar del "${VAR}s" "$VAL"
@@ -2396,6 +2410,14 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     rm -f "$outpath"/mkspecs/*
     ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
     rm -f "$outpath/mkspecs/default"
+
+    # Special case for mkspecs/features directory.
+    # To be able to place .prf files into a shadow build directory,
+    # we're creating links for files only. The directory structure is reproduced.
+    # A simple "cp -rs" doesn't work on Mac. :(
+    rm -rf "$outpath/mkspecs/features"
+    find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+    find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
 
     # symlink the doc directory
     rm -rf "$outpath/doc"
@@ -3669,6 +3691,8 @@ cat << EOF
     -graphicssystem <sys> Sets an alternate graphics system. Available options are:
                            raster - Software rasterizer
                            opengl - Rendering via OpenGL, Experimental!
+                           openvg - Rendering via OpenVG, Experimental!
+
 EOF
 fi
 cat << EOF
@@ -4841,23 +4865,24 @@ case "$XPLATFORM" in *symbian*)
         exit 1
     fi
 
-    # the main commands needed to compile;
-    (cd config.tests/symbian
-        mkdir -p rcomp
-        cd rcomp
-        rm -f rcomp_test.rsg
-        touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
-        rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
-        if test ! -f rcomp_test.rsg; then
-            echo "Finding a working rcomp in your PATH failed."
-            echo "Fatal error. Make sure you have the epoc tools working and in your PATH";
-            exit 1;
-        fi
-    )
-
-    # compile a simple main that uses printf
     if ! echo $XPLATFORM | grep symbian-sbsv2 > /dev/null; then
         # Raptor does not support configure tests.
+
+        # the main commands needed to compile;
+        (cd config.tests/symbian
+            mkdir -p rcomp
+            cd rcomp
+            rm -f rcomp_test.rsg
+            touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
+            rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
+            if test ! -f rcomp_test.rsg; then
+                echo "Finding a working rcomp in your PATH failed."
+                echo "Fatal error. Make sure you have the epoc tools working and in your PATH";
+                exit 1;
+            fi
+        )
+
+        # compile a simple main that uses printf
         if ! "$symbiantests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/symbian/simple "simple" $L_FLAGS $I_FLAGS $l_FLAGS
         then
             echo "Testing your compiler failed. Could not compile a simple application."
@@ -5111,7 +5136,9 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         tds)
             if [ "$CFG_SQL_tds" != "no" ]; then
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+                [ -z "$SYBASE" ] || QT_LFLAGS_TDS="-L$SYBASE/lib"
+                [ -z "$SYBASE_LIBS" ] || QT_LFLAGS_TDS="$QT_LFLAGS_TDS $SYBASE_LIBS"
+                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tds "TDS" $QT_LFLAGS_TDS $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
                     if [ "$CFG_SQL_tds" = "auto" ]; then
                         CFG_SQL_tds=plugin
                     fi
@@ -5374,7 +5401,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
+    # Auto-detect GStreamer support (needed for Phonon)
     if [ "$CFG_PHONON" != "no" ]; then
         if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
             if [ -n "$PKG_CONFIG" ]; then
@@ -6352,6 +6379,11 @@ fi
 if [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && [ "$CFG_OPENVG" = "no" ]; then
     echo "OpenVG Graphics System is disabled due to missing OpenVG support..."
     CFG_GRAPHICS_SYSTEM=default
+fi
+
+if [ -n "$CFG_RUNTIME_SYSTEM" -a "$CFG_GRAPHICS_SYSTEM" != "runtime" ] || [ "$CFG_RUNTIME_SYSTEM" = "runtime" ]; then
+    echo "Argument to -runtimegraphicssystem is invalid so ignoring..."
+    CFG_RUNTIME_SYSTEM=
 fi
 
 if [ "$CFG_PTMALLOC" != "no" ]; then
@@ -7657,6 +7689,7 @@ if [ "$PLATFORM_QWS" != "yes" ]; then
     [ "$CFG_GRAPHICS_SYSTEM" = "raster" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RASTER"
     [ "$CFG_GRAPHICS_SYSTEM" = "opengl" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENGL"
     [ "$CFG_GRAPHICS_SYSTEM" = "openvg" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_OPENVG"
+    [ "$CFG_GRAPHICS_SYSTEM" = "runtime" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_GRAPHICSSYSTEM_RUNTIME"
 fi
 
 # X11/Unix/Mac only configs
@@ -7766,6 +7799,13 @@ fi
 if [ -n "$QT_LIBINFIX" ]; then
 cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
 #define QT_LIBINFIX "$QT_LIBINFIX"
+
+EOF
+fi
+
+if [ -n "$CFG_RUNTIME_SYSTEM" ]; then
+cat >>"$outpath/src/corelib/global/qconfig.h.new" << EOF
+#define QT_DEFAULT_RUNTIME_SYSTEM "$CFG_RUNTIME_SYSTEM"
 
 EOF
 fi
@@ -7919,6 +7959,9 @@ if [ -n "$QT_LFLAGS_SQLITE" ]; then
 fi
 if [ -n "$QT_LFLAGS_ODBC" ]; then
     echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
+fi
+if [ -n "$QT_LFLAGS_TDS" ]; then
+    echo "QT_LFLAGS_TDS   = $QT_LFLAGS_TDS" >> "$CACHEFILE.tmp"
 fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then

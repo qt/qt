@@ -134,6 +134,8 @@ private:
     QStringList qmakeLibs;
     QString opensslLibs;
     QString psqlLibs;
+    QString sybase;
+    QString sybaseLibs;
 
     QMap<QString,QString> licenseInfo;
     QString outputLine;

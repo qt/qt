@@ -103,10 +103,27 @@ public:
 
     Q_DECLARE_FLAGS(StateFlags, StateFlag)
 
+    enum BearerType {
+        BearerUnknown,
+        BearerEthernet,
+        BearerWLAN,
+        Bearer2G,
+        BearerCDMA2000,
+        BearerWCDMA,
+        BearerHSPA,
+        BearerBluetooth,
+        BearerWiMAX
+    };
+
     StateFlags state() const;
     Type type() const;
     Purpose purpose() const;
-    QString bearerName() const;
+
+    // Required to maintain source compatibility with Qt Mobility.
+    QT_DEPRECATED inline QString bearerName() const { return bearerTypeName(); }
+    BearerType bearerType() const;
+    QString bearerTypeName() const;
+
     QString identifier() const;
     bool isRoamingAvailable() const;
     QList<QNetworkConfiguration> children() const;

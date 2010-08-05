@@ -58,12 +58,12 @@
 #include <AknsSkinInstance.h>
 #include <AknsBasicBackgroundControlContext.h>
 #include <avkon.mbg>
-#include <aknfontaccess.h>
-#include <aknlayoutfont.h>
+#include <AknFontAccess.h>
+#include <AknLayoutFont.h>
 #include <AknUtils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
-#include <aknbitmapanimation.h>
+#include <AknBitmapAnimation.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 

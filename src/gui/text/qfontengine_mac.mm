@@ -349,11 +349,32 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                                             int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
     *nglyphs = len;
+    QCFType<CFStringRef> cfstring;
+
     QVarLengthArray<CGGlyph> cgGlyphs(len);
     CTFontGetGlyphsForCharacters(ctfont, (const UniChar*)str, cgGlyphs.data(), len);
 
-    for (int i = 0; i < len; ++i)
-        glyphs->glyphs[i] = cgGlyphs[i];
+    for (int i = 0; i < len; ++i) {
+        if (cgGlyphs[i]) {
+            glyphs->glyphs[i] = cgGlyphs[i];
+	} else {
+            if (!cfstring)
+                cfstring = CFStringCreateWithCharactersNoCopy(0, reinterpret_cast<const UniChar *>(str), len, kCFAllocatorNull);
+            QCFType<CTFontRef> substituteFont = CTFontCreateForString(ctfont, cfstring, CFRangeMake(i, 1));
+            CGGlyph substituteGlyph = 0;
+            CTFontGetGlyphsForCharacters(substituteFont, (const UniChar*)str + i, &substituteGlyph, 1);
+            if (substituteGlyph) {
+                const uint fontIndex = (fontIndexForFont(substituteFont) << 24);
+                glyphs->glyphs[i] = substituteGlyph | fontIndex;
+                if (!(flags & QTextEngine::GlyphIndicesOnly)) {
+                    CGSize advance;
+                    CTFontGetAdvancesForGlyphs(substituteFont, kCTFontHorizontalOrientation, &substituteGlyph, &advance, 1);
+                    glyphs->advances_x[i] = QFixed::fromReal(advance.width);
+                    glyphs->advances_y[i] = QFixed::fromReal(advance.height);
+                }
+            }
+        }
+    }
 
     if (flags & QTextEngine::GlyphIndicesOnly)
         return true;
@@ -362,9 +383,14 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
     CTFontGetAdvancesForGlyphs(ctfont, kCTFontHorizontalOrientation, cgGlyphs.data(), advances.data(), len);
 
     for (int i = 0; i < len; ++i) {
+        if (glyphs->glyphs[i] & 0xff000000)
+            continue;
         glyphs->advances_x[i] = QFixed::fromReal(advances[i].width);
         glyphs->advances_y[i] = QFixed::fromReal(advances[i].height);
-        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+    }
+
+    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+        for (int i = 0; i < len; ++i) {
             glyphs->advances_x[i] = glyphs->advances_x[i].round();
             glyphs->advances_y[i] = glyphs->advances_y[i].round();
         }

@@ -45,13 +45,12 @@
 
 #ifdef QT_HAVE_SSSE3
 
-#include <stdio.h>
 QT_BEGIN_NAMESPACE
 
 // Convert a scanline of RGB888 (src) to RGB32 (dst)
 // src must be at least len * 3 bytes
 // dst must be at least len * 4 bytes
-inline void convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len)
+Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len)
 {
     quint32 *const end = dst + len;
 
@@ -139,7 +138,7 @@ void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::
     quint32 *dest_data = (quint32 *) dest->data;
 
     for (int i = 0; i < src->height; ++i) {
-        convert_rgb888_to_rgb32_ssse3(dest_data, src_data, src->width);
+        qt_convert_rgb888_to_rgb32_ssse3(dest_data, src_data, src->width);
         src_data += src->bytes_per_line;
         dest_data = (quint32 *)((uchar*)dest_data + dest->bytes_per_line);
     }

@@ -1143,4 +1143,6 @@ EXPORTS
 	?setNetworkAccessible@QNetworkAccessManager@@QAEXW4NetworkAccessibility@1@@Z @ 1142 NONAME ; void QNetworkAccessManager::setNetworkAccessible(enum QNetworkAccessManager::NetworkAccessibility)
 	??_EQBearerEngineFactoryInterface@@UAE@I@Z @ 1143 NONAME ; QBearerEngineFactoryInterface::~QBearerEngineFactoryInterface(unsigned int)
 	?enablePolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1144 NONAME ; void QNetworkConfigurationManagerPrivate::enablePolling(void)
+	?bearerTypeName@QNetworkConfiguration@@QBE?AVQString@@XZ @ 1145 NONAME ; class QString QNetworkConfiguration::bearerTypeName(void) const
+	?bearerType@QNetworkConfiguration@@QBE?AW4BearerType@1@XZ @ 1146 NONAME ; enum QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType(void) const
 

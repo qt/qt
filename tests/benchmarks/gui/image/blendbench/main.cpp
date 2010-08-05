@@ -103,6 +103,9 @@ class BlendBench : public QObject
 private slots:		
     void blendBench_data();
     void blendBench();
+
+    void blendBenchAlpha_data();
+    void blendBenchAlpha();
 };
 
 void BlendBench::blendBench_data()
@@ -141,6 +144,35 @@ void BlendBench::blendBench()
     } else if (brushType == SolidBrush) {
         p.setBrush(QColor(127, 127, 127, 127));
     }
+
+    QBENCHMARK {
+        p.drawRect(0, 0, 512, 512);
+    }
+}
+
+void BlendBench::blendBenchAlpha_data()
+{
+    blendBench_data();
+}
+
+void BlendBench::blendBenchAlpha()
+{
+    QFETCH(int, brushType);
+    QFETCH(int, compositionMode);
+
+    QImage img(512, 512, QImage::Format_ARGB32_Premultiplied);
+    QImage src(512, 512, QImage::Format_ARGB32_Premultiplied);
+    paint(&src);
+    QPainter p(&img);
+    p.setPen(Qt::NoPen);
+
+    p.setCompositionMode(QPainter::CompositionMode(compositionMode));
+    if (brushType == ImageBrush) {
+        p.setBrush(QBrush(src));
+    } else if (brushType == SolidBrush) {
+        p.setBrush(QColor(127, 127, 127, 127));
+    }
+    p.setOpacity(0.7f);
 
     QBENCHMARK {
         p.drawRect(0, 0, 512, 512);

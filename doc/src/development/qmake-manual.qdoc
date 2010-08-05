@@ -3015,6 +3015,13 @@ For example:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 150
 
+    \target SYMBIAN_VERSION
+    \section1 SYMBIAN_VERSION
+
+    \e {This is only used on the Symbian platform.}
+
+    Contains the version number of the underlying Symbian SDK; e.g. "9.2" or "Symbian3".
+
     \target TARGET
     \section1 TARGET
 
