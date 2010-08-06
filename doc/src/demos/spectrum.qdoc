@@ -28,12 +28,8 @@
 /*!
     \example demos/spectrum
     \title Spectrum Analyzer
-
-This application is a demo which uses the QtMultimedia APIs to capture and 
-play back PCM audio.  While either recording or playback is ongoing, the 
-application performs real-time level and frequency spectrum analysis, 
+This application is a demo which uses the QtMultimedia APIs to capture and
+play back PCM audio. While either recording or playback is ongoing, the
+application performs real-time level and frequency spectrum analysis,
 displaying the results in its main window.
-
-
 */
-
