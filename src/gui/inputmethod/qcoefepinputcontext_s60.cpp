@@ -406,7 +406,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         flags |= EAknEditorNumericInputMode;
     }
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0
-        && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
+        && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly))) {
         //workaround - the * key does not launch the symbols menu, making it impossible to use these modes unless text mode is enabled.
         flags |= EAknEditorTextInputMode;
     }
