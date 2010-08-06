@@ -252,7 +252,8 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     : d(new QGLTemporaryContextPrivate)
 {
     d->context = const_cast<QGLContext *>(QGLContext::currentContext());
-    d->context->doneCurrent();
+    if (d->context)
+        d->context->doneCurrent();
     d->widget = new QGLWidget;
     d->widget->makeCurrent();
 }
@@ -260,7 +261,8 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
 QGLTemporaryContext::~QGLTemporaryContext()
 {
     d->widget->doneCurrent();
-    d->context->makeCurrent();
+    if (d->context)
+        d->context->makeCurrent();
     delete d->widget;
 }
 
