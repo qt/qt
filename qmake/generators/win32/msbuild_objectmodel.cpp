@@ -1266,7 +1266,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagT(_OpenMPSupport, tool.OpenMP)
             << attrTagS(_Optimization, toString(tool.Optimization))
             << attrTagS(_PrecompiledHeader, toString(tool.UsePrecompiledHeader))
-            << attrTagS(_PrecompiledHeaderFile, tool.PrecompiledHeaderFile)
+            << attrTagS(_PrecompiledHeaderFile, tool.PrecompiledHeaderThrough)
             << attrTagS(_PrecompiledHeaderOutputFile, tool.PrecompiledHeaderFile)
             << attrTagT(_PreprocessKeepComments, tool.KeepComments)
             << attrTagX(_PreprocessorDefinitions, tool.PreprocessorDefinitions, ";")
@@ -1791,6 +1791,7 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
     filter.CompilerTool = VCCLCompilerTool();
 
     // Unset some default options
+    filter.CustomBuildTool.config = filter.Config;
     filter.CompilerTool.BufferSecurityCheck = unset;
     filter.CompilerTool.DebugInformationFormat = debugUnknown;
     filter.CompilerTool.ExceptionHandling = ehDefault;
@@ -1925,16 +1926,12 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
                     << valueTagX(filter.CompilerTool.ForcedIncludeFiles);
             }
 
-            if ( !filter.CompilerTool.PrecompiledHeaderFile.isEmpty() ) {
+            if ( !filter.CompilerTool.PrecompiledHeaderThrough.isEmpty() ) {
 
                 xml << tag("PrecompiledHeaderFile")
                     << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
-                    << valueTag(filter.CompilerTool.PrecompiledHeaderFile);
-            }
-
-            if ( filter.CompilerTool.UsePrecompiledHeader ) {
-
-                xml << tag("PrecompiledHeader")
+                    << valueTag(filter.CompilerTool.PrecompiledHeaderThrough)
+                    << tag("PrecompiledHeader")
                     << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(filter.Config->Name))
                     << valueTag(toString(filter.CompilerTool.UsePrecompiledHeader));
             }

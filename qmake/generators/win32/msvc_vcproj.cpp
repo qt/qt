@@ -207,9 +207,9 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
-      init_flag(false)
+      init_flag(false),
+      projectWriter(0)
 {
-    projectWriter = createProjectWriter();
 }
 
 VcprojGenerator::~VcprojGenerator()
@@ -660,6 +660,7 @@ void VcprojGenerator::init()
     if (init_flag)
         return;
     init_flag = true;
+    projectWriter = createProjectWriter();
 
     if(project->first("TEMPLATE") == "vcsubdirs") //too much work for subdirs
         return;
@@ -775,7 +776,7 @@ bool VcprojGenerator::mergeBuildProject(MakefileGenerator *other)
         warn_msg(WarnLogic, "VcprojGenerator: Cannot merge null project.");
         return false;
     }
-    if (other->projectFile()->first("MAKEFILE_GENERATOR") != "MSVC.NET") {
+    if (other->projectFile()->first("MAKEFILE_GENERATOR") != project->first("MAKEFILE_GENERATOR")) {
         warn_msg(WarnLogic, "VcprojGenerator: Cannot merge other types of projects! (ignored)");
         return false;
     }
@@ -804,6 +805,9 @@ void VcprojGenerator::initProject()
     // Own elements -----------------------------
     vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
     switch(which_dotnet_version()) {
+    case NET2010:
+        vcProject.Version = "10.00";
+        break;
     case NET2008:
         vcProject.Version = "9,00";
         break;
@@ -888,6 +892,7 @@ void VcprojGenerator::initConfiguration()
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT"));
     } else {
         conf.PrimaryOutput = project->first("PrimaryOutput");
+        conf.OutputDirectory = ".";
     }
 
     conf.Name = project->values("BUILD_NAME").join(" ");
@@ -906,7 +911,6 @@ void VcprojGenerator::initConfiguration()
     conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean");
     conf.ImportLibrary = conf.linker.ImportLibrary;
     conf.IntermediateDirectory = project->first("OBJECTS_DIR");
-    conf.OutputDirectory = ".";
     conf.WholeProgramOptimization = conf.compiler.WholeProgramOptimization;
     temp = project->first("UseOfATL");
     if(!temp.isEmpty())
