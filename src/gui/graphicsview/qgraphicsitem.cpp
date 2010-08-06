@@ -7734,6 +7734,21 @@ void QGraphicsItemPrivate::resetHeight()
 }
 
 /*!
+  \property QGraphicsObject::children
+  \internal
+*/
+
+/*!
+  \property QGraphicsObject::width
+  \internal
+*/
+
+/*!
+  \property QGraphicsObject::height
+  \internal
+*/
+
+/*!
   \property QGraphicsObject::parent
   \brief the parent of the item
 
