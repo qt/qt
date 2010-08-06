@@ -139,6 +139,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         }
         d->platformContext = widget->platformWindow()->glContext();
         Q_ASSERT(d->platformContext);
+        d->default_fbo = d->platformContext->defaultFBO();
         d->glFormat = qt_platformwindowformat_to_glformat(d->platformContext->platformWindowFormat());
         d->valid =(bool) d->platformContext;
     }

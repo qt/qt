@@ -57,6 +57,7 @@ public:
     virtual void doneCurrent() = 0;
     virtual void swapBuffers() = 0;
     virtual void* getProcAddress(const QString& procName) = 0;
+    virtual GLuint defaultFBO() const;
 
     virtual QPlatformWindowFormat platformWindowFormat() const = 0;
 
