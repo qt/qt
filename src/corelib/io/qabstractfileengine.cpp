@@ -41,6 +41,9 @@
 
 #include "qabstractfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#ifdef QT_BUILD_CORE_LIB
+#include "private/qresource_p.h"
+#endif
 #include "qdatetime.h"
 #include "qreadwritelock.h"
 #include "qvariant.h"
@@ -179,7 +182,9 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 #ifdef QT_BUILD_CORE_LIB
     if (!fileName.startsWith(QLatin1Char('/'))) {
         int prefixSeparator = fileName.indexOf(QLatin1Char(':'));
-        if (prefixSeparator > 1) {
+        if (prefixSeparator == 0) {
+            return new QResourceFileEngine(fileName);
+        } else if (prefixSeparator > 1) {
             QString prefix = fileName.left(prefixSeparator);
             QString fileNameWithoutPrefix = fileName.mid(prefixSeparator + 1).prepend(QLatin1Char('/'));
             const QStringList &paths = QDir::searchPaths(prefix);

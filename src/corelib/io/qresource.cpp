@@ -1185,21 +1185,6 @@ QResource::unregisterResource(const uchar *rccData, const QString &resourceRoot)
     return false;
 }
 
-//file type handler
-class QResourceFileEngineHandler : public QAbstractFileEngineHandler
-{
-public:
-    QResourceFileEngineHandler() { }
-    ~QResourceFileEngineHandler() { }
-    QAbstractFileEngine *create(const QString &path) const;
-};
-QAbstractFileEngine *QResourceFileEngineHandler::create(const QString &path) const
-{
-    if (path.size() > 0 && path.startsWith(QLatin1Char(':')))
-        return new QResourceFileEngine(path);
-    return 0;
-}
-
 //resource engine
 class QResourceFileEnginePrivate : public QAbstractFileEnginePrivate
 {
@@ -1506,12 +1491,6 @@ bool QResourceFileEnginePrivate::unmap(uchar *ptr)
     return true;
 }
 
-//Initialization and cleanup
-Q_GLOBAL_STATIC(QResourceFileEngineHandler, resource_file_handler)
-
-static int qt_force_resource_init() { resource_file_handler(); return 1; }
-Q_CORE_EXPORT void qInitResourceIO() { resource_file_handler(); }
-static int qt_forced_resource_init = qt_force_resource_init();
-Q_CONSTRUCTOR_FUNCTION(qt_force_resource_init)
+Q_CORE_EXPORT void qInitResourceIO() { } // ### Qt 5: remove
 
 QT_END_NAMESPACE
