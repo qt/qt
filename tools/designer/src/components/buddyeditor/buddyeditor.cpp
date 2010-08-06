@@ -153,13 +153,13 @@ void BuddyEditor::updateBackground()
 
     m_updating = true;
     QList<Connection *> newList;
-    const LabelList label_list = qFindChildren<QLabel*>(background());
+    const LabelList label_list = background()->findChildren<QLabel*>();
     foreach (QLabel *label, label_list) {
         const QString buddy_name = buddy(label, m_formWindow->core());
         if (buddy_name.isEmpty())
             continue;
 
-        const QList<QWidget *> targets = qFindChildren<QWidget*>(background(), buddy_name);
+        const QList<QWidget *> targets = background()->findChildren<QWidget*>(buddy_name);
         if (targets.isEmpty())
             continue;
 
@@ -238,12 +238,12 @@ void BuddyEditor::setBackground(QWidget *background)
     clear();
     ConnectionEdit::setBackground(background);
 
-    const LabelList label_list = qFindChildren<QLabel*>(background);
+    const LabelList label_list = background->findChildren<QLabel*>();
     foreach (QLabel *label, label_list) {
         const QString buddy_name = buddy(label, m_formWindow->core());
         if (buddy_name.isEmpty())
             continue;
-        QWidget *target = qFindChild<QWidget*>(background, buddy_name);
+        QWidget *target = background->findChild<QWidget*>(buddy_name);
         if (target == 0)
             continue;
 
@@ -297,7 +297,7 @@ void BuddyEditor::endConnection(QWidget *target, const QPoint &pos)
 
 void BuddyEditor::widgetRemoved(QWidget *widget)
 {
-    QList<QWidget*> child_list = qFindChildren<QWidget*>(widget);
+    QList<QWidget*> child_list = widget->findChildren<QWidget*>();
     child_list.prepend(widget);
 
     ConnectionSet remove_set;
@@ -354,7 +354,7 @@ void BuddyEditor::deleteSelected()
 void BuddyEditor::autoBuddy()
 {
     // Any labels?
-    LabelList labelList = qFindChildren<QLabel*>(background());
+    LabelList labelList = background()->findChildren<QLabel*>();
     if (labelList.empty())
         return;
     // Find already used buddies

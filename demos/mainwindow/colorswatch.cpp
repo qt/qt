@@ -454,7 +454,7 @@ void ColorSwatch::updateContextMenu()
     tabMenu->clear();
     splitHMenu->clear();
     splitVMenu->clear();
-    QList<ColorSwatch*> dock_list = qFindChildren<ColorSwatch*>(mainWindow);
+    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     foreach (ColorSwatch *dock, dock_list) {
 //        if (!dock->isVisible() || dock->isFloating())
 //            continue;
@@ -467,7 +467,7 @@ void ColorSwatch::updateContextMenu()
 void ColorSwatch::splitInto(QAction *action)
 {
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    QList<ColorSwatch*> dock_list = qFindChildren<ColorSwatch*>(mainWindow);
+    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     ColorSwatch *target = 0;
     foreach (ColorSwatch *dock, dock_list) {
         if (action->text() == dock->objectName()) {
@@ -486,7 +486,7 @@ void ColorSwatch::splitInto(QAction *action)
 void ColorSwatch::tabInto(QAction *action)
 {
     QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parentWidget());
-    QList<ColorSwatch*> dock_list = qFindChildren<ColorSwatch*>(mainWindow);
+    QList<ColorSwatch*> dock_list = mainWindow->findChildren<ColorSwatch*>();
     ColorSwatch *target = 0;
     foreach (ColorSwatch *dock, dock_list) {
         if (action->text() == dock->objectName()) {

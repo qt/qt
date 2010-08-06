@@ -175,7 +175,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             widget = widget->window();
 
             // Alt has been pressed - find all widgets that care
-            QList<QWidget *> l = qFindChildren<QWidget *>(widget);
+            QList<QWidget *> l = widget->findChildren<QWidget *>();
             for (int pos=0 ; pos < l.size() ; ++pos) {
                 QWidget *w = l.at(pos);
                 if (w->isWindow() || !w->isVisible() ||
@@ -198,7 +198,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             // Update state and repaint the menu bars.
             d->alt_down = false;
 #ifndef QT_NO_MENUBAR
-            QList<QMenuBar *> l = qFindChildren<QMenuBar *>(widget);
+            QList<QMenuBar *> l = widget->findChildren<QMenuBar *>();
             for (int i = 0; i < l.size(); ++i)
                 l.at(i)->update();
 #endif
@@ -1160,7 +1160,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
             if (!menuBar && qobject_cast<const QMenu *>(widget)) {
                 QWidget *w = QApplication::activeWindow();
                 if (w && w != widget)
-                    menuBar = qFindChild<QMenuBar *>(w);
+                    menuBar = w->findChild<QMenuBar *>();
             }
             // If we paint a menu bar draw underlines if is in the keyboardState
             if (menuBar) {

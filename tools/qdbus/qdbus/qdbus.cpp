@@ -324,7 +324,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                 if (id == int(QMetaType::UChar)) {
                     // special case: QVariant::convert doesn't convert to/from
                     // UChar because it can't decide if it's a character or a number
-                    p = qVariantFromValue<uchar>(p.toUInt());
+                    p = QVariant::fromValue<uchar>(p.toUInt());
                 } else if (id < int(QMetaType::User) && id != int(QVariant::Map)) {
                     p.convert(QVariant::Type(id));
                     if (p.type() == QVariant::Invalid) {
@@ -334,7 +334,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                     }
                 } else if (id == qMetaTypeId<QDBusVariant>()) {
                     QDBusVariant tmp(p);
-                    p = qVariantFromValue(tmp);
+                    p = QVariant::fromValue(tmp);
                 } else if (id == qMetaTypeId<QDBusObjectPath>()) {
                     QDBusObjectPath path(argument);
                     if (path.path().isNull()) {
@@ -342,7 +342,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                                 qPrintable(argument));
                         return 1;
                     }
-                    p = qVariantFromValue(path);
+                    p = QVariant::fromValue(path);
                 } else if (id == qMetaTypeId<QDBusSignature>()) {
                     QDBusSignature sig(argument);
                     if (sig.signature().isNull()) {
@@ -350,7 +350,7 @@ static int placeCall(const QString &service, const QString &path, const QString 
                                 qPrintable(argument));
                         return 1;
                     }
-                    p = qVariantFromValue(sig);
+                    p = QVariant::fromValue(sig);
                 } else {
                     fprintf(stderr, "Sorry, can't pass arg of type '%s'.\n",
                             types.at(i).constData());

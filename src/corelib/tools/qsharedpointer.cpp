@@ -1275,8 +1275,6 @@ QT_END_NAMESPACE
 
 
 
-#if !defined(QT_NO_MEMBER_TEMPLATES)
-
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #  ifdef QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #    if defined(__GLIBC__) && (__GLIBC__ >= 2) && !defined(__UCLIBC__) && !defined(QT_LINUXBASE)
@@ -1501,5 +1499,3 @@ void QtSharedPointer::internalSafetyCheckCleanCheck()
 }
 
 QT_END_NAMESPACE
-
-#endif

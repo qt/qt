@@ -132,7 +132,7 @@ static QString objName(const QDesignerFormEditorInterface *core, QObject *object
     const QString objectNameProperty = QLatin1String("objectName");
     const int index = sheet->indexOf(objectNameProperty);
     const qdesigner_internal::PropertySheetStringValue objectNameValue
-            = qVariantValue<qdesigner_internal::PropertySheetStringValue>(sheet->property(index));
+            = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(sheet->property(index));
     return objectNameValue.value();
 }
 
@@ -447,7 +447,7 @@ void QDesignerTaskMenu::changeObjectName()
             const QString objectNameProperty = QLatin1String("objectName");
             PropertySheetStringValue objectNameValue;
             objectNameValue.setValue(newObjectName);
-            setProperty(fw, CurrentWidgetMode, objectNameProperty, qVariantFromValue(objectNameValue));
+            setProperty(fw, CurrentWidgetMode, objectNameProperty, QVariant::fromValue(objectNameValue));
         }
     }
 }
@@ -465,7 +465,7 @@ void QDesignerTaskMenu::changeTextProperty(const QString &propertyName, const QS
         qDebug() << "** WARNING Invalid property" << propertyName << " passed to changeTextProperty!";
         return;
     }
-    PropertySheetStringValue textValue = qVariantValue<PropertySheetStringValue>(sheet->property(index));
+    PropertySheetStringValue textValue = qvariant_cast<PropertySheetStringValue>(sheet->property(index));
     const QString oldText = textValue.value();
     // Pop up respective dialog
     bool accepted = false;
@@ -498,7 +498,7 @@ void QDesignerTaskMenu::changeTextProperty(const QString &propertyName, const QS
 
 
     textValue.setValue(newText);
-    setProperty(fw, pm, propertyName, qVariantFromValue(textValue));
+    setProperty(fw, pm, propertyName, QVariant::fromValue(textValue));
 }
 
 void QDesignerTaskMenu::changeToolTip()
@@ -673,7 +673,7 @@ void QDesignerTaskMenu::navigateToSlot(QDesignerFormEditorInterface *core,
     if (selectSignalDialog.exec() == QDialog::Accepted) {
         QTreeWidgetItem *selectedItem = dialogUi.signalList->selectedItems().first();
         const QString signalSignature = selectedItem->text(0);
-        const QStringList parameterNames = qVariantValue<QStringList>(selectedItem->data(0, Qt::UserRole));
+        const QStringList parameterNames = qvariant_cast<QStringList>(selectedItem->data(0, Qt::UserRole));
 
         // TODO: Check whether signal is connected to slot
         integr->emitNavigateToSlot(objectName, signalSignature, parameterNames);

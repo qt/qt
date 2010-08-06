@@ -2342,7 +2342,7 @@ static QWidget *embeddedWidget(QWidget *w)
 
 #ifndef QT_NO_SPINBOX
     if (QAbstractSpinBox *sb = qobject_cast<QAbstractSpinBox *>(w))
-        return qFindChild<QLineEdit *>(sb);
+        return sb->findChild<QLineEdit *>();
 #endif
 
 #ifndef QT_NO_SCROLLAREA
@@ -2583,7 +2583,7 @@ void QStyleSheetStyle::unsetPalette(QWidget *w)
     }
     QVariant oldFont = w->property("_q_styleSheetWidgetFont");
     if (oldFont.isValid()) {
-        w->setFont(qVariantValue<QFont>(oldFont));
+        w->setFont(qvariant_cast<QFont>(oldFont));
     }
     if (autoFillDisabledWidgets->contains(w)) {
         embeddedWidget(w)->setAutoFillBackground(true);
@@ -2795,7 +2795,7 @@ void QStyleSheetStyle::polish(QPalette &pal)
 
 void QStyleSheetStyle::repolish(QWidget *w)
 {
-    QList<const QWidget *> children = qFindChildren<const QWidget *>(w, QString());
+    QList<const QWidget *> children = w->findChildren<const QWidget *>(QString());
     children.append(w);
     styleSheetCache->remove(w);
     updateWidgets(children);
@@ -5067,7 +5067,7 @@ QIcon QStyleSheetStyle::standardIconImplementation(StandardPixmap standardIcon, 
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s))
-            return qVariantValue<QIcon>(rule.styleHint(s));
+            return qvariant_cast<QIcon>(rule.styleHint(s));
     }
     return baseStyle()->standardIcon(standardIcon, opt, w);
 }
@@ -5085,7 +5085,7 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
     if (!s.isEmpty()) {
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s)) {
-            QIcon icon = qVariantValue<QIcon>(rule.styleHint(s));
+            QIcon icon = qvariant_cast<QIcon>(rule.styleHint(s));
             return icon.pixmap(16, 16); // ###: unhard-code this if someone complains
         }
     }
@@ -5179,7 +5179,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ComboBox_PopupFrameStyle:
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
-                QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
+                QAbstractItemView *view = w->findChild<QAbstractItemView *>();
                 if (view) {
                     view->ensurePolished();
                     QRenderRule subRule = renderRule(view, PseudoElement_None);

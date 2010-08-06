@@ -184,11 +184,11 @@ void FormWindowBase::reloadProperties()
             const int index = itIndex.next().key();
             const QVariant newValue = sheet->property(index);
             if (qobject_cast<QLabel *>(sheet->object()) && sheet->propertyName(index) == QLatin1String("text")) {
-                const PropertySheetStringValue newString = qVariantValue<PropertySheetStringValue>(newValue);
+                const PropertySheetStringValue newString = qvariant_cast<PropertySheetStringValue>(newValue);
                 // optimize a bit, reset only if the text value might contain a reference to qt resources
                 // (however reloading of icons other than taken from resources might not work here)
                 if (newString.value().contains(QLatin1String(":/"))) {
-                    const QVariant resetValue = qVariantFromValue(PropertySheetStringValue());
+                    const QVariant resetValue = QVariant::fromValue(PropertySheetStringValue());
                     sheet->setProperty(index, resetValue);
                 }
             }

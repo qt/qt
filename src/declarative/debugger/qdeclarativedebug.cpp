@@ -194,7 +194,7 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugOb
             {
                 QDeclarativeDebugObjectReference obj;
                 obj.m_debugId = prop.m_value.toInt();
-                prop.m_value = qVariantFromValue(obj);
+                prop.m_value = QVariant::fromValue(obj);
                 break;
             }
             case QDeclarativeEngineDebugServer::QDeclarativeObjectProperty::Unknown:

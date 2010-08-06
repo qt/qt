@@ -336,11 +336,7 @@ inline char qToLower(char ch)
         return ch;
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300
-const QString::Null QString::null;
-#else
 const QString::Null QString::null = { };
-#endif
 
 /*!
   \macro QT_NO_CAST_FROM_ASCII

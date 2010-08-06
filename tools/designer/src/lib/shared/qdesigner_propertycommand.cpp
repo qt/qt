@@ -505,7 +505,7 @@ PropertyHelper::Value applySubProperty(const QVariant &oldValue, const QVariant 
     case QVariant::Size:
         return PropertyHelper::Value(applySizeSubProperty(oldValue.toSize(), newValue.toSize(), mask), changed);
     case QVariant::SizePolicy:
-        return PropertyHelper::Value(qVariantFromValue(applySizePolicySubProperty(qvariant_cast<QSizePolicy>(oldValue), qvariant_cast<QSizePolicy>(newValue), mask)), changed);
+        return PropertyHelper::Value(QVariant::fromValue(applySizePolicySubProperty(qvariant_cast<QSizePolicy>(oldValue), qvariant_cast<QSizePolicy>(newValue), mask)), changed);
     case QVariant::Font: {
         // Changed flag in case of font and palette depends on resolve mask only, not on the passed "changed" value.
 
@@ -524,27 +524,27 @@ PropertyHelper::Value applySubProperty(const QVariant &oldValue, const QVariant 
         // He press reset button for the whole font property. In result whole font properties for both
         // widgets should be marked as unchanged.
         QFont font = applyFontSubProperty(qvariant_cast<QFont>(oldValue), qvariant_cast<QFont>(newValue), mask);
-        return PropertyHelper::Value(qVariantFromValue(font), font.resolve());
+        return PropertyHelper::Value(QVariant::fromValue(font), font.resolve());
         }
     case QVariant::Palette: {
         QPalette palette = applyPaletteSubProperty(qvariant_cast<QPalette>(oldValue), qvariant_cast<QPalette>(newValue), mask);
-        return PropertyHelper::Value(qVariantFromValue(palette), palette.resolve());
+        return PropertyHelper::Value(QVariant::fromValue(palette), palette.resolve());
         }
     default:
         if (oldValue.userType() == qMetaTypeId<qdesigner_internal::PropertySheetIconValue>()) {
             PropertySheetIconValue icon = qvariant_cast<qdesigner_internal::PropertySheetIconValue>(oldValue);
             icon.assign(qvariant_cast<qdesigner_internal::PropertySheetIconValue>(newValue), mask);
-            return PropertyHelper::Value(qVariantFromValue(icon), icon.mask());
+            return PropertyHelper::Value(QVariant::fromValue(icon), icon.mask());
         } else if (oldValue.userType() == qMetaTypeId<qdesigner_internal::PropertySheetStringValue>()) {
             qdesigner_internal::PropertySheetStringValue str = applyStringSubProperty(
                         qvariant_cast<qdesigner_internal::PropertySheetStringValue>(oldValue),
                         qvariant_cast<qdesigner_internal::PropertySheetStringValue>(newValue), mask);
-            return PropertyHelper::Value(qVariantFromValue(str), changed);
+            return PropertyHelper::Value(QVariant::fromValue(str), changed);
         } else if (oldValue.userType() == qMetaTypeId<qdesigner_internal::PropertySheetKeySequenceValue>()) {
             qdesigner_internal::PropertySheetKeySequenceValue key = applyKeySequenceSubProperty(
                         qvariant_cast<qdesigner_internal::PropertySheetKeySequenceValue>(oldValue),
                         qvariant_cast<qdesigner_internal::PropertySheetKeySequenceValue>(newValue), mask);
-            return PropertyHelper::Value(qVariantFromValue(key), changed);
+            return PropertyHelper::Value(QVariant::fromValue(key), changed);
         }
         // Enumerations, flags
         switch (specialProperty) {
@@ -552,7 +552,7 @@ PropertyHelper::Value applySubProperty(const QVariant &oldValue, const QVariant 
             qdesigner_internal::PropertySheetFlagValue f = qvariant_cast<qdesigner_internal::PropertySheetFlagValue>(oldValue);
             f.value = applyAlignmentSubProperty(variantToAlignment(oldValue), variantToAlignment(newValue), mask);
             QVariant v;
-            qVariantSetValue(v, f);
+            v.setValue(f);
             return PropertyHelper::Value(v, changed);
                                                }
         default:
@@ -651,7 +651,7 @@ void PropertyHelper::checkApplyWidgetValue(QDesignerFormWindowInterface *fw, QWi
     switch (specialProperty) {
     case SP_MinimumSize: {
         const QSize size = checkSize(value.toSize());
-        qVariantSetValue(value, size);
+        value.setValue(size);
     }
 
         break;
@@ -660,7 +660,7 @@ void PropertyHelper::checkApplyWidgetValue(QDesignerFormWindowInterface *fw, QWi
         checkSizes(fw, value.toSize(), &fs, &cs);
         container->setMaximumSize(cs);
         fw->mainContainer()->setMaximumSize(fs);
-        qVariantSetValue(value, fs);
+        value.setValue(fs);
 
     }
         break;
@@ -670,7 +670,7 @@ void PropertyHelper::checkApplyWidgetValue(QDesignerFormWindowInterface *fw, QWi
         checkSizes(fw, r.size(), &fs, &cs);
         container->resize(cs);
         r.setSize(fs);
-        qVariantSetValue(value, r);
+        value.setValue(r);
     }
         break;
     default:
@@ -727,8 +727,8 @@ void PropertyHelper::updateObject(QDesignerFormWindowInterface *fw, const QVaria
     case OT_Widget: {
         switch (m_specialProperty) {
         case SP_ObjectName: {
-            const QString oldName = qVariantValue<PropertySheetStringValue>(oldValue).value();
-            const QString newName = qVariantValue<PropertySheetStringValue>(newValue).value();
+            const QString oldName = qvariant_cast<PropertySheetStringValue>(oldValue).value();
+            const QString newName = qvariant_cast<PropertySheetStringValue>(newValue).value();
             QDesignerFormWindowCommand::updateBuddies(fw, oldName, newName);
         }
             break;
@@ -751,8 +751,8 @@ void PropertyHelper::updateObject(QDesignerFormWindowInterface *fw, const QVaria
     case SP_LayoutName:
     case SP_SpacerName:
         if (QDesignerIntegration *integr = integration(fw)) {
-            const QString oldName = qVariantValue<PropertySheetStringValue>(oldValue).value();
-            const QString newName = qVariantValue<PropertySheetStringValue>(newValue).value();
+            const QString oldName = qvariant_cast<PropertySheetStringValue>(oldValue).value();
+            const QString newName = qvariant_cast<PropertySheetStringValue>(newValue).value();
             integr->emitObjectNameChanged(fw, m_object, newName, oldName);
         }
         break;

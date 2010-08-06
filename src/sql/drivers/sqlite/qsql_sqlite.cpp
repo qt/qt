@@ -452,7 +452,7 @@ QSqlRecord QSQLiteResult::record() const
 
 QVariant QSQLiteResult::handle() const
 {
-    return qVariantFromValue(d->stmt);
+    return QVariant::fromValue(d->stmt);
 }
 
 /////////////////////////////////////////////////////////
@@ -697,7 +697,7 @@ QSqlRecord QSQLiteDriver::record(const QString &tbl) const
 
 QVariant QSQLiteDriver::handle() const
 {
-    return qVariantFromValue(d->access);
+    return QVariant::fromValue(d->access);
 }
 
 QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const

@@ -872,12 +872,12 @@ void PropertyEditor::updateBrowserValue(QtVariantProperty *property, const QVari
 
 int PropertyEditor::toBrowserType(const QVariant &value, const QString &propertyName) const
 {
-    if (qVariantCanConvert<PropertySheetFlagValue>(value)) {
+    if (value.canConvert<PropertySheetFlagValue>()) {
         if (m_strings.m_alignmentProperties.contains(propertyName))
             return DesignerPropertyManager::designerAlignmentTypeId();
         return DesignerPropertyManager::designerFlagTypeId();
     }
-    if (qVariantCanConvert<PropertySheetEnumValue>(value))
+    if (value.canConvert<PropertySheetEnumValue>())
         return DesignerPropertyManager::enumTypeId();
 
     return value.userType();
@@ -1034,7 +1034,7 @@ void PropertyEditor::setObject(QObject *object)
                         }
                         m_updatingBrowser = true;
                         QVariant v;
-                        qVariantSetValue(v, flags);
+                        v.setValue(flags);
                         property->setAttribute(m_strings.m_flagsAttribute, v);
                         m_updatingBrowser = false;
                     }
@@ -1223,7 +1223,7 @@ void PropertyEditor::slotValueChanged(QtProperty *property, const QVariant &valu
         e.value = e.metaEnum.parseEnum(valName, &ok);
         Q_ASSERT(ok);
         QVariant v;
-        qVariantSetValue(v, e);
+        v.setValue(e);
         emitPropertyValueChanged(property->propertyName(), v, true);
         return;
     }

@@ -809,7 +809,7 @@ QScriptValue QDeclarativeXmlListModel::get(int index) const
 
     QScriptValue sv = sengine->newObject();
     for (int i=0; i<d->roleObjects.count(); i++) 
-        sv.setProperty(d->roleObjects[i]->name(), qScriptValueFromValue(sengine, d->data.value(i).value(index)));
+        sv.setProperty(d->roleObjects[i]->name(), sengine->toScriptValue(d->data.value(i).value(index)));
     return sv;    
 }
 

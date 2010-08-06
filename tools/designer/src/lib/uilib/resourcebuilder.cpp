@@ -91,7 +91,7 @@ QVariant QResourceBuilder::loadResource(const QDir &workingDirectory, const DomP
         case DomProperty::Pixmap: {
             const DomResourcePixmap *dpx = property->elementPixmap();
             QPixmap pixmap(QFileInfo(workingDirectory, dpx->text()).absoluteFilePath());
-            return qVariantFromValue(pixmap);
+            return QVariant::fromValue(pixmap);
         }
         case DomProperty::IconSet: {
             const DomResourceIcon *dpi = property->elementIconSet();
@@ -113,10 +113,10 @@ QVariant QResourceBuilder::loadResource(const QDir &workingDirectory, const DomP
                     icon.addFile(QFileInfo(workingDirectory, dpi->elementSelectedOff()->text()).absoluteFilePath(), QSize(), QIcon::Selected, QIcon::Off);
                 if (flags & SelectedOn)
                     icon.addFile(QFileInfo(workingDirectory, dpi->elementSelectedOn()->text()).absoluteFilePath(), QSize(), QIcon::Selected, QIcon::On);
-                return qVariantFromValue(icon);
+                return QVariant::fromValue(icon);
             } else { // 4.3 legacy
                 const QIcon icon(QFileInfo(workingDirectory, dpi->text()).absoluteFilePath());
-                return qVariantFromValue(icon);
+                return QVariant::fromValue(icon);
             }
         }
             break;

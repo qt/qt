@@ -789,11 +789,8 @@ QT_END_INCLUDE_NAMESPACE
 #else
 #define Q_TEMPLATE_EXTERN extern
 #endif
-# pragma warning(push)          /* MSVC 6.0 doesn't care about the disabling in qglobal.h (why?), so do it here */
-# pragma warning(disable: 4231) /* nonstandard extension used : 'extern' before template explicit instantiation */
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPointF>;
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPoint>;
-# pragma warning(pop)
 #endif
 
 QT_END_NAMESPACE

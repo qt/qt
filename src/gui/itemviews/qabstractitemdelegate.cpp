@@ -362,7 +362,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
     case QEvent::ToolTip: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         QVariant tooltip = index.data(Qt::ToolTipRole);
-        if (qVariantCanConvert<QString>(tooltip)) {
+        if (tooltip.canConvert<QString>()) {
             QToolTip::showText(he->globalPos(), tooltip.toString(), view);
             return true;
         }
@@ -376,7 +376,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
     case QEvent::WhatsThis: {
         QHelpEvent *he = static_cast<QHelpEvent*>(event);
         QVariant whatsthis = index.data(Qt::WhatsThisRole);
-        if (qVariantCanConvert<QString>(whatsthis)) {
+        if (whatsthis.canConvert<QString>()) {
             QWhatsThis::showText(he->globalPos(), whatsthis.toString(), view);
             return true;
         }

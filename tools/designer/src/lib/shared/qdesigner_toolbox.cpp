@@ -260,12 +260,12 @@ QToolBoxWidgetPropertySheet::QToolBoxWidgetPropertySheet(QToolBox *object, QObje
     QDesignerPropertySheet(object, parent),
     m_toolBox(object)
 {
-    createFakeProperty(QLatin1String(currentItemTextKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
+    createFakeProperty(QLatin1String(currentItemTextKey), QVariant::fromValue(qdesigner_internal::PropertySheetStringValue()));
     createFakeProperty(QLatin1String(currentItemNameKey), QString());
-    createFakeProperty(QLatin1String(currentItemIconKey), qVariantFromValue(qdesigner_internal::PropertySheetIconValue()));
+    createFakeProperty(QLatin1String(currentItemIconKey), QVariant::fromValue(qdesigner_internal::PropertySheetIconValue()));
     if (formWindowBase())
         formWindowBase()->addReloadableProperty(this, indexOf(QLatin1String(currentItemIconKey)));
-    createFakeProperty(QLatin1String(currentItemToolTipKey), qVariantFromValue(qdesigner_internal::PropertySheetStringValue()));
+    createFakeProperty(QLatin1String(currentItemToolTipKey), QVariant::fromValue(qdesigner_internal::PropertySheetStringValue()));
     createFakeProperty(QLatin1String(tabSpacingKey), QVariant(tabSpacingDefault));
 }
 
@@ -306,18 +306,18 @@ void QToolBoxWidgetPropertySheet::setProperty(int index, const QVariant &value)
     switch (toolBoxProperty) {
     case PropertyCurrentItemText:
         m_toolBox->setItemText(currentIndex, qvariant_cast<QString>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].text = qVariantValue<qdesigner_internal::PropertySheetStringValue>(value);
+        m_pageToData[currentWidget].text = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
         break;
     case PropertyCurrentItemName:
         currentWidget->setObjectName(value.toString());
         break;
     case PropertyCurrentItemIcon:
         m_toolBox->setItemIcon(currentIndex, qvariant_cast<QIcon>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].icon = qVariantValue<qdesigner_internal::PropertySheetIconValue>(value);
+        m_pageToData[currentWidget].icon = qvariant_cast<qdesigner_internal::PropertySheetIconValue>(value);
         break;
     case PropertyCurrentItemToolTip:
         m_toolBox->setItemToolTip(currentIndex, qvariant_cast<QString>(resolvePropertyValue(index, value)));
-        m_pageToData[currentWidget].tooltip = qVariantValue<qdesigner_internal::PropertySheetStringValue>(value);
+        m_pageToData[currentWidget].tooltip = qvariant_cast<qdesigner_internal::PropertySheetStringValue>(value);
         break;
     case PropertyTabSpacing:
     case PropertyToolBoxNone:
@@ -353,24 +353,24 @@ QVariant QToolBoxWidgetPropertySheet::property(int index) const
     QWidget *currentWidget = m_toolBox->currentWidget();
     if (!currentWidget) {
         if (toolBoxProperty == PropertyCurrentItemIcon)
-            return  qVariantFromValue(qdesigner_internal::PropertySheetIconValue());
+            return  QVariant::fromValue(qdesigner_internal::PropertySheetIconValue());
         if (toolBoxProperty == PropertyCurrentItemText)
-            return  qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
+            return  QVariant::fromValue(qdesigner_internal::PropertySheetStringValue());
         if (toolBoxProperty == PropertyCurrentItemToolTip)
-            return  qVariantFromValue(qdesigner_internal::PropertySheetStringValue());
+            return  QVariant::fromValue(qdesigner_internal::PropertySheetStringValue());
         return QVariant(QString());
     }
 
     // index-dependent
     switch (toolBoxProperty) {
     case PropertyCurrentItemText:
-        return qVariantFromValue(m_pageToData.value(currentWidget).text);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).text);
     case PropertyCurrentItemName:
         return currentWidget->objectName();
     case PropertyCurrentItemIcon:
-        return qVariantFromValue(m_pageToData.value(currentWidget).icon);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).icon);
     case PropertyCurrentItemToolTip:
-        return qVariantFromValue(m_pageToData.value(currentWidget).tooltip);
+        return QVariant::fromValue(m_pageToData.value(currentWidget).tooltip);
     case PropertyTabSpacing:
     case PropertyToolBoxNone:
         break;

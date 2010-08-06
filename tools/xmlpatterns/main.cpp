@@ -145,14 +145,14 @@ protected:
             }
 
             /* The value.isNull() check ensures we can bind variables whose value is an empty string. */
-            return qVariantFromValue(Parameter(name, value.isNull() ? QString(QLatin1String("")) : value ));
+            return QVariant::fromValue(Parameter(name, value.isNull() ? QString(QLatin1String("")) : value ));
         }
         else if(arg.name() == QLatin1String("output"))
         {
             QFile *const f = new QFile(input);
 
             if(f->open(QIODevice::WriteOnly))
-                return qVariantFromValue(static_cast<QIODevice *>(f));
+                return QVariant::fromValue(static_cast<QIODevice *>(f));
             else
             {
                 message(QXmlPatternistCLI::tr("Failed to open file %1 for writing: %2").arg(f->fileName(), f->errorString()));
@@ -168,7 +168,7 @@ protected:
                 return QVariant();
             }
             else
-                return qVariantFromValue(name);
+                return QVariant::fromValue(name);
         }
         else
             return QApplicationArgumentParser::convertToValue(arg, input);
@@ -200,7 +200,7 @@ protected:
             out->open(stdout, QIODevice::WriteOnly);
 #endif
 
-            return qVariantFromValue(static_cast<QIODevice *>(out));
+            return QVariant::fromValue(static_cast<QIODevice *>(out));
         }
         else
             return QApplicationArgumentParser::defaultValue(argument);
@@ -317,7 +317,7 @@ int main(int argc, char **argv)
 
     QXmlQuery query(lang, namePool);
 
-    query.setInitialTemplateName(qVariantValue<QXmlName>(parser.value(initialTemplateName)));
+    query.setInitialTemplateName(qvariant_cast<QXmlName>(parser.value(initialTemplateName)));
 
     /* Bind external variables. */
     {
@@ -329,7 +329,7 @@ int main(int argc, char **argv)
 
         for(int i = 0; i < len; ++i)
         {
-            const Parameter p(qVariantValue<Parameter>(parameters.at(i)));
+            const Parameter p(qvariant_cast<Parameter>(parameters.at(i)));
 
             if(usedParameters.contains(p.first))
             {
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
 
     query.setQuery(effectiveURI);
 
-    const QPatternist::AutoPtr<QIODevice> outDevice(qVariantValue<QIODevice *>(parser.value(output)));
+    const QPatternist::AutoPtr<QIODevice> outDevice(qvariant_cast<QIODevice *>(parser.value(output)));
     Q_ASSERT(outDevice);
     Q_ASSERT(outDevice->isWritable());
 

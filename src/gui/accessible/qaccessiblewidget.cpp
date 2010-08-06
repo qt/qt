@@ -1015,7 +1015,7 @@ QVariant QAccessibleWidgetEx::invokeMethodEx(Method method, int child, const QVa
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods << ForegroundColor << BackgroundColor;
-        return qVariantFromValue(set);
+        return QVariant::fromValue(set);
     }
     case ForegroundColor:
         return widget()->palette().color(widget()->foregroundRole());

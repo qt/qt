@@ -171,7 +171,7 @@ bool BencodeParser::getList(QList<QVariant> *list)
 	else if (getList(&tmpList))
 	    tmp << tmpList;
 	else if (getDictionary(&dictionary))
-	    tmp << qVariantFromValue<QMap<QByteArray, QVariant> >(dictionary);
+	    tmp << QVariant::fromValue<QMap<QByteArray, QVariant> >(dictionary);
 	else {
 	    errString = QString("error at index %1").arg(index);
 	    return false;
@@ -217,7 +217,7 @@ bool BencodeParser::getDictionary(QMap<QByteArray, QVariant> *dictionary)
 	else if (getList(&tmpList))
 	    tmp.insert(key, tmpList);
 	else if (getDictionary(&dictionary))
-	    tmp.insert(key, qVariantFromValue<QMap<QByteArray, QVariant> >(dictionary));
+	    tmp.insert(key, QVariant::fromValue<QMap<QByteArray, QVariant> >(dictionary));
 	else {
 	    errString = QString("error at index %1").arg(index);
 	    return false;

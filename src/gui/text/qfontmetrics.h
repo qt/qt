@@ -85,6 +85,7 @@ public:
     int averageCharWidth() const;
 
     bool inFont(QChar) const;
+    bool inFontUcs4(uint ucs4) const;
 
     int leftBearing(QChar) const;
     int rightBearing(QChar) const;
@@ -162,6 +163,7 @@ public:
     qreal averageCharWidth() const;
 
     bool inFont(QChar) const;
+    bool inFontUcs4(uint ucs4) const;
 
     qreal leftBearing(QChar) const;
     qreal rightBearing(QChar) const;

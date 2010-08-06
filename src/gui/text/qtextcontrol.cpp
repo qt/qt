@@ -2908,7 +2908,7 @@ QAbstractTextDocumentLayout::PaintContext QTextControl::getPaintContext(QWidget 
             if (widget)
                 style = widget->style();
             style->styleHint(QStyle::SH_TextControl_FocusIndicatorTextCharFormat, &opt, widget, &ret);
-            selection.format = qVariantValue<QTextFormat>(ret.variant).toCharFormat();
+            selection.format = qvariant_cast<QTextFormat>(ret.variant).toCharFormat();
         } else {
             QPalette::ColorGroup cg = d->hasFocus ? QPalette::Active : QPalette::Inactive;
             selection.format.setBackground(ctx.palette.brush(cg, QPalette::Highlight));

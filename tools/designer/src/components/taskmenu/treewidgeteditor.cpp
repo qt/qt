@@ -171,8 +171,8 @@ void TreeWidgetEditor::setItemData(int role, const QVariant &v)
     BoolBlocker block(m_updatingBrowser);
     if (role == Qt::FontRole && newValue.type() == QVariant::Font) {
         QFont oldFont = ui.treeWidget->font();
-        QFont newFont = qVariantValue<QFont>(newValue).resolve(oldFont);
-        newValue = qVariantFromValue(newFont);
+        QFont newFont = qvariant_cast<QFont>(newValue).resolve(oldFont);
+        newValue = QVariant::fromValue(newFont);
         ui.treeWidget->currentItem()->setData(col, role, QVariant()); // force the right font with the current resolve mask is set (item view bug)
     }
     ui.treeWidget->currentItem()->setData(col, role, newValue);
@@ -198,7 +198,7 @@ void TreeWidgetEditor::on_newItemButton_clicked()
         newItem = new QTreeWidgetItem(ui.treeWidget);
     const QString newItemText = tr("New Item");
     newItem->setText(0, newItemText);
-    newItem->setData(0, Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(newItemText)));
+    newItem->setData(0, Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(newItemText)));
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
     ui.treeWidget->blockSignals(false);
 
@@ -217,7 +217,7 @@ void TreeWidgetEditor::on_newSubItemButton_clicked()
     QTreeWidgetItem *newItem = new QTreeWidgetItem(curItem);
     const QString newItemText = tr("New Subitem");
     newItem->setText(0, newItemText);
-    newItem->setData(0, Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(newItemText)));
+    newItem->setData(0, Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(newItemText)));
     newItem->setFlags(newItem->flags() | Qt::ItemIsEditable);
     ui.treeWidget->blockSignals(false);
 
@@ -408,10 +408,10 @@ void TreeWidgetEditor::on_treeWidget_itemChanged(QTreeWidgetItem *item, int colu
     if (m_updatingBrowser)
         return;
 
-    PropertySheetStringValue val = qVariantValue<PropertySheetStringValue>(item->data(column, Qt::DisplayPropertyRole));
+    PropertySheetStringValue val = qvariant_cast<PropertySheetStringValue>(item->data(column, Qt::DisplayPropertyRole));
     val.setValue(item->text(column));
     BoolBlocker block(m_updatingBrowser);
-    item->setData(column, Qt::DisplayPropertyRole, qVariantFromValue(val));
+    item->setData(column, Qt::DisplayPropertyRole, QVariant::fromValue(val));
 
     updateBrowser();
 }
@@ -425,7 +425,7 @@ void TreeWidgetEditor::on_columnEditor_indexChanged(int idx)
 void TreeWidgetEditor::on_columnEditor_itemChanged(int idx, int role, const QVariant &v)
 {
     if (role == Qt::DisplayPropertyRole)
-        ui.treeWidget->headerItem()->setData(idx, Qt::EditRole, qVariantValue<PropertySheetStringValue>(v).value());
+        ui.treeWidget->headerItem()->setData(idx, Qt::EditRole, qvariant_cast<PropertySheetStringValue>(v).value());
     ui.treeWidget->headerItem()->setData(idx, role, v);
 }
 

@@ -1629,7 +1629,7 @@ bool QMacStylePrivate::eventFilter(QObject *o, QEvent *e)
         case QEvent::FocusOut:
         case QEvent::Show:
         case QEvent::WindowActivate: {
-            QList<QPushButton *> list = qFindChildren<QPushButton *>(btn->window());
+            QList<QPushButton *> list = btn->window()->findChildren<QPushButton *>();
             for (int i = 0; i < list.size(); ++i) {
                 QPushButton *pBtn = list.at(i);
                 if ((e->type() == QEvent::FocusOut

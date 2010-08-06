@@ -51,14 +51,7 @@
 #endif
 
 #ifndef QT_NO_STL
-#  if defined (Q_CC_MSVC_NET) && _MSC_VER < 1310 // Avoids nasty warning for xlocale, line 450
-#    pragma warning (push)
-#    pragma warning (disable : 4189)
-#    include <string>
-#    pragma warning (pop)
-#  else
-#    include <string>
-#  endif
+#  include <string>
 
 #  ifndef QT_NO_STL_WCHAR
 // workaround for some headers not typedef'ing std::wstring

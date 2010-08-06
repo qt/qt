@@ -264,7 +264,7 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
         return propertyNotFoundError(msg, interface_name, property_name);
     }
 
-    return msg.createReply(qVariantFromValue(QDBusVariant(value)));
+    return msg.createReply(QVariant::fromValue(QDBusVariant(value)));
 }
 
 enum PropertyWriteResult {
@@ -334,7 +334,7 @@ static int writeProperty(QObject *obj, const QByteArray &property_name, QVariant
         // we have to demarshall before writing
         void *null = 0;
         QVariant other(id, null);
-        if (!QDBusMetaType::demarshall(qVariantValue<QDBusArgument>(value), id, other.data())) {
+        if (!QDBusMetaType::demarshall(qvariant_cast<QDBusArgument>(value), id, other.data())) {
             qWarning("QDBusConnection: type `%s' (%d) is not registered with QtDBus. "
                      "Use qDBusRegisterMetaType to register it",
                      mp.typeName(), id);
@@ -495,7 +495,7 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
         return interfaceNotFoundError(msg, interface_name);
     }
 
-    return msg.createReply(qVariantFromValue(result));
+    return msg.createReply(QVariant::fromValue(result));
 }
 
 QT_END_NAMESPACE

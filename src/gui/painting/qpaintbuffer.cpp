@@ -130,7 +130,7 @@ QPaintBufferPrivate::~QPaintBufferPrivate()
     for (int i = 0; i < commands.size(); ++i) {
         const QPaintBufferCommand &cmd = commands.at(i);
         if (cmd.id == QPaintBufferPrivate::Cmd_DrawTextItem)
-            delete reinterpret_cast<QTextItemIntCopy *>(qVariantValue<void *>(variants.at(cmd.offset)));
+            delete reinterpret_cast<QTextItemIntCopy *>(qvariant_cast<void *>(variants.at(cmd.offset)));
     }
 }
 
@@ -330,7 +330,7 @@ QString QPaintBuffer::commandDescription(int command) const
         break; }
 
     case QPaintBufferPrivate::Cmd_SetBrush: {
-        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.offset));
+        QBrush brush = qvariant_cast<QBrush>(d_ptr->variants.at(cmd.offset));
         debug << "Cmd_SetBrush: " << brush;
         break; }
 
@@ -354,27 +354,27 @@ QString QPaintBuffer::commandDescription(int command) const
         break; }
 
     case QPaintBufferPrivate::Cmd_StrokeVectorPath: {
-        QPen pen = qVariantValue<QPen>(d_ptr->variants.at(cmd.extra));
+        QPen pen = qvariant_cast<QPen>(d_ptr->variants.at(cmd.extra));
         debug << "ExCmd_StrokeVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
                  << "pts/elms:" << cmd.offset << cmd.offset2 << pen;
         break; }
 
     case QPaintBufferPrivate::Cmd_FillVectorPath: {
-        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d_ptr->variants.at(cmd.extra));
         debug << "ExCmd_FillVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
                  << "pts/elms:" << cmd.offset << cmd.offset2 << brush;
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectBrush: {
-        QBrush brush = qVariantValue<QBrush>(d_ptr->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d_ptr->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d_ptr->floats.constData() + cmd.offset);
         debug << "ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " brush: " << brush;
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectColor: {
-        QColor color = qVariantValue<QColor>(d_ptr->variants.at(cmd.extra));
+        QColor color = qvariant_cast<QColor>(d_ptr->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d_ptr->floats.constData() + cmd.offset);
         debug << "ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " color: " << color;
         break; }
@@ -451,12 +451,12 @@ QString QPaintBuffer::commandDescription(int command) const
         break; }
 
     case QPaintBufferPrivate::Cmd_SetPen: {
-        QPen pen = qVariantValue<QPen>(d_ptr->variants.at(cmd.offset));
+        QPen pen = qvariant_cast<QPen>(d_ptr->variants.at(cmd.offset));
         debug << "Cmd_SetPen: " << pen;
         break; }
 
     case QPaintBufferPrivate::Cmd_SetTransform: {
-        QTransform xform = qVariantValue<QTransform>(d_ptr->variants.at(cmd.offset));
+        QTransform xform = qvariant_cast<QTransform>(d_ptr->variants.at(cmd.offset));
         debug << "Cmd_SetTransform, offset: " << cmd.offset << xform;
         break; }
 
@@ -532,7 +532,7 @@ QString QPaintBuffer::commandDescription(int command) const
 
     case QPaintBufferPrivate::Cmd_DrawTextItem: {
         QPointF pos(d_ptr->floats.at(cmd.extra), d_ptr->floats.at(cmd.extra+1));
-        QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qVariantValue<void *>(d_ptr->variants.at(cmd.offset)));
+        QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qvariant_cast<void *>(d_ptr->variants.at(cmd.offset)));
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
 
@@ -1287,7 +1287,7 @@ void QPaintBufferEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
     qDebug() << "QPaintBufferEngine: drawTextItem: pos:" << pos << ti.text();
 #endif
     if (m_stream_raw_text_items) {
-        QPaintBufferCommand *cmd = buffer->addCommand(QPaintBufferPrivate::Cmd_DrawTextItem, qVariantFromValue<void *>(new QTextItemIntCopy(ti)));
+        QPaintBufferCommand *cmd = buffer->addCommand(QPaintBufferPrivate::Cmd_DrawTextItem, QVariant::fromValue<void *>(new QTextItemIntCopy(ti)));
 
         QFont font(ti.font());
         font.setUnderline(false);
@@ -1429,7 +1429,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_SetPen: {
-        QPen pen = qVariantValue<QPen>(d->variants.at(cmd.offset));
+        QPen pen = qvariant_cast<QPen>(d->variants.at(cmd.offset));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_SetPen: " << pen;
 #endif
@@ -1437,7 +1437,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_SetBrush: {
-        QBrush brush = qVariantValue<QBrush>(d->variants.at(cmd.offset));
+        QBrush brush = qvariant_cast<QBrush>(d->variants.at(cmd.offset));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_SetBrush: " << brush;
 #endif
@@ -1452,7 +1452,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_SetTransform: {
-        QTransform xform = qVariantValue<QTransform>(d->variants.at(cmd.offset));
+        QTransform xform = qvariant_cast<QTransform>(d->variants.at(cmd.offset));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_SetTransform, offset: " << cmd.offset << xform;
 #endif
@@ -1520,7 +1520,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_StrokeVectorPath: {
-        QPen pen = qVariantValue<QPen>(d->variants.at(cmd.extra));
+        QPen pen = qvariant_cast<QPen>(d->variants.at(cmd.extra));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_StrokeVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
@@ -1531,7 +1531,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillVectorPath: {
-        QBrush brush = qVariantValue<QBrush>(d->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d->variants.at(cmd.extra));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_FillVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
@@ -1705,7 +1705,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectBrush: {
-        QBrush brush = qVariantValue<QBrush>(d->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d->floats.constData() + cmd.offset);
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " brush: " << brush;
@@ -1714,7 +1714,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectColor: {
-        QColor color = qVariantValue<QColor>(d->variants.at(cmd.extra));
+        QColor color = qvariant_cast<QColor>(d->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d->floats.constData() + cmd.offset);
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> Cmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " color: " << color;
@@ -1790,7 +1790,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 
     case QPaintBufferPrivate::Cmd_DrawTextItem: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));
-        QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qVariantValue<void *>(d->variants.at(cmd.offset)));
+        QTextItemIntCopy *tiCopy = reinterpret_cast<QTextItemIntCopy *>(qvariant_cast<void *>(d->variants.at(cmd.offset)));
         QTextItemInt &ti = (*tiCopy)();
         QString text(ti.text());
 
@@ -1885,7 +1885,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_StrokeVectorPath: {
-        QPen pen = qVariantValue<QPen>(d->variants.at(cmd.extra));
+        QPen pen = qvariant_cast<QPen>(d->variants.at(cmd.extra));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> ExCmd_StrokeVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
@@ -1896,7 +1896,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillVectorPath: {
-        QBrush brush = qVariantValue<QBrush>(d->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d->variants.at(cmd.extra));
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> ExCmd_FillVectorPath: size: " << cmd.size
 //                 << ", hints:" << d->ints[cmd.offset2+cmd.size]
@@ -1907,7 +1907,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectBrush: {
-        QBrush brush = qVariantValue<QBrush>(d->variants.at(cmd.extra));
+        QBrush brush = qvariant_cast<QBrush>(d->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d->floats.constData() + cmd.offset);
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " brush: " << brush;
@@ -1916,7 +1916,7 @@ void QPaintEngineExReplayer::process(const QPaintBufferCommand &cmd)
         break; }
 
     case QPaintBufferPrivate::Cmd_FillRectColor: {
-        QColor color = qVariantValue<QColor>(d->variants.at(cmd.extra));
+        QColor color = qvariant_cast<QColor>(d->variants.at(cmd.extra));
         QRectF *rect = (QRectF *)(d->floats.constData() + cmd.offset);
 #ifdef QPAINTBUFFER_DEBUG_DRAW
         qDebug() << " -> ExCmd_FillRectBrush, offset: " << cmd.offset << " rect: " << *rect << " color: " << color;
