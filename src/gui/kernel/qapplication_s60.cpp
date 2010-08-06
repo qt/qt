@@ -1087,7 +1087,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             break;
 
         case QWExtra::ZeroFill:
-            if (Window().DisplayMode() == EColor16MA) {
+            if (Window().DisplayMode() == EColor16MA
+                || Window().DisplayMode() == Q_SYMBIAN_ECOLOR16MAP) {
                 gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
                 gc.SetBrushColor(TRgb::Color16MA(0));
