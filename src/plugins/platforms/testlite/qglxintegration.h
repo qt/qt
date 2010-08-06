@@ -87,8 +87,6 @@ private:
     static void createDefaultSharedContex(MyDisplay *xd);
 };
 
-
-
 QT_END_NAMESPACE
 
 #endif
