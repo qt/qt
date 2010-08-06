@@ -8,6 +8,7 @@ isEmpty(QMAKE_QT_CONFIG)|!exists($$QMAKE_QT_CONFIG) {
    debug(1, "Cannot load qconfig.pri!")
 } else {
    debug(1, "Loaded .qconfig.pri from ($$QMAKE_QT_CONFIG)")
+   for(mod, $$list($$files($$dirname(QMAKE_QT_CONFIG)/modules/qt_*.pri))):include($$mod)
 }
 
 load(qt_functions)
