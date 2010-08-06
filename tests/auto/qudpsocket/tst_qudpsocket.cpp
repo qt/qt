@@ -869,12 +869,12 @@ void tst_QUdpSocket::multicastTtlOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow("0") << address << 0 << 0;
-        QTest::newRow("1") << address << 1 << 1;
-        QTest::newRow("2") << address << 2 << 2;
-        QTest::newRow("128") << address << 128 << 128;
-        QTest::newRow("255") << address << 255 << 255;
-        QTest::newRow("1024") << address << 1024 << 1;
+        QTest::newRow(QString("%1 0").arg(address.toString()).toAscii()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1").arg(address.toString()).toAscii()) << address << 1 << 1;
+        QTest::newRow(QString("%1 2").arg(address.toString()).toAscii()) << address << 2 << 2;
+        QTest::newRow(QString("%1 128").arg(address.toString()).toAscii()) << address << 128 << 128;
+        QTest::newRow(QString("%1 255").arg(address.toString()).toAscii()) << address << 255 << 255;
+        QTest::newRow(QString("%1 1024").arg(address.toString()).toAscii()) << address << 1024 << 1;
     }
 }
 
@@ -907,13 +907,13 @@ void tst_QUdpSocket::multicastLoopbackOption_data()
     addresses += QHostAddress(QHostAddress::AnyIPv6);
 
     foreach (const QHostAddress &address, addresses) {
-        QTest::newRow("0") << address << 0 << 0;
-        QTest::newRow("1") << address << 1 << 1;
-        QTest::newRow("2") << address << 2 << 1;
-        QTest::newRow("0 again") << address << 0 << 0;
-        QTest::newRow("2 again") << address << 2 << 1;
-        QTest::newRow("0 last time") << address << 0 << 0;
-        QTest::newRow("1 again") << address << 1 << 1;
+        QTest::newRow(QString("%1 0").arg(address.toString()).toAscii()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1").arg(address.toString()).toAscii()) << address << 1 << 1;
+        QTest::newRow(QString("%1 2").arg(address.toString()).toAscii()) << address << 2 << 1;
+        QTest::newRow(QString("%1 0 again").arg(address.toString()).toAscii()) << address << 0 << 0;
+        QTest::newRow(QString("%1 2 again").arg(address.toString()).toAscii()) << address << 2 << 1;
+        QTest::newRow(QString("%1 0 last time").arg(address.toString()).toAscii()) << address << 0 << 0;
+        QTest::newRow(QString("%1 1 again").arg(address.toString()).toAscii()) << address << 1 << 1;
     }
 }
 
@@ -1031,8 +1031,10 @@ void tst_QUdpSocket::multicast_data()
     QTest::addColumn<QHostAddress>("groupAddress");
     QTest::addColumn<bool>("joinResult");
     QTest::newRow("valid bind, group ipv4 address") << anyAddress << true << groupAddress << true;
+    QTest::newRow("valid bind, invalid group ipv4 address") << anyAddress << true << anyAddress << false;
     QTest::newRow("same bind, group ipv4 address") << groupAddress << true << groupAddress << true;
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
+    QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
     QTest::newRow("same bind, group ipv6 address") << group6Address << true << group6Address << true;
 }
 
