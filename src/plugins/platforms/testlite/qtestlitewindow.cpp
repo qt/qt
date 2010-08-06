@@ -56,7 +56,6 @@
 #include <QTimer>
 #include <QApplication>
 
-#include <QtOpenGL/QGLFormat>
 #include "qglxintegration.h"
 
 #include <stdio.h>
@@ -158,21 +157,21 @@ QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration
         int w = window->width();
         int h = window->height();
 
-//        int n, i;
-//        if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL) {
-//            x_visualInfo = QGLXGLContext::findVisual(window->platformWindowFormat(),xd);
+        if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL) {
 
-//            XSetWindowAttributes a;
-//            a.background_pixel = xd->whitePixel();
-//            a.border_pixel = xd->blackPixel();
-//            x_window = XCreateWindow(xd->display, xd->rootWindow(),x, y, w, h,
-//                                      0, visualInfo()->depth, InputOutput, visualInfo()->visual,
-//                                      CWBackPixel|CWBorderPixel, &a);
-//        } else {
+            XVisualInfo *visualInfo = QGLXGLContext::findVisualInfo(xd,window->platformWindowFormat());
+            Colormap cmap = XCreateColormap(xd->display,xd->rootWindow(),visualInfo->visual,AllocNone);
+
+            XSetWindowAttributes a;
+            a.colormap = cmap;
+            x_window = XCreateWindow(xd->display, xd->rootWindow(),x, y, w, h,
+                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                      CWColormap, &a);
+        } else {
             x_window = XCreateSimpleWindow(xd->display, xd->rootWindow(),
                                            x, y, w, h, 0 /*border_width*/,
                                            xd->blackPixel(), xd->whitePixel());
-//        }
+        }
 
 #ifdef MYX11_DEBUG
         qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;

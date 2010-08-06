@@ -105,7 +105,8 @@ static QPlatformWindowFormat qt_glformat_to_platformwindowformat(const QGLFormat
         retFormat.setRedBufferSize(format.redBufferSize());
     retFormat.setRgba(format.rgba());
     retFormat.setSampleBuffers(format.sampleBuffers());
-    retFormat.setSamples(format.sampleBuffers());
+    if (format.samples() >= 0)
+        retFormat.setSamples(format.samples());
     retFormat.setStencil(format.stencil());
     if (format.stencilBufferSize() >= 0)
         retFormat.setStencilBufferSize(format.stencilBufferSize());
