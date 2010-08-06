@@ -1937,6 +1937,61 @@ void HtmlGenerator::generateHeader(const QString& title,
         }
     }
 
+        navigationLinks.clear();
+
+    if (node && !node->links().empty()) {
+        QPair<QString,QString> linkPair;
+        QPair<QString,QString> anchorPair;
+        const Node *linkNode;
+
+        if (node->links().contains(Node::PreviousLink)) {
+            linkPair = node->links()[Node::PreviousLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"prev\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::NextLink)) {
+            linkPair = node->links()[Node::NextLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"next\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::StartLink)) {
+            linkPair = node->links()[Node::StartLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+            out() << "  <link rel=\"start\" href=\""
+                  << anchorPair.first << "\" />\n";
+        }
+    }
+
 #if 0 // Removed for new doc format. MWS
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
