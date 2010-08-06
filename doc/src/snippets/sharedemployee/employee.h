@@ -48,7 +48,7 @@
 class EmployeeData : public QSharedData
 {
   public:
-    EmployeeData() : id(-1) { name.clear(); }
+    EmployeeData() : id(-1) { }
     EmployeeData(const EmployeeData &other)
         : QSharedData(other), id(other.id), name(other.name) { }
     ~EmployeeData() { }
