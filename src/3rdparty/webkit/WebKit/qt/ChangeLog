@@ -1,3 +1,83 @@
+2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Use the default timeout interval for JS as the HTML tokenizer delay for setHtml()
+
+        This ensures that long-running JavaScript (for example due to a modal alert() dialog),
+        will not trigger a deferred load after only 500ms (the default tokenizer delay) while
+        still giving a reasonable timeout (10 seconds) to prevent deadlock.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29381
+
+        * Api/qwebframe.cpp: Document the behaviour
+        * WebCoreSupport/FrameLoaderClientQt.cpp: set the custom tokenizer delay for substitute loads
+        * tests/qwebframe/tst_qwebframe.cpp: Add test
+
+2010-07-07  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Prevent assertion/duplicate loads for non-deferred subtitute-data loads
+
+        https://bugs.webkit.org/show_bug.cgi?id=30879
+
+        MainResourceLoader uses the member m_initialRequest to store requests for future
+        deferred loads. When doing the actual load in handleDataLoadNow(), we therefore
+        have to clear this request so that subsequent entries into the loader will not
+        start yet another load.
+
+        This can happen as a result of a PageGroupLoadDeferrer going out of scope when
+        returning from Chrome::runJavaScriptAlert(), which calls setDeferredLoading(false),
+        but only in the case of using both substitute-data and non-deferred main resource
+        load together. That's why two new DRT functions were added:
+
+         * queueLoadHTMLString()
+         * setDeferMainResourceLoad()
+
+        The change adds DRT hooks for Mac, Win and Qt for these two functions. For Mac
+        and Win the hook uses new SPI in WebDataSource. For Qt a new static member was
+        added to the FrameLoaderClientQt and accessed though DumpRenderTreeSupportQt.
+
+        * WebCoreSupport/DumpRenderTreeSupportQt.cpp:
+        (DumpRenderTreeSupportQt::setDeferMainResourceDataLoad):
+        * WebCoreSupport/DumpRenderTreeSupportQt.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::createDocumentLoader):
+        * WebCoreSupport/FrameLoaderClientQt.h:
+
+2010-07-23  David Boddie  <dboddie@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Doc: Fixed incorrect QML property type.
+
+        * declarative/qdeclarativewebview.cpp:
+
+2010-07-23  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        [Qt] Build fix for Qt apps
+
+        Add webkit to QT_CONFIG. qconfig.pri will read qt_webkit_version.pri and
+        that's how it will pick up webkit in QT_CONFIG.
+
+        * qt_webkit_version.pri:
+
+2010-07-09  Kent Hansen  <kent.hansen@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Skip test that never terminates on maemo5
+
+        Due to https://bugs.webkit.org/show_bug.cgi?id=38538
+        the tst_QWebPage::infiniteLoopJS() autotest never terminates.
+        Skip the test so that the test case may run to completion.
+
+        Patch by Dominik Holland <dominik.holland@nokia.com>
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::infiniteLoopJS):
+
 2010-07-09  Simon Hausmann <simon.hausmann@nokia.com>
 
         Unreviewed trivial Symbian build fix.

@@ -49,10 +49,10 @@ QueryMainWindow::QueryMainWindow() : ui_defaultQueries(0)
 {
     setupUi(this);
 
-    new XmlSyntaxHighlighter(qFindChild<QTextEdit*>(this, "inputTextEdit")->document());
-    new XmlSyntaxHighlighter(qFindChild<QTextEdit*>(this, "outputTextEdit")->document());
+    new XmlSyntaxHighlighter(findChild<QTextEdit*>("inputTextEdit")->document());
+    new XmlSyntaxHighlighter(findChild<QTextEdit*>("outputTextEdit")->document());
 
-    ui_defaultQueries = qFindChild<QComboBox*>(this, "defaultQueries");
+    ui_defaultQueries = findChild<QComboBox*>("defaultQueries");
     QMetaObject::connectSlotsByName(this);
     connect(ui_defaultQueries, SIGNAL(currentIndexChanged(int)), SLOT(displayQuery(int)));
 
@@ -71,7 +71,7 @@ void QueryMainWindow::displayQuery(int index)
     QFile queryFile(QString(":files/") + ui_defaultQueries->itemText(index));
     queryFile.open(QIODevice::ReadOnly);
     const QString query(QString::fromLatin1(queryFile.readAll()));
-    qFindChild<QTextEdit*>(this, "queryTextEdit")->setPlainText(query);
+    findChild<QTextEdit*>("queryTextEdit")->setPlainText(query);
 
     evaluate(query);
 }
@@ -90,7 +90,7 @@ void QueryMainWindow::loadInputFile()
 
     QTextStream in(&forView);
     QString inputDocument = in.readAll();
-    qFindChild<QTextEdit*>(this, "inputTextEdit")->setPlainText(inputDocument);
+    findChild<QTextEdit*>("inputTextEdit")->setPlainText(inputDocument);
 }
 
 
@@ -116,7 +116,7 @@ void QueryMainWindow::evaluate(const QString &str)
         return;
 
     buffer.close();
-    qFindChild<QTextEdit*>(this, "outputTextEdit")->setPlainText(QString::fromUtf8(outArray.constData()));
+    findChild<QTextEdit*>("outputTextEdit")->setPlainText(QString::fromUtf8(outArray.constData()));
 
 }
 //! [2]

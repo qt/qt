@@ -91,8 +91,6 @@ inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T **t)
 { (void) d.set(*t); }
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
-
 // value-based specialization
 template <typename T>
 inline
@@ -115,8 +113,6 @@ template <typename T>
 inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
 { (void) d.set(new T(*t)); }
-
-#endif // QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 // MOC_SKIP_END
 #endif

@@ -1,3 +1,6 @@
-load(qttest_p4)
-QT = core
-SOURCES += tst_quuid.cpp
+TEMPLATE = subdirs
+
+SUBDIRS = testProcessUniqueness
+
+SUBDIRS += test
+

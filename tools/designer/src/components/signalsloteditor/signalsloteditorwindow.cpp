@@ -117,7 +117,7 @@ static QStringList objectNameList(QDesignerFormWindowInterface *form)
     const QDesignerMetaDataBaseInterface *mdb = form->core()->metaDataBase();
 
     // Add managed actions and actions with managed menus
-    const ActionList actions = qFindChildren<QAction*>(mainContainer);
+    const ActionList actions = mainContainer->findChildren<QAction*>();
     if (!actions.empty()) {
         const ActionList::const_iterator cend = actions.constEnd();
         for (ActionList::const_iterator it = actions.constBegin(); it != cend; ++it) {
@@ -135,7 +135,7 @@ static QStringList objectNameList(QDesignerFormWindowInterface *form)
     }
 
     // Add  managed buttons groups
-    const ButtonGroupList buttonGroups = qFindChildren<QButtonGroup *>(mainContainer);
+    const ButtonGroupList buttonGroups = mainContainer->findChildren<QButtonGroup *>();
     if (!buttonGroups.empty()) {
         const ButtonGroupList::const_iterator cend = buttonGroups.constEnd();
         for (ButtonGroupList::const_iterator it = buttonGroups.constBegin(); it != cend; ++it)
@@ -473,7 +473,7 @@ void InlineEditorModel::addTextList(const QMap<QString, bool> &text_list)
     insertRows(cnt, text_list.size());
     QFont font = QApplication::font();
     font.setItalic(true);
-    QVariant fontVariant = qVariantFromValue(font);
+    QVariant fontVariant = QVariant::fromValue(font);
     QMap<QString, bool>::ConstIterator it = text_list.constBegin();
     const QMap<QString, bool>::ConstIterator itEnd = text_list.constEnd();
     while (it != itEnd) {
@@ -658,7 +658,7 @@ QWidget *ConnectionDelegate::createEditor(QWidget *parent,
 
         const qdesigner_internal::ClassesMemberFunctions class_list = qdesigner_internal::reverseClassesMemberFunctions(obj_name, type, peer, m_form);
 
-        QObject *object = qFindChild<QObject*>(m_form, obj_name);
+        QObject *object = m_form->findChild<QObject*>(obj_name);
 
         inline_editor->addText(type == qdesigner_internal::SignalMember ? tr("<signal>") : tr("<slot>"));
         foreach (const qdesigner_internal::ClassMemberFunctions &class_info, class_list) {
@@ -767,7 +767,7 @@ void SignalSlotEditorWindow::setActiveFormWindow(QDesignerFormWindowInterface *f
         }
     }
 
-    m_editor = qFindChild<SignalSlotEditor*>(form);
+    m_editor = form->findChild<SignalSlotEditor*>();
     m_model->setEditor(m_editor);
     if (!m_editor.isNull()) {
         ConnectionDelegate *delegate

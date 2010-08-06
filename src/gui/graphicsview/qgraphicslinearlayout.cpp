@@ -171,14 +171,13 @@ int QGraphicsLinearLayoutPrivate::gridColumn(int index) const
     return int(qMin(uint(index), uint(engine.columnCount())));
 }
 
+Q_GLOBAL_STATIC(QWidget, globalStyleInfoWidget)
+
 QLayoutStyleInfo QGraphicsLinearLayoutPrivate::styleInfo() const
 {
-    static QWidget *wid = 0;
-    if (!wid)
-        wid = new QWidget;
     QGraphicsItem *item = parentItem();
     QStyle *style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : QApplication::style();
-    return QLayoutStyleInfo(style, wid);
+    return QLayoutStyleInfo(style, globalStyleInfoWidget());
 }
 
 /*!

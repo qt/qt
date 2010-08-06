@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 //! [2]
 
 #if !defined(QT_NO_SCRIPTTOOLS)
-    QLineEdit *display = qFindChild<QLineEdit*>(ui, "display");
+    QLineEdit *display = ui->findChild<QLineEdit*>("display");
     QObject::connect(display, SIGNAL(returnPressed()),
                      debugWindow, SLOT(show()));
 #endif

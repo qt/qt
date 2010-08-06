@@ -1756,6 +1756,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
         }
         QStringList tmp_dep = project->values((*it) + ".depends");
         QString tmp_dep_cmd;
+        QString dep_cd_cmd;
         if(!project->isEmpty((*it) + ".depend_command")) {
             int argv0 = -1;
             QStringList cmdline = project->values((*it) + ".depend_command");
@@ -1774,6 +1775,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     cmdline[argv0] = escapeFilePath(cmdline.at(argv0));
                 }
             }
+            dep_cd_cmd = QLatin1String("cd ")
+                 + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))
+                 + QLatin1String(" && ");
         }
         QStringList &vars = project->values((*it) + ".variables");
         if(tmp_out.isEmpty() || tmp_cmd.isEmpty())
@@ -1875,7 +1879,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     char buff[256];
                     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, (*input),
                                                                     tmp_out);
-                    dep_cmd = fixEnvVariables(dep_cmd);
+                    dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1973,7 +1977,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {
                 char buff[256];
                 QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, (*input), out);
-                dep_cmd = fixEnvVariables(dep_cmd);
+                dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
                 if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                     QString indeps;
                     while(!feof(proc)) {
@@ -2708,7 +2712,7 @@ MakefileGenerator::fileInfo(QString file) const
     static QFileInfo noInfo = QFileInfo();
     if(!cache) {
         cache = new QHash<FileInfoCacheKey, QFileInfo>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFileInfoCacheKeyQFileInfo, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileInfoCacheKey, QFileInfo> >, (void**)&cache);
     }
     FileInfoCacheKey cacheKey(file);
     QFileInfo value = cache->value(cacheKey, noInfo);
@@ -2787,7 +2791,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     static QHash<FileFixifyCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FileFixifyCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFileFixifyCacheKeyQString, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileFixifyCacheKey, QString> >, (void**)&cache);
     }
     FileFixifyCacheKey cacheKey(ret, out_d, in_d, fix, canon);
     QString cacheVal = cache->value(cacheKey);

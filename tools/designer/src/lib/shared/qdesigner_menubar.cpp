@@ -403,7 +403,7 @@ ActionList QDesignerMenuBar::contextMenuActions()
     if (QAction *action = safeActionAt(m_currentIndex)) {
         if (!qobject_cast<SpecialMenuAction*>(action)) {
             QVariant itemData;
-            qVariantSetValue(itemData, action);
+            itemData.setValue(action);
 
             QAction *remove_action = new QAction(tr("Remove Menu '%1'").arg(action->menu()->objectName()), 0);
             remove_action->setData(itemData);

@@ -204,9 +204,8 @@ void tst_MediaObject::testPlayFromResource()
 #ifdef Q_OS_SYMBIAN
     QSKIP("Not implemented yet.", SkipAll);
 #else
-    QFile file(MEDIA_FILEPATH);
     MediaObject media;
-    media.setCurrentSource(&file);
+    media.setCurrentSource(QString(MEDIA_FILEPATH));
     QVERIFY(media.state() != Phonon::ErrorState);
     if (media.state() != Phonon::StoppedState)
         QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 10000);

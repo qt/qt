@@ -433,6 +433,7 @@ void SessionTab::opened()
             iapLineEdit->setText(config.name()+" ("+config.identifier()+")");
         }
     }
+    newState(m_NetworkSession->state()); // Update the "(open)"
 
     if (m_NetworkSession->configuration().type() == QNetworkConfiguration::UserChoice) {
         QVariant identifier = m_NetworkSession->sessionProperty("UserChoiceConfiguration");
@@ -523,7 +524,7 @@ void SessionTab::newState(QNetworkSession::State state)
 
     QString active;
     if (m_NetworkSession->isOpen()) {
-        active = " (O)";
+        active = " (open)";
     }
     stateLineEdit->setText(stateString(state)+active);
 }

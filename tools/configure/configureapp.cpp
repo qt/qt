@@ -581,6 +581,8 @@ void Configure::parseCmdLine()
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
+        else if (configCmdLine.at(i) == "-qt-gif")
+            dictionary[ "GIF" ] = "plugin";
 
         else if (configCmdLine.at(i) == "-no-libtiff") {
             dictionary[ "TIFF"] = "no";
@@ -1741,7 +1743,7 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
-        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler.h\n");
+        desc("GIF", "auto",     "-qt-gif",              "Compile GIF reading support.\nSee also src/gui/image/qgifhandler_p.h\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
@@ -2096,12 +2098,7 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
     else if (part == "XMLPATTERNS")
-    {
-        /* MSVC 6.0 and MSVC 2002/7.0 has too poor C++ support for QtXmlPatterns. */
-        return dictionary.value("QMAKESPEC") != "win32-msvc"
-               && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
-               && dictionary.value("QMAKESPEC") != "win32-msvc2002"
-               && dictionary.value("EXCEPTIONS") == "yes";
+        available = dictionary.value("EXCEPTIONS") == "yes";
     } else if (part == "PHONON") {
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             available = true;
@@ -2459,7 +2456,9 @@ void Configure::generateOutputVars()
         qmakeFormatPlugins += "gif";
 
     if (dictionary[ "TIFF" ] == "no")
-          qtConfig += "no-tiff";
+        qtConfig += "no-tiff";
+    else if (dictionary[ "TIFF" ] == "yes")
+        qtConfig += "tiff";
     else if (dictionary[ "TIFF" ] == "plugin")
         qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
@@ -2467,6 +2466,8 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "JPEG" ] == "no")
         qtConfig += "no-jpeg";
+    else if (dictionary[ "JPEG" ] == "yes")
+        qtConfig += "jpeg";
     else if (dictionary[ "JPEG" ] == "plugin")
         qmakeFormatPlugins += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
@@ -2939,6 +2940,8 @@ void Configure::generateCachefile()
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
 
+        configStream << "#modules" << endl << "for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)" << endl;
+
         configStream.flush();
         configFile.close();
     }
@@ -3180,16 +3183,6 @@ void Configure::generateConfigfiles()
         QFile::remove(outName);
         tmpFile.copy(outName);
         tmpFile.close();
-
-        if (!QFile::exists(buildPath + "/include/QtCore/qconfig.h")) {
-            if (!writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                             buildPath + "/include/QtCore/qconfig.h")
-            || !writeToFile("#include \"../../src/corelib/global/qconfig.h\"\n",
-                            buildPath + "/include/Qt/qconfig.h")) {
-                dictionary["DONE"] = "error";
-                return;
-            }
-        }
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any

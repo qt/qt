@@ -294,7 +294,7 @@ bool PaletteModel::setData(const QModelIndex &index, const QVariant &value, int 
         return false;
 
     if (index.column() != 0 && role == BrushRole) {
-        const QBrush br = qVariantValue<QBrush>(value);
+        const QBrush br = qvariant_cast<QBrush>(value);
         const QPalette::ColorRole r = static_cast<QPalette::ColorRole>(index.row());
         const QPalette::ColorGroup g = columnToGroup(index.column());
         m_palette.setBrush(g, r, br);
@@ -336,7 +336,7 @@ bool PaletteModel::setData(const QModelIndex &index, const QVariant &value, int 
     }
     if (index.column() == 0 && role == Qt::EditRole) {
         uint mask = m_palette.resolve();
-        const bool isMask = qVariantValue<bool>(value);
+        const bool isMask = qvariant_cast<bool>(value);
         const int r = index.row();
         if (isMask)
             mask |= (1 << r);
@@ -532,13 +532,13 @@ QWidget *ColorDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem
 void ColorDelegate::setEditorData(QWidget *ed, const QModelIndex &index) const
 {
     if (index.column() == 0) {
-        const bool mask = qVariantValue<bool>(index.model()->data(index, Qt::EditRole));
+        const bool mask = qvariant_cast<bool>(index.model()->data(index, Qt::EditRole));
         RoleEditor *editor = static_cast<RoleEditor *>(ed);
         editor->setEdited(mask);
-        const QString colorName = qVariantValue<QString>(index.model()->data(index, Qt::DisplayRole));
+        const QString colorName = qvariant_cast<QString>(index.model()->data(index, Qt::DisplayRole));
         editor->setLabel(colorName);
     } else {
-        const QBrush br = qVariantValue<QBrush>(index.model()->data(index, BrushRole));
+        const QBrush br = qvariant_cast<QBrush>(index.model()->data(index, BrushRole));
         BrushEditor *editor = static_cast<BrushEditor *>(ed);
         editor->setBrush(br);
     }
@@ -571,11 +571,11 @@ void ColorDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt,
             const QModelIndex &index) const
 {
     QStyleOptionViewItem option = opt;
-    const bool mask = qVariantValue<bool>(index.model()->data(index, Qt::EditRole));
+    const bool mask = qvariant_cast<bool>(index.model()->data(index, Qt::EditRole));
     if (index.column() == 0 && mask) {
         option.font.setBold(true);
     }
-    QBrush br = qVariantValue<QBrush>(index.model()->data(index, BrushRole));
+    QBrush br = qvariant_cast<QBrush>(index.model()->data(index, BrushRole));
     if (br.style() == Qt::LinearGradientPattern ||
             br.style() == Qt::RadialGradientPattern ||
             br.style() == Qt::ConicalGradientPattern) {

@@ -37,8 +37,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "musician.h"
-#include "instrument.h"
+#include "piechart.h"
+#include "pieslice.h"
 
 #include <qdeclarative.h>
 #include <QDeclarativeView>
@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
 //![0]
     QApplication app(argc, argv);
 
-    qmlRegisterType<Musician>("Music", 1, 0, "Musician");
+    qmlRegisterType<PieChart>("Charts", 1, 0, "PieChart");
 
 //![1]
-    qmlRegisterType<Instrument>("Music", 1, 0, "Instrument");
+    qmlRegisterType<PieSlice>("Charts", 1, 0, "PieSlice");
 //![1]
 
     QDeclarativeView view;

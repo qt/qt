@@ -71,6 +71,30 @@
     A guided tour through the translations process, explaining the
     tools provided for developers, translators and release managers.
 
+
+    \row
+    \o{2,1} \l{modelview.html}{\bold{ModelView}}
+    \o{2,1}
+    
+    \row
+    \o \image treeview_sml.png ModelView
+    \o This tutorial gives an introduction to ModelView programming using the Qt cross-platform framework
+
+    \o
+    \o
+    
+    \row
+    \o{2,1} \l{QML Tutorial}{\bold QML Tutorial}
+    \o{2,1} \l{QML Advanced Tutorial}{\bold SameGame}
+    \row
+    \o{2,1}
+    This tutorial provides a very basic introduction to QML.
+    \o \image qml-samegame-demo-small.png Samegame
+    \o
+    This tutorial walks through creating a complete application with QML,
+    in this case a simple game. It is recommended that you complete the basic QML
+    tutorial first.
+
     \row
     \o{2,1} \l{QTestLib Tutorial}{\bold QTestLib}
     \o{2,1} \l{qmake Tutorial}{\bold qmake}

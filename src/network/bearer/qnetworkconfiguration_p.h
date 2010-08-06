@@ -57,6 +57,7 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +85,7 @@ public:
         return bearer;
     }
 
-    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
+    QMap<unsigned int, QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
     mutable QMutex mutex;
 

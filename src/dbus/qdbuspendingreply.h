@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(DBus)
 
-class QDBUS_EXPORT QDBusPendingReplyData: public QDBusPendingCall
+class Q_DBUS_EXPORT QDBusPendingReplyData: public QDBusPendingCall
 {
 protected:
     QDBusPendingReplyData();

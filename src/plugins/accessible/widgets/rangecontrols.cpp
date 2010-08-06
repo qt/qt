@@ -233,7 +233,7 @@ QVariant QAccessibleAbstractSpinBox::invokeMethodEx(Method method, int child, co
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
-        return qVariantFromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
+        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
                     QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
     }
     default:
@@ -814,7 +814,7 @@ QVariant QAccessibleAbstractSlider::invokeMethodEx(Method method, int child, con
     case ListSupportedMethods: {
         QSet<QAccessible::Method> set;
         set << ListSupportedMethods;
-        return qVariantFromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
+        return QVariant::fromValue(set | qvariant_cast<QSet<QAccessible::Method> >(
                     QAccessibleWidgetEx::invokeMethodEx(method, child, params)));
     }
     default:

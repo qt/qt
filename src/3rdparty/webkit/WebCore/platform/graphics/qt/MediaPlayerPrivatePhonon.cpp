@@ -101,7 +101,7 @@ MediaPlayerPrivate::MediaPlayerPrivate(MediaPlayer* player)
 
     // Make sure we get updates for each frame
     m_videoWidget->installEventFilter(this);
-    foreach (QWidget* widget, qFindChildren<QWidget*>(m_videoWidget))
+    foreach (QWidget* widget, m_videoWidget->findChildren<QWidget*>())
         widget->installEventFilter(this);
 
     connect(m_mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),

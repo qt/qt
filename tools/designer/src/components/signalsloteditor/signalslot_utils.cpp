@@ -245,7 +245,7 @@ namespace qdesigner_internal {
     ClassesMemberFunctions reverseClassesMemberFunctions(const QString &obj_name, MemberType member_type,
                                                          const QString &peer, QDesignerFormWindowInterface *form)
     {
-        QObject *object = qFindChild<QObject*>(form, obj_name);
+        QObject *object = form->findChild<QObject*>(obj_name);
         if (!object)
             return ClassesMemberFunctions();
 

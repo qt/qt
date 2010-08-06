@@ -72,9 +72,7 @@ public:
     tst_QGL();
     virtual ~tst_QGL();
 
-#ifndef Q_WS_MAC //All tests are disabled on mac as they crash and prevent integration, see QTBUG-12138
 private slots:
-#endif
     void getSetCheck();
     void openGLVersionCheck();
     void graphicsViewClipping();
@@ -2246,5 +2244,30 @@ void tst_QGL::textureCleanup()
 #endif
 }
 
-QTEST_MAIN(tst_QGL)
+class tst_QGLDummy : public QObject
+{
+Q_OBJECT
+
+public:
+    tst_QGLDummy() {}
+
+private slots:
+    void qglSkipTests() {
+	QSKIP("QGL not supported on this system.", SkipAll);
+    }
+};
+
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
+    QTEST_DISABLE_KEYPAD_NAVIGATION \
+    QGLWidget glWidget;
+    if (!glWidget.isValid()) {
+	tst_QGLDummy tc;
+	return QTest::qExec(&tc, argc, argv);
+    }
+    tst_QGL tc;
+    return QTest::qExec(&tc, argc, argv);
+}
+
 #include "tst_qgl.moc"

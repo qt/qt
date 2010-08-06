@@ -230,6 +230,14 @@ QT_BEGIN_NAMESPACE
 
         \since 4.7
 
+    \omitvalue MaximumDownloadBufferSizeAttribute
+        \since 4.7
+        \internal
+
+    \omitvalue DownloadBufferAttribute
+        \since 4.7
+        \internal
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -760,7 +768,7 @@ static QVariant parseCookieHeader(const QByteArray &raw)
         result += parsed;
     }
 
-    return qVariantFromValue(result);
+    return QVariant::fromValue(result);
 }
 
 static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QByteArray &value)
@@ -793,7 +801,7 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
         return parseCookieHeader(value);
 
     case QNetworkRequest::SetCookieHeader:
-        return qVariantFromValue(QNetworkCookie::parseCookies(value));
+        return QVariant::fromValue(QNetworkCookie::parseCookies(value));
 
     default:
         Q_ASSERT(0);

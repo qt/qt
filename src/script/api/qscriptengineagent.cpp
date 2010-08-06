@@ -117,6 +117,8 @@ void QScriptEngineAgentPrivate::attach()
     if (engine->originalGlobalObject()->debugger())
         engine->originalGlobalObject()->setDebugger(0);
     JSC::Debugger::attach(engine->originalGlobalObject());
+    if (!QScriptEnginePrivate::get(engine)->isEvaluating())
+        JSC::Debugger::recompileAllJSFunctions(engine->globalData);
 }
 
 void QScriptEngineAgentPrivate::detach()
@@ -134,9 +136,12 @@ void QScriptEngineAgentPrivate::returnEvent(const JSC::DebuggerCallFrame& frame,
 void QScriptEngineAgentPrivate::exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler)
 {
     JSC::CallFrame *oldFrame = engine->currentFrame;
+    int oldAgentLineNumber = engine->agentLineNumber;
     engine->currentFrame = frame.callFrame();
     QScriptValue value(engine->scriptValueFromJSCValue(frame.exception()));
+    engine->agentLineNumber = value.property(QLatin1String("lineNumber")).toInt32();
     q_ptr->exceptionThrow(sourceID, value, hasHandler);
+    engine->agentLineNumber = oldAgentLineNumber;
     engine->currentFrame = oldFrame;
     engine->setCurrentException(value);
 };

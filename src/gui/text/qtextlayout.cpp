@@ -1134,7 +1134,7 @@ QList<QGlyphs> QTextLayout::glyphs() const
 {
     QList<QGlyphs> glyphs;
     for (int i=0; i<d->lines.size(); ++i)
-        glyphs += QTextLine(i, d).glyphs();
+        glyphs += QTextLine(i, d).glyphs(-1, -1);
 
     return glyphs;
 }
@@ -1978,7 +1978,7 @@ void QTextLine::layout_helper(int maxGlyphs)
             // We ignore the right bearing if the minimum negative bearing is too little to
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
-                if (lbh.calculateNewWidth(line) + lbh.minimumRightBearing > line.width)
+                if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
                     if (!breakany) {
@@ -2198,13 +2198,16 @@ namespace {
 /*!
     \internal
 
-    Returns the glyph indexes and positions for all glyphs in this QTextLine.
+    Returns the glyph indexes and positions for all glyphs in this QTextLine which reside in
+    QScriptItems that overlap with the range defined by \a from and \a length. The arguments
+    specify characters, relative to the text in the layout. Note that it is not possible to
+    use this function to retrieve a subset of the glyphs in a QScriptItem.
 
     \since 4.8
 
     \sa QTextLayout::glyphs()
 */
-QList<QGlyphs> QTextLine::glyphs() const
+QList<QGlyphs> QTextLine::glyphs(int from, int length) const
 {
     const QScriptLine &line = eng->lines[i];
 
@@ -2217,7 +2220,13 @@ QList<QGlyphs> QTextLine::glyphs() const
     qreal y = line.y.toReal() + line.base().toReal();
     while (!iterator.atEnd()) {
         QScriptItem &si = iterator.next();
+        if (si.analysis.flags >= QScriptAnalysis::TabOrObject)
+            continue;
+
         QPointF pos(iterator.x.toReal(), y);
+        if (from >= 0 && length >= 0 &&
+            (from >= si.position + eng->length(&si) || from + length <= si.position))
+            continue;
 
         QFont font = eng->font(si);
 

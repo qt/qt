@@ -326,7 +326,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
         option->displayAlignment = Qt::Alignment(value.toInt());
 
     value = index.data(Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(value))
+    if (value.canConvert<QBrush>())
         option->palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
     if (QStyleOptionViewItemV4 *v4 = qstyleoption_cast<QStyleOptionViewItemV4 *>(option)) {

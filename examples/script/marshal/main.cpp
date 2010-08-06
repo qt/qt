@@ -49,7 +49,7 @@ QScriptValue toScriptValue(QScriptEngine *eng, const Container &cont)
     typename Container::const_iterator end = cont.end();
     typename Container::const_iterator it;
     for (it = begin; it != end; ++it)
-        a.setProperty(quint32(it - begin), qScriptValueFromValue(eng, *it));
+        a.setProperty(quint32(it - begin), eng->toScriptValue(*it));
     return a;
 }
 

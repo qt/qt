@@ -55,6 +55,7 @@ class QTreeWidgetItem;
 class QProgressDialog;
 class QPushButton;
 class QUrlInfo;
+class QNetworkSession;
 QT_END_NAMESPACE
 
 class FtpWindow : public QDialog
@@ -78,6 +79,7 @@ private slots:
     void updateDataTransferProgress(qint64 readBytes,
                                     qint64 totalBytes);
     void enableDownloadButton();
+    void enableConnectButton();
 //![0]
 
 private:
@@ -98,9 +100,7 @@ private:
     QFtp *ftp;
     QFile *file;
 
-#ifdef Q_OS_SYMBIAN
-    bool bDefaultIapSet;
-#endif
+    QNetworkSession *networkSession;
 //![1]
 };
 

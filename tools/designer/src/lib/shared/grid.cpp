@@ -71,7 +71,7 @@ template <class T>
         const QVariantMap::const_iterator it = v.constFind(key);
         const bool found = it != v.constEnd();
         if (found)
-            value = qVariantValue<T>(it.value());
+            value = qvariant_cast<T>(it.value());
         return found;
     }
 

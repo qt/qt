@@ -136,7 +136,7 @@ bool QFormBuilderExtra::applyBuddy(const QString &buddyName, BuddyMode applyMode
         return false;
     }
 
-    const QWidgetList widgets = qFindChildren<QWidget*>(label->topLevelWidget(), buddyName);
+    const QWidgetList widgets = label->topLevelWidget()->findChildren<QWidget*>(buddyName);
     if (widgets.empty()) {
         label->setBuddy(0);
         return false;

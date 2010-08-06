@@ -68,7 +68,7 @@ class QDeclarativeMouseAreaPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativeMouseAreaPrivate()
       : absorb(true), hovered(false), pressed(false), longPress(false),
-      moved(false), drag(0)
+      moved(false), stealMouse(false), drag(0)
     {
     }
 
@@ -78,6 +78,7 @@ public:
     {
         Q_Q(QDeclarativeMouseArea);
         q->setAcceptedMouseButtons(Qt::LeftButton);
+        q->setFiltersChildEvents(true);
     }
 
     void saveEvent(QGraphicsSceneMouseEvent *event) {
@@ -101,6 +102,7 @@ public:
     bool moved : 1;
     bool dragX : 1;
     bool dragY : 1;
+    bool stealMouse : 1;
     QDeclarativeDrag *drag;
     QPointF startScene;
     qreal startX;

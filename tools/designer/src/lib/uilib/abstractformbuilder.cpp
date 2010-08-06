@@ -341,7 +341,7 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
                 w->addAction(a);
             } else if (QActionGroup *g = m_actionGroups.value(name)) {
                 w->addActions(g->actions());
-            } else if (QMenu *menu = qFindChild<QMenu*>(w, name)) {
+            } else if (QMenu *menu = w->findChild<QMenu*>(name)) {
                 w->addAction(menu->menuAction());
                 addMenuAction(menu->menuAction());
             }
@@ -363,9 +363,9 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
 
     const QStringList zOrderNames = ui_widget->elementZOrder();
     if (!zOrderNames.isEmpty()) {
-        QList<QWidget *> zOrder = qVariantValue<QWidgetList>(w->property("_q_zOrder"));
+        QList<QWidget *> zOrder = qvariant_cast<QWidgetList>(w->property("_q_zOrder"));
         foreach (const QString &widgetName, zOrderNames) {
-            if (QWidget *child = qFindChild<QWidget*>(w, widgetName)) {
+            if (QWidget *child = w->findChild<QWidget*>(widgetName)) {
                 if (child->parentWidget() == w) {
                     zOrder.removeAll(child);
                     zOrder.append(child);
@@ -373,7 +373,7 @@ QWidget *QAbstractFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidge
                 }
             }
         }
-        w->setProperty("_q_zOrder", qVariantFromValue(zOrder));
+        w->setProperty("_q_zOrder", QVariant::fromValue(zOrder));
     }
 
     return w;
@@ -1287,7 +1287,7 @@ DomWidget *QAbstractFormBuilder::createDom(QWidget *widget, DomWidget *ui_parent
     {
         QList<QObject *> childObjects = widget->children();
 
-        const QList<QWidget *> list = qVariantValue<QWidgetList>(widget->property("_q_widgetOrder"));
+        const QList<QWidget *> list = qvariant_cast<QWidgetList>(widget->property("_q_widgetOrder"));
         foreach (QWidget *w, list) {
             if (childObjects.contains(w)) {
                 children.append(w);
@@ -1296,7 +1296,7 @@ DomWidget *QAbstractFormBuilder::createDom(QWidget *widget, DomWidget *ui_parent
         }
         children += childObjects;
 
-        const QList<QWidget *> zOrder = qVariantValue<QWidgetList>(widget->property("_q_zOrder"));
+        const QList<QWidget *> zOrder = qvariant_cast<QWidgetList>(widget->property("_q_zOrder"));
         if (list != zOrder) {
             QStringList zOrderList;
             QListIterator<QWidget* > itZOrder(zOrder);
@@ -1603,14 +1603,14 @@ void QAbstractFormBuilder::applyTabStops(QWidget *widget, DomTabStops *tabStops)
     for (int i=0; i<l.size(); ++i) {
         const QString name = l.at(i);
 
-        QWidget *child = qFindChild<QWidget*>(widget, name);
+        QWidget *child = widget->findChild<QWidget*>(name);
         if (!child) {
             uiLibWarning(QCoreApplication::translate("QAbstractFormBuilder", "While applying tab stops: The widget '%1' could not be found.").arg(name));
             continue;
         }
 
         if (i == 0) {
-            lastWidget = qFindChild<QWidget*>(widget, name);
+            lastWidget = widget->findChild<QWidget*>(name);
             continue;
         } else if (!child || !lastWidget) {
             continue;
@@ -1618,7 +1618,7 @@ void QAbstractFormBuilder::applyTabStops(QWidget *widget, DomTabStops *tabStops)
 
         QWidget::setTabOrder(lastWidget, child);
 
-        lastWidget = qFindChild<QWidget*>(widget, name);
+        lastWidget = widget->findChild<QWidget*>(name);
     }
 }
 
@@ -1747,7 +1747,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, T *item,
         if ((p = properties.value(it.second))) {
             v = formBuilder->textBuilder()->loadText(p);
             QVariant nativeValue = formBuilder->textBuilder()->toNativeValue(v);
-            item->setData(it.first.first, qVariantValue<QString>(nativeValue));
+            item->setData(it.first.first, qvariant_cast<QString>(nativeValue));
             item->setData(it.first.second, v);
         }
 
@@ -1759,7 +1759,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, T *item,
     if ((p = properties.value(strings.iconAttribute))) {
         v = formBuilder->resourceBuilder()->loadResource(formBuilder->workingDirectory(), p);
         QVariant nativeValue = formBuilder->resourceBuilder()->toNativeValue(v);
-        item->setIcon(qVariantValue<QIcon>(nativeValue));
+        item->setIcon(qvariant_cast<QIcon>(nativeValue));
         item->setData(Qt::DecorationPropertyRole, v);
     }
 }
@@ -1855,7 +1855,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QTableWidge
         if ((p = properties.value(it.second))) {
             v = formBuilder->textBuilder()->loadText(p);
             QVariant nativeValue = formBuilder->textBuilder()->toNativeValue(v);
-            item->setData(it.first.first, qVariantValue<QString>(nativeValue));
+            item->setData(it.first.first, qvariant_cast<QString>(nativeValue));
             item->setData(it.first.second, v);
         }
 
@@ -1867,7 +1867,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QTableWidge
     if ((p = properties.value(strings.iconAttribute))) {
         v = formBuilder->resourceBuilder()->loadResource(formBuilder->workingDirectory(), p);
         QVariant nativeValue = formBuilder->resourceBuilder()->toNativeValue(v);
-        item->setIcon(qVariantValue<QIcon>(nativeValue));
+        item->setIcon(qvariant_cast<QIcon>(nativeValue));
         item->setData(Qt::DecorationPropertyRole, v);
     }
 }
@@ -1885,7 +1885,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QListWidget
         if ((p = properties.value(it.second))) {
             v = formBuilder->textBuilder()->loadText(p);
             QVariant nativeValue = formBuilder->textBuilder()->toNativeValue(v);
-            item->setData(it.first.first, qVariantValue<QString>(nativeValue));
+            item->setData(it.first.first, qvariant_cast<QString>(nativeValue));
             item->setData(it.first.second, v);
         }
 
@@ -1897,7 +1897,7 @@ static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QListWidget
     if ((p = properties.value(strings.iconAttribute))) {
         v = formBuilder->resourceBuilder()->loadResource(formBuilder->workingDirectory(), p);
         QVariant nativeValue = formBuilder->resourceBuilder()->toNativeValue(v);
-        item->setIcon(qVariantValue<QIcon>(nativeValue));
+        item->setIcon(qvariant_cast<QIcon>(nativeValue));
         item->setData(Qt::DecorationPropertyRole, v);
     }
 }
@@ -2337,14 +2337,14 @@ void QAbstractFormBuilder::loadTreeWidgetExtraInfo(DomWidget *ui_widget, QTreeWi
             if ((p = properties.value(it.second))) {
                 v = textBuilder()->loadText(p);
                 QVariant nativeValue = textBuilder()->toNativeValue(v);
-                treeWidget->headerItem()->setData(i, it.first.first, qVariantValue<QString>(nativeValue));
+                treeWidget->headerItem()->setData(i, it.first.first, qvariant_cast<QString>(nativeValue));
                 treeWidget->headerItem()->setData(i, it.first.second, v);
             }
 
         if ((p = properties.value(strings.iconAttribute))) {
             v = resourceBuilder()->loadResource(workingDirectory(), p);
             QVariant nativeValue = resourceBuilder()->toNativeValue(v);
-            treeWidget->headerItem()->setIcon(i, qVariantValue<QIcon>(nativeValue));
+            treeWidget->headerItem()->setIcon(i, qvariant_cast<QIcon>(nativeValue));
             treeWidget->headerItem()->setData(i, Qt::DecorationPropertyRole, v);
         }
     }
@@ -2374,14 +2374,14 @@ void QAbstractFormBuilder::loadTreeWidgetExtraInfo(DomWidget *ui_widget, QTreeWi
                 col++;
                 QVariant textV = textBuilder()->loadText(property);
                 QVariant nativeValue = textBuilder()->toNativeValue(textV);
-                currentItem->setText(col, qVariantValue<QString>(nativeValue));
+                currentItem->setText(col, qvariant_cast<QString>(nativeValue));
                 currentItem->setData(col, Qt::DisplayPropertyRole, textV);
             } else if (col >= 0) {
                 if (property->attributeName() == strings.iconAttribute) {
                     QVariant v = resourceBuilder()->loadResource(workingDirectory(), property);
                     if (v.isValid()) {
                         QVariant nativeValue = resourceBuilder()->toNativeValue(v);
-                        currentItem->setIcon(col, qVariantValue<QIcon>(nativeValue));
+                        currentItem->setIcon(col, qvariant_cast<QIcon>(nativeValue));
                         currentItem->setData(col, Qt::DecorationPropertyRole, v);
                     }
                 } else {
@@ -2397,7 +2397,7 @@ void QAbstractFormBuilder::loadTreeWidgetExtraInfo(DomWidget *ui_widget, QTreeWi
                         if (rolePair.first >= 0) {
                             QVariant textV = textBuilder()->loadText(property);
                             QVariant nativeValue = textBuilder()->toNativeValue(textV);
-                            currentItem->setData(col, rolePair.first, qVariantValue<QString>(nativeValue));
+                            currentItem->setData(col, rolePair.first, qvariant_cast<QString>(nativeValue));
                             currentItem->setData(col, rolePair.second, textV);
                         }
                     }
@@ -2475,13 +2475,13 @@ void QAbstractFormBuilder::loadComboBoxExtraInfo(DomWidget *ui_widget, QComboBox
         p = properties.value(strings.textAttribute);
         if (p && p->elementString()) {
              textData = textBuilder()->loadText(p);
-             text = qVariantValue<QString>(textBuilder()->toNativeValue(textData));
+             text = qvariant_cast<QString>(textBuilder()->toNativeValue(textData));
         }
 
         p = properties.value(strings.iconAttribute);
         if (p) {
              iconData = resourceBuilder()->loadResource(workingDirectory(), p);
-             icon = qVariantValue<QIcon>(resourceBuilder()->toNativeValue(iconData));
+             icon = qvariant_cast<QIcon>(resourceBuilder()->toNativeValue(iconData));
         }
 
         comboBox->addItem(icon, text);

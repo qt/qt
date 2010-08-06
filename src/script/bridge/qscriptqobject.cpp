@@ -664,7 +664,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         if (actual.isNumber()) {
                             int ival = QScriptEnginePrivate::toInt32(exec, actual);
                             if (m.valueToKey(ival) != 0) {
-                                qVariantSetValue(v, ival);
+                                v.setValue(ival);
                                 converted = true;
                                 matchDistance += 10;
                             }
@@ -672,7 +672,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                             JSC::UString sval = QScriptEnginePrivate::toString(exec, actual);
                             int ival = m.keyToValue(convertToLatin1(sval));
                             if (ival != -1) {
-                                qVariantSetValue(v, ival);
+                                v.setValue(ival);
                                 converted = true;
                                 matchDistance += 10;
                             }
@@ -1668,7 +1668,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
     QString name;
     if (args.size() != 0)
         name = args.at(0).toString(exec);
-    QObject *child = qFindChild<QObject*>(obj, name);
+    QObject *child = obj->findChild<QObject*>(name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
     return engine->newQObject(child, QScriptEngine::QtOwnership, opt);
 }
@@ -1709,10 +1709,10 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
             }
         } else {
             const QString name(args.at(0).toString(exec));
-            children = qFindChildren<QObject*>(obj, name);
+            children = obj->findChildren<QObject*>(name);
         }
     } else {
-        children = qFindChildren<QObject*>(obj, QString());
+        children = obj->findChildren<QObject*>(QString());
     }
     // create the result array with the children
     const int length = children.size();

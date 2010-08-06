@@ -225,7 +225,7 @@ struct QHashNode
     inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
 };
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
 #define Q_HASH_DECLARE_INT_NODES(key_type) \
     template <class T> \
     struct QHashDummyNode<key_type, T> { \
@@ -253,7 +253,6 @@ Q_HASH_DECLARE_INT_NODES(ushort);
 Q_HASH_DECLARE_INT_NODES(int);
 Q_HASH_DECLARE_INT_NODES(uint);
 #undef Q_HASH_DECLARE_INT_NODES
-#endif // QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 template <class Key, class T>
 class QHash
@@ -513,8 +512,6 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode2(QHashData::Node *node)
 {
 #ifdef Q_CC_BOR
     concrete(node)->~QHashNode<Key, T>();
-#elif defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
-    concrete(node)->~QHashNode();
 #else
     concrete(node)->~Node();
 #endif

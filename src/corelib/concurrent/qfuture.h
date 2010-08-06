@@ -210,7 +210,7 @@ public:
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
 
-#if !defined(QT_NO_MEMBER_TEMPLATES) && !defined(Q_CC_XLC)
+#if !defined(Q_CC_XLC)
     template <typename T>
     QFuture(const QFuture<T> &other)
         : d(other.d)

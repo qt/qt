@@ -2543,8 +2543,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Notify the item that its scene is changing, and allow the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                    qVariantFromValue<QGraphicsScene *>(this)));
-    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
+                                                    QVariant::fromValue<QGraphicsScene *>(this)));
+    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
         if (targetScene && item->d_ptr->scene != targetScene)
             targetScene->addItem(item);
@@ -2955,8 +2955,8 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     // Notify the item that it's scene is changing to 0, allowing the item to
     // react.
     const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                    qVariantFromValue<QGraphicsScene *>(0)));
-    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
+                                                    QVariant::fromValue<QGraphicsScene *>(0)));
+    QGraphicsScene *targetScene = qvariant_cast<QGraphicsScene *>(newSceneVariant);
     if (targetScene != 0 && targetScene != this) {
         targetScene->addItem(item);
         return;
@@ -5178,7 +5178,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     // Process children.
     if (itemHasChildren && item->d_ptr->dirtyChildren) {
         const bool itemClipsChildrenToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
-        if (itemClipsChildrenToShape) {
+        // Items with no content are threated as 'dummy' items which means they are never drawn and
+        // 'processed', so the painted view bounding rect is never up-to-date. This means that whenever
+        // such an item changes geometry, its children have to take care of the update regardless
+        // of whether the item clips children to shape or not.
+        const bool bypassUpdateClip = !itemHasContents && wasDirtyParentViewBoundingRects;
+        if (itemClipsChildrenToShape && !bypassUpdateClip) {
             // Make sure child updates are clipped to the item's bounding rect.
             for (int i = 0; i < views.size(); ++i)
                 views.at(i)->d_func()->setUpdateClip(item);

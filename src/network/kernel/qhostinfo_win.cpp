@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-#if defined Q_CC_MSVC && _MSC_VER <=1300
-//VC.net 2002 support for templates doesn't match some PSDK requirements
-#define _WSPIAPI_COUNTOF(_Array) (sizeof(_Array) / sizeof(_Array[0]))
-#endif
-
 #include <winsock2.h>
 
 #include "qhostinfo_p.h"

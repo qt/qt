@@ -47,7 +47,7 @@ foreach (variable, container)
 //! [1]
 QList<QString> list;
 ...
-foreach (QString str, list)
+foreach (const QString &str, list)
     cout << str.ascii() << endl;
 //! [1]
 

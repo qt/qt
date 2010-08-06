@@ -2822,10 +2822,9 @@ void tst_QMatrixNxN::convertGeneric()
         9.0f, 10.0f, 11.0f, 12.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
-#if !defined(QT_NO_MEMBER_TEMPLATES)
     QMatrix4x4 m4(m1);
     QVERIFY(isSame(m4, unique4x4));
-#endif
+
     QMatrix4x4 m5 = qGenericMatrixToMatrix4x4(m1);
     QVERIFY(isSame(m5, unique4x4));
 
@@ -2835,10 +2834,9 @@ void tst_QMatrixNxN::convertGeneric()
         9.0f, 10.0f, 11.0f, 12.0f
     };
     QMatrix4x4 m9(uniqueValues4);
-#if !defined(QT_NO_MEMBER_TEMPLATES)
+
     QMatrix4x3 m10 = m9.toGenericMatrix<4, 3>();
     QVERIFY(isSame(m10, conv4x4));
-#endif
 
     QMatrix4x3 m11 = qGenericMatrixFromMatrix4x4<4, 3>(m9);
     QVERIFY(isSame(m11, conv4x4));

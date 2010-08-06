@@ -103,7 +103,7 @@ public:
 
     qint64 objectId()
     {
-        if ( (type == JavaScriptCore) && (engine) )
+        if ( (type == JavaScriptCore) && (engine) && jscValue.isCell() )
             return (qint64)jscValue.asCell();
         else
             return -1;

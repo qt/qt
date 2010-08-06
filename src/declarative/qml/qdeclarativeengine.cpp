@@ -115,22 +115,55 @@ QT_BEGIN_NAMESPACE
 /*!
   \qmlclass QtObject QObject
   \since 4.7
-  \brief The QtObject element is the most basic element in QML
+  \brief The QtObject element is the most basic element in QML.
 
   The QtObject element is a non-visual element which contains only the
-  objectName property. It is useful for when you need an extremely
-  lightweight element to place your own custom properties in.
+  objectName property. 
+
+  It can be useful to create a QtObject if you need an extremely
+  lightweight element to enclose a set of custom properties:
+
+  \snippet doc/src/snippets/declarative/qtobject.qml 0
 
   It can also be useful for C++ integration, as it is just a plain
   QObject. See the QObject documentation for further details.
 */
 /*!
-  \qmlproperty string QtObject::objectName
-  This property allows you to give a name to this specific object instance.
+  \qmlproperty string QML:QtObject::objectName
+  This property holds the QObject::objectName for this specific object instance.
 
-  See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
-  in the scripting documentation for details how objectName can be used from
-  scripts.
+  This allows a C++ application to locate an item within a QML component
+  using the QObject::findChild() method. For example, the following C++ 
+  application locates the child \l Rectangle item and dynamically changes its
+  \c color value:
+
+    \qml
+    // MyRect.qml
+
+    import Qt 4.7
+
+    Item {
+        width: 200; height: 200
+
+        Rectangle {
+            anchors.fill: parent
+            color: "red" 
+            objectName: "myRect"
+        }
+    }
+    \endqml
+
+    \code
+    // main.cpp
+
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("MyRect.qml"));
+    view.show();
+
+    QDeclarativeItem *item = view.rootObject()->findChild<QDeclarativeItem*>("myRect");
+    if (item) 
+        item->setProperty("color", QColor(Qt::yellow));
+    \endcode
 */
 
 struct StaticQtMetaObject : public QObject
@@ -195,7 +228,7 @@ There are also string based constructors for these types. See \l{qdeclarativebas
 
 \section1 Date/Time Formatters
 
-The Qt object contains several functions for formatting dates and times.
+The Qt object contains several functions for formatting QDateTime, QDate and QTime values.
 
 \list
     \o \l{QML:Qt::formatDateTime}{string Qt.formatDateTime(datetime date, variant format)}
@@ -237,8 +270,8 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-\qmlmethod url Qt::resolvedUrl(url)
-Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url)
+  Returns \c url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
@@ -296,7 +329,7 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
     //date/time formatting
     qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
     qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
@@ -545,9 +578,9 @@ void QDeclarativeEngine::clearComponentCache()
   component instances should be added to sub-contexts parented to the
   root context.
 */
-QDeclarativeContext *QDeclarativeEngine::rootContext()
+QDeclarativeContext *QDeclarativeEngine::rootContext() const
 {
-    Q_D(QDeclarativeEngine);
+    Q_D(const QDeclarativeEngine);
     return d->rootContext;
 }
 
@@ -1080,18 +1113,23 @@ Here is an example. Notice it checks whether the component \l{Component::status}
 \c Component.Ready before calling \l {Component::createObject()}{createObject()}
 in case the QML file is loaded over a network and thus is not ready immediately.
 
-\snippet doc/src/snippets/declarative/componentCreation.js 0
+\snippet doc/src/snippets/declarative/componentCreation.js vars
 \codeline
-\snippet doc/src/snippets/declarative/componentCreation.js 1
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js remote
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
+\codeline
+\snippet doc/src/snippets/declarative/componentCreation.js finishCreation
 
-If you are certain the files will be local, you could simplify to:
+If you are certain the QML file to be loaded is a local file, you could omit the \c finishCreation() 
+function and call \l {Component::createObject()}{createObject()} immediately:
 
-\snippet doc/src/snippets/declarative/componentCreation.js 2
+\snippet doc/src/snippets/declarative/componentCreation.js func
+\snippet doc/src/snippets/declarative/componentCreation.js local
+\snippet doc/src/snippets/declarative/componentCreation.js func-end
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
-
-\sa {Dynamic Object Management}
 */
 
 QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1139,8 +1177,6 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
-
-\sa {Dynamic Object Management}
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
@@ -1258,14 +1294,14 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QVector3D(x, y, z)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QVector3D(x, y, z)));
 }
 
 /*!
 \qmlmethod string Qt::formatDate(datetime date, variant format)
 Returns the string representation of \c date, formatted according to \c format.
 */
-#ifndef QT_NO_TEXTDATE
+#ifndef QT_NO_DATESTRING
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
 {
     int argCount = ctxt->argumentCount();
@@ -1278,14 +1314,14 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid date format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
 
 /*!
@@ -1306,14 +1342,14 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
 
 /*!
@@ -1397,16 +1433,16 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else { 
             return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
-#endif // QT_NO_TEXTDATE
+#endif // QT_NO_DATESTRING
 
 /*!
 \qmlmethod color Qt::rgba(real red, real green, real blue, real alpha)
@@ -1433,7 +1469,7 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromRgbF(r, g, b, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromRgbF(r, g, b, a)));
 }
 
 /*!
@@ -1461,7 +1497,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromHslF(h, s, l, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromHslF(h, s, l, a)));
 }
 
 /*!
@@ -1484,7 +1520,7 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     if (w < 0 || h < 0)
         return engine->nullValue();
 
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QRectF(x, y, w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QRectF(x, y, w, h)));
 }
 
 /*!
@@ -1497,7 +1533,7 @@ QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngin
         return ctxt->throwError(QLatin1String("Qt.point(): Invalid arguments"));
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QPointF(x, y)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QPointF(x, y)));
 }
 
 /*!
@@ -1510,7 +1546,7 @@ QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine
         return ctxt->throwError(QLatin1String("Qt.size(): Invalid arguments"));
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QSizeF(w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QSizeF(w, h)));
 }
 
 /*!
@@ -1546,7 +1582,7 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.lighter(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, qVariantFromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1583,7 +1619,7 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.darker(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, qVariantFromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1818,7 +1854,7 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
                            a + inv_a * color.alphaF());
     }
 
-    return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
+    return engine->toScriptValue(QVariant::fromValue(finalColor));
 }
 
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
@@ -1848,7 +1884,7 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     if (objOk) {
         return objectClass->newQObject(obj);
     } else {
-        return qScriptValueFromValue(&scriptEngine, val);
+        return scriptEngine.toScriptValue(val);
     }
 }
 

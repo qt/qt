@@ -2203,7 +2203,7 @@ void QMdiSubWindowPrivate::setSizeGrip(QSizeGrip *newSizeGrip)
 void QMdiSubWindowPrivate::setSizeGripVisible(bool visible) const
 {
     // See if we can find any size grips
-    QList<QSizeGrip *> sizeGrips = qFindChildren<QSizeGrip *>(q_func());
+    QList<QSizeGrip *> sizeGrips = q_func()->findChildren<QSizeGrip *>();
     foreach (QSizeGrip *grip, sizeGrips)
         grip->setVisible(visible);
 }
@@ -2319,7 +2319,7 @@ void QMdiSubWindow::setWidget(QWidget *widget)
         widget->setParent(this);
 
 #ifndef QT_NO_SIZEGRIP
-    QSizeGrip *sizeGrip = qFindChild<QSizeGrip *>(widget);
+    QSizeGrip *sizeGrip = widget->findChild<QSizeGrip *>();
     if (sizeGrip)
         sizeGrip->installEventFilter(this);
     if (d->sizeGrip)

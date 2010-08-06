@@ -643,7 +643,7 @@ void HelpEngineWrapper::setUseBrowserFont(bool useBrowserFont)
 const QFont HelpEngineWrapper::appFont() const
 {
     TRACE_OBJ
-    return qVariantValue<QFont>(d->m_helpEngine->customValue(AppFontKey));
+    return qvariant_cast<QFont>(d->m_helpEngine->customValue(AppFontKey));
 }
 
 void HelpEngineWrapper::setAppFont(const QFont &font)
@@ -668,7 +668,7 @@ void HelpEngineWrapper::setAppWritingSystem(QFontDatabase::WritingSystem system)
 const QFont HelpEngineWrapper::browserFont() const
 {
     TRACE_OBJ
-    return qVariantValue<QFont>(d->m_helpEngine->customValue(BrowserFontKey));
+    return qvariant_cast<QFont>(d->m_helpEngine->customValue(BrowserFontKey));
 }
 
 void HelpEngineWrapper::setBrowserFont(const QFont &font)

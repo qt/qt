@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
 static QScriptValue debuggerResponseToScriptValue(QScriptEngine *eng, const QScriptDebuggerResponse &in)
 {
     QScriptValue out = eng->newObject();
-    out.setProperty(QString::fromLatin1("result"), qScriptValueFromValue(eng, in.result()));
+    out.setProperty(QString::fromLatin1("result"), eng->toScriptValue(in.result()));
     out.setProperty(QString::fromLatin1("error"), QScriptValue(eng, in.error()));
     out.setProperty(QString::fromLatin1("async"), QScriptValue(eng, in.async()));
     return out;
@@ -122,7 +122,7 @@ static QScriptValue breakpointMapToScriptValue(QScriptEngine *eng, const QScript
     QScriptValue out = eng->newObject();
     QScriptBreakpointMap::const_iterator it;
     for (it = in.constBegin(); it != in.constEnd(); ++it) {
-        out.setProperty(QString::number(it.key()), qScriptValueFromValue(eng, it.value()));
+        out.setProperty(QString::number(it.key()), eng->toScriptValue(it.value()));
     }
     return out;
 }
@@ -155,7 +155,7 @@ static QScriptValue scriptMapToScriptValue(QScriptEngine *eng, const QScriptScri
     QScriptValue out = eng->newObject();
     QScriptScriptMap::const_iterator it;
     for (it = in.constBegin(); it != in.constEnd(); ++it) {
-        out.setProperty(QString::number(it.key()), qScriptValueFromValue(eng, it.value()));
+        out.setProperty(QString::number(it.key()), eng->toScriptValue(it.value()));
     }
     return out;
 }
@@ -175,8 +175,8 @@ static QScriptValue consoleCommandToScriptValue(
     out.setProperty(QString::fromLatin1("group"), QScriptValue(eng, in->group()));
     out.setProperty(QString::fromLatin1("shortDescription"), QScriptValue(eng, in->shortDescription()));
     out.setProperty(QString::fromLatin1("longDescription"), QScriptValue(eng, in->longDescription()));
-    out.setProperty(QString::fromLatin1("aliases"), qScriptValueFromValue(eng, in->aliases()));
-    out.setProperty(QString::fromLatin1("seeAlso"), qScriptValueFromValue(eng, in->seeAlso()));
+    out.setProperty(QString::fromLatin1("aliases"), eng->toScriptValue(in->aliases()));
+    out.setProperty(QString::fromLatin1("seeAlso"), eng->toScriptValue(in->seeAlso()));
     return out;
 }
 
@@ -207,7 +207,7 @@ static QScriptValue consoleCommandGroupMapToScriptValue(
     QScriptValue out = eng->newObject();
     QScriptDebuggerConsoleCommandGroupMap::const_iterator it;
     for (it = in.constBegin(); it != in.constEnd(); ++it) {
-        out.setProperty(it.key(), qScriptValueFromValue(eng, it.value()));
+        out.setProperty(it.key(), eng->toScriptValue(it.value()));
     }
     return out;
 }
@@ -238,7 +238,7 @@ static QScriptValue debuggerScriptValuePropertyToScriptValue(QScriptEngine *eng,
 {
     QScriptValue out = eng->newObject();
     out.setProperty(QString::fromLatin1("name"), QScriptValue(eng, in.name()));
-    out.setProperty(QString::fromLatin1("value"), qScriptValueFromValue(eng, in.value()));
+    out.setProperty(QString::fromLatin1("value"), eng->toScriptValue(in.value()));
     out.setProperty(QString::fromLatin1("valueAsString"), QScriptValue(eng, in.valueAsString()));
     out.setProperty(QString::fromLatin1("flags"), QScriptValue(eng, static_cast<int>(in.flags())));
     return out;

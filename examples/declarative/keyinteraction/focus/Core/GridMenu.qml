@@ -43,7 +43,7 @@ import Qt 4.7
 FocusScope {
     property alias interactive: gridView.interactive
 
-    onWantsFocusChanged: if (wantsFocus) mainView.state = ""
+    onActiveFocusChanged: if (activeFocus) mainView.state = ""
 
     Rectangle {
         anchors.fill: parent
@@ -84,12 +84,12 @@ FocusScope {
 
                     onClicked: {
                         GridView.view.currentIndex = index
-                        container.forceFocus()
+                        container.forceActiveFocus()
                     }
                 }
 
                 states: State {
-                    name: "active"; when: container.focus == true
+                    name: "active"; when: container.activeFocus
                     PropertyChanges { target: content; color: "#FCFFF5"; scale: 1.1 }
                 }
 

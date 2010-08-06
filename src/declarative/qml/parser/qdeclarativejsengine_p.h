@@ -88,12 +88,6 @@ uint qHash(const QDeclarativeJS::NameId &id);
 
 } // end of namespace QDeclarativeJS
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300
-//this ensures that code outside QDeclarativeJS can use the hash function
-//it also a workaround for some compilers
-inline uint qHash(const QDeclarativeJS::NameId &nameId) { return QDeclarativeJS::qHash(nameId); }
-#endif
-
 namespace QDeclarativeJS {
 
 class Lexer;

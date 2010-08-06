@@ -273,7 +273,7 @@ namespace qdesigner_internal {
 
     void ObjectData::setItems(const StandardItemList &row, const ObjectInspectorIcons &icons) const
     {
-        const QVariant object = qVariantFromValue(m_object);
+        const QVariant object = QVariant::fromValue(m_object);
         row[ObjectInspectorModel::ObjectNameColumn]->setData(object, DataRole);
         row[ObjectInspectorModel::ClassNameColumn]->setData(object, DataRole);
         setItemsDisplayData(row, icons, ClassNameChanged|ObjectNameChanged|ClassIconChanged|TypeChanged|LayoutTypeChanged);

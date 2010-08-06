@@ -123,9 +123,6 @@ private slots:
     void supportsAnimation_data();
     void supportsAnimation();
 
-    void description_data();
-    void description();
-
     void readFromResources_data();
     void readFromResources();
 
@@ -315,7 +312,24 @@ void tst_QImageReader::jpegRgbCmyk()
     QImage image1(prefix + QLatin1String("YCbCr_cmyk.jpg"));
     QImage image2(prefix + QLatin1String("YCbCr_cmyk.png"));
 
-    QCOMPARE(image1, image2);
+    // first, do some obvious tests
+    QCOMPARE(image1.height(), image2.height());
+    QCOMPARE(image1.width(), image2.width());
+    QCOMPARE(image1.format(), image2.format());
+    QCOMPARE(image1.format(), QImage::Format_RGB32);
+
+    // compare all the pixels with a slack of 3. This ignores rounding errors in libjpeg/libpng
+    for (int h = 0; h < image1.height(); ++h) {
+        const uchar *s1 = image1.constScanLine(h);
+        const uchar *s2 = image2.constScanLine(h);
+        for (int w = 0; w < image1.width() * 4; ++w) {
+            if (*s1 != *s2) {
+                QVERIFY2(qAbs(*s1 - *s2) <= 3, qPrintable(QString("images differ in line %1, col %2 (image1: %3, image2: %4)").arg(h).arg(w).arg(*s1, 0, 16).arg(*s2, 0, 16)));
+            }
+            s1++;
+            s2++;
+        }
+    }
 }
 
 void tst_QImageReader::setScaledSize_data()
@@ -1236,53 +1250,6 @@ void tst_QImageReader::devicePosition()
 }
 
 
-void tst_QImageReader::description_data()
-{
-    QTest::addColumn<QString>("fileName");
-    QTest::addColumn<QStringMap>("description");
-
-    QMap<QString, QString> willem;
-    willem["Title"] = "PngSuite";
-    willem["Author"] = "Willem A.J. van Schaik (gwillem@ntuvax.ntu.ac.sg)";
-    willem["Copyright"] = "Copyright Willem van Schaik, Singapore 1995";
-    willem["Description"] = "A compilation of a set of images created to test the "
-                            "various color-types of the PNG format. Included are "
-                            "black&white, color, paletted, with alpha channel, with "
-                            "transparency formats. All bit-depths allowed according "
-                            "to the spec are present.";
-    willem["Software"] = "Created on a NeXTstation color using \"pnmtopng\".";
-    willem["Disclaimer"] = "Freeware.";
-
-    QTest::newRow("PNG") << QString("pngwithtext.png") << willem;
-    QTest::newRow("PNG Compressed") << QString("pngwithcompressedtext.png") << willem;
-}
-
-void tst_QImageReader::description()
-{
-    QFETCH(QString, fileName);
-    QFETCH(QStringMap, description);
-
-    // Sanity check
-    QVERIFY(!QImage(prefix + fileName).isNull());
-
-    QImageReader reader(prefix + fileName);
-
-    foreach (QString key, description.keys())
-        QCOMPARE(reader.text(key), description.value(key));
-    QCOMPARE(reader.textKeys(), QStringList(description.keys()));
-
-    QImage image = reader.read();
-    QVERIFY(!image.isNull());
-
-    foreach (QString key, description.keys())
-        QCOMPARE(image.text(key), description.value(key));
-    QCOMPARE(image.textKeys(), QStringList(description.keys()));
-
-    foreach (QString key, description.keys())
-        QCOMPARE(reader.text(key), description.value(key));
-    QCOMPARE(reader.textKeys(), QStringList(description.keys()));
-}
-
 void tst_QImageReader::readFromResources_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -1388,12 +1355,6 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("image.png") << QString("image.png")
                                       << QByteArray("png") << QSize(22, 22)
                                       << QString("");
-    QTest::newRow("pngwithcompressedtext.png") << QString("pngwithcompressedtext.png")
-                                                      << QByteArray("png") << QSize(32, 32)
-                                                      << QString("");
-    QTest::newRow("pngwithtext.png") << QString("pngwithtext.png")
-                                            << QByteArray("png") << QSize(32, 32)
-                                            << QString("");
     QTest::newRow("kollada.png") << QString("kollada.png")
                                         << QByteArray("png") << QSize(436, 160)
                                         << QString("");

@@ -163,7 +163,7 @@
                     break;
                 default:
                     if (v.userType() == qMetaTypeId<QXmlName>()) {
-                        QXmlName n = qVariantValue<QXmlName>(v);
+                        QXmlName n = qvariant_cast<QXmlName>(v);
                         // process QXmlName n...
                     }
                     else {

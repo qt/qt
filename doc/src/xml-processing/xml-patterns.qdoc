@@ -415,7 +415,7 @@
     slight-of-hand using the \l{QMetaType} {Qt metatype system}. We
     must modify our example to use a couple of template functions, a
     friend of QMetaType (qMetaTypeId<T>()) and a friend of QVariant
-    (qVariantValue<T>()):
+    (qvariant_cast<T>()):
 
     \snippet doc/src/snippets/code/src_xmlpatterns_api_qxmlquery.cpp 6
 

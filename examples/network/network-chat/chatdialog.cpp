@@ -53,9 +53,6 @@ ChatDialog::ChatDialog(QWidget *parent)
     listWidget->setFocusPolicy(Qt::NoFocus);
 
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
-#ifdef Q_OS_SYMBIAN
-    connect(sendButton, SIGNAL(clicked()), this, SLOT(returnPressed()));
-#endif
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(returnPressed()));
     connect(&client, SIGNAL(newMessage(QString,QString)),
             this, SLOT(appendMessage(QString,QString)));

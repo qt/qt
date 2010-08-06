@@ -397,6 +397,9 @@ private slots:
     void childAt();
 #ifdef Q_WS_MAC
     void childAt_unifiedToolBar();
+#ifdef QT_MAC_USE_COCOA
+    void taskQTBUG_11373();
+#endif // QT_MAC_USE_COCOA
 #endif
 
 private:
@@ -453,11 +456,7 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(obj1.minimumWidth(), 0); // A widgets width can never be less than 0
     obj1.setMinimumWidth(INT_MAX);
 #ifndef Q_WS_QWS  //QWS doesn't allow toplevels to be bigger than the screen
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)obj1.minimumWidth(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#else
     QCOMPARE(obj1.minimumWidth(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#endif
 #endif
 
     child1.setMinimumWidth(0);
@@ -465,11 +464,7 @@ void tst_QWidget::getSetCheck()
     child1.setMinimumWidth(INT_MIN);
     QCOMPARE(child1.minimumWidth(), 0); // A widgets width can never be less than 0
     child1.setMinimumWidth(INT_MAX);
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)child1.minimumWidth(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#else
     QCOMPARE(child1.minimumWidth(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#endif
 
     // int QWidget::minimumHeight()
     // void QWidget::setMinimumHeight(int)
@@ -479,11 +474,7 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(obj1.minimumHeight(), 0); // A widgets height can never be less than 0
     obj1.setMinimumHeight(INT_MAX);
 #ifndef Q_WS_QWS    //QWS doesn't allow toplevels to be bigger than the screen
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)obj1.minimumHeight(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#else
     QCOMPARE(obj1.minimumHeight(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#endif
 #endif
 
     child1.setMinimumHeight(0);
@@ -491,26 +482,16 @@ void tst_QWidget::getSetCheck()
     child1.setMinimumHeight(INT_MIN);
     QCOMPARE(child1.minimumHeight(), 0); // A widgets height can never be less than 0
     child1.setMinimumHeight(INT_MAX);
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)child1.minimumHeight(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#else
     QCOMPARE(child1.minimumHeight(), QWIDGETSIZE_MAX); // The largest minimum size should only be as big as the maximium
-#endif
 
-
-
-// int QWidget::maximumWidth()
+    // int QWidget::maximumWidth()
     // void QWidget::setMaximumWidth(int)
     obj1.setMaximumWidth(0);
     QCOMPARE(obj1.maximumWidth(), 0);
     obj1.setMaximumWidth(INT_MIN);
     QCOMPARE(obj1.maximumWidth(), 0); // A widgets width can never be less than 0
     obj1.setMaximumWidth(INT_MAX);
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)obj1.maximumWidth(), QWIDGETSIZE_MAX); // QWIDGETSIZE_MAX is the abs max, not INT_MAX
-#else
     QCOMPARE(obj1.maximumWidth(), QWIDGETSIZE_MAX); // QWIDGETSIZE_MAX is the abs max, not INT_MAX
-#endif
 
     // int QWidget::maximumHeight()
     // void QWidget::setMaximumHeight(int)
@@ -519,11 +500,7 @@ void tst_QWidget::getSetCheck()
     obj1.setMaximumHeight(INT_MIN);
     QCOMPARE(obj1.maximumHeight(), 0); // A widgets height can never be less than 0
     obj1.setMaximumHeight(INT_MAX);
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-    QCOMPARE((long)obj1.maximumHeight(), QWIDGETSIZE_MAX); // QWIDGETSIZE_MAX is the abs max, not INT_MAX
-#else
     QCOMPARE(obj1.maximumHeight(), QWIDGETSIZE_MAX); // QWIDGETSIZE_MAX is the abs max, not INT_MAX
-#endif
 
     // back to normal
     obj1.setMinimumWidth(0);
@@ -9691,7 +9668,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 
@@ -9740,7 +9716,7 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QVERIFY(0 != backingStore(child));
 
     // Parent is obscured, therefore its backing store should be destroyed
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
+    QEXPECT_FAIL("", "QTBUG-12406", Continue);
     QVERIFY(0 == backingStore(parent));
 
     // Disable full screen
@@ -9754,7 +9730,6 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
-    QEXPECT_FAIL("", "QTBUG-10643", Continue);
     QVERIFY(0 == backingStore(child));
     }
 }
@@ -10435,6 +10410,26 @@ void tst_QWidget::childAt_unifiedToolBar()
     QCOMPARE(mainWindow.childAt(toolBarTopLeft), static_cast<QWidget *>(toolBar));
     QCOMPARE(mainWindow.childAt(labelTopLeft), static_cast<QWidget *>(label));
 }
+
+#ifdef QT_MAC_USE_COCOA
+void tst_QWidget::taskQTBUG_11373()
+{
+    QMainWindow * myWindow = new QMainWindow();
+    QWidget * center = new QWidget();
+    myWindow -> setCentralWidget(center);
+    QWidget * drawer = new QWidget(myWindow, Qt::Drawer);
+    drawer -> hide();
+    QCOMPARE(drawer->isVisible(), false);
+    myWindow -> show();
+    myWindow -> raise();
+    // The drawer shouldn't be visible now.
+    QCOMPARE(drawer->isVisible(), false);
+    myWindow -> setWindowState(Qt::WindowFullScreen);
+    myWindow -> setWindowState(Qt::WindowNoState);
+    // The drawer should still not be visible, since we haven't shown it.
+    QCOMPARE(drawer->isVisible(), false);
+}
+#endif // QT_MAC_USE_COCOA
 #endif
 
 QTEST_MAIN(tst_QWidget)

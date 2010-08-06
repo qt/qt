@@ -137,6 +137,17 @@ void tst_QDeclarativeMouseArea::dragProperties()
     QCOMPARE(yminSpy.count(),1);
     QCOMPARE(ymaxSpy.count(),1);
 
+    // filterChildren
+    QSignalSpy filterChildrenSpy(drag, SIGNAL(filterChildrenChanged()));
+
+    drag->setFilterChildren(true);
+
+    QVERIFY(drag->filterChildren());
+    QCOMPARE(filterChildrenSpy.count(), 1);
+
+    drag->setFilterChildren(true);
+    QCOMPARE(filterChildrenSpy.count(), 1);
+
     delete canvas;
 }
 

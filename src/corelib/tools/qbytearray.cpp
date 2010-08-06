@@ -2152,18 +2152,18 @@ QByteArray QByteArray::repeated(int times) const
     if (result.d->alloc != resultSize)
         return QByteArray(); // not enough memory
 
-    qMemCopy(result.d->data, d->data, d->size);
+    memcpy(result.d->data, d->data, d->size);
 
     int sizeSoFar = d->size;
     char *end = result.d->data + sizeSoFar;
 
     const int halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
-        qMemCopy(end, result.d->data, sizeSoFar);
+        memcpy(end, result.d->data, sizeSoFar);
         end += sizeSoFar;
         sizeSoFar <<= 1;
     }
-    qMemCopy(end, result.d->data, resultSize - sizeSoFar);
+    memcpy(end, result.d->data, resultSize - sizeSoFar);
     result.d->data[resultSize] = '\0';
     result.d->size = resultSize;
     return result;

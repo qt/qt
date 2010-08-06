@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     QScriptValue tetrix = ctor.construct(QScriptValueList() << scriptUi);
 //! [3]
 
-    QPushButton *debugButton = qFindChild<QPushButton*>(ui, "debugButton");
+    QPushButton *debugButton = ui->findChild<QPushButton*>("debugButton");
 #if !defined(QT_NO_SCRIPTTOOLS)
     QObject::connect(debugButton, SIGNAL(clicked()),
                      debugger.action(QScriptEngineDebugger::InterruptAction),

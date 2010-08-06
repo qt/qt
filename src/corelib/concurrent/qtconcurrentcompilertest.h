@@ -51,12 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-#ifdef Q_CC_MSVC
-#  if _MSC_VER < 1300
-#    define QT_CONURRENT_NONSTANDARD_COMPILER
-#  endif
-#endif
-
 #if defined (Q_CC_MSVC) && (_MSC_VER < 1300)
 #  define QT_TYPENAME
 #else

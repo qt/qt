@@ -50,11 +50,11 @@ int main(int argc, char **argv)
     fontTree.setColumnCount(2);
     fontTree.setHeaderLabels(QStringList() << "Font" << "Smooth Sizes");
 
-    foreach (QString family, database.families()) {
+    foreach (const QString &family, database.families()) {
         QTreeWidgetItem *familyItem = new QTreeWidgetItem(&fontTree);
         familyItem->setText(0, family);
 
-        foreach (QString style, database.styles(family)) {
+        foreach (const QString &style, database.styles(family)) {
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
             styleItem->setText(0, style);
 

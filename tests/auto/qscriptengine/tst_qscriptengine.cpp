@@ -1909,7 +1909,6 @@ void tst_QScriptEngine::valueConversion()
         QString snum = qScriptValueToValue<QString>(num);
         QCOMPARE(snum, QLatin1String("123"));
     }
-#ifndef QT_NO_MEMBER_TEMPLATES
     {
         QScriptValue num = eng.toScriptValue(123);
         QCOMPARE(num.isNumber(), true);
@@ -1921,7 +1920,6 @@ void tst_QScriptEngine::valueConversion()
         QString snum = eng.fromScriptValue<QString>(num);
         QCOMPARE(snum, QLatin1String("123"));
     }
-#endif
     {
         QScriptValue num(&eng, 123);
         QCOMPARE(qScriptValueToValue<char>(num), char(123));
@@ -4296,6 +4294,35 @@ void tst_QScriptEngine::reentrancy()
     {
         QScriptEngine eng;
         QCOMPARE(eng.evaluate("Array()").toString(), QString());
+    }
+
+    {
+        QScriptEngine eng1;
+        QScriptEngine eng2;
+        {
+            QScriptValue d1 = eng1.newDate(0);
+            QScriptValue d2 = eng2.newDate(0);
+            QCOMPARE(d1.toDateTime(), d2.toDateTime());
+            QCOMPARE(d2.toDateTime(), d1.toDateTime());
+        }
+        {
+            QScriptValue r1 = eng1.newRegExp("foo", "gim");
+            QScriptValue r2 = eng2.newRegExp("foo", "gim");
+            QCOMPARE(r1.toRegExp(), r2.toRegExp());
+            QCOMPARE(r2.toRegExp(), r1.toRegExp());
+        }
+        {
+            QScriptValue o1 = eng1.newQObject(this);
+            QScriptValue o2 = eng2.newQObject(this);
+            QCOMPARE(o1.toQObject(), o2.toQObject());
+            QCOMPARE(o2.toQObject(), o1.toQObject());
+        }
+        {
+            QScriptValue mo1 = eng1.newQMetaObject(&staticMetaObject);
+            QScriptValue mo2 = eng2.newQMetaObject(&staticMetaObject);
+            QCOMPARE(mo1.toQMetaObject(), mo2.toQMetaObject());
+            QCOMPARE(mo2.toQMetaObject(), mo1.toQMetaObject());
+        }
     }
 }
 

@@ -466,9 +466,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       peerPort(0),
       socketEngine(0),
       cachedSocketDescriptor(-1),
-#ifdef Q_OS_LINUX
-      addToBytesAvailable(0),
-#endif
       readBufferMaxSize(0),
       readBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       writeBuffer(QABSTRACTSOCKET_BUFFERSIZE),
@@ -1132,10 +1129,6 @@ bool QAbstractSocketPrivate::readFromSocket()
     Q_Q(QAbstractSocket);
     // Find how many bytes we can read from the socket layer.
     qint64 bytesToRead = socketEngine->bytesAvailable();
-#ifdef Q_OS_LINUX
-    if (bytesToRead > 0) // ### See setSocketDescriptor()
-        bytesToRead += addToBytesAvailable;
-#endif
     if (bytesToRead == 0) {
         // Under heavy load, certain conditions can trigger read notifications
         // for socket notifiers on which there is no activity. If we continue
@@ -1340,10 +1333,6 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
     d->localAddress.clear();
     d->peerAddress.clear();
     d->peerName = hostName;
-#ifdef Q_OS_LINUX
-    // ### See setSocketDescriptor().
-    d->addToBytesAvailable = 0;
-#endif
     if (d->hostLookupId != -1) {
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
@@ -1602,17 +1591,6 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
     d->localAddress = d->socketEngine->localAddress();
     d->peerAddress = d->socketEngine->peerAddress();
     d->cachedSocketDescriptor = socketDescriptor;
-
-#ifdef Q_OS_LINUX
-    // ### This is a workaround for certain broken Linux kernels, when using
-    // QTcpSocket with a Unix domain socket. It was introduced around 2.6.9,
-    // and fixed at some point after that.
-    // http://archive.linux-usenet.com/index-t-73300.html
-    // We can provide a better workaround for this: readFromSocket() can loop
-    // while reading, but this must happen without triggering an implicit
-    // close because of reading after the socket has closed.
-    d->addToBytesAvailable = 4096;
-#endif
 
     return true;
 }

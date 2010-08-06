@@ -199,7 +199,7 @@ void MainWindow::on_generate_clicked()
             if (item->checkState() != Qt::Checked)
                 continue;
 
-            QPF::CharacterRange range = qVariantValue<QPF::CharacterRange>(item->data(Qt::UserRole));
+            QPF::CharacterRange range = qvariant_cast<QPF::CharacterRange>(item->data(Qt::UserRole));
             ranges.append(range);
         }
     }
@@ -297,7 +297,7 @@ void MainWindow::populateCharacterRanges()
         item->setText(text);
         item->setCheckState(Qt::Checked);
 
-        item->setData(Qt::UserRole, qVariantFromValue(range));
+        item->setData(Qt::UserRole, QVariant::fromValue(range));
     }
 }
 

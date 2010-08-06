@@ -155,7 +155,7 @@ void AudioTest::modeChanged(int idx)
 
     deviceBox->clear();
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(mode))
-        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
+        deviceBox->addItem(deviceInfo.deviceName(), QVariant::fromValue(deviceInfo));
 
     deviceBox->setCurrentIndex(0);
     deviceChanged(0);

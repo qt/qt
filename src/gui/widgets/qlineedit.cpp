@@ -1663,8 +1663,11 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     }
 #endif
     d->control->processKeyEvent(event);
-    if (event->isAccepted())
+    if (event->isAccepted()) {
+        if (layoutDirection() != d->control->layoutDirection())
+            setLayoutDirection(d->control->layoutDirection());
         d->control->setCursorBlinkPeriod(0);
+    }
 }
 
 /*!
@@ -1946,7 +1949,8 @@ void QLineEdit::paintEvent(QPaintEvent *)
     if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QLineControl::DrawSelections;
         // Palette only used for selections/mask and may not be in sync
-        if(d->control->palette() != pal)
+        if (d->control->palette() != pal
+           || d->control->palette().currentColorGroup() != pal.currentColorGroup())
             d->control->setPalette(pal);
     }
 
