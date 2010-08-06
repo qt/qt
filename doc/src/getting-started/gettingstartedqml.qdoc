@@ -32,27 +32,30 @@
 	\ingroup gettingStarted
 	
 	Welcome to the world of QML - the declarative UI language. In this Getting
-	Started guide, we will create a simple text editor application using QML.
-	After reading this guide, you should be ready to develop your own applications
-	using QML and Qt C++.
+	Started guide, we create a simple text editor application using QML.
+	After reading this guide, you should be ready to start developing your own
+	applications using QML and Qt C++.
 
+	\example tutorials/gettingStarted/gsQml
+	
 	\section1 QML to Build User Interfaces
 
-	The application we are building is a simple text editor that will load, save,
-	and perform some text manipulation. This guide will consist of two parts. The
-	first part will involve designing the application layout and behaviors using
-	declarative language in QML. For the second part, file loading and saving will
-	be implemented using Qt C++. Using
-	\l {The Meta-Object System}{Qt's Meta-Object System}, we can expose C++ functions
-	as properties that QML elements can use. Utilizing QML and Qt C++, we can
-	efficiently decouple the interface logic from the application logic.
+	Here we are building is a simple text editor that con load, save,
+	and perform some text manipulation. This guide consists of two parts. The
+	first part involves designing the application layout and behaviors using
+	declarative language in QML. For the second part, file loading and saving is
+	implemented using Qt C++.
+	Using \l {The Meta-Object System}{Qt's Meta-Object System}, we can expose C++
+	functions as properties that QML elements can use. By utilizing QML and Qt C++,
+	we can efficiently decouple the interface logic from the application logic.
 	
 	\image qml-texteditor5_editmenu.png
 	
-	To run the QML example code, merely provide the included \l{QML Viewer}{qmlviewer}
+	To run the QML example code, we merely provide the included \l{QML Viewer}{qmlviewer}
 	tool with the QML file as the argument. The C++ portion of this tutorial assumes
 	that the reader possesses basic knowledge of Qt's compilation procedures.
 	
+	\omit
 	Tutorial chapters:
 	\list 1
 		\o \l {Defining a Button and a Menu}{Defining a Button and a Menu}
@@ -61,6 +64,7 @@
 		\o \l {Decorating the Text Editor}{Decorating the Text Editor}
 		\o \l {Extending QML using Qt C++}{Extending QML using Qt C++}
 	\endlist
+	\endomit
 
 	\section1 Defining a Button and a Menu
 
@@ -104,7 +108,7 @@
 	is called \c simplebutton. Anchors may bind to other items' anchors, allowing layout
 	assignments simpler. 
 	
-	We shall save this code as \c SimpleButton.qml. Running qmlviewer with the file as the
+	We save this code as \c SimpleButton.qml. Running qmlviewer with the file as the
 	argument will display the grey rectangle with a text label.
 	
 	\image qml-texteditor1_simplebutton.png
@@ -407,13 +411,9 @@
 
 	\image qml-texteditor2_menubar.png 
 
-	*/
+	\section1 Building a Text Editor
 
-	/*!
-	\page qml-textEditor3.html
-	\title Building a Text Editor
-
-	\section1 Declaring a TextArea
+	\section2 Declaring a TextArea
 
 	Our text editor is not a text editor if it didn't contain an editable text area.
 	QML's \l {TextEdit}{TextEdit} element allows the declaration of a multi-line
@@ -497,12 +497,8 @@
 
 	\image qml-texteditor3_texteditor.png 
 
-	*/
-
-	/*!
-	\page qml-textEditor4
-	\title Decorating the Text Editor
-	\section1 Implementing a Drawer Interface
+	\section1 Decorating the Text Editor
+	\section2 Implementing a Drawer Interface
 
 	Our text editor looks simple and we need to decorate it. Using QML, we can declare
 	transitions and animate our text editor. Our menu bar is occupying one-third of the

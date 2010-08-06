@@ -8,9 +8,6 @@ project                 = Qml
 description             = Qml Reference Documentation
 url                     = http://qt.nokia.com/doc/4.7/
 qmlonly                 = true
-online                  = false
-offline                 = false
-creator                 = true
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
                           QtXmlPatterns QtTest
