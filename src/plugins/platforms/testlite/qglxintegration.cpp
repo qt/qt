@@ -262,19 +262,26 @@ void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
     int w = 3;
     int h = 3;
 
-    Window sharedWindow = XCreateSimpleWindow(xd->display, xd->rootWindow(),
-                                   x, y, w, h, 0 /*border_width*/,
-                                   xd->blackPixel(), xd->whitePixel());
-    GLXContext context;
     QPlatformWindowFormat format = QPlatformWindowFormat::defaultFormat();
+    GLXContext context;
     GLXFBConfig config = findConfig(xd,format);
     if (config) {
+        XVisualInfo *visualInfo = glXGetVisualFromFBConfig(xd->display,config);
+        Colormap cmap = XCreateColormap(xd->display,xd->rootWindow(),visualInfo->visual,AllocNone);
+        XSetWindowAttributes a;
+        a.colormap = cmap;
+        Window sharedWindow = XCreateWindow(xd->display, xd->rootWindow(),x, y, w, h,
+                                  0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                  CWColormap, &a);
+
         context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,0,TRUE);
         QPlatformGLContext *sharedContext = new QGLXGLContext(xd,sharedWindow,context);
         QPlatformGLContext::setDefaultSharedContext(sharedContext);
     } else {
-        qFatal("Warning no shared context created");
+        qWarning("Warning no shared context created");
     }
+
+
 
 }
 

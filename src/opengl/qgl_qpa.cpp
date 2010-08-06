@@ -244,20 +244,23 @@ void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
 class QGLTemporaryContextPrivate
 {
 public:
-    QWidget *widget;
+    QGLWidget *widget;
+    QGLContext *context;
 };
 
 QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     : d(new QGLTemporaryContextPrivate)
 {
-    d->widget = new QWidget;
-    d->widget->setGeometry(0,0,3,3);
-    d->widget->winId();
-    d->widget->platformWindow()->glContext()->makeCurrent();
+    d->context = const_cast<QGLContext *>(QGLContext::currentContext());
+    d->context->doneCurrent();
+    d->widget = new QGLWidget;
+    d->widget->makeCurrent();
 }
 
 QGLTemporaryContext::~QGLTemporaryContext()
 {
+    d->widget->doneCurrent();
+    d->context->makeCurrent();
     delete d->widget;
 }
 
