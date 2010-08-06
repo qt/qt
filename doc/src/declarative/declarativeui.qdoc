@@ -41,11 +41,10 @@ and netbooks. Qt Quick consists of the QtDeclarative C++ module, QML, and
 the integration of both of these into the Qt Creator IDE. Using the QtDeclarative
 C++ module, you can load and interact with QML files from your Qt application.
 
-QML is an extension to \l
-{http://www.ecma-international.org/publications/standards/Ecma-262.htm}
-{JavaScript}, that provides a mechanism to declaratively build an
-object tree of \l {QML Elements}{QML elements}.  QML improves the
-integration between JavaScript and Qt's existing QObject based type
+QML provides mechanisms to declaratively build an object tree using
+\l {QML Elements}{QML elements}. QML improves the integration between 
+{http://www.ecma-international.org/publications/standards/Ecma-262.htm}{JavaScript}
+and Qt's existing QObject based type
 system, adds support for automatic \l {Property Binding}{property
 bindings} and provides \l {Network Transparency}{network transparency}
 at the language level.
@@ -87,11 +86,11 @@ application or to build completely new applications.  QML is fully \l
 \o \l {qdeclarativemodules.html}{Modules}
 \o \l {Extending types from QML}
 \o \l {qdeclarativedynamicobjects.html}{Dynamic Object Creation}
-\o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \endlist
 
 \section1 Using QML with C++
 \list
+\o \l {qmlruntime.html}{The Qt Declarative Runtime}
 \o \l {Using QML in C++ Applications}
 \o \l {Integrating QML with existing Qt UI code}
 \o \l {Tutorial: Writing QML extensions with C++}
