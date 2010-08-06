@@ -281,76 +281,121 @@ void QS60MainAppUi::RestoreMenuL(CCoeControl *menuWindow, TInt resourceId, TMenu
     }
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::Exit()
 {
     QS60MainAppUiBase::Exit();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::SetFadedL(TBool aFaded)
 {
     QS60MainAppUiBase::SetFadedL(aFaded);
 }
 
+/*!
+  \internal
+*/
 TRect QS60MainAppUi::ApplicationRect() const
 {
     return QS60MainAppUiBase::ApplicationRect();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleScreenDeviceChangedL()
 {
     QS60MainAppUiBase::HandleScreenDeviceChangedL();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleApplicationSpecificEventL(TInt aType, const TWsEvent &aEvent)
 {
     QS60MainAppUiBase::HandleApplicationSpecificEventL(aType, aEvent);
 }
 
+/*!
+  \internal
+*/
 TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(TTypeUid aId)
 {
     return QS60MainAppUiBase::MopSupplyObject(aId);
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::ProcessCommandL(TInt aCommand)
 {
     QS60MainAppUiBase::ProcessCommandL(aCommand);
 }
 
+/*!
+  \internal
+*/
 TErrorHandlerResponse QS60MainAppUi::HandleError (TInt aError, const SExtendedError &aExtErr, TDes &aErrorText, TDes &aContextText)
 {
     return QS60MainAppUiBase::HandleError(aError, aExtErr, aErrorText, aContextText);
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleViewDeactivation(const TVwsViewId &aViewIdToBeDeactivated, const TVwsViewId &aNewlyActivatedViewId)
 {
     QS60MainAppUiBase::HandleViewDeactivation(aViewIdToBeDeactivated, aNewlyActivatedViewId);
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::PrepareToExit()
 {
     QS60MainAppUiBase::PrepareToExit();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleTouchPaneSizeChange()
 {
     QS60MainAppUiBase::HandleTouchPaneSizeChange();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleSystemEventL(const TWsEvent &aEvent)
 {
     QS60MainAppUiBase::HandleSystemEventL(aEvent);
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::Reserved_MtsmPosition()
 {
     QS60MainAppUiBase::Reserved_MtsmPosition();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::Reserved_MtsmObject()
 {
     QS60MainAppUiBase::Reserved_MtsmObject();
 }
 
+/*!
+  \internal
+*/
 void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
 {
     QS60MainAppUiBase::HandleForegroundEventL(aForeground);
