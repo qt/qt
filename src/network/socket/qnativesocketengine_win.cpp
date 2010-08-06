@@ -402,12 +402,28 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         n = SO_KEEPALIVE;
         break;
     case QNativeSocketEngine::MulticastTtlOption:
-        level = IPPROTO_IP;
-        n = IP_MULTICAST_TTL;
+#ifndef QT_NO_IPV6
+        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_HOPS;
+        } else
+#endif
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_TTL;
+        }
         break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        level = IPPROTO_IP;
-        n = IP_MULTICAST_LOOP;
+#ifndef QT_NO_IPV6
+        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_LOOP;
+        } else
+#endif
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_LOOP;
+        }
         break;
     }
 
@@ -470,12 +486,28 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         n = SO_KEEPALIVE;
         break;
     case QNativeSocketEngine::MulticastTtlOption:
-        level = IPPROTO_IP;
-        n = IP_MULTICAST_TTL;
+#ifndef QT_NO_IPV6
+        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_HOPS;
+        } else
+#endif
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_TTL;
+        }
         break;
     case QNativeSocketEngine::MulticastLoopbackOption:
-        level = IPPROTO_IP;
-        n = IP_MULTICAST_LOOP;
+#ifndef QT_NO_IPV6
+        if (socketProtocol == QAbstractSocket::IPv6Protocol) {
+            level = IPPROTO_IPV6;
+            n = IPV6_MULTICAST_LOOP;
+        } else
+#endif
+        {
+            level = IPPROTO_IP;
+            n = IP_MULTICAST_LOOP;
+        }
         break;
     }
 
@@ -666,8 +698,24 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 }
 
 
-bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16 port)
+bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
 {
+    QHostAddress address = a;
+    switch (address.protocol()) {
+    case QAbstractSocket::IPv6Protocol:
+        if (address.toIPv6Address()[0] == 0xff) {
+            // binding to a multicast address
+            address = QHostAddress(QHostAddress::AnyIPv6);
+        }
+        break;
+    case QAbstractSocket::IPv4Protocol:
+        if ((address.toIPv4Address() & 0xffff0000) == 0xefff0000) {
+            // binding to a multicast address
+            address = QHostAddress(QHostAddress::Any);
+        }
+        break;
+    }
+
     struct sockaddr_in sockAddrIPv4;
     qt_sockaddr_in6 sockAddrIPv6;
     struct sockaddr *sockAddrPtr = 0;
@@ -771,6 +819,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
                                       const QHostAddress &groupAddress,
                                       const QNetworkInterface &iface)
 {
+    int level = 0;
     int sockOpt = 0;
     char *sockArg;
     int sockArgSize;
@@ -780,7 +829,8 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
     struct ipv6_mreq mreq6;
 
     if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-       sockOpt = how6;
+        level = IPPROTO_IPV6;
+        sockOpt = how6;
         sockArg = reinterpret_cast<char *>(&mreq6);
         sockArgSize = sizeof(mreq6);
         memset(&mreq6, 0, sizeof(mreq6));
@@ -790,6 +840,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
     } else
 #endif
     if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        level = IPPROTO_IP;
         sockOpt = how4;
         sockArg = reinterpret_cast<char *>(&mreq4);
         sockArgSize = sizeof(mreq4);
@@ -816,7 +867,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         return false;
     }
 
-    int res = setsockopt(d->socketDescriptor, IPPROTO_IP, sockOpt, sockArg, sockArgSize);
+    int res = setsockopt(d->socketDescriptor, level, sockOpt, sockArg, sockArgSize);
     if (res == -1) {
         d->setError(QAbstractSocket::UnsupportedSocketOperationError,
                     QNativeSocketEnginePrivate::OperationUnsupportedErrorString);
