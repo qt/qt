@@ -37,21 +37,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-#ifndef DIALOGPLUGIN_H
-#define DIALOGPLUGIN_H
-
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
-
-class DialogPlugin : public QDeclarativeExtensionPlugin
-{
-	Q_OBJECT
-	
-	public:
-		//registerTypes is inherited from QDeclarativeExtensionPlugin
-		void registerTypes(const char *uri);
-		
-};
-
-#endif
+Rectangle {
+    width: 100; height: 100
+    color: "red"
+    
+    PropertyAnimation on x { to: 50; duration: 1000; loops: Animation.Infinite }
+    PropertyAnimation on y { to: 50; duration: 1000; loops: Animation.Infinite }
+}
+//![0]
 

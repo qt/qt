@@ -37,21 +37,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-#include "dialogPlugin.h"
-#include "directory.h"
-#include "file.h"
-#include <QtDeclarative/qdeclarative.h>
-
-void DialogPlugin::registerTypes(const char *uri){
-	
-	//register the class Directory into QML as a "Directory" element version 1.0
-	qmlRegisterType<Directory>(uri, 1, 0, "Directory");
-	qmlRegisterType<File>(uri,1,0,"File");
-	
-	//qRegisterMetaType<QDeclarativeListProperty<QString> > ("QDeclarativeListProperty<QString>");
-		
+Rectangle {
+    width: 100; height: 100
+    color: "red"
+    
+    PropertyAnimation on x { to: 50; duration: 1000; easing.type: Easing.OutBounce }
+    PropertyAnimation on y { to: 50; duration: 1000; easing.type: Easing.OutBounce }
 }
+//![0]
 
-//FileDialog is the plugin name (same as the TARGET in the project file) and DialogPlugin is the plugin classs
-Q_EXPORT_PLUGIN2(FileDialog, DialogPlugin);

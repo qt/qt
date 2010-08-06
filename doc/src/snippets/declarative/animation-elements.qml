@@ -37,21 +37,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
+Row {
 
-#include "file.h"
+//![color]
+Rectangle {
+    width: 100; height: 100
 
-File::File(QObject *parent) : QObject(parent)
-{
-	m_name = "";
+    ColorAnimation on color { from: "red"; to: "yellow"; duration: 1000 }
 }
+//![color]
 
-QString File::name() const{
-	return m_name;
+//![rotation]
+Item {
+    width: 300; height: 300
+    
+    Rectangle {
+        width: 100; height: 100; anchors.centerIn: parent
+        color: "red"
+        
+        RotationAnimation on rotation { to: 90; direction: RotationAnimation.Clockwise }
+    }
 }
-void File::setName(const QString &str){
-	if(str != m_name){
-		m_name = str;
-		emit nameChanged();
-	}
+//![rotation]
+
 }
