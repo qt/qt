@@ -335,7 +335,7 @@ void tst_qdeclarativefocusscope::noParentFocus()
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/chain.qml"));
     QVERIFY(view->rootObject());
 
-    QVERIFY(view->rootObject()->property("focus1") == true);
+    QVERIFY(view->rootObject()->property("focus1") == false);
     QVERIFY(view->rootObject()->property("focus2") == false);
     QVERIFY(view->rootObject()->property("focus3") == true);
     QVERIFY(view->rootObject()->property("focus4") == true);

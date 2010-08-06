@@ -3142,8 +3142,7 @@ bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
     return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
-           (!parentItem() && focusItem() != 0);
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
 }
 
 /*!
@@ -3163,10 +3162,8 @@ bool QDeclarativeItem::hasActiveFocus() const
   }
   \endqml
 
-  For the purposes of this property, the top level item in the scene
-  is assumed to act like a focus scope, and to always have active focus
-  when the scene has focus. On a practical level, that means the following
-  QML will give active focus to \c input on startup.
+  For the purposes of this property, the scene as a whole is assumed to act like a focus scope.
+  On a practical level, that means the following QML will give active focus to \c input on startup.
 
   \qml
   Rectangle {
@@ -3192,7 +3189,7 @@ bool QDeclarativeItem::hasFocus() const
         p = p->parentItem();
     }
 
-    return hasActiveFocus() ? true : (!QGraphicsItem::parentItem() ? true : false);
+    return hasActiveFocus();
 }
 
 /*! \internal */
