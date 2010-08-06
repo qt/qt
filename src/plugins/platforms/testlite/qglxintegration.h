@@ -75,6 +75,7 @@ private:
     static GLXFBConfig findConfig(const MyDisplay *xd,const QPlatformWindowFormat &format);
     static QVector<int> buildSpec(const QPlatformWindowFormat &format);
     static QPlatformWindowFormat platformWindowFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext context);
+    static QPlatformWindowFormat reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced);
 
 
     MyDisplay  *m_xd;

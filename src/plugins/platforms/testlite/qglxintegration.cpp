@@ -113,28 +113,33 @@ QVector<int> QGLXGLContext::buildSpec(const QPlatformWindowFormat &format)
 
 GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindowFormat &format)
 {
-    QVector<int> spec = buildSpec(format);
-    int confcount = 0;
-    GLXFBConfig *configs;
+    bool reduced = true;
     GLXFBConfig chosenConfig = 0;
-    configs = glXChooseFBConfig(xd->display,xd->screen,spec.constData(),&confcount);
-    if (confcount)
-    {
-        for (int i = 0; i < confcount; i++) {
-            chosenConfig = configs[i];
+    QPlatformWindowFormat reducedFormat = format;
+    while (!chosenConfig && reduced) {
+        QVector<int> spec = buildSpec(reducedFormat);
+        int confcount = 0;
+        GLXFBConfig *configs;
+        configs = glXChooseFBConfig(xd->display,xd->screen,spec.constData(),&confcount);
+        if (confcount)
+        {
+            for (int i = 0; i < confcount; i++) {
+                chosenConfig = configs[i];
 
-            // Make sure we try to get an ARGB visual if the format asked for an alpha:
-            if (format.alpha()) {
-                int alphaSize;
-                glXGetFBConfigAttrib(xd->display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
-                if (alphaSize > 0)
-                    break;
-            } else {
-                break; // Just choose the first in the list if there's no alpha requested
+                // Make sure we try to get an ARGB visual if the format asked for an alpha:
+                if (format.alpha()) {
+                    int alphaSize;
+                    glXGetFBConfigAttrib(xd->display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
+                    if (alphaSize > 0)
+                        break;
+                } else {
+                    break; // Just choose the first in the list if there's no alpha requested
+                }
             }
-        }
 
-        XFree(configs);
+            XFree(configs);
+        }
+        reducedFormat = reducePlatformWindowFormat(format,&reduced);
     }
 
     if (!chosenConfig)
@@ -204,6 +209,31 @@ QPlatformWindowFormat QGLXGLContext::platformWindowFromGLXFBConfig(Display *disp
     format.setAccumBufferSize(accumSizeB);
 
     return format;
+}
+
+QPlatformWindowFormat QGLXGLContext::reducePlatformWindowFormat(const QPlatformWindowFormat &format, bool *reduced)
+{
+    QPlatformWindowFormat retFormat = format;
+    *reduced = true;
+
+    if (retFormat.sampleBuffers()) {
+        retFormat.setSampleBuffers(false);
+    } else if (retFormat.stereo()) {
+        retFormat.setStereo(false);
+    } else if (retFormat.accum()) {
+        retFormat.setAccum(false);
+    }else if (retFormat.stencil()) {
+        retFormat.setStencil(false);
+    }else if (retFormat.alpha()) {
+        retFormat.setAlpha(false);
+    }else if (retFormat.depth()) {
+        retFormat.setDepth(false);
+    }else if (retFormat.doubleBuffer()) {
+        retFormat.setDoubleBuffer(false);
+    }else{
+        *reduced = false;
+    }
+    return retFormat;
 }
 
 QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
