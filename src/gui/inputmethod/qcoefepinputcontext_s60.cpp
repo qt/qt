@@ -359,10 +359,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 
     commitTemporaryPreeditString();
 
-    bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
-            || hints & ImhDialableCharactersOnly;
-    bool noOnlys = !(numbersOnly || hints & ImhUppercaseOnly
-            || hints & ImhLowercaseOnly);
+    bool numbersOnly = (hints & ImhDigitsOnly) || (hints & ImhFormattedNumbersOnly)
+            || (hints & ImhDialableCharactersOnly);
+    bool noOnlys = !(numbersOnly || (hints & ImhUppercaseOnly)
+            || (hints & ImhLowercaseOnly));
     TInt flags;
     Qt::InputMethodHints oldHints = hints;
 
@@ -388,8 +388,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
                 hints |= ImhPreferLowercase;
             } else if (hints & ImhUppercaseOnly) {
                 hints |= ImhPreferUppercase;
-            } else if (hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
-                    || hints & ImhDialableCharactersOnly) {
+            } else if (numbersOnly) {
                 hints |= ImhPreferNumbers;
             }
         }
@@ -405,6 +404,11 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     flags = 0;
     if (numbersOnly) {
         flags |= EAknEditorNumericInputMode;
+    }
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0
+        && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly)) {
+        //workaround - the * key does not launch the symbols menu, making it impossible to use these modes unless text mode is enabled.
+        flags |= EAknEditorTextInputMode;
     }
     if (hints & ImhUppercaseOnly || hints & ImhLowercaseOnly) {
         flags |= EAknEditorTextInputMode;
@@ -456,6 +460,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
+    // if alphanumeric input, then make all symbols available in numeric mode too.
+    if (!numbersOnly)
+        flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
 
