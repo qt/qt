@@ -212,6 +212,7 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportScriptableSlots                export this object's scriptable slots
     \value ExportScriptableSignals              export this object's scriptable signals
     \value ExportScriptableProperties           export this object's scriptable properties
+    \value ExportScriptableInvokables           export this object's scriptable invokables
     \value ExportScriptableContents             shorthand form for ExportScriptableSlots |
                                                 ExportScriptableSignals |
                                                 ExportScriptableProperties
@@ -219,6 +220,7 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportNonScriptableSlots             export this object's non-scriptable slots
     \value ExportNonScriptableSignals           export this object's non-scriptable signals
     \value ExportNonScriptableProperties        export this object's non-scriptable properties
+    \value ExportNonScriptableInvokables        export this object's non-scriptable invokables
     \value ExportNonScriptableContents          shorthand form for ExportNonScriptableSlots |
                                                 ExportNonScriptableSignals |
                                                 ExportNonScriptableProperties
@@ -226,10 +228,9 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportAllSlots                       export all of this object's slots
     \value ExportAllSignals                     export all of this object's signals
     \value ExportAllProperties                  export all of this object's properties
+    \value ExportAllInvokables                  export all of this object's invokables
     \value ExportAllContents                    export all of this object's contents
-
     \value ExportChildObjects                   export this object's child objects
-
     \sa registerObject(), QDBusAbstractAdaptor, {usingadaptors.html}{Using adaptors}
 */
 
