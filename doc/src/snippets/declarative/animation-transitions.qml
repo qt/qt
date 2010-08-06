@@ -37,12 +37,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-Button ./Button.qml
-FileDialog ./FileDialog.qml
-TextArea ./TextArea.qml
-TextEditor ./TextEditor.qml
-EditMenu ./EditMenu.qml
-MenuBar ./MenuBar.qml
-
-plugin FileDialog ../plugins
+Rectangle {
+    id: rect
+    width: 100; height: 100
+    color: "red"
+    
+    MouseArea {
+        anchors.fill: parent
+        onClicked: rect.state = "moved"
+    }
+    
+    states: State {
+        name: "moved"
+        PropertyChanges { target: rect; x: 50; y: 50 }
+    }
+    
+    transitions: Transition {
+        PropertyAnimation { properties: "x,y"; duration: 1000 }
+    }
+}
+//![0]

@@ -37,66 +37,68 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import Qt 4.7
 
-FocusScope {
-    clip: true
+Row {
 
-    onActiveFocusChanged: if (activeFocus) mainView.state = "showListViews"
+//![0]
+Rectangle {
+    id: rect
+    width: 120; height: 200
 
-    ListView {
-        id: list1
-        y: activeFocus ? 10 : 40; width: parent.width / 3; height: parent.height - 20
-        focus: true
-        KeyNavigation.up: gridMenu; KeyNavigation.left: contextMenu; KeyNavigation.right: list2
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
+    Image {
+        id: img
+        source: "pics/qt.png"
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 0
 
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+        SequentialAnimation on y {
+            loops: Animation.Infinite
+            NumberAnimation { to: rect.height - img.height; easing.type: Easing.OutBounce; duration: 2000 }
+            PauseAnimation { duration: 1000 }
+            NumberAnimation { to: 0; easing.type: Easing.OutQuad; duration: 1000 }
         }
     }
+}
+//![0]
 
-    ListView {
-        id: list2
-        y: activeFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
-        KeyNavigation.up: gridMenu; KeyNavigation.left: list1; KeyNavigation.right: list3
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
+//![1]
+Rectangle {
+    id: redRect
+    width: 100; height: 100
+    color: "red"
 
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
-        }
+    MouseArea { id: mouseArea; anchors.fill: parent }
+
+    states: State {
+        name: "pressed"; when: mouseArea.pressed
+        PropertyChanges { target: redRect; color: "blue"; y: mouseArea.mouseY; width: mouseArea.mouseX }
     }
 
-    ListView {
-        id: list3
-        y: activeFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
-        KeyNavigation.up: gridMenu; KeyNavigation.left: list2
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
+    transitions: Transition {
 
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+        SequentialAnimation {
+            ColorAnimation { duration: 200 }
+            PauseAnimation { duration: 100 }
+
+            ParallelAnimation {
+                NumberAnimation {
+                    duration: 500
+                    easing.type: Easing.OutBounce
+                    targets: redRect
+                    properties: "y"
+                }
+
+                NumberAnimation {
+                    duration: 800
+                    easing.type: Easing.InOutQuad
+                    targets: redRect
+                    properties: "width"
+                }
+            }
         }
     }
+}
+//![1]
 
-    Rectangle { width: parent.width; height: 1; color: "#D1DBBD" }
-
-    Rectangle {
-        y: 1; width: parent.width; height: 10
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#3E606F" }
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-    }
-
-    Rectangle {
-        y: parent.height - 10; width: parent.width; height: 10
-        gradient: Gradient {
-            GradientStop { position: 1.0; color: "#3E606F" }
-            GradientStop { position: 0.0; color: "transparent" }
-        }
-    }
 }

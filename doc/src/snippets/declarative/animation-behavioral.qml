@@ -37,72 +37,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-#ifndef DIRECTORY_H
-#define DIRECTORY_H
+Item {
+    width: 100; height: 100
 
-#include "file.h"
+    Rectangle {
+        id: rect
+        width: 100; height: 100
+        color: "red"
+        
+        Behavior on x { PropertyAnimation { duration: 500 } }
+        Behavior on y { PropertyAnimation { duration: 500 } }
+    }
 
-#include <QDir>
-#include <QStringList>
-#include <QTextStream>
-#include <QDeclarativeListProperty>
-#include <QObject>
+    MouseArea {
+        anchors.fill: parent
+        onClicked: { rect.x = mouse.x; rect.y = mouse.y }
+    }
+}
+//![0]
 
-class Directory : public QObject{
-
-	Q_OBJECT
-	
-	//number of files in the directory
-	Q_PROPERTY(int filesCount READ filesCount)
-		
-	//list property containing file names as QString
-	Q_PROPERTY(QDeclarativeListProperty<File> files READ files CONSTANT )
-	
-	//file name of the text file to read/write
-	Q_PROPERTY(QString filename READ filename WRITE setFilename NOTIFY filenameChanged)
-	
-	//text content of the file
-	Q_PROPERTY(QString fileContent READ fileContent WRITE setFileContent NOTIFY fileContentChanged)
-	
-	public:
-		Directory(QObject *parent = 0);
-		
-		//properties' read functions
-		int filesCount() const;
-		QString filename() const;
-		QString fileContent() const;
-		QDeclarativeListProperty<File> files();
-
-		//properties' write functions
-		void setFilename(const QString &str);
-		void setFileContent(const QString &str);
-		
-		//accessible from QML
-		Q_INVOKABLE void saveFile();
-		Q_INVOKABLE void loadFile();
-	
-	signals:
-		void directoryChanged();
-		void filenameChanged();
-		void fileContentChanged();
-		
-	private:
-		QDir m_dir;
-		QStringList m_dirFiles;		
-		File currentFile;      
-		QString m_saveDir;
-		QStringList m_filterList;	
-		
-		//contains the file data in QString format
-		QString m_fileContent;
-		
-		//Registered to QML in a plugin. Accessible from QML as a property of Directory
-		QList<File *> m_fileList;
-
-		//refresh content of the directory 
-		void refresh();
-};
-
-
-#endif

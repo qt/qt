@@ -173,6 +173,9 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     The connection is then torn down using the disconnectFromBus()
     function.
 
+    Once disconnected, calling connectToBus() will not reestablish a
+    connection, you must create a new QDBusConnection instance.
+
     As a convenience for the two most common connection types, the
     sessionBus() and systemBus() functions return open connections to
     the session server daemon and the system server daemon,
@@ -853,10 +856,6 @@ QDBusConnectionInterface *QDBusConnection::interface() const
 
 /*!
     Returns true if this QDBusConnection object is connected.
-
-    If it isn't connected, calling connectToBus() on the same
-    connection name will not make be connected. You need to call the
-    QDBusConnection constructor again.
 */
 bool QDBusConnection::isConnected() const
 {

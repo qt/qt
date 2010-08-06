@@ -84,12 +84,15 @@ public:
 
     \snippet doc/src/snippets/declarative/behavior.qml 0
 
-    To run multiple animations within a Behavior, use ParallelAnimation or
+    Note that a property cannot have more than one assigned Behavior. To provide
+    multiple animations within a Behavior, use ParallelAnimation or
     SequentialAnimation.
 
-    Note that a property cannot have more than one assigned Behavior.
+    If a \l{QML States}{state change} has a \l Transition that matches the same property as a
+    Behavior, the \l Transition animation overrides the Behavior for that
+    state change.
 
-    \sa {Property Behaviors}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
+    \sa {QML Animation}, {declarative/animation/behaviors}{Behavior example}, QtDeclarative
 */
 
 
