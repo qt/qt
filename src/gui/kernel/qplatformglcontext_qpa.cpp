@@ -51,7 +51,7 @@ QPlatformGLContext::~QPlatformGLContext()
     The default implementation returns 0, which denotes the default
     window-system provided frame buffer.
 */
-GLuint QPlatformGLContext::defaultFBO() const
+unsigned long QPlatformGLContext::defaultFBO() const
 {
     return 0;
 }

@@ -41,11 +41,11 @@
 #ifndef QEGLCONVENIENCE_H
 #define QEGLCONVENIENCE_H
 
-#include <EGL/egl.h>
 
 #include <QtGui/QPlatformWindowFormat>
 #include <QtCore/QVector>
 
+#include <EGL/egl.h>
 QT_BEGIN_NAMESPACE
 
 QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &format);

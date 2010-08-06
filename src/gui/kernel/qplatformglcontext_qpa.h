@@ -42,7 +42,8 @@
 #ifndef QPLATFORM_GL_CONTEXT_H
 #define QPLATFORM_GL_CONTEXT_H
 
-#include <QtOpenGL/qgl.h>
+#include <QtCore/qnamespace.h>
+#include <QPlatformWindowFormat>
 
 QT_BEGIN_HEADER
 
@@ -57,7 +58,7 @@ public:
     virtual void doneCurrent() = 0;
     virtual void swapBuffers() = 0;
     virtual void* getProcAddress(const QString& procName) = 0;
-    virtual GLuint defaultFBO() const;
+    virtual unsigned long defaultFBO() const;
 
     virtual QPlatformWindowFormat platformWindowFormat() const = 0;
 
