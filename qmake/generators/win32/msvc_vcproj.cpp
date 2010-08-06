@@ -207,10 +207,9 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
-      init_flag(false),
-      projectWriter(0)
+      init_flag(false)
 {
-    projectWriter = new VCProjectWriter;
+    projectWriter = createProjectWriter();
 }
 
 VcprojGenerator::~VcprojGenerator()
@@ -1495,6 +1494,11 @@ void VcprojGenerator::initOld()
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
+
+VCProjectWriter *VcprojGenerator::createProjectWriter()
+{
+    return new VCProjectWriter;
+}
 
 QString VcprojGenerator::replaceExtraCompilerVariables(const QString &var, const QStringList &in, const QStringList &out)
 {

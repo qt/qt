@@ -1065,6 +1065,8 @@ public:
 class VCProjectWriter
 {
 public:
+    virtual ~VCProjectWriter() {}
+
     virtual void write(XmlOutput &, VCProjectSingleConfig &);
     virtual void write(XmlOutput &, VCProject &);
 

@@ -63,7 +63,14 @@ QT_BEGIN_NAMESPACE
 
 VcxprojGenerator::VcxprojGenerator() : VcprojGenerator()
 {
+    projectWriter = new VCXProjectWriter;
 }
+
+VCProjectWriter *VcxprojGenerator::createProjectWriter()
+{
+    return new VCXProjectWriter;
+}
+
 bool VcxprojGenerator::writeMakefile(QTextStream &t)
 {
     initProject(); // Fills the whole project with proper data
@@ -84,7 +91,7 @@ bool VcxprojGenerator::writeMakefile(QTextStream &t)
         if(!project->isActiveConfig("build_pass")) {
             debug_msg(1, "Generator: MSVC.NET: Writing single configuration project file");
             XmlOutput xmlOut(t);
-            xmlOut << vcxProject;
+            projectWriter->write(xmlOut, vcxProject);
         }
         return true;
     }
@@ -643,7 +650,7 @@ bool VcxprojGenerator::writeProjectMakefile()
         mergedProject.PlatformName = mergedProjects.at(0)->vcxProject.PlatformName;
 
         XmlOutput xmlOut(t);
-        xmlOut << mergedProject;
+        projectWriter->write(xmlOut, mergedProject);
         return true;
     } else if(project->first("TEMPLATE") == "vcsubdirs") {
         return writeMakefile(t);

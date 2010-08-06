@@ -56,8 +56,10 @@ class VcxprojGenerator : public VcprojGenerator
 public:
     VcxprojGenerator();
     ~VcxprojGenerator();
+    VCXProjectWriter *projectWriter; // ### remove, once we've killed the VCX classes
 
 protected:
+    virtual VCProjectWriter *createProjectWriter();
     virtual bool supportsMetaBuild() { return true; }
     virtual bool supportsMergedBuilds() { return true; }
     virtual bool mergeBuildProject(MakefileGenerator *other);

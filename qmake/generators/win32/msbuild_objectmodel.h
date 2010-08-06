@@ -689,19 +689,24 @@ public:
 
 };
 
+class VCXProjectWriter : public VCProjectWriter
+{
+public:
+    // ### replace the X classes by the standard names!
+    void write(XmlOutput &, VCXProjectSingleConfig &);
+    void write(XmlOutput &, VCXProject &);
 
-XmlOutput &operator<<(XmlOutput &, const VCXCLCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXLinkerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXMIDLTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXCustomBuildTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXLibrarianTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXResourceCompilerTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXEventTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXDeploymentTool &);
-XmlOutput &operator<<(XmlOutput &, const VCXConfiguration &);
-XmlOutput &operator<<(XmlOutput &, const VCXProjectSingleConfig &);
-XmlOutput &operator<<(XmlOutput &, VCXProject &);
-
+    void write(XmlOutput &, const VCXCLCompilerTool &);
+    void write(XmlOutput &, const VCXLinkerTool &);
+    void write(XmlOutput &, const VCXMIDLTool &);
+    void write(XmlOutput &, const VCXCustomBuildTool &);
+    void write(XmlOutput &, const VCXLibrarianTool &);
+    void write(XmlOutput &, const VCXResourceCompilerTool &);
+    void write(XmlOutput &, const VCXEventTool &);
+    void write(XmlOutput &, const VCDeploymentTool &);
+    void write(XmlOutput &, const VCXConfiguration &);
+    void write(XmlOutput &, VCFilter &);
+};
 
 QT_END_NAMESPACE
 
