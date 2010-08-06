@@ -981,9 +981,11 @@ redefine to built-in booleans to make autotests work properly */
 #  undef QT_DEPRECATED_VARIABLE
 #  undef QT_DEPRECATED_CONSTRUCTOR
 #elif defined(QT_DEPRECATED_WARNINGS)
+#  ifdef QT3_SUPPORT
 /* enable Qt3 support warnings as well */
-#  undef QT3_SUPPORT_WARNINGS
-#  define QT3_SUPPORT_WARNINGS
+#    undef QT3_SUPPORT_WARNINGS
+#    define QT3_SUPPORT_WARNINGS
+#  endif
 #  undef QT_DEPRECATED
 #  define QT_DEPRECATED Q_DECL_DEPRECATED
 #  undef QT_DEPRECATED_VARIABLE

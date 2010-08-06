@@ -119,7 +119,7 @@ static void printBlob(NLA_BLOB *blob)
 }
 #endif
 
-static QString qGetInterfaceType(const QString &interface)
+static QNetworkConfiguration::BearerType qGetInterfaceType(const QString &interface)
 {
 #ifdef Q_OS_WINCE
     Q_UNUSED(interface)
@@ -130,10 +130,10 @@ static QString qGetInterfaceType(const QString &interface)
     NDIS_MEDIUM medium;
     NDIS_PHYSICAL_MEDIUM physicalMedium;
 
-    HANDLE handle = CreateFile((TCHAR *)QString(QLatin1String("\\\\.\\%1")).arg(interface).utf16(),
-                               0, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+    HANDLE handle = CreateFile((TCHAR *)QString::fromLatin1("\\\\.\\%1").arg(interface).utf16(), 0,
+                               FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (handle == INVALID_HANDLE_VALUE)
-        return QLatin1String("Unknown");
+        return QNetworkConfiguration::BearerUnknown;
 
     oid = OID_GEN_MEDIA_SUPPORTED;
     bytesWritten = 0;
@@ -141,7 +141,7 @@ static QString qGetInterfaceType(const QString &interface)
                                   &medium, sizeof(medium), &bytesWritten, 0);
     if (!result) {
         CloseHandle(handle);
-        return QLatin1String("Unknown");
+        return QNetworkConfiguration::BearerUnknown;
     }
 
     oid = OID_GEN_PHYSICAL_MEDIUM;
@@ -152,9 +152,9 @@ static QString qGetInterfaceType(const QString &interface)
         CloseHandle(handle);
 
         if (medium == NdisMedium802_3)
-            return QLatin1String("Ethernet");
+            return QNetworkConfiguration::BearerEthernet;
         else
-            return QLatin1String("Unknown");
+            return QNetworkConfiguration::BearerUnknown;
     }
 
     CloseHandle(handle);
@@ -162,16 +162,16 @@ static QString qGetInterfaceType(const QString &interface)
     if (medium == NdisMedium802_3) {
         switch (physicalMedium) {
         case NdisPhysicalMediumWirelessLan:
-            return QLatin1String("WLAN");
+            return QNetworkConfiguration::BearerWLAN;
         case NdisPhysicalMediumBluetooth:
-            return QLatin1String("Bluetooth");
+            return QNetworkConfiguration::BearerBluetooth;
         case NdisPhysicalMediumWiMax:
-            return QLatin1String("WiMAX");
+            return QNetworkConfiguration::BearerWiMAX;
         default:
 #ifdef BEARER_MANAGEMENT_DEBUG
             qDebug() << "Physical Medium" << physicalMedium;
 #endif
-            return QLatin1String("Ethernet");
+            return QNetworkConfiguration::BearerEthernet;
         }
     }
 
@@ -181,7 +181,7 @@ static QString qGetInterfaceType(const QString &interface)
 
 #endif
 
-    return QLatin1String("Unknown");
+    return QNetworkConfiguration::BearerUnknown;
 }
 
 class QNlaThread : public QThread
@@ -374,10 +374,9 @@ DWORD QNlaThread::parseBlob(NLA_BLOB *blob, QNetworkConfigurationPrivate *cpPriv
 #endif
         break;
     case NLA_CONNECTIVITY:
-        if (blob->data.connectivity.internet == NLA_INTERNET_YES)
-            cpPriv->internet = true;
-        else
-            cpPriv->internet = false;
+#ifdef BEARER_MANAGEMENT_DEBUG
+        qDebug("%s: unhandled header type NLA_CONNECTIVITY", __FUNCTION__);
+#endif
         break;
     case NLA_ICS:
 #ifdef BEARER_MANAGEMENT_DEBUG
@@ -438,8 +437,10 @@ QNetworkConfigurationPrivate *QNlaThread::parseQuerySet(const WSAQUERYSET *query
         } while (offset != 0 && offset < querySet->lpBlob->cbSize);
     }
 
-    if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent()))
-        cpPriv->bearer = engine->bearerName(cpPriv->id);
+    if (QNlaEngine *engine = qobject_cast<QNlaEngine *>(parent())) {
+        const QString interface = engine->getInterfaceFromId(cpPriv->id);
+        cpPriv->bearerType = qGetInterfaceType(interface);
+    }
 
     return cpPriv;
 }
@@ -584,16 +585,6 @@ bool QNlaEngine::hasIdentifier(const QString &id)
     QMutexLocker locker(&mutex);
 
     return configurationInterface.contains(id.toUInt());
-}
-
-QString QNlaEngine::bearerName(const QString &id)
-{
-    QString interface = getInterfaceFromId(id);
-
-    if (interface.isEmpty())
-        return QString();
-
-    return qGetInterfaceType(interface);
 }
 
 void QNlaEngine::connectToId(const QString &id)

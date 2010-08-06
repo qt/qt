@@ -206,10 +206,9 @@ Text {
 
 \section1 Enums
 
-The Qt object contains all enums in the Qt namespace. For example, you can
-access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
+the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
 
-For a full list of enums, see the \l{Qt Namespace} documentation.
 
 \section1 Types
 The Qt object also contains helper functions for creating objects of specific

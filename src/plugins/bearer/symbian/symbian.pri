@@ -14,14 +14,20 @@ INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 symbian-abld:INCLUDEPATH += $$QT_BUILD_TREE/include/QtNetwork/private
 
 LIBS += -lcommdb \
-        -lapsettingshandlerui \
-        -lconnmon \
         -lcentralrepository \
         -lesock \
         -linsock \
         -lecom \
         -lefsrv \
         -lnetmeta
+
+is_using_gnupoc {
+    LIBS += -lconnmon \
+            -lapsettingshandlerui
+} else {
+    LIBS += -lConnMon \
+            -lApSettingsHandlerUI
+}
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

@@ -122,9 +122,10 @@ void AddressBook::submitContact()
     QString name = nameLine->text();
     QString address = addressText->toPlainText();
     
-    if (name == "" || address == "") {
+    if (name.isEmpty() || address.isEmpty()) {
         QMessageBox::information(this, tr("Empty Field"),
             tr("Please enter a name and address."));
+	return;
     }
 
     if (!contacts.contains(name)) {

@@ -47,7 +47,7 @@
 #ifdef Q_OS_SYMBIAN
 
 #ifdef Q_WS_S60
-#include <akndoc.h>
+#include <AknDoc.h>
 typedef CAknDocument QS60MainDocumentBase;
 #else
 #include <eikdoc.h>
