@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-wince*:{
+wince*|symbian:{
   SUBDIRS = test
 } else {
   SUBDIRS = test stdinprocess
