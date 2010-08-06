@@ -529,7 +529,7 @@
     \title OpenVG Examples
     \brief Accessing OpenVG from Qt
 
-    \image openvg-examples.png
+    \image opengl-examples.png
 
     Qt provides support for integration with OpenVG implementations on
     platforms with suitable drivers.
