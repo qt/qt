@@ -470,7 +470,7 @@ enum warningLevelOption {
 class VCToolBase {
 protected:
     // Functions
-    VCToolBase(){};
+    VCToolBase(){}
     virtual ~VCToolBase(){}
     virtual bool parseOption(const char* option) = 0;
 public:
@@ -725,7 +725,7 @@ public:
     // Functions
     VCLibrarianTool();
     virtual ~VCLibrarianTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalDependencies;
@@ -746,7 +746,7 @@ public:
     // Functions
     VCCustomBuildTool();
     virtual ~VCCustomBuildTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalDependencies;
@@ -765,7 +765,7 @@ public:
     // Functions
     VCResourceCompilerTool();
     virtual ~VCResourceCompilerTool(){}
-    bool parseOption(const char*){ return false; };
+    bool parseOption(const char*){ return false; }
 
     // Variables
     QStringList             AdditionalIncludeDirectories;
@@ -908,14 +908,13 @@ class VCFilter
 public:
     // Functions
     VCFilter();
-    ~VCFilter(){};
+    ~VCFilter(){}
 
     void addFile(const QString& filename);
     void addFile(const VCFilterFile& fileInfo);
     void addFiles(const QStringList& fileList);
     bool addExtraCompiler(const VCFilterFile &info);
     void modifyPCHstage(QString str);
-    void outputFileConfig(XmlOutput &xml, const QString &filename);
 
     // Variables
     QString                 Name;
@@ -933,9 +932,6 @@ public:
 
     bool                    useCompilerTool;
     VCCLCompilerTool        CompilerTool;
-
-private:
-    friend XmlOutput &operator<<(XmlOutput &xml, VCFilter &tool);
 };
 
 typedef QList<VCFilter> VCFilterList;
@@ -953,7 +949,7 @@ public:
         Extras
     };
     // Functions
-    VCProjectSingleConfig(){};
+    VCProjectSingleConfig(){}
     ~VCProjectSingleConfig(){}
 
     // Variables
@@ -982,8 +978,6 @@ public:
     // Accessor for extracompilers
     VCFilter               &filterForExtraCompiler(const QString &compilerName);
 };
-
-
 
 // Tree & Flat view of files --------------------------------------------------
 class VCFilter;
@@ -1110,16 +1104,6 @@ public:
 
     // List of all extracompilers
     QStringList             ExtraCompilers;
-
-    // Functions
-    void                    outputFilter(XmlOutput &xml,
-//                                         VCProjectSingleConfig::FilterTypes type,
-                                         const QString &filtername);
-
-    void                    outputFileConfigs(XmlOutput &xml,
-//                                              VCProjectSingleConfig::FilterTypes type,
-                                              const VCFilterFile &info,
-                                              const QString &filtername);
 };
 
 class VCProjectWriter
@@ -1140,6 +1124,14 @@ public:
     virtual void write(XmlOutput &, const VCDeploymentTool &);
     virtual void write(XmlOutput &, const VCConfiguration &);
     virtual void write(XmlOutput &, VCFilter &);
+
+private:
+    static void outputFilter(VCProject &project, XmlOutput &xml, const QString &filtername);
+    static void outputFileConfigs(VCProject &project, XmlOutput &xml, const VCFilterFile &info, const QString &filtername);
+    static void outputFileConfig(VCFilter &filter, XmlOutput &xml, const QString &filename);
+
+    friend class TreeNode;
+    friend class FlatNode;
 };
 
 QT_END_NAMESPACE

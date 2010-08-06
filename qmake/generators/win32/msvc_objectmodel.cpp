@@ -2300,58 +2300,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
     return useCustomBuildTool;
 }
 
-void VCFilter::outputFileConfig(XmlOutput &xml, const QString &filename)
-{
-    // Clearing each filter tool
-    useCustomBuildTool = false;
-    useCompilerTool = false;
-    CustomBuildTool = VCCustomBuildTool();
-    CompilerTool = VCCLCompilerTool();
-
-    // Unset some default options
-    CompilerTool.BufferSecurityCheck = unset;
-    CompilerTool.DebugInformationFormat = debugUnknown;
-    CompilerTool.ExceptionHandling = ehDefault;
-    CompilerTool.GeneratePreprocessedFile = preprocessUnknown;
-    CompilerTool.Optimization = optimizeDefault;
-    CompilerTool.ProgramDataBaseFileName.clear();
-    CompilerTool.RuntimeLibrary = rtUnknown;
-    CompilerTool.WarningLevel = warningLevelUnknown;
-    CompilerTool.config = Config;
-
-    bool inBuild = false;
-    VCFilterFile info;
-    for (int i = 0; i < Files.count(); ++i) {
-        if (Files.at(i).file == filename) {
-            info = Files.at(i);
-            inBuild = true;
-        }
-    }
-    inBuild &= !info.excludeFromBuild;
-
-    if (inBuild) {
-        addExtraCompiler(info);
-        if(Project->usePCH)
-            modifyPCHstage(info.file);
-    } else {
-        // Excluded files uses an empty compiler stage
-        if(info.excludeFromBuild)
-            useCompilerTool = true;
-    }
-
-    // Actual XML output ----------------------------------
-    if(useCustomBuildTool || useCompilerTool || !inBuild) {
-        xml << tag(_FileConfiguration)
-                << attr(_Name, (*Config).Name)
-                << (!inBuild ? attrS(_ExcludedFromBuild, "true") : noxml());
-        if (useCustomBuildTool)
-            Project->projectWriter->write(xml, CustomBuildTool);
-        if (useCompilerTool)
-            Project->projectWriter->write(xml, CompilerTool);
-        xml << closetag(_FileConfiguration);
-    }
-}
-
 // VCProjectSingleConfig --------------------------------------------
 VCFilter& VCProjectSingleConfig::filterForExtraCompiler(const QString &compilerName)
 {
@@ -2386,10 +2334,9 @@ void TreeNode::generateXML(XmlOutput &xml, const QString &tagName, VCProject &to
             xml << closetag("Filter");
     } else {
         // Leaf
-        tool.outputFileConfigs(xml, info, filter);
+        VCProjectWriter::outputFileConfigs(tool, xml, info, filter);
     }
 }
-
 
 // Flat file generation ---------------------------------------------
 void FlatNode::generateXML(XmlOutput &xml, const QString &/*tagName*/, VCProject &tool, const QString &filter) {
@@ -2397,116 +2344,9 @@ void FlatNode::generateXML(XmlOutput &xml, const QString &/*tagName*/, VCProject
         ChildrenMapFlat::ConstIterator it = children.constBegin();
         ChildrenMapFlat::ConstIterator end = children.constEnd();
         for (; it != end; ++it) {
-            tool.outputFileConfigs(xml, (*it), filter);
+            VCProjectWriter::outputFileConfigs(tool, xml, (*it), filter);
         }
     }
-}
-
-
-// VCProject --------------------------------------------------------
-// Output all configurations (by filtername) for a file (by info)
-// A filters config output is in VCFilter.outputFileConfig()
-void VCProject::outputFileConfigs(XmlOutput &xml,
-//                                  VCProjectSingleConfig::FilterTypes type
-                                  const VCFilterFile &info,
-                                  const QString &filtername)
-{
-    xml << tag(q_File)
-            << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
-    for (int i = 0; i < SingleProjects.count(); ++i) {
-        VCFilter filter;
-        if (filtername == "RootFiles") {
-            filter = SingleProjects.at(i).RootFiles;
-        } else if (filtername == "Sources") {
-            filter = SingleProjects.at(i).SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = SingleProjects.at(i).HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = SingleProjects.at(i).GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = SingleProjects.at(i).LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = SingleProjects.at(i).TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = SingleProjects.at(i).FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = SingleProjects.at(i).ResourceFiles;
-        } else {
-            // ExtraCompilers
-            filter = SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
-        if (filter.Config) // only if the filter is not empty
-            filter.outputFileConfig(xml, info.file);
-    }
-    xml << closetag(q_File);
-}
-
-// outputs a given filter for all existing configurations of a project
-void VCProject::outputFilter(XmlOutput &xml,
-//                             VCProjectSingleConfig::FilterTypes type
-                             const QString &filtername)
-{
-    Node *root;
-    if (SingleProjects.at(0).flat_files)
-        root = new FlatNode;
-    else
-        root = new TreeNode;
-
-    QString name, extfilter, guid;
-    triState parse;
-
-    for (int i = 0; i < SingleProjects.count(); ++i) {
-        VCFilter filter;
-        if (filtername == "RootFiles") {
-            filter = SingleProjects.at(i).RootFiles;
-        } else if (filtername == "Sources") {
-            filter = SingleProjects.at(i).SourceFiles;
-        } else if (filtername == "Headers") {
-            filter = SingleProjects.at(i).HeaderFiles;
-        } else if (filtername == "GeneratedFiles") {
-            filter = SingleProjects.at(i).GeneratedFiles;
-        } else if (filtername == "LexYaccFiles") {
-            filter = SingleProjects.at(i).LexYaccFiles;
-        } else if (filtername == "TranslationFiles") {
-            filter = SingleProjects.at(i).TranslationFiles;
-        } else if (filtername == "FormFiles") {
-            filter = SingleProjects.at(i).FormFiles;
-        } else if (filtername == "ResourceFiles") {
-            filter = SingleProjects.at(i).ResourceFiles;
-        } else {
-            // ExtraCompilers
-            filter = SingleProjects[i].filterForExtraCompiler(filtername);
-        }
-
-        // Merge all files in this filter to root tree
-        for (int x = 0; x < filter.Files.count(); ++x)
-            root->addElement(filter.Files.at(x));
-
-        // Save filter setting from first filter. Next filters
-        // may differ but we cannot handle that. (ex. extfilter)
-        if (name.isEmpty()) {
-            name = filter.Name;
-            extfilter = filter.Filter;
-            parse = filter.ParseFiles;
-            guid = filter.Guid;
-        }
-    }
-
-    if (!root->hasElements())
-        return;
-
-    // Actual XML output ----------------------------------
-    if (!name.isEmpty()) {
-        xml << tag(_Filter)
-                << attrS(_Name, name)
-                << attrS(_Filter, extfilter)
-                << attrS(_UniqueIdentifier, guid)
-                << attrT(_ParseFiles, parse);
-    }
-    root->generateXML(xml, "", *this, filtername); // output root tree
-    if (!name.isEmpty())
-        xml << closetag(_Filter);
 }
 
 void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
@@ -2532,17 +2372,17 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     // XML output functionality
     VCProject tempProj;
     tempProj.SingleProjects += tool;
-    tempProj.outputFilter(xml, "Sources");
-    tempProj.outputFilter(xml, "Headers");
-    tempProj.outputFilter(xml, "GeneratedFiles");
-    tempProj.outputFilter(xml, "LexYaccFiles");
-    tempProj.outputFilter(xml, "TranslationFiles");
-    tempProj.outputFilter(xml, "FormFiles");
-    tempProj.outputFilter(xml, "ResourceFiles");
+    outputFilter(tempProj, xml, "Sources");
+    outputFilter(tempProj, xml, "Headers");
+    outputFilter(tempProj, xml, "GeneratedFiles");
+    outputFilter(tempProj, xml, "LexYaccFiles");
+    outputFilter(tempProj, xml, "TranslationFiles");
+    outputFilter(tempProj, xml, "FormFiles");
+    outputFilter(tempProj, xml, "ResourceFiles");
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
-        tempProj.outputFilter(xml, tempProj.ExtraCompilers.at(x));
+        outputFilter(tempProj, xml, tempProj.ExtraCompilers.at(x));
     }
-    tempProj.outputFilter(xml, "RootFiles");
+    outputFilter(tempProj, xml, "RootFiles");
     xml     << closetag(q_Files)
             << tag(_Globals)
                 << data(); // No "/>" end tag
@@ -2574,17 +2414,17 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
         write(xml, tool.SingleProjects.at(i).Configuration);
     xml     << closetag(_Configurations)
             << tag(q_Files);
-    tool.outputFilter(xml, "Sources");
-    tool.outputFilter(xml, "Headers");
-    tool.outputFilter(xml, "GeneratedFiles");
-    tool.outputFilter(xml, "LexYaccFiles");
-    tool.outputFilter(xml, "TranslationFiles");
-    tool.outputFilter(xml, "FormFiles");
-    tool.outputFilter(xml, "ResourceFiles");
+    outputFilter(tool, xml, "Sources");
+    outputFilter(tool, xml, "Headers");
+    outputFilter(tool, xml, "GeneratedFiles");
+    outputFilter(tool, xml, "LexYaccFiles");
+    outputFilter(tool, xml, "TranslationFiles");
+    outputFilter(tool, xml, "FormFiles");
+    outputFilter(tool, xml, "ResourceFiles");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
-        tool.outputFilter(xml, tool.ExtraCompilers.at(x));
+        outputFilter(tool, xml, tool.ExtraCompilers.at(x));
     }
-    tool.outputFilter(xml, "RootFiles");
+    outputFilter(tool, xml, "RootFiles");
     xml     << closetag(q_Files)
             << tag(_Globals)
             << data(); // No "/>" end tag
@@ -2907,11 +2747,165 @@ void VCProjectWriter::write(XmlOutput &xml, VCFilter &tool)
         xml << tag(q_File)
                 << attrS(_RelativePath, Option::fixPathToLocalOS(info.file))
             << data(); // In case no custom builds, to avoid "/>" endings
-        tool.outputFileConfig(xml, tool.Files.at(i).file);
+        outputFileConfig(tool, xml, tool.Files.at(i).file);
         xml << closetag(q_File);
     }
     if (!tool.Name.isEmpty())
         xml << closetag(_Filter);
+}
+
+// outputs a given filter for all existing configurations of a project
+void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QString &filtername)
+{
+    Node *root;
+    if (project.SingleProjects.at(0).flat_files)
+        root = new FlatNode;
+    else
+        root = new TreeNode;
+
+    QString name, extfilter, guid;
+    triState parse;
+
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        VCFilter filter;
+        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
+        if (filtername == "RootFiles") {
+            filter = projectSingleConfig.RootFiles;
+        } else if (filtername == "Sources") {
+            filter = projectSingleConfig.SourceFiles;
+        } else if (filtername == "Headers") {
+            filter = projectSingleConfig.HeaderFiles;
+        } else if (filtername == "GeneratedFiles") {
+            filter = projectSingleConfig.GeneratedFiles;
+        } else if (filtername == "LexYaccFiles") {
+            filter = projectSingleConfig.LexYaccFiles;
+        } else if (filtername == "TranslationFiles") {
+            filter = projectSingleConfig.TranslationFiles;
+        } else if (filtername == "FormFiles") {
+            filter = projectSingleConfig.FormFiles;
+        } else if (filtername == "ResourceFiles") {
+            filter = projectSingleConfig.ResourceFiles;
+        } else {
+            // ExtraCompilers
+            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
+        }
+
+        // Merge all files in this filter to root tree
+        for (int x = 0; x < filter.Files.count(); ++x)
+            root->addElement(filter.Files.at(x));
+
+        // Save filter setting from first filter. Next filters
+        // may differ but we cannot handle that. (ex. extfilter)
+        if (name.isEmpty()) {
+            name = filter.Name;
+            extfilter = filter.Filter;
+            parse = filter.ParseFiles;
+            guid = filter.Guid;
+        }
+    }
+
+    if (!root->hasElements())
+        return;
+
+    // Actual XML output ----------------------------------
+    if (!name.isEmpty()) {
+        xml << tag(_Filter)
+                << attrS(_Name, name)
+                << attrS(_Filter, extfilter)
+                << attrS(_UniqueIdentifier, guid)
+                << attrT(_ParseFiles, parse);
+    }
+    root->generateXML(xml, "", project, filtername); // output root tree
+    if (!name.isEmpty())
+        xml << closetag(_Filter);
+}
+
+// Output all configurations (by filtername) for a file (by info)
+// A filters config output is in VCFilter.outputFileConfig()
+void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, const VCFilterFile &info, const QString &filtername)
+{
+    xml << tag(q_File)
+            << attrS(_RelativePath, Option::fixPathToLocalOS(info.file));
+    for (int i = 0; i < project.SingleProjects.count(); ++i) {
+        VCFilter filter;
+        const VCProjectSingleConfig &projectSingleConfig = project.SingleProjects.at(i);
+        if (filtername == "RootFiles") {
+            filter = projectSingleConfig.RootFiles;
+        } else if (filtername == "Sources") {
+            filter = projectSingleConfig.SourceFiles;
+        } else if (filtername == "Headers") {
+            filter = projectSingleConfig.HeaderFiles;
+        } else if (filtername == "GeneratedFiles") {
+            filter = projectSingleConfig.GeneratedFiles;
+        } else if (filtername == "LexYaccFiles") {
+            filter = projectSingleConfig.LexYaccFiles;
+        } else if (filtername == "TranslationFiles") {
+            filter = projectSingleConfig.TranslationFiles;
+        } else if (filtername == "FormFiles") {
+            filter = projectSingleConfig.FormFiles;
+        } else if (filtername == "ResourceFiles") {
+            filter = projectSingleConfig.ResourceFiles;
+        } else {
+            // ExtraCompilers
+            filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
+        }
+
+        if (filter.Config) // only if the filter is not empty
+            outputFileConfig(filter, xml, info.file);
+    }
+    xml << closetag(q_File);
+}
+
+void VCProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, const QString &filename)
+{
+    // Clearing each filter tool
+    filter.useCustomBuildTool = false;
+    filter.useCompilerTool = false;
+    filter.CustomBuildTool = VCCustomBuildTool();
+    filter.CompilerTool = VCCLCompilerTool();
+
+    // Unset some default options
+    filter.CompilerTool.BufferSecurityCheck = unset;
+    filter.CompilerTool.DebugInformationFormat = debugUnknown;
+    filter.CompilerTool.ExceptionHandling = ehDefault;
+    filter.CompilerTool.GeneratePreprocessedFile = preprocessUnknown;
+    filter.CompilerTool.Optimization = optimizeDefault;
+    filter.CompilerTool.ProgramDataBaseFileName.clear();
+    filter.CompilerTool.RuntimeLibrary = rtUnknown;
+    filter.CompilerTool.WarningLevel = warningLevelUnknown;
+    filter.CompilerTool.config = filter.Config;
+
+    bool inBuild = false;
+    VCFilterFile info;
+    for (int i = 0; i < filter.Files.count(); ++i) {
+        if (filter.Files.at(i).file == filename) {
+            info = filter.Files.at(i);
+            inBuild = true;
+        }
+    }
+    inBuild &= !info.excludeFromBuild;
+
+    if (inBuild) {
+        filter.addExtraCompiler(info);
+        if(filter.Project->usePCH)
+            filter.modifyPCHstage(info.file);
+    } else {
+        // Excluded files uses an empty compiler stage
+        if(info.excludeFromBuild)
+            filter.useCompilerTool = true;
+    }
+
+    // Actual XML output ----------------------------------
+    if (filter.useCustomBuildTool || filter.useCompilerTool || !inBuild) {
+        xml << tag(_FileConfiguration)
+                << attr(_Name, filter.Config->Name)
+                << (!inBuild ? attrS(_ExcludedFromBuild, "true") : noxml());
+        if (filter.useCustomBuildTool)
+            filter.Project->projectWriter->write(xml, filter.CustomBuildTool);
+        if (filter.useCompilerTool)
+            filter.Project->projectWriter->write(xml, filter.CompilerTool);
+        xml << closetag(_FileConfiguration);
+    }
 }
 
 QT_END_NAMESPACE
