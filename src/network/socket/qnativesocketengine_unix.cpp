@@ -635,6 +635,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
                                       const QHostAddress &groupAddress,
                                       const QNetworkInterface &interface)
 {
+    int level = 0;
     int sockOpt = 0;
     void *sockArg;
     int sockArgSize;
@@ -644,7 +645,8 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
     ipv6_mreq mreq6;
 
     if (groupAddress.protocol() == QAbstractSocket::IPv6Protocol) {
-       sockOpt = how6;
+        level = IPPROTO_IPV6;
+        sockOpt = how6;
         sockArg = &mreq6;
         sockArgSize = sizeof(mreq6);
         memset(&mreq6, 0, sizeof(mreq6));
@@ -654,6 +656,7 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
     } else
 #endif
     if (groupAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        level = IPPROTO_IP;
         sockOpt = how4;
         sockArg = &mreq4;
         sockArgSize = sizeof(mreq4);
@@ -680,12 +683,16 @@ static bool multicastMembershipHelper(QNativeSocketEnginePrivate *d,
         return false;
     }
 
-    int res = setsockopt(d->socketDescriptor, IPPROTO_IP, sockOpt, sockArg, sockArgSize);
+    int res = setsockopt(d->socketDescriptor, level, sockOpt, sockArg, sockArgSize);
     if (res == -1) {
         switch (errno) {
         case ENOPROTOOPT:
             d->setError(QAbstractSocket::UnsupportedSocketOperationError,
                         QNativeSocketEnginePrivate::OperationUnsupportedErrorString);
+            break;
+        case EADDRNOTAVAIL:
+            d->setError(QAbstractSocket::SocketAddressNotAvailableError,
+                        QNativeSocketEnginePrivate::AddressNotAvailableErrorString);
             break;
         default:
             d->setError(QAbstractSocket::UnknownSocketError,
@@ -763,7 +770,7 @@ bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInter
 {
 #ifndef QT_NO_IPV6
     if (socketProtocol == QAbstractSocket::IPv6Protocol) {
-        uint v = iface.isValid() ? iface.index() : 0;
+        uint v = iface.index();
         return (::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_MULTICAST_IF, &v, sizeof(v)) != -1);
     }
 #endif
