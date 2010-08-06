@@ -46,13 +46,18 @@ Rectangle {
     width: 100; height: 100
     color: "red"
 
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+    }
+
     states: State {
-        name: "moved"
+        name: "moved"; when: mouseArea.pressed
         PropertyChanges { target: rect; x: 50; y: 50 }
     }
 
     transitions: Transition { 
-        PropertyAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } 
+        NumberAnimation { properties: "x,y"; easing.type: Easing.InOutQuad } 
     }
 }
 //![0]

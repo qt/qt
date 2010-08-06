@@ -77,6 +77,25 @@ symbian {
     DEPLOYMENT = partial_upgrade $$DEPLOYMENT
 }
 
+neon:*-g++* {
+    DEFINES += QT_HAVE_NEON
+    QMAKE_CXXFLAGS *= -mfpu=neon
+    HEADERS += $$NEON_HEADERS
+    SOURCES += $$NEON_SOURCES
+
+    DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
+
+    neon_compiler.commands = $$QMAKE_CXX -c
+    neon_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+    neon_compiler.dependency_type = TYPE_C
+    neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+    neon_compiler.input = DRAWHELPER_NEON_ASM_FILES
+    neon_compiler.variable_out = OBJECTS
+    neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
+    silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
+    QMAKE_EXTRA_COMPILERS += neon_compiler
+}
+
 contains(QMAKE_MAC_XARCH, no) {
     DEFINES += QT_NO_MAC_XARCH
 } else {

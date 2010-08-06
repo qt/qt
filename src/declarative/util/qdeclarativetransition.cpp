@@ -66,6 +66,19 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/declarative/transition.qml 0
 
+    Notice the example does not require \l{PropertyAnimation::}{to} and 
+    \l{PropertyAnimation::}{from} values for the NumberAnimation. As a convenience,
+    these properties are automatically set to the values of \c x and \c y before
+    and after the state change; the \c from values are provided by
+    the current values of \c x and \c y, and the \c to values are provided by
+    the PropertyChanges object. If you wish, you can provide \l{PropertyAnimation::}{to} and 
+    \l{PropertyAnimation::}{from} values anyway to override the default values.
+
+    By default, a Transition's animations are applied for any state change in the 
+    parent item. The  Transition \l {Transition::}{from} and \l {Transition::}{to} 
+    values can be set to restrict the animations to only be applied when changing 
+    from one particular state to another.
+
     To define multiple transitions, specify \l Item::transitions as a list:
 
     \qml
@@ -78,7 +91,11 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, {QtDeclarative}
+    If a state change has a Transition that matches the same property as a
+    \l Behavior, the Transition animation overrides the \l Behavior for that
+    state change.
+
+    \sa {QML Animation}, {declarative/animation/states}{states example}, {qmlstates}{States}, {QtDeclarative}
 */
 
 /*!
