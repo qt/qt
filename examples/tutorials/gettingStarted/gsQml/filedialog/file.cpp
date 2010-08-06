@@ -43,15 +43,15 @@
 
 File::File(QObject *parent) : QObject(parent)
 {
-	m_name = "";
+    m_name = "";
 }
 
 QString File::name() const{
-	return m_name;
+    return m_name;
 }
 void File::setName(const QString &str){
-	if(str != m_name){
-		m_name = str;
-		emit nameChanged();
-	}
+    if(str != m_name){
+        m_name = str;
+        emit nameChanged();
+    }
 }

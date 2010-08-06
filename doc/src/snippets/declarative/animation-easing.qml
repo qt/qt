@@ -37,13 +37,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-Button ./button.qml
-FileDialog ./fileDialog.qml
-TextArea ./textArea.qml
-TextEditor ./textEditor.qml
-EditMenu ./editMenu.qml
-MenuBar ./menuBar.qml
-FileMenu ./fileMenu.qml
+Rectangle {
+    width: 100; height: 100
+    color: "red"
+    
+    PropertyAnimation on x { to: 50; duration: 1000; easing.type: Easing.OutBounce }
+    PropertyAnimation on y { to: 50; duration: 1000; easing.type: Easing.OutBounce }
+}
+//![0]
 
-plugin FileDialog ../plugins

@@ -132,6 +132,7 @@ namespace QDeclarativePrivate
     template <typename T, bool hasMember>
     class has_attachedPropertiesMethod 
     {
+    public:
         typedef int yes_type;
         typedef char no_type;
 
@@ -139,7 +140,6 @@ namespace QDeclarativePrivate
         static yes_type check(ReturnType *(*)(QObject *));
         static no_type check(...);
 
-    public:
         static bool const value = sizeof(check(&T::qmlAttachedProperties)) == sizeof(yes_type);
     }; 
 

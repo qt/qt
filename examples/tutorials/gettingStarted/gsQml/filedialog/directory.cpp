@@ -48,172 +48,177 @@ Initialize the saves directory and creates the file list
 */
 Directory::Directory(QObject *parent) : QObject(parent)
 {
-	
+    m_dir.cd( QDir::currentPath() );
 
-	m_dir.cd( QDir::currentPath());
-	
-	//go to the saved directory. if not found, create save directory
-	m_saveDir = "saves";
-	if (m_dir.cd(m_saveDir) == 0){
-		m_dir.mkdir(m_saveDir);
-		m_dir.cd(m_saveDir);
-	}
- 	m_filterList << "*.txt";
-
-	refresh();
+    //go to the saved directory. if not found, create save directory
+    m_saveDir = "saves";
+    if ( m_dir.cd(m_saveDir) == 0 ) {
+        m_dir.mkdir(m_saveDir);
+        m_dir.cd(m_saveDir);
+    }
+     m_filterList << "*.txt";
+    refresh();
 }
 
 /*
 Directory::filesNumber
 Return the number of Files
 */
-int Directory::	filesCount() const{
-	return m_fileList.size();
+int Directory::filesCount() const
+{
+    return m_fileList.size();
 }
 
 /*
 Function called to append data onto list property
 */
-void appendFiles(QDeclarativeListProperty<File> * property, File * file){
-	//Do nothing. can't add to a directory using this method
+void appendFiles(QDeclarativeListProperty<File> * property, File * file)
+{
+    Q_UNUSED(property);
+    Q_UNUSED(file);
+    //Do nothing. can't add to a directory using this method
 }
 
 /*
 Function called to retrieve file in the list using an index
 */
-File* fileAt(QDeclarativeListProperty<File> * property, int index){
-	return static_cast< QList<File *> *>(property->data)->at(index);
+File* fileAt(QDeclarativeListProperty<File> * property, int index)
+{
+    return static_cast< QList<File *> *>(property->data)->at(index);
 }
 
 /*
 Returns the number of files in the list
 */
-int filesSize(QDeclarativeListProperty<File> * property){
-	return static_cast< QList<File *> *>(property->data)->size();
+int filesSize(QDeclarativeListProperty<File> * property) 
+{
+    return static_cast< QList<File *> *>(property->data)->size();
 }
 
 /*
 Function called to empty the list property contents
 */
-void clearFilesPtr(QDeclarativeListProperty<File> *property){
-	return static_cast< QList<File *> *>(property->data)->clear();
+void clearFilesPtr(QDeclarativeListProperty<File> *property)
+{
+    return static_cast< QList<File *> *>(property->data)->clear();
 }
 
 /*
 Returns the list of files as a QDeclarativeListProperty.
 */
-QDeclarativeListProperty<File> Directory::files(){
-
-	refresh();
-// 	return QDeclarativeListProperty<QString>(this,m_filePtrList);		//not recommended in the docs
-	return QDeclarativeListProperty<File>( this, &m_fileList, &appendFiles, &filesSize, &fileAt,  &clearFilesPtr );
+QDeclarativeListProperty<File> Directory::files()
+{
+    refresh();
+    return QDeclarativeListProperty<File>( this, &m_fileList, &appendFiles, &filesSize, &fileAt,  &clearFilesPtr );
 }
 
 /*
-Return te name of the currently selected file
+Return the name of the currently selected file
 */
-QString Directory::filename() const{
-	return currentFile.name();
+QString Directory::filename() const
+{
+    return currentFile.name();
 }
 
 /*
 Return the file's content as a string.
 */
-QString Directory::fileContent() const{
-	return m_fileContent;
+QString Directory::fileContent() const
+{
+    return m_fileContent;
 }
 
 /*
 Set the file name of the current file
 */
-void Directory::setFilename(const QString &str){
-	if(str != currentFile.name()){
-		currentFile.setName(str);
-		emit filenameChanged();
-	}
+void Directory::setFilename(const QString &str)
+{
+    if( str != currentFile.name() ) {
+        currentFile.setName(str);
+        emit filenameChanged();
+    }
 }
 
 /*
 Set the content of the file as a string
 */
-void Directory::setFileContent(const QString &str){
-	if(str != m_fileContent){
-		m_fileContent = str;
-		emit fileContentChanged();
-	}	
+void Directory::setFileContent(const QString &str)
+{
+    if(str != m_fileContent){
+        m_fileContent = str;
+        emit fileContentChanged();
+    }
 }
 
 /*
 Called from QML to save the file using the filename and file content.
 Saving makes sure that the file has a .txt extension.
 */
-void Directory::saveFile(){
-	
-	if(currentFile.name().size() == 0){
-		qWarning()<< "Empty filename. no save";
-		return;
-	}
-		
-	QString extendedName = currentFile.name();
-	if(!currentFile.name().endsWith(".txt")){
-		extendedName.append(".txt");
-	}
-	
-	QFile file( m_dir.filePath(extendedName) );
-	if (file.open(QFile::WriteOnly | QFile::Truncate)){
-		QTextStream outStream(&file);
-		outStream << m_fileContent;
-	}
-	file.close();
-	refresh();
-	emit directoryChanged();
+void Directory::saveFile()
+{
+    if(currentFile.name().size() == 0){
+        qWarning()<< "Empty filename. no save";
+        return;
+    }
+    QString extendedName = currentFile.name();
+    if(!currentFile.name().endsWith(".txt")){
+        extendedName.append(".txt");
+    }
+    QFile file( m_dir.filePath(extendedName) );
+    if ( file.open(QFile::WriteOnly | QFile::Truncate) ) {
+        QTextStream outStream(&file);
+        outStream << m_fileContent;
+    }
+    file.close();
+    refresh();
+    emit directoryChanged();
 }
 
 /*
 Load the contents of a file.
 Only loads files with a .txt extension
 */
-void Directory::loadFile(){
+void Directory::loadFile()
+{
+    m_fileContent.clear();
+    QString extendedName = currentFile.name();
+    if( !currentFile.name().endsWith(".txt") ) {
+        extendedName.append(".txt");
+    }
 
-	m_fileContent.clear();
-	QString extendedName = currentFile.name();
-	if(!currentFile.name().endsWith(".txt")){
-		extendedName.append(".txt");
-	}
-	
-	QFile file( m_dir.filePath(extendedName) );
-	if (file.open(QFile::ReadOnly )){
-		QTextStream inStream(&file);
-		
-		QString line;
-		do{
-			line = inStream.read(75);
-			m_fileContent.append(line);
-		}while (!line .isNull());
-	}
-	file.close();
+    QFile file( m_dir.filePath(extendedName) );
+    if ( file.open(QFile::ReadOnly ) ) {
+        QTextStream inStream(&file);
+
+        QString line;
+        do {
+            line = inStream.read(75);
+            m_fileContent.append(line);
+        } while ( !line.isNull() ) ;
+    }
+    file.close();
 }
 
 /*
 Reloads the content of the files list. This is to ensure that the newly
 created files are added onto the list.
 */
-void Directory::refresh(){
-	m_dirFiles = m_dir.entryList(m_filterList,QDir::Files,QDir::Name);
-	m_fileList.clear();
-	
-	File * file;
-	for(int i = 0; i < m_dirFiles.size() ; i ++){
-		
-		file = new File();
-		
-		if(m_dirFiles.at(i).endsWith(".txt")){
-			QString name = m_dirFiles.at(i);
-			file->setName( name.remove(".txt",Qt::CaseSensitive));
-		}
-		else{
-			file->setName(m_dirFiles.at(i));
-		}
-		m_fileList.append(file);
-	}
+void Directory::refresh()
+{
+    m_dirFiles = m_dir.entryList(m_filterList,QDir::Files,QDir::Name);
+    m_fileList.clear();
+
+    File * file;
+    for(int i = 0; i < m_dirFiles.size() ; i ++) {
+        file = new File();
+
+        if( m_dirFiles.at(i).endsWith(".txt") ) {
+            QString name = m_dirFiles.at(i);
+            file->setName( name.remove(".txt",Qt::CaseSensitive) );
+        }
+        else {
+            file->setName(m_dirFiles.at(i));
+        }
+        m_fileList.append(file);
+    }
 }

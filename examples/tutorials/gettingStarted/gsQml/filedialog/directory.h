@@ -49,60 +49,59 @@
 #include <QDeclarativeListProperty>
 #include <QObject>
 
-class Directory : public QObject{
+class Directory : public QObject {
 
-	Q_OBJECT
-	
-	//number of files in the directory
-	Q_PROPERTY(int filesCount READ filesCount)
-		
-	//list property containing file names as QString
-	Q_PROPERTY(QDeclarativeListProperty<File> files READ files CONSTANT )
-	
-	//file name of the text file to read/write
-	Q_PROPERTY(QString filename READ filename WRITE setFilename NOTIFY filenameChanged)
-	
-	//text content of the file
-	Q_PROPERTY(QString fileContent READ fileContent WRITE setFileContent NOTIFY fileContentChanged)
-	
-	public:
-		Directory(QObject *parent = 0);
-		
-		//properties' read functions
-		int filesCount() const;
-		QString filename() const;
-		QString fileContent() const;
-		QDeclarativeListProperty<File> files();
+    Q_OBJECT
 
-		//properties' write functions
-		void setFilename(const QString &str);
-		void setFileContent(const QString &str);
-		
-		//accessible from QML
-		Q_INVOKABLE void saveFile();
-		Q_INVOKABLE void loadFile();
-	
-	signals:
-		void directoryChanged();
-		void filenameChanged();
-		void fileContentChanged();
-		
-	private:
-		QDir m_dir;
-		QStringList m_dirFiles;		
-		File currentFile;      
-		QString m_saveDir;
-		QStringList m_filterList;	
-		
-		//contains the file data in QString format
-		QString m_fileContent;
-		
-		//Registered to QML in a plugin. Accessible from QML as a property of Directory
-		QList<File *> m_fileList;
+    //number of files in the directory
+    Q_PROPERTY(int filesCount READ filesCount)
 
-		//refresh content of the directory 
-		void refresh();
+    //list property containing file names as QString
+    Q_PROPERTY(QDeclarativeListProperty<File> files READ files CONSTANT )
+
+    //file name of the text file to read/write
+    Q_PROPERTY(QString filename READ filename WRITE setFilename NOTIFY filenameChanged)
+
+    //text content of the file
+    Q_PROPERTY(QString fileContent READ fileContent WRITE setFileContent NOTIFY fileContentChanged)
+
+    public:
+        Directory(QObject *parent = 0);
+
+        //properties' read functions
+        int filesCount() const;
+        QString filename() const;
+        QString fileContent() const;
+        QDeclarativeListProperty<File> files();
+
+        //properties' write functions
+        void setFilename(const QString &str);
+        void setFileContent(const QString &str);
+
+        //accessible from QML
+        Q_INVOKABLE void saveFile();
+        Q_INVOKABLE void loadFile();
+
+    signals:
+        void directoryChanged();
+        void filenameChanged();
+        void fileContentChanged();
+
+    private:
+        QDir m_dir;
+        QStringList m_dirFiles;
+        File currentFile;
+        QString m_saveDir;
+        QStringList m_filterList;
+
+        //contains the file data in QString format
+        QString m_fileContent;
+
+        //Registered to QML in a plugin. Accessible from QML as a property of Directory
+        QList<File *> m_fileList;
+
+        //refresh content of the directory 
+        void refresh();
 };
-
 
 #endif

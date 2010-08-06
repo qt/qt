@@ -141,7 +141,6 @@ public:
     int supportsPremultipliedAlpha : 1;
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
-    int memoryLimitForHwRendering;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
 
     enum ScanCodeState {
@@ -291,7 +290,6 @@ inline QS60Data::QS60Data()
   supportsPremultipliedAlpha(0),
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
-  memoryLimitForHwRendering(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

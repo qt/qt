@@ -37,13 +37,30 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
+import Qt 4.7
 
-Button ./button.qml
-FileDialog ./fileDialog.qml
-TextArea ./textArea.qml
-TextEditor ./textEditor.qml
-EditMenu ./editMenu.qml
-MenuBar ./menuBar.qml
-FileMenu ./fileMenu.qml
+Row {
 
-plugin FileDialog ../plugins
+//![color]
+Rectangle {
+    width: 100; height: 100
+
+    ColorAnimation on color { from: "red"; to: "yellow"; duration: 1000 }
+}
+//![color]
+
+//![rotation]
+Item {
+    width: 300; height: 300
+    
+    Rectangle {
+        width: 100; height: 100; anchors.centerIn: parent
+        color: "red"
+        
+        RotationAnimation on rotation { to: 90; direction: RotationAnimation.Clockwise }
+    }
+}
+//![rotation]
+
+}

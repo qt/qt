@@ -46,22 +46,22 @@
 #include <QObject>
 
 class File : public QObject{
-	
-	Q_OBJECT
-	
-	Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-	
-	public:
-		File(QObject *parent = 0);
-		
-		QString name() const;
-		void setName(const QString &str);
-		
-	signals:
-		void nameChanged();
-		
-	private:
-		QString m_name;
+
+    Q_OBJECT
+
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+
+    public:
+        File(QObject *parent = 0);
+
+        QString name() const;
+        void setName(const QString &str);
+
+    signals:
+        void nameChanged();
+
+    private:
+        QString m_name;
 };
 
 #endif
