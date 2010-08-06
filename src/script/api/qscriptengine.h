@@ -212,7 +212,7 @@ public:
     template <typename T>
     inline QScriptValue toScriptValue(const T &value)
     {
-        return toScriptValue(value);
+        return qScriptValueFromValue(value);
     }
     template <typename T>
     inline T fromScriptValue(const QScriptValue &value)
