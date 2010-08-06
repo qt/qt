@@ -732,7 +732,6 @@ void tst_QSharedPointer::objectCast()
         ptr = baseptr.objectCast<OtherObject>();
         QVERIFY(ptr == data);
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         ptr = qobject_cast<OtherObject *>(baseptr);
         QVERIFY(ptr == data);
@@ -740,7 +739,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         ptr = qobject_cast<QSharedPointer<OtherObject> >(baseptr);
         QVERIFY(ptr == data);
-#endif
     }
     check();
 
@@ -760,7 +758,6 @@ void tst_QSharedPointer::objectCast()
         ptr = baseptr.objectCast<const OtherObject>();
         QVERIFY(ptr == data);
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         ptr = qobject_cast<const OtherObject *>(baseptr);
         QVERIFY(ptr == data);
@@ -768,7 +765,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         ptr = qobject_cast<QSharedPointer<const OtherObject> >(baseptr);
         QVERIFY(ptr == data);
-#endif
     }
     check();
 
@@ -802,7 +798,6 @@ void tst_QSharedPointer::objectCast()
         QSharedPointer<OtherObject> otherptr = qSharedPointerObjectCast<OtherObject>(weakptr);
         QVERIFY(otherptr.isNull());
 
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
         // again:
         otherptr = qobject_cast<OtherObject *>(weakptr);
         QVERIFY(otherptr.isNull());
@@ -810,7 +805,6 @@ void tst_QSharedPointer::objectCast()
         // again:
         otherptr = qobject_cast<QSharedPointer<OtherObject> >(weakptr);
         QVERIFY(otherptr.isNull());
-#endif
     }
     check();
 }
@@ -1736,12 +1730,10 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
         "qSharedPointerObjectCast<QCoreApplication>(baseptr);";
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
     QTest::newRow("const-dropping-object-cast2")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const QObject> baseptr = QSharedPointer<const QObject>(new QObject);\n"
         "qobject_cast<QCoreApplication *>(baseptr);";
-#endif
 
     // arithmethics through automatic cast operators
     QTest::newRow("arithmethic1")

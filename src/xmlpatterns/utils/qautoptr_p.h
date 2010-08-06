@@ -122,7 +122,6 @@ namespace QPatternist
             return *this;
         }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
         template<typename L>
         operator AutoPtrRef<L>()
         {
@@ -139,7 +138,6 @@ namespace QPatternist
         inline AutoPtr(AutoPtr<L>& other) : m_ptr(other.release())
         {
         }
-#endif
 
         inline T *release()
         {

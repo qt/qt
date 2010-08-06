@@ -1909,7 +1909,6 @@ void tst_QScriptEngine::valueConversion()
         QString snum = qScriptValueToValue<QString>(num);
         QCOMPARE(snum, QLatin1String("123"));
     }
-#ifndef QT_NO_MEMBER_TEMPLATES
     {
         QScriptValue num = eng.toScriptValue(123);
         QCOMPARE(num.isNumber(), true);
@@ -1921,7 +1920,6 @@ void tst_QScriptEngine::valueConversion()
         QString snum = eng.fromScriptValue<QString>(num);
         QCOMPARE(snum, QLatin1String("123"));
     }
-#endif
     {
         QScriptValue num(&eng, 123);
         QCOMPARE(qScriptValueToValue<char>(num), char(123));

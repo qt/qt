@@ -83,7 +83,6 @@ class QUrl;
 class QVariant;
 class QVariantComparisonHelper;
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template <typename T>
 inline QVariant qVariantFromValue(const T &);
 
@@ -95,7 +94,6 @@ inline T qVariantValue(const QVariant &);
 
 template<typename T>
 inline bool qVariantCanConvert(const QVariant &);
-#endif
 
 class Q_CORE_EXPORT QVariant
 {
@@ -327,7 +325,6 @@ class Q_CORE_EXPORT QVariant
     const void *constData() const;
     inline const void *data() const { return constData(); }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
     template<typename T>
     inline void setValue(const T &value);
 
@@ -342,7 +339,6 @@ class Q_CORE_EXPORT QVariant
     template<typename T>
     bool canConvert() const
     { return qVariantCanConvert<T>(*this); }
-#endif
 
  public:
 #ifndef qdoc
@@ -527,11 +523,9 @@ inline QSize &QVariant::asSize()
 { return *reinterpret_cast<QSize *>(castOrDetach(Size)); }
 #endif //QT3_SUPPORT
 
-#ifndef QT_NO_MEMBER_TEMPLATES
 template<typename T>
 inline void QVariant::setValue(const T &avalue)
 { qVariantSetValue(*this, avalue); }
-#endif
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream& operator>> (QDataStream& s, QVariant& p);

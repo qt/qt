@@ -621,7 +621,7 @@ Option::fixString(QString string, uchar flags)
     static QHash<FixStringCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FixStringCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFixStringCacheKeyQString, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FixStringCacheKey, QString> >, (void**)&cache);
     }
     FixStringCacheKey cacheKey(string, flags);
     if(cache->contains(cacheKey)) {

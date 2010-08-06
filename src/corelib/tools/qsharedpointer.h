@@ -47,10 +47,7 @@
 #include <QtCore/qshareddata.h>
 
 #ifndef Q_QDOC
-# if !defined(QT_NO_MEMBER_TEMPLATES)
-// QSharedPointer requires member template support
 # include <QtCore/qsharedpointer_impl.h>
-# endif
 #else
 
 QT_BEGIN_HEADER

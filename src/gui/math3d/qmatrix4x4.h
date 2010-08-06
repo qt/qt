@@ -69,10 +69,10 @@ public:
                       qreal m21, qreal m22, qreal m23, qreal m24,
                       qreal m31, qreal m32, qreal m33, qreal m34,
                       qreal m41, qreal m42, qreal m43, qreal m44);
-#if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
+
     template <int N, int M>
     explicit QMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix);
-#endif
+
     QMatrix4x4(const qreal *values, int cols, int rows);
     QMatrix4x4(const QTransform& transform);
     QMatrix4x4(const QMatrix& matrix);
@@ -169,10 +169,8 @@ public:
     QRect mapRect(const QRect& rect) const;
     QRectF mapRect(const QRectF& rect) const;
 
-#if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
     template <int N, int M>
     QGenericMatrix<N, M, qreal> toGenericMatrix() const;
-#endif
 
     inline qreal *data();
     inline const qreal *data() const { return m[0]; }
@@ -223,8 +221,6 @@ inline QMatrix4x4::QMatrix4x4
     flagBits = General;
 }
 
-#if !defined(QT_NO_MEMBER_TEMPLATES)
-
 template <int N, int M>
 Q_INLINE_TEMPLATE QMatrix4x4::QMatrix4x4
     (const QGenericMatrix<N, M, qreal>& matrix)
@@ -260,8 +256,6 @@ QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
     }
     return result;
 }
-
-#endif
 
 inline const qreal& QMatrix4x4::operator()(int aRow, int aColumn) const
 {

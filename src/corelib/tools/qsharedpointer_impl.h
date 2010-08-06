@@ -109,7 +109,6 @@ namespace QtSharedPointer {
     template <class T> inline void normalDeleter(T *t) { delete t; }
 
     // this uses partial template specialization
-    // the only compilers that didn't support this were MSVC 6.0 and 2002
     template <class T> struct RemovePointer;
     template <class T> struct RemovePointer<T *> { typedef T Type; };
     template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };

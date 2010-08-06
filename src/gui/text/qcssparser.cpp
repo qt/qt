@@ -1032,15 +1032,7 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                     parseShorthandBackgroundProperty(decl.d->values, &brushData, image, repeat, alignment, pal);
                     *brush = brushFromData(brushData, pal);
                     if (brushData.type != BrushData::DependsOnThePalette) {
-#if defined Q_CC_MSVC && _MSC_VER <= 1300
-                        BackgroundData data;
-                        data.brush = brushData;
-                        data.image = *image;
-                        data.repeat = *repeat;
-                        data.alignment = *alignment;
-#else
                         BackgroundData data = { brushData, *image, *repeat, *alignment };
-#endif
                         decl.d->parsed = qVariantFromValue<BackgroundData>(data);
                     }
                 }
