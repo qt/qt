@@ -560,7 +560,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     ListView {
         width: 180; height: 300
         model: xmlModel
-        delegate: Text { text: title + " (" + pubDate + ")" }
+        delegate: Text { text: title + ": " + pubDate }
     }
     \endqml
 
@@ -855,6 +855,12 @@ qreal QDeclarativeXmlListModel::progress() const
     return d->progress;
 }
 
+/*!
+    \qmlmethod void XmlListModel::errorString()
+
+    Returns a string description of the last error that occurred
+    if \l status is XmlListModel::Error.
+*/
 QString QDeclarativeXmlListModel::errorString() const
 {
     Q_D(const QDeclarativeXmlListModel);

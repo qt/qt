@@ -302,5 +302,13 @@ For examples of \c qmldir files for plugins, see the
 \l {declarative/cppextensions/plugins}{Plugins} example and 
 \l {Tutorial: Writing QML extensions with C++}.
 
+
+\section1 Debugging
+
+The \c QML_IMPORT_TRACE environment variable can be useful for debugging
+when there are problems with finding and loading modules. See 
+\l{Debugging module imports} for more information.
+
+
 */
 /

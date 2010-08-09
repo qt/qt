@@ -112,7 +112,7 @@ public:
     }
     \endcode
 
-    Now the images can be succesfully loaded in QML:
+    Now the images can be successfully loaded in QML:
 
     \image imageprovider.png
 

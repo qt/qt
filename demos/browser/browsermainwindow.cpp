@@ -670,7 +670,7 @@ void BrowserMainWindow::slotPrivateBrowsing()
             " items are automatically removed from the Downloads window," \
             " new cookies are not stored, current cookies can't be accessed," \
             " site icons wont be stored, session wont be saved, " \
-            " and searches are not addded to the pop-up menu in the Google search box." \
+            " and searches are not added to the pop-up menu in the Google search box." \
             "  Until you close the window, you can still click the Back and Forward buttons" \
             " to return to the webpages you have opened.").arg(title);
 
