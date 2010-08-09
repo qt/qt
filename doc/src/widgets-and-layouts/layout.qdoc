@@ -37,9 +37,9 @@
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
     
-    \previouspage Widget Classes
+    \previouspage Widgets and Layouts
     \contentspage Widgets and Layouts
-    \nextpage {Implementing Styles and Style Aware Widgets}{Styles}
+    \nextpage {Styles and Style Aware Widgets}{Styles}
 
     \ingroup frameworks-technologies
 
