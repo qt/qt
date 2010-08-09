@@ -84,18 +84,34 @@ Rectangle.
 
 \snippet doc/src/snippets/declarative/states.qml 0
  
-A \l State item defines all the changes to be made in the new state. You
+The \l State item defines all the changes to be made in the new state. It
 could specify additional properties to be changed, or create additional 
-PropertyChanges for other objects. (Note that a \l State can modify the
-properties of other objects, not just the object that owns the state.)
-
-For example:
+PropertyChanges for other objects. It can also modify the properties of other 
+objects, not just the object that owns the state. For example:
 
 \qml
-State {
-    name: "moved"
-    PropertyChanges { target: myRect; x: 50; y: 50; color: "blue" }
-    PropertyChanges { target: someOtherItem; width: 1000 }            
+Rectangle {
+    ...
+    states: [
+        State {
+            name: "moved"
+            PropertyChanges { target: myRect; x: 50; y: 50; color: "blue" }
+            PropertyChanges { target: someOtherItem; width: 1000 }            
+        }
+    ]
+}
+\endqml
+
+As a convenience, if an item only has one state, its \l {Item::}{states} 
+property can be defined as a single \l State, without the square-brace list
+syntax:
+
+\qml
+Item {
+    ...
+    states: State {
+        ...
+    }
 }
 \endqml
 
@@ -118,35 +134,16 @@ transitions between them.
 
 Of course, the \l Rectangle in the example above could have simply been moved
 by setting its position to (50, 50) in the mouse area's \c onClicked handler.
-However, aside from enabling batched property changes, the use of states allows
-an item to revert to its \e {default state}, which contains all of the items'
-initial property values before they were modified in a state change.
+However, aside from enabling batched property changes, one of the features of
+QML states is the ability of an item to revert to its \e {default state}.
+The default state contains all of an item's initial property values before 
+they were modified in a state change.
 
-The default state is specified by an empty string. If the MouseArea in the
-above example was changed to this:
+For example, suppose the \l Rectangle should move to (50,50) when the mouse is
+pressed, and then move back to its original position when the mouse is 
+released. This can be achieved by using the \l {State::}{when} property,
+like this:
 
-\qml
-MouseArea {
-    anchors.fill: parent
-    onClicked: myRect.state == 'moved' ? myRect.state = "" : myRect.state = 'moved';
-}
-\endqml      
-
-This would toggle the \l Rectangle's state between the \e moved and \e default
-states when clicked. The properties can be reverted to their initial
-values without requiring the definition of another \l State that defines these
-value changes.
-
-
-
-\section1 The "when" property
-
-The \l {State::}{when} property is useful for specifying when a state should be
-applied. This can be set to an expression that evaluates to \c true when an
-item should change to a particular state.
-
-If the above example was changed to this:
- 
 \qml 
 Rectangle {
     ...
@@ -160,12 +157,38 @@ Rectangle {
         name: "moved"; when: mouseArea.pressed
         ...
     }
+}
 \endqml 
 
-The \l Rectangle would automatically change to the \e moved state when the
-mouse is pressed, and revert to the default state when it is released. This is
-simpler (and a better, more declarative method) than creating \c onPressed 
-and \c onReleased handlers in the MouseArea to set the current state.
+The \l {State::}{when} property is set to an expression that evaluates to
+\c true when the item should be set to that state. When the mouse is pressed,
+the state is changed to \e moved. When it is released, the item reverts to its
+\e default state, which defines all of the item's original property values.
+
+Alternatively, an item can be explicitly set to its default state by setting its
+\l {Item::}{state} property to an empty string (""). For example, instead of
+using the \l {State::}{when} property, the above code could be changed to:
+
+\qml 
+Rectangle {
+    ...
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: myRect.state = 'moved';
+        onReleased: myRect.state = '';
+    }
+
+    states: State {
+        name: "moved"
+        ...
+    }
+}
+\endqml 
+
+Obviously it makes sense to use the \l {State::}{when} property when possible
+as it provides a simpler (and a better, more declarative) solution than 
+assigning the state from signal handlers.
 
 
 \section1 Animating state changes
