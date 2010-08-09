@@ -56,7 +56,6 @@ QT_BEGIN_HEADER
 
 #if defined(Q_WS_MAC)
 # include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
 #elif defined(QT_OPENGL_ES_1)
 # include <GLES/gl.h>
 #ifndef GL_DOUBLE
@@ -75,9 +74,6 @@ typedef GLfloat GLdouble;
 #endif
 #else
 # include <GL/gl.h>
-# ifndef QT_LINUXBASE
-#   include <GL/glu.h>
-# endif
 #endif
 
 QT_BEGIN_NAMESPACE
