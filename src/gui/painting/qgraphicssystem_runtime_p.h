@@ -129,8 +129,8 @@ public:
 
     virtual QPoint offset(const QWidget *widget) const;
 
-    QWindowSurface *m_windowSurface;
-    QWindowSurface *m_pendingWindowSurface;
+    QScopedPointer<QWindowSurface> m_windowSurface;
+    QScopedPointer<QWindowSurface> m_pendingWindowSurface;
 
 private:
     const QRuntimeGraphicsSystem *m_graphicsSystem;

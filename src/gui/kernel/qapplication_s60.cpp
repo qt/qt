@@ -1067,7 +1067,7 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         if (QApplicationPrivate::runtime_graphics_system) {
             QRuntimeWindowSurface *rtSurface =
                     static_cast<QRuntimeWindowSurface*>(qwidget->windowSurface());
-            s60Surface = static_cast<QS60WindowSurface *>(rtSurface->m_windowSurface);
+            s60Surface = static_cast<QS60WindowSurface *>(rtSurface->m_windowSurface.data());
         } else
 #endif
             s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());

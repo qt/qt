@@ -251,7 +251,7 @@ QPixmapData* QRuntimePixmapData::runtimeData() const
 }
 
 QRuntimeWindowSurface::QRuntimeWindowSurface(const QRuntimeGraphicsSystem *gs, QWidget *window)
-    : QWindowSurface(window), m_windowSurface(0), m_pendingWindowSurface(0), m_graphicsSystem(gs)
+    : QWindowSurface(window), m_graphicsSystem(gs)
 {
 
 }
@@ -259,7 +259,6 @@ QRuntimeWindowSurface::QRuntimeWindowSurface(const QRuntimeGraphicsSystem *gs, Q
 QRuntimeWindowSurface::~QRuntimeWindowSurface()
 {
     m_graphicsSystem->removeWindowSurface(this);
-    delete m_windowSurface;
 }
 
 QPaintDevice *QRuntimeWindowSurface::paintDevice()
@@ -278,8 +277,7 @@ void QRuntimeWindowSurface::flush(QWidget *widget, const QRegion &region,
 #ifdef QT_DEBUG
         qDebug() << "QRuntimeWindowSurface::flush() - destroy pending window surface";
 #endif
-        delete m_pendingWindowSurface;
-        m_pendingWindowSurface = 0;
+        m_pendingWindowSurface.reset();
     }
 }
 
@@ -352,7 +350,7 @@ QWindowSurface *QRuntimeGraphicsSystem::createWindowSurface(QWidget *widget) con
 {
     Q_ASSERT(m_graphicsSystem);
     QRuntimeWindowSurface *rtSurface = new QRuntimeWindowSurface(this, widget);
-    rtSurface->m_windowSurface = m_graphicsSystem->createWindowSurface(widget);
+    rtSurface->m_windowSurface.reset(m_graphicsSystem->createWindowSurface(widget));
     widget->setWindowSurface(rtSurface);
     m_windowSurfaces << rtSurface;
     return rtSurface;
@@ -376,7 +374,6 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
     for (int i = 0; i < m_pixmapDatas.size(); ++i) {
         QRuntimePixmapData *proxy = m_pixmapDatas.at(i);
         QPixmapData *newData = m_graphicsSystem->createPixmapData(proxy->m_data);
-        // ### TODO Optimize. Openvg and s60raster graphics systems could switch internal ARGB32_PRE QImage buffers.
         newData->fromImage(proxy->m_data->toImage(), Qt::NoOpaqueDetection);
         delete proxy->m_data;
         proxy->m_data = newData;
@@ -387,14 +384,10 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         QRuntimeWindowSurface *proxy = m_windowSurfaces.at(i);
         QWidget *widget = proxy->m_windowSurface->window();
 
-        if(m_windowSurfaceDestroyPolicy == DestroyImmediately) {
-            delete proxy->m_windowSurface;
-            proxy->m_pendingWindowSurface = 0;
-        } else {
-            proxy->m_pendingWindowSurface = proxy->m_windowSurface;
-        }
+        if(m_windowSurfaceDestroyPolicy == DestroyAfterFirstFlush)
+            proxy->m_pendingWindowSurface.reset(proxy->m_windowSurface.take());
 
-        proxy->m_windowSurface = m_graphicsSystem->createWindowSurface(widget);
+        proxy->m_windowSurface.reset(m_graphicsSystem->createWindowSurface(widget));
         qt_widget_private(widget)->invalidateBuffer(widget->rect());
     }
 }
