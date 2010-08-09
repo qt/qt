@@ -105,7 +105,7 @@ namespace QDeclarativePrivate
     template<class From, class To>
     struct StaticCastSelectorClass<From, To, sizeof(int)>
     {
-        static inline int cast() { return (int)((intptr_t)static_cast<To *>((From *)0x10000000)) - 0x10000000; }
+        static inline int cast() { return int(reinterpret_cast<intptr_t>(static_cast<To *>(reinterpret_cast<From *>(0x10000000)))) - 0x10000000; }
     };
 
     template<class From, class To>
@@ -119,7 +119,7 @@ namespace QDeclarativePrivate
 
         static inline int cast()
         {
-            return StaticCastSelectorClass<From, To, sizeof(check((From *)0))>::cast();
+            return StaticCastSelectorClass<From, To, sizeof(check(reinterpret_cast<From *>(0)))>::cast();
         }
     };
 
