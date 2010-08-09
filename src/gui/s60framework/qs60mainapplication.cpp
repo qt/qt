@@ -136,13 +136,16 @@ TFileName QS60MainApplication::ResourceFileName() const
     return KNullDesC();
 }
 
+/*!
+  \internal
+*/
 void QS60MainApplication::PreDocConstructL()
 {
     QS60MainApplicationBase::PreDocConstructL();
 }
 
 /*!
-    \internal
+  \internal
 */
 CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 {
@@ -150,7 +153,7 @@ CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
 {

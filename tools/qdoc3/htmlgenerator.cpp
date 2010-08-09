@@ -219,9 +219,7 @@ HtmlGenerator::HtmlGenerator()
       inTableHeader(false),
       numTableRows(0),
       threeColumnEnumValueTable(true),
-      offlineDocs(false),
-      onlineDocs(false),
-      creatorDocs(true),
+      application(Online),
       funcLeftParen("\\S(\\()"),
       myTree(0),
       slow(false),
@@ -290,11 +288,17 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     project = config.getString(CONFIG_PROJECT);
 
-    onlineDocs = config.getBool(CONFIG_ONLINE);
-
-    offlineDocs = config.getBool(CONFIG_OFFLINE);
-
-    creatorDocs = config.getBool(CONFIG_CREATOR);
+    QString app = config.getString(CONFIG_APPLICATION);
+    if (app == "online")
+        application = Online;
+    else if (app == "creator")
+        application = Creator;
+    else if (app == "assistant")
+        application = Assistant;
+    else if (app == "base")
+        application = Assistant;
+    else 
+        application = Online;
 
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
@@ -1811,9 +1815,8 @@ void HtmlGenerator::generateHeader(const QString& title,
 	
     // Setting some additional style sheet related details depending on configuration (e.g. online/offline)
 
-    
-    if(onlineDocs==true) // onlineDocs is for the web
-    {
+    switch (application) {
+    case Online:
         // Browser spec styles
 	out() << "  <!--[if IE]>\n";
 	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
@@ -1832,22 +1835,19 @@ void HtmlGenerator::generateHeader(const QString& title,
 	out() << "</head>\n";
 	// CheckEmptyAndLoadList activating search
 	out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
-    }   
-    else if (offlineDocs == true) // offlineDocs is for ???
-    {
+        break;
+    case Assistant:
 	out() << "</head>\n";
-	out() << "<body class=\"offline \">\n"; // offline		
-    }	  
-    else if (creatorDocs == true) // creatorDocs is for Assistant/Creator
-    {
+	out() << "<body class=\"offline \">\n";
+        break;
+    case Creator:
 	out() << "</head>\n";
 	out() << "<body class=\"offline narrow creator\">\n"; // offline narrow
-    }	
-    // default -- not used except if one forgets to set any of the above settings to true
-    else
-    {
+        break;
+    default:
 	out() << "</head>\n";
-	out() << "<body>\n";		
+	out() << "<body>\n";
+        break;
     }
 
 #ifdef GENERATE_MAC_REFS    
@@ -1855,31 +1855,82 @@ void HtmlGenerator::generateHeader(const QString& title,
         generateMacRef(node, marker);
 #endif   
  
-
-    if(onlineDocs==true) // onlineDocs is for the web
-    {
+    switch (application) {
+    case Online:
         out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         generateBreadCrumbs(title,node,marker);
         out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-    }   
-    else if (offlineDocs == true) // offlineDocs is for ???
-    {
+        break;
+    case Assistant:
+        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        generateBreadCrumbs(title,node,marker);
+        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        break;
+    case Creator:
         out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         generateBreadCrumbs(title,node,marker);
         out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
-    }	  
-    else if (creatorDocs == true) // creatorDocs is for Assistant/Creator
-    {
+        break;
+    default: // default -- not used except if one forgets to set any of the above settings to true
         out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
-    }	
-    // default -- not used except if one forgets to set any of the above settings to true
-    else
-    {
-        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());	
+        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+        break;
+    }
+
+        navigationLinks.clear();
+
+    if (node && !node->links().empty()) {
+        QPair<QString,QString> linkPair;
+        QPair<QString,QString> anchorPair;
+        const Node *linkNode;
+
+        if (node->links().contains(Node::PreviousLink)) {
+            linkPair = node->links()[Node::PreviousLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"prev\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::NextLink)) {
+            linkPair = node->links()[Node::NextLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"next\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::StartLink)) {
+            linkPair = node->links()[Node::StartLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+            out() << "  <link rel=\"start\" href=\""
+                  << anchorPair.first << "\" />\n";
+        }
     }
 
 #if 0 // Removed for new doc format. MWS
@@ -1914,34 +1965,33 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
-	
-	    if (onlineDocs == true)
-	    {
-	    	    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-	    	    out() << "  <!-- <script type=\"text/javascript\">\n";
-	    	    out() << "  var _gaq = _gaq || [];\n";
-	    	    out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
-	    	    out() << "  _gaq.push(['_trackPageview']);\n";
-	    	    out() << "  (function() {\n";
-	    	    out() << "  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;\n";
-	    	    out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';\n";
-	    	    out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
-	    	    out() << "  })();\n";
-	    	    out() << "  </script> -->\n";
-	    	    out() << "</body>\n";
-	    }	
-	    else if (offlineDocs == true)
-	    {
-	    	    out() << "</body>\n";
-	    }
-	    else if (creatorDocs == true)
-	    {
-	    	    out() << "</body>\n";
-	    }
-	    else
-	    {
-	    	    out() << "</body>\n";
-	    }
+
+    switch (application) {
+    case Online:
+        out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+        out() << "  <!-- <script type=\"text/javascript\">\n";
+        out() << "  var _gaq = _gaq || [];\n";
+        out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
+        out() << "  _gaq.push(['_trackPageview']);\n";
+        out() << "  (function() {\n";
+        out() << "  var ga = document.createElement('script'); ";
+        out() << "ga.type = 'text/javascript'; ga.async = true;\n";
+        out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + ";
+        out() << "'.google-analytics.com/ga.js';\n";
+        out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
+        out() << "  })();\n";
+        out() << "  </script> -->\n";
+        out() << "</body>\n";
+	break;
+    case Assistant:
+        out() << "</body>\n";
+        break;
+    case Creator:
+        out() << "</body>\n";
+	break;
+    default:
+        out() << "</body>\n";
+    }
           out() <<   "</html>\n";
 }
 

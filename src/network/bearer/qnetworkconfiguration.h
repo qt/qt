@@ -121,7 +121,7 @@ public:
 
     // Required to maintain source compatibility with Qt Mobility.
 #ifdef QT_DEPRECATED
-    QT_DEPRECATED inline QString bearerName() const { return bearerTypeName(); }
+    QT_DEPRECATED QString bearerName() const;
 #endif
     BearerType bearerType() const;
     QString bearerTypeName() const;

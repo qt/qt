@@ -282,7 +282,7 @@ void QS60MainAppUi::RestoreMenuL(CCoeControl *menuWindow, TInt resourceId, TMenu
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::Exit()
 {
@@ -290,7 +290,7 @@ void QS60MainAppUi::Exit()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::SetFadedL(TBool aFaded)
 {
@@ -298,7 +298,7 @@ void QS60MainAppUi::SetFadedL(TBool aFaded)
 }
 
 /*!
-    \internal
+  \internal
 */
 TRect QS60MainAppUi::ApplicationRect() const
 {
@@ -306,7 +306,7 @@ TRect QS60MainAppUi::ApplicationRect() const
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleScreenDeviceChangedL()
 {
@@ -314,7 +314,7 @@ void QS60MainAppUi::HandleScreenDeviceChangedL()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleApplicationSpecificEventL(TInt aType, const TWsEvent &aEvent)
 {
@@ -322,7 +322,7 @@ void QS60MainAppUi::HandleApplicationSpecificEventL(TInt aType, const TWsEvent &
 }
 
 /*!
-    \internal
+  \internal
 */
 TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(TTypeUid aId)
 {
@@ -330,7 +330,7 @@ TTypeUid::Ptr QS60MainAppUi::MopSupplyObject(TTypeUid aId)
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::ProcessCommandL(TInt aCommand)
 {
@@ -338,7 +338,7 @@ void QS60MainAppUi::ProcessCommandL(TInt aCommand)
 }
 
 /*!
-    \internal
+  \internal
 */
 TErrorHandlerResponse QS60MainAppUi::HandleError (TInt aError, const SExtendedError &aExtErr, TDes &aErrorText, TDes &aContextText)
 {
@@ -346,7 +346,7 @@ TErrorHandlerResponse QS60MainAppUi::HandleError (TInt aError, const SExtendedEr
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleViewDeactivation(const TVwsViewId &aViewIdToBeDeactivated, const TVwsViewId &aNewlyActivatedViewId)
 {
@@ -354,7 +354,7 @@ void QS60MainAppUi::HandleViewDeactivation(const TVwsViewId &aViewIdToBeDeactiva
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::PrepareToExit()
 {
@@ -362,7 +362,7 @@ void QS60MainAppUi::PrepareToExit()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleTouchPaneSizeChange()
 {
@@ -370,7 +370,7 @@ void QS60MainAppUi::HandleTouchPaneSizeChange()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleSystemEventL(const TWsEvent &aEvent)
 {
@@ -378,7 +378,7 @@ void QS60MainAppUi::HandleSystemEventL(const TWsEvent &aEvent)
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::Reserved_MtsmPosition()
 {
@@ -386,7 +386,7 @@ void QS60MainAppUi::Reserved_MtsmPosition()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::Reserved_MtsmObject()
 {
@@ -394,7 +394,7 @@ void QS60MainAppUi::Reserved_MtsmObject()
 }
 
 /*!
-    \internal
+  \internal
 */
 void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
 {

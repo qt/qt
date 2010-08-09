@@ -910,7 +910,7 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     interaction. The highlighted() signal is emitted when the user
     highlights an item in the combobox popup list. All three signals
     exist in two versions, one with a QString argument and one with an
-    \c int argument. If the user selectes or highlights a pixmap, only
+    \c int argument. If the user selects or highlights a pixmap, only
     the \c int signals are emitted. Whenever the text of an editable
     combobox is changed the editTextChanged() signal is emitted.
 
