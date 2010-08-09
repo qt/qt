@@ -87,6 +87,10 @@
 #include <hal.h>
 #include <hal_data.h>
 
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#include <graphics/wstfxconst.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Goom Events through Window Server
@@ -372,7 +376,7 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 {
     if (!desktop)
     {
-        if (isWindowOwning or !qwidget->parentWidget())
+        if (isWindowOwning || !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
             /**
@@ -395,6 +399,34 @@ void QSymbianControl::ConstructL(bool isWindowOwning, bool desktop)
 
         DrawableWindow()->SetPointerGrab(ETrue);
     }
+
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+    if (OwnsWindow()) {
+        TTfxWindowPurpose windowPurpose(ETfxPurposeNone);
+        switch (qwidget->windowType()) {
+        case Qt::Dialog:
+            windowPurpose = ETfxPurposeDialogWindow;
+            break;
+        case Qt::Popup:
+            windowPurpose = ETfxPurposePopupWindow;
+            break;
+        case Qt::Tool:
+            windowPurpose = ETfxPurposeToolWindow;
+            break;
+        case Qt::ToolTip:
+            windowPurpose = ETfxPurposeToolTipWindow;
+            break;
+        case Qt::SplashScreen:
+            windowPurpose = ETfxPurposeSplashScreenWindow;
+            break;
+        default:
+            windowPurpose = (isWindowOwning || !qwidget->parentWidget())
+                            ? ETfxPurposeWindow : ETfxPurposeChildWindow;
+            break;
+        }
+        Window().SetPurpose(windowPurpose);
+    }
+#endif
 }
 
 QSymbianControl::~QSymbianControl()
@@ -1055,7 +1087,8 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             break;
 
         case QWExtra::ZeroFill:
-            if (Window().DisplayMode() == EColor16MA) {
+            if (Window().DisplayMode() == EColor16MA
+                || Window().DisplayMode() == Q_SYMBIAN_ECOLOR16MAP) {
                 gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
                 gc.SetBrushColor(TRgb::Color16MA(0));
@@ -1483,6 +1516,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     systemFont.setFamily(systemFont.defaultFamily());
     QApplicationPrivate::setSystemFont(systemFont);
 
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+    QObject::connect(qApp, SIGNAL(aboutToQuit()), qApp, SLOT(_q_aboutToQuit()));
+#endif
+
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
     int argc = priv->argc;
@@ -1572,6 +1609,9 @@ bool QApplicationPrivate::modalState()
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+    S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeEnter);
+#endif
     if (widget) {
         static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(ETrue);
         // Modal partial screen dialogs (like queries) capture pointer events.
@@ -1587,6 +1627,9 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+    S60->wsSession().SendEffectCommand(ETfxCmdAppModalModeExit);
+#endif
     if (widget) {
         static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(EFalse);
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
@@ -1883,6 +1926,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
                 break;
             QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
             if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
+#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
+#endif
                 // Decrement backing store reference count
                 backingStore.deref();
                 // In order to ensure that any resources used by the window surface
@@ -1893,6 +1939,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
                     // Increment backing store reference count
                     backingStore.ref();
                 } else {
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
+#endif
                     // Create backing store with an initial reference count of 1
                     backingStore.create(window);
                     backingStore.ref();
@@ -2267,6 +2316,14 @@ void QApplication::restoreOverrideCursor()
 }
 
 #endif // QT_NO_CURSOR
+
+void QApplicationPrivate::_q_aboutToQuit()
+{
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+    // Send the shutdown tfx command
+    S60->wsSession().SendEffectCommand(ETfxCmdAppShutDown);
+#endif
+}
 
 QS60ThreadLocalData::QS60ThreadLocalData()
 {

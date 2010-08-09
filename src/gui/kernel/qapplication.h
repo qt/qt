@@ -412,6 +412,9 @@ private:
 #if defined(QT_RX71_MULTITOUCH)
     Q_PRIVATE_SLOT(d_func(), void _q_readRX71MultiTouchEvents())
 #endif
+#if defined(Q_OS_SYMBIAN)
+    Q_PRIVATE_SLOT(d_func(), void _q_aboutToQuit())
+#endif
 };
 
 QT_END_NAMESPACE
