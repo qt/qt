@@ -68,7 +68,7 @@
                  <!--   <li><a href="qt-basic-concepts.html">Programming with Qt</a></li> -->
                     <li><a href="qt-basic-concepts.html">Qt Basic Concepts</a></li>
                     <li><a href="qt-gui-concepts.html">Qt GUI Concepts</a></li>
-                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific Development</a></li>
+                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific dev</a></li>
                     <li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
                     <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
                 </ul>
