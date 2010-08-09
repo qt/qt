@@ -29,7 +29,6 @@
   \page widgets-and-layouts.html
   \title Widgets and Layouts
   \ingroup qt-gui-concepts
-  \ingroup qt-basic-concepts
   \brief The primary elements for designing user interfaces in Qt.
 
   \section1 Widgets

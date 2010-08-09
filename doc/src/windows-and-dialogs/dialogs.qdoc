@@ -27,14 +27,9 @@
 
 /*!
     \group standard-dialogs
-    \ingroup qt-basic-concepts
+    \ingroup qt-gui-concepts
     \title Standard Dialogs
     \brief A list of Qt classes for implementing standard dialogs. 
-*/
-
-/*!
-    \group dialog-classes
-    \title Classes for Building Dialogs
 */
 
 /*!
