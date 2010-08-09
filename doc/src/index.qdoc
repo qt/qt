@@ -65,11 +65,10 @@
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-                 <!--   <li><a href="qt-basic-concepts.html">Programming with Qt</a></li> -->
-                    <li><a href="qt-basic-concepts.html">Qt Basic Concepts</a></li>
-                    <li><a href="qt-gui-concepts.html">Qt GUI Concepts</a></li>
-                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific dev</a></li>
-                    <li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
+                    <li><a href="qt-basic-concepts.html">Basic Concepts</a></li>
+                    <li><a href="qt-gui-concepts.html">UI Components</a></li>
+                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific</a></li>
+                    <li><a href="technology-apis.html">Qt API's for standard technologies </a></li>
                     <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
                 </ul>
               </div>
@@ -78,8 +77,9 @@
                     <li><a href="declarativeui.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
-                    <li><a href="qt-gui-concepts.html">UI components</a></li>
-                <!--    <li><a href="declarativeui.html">Qt & GUI design</a></li> -->
+                    <li><a href="model-view-programming.html">Model/View Programming</a></li>
+                    <li><a href="qt-network.html">Network Programming</a></li>
+                    <li><a href="qt-graphics.html">Graphics and Printing</a></li>
                 </ul>
               </div>
             </div>
