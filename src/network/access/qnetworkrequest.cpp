@@ -105,7 +105,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QNetworkRequest::Attribute
-
+    \since 4.7
+    
     Attribute codes for the QNetworkRequest and QNetworkReply.
 
     Attributes are extra meta-data that are used to control the
@@ -186,9 +187,9 @@ QT_BEGIN_NAMESPACE
 
     \value CustomVerbAttribute
        Requests only, type: QVariant::ByteArray
-        Holds the value for the custom HTTP verb to send (destined for usage
-        of other verbs than GET, POST, PUT and DELETE). This verb is set
-        when calling QNetworkAccessManager::sendCustomRequest().
+       Holds the value for the custom HTTP verb to send (destined for usage
+       of other verbs than GET, POST, PUT and DELETE). This verb is set
+       when calling QNetworkAccessManager::sendCustomRequest().
 
     \value CookieLoadControlAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
@@ -198,20 +199,20 @@ QT_BEGIN_NAMESPACE
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
 
-        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+        See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag}{here} for more information.
 
         (This value was introduced in 4.7.)
+
 
     \value CookieSaveControlAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
         Indicates whether to save 'Cookie' headers received from the server in reply
         to the request.
-
         This attribute is set to false by QtWebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
 
-        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+        See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
 
         (This value was introduced in 4.7.)
 
@@ -221,12 +222,11 @@ QT_BEGIN_NAMESPACE
         if available. If this is set to QNetworkRequest::Manual and the authentication
         mechanism is 'Basic' or 'Digest', Qt will not send an an 'Authorization' HTTP
         header with any cached credentials it may have for the request's URL.
-
         This attribute is set to QNetworkRequest::Manual by QtWebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
 
-        See http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag for more information.
+        See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
 
         (This value was introduced in 4.7.)
 

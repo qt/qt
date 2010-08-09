@@ -58,6 +58,9 @@
 #include <QtDBus/QtDBus>
 #endif
 
+#include <QtDeclarative/QtDeclarative>
+
+
 #ifndef Q_OS_MAC
 int main(int, char **)
 {

@@ -1709,14 +1709,18 @@ namespace {
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
+        inline void adjustRightBearing(glyph_t glyph)
+        {
+            qreal rb;
+            fontEngine->getGlyphBearings(glyph, 0, &rb);
+            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+        }
+
         inline void adjustRightBearing()
         {
             if (currentPosition <= 0)
                 return;
-
-            qreal rb;
-            fontEngine->getGlyphBearings(currentGlyph(), 0, &rb);
-            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+            adjustRightBearing(currentGlyph());
         }
 
         inline void resetRightBearing()
@@ -1901,6 +1905,9 @@ void QTextLine::layout_helper(int maxGlyphs)
         } else {
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
+            glyph_t previousGlyph = 0;
+            if (lbh.currentPosition > 0 && lbh.logClusters[lbh.currentPosition - 1] <lbh.glyphs.numGlyphs)
+                previousGlyph = lbh.currentGlyph(); // needed to calculate right bearing later
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
@@ -1944,9 +1951,15 @@ void QTextLine::layout_helper(int maxGlyphs)
             // We ignore the right bearing if the minimum negative bearing is too little to
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
+                QFixed rightBearing = lbh.rightBearing; // store previous right bearing
                 if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
+                    // we are too wide, fix right bearing
+                    if (rightBearing <= 0)
+                        lbh.rightBearing = rightBearing; // take from cache
+                    else if (previousGlyph > 0)
+                        lbh.adjustRightBearing(previousGlyph);
                     if (!breakany) {
                         line.textWidth += lbh.softHyphenWidth;
                     }

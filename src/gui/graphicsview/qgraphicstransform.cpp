@@ -345,6 +345,24 @@ void QGraphicsScale::applyTo(QMatrix4x4 *matrix) const
 */
 
 /*!
+    \fn QGraphicsScale::xScaleChanged()
+
+    QGraphicsScale emits this signal when its xScale changes.
+*/
+
+/*!
+    \fn QGraphicsScale::yScaleChanged()
+
+    QGraphicsScale emits this signal when its yScale changes.
+*/
+
+/*!
+    \fn QGraphicsScale::zScaleChanged()
+
+    QGraphicsScale emits this signal when its zScale changes.
+*/    
+
+/*!
     \fn QGraphicsScale::scaleChanged()
 
     This signal is emitted whenever the xScale, yScale, or zScale
