@@ -50,6 +50,7 @@
 // built-in handlers
 #include "qfsfileengine.h"
 #include "qdiriterator.h"
+#include "qstringbuilder.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -138,7 +139,7 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
     QWriteLocker locker(fileEngineHandlerMutex());
     // Remove this handler from the handler list only if the list is valid.
     if (!qt_abstractfileenginehandlerlist_shutDown)
-        fileEngineHandlers()->removeAll(this);
+        fileEngineHandlers()->removeOne(this);
 }
 
 /*!
@@ -173,8 +174,9 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file
-        for (int i = 0; i < fileEngineHandlers()->size(); i++) {
-            if (QAbstractFileEngine *ret = fileEngineHandlers()->at(i)->create(fileName))
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        for (int i = 0; i < handlers->size(); i++) {
+            if (QAbstractFileEngine *ret = handlers->at(i)->create(fileName))
                 return ret;
         }
     }
@@ -185,13 +187,9 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
         if (prefixSeparator == 0) {
             return new QResourceFileEngine(fileName);
         } else if (prefixSeparator > 1) {
-            QString prefix = fileName.left(prefixSeparator);
-            QString fileNameWithoutPrefix = fileName.mid(prefixSeparator + 1).prepend(QLatin1Char('/'));
-            const QStringList &paths = QDir::searchPaths(prefix);
+            const QStringList &paths = QDir::searchPaths(fileName.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
-                QString path = paths.at(i);
-                path.append(fileNameWithoutPrefix);
-                QAbstractFileEngine *engine = create(path);
+                QAbstractFileEngine *engine = create(paths.at(i) % QLatin1Char('/') % fileName.mid(prefixSeparator + 1));
                 if (engine && (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
                     return engine;
                 }
