@@ -28,12 +28,12 @@
 /*!
     \group standard-dialogs
     \ingroup qt-basic-concepts
-    \title Standard Dialog Classes
+    \title Standard Dialogs
+    \brief A list of Qt classes for implementing standard dialogs. 
 */
 
 /*!
     \group dialog-classes
-    \ingroup qt-basic-concepts
     \title Classes for Building Dialogs
 */
 

@@ -29,7 +29,6 @@
     \page overviews.html
 
     \title All Overviews and HOWTOs
-	\ingroup qt-basic-concepts
 
     \generatelist overviews
 */
