@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-\page qdeclarativeelements.html
+\page qmlelements.html
 \target elements
 \title QML Elements
 
-The following table lists the QML elements provided by the \l {QtDeclarative}{Qt Declarative} module.
+The following table lists the QML elements provided by the \l{QtDeclarative} module.
 
 \table 
 \header \o {2,1} \bold {Basic Visual Items}
@@ -54,7 +54,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \row \o \l {Flickable} \o Provides a surface that can be "flicked"  
 \row \o \l {Flipable} \o Provides a surface that produces flipping effects
 \row \o \l {GestureArea} (experimental) \o Enables simple gesture handling
- 
+
 \header \o {2,1} \bold {States}
 \row \o \l {State} \o Defines sets of configurations of objects and properties
 \row \o \l {PropertyChanges} \o Describes property changes within a state
