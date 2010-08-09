@@ -1328,7 +1328,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // framework destruction.
         TTrapHandler *origTrapHandler = User::TrapHandler();
 
-        // The S60 framework has not been initalized. We need to do it.
+        // The S60 framework has not been initialized. We need to do it.
         TApaApplicationFactory factory(S60->s60ApplicationFactory ?
                 S60->s60ApplicationFactory : newS60Application);
         CApaCommandLine* commandLine = 0;
@@ -1506,7 +1506,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 */
 
     // Register WId with the metatype system.  This is to enable
-    // QWidgetPrivate::create_sys to used delayed slot invokation in order
+    // QWidgetPrivate::create_sys to used delayed slot invocation in order
     // to destroy WId objects during reparenting.
     qRegisterMetaType<WId>("WId");
 }
