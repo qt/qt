@@ -182,11 +182,18 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
     }
 
 #ifdef QT_BUILD_CORE_LIB
-    if (!fileName.startsWith(QLatin1Char('/'))) {
-        int prefixSeparator = fileName.indexOf(QLatin1Char(':'));
-        if (prefixSeparator == 0) {
-            return new QResourceFileEngine(fileName);
-        } else if (prefixSeparator > 1) {
+    for (int prefixSeparator = 0; prefixSeparator < fileName.size(); ++prefixSeparator) {
+        QChar const ch = fileName[prefixSeparator];
+        if (ch == QLatin1Char('/'))
+            break;
+
+        if (ch == QLatin1Char(':')) {
+            if (prefixSeparator == 0)
+                return new QResourceFileEngine(fileName);
+
+            if (prefixSeparator == 1)
+                break;
+
             const QStringList &paths = QDir::searchPaths(fileName.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
                 QAbstractFileEngine *engine = create(paths.at(i) % QLatin1Char('/') % fileName.mid(prefixSeparator + 1));
@@ -195,7 +202,16 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
                 }
                 delete engine;
             }
+
+            break;
         }
+
+        //  There's no need to fully validate the prefix here. Consulting the
+        //  unicode tables could be expensive and validation is already
+        //  performed in QDir::setSearchPaths.
+        //
+        //  if (!ch.isLetterOrNumber())
+        //      break;
     }
 #endif
 
