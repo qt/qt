@@ -59,7 +59,7 @@ public:
 
     \list
     \o Loaded using QPixmaps rather than actual image files
-    \o Loaded asynchronously in a separate thread, if imageType() is \l ImageType::Image
+    \o Loaded asynchronously in a separate thread, if imageType() is \l Image
     \endlist
 
     To specify that an image should be loaded by an image provider, use the

@@ -2454,7 +2454,7 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
   }
   \endqml
 
-  \sa {state-transitions}{Transitions}
+  \sa {qdeclarativeanimation.html#transitions}{QML Transitions}
 */
 
 
