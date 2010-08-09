@@ -753,8 +753,6 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
         QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
         for (int i = 0; i < ifaces.count(); ++i) {
             const QNetworkInterface &iface = ifaces.at(i);
-            if (!(iface.flags() & QNetworkInterface::CanMulticast))
-                continue;
             QList<QNetworkAddressEntry> entries = iface.addressEntries();
             for (int j = 0; j < entries.count(); ++j) {
                 const QNetworkAddressEntry &entry = entries.at(j);
