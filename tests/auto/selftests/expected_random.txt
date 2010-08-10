@@ -1,0 +1,9 @@
+********* Start testing of tst_Random *********
+Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@, Random seed 325
+PASS   : tst_Random::initTestCase()
+PASS   : tst_Random::testTwo()
+PASS   : tst_Random::testOne()
+PASS   : tst_Random::testThree()
+PASS   : tst_Random::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped
+********* Finished testing of tst_Random *********

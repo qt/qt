@@ -93,7 +93,7 @@ namespace QTest {
 
 
 QXmlTestLogger::QXmlTestLogger(XmlMode mode )
-    :xmlmode(mode)
+    :xmlmode(mode), randomSeed(0), hasRandomSeed(false)
 {
 
 }
@@ -116,11 +116,20 @@ void QXmlTestLogger::startLogging()
         outputString(buf.constData());
     }
 
-    QTest::qt_asprintf(&buf,
-            "<Environment>\n"
-            "    <QtVersion>%s</QtVersion>\n"
-            "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
-            "</Environment>\n", qVersion());
+    if (hasRandomSeed) {
+       QTest::qt_asprintf(&buf,
+                "<Environment>\n"
+                "    <QtVersion>%s</QtVersion>\n"
+                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "    <RandomSeed>%d</RandomSeed>\n"
+                "</Environment>\n", qVersion(), randomSeed);
+    } else {
+       QTest::qt_asprintf(&buf,
+                "<Environment>\n"
+                "    <QtVersion>%s</QtVersion>\n"
+                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "</Environment>\n", qVersion());
+    }
     outputString(buf.constData());
 }
 
@@ -439,6 +448,12 @@ int QXmlTestLogger::xmlQuote(QTestCharBuffer* str, char const* src)
 int QXmlTestLogger::xmlCdata(QTestCharBuffer* str, char const* src)
 {
     return allocateStringFn(str, src, QXmlTestLogger::xmlCdata);
+}
+
+void QXmlTestLogger::registerRandomSeed(unsigned int seed)
+{
+    randomSeed = seed;
+    hasRandomSeed = true;
 }
 
 QT_END_NAMESPACE
