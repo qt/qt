@@ -91,10 +91,11 @@
 
 /*!
   \group qt-activex
-  \title Qt For ActiveX
-  \brief Qt API's for using ActiveX controls, servers, and COM.
+  \title ActiveX in Qt
   \ingroup technology-apis
   \ingroup platform-specific
+
+  \brief Qt API's for using ActiveX controls, servers, and COM.
 
   These pages document Qt's API's for developing with ActiveX
   controls, servers, and COM.
@@ -104,7 +105,7 @@
 
 /*!
   \group qt-sql
-  \title Using SQL in Qt
+  \title SQL in Qt
   \brief Qt API's for using SQL.
   \ingroup technology-apis
   \ingroup best-practices
