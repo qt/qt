@@ -129,10 +129,12 @@ QString NmakeMakefileGenerator::var(const QString &value)
             p.replace("-c", precompRule);
             // Cannot use -Gm with -FI & -Yu, as this gives an
             // internal compiler error, on the newer compilers
+            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
             p.remove("-Gm");
             return p;
         } else if (value == "QMAKE_CXXFLAGS") {
             // Remove internal compiler error option
+            // ### work-around for a VS 2003 bug. Move to some prf file or remove completely.
             return MakefileGenerator::var(value).remove("-Gm");
         }
     }
