@@ -42,8 +42,8 @@
     \image spinboxdelegate-example.png
 
     This concepts behind this example are covered in the
-    \l{model-view-delegate.html}{Delegate Classes} chapter of the
-    \l{model-view-programming.html}{Model/View Programming} overview.
+    \l{Model/View Programming#Delegate Classes}{Delegate Classes} chapter of the
+    \l{Model/View Programming} overview.
 
     \section1 SpinBoxDelegate Class Definition
 

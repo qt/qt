@@ -1009,8 +1009,11 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
     int argdepth = 0;
     int templdepth = 0;
     while (*d) {
-        if (argdepth == 1)
+        if (argdepth == 1) {
             d = qNormalizeType(d, templdepth, result);
+            if (!*d) //most likely an invalid signature.
+                break;
+        }
         if (*d == '(')
             ++argdepth;
         if (*d == ')')
