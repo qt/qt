@@ -7985,6 +7985,24 @@ void QGraphicsItemPrivate::resetHeight()
 */
 
 /*!
+    \property QGraphicsObject::children
+    \since 4.7
+    \internal
+*/
+
+/*!
+    \property QGraphicsObject::width
+    \since 4.7
+    \internal
+*/
+
+/*!
+    \property QGraphicsObject::height
+    \since 4.7
+    \internal
+*/
+
+/*!
     \class QAbstractGraphicsShapeItem
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.

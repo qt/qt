@@ -175,12 +175,12 @@ QT_BEGIN_NAMESPACE
         When using this flag with sequential upload data, the ContentLengthHeader
         header must be set.
 
-     \value HttpPipeliningAllowedAttribute
+    \value HttpPipeliningAllowedAttribute
         Requests only, type: QVariant::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP pipelining with this request.
 
-     \value HttpPipeliningWasUsedAttribute
+    \value HttpPipeliningWasUsedAttribute
         Replies only, type: QVariant::Bool
         Indicates whether the HTTP pipelining was used for receiving
         this reply.
@@ -192,25 +192,31 @@ QT_BEGIN_NAMESPACE
        when calling QNetworkAccessManager::sendCustomRequest().
 
     \value CookieLoadControlAttribute
-        Requests only, type: QVariant::Int (default:
-        QNetworkRequest::Automatic) Indicates whether to send 'Cookie'
-        headers in the request.  This attribute is set to false by
-        QtWebKit when creating a cross-origin XMLHttpRequest where
-        withCredentials has not been set explicitly to true by the
-        Javascript that created the request.  See
-        \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag}
-        {here} for more information.
+        Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
+        Indicates whether to send 'Cookie' headers in the request.
 
-     \value CookieSaveControlAttribute
+        This attribute is set to false by QtWebKit when creating a cross-origin
+        XMLHttpRequest where withCredentials has not been set explicitly to true by the
+        Javascript that created the request.
+
+        See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag}{here} for more information.
+
+        (This value was introduced in 4.7.)
+
+
+    \value CookieSaveControlAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
         Indicates whether to save 'Cookie' headers received from the server in reply
         to the request.
         This attribute is set to false by QtWebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
+
         See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
 
-     \value AuthenticationReuseAttribute
+        (This value was introduced in 4.7.)
+
+    \value AuthenticationReuseAttribute
         Requests only, type: QVariant::Int (default: QNetworkRequest::Automatic)
         Indicates whether to use cached authorization credentials in the request,
         if available. If this is set to QNetworkRequest::Manual and the authentication
@@ -219,11 +225,16 @@ QT_BEGIN_NAMESPACE
         This attribute is set to QNetworkRequest::Manual by QtWebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
+
         See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
 
+        (This value was introduced in 4.7.)
+
     \omitvalue MaximumDownloadBufferSizeAttribute
+        (This value was introduced in 4.7.)
 
     \omitvalue DownloadBufferAttribute
+        (This value was introduced in 4.7.)
 
     \value User
         Special type. Additional information can be passed in

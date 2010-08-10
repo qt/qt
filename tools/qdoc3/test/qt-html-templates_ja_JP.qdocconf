@@ -160,19 +160,9 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit you feedback...</textarea></p>\n" \
+			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\">Please submit your feedback...</textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"blurpage\">\n" \
-			  "  </div>\n" \
-			  "<script type=\"text/javascript\">\n" \
-			  "  var _gaq = _gaq || [];\n" \
-			  "  _gaq.push([\'_setAccount\', \'UA-4457116-5\']);\n" \
-			  "  _gaq.push([\'_trackPageview\']);\n" \
-			  "  (function() {\n" \
-			  "    var ga = document.createElement(\'script\'); ga.type = \'text/javascript\'; ga.async = true;\n" \
-			  "    ga.src = (\'https:\' == document.location.protocol ? \'https://ssl\' : \'http://www\') + \'.google-analytics.com/ga.js\';\n" \
-			  "    var s = document.getElementsByTagName(\'script\')[0]; s.parentNode.insertBefore(ga, s);\n" \
-			  "  })();\n" \
-			  "</script>\n"
+			  "  </div>\n"
