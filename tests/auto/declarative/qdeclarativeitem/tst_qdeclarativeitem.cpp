@@ -75,6 +75,7 @@ private slots:
     void childrenRect();
     void childrenRectBug();
     void childrenRectBug2();
+    void childrenRectBug3();
 
     void childrenProperty();
     void resourcesProperty();
@@ -777,6 +778,17 @@ void tst_QDeclarativeItem::childrenRectBug2()
     QCOMPARE(item->height(), qreal(50));
     QCOMPARE(item->x(), qreal(75));
 
+    delete canvas;
+}
+
+// QTBUG-12722
+void tst_QDeclarativeItem::childrenRectBug3()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/childrenRectBug3.qml"));
+    canvas->show();
+
+    //don't crash on delete
     delete canvas;
 }
 
