@@ -1926,27 +1926,24 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             QWidget *const window = w->window();
             if (!window->d_func()->maybeTopData())
                 break;
-            QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
+            QWidgetBackingStoreTracker &backingStore = window->d_func()->maybeTopData()->backingStore;
             if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
 #ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
                 S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
 #endif
-                // Decrement backing store reference count
-                backingStore.deref();
+                backingStore.unregisterWidget(w);
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
                 S60->wsSession().Flush();
             } else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
                 if (backingStore.data()) {
-                    // Increment backing store reference count
-                    backingStore.ref();
+                    backingStore.registerWidget(w);
                 } else {
 #ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
                     S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
 #endif
-                    // Create backing store with an initial reference count of 1
                     backingStore.create(window);
-                    backingStore.ref();
+                    backingStore.registerWidget(w);
                     w->d_func()->invalidateBuffer(w->rect());
                     w->repaint();
                 }
