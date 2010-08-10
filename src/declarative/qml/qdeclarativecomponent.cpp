@@ -192,7 +192,7 @@ class QByteArray;
     \value Null This QDeclarativeComponent has no data.  Call loadUrl() or setData() to add QML content.
     \value Ready This QDeclarativeComponent is ready and create() may be called.
     \value Loading This QDeclarativeComponent is loading network data.
-    \value Error An error has occured.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
+    \value Error An error has occurred.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
 */
 
 void QDeclarativeComponentPrivate::typeDataReady()
@@ -518,7 +518,7 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
 }
 
 /*!
-    Return the list of errors that occured during the last compile or create
+    Return the list of errors that occurred during the last compile or create
     operation.  An empty list is returned if isError() is not set.
 */
 QList<QDeclarativeError> QDeclarativeComponent::errors() const

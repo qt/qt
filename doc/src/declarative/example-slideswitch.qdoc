@@ -115,7 +115,7 @@ For more information on scripts see \l{Integrating JavaScript}.
 At this point, when the switch toggles between the two states the knob will instantly change its \c x position between 1 and 78.
 In order for the the knob to move smoothly we add a transition that will animate the \c x property with an easing curve for a duration of 200ms.
 
-For more information on transitions see \l{state-transitions}{QML Transitions}.
+For more information on transitions see \l{qdeclarativeanimation.html#transitions}{QML Transitions}.
 
 \section1 Usage
 The switch can be used in a QML file, like this:

@@ -27,14 +27,9 @@
 
 /*!
     \group standard-dialogs
-    \ingroup qt-basic-concepts
-    \title Standard Dialog Classes
-*/
-
-/*!
-    \group dialog-classes
-    \ingroup qt-basic-concepts
-    \title Classes for Building Dialogs
+    \ingroup qt-gui-concepts
+    \title Standard Dialogs
+    \brief A list of Qt classes for implementing standard dialogs. 
 */
 
 /*!
@@ -43,7 +38,7 @@
     \ingroup qt-gui-concepts
     \brief An overview over dialog windows.
     
-    \previouspage The Application Main Window
+    \previouspage Application Main Window
     \contentspage Application Windows and Dialogs
     \nextpage Desktop Integration
 

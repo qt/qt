@@ -306,7 +306,7 @@ void QLocalSocketPrivate::startAsyncRead()
 /*!
     \internal
     Sets the correct size of the read buffer after a read operation.
-    Returns false, if an error occured or the connection dropped.
+    Returns false, if an error occurred or the connection dropped.
  */
 bool QLocalSocketPrivate::completeAsyncRead()
 {
