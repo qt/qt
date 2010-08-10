@@ -324,7 +324,7 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadMatrixf(moveToRectMatrix);
-    gluPerspective(60.0, 1.0, 0.01, 10.0);
+    qgluPerspective(60.0, 1.0, 0.01, 10.0);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
