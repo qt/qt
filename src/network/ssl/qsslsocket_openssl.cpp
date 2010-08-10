@@ -992,6 +992,11 @@ bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QStri
     if (hostname.midRef(hostname.indexOf(QLatin1Char('.'))) != cn.midRef(firstCnDot))
         return false;
 
+    // Check if the hostname is an IP address, if so then wildcards are not allowed
+    QHostAddress addr(hostname);
+    if (!addr.isNull())
+        return false;
+
     // Ok, I guess this was a wildcard CN and the hostname matches.
     return true;
 }
