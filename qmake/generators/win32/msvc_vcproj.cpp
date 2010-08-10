@@ -996,7 +996,17 @@ void VcprojGenerator::initLinkerTool()
 {
     findLibraries(); // Need to add the highest version of the libs
     VCConfiguration &conf = vcProject.Configuration;
-    conf.linker.parseOptions(project->values("MSVCPROJ_LFLAGS"));
+    conf.linker.parseOptions(project->values("QMAKE_LFLAGS"));
+
+    foreach (const QString &libDir, project->values("QMAKE_LIBDIR")) {
+        if (libDir.startsWith("/LIBPATH:"))
+            conf.linker.AdditionalLibraryDirectories += libDir.mid(9);
+        else
+            conf.linker.AdditionalLibraryDirectories += libDir;
+    }
+
+    if (!project->values("DEF_FILE").isEmpty())
+        conf.linker.ModuleDefinitionFile = project->first("DEF_FILE");
 
     foreach(QString libs, project->values("MSVCPROJ_LIBS")) {
         if (libs.left(9).toUpper() == "/LIBPATH:") {
@@ -1458,17 +1468,6 @@ void VcprojGenerator::initOld()
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
-    project->values("MSVCPROJ_LFLAGS") += project->values("QMAKE_LFLAGS");
-    if(!project->values("QMAKE_LIBDIR").isEmpty()) {
-        QStringList strl = project->values("QMAKE_LIBDIR");
-        QStringList::iterator stri;
-        for(stri = strl.begin(); stri != strl.end(); ++stri) {
-            if(!(*stri).startsWith("/LIBPATH:"))
-                (*stri).prepend("/LIBPATH:");
-        }
-        project->values("MSVCPROJ_LFLAGS") += strl;
-    }
-    project->values("MSVCPROJ_CXXFLAGS") += project->values("QMAKE_CXXFLAGS");
     QStringList &incs = project->values("INCLUDEPATH");
     for(QStringList::Iterator incit = incs.begin(); incit != incs.end(); ++incit) {
         QString inc = (*incit);
@@ -1506,9 +1505,6 @@ void VcprojGenerator::initOld()
         project->values("MSVCPROJ_COPY_DLL").append(copydll);
         project->values("MSVCPROJ_COPY_DLL_DESC").append(deststr);
     }
-
-    if (!project->values("DEF_FILE").isEmpty())
-        project->values("MSVCPROJ_LFLAGS").append("/DEF:"+project->first("DEF_FILE"));
 
     project->values("QMAKE_INTERNAL_PRL_LIBS") << "MSVCPROJ_LIBS";
 
