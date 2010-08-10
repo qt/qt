@@ -32,7 +32,7 @@
     The Simple Tree Model example shows how to create a basic, read-only
     hierarchical model to use with Qt's standard view classes. For a
     description of simple non-hierarchical list and table models, see the
-    \l{model-view-programming.html}{Model/View Programming} overview.
+    \l{Model/View Programming} overview.
 
     \image simpletreemodel-example.png
 
@@ -40,7 +40,7 @@
     information in a data source, using an abstract model of the data to
     simplify and standardize the way it is accessed. Simple models represent
     data as a table of items, and allow views to access this data via an
-    \l{model-view-model.html}{index-based} system. More generally, models can
+    \l{Model/View Programming#Models}{index-based} system. More generally, models can
     be used to represent data in the form of a tree structure by allowing each
     item to act as a parent to a table of child items.
 

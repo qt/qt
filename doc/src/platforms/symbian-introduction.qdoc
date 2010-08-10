@@ -86,12 +86,12 @@
 
     \tableofcontents
 
-    \section1 Required tools
+    \section1 Required Tools
 
     See \l{Qt for the Symbian platform Requirements} to see what tools are
     required to use Qt for the Symbian platform.
 
-    \section1 Installing Qt and running demos
+    \section1 Installing Qt and Running Demos
 
     Follow the instructions found in \l{Installing Qt on the Symbian platform from a Binary Package}
     to learn how to install Qt using a binary package and how to build and run Qt demos.
@@ -99,7 +99,7 @@
     Follow the instructions found in \l{Installing Qt on the Symbian platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
 
-    \section1 Building your own applications
+    \section1 Building Your Own Applications
 
     If you are new to Qt development, have a look at \l{How to Learn Qt}.
     In general, the difference between developing a
@@ -112,12 +112,19 @@
     \snippet doc/src/snippets/code/doc_src_symbian-introduction.qdoc 0
 
     For more information on how to use qmake have a look at the \l
-    {qmake Tutorial}.
+    {qmake Tutorial}. In particular, see the
+    \l{qmake Platform Notes#Symbian platform}{qmake Platform Notes} for
+    details of Symbian-specific build settings.
 
     Now you can build the Qt for the Symbian platform application with
-    standard build tools. By default, running \c make will produce binaries for
-    the emulator. However, the Symbian platform comes with several alternative
-    build targets, as shown in the table below:
+    standard build tools.
+
+    \section2 Alternative Build Targets
+
+    By default, running \c make will produce binaries for the emulator.
+    However, the Symbian platform comes with several alternative
+    build targets that can be used to create binaries for target hardware
+    and deploy them on devices, as shown in the table below:
 
     \table
     \row \o \c debug-winscw  \o Build debug binaries for the emulator (default).
@@ -149,19 +156,30 @@
     To work on your project in Carbide, simply import the \c .pro file
     by right clicking on the project explorer and executing "Import...".
 
-    \section2 Smart Installer
+    \section1 Running Applications from the Command Line
 
-    The Smart Installer makes sure that deployed applications have all the Qt dependencies
-    they need to run on a device.
+    The application can be launched on the emulator using \c{make run} command.
 
-    Download the latest release of the Smart Installer from \l{http://get.qt.nokia.com/nokiasmartinstaller/},
-    and install it on top of the Qt package.
+    The application can be launched on a device using \c{make runonphone} command.
+    When this command is invoked, a \c .sis file is first created as if \c{make sis}
+    command was invoked (see above for details).
+    \bold{Note:} Running the application on a device using this command requires
+    \c TRK application to be running on the device.
 
-    \section1 Installing your own applications
+    Additional environment variables that can be utilized with these commands are:
+    \table
+    \row \o \c QT_RUN_OPTIONS           \o Any command line parameters you wish to pass
+                                           to your application.
+    \row \o \c QT_RUN_ON_PHONE_OPTIONS  \o Options for runonphone application.
+                                           Execute \c runonphone from command line for
+                                           more information about available options.
+                                           \c{make runonphone} only.
+    \endtable
+
+    \section1 Installing Your Own Applications
 
     To install your own applications on hardware, you need a signed \c .sis file.
-    (Refer to the \l{http://developer.symbian.org/wiki/index.php/Platform_Security_%28Fundamentals_of_Symbian_C%2B%2B%29#Self-Signed_Applications}
-    {Platform Security Article} for more informations about self-signing.)
+    (Refer to the \l{Symbian Platform Security} article for more informations about self-signing.)
     The signed \c .sis file can be created with \c make \c sis target. \c sis target
     is only supported for executables or projects with \c DEPLOYMENT statements.
     By default the \c sis target will create signed \c .sis file for last build
@@ -220,23 +238,19 @@
 
     \snippet doc/src/snippets/code/doc_src_symbian-introduction.qdoc 5
 
-    \section1 Running applications from command line
+    \section1 Deployment and the Smart Installer
 
-    The application can be launched on the emulator using \c{make run} command.
+    Although some Symbian devices may already have a version of Qt installed
+    on them, there needs to be a way to ensure that an appropriate version
+    of Qt is available for your application to use. Rather than deploy the
+    required Qt libraries with your application, the preferred way to
+    package Qt applications for deployment is to download and use the Smart
+    Installer.
 
-    The application can be launched on a device using \c{make runonphone} command.
-    When this command is invoked, a \c .sis file is first created as if \c{make sis}
-    command was invoked (see above for details).
-    \bold{Note:} Running the application on a device using this command requires
-    \c TRK application to be running on the device.
+    The Smart Installer makes sure that deployed applications have all the
+    Qt dependencies they need to run on a device, performing the necessary
+    updates when the user installs the application.
 
-    Additional environment variables that can be utilized with these commands are:
-    \table
-    \row \o \c QT_RUN_OPTIONS           \o Any command line parameters you wish to pass
-                                           to your application.
-    \row \o \c QT_RUN_ON_PHONE_OPTIONS  \o Options for runonphone application.
-                                           Execute \c runonphone from command line for
-                                           more information about available options.
-                                           \c{make runonphone} only.
-    \endtable
+    More information about deployment can be found in the
+    \l{Deploying an Application on the Symbian Platform} document.
 */
