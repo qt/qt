@@ -442,7 +442,7 @@
     \section1 Further Reading
 
     General overviews of XQuery and XSchema can be found in the
-    \l{Using XML Technologies} document.
+    \l{XQuery} document.
 
     An introduction to the XQuery language can be found in
     \l{A Short Path to XQuery}.
@@ -842,8 +842,7 @@
     \target The QDBus compiler
 
     \brief The QtDBus module is a Unix-only library that you can use
-    to perform Inter-Process Communication using the \l{Introduction to
-    D-Bus}{D-Bus} protocol.
+    to perform Inter-Process Communication using the \l{D-Bus} protocol.
 
     Applications using the QtDBus module can provide services to
     other, remote applications by exporting objects, as well as use
@@ -869,7 +868,7 @@
     directory. When installing Qt from source, this module is built when Qt's
     tools are built.
 
-    See the \l {Introduction to D-Bus} page for detailed information on
+    See the \l {D-Bus} page for detailed information on
     how to use this module.
 
     This module is part of all \l{Qt editions}.
