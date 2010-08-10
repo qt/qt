@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn QDeclarativeInfo qmlInfo(const QObject *object)
+    \relates QDeclarativeEngine
 
     \brief Prints warnings messages that include the file and line number for QML types.
 
