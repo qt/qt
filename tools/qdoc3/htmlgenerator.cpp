@@ -1717,7 +1717,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "</li>\n";
         }
         if (!cn->name().isEmpty())
-            out() << "              <li>" << protect(cn->name()) << "</li>\n";
+            out() << "              <li>" << protectEnc(cn->name()) << "</li>\n";
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
@@ -1725,13 +1725,13 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "              <li><a href=\"modules.html\">Modules</a></li>";
             QString name =  node->name();
             if (!name.isEmpty())
-                out() << "              <li>" << protect(name) << "</li>\n";
+                out() << "              <li>" << protectEnc(name) << "</li>\n";
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
                 out() << "              <li>Modules</li>";
             else {
-                out() << "              <li>" << protect(title) << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::Page) {
@@ -1741,18 +1741,18 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << protect(title) << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
             else if (fn->name() == QString("namespaces.html")) {
                 out() << "              <li>Namespaces</li>";
             }
             else {
-                out() << "              <li>" << protect(title) << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {
             out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << protect(title) << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
@@ -1760,15 +1760,15 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             if (sl.contains("declarative"))
                 out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples &amp; Demos</a></li>";
             else {
-                QString name = protect("examples-" + sl.at(0) + ".html"); // this generates an empty link
+                QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
             }
-            out() << "              <li>" << protect(title) << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
     }
     else if (node->type() == Node::Namespace) {
         out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << protect(title) << "</li>";
+        out() << "              <li>" << protectEnc(title) << "</li>";
     }
 }
 
