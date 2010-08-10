@@ -2702,6 +2702,61 @@ QPainterPath QPainter::clipPath() const
 }
 
 /*!
+    Returns the bounding rectangle of the current clip if there is a clip;
+    otherwise returns an empty rectangle. Note that the clip region is
+    given in logical coordinates.
+
+    The bounding rectangle is not guaranteed to be tight.
+
+    \sa setClipRect(), setClipPath(), setClipRegion()
+
+    \since 4.8
+ */
+
+QRectF QPainter::clipBoundingRect() const
+{
+    Q_D(const QPainter);
+
+    if (!d->engine) {
+        qWarning("QPainter::clipBoundingRect: Painter not active");
+        return QRectF();
+    }
+
+    // Accumulate the bounding box in device space. This is not 100%
+    // precise, but it fits within the guarantee and it is resonably
+    // fast.
+    QRectF bounds;
+    for (int i=0; i<d->state->clipInfo.size(); ++i) {
+         QRectF r;
+         const QPainterClipInfo &info = d->state->clipInfo.at(i);
+
+         if (info.clipType == QPainterClipInfo::RectClip)
+             r = info.rect;
+         else if (info.clipType == QPainterClipInfo::RegionClip)
+             r = info.region.boundingRect();
+         else
+             r = info.path.boundingRect();
+
+         r = info.matrix.mapRect(r);
+
+         if (i == 0)
+             bounds = r;
+         else if (info.operation == Qt::IntersectClip)
+             bounds &= r;
+         else if (info.operation == Qt::UniteClip)
+             bounds |= r;
+    }
+
+
+    // Map the rectangle back into logical space using the inverse
+    // matrix.
+    if (!d->txinv)
+        const_cast<QPainter *>(this)->d_ptr->updateInvMatrix();
+
+    return d->invMatrix.mapRect(bounds);
+}
+
+/*!
     \fn void QPainter::setClipRect(const QRectF &rectangle, Qt::ClipOperation operation)
 
     Enables clipping, and sets the clip region to the given \a
