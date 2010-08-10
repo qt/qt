@@ -409,13 +409,18 @@ static void qAccessibleCleanup()
 /*!
     \typedef QAccessible::InterfaceFactory
 
-    A function pointer type. Use a function with this prototype to install
-    interface factories with installFactory().
+    This is a typedef for a pointer to a function with the following
+    signature:
 
-    The function receives a QObject pointer. If the QObject
-    provides a QAccessibleInterface, it sets the second parameter to
-    point to the corresponding QAccessibleInterface, and returns true;
-    otherwise returns false.
+    \snippet doc/src/snippets/code/src_gui_accessible_qaccessible.cpp 1
+
+    The function receives a QString and a QObject pointer, where the
+    QString is the key identifying the interface. The QObject is used
+    to pass on to the QAccessibleInterface so that it can hold a reference
+    to it.
+
+    If the key and the QObject does not have a corresponding
+    QAccessibleInterface, a null-pointer will be returned.
 
     Installed factories are called by queryAccessibilityInterface() until
     one provides an interface.
