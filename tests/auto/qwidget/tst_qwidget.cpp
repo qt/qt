@@ -9758,6 +9758,43 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QVERIFY(0 != backingStore(parent));
     QVERIFY(0 == backingStore(child));
     }
+
+    // 6. Partial reveal followed by full reveal
+    {
+    QWidget upper;
+    upper.setAutoFillBackground(true);
+    upper.setPalette(Qt::red);
+    upper.setGeometry(50, 50, 100, 100);
+
+    QWidget lower;
+    lower.setAutoFillBackground(true);
+    lower.setPalette(Qt::green);
+    lower.setGeometry(50, 50, 100, 100);
+
+    lower.show();
+    QTest::qWaitForWindowShown(&lower);
+    upper.show();
+    QTest::qWaitForWindowShown(&upper);
+    upper.raise();
+
+    QVERIFY(0 != backingStore(upper));
+    QVERIFY(0 == backingStore(lower));
+
+    // Check that upper obscures lower
+    QVERIFY(lower.visibleRegion().subtracted(upper.visibleRegion()).isEmpty());
+
+    // Partially reveal lower
+    upper.move(100, 100);
+
+    // Completely reveal lower
+    upper.hide();
+
+    // Hide lower widget - this should cause its backing store to be deleted
+    lower.hide();
+
+    // Check that backing store was deleted
+    WAIT_AND_VERIFY(0 == backingStore(lower));
+    }
 }
 
 #undef WAIT_AND_VERIFY
