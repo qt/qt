@@ -273,7 +273,7 @@
     
     \previouspage Paint Devices and Backends
     \contentspage The Paint System
-    \nextpage The Coordinate System
+    \nextpage Coordinate System
 
     \section1 Drawing
 
@@ -395,7 +395,7 @@
     \page paintsystem-images.html
     \title Reading and Writing Image Files
 
-    \previouspage The Coordinate System
+    \previouspage Coordinate System
     \contentspage The Paint System
     \nextpage Styling
 
@@ -554,5 +554,5 @@
     \endtable
     
     For more information about widget styling and appearance, see the
-    \l{Styles &amp Style Aware Widgets}.
+    \l{Styles and Style Aware Widgets}.
 */

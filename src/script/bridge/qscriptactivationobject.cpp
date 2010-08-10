@@ -53,7 +53,7 @@ QScriptActivationObject::QScriptActivationObject(JSC::ExecState *callFrame, JSC:
 
 QScriptActivationObject::~QScriptActivationObject()
 {
-    delete d;
+    delete d_ptr();
 }
 
 bool QScriptActivationObject::getOwnPropertySlot(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertySlot& slot)

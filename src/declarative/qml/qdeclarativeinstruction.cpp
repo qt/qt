@@ -218,7 +218,7 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "DEFER" << "\t\t\t" << instr->defer.deferCount;
         break;
     default:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "XXX UNKOWN INSTRUCTION" << "\t" << instr->type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "XXX UNKNOWN INSTRUCTION" << "\t" << instr->type;
         break;
     }
 #endif // QT_NO_DEBUG_STREAM

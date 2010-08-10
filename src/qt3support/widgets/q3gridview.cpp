@@ -84,7 +84,7 @@ using namespace Qt;
   size in a potentially scrollable canvas. If you need rows and
   columns with different sizes, use a Q3Table instead. If you need a
   simple list of items, use a Q3ListBox. If you need to present
-  hierachical data use a Q3ListView, and if you need random objects
+  hierarichal data use a Q3ListView, and if you need random objects
   at random positions, consider using either a Q3IconView or a
   Q3Canvas.
 */
