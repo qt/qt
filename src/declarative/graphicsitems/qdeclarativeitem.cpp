@@ -2740,12 +2740,12 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
         }
         break;
     case ItemChildAddedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childAdded(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
     case ItemChildRemovedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childRemoved(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
