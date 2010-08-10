@@ -22,6 +22,10 @@
 
 #include <QtCore/QtGlobal>
 
+#ifndef QT_DLL
+#  error This library is licensed under the LGPL and must be dynamically linked
+#endif
+
 #if defined(FFTREAL_LIBRARY)
 #  define FFTREAL_EXPORT Q_DECL_EXPORT
 #else
