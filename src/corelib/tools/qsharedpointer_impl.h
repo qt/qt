@@ -387,7 +387,13 @@ namespace QtSharedPointer {
         template <class X>
         inline void internalCopy(const ExternalRefCount<X> &other)
         {
-            internalSet(other.d, other.data());
+            Data *o = other.d;
+            T *actual = other.value;
+            if (o)
+                other.ref();
+            qSwap(d, o);
+            qSwap(this->value, actual);
+            deref(o, actual);
         }
 
         inline void internalSwap(ExternalRefCount &other)
