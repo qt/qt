@@ -988,7 +988,6 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
             dictionary[ "QT_NAMESPACE" ] = configCmdLine.at(i);
         } else if (configCmdLine.at(i) == "-qtlibinfix") {
             ++i;
