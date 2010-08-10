@@ -9795,6 +9795,43 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     // Check that backing store was deleted
     WAIT_AND_VERIFY(0 == backingStore(lower));
     }
+
+    // 7. Reparenting of visible native child widget
+    {
+    QWidget parent1;
+    parent1.setAutoFillBackground(true);
+    parent1.setPalette(Qt::green);
+    parent1.setGeometry(50, 50, 100, 100);
+
+    QWidget *child = new QWidget(&parent1);
+    child->winId();
+    child->setAutoFillBackground(true);
+    child->setPalette(Qt::red);
+    child->setGeometry(10, 10, 30, 30);
+
+    QWidget parent2;
+    parent2.setAutoFillBackground(true);
+    parent2.setPalette(Qt::blue);
+    parent2.setGeometry(150, 150, 100, 100);
+
+    parent1.show();
+    QTest::qWaitForWindowShown(&parent1);
+    QVERIFY(0 != backingStore(parent1));
+
+    parent2.show();
+    QTest::qWaitForWindowShown(&parent2);
+    QVERIFY(0 != backingStore(parent2));
+
+    child->setParent(&parent2);
+    child->setGeometry(10, 10, 30, 30);
+    child->show();
+
+    parent1.hide();
+    WAIT_AND_VERIFY(0 == backingStore(parent1));
+
+    parent2.hide();
+    WAIT_AND_VERIFY(0 == backingStore(parent2));
+    }
 }
 
 #undef WAIT_AND_VERIFY
