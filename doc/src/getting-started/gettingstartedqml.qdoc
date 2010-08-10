@@ -308,7 +308,7 @@
 	with a header that displays a row of menu names. The list of menus are declared
 	inside a \c VisualItemModel. The \l{VisualItemModel}{\c VisualItemModel}
 	element contains items that already have views such as \c Rectangle elements
-	and imported UI elements. Other model types such as the \l {ListModel}{\c ListModel}
+	and imported UI elements. Other model types such as the \l {ListModel}{\c ListModel}
 	element need a delegate to display their data.
 
 	We declare two visual items in the \c menuListModel, the \c FileMenu and the
@@ -361,7 +361,7 @@
 		}
 	\endcode
 
-	Additionally, \c ListView inherits from \l {Flickable}{\c Flickable}, making
+	Additionally, \c ListView inherits from \l {Flickable}{\c Flickable}, making
 	the list respond to mouse drags and other gestures. The last portion of the
 	code above sets \c Flickable properties to create the desired flicking movement
 	to our view. In particular,the property \c highlightMoveDuration changes the
@@ -585,7 +585,7 @@
 	that the targets' properties will animate for a certain duration of time and using
 	a certain easing curve. An easing curve controls the animation rates and
 	interpolation behavior during state transitions. The easing curve we chose is
-	\l {PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
+	\l{PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
 	the end of the animation. Pleae read \l {qdeclarativeanimation.html}{QML's Animation}
 	article.
 
@@ -737,7 +737,12 @@
 		};
 		
 	\endcode
-		Our plugin class, \c DialogPlugin is a subclass of \l {QDeclarativeExtensionPlugin}{QDeclarativeExtensionPlugin}. We need to implement the inherited function, \l {QDeclarativeExtensionPlugin::registerTypes}{registerTypes}. The \c dialogPlugin.cpp file looks like this:
+
+		Our plugin class, \c DialogPlugin is a subclass of \l
+		{QDeclarativeExtensionPlugin}{QDeclarativeExtensionPlugin}. We
+		need to implement the inherited function, \l
+		{QDeclarativeExtensionPlugin::registerTypes()}{registerTypes}. The
+		\c dialogPlugin.cpp file looks like this:
 		
 	\code
 	DialogPlugin.cpp:
@@ -756,7 +761,7 @@
 		Q_EXPORT_PLUGIN2(FileDialog, DialogPlugin);
 	\endcode
 		
-	The \l {QDeclarativeExtensionPlugin::registerTypes}{registerTypes}
+	The \l {QDeclarativeExtensionPlugin::registerTypes()}{registerTypes}
 	function registers our File and Directory classes into QML. This function
 	needs the class name for its template, a major version number, a minor version
 	number, and a name for our classes.
@@ -816,7 +821,7 @@
 
 	The \c files list property is a list of all the filtered files in a directory.
 	The \c Directory class is implemented to filter out invalid text files; only
-	files with a \c .txt extension are valid. Further, \l {QLists}{QLists} can be
+	files with a \c .txt extension are valid. Further, \l {QList}{QLists} can be
 	used in QML files by declaring them as a \c QDeclarativeListProperty in C++.
 	The templated object needs to inherit from a \l {QObject}{QObject}, therefore,
 	the \c File class must also inherit from \c QObject. In the \c Directory class,

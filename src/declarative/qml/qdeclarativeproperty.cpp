@@ -640,7 +640,7 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
     is assumed by the caller.
 
     \a flags is passed through to the binding and is used for the initial update (when
-    the binding sets the intial value, it will use these flags for the write).
+    the binding sets the initial value, it will use these flags for the write).
 */
 QDeclarativeAbstractBinding *
 QDeclarativePropertyPrivate::setBinding(const QDeclarativeProperty &that,

@@ -449,7 +449,7 @@ void MenuManager::init(MainWindow *window)
         window->scene->setStickyFocus(true);
         window->setFocus();
     }else{
-        qDebug() << "Error intializing QML subsystem, Declarative examples will not work";
+        qDebug() << "Error initializing QML subsystem, Declarative examples will not work";
     }
 }
 
