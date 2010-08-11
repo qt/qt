@@ -271,6 +271,9 @@ void tst_qdeclarativelistmodel::dynamic_data()
     QTest::newRow("nested-insert") << "{append({'foo':123});insert(0,{'bars':[{'a':1},{'b':2},{'c':3}]});get(0).bars.get(0).a}" << 1 << "";
     QTest::newRow("nested-set") << "{append({'foo':123});set(0,{'foo':[{'x':123}]});get(0).foo.get(0).x}" << 123 << "";
 
+    QTest::newRow("nested-count") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]}); get(0).bars.count}" << 3 << "";
+    QTest::newRow("nested-clear") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]}); get(0).bars.clear(); get(0).bars.count}" << 0 << "";
+
     // XXX
     //QTest::newRow("nested-setprop") << "{append({'foo':123});setProperty(0,'foo',[{'x':123}]);get(0).foo.get(0).x}" << 123 << "";
 }
@@ -344,9 +347,7 @@ void tst_qdeclarativelistmodel::dynamic_worker()
         waitForWorker(item);
 
         QDeclarativeExpression e(eng.rootContext(), &model, operations.last().toString());
-        if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
-            QVERIFY(e.evaluate().toInt() != result);
-        else
+        if (!QByteArray(QTest::currentDataTag()).startsWith("nested"))
             QCOMPARE(e.evaluate().toInt(), result);
     }
 
