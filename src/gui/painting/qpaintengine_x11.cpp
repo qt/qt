@@ -1916,6 +1916,8 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     int sh = qRound(sr.height());
 
     QPixmap pixmap = qt_toX11Pixmap(px);
+    if(pixmap.isNull())
+        return;
 
     if ((d->xinfo && d->xinfo->screen() != pixmap.x11Info().screen())
         || (pixmap.x11Info().screen() != DefaultScreen(X11->display))) {
