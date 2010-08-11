@@ -112,7 +112,7 @@ class QPinchGesturePrivate : public QGesturePrivate
 public:
     QPinchGesturePrivate()
         : totalChangeFlags(0), changeFlags(0),
-          totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalScaleFactor(1), lastScaleFactor(1), scaleFactor(1),
           totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0),
           isNewSequence(true)
     {
