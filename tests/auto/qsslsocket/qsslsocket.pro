@@ -29,6 +29,7 @@ wince* {
     certFiles.sources = certs ssl.tar.gz
     certFiles.path    = .
     DEPLOYMENT += certFiles
+    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

@@ -59,6 +59,7 @@ class SymbianMakefileGenerator : public MakefileGenerator, public SymbianCommonG
 protected:
     QString platform;
     QString uid2;
+    QString mmpFileName;
     QMap<QString, QStringList> sources;
     QMap<QString, QStringList> systeminclude;
     QMap<QString, QStringList> library;
@@ -78,6 +79,7 @@ protected:
     QString generateUID3();
 
     void initMmpVariables();
+    void generateMmpFileName();
     void handleMmpRulesOverrides(QString &checkString,
                                  bool &inResourceBlock,
                                  QStringList &restrictedMmpKeywords,
