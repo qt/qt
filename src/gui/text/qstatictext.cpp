@@ -109,10 +109,18 @@ QT_BEGIN_NAMESPACE
     QPainter::drawStaticText() and can change from call to call with a minimal impact on
     performance.
 
-    QStaticText will attempt to guess the format of the input text using Qt::mightBeRichText().
-    To force QStaticText to display its contents as either plain text or rich text, use the
-    function QStaticText::setTextFormat() and pass in, respectively, Qt::PlainText and
-    Qt::RichText.
+    For extra convenience, it is possible to apply formatting to the text using the HTML subset
+    supported by QTextDocument. QStaticText will attempt to guess the format of the input text using
+    Qt::mightBeRichText(), and interpret it as rich text if this function returns true. To force
+    QStaticText to display its contents as either plain text or rich text, use the function
+    QStaticText::setTextFormat() and pass in, respectively, Qt::PlainText and Qt::RichText.
+
+    QStaticText can only represent text, so only HTML tags which alter the layout or appearance of
+    the text will be respected. Adding an image to the input HTML, for instance, will cause the
+    image to be included as part of the layout, affecting the positions of the text glyphs, but it
+    will not be displayed. The result will be an empty area the size of the image in the output.
+    Similarly, using tables will cause the text to be laid out in table format, but the borders
+    will not be drawn.
 
     If it's the first time the static text is drawn, or if the static text, or the painter's font
     has been altered since the last time it was drawn, the text's layout has to be
