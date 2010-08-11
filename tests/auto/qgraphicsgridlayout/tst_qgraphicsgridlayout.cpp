@@ -485,12 +485,12 @@ void tst_QGraphicsGridLayout::alignment()
     widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
     QApplication::processEvents();
 
-    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0,    0,  50,  25));
-    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0,   25,  50,  25));
-    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(125,  0,  50,  25));
-    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(125, 25,  50,  25));
-    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(250,  0,  50,  25));
-    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(250, 25,  50,  25));
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0,    0,  50,  50));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0,   50,  50,  50));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(125,  0,  50,  50));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(125, 50,  50,  50));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(250,  0,  50,  50));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(250, 50,  50,  50));
 
     delete widget;
 }
@@ -544,12 +544,12 @@ void tst_QGraphicsGridLayout::columnAlignment()
       | HCenter  |   Right    |   Left  |
       +---------------------------------+
     */
-    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0,   0,   50,  25));
-    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(25,  26,  50,  25));   // item is king
-    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(126,  0,  50,  25));
-    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(151, 26,  50,  25));   // item is king
-    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(252,  0,  50,  25));
-    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(202, 26,  50,  25));   // item is king
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0,   0,   50,  50));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(25,  51,  50,  50));   // item is king
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(126,  0,  50,  50));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(151, 51,  50,  50));   // item is king
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(252,  0,  50,  50));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(202, 51,  50,  50));   // item is king
 
     delete widget;
 }
