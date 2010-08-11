@@ -1209,16 +1209,22 @@ ModelNode::ModelNode()
 
 ModelNode::~ModelNode()
 {
-    qDeleteAll(properties.values());
+    clear();
+    if (modelCache) { modelCache->m_nested->_root = 0/* ==this */; delete modelCache; modelCache = 0; }
+    if (objectCache) { delete objectCache; objectCache = 0; }
+}
 
+void ModelNode::clear()
+{
     ModelNode *node;
     for (int ii = 0; ii < values.count(); ++ii) {
         node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
     }
+    values.clear();
 
-    if (modelCache) { modelCache->m_nested->_root = 0/* ==this */; delete modelCache; modelCache = 0; }
-    if (objectCache) { delete objectCache; objectCache = 0; }
+    qDeleteAll(properties.values());
+    properties.clear();
 }
 
 void ModelNode::setObjectValue(const QScriptValue& valuemap) {
