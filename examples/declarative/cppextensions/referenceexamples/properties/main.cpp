@@ -52,7 +52,7 @@ int main(int argc, char ** argv)
     qmlRegisterType<Person>("People", 1,0, "Person");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
+    QDeclarativeComponent component(&engine, QUrl("qrc:example.qml"));
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
     if (party && party->host()) {
@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
         for (int ii = 0; ii < party->guestCount(); ++ii)
             qWarning() << "   " << party->guest(ii)->name();
     } else {
-        qWarning() << "An error occurred";
+        qWarning() << component.errors();
     }
 
     return 0;
