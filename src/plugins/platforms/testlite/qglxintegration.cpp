@@ -125,9 +125,8 @@ GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindow
         {
             for (int i = 0; i < confcount; i++) {
                 chosenConfig = configs[i];
-
                 // Make sure we try to get an ARGB visual if the format asked for an alpha:
-                if (format.alpha()) {
+                if (reducedFormat.alpha()) {
                     int alphaSize;
                     glXGetFBConfigAttrib(xd->display,configs[i],GLX_ALPHA_SIZE,&alphaSize);
                     if (alphaSize > 0)
@@ -139,11 +138,11 @@ GLXFBConfig QGLXGLContext::findConfig(const MyDisplay *xd, const QPlatformWindow
 
             XFree(configs);
         }
-        reducedFormat = reducePlatformWindowFormat(format,&reduced);
+        reducedFormat = reducePlatformWindowFormat(reducedFormat,&reduced);
     }
 
     if (!chosenConfig)
-        qFatal("Warning no context created");
+        qWarning("Warning no context created");
 
     return chosenConfig;
 }
