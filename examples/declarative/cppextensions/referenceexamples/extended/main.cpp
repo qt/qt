@@ -51,14 +51,14 @@ int main(int argc, char ** argv)
     qmlRegisterExtendedType<QLineEdit, LineEditExtension>("People", 1,0, "QLineEdit");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
+    QDeclarativeComponent component(&engine, QUrl("qrc:example.qml"));
     QLineEdit *edit = qobject_cast<QLineEdit *>(component.create());
 
     if (edit) {
         edit->show();
         return app.exec();
     } else {
-        qWarning() << "An error occurred";
+        qWarning() << component.errors();
         return 0;
     }
 }
