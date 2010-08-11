@@ -169,7 +169,10 @@ class HtmlGenerator : public PageGenerator
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker, 
                                  QList<Section>* sections = 0);
-    QString generateListOfAllMemberFile(const InnerNode *inner, CodeMarker *marker);
+    QString generateListOfAllMemberFile(const InnerNode *inner, 
+                                        CodeMarker *marker);
+    QString generateAllQmlMembersFile(const QmlClassNode* qml_cn, 
+                                      CodeMarker* marker);
     QString generateLowStatusMemberFile(const InnerNode *inner, 
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
