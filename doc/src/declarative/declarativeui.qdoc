@@ -43,7 +43,7 @@ C++ module, you can load and interact with QML files from your Qt application.
 
 QML provides mechanisms to declaratively build an object tree using
 \l {QML Elements}{QML elements}. QML improves the integration between 
-{http://www.ecma-international.org/publications/standards/Ecma-262.htm}{JavaScript}
+\l {http://www.ecma-international.org/publications/standards/Ecma-262.htm}{JavaScript}
 and Qt's existing QObject based type
 system, adds support for automatic \l {Property Binding}{property
 bindings} and provides \l {Network Transparency}{network transparency}

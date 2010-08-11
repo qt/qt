@@ -1628,7 +1628,7 @@ void QDeclarativeBindingCompiler::dump(const QByteArray &programData)
 
 /*!
 Clear the state associated with attempting to compile a specific binding.
-This does not clear the global "commited binding" states.
+This does not clear the global "committed binding" states.
 */
 void QDeclarativeBindingCompilerPrivate::resetInstanceState()
 {

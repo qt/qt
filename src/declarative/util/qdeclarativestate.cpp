@@ -160,7 +160,8 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \note Setting the state of an object from within another state of the same object is
     not allowed.
 
-    \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, QtDeclarative
+    \sa {declarative/animation/states}{states example}, {qmlstates}{States},
+    {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
 */
 
 /*!

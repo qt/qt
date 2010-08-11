@@ -825,7 +825,7 @@ void QDBusArgument::endStructure()
     \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 6
 
     If the type you want to marshall is a QList, QVector or any of the
-    Qt's \l {Generic Containers} that take one template parameter,
+    Qt's \l {Container Classes} that take one template parameter,
     you need not declare an \c{operator<<} function for it, since
     QtDBus provides generic templates to do the job of marshalling
     the data. The same applies for STL's sequence containers, such
@@ -952,7 +952,7 @@ void QDBusArgument::endStructure() const
     \snippet doc/src/snippets/code/src_qdbus_qdbusargument.cpp 9
 
     If the type you want to demarshall is a QList, QVector or any of the
-    Qt's \l {Generic Containers} that take one template parameter, you
+    Qt's \l {Container Classes} that take one template parameter, you
     need not declare an \c{operator>>} function for it, since QtDBus
     provides generic templates to do the job of demarshalling the data.
     The same applies for STL's sequence containers, such as \c {std::list},
