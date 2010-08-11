@@ -166,12 +166,6 @@ void QGLWidgetGLPaintDevice::setWidget(QGLWidget* w)
 
 void QGLWidgetGLPaintDevice::beginPaint()
 {
-    // ### This should be in setWidget(), but the context of the QGLWidget
-    // hasn't been set there yet.
-#ifdef Q_WS_QPA
-    m_thisFBO = context()->d_ptr->platformContext->defaultFBO();
-#endif
-
     QGLPaintDevice::beginPaint();
     if (!glWidget->d_func()->disable_clear_on_painter_begin && glWidget->autoFillBackground()) {
         if (glWidget->testAttribute(Qt::WA_TranslucentBackground))

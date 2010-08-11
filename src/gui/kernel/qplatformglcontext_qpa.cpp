@@ -44,18 +44,6 @@
 QPlatformGLContext::~QPlatformGLContext()
 { }
 
-/*!
-    The frame buffer object that a QGLWidget is painted to and that gets bound
-    when a QGLFramebufferObject is released.
-
-    The default implementation returns 0, which denotes the default
-    window-system provided frame buffer.
-*/
-unsigned long QPlatformGLContext::defaultFBO() const
-{
-    return 0;
-}
-
 static QPlatformGLContext *staticSharedContext = 0;
 
 void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)
