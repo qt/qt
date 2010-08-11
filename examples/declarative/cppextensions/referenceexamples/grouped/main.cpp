@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
     qmlRegisterType<Girl>("People", 1,0, "Girl");
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
+    QDeclarativeComponent component(&engine, QUrl("qrc:example.qml"));
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
     if (party && party->host()) {
@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
             qWarning() << bestShoe->name() << "is wearing the best shoes!";
 
     } else {
-        qWarning() << "An error occurred";
+        qWarning() << component.errors();
     }
 
     return 0;
