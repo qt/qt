@@ -684,6 +684,12 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     QSymbianControl *old_winid = static_cast<QSymbianControl *>(wasCreated ? data.winid : 0);
     if ((q->windowType() == Qt::Desktop))
         old_winid = 0;
+
+    // old_winid may not have received a 'not visible' visibility
+    // changed event before being destroyed; make sure that it is
+    // removed from the backing store's list of visible windows.
+    S60->controlVisibilityChanged(old_winid, false);
+
     setWinId(0);
 
     // hide and reparent our own window away. Otherwise we might get
