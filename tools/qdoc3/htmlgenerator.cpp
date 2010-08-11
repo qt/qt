@@ -1493,7 +1493,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     const QmlClassNode* qml_cn = 0;
     if (fake->subType() == Node::QmlClass) {
         qml_cn = static_cast<const QmlClassNode*>(fake);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         generateTableOfContents(fake,marker,&sections);
     }
     else if (fake->name() != QString("index.html"))
@@ -1575,6 +1575,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
+
+        QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
+        if (!allQmlMembersLink.isEmpty()) {
+            out() << "<li><a href=\"" << allQmlMembersLink << "\">"
+                  << "List of all members, including inherited members</a></li>\n";
+        }
+
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<a name=\"" << registerRef((*s).name.toLower())
@@ -1594,7 +1601,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateExtractionMark(fake, EndMark);
         //out() << "<hr />\n";
 
-        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed,0);
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
@@ -2336,6 +2343,38 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
     out() << "<p>This is the complete list of members for ";
     generateFullName(inner, 0, marker);
+    out() << ", including inherited members.</p>\n";
+
+    Section section = sections.first();
+    generateSectionList(section, 0, marker, CodeMarker::SeparateList);
+
+    generateFooter();
+    endSubPage();
+    return fileName;
+}
+
+/*!
+  This function creates an html page on which are listed all
+  the members of QML class \a qml_cn, including the inherited
+  members. The \a marker is used for formatting stuff.
+ */
+QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
+                                                 CodeMarker* marker)
+{
+    QList<Section> sections;
+    QList<Section>::ConstIterator s;
+
+    sections = marker->qmlSections(qml_cn,CodeMarker::SeparateList,myTree);
+    if (sections.isEmpty())
+        return QString();
+
+    QString fileName = fileBase(qml_cn) + "-members." + fileExtension(qml_cn);
+    beginSubPage(qml_cn->location(), fileName);
+    QString title = "List of All Members for " + qml_cn->name();
+    generateHeader(title, qml_cn, marker);
+    generateTitle(title, Text(), SmallSubTitle, qml_cn, marker);
+    out() << "<p>This is the complete list of members for ";
+    generateFullName(qml_cn, 0, marker);
     out() << ", including inherited members.</p>\n";
 
     Section section = sections.first();
