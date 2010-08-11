@@ -1952,7 +1952,9 @@ void QTextLine::layout_helper(int maxGlyphs)
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
                 QFixed rightBearing = lbh.rightBearing; // store previous right bearing
+#if !defined(Q_WS_MAC)
                 if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
+#endif
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
                     // we are too wide, fix right bearing
