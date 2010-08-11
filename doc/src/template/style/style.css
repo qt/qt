@@ -1322,7 +1322,7 @@
    .creator .wrapper
     {
 	position:relative;
-	top:50px;
+	top:5px;
     }
     .creator .wrapper .bd
 	{
@@ -1433,7 +1433,7 @@
 
 
 
-	  position:fixed;
+	/*  position:fixed;*/
     }
 
 
