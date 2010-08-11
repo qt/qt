@@ -777,8 +777,8 @@ QGridLayoutItem *QGridLayoutEngine::itemAt(int index) const
 
 int QGridLayoutEngine::indexOf(QGraphicsLayoutItem *item) const
 {
-    for(int i = 0; i < q_items.size(); ++i) {
-        if(item == q_items.at(i)->layoutItem()) 
+    for (int i = 0; i < q_items.size(); ++i) {
+        if (item == q_items.at(i)->layoutItem())
             return i;
     }
     return -1;
