@@ -236,7 +236,7 @@ int ResultStoreBase::count() const
     return resultCount;
 }
 
-// returns the insert index, calling this funciton with
+// returns the insert index, calling this function with
 // index equal to -1 returns the next available index.
 int ResultStoreBase::updateInsertIndex(int index, int _count)
 {

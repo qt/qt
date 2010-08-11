@@ -210,7 +210,7 @@
     valid. On failure, QSslSocket will emit the QSslSocket::sslErrors()
     signal. This mode is the default for clients.
 
-    \value AutoVerifyPeer QSslSocket will automaticaly use QueryPeer for
+    \value AutoVerifyPeer QSslSocket will automatically use QueryPeer for
     server sockets and VerifyPeer for client sockets.
 
     \sa QSslSocket::peerVerifyMode()
