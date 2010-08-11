@@ -278,7 +278,7 @@ public:
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glViewport(0, 0, GLsizei(w), GLsizei(h));
-        gluOrtho2D(0, GLsizei(w), 0, GLsizei(h));
+        glOrtho(0, GLsizei(w), 0, GLsizei(h), -1, 1);
         updateGL();
     }
 

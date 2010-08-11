@@ -58,6 +58,8 @@ if (m_failed || !(assertion)) {                                                 
     returnStatement;                                                                        \
 }
 
+void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+
 QT_BEGIN_NAMESPACE
 class QMatrix4x4;
 QT_END_NAMESPACE

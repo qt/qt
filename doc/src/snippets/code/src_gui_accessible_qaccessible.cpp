@@ -46,3 +46,7 @@ if (child) {
     delete child;
 }
 //! [0]
+
+//! [1]
+typedef QAccessibleInterface* myFactoryFunction(const QString &key, QObject *);
+//! [1]
