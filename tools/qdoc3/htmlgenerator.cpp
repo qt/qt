@@ -1724,7 +1724,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "</li>\n";
         }
         if (!cn->name().isEmpty())
-            out() << "              <li>" << cn->name() << "</li>\n";
+            out() << "              <li>" << protectEnc(cn->name()) << "</li>\n";
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
@@ -1732,52 +1732,50 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "              <li><a href=\"modules.html\">Modules</a></li>";
             QString name =  node->name();
             if (!name.isEmpty())
-                out() << "              <li>" << name << "</li>\n";
+                out() << "              <li>" << protectEnc(name) << "</li>\n";
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
                 out() << "              <li>Modules</li>";
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("qdeclarativeexamples.html")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>QML Examples & Demos</li>";
+                out() << "              <li>QML Examples &amp; Demos</li>";
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
             else if (fn->name() == QString("namespaces.html")) {
                 out() << "              <li>Namespaces</li>";
             }
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {
             out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
             QStringList sl = fn->name().split('/');
             if (sl.contains("declarative"))
-                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples & Demos</a></li>";
+                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples &amp; Demos</a></li>";
             else {
-                QString name = "examples-" + sl.at(0) + ".html"; // this generates an empty link
+                QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
-             //   out() << "              <li>  <a href=\"" << name << "\">"
-             //       << t << "</a></li>";
             }
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
     }
     else if (node->type() == Node::Namespace) {
         out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << title << "</li>";
+        out() << "              <li>" << protectEnc(title) << "</li>";
     }
 }
 
