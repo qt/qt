@@ -1946,6 +1946,8 @@ void tst_QTextCodec::toLocal8Bit()
 {
 #ifdef QT_NO_PROCESS
     QSKIP("This test requires QProcess", SkipAll);
+#elif defined(Q_OS_SYMBIAN)
+    QSKIP("This test requires streams support in QProcess", SkipAll);
 #else
     QProcess process;
     process.start("echo/echo");

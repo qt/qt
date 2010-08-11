@@ -130,6 +130,7 @@ public:
     void checkRoles() const;
 
     ModelNode *_root;
+    bool m_ownsRoot;
     QDeclarativeListModel *m_listModel;
 
 private:
@@ -156,6 +157,8 @@ struct ModelNode
 
     QList<QVariant> values;
     QHash<QString, ModelNode *> properties;
+
+    void clear();
 
     QDeclarativeListModel *model(const NestedListModel *model) {
         if (!modelCache) { 

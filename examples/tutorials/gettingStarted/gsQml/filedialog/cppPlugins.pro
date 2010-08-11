@@ -8,10 +8,10 @@ MOC_DIR = tmp
 
 TARGET = FileDialog
 
-HEADERS += 	directory.h \
-		file.h \
-		dialogPlugin.h
+HEADERS +=     directory.h \
+        file.h \
+        dialogPlugin.h
 
-SOURCES +=	directory.cpp \
-		file.cpp \
-		dialogPlugin.cpp
+SOURCES +=    directory.cpp \
+        file.cpp \
+        dialogPlugin.cpp

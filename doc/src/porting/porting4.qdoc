@@ -2598,7 +2598,7 @@
     seems feeble.
     \endomit
 
-    See \l{Generic Containers} for a list of Qt 4 containers.
+    See \l{Container Classes} for a list of Qt 4 containers.
 
     \section1 QPtrDict<T>
 
@@ -3939,7 +3939,7 @@
        check the index against QVector::size() yourself.
     \endlist
 
-    See \l{Generic Containers} for an overview of the Qt 4 container
+    See \l{Container Classes} for an overview of the Qt 4 container
     classes.
 
     \section1 QVariant

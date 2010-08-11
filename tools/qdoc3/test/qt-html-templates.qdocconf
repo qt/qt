@@ -12,7 +12,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <div id=\"nav-logo\">\n" \
 			  "      <a href=\"index.html\">Home</a></div>\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
-			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
+			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearchTop\">\n" \
 			  "		<fieldset>\n" \
               "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\"/>\n" \
 			  "		 </fieldset>\n" \
@@ -41,7 +41,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			" 			  <li><a href=\"functions.html\">Function index</a></li> \n" \
 			"			   <li><a href=\"modules.html\">Modules</a></li> \n" \
 			"			   <li><a href=\"namespaces.html\">Namespaces</a></li> \n" \
-			"			   <li><a href=\"qtglobal.html\">Global stuff</a></li> \n" \
+			"			   <li><a href=\"qtglobal.html\">Global Declarations</a></li> \n" \
 			"			   <li><a href=\"qdeclarativeelements.html\">QML elements</a></li> \n" \
 			"			   </ul> \n" \
 			"		 </li> \n" \
@@ -149,6 +149,7 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "      <span></span>\n" \
 			  "    </div>\n" \
 			  "  </div> \n" \
+			  "  </div> \n" \
 			  "  <div class=\"footer\">\n" \
 			  "    <p>\n" \
 			  "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
@@ -161,8 +162,8 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p id=\"noteHead\">Thank you for giving your feedback. <div class=\"note\">Make sure it is related to this specific page. For more general bugs and \n" \
-			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</div></p>\n" \
+			  "      <p id=\"noteHead\">Thank you for giving your feedback.</p> <div class=\"note\"><p>Make sure it is related to this specific page. For more general bugs and \n" \
+			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</p></div>\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\"></textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \

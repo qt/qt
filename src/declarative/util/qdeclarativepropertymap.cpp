@@ -104,22 +104,25 @@ void QDeclarativePropertyMapMetaObject::propertyCreated(int, QMetaPropertyBuilde
     The following example shows how you might declare data in C++ and then
     access it in QML.
 
-    Setup in C++:
+    In the C++ file:
     \code
-    //create our data
+    // create our data
     QDeclarativePropertyMap ownerData;
     ownerData.insert("name", QVariant(QString("John Smith")));
     ownerData.insert("phone", QVariant(QString("555-5555")));
 
-    //expose it to the UI layer
-    QDeclarativeContext *ctxt = view->rootContext();
-    ctxt->setProperty("owner", &data);
+    // expose it to the UI layer
+    QDeclarativeView view;
+    QDeclarativeContext *ctxt = view.rootContext();
+    ctxt->setContextProperty("owner", &ownerData);
+
+    view.setSource(QUrl::fromLocalFile("main.qml"));
+    view.show();
     \endcode
 
-    Then, in QML:
+    Then, in \c main.qml:
     \code
-    Text { text: owner.name }
-    Text { text: owner.phone }
+    Text { text: owner.name + " " + owner.phone }
     \endcode
 
     The binding is dynamic - whenever a key's value is updated, anything bound to that

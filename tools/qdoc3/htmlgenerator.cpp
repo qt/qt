@@ -1493,7 +1493,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     const QmlClassNode* qml_cn = 0;
     if (fake->subType() == Node::QmlClass) {
         qml_cn = static_cast<const QmlClassNode*>(fake);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         generateTableOfContents(fake,marker,&sections);
     }
     else if (fake->name() != QString("index.html"))
@@ -1575,6 +1575,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
+
+        QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
+        if (!allQmlMembersLink.isEmpty()) {
+            out() << "<li><a href=\"" << allQmlMembersLink << "\">"
+                  << "List of all members, including inherited members</a></li>\n";
+        }
+
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<a name=\"" << registerRef((*s).name.toLower())
@@ -1594,7 +1601,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateExtractionMark(fake, EndMark);
         //out() << "<hr />\n";
 
-        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed,0);
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
@@ -1876,6 +1883,61 @@ void HtmlGenerator::generateHeader(const QString& title,
         break;
     }
 
+        navigationLinks.clear();
+
+    if (node && !node->links().empty()) {
+        QPair<QString,QString> linkPair;
+        QPair<QString,QString> anchorPair;
+        const Node *linkNode;
+
+        if (node->links().contains(Node::PreviousLink)) {
+            linkPair = node->links()[Node::PreviousLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"prev\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Previous: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::NextLink)) {
+            linkPair = node->links()[Node::NextLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+
+            out() << "  <link rel=\"next\" href=\""
+                  << anchorPair.first << "\" />\n";
+
+            navigationLinks += "[Next: <a href=\"" + anchorPair.first + "\">";
+            if (linkPair.first == linkPair.second && !anchorPair.second.isEmpty())
+                navigationLinks += protect(anchorPair.second);
+            else
+                navigationLinks += protect(linkPair.second);
+            navigationLinks += "</a>]\n";
+        }
+        if (node->links().contains(Node::StartLink)) {
+            linkPair = node->links()[Node::StartLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            if (!linkNode || linkNode == node)
+                anchorPair = linkPair;
+            else
+                anchorPair = anchorForNode(linkNode);
+            out() << "  <link rel=\"start\" href=\""
+                  << anchorPair.first << "\" />\n";
+        }
+    }
+
 #if 0 // Removed for new doc format. MWS
     if (node && !node->links().empty())
         out() << "<p>\n" << navigationLinks << "</p>\n";
@@ -1970,7 +2032,7 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 }
 
 /*!
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2056,7 +2118,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
 
 /*!
   Revised for the new doc format.
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2224,6 +2286,38 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
     out() << "<p>This is the complete list of members for ";
     generateFullName(inner, 0, marker);
+    out() << ", including inherited members.</p>\n";
+
+    Section section = sections.first();
+    generateSectionList(section, 0, marker, CodeMarker::SeparateList);
+
+    generateFooter();
+    endSubPage();
+    return fileName;
+}
+
+/*!
+  This function creates an html page on which are listed all
+  the members of QML class \a qml_cn, including the inherited
+  members. The \a marker is used for formatting stuff.
+ */
+QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
+                                                 CodeMarker* marker)
+{
+    QList<Section> sections;
+    QList<Section>::ConstIterator s;
+
+    sections = marker->qmlSections(qml_cn,CodeMarker::SeparateList,myTree);
+    if (sections.isEmpty())
+        return QString();
+
+    QString fileName = fileBase(qml_cn) + "-members." + fileExtension(qml_cn);
+    beginSubPage(qml_cn->location(), fileName);
+    QString title = "List of All Members for " + qml_cn->name();
+    generateHeader(title, qml_cn, marker);
+    generateTitle(title, Text(), SmallSubTitle, qml_cn, marker);
+    out() << "<p>This is the complete list of members for ";
+    generateFullName(qml_cn, 0, marker);
     out() << ", including inherited members.</p>\n";
 
     Section section = sections.first();

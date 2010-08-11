@@ -40,63 +40,48 @@
 
 import Qt 4.7
 
-FocusScope {
-    clip: true
+Rectangle {
+    id:textArea
 
-    onActiveFocusChanged: if (activeFocus) mainView.state = "showListViews"
+    function paste() { textEdit.paste() }
+    function copy() { textEdit.copy() }
+    function selectAll() { textEdit.selectAll() }
 
-    ListView {
-        id: list1
-        y: activeFocus ? 10 : 40; width: parent.width / 3; height: parent.height - 20
-        focus: true
-        KeyNavigation.up: gridMenu; KeyNavigation.left: contextMenu; KeyNavigation.right: list2
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
+    width :400; height:400
 
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
+    property color fontColor: "white"
+    property alias textContent: textEdit.text
+    Flickable {
+        id: flickArea
+        width: parent.width; height: parent.height
+        anchors.fill:parent
+
+        boundsBehavior: Flickable.StopAtBounds
+        flickableDirection: Flickable.HorizontalFlick
+        interactive: true
+        //Will move the text Edit area to make the area visible when
+        //scrolled with keyboard strokes
+        function ensureVisible(r) {
+            if (contentX >= r.x)
+            contentX = r.x;
+            else if (contentX+width <= r.x+r.width)
+            contentX = r.x+r.width-width;
+            if (contentY >= r.y)
+            contentY = r.y;
+            else if (contentY+height <= r.y+r.height)
+            contentY = r.y+r.height-height;
         }
-    }
 
-    ListView {
-        id: list2
-        y: activeFocus ? 10 : 40; x: parseInt(parent.width / 3); width: parent.width / 3; height: parent.height - 20
-        KeyNavigation.up: gridMenu; KeyNavigation.left: list1; KeyNavigation.right: list3
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
-
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
-        }
-    }
-
-    ListView {
-        id: list3
-        y: activeFocus ? 10 : 40; x: parseInt(2 * parent.width / 3); width: parent.width / 3; height: parent.height - 20
-        KeyNavigation.up: gridMenu; KeyNavigation.left: list2
-        model: 10; cacheBuffer: 200
-        delegate: ListViewDelegate {}
-
-        Behavior on y {
-            NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
-        }
-    }
-
-    Rectangle { width: parent.width; height: 1; color: "#D1DBBD" }
-
-    Rectangle {
-        y: 1; width: parent.width; height: 10
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#3E606F" }
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-    }
-
-    Rectangle {
-        y: parent.height - 10; width: parent.width; height: 10
-        gradient: Gradient {
-            GradientStop { position: 1.0; color: "#3E606F" }
-            GradientStop { position: 0.0; color: "transparent" }
+        TextEdit {
+            id: textEdit
+            anchors.fill:parent
+            width:parent.width; height:parent.height
+            color:fontColor
+            focus: true
+            wrapMode: TextEdit.Wrap
+            font.pointSize:10
+            onCursorRectangleChanged: flickArea.ensureVisible(cursorRectangle)
+            selectByMouse: true
         }
     }
 }

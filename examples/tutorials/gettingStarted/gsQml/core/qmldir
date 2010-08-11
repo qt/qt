@@ -38,11 +38,12 @@
 **
 ****************************************************************************/
 
-Button ./Button.qml
-FileDialog ./FileDialog.qml
-TextArea ./TextArea.qml
-TextEditor ./TextEditor.qml
-EditMenu ./EditMenu.qml
-MenuBar ./MenuBar.qml
+Button ./button.qml
+FileDialog ./fileDialog.qml
+TextArea ./textArea.qml
+TextEditor ./textEditor.qml
+EditMenu ./editMenu.qml
+MenuBar ./menuBar.qml
+FileMenu ./fileMenu.qml
 
 plugin FileDialog ../plugins

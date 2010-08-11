@@ -2406,18 +2406,7 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     Q_Q(QDeclarativeItem);
     if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
         emit q->activeFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
-
-    bool inScope = false;
-    QGraphicsItem *p = parent;
-    while (p) {
-        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-            inScope = true;
-            break;
-        }
-        p = p->parentItem();
-    }
-    if (!inScope)
-        emit q->focusChanged(flag);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
@@ -2465,7 +2454,7 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
   }
   \endqml
 
-  \sa {state-transitions}{Transitions}
+  \sa {qdeclarativeanimation.html#transitions}{QML Transitions}
 */
 
 
@@ -2735,12 +2724,12 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
         }
         break;
     case ItemChildAddedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childAdded(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
     case ItemChildRemovedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childRemoved(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
@@ -3207,8 +3196,7 @@ bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
     return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
-           (!parentItem() && focusItem() != 0);
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
 }
 
 /*!
@@ -3228,10 +3216,8 @@ bool QDeclarativeItem::hasActiveFocus() const
   }
   \endqml
 
-  For the purposes of this property, the top level item in the scene
-  is assumed to act like a focus scope, and to always have active focus
-  when the scene has focus. On a practical level, that means the following
-  QML will give active focus to \c input on startup.
+  For the purposes of this property, the scene as a whole is assumed to act like a focus scope.
+  On a practical level, that means the following QML will give active focus to \c input on startup.
 
   \qml
   Rectangle {
@@ -3257,7 +3243,7 @@ bool QDeclarativeItem::hasFocus() const
         p = p->parentItem();
     }
 
-    return hasActiveFocus() ? true : (!QGraphicsItem::parentItem() ? true : false);
+    return hasActiveFocus();
 }
 
 /*! \internal */

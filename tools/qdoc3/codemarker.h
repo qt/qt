@@ -153,7 +153,8 @@ class CodeMarker
                                     Status status) = 0;
 #ifdef QDOC_QML
     virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
-                                       SynopsisStyle style);
+                                       SynopsisStyle style,
+                                       const Tree* tree);
 #endif
     virtual const Node* resolveTarget(const QString& target, 
                                       const Tree* tree,

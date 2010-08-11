@@ -45,12 +45,12 @@
 
 class DialogPlugin : public QDeclarativeExtensionPlugin
 {
-	Q_OBJECT
-	
-	public:
-		//registerTypes is inherited from QDeclarativeExtensionPlugin
-		void registerTypes(const char *uri);
-		
+    Q_OBJECT
+
+    public:
+        //registerTypes is inherited from QDeclarativeExtensionPlugin
+        void registerTypes(const char *uri);
+
 };
 
 #endif

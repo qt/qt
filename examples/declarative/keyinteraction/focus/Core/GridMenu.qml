@@ -43,7 +43,10 @@ import Qt 4.7
 FocusScope {
     property alias interactive: gridView.interactive
 
-    onActiveFocusChanged: if (activeFocus) mainView.state = ""
+    onActiveFocusChanged: {
+        if (activeFocus) 
+            mainView.state = ""
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -60,7 +63,7 @@ FocusScope {
             focus: true
             model: 12
 
-            KeyNavigation.down: listViews
+            KeyNavigation.down: listMenu
             KeyNavigation.left: contextMenu
 
             delegate: Item {
