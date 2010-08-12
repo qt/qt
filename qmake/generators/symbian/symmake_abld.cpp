@@ -253,13 +253,17 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     } else {
         t << "all: debug release" << endl;
         t << endl;
+
+        QString qmakeCmd = "\t$(QMAKE) \"" + project->projectFile() + "\" " + buildArgs();
+
         t << "qmake:" << endl;
-        t << "\t$(QMAKE) -spec symbian-abld -o \"" << fileInfo(Option::output.fileName()).fileName()
-          << "\" \"" << project->projectFile() << "\"" << endl;
+        t << qmakeCmd << endl;
         t << endl;
-        t << BLD_INF_FILENAME ":" << endl;
-        t << "\t$(QMAKE)" << endl;
+
+        t << BLD_INF_FILENAME ": " << project->projectFile() << endl;
+        t << qmakeCmd << endl;
         t << endl;
+
         t << "$(ABLD): " BLD_INF_FILENAME << endl;
         t << "\tbldmake bldfiles" << endl;
         t << endl;
