@@ -2308,6 +2308,7 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
     if (!coreappdata()->app_libpaths)
         coreappdata()->app_libpaths = new QStringList;
     *(coreappdata()->app_libpaths) = paths;
+    locker.unlock();
     QFactoryLoader::refreshAll();
 }
 
@@ -2341,6 +2342,7 @@ void QCoreApplication::addLibraryPath(const QString &path)
     if (!canonicalPath.isEmpty()
         && !coreappdata()->app_libpaths->contains(canonicalPath)) {
         coreappdata()->app_libpaths->prepend(canonicalPath);
+        locker.unlock();
         QFactoryLoader::refreshAll();
     }
 }
