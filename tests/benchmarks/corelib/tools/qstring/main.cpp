@@ -40,7 +40,7 @@
 ****************************************************************************/
 #include <QStringList>
 #include <QFile>
-#include <qtest.h>
+#include <QtTest/QtTest>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -48,12 +48,18 @@
 #define SRCDIR ""
 #endif
 
+#include <private/qsimd_p.h>
+
 class tst_QString: public QObject
 {
     Q_OBJECT
+public:
+    tst_QString();
 private slots:
     void equals() const;
     void equals_data() const;
+    void equals2_data() const;
+    void equals2() const;
     void fromUtf8() const;
 };
 
@@ -64,6 +70,22 @@ void tst_QString::equals() const
 
     QBENCHMARK {
         a == b;
+    }
+}
+
+static ushort databuffer[4096];
+
+tst_QString::tst_QString()
+{
+    // populate databuffer with our seed, each byte 3 times in a row
+    // include the NUL!
+    static const char seed[] = "AAAAAAAAAEhlbGxvIFdvcmxkIAAAAAA=";
+    static const int repeat = 3;
+    int pos = 0;
+    for (ushort *p = databuffer; p < databuffer + (sizeof(databuffer) / sizeof(databuffer[0])); p += repeat) {
+        for (int j = 0; j < repeat; ++p, ++j)
+            *p = seed[pos];
+        pos = (pos + 1) % sizeof(seed);
     }
 }
 
@@ -124,6 +146,125 @@ void tst_QString::equals_data() const
             << QString::fromRawData(ptr, 58) << QString::fromRawData(ptr + 1, 58);
     QTest::newRow("unaligned-unaligned-2n")
             << QString::fromRawData(ptr + 1, 58) << QString::fromRawData(ptr + 3, 58);
+}
+
+static bool equals2_memcmp_call(ushort *p1, ushort *p2, int len)
+{
+    return memcmp(p1, p2, len * 2) == 0;
+}
+
+static bool equals2_bytewise(ushort *p1, ushort *p2, int len)
+{
+    uchar *b1 = (uchar *)p1;
+    uchar *b2 = (uchar *)p2;
+    len *= 2;
+    while (len--)
+        if (*b1++ != *b2++)
+            return false;
+    return true;
+}
+
+static bool equals2_shortwise(ushort *p1, ushort *p2, int len)
+{
+    register ushort * const end = p1 + len;
+    for ( ; p1 != end; ++p1, ++p2)
+        if (*p1 != *p2)
+            return false;
+    return true;
+}
+
+void tst_QString::equals2_data() const
+{
+    QTest::addColumn<int>("algorithm");
+    QTest::newRow("selftest") << -1;
+    QTest::newRow("memcmp_call") << 0;
+    QTest::newRow("bytewise") << 1;
+    QTest::newRow("shortwise") << 2;
+}
+
+void tst_QString::equals2() const
+{
+    static const short positions[] = {
+        190, 1719, 2149, 1752,
+        158, 244, 365, 1117,
+        254, 265, 1047, 1785,
+        1435, 552, 1476, 2030,
+        // 16
+        421, 1840, 2209, 232,
+        1389, 907, 1500, 1479,
+        1152, 541, 655, 1960,
+        1642, 299, 740, 1995,
+        // 32
+        1946, 1407, 1272, 1946,
+        1459, 1851, 1717, 1484,
+        1761, 1630, 1377, 1675,
+        629, 341, 661, 244
+        // 48
+    };
+    // the length list must not contain 0
+    static const int lens[] = {
+        11, // 0
+        40,
+        28,
+        38,
+        9,
+        52, // 5
+        48,
+        38,
+        29,
+        7,
+        2,  // 10
+        49,
+        41,
+        5,
+        20,
+        62  // 15
+    };
+
+    typedef bool (* FuncPtr)(ushort *, ushort *, int);
+    static const FuncPtr func[] = {
+        equals2_memcmp_call, // 0
+        equals2_bytewise, // 1
+        equals2_shortwise, // 1
+        0
+    };
+
+    QFETCH(int, algorithm);
+    if (algorithm == -1) {
+        for (uint pos1 = 0; pos1 < sizeof positions / sizeof positions[0]; ++pos1)
+            for (uint pos2 = 0; pos2 < (sizeof positions / sizeof positions[0]) - 32; ++pos2)
+                for (uint len = 0; len < sizeof lens / sizeof lens[0]; ++len) {
+                    ushort *p1 = databuffer + positions[pos1];
+                    ushort *p2 = databuffer + positions[pos2];
+                    bool expected = memcmp(p1, p2, lens[len] * 2) == 0;
+
+                    for (uint algo = 0; algo < -1 + (sizeof func / sizeof func[0]); ++algo) {
+                        bool result = (func[algo])(p1, p2, lens[len]);
+                        if (expected != result)
+                            qWarning().nospace()
+                                    << "algo=" << algo
+                                    << " pos1=" << positions[pos1]
+                                    << " pos2=" << positions[pos2]
+                                    << " len=" << lens[len]
+                                    << " failed (" << result << "!=" << expected
+                                    << "); strings were "
+                                    << QByteArray((char*)p1, lens[len]).toHex()
+                                    << " and "
+                                    << QByteArray((char*)p2, lens[len]).toHex();
+                    }
+
+                }
+        return;
+    }
+
+    QBENCHMARK {
+        for (uint pos1 = 0; pos1 < sizeof positions / sizeof positions[0]; ++pos1)
+            for (uint pos2 = 0; pos2 < (sizeof positions / sizeof positions[0]) - 32; ++pos2)
+                for (uint len = 0; len < sizeof lens / sizeof lens[0]; ++len) {
+                    bool result = (func[algorithm])(databuffer + positions[pos1], databuffer + positions[pos2], lens[len]);
+                    Q_UNUSED(result);
+                }
+    }
 }
 
 void tst_QString::fromUtf8() const
