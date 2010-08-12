@@ -231,6 +231,7 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportAllInvokables                  export all of this object's invokables
     \value ExportAllContents                    export all of this object's contents
     \value ExportChildObjects                   export this object's child objects
+
     \sa registerObject(), QDBusAbstractAdaptor, {usingadaptors.html}{Using adaptors}
 */
 

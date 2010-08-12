@@ -53,6 +53,9 @@ symbian: {
     DEPLOYMENT = partial_upgrade $$DEPLOYMENT
 }
 
-neon: QMAKE_CXXFLAGS *= -mfpu=neon
+neon {
+    DEFINES += QT_HAVE_NEON
+    QMAKE_CXXFLAGS *= -mfpu=neon
+}
 
 

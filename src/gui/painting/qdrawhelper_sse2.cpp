@@ -112,9 +112,7 @@ void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
                 int x = 0;
 
                 // First, align dest to 16 bytes:
-                const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
-                const int prologLength = qMin(w, offsetToAlignOn16Bytes);
-                for (; x < prologLength; ++x) {
+                ALIGNMENT_PROLOGUE_16BYTES(dst, x, w) {
                     quint32 s = src[x];
                     s = BYTE_MUL(s, const_alpha);
                     dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
@@ -182,12 +180,10 @@ inline int comp_func_Plus_one_pixel(uint d, const uint s)
 void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
 {
     int x = 0;
-    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
-    const int prologLength = qMin(length, offsetToAlignOn16Bytes);
 
     if (const_alpha == 255) {
         // 1) Prologue: align destination on 16 bytes
-        for (; x < prologLength; ++x)
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             dst[x] = comp_func_Plus_one_pixel(dst[x], src[x]);
 
         // 2) composition with SSE2
@@ -208,7 +204,7 @@ void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uin
         const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
 
         // 1) Prologue: align destination on 16 bytes
-        for (; x < prologLength; ++x)
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
 
         const __m128i half = _mm_set1_epi16(0x80);
@@ -239,9 +235,7 @@ void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, u
         int x = 0;
 
         // 1) prologue, align on 16 bytes
-        const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
-        const int prologLength = qMin(length, offsetToAlignOn16Bytes);
-        for (; x < prologLength; ++x)
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
             dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], ialpha);
 
         // 2) interpolate pixels with SSE2

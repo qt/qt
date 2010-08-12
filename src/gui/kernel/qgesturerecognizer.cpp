@@ -62,6 +62,9 @@ QT_BEGIN_NAMESPACE
    need to use this class directly. Instances will be created behind the scenes by the
    framework.
 
+   For an overview of gesture handling in Qt and information on using gestures
+   in your applications, see the \l{Gestures Programming} document.
+
    \section1 Recognizing Gestures
 
    The process of recognizing gestures involves filtering input events sent to specific

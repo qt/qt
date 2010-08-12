@@ -105,6 +105,7 @@ private slots:
 
     void QTBUG_7049_data();
     void QTBUG_7049();
+    void interval();
 };
 
 // Testing get/set functions
@@ -1425,6 +1426,23 @@ void tst_QRegExp::QTBUG_7049()
     QCOMPARE( re.cap(2).isNull(), cap2.isNull() );
     QCOMPARE( re.cap(2), cap2 );
 }
+
+void tst_QRegExp::interval()
+{
+    {
+        QRegExp exp("a{0,1}");
+        QVERIFY(exp.isValid());
+    }
+    {
+        QRegExp exp("a{1,1}");
+        QVERIFY(exp.isValid());
+    }
+    {
+        QRegExp exp("a{1,0}");
+        QVERIFY(!exp.isValid());
+    }
+}
+
 
 QTEST_APPLESS_MAIN(tst_QRegExp)
 #include "tst_qregexp.moc"
