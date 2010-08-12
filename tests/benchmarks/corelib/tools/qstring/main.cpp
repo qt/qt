@@ -378,6 +378,41 @@ static bool equals2_ssse3(ushort *p1, ushort *p2, int len)
     return equals2_shortwise(p1, p2, len);
 }
 //#endif
+
+//#ifdef __SSE4_1__
+static bool equals2_sse4(ushort *p1, ushort *p2, int len)
+{
+    // We use the pcmpestrm instruction searching for differences (negative polarity)
+    // it will reset CF if it's all equal
+    // it will reset OF if the first char is equal
+    // it will set ZF & SF if the length is less than 8 (which means we've done the last operation)
+    // the three possible conditions are:
+    //  difference found:         CF = 1
+    //  all equal, not finished:  CF = ZF = SF = 0
+    //  all equal, finished:      CF = 0, ZF = SF = 1
+    len += 8;
+    asm (
+        "0:\n\t"
+        "movdqu     (%[p1]), %%xmm0\n\t"    // load 8 ushorts
+        "movdqu     (%[p2]), %%xmm1\n\t"
+        "addl       $16, %[p2]\n\t"
+        "addl       $16, %[p1]\n\t"
+        "subl       $8, %[len]\n\t"
+        "movl       %[len], %%edx\n\t"
+        "pcmpestrm  %[mode], %%xmm1, %%xmm0\n\t"
+        "ja         0b\n\t"
+         "1:\n\t"
+        "mov        $0, %[len]\n\t"
+        "setnc      %%al\n\t"
+        : [len] "+a" (len)
+        : [p1] "r" (p1),
+          [p2] "r" (p2),
+          [mode] "K" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY | _SIDD_UNIT_MASK)
+        : "%edx", "%xmm0", "%xmm1"
+    );
+    return len;
+}
+//#endif
 #endif
 
 void tst_QString::equals2_data() const
@@ -393,6 +428,9 @@ void tst_QString::equals2_data() const
     QTest::newRow("sse2_aligning") << 5;
 #ifdef __SSSE3__
     QTest::newRow("ssse3") << 6;
+#ifdef __SSE4_1__
+    QTest::newRow("sse4.2") << 7;
+#endif
 #endif
 #endif
 }
@@ -447,6 +485,9 @@ void tst_QString::equals2() const
         equals2_sse2_aligning, // 5
 #ifdef __SSSE3__
         equals2_ssse3, // 6
+#ifdef __SSE4_1__
+        equals2_sse4, // 7
+#endif
 #endif
 #endif
         0

@@ -14,5 +14,6 @@ wince*:{
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-ssse3:QMAKE_FLAGS += -mssse3
+sse4:QMAKE_CXXFLAGS += -msse4
+else:ssse3:QMAKE_FLAGS += -mssse3
 else:sse2:QMAKE_CXXFLAGS += -msse2
