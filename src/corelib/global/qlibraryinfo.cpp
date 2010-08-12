@@ -508,6 +508,14 @@ void qt_core_boilerplate()
            "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
            "Build key:           " QT_BUILD_KEY "\n"
+           "Compat build key:    "
+#ifdef QT_BUILD_KEY_COMPAT
+           "| " QT_BUILD_KEY_COMPAT " "
+#endif
+#ifdef QT_BUILD_KEY_COMPAT2
+           "| " QT_BUILD_KEY_COMPAT2 " "
+#endif
+           "|\n"
            "Build date:          %s\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"
