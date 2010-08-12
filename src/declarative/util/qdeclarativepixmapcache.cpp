@@ -525,6 +525,7 @@ void QDeclarativePixmapReader::cancel(QDeclarativePixmapReply *reply)
     mutex.lock();
     if (reply->loading) {
         cancelled.append(reply);
+        reply->data = 0;
         // XXX 
         if (threadObject) threadObject->processJobs();
     } else {
@@ -738,7 +739,6 @@ void QDeclarativePixmapData::release()
 
     if (refCount == 0) {
         if (reply) {
-            reply->data = 0;
             reply->reader->cancel(reply);
             reply = 0;
         }
