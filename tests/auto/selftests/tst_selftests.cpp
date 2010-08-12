@@ -245,7 +245,6 @@ void tst_Selftests::runSubTest_data()
         << "xunit"
         << "longstring"
         << "badxml"
-        << "random"
     ;
 
     foreach (Logger const& logger, allLoggers()) {
@@ -273,9 +272,6 @@ void tst_Selftests::runSubTest_data()
             }
             else if (subtest == "badxml") {
                 arguments << "-eventcounter";
-            }
-            else if (subtest == "random") {
-                arguments << QString("-random -seed 325").split(' ');
             }
 
             // These tests don't work right with loggers other than plain, usually because
@@ -636,4 +632,3 @@ void tst_Selftests::cleanupTestCase()
 QTEST_MAIN(tst_Selftests)
 
 #include "tst_selftests.moc"
-

@@ -90,10 +90,6 @@
         <file>expected_multiexec.xml</file>
         <file>expected_multiexec.xunitxml</file>
         <file>expected_qexecstringlist.txt</file>
-        <file>expected_random.txt</file>
-        <file>expected_random.lightxml</file>
-        <file>expected_random.xml</file>
-        <file>expected_random.xunitxml</file>
         <file>expected_singleskip.lightxml</file>
         <file>expected_singleskip.txt</file>
         <file>expected_singleskip.xml</file>
@@ -138,5 +134,5 @@
         <file>expected_xunit.txt</file>
         <file>expected_xunit.xml</file>
         <file>expected_xunit.xunitxml</file>
-   </qresource>
+    </qresource>
 </RCC>
