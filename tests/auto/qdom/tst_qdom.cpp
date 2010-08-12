@@ -1776,6 +1776,7 @@ void tst_QDom::crashInSetContent() const
     QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode); 
     QDomDocument docImport;
 
+    QCOMPARE(docImport.setContent(QLatin1String("<a:>text</a:>"), true), false);
     QVERIFY(docImport.setContent(QLatin1String("<?xml version=\"1.0\"?><e/>")));
 }
 

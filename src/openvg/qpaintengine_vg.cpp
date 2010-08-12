@@ -77,6 +77,9 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
 
+// use the same rounding as in qrasterizer.cpp (6 bit fixed point)
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
 Q_DECL_IMPORT extern int qt_defaultDpiX();
 Q_DECL_IMPORT extern int qt_defaultDpiY();
 
@@ -102,6 +105,7 @@ private:
 
 class QVGPaintEnginePrivate : public QPaintEngineExPrivate
 {
+    Q_DECLARE_PUBLIC(QVGPaintEngine)
 public:
     // Extra blending modes from VG_KHR_advanced_blending extension.
     // Use the QT_VG prefix to avoid conflicts with any definitions
@@ -132,7 +136,7 @@ public:
         QT_VG_BLEND_XOR_KHR           = 0x2026
     };
 
-    QVGPaintEnginePrivate();
+    QVGPaintEnginePrivate(QVGPaintEngine *q_ptr);
     ~QVGPaintEnginePrivate();
 
     void init();
@@ -153,6 +157,7 @@ public:
     void setBrushTransform(const QBrush& brush, VGMatrixMode mode);
     void setupColorRamp(const QGradient *grad, VGPaint paint);
     void setImageOptions();
+    void systemStateChanged();
 #if !defined(QVG_SCISSOR_CLIP)
     void ensureMask(QVGPaintEngine *engine, int width, int height);
     void modifyMask
@@ -281,6 +286,9 @@ public:
 
     // Clear all lazily-set modes.
     void clearModes();
+
+private:
+    QVGPaintEngine *q;
 };
 
 inline void QVGPaintEnginePrivate::setImageMode(VGImageMode mode)
@@ -332,7 +340,7 @@ void QVGPaintEnginePrivate::clearModes()
     imageQuality = (VGImageQuality)0;
 }
 
-QVGPaintEnginePrivate::QVGPaintEnginePrivate()
+QVGPaintEnginePrivate::QVGPaintEnginePrivate(QVGPaintEngine *q_ptr) : q(q_ptr)
 {
     init();
 }
@@ -1431,7 +1439,7 @@ QVGPainterState::~QVGPainterState()
 }
 
 QVGPaintEngine::QVGPaintEngine()
-    : QPaintEngineEx(*new QVGPaintEnginePrivate)
+    : QPaintEngineEx(*new QVGPaintEnginePrivate(this))
 {
 }
 
@@ -2974,6 +2982,11 @@ void QVGPaintEnginePrivate::setImageOptions()
     }
 }
 
+void QVGPaintEnginePrivate::systemStateChanged()
+{
+    q->updateScissor();
+}
+
 static void drawVGImage(QVGPaintEnginePrivate *d,
                         const QRectF& r, VGImage vgImg,
                         const QSize& imageSize, const QRectF& sr)
@@ -3432,9 +3445,10 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     // Set the transformation to use for drawing the current glyphs.
     QTransform glyphTransform(d->pathTransform);
     if (d->transform.type() <= QTransform::TxTranslate) {
-        // Prevent blurriness of unscaled, unrotated text by using integer coordinates.
-        // Using ceil(x-0.5) instead of qRound() or int-cast, behave like other paint engines.
-        glyphTransform.translate(ceil(p.x() - 0.5), ceil(p.y() - 0.5));
+        // Prevent blurriness of unscaled, unrotated text by forcing integer coordinates.
+        glyphTransform.translate(
+                floor(p.x() + glyphTransform.dx() + aliasedCoordinateDelta) - glyphTransform.dx(),
+                floor(p.y() - glyphTransform.dy() + aliasedCoordinateDelta) + glyphTransform.dy());
     } else {
         glyphTransform.translate(p.x(), p.y());
     }

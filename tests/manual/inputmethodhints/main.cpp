@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,15 @@
 **
 ****************************************************************************/
 
+#include "inputmethodhints.h"
 
-#include <QtCore/QtCore>
-#include <QtNetwork/QtNetwork>
-#include <QtXml/QtXml>
-#include <QtSql/QtSql>
-#include <QtGui/QtGui>
+#include <QtGui>
+#include <QApplication>
 
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
-#endif
-
-#include <QtDesigner/QtDesigner>
-
-#include <QtTest/QtTest>
-
-#if !defined(QT_NO_DBUS) && defined(Q_OS_UNIX)
-#include <QtDBus/QtDBus>
-#endif
-
-#include <QtDeclarative/QtDeclarative>
-
-
-#ifndef Q_OS_MAC
-int main(int, char **)
+int main(int argc, char *argv[])
 {
-    return 0;
+    QApplication a(argc, argv);
+    inputmethodhints w;
+    w.showMaximized();
+    return a.exec();
 }
-#endif
-

@@ -7418,8 +7418,10 @@ bool QDomHandler::startElement(const QString& nsURI, const QString&, const QStri
         n = doc->createElement(qName);
     }
 
-    if (n)
-        n->setLocation(locator->lineNumber(), locator->columnNumber());
+    if (!n)
+        return false;
+
+    n->setLocation(locator->lineNumber(), locator->columnNumber());
 
     node->appendChild(n);
     node = n;

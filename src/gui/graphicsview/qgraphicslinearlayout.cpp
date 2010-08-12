@@ -528,7 +528,8 @@ QSizeF QGraphicsLinearLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
     Q_D(const QGraphicsLinearLayout);
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    return d->engine.sizeHint(d->styleInfo(), which , constraint) + QSizeF(left + right, top + bottom);
+    const QSizeF extraMargins(left + right, top + bottom);
+    return d->engine.sizeHint(d->styleInfo(), which , constraint - extraMargins) + extraMargins;
 }
 
 /*!

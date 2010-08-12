@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,25 @@
 **
 ****************************************************************************/
 
+#ifndef INPUTMETHODHINTS_H
+#define INPUTMETHODHINTS_H
 
-#include <QtCore/QtCore>
-#include <QtNetwork/QtNetwork>
-#include <QtXml/QtXml>
-#include <QtSql/QtSql>
-#include <QtGui/QtGui>
+#include <QtGui/QMainWindow>
+#include "ui_tst_inputmethodhints.h"
 
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
-#endif
-
-#include <QtDesigner/QtDesigner>
-
-#include <QtTest/QtTest>
-
-#if !defined(QT_NO_DBUS) && defined(Q_OS_UNIX)
-#include <QtDBus/QtDBus>
-#endif
-
-#include <QtDeclarative/QtDeclarative>
-
-
-#ifndef Q_OS_MAC
-int main(int, char **)
+class inputmethodhints : public QMainWindow
 {
-    return 0;
-}
-#endif
+    Q_OBJECT
 
+public:
+    inputmethodhints(QWidget *parent = 0);
+    ~inputmethodhints();
+    
+public slots:
+    void checkboxChanged(int);
+
+private:
+    Ui::MainWindow ui;
+};
+
+#endif // INPUTMETHODHINTS_H

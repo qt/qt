@@ -416,6 +416,11 @@ class QTextFormatCollection;
 
 class Q_GUI_EXPORT QTextEngine {
 public:
+    enum LayoutState {
+        LayoutEmpty,
+        InLayout,
+        LayoutFailed,
+    };
     struct LayoutData {
         LayoutData(const QString &str, void **stack_memory, int mem_size);
         LayoutData();
@@ -428,11 +433,11 @@ public:
         QGlyphLayout glyphLayout;
         mutable int used;
         uint hasBidi : 1;
-        uint inLayout : 1;
+        uint layoutState : 2;
         uint memory_on_stack : 1;
         bool haveCharAttributes;
         QString string;
-        void reallocate(int totalGlyphs);
+        bool reallocate(int totalGlyphs);
     };
 
     QTextEngine(LayoutData *data);
@@ -520,9 +525,10 @@ public:
         return layoutData->glyphLayout.mid(si->glyph_data_offset, si->num_glyphs);
     }
 
-    inline void ensureSpace(int nGlyphs) const {
+    inline bool ensureSpace(int nGlyphs) const {
         if (layoutData->glyphLayout.numGlyphs - layoutData->used < nGlyphs)
-            layoutData->reallocate((((layoutData->used + nGlyphs)*3/2 + 15) >> 4) << 4);
+            return layoutData->reallocate((((layoutData->used + nGlyphs)*3/2 + 15) >> 4) << 4);
+        return true;
     }
 
     void freeMemory();

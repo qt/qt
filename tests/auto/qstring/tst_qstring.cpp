@@ -208,6 +208,7 @@ private slots:
     void repeated_data() const;
     void task262677remove();
     void QTBUG10404_compareRef();
+    void QTBUG9281_arg_locale();
 };
 
 typedef QList<int> IntList;
@@ -4858,6 +4859,17 @@ void tst_QString::QTBUG10404_compareRef()
     QVERIFY(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 3)) < 0);
     QCOMPARE(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 2), Qt::CaseInsensitive), 0);
     QVERIFY(QStringRef(&a2, 1, 2).compare(QStringRef(&a, 1, 3), Qt::CaseInsensitive) < 0);
+}
+
+void tst_QString::QTBUG9281_arg_locale()
+{
+    QLocale l(QLocale::English, QLocale::UnitedKingdom);
+    l.setNumberOptions(QLocale::OmitGroupSeparator);
+    QLocale::setDefault(l);
+    QString str("*%L1*%L2*");
+    str = str.arg(123456).arg(1234.56);
+    QCOMPARE(str, QString::fromLatin1("*123456*1234.56*"));
+    QLocale::setDefault(QLocale::C);
 }
 
 
