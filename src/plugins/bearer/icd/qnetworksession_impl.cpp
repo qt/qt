@@ -458,14 +458,15 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 			else
                 ptr->name = ptr->id;
 
+            const QString identifier = ptr->id;
+
+            configLocker.unlock();
+
             // Add the new active configuration to manager or update the old config
-            if (!engine->hasIdentifier(ptr->id)) {
-                configLocker.unlock();
+            if (!engine->hasIdentifier(identifier))
                 engine->addSessionConfiguration(ptr);
-            } else {
-                configLocker.unlock();
+            else
                 engine->changedSessionConfiguration(ptr);
-            }
         }
         break;
 
