@@ -2100,7 +2100,6 @@ qint64 QAbstractSocket::readData(char *data, qint64 maxSize)
             && d->readBufferMaxSize > 0
             && maxSize < d->readBufferMaxSize
             && d->socketEngine) {
-        qDebug() << "QAbstractSocket::readData filling buffer";
         // Our buffer is empty and a read() was requested for a byte amount that is smaller
         // than the readBufferMaxSize. This means that we should fill our buffer since we want
         // such small reads come from the buffer and not always go to the costly socket engine read()
