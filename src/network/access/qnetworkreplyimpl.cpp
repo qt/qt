@@ -54,9 +54,11 @@
 #include <QtCore/QCoreApplication>
 
 QT_BEGIN_NAMESPACE
-
 typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
+QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
+
+QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
     : backend(0), outgoingData(0), outgoingDataBuffer(0),
