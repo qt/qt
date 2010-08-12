@@ -293,12 +293,8 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         application = Online;
     else if (app == "creator")
         application = Creator;
-    else if (app == "assistant")
-        application = Assistant;
-    else if (app == "base")
-        application = Assistant;
     else 
-        application = Online;
+        application = Creator;
 
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
@@ -1841,10 +1837,6 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// CheckEmptyAndLoadList activating search
 	out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
         break;
-    case Assistant:
-	out() << "</head>\n";
-	out() << "<body class=\"offline \">\n";
-        break;
     case Creator:
 	out() << "</head>\n";
 	out() << "<body class=\"offline narrow creator\">\n"; // offline narrow
@@ -1865,11 +1857,6 @@ void HtmlGenerator::generateHeader(const QString& title,
         out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         generateBreadCrumbs(title,node,marker);
         out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        break;
-    case Assistant:
-        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         break;
     case Creator:
         out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
@@ -1988,9 +1975,6 @@ void HtmlGenerator::generateFooter(const Node *node)
         out() << "  </script> -->\n";
         out() << "</body>\n";
 	break;
-    case Assistant:
-        out() << "</body>\n";
-        break;
     case Creator:
         out() << "</body>\n";
 	break;
