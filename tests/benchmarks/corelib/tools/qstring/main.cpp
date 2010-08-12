@@ -390,27 +390,32 @@ static bool equals2_sse4(ushort *p1, ushort *p2, int len)
     //  difference found:         CF = 1
     //  all equal, not finished:  CF = ZF = SF = 0
     //  all equal, finished:      CF = 0, ZF = SF = 1
-    len += 8;
+    bool result;
     asm (
+        "movd       %%ebx, %%xmm1\n\t"
+        "sub        %[p1], %[p2]\n\t"
+        "mov        %[p1], %%ebx\n\t"
+        "sub        $16, %%ebx\n\t"
+        "add        $8, %[len]\n\t"
         "0:\n\t"
-        "movdqu     (%[p1]), %%xmm0\n\t"    // load 8 ushorts
-        "movdqu     (%[p2]), %%xmm1\n\t"
-        "addl       $16, %[p2]\n\t"
-        "addl       $16, %[p1]\n\t"
-        "subl       $8, %[len]\n\t"
-        "movl       %[len], %%edx\n\t"
-        "pcmpestrm  %[mode], %%xmm1, %%xmm0\n\t"
+        "add        $16, %%ebx\n\t"
+        "sub        $8, %[len]\n\t"
+        "movdqu     (%%ebx), %%xmm0\n\t"
+        "mov        %[len], %%edx\n\t"
+        "pcmpestrm  %[mode], (%[p2],%%ebx), %%xmm0\n\t"
         "ja         0b\n\t"
-         "1:\n\t"
-        "mov        $0, %[len]\n\t"
+        "1:\n\t"
+        "mov        $0, %%eax\n\t"
         "setnc      %%al\n\t"
-        : [len] "+a" (len)
-        : [p1] "r" (p1),
+        "movd       %%xmm1, %%ebx\n\t"
+        : [result] "=a" (result)
+        : [len] "0" (len),
+          [p1] "d" (p1),
           [p2] "r" (p2),
-          [mode] "K" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY | _SIDD_UNIT_MASK)
-        : "%edx", "%xmm0", "%xmm1"
+          [mode] "K" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY)
+        : "%xmm0", "%xmm1"
     );
-    return len;
+    return result;
 }
 //#endif
 #endif
