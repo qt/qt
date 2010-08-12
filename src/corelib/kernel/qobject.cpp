@@ -2287,7 +2287,7 @@ static void err_info_about_objects(const char * func,
     a thread different from this object's thread. Do not use this
     function in this type of scenario.
 
-    \sa QSignalMapper
+    \sa senderSignalIndex(), QSignalMapper
 */
 
 QObject *QObject::sender() const
@@ -2304,6 +2304,47 @@ QObject *QObject::sender() const
     }
 
     return 0;
+}
+
+/*!
+    \since 4.8
+
+    Returns the meta-method index of the signal that called the currently
+    executing slot, which is a member of the class returned by sender().
+    If called outside of a slot activated by a signal, -1 is returned.
+
+    For signals with default parameters, this function will always return
+    the index with all parameters, regardless of which was used with
+    connect(). For example, the signal \c {destroyed(QObject *obj = 0)}
+    will have two different indexes (with and without the parameter), but
+    this function will always return the index with a parameter. This does
+    not apply when overloading signals with different parameters.
+
+    \warning This function violates the object-oriented principle of
+    modularity. However, getting access to the signal index might be useful
+    when many signals are connected to a single slot.
+
+    \warning The return value of this function is not valid when the slot
+    is called via a Qt::DirectConnection from a thread different from this
+    object's thread. Do not use this function in this type of scenario.
+
+    \sa sender(), QMetaObject::indexOfSignal(), QMetaObject::method()
+*/
+
+int QObject::senderSignalIndex() const
+{
+    Q_D(const QObject);
+
+    QMutexLocker locker(signalSlotLock(this));
+    if (!d->currentSender)
+        return -1;
+
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender)
+            return d->currentSender->signal;
+    }
+
+    return -1;
 }
 
 /*!

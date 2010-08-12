@@ -280,6 +280,7 @@ public Q_SLOTS:
 
 protected:
     QObject *sender() const;
+    int senderSignalIndex() const;
     int receivers(const char* signal) const;
 
     virtual void timerEvent(QTimerEvent *);
