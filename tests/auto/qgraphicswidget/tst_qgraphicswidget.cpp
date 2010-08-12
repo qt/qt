@@ -111,6 +111,7 @@ private slots:
     void fontPropagationSceneChange();
     void geometry_data();
     void geometry();
+    void geometryChanged();
     void width();
     void height();
     void getContentsMargins_data();
@@ -776,9 +777,26 @@ void tst_QGraphicsWidget::geometry()
     QFETCH(QSizeF, size);
     widget.setPos(pos);
     widget.resize(size);
-    if (!size.isNull())
+    if (!size.isNull() && !pos.isNull())
+        QCOMPARE(spy.count(), 2);
+    if (!size.isNull() && pos.isNull())
         QCOMPARE(spy.count(), 1);
     QCOMPARE(widget.geometry(), QRectF(pos, size));
+}
+
+void tst_QGraphicsWidget::geometryChanged()
+{
+    QGraphicsWidget w;
+    w.setGeometry(0, 0, 200, 200);
+    QCOMPARE(w.geometry(), QRectF(0, 0, 200, 200));
+    QSignalSpy spy(&w, SIGNAL(geometryChanged()));
+    w.setGeometry(0, 0, 100, 100);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(w.geometry(), QRectF(0, 0, 100, 100));
+    w.setPos(10, 10);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(w.geometry(), QRectF(10, 10, 100, 100));
+
 }
 
 void tst_QGraphicsWidget::width()
