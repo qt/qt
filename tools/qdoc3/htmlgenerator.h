@@ -97,7 +97,6 @@ class HtmlGenerator : public PageGenerator
 
     enum Application {
         Online,
-        Assistant,
         Creator};
 
  public:
