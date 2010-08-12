@@ -238,6 +238,42 @@ static bool equals2_sse2(ushort *p1, ushort *p2, int len)
 
     return equals2_shortwise(p1, p2, len);
 }
+
+static inline
+#ifdef Q_CC_GNU
+__attribute__((always_inline))
+#endif
+bool prolog_align(ushort *&p1, ushort *&p2, int &len)
+{
+    const ushort *end = (ushort*) ((quintptr(p1) + 15) & ~15);
+    if (end > p1 + len)
+        end = p1 + len;
+    for ( ; p1 != end; ++p1, ++p2, --len)
+        if (*p1 != *p2)
+            return false;
+    return true;
+}
+
+static bool equals2_sse2_aligning(ushort *p1, ushort *p2, int len)
+{
+    if (len > 8) {
+        if (!prolog_align(p1, p2, len))
+            return false;
+        while (len > 8) {
+            __m128i q1 = _mm_load_si128((__m128i *)p1);
+            __m128i q2 = _mm_loadu_si128((__m128i *)p2);
+            __m128i cmp = _mm_cmpeq_epi16(q1, q2);
+            if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+                return false;
+
+            len -= 8;
+            p1 += 8;
+            p2 += 8;
+        }
+    }
+
+    return equals2_shortwise(p1, p2, len);
+}
 #endif
 
 void tst_QString::equals2_data() const
@@ -250,6 +286,7 @@ void tst_QString::equals2_data() const
     QTest::newRow("intwise") << 3;
 #ifdef __SSE2__
     QTest::newRow("sse2") << 4;
+    QTest::newRow("sse2_aligning") << 5;
 #endif
 }
 
@@ -300,6 +337,7 @@ void tst_QString::equals2() const
         equals2_intwise, // 3
 #ifdef __SSE2__
         equals2_sse2, // 4
+        equals2_sse2_aligning, // 5
 #endif
         0
     };
