@@ -804,17 +804,22 @@ void QGLContext::generateFontDisplayLists(const QFont & /* fnt */, int /* listBa
 static CFBundleRef qt_getOpenGLBundle()
 {
     CFBundleRef bundle = 0;
+    CFStringRef urlString = QCFString::toCFStringRef(QLatin1String("/System/Library/Frameworks/OpenGL.framework"));
     QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                 QCFString::toCFStringRef(QLatin1String("/System/Library/Frameworks/OpenGL.framework")), kCFURLPOSIXPathStyle, false);
+                 urlString, kCFURLPOSIXPathStyle, false);
     if (url)
         bundle = CFBundleCreate(kCFAllocatorDefault, url);
+    CFRelease(urlString);
     return bundle;
 }
 
 void *QGLContext::getProcAddress(const QString &proc) const
 {
-    return CFBundleGetFunctionPointerForName(QCFType<CFBundleRef>(qt_getOpenGLBundle()),
-                                             QCFString(proc));
+    CFStringRef procName = QCFString(proc).toCFStringRef(proc);
+    void *result = CFBundleGetFunctionPointerForName(QCFType<CFBundleRef>(qt_getOpenGLBundle()),
+                                             procName);
+    CFRelease(procName);
+    return result;
 }
 #ifndef QT_MAC_USE_COCOA
 /*****************************************************************************
