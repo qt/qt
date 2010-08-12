@@ -110,6 +110,7 @@ private slots:
     void nulInCN();
     void nulInSan();
     void largeSerialNumber();
+    void largeExpirationDate();
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -800,6 +801,20 @@ void tst_QSslCertificate::largeSerialNumber()
     const QSslCertificate &cert = certList.at(0);
     QVERIFY(!cert.isNull());
     QCOMPARE(cert.serialNumber(), QByteArray("01:02:03:04:05:06:07:08:09:10:aa:bb:cc:dd:ee:ff:17:18:19:20"));
+}
+
+void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/cert-large-expiration-date.pem");
+
+    QCOMPARE(certList.size(), 1);
+
+    const QSslCertificate &cert = certList.at(0);
+    QVERIFY(!cert.isNull());
+    QCOMPARE(cert.effectiveDate().toUTC(), QDateTime(QDate(2010, 8, 4), QTime(9, 53, 41), Qt::UTC));
+    // if the date is larger than 2049, then the generalized time format is used
+    QCOMPARE(cert.expiryDate().toUTC(), QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC));
 }
 
 #endif // QT_NO_OPENSSL
