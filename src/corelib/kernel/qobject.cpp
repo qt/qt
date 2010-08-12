@@ -2298,13 +2298,12 @@ QObject *QObject::sender() const
     if (!d->currentSender)
         return 0;
 
-    // Return 0 if d->currentSender isn't in d->senders
-    bool found = false;
-    for (QObjectPrivate::Connection *c = d->senders; c && !found; c = c->next)
-        found = (c->sender == d->currentSender->sender);
-    if (!found)
-        return 0;
-    return d->currentSender->sender;
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender)
+            return d->currentSender->sender;
+    }
+
+    return 0;
 }
 
 /*!
