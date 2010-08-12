@@ -117,6 +117,7 @@ void QHttpNetworkConnectionPrivate::init()
 {
     for (int i = 0; i < channelCount; i++) {
         channels[i].setConnection(this->q_func());
+        channels[i].ssl = encrypt;
         channels[i].init();
     }
 }
@@ -530,33 +531,35 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
            || channels[i].state == QHttpNetworkConnectionChannel::ReadingState))
         return;
 
-
-    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing highPriorityQueue, size=" << highPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
     int lengthBefore;
     while (!highPriorityQueue.isEmpty()) {
         lengthBefore = channels[i].alreadyPipelinedRequests.length();
         fillPipeline(highPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+            channels[i].pipelineFlush();
             return;
+        }
 
         if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
             break; // did not process anything, now do the low prio queue
     }
 
-    //qDebug() << "QHttpNetworkConnectionPrivate::fillPipeline processing lowPriorityQueue, size=" << lowPriorityQueue.size() << " alreadyPipelined=" << channels[i].alreadyPipelinedRequests.length();
     while (!lowPriorityQueue.isEmpty()) {
         lengthBefore = channels[i].alreadyPipelinedRequests.length();
         fillPipeline(lowPriorityQueue, channels[i]);
 
-        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength) {
+            channels[i].pipelineFlush();
             return;
+        }
 
         if (lengthBefore == channels[i].alreadyPipelinedRequests.length())
             break; // did not process anything
     }
 
 
+    channels[i].pipelineFlush();
 }
 
 // returns true when the processing of a queue has been done

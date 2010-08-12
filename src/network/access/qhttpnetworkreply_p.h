@@ -128,6 +128,10 @@ public:
     QByteArray readAny();
     void setDownstreamLimited(bool t);
 
+    bool supportsUserProvidedDownloadBuffer();
+    void setUserProvidedDownloadBuffer(char*);
+    char* userProvidedDownloadBuffer();
+
     bool isFinished() const;
 
     bool isPipeliningUsed() const;
@@ -147,6 +151,7 @@ Q_SIGNALS:
     void finished();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
     void headerChanged();
+    // FIXME we need to change this to qint64!
     void dataReadProgress(int done, int total);
     void dataSendProgress(qint64 done, qint64 total);
 
@@ -168,15 +173,16 @@ public:
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
     qint64 readBody(QAbstractSocket *socket, QByteDataBuffer *out);
+    qint64 readBodyVeryFast(QAbstractSocket *socket, char *b);
     qint64 readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb);
     bool findChallenge(bool forProxy, QByteArray &challenge) const;
     QAuthenticatorPrivate::Method authenticationMethod(bool isProxy) const;
     void clear();
     void clearHttpLayerInformation();
 
-    qint64 readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size);
-    qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);
-    qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
+    qint64 readReplyBodyRaw(QAbstractSocket *in, QByteDataBuffer *out, qint64 size);
+    qint64 readReplyBodyChunked(QAbstractSocket *in, QByteDataBuffer *out);
+    qint64 getChunkSize(QAbstractSocket *in, qint64 *chunkSize);
 
     void appendUncompressedReplyData(QByteArray &qba);
     void appendUncompressedReplyData(QByteDataBuffer &data);
@@ -205,6 +211,7 @@ public:
     } state;
 
     QHttpNetworkRequest request;
+    bool ssl;
     int statusCode;
     int majorVersion;
     int minorVersion;
@@ -234,6 +241,8 @@ public:
 
     bool pipeliningUsed;
     bool downstreamLimited;
+
+    char* userProvidedDownloadBuffer;
 };
 
 
