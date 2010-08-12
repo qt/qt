@@ -274,6 +274,110 @@ static bool equals2_sse2_aligning(ushort *p1, ushort *p2, int len)
 
     return equals2_shortwise(p1, p2, len);
 }
+
+template<int N> static inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
+{
+    __m128i lower = _mm_load_si128(m1);
+    while (len > 8) {
+        __m128i upper = _mm_load_si128(m1 + 1);
+        __m128i correct;
+        correct = _mm_alignr_epi8(upper, lower, N);
+
+        __m128i q2 = _mm_loadu_si128(m2);
+        __m128i cmp = _mm_cmpeq_epi16(correct, q2);
+        if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+            return false;
+
+        len -= 8;
+        ++m2;
+        ++m1;
+        lower = upper;
+    }
+
+    // tail
+    return len == 0 || equals2_shortwise((ushort *)m1 + N / 2, (ushort*)m2, len);
+}
+
+static inline bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
+{
+    while (len > 8) {
+        __m128i q2 = _mm_loadu_si128(m2);
+        __m128i cmp = _mm_cmpeq_epi16(*m1, q2);
+        if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+            return false;
+
+        len -= 8;
+        ++m1;
+        ++m2;
+    }
+    return len == 0 || equals2_shortwise((ushort *)m1, (ushort *)m2, len);
+}
+
+//#ifdef __SSSE3__
+static bool equals2_ssse3(ushort *p1, ushort *p2, int len)
+{
+    // p1 & 0xf can be:
+    //   0,  2,  4,  6,  8, 10, 12, 14
+    // If it's 0, we're aligned
+    // If it's not, then we're interested in the 16 - (p1 & 0xf) bytes only
+
+    if (len > 8) {
+        // find the last aligned position below the p1 memory
+        __m128i *m1 = (__m128i *)(quintptr(p1) & ~0xf);
+        __m128i *m2 = (__m128i *)p2;
+        uchar diff = quintptr(p1) - quintptr(m1);
+
+        // diff contains the number of extra bytes
+        if (diff < 8) {
+            if (diff < 4) {
+                if (diff == 0)
+                    return equals2_ssse3_aligned(m1, m2, len);
+                else // diff == 2
+                    return equals2_ssse3_alignr<2>(m1, m2, len);
+            } else {
+                if (diff == 4)
+                    return equals2_ssse3_alignr<4>(m1, m2, len);
+                else // diff == 6
+                    return equals2_ssse3_alignr<6>(m1, m2, len);
+            }
+        } else {
+            if (diff < 12) {
+                if (diff == 8)
+                    return equals2_ssse3_alignr<8>(m1, m2, len);
+                else // diff == 10
+                    return equals2_ssse3_alignr<10>(m1, m2, len);
+            } else {
+                if (diff == 12)
+                    return equals2_ssse3_alignr<12>(m1, m2, len);
+                else // diff == 14
+                    return equals2_ssse3_alignr<14>(m1, m2, len);
+            }
+        }
+
+//        switch (diff) {
+//        case 0:
+//            return equals2_ssse3_aligned(m1, m2, len);
+//        case 2:
+//            return equals2_ssse3_alignr<2>(m1, m2, len);
+//        case 4:
+//            return equals2_ssse3_alignr<4>(m1, m2, len);
+//        case 6:
+//            return equals2_ssse3_alignr<6>(m1, m2, len);
+//        case 8:
+//            return equals2_ssse3_alignr<8>(m1, m2, len);
+//        case 10:
+//            return equals2_ssse3_alignr<10>(m1, m2, len);
+//        case 12:
+//            return equals2_ssse3_alignr<12>(m1, m2, len);
+//        case 14:
+//            return equals2_ssse3_alignr<14>(m1, m2, len);
+//        }
+    }
+
+    // tail
+    return equals2_shortwise(p1, p2, len);
+}
+//#endif
 #endif
 
 void tst_QString::equals2_data() const
@@ -287,6 +391,9 @@ void tst_QString::equals2_data() const
 #ifdef __SSE2__
     QTest::newRow("sse2") << 4;
     QTest::newRow("sse2_aligning") << 5;
+#ifdef __SSSE3__
+    QTest::newRow("ssse3") << 6;
+#endif
 #endif
 }
 
@@ -338,6 +445,9 @@ void tst_QString::equals2() const
 #ifdef __SSE2__
         equals2_sse2, // 4
         equals2_sse2_aligning, // 5
+#ifdef __SSSE3__
+        equals2_ssse3, // 6
+#endif
 #endif
         0
     };
