@@ -51,6 +51,9 @@
 #include "../../../../auto/network-settings.h"
 
 
+typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
+Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
+
 class TimedSender: public QThread
 {
     Q_OBJECT
@@ -465,7 +468,8 @@ private slots:
     void httpUploadPerformance();
     void httpDownloadPerformance_data();
     void httpDownloadPerformance();
-
+    void httpDownloadPerformanceDownloadBuffer_data();
+    void httpDownloadPerformanceDownloadBuffer();
 };
 
 void tst_qnetworkreply::httpLatency()
@@ -649,6 +653,72 @@ void tst_qnetworkreply::httpDownloadPerformance()
     qint64 elapsed = time.elapsed();
     qDebug() << "tst_QNetworkReply::httpDownloadPerformance" << elapsed << "msec, "
             << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
+};
+
+class HttpDownloadPerformanceClientDownloadBuffer : QObject {
+    Q_OBJECT
+private:
+    bool useDownloadBuffer;
+    QNetworkReply *reply;
+    qint64 uploadSize;
+public:
+    HttpDownloadPerformanceClientDownloadBuffer (QNetworkReply *reply, bool useDownloadBuffer, qint64 uploadSize)
+        : useDownloadBuffer(useDownloadBuffer), reply(reply), uploadSize(uploadSize)
+    {
+        connect(reply, SIGNAL(finished()), this, SLOT(finishedSlot()));
+    }
+
+    public slots:
+    void finishedSlot() {
+        if (useDownloadBuffer) {
+            QVariant downloadBufferAttribute = reply->attribute(QNetworkRequest::DownloadBufferAttribute);
+            QSharedPointer<QVarLengthArray<char, 0> > data = downloadBufferAttribute.value<QSharedPointer<QVarLengthArray<char, 0> > >();
+        } else {
+            // We did not have a download buffer but we still need to benchmark having the data, e.g. reading it all.
+            char* replyData = (char*) qMalloc(uploadSize);
+            QVERIFY(reply->read(replyData, uploadSize) == uploadSize);
+            qFree(replyData);
+        }
+    }
+};
+
+void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer_data()
+{
+    QTest::addColumn<bool>("useDownloadBuffer");
+
+    QTest::newRow("use-download-buffer") << true;
+    QTest::newRow("do-not-use-download-buffer") << false;
+}
+
+void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
+{
+    QFETCH(bool, useDownloadBuffer);
+
+    // On my Linux Desktop the results are already visible with 128 kB, however we use this to have good results.
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
+    // Show some mercy to non-desktop platform/s
+    enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
+    enum {UploadSize = 32*1024*1024}; // 32 MB
+#endif
+
+    HttpDownloadPerformanceServer server(UploadSize, true, false);
+
+    QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
+    if (useDownloadBuffer)
+        request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
+
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    HttpDownloadPerformanceClientDownloadBuffer client(reply, useDownloadBuffer, UploadSize);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QBENCHMARK {
+        QTestEventLoop::instance().enterLoop(40);
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
 }
 
 QTEST_MAIN(tst_qnetworkreply)
