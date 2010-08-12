@@ -469,7 +469,7 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     \o Create the QPrintPreviewWidget
 
     Construct the QPrintPreviewWidget either by passing in an
-    exisiting QPrinter object, or have QPrintPreviewWidget create a
+    existing QPrinter object, or have QPrintPreviewWidget create a
     default constructed QPrinter object for you.
 
     \o Connect the paintRequested() signal to a slot.

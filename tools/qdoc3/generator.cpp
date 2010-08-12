@@ -1068,8 +1068,11 @@ void Generator::generateSince(const Node *node, CodeMarker *marker)
         Text text;
         text << Atom::ParaLeft
              << "This "
-             << typeString(node)
-             << " was introduced in ";
+             << typeString(node);
+        if (node->type() == Node::Enum)
+            text << " was introduced or modified in ";
+        else
+            text << " was introduced in ";
         if (project.isEmpty())
              text << "version";
         else

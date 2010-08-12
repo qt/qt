@@ -27,7 +27,7 @@
 
 /*!
     \page intro-to-dbus.html
-    \title Introduction to D-Bus
+    \title D-Bus
     \brief An introduction to Inter-Process Communication and Remote Procedure Calling with D-Bus.
 
     \keyword QtDBus

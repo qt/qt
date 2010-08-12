@@ -228,6 +228,7 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
+    \inherits Animation
     \since 4.7
 
     \brief The SpringAnimation element allows a property to track a value in a spring-like motion.
@@ -246,7 +247,7 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 
     Like any other animation element, a SpringAnimation can be applied in a
     number of ways, including transitions, behaviors and property value 
-    sources. The \l PropertyAnimation documentation shows a variety of methods
+    sources. The \l {QML Animation} documentation shows a variety of methods
     for creating animations.
 
     \sa SmoothedAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}, {declarative/toys/clocks}{Clocks example}

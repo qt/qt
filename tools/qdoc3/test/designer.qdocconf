@@ -7,9 +7,6 @@ include(qt-defines.qdocconf)
 project                 = Qt Designer
 description             = Qt Designer Manual
 url                     = http://qt.nokia.com/doc/4.7
-online                  = false
-offline                 = false
-creator                 = true
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 

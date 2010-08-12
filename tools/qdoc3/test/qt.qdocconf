@@ -9,9 +9,6 @@ versionsym              =
 version                 = %VERSION%
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.7
-online                  = true
-offline                 = false
-creator                 = false
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8

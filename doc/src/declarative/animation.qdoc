@@ -29,134 +29,301 @@
 \page qdeclarativeanimation.html
 \title QML Animation
 
-Animation in QML is done by animating properties of objects. Properties of type
-real, int, color, rect, point, size, and vector3d can all be animated.
 
-QML supports three main forms of animation: basic property animation,
-transitions, and property behaviors.
+In QML, animations are created by applying animation objects to object property
+values to gradually change them over time. Animation objects are created from
+the built-in set of animation elements, which can be used to animate various
+types of property values. In addition, animation objects can be applied in
+different ways depending on the context in which they are required.
 
-\tableofcontents
+To create an animation, use an appropriate animation element for the type of
+the property that is to be animated, and apply the animation depending on the
+type of behavior that is required. This page describes the \l {Types of
+Animations} that can be created and the \l {Animation Elements} that are used
+to create these animations.
 
-\section1 Basic Property Animation
 
-The simplest form of animation is a \l PropertyAnimation, which can animate all of the property
-types listed above. If the property you are animating is a number or color, you can alternatively use
-NumberAnimation or ColorAnimation. These elements don't add any additional functionality,
-but will help enforce type correctness and are slightly more efficient.
+\section1 Types of Animations
 
-A property animation can be specified as a value source using the \e Animation \bold on \e property syntax. This is especially useful
-for repeating animations.
+An animation is created in different ways depending on the context in which it
+is required. Suppose a \l Rectangle's movement - that is, changes in its \c x
+or \c y property values - should be animated. The semantics of the animation
+differ depending on whether you want to create:
 
-The following example creates a bouncing effect:
-\snippet doc/src/snippets/declarative/animation.qml property-anim-1
+\list
+\o An animation that moves the \l Rectangle as soon as it is created, to a
+known position
+\o An animation that only triggers when the \l Rectangle is moved by external
+sources - for example, when the mouse is clicked, animate the movement to the
+mouse position
+\o An animation that triggers when a particular signal is received
+\o A standalone animation that is not bound to the \l Rectangle's movement, but
+instead can be started and stopped from script as required
+\o An animation that only triggers during \l{QML States}{state changes}
+\endlist
 
+To support these different types of animation methods, QML provides several
+methods for defining an animation. These are:
+
+\list
+\o Creating an \l{Animations as Property Value Sources}{animation using
+property value sources}, to immediately animate a specific property
+\o Using \l{Behavioral Animations}{behavioral animations}, which are triggered
+when a property changes value
+\o \l{Animations in a Signal Handler}{Within a signal handler}, to be triggered
+when a signal is received
+\o As a \l{Standalone Animation}{standalone animation}, that can be
+started/stopped from script and can be rebound to different objects
+\o Using \l{Transitions}{transitions}, to provide animations between \l{QML
+States}{state changes}
+\endlist
+
+These methods are demonstrated below. Notice these examples use
+PropertyAnimation, which is one of several QML elements that can be used to
+create an animation. See the \l {Animation Elements} section further below for 
+details.
+
+
+
+\section2 Animations as Property Value Sources
+
+An animation is applied as a \l{QDeclarativePropertyValueSource}{property value
+source} using the \e Animation \bold on \e Property syntax. Here is a \l
+Rectangle whose movement is animated using this method:
+
+\snippet doc/src/snippets/declarative/animation-propertyvaluesource.qml 0
+	
+This applies a PropertyAnimation to the \l Rectangle's \c x and \c y properties
+to animate from their current values (i.e. zero) to 50, over 1000 milliseconds.
+The animation starts as soon as the \l Rectangle is loaded. To animate from
+specific values rather than the current \c x and \c y values, set the
+PropertyAnimation's \l {PropertyAnimation::}{from} property.
+
+Specifying an animation as a property value source is useful for animating a
+property to a particular value as soon as the object is loaded.
+
+
+\section2 Behavioral Animations
+
+Often an animation should be applied whenever a particular property value
+changes. In these cases, a \l Behavior can be used to specify a default
+animation for a property change. Here is an example:
+
+\snippet doc/src/snippets/declarative/animation-behavioral.qml 0
+
+This \l Rectangle has \l Behavior objects applied to its \c x and \c y
+properties. Whenever these properties change (in this case, when the mouse is
+clicked within the parent \l Item), the PropertyAnimation objects defined
+within the behaviors will be applied to these properties, thus animating the \l
+Rectangle's movement to its new position. Unlike the method of \l {Animations
+as Property Value Sources}{defining an animation as a property value source},
+which creates a one-time animation that animates a property to a known value, a
+behavioral animation is an animation that is triggered \e {in response to} a
+value change.
+
+Any changes to these properties will trigger their animations. If \c x or \c y
+were bound to other properties, and those properties changed, the animation
+would be triggered. The \l{Behavior::}{enabled} property can be used to force a
+\l Behavior to only apply under certain circumstances.
+
+Notice that unlike for property value source animations, the
+PropertyAnimation's \l {PropertyAnimation::}{from} and \l
+{PropertyAnimation::}{to} properties do not need to be defined because these
+values are already provided, respectively, by the \l Rectangle's current values
+and the new values set in the \c onClicked handler. If these properties were
+defined anyway, they would override the default values.
+
+See the \l {declarative/animation/behaviors}{Behaviors example} for a
+demonstration of behavioral animations.
+
+
+\section2 Animations in a Signal Handler
+
+An animation can be created within a signal handler to be triggered when the
+signal is received. For example:
+    
+\snippet doc/src/snippets/declarative/animation-signalhandler.qml 0
+
+The PropertyAnimation is triggered when the MouseArea is clicked, animating the
+\c x and \c y properties to a value of 50 over 1000 milliseconds. Since the
+animation is not bound to a particular object or property, it must define the
+\l {PropertyAnimation::}{target} and \l {PropertyAnimation::}{property} (or \l
+{PropertyAnimation::}{targets} and \l{PropertyAnimation::}{properties}) values.
+The \l {PropertyAnimation::}{to} property is also required to specify the new
+\c x and \c y values.
+
+
+\section2 Standalone Animations
+
+Animations can also be created as ordinary QML objects that are not bound to
+any particular objects and properties. An example:
+
+\snippet doc/src/snippets/declarative/animation-standalone.qml 0
+
+A standalone animation is not running by default and must be started explicitly
+using the \l {Animation::}{running} property or \l {Animation::}{start()} and
+\l {Animation::}{stop()} methods. Since the animation is not bound to a
+particular object or property, it must define the \l
+{PropertyAnimation::}{target} and \l {PropertyAnimation::}{property} (or \l
+{PropertyAnimation::}{targets} and \l{PropertyAnimation::}{properties}) values.
+The \l {PropertyAnimation::}{to} property is also required to specify the new
+\c x and \c y values. (The \l {PropertyAnimation::}{from} value can optionally
+be provided.)
+
+Standalone animations are useful when an animation is not targeted towards a
+single object property and the animation should be explicitly started and
+stopped.
+
+
+\section2 Transitions
+
+Transitions are used to describe the animations to be applied when a \l {QML
+States}{state change} occurs. To create a transition, define a \l Transition
+object and add it to an item's \l {Item::}{transitions} property. An example:
+
+\snippet doc/src/snippets/declarative/animation-transitions.qml 0
+
+When the \l Rectangle changes to the \e moved state, its \c x and \c y property
+values are changed by the PropertyChanges object, and the PropertyAnimation
+defined within the \l Transition is triggered on these properties. The
+animation will not be applied at any time other than during the state change.
+
+Notice the example does not set any \l {PropertyAnimation::}{from} and \l
+{PropertyAnimation::}{to} values for the PropertyAnimation. As a convenience,
+these properties are automatically set to the values of \c x and \c y before
+and after the state change, respectively. However, they can be explicitly set
+if these values should be overrided.
+
+Also notice the PropertyAnimation does not need to specify a \l
+{PropertyAnimation::}{target} object; any \c x or \c y value of any object that
+has changed during the state change will be animated. However, the target can
+be set if the animation should be restricted to certain objects.
+
+The top-level animations in a \l Transition are run in parallel. To run them
+one after the other, use a SequentialAnimation, as shown below in \l {Grouping
+Animations}.
+
+See the \l Transition documentation for more information.
+
+
+\section1 Animation Elements
+
+To create an animation, choose from one of the built-in QML animation elements.
+While the above examples are demonstrated using PropertyAnimation, they could
+have used other elements depending on the type of the property to be animated
+and whether a single or multiple animations are required.
+
+All animation elements inherit from the \l Animation element. It is not
+possible to create \l Animation objects; instead, this element provides the
+essential properties and methods for animation elements. For example, it allows
+animations to be started and stopped through the \l {Animation::}{running}
+property and the \l{Animation::}{start()} and \l{Animation::}{stop()} methods.
+It can also define the number of \l {Animation::}{loops} for an animation.
+
+
+\section2 Property Animation Elements
+
+PropertyAnimation is the most basic animation element for animating a property.
+It can be used to animate \c real, \c int, \c color, \c rect, \c point, \c size, and
+\c vector3d properties. It is inherited by NumberAnimation, ColorAnimation,
+RotationAnimation and Vector3dAnimation: NumberAnimation provides a more 
+efficient implementation for animating \c real and \c int properties, and 
+Vector3dAnimation does the same for \c vector3d properties.  ColorAnimation 
+and RotationAnimation provide more specific attributes for animating color 
+and rotation changes. 
+
+A ColorAnimation allows color values for the \l {ColorAnimation::}{from} 
+and \l {ColorAnimation::}{to} properties. The
+following animates the rectangle's \l {Rectangle::color} property:
+
+\snippet doc/src/snippets/declarative/animation-elements.qml color
+
+RotationAnimation allows a rotation's direction to be specified. The following
+animates the rectangle's \l {Item::rotation} property:
+
+\snippet doc/src/snippets/declarative/animation-elements.qml rotation
+
+In addition, the following specialized animation elements are available:
+
+\list
+\o SmoothedAnimation: a specialized NumberAnimation that provides smooth 
+changes in animation when the target value changes
+\o SpringAnimation: provides a spring-like animation with specialized 
+attributes such as \l {SpringAnimation::}{mass}, 
+\l{SpringAnimation::}{damping} and \l{SpringAnimation::}{epsilon}
+\o ParentAnimation: used for animating a parent change (see ParentChange)
+\o AnchorAnimation: used for animating an anchor change (see AnchorChanges)
+\endlist
+
+See their respective documentation pages for more details.
+
+
+\section3 Easing
+
+Any PropertyAnimation-based animations can specify \l
+{PropertyAnimation::easing.type}{easing attributes} to control the
+easing curve applied when a property value is animated. These control the
+effect of the animation on the property value, to provide visual effects like
+bounce, acceleration and deceleration.
+
+For example, this modified version of an \l {Animations as Property Value
+Sources}{earlier example} uses \c Easing.OutBounce to create a bouncing effect
+when the animation reaches its target value:
+
+\snippet doc/src/snippets/declarative/animation-easing.qml 0
+
+The \l{declarative/animation/easing}{easing example} visually demonstrates each
+of the different easing types.
+
+\section2 Grouping Animations
+
+Multiple animations can be combined into a single animation using one of the
+animation group elements: ParallelAnimation or SequentialAnimation. As their
+names suggest, animations in a ParallelAnimation are run at the same time,
+while animations in a SequentialAnimation are run one after the other.
+
+To run multiple animations, define the animations within an animation group.
+The following example creates a SequentialAnimation that runs three animations
+one after the other: a NumberAnimation, a PauseAnimation and another
+NumberAnimation. The SequentialAnimation is applied as a \l{Animations as
+Property Value Sources}{property value source animation} on the image's \c y
+property, so that the animation starts as soon as the image is loaded, moving
+the image up and down:
+
+\snippet doc/src/snippets/declarative/animation-groups.qml 0
 \image propanim.gif
 
-When you assign an animation as a value source, you do not need to specify \c property
-or \c target values; they are automatically selected for you. You do, however, need to specify a \c to value.
-An animation specified as a value source will be \c running by default.
+Since the SequentialAnimation is applied to the \c y property, the individual
+animations within the group are automatically applied to the \c y property as
+well; it is not required to set their \l{PropertyAnimation::}{properties}
+values to a particular property.
 
-For example, here is a rectangle that uses a \l NumberAnimation value source to animate the movement
-from its current position to an \c x value of 50. The animation starts immediately, and only the \c to 
-property is required:
+Animation groups can be nested. Here is a rather complex animation making use
+of both sequential and parallel animations:
 
-\snippet doc/src/snippets/declarative/animation.qml property-anim-2
+\snippet doc/src/snippets/declarative/animation-groups.qml 1
 
-A property animation can also be specified as a resource that is manipulated from script.
+Once individual animations are placed into a SequentialAnimation or
+ParallelAnimation, they can no longer be started and stopped independently. The
+sequential or parallel animation must be started and stopped as a group.
 
-\snippet doc/src/snippets/declarative/animation.qml property-anim-3
-
-As can be seen, when an animation is used like this (as opposed to as a value source) you will need
-to explicitly set the \c target and \c property to animate.  This also the only case where
-an animation needs to be started explictly by either setting the \c running property to
-true or calling the \c start() method.
-
-Animations can be joined into a group using SequentialAnimation and ParallelAnimation.
-
-See the \l {declarative/animation/basics}{Animation basics example} for a demonstration of creating and combining multiple animations in QML.
-
-\target state-transitions
-\section1 Transitions
-
-\l Transition elements describe the animations to perform when \l{qmlstates}{state} changes occur. A transition
-can only be triggered by a state change.
-
-For example, a \l Transition could describe how an item moves from its initial position to its new position:
-
-\snippet doc/src/snippets/declarative/animation.qml transitions-1
-
-As can be seen, transitions make use of the same basic animation classes introduced above.
-In the above example we have specified that we want to animate the \c x and \c y properties, but have not
-specified the objects to animate or the \c to values. By default these values are supplied by the framework;
-the animation will animate any \c targets whose \c x and \c y have changed, and the \c to values will be those
-defined in the end state. You can always supply explicit values to override these implicit values when needed.
-
-\snippet doc/src/snippets/declarative/animation.qml transitions-2
-
-QML transitions have selectors to determine which state changes a transition should apply to.
-The following transition will only be triggered when we enter into the \c "details" state.
-(The "*" value is a wildcard value that specifies the transition should be applied when changing
-from \e any state to the "details" state.)
-
-\code
-Transition {
-    from: "*"
-    to: "details"
-    ...
-}
-\endcode
-
-Transitions can happen in parallel, in sequence, or in any combination of the two. By default, the top-level
-animations in a transition will happen in parallel. The following example shows a rather complex transition
-making use of both sequential and parallel animations:
-
-\snippet doc/src/snippets/declarative/animation.qml transitions-3
+See the \l {declarative/animation/basics}{Animation basics example} for a
+demonstration of creating and combining multiple animations in QML.
 
 
-See \l {declarative/animation/states}{States and Transitions example} for a simple example of how transitions can be applied.
 
+\section2 Other Animation Elements
 
-\section1 Property Behaviors
+In addition, QML provides several other elements useful for animation:
 
-A property \l {Behavior}{behavior} specifies a default animation to run whenever the property's value changes, regardless
-of what caused the change. The \c enabled property can be used to force a \l Behavior
-to only apply under certain circumstances.
+\list
+\o PauseAnimation: enables pauses during animations
+\o ScriptAction: allows JavaScript to be executed during an animation, and can
+be used together with StateChangeScript to reused existing scripts
+\o PropertyAction: changes a property \e immediately during an animation,
+without animating the property change
+\endlist
 
-In the following snippet, we specify that we want the \c x position of \c redRect to be animated
-whenever it changes. The animation will last 300 milliseconds and use an \l{PropertyAnimation::easing.type}{Easing.InOutQuad} easing curve.
-
-\snippet doc/src/snippets/declarative/animation.qml behavior
-
-Like using an animation as a value source, when used in a \l Behavior and animation does not need to specify
-a \c target or \c property.
-
-To trigger this behavior, we could enter a state that changes \c x:
-
-\qml
-State {
-    name: "myState"
-    PropertyChanges {
-        target: redRect
-        x: 200
-        ...
-    }
-}
-\endqml
-
-Or, update \c x from a script:
-
-\qml
-MouseArea {
-    ....
-    onClicked: redRect.x = 24;
-}
-\endqml
-
-If \c x were bound to another property, triggering the binding would also trigger the behavior.
-
-If a state change has a transition animation matching a property with a \l Behavior, the transition animation
-will override the \l Behavior for that state change.
-
-The \l {declarative/animation/behaviors}{Behaviors example} shows how behaviors can be used to provide animations.
+See their respective documentation pages for more details.
 
 */

@@ -1355,7 +1355,7 @@ bool QXmlItem::isNull() const
   QAbstractXmlNodeModel for its existence, the only way you can create
   an instance of QXmlNodeModelIndex is by asking the node model to
   create one for you with QAbstractXmlNodeModel::createIndex(). Since
-  that function is protected, it is usually a good ide to write a
+  that function is protected, it is usually a good idea to write a
   public function that creates a QXmlNodeModelIndex from arguments that
   are appropriate for your particular node model.
 

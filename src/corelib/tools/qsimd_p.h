@@ -150,7 +150,9 @@ enum CPUFeatures {
 
 Q_CORE_EXPORT uint qDetectCPUFeatures();
 
-Q_CORE_EXPORT uint qDetectCPUFeatures();
+
+#define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
+    for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 
 QT_END_NAMESPACE
 

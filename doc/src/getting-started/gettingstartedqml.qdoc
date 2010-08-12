@@ -32,27 +32,30 @@
 	\ingroup gettingStarted
 	
 	Welcome to the world of QML - the declarative UI language. In this Getting
-	Started guide, we will create a simple text editor application using QML.
-	After reading this guide, you should be ready to develop your own applications
-	using QML and Qt C++.
+	Started guide, we create a simple text editor application using QML.
+	After reading this guide, you should be ready to start developing your own
+	applications using QML and Qt C++.
 
+	\example tutorials/gettingStarted/gsQml
+	
 	\section1 QML to Build User Interfaces
 
-	The application we are building is a simple text editor that will load, save,
-	and perform some text manipulation. This guide will consist of two parts. The
-	first part will involve designing the application layout and behaviors using
-	declarative language in QML. For the second part, file loading and saving will
-	be implemented using Qt C++. Using
-	\l {The Meta-Object System}{Qt's Meta-Object System}, we can expose C++ functions
-	as properties that QML elements can use. Utilizing QML and Qt C++, we can
-	efficiently decouple the interface logic from the application logic.
+	Here we are building is a simple text editor that con load, save,
+	and perform some text manipulation. This guide consists of two parts. The
+	first part involves designing the application layout and behaviors using
+	declarative language in QML. For the second part, file loading and saving is
+	implemented using Qt C++.
+	Using \l {The Meta-Object System}{Qt's Meta-Object System}, we can expose C++
+	functions as properties that QML elements can use. By utilizing QML and Qt C++,
+	we can efficiently decouple the interface logic from the application logic.
 	
 	\image qml-texteditor5_editmenu.png
 	
-	To run the QML example code, merely provide the included \l{QML Viewer}{qmlviewer}
+	To run the QML example code, we merely provide the included \l{QML Viewer}{qmlviewer}
 	tool with the QML file as the argument. The C++ portion of this tutorial assumes
 	that the reader possesses basic knowledge of Qt's compilation procedures.
 	
+	\omit
 	Tutorial chapters:
 	\list 1
 		\o \l {Defining a Button and a Menu}{Defining a Button and a Menu}
@@ -61,6 +64,7 @@
 		\o \l {Decorating the Text Editor}{Decorating the Text Editor}
 		\o \l {Extending QML using Qt C++}{Extending QML using Qt C++}
 	\endlist
+	\endomit
 
 	\section1 Defining a Button and a Menu
 
@@ -104,7 +108,7 @@
 	is called \c simplebutton. Anchors may bind to other items' anchors, allowing layout
 	assignments simpler. 
 	
-	We shall save this code as \c SimpleButton.qml. Running qmlviewer with the file as the
+	We save this code as \c SimpleButton.qml. Running qmlviewer with the file as the
 	argument will display the grey rectangle with a text label.
 	
 	\image qml-texteditor1_simplebutton.png
@@ -304,7 +308,7 @@
 	with a header that displays a row of menu names. The list of menus are declared
 	inside a \c VisualItemModel. The \l{VisualItemModel}{\c VisualItemModel}
 	element contains items that already have views such as \c Rectangle elements
-	and imported UI elements. Other model types such as the \l {ListModel}{\c ListModel}
+	and imported UI elements. Other model types such as the \l {ListModel}{\c ListModel}
 	element need a delegate to display their data.
 
 	We declare two visual items in the \c menuListModel, the \c FileMenu and the
@@ -357,7 +361,7 @@
 		}
 	\endcode
 
-	Additionally, \c ListView inherits from \l {Flickable}{\c Flickable}, making
+	Additionally, \c ListView inherits from \l {Flickable}{\c Flickable}, making
 	the list respond to mouse drags and other gestures. The last portion of the
 	code above sets \c Flickable properties to create the desired flicking movement
 	to our view. In particular,the property \c highlightMoveDuration changes the
@@ -407,13 +411,9 @@
 
 	\image qml-texteditor2_menubar.png 
 
-	*/
+	\section1 Building a Text Editor
 
-	/*!
-	\page qml-textEditor3.html
-	\title Building a Text Editor
-
-	\section1 Declaring a TextArea
+	\section2 Declaring a TextArea
 
 	Our text editor is not a text editor if it didn't contain an editable text area.
 	QML's \l {TextEdit}{TextEdit} element allows the declaration of a multi-line
@@ -497,12 +497,8 @@
 
 	\image qml-texteditor3_texteditor.png 
 
-	*/
-
-	/*!
-	\page qml-textEditor4
-	\title Decorating the Text Editor
-	\section1 Implementing a Drawer Interface
+	\section1 Decorating the Text Editor
+	\section2 Implementing a Drawer Interface
 
 	Our text editor looks simple and we need to decorate it. Using QML, we can declare
 	transitions and animate our text editor. Our menu bar is occupying one-third of the
@@ -589,7 +585,7 @@
 	that the targets' properties will animate for a certain duration of time and using
 	a certain easing curve. An easing curve controls the animation rates and
 	interpolation behavior during state transitions. The easing curve we chose is
-	\l {PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
+	\l{PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
 	the end of the animation. Pleae read \l {qdeclarativeanimation.html}{QML's Animation}
 	article.
 
@@ -741,7 +737,12 @@
 		};
 		
 	\endcode
-		Our plugin class, \c DialogPlugin is a subclass of \l {QDeclarativeExtensionPlugin}{QDeclarativeExtensionPlugin}. We need to implement the inherited function, \l {QDeclarativeExtensionPlugin::registerTypes}{registerTypes}. The \c dialogPlugin.cpp file looks like this:
+
+		Our plugin class, \c DialogPlugin is a subclass of \l
+		{QDeclarativeExtensionPlugin}{QDeclarativeExtensionPlugin}. We
+		need to implement the inherited function, \l
+		{QDeclarativeExtensionPlugin::registerTypes()}{registerTypes}. The
+		\c dialogPlugin.cpp file looks like this:
 		
 	\code
 	DialogPlugin.cpp:
@@ -760,7 +761,7 @@
 		Q_EXPORT_PLUGIN2(FileDialog, DialogPlugin);
 	\endcode
 		
-	The \l {QDeclarativeExtensionPlugin::registerTypes}{registerTypes}
+	The \l {QDeclarativeExtensionPlugin::registerTypes()}{registerTypes}
 	function registers our File and Directory classes into QML. This function
 	needs the class name for its template, a major version number, a minor version
 	number, and a name for our classes.
@@ -820,7 +821,7 @@
 
 	The \c files list property is a list of all the filtered files in a directory.
 	The \c Directory class is implemented to filter out invalid text files; only
-	files with a \c .txt extension are valid. Further, \l {QLists}{QLists} can be
+	files with a \c .txt extension are valid. Further, \l {QList}{QLists} can be
 	used in QML files by declaring them as a \c QDeclarativeListProperty in C++.
 	The templated object needs to inherit from a \l {QObject}{QObject}, therefore,
 	the \c File class must also inherit from \c QObject. In the \c Directory class,

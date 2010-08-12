@@ -585,7 +585,7 @@ void tst_qdeclarativeinstruction::dump()
         << "45\t\t48\tDEFER\t\t\t7"
         << "46\t\tNA\tDEFER\t\t\t7"
         << "47\t\t48\tSTORE_IMPORTED_SCRIPT\t2"
-        << "48\t\t50\tXXX UNKOWN INSTRUCTION\t1234"
+        << "48\t\t50\tXXX UNKNOWN INSTRUCTION\t1234"
         << "49\t\t51\tSTORE_VARIANT_INTEGER\t\t32\t11"
         << "50\t\t52\tSTORE_VARIANT_DOUBLE\t\t19\t33.7"
         << "-------------------------------------------------------------------------------";

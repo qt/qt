@@ -1380,7 +1380,7 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
 #endif
     } else {
         if (d->threadData->eventDispatcher) {
-            // this internal API for QHostInfo either immediatly gives us the desired
+            // this internal API for QHostInfo either immediately gives us the desired
             // QHostInfo from cache or later calls the _q_startConnecting slot.
             bool immediateResultValid = false;
             QHostInfo hostInfo = qt_qhostinfo_lookup(hostName,

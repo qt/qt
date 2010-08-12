@@ -988,7 +988,6 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
             dictionary[ "QT_NAMESPACE" ] = configCmdLine.at(i);
         } else if (configCmdLine.at(i) == "-qtlibinfix") {
             ++i;
@@ -2944,8 +2943,6 @@ void Configure::generateCachefile()
         if (!dictionary["QT_NAMESPACE"].isEmpty()) {
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
-
-        configStream << "#modules" << endl << "for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)" << endl;
 
         configStream.flush();
         configFile.close();

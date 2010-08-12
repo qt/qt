@@ -95,6 +95,11 @@ class HtmlGenerator : public PageGenerator
         LastSinceType
     };
 
+    enum Application {
+        Online,
+        Assistant,
+        Creator};
+
  public:
     HtmlGenerator();
     ~HtmlGenerator();
@@ -294,9 +299,7 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
-    bool onlineDocs;
-    bool offlineDocs;
-    bool creatorDocs;
+    Application application;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
