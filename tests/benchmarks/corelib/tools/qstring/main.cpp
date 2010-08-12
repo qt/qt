@@ -219,6 +219,27 @@ static bool equals2_intwise(ushort *p1, ushort *p2, int length)
     return true;
 }
 
+#ifdef __SSE2__
+static bool equals2_sse2(ushort *p1, ushort *p2, int len)
+{
+    if (len > 8) {
+        while (len > 8) {
+            __m128i q1 = _mm_loadu_si128((__m128i *)p1);
+            __m128i q2 = _mm_loadu_si128((__m128i *)p2);
+            __m128i cmp = _mm_cmpeq_epi16(q1, q2);
+            if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+                return false;
+
+            len -= 8;
+            p1 += 8;
+            p2 += 8;
+        }
+    }
+
+    return equals2_shortwise(p1, p2, len);
+}
+#endif
+
 void tst_QString::equals2_data() const
 {
     QTest::addColumn<int>("algorithm");
@@ -227,6 +248,9 @@ void tst_QString::equals2_data() const
     QTest::newRow("bytewise") << 1;
     QTest::newRow("shortwise") << 2;
     QTest::newRow("intwise") << 3;
+#ifdef __SSE2__
+    QTest::newRow("sse2") << 4;
+#endif
 }
 
 void tst_QString::equals2() const
@@ -274,6 +298,9 @@ void tst_QString::equals2() const
         equals2_bytewise, // 1
         equals2_shortwise, // 1
         equals2_intwise, // 3
+#ifdef __SSE2__
+        equals2_sse2, // 4
+#endif
         0
     };
 
