@@ -173,6 +173,52 @@ static bool equals2_shortwise(ushort *p1, ushort *p2, int len)
     return true;
 }
 
+static bool equals2_intwise(ushort *p1, ushort *p2, int length)
+{
+    register union {
+        const quint16 *w;
+        const quint32 *d;
+        quintptr value;
+    } sa, sb;
+    sa.w = p1;
+    sb.w = p2;
+
+    // check alignment
+    if ((sa.value & 2) == (sb.value & 2)) {
+        // both addresses have the same alignment
+        if (sa.value & 2) {
+            // both addresses are not aligned to 4-bytes boundaries
+            // compare the first character
+            if (*sa.w != *sb.w)
+                return false;
+            --length;
+            ++sa.w;
+            ++sb.w;
+
+            // now both addresses are 4-bytes aligned
+        }
+
+        // both addresses are 4-bytes aligned
+        // do a fast 32-bit comparison
+        register const quint32 *e = sa.d + (length >> 1);
+        for ( ; sa.d != e; ++sa.d, ++sb.d) {
+            if (*sa.d != *sb.d)
+                return false;
+        }
+
+        // do we have a tail?
+        return (length & 1) ? *sa.w == *sb.w : true;
+    } else {
+        // one of the addresses isn't 4-byte aligned but the other is
+        register const quint16 *e = sa.w + length;
+        for ( ; sa.w != e; ++sa.w, ++sb.w) {
+            if (*sa.w != *sb.w)
+                return false;
+        }
+    }
+    return true;
+}
+
 void tst_QString::equals2_data() const
 {
     QTest::addColumn<int>("algorithm");
@@ -180,6 +226,7 @@ void tst_QString::equals2_data() const
     QTest::newRow("memcmp_call") << 0;
     QTest::newRow("bytewise") << 1;
     QTest::newRow("shortwise") << 2;
+    QTest::newRow("intwise") << 3;
 }
 
 void tst_QString::equals2() const
@@ -226,6 +273,7 @@ void tst_QString::equals2() const
         equals2_memcmp_call, // 0
         equals2_bytewise, // 1
         equals2_shortwise, // 1
+        equals2_intwise, // 3
         0
     };
 
