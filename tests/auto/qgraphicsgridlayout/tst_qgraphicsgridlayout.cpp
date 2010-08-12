@@ -78,6 +78,7 @@ private slots:
     void horizontalSpacing();
     void itemAt();
     void removeAt();
+    void removeItem();
     void rowAlignment();
     void rowCount();
     void rowMaximumHeight();
@@ -990,6 +991,32 @@ void tst_QGraphicsGridLayout::removeAt()
     layout->removeAt(0);
     QCOMPARE(layout->count(), 0);
     delete widget;
+}
+
+void tst_QGraphicsGridLayout::removeItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+    scene.addItem(widget);
+    QGraphicsGridLayout *l = new QGraphicsGridLayout();
+    widget->setLayout(l);
+
+    populateLayout(l, 3, 2);
+    QCOMPARE(l->count(), 6);
+    l->removeItem(l->itemAt(5));
+    l->removeItem(l->itemAt(4));
+    QCOMPARE(l->count(), 4);
+
+    // Avoid crashing. Note that the warning message might change in the future.
+    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
+    l->removeItem(0);
+    QCOMPARE(l->count(), 4);
+
+    QTest::ignoreMessage(QtWarningMsg, QString::fromAscii("QGraphicsGridLayout::removeAt: invalid index -1").toLatin1().constData());
+    l->removeItem(new QGraphicsWidget);
+    QCOMPARE(l->count(), 4);
 }
 
 // public Qt::Alignment rowAlignment(int row) const

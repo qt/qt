@@ -775,6 +775,15 @@ QGridLayoutItem *QGridLayoutEngine::itemAt(int index) const
     return q_items.at(index);
 }
 
+int QGridLayoutEngine::indexOf(QGraphicsLayoutItem *item) const
+{
+    for (int i = 0; i < q_items.size(); ++i) {
+        if (item == q_items.at(i)->layoutItem())
+            return i;
+    }
+    return -1;
+}
+
 int QGridLayoutEngine::effectiveFirstRow(Qt::Orientation orientation) const
 {
     ensureEffectiveFirstAndLastRows();
