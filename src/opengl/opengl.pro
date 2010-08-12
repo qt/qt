@@ -20,6 +20,7 @@ contains(QT_CONFIG, egl):CONFIG += egl
 HEADERS += qgl.h \
 	   qgl_p.h \
 	   qglcolormap.h \
+           qglfunctions.h \
 	   qglpixelbuffer.h \
            qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
@@ -31,6 +32,7 @@ HEADERS += qgl.h \
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
+           qglfunctions.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
