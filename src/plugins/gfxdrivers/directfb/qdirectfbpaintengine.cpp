@@ -167,7 +167,6 @@ struct CachedImage
 static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
 #endif
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS || defined QT_DEBUG
 #define VOID_ARG() static_cast<bool>(false)
 enum PaintOperation {
     DRAW_RECTS = 0x0001, DRAW_LINES = 0x0002, DRAW_IMAGE = 0x0004,
@@ -178,88 +177,81 @@ enum PaintOperation {
     DRAW_STATICTEXT = 0x8000, ALL = 0xffff
 };
 
-#ifdef QT_DEBUG
-static void initRasterFallbacksMasks(int *warningMask, int *disableMask)
+enum { RasterWarn = 1, RasterDisable = 2 };
+static inline uint rasterFallbacksMask(PaintOperation op)
 {
-    struct {
-        const char *name;
-        PaintOperation operation;
-    } const operations[] = {
-        { "DRAW_RECTS", DRAW_RECTS },
-        { "DRAW_LINES", DRAW_LINES },
-        { "DRAW_IMAGE", DRAW_IMAGE },
-        { "DRAW_PIXMAP", DRAW_PIXMAP },
-        { "DRAW_TILED_PIXMAP", DRAW_TILED_PIXMAP },
-        { "STROKE_PATH", STROKE_PATH },
-        { "DRAW_PATH", DRAW_PATH },
-        { "DRAW_POINTS", DRAW_POINTS },
-        { "DRAW_ELLIPSE", DRAW_ELLIPSE },
-        { "DRAW_POLYGON", DRAW_POLYGON },
-        { "DRAW_TEXT", DRAW_TEXT },
-        { "FILL_PATH", FILL_PATH },
-        { "FILL_RECT", FILL_RECT },
-        { "DRAW_COLORSPANS", DRAW_COLORSPANS },
-        { "DRAW_ROUNDED_RECT", DRAW_ROUNDED_RECT },
-        { "ALL", ALL },
-        { 0, ALL }
-    };
-
-    QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
-                                                                                                              QString::SkipEmptyParts);
-    QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
-                                                                                                              QString::SkipEmptyParts);
-    *warningMask = 0;
-    *disableMask = 0;
-    if (!warning.isEmpty() || !disable.isEmpty()) {
-        for (int i=0; operations[i].name; ++i) {
-            const QString name = QString::fromLatin1(operations[i].name);
-            int idx = warning.indexOf(name);
-            if (idx != -1) {
-                *warningMask |= operations[i].operation;
-                warning.erase(warning.begin() + idx);
-            }
-            idx = disable.indexOf(name);
-            if (idx != -1) {
-                *disableMask |= operations[i].operation;
-                disable.erase(disable.begin() + idx);
-            }
-        }
-    }
-    if (!warning.isEmpty()) {
-        qWarning("QDirectFBPaintEngine QT_DIRECTFB_WARN_ON_RASTERFALLBACKS Unknown operation(s): %s",
-                 qPrintable(warning.join(QLatin1String("|"))));
-    }
-    if (!disable.isEmpty()) {
-        qWarning("QDirectFBPaintEngine QT_DIRECTFB_DISABLE_RASTERFALLBACKS Unknown operation(s): %s",
-                 qPrintable(disable.join(QLatin1String("|"))));
-    }
-
-}
-#endif
-
-static inline int rasterFallbacksMask(bool warn)
-{
+    uint ret = 0;
 #ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-    if (warn)
-        return QT_DIRECTFB_WARN_ON_RASTERFALLBACKS;
+    if (op & QT_DIRECTFB_WARN_ON_RASTERFALLBACKS)
+        ret |= RasterWarn;
 #endif
 #ifdef QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-    if (!warn)
-        return QT_DIRECTFB_DISABLE_RASTERFALLBACKS;
+    if (op & QT_DIRECTFB_DISABLE_RASTERFALLBACKS)
+        ret |= RasterDisable;
 #endif
-#ifndef QT_DEBUG
-    return 0;
-#else
-    static int warnMask = -1;
+    static int warningMask = -1;
     static int disableMask = -1;
-    if (warnMask == -1)
-        initRasterFallbacksMasks(&warnMask, &disableMask);
-    return warn ? warnMask : disableMask;
-#endif
-}
-#endif
+    if (warningMask < 0) {
+        struct {
+            const char *name;
+            PaintOperation operation;
+        } const operations[] = {
+            { "DRAW_RECTS", DRAW_RECTS },
+            { "DRAW_LINES", DRAW_LINES },
+            { "DRAW_IMAGE", DRAW_IMAGE },
+            { "DRAW_PIXMAP", DRAW_PIXMAP },
+            { "DRAW_TILED_PIXMAP", DRAW_TILED_PIXMAP },
+            { "STROKE_PATH", STROKE_PATH },
+            { "DRAW_PATH", DRAW_PATH },
+            { "DRAW_POINTS", DRAW_POINTS },
+            { "DRAW_ELLIPSE", DRAW_ELLIPSE },
+            { "DRAW_POLYGON", DRAW_POLYGON },
+            { "DRAW_TEXT", DRAW_TEXT },
+            { "FILL_PATH", FILL_PATH },
+            { "FILL_RECT", FILL_RECT },
+            { "DRAW_COLORSPANS", DRAW_COLORSPANS },
+            { "DRAW_ROUNDED_RECT", DRAW_ROUNDED_RECT },
+            { "ALL", ALL },
+            { 0, ALL }
+        };
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DEBUG
+        QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                                  QString::SkipEmptyParts);
+        QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                                  QString::SkipEmptyParts);
+        warningMask = 0;
+        disableMask = 0;
+        if (!warning.isEmpty() || !disable.isEmpty()) {
+            for (int i=0; operations[i].name; ++i) {
+                const QString name = QString::fromLatin1(operations[i].name);
+                int idx = warning.indexOf(name);
+                if (idx != -1) {
+                    warningMask |= operations[i].operation;
+                    warning.erase(warning.begin() + idx);
+                }
+                idx = disable.indexOf(name);
+                if (idx != -1) {
+                    disableMask |= operations[i].operation;
+                    disable.erase(disable.begin() + idx);
+                }
+            }
+        }
+        if (!warning.isEmpty()) {
+            qWarning("QDirectFBPaintEngine QT_DIRECTFB_WARN_ON_RASTERFALLBACKS Unknown operation(s): %s",
+                     qPrintable(warning.join(QLatin1String("|"))));
+        }
+        if (!disable.isEmpty()) {
+            qWarning("QDirectFBPaintEngine QT_DIRECTFB_DISABLE_RASTERFALLBACKS Unknown operation(s): %s",
+                     qPrintable(disable.join(QLatin1String("|"))));
+        }
+    }
+    if (op & warningMask)
+        ret |= RasterWarn;
+    if (op & disableMask)
+        ret |= RasterDisable;
+    return ret;
+}
+
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                uint transformationType, bool simplePen,
@@ -267,16 +259,14 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three);
-#endif
 
-#if defined QT_DEBUG || (defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS)
 #define RASTERFALLBACK(op, one, two, three)                             \
     {                                                                   \
-        const bool disable = op & rasterFallbacksMask(false);           \
-        if (op & rasterFallbacksMask(true))                             \
-            rasterFallbackWarn(disable                                  \
-                               ? "Disabled raster engine operation"     \
-                               : "Falling back to raster engine for",   \
+        static const uint rasterFallbacks = rasterFallbacksMask(op);    \
+        switch (rasterFallbacks) {                                      \
+        case 0: break;                                                  \
+        case RasterWarn:                                                \
+            rasterFallbackWarn("Falling back to raster engine for",     \
                                __FUNCTION__,                            \
                                state()->painter->device(),              \
                                d_func()->transformationType,            \
@@ -284,26 +274,20 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                                d_func()->clipType,                      \
                                d_func()->compositionModeStatus,         \
                                #one, one, #two, two, #three, three);    \
-        if (disable)                                                    \
+            break;                                                      \
+        case RasterDisable|RasterWarn:                                  \
+            rasterFallbackWarn("Disabled raster engine operation",      \
+                               __FUNCTION__,                            \
+                               state()->painter->device(),              \
+                               d_func()->transformationType,            \
+                               d_func()->simplePen,                     \
+                               d_func()->clipType,                      \
+                               d_func()->compositionModeStatus,         \
+                               #one, one, #two, two, #three, three);    \
+        case RasterDisable:                                             \
             return;                                                     \
+        }                                                               \
     }
-#elif defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & rasterFallbacksMask(false))                                \
-        return;
-#elif defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & rasterFallbacksMask(true))                                 \
-        rasterFallbackWarn("Falling back to raster engine for",         \
-                           __FUNCTION__, state()->painter->device(),    \
-                           d_func()->transformationType,                \
-                           d_func()->simplePen,                         \
-                           d_func()->clipType,                          \
-                           d_func()->compositionModeStatus,             \
-                           #one, one, #two, two, #three, three);
-#else
-#define RASTERFALLBACK(op, one, two, three)
-#endif
 
 template <class T>
 static inline void drawLines(const T *lines, int n, const QTransform &transform, IDirectFBSurface *surface);
@@ -1362,7 +1346,6 @@ static inline void drawRects(const T *rects, int n, const QTransform &transform,
     }
 }
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DEBUG
 template <typename T> inline const T *ptr(const T &t) { return &t; }
 template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
@@ -1402,8 +1385,6 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     }
     qWarning("%s", qPrintable(out));
 }
-
-#endif // QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
 
 QT_END_NAMESPACE
 
