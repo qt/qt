@@ -90,6 +90,8 @@ void tst_QGLFunctions::features()
 
     // Make a context current.
     QGLWidget glw;
+    if (!glw.isValid())
+        QSKIP("Could not create a GL context", SkipAll);
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
@@ -192,6 +194,8 @@ void tst_QGLFunctions::multitexture()
 {
     QGLFunctions funcs;
     QGLWidget glw;
+    if (!glw.isValid())
+        QSKIP("Could not create a GL context", SkipAll);
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
@@ -216,6 +220,8 @@ void tst_QGLFunctions::blendColor()
 {
     QGLFunctions funcs;
     QGLWidget glw;
+    if (!glw.isValid())
+        QSKIP("Could not create a GL context", SkipAll);
     glw.makeCurrent();
     funcs.initializeGLFunctions();
 
