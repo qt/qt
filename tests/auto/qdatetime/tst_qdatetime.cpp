@@ -959,7 +959,9 @@ void tst_QDateTime::currentDateTime()
 #endif
     QDateTime upperBound;
     upperBound.setTime_t(buf2);
-    upperBound = upperBound.addSecs(1);
+    // Note we must add 2 seconds here because time() may return up to
+    // 1 second difference from the more accurate method used by QDateTime::currentDateTime()
+    upperBound = upperBound.addSecs(2);
 
     QString details = QString("\n"
         "lowerBound: %1\n"
@@ -1010,7 +1012,9 @@ void tst_QDateTime::currentDateTimeUtc()
 #endif
     QDateTime upperBound;
     upperBound.setTime_t(buf2);
-    upperBound = upperBound.addSecs(1);
+    // Note we must add 2 seconds here because time() may return up to
+    // 1 second difference from the more accurate method used by QDateTime::currentDateTime()
+    upperBound = upperBound.addSecs(2);
 
     QString details = QString("\n"
         "lowerBound: %1\n"

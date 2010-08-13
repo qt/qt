@@ -58,6 +58,7 @@ MediaSource::MediaSource(const QString &filename)
             d->type = Stream;
             d->ioDevice = new QFile(filename);
             d->setStream(new IODeviceStream(d->ioDevice, d->ioDevice));
+            d->url =  QUrl::fromLocalFile(fileInfo.absoluteFilePath());
 #else
             d->type = Invalid;
 #endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM

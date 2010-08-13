@@ -60,6 +60,8 @@ class QPalette;
 #define Q_GUI_EXPORT_STYLE_MAC Q_GUI_EXPORT
 #endif
 
+class QPushButton;
+class QStyleOptionButton;
 class QMacStylePrivate;
 class Q_GUI_EXPORT_STYLE_MAC QMacStyle : public QWindowsStyle
 {
@@ -133,6 +135,8 @@ private:
     Q_DISABLE_COPY(QMacStyle)
 
     QMacStylePrivate *d;
+
+    friend bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
 };
 
 #endif // Q_WS_MAC

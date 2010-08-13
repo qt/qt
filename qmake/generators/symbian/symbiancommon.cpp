@@ -252,8 +252,30 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     tw << languageRules.join("\n") << endl;
     ts << languageRules.join("\n") << endl;
 
-    // name of application, UID and version
-    QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
+    // Determine application version. If version has missing component values,
+    // those will default to zero.
+    // If VERSION is missing altogether or is invalid, use "1,0,0"
+    QStringList verNumList = project->first("VERSION").split('.');
+    uint major = 0;
+    uint minor = 0;
+    uint patch = 0;
+    bool success = false;
+
+    if (verNumList.size() > 0) {
+        major = verNumList[0].toUInt(&success);
+        if (success && verNumList.size() > 1) {
+            minor = verNumList[1].toUInt(&success);
+            if (success && verNumList.size() > 2) {
+                patch = verNumList[2].toUInt(&success);
+            }
+        }
+    }
+
+    QString applicationVersion("1,0,0");
+    if (success)
+        applicationVersion = QString("%1,%2,%3").arg(major).arg(minor).arg(patch);
+
+    // Package header
     QString sisHeader = "; SIS header: name, uid, version\n#{\"%1\"},(%2),%3\n\n";
     QString visualTarget = generator->escapeFilePath(project->first("TARGET"));
 

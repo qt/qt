@@ -3259,8 +3259,12 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     QGraphicsItem *p = parent;
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+            QGraphicsItem *oldFocusScopeItem = p->d_ptr->focusScopeItem;
             p->d_ptr->focusScopeItem = q_ptr;
             if (!p->focusItem() && !focusFromShow) {
+                if (oldFocusScopeItem)
+                    oldFocusScopeItem->d_ptr->focusScopeItemChange(false);
+                focusScopeItemChange(true);
                 // If you call setFocus on a child of a focus scope that
                 // doesn't currently have a focus item, then stop.
                 return;
@@ -3931,7 +3935,7 @@ void QGraphicsItem::setScale(qreal factor)
     Returns a list of graphics transforms that currently apply to this item.
 
     QGraphicsTransform is for applying and controlling a chain of individual
-    transformation operations on an item. It's particularily useful in
+    transformation operations on an item. It's particularly useful in
     animations, where each transform operation needs to be interpolated
     independently, or differently.
 
@@ -3958,7 +3962,7 @@ QList<QGraphicsTransform *> QGraphicsItem::transformations() const
     an item, you can call setTransform().
 
     QGraphicsTransform is for applying and controlling a chain of individual
-    transformation operations on an item. It's particularily useful in
+    transformation operations on an item. It's particularly useful in
     animations, where each transform operation needs to be interpolated
     independently, or differently.
 
@@ -5152,7 +5156,7 @@ QPainterPath QGraphicsItem::opaqueArea() const
     The bounding region describes a coarse outline of the item's visual
     contents. Although it's expensive to calculate, it's also more precise
     than boundingRect(), and it can help to avoid unnecessary repainting when
-    an item is updated. This is particularily efficient for thin items (e.g.,
+    an item is updated. This is particularly efficient for thin items (e.g.,
     lines or simple polygons). You can tune the granularity for the bounding
     region by calling setBoundingRegionGranularity(). The default granularity
     is 0; in which the item's bounding region is the same as its bounding
@@ -5595,6 +5599,7 @@ void QGraphicsItemPrivate::subFocusItemChange()
 */
 void QGraphicsItemPrivate::focusScopeItemChange(bool isSubFocusItem)
 {
+    Q_UNUSED(isSubFocusItem);
 }
 
 /*!
@@ -7753,6 +7758,21 @@ void QGraphicsItemPrivate::resetHeight()
 }
 
 /*!
+  \property QGraphicsObject::children
+  \internal
+*/
+
+/*!
+  \property QGraphicsObject::width
+  \internal
+*/
+
+/*!
+  \property QGraphicsObject::height
+  \internal
+*/
+
+/*!
   \property QGraphicsObject::parent
   \brief the parent of the item
 
@@ -7962,6 +7982,24 @@ void QGraphicsItemPrivate::resetHeight()
   \brief the effect attached to this item
 
   \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
+*/
+
+/*!
+    \property QGraphicsObject::children
+    \since 4.7
+    \internal
+*/
+
+/*!
+    \property QGraphicsObject::width
+    \since 4.7
+    \internal
+*/
+
+/*!
+    \property QGraphicsObject::height
+    \since 4.7
+    \internal
 */
 
 /*!

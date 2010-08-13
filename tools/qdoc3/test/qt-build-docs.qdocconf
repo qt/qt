@@ -7,9 +7,6 @@ include(qt-defines.qdocconf)
 project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.8
-online                  = false
-offline                 = false
-creator                 = true
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
@@ -21,6 +18,7 @@ qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.480
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.indexTitle          = Qt Reference Documentation
+qhp.Qt.indexRoot           =
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML

@@ -718,146 +718,80 @@ QNmSettingsMap QNetworkManagerSettingsConnection::getSettings()
 
 NMDeviceType QNetworkManagerSettingsConnection::getType()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("connection"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("connection")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("type"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("type")) {
-            QString devType = ii.value().toString();
-            if (devType == QLatin1String("802-3-ethernet")) {
-                return 	DEVICE_TYPE_802_3_ETHERNET;
-            }
-            if (devType == QLatin1String("802-11-wireless")) {
-                return 	DEVICE_TYPE_802_11_WIRELESS;
-            }
-            ii++;
-        }
-        i++;
-    }
-    return 	DEVICE_TYPE_UNKNOWN;
+    const QString devType =
+        d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("type")).toString();
+
+    if (devType == QLatin1String("802-3-ethernet"))
+        return DEVICE_TYPE_802_3_ETHERNET;
+    else if (devType == QLatin1String("802-11-wireless"))
+        return DEVICE_TYPE_802_11_WIRELESS;
+    else
+        return DEVICE_TYPE_UNKNOWN;
 }
 
 bool QNetworkManagerSettingsConnection::isAutoConnect()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("connection"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("connection")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("autoconnect"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("autoconnect")) {
-            return ii.value().toBool();
-            ii++;
-        }
-        i++;
-    }
-    return true; //default networkmanager is autoconnect
+    const QVariant autoConnect =
+        d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("autoconnect"));
+
+    // NetworkManager default is to auto connect
+    if (!autoConnect.isValid())
+        return true;
+
+    return autoConnect.toBool();
 }
 
 quint64 QNetworkManagerSettingsConnection::getTimestamp()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("connection"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("connection")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("timestamp"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("timestamp")) {
-            return ii.value().toUInt();
-            ii++;
-        }
-        i++;
-    }
-    return 	0;
+    qDebug() << d->settingsMap.value(QLatin1String("connection"));
+
+    return d->settingsMap.value(QLatin1String("connection"))
+                         .value(QLatin1String("timestamp")).toUInt();
 }
 
 QString QNetworkManagerSettingsConnection::getId()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("connection"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("connection")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("id"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("id")) {
-            return ii.value().toString();
-            ii++;
-        }
-        i++;
-    }
-    return 	QString();
+    return d->settingsMap.value(QLatin1String("connection")).value(QLatin1String("id")).toString();
 }
 
 QString QNetworkManagerSettingsConnection::getUuid()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("connection"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("connection")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("uuid"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("uuid")) {
-            return ii.value().toString();
-            ii++;
-        }
-        i++;
-    }
+    const QString id = d->settingsMap.value(QLatin1String("connection"))
+                                     .value(QLatin1String("uuid")).toString();
+
     // is no uuid, return the connection path
-    return 	d->connectionInterface->path();
+    return id.isEmpty() ? d->connectionInterface->path() : id;
 }
 
 QString QNetworkManagerSettingsConnection::getSsid()
 {
-    QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("802-11-wireless"));
-    while (i != d->settingsMap.end() && i.key() == QLatin1String("802-11-wireless")) {
-        QMap<QString,QVariant> innerMap = i.value();
-        QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("ssid"));
-        while (ii != innerMap.end() && ii.key() == QLatin1String("ssid")) {
-            return ii.value().toString();
-            ii++;
-        }
-        i++;
-    }
-    return 	QString();
+    return d->settingsMap.value(QLatin1String("802-11-wireless"))
+                         .value(QLatin1String("ssid")).toString();
 }
 
 QString QNetworkManagerSettingsConnection::getMacAddress()
 {
-    if(getType() == DEVICE_TYPE_802_3_ETHERNET) {
-        QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("802-3-ethernet"));
-        while (i != d->settingsMap.end() && i.key() == QLatin1String("802-3-ethernet")) {
-            QMap<QString,QVariant> innerMap = i.value();
-            QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("mac-address"));
-            while (ii != innerMap.end() && ii.key() == QLatin1String("mac-address")) {
-                return ii.value().toString();
-                ii++;
-            }
-            i++;
-        }
-    }
+    NMDeviceType type = getType();
 
-    else if(getType() == DEVICE_TYPE_802_11_WIRELESS) {
-        QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("802-11-wireless"));
-        while (i != d->settingsMap.end() && i.key() == QLatin1String("802-11-wireless")) {
-            QMap<QString,QVariant> innerMap = i.value();
-            QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("mac-address"));
-            while (ii != innerMap.end() && ii.key() == QLatin1String("mac-address")) {
-                return ii.value().toString();
-                ii++;
-            }
-            i++;
-        }
+    if (type == DEVICE_TYPE_802_3_ETHERNET) {
+        return d->settingsMap.value(QLatin1String("802-3-ethernet"))
+                             .value(QLatin1String("mac-address")).toString();
+    } else if (type == DEVICE_TYPE_802_11_WIRELESS) {
+        return d->settingsMap.value(QLatin1String("802-11-wireless"))
+                             .value(QLatin1String("mac-address")).toString();
+    } else {
+        return QString();
     }
-    return 	QString();
 }
 
-QStringList  QNetworkManagerSettingsConnection::getSeenBssids()
+QStringList QNetworkManagerSettingsConnection::getSeenBssids()
 {
- if(getType() == DEVICE_TYPE_802_11_WIRELESS) {
-        QNmSettingsMap::const_iterator i = d->settingsMap.find(QLatin1String("802-11-wireless"));
-        while (i != d->settingsMap.end() && i.key() == QLatin1String("802-11-wireless")) {
-            QMap<QString,QVariant> innerMap = i.value();
-            QMap<QString,QVariant>::const_iterator ii = innerMap.find(QLatin1String("seen-bssids"));
-            while (ii != innerMap.end() && ii.key() == QLatin1String("seen-bssids")) {
-                return ii.value().toStringList();
-                ii++;
-            }
-            i++;
-        }
+    if (getType() == DEVICE_TYPE_802_11_WIRELESS) {
+        return d->settingsMap.value(QLatin1String("802-11-wireless"))
+                             .value(QLatin1String("seen-bssids")).toStringList();
+    } else {
+        return QStringList();
     }
- return QStringList();
 }
 
 class QNetworkManagerConnectionActivePrivate

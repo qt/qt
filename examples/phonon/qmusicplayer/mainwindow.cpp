@@ -248,7 +248,7 @@ void MainWindow::aboutToFinish()
 void MainWindow::setupActions()
 {
     playAction = new QAction(style()->standardIcon(QStyle::SP_MediaPlay), tr("Play"), this);
-    playAction->setShortcut(tr("Crl+P"));
+    playAction->setShortcut(tr("Ctrl+P"));
     playAction->setDisabled(true);
     pauseAction = new QAction(style()->standardIcon(QStyle::SP_MediaPause), tr("Pause"), this);
     pauseAction->setShortcut(tr("Ctrl+A"));

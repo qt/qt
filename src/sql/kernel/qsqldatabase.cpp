@@ -60,7 +60,10 @@
 #include "../drivers/oci/qsql_oci.h"
 #endif
 #ifdef QT_SQL_TDS
+// conflicting RETCODE typedef between odbc and freetds
+#define RETCODE DBRETCODE
 #include "../drivers/tds/qsql_tds.h"
+#undef RETCODE
 #endif
 #ifdef QT_SQL_DB2
 #include "../drivers/db2/qsql_db2.h"

@@ -1167,4 +1167,6 @@ EXPORTS
 	_ZN14QAuthenticator9setOptionERK7QStringRK8QVariant @ 1166 NONAME
 	_ZNK14QAuthenticator6optionERK7QString @ 1167 NONAME
 	_ZNK14QAuthenticator7optionsEv @ 1168 NONAME
+	_ZNK21QNetworkConfiguration10bearerTypeEv @ 1169 NONAME
+	_ZNK21QNetworkConfiguration14bearerTypeNameEv @ 1170 NONAME
 

@@ -143,9 +143,7 @@ QT_BEGIN_NAMESPACE
     int x = 0; \
 \
     /* First, get dst aligned. */ \
-    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
-    const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
-    for (; x < prologLength; ++x) { \
+    ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) { \
         uint s = src[x]; \
         if (s >= 0xff000000) \
             dst[x] = s; \
@@ -202,9 +200,7 @@ QT_BEGIN_NAMESPACE
 { \
     int x = 0; \
 \
-    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
-    const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
-    for (; x < prologLength; ++x) { \
+    ALIGNMENT_PROLOGUE_16BYTES(dst, x, length) { \
         quint32 s = src[x]; \
         if (s != 0) { \
             s = BYTE_MUL(s, const_alpha); \

@@ -653,6 +653,8 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
         // is the reply associated the currently processing of this channel?
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
+            channels[i].request = QHttpNetworkRequest();
+            channels[i].resendCurrent = false;
 
             if (!reply->isFinished() && !channels[i].alreadyPipelinedRequests.isEmpty()) {
                 // the reply had to be prematurely removed, e.g. it was not finished

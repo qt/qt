@@ -95,6 +95,10 @@ class HtmlGenerator : public PageGenerator
         LastSinceType
     };
 
+    enum Application {
+        Online,
+        Creator};
+
  public:
     HtmlGenerator();
     ~HtmlGenerator();
@@ -164,7 +168,10 @@ class HtmlGenerator : public PageGenerator
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker, 
                                  QList<Section>* sections = 0);
-    QString generateListOfAllMemberFile(const InnerNode *inner, CodeMarker *marker);
+    QString generateListOfAllMemberFile(const InnerNode *inner, 
+                                        CodeMarker *marker);
+    QString generateAllQmlMembersFile(const QmlClassNode* qml_cn, 
+                                      CodeMarker* marker);
     QString generateLowStatusMemberFile(const InnerNode *inner, 
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
@@ -294,9 +301,7 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
-    bool onlineDocs;
-    bool offlineDocs;
-    bool creatorDocs;
+    Application application;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;

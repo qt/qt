@@ -760,7 +760,7 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
     prop->listValueRange.offset = node->lbracketToken.offset;
     prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
 
-    // Store the positions of the comma token too, again for the DOM to be able to retreive it.
+    // Store the positions of the comma token too, again for the DOM to be able to retrieve it.
     prop->listCommaPositions = collectCommas(node->members);
 
     while (propertyCount--)
@@ -831,7 +831,9 @@ bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     _scriptFile = fileName;
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
+#ifndef QT_NO_TEXTCODEC
     stream.setCodec("UTF-8");
+#endif
     const QString code = stream.readAll();
 
     data = new QDeclarativeScriptParserJsASTData(fileName);

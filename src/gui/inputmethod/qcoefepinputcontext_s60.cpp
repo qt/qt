@@ -364,10 +364,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 
     commitTemporaryPreeditString();
 
-    bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
-            || hints & ImhDialableCharactersOnly;
-    bool noOnlys = !(numbersOnly || hints & ImhUppercaseOnly
-            || hints & ImhLowercaseOnly);
+    const bool anynumbermodes = hints & (ImhDigitsOnly | ImhFormattedNumbersOnly | ImhDialableCharactersOnly);
+    const bool anytextmodes = hints & (ImhUppercaseOnly | ImhLowercaseOnly | ImhEmailCharactersOnly | ImhUrlCharactersOnly);
+    const bool numbersOnly = anynumbermodes && !anytextmodes;
+    const bool noOnlys = !(hints & ImhExclusiveInputMask);
     TInt flags;
     Qt::InputMethodHints oldHints = hints;
 
@@ -379,8 +379,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     }
     if (!noOnlys) {
         // Make sure that the preference is within the permitted set.
-        if (hints & ImhPreferNumbers && !(hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
-                || hints & ImhDialableCharactersOnly)) {
+        if (hints & ImhPreferNumbers && !anynumbermodes) {
             hints &= ~ImhPreferNumbers;
         } else if (hints & ImhPreferUppercase && !(hints & ImhUppercaseOnly)) {
             hints &= ~ImhPreferUppercase;
@@ -393,8 +392,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
                 hints |= ImhPreferLowercase;
             } else if (hints & ImhUppercaseOnly) {
                 hints |= ImhPreferUppercase;
-            } else if (hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
-                    || hints & ImhDialableCharactersOnly) {
+            } else if (numbersOnly) {
                 hints |= ImhPreferNumbers;
             }
         }
@@ -408,13 +406,21 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetCurrentInputMode(EAknEditorTextInputMode);
     }
     flags = 0;
-    if (numbersOnly) {
-        flags |= EAknEditorNumericInputMode;
+    if (noOnlys || (anynumbermodes && anytextmodes)) {
+        flags = EAknEditorAllInputModes;
     }
-    if (hints & ImhUppercaseOnly || hints & ImhLowercaseOnly) {
+    else if (anynumbermodes) {
+        flags |= EAknEditorNumericInputMode;
+        if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0
+            && ((hints & ImhFormattedNumbersOnly) || (hints & ImhDialableCharactersOnly))) {
+            //workaround - the * key does not launch the symbols menu, making it impossible to use these modes unless text mode is enabled.
+            flags |= EAknEditorTextInputMode;
+        }
+    }
+    else if (anytextmodes) {
         flags |= EAknEditorTextInputMode;
     }
-    if (flags == 0) {
+    else {
         flags = EAknEditorAllInputModes;
     }
     m_fepState->SetPermittedInputModes(flags);
@@ -461,24 +467,33 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
+    // if alphanumeric input, or if multiple incompatible number modes are selected;
+    // then make all symbols available in numeric mode too.
+    if (!numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly)))
+        flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
 
-    if (hints & ImhFormattedNumbersOnly) {
+    if (hints & ImhDialableCharactersOnly) {
+        // This is first, because if (ImhDialableCharactersOnly | ImhFormattedNumbersOnly)
+        // is specified, this one is more natural (# key enters a #)
+        flags = EAknEditorStandardNumberModeKeymap;
+    } else if (hints & ImhFormattedNumbersOnly) {
+        // # key enters decimal point
         flags = EAknEditorCalculatorNumberModeKeymap;
     } else if (hints & ImhDigitsOnly) {
+        // This is last, because it is most restrictive (# key is inactive)
         flags = EAknEditorPlainNumberModeKeymap;
     } else {
-        // ImhDialableCharactersOnly is the fallback as well, so we don't need to check for
-        // that flag.
         flags = EAknEditorStandardNumberModeKeymap;
     }
     m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
 
-    if (hints & ImhEmailCharactersOnly) {
-        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else if (hints & ImhUrlCharactersOnly) {
+    if (hints & ImhUrlCharactersOnly) {
+        // URL characters is everything except space, so a superset of the other restrictions
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else if (hints & ImhEmailCharactersOnly) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     }

@@ -240,6 +240,7 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
             if (QGLWidget *wgl = qobject_cast<QGLWidget *>(w)) {
                 if (wgl->d_func()->eglSurfaceWindowId != wgl->winId()) {
                     qWarning("WARNING: Potential EGL surface leak! Not destroying surface.");
+                    eglSurface = EGL_NO_SURFACE;
                     return;
                 }
             }

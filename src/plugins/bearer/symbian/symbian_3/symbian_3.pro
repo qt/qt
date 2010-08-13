@@ -12,7 +12,11 @@ symbian {
         }
     } else {
         # Fall back to 3_1 implementation on platforms that do not have cmmanager
-        LIBS += -lapengine
+        is_using_gnupoc {
+            LIBS += -lapengine
+        } else {
+            LIBS += -lAPEngine
+        }
     }
 }
 

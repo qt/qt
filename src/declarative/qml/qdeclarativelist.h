@@ -98,16 +98,16 @@ public:
 
 private:
     static void qlist_append(QDeclarativeListProperty *p, T *v) {
-        ((QList<T *> *)p->data)->append(v);
+        reinterpret_cast<QList<T *> *>(p->data)->append(v);
     }
     static int qlist_count(QDeclarativeListProperty *p) {
-        return ((QList<T *> *)p->data)->count();
+        return reinterpret_cast<QList<T *> *>(p->data)->count();
     }
     static T *qlist_at(QDeclarativeListProperty *p, int idx) {
-        return ((QList<T *> *)p->data)->at(idx);
+        return reinterpret_cast<QList<T *> *>(p->data)->at(idx);
     }
     static void qlist_clear(QDeclarativeListProperty *p) {
-        return ((QList<T *> *)p->data)->clear();
+        return reinterpret_cast<QList<T *> *>(p->data)->clear();
     }
 };
 #endif

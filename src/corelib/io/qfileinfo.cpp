@@ -797,12 +797,12 @@ QString QFileInfo::suffix() const
     \bold{Note:} The QDir returned always corresponds to the object's
     parent directory, even if the QFileInfo represents a directory.
 
-    For each of the follwing, dir() returns a QDir for
+    For each of the following, dir() returns a QDir for
     \c{"~/examples/191697"}.
 
     \snippet doc/src/snippets/fileinfo/main.cpp 0
 
-    For each of the follwing, dir() returns a QDir for
+    For each of the following, dir() returns a QDir for
     \c{"."}.
 
     \snippet doc/src/snippets/fileinfo/main.cpp 1

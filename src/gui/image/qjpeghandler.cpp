@@ -45,6 +45,7 @@
 #include <qvariant.h>
 #include <qvector.h>
 #include <qbuffer.h>
+#include <private/qsimd_p.h>
 
 #include <stdio.h>      // jpeglib needs this to be pre-included
 #include <setjmp.h>
@@ -74,6 +75,19 @@ extern "C" {
 }
 
 QT_BEGIN_NAMESPACE
+
+void QT_FASTCALL convert_rgb888_to_rgb32_C(quint32 *dst, const uchar *src, int len)
+{
+    // Expand 24->32 bpp.
+    for (int i = 0; i < len; ++i) {
+        *dst++ = qRgb(src[0], src[1], src[2]);
+        src += 3;
+    }
+}
+
+typedef void (QT_FASTCALL *Rgb888ToRgb32Converter)(quint32 *dst, const uchar *src, int len);
+
+static Rgb888ToRgb32Converter rgb888ToRgb32ConverterPtr = convert_rgb888_to_rgb32_C;
 
 struct my_error_mgr : public jpeg_error_mgr {
     jmp_buf setjmp_buffer;
@@ -393,13 +407,9 @@ static bool read_jpeg_image(QImage *outImage,
                     continue;   // Haven't reached the starting line yet.
 
                 if (info->output_components == 3) {
-                    // Expand 24->32 bpp.
                     uchar *in = rows[0] + clip.x() * 3;
                     QRgb *out = (QRgb*)outImage->scanLine(y);
-                    for (int i = 0; i < clip.width(); ++i) {
-                        *out++ = qRgb(in[0], in[1], in[2]);
-                        in += 3;
-                    }
+                    rgb888ToRgb32ConverterPtr(out, in, clip.width());
                 } else if (info->out_color_space == JCS_CMYK) {
                     // Convert CMYK->RGB.
                     uchar *in = rows[0] + clip.x() * 4;
@@ -793,6 +803,22 @@ bool QJpegHandlerPrivate::read(QImage *image)
 QJpegHandler::QJpegHandler()
     : d(new QJpegHandlerPrivate(this))
 {
+    const uint features = qDetectCPUFeatures();
+    Q_UNUSED(features);
+#if defined(QT_HAVE_NEON)
+    // from qimage_neon.cpp
+    Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_neon(quint32 *dst, const uchar *src, int len);
+
+    if (features & NEON)
+        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_neon;
+#endif // QT_HAVE_NEON
+#if defined(QT_HAVE_SSSE3)
+    // from qimage_ssse3.cpp
+    Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, const uchar *src, int len);
+
+    if (features & SSSE3)
+        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_ssse3;
+#endif // QT_HAVE_SSSE3
 }
 
 QJpegHandler::~QJpegHandler()

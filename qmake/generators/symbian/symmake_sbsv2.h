@@ -65,6 +65,13 @@ public:
 
 private:
     void exportFlm();
+    QString gcceVersion();
+    QString configClause(QString &platform,
+                         QString &build,
+                         QString &winscwClauseTemplate,
+                         QString &gcceClauseTemplate,
+                         QString &genericClauseTemplate);
+
     void writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t);
 
     QString extraTargetsCache;

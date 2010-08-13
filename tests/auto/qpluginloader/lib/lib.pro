@@ -2,7 +2,7 @@ TEMPLATE = lib
 CONFIG += dll
 CONFIG -= staticlib
 SOURCES		= mylib.c
-TARGET = mylib
+TARGET = tst_qpluginloaderlib
 DESTDIR = ../bin
 QT = core
 

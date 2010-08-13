@@ -104,8 +104,6 @@ public:
 
     virtual QPixmapData *runtimeData() const;
 
-    virtual uint memoryUsage() const;
-
 private:
     const QRuntimeGraphicsSystem *m_graphicsSystem;
 
@@ -131,10 +129,8 @@ public:
 
     virtual QPoint offset(const QWidget *widget) const;
 
-    virtual uint memoryUsage() const;
-
-    QWindowSurface *m_windowSurface;
-    QWindowSurface *m_pendingWindowSurface;
+    QScopedPointer<QWindowSurface> m_windowSurface;
+    QScopedPointer<QWindowSurface> m_pendingWindowSurface;
 
 private:
     const QRuntimeGraphicsSystem *m_graphicsSystem;
@@ -159,7 +155,6 @@ public:
     void removePixmapData(QRuntimePixmapData *pixmapData) const;
     void removeWindowSurface(QRuntimeWindowSurface *windowSurface) const;
 
-    void setGraphicsSystem(const QString &name, uint memoryUsageLimit);
     void setGraphicsSystem(const QString &name);
     QString graphicsSystemName() const { return m_graphicsSystemName; }
 
@@ -170,22 +165,14 @@ public:
 
     int windowSurfaceDestroyPolicy() const { return m_windowSurfaceDestroyPolicy; }
 
-    uint memoryUsage() const { return m_memoryUsage; }
 
 private:
-
-    void increaseMemoryUsage(uint amount) const;
-    void decreaseMemoryUsage(uint amount, bool persistent = false) const;
-
-private:
-    mutable uint m_memoryUsage;
     int m_windowSurfaceDestroyPolicy;
     QGraphicsSystem *m_graphicsSystem;
     mutable QList<QRuntimePixmapData *> m_pixmapDatas;
     mutable QList<QRuntimeWindowSurface *> m_windowSurfaces;
     QString m_graphicsSystemName;
 
-    uint m_graphicsSystemChangeMemoryLimit;
     QString m_pendingGraphicsSystemName;
 
     friend class QRuntimePixmapData;

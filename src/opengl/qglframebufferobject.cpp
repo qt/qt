@@ -445,11 +445,11 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         GLint maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
 
-        samples = qBound(1, int(samples), int(maxSamples));
+        samples = qBound(0, int(samples), int(maxSamples));
 
         glGenRenderbuffers(1, &color_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER_EXT, color_buffer);
-        if (glRenderbufferStorageMultisampleEXT) {
+        if (glRenderbufferStorageMultisampleEXT && samples > 0) {
             glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
                 internal_format, size.width(), size.height());
         } else {

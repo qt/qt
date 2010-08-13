@@ -30,10 +30,13 @@
 \title Installation
 \brief Installing Qt on supported platforms.
 
-The installation procedure is different on each Qt platform.
-Please follow the instructions for your platform from the following list.
+The installation procedure is different on each Qt platform. This page provides
+information on how to install Qt, as well as software and hardware requirements
+for using Qt on each of the supported platforms. Please follow the instructions
+for your platform from the following list.
 
 \generatelist{related}
+
 */
 
 /*! \page install-x11.html

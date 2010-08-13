@@ -41,12 +41,12 @@
 /**
  * PHONON_VERSION is (major << 16) + (minor << 8) + patch.
  */
-#define PHONON_VERSION PHONON_VERSION_CHECK(4, 3, 1)
+#define PHONON_VERSION PHONON_VERSION_CHECK(4, 4, 0)
 
 /**
  * PHONON_VERSION_STR is "major.minor.patch". E.g. "4.2.1"
  */
-#define PHONON_VERSION_STR "4.3.1"
+#define PHONON_VERSION_STR "4.4.0"
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

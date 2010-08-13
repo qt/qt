@@ -621,14 +621,15 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
         case QDeclarativeInstruction::StoreSignal:
             {
                 QObject *target = stack.top();
-                QObject *context = stack.at(stack.count() - 1 - instr.assignBinding.context);
-                
+                QObject *context = stack.at(stack.count() - 1 - instr.storeSignal.context);
+
                 QMetaMethod signal = target->metaObject()->method(instr.storeSignal.signalIndex);
 
                 QDeclarativeBoundSignal *bs = new QDeclarativeBoundSignal(target, signal, target);
                 QDeclarativeExpression *expr = 
                     new QDeclarativeExpression(ctxt, context, primitives.at(instr.storeSignal.value));
                 expr->setSourceLocation(comp->name, instr.line);
+                static_cast<QDeclarativeExpressionPrivate *>(QObjectPrivate::get(expr))->name = datas.at(instr.storeSignal.name);
                 bs->setExpression(expr);
             }
             break;

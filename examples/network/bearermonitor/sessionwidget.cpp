@@ -111,11 +111,11 @@ void SessionWidget::updateSession()
         killTimer(statsTimer);
 
     if (session->configuration().type() == QNetworkConfiguration::InternetAccessPoint)
-        bearer->setText(session->configuration().bearerName());
+        bearer->setText(session->configuration().bearerTypeName());
     else {
         QNetworkConfigurationManager mgr;
         QNetworkConfiguration c = mgr.configurationFromIdentifier(session->sessionProperty("ActiveConfiguration").toString());
-        bearer->setText(c.bearerName());
+        bearer->setText(c.bearerTypeName());
     }
 
 #ifndef QT_NO_NETWORKINTERFACE

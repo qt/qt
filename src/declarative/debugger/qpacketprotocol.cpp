@@ -125,7 +125,7 @@ public:
         QObject::connect(this, SIGNAL(invalidPacket()),
                          parent, SIGNAL(invalidPacket()));
         QObject::connect(dev, SIGNAL(readyRead()),
-                         this, SLOT(readyToRead()));
+                         this, SLOT(readyToRead()), Qt::QueuedConnection);
         QObject::connect(dev, SIGNAL(aboutToClose()),
                          this, SLOT(aboutToClose()));
         QObject::connect(dev, SIGNAL(bytesWritten(qint64)),
@@ -422,7 +422,7 @@ QPacket::~QPacket()
 
 /*!
   Creates a copy of \a other.  The initial stream positions are shared, but the
-  two packets are otherwise independant.
+  two packets are otherwise independent.
  */
 QPacket::QPacket(const QPacket & other)
 : QDataStream(), b(other.b), buf(0)

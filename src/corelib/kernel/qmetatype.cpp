@@ -1415,7 +1415,7 @@ void QMetaType::destroy(int type, void *data)
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 4
 
-    This function is usefull to register typedefs so they can be used
+    This function is useful to register typedefs so they can be used
     by QMetaProperty, or in QueuedConnections
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 9

@@ -38,16 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QDebug>
 #include <QRegExp>
 #include <QString>
+#include <QFile>
 
 #include <qtest.h>
+#ifdef HAVE_BOOST
+#include <boost/regex.hpp>
+#endif
 
+#include <QtScript>
+#include "pcre/pcre.h"
+
+#define ZLIB_VERSION "1.2.3.4"
 
 class tst_qregexp : public QObject
 {
     Q_OBJECT
+public:
+    tst_qregexp();
 private slots:
     void escape_old();
     void escape_old_data() { escape_data(); }
@@ -59,10 +70,56 @@ private slots:
     void escape_new3_data() { escape_data(); }
     void escape_new4();
     void escape_new4_data() { escape_data(); }
+/*
+   JSC outperforms everything.
+   Boost is less impressive then expected.
+ */
+    void simpleFind1();
+    void rangeReplace1();
+    void matchReplace1();
+
+    void simpleFind2();
+    void rangeReplace2();
+    void matchReplace2();
+
+    void simpleFindJSC();
+    void rangeReplaceJSC();
+    void matchReplaceJSC();
+
+#ifdef HAVE_BOOST
+    void simpleFindBoost();
+    void rangeReplaceBoost();
+    void matchReplaceBoost();
+#endif
+
+/* those apply an (incorrect) regexp on entire source
+   (this main.cpp). JSC appears to handle this
+   (ab)use case best. QRegExp performs extremly bad.
+ */
+    void horribleWrongReplace1();
+    void horribleReplace1();
+    void horribleReplace2();
+    void horribleWrongReplace2();
+    void horribleWrongReplaceJSC();
+    void horribleReplaceJSC();
+#ifdef HAVE_BOOST
+    void horribleWrongReplaceBoost();
+    void horribleReplaceBoost();
+#endif
 private:
+    QString str1;
+    QString str2;
     void escape_data();
 };
 
+tst_qregexp::tst_qregexp()
+    :QObject()
+    ,str1("We are all happy monkeys")
+{
+        QFile f(":/main.cpp");
+        f.open(QFile::ReadOnly);
+        str2=f.readAll();
+}
 
 static void verify(const QString &quoted, const QString &expected)
 {
@@ -285,6 +342,253 @@ void tst_qregexp::escape_new4()
         // "return quoted"
     }
 }
+
+
+void tst_qregexp::simpleFind1()
+{
+    int roff;
+    QRegExp rx("happy");
+    rx.setPatternSyntax(QRegExp::RegExp);
+    QBENCHMARK{
+        roff = rx.indexIn(str1);
+    }
+    QCOMPARE(roff, 11);
+}
+
+void tst_qregexp::rangeReplace1()
+{
+    QString r;
+    QRegExp rx("[a-f]");
+    rx.setPatternSyntax(QRegExp::RegExp);
+    QBENCHMARK{
+        r = QString(str1).replace(rx, "-");
+    }
+    QCOMPARE(r, QString("W- -r- -ll h-ppy monk-ys"));
+}
+
+void tst_qregexp::matchReplace1()
+{
+    QString r;
+    QRegExp rx("[^a-f]*([a-f]+)[^a-f]*");
+    rx.setPatternSyntax(QRegExp::RegExp);
+    QBENCHMARK{
+        r = QString(str1).replace(rx, "\\1");
+    }
+    QCOMPARE(r, QString("eaeaae"));
+}
+
+void tst_qregexp::horribleWrongReplace1()
+{
+    QString r;
+    QRegExp rx(".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+)\".*");
+    rx.setPatternSyntax(QRegExp::RegExp);
+    QBENCHMARK{
+        r = QString(str2).replace(rx, "\\1.\\2.\\3");
+    }
+    QCOMPARE(r, str2);
+}
+
+void tst_qregexp::horribleReplace1()
+{
+    QString r;
+    QRegExp rx(".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+).*");
+    rx.setPatternSyntax(QRegExp::RegExp);
+    QBENCHMARK{
+        r = QString(str2).replace(rx, "\\1.\\2.\\3");
+    }
+    QCOMPARE(r, QString("1.2.3"));
+}
+
+
+void tst_qregexp::simpleFind2()
+{
+    int roff;
+    QRegExp rx("happy");
+    rx.setPatternSyntax(QRegExp::RegExp2);
+    QBENCHMARK{
+        roff = rx.indexIn(str1);
+    }
+    QCOMPARE(roff, 11);
+}
+
+void tst_qregexp::rangeReplace2()
+{
+    QString r;
+    QRegExp rx("[a-f]");
+    rx.setPatternSyntax(QRegExp::RegExp2);
+    QBENCHMARK{
+        r = QString(str1).replace(rx, "-");
+    }
+    QCOMPARE(r, QString("W- -r- -ll h-ppy monk-ys"));
+}
+
+void tst_qregexp::matchReplace2()
+{
+    QString r;
+    QRegExp rx("[^a-f]*([a-f]+)[^a-f]*");
+    rx.setPatternSyntax(QRegExp::RegExp2);
+    QBENCHMARK{
+        r = QString(str1).replace(rx, "\\1");
+    }
+    QCOMPARE(r, QString("eaeaae"));
+}
+
+void tst_qregexp::horribleWrongReplace2()
+{
+    QString r;
+    QRegExp rx(".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+)\".*");
+    rx.setPatternSyntax(QRegExp::RegExp2);
+    QBENCHMARK{
+        r = QString(str2).replace(rx, "\\1.\\2.\\3");
+    }
+    QCOMPARE(r, str2);
+}
+
+void tst_qregexp::horribleReplace2()
+{
+    QString r;
+    QRegExp rx(".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+).*");
+    rx.setPatternSyntax(QRegExp::RegExp2);
+    QBENCHMARK{
+        r = QString(str2).replace(rx, "\\1.\\2.\\3");
+    }
+    QCOMPARE(r, QString("1.2.3"));
+}
+
+
+void tst_qregexp::simpleFindJSC()
+{
+    int numr;
+    const char * errmsg="  ";
+    QString rxs("happy");
+    JSRegExp *rx = jsRegExpCompile(rxs.utf16(), rxs.length(), JSRegExpDoNotIgnoreCase, JSRegExpSingleLine, 0, &errmsg);
+    QVERIFY(rx != 0);
+    QString s(str1);
+    int offsetVector[3];
+    QBENCHMARK{
+        numr = jsRegExpExecute(rx, s.utf16(), s.length(), 0,  offsetVector, 3);
+    }
+    jsRegExpFree(rx);
+    QCOMPARE(numr, 1);
+    QCOMPARE(offsetVector[0], 11);
+}
+
+void tst_qregexp::rangeReplaceJSC()
+{
+    QScriptValue r;
+    QScriptEngine engine;
+    engine.globalObject().setProperty("s", str1);
+    QScriptValue replaceFunc = engine.evaluate("(function() { return s.replace(/[a-f]/g, '-')  } )");
+    QVERIFY(replaceFunc.isFunction());
+    QBENCHMARK{
+        r = replaceFunc.call(QScriptValue());
+    }
+    QCOMPARE(r.toString(), QString("W- -r- -ll h-ppy monk-ys"));
+}
+
+void tst_qregexp::matchReplaceJSC()
+{
+    QScriptValue r;
+    QScriptEngine engine;
+    engine.globalObject().setProperty("s", str1);
+    QScriptValue replaceFunc = engine.evaluate("(function() { return s.replace(/[^a-f]*([a-f]+)[^a-f]*/g, '$1')  } )");
+    QVERIFY(replaceFunc.isFunction());
+    QBENCHMARK{
+        r = replaceFunc.call(QScriptValue());
+    }
+    QCOMPARE(r.toString(), QString("eaeaae"));
+}
+
+void tst_qregexp::horribleWrongReplaceJSC()
+{
+    QScriptValue r;
+    QScriptEngine engine;
+    engine.globalObject().setProperty("s", str2);
+    QScriptValue replaceFunc = engine.evaluate("(function() { return s.replace(/.*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+)\".*/gm, '$1.$2.$3')  } )");
+    QVERIFY(replaceFunc.isFunction());
+    QBENCHMARK{
+        r = replaceFunc.call(QScriptValue());
+    }
+    QCOMPARE(r.toString(), str2);
+}
+
+void tst_qregexp::horribleReplaceJSC()
+{
+    QScriptValue r;
+    QScriptEngine engine;
+    // the m flag doesnt actually work here; dunno
+    engine.globalObject().setProperty("s", str2.replace('\n', ' '));
+    QScriptValue replaceFunc = engine.evaluate("(function() { return s.replace(/.*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+).*/gm, '$1.$2.$3')  } )");
+    QVERIFY(replaceFunc.isFunction());
+    QBENCHMARK{
+        r = replaceFunc.call(QScriptValue());
+    }
+    QCOMPARE(r.toString(), QString("1.2.3"));
+}
+
+
+#ifdef HAVE_BOOST
+void tst_qregexp::simpleFindBoost(){
+    int roff;
+    boost::regex rx ("happy", boost::regex_constants::perl);
+    std::string s = str1.toStdString();
+    std::string::const_iterator start, end;
+    start = s.begin();
+    end = s.end();
+    boost::match_flag_type flags = boost::match_default;
+    QBENCHMARK{
+        boost::match_results<std::string::const_iterator> what;
+        regex_search(start, end, what, rx, flags);
+        roff = (what[0].first)-start;
+    }
+    QCOMPARE(roff, 11);
+}
+
+void tst_qregexp::rangeReplaceBoost()
+{
+    boost::regex pattern ("[a-f]", boost::regex_constants::perl);
+    std::string s = str1.toStdString();
+    std::string r;
+    QBENCHMARK{
+        r = boost::regex_replace (s, pattern, "-");
+    }
+    QCOMPARE(r, std::string("W- -r- -ll h-ppy monk-ys"));
+}
+
+void tst_qregexp::matchReplaceBoost()
+{
+    boost::regex pattern ("[^a-f]*([a-f]+)[^a-f]*",boost::regex_constants::perl);
+    std::string s = str1.toStdString();
+    std::string r;
+    QBENCHMARK{
+        r = boost::regex_replace (s, pattern, "$1");
+    }
+    QCOMPARE(r, std::string("eaeaae"));
+}
+
+void tst_qregexp::horribleWrongReplaceBoost()
+{
+    boost::regex pattern (".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+)\".*", boost::regex_constants::perl);
+    std::string s = str2.toStdString();
+    std::string r;
+    QBENCHMARK{
+        r = boost::regex_replace (s, pattern, "$1.$2.$3");
+    }
+    QCOMPARE(r, s);
+}
+
+void tst_qregexp::horribleReplaceBoost()
+{
+    boost::regex pattern (".*#""define ZLIB_VERSION \"([0-9]+)\\.([0-9]+)\\.([0-9]+).*", boost::regex_constants::perl);
+    std::string s = str2.toStdString();
+    std::string r;
+    QBENCHMARK{
+        r = boost::regex_replace (s, pattern, "$1.$2.$3");
+    }
+    QCOMPARE(r, std::string("1.2.3"));
+}
+#endif //HAVE_BOOST
+
 QTEST_MAIN(tst_qregexp)
 
 #include "main.moc"

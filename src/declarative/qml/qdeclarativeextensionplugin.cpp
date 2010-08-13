@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     \o Subclass QDeclarativeExtensionPlugin, implement registerTypes() method
     to register types using qmlRegisterType(), and export the class using the Q_EXPORT_PLUGIN2() macro
     \o Write an appropriate project file for the plugin
-    \o Create a \l{The qmldir file}{qmldir file} to describe the plugin
+    \o Create a \l{Writing a qmldir file}{qmldir file} to describe the plugin
     \endlist
 
     QML extension plugins can be used to provide either application-specific or
@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
     \dots
 
     To make this class available as a QML type, create a plugin that registers
-    this type using qmlRegisterType(). For this example the plugin
+    this type with a specific \l {QML Modules}{module} using qmlRegisterType(). For this example the plugin
     module will be named \c com.nokia.TimeExample (as defined in the project
     file further below).
 
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
     ...
     \endcode    
 
-    Finally, a \l{The qmldir file}{qmldir file} is required in the \c com/nokia/TimeExample directory
+    Finally, a \l{Writing a qmldir file}{qmldir file} is required in the \c com/nokia/TimeExample directory
     that describes the plugin. This directory includes a \c Clock.qml file that
     should be bundled with the plugin, so it needs to be specified in the \c qmldir
     file:
