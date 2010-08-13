@@ -20,7 +20,7 @@ $$unixstyle {
     QDOC = $$replace(QDOC, "/", "\\")
 }
 ADP_DOCS_QDOCCONF_FILE = -online qt-build-docs.qdocconf
-QT_DOCUMENTATION = ($$QDOC -assistant qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
+QT_DOCUMENTATION = ($$QDOC -creator qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
                     linguist.qdocconf qmake.qdocconf qdeclarative.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
                     $$GENERATOR doc-build/html-qt/qt.qhp -o doc/qch/qt.qch && \

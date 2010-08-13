@@ -366,7 +366,7 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
 #ifdef QT_DEBUG
     qDebug() << "QRuntimeGraphicsSystem::setGraphicsSystem( " << name << " )";
 #endif
-    delete m_graphicsSystem;
+    QGraphicsSystem *oldSystem = m_graphicsSystem;
     m_graphicsSystem = QGraphicsSystemFactory::create(name);
     m_graphicsSystemName = name;
 
@@ -393,6 +393,8 @@ void QRuntimeGraphicsSystem::setGraphicsSystem(const QString &name)
         proxy->m_windowSurface.reset(m_graphicsSystem->createWindowSurface(widget));
         qt_widget_private(widget)->invalidateBuffer(widget->rect());
     }
+
+    delete oldSystem;
 }
 
 void QRuntimeGraphicsSystem::removePixmapData(QRuntimePixmapData *pixmapData) const

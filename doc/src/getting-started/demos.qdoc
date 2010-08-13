@@ -155,6 +155,15 @@
 
     \note The Phonon demos are currently not available for the MinGW platform.
 
+    \section1 Multimedia
+
+    \list
+    \o \l{demos/spectrum}{Spectrum Analyzer} demonstrates how the \l{QtMultimedia Module}
+    can be used to capture and play back an audio stream, at the same time allowing the
+    application to access the raw audio data.  This application analyzes the audio stream
+    in order to display a frequency spectrum.
+    \endlist
+
     \section1 Animation
 
     \list

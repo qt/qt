@@ -56,6 +56,12 @@ SymbianSbsv2MakefileGenerator::~SymbianSbsv2MakefileGenerator() { }
 
 #define FLM_DEST_DIR "epoc32/tools/makefile_templates/qt"
 #define FLM_SOURCE_DIR "/mkspecs/symbian-sbsv2/flm/qt"
+#define UNDETECTED_GCCE_VERSION "0"
+#define PLATFORM_GCCE "gcce"
+#define PLATFORM_WINSCW "winscw"
+#define PLATFORM_ARMV5 "armv5"
+#define BUILD_DEBUG "udeb"
+#define BUILD_RELEASE "urel"
 
 // Copies Qt FLMs to correct location under epocroot.
 // This is not done by configure as it is possible to change epocroot after configure.
@@ -90,6 +96,67 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
     }
 }
 
+QString SymbianSbsv2MakefileGenerator::gcceVersion()
+{
+    static QString gcceVersionStr;
+
+    if (gcceVersionStr.isEmpty()) {
+        // First check if QT_GCCE_VERSION has been set, and use that if it is
+        QByteArray qtGcceVersion = qgetenv("QT_GCCE_VERSION");
+        if (!qtGcceVersion.isEmpty()) {
+            // Check that QT_GCCE_VERSION is in proper format
+            QString check(qtGcceVersion);
+            check.replace(QRegExp("^\\d+\\.\\d+\\.\\d+$"),QString());
+            if (check.isEmpty()) {
+                gcceVersionStr = PLATFORM_GCCE + QString(qtGcceVersion).replace(".","_");
+                return gcceVersionStr;
+            } else {
+                fprintf(stderr, "Warning: Environment variable QT_GCCE_VERSION ('%s') is in incorrect "
+                        "format, expected format is: '1.2.3'. Attempting to autodetect GCCE version.",
+                        qtGcceVersion.constData());
+            }
+        }
+        // Sbsv2 has separate env variable defined for each gcce version, so try to determine
+        // which user is likely to want to use by checking version 4.0.0 to 9.9.9 and taking
+        // the highest found version that actually points to a valid path.
+        // This is kind of a kludge, but since qmake doesn't bootstrap QProcess, there
+        // is no Qt API available to get all environment variables.
+        for (int i = 9; i >= 4; i--) {
+            for (int j = 9; j >= 0; j--) {
+                for (int k = 9; k >= 0; k--) {
+                    QByteArray gcceVar = qgetenv(qPrintable(QString("SBS_GCCE%1%2%3BIN").arg(i).arg(j).arg(k)));
+                    if (!gcceVar.isEmpty() && fileInfo(QString::fromLocal8Bit(gcceVar.constData())).exists()) {
+                        gcceVersionStr = QString(PLATFORM_GCCE "%1_%2_%3").arg(i).arg(j).arg(k);
+                        return gcceVersionStr;
+                   }
+                }
+            }
+        }
+    }
+
+    // Indicate undetected version to avoid rechecking multiple times
+    if (gcceVersionStr.isEmpty())
+        gcceVersionStr = UNDETECTED_GCCE_VERSION;
+
+    return gcceVersionStr;
+}
+
+QString SymbianSbsv2MakefileGenerator::configClause(QString &platform,
+                                                    QString &build,
+                                                    QString &winscwClauseTemplate,
+                                                    QString &gcceClauseTemplate,
+                                                    QString &genericClauseTemplate)
+{
+    QString retval;
+    if (QString::compare(platform, PLATFORM_WINSCW) == 0)
+        retval = winscwClauseTemplate.arg(build);
+    else if (QString::compare(platform, PLATFORM_GCCE) == 0)
+        retval = gcceClauseTemplate.arg(build);
+    else
+        retval = genericClauseTemplate.arg(platform).arg(build);
+    return retval;
+}
+
 void SymbianSbsv2MakefileGenerator::writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t)
 {
     for (int i = 0; i < depList.size(); ++i) {
@@ -118,20 +185,44 @@ void SymbianSbsv2MakefileGenerator::writeMkFile(const QString& wrapperFileName, 
 
 void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile)
 {
+    static QString debugBuild(BUILD_DEBUG);
+    static QString releaseBuild(BUILD_RELEASE);
+
     QStringList allPlatforms;
     foreach(QString platform, project->values("SYMBIAN_PLATFORMS")) {
         allPlatforms << platform.toLower();
     }
-
-    QStringList debugPlatforms = allPlatforms;
-    QStringList releasePlatforms = allPlatforms;
-    releasePlatforms.removeAll("winscw"); // No release for emulator
 
     QString testClause;
     if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         testClause = QLatin1String(".test");
     else
         testClause = QLatin1String("");
+
+    QString genericClause = " -c %1_%2" + testClause;
+    QString winscwClause = " -c winscw_%1.mwccinc" + testClause;
+    QString gcceClause;
+    if (QString::compare(gcceVersion(), UNDETECTED_GCCE_VERSION) == 0)
+        allPlatforms.removeAll(PLATFORM_GCCE);
+    else
+        gcceClause = " -c arm.v5.%1." + gcceVersion() + ".release_gcce" + testClause;
+
+    QStringList allClauses;
+    QStringList debugClauses;
+    QStringList releaseClauses;
+
+    QStringList debugPlatforms = allPlatforms;
+    QStringList releasePlatforms = allPlatforms;
+    releasePlatforms.removeAll(PLATFORM_WINSCW); // No release for emulator
+
+    foreach(QString item, debugPlatforms) {
+        debugClauses << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
+    }
+    foreach(QString item, releasePlatforms) {
+        releaseClauses << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
+    }
+    allClauses << debugClauses << releaseClauses;
+
 
     QTextStream t(&wrapperFile);
 
@@ -172,9 +263,9 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     }
     t << endl;
     t << "first: default" << endl;
-    if (debugPlatforms.contains("winscw"))
+    if (debugPlatforms.contains(PLATFORM_WINSCW))
         t << "default: debug-winscw";
-    else if (debugPlatforms.contains("armv5"))
+    else if (debugPlatforms.contains(PLATFORM_ARMV5))
         t << "default: debug-armv5";
     else if (debugPlatforms.size())
         t << "default: debug-" << debugPlatforms.first();
@@ -187,60 +278,61 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     } else {
         t << "all: debug release" << endl;
         t << endl;
+
+        QString qmakeCmd = "\t$(QMAKE) \"" + project->projectFile() + "\" " + buildArgs();
+
         t << "qmake:" << endl;
-        t << "\t$(QMAKE) -spec symbian-sbsv2 -o \"" << fileInfo(Option::output.fileName()).fileName()
-          << "\" \"" << project->projectFile() << "\"" << endl;
-        t << endl;
-        t << BLD_INF_FILENAME ":" << endl;
-        t << "\t$(QMAKE)" << endl;
+        t << qmakeCmd << endl;
         t << endl;
 
-        QString winscw("winscw");
+        t << BLD_INF_FILENAME ": " << project->projectFile() << endl;
+        t << qmakeCmd << endl;
+        t << endl;
+
+        QString currentClause;
+
         t << "debug: " << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
-        foreach(QString item, debugPlatforms) {
-            if(QString::compare(item, winscw) == 0)
-                t << " -c " << item << "_udeb.mwccinc" << testClause;
-            else
-                t << " -c " << item << "_udeb" << testClause;
+        foreach(QString item, debugClauses) {
+            t << item;
         }
         t << endl;
         t << "release: " << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
-        foreach(QString item, releasePlatforms) {
-            if(QString::compare(item, winscw) == 0)
-                t << " -c " << item << "_urel.mwccinc" << testClause;
-            else
-                t << " -c " << item << "_urel" << testClause;
+        foreach(QString item, releaseClauses) {
+            t << item;
         }
         t << endl;
 
         // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
-            if(QString::compare(item, winscw) == 0)
-                t << "\t$(SBS) -c " << item << "_udeb.mwccinc" << testClause << endl;
-            else
-                t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
+            t << "\t$(SBS)";
+            t << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
+            t << endl;
         }
 
         foreach(QString item, releasePlatforms) {
             t << "release-" << item << ": " << BLD_INF_FILENAME << endl;
-            if(QString::compare(item, winscw) == 0)
-                t << "\t$(SBS) -c " << item << "_urel.mwccinc" << testClause << endl;
-            else
-                t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
+            t << "\t$(SBS)";
+            t << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
+            t << endl;
         }
 
         t << endl;
         t << "export: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) export" << endl;
-        t << endl;
+        t << "\t$(SBS) export";
+        foreach(QString clause, allClauses) {
+            t << clause;
+        }
+        t << endl << endl;
 
         t << "cleanexport: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) cleanexport" << endl;
-        t << endl;
-
+        t << "\t$(SBS) cleanexport";
+        foreach(QString clause, allClauses) {
+            t << clause;
+        }
+        t << endl << endl;
     }
 
     // Add all extra targets including extra compiler targest also to wrapper makefile,
@@ -258,30 +350,37 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     generateDistcleanTargets(t);
 
     t << "clean: " << BLD_INF_FILENAME << endl;
-    t << "\t-$(SBS) reallyclean" << endl;
-    t << endl;
+    t << "\t-$(SBS) reallyclean";
+    foreach(QString clause, allClauses) {
+        t << clause;
+    }
+    t << endl << endl;
 
     t << "clean-debug: " << BLD_INF_FILENAME << endl;
     t << "\t$(SBS) reallyclean";
-    foreach(QString item, debugPlatforms) {
-        t << " -c " << item << "_udeb" << testClause;
+    foreach(QString clause, debugClauses) {
+        t << clause;
     }
-    t << endl;
+    t << endl << endl;
     t << "clean-release: " << BLD_INF_FILENAME << endl;
     t << "\t$(SBS) reallyclean";
-    foreach(QString item, releasePlatforms) {
-        t << " -c " << item << "_urel" << testClause;
+    foreach(QString clause, releaseClauses) {
+        t << clause;
     }
-    t << endl;
+    t << endl << endl;
 
     // For more specific builds, targets are in this form: clean-build-platform, e.g. clean-release-armv5
     foreach(QString item, debugPlatforms) {
         t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean -c " << item << "_udeb" << testClause << endl;
+        t << "\t$(SBS) reallyclean";
+        t << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
+        t << endl;
     }
     foreach(QString item, releasePlatforms) {
         t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean -c " << item << "_urel" << testClause << endl;
+        t << "\t$(SBS) reallyclean";
+        t << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
+        t << endl;
     }
     t << endl;
 }

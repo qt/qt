@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,44 +39,15 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "inputmethodhints.h"
 
-#include "qmacdefines_mac.h"
-#ifdef QT_MAC_USE_COCOA
-#import <Cocoa/Cocoa.h>
+#include <QtGui>
+#include <QApplication>
 
-QT_FORWARD_DECLARE_CLASS(QMenu)
-QT_FORWARD_DECLARE_CLASS(QAction)
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-
-@protocol NSMenuDelegate <NSObject>
-- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
-- (void)menuWillOpen:(NSMenu*)menu;
-- (void)menuDidClose:(NSMenu*)menu;
-- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
-  whichItem:(NSMenuItem**)outItem;
-@end
-
-#endif
-
-@interface QT_MANGLE_NAMESPACE(QCocoaMenu) : NSMenu <NSMenuDelegate>
+int main(int argc, char *argv[])
 {
-    QMenu *qmenu;
-    QAction *previousAction;
+    QApplication a(argc, argv);
+    inputmethodhints w;
+    w.showMaximized();
+    return a.exec();
 }
-- (id)initWithQMenu:(QMenu*)menu;
-- (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action;
-- (NSInteger)indexOfItemWithTarget:(id)anObject andAction:(SEL)actionSelector;
-@end
-#endif
-

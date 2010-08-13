@@ -476,7 +476,7 @@ QLibraryInfo::location(LibraryLocation loc)
     \value PrefixPath The default prefix for all paths.
     \value DocumentationPath The location for documentation upon install.
     \value HeadersPath The location for all headers.
-    \value LibrariesPath The location of installed librarires.
+    \value LibrariesPath The location of installed libraries.
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
     \value ImportsPath The location of installed QML extensions to import.
