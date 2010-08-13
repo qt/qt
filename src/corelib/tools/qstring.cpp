@@ -3678,7 +3678,7 @@ QByteArray QString::toUtf8() const
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
     UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    can be encoded in UCS-4. The vector is not null terminated.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
