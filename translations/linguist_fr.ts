@@ -2,17 +2,9 @@
 <!DOCTYPE TS>
 <TS version="2.0">
 <context>
-    <name></name>
-    <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+59"/>
-        <source>(New Entry)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1366"/>
         <source>Qt Linguist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -68,11 +60,6 @@
     </message>
     <message>
         <location/>
-        <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Translate also finished entries</source>
         <translation type="unfinished"></translation>
     </message>
@@ -93,17 +80,22 @@
     </message>
     <message>
         <location/>
-        <source>The batch translator will search through the selected phrase books in the order given above.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>The batch translator will search through the selected phrase books in the order given above</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -116,11 +108,17 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+8"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-5"/>
+        <source>&lt;p&gt;* ID: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -130,7 +128,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+71"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
         <translation type="unfinished"></translation>
@@ -284,19 +282,62 @@ Will assume a single universal form.</source>
     </message>
 </context>
 <context>
+    <name>FormMultiWidget</name>
+    <message>
+        <location filename="../tools/linguist/linguist/messageeditorwidgets.cpp" line="+302"/>
+        <source>Alt+Delete</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Shift+Alt+Insert</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alt+Insert</source>
+        <extracomment>translate, but don&apos;t change</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>Confirmation - Qt Linguist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete non-empty length variant?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+715"/>
-        <source>    Generated %n translation(s) (%1 finished and %2 unfinished)
-</source>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+763"/>
+        <source>Dropped %n message(s) which had no ID.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+4"/>
-        <source>    Ignored %n untranslated source text(s)
-</source>
+        <source>Excess context/disambiguation dropped from %n message(s).</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+8"/>
+        <source>    Generated %n translation(s) (%1 finished and %2 unfinished)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+4"/>
+        <source>    Ignored %n untranslated source text(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
@@ -400,7 +441,7 @@ Will assume a single universal form.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+646"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+668"/>
         <location line="+15"/>
         <source>&amp;Save</source>
         <translation type="unfinished"></translation>
@@ -412,17 +453,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Previous unfinished item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the previous unfinished item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Next unfinished item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -432,27 +463,12 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Move to previous item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the previous item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location/>
-        <source>Next item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Move to the next item.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Mark item as done and move to the next unfinished item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -467,17 +483,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Toggle the validity check of accelerators.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of ending punctuation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -488,11 +494,6 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
-        <source>Toggle the validity check of place markers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -516,14 +517,14 @@ Will assume a single universal form.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-14"/>
         <location line="+11"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Save &amp;As...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>Save As...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -764,11 +765,6 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Toggle checking that phrase suggestions are used.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>Place &amp;Marker Matches</source>
         <translation type="unfinished"></translation>
     </message>
@@ -854,11 +850,6 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location/>
-        <source>Display information about the Qt toolkit by Trolltech.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location/>
         <source>&amp;What&apos;s This?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -888,36 +879,31 @@ Will assume a single universal form.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+21"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>&amp;Batch Translation...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>Batch translate all entries using the information in the phrase books.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location/>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-34"/>
         <location line="+10"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Release As...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
-        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the .ts file.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2035"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+195"/>
+        <location line="+190"/>
         <source>Source text</source>
         <translation type="unfinished"></translation>
     </message>
@@ -929,27 +915,27 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <location line="-2"/>
-        <location line="+61"/>
+        <location line="+63"/>
         <source>Context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-60"/>
+        <location line="-62"/>
         <source>Items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+79"/>
         <source>This panel lists the source contexts.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+13"/>
         <source>Strings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+37"/>
         <source>Phrases and guesses</source>
         <translation type="unfinished"></translation>
     </message>
@@ -970,7 +956,7 @@ Will assume a single universal form.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+125"/>
+        <location line="+139"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1002,7 +988,7 @@ Skip loading the first named file?</source>
         </translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+94"/>
         <source>Related files (%1);;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1018,14 +1004,14 @@ Skip loading the first named file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+15"/>
-        <location line="+1164"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+15"/>
+        <location line="+1187"/>
         <source>Release</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1163"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1186"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
         <translation type="unfinished"></translation>
@@ -1037,7 +1023,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+34"/>
         <location line="+355"/>
         <source>Printing...</source>
         <translation type="unfinished"></translation>
@@ -1088,10 +1074,10 @@ All files (*)</source>
     <message>
         <location line="+17"/>
         <location line="+278"/>
-        <location line="+40"/>
+        <location line="+34"/>
         <location line="+24"/>
         <location line="+22"/>
-        <location line="+516"/>
+        <location line="+538"/>
         <location line="+1"/>
         <location line="+274"/>
         <location line="+40"/>
@@ -1100,7 +1086,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1204"/>
+        <location line="-1220"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
@@ -1195,12 +1181,12 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
+        <location line="+3"/>
+        <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+38"/>
         <source>Do you want to save the modified files?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1226,7 +1212,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+198"/>
         <source>&amp;Window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1287,13 +1273,13 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>&amp;Release All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1"/>
         <source>Close All</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1318,37 +1304,37 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+51"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+51"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+6"/>
         <source>Validation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+7"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1378,7 +1364,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+314"/>
+        <location line="+349"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1398,13 +1384,13 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-527"/>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-562"/>
         <source>Translation File &amp;Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.ui"/>
+        <location/>
         <source>&amp;Add to Phrase Book</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1423,11 +1409,87 @@ All files (*)</source>
         <source>Ctrl+Shift+J</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location/>
+        <source>Previous unfinished item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Next unfinished item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Move to previous item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Next item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Mark item as done and move to the next unfinished item</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Copies the source text into the translation field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of accelerators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of ending punctuation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle checking that phrase suggestions are used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Toggle the validity check of place markers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display information about the Qt toolkit by Nokia.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Create a Qt message file suitable for released applications from the current message file. The filename will automatically be determined from the name of the TS file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location/>
+        <source>Length Variants</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MessageEditor</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+72"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+42"/>
+        <source></source>
+        <comment>This is the right panel of the main window.</comment>
+        <translation></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Russian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>German</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1452,12 +1514,12 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+50"/>
+        <location line="+47"/>
         <source>This whole panel allows you to view and edit the translation of some source text.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+10"/>
         <source>Source text</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1467,7 +1529,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Source text (Plural)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1477,7 +1539,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Developer comments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1492,12 +1554,12 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+234"/>
         <source>%1 translation (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+9"/>
         <source>This is where you can enter or modify the translation of the above source text.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1512,7 +1574,7 @@ All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+138"/>
+        <location line="+157"/>
         <source>&apos;%1&apos;
 Line: %2</source>
         <translation type="unfinished"></translation>
@@ -1521,7 +1583,7 @@ Line: %2</source>
 <context>
     <name>MessageModel</name>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+839"/>
         <source>Completion status for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1544,7 +1606,7 @@ Line: %2</source>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-577"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-600"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1553,13 +1615,18 @@ Line: %2</source>
 <context>
     <name>PhraseBookBox</name>
     <message>
-        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="-45"/>
+        <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+14"/>
         <source></source>
         <comment>Go to Phrase &gt; Edit Phrase Book... The dialog that pops up is a PhraseBookBox.</comment>
         <translation></translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+52"/>
+        <source>(New Entry)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>%1[*] - Qt Linguist</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1680,7 +1747,7 @@ Line: %2</source>
 <context>
     <name>PhraseView</name>
     <message>
-        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+121"/>
+        <location filename="../tools/linguist/linguist/phraseview.cpp" line="+122"/>
         <source>Insert</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1708,7 +1775,7 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1302"/>
         <source>Translation files (%1);;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1718,8 +1785,8 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
-        <location line="+18"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1134"/>
+        <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
         <location line="+17"/>
@@ -1729,23 +1796,13 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/cpp.cpp" line="+1072"/>
-        <source>C++ source files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/java.cpp" line="+646"/>
-        <source>Java source files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
+        <location filename="../tools/linguist/shared/po.cpp" line="+870"/>
         <source>GNU Gettext localization files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
-        <source>Qt Script source files</source>
+        <location line="+7"/>
+        <source>GNU Gettext localization template files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1764,22 +1821,12 @@ Line: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
-        <source>Qt Designer form files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Qt Jambi form files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
+        <location filename="../tools/linguist/shared/xliff.cpp" line="+829"/>
         <source>XLIFF localization files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
+        <location filename="../tools/linguist/shared/qph.cpp" line="+195"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1930,12 +1977,12 @@ Line: %2</source>
 <context>
     <name>TranslationSettingsDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+68"/>
+        <location filename="../tools/linguist/linguist/translationsettingsdialog.cpp" line="+93"/>
         <source>Any Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-22"/>
         <location line="+8"/>
         <source>Settings for &apos;%1&apos; - Qt Linguist</source>
         <translation type="unfinished"></translation>

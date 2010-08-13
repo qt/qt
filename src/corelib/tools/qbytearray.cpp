@@ -1809,7 +1809,7 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
     Replaces \a len bytes from index position \a pos with the zero terminated
     string \a after.
 
-    Notice: this can change the lenght of the byte array.
+    Notice: this can change the length of the byte array.
 */
 QByteArray &QByteArray::replace(int pos, int len, const char *after)
 {

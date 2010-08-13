@@ -1,5 +1,7 @@
 include(../../spectrum.pri)
 
+static: error(This library cannot be built for static linkage)
+
 TEMPLATE = lib
 TARGET   = fftreal
 

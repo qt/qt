@@ -48,6 +48,7 @@
 #include <Carbon/Carbon.h>
 #else
 #include <private/qcocoatoolbardelegate_mac_p.h>
+#import  <private/qcocoawindowdelegate_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -337,6 +338,17 @@ void QMainWindowLayout::updateHIToolBarStatus()
 #endif
 
     layoutState.mainWindow->setUpdatesEnabled(false);  // reduces a little bit of flicker, not all though
+#if defined(QT_MAC_USE_COCOA)
+    QMacCocoaAutoReleasePool pool;
+    NSView *cView = [qt_mac_window_for(layoutState.mainWindow) contentView];
+    if (useMacToolbar) {
+        [cView setPostsFrameChangedNotifications:YES];
+        [[NSNotificationCenter defaultCenter] addObserver: [QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate]
+                                                 selector: @selector(syncContentViewFrame:)
+                                                     name: NSViewFrameDidChangeNotification
+                                                   object: cView];
+    }
+#endif
     if (!useMacToolbar) {
         macWindowToolbarShow(layoutState.mainWindow, false);
         // Move everything out of the HIToolbar into the main toolbar.
@@ -356,6 +368,14 @@ void QMainWindowLayout::updateHIToolBarStatus()
         }
         syncUnifiedToolbarVisibility();
     }
+#if defined(QT_MAC_USE_COCOA)
+    if (!useMacToolbar) {
+        [cView setPostsFrameChangedNotifications:NO];
+        [[NSNotificationCenter defaultCenter] removeObserver: [QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate]
+                                                        name: NSViewFrameDidChangeNotification
+                                                      object: cView];
+    }
+#endif
     layoutState.mainWindow->setUpdatesEnabled(true);
 }
 

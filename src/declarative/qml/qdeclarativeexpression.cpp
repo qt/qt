@@ -143,16 +143,12 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContextData *ctxt, void *ex
 
     } else {
 
-#if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
         if (!dd->cachedPrograms.at(progIdx)) {
             dd->cachedPrograms[progIdx] = new QScriptProgram(expression, url, line);
         }
 
         expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx), 
                                                      &expressionContext);
-#else
-        expressionFunction = evalInObjectScope(ctxt, me, expression, &expressionContext);
-#endif
 
         expressionFunctionMode = ExplicitContext;
         expressionFunctionValid = true;
@@ -604,6 +600,7 @@ QScriptValue QDeclarativeExpressionPrivate::scriptValue(QObject *secondaryScope,
         scriptContext->pushScope(ep->globalClass->staticGlobalObject());
 
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
+        rewriteBinding.setName(name);
         bool ok = true;
         const QString code = rewriteBinding(expression, &ok);
         if (ok) 

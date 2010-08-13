@@ -850,6 +850,8 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
     QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
     QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
+
+    QTest::newRow("invalid1") << "a( b" << "a(b";
 }
 
 void tst_QMetaObject::normalizedSignature()
@@ -857,7 +859,7 @@ void tst_QMetaObject::normalizedSignature()
     QFETCH(QString, signature);
     QFETCH(QString, result);
 
-    QCOMPARE(QString::fromLatin1(QMetaObject::normalizedSignature(signature.toLatin1())), result);
+    QCOMPARE(QMetaObject::normalizedSignature(signature.toLatin1()), result.toLatin1());
 }
 
 void tst_QMetaObject::normalizedType_data()
@@ -895,7 +897,7 @@ void tst_QMetaObject::normalizedType()
     QFETCH(QString, type);
     QFETCH(QString, result);
 
-    QCOMPARE(QString::fromLatin1(QMetaObject::normalizedType(type.toLatin1())), result);
+    QCOMPARE(QMetaObject::normalizedType(type.toLatin1()), result.toLatin1());
 }
 
 void tst_QMetaObject::customPropertyType()

@@ -80,10 +80,12 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
 
     \code
     QDeclarativeEngine engine;
+    QStringListModel modelData;
     QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
-    context->setContextProperty("myModel", modelData);
+    context->setContextProperty("myModel", &modelData);
 
-    QDeclarativeComponent component(&engine, "ListView { model=myModel }");
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.7\nListView { model: myModel }", QUrl());
     component.create(context);
     \endcode
 
@@ -104,12 +106,13 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
         ...
     };
 
-    MyDataSet *myDataSet = new MyDataSet;
+    MyDataSet myDataSet;
     QDeclarativeEngine engine;
     QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
-    context->setContextObject(myDataSet);
+    context->setContextObject(&myDataSet);
 
-    QDeclarativeComponent component(&engine, "ListView { model=myModel }");
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.7\nListView { model: myModel }", QUrl());
     component.create(context);
     \endcode
 

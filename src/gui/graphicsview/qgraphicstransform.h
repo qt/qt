@@ -85,9 +85,9 @@ class Q_GUI_EXPORT QGraphicsScale : public QGraphicsTransform
     Q_OBJECT
 
     Q_PROPERTY(QVector3D origin READ origin WRITE setOrigin NOTIFY originChanged)
-    Q_PROPERTY(qreal xScale READ xScale WRITE setXScale NOTIFY scaleChanged)
-    Q_PROPERTY(qreal yScale READ yScale WRITE setYScale NOTIFY scaleChanged)
-    Q_PROPERTY(qreal zScale READ zScale WRITE setZScale NOTIFY scaleChanged)
+    Q_PROPERTY(qreal xScale READ xScale WRITE setXScale NOTIFY xScaleChanged)
+    Q_PROPERTY(qreal yScale READ yScale WRITE setYScale NOTIFY yScaleChanged)
+    Q_PROPERTY(qreal zScale READ zScale WRITE setZScale NOTIFY zScaleChanged)
 public:
     QGraphicsScale(QObject *parent = 0);
     ~QGraphicsScale();
@@ -108,6 +108,9 @@ public:
 
 Q_SIGNALS:
     void originChanged();
+    void xScaleChanged();
+    void yScaleChanged();
+    void zScaleChanged();
     void scaleChanged();
 
 private:

@@ -73,7 +73,7 @@ DesktopWidget::DesktopWidget(QWidget *parent) : QWidget(parent)
 
     // Links
     LinkTab* othersTab = new LinkTab(tabWidget);;
-    // Given icon file will be overriden by LinkTab
+    // Given icon file will be overridden by LinkTab
     othersTab->init(QDesktopServices::PicturesLocation, "", "");
     tabWidget->addTab(othersTab, tr("Links"));
 

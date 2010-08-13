@@ -163,7 +163,7 @@ QDateTime AbstractDateTime::create(AtomicValue::Ptr &errorMessage,
 
         QString msecondsStr(getSafeCapt(mseconds));
         if(!msecondsStr.isEmpty())
-            msecondsStr = msecondsStr.leftJustified(3, QLatin1Char('0'));
+            msecondsStr = msecondsStr.leftJustified(3, QLatin1Char('0'), true);
         const MSecondProperty msecs = msecondsStr.toInt();
 
         if(hour == 24)

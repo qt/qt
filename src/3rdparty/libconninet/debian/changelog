@@ -1,0 +1,285 @@
+libconninet (0.41+0m6) unstable; urgency=low
+
+  * This entry has been added by BIFH queue processor
+    version has been changed to 0.41+0m6
+
+ -- Qing Jin <ext-qing.1.jin@nokia.com>  Thu, 15 Jul 2010 15:56:38 +0300
+
+libconninet (0.41) unstable; urgency=low
+
+  * Fixes: NB#175098 - Qt4.7 Webkit crashes when bearer API QNetworkSession
+    constructor calls QNetworkSession::syncStateWithInterface() which in turn
+    calls Maemo::state() and Maemo::addrinfo() and webkit expects that event
+    loop is not run but those function process main loop events.
+    Now Maemo::state() and Maemo::addrinfo() are changed to be synchronous
+    and fully blocking functions. The old non-blocking versions are called 
+    Maemo::state_non_blocking() and Maemo::addrinfo_non_blocking().
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed, 14 Jul 2010 10:12:47 +0300
+
+libconninet (0.40) unstable; urgency=low
+
+  * Fixes: NB#167465 - Unable to open network connection using libbearer
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 11 May 2010 10:47:10 +0300
+
+libconninet (0.39) unstable; urgency=low
+
+  * Fixes: NB#167982 - initialize DBus vtable in DBusDispatcher.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Mon, 10 May 2010 14:42:39 +0300
+
+libconninet (0.38) unstable; urgency=low
+
+  * Changing icd2 connect_req to be synchronous as the check for
+    returned connect signal did not work correctly, this caused a
+    long timeout when connect() was called.
+  * Scan sometimes missed results and did not return them to caller.
+  * HTTP proxy settings were not set correctly.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 15 Apr 2010 11:25:06 +0300
+
+libconninet (0.37) unstable; urgency=low
+
+  * Make proxy config reference counting atomic.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed,  3 Mar 2010 13:23:08 +0200
+
+libconninet (0.36) unstable; urgency=low
+
+  * Fixes: NB#157586 - Cleanup dbus listener when WLAN scanning object is
+    deleted.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Fri, 26 Feb 2010 13:30:41 +0200
+
+libconninet (0.35) unstable; urgency=low
+
+  * Fixes: NB#156883 - libconninet fails to build under the Platform SDK (SB2)
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 18 Feb 2010 12:14:40 +0200
+
+libconninet (0.34) unstable; urgency=low
+
+  * Coverity fix
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 16 Feb 2010 16:38:00 +0200
+
+libconninet (0.33) unstable; urgency=low
+
+  * Added API to update Qt proxy config.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 26 Jan 2010 15:48:36 +0200
+
+libconninet (0.32) unstable; urgency=low
+
+  * Fixed IAPConf to unset value when set value is invalid.
+  * Updated IAPMonitor to use libconnsettings.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Wed, 03 Feb 2010 07:32:45 +0200
+
+libconninet (0.31) unstable; urgency=low
+
+  * Fixes: NB#154892 - Check nulls in IAPConf.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Mon, 01 Feb 2010 09:32:06 +0200
+
+libconninet (0.30) unstable; urgency=low
+
+  * Updated IAPConf to use libconnsettings.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Fri, 29 Jan 2010 12:58:03 +0200
+
+libconninet (0.29) unstable; urgency=low
+
+  * Fixed dependencies
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Fri, 15 Jan 2010 10:16:07 +0200
+
+libconninet (0.28) unstable; urgency=low
+
+  * Get rid of libdui dependency
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed, 13 Jan 2010 09:56:26 +0200
+
+libconninet (0.27) unstable; urgency=low
+
+  * Insert new pending calls to the list in DBusDispatcher.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Tue, 22 Dec 2009 14:27:32 +0200
+
+libconninet (0.26) unstable; urgency=low
+
+  * Added possibility to specify different signal path for DBusDispatcher.
+
+ -- Aapo Makela <aapo.makela@nokia.com>  Wed, 25 Nov 2009 14:27:34 +0200
+
+libconninet (0.25) unstable; urgency=low
+
+  * Fixes: NB#146450 - All scan results were not returned to the caller.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 16 Nov 2009 17:23:15 +0200
+
+libconninet (0.24) unstable; urgency=low
+
+  * Wait all scan results for all network types in Maemo::Icd::scan()
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Fri,  6 Nov 2009 14:45:23 +0200
+
+libconninet (0.23) unstable; urgency=low
+
+  * Fixes: NB#143361 - Assert failure in session class for GPRS IAP.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 19 Oct 2009 16:00:14 +0300
+
+libconninet (0.22) unstable; urgency=low
+
+  * Fixed the error checking if scan returns 0 results.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed,  7 Oct 2009 13:50:27 +0300
+
+libconninet (0.21) unstable; urgency=low
+
+  * Support multiple DBusDispatcher classes at the same time. This is
+    required by Maemo::Icd class so that multiple instances of it can
+    be used the same time.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon,  5 Oct 2009 16:33:43 +0300
+
+libconninet (0.20) unstable; urgency=low
+
+  * Fixed memory leak in IAPConf::setValue()
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Fri,  2 Oct 2009 13:02:21 +0300
+
+libconninet (0.19) unstable; urgency=low
+
+  * Fixed connect_req to one specific IAP in Icd class.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 29 Sep 2009 17:02:46 +0300
+
+libconninet (0.18) unstable; urgency=low
+
+  * Make sure the library will not abort in Icd class if scan does
+    not return any results.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 22 Sep 2009 17:00:12 +0300
+
+libconninet (0.17) unstable; urgency=low
+
+  * Added IAP monitoring support.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 21 Sep 2009 16:29:31 +0300
+
+libconninet (0.16) unstable; urgency=low
+
+  * Disabled the old osso-ic dbus interface as it is currently not used.
+  * Fixed the addrinfo request, now addresses are returned correctly to
+    the caller.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 17 Sep 2009 15:56:13 +0300
+
+libconninet (0.15) unstable; urgency=low
+
+  * Enabling state_req, statistics_req and addrinfo_req support
+    functions in Maemo::Icd as the corresponding DBUS API functions are
+    fixed in icd2 v0.89
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Fri, 24 Jul 2009 15:23:02 +0300
+
+libconninet (0.14) unstable; urgency=low
+
+  * Icd statistics support added.
+  * Icd address information support added.
+  * Icd scan method does not return the final (and empty) result any more.
+  * Added initial unit test implementation for Icd class.
+  * Some of the status functions in Icd class disabled because of issues
+    in icd2 and the dbus api.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 23 Jul 2009 11:03:05 +0300
+
+libconninet (0.13) unstable; urgency=low
+
+  * Added API to get all the configured IAPs.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 21 Jul 2009 09:47:18 +0300
+
+libconninet (0.12) unstable; urgency=low
+
+  * Replaced duivaluespace by Dui in pkg-config file because the
+    duivaluespace is deprecated.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 20 Jul 2009 16:00:10 +0300
+
+libconninet (0.11) unstable; urgency=low
+
+  * Using libdui instead of libduivaluespace because it is deprecated.
+  * The IAPConf::clear() uses native gconf API instead of launching gconftool
+  * Check that state_req call returned list and the list contains entries
+    before trying to access it.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 20 Jul 2009 14:55:15 +0300
+
+libconninet (0.10) unstable; urgency=low
+
+  * connect() did not return ok when connection succeeded.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 25 Jun 2009 09:31:21 +0300
+
+libconninet (0.9) unstable; urgency=low
+
+  * Connection timeout set to 2.5min, same as in fremantle.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed, 17 Jun 2009 13:36:40 +0300
+
+libconninet (0.8) unstable; urgency=low
+
+  * Fix state_req signal received from Icd
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 11 Jun 2009 17:19:33 +0300
+
+libconninet (0.7) unstable; urgency=low
+
+  * Icd disconnect and select reqs are made synchronous as we do not
+    wait the return status. The previous async version was causing core
+    dumps if Icd class was destroyed too early.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 11 Jun 2009 11:52:36 +0300
+
+libconninet (0.6) unstable; urgency=low
+
+  * Fixed the libconninet0-dev dependencies.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon,  8 Jun 2009 10:47:56 +0300
+
+libconninet (0.5) unstable; urgency=low
+
+  * Fixed missing QObject connect functions.
+  * Fixed IAPConf to return invalid QVariant if the value does not exist.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 01 Jun 2009 13:58:53 +0300
+
+libconninet (0.4) unstable; urgency=low
+
+  * Fixed QObject signal setting for Maemo::Icd
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed, 20 May 2009 13:51:11 +0300
+
+libconninet (0.3) unstable; urgency=low
+
+  * Refactoring classes
+  * Added IAPConf class.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 14 May 2009 13:24:11 +0300
+
+libconninet (0.2) unstable; urgency=low
+
+  * Fixed pkgconfig file which had wrong dependency
+  * Added DBus array and struct support to DBusDispatcher.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Wed, 13 May 2009 12:11:00 +0300
+
+libconninet (0.1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Tue, 12 May 2009 16:10:27 +0200

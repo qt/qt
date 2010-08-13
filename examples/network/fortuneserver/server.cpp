@@ -107,17 +107,19 @@ Server::Server(QWidget *parent)
 void Server::sessionOpened()
 {
     // Save the used configuration
-    QNetworkConfiguration config = networkSession->configuration();
-    QString id;
-    if (config.type() == QNetworkConfiguration::UserChoice)
-        id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
-    else
-        id = config.identifier();
+    if (networkSession) {
+        QNetworkConfiguration config = networkSession->configuration();
+        QString id;
+        if (config.type() == QNetworkConfiguration::UserChoice)
+            id = networkSession->sessionProperty(QLatin1String("UserChoiceConfiguration")).toString();
+        else
+            id = config.identifier();
 
-    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
-    settings.beginGroup(QLatin1String("QtNetwork"));
-    settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
-    settings.endGroup();
+        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        settings.beginGroup(QLatin1String("QtNetwork"));
+        settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
+        settings.endGroup();
+    }
 
 //! [0] //! [1]
     tcpServer = new QTcpServer(this);

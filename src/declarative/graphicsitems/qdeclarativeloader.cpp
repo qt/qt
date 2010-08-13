@@ -159,6 +159,9 @@ void QDeclarativeLoaderPrivate::initResize()
 
     unloads "Page1.qml" and frees resources consumed by it.
 
+    Note that Loader is a focus scope. Its \c focus property must be set to \c true for any of its children
+    to get the \e {active focus} (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
+
     \sa {dynamic-object-creation}{Dynamic Object Creation}
 */
 

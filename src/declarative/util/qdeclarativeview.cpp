@@ -365,7 +365,7 @@ QDeclarativeContext* QDeclarativeView::rootContext() const
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occured.  Call errorDescription() to retrieve a description.
+    \value Error An error has occurred.  Call errorDescription() to retrieve a description.
 */
 
 /*! \enum QDeclarativeView::ResizeMode
@@ -391,7 +391,7 @@ QDeclarativeView::Status QDeclarativeView::status() const
 }
 
 /*!
-    Return the list of errors that occured during the last compile or create
+    Return the list of errors that occurred during the last compile or create
     operation.  An empty list is returned if isError() is not set.
 */
 QList<QDeclarativeError> QDeclarativeView::errors() const

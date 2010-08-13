@@ -67,7 +67,7 @@
 
   \section1 Widget Styles
 
-  \l{Styles &amp Style Aware Widgets}{Styles} draw on behalf of
+  \l{Styles and Style Aware Widgets}{Styles} draw on behalf of
   widgets and encapsulate the look and feel of a GUI. Qt's built-in
   widgets use the QStyle class to perform nearly all of their drawing,
   ensuring that they look exactly like the equivalent native widgets.

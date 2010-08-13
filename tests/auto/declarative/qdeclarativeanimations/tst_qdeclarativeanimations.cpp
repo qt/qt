@@ -551,6 +551,20 @@ void tst_qdeclarativeanimations::propertiesTransition()
         QTest::qWait(waitDuration);
         QTIMED_COMPARE(myRect->x(),qreal(100));
     }*/
+
+    {
+        QDeclarativeEngine engine;
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition7.qml"));
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
+        QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
+    }
+
 }
 
 void tst_qdeclarativeanimations::invalidDuration()

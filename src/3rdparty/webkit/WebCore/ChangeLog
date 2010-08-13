@@ -1,3 +1,216 @@
+2010-08-10  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Make sure NPAPI plugins get an initial setNPWindow on Mac
+
+        https://bugs.webkit.org/show_bug.cgi?id=43782
+
+        * plugins/mac/PluginViewMac.mm:
+
+2010-06-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Stack overflow when converting navigator object to QVariant
+        https://bugs.webkit.org/show_bug.cgi?id=40572
+
+        Protect against infinite recursion in JSValue->QVariant conversion.
+        This fixes a crash when trying to convert MimeType objects (they
+        recurse infinitely and on-the-fly via the enabledPlugin property.)
+
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant):
+
+2010-03-30  Kent Tamura  <tkent@chromium.org>
+
+        Reviewed by Brady Eidson.
+
+        REGRESSION (r56439) - Crash when a renderer for a file upload control
+        with a selected file is recreated
+        https://bugs.webkit.org/show_bug.cgi?id=36723
+
+        RenderFileUploadControl::chooseIconForFiles was called before
+        m_fileChooser was initialized.
+
+        * platform/FileChooser.cpp:
+        (WebCore::FileChooser::FileChooser): Introduce m_isInitializing flag to
+          avoid FileChooserClient::repaint() call.
+        (WebCore::FileChooser::loadIcon):
+        (WebCore::FileChooser::iconLoaded):
+        * platform/FileChooser.h: Add a FielChooser parameter to
+          FileChooserClient::chooseIconForFiles().
+        * rendering/RenderFileUploadControl.cpp:
+        (WebCore::RenderFileUploadControl::chooseIconForFiles):
+        (WebCore::RenderFileUploadControl::paintObject): Add an assertion.
+        * rendering/RenderFileUploadControl.h:
+
+2010-07-06  Nikolas Zimmermann  <nzimmermann@rim.com>
+
+        Reviewed by Dirk Schulze.
+
+        <use> on <font-face> causes crashes, if SVGUseElement gets detached
+        https://bugs.webkit.org/show_bug.cgi?id=41621
+
+        Do not call removeFromMappedElementSheet() from the SVGFontFaceElement destructor,
+        as that can potentially cause the element to be reattached while destructing.
+
+        In order to fix the crash in the testcase, the order of calling the base-class detach
+        method in SVGUseElement and the instance/shadow tree destruction has to be reversed,
+        matching the order in removedFromDocument().
+
+        Test: svg/custom/use-font-face-crash.svg
+
+        * svg/SVGFontFaceElement.cpp:
+        (WebCore::SVGFontFaceElement::~SVGFontFaceElement): Remove removeFromMappedElementSheet() call.
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::detach): Reverse order of calling base-class detach method and instance/shadow tree destruction.
+
+2010-07-06  Nikolas Zimmermann  <nzimmermann@rim.com>
+
+        Reviewed by Darin Adler.
+
+        <use> on <font-face> causes crashes, if SVGUseElement gets detached
+        https://bugs.webkit.org/show_bug.cgi?id=41621
+
+        Do not call removeFromMappedElementSheet() from the destructor, as the call to document()->updateStyleSelector() that can potentially
+        cause the element to be reattached while destructing. It's not needed at all, because removedFromDocument() is called before destruction,
+        which already calls removeFromMappedElementSheet() - at this point it's still safe to update the style selector.
+
+        The crash is reproducable when using <use> on <font-face>.
+
+        Test: svg/custom/use-font-face-crash.svg
+
+        * svg/SVGFontFaceElement.cpp:
+        (WebCore::SVGFontFaceElement::~SVGFontFaceElement):
+
+2010-07-05  Nikolas Zimmermann  <nzimmermann@rim.com>
+
+        Reviewed by Darin Adler.
+
+        Memory corruption with SVG <use> element
+        https://bugs.webkit.org/show_bug.cgi?id=40994
+
+        Fix race condition in svgAttributeChanged. Never call svgAttributeChanged() from attributeChanged()
+        when we're synchronizing SVG attributes. It leads to either unnecessary extra work being done or
+        crashes. Especially together with <polyline>/<polygon> which always synchronize the SVGAnimatedPoints
+        datastructure with the points attribute, no matter if there are changes are not. This should be
+        furhter optimized, but this fix is sane and fixes the root of the evil races.
+
+        Test: svg/custom/use-property-synchronization-crash.svg
+
+        * svg/SVGElement.cpp:
+        (WebCore::SVGElement::attributeChanged):
+
+2010-06-11  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by David Hyatt.
+
+        Don't process floats if parent node is not a RenderBlock.
+        https://bugs.webkit.org/show_bug.cgi?id=40033
+
+        Test: svg/text/clear-floats-crash.svg
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::clearFloats):
+
+2010-06-23  Nikolas Zimmermann  <nzimmermann@rim.com>
+
+        Reviewed by Eric Seidel.
+
+        Reproducible crash in com.apple.WebCore 0x01ed3784 WebCore::RenderLineBoxList::appendLineBox(WebCore::InlineFlowBox*) + 36
+        https://bugs.webkit.org/show_bug.cgi?id=40953
+
+        REGRESSION (r58209-58231): Memory corruption with invalid SVG
+        https://bugs.webkit.org/show_bug.cgi?id=40173
+
+        Fix several crashes, all related to <foreignObject> and/or invalid SVG documents.
+        - Only allow <svg> nodes, as direct children of a <foreignObject>, not any other "partial" SVG content.
+        - Assure to create RenderSVGRoot objects for <svg> nodes in <foreignObject>, treat them as "outermost SVG elements".
+        - Never allow any partial SVG content to appear in any document. Only <svg> elements are allowed.
+
+        Tests: svg/custom/bug45331.svg
+               svg/foreignObject/disallowed-svg-nodes-as-direct-children.svg
+               svg/foreignObject/no-crash-with-svg-content-in-html-document.svg
+               svg/foreignObject/svg-document-as-direct-child.svg
+               svg/foreignObject/svg-document-in-html-document.svg
+               svg/foreignObject/text-tref-02-b.svg
+
+        * dom/Element.cpp: Added childShouldCreateRenderer, with ENABLE(SVG) guards.
+        (WebCore::Element::childShouldCreateRenderer): Only create a renderer for a SVG child, if we're a SVG element, or if the child is a <svg> element.
+        * dom/Element.h: Added childShouldCreateRenderer, with ENABLE(SVG) guards.
+        * svg/SVGForeignObjectElement.cpp:
+        (WebCore::SVGForeignObjectElement::childShouldCreateRenderer): Disallow arbitary SVG content, only <svg> elements are allowed as direct children of a <foreignObject>
+        * svg/SVGSVGElement.cpp:
+        (WebCore::SVGSVGElement::isOutermostSVG): Be sure to create RenderSVGRoot objects for <svg> elements inside <foreignObject>
+
+2010-06-10  Abhishek Arya  <inferno@chromium.org>
+
+        Reviewed by Dave Hyatt.
+
+        Do not render CSS Styles :first-letter and :first-line in a SVG text element context. 
+        https://bugs.webkit.org/show_bug.cgi?id=40031
+
+        Test: svg/text/text-style-invalid.svg
+
+        * rendering/RenderSVGText.cpp:
+        (WebCore::RenderSVGText::firstLineBlock):
+        (WebCore::RenderSVGText::updateFirstLetter):
+        * rendering/RenderSVGText.h:
+
+2010-07-01  Justin Schuh  <jschuh@chromium.org>
+
+        Reviewed by Dan Bernstein.
+
+        Prevent crash on counter destruction
+        https://bugs.webkit.org/show_bug.cgi?id=40032
+
+        Added counter destruction to RenderWidget::destroy()
+
+        Test: fast/css/counters/destroy-counter-crash.html
+
+        * rendering/RenderWidget.cpp:
+        (WebCore::RenderWidget::destroy):
+
+2010-06-29  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Darin Adler.
+
+        <rdar://problem/7975842> Certain text is repeated after using splitText()
+
+        Tests: fast/text/setData-dirty-lines.html
+               fast/text/splitText-dirty-lines.html
+
+        * dom/CharacterData.cpp:
+        (WebCore::CharacterData::setData): Call RenderText::setTextWithOffset() rather than
+        setText(), because only the former correctly dirties line boxes.
+        * dom/Text.cpp:
+        (WebCore::Text::splitText): Ditto.
+
+2010-06-25  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        <rdar://problem/8000667> Certain text is repeated before and after a line break
+
+        Test: fast/text/bidi-explicit-embedding-past-end.html
+
+        * platform/text/BidiResolver.h:
+        (WebCore::::createBidiRunsForLine): Committing explicit embedding past the end of the range
+        creates BidiRuns up to the end of the range, so at that point, we can stop iterating.
+
+2010-06-10  Tony Chang  <tony@chromium.org>
+
+        Reviewed by Kent Tamura.
+
+        crash when focus is changed while trying to focus next element
+        https://bugs.webkit.org/show_bug.cgi?id=40407
+
+        Test: fast/events/focus-change-crash.html
+
+        * dom/Element.cpp:
+        (WebCore::Element::focus):
+
 2010-07-01  Andreas Kling  <andreas.kling@nokia.com>
 
         Reviewed by Tor Arne Vestbø.

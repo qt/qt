@@ -4294,7 +4294,7 @@ EXPORTS
 	_ZN19QApplicationPrivate13animate_comboE @ 4293 NONAME DATA 1
 	_ZN19QApplicationPrivate13mouse_buttonsE @ 4294 NONAME DATA 4
 	_ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent @ 4295 NONAME
-	_ZN19QApplicationPrivate13scanCodeCacheE @ 4296 NONAME DATA 4
+	_ZN19QApplicationPrivate13scanCodeCacheE @ 4296 NONAME DATA 4 ABSENT
 	_ZN19QApplicationPrivate13setSystemFontERK5QFont @ 4297 NONAME
 	_ZN19QApplicationPrivate13styleOverrideE @ 4298 NONAME DATA 4
 	_ZN19QApplicationPrivate14autoSipEnabledE @ 4299 NONAME DATA 1
@@ -12046,7 +12046,7 @@ EXPORTS
 	_ZN18QRuntimePixmapDataD1Ev @ 12045 NONAME
 	_ZN18QRuntimePixmapDataD2Ev @ 12046 NONAME
 	_ZN7QPixmap15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 12047 NONAME
-	_ZNK18QRuntimePixmapData11memoryUsageEv @ 12048 NONAME
+	_ZNK18QRuntimePixmapData11memoryUsageEv @ 12048 NONAME ABSENT
 	_ZNK18QRuntimePixmapData11paintEngineEv @ 12049 NONAME
 	_ZNK18QRuntimePixmapData11runtimeDataEv @ 12050 NONAME
 	_ZNK18QRuntimePixmapData11transformedERK10QTransformN2Qt18TransformationModeE @ 12051 NONAME
@@ -12088,4 +12088,7 @@ EXPORTS
 	_ZN18QTapAndHoldGesture7timeoutEv @ 12087 NONAME
 	_ZN20QGraphicsItemPrivate20focusScopeItemChangeEb @ 12088 NONAME
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12089 NONAME
+	_ZN14QGraphicsScale13xScaleChangedEv @ 12090 NONAME
+	_ZN14QGraphicsScale13yScaleChangedEv @ 12091 NONAME
+	_ZN14QGraphicsScale13zScaleChangedEv @ 12092 NONAME
 

@@ -184,11 +184,12 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
-\keyword QmlGlobalQtObject
-\qmlclass Qt QDeclarativeEnginePrivate
+\qmlclass QML:Qt QDeclarativeEnginePrivate
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\keyword QmlGlobalQtObject
+
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
 The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
 with enums and functions.  To use it, call the members of the global \c Qt object directly. 
@@ -206,10 +207,9 @@ Text {
 
 \section1 Enums
 
-The Qt object contains all enums in the Qt namespace. For example, you can
-access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
+the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
 
-For a full list of enums, see the \l{Qt Namespace} documentation.
 
 \section1 Types
 The Qt object also contains helper functions for creating objects of specific
@@ -301,7 +301,9 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         + QDir::separator() + QLatin1String("OfflineStorage");
 #endif
 
+#ifndef QT_NO_XMLSTREAMREADER
     qt_add_qmlxmlhttprequest(this);
+#endif
     qt_add_qmlsqldatabase(this);
     // XXX A Multimedia "Qt.Sound" class also needs to be made available,
     // XXX but we don't want a dependency in that cirection.
@@ -1104,29 +1106,20 @@ QString QDeclarativeEnginePrivate::urlToLocalFileOrQrc(const QUrl& url)
 \qmlmethod object Qt::createComponent(url)
 
 Returns a \l Component object created using the QML file at the specified \a url,
-or \c null if there was an error in creating the component.
+or \c null if an empty string was given.
+
+The returned component's \l Component::status property indicates whether the
+component was successfully created. If the status is \c Component.Error, 
+see \l Component::errorString() for an error description.
 
 Call \l {Component::createObject()}{Component.createObject()} on the returned
 component to create an object instance of the component.
 
-Here is an example. Notice it checks whether the component \l{Component::status}{status} is
-\c Component.Ready before calling \l {Component::createObject()}{createObject()}
-in case the QML file is loaded over a network and thus is not ready immediately.
+For example:
 
-\snippet doc/src/snippets/declarative/componentCreation.js vars
-\codeline
-\snippet doc/src/snippets/declarative/componentCreation.js func
-\snippet doc/src/snippets/declarative/componentCreation.js remote
-\snippet doc/src/snippets/declarative/componentCreation.js func-end
-\codeline
-\snippet doc/src/snippets/declarative/componentCreation.js finishCreation
+\snippet doc/src/snippets/declarative/createComponent-simple.qml 0
 
-If you are certain the QML file to be loaded is a local file, you could omit the \c finishCreation() 
-function and call \l {Component::createObject()}{createObject()} immediately:
-
-\snippet doc/src/snippets/declarative/componentCreation.js func
-\snippet doc/src/snippets/declarative/componentCreation.js local
-\snippet doc/src/snippets/declarative/componentCreation.js func-end
+See \l {Dynamic Object Management} for more information on using this function.
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
@@ -1177,6 +1170,8 @@ Each object in this array has the members \c lineNumber, \c columnNumber, \c fil
 Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
+
+See \l {Dynamic Object Management} for more information on using this function.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)

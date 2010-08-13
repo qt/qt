@@ -1211,7 +1211,7 @@ bool Moc::until(Token target) {
 
     //when searching commas within the default argument, we should take care of template depth (anglecount)
     // unfortunatelly, we do not have enough semantic information to know if '<' is the operator< or
-    // the begining of a template type. so we just use heuristics.
+    // the beginning of a template type. so we just use heuristics.
     int possible = -1;
 
     while (index < symbols.size()) {

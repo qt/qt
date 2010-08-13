@@ -148,17 +148,47 @@ lots of dynamically created items, however, you may receive a worthwhile
 performance benefit if unused items are deleted.
 
 Note that you should never manually delete items that were dynamically created
-by QML elements (such as \l Loader and \l Repeater). Also, you should generally avoid deleting
+by QML elements (such as \l Loader and \l Repeater). Also, you should avoid deleting
 items that you did not dynamically create yourself.
 
 Items can be deleted using the \c destroy() method. This method has an optional
 argument (which defaults to 0) that specifies the approximate delay in milliseconds
-before the object is to be destroyed. This allows you to wait until the completion of
-an animation or transition. An example:
+before the object is to be destroyed. 
 
-\snippet doc/src/snippets/declarative/dynamicObjects.qml 0
+Here is an example. The \c application.qml creates five instances of the \c SelfDestroyingRect.qml
+component. Each instance runs a NumberAnimation, and when the animation has finished, calls
+\c destroy() on its root item to destroy itself:
 
-Here, \c Rectangle objects are destroyed one second after they are created, which is long
-enough for the \c NumberAnimation to be played before the object is destroyed.
+\table
+\row
+\o \c application.qml
+\o \c SelfDestroyingRect.qml
+
+\row
+\o \snippet doc/src/snippets/declarative/dynamicObjects-destroy.qml 0
+\o \snippet doc/src/snippets/declarative/SelfDestroyingRect.qml 0
+
+\endtable
+
+Alternatively, the \c application.qml could have destroyed the created object
+by calling \c object.destroy().
+
+Notice that if a \c SelfDestroyingRect instance was created statically like this:
+
+\qml
+Item {
+    SelfDestroyingRect { ... }
+}
+\endqml
+
+This would result in an error, since items can only be dynamically 
+destroyed if they were dynamically created.
+
+Objects created with \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}
+can similarly be destroyed using \c destroy():
+
+\snippet doc/src/snippets/declarative/createQmlObject.qml 0
+\snippet doc/src/snippets/declarative/createQmlObject.qml destroy
+
 */
 

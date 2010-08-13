@@ -394,5 +394,25 @@ static void cleanupCocoaWindowDelegate()
     }
     return NO;
 }
+
+- (void)syncContentViewFrame: (NSNotification *)notification
+{
+    NSView *cView = [notification object];
+    if (cView) {
+        NSWindow *window = [cView window];
+        QWidget *qwidget = m_windowHash->value(window);
+        if (qwidget) {
+            QWidgetData *widgetData = qt_qwidget_data(qwidget);
+            NSRect rect = [cView frame];
+            const QSize newSize(rect.size.width, rect.size.height);
+            const QSize &oldSize = widgetData->crect.size();
+            if (newSize != oldSize) {
+                [self syncSizeForWidget:qwidget toSize:newSize fromSize:oldSize];
+            }
+        }
+
+    }
+}
+
 @end
 #endif// QT_MAC_USE_COCOA

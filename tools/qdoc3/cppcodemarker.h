@@ -80,7 +80,8 @@ class CppCodeMarker : public CodeMarker
                             SynopsisStyle style, 
                             Status status);
     QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
-                               SynopsisStyle style);
+                               SynopsisStyle style,
+                               const Tree* tree);
     const Node* resolveTarget(const QString& target, 
                               const Tree* tree, 
                               const Node* relative,

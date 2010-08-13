@@ -16,7 +16,9 @@ SOURCES += $$PWD/qmlruntime.cpp \
            $$PWD/qdeclarativetester.cpp \
            $$PWD/loggerwidget.cpp
 
-RESOURCES = $$PWD/qmlruntime.qrc
+RESOURCES = $$PWD/browser/browser.qrc \
+            $$PWD/startup/startup.qrc
+
 symbian:!contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
    SOURCES += $$PWD/deviceorientation_symbian.cpp
    FORMS = $$PWD/recopts.ui \

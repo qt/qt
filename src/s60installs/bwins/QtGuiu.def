@@ -12372,7 +12372,7 @@ EXPORTS
 	?staticMetaObject@QBoxLayout@@2UQMetaObject@@B @ 12371 NONAME ; struct QMetaObject const QBoxLayout::staticMetaObject
 	?qt_tab_all_widgets@@3_NA @ 12372 NONAME ; bool qt_tab_all_widgets
 	?staticMetaObject@QSpinBox@@2UQMetaObject@@B @ 12373 NONAME ; struct QMetaObject const QSpinBox::staticMetaObject
-	?scanCodeCache@QApplicationPrivate@@0V?$QHash@HI@@A @ 12374 NONAME ; class QHash<int, unsigned int> QApplicationPrivate::scanCodeCache
+	?scanCodeCache@QApplicationPrivate@@0V?$QHash@HI@@A @ 12374 NONAME ABSENT ; class QHash<int, unsigned int> QApplicationPrivate::scanCodeCache
 	?staticMetaObject@QItemSelectionModel@@2UQMetaObject@@B @ 12375 NONAME ; struct QMetaObject const QItemSelectionModel::staticMetaObject
 	?staticMetaObject@QItemDelegate@@2UQMetaObject@@B @ 12376 NONAME ; struct QMetaObject const QItemDelegate::staticMetaObject
 	?staticMetaObject@QPushButton@@2UQMetaObject@@B @ 12377 NONAME ; struct QMetaObject const QPushButton::staticMetaObject
@@ -12832,7 +12832,7 @@ EXPORTS
 	?readBackInfo@QRuntimePixmapData@@QAEXXZ @ 12831 NONAME ; void QRuntimePixmapData::readBackInfo(void)
 	??_EQRuntimePixmapData@@UAE@I@Z @ 12832 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(unsigned int)
 	?paintEngine@QRuntimePixmapData@@UBEPAVQPaintEngine@@XZ @ 12833 NONAME ; class QPaintEngine * QRuntimePixmapData::paintEngine(void) const
-	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ; unsigned int QRuntimePixmapData::memoryUsage(void) const
+	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ABSENT ; unsigned int QRuntimePixmapData::memoryUsage(void) const
 	?toImage@QRasterPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12835 NONAME ; class QImage QRasterPixmapData::toImage(class QRect const &) const
 	?fromImageReader@QRasterPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12836 NONAME ; void QRasterPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
 	?fill@QRuntimePixmapData@@UAEXABVQColor@@@Z @ 12837 NONAME ; void QRuntimePixmapData::fill(class QColor const &)
@@ -12883,4 +12883,7 @@ EXPORTS
 	?focusScopeItemChange@QGraphicsItemPrivate@@UAEX_N@Z @ 12882 NONAME ; void QGraphicsItemPrivate::focusScopeItemChange(bool)
 	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12883 NONAME ; void QTapAndHoldGesture::setTimeout(int)
 	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@_N@Z @ 12884 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *, bool)
+	?zScaleChanged@QGraphicsScale@@IAEXXZ @ 12885 NONAME ; void QGraphicsScale::zScaleChanged(void)
+	?xScaleChanged@QGraphicsScale@@IAEXXZ @ 12886 NONAME ; void QGraphicsScale::xScaleChanged(void)
+	?yScaleChanged@QGraphicsScale@@IAEXXZ @ 12887 NONAME ; void QGraphicsScale::yScaleChanged(void)
 
