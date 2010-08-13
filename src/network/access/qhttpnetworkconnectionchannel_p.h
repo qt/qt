@@ -153,8 +153,6 @@ public:
     void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
 
-    void eatWhitespace();
-
     bool isSocketBusy() const;
     bool isSocketWriting() const;
     bool isSocketWaiting() const;

@@ -631,7 +631,6 @@ bool QHttpNetworkConnectionChannel::expand(bool dataComplete)
 
 void QHttpNetworkConnectionChannel::allDone()
 {
-    eatWhitespace(); // FIXME HACK!
 #ifndef QT_NO_COMPRESS
     // expand the whole data.
     if (reply->d_func()->expectContent() && reply->d_func()->autoDecompress && !reply->d_func()->streamEnd)
@@ -693,10 +692,15 @@ void QHttpNetworkConnectionChannel::allDone()
             // this was wrong, allDone gets called from that function anyway.
         }
     } else if (alreadyPipelinedRequests.isEmpty() && socket->bytesAvailable() > 0) {
-        eatWhitespace();
         // this is weird. we had nothing pipelined but still bytes available. better close it.
-        if (socket->bytesAvailable() > 0)
-            close();
+        //if (socket->bytesAvailable() > 0)
+        //    close();
+        //
+        // FIXME
+        // We do not close it anymore now, but should introduce this again after having fixed
+        // the chunked decoder in QHttpNetworkReply to read the whitespace after the last chunk.
+        // (Currently this is worked around by readStatus in the QHttpNetworkReply ignoring
+        // leading whitespace.
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
         if (qobject_cast<QHttpNetworkConnection*>(connection))
@@ -741,30 +745,6 @@ void QHttpNetworkConnectionChannel::requeueCurrentlyPipelinedRequests()
     // of ~QHttpNetworkConnectionPrivate
     if (qobject_cast<QHttpNetworkConnection*>(connection))
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
-}
-
-void QHttpNetworkConnectionChannel::eatWhitespace()
-{
-    char c;
-    do {
-        qint64 ret = socket->peek(&c, 1);
-
-        // nothing read, fine.
-        if (ret == 0)
-            return;
-
-        // EOF from socket?
-        if (ret == -1)
-            return; // FIXME, we need to stop processing. however the next stuff done will also do that.
-
-        // read all whitespace and line endings
-        if (c == 11 || c == '\n' || c == '\r' || c == ' ' || c == 31) {
-            socket->read(&c, 1);
-            continue;
-        } else {
-            break;
-        }
-    } while(true);
 }
 
 void QHttpNetworkConnectionChannel::handleStatus()
