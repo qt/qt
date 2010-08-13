@@ -1267,43 +1267,6 @@
 	
 
 
-/* start of offline spec*/
-    .offline .wrapper .hd
-    {
-        background: url(../images/page.png) no-repeat 0 -15px;
-    }
-	    .offline .wrapper .bd
-    {
-        background: url(../images/bg_l_blank.png) repeat-y 0 0;
-    }
-    .offline .wrapper .ft
-    {
-        background: url(../images/page.png) no-repeat 0 -90px;
-    }
-    .offline .sidebar,
-	.offline .feedback,
-	.offline .t_button,
-	.offline #narrowsearch,
-	.offline #narrowmenu
-    {
-        display: none;
-    }
-    .offline .wrap
-    {
-        margin: 0 5px 0 5px;
-    }
-    .offline .wrap .breadcrumb
-    {
-    }
-
-    .offline .wrap .content
-    {
-        padding-top: 15px;
-    }
-
-
-/* end of offline spec*/
-	
 /* start of creator spec*/
 	.creator
 	{
@@ -1323,9 +1286,9 @@
 	.creator #feedbackBox,
 	.creator #feedback,
 	.creator #blurpage,
-	.creator .indexbox .indexIcon span,
+	/*.creator .indexbox .indexIcon span,*/
 	.creator .wrapper .hd,
-	.creator  .indexbox .indexIcon,
+/*	.creator  .indexbox .indexIcon,*/
 	.creator .header #nav-logo,
 	.creator #offlinemenu,
 	.creator #offlinesearch,
