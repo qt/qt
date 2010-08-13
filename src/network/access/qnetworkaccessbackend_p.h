@@ -177,6 +177,10 @@ protected:
     qint64 nextDownstreamBlockSize() const;
     void writeDownstreamData(QByteDataBuffer &list);
 
+    // not actually appending data, it was already written to the user buffer
+    void writeDownstreamDataDownloadBuffer(qint64, qint64);
+    char* getDownloadBuffer(qint64);
+
 public slots:
     // for task 251801, needs to be a slot to be called asynchronously
     void writeDownstreamData(QIODevice *data);

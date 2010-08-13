@@ -83,6 +83,7 @@ public:
     static void info(const char *msg, const char *file, int line);
 
     static void startLogging();
+    static void startLogging(unsigned int randomSeed);
     static void stopLogging();
 
     static void setLogMode(LogMode mode);
@@ -97,7 +98,6 @@ public:
     static void setMaxWarnings(int max);
 
     static void setFlushMode(FlushMode mode);
-
 private:
     QTestLog();
     ~QTestLog();
