@@ -406,13 +406,6 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     This function is deprecated.  It is equivalent to calling bearerTypeName(), however
     bearerType() should be used in preference.
 */
-QString QNetworkConfiguration::bearerName() const
-{
-    // This function cannot be inline as it would break Qt Mobility.
-    // Qt Mobility uses the Qt header as well and since the Mobility Bearer library
-    // does not provide bearerTypeName() we cannot use an inline function.
-    return bearerTypeName();
-}
 
 /*!
     Returns the type of bearer used by this network configuration.
