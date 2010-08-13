@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     to (50, 50).  The added Transition specifies that when the rectangle
     changes between the default and the "moved" state, any changes
     to the \c x and \c y properties should be animated, using an \c Easing.InOutQuad.
-   
+
     \snippet doc/src/snippets/declarative/transition.qml 0
 
     Notice the example does not require \l{PropertyAnimation::}{to} and 

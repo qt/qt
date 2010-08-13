@@ -66,15 +66,15 @@
               <div class="sectionlist  tricol">
                 <ul>
                     <li><a href="qt-basic-concepts.html">Basic Concepts</a></li>
-                    <li><a href="qt-gui-concepts.html">UI Components</a></li>
-                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific</a></li>
-                    <li><a href="technology-apis.html">Qt API's for standard technologies </a></li>
-                    <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
+                    <li><a href="qt-gui-concepts.html">GUI Components</a></li>
+                    <li><a href="developing-with-qt.html">Cross-platform and Platform-specific</a></li>
+                    <li><a href="technology-apis.html">Qt APIs for standard technologies </a></li>
+                    <li><a href="best-practices.html">How-To Guides and Best Practices</a></li>
                 </ul>
               </div>
               <div class="sectionlist">
                 <ul>
-                    <li><a href="declarativeui.html">Qt Quick</a></li>
+                    <li><a href="qtquick.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
                     <li><a href="model-view-programming.html">Model/View Programming</a></li>
@@ -109,6 +109,4 @@
             </div>
           </div>
     \endraw
-
-
 */

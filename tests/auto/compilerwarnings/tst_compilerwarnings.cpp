@@ -114,6 +114,9 @@ void tst_CompilerWarnings::warnings_data()
     QTest::addColumn<QStringList>("cflags");
 
     QTest::newRow("standard") << QStringList();
+    QTest::newRow("warn deprecated, fast plus, no debug") << (QStringList() << "-DQT_DEPRECATED_WARNINGS"
+        << "-DQT_USE_FAST_OPERATOR_PLUS" << "-DQT_NU_DEBUG" << "-DQT_NO_DEBUG_STREAM" << "-DQT_NO_WARNING_OUTPUT");
+    QTest::newRow("no deprecated, no keywords") << (QStringList() << "-DQT_NO_DEPRECATED" << "-DQT_NO_KEYWORDS");
 
 #if 0
 #ifdef Q_WS_QWS
@@ -136,14 +139,14 @@ void tst_CompilerWarnings::warnings()
     QSKIP("gcc 3.x outputs too many bogus warnings", SkipAll);
 #endif
 
-    static QString tmpFile;
+    /*static*/ QString tmpFile;
     if (tmpFile.isEmpty()) {
         QTemporaryFile tmpQFile;
         tmpQFile.open();
         tmpFile = tmpQFile.fileName();
         tmpQFile.close();
     }
-    static QString tmpSourceFile;
+    /*static*/ QString tmpSourceFile;
     bool openResult = true;
     const QString tmpBaseName("XXXXXX-test.cpp");
     QString templatePath = QDir::temp().absoluteFilePath(tmpBaseName);
