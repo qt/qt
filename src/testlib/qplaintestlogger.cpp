@@ -384,6 +384,7 @@ namespace QTest {
 }
 
 QPlainTestLogger::QPlainTestLogger()
+: randomSeed(9), hasRandomSeed(false)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     InitializeCriticalSection(&QTest::outputCriticalSection);
@@ -415,10 +416,17 @@ void QPlainTestLogger::startLogging()
         QTest::qt_snprintf(buf, sizeof(buf), "Testing %s\n",
                            QTestResult::currentTestObjectName());
     } else {
-        QTest::qt_snprintf(buf, sizeof(buf),
-                         "********* Start testing of %s *********\n"
-                         "Config: Using QTest library " QTEST_VERSION_STR
-                         ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
+        if (hasRandomSeed) {
+            QTest::qt_snprintf(buf, sizeof(buf),
+                             "********* Start testing of %s *********\n"
+                             "Config: Using QTest library " QTEST_VERSION_STR
+                             ", Qt %s, Random seed %d\n", QTestResult::currentTestObjectName(), qVersion(), randomSeed);
+        } else {
+            QTest::qt_snprintf(buf, sizeof(buf),
+                             "********* Start testing of %s *********\n"
+                             "Config: Using QTest library " QTEST_VERSION_STR
+                             ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
+        }
     }
     QTest::outputMessage(buf);
 }
@@ -478,6 +486,12 @@ void QPlainTestLogger::addMessage(MessageTypes type, const char *message,
         return;
 
     QTest::printMessage(QTest::messageType2String(type), message, file, line);
+}
+
+void QPlainTestLogger::registerRandomSeed(unsigned int seed)
+{
+    randomSeed = seed;
+    hasRandomSeed = true;
 }
 
 QT_END_NAMESPACE

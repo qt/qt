@@ -75,7 +75,8 @@
 
 #include "../network-settings.h"
 
-
+typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
+Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
 Q_DECLARE_METATYPE(QNetworkReply*)
 Q_DECLARE_METATYPE(QAuthenticator*)
 Q_DECLARE_METATYPE(QNetworkProxy)
@@ -288,6 +289,13 @@ private Q_SLOTS:
     void getAndThenDeleteObject();
 
     void symbianOpenCDataUrlCrash();
+
+    void getFromHttpIntoBuffer_data();
+    void getFromHttpIntoBuffer();
+
+    void ioGetFromHttpWithoutContentLength();
+
+    void ioGetFromHttpBrokenChunkedEncoding();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -3936,6 +3944,7 @@ void tst_QNetworkReply::authorizationError()
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), httpStatusCode);
 
     QFETCH(QString, httpBody);
+    QCOMPARE(qint64(reply->size()), qint64(httpBody.size()));
     QCOMPARE(QString(reply->readAll()), httpBody);
 }
 
@@ -4280,6 +4289,91 @@ void tst_QNetworkReply::symbianOpenCDataUrlCrash()
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(598));
 }
 
+void tst_QNetworkReply::getFromHttpIntoBuffer_data()
+{
+    QTest::addColumn<QUrl>("url");
+
+    QTest::newRow("rfc-internal") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+}
+
+void tst_QNetworkReply::getFromHttpIntoBuffer()
+{
+    QFETCH(QUrl, url);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*128); // 128 kB
+
+    QNetworkAccessManager manager;
+    QNetworkReply *reply = manager.get(request);
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+
+    QFile reference(SRCDIR "/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+
+    QCOMPARE(reference.bytesAvailable(), reply->bytesAvailable());
+    QCOMPARE(reference.size(), reply->size());
+
+    // Compare the memory buffer
+    QVariant downloadBufferAttribute = reply->attribute(QNetworkRequest::DownloadBufferAttribute);
+    bool memoryComparison =
+            (0 == memcmp(static_cast<void*>(reference.readAll().data()),
+                         downloadBufferAttribute.value<QSharedPointer<QVarLengthArray<char, 0> > >()->constData(), reference.size()));
+    QVERIFY(memoryComparison);
+
+    // Make sure the normal reading works
+    reference.seek(0);
+    QCOMPARE(reply->read(42), reference.read(42));
+    QCOMPARE(reply->getChar(0), reference.getChar(0));
+    QCOMPARE(reply->peek(23), reference.peek(23));
+    QCOMPARE(reply->readLine(), reference.readLine());
+    QCOMPARE(reference.bytesAvailable(), reply->bytesAvailable());
+    QCOMPARE(reply->readAll(), reference.readAll());
+    QVERIFY(reply->atEnd());
+}
+
+// Is handled somewhere else too, introduced this special test to have it more accessible
+void tst_QNetworkReply::ioGetFromHttpWithoutContentLength()
+{
+    QByteArray dataToSend("HTTP/1.0 200 OK\r\n\r\nHALLO! 123!");
+    MiniHttpServer server(dataToSend);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+}
+
+// Is handled somewhere else too, introduced this special test to have it more accessible
+void tst_QNetworkReply::ioGetFromHttpBrokenChunkedEncoding()
+{
+    // This is wrong chunked encoding because of the X. What actually has to follow is \r\n
+    // and then the declaration of the final 0 chunk
+    QByteArray dataToSend("HTTP/1.0 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n3\r\nABCX");
+    MiniHttpServer server(dataToSend);
+    server.doClose = false; // FIXME
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+
+    QEXPECT_FAIL(0, "We should close the socket and not just do nothing", Continue);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QEXPECT_FAIL(0, "We should close the socket and not just do nothing", Continue);
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+}
 
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

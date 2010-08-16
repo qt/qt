@@ -95,6 +95,8 @@ public:
     virtual void addMessage(MessageTypes type, const char *message,
                             const char *file = 0, int line = 0) = 0;
 
+    virtual void registerRandomSeed(unsigned int seed) = 0;
+
     static void outputString(const char *msg);
     static bool isTtyOutput();
 };

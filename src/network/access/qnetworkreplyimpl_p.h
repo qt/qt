@@ -62,6 +62,7 @@
 #include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
 #include "private/qbytedata_p.h"
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -163,6 +164,9 @@ public:
     void appendDownstreamData(QIODevice *data);
     void appendDownstreamData(const QByteArray &data);
 
+    char* getDownloadBuffer(qint64 size);
+    void appendDownstreamDataDownloadBuffer(qint64, qint64);
+
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
@@ -191,6 +195,7 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
+    // Used for normal downloading. For "zero copy" the downloadBuffer is used
     QByteDataBuffer readBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
@@ -201,6 +206,11 @@ public:
     int httpStatusCode;
 
     State state;
+
+    // only used when the "zero copy" style is used. Else readBuffer is used.
+    QSharedPointer< QVarLengthArray<char, 0> > downloadBufferArray;
+    char* downloadBuffer;
+    qint64 downloadBufferPosition;
 
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };

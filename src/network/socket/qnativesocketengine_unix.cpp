@@ -887,7 +887,7 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
 {
     Q_Q(QNativeSocketEngine);
     if (!q->isValid()) {
-        qWarning("QNativeSocketEngine::unbufferedRead: Invalid socket");
+        qWarning("QNativeSocketEngine::nativeRead: Invalid socket");
         return -1;
     }
 
