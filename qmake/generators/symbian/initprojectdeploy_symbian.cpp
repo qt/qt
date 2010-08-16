@@ -353,7 +353,11 @@ void initProjectDeploySymbian(QMakeProject* project,
             CopyItem &item = i.next();
             QFileInfo fromItem(item.from);
             QFileInfo toItem(item.to);
-            if (fromItem == toItem)
+#if defined(Q_OS_WIN)
+            if (0 == fromItem.absoluteFilePath().compare(toItem.absoluteFilePath(), Qt::CaseInsensitive))
+#else
+            if (0 == fromItem.absoluteFilePath().compare(toItem.absoluteFilePath()))
+#endif
                 i.remove();
         }
     }

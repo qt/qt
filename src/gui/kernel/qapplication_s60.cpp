@@ -1475,6 +1475,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
         }
     }
+    delete repository;
+    repository = 0;
 #endif
 
 #ifdef QT_KEYPAD_NAVIGATION
