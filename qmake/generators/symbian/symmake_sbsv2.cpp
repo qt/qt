@@ -278,12 +278,15 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     } else {
         t << "all: debug release" << endl;
         t << endl;
+
+        QString qmakeCmd = "\t$(QMAKE) \"" + project->projectFile() + "\" " + buildArgs();
+
         t << "qmake:" << endl;
-        t << "\t$(QMAKE) -spec symbian-sbsv2 -o \"" << fileInfo(Option::output.fileName()).fileName()
-          << "\" \"" << project->projectFile() << "\"" << endl;
+        t << qmakeCmd << endl;
         t << endl;
-        t << BLD_INF_FILENAME ":" << endl;
-        t << "\t$(QMAKE)" << endl;
+
+        t << BLD_INF_FILENAME ": " << project->projectFile() << endl;
+        t << qmakeCmd << endl;
         t << endl;
 
         QString currentClause;

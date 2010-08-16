@@ -2392,6 +2392,8 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         d->actions = &data->actions;
     } else {
         delete data;
+        d->va->setFromSourcedValue(0);  //clear previous data
+        d->va->setAnimValue(0, QAbstractAnimation::DeleteWhenStopped);  //clear previous data
         d->actions = 0;
     }
 }

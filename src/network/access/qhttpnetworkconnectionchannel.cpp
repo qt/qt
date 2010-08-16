@@ -647,8 +647,10 @@ void QHttpNetworkConnectionChannel::allDone()
     // finished request.
     // Note that this may trigger a segfault at some other point. But then we can fix the underlying
     // problem.
-    if (!resendCurrent)
+    if (!resendCurrent) {
+        request = QHttpNetworkRequest();
         reply = 0;
+    }
 
     // move next from pipeline to current request
     if (!alreadyPipelinedRequests.isEmpty()) {

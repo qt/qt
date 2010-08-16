@@ -741,6 +741,30 @@ void tst_qdeclarativetextinput::copyAndPaste() {
     textInput->paste();
     QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textInput->text().length(), 24);
+
+    // clear copy buffer
+    QClipboard *clipboard = QApplication::clipboard();
+    QVERIFY(clipboard);
+    clipboard->clear();
+
+    // test that copy functionality is disabled
+    // when echo mode is set to hide text/password mode
+    int index = 0;
+    while (index < 4) {
+        QDeclarativeTextInput::EchoMode echoMode = QDeclarativeTextInput::EchoMode(index);
+        textInput->setEchoMode(echoMode);
+        textInput->setText("My password");
+        textInput->select(0, textInput->text().length());;
+        textInput->copy();
+        if (echoMode == QDeclarativeTextInput::Normal) {
+            QVERIFY(!clipboard->text().isEmpty());
+            QCOMPARE(clipboard->text(), QString("My password"));
+            clipboard->clear();
+        } else {
+            QVERIFY(clipboard->text().isEmpty());
+        }
+        index++;
+    }
 #endif
 }
 
