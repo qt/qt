@@ -352,10 +352,8 @@ void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QWindowS
     // Always flush repainted areas.
     dirtyOnScreen += toClean;
 
-#ifdef Q_WS_QWS
-#ifndef Q_BACKINGSTORE_SUBSURFACES
+#if defined(Q_WS_QWS) && !defined(Q_BACKINGSTORE_SUBSURFACES)
     toClean.translate(tlwOffset);
-#endif
 #endif
 
 #ifdef QT_NO_PAINT_DEBUG
