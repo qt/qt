@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
     \qmlclass AnimatedImage QDeclarativeAnimatedImage
     \inherits Image
     \since 4.7
-
+    \ingroup basic-visual-elements
+    
     The AnimatedImage element provides for playing animations stored as images containing a series of frames,
     such as GIF files. 
     

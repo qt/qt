@@ -108,6 +108,7 @@ void QDeclarativeLoaderPrivate::initResize()
 
 /*!
     \qmlclass Loader QDeclarativeLoader
+    \ingroup qml-utility-elements
     \since 4.7
     \inherits Item
 

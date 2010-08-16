@@ -228,6 +228,7 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
 
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
+    \ingroup qml-animation-transition
     \inherits Animation
     \since 4.7
 

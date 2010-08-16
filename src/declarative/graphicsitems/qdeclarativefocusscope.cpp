@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass FocusScope QDeclarativeFocusScope
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
     \brief The FocusScope object explicitly creates a focus scope.
     \inherits Item
 
