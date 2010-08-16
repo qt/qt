@@ -160,6 +160,11 @@ void tst_QMetaType::qMetaTypeId()
     QCOMPARE(::qMetaTypeId<QString>(), int(QMetaType::QString));
     QCOMPARE(::qMetaTypeId<int>(), int(QMetaType::Int));
     QCOMPARE(::qMetaTypeId<TestSpace::Foo>(), QMetaType::type("TestSpace::Foo"));
+
+    QCOMPARE(::qMetaTypeId<char>(), QMetaType::type("char"));
+    QCOMPARE(::qMetaTypeId<uchar>(), QMetaType::type("unsigned char"));
+    QCOMPARE(::qMetaTypeId<signed char>(), QMetaType::type("signed char"));
+    QCOMPARE(::qMetaTypeId<qint8>(), QMetaType::type("qint8"));
 }
 
 void tst_QMetaType::properties()
