@@ -70,6 +70,8 @@ void QDeclarativeBasePositionerPrivate::watchChanges(QGraphicsObject *other)
         Q_Q(QDeclarativeBasePositioner);
         QObject::connect(other, SIGNAL(widthChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
         QObject::connect(other, SIGNAL(heightChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::connect(other, SIGNAL(opacityChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::connect(other, SIGNAL(visibleChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
     }
 }
 
@@ -82,6 +84,8 @@ void QDeclarativeBasePositionerPrivate::unwatchChanges(QGraphicsObject* other)
         Q_Q(QDeclarativeBasePositioner);
         QObject::disconnect(other, SIGNAL(widthChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
         QObject::disconnect(other, SIGNAL(heightChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::disconnect(other, SIGNAL(opacityChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::disconnect(other, SIGNAL(visibleChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
     }
 }
 
@@ -235,7 +239,7 @@ void QDeclarativeBasePositioner::prePositioning()
         QGraphicsObject *child = children.at(ii)->toGraphicsObject();
         if (!child)
             continue;
-        QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
+        QGraphicsItemPrivate *childPrivate = static_cast<QGraphicsItemPrivate*>(QGraphicsItemPrivate::get(child));
         PositionedItem *item = 0;
         PositionedItem posItem(child);
         int wIdx = oldItems.find(posItem);
@@ -320,7 +324,7 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
 
 static inline bool isInvisible(QGraphicsObject *child)
 {
-    QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
+    QGraphicsItemPrivate *childPrivate = static_cast<QGraphicsItemPrivate*>(QGraphicsItemPrivate::get(child));
     return child->opacity() == 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height();
 }
 

@@ -46,6 +46,7 @@
 #include <private/qdeclarativepositioners_p.h>
 #include <private/qdeclarativetransition_p.h>
 #include <qdeclarativeexpression.h>
+#include <QtGui/qgraphicswidget.h>
 #include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -77,6 +78,7 @@ private slots:
     void test_flow_resize();
     void test_flow_implicit_resize();
     void test_conflictinganchors();
+    void test_vertical_qgraphicswidget();
 private:
     QDeclarativeView *createView(const QString &filename);
 };
@@ -769,6 +771,48 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
+}
+
+void tst_QDeclarativePositioners::test_vertical_qgraphicswidget()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/verticalqgraphicswidget.qml");
+
+    QGraphicsWidget *one = canvas->rootObject()->findChild<QGraphicsWidget*>("one");
+    QVERIFY(one != 0);
+
+    QGraphicsWidget *two = canvas->rootObject()->findChild<QGraphicsWidget*>("two");
+    QVERIFY(two != 0);
+
+    QGraphicsWidget *three = canvas->rootObject()->findChild<QGraphicsWidget*>("three");
+    QVERIFY(three != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 60.0);
+
+    QDeclarativeItem *column = canvas->rootObject()->findChild<QDeclarativeItem*>("column");
+    QVERIFY(column);
+    QCOMPARE(column->height(), 80.0);
+    QCOMPARE(column->width(), 50.0);
+
+    two->resize(QSizeF(two->size().width(), 20.0));
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 70.0);
+
+    two->setOpacity(0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 50.0);
+
+    one->setVisible(false);
+    QCOMPARE(three->x(), 0.0);
+    QCOMPARE(three->y(), 0.0);
+
+    delete canvas;
 }
 
 QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)
