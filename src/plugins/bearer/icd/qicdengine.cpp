@@ -821,9 +821,8 @@ void QIcdEngine::getIcdInitialState()
 
                 ptr = accessPointConfigurations.value(m_onlineIapId);
                 if (ptr) {
-                    ptr->state = QNetworkConfiguration::Active;
-
                     QMutexLocker configLocker(&ptr->mutex);
+                    ptr->state = QNetworkConfiguration::Active;
                     configLocker.unlock();
 
                     locker.unlock();
