@@ -71,6 +71,7 @@ public:
 
 /*!
     \qmlclass Connections QDeclarativeConnections
+  \ingroup qml-utility-elements
   \since 4.7
     \brief A Connections element describes generalized connections to signals.
 

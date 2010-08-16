@@ -30,8 +30,29 @@
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace Maemo {
+
+#undef PRINT_DEBUGINFO
+#ifdef PRINT_DEBUGINFO
+  static FILE *fdebug = NULL;
+#define PDEBUG(fmt, args...)						\
+  do {									\
+    struct timeval tv;							\
+    gettimeofday(&tv, 0);						\
+    fprintf(fdebug, "DEBUG[%d]:%ld.%ld:%s:%s():%d: " fmt,		\
+	    getpid(),							\
+	    tv.tv_sec, tv.tv_usec,					\
+	    __FILE__, __FUNCTION__, __LINE__, args);			\
+    fflush(fdebug);							\
+  } while(0)
+#else
+#define PDEBUG(fmt...)
+#endif
+
 
 /* Reference counting singleton class that creates a single connection
  * to icd so that icd reference counting works as expected. This is
@@ -239,6 +260,13 @@ public:
 
       icd = myfriend;
       timeout = dbus_timeout;
+
+#ifdef PRINT_DEBUGINFO
+      if (!fdebug) {
+	fdebug = fopen("/tmp/maemoicd.log", "a+");
+      }
+      PDEBUG("created %s\n", "IcdPrivate");
+#endif
     }
 
     void clearState()
@@ -672,6 +700,8 @@ uint IcdPrivate::state_non_blocking(QList<IcdStateResult>& state_results)
     uint signals_left, total_signals;
     IcdStateResult result;
 
+    PDEBUG("%s\n", "non blocking state");
+
     clearState();
     reply = mDBus->call(ICD_DBUS_API_STATE_REQ);
     if (reply.type() != QVariant::List)
@@ -719,6 +749,7 @@ uint IcdPrivate::state_non_blocking(QList<IcdStateResult>& state_results)
     }
     timer.stop();
 
+    PDEBUG("total_signals=%d\n", total_signals);
     return total_signals;
 }
 
@@ -731,11 +762,14 @@ uint IcdPrivate::state_non_blocking(QList<IcdStateResult>& state_results)
  */
 uint IcdPrivate::state(QList<IcdStateResult>& state_results)
 {
-    QTimer timer;
     QVariant reply;
     QVariantList vl;
     uint signals_left, total_signals;
     IcdStateResult result;
+    time_t started;
+    int timeout_secs = timeout / 1000;
+
+    PDEBUG("%s\n", "state_results");
 
     clearState();
     reply = mDBus->call(ICD_DBUS_API_STATE_REQ);
@@ -749,17 +783,16 @@ uint IcdPrivate::state(QList<IcdStateResult>& state_results)
     if (!signals_left)
         return 0;
 
-    timer.setSingleShot(true);
-    timer.start(timeout);
+    started = time(0);
     state_results.clear();
     mError.clear();
     while (signals_left) {
         mInterface.clear();
-	while (timer.isActive() && mInterface.isEmpty()) {
+	while ((time(0)<=(started+timeout_secs)) && mInterface.isEmpty()) {
 	    mDBus->synchronousDispatch(1000);
 	}
 
-	if (!timer.isActive()) {
+        if (time(0)>(started+timeout_secs)) {
 	    total_signals = 0;
 	    break;
 	}
@@ -782,8 +815,8 @@ uint IcdPrivate::state(QList<IcdStateResult>& state_results)
 	    break;
 	}
     }
-    timer.stop();
 
+    PDEBUG("total_signals=%d\n", total_signals);
     return total_signals;
 }
 
@@ -956,11 +989,14 @@ static void get_addrinfo_all_result(QList<QVariant>& args,
  */
 uint IcdPrivate::addrinfo(QList<IcdAddressInfoResult>& addr_results)
 {
-    QTimer timer;
     QVariant reply;
     QVariantList vl;
     uint signals_left, total_signals;
     IcdAddressInfoResult result;
+    time_t started;
+    int timeout_secs = timeout / 1000;
+
+    PDEBUG("%s\n", "addr_results");
 
     clearState();
     reply = mDBus->call(ICD_DBUS_API_ADDRINFO_REQ);
@@ -976,16 +1012,15 @@ uint IcdPrivate::addrinfo(QList<IcdAddressInfoResult>& addr_results)
     if (!signals_left)
         return 0;
 
-    timer.setSingleShot(true);
-    timer.start(timeout);
+    started = time(0);
     addr_results.clear();
     while (signals_left) {
         mInterface.clear();
-	while (timer.isActive() && mInterface.isEmpty()) {
+	while ((time(0)<=(started+timeout_secs)) && mInterface.isEmpty()) {
 	    mDBus->synchronousDispatch(1000);
 	}
 
-	if (!timer.isActive()) {
+        if (time(0)>(started+timeout_secs)) {
 	    total_signals = 0;
 	    break;
 	}
@@ -1003,7 +1038,8 @@ uint IcdPrivate::addrinfo(QList<IcdAddressInfoResult>& addr_results)
 	    break;
 	}
     }
-    timer.stop();
+
+    PDEBUG("total_signals=%d\n", total_signals);
     return total_signals;
 }
 
@@ -1014,6 +1050,8 @@ uint IcdPrivate::addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results
     QVariantList vl;
     uint signals_left, total_signals;
     IcdAddressInfoResult result;
+
+    PDEBUG("%s\n", "non blocking addrinfo");
 
     clearState();
     reply = mDBus->call(ICD_DBUS_API_ADDRINFO_REQ);
@@ -1057,6 +1095,7 @@ uint IcdPrivate::addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results
 	}
     }
     timer.stop();
+    PDEBUG("total_signals=%d\n", total_signals);
     return total_signals;
 }
 

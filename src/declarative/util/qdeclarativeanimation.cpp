@@ -74,6 +74,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QDeclarativeAbstractAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \brief The Animation element is the base of all QML animations.
 
@@ -554,6 +555,7 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QDeclarativePauseAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
@@ -630,6 +632,7 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QDeclarativeColorAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The ColorAnimation element animates changes in color values.
@@ -730,6 +733,7 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QDeclarativeScriptAction
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
@@ -878,6 +882,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QDeclarativePropertyAction
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
@@ -1129,6 +1134,7 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
 
 /*!
     \qmlclass NumberAnimation QDeclarativeNumberAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The NumberAnimation element animates changes in qreal-type values.
@@ -1238,6 +1244,7 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
 
 /*!
     \qmlclass Vector3dAnimation QDeclarativeVector3dAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element animates changes in QVector3d values.
@@ -1311,6 +1318,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
 /*!
     \qmlclass RotationAnimation QDeclarativeRotationAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The RotationAnimation element animates changes in rotation values.
@@ -1540,6 +1548,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
 
 /*!
     \qmlclass SequentialAnimation QDeclarativeSequentialAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The SequentialAnimation element allows animations to be run sequentially.
@@ -1613,6 +1622,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
 
 /*!
     \qmlclass ParallelAnimation QDeclarativeParallelAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ParallelAnimation element allows animations to be run in parallel.
@@ -1731,6 +1741,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
 
 /*!
     \qmlclass PropertyAnimation QDeclarativePropertyAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAnimation element animates changes in property values.
@@ -2392,12 +2403,15 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
         d->actions = &data->actions;
     } else {
         delete data;
+        d->va->setFromSourcedValue(0);  //clear previous data
+        d->va->setAnimValue(0, QAbstractAnimation::DeleteWhenStopped);  //clear previous data
         d->actions = 0;
     }
 }
 
 /*!
     \qmlclass ParentAnimation QDeclarativeParentAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ParentAnimation element animates changes in parent values.
@@ -2757,6 +2771,7 @@ QAbstractAnimation *QDeclarativeParentAnimation::qtAnimation()
 
 /*!
     \qmlclass AnchorAnimation QDeclarativeAnchorAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The AnchorAnimation element animates changes in anchor values.
