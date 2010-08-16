@@ -310,6 +310,7 @@ static inline bool isInvisible(QDeclarativeItem *child)
 
 /*!
   \qmlclass Column QDeclarativeColumn
+    \ingroup qml-positioning-elements
     \since 4.7
   \brief The Column item arranges its children vertically.
   \inherits Item
@@ -475,6 +476,7 @@ void QDeclarativeColumn::reportConflictingAnchors()
 
 /*!
   \qmlclass Row QDeclarativeRow
+    \ingroup qml-positioning-elements
   \since 4.7
   \brief The Row item arranges its children horizontally.
   \inherits Item
@@ -613,6 +615,7 @@ void QDeclarativeRow::reportConflictingAnchors()
 
 /*!
   \qmlclass Grid QDeclarativeGrid
+    \ingroup qml-positioning-elements
   \since 4.7
   \brief The Grid item positions its children in a grid.
   \inherits Item
@@ -905,6 +908,7 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
 /*!
   \qmlclass Flow QDeclarativeFlow
+    \ingroup qml-positioning-elements
   \since 4.7
   \brief The Flow item arranges its children side by side, wrapping as necessary.
   \inherits Item

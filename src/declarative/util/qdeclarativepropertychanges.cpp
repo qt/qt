@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass PropertyChanges QDeclarativePropertyChanges
+    \ingroup qml-state-elements
     \since 4.7
     \brief The PropertyChanges element describes new property bindings or values for a state.
 

@@ -133,6 +133,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
 /*!
     \qmlclass State QDeclarativeState
+    \ingroup qml-state-elements
     \since 4.7
     \brief The State element defines configurations of objects and properties.
 

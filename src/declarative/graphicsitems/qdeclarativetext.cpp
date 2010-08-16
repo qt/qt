@@ -162,7 +162,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
-  \since 4.7
+    \ingroup qml-basic-visual-elements
+    \since 4.7
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
