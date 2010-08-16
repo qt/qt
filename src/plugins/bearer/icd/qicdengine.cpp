@@ -807,7 +807,6 @@ void QIcdEngine::getIcdInitialState()
      */
     Maemo::Icd icd;
     QList<Maemo::IcdStateResult> state_results;
-    QMutexLocker locker(&mutex);
     QNetworkConfigurationPrivatePointer ptr;
 
     if (icd.state(state_results) && !state_results.isEmpty()) {
@@ -825,9 +824,9 @@ void QIcdEngine::getIcdInitialState()
                     ptr->state = QNetworkConfiguration::Active;
                     configLocker.unlock();
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationChanged(ptr);
-                    locker.relock();
+                    mutex.lock();
                 }
                 break;
             default:
