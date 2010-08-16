@@ -152,6 +152,7 @@ private:
     void startListeningStateSignalsForAllConnections();
     void doRequestUpdate(QList<Maemo::IcdScanResult> scanned = QList<Maemo::IcdScanResult>());
     void cancelAsyncConfigurationUpdate();
+    void getIcdInitialState();
 
 private:
     IapMonitor *iapMonitor;
@@ -162,7 +163,6 @@ private:
     QList<Maemo::IcdScanResult> m_scanResult;
 
     bool firstUpdate;
-    bool m_gettingInitialConnectionState;
     bool m_scanGoingOn;
 };
 
