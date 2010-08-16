@@ -245,8 +245,8 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         */
         regenerate();
-        emit countChanged();
     }
+    emit countChanged();
 }
 
 /*!
@@ -377,6 +377,7 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
             d->deletables.insert(modelIndex, item);
         }
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsRemoved(int index, int count)
@@ -391,6 +392,7 @@ void QDeclarativeRepeater::itemsRemoved(int index, int count)
         else
             break;
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
@@ -420,6 +422,7 @@ void QDeclarativeRepeater::modelReset()
     if (!isComponentComplete())
         return;
     regenerate();
+    emit countChanged();
 }
 
 QT_END_NAMESPACE
