@@ -1173,8 +1173,16 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                          QGLFormat::OpenGL_Version_2_1 |
                          QGLFormat::OpenGL_Version_3_0;
         }
-        else
-            qWarning("Unrecognised OpenGL version");
+        else {
+         versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                         QGLFormat::OpenGL_Version_1_2 |
+                         QGLFormat::OpenGL_Version_1_3 |
+                         QGLFormat::OpenGL_Version_1_4 |
+                         QGLFormat::OpenGL_Version_1_5 |
+                         QGLFormat::OpenGL_Version_2_0 |
+                         QGLFormat::OpenGL_Version_2_1 |
+                         QGLFormat::OpenGL_Version_3_0;
+        }
     }
     return versionFlags;
 }
