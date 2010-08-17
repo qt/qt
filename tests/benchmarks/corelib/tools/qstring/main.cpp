@@ -67,6 +67,8 @@ private slots:
     void equals_data() const;
     void equals2_data() const;
     void equals2() const;
+    void ucstrncmp_data() const;
+    void ucstrncmp() const;
     void fromUtf8() const;
 };
 
@@ -831,6 +833,140 @@ void tst_QString::equals2() const
             const ushort *p2 = stringCollectionData + stringCollection[i].offset2;
             bool result = (func[algorithm])(p1, p2, stringCollection[i].len);
             Q_UNUSED(result);
+        }
+    }
+}
+
+static int ucstrncmp_shortwise(const ushort *a, const ushort *b, int l)
+{
+    while (l-- && *a == *b)
+        a++,b++;
+    if (l==-1)
+        return 0;
+    return *a - *b;
+}
+
+static int ucstrncmp_intwise(const ushort *a, const ushort *b, int len)
+{
+    // do both strings have the same alignment?
+    if ((quintptr(a) & 2) == (quintptr(b) & 2)) {
+        // are we aligned to 4 bytes?
+        if (quintptr(a) & 2) {
+            if (*a != *b)
+                return *a - *b;
+            ++a;
+            ++b;
+            --len;
+        }
+
+        const uint *p1 = (const uint *)a;
+        const uint *p2 = (const uint *)b;
+        quintptr counter = 0;
+        for ( ; len > 1 ; len -= 2, ++counter) {
+            if (p1[counter] != p2[counter]) {
+                // which ushort isn't equal?
+                int diff = a[2*counter] - b[2*counter];
+                return diff ? diff : a[2*counter + 1] - b[2*counter + 1];
+            }
+        }
+
+        return len ? a[2*counter] - b[2*counter] : 0;
+    } else {
+        while (len-- && *a == *b)
+            a++,b++;
+        if (len==-1)
+            return 0;
+        return *a - *b;
+    }
+}
+
+typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
+Q_DECLARE_METATYPE(UcstrncmpFunction)
+
+void tst_QString::ucstrncmp_data() const
+{
+    QTest::addColumn<UcstrncmpFunction>("function");
+    QTest::newRow("selftest") << UcstrncmpFunction(0);
+    QTest::newRow("shortwise") << &ucstrncmp_shortwise;
+    QTest::newRow("intwise") << &ucstrncmp_intwise;
+}
+
+void tst_QString::ucstrncmp() const
+{
+    QFETCH(UcstrncmpFunction, function);
+    if (!function) {
+        static const UcstrncmpFunction func[] = {
+            &ucstrncmp_shortwise,
+            &ucstrncmp_intwise
+        };
+        static const int functionCount = sizeof func / sizeof func[0];
+
+#ifdef Q_OS_UNIX
+        const long pagesize = sysconf(_SC_PAGESIZE);
+        void *page1, *page3;
+        ushort *page2;
+        page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);
+        Q_ASSERT(quintptr(page3) == quintptr(page2) + pagesize || quintptr(page3) == quintptr(page2) - pagesize);
+        munmap(page1, pagesize);
+        munmap(page3, pagesize);
+
+        // populate our page
+        for (uint i = 0; i < pagesize / sizeof(long long); ++i)
+            ((long long *)page2)[i] = Q_INT64_C(0x0041004100410041);
+
+        // the following should crash:
+        //page2[-1] = 0xdead;
+        //page2[pagesize / sizeof(ushort) + 1] = 0xbeef;
+
+        static const ushort needle[] = {
+            0x41, 0x41, 0x41, 0x41,   0x41, 0x41, 0x41, 0x41,
+            0x41, 0x41, 0x41, 0x41,   0x41, 0x41, 0x41, 0x41,
+            0x41
+        };
+
+        for (int algo = 0; algo < functionCount; ++algo) {
+            // boundary condition test:
+            for (int i = 0; i < 8; ++i) {
+                (func[algo])(page2 + i, needle, sizeof needle / 2);
+                (func[algo])(page2 - i - 1 - sizeof(needle)/2 + pagesize/2, needle, sizeof needle/2);
+            }
+        }
+
+        munmap(page2, pagesize);
+#endif
+
+        for (int algo = 0; algo < functionCount; ++algo) {
+            for (int i = 0; i < stringCollectionCount; ++i) {
+                const ushort *p1 = stringCollectionData + stringCollection[i].offset1;
+                const ushort *p2 = stringCollectionData + stringCollection[i].offset2;
+                int expected = ucstrncmp_shortwise(p1, p2, stringCollection[i].len);
+                expected = qBound(-1, expected, 1);
+
+                int result = (func[algo])(p1, p2, stringCollection[i].len);
+                result = qBound(-1, result, 1);
+                if (expected != result)
+                    qWarning().nospace()
+                        << "algo=" << algo
+                        << " i=" << i
+                        << " failed (" << result << "!=" << expected
+                        << "); strings were "
+                        << QByteArray((char*)p1, stringCollection[i].len).toHex()
+                        << " and "
+                        << QByteArray((char*)p2, stringCollection[i].len).toHex();
+            }
+        }
+        return;
+    }
+
+    QBENCHMARK {
+        for (int i = 0; i < stringCollectionCount; ++i) {
+            const ushort *p1 = stringCollectionData + stringCollection[i].offset1;
+            const ushort *p2 = stringCollectionData + stringCollection[i].offset2;
+            (function)(p1, p2, stringCollection[i].len);
         }
     }
 }
