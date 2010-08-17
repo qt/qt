@@ -856,7 +856,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
                     uint tl = fetch(s1, x1, data->texture.colorTable);
                     uint tr = fetch(s1, x2, data->texture.colorTable);
                     uint bl = fetch(s2, x1, data->texture.colorTable);
@@ -883,7 +883,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
                     uint tl = fetch(s1, x1, data->texture.colorTable);
                     uint tr = fetch(s1, x2, data->texture.colorTable);
                     uint bl = fetch(s2, x1, data->texture.colorTable);
