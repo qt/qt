@@ -48,7 +48,14 @@
 #define SRCDIR ""
 #endif
 
+#ifdef Q_OS_UNIX
+#include <sys/mman.h>
+#include <unistd.h>
+#endif
+
 #include <private/qsimd_p.h>
+
+#include "data.cpp"
 
 class tst_QString: public QObject
 {
@@ -73,20 +80,8 @@ void tst_QString::equals() const
     }
 }
 
-static ushort databuffer[4096];
-
 tst_QString::tst_QString()
 {
-    // populate databuffer with our seed, each byte 3 times in a row
-    // include the NUL!
-    static const char seed[] = "AAAAAAAAAEhlbGxvIFdvcmxkIAAAAAA=";
-    static const int repeat = 3;
-    int pos = 0;
-    for (ushort *p = databuffer; p < databuffer + (sizeof(databuffer) / sizeof(databuffer[0])); p += repeat) {
-        for (int j = 0; j < repeat; ++p, ++j)
-            *p = seed[pos];
-        pos = (pos + 1) % sizeof(seed);
-    }
 }
 
 void tst_QString::equals_data() const
@@ -148,13 +143,15 @@ void tst_QString::equals_data() const
             << QString::fromRawData(ptr + 1, 58) << QString::fromRawData(ptr + 3, 58);
 }
 
-static bool equals2_memcmp_call(ushort *p1, ushort *p2, int len)
+static bool equals2_memcmp_call(const ushort *p1, const ushort *p2, int len)
 {
     return memcmp(p1, p2, len * 2) == 0;
 }
 
-static bool equals2_bytewise(ushort *p1, ushort *p2, int len)
+static bool equals2_bytewise(const ushort *p1, const ushort *p2, int len)
 {
+    if (p1 == p2 || !len)
+        return true;
     uchar *b1 = (uchar *)p1;
     uchar *b2 = (uchar *)p2;
     len *= 2;
@@ -164,17 +161,24 @@ static bool equals2_bytewise(ushort *p1, ushort *p2, int len)
     return true;
 }
 
-static bool equals2_shortwise(ushort *p1, ushort *p2, int len)
+static bool __attribute__((optimize("unroll-loops"))) equals2_shortwise(const ushort *p1, const ushort *p2, int len)
 {
-    register ushort * const end = p1 + len;
-    for ( ; p1 != end; ++p1, ++p2)
-        if (*p1 != *p2)
+    if (p1 == p2 || !len)
+        return true;
+//    for (register int counter; counter < len; ++counter)
+//        if (p1[counter] != p2[counter])
+//            return false;
+    while (len--) {
+        if (p1[len] != p2[len])
             return false;
+    }
     return true;
 }
 
-static bool equals2_intwise(ushort *p1, ushort *p2, int length)
+static bool equals2_intwise(const ushort *p1, const ushort *p2, int length)
 {
+    if (p1 == p2 || !length)
+        return true;
     register union {
         const quint16 *w;
         const quint32 *d;
@@ -219,71 +223,204 @@ static bool equals2_intwise(ushort *p1, ushort *p2, int length)
     return true;
 }
 
-#ifdef __SSE2__
-static bool equals2_sse2(ushort *p1, ushort *p2, int len)
+static inline bool equals2_short_tail(const ushort *p1, const ushort *p2, int len)
 {
-    if (len > 8) {
-        while (len > 8) {
-            __m128i q1 = _mm_loadu_si128((__m128i *)p1);
-            __m128i q2 = _mm_loadu_si128((__m128i *)p2);
-            __m128i cmp = _mm_cmpeq_epi16(q1, q2);
-            if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
-                return false;
-
-            len -= 8;
-            p1 += 8;
-            p2 += 8;
-        }
-    }
-
-    return equals2_shortwise(p1, p2, len);
-}
-
-static inline
-#ifdef Q_CC_GNU
-__attribute__((always_inline))
-#endif
-bool prolog_align(ushort *&p1, ushort *&p2, int &len)
-{
-    const ushort *end = (ushort*) ((quintptr(p1) + 15) & ~15);
-    if (end > p1 + len)
-        end = p1 + len;
-    for ( ; p1 != end; ++p1, ++p2, --len)
+    if (len) {
         if (*p1 != *p2)
             return false;
+        if (--len) {
+            if (p1[1] != p2[1])
+                return false;
+            if (--len) {
+                if (p1[2] != p2[2])
+                    return false;
+                if (--len) {
+                    if (p1[3] != p2[3])
+                        return false;
+                    if (--len) {
+                        if (p1[4] != p2[4])
+                            return false;
+                        if (--len) {
+                            if (p1[5] != p2[5])
+                                return false;
+                            if (--len) {
+                                if (p1[6] != p2[6])
+                                    return false;
+                                return p1[7] == p2[7];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     return true;
 }
 
-static bool equals2_sse2_aligning(ushort *p1, ushort *p2, int len)
+#pragma GCC optimize("no-unroll-loops")
+#ifdef __SSE2__
+static bool equals2_sse2_aligned(const ushort *p1, const ushort *p2, int len)
 {
-    if (len > 8) {
-        if (!prolog_align(p1, p2, len))
-            return false;
+    if (len >= 8) {
+        qptrdiff counter = 0;
         while (len > 8) {
-            __m128i q1 = _mm_load_si128((__m128i *)p1);
-            __m128i q2 = _mm_loadu_si128((__m128i *)p2);
+            __m128i q1 = _mm_load_si128((__m128i *)(p1 + counter));
+            __m128i q2 = _mm_load_si128((__m128i *)(p2 + counter));
+            __m128i cmp = _mm_cmpeq_epi16(q1, q2);
+            if (ushort(_mm_movemask_epi8(cmp)) != ushort(0xffff))
+                return false;
+
+            len -= 8;
+            counter += 8;
+        }
+        p1 += counter;
+        p2 += counter;
+    }
+
+    return equals2_short_tail(p1, p2, len);
+}
+
+static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse2(const ushort *p1, const ushort *p2, int len)
+{
+    if (p1 == p2 || !len)
+        return true;
+
+    if (len >= 8) {
+        qptrdiff counter = 0;
+        while (len >= 8) {
+            __m128i q1 = _mm_loadu_si128((__m128i *)(p1 + counter));
+            __m128i q2 = _mm_loadu_si128((__m128i *)(p2 + counter));
             __m128i cmp = _mm_cmpeq_epi16(q1, q2);
             if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
                 return false;
 
             len -= 8;
-            p1 += 8;
-            p2 += 8;
+            counter += 8;
         }
+        p1 += counter;
+        p2 += counter;
     }
 
-    return equals2_shortwise(p1, p2, len);
+    return equals2_short_tail(p1, p2, len);
 }
 
-template<int N> static inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
+//static bool equals2_sse2(const ushort *p1, const ushort *p2, int len)
+//{
+//    register int val1 = quintptr(p1) & 0xf;
+//    register int val2 = quintptr(p2) & 0xf;
+//    if (false && val1 + val2 == 0)
+//        return equals2_sse2_aligned(p1, p2, len);
+//    else
+//        return equals2_sse2_unaligned(p1, p2, len);
+//}
+
+static bool equals2_sse2_aligning(const ushort *p1, const ushort *p2, int len)
+{
+    if (len < 8)
+        return equals2_short_tail(p1, p2, len);
+
+    qptrdiff counter = 0;
+
+    // which one is easier to align, p1 or p2 ?
+    register int val1 = quintptr(p1) & 0xf;
+    register int val2 = quintptr(p2) & 0xf;
+    if (val1 && val2) {
+#if 0
+        // we'll align the one which requires the least number of steps
+        if (val1 > val2) {
+            qSwap(p1, p2);
+            val1 = val2;
+        }
+
+        // val1 contains the number of bytes past the 16-aligned mark
+        // we must read 16-val1 bytes to align
+        val1 = 16 - val1;
+        if (val1 & 0x2) {
+            if (*p1 != *p2)
+                return false;
+            --len;
+            ++counter;
+        }
+        while (val1 & 12) {
+            if (*(uint*)p1 != *(uint*)p2)
+                return false;
+            --len;
+            counter += 2;
+            val1 -= 4;
+        }
+#else
+        // we'll align the one closest to the 16-byte mark
+        if (val1 > val2) {
+            qSwap(p1, p2);
+            val1 = val2;
+        }
+
+        // we're reading val1 bytes too many
+        __m128i q2 = _mm_loadu_si128((__m128i *)(p2 - val1/2));
+        __m128i cmp = _mm_cmpeq_epi16(*(__m128i *)(p1 - val1/2), q2);
+        if (short(_mm_movemask_epi8(cmp)) >> val1 != short(-1))
+            return false;
+
+        counter = 8 - val1/2;
+        len -= 8 - val1/2;
+#endif
+    } else if (!val2) {
+        // p2 is already aligned
+        qSwap(p1, p2);
+    }
+
+    // p1 is aligned
+
+    while (len >= 8) {
+        __m128i q1 = _mm_load_si128((__m128i *)(p1 + counter));
+        __m128i q2 = _mm_loadu_si128((__m128i *)(p2 + counter));
+        __m128i cmp = _mm_cmpeq_epi16(q1, q2);
+        if (ushort(_mm_movemask_epi8(cmp)) != ushort(0xffff))
+            return false;
+
+        len -= 8;
+        counter += 8;
+    }
+
+    // tail
+    return equals2_short_tail(p1 + counter, p2 + counter, len);
+}
+
+#ifdef __SSE3__
+static bool __attribute__((optimize("no-unroll-loops"))) equals2_sse3(const ushort *p1, const ushort *p2, int len)
+{
+    if (p1 == p2 || !len)
+        return true;
+
+    if (len >= 8) {
+        qptrdiff counter = 0;
+        while (len >= 8) {
+            __m128i q1 = _mm_lddqu_si128((__m128i *)(p1 + counter));
+            __m128i q2 = _mm_lddqu_si128((__m128i *)(p2 + counter));
+            __m128i cmp = _mm_cmpeq_epi16(q1, q2);
+            if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+                return false;
+
+            len -= 8;
+            counter += 8;
+        }
+        p1 += counter;
+        p2 += counter;
+    }
+
+    return equals2_short_tail(p1, p2, len);
+}
+
+#ifdef __SSSE3__
+template<int N> static __attribute__((optimize("unroll-loops"))) inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2, int len)
 {
     __m128i lower = _mm_load_si128(m1);
-    while (len > 8) {
+    while (len >= 8) {
         __m128i upper = _mm_load_si128(m1 + 1);
         __m128i correct;
         correct = _mm_alignr_epi8(upper, lower, N);
 
-        __m128i q2 = _mm_loadu_si128(m2);
+        __m128i q2 = _mm_lddqu_si128(m2);
         __m128i cmp = _mm_cmpeq_epi16(correct, q2);
         if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
             return false;
@@ -295,13 +432,13 @@ template<int N> static inline bool equals2_ssse3_alignr(__m128i *m1, __m128i *m2
     }
 
     // tail
-    return len == 0 || equals2_shortwise((ushort *)m1 + N / 2, (ushort*)m2, len);
+    return len == 0 || equals2_short_tail((const ushort *)m1 + N / 2, (const ushort*)m2, len);
 }
 
-static inline bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
+static inline __attribute__((optimize("unroll-loops"))) bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
 {
-    while (len > 8) {
-        __m128i q2 = _mm_loadu_si128(m2);
+    while (len >= 8) {
+        __m128i q2 = _mm_lddqu_si128(m2);
         __m128i cmp = _mm_cmpeq_epi16(*m1, q2);
         if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
             return false;
@@ -310,30 +447,30 @@ static inline bool equals2_ssse3_aligned(__m128i *m1, __m128i *m2, int len)
         ++m1;
         ++m2;
     }
-    return len == 0 || equals2_shortwise((ushort *)m1, (ushort *)m2, len);
+    return len == 0 || equals2_short_tail((const ushort *)m1, (const ushort *)m2, len);
 }
 
-//#ifdef __SSSE3__
-static bool equals2_ssse3(ushort *p1, ushort *p2, int len)
+static bool equals2_ssse3(const ushort *p1, const ushort *p2, int len)
 {
     // p1 & 0xf can be:
     //   0,  2,  4,  6,  8, 10, 12, 14
     // If it's 0, we're aligned
     // If it's not, then we're interested in the 16 - (p1 & 0xf) bytes only
 
-    if (len > 8) {
+    if (len >= 8) {
         // find the last aligned position below the p1 memory
         __m128i *m1 = (__m128i *)(quintptr(p1) & ~0xf);
         __m128i *m2 = (__m128i *)p2;
-        uchar diff = quintptr(p1) - quintptr(m1);
+        qptrdiff diff = quintptr(p1) - quintptr(m1);
 
         // diff contains the number of extra bytes
+        if (diff == 10)
+            return equals2_ssse3_alignr<10>(m1, m2, len);
+        else if (diff == 2)
+            return equals2_ssse3_alignr<2>(m1, m2, len);
         if (diff < 8) {
             if (diff < 4) {
-                if (diff == 0)
-                    return equals2_ssse3_aligned(m1, m2, len);
-                else // diff == 2
-                    return equals2_ssse3_alignr<2>(m1, m2, len);
+                return equals2_ssse3_aligned(m1, m2, len);
             } else {
                 if (diff == 4)
                     return equals2_ssse3_alignr<4>(m1, m2, len);
@@ -342,10 +479,7 @@ static bool equals2_ssse3(ushort *p1, ushort *p2, int len)
             }
         } else {
             if (diff < 12) {
-                if (diff == 8)
-                    return equals2_ssse3_alignr<8>(m1, m2, len);
-                else // diff == 10
-                    return equals2_ssse3_alignr<10>(m1, m2, len);
+                return equals2_ssse3_alignr<8>(m1, m2, len);
             } else {
                 if (diff == 12)
                     return equals2_ssse3_alignr<12>(m1, m2, len);
@@ -353,34 +487,99 @@ static bool equals2_ssse3(ushort *p1, ushort *p2, int len)
                     return equals2_ssse3_alignr<14>(m1, m2, len);
             }
         }
-
-//        switch (diff) {
-//        case 0:
-//            return equals2_ssse3_aligned(m1, m2, len);
-//        case 2:
-//            return equals2_ssse3_alignr<2>(m1, m2, len);
-//        case 4:
-//            return equals2_ssse3_alignr<4>(m1, m2, len);
-//        case 6:
-//            return equals2_ssse3_alignr<6>(m1, m2, len);
-//        case 8:
-//            return equals2_ssse3_alignr<8>(m1, m2, len);
-//        case 10:
-//            return equals2_ssse3_alignr<10>(m1, m2, len);
-//        case 12:
-//            return equals2_ssse3_alignr<12>(m1, m2, len);
-//        case 14:
-//            return equals2_ssse3_alignr<14>(m1, m2, len);
-//        }
     }
 
     // tail
-    return equals2_shortwise(p1, p2, len);
+    return equals2_short_tail(p1, p2, len);
 }
-//#endif
 
-//#ifdef __SSE4_1__
-static bool equals2_sse4(ushort *p1, ushort *p2, int len)
+template<int N> static inline bool equals2_ssse3_aligning_alignr(__m128i *m1, __m128i *m2, int len)
+{
+    __m128i lower = _mm_load_si128(m1);
+    while (len >= 8) {
+        __m128i upper = _mm_load_si128(m1 + 1);
+        __m128i correct;
+        correct = _mm_alignr_epi8(upper, lower, N);
+
+        __m128i cmp = _mm_cmpeq_epi16(correct, *m2);
+        if (ushort(_mm_movemask_epi8(cmp)) != 0xffff)
+            return false;
+
+        len -= 8;
+        ++m2;
+        ++m1;
+        lower = upper;
+    }
+
+    // tail
+    return len == 0 || equals2_short_tail((const ushort *)m1 + N / 2, (const ushort*)m2, len);
+}
+
+static bool equals2_ssse3_aligning(const ushort *p1, const ushort *p2, int len)
+{
+    if (len < 8)
+        return equals2_short_tail(p1, p2, len);
+    qptrdiff counter = 0;
+
+    // which one is easier to align, p1 or p2 ?
+    {
+        register int val1 = quintptr(p1) & 0xf;
+        register int val2 = quintptr(p2) & 0xf;
+        if (val1 && val2) {
+            // we'll align the one closest to the 16-byte mark
+            if (val1 < val2) {
+                qSwap(p1, p2);
+                val2 = val1;
+            }
+
+            // we're reading val1 bytes too many
+            __m128i q1 = _mm_lddqu_si128((__m128i *)(p1 - val2/2));
+            __m128i cmp = _mm_cmpeq_epi16(q1, *(__m128i *)(p2 - val2/2));
+            if (short(_mm_movemask_epi8(cmp)) >> val1 != short(-1))
+                return false;
+
+            counter = 8 - val2/2;
+            len -= 8 - val2/2;
+        } else if (!val1) {
+            // p1 is already aligned
+            qSwap(p1, p2);
+        }
+    }
+
+    // p2 is aligned now
+    // we want to use palignr in the mis-alignment of p1
+    __m128i *m1 = (__m128i *)(quintptr(p1 + counter) & ~0xf);
+    __m128i *m2 = (__m128i *)(p2 + counter);
+    register int val1 = quintptr(p1 + counter) - quintptr(m1);
+
+    // val1 contains the number of extra bytes
+    if (val1 == 8)
+        return equals2_ssse3_aligning_alignr<8>(m1, m2, len);
+    if (val1 == 0)
+        return equals2_sse2_aligned(p1 + counter, p2 + counter, len);
+    if (val1 < 8) {
+        if (val1 < 4) {
+            return equals2_ssse3_aligning_alignr<2>(m1, m2, len);
+        } else {
+            if (val1 == 4)
+                return equals2_ssse3_aligning_alignr<4>(m1, m2, len);
+            else // diff == 6
+                return equals2_ssse3_aligning_alignr<6>(m1, m2, len);
+        }
+    } else {
+        if (val1 < 12) {
+            return equals2_ssse3_aligning_alignr<10>(m1, m2, len);
+        } else {
+            if (val1 == 12)
+                return equals2_ssse3_aligning_alignr<12>(m1, m2, len);
+            else // diff == 14
+                return equals2_ssse3_aligning_alignr<14>(m1, m2, len);
+        }
+    }
+}
+
+#ifdef __SSE4_1__
+static bool equals2_sse4(const ushort *p1, const ushort *p2, int len)
 {
     // We use the pcmpestrm instruction searching for differences (negative polarity)
     // it will reset CF if it's all equal
@@ -390,35 +589,149 @@ static bool equals2_sse4(ushort *p1, ushort *p2, int len)
     //  difference found:         CF = 1
     //  all equal, not finished:  CF = ZF = SF = 0
     //  all equal, finished:      CF = 0, ZF = SF = 1
+    // We use the JA instruction that jumps if ZF = 0 and CF = 0
+    if (p1 == p2 || !len)
+        return true;
+
+    // This function may read some bytes past the end of p1 or p2
+    // It is safe to do that, as long as those extra bytes (beyond p1+len and p2+len)
+    // are on the same page as the last valid byte.
+    // If len is a multiple of 8, we'll never load invalid bytes.
+    if (len & 7) {
+        // The last load would load (len & ~7) valid bytes and (8 - (len & ~7)) invalid bytes.
+        // So we can't do the last load if any of those bytes is in a different
+        // page. That is, if:
+        //    pX + len      is on a different page from     pX + (len & ~7) + 8
+        //
+        // that is, if second-to-last load ended up less than 16 bytes from the page end:
+        //    pX + (len & ~7)  is the last ushort read in the second-to-last load
+        if (len < 8)
+            return equals2_short_tail(p1, p2, len);
+        if ((quintptr(p1 + (len & ~7)) & 0xfff) > 0xff0 ||
+                (quintptr(p2 + (len & ~7)) & 0xfff) > 0xff0) {
+
+            // yes, so we mustn't do the final 128-bit load
+            bool result;
+            asm (
+            "sub        %[p1], %[p2]\n\t"
+            "sub        $16, %[p1]\n\t"
+            "add        $8, %[len]\n\t"
+
+            // main loop:
+            "0:\n\t"
+            "add        $16, %[p1]\n\t"
+            "sub        $8, %[len]\n\t"
+            "jz         1f\n\t"
+            "lddqu      (%[p1]), %%xmm0\n\t"
+            "mov        %[len], %%edx\n\t"
+            "pcmpestri  %[mode], (%[p2],%[p1]), %%xmm0\n\t"
+
+            "jna        1f\n\t"
+            "add        $16, %[p1]\n\t"
+            "sub        $8, %[len]\n\t"
+            "jz         1f\n\t"
+            "lddqu      (%[p1]), %%xmm0\n\t"
+            "mov        %[len], %%edx\n\t"
+            "pcmpestri  %[mode], (%[p2],%[p1]), %%xmm0\n\t"
+
+            "ja         0b\n\t"
+            "1:\n\t"
+            "setnc      %[result]\n\t"
+            : [result] "=a" (result),
+              [p1] "+r" (p1),
+              [p2] "+r" (p2)
+            : [len] "0" (len & ~7),
+              [mode] "i" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY)
+            : "%edx", "%ecx", "%xmm0"
+            );
+            return result && equals2_short_tail(p1, (const ushort *)(quintptr(p1) + quintptr(p2)), len & 7);
+        }
+    }
+
+//    const qptrdiff disp = p2 - p1;
+//    p1 -= 8;
+//    len += 8;
+//    while (true) {
+//        enum { Mode = _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY };
+
+//        p1 += 8;
+//        len -= 8;
+//        if (!len)
+//            return true;
+
+//        __m128i q1 = _mm_lddqu_si128((__m128i *)(p1 + disp));
+//        __m128i *m2 = (__m128i *)p1;
+
+//        bool cmp_a = _mm_cmpestra(q1, len, *m2, len, Mode);
+//        if (cmp_a)
+//            continue;
+//        return !_mm_cmpestrc(q1, len, *m2, len, Mode);
+//    }
+//    return true;
     bool result;
     asm (
-        "movd       %%ebx, %%xmm1\n\t"
         "sub        %[p1], %[p2]\n\t"
-        "mov        %[p1], %%ebx\n\t"
-        "sub        $16, %%ebx\n\t"
+        "sub        $16, %[p1]\n\t"
         "add        $8, %[len]\n\t"
-        "0:\n\t"
-        "add        $16, %%ebx\n\t"
+
+    "0:\n\t"
+        "add        $16, %[p1]\n\t"
         "sub        $8, %[len]\n\t"
-        "movdqu     (%%ebx), %%xmm0\n\t"
+        "jz         1f\n\t"
+        "lddqu      (%[p2],%[p1]), %%xmm0\n\t"
         "mov        %[len], %%edx\n\t"
-        "pcmpestrm  %[mode], (%[p2],%%ebx), %%xmm0\n\t"
+        "pcmpestri  %[mode], (%[p1]), %%xmm0\n\t"
+
+        "jna        1f\n\t"
+        "add        $16, %[p1]\n\t"
+        "sub        $8, %[len]\n\t"
+        "jz         1f\n\t"
+        "lddqu      (%[p2],%[p1]), %%xmm0\n\t"
+        "mov        %[len], %%edx\n\t"
+        "pcmpestri  %[mode], (%[p1]), %%xmm0\n\t"
+
         "ja         0b\n\t"
-        "1:\n\t"
-        "mov        $0, %%eax\n\t"
-        "setnc      %%al\n\t"
-        "movd       %%xmm1, %%ebx\n\t"
+
+    "1:\n\t"
+        "setnc      %[result]\n\t"
         : [result] "=a" (result)
         : [len] "0" (len),
-          [p1] "d" (p1),
+          [p1] "r" (p1),
           [p2] "r" (p2),
-          [mode] "K" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY)
-        : "%xmm0", "%xmm1"
+          [mode] "i" (_SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY)
+        : "%edx", "%ecx", "%xmm0"
     );
     return result;
 }
-//#endif
+
 #endif
+#endif
+#endif
+#endif
+
+typedef bool (* FuncPtr)(const ushort *, const ushort *, int);
+static const FuncPtr func[] = {
+    equals2_memcmp_call, // 0
+    equals2_bytewise, // 1
+    equals2_shortwise, // 1
+    equals2_intwise, // 3
+#ifdef __SSE2__
+    equals2_sse2, // 4
+    equals2_sse2_aligning, // 5
+#ifdef __SSE3__
+    equals2_sse3, // 6
+#ifdef __SSSE3__
+    equals2_ssse3, // 7
+    equals2_ssse3, // 8
+#ifdef __SSE4_1__
+    equals2_sse4, // 9
+#endif
+#endif
+#endif
+#endif
+    0
+};
+static const int functionCount = sizeof(func)/sizeof(func[0]) - 1;
 
 void tst_QString::equals2_data() const
 {
@@ -431,108 +744,94 @@ void tst_QString::equals2_data() const
 #ifdef __SSE2__
     QTest::newRow("sse2") << 4;
     QTest::newRow("sse2_aligning") << 5;
+#ifdef __SSE3__
+    QTest::newRow("sse3") << 6;
 #ifdef __SSSE3__
-    QTest::newRow("ssse3") << 6;
+    QTest::newRow("ssse3") << 7;
+    QTest::newRow("ssse3_aligning") << 8;
 #ifdef __SSE4_1__
-    QTest::newRow("sse4.2") << 7;
+    QTest::newRow("sse4.2") << 9;
+#endif
 #endif
 #endif
 #endif
 }
 
+static void __attribute__((noinline)) equals2_selftest()
+{
+#ifdef Q_OS_UNIX
+    const long pagesize = sysconf(_SC_PAGESIZE);
+    void *page1, *page3;
+    ushort *page2;
+    page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+    page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+    Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);
+    Q_ASSERT(quintptr(page3) == quintptr(page2) + pagesize || quintptr(page3) == quintptr(page2) - pagesize);
+    munmap(page1, pagesize);
+    munmap(page3, pagesize);
+
+    // populate our page
+    for (uint i = 0; i < pagesize / sizeof(long long); ++i)
+        ((long long *)page2)[i] = Q_INT64_C(0x0041004100410041);
+
+    // the following should crash:
+    //page2[-1] = 0xdead;
+    //page2[pagesize / sizeof(ushort) + 1] = 0xbeef;
+
+    static const ushort needle[] = {
+        0x41, 0x41, 0x41, 0x41,   0x41, 0x41, 0x41, 0x41,
+        0x41, 0x41, 0x41, 0x41,   0x41, 0x41, 0x41, 0x41,
+        0x41
+    };
+
+    for (int algo = 0; algo < functionCount; ++algo) {
+        // boundary condition test:
+        for (int i = 0; i < 8; ++i) {
+            (func[algo])(page2 + i, needle, sizeof needle / 2);
+            (func[algo])(page2 - i - 1 - sizeof(needle)/2 + pagesize/2, needle, sizeof needle/2);
+        }
+    }
+
+    munmap(page2, pagesize);
+#endif
+
+    for (int algo = 0; algo < functionCount; ++algo) {
+        for (int i = 0; i < stringCollectionCount; ++i) {
+            const ushort *p1 = stringCollectionData + stringCollection[i].offset1;
+            const ushort *p2 = stringCollectionData + stringCollection[i].offset2;
+            bool expected = memcmp(p1, p2, stringCollection[i].len * 2) == 0;
+
+            bool result = (func[algo])(p1, p2, stringCollection[i].len);
+            if (expected != result)
+                qWarning().nospace()
+                        << "algo=" << algo
+                        << " i=" << i
+                        << " failed (" << result << "!=" << expected
+                        << "); strings were "
+                        << QByteArray((char*)p1, stringCollection[i].len).toHex()
+                        << " and "
+                        << QByteArray((char*)p2, stringCollection[i].len).toHex();
+        }
+    }
+}
+
 void tst_QString::equals2() const
 {
-    static const short positions[] = {
-        190, 1719, 2149, 1752,
-        158, 244, 365, 1117,
-        254, 265, 1047, 1785,
-        1435, 552, 1476, 2030,
-        // 16
-        421, 1840, 2209, 232,
-        1389, 907, 1500, 1479,
-        1152, 541, 655, 1960,
-        1642, 299, 740, 1995,
-        // 32
-        1946, 1407, 1272, 1946,
-        1459, 1851, 1717, 1484,
-        1761, 1630, 1377, 1675,
-        629, 341, 661, 244
-        // 48
-    };
-    // the length list must not contain 0
-    static const int lens[] = {
-        11, // 0
-        40,
-        28,
-        38,
-        9,
-        52, // 5
-        48,
-        38,
-        29,
-        7,
-        2,  // 10
-        49,
-        41,
-        5,
-        20,
-        62  // 15
-    };
-
-    typedef bool (* FuncPtr)(ushort *, ushort *, int);
-    static const FuncPtr func[] = {
-        equals2_memcmp_call, // 0
-        equals2_bytewise, // 1
-        equals2_shortwise, // 1
-        equals2_intwise, // 3
-#ifdef __SSE2__
-        equals2_sse2, // 4
-        equals2_sse2_aligning, // 5
-#ifdef __SSSE3__
-        equals2_ssse3, // 6
-#ifdef __SSE4_1__
-        equals2_sse4, // 7
-#endif
-#endif
-#endif
-        0
-    };
-
     QFETCH(int, algorithm);
     if (algorithm == -1) {
-        for (uint pos1 = 0; pos1 < sizeof positions / sizeof positions[0]; ++pos1)
-            for (uint pos2 = 0; pos2 < (sizeof positions / sizeof positions[0]) - 32; ++pos2)
-                for (uint len = 0; len < sizeof lens / sizeof lens[0]; ++len) {
-                    ushort *p1 = databuffer + positions[pos1];
-                    ushort *p2 = databuffer + positions[pos2];
-                    bool expected = memcmp(p1, p2, lens[len] * 2) == 0;
-
-                    for (uint algo = 0; algo < -1 + (sizeof func / sizeof func[0]); ++algo) {
-                        bool result = (func[algo])(p1, p2, lens[len]);
-                        if (expected != result)
-                            qWarning().nospace()
-                                    << "algo=" << algo
-                                    << " pos1=" << positions[pos1]
-                                    << " pos2=" << positions[pos2]
-                                    << " len=" << lens[len]
-                                    << " failed (" << result << "!=" << expected
-                                    << "); strings were "
-                                    << QByteArray((char*)p1, lens[len]).toHex()
-                                    << " and "
-                                    << QByteArray((char*)p2, lens[len]).toHex();
-                    }
-
-                }
+        equals2_selftest();
         return;
     }
 
     QBENCHMARK {
-        for (uint pos1 = 0; pos1 < sizeof positions / sizeof positions[0]; ++pos1)
-            for (uint pos2 = 0; pos2 < (sizeof positions / sizeof positions[0]) - 32; ++pos2)
-                for (uint len = 0; len < sizeof lens / sizeof lens[0]; ++len) {
-                    bool result = (func[algorithm])(databuffer + positions[pos1], databuffer + positions[pos2], lens[len]);
-                    Q_UNUSED(result);
-                }
+        for (int i = 0; i < stringCollectionCount; ++i) {
+            const ushort *p1 = stringCollectionData + stringCollection[i].offset1;
+            const ushort *p2 = stringCollectionData + stringCollection[i].offset2;
+            bool result = (func[algorithm])(p1, p2, stringCollection[i].len);
+            Q_UNUSED(result);
+        }
     }
 }
 
