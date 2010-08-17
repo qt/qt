@@ -10918,8 +10918,8 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
 
 /*!
     \class QGraphicsItemGroup
-    \brief The QGraphicsItemGroup class provides treating a group of items as
-    one.
+    \brief The QGraphicsItemGroup class provides a container that treats
+    a group of items as a single item.
     \since 4.2
     \ingroup graphicsview-api
 
