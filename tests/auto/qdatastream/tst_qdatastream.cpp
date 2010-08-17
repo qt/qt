@@ -1820,7 +1820,7 @@ void tst_QDataStream::stream_QPixmap()
 #ifdef Q_OS_WINCE
     QSKIP("Test depends on more memory than available on Qt/CE", SkipAll);
 #endif
-    STREAM_IMPL(QIcon);
+    STREAM_IMPL(QPixmap);
 }
 
 void tst_QDataStream::stream_QIcon_data()
