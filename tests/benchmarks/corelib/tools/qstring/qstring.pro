@@ -1,7 +1,7 @@
 load(qttest_p4)
 TARGET = tst_bench_qstring
 QT -= gui
-SOURCES += main.cpp
+SOURCES += main.cpp data.cpp
 
 wince*:{
    DEFINES += SRCDIR=\\\"\\\"

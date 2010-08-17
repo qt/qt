@@ -51,10 +51,10 @@
 #   <data2>     the second data
 #   \n          newline
 #
-# The C code to write this data would be:
+# The code to write this data would be:
 #   fprintf(out, "LEN = %d %s %d %d\n", len,
-#          (p1 == p2) : "SAME" : "DIFF",
-#          (int)p1 & 0xfff, (int)p2 & 0xfff);
+#          (p1 == p2) ? "SAME" : "DIFF",
+#          uint(quintptr(p1)) & 0xfff, uint(quintptr(p2)) & 0xfff);
 #   fwrite(p1, 2, len, out);
 #   fwrite(p2, 2, len, out);
 #   fwrite("\n", 1, 1, out);
@@ -103,7 +103,9 @@ sub printUshortArray($$$) {
     return ($offset + $headpadding, $offset + $headpadding + $len + $tailpadding);
 }
 
-print "static const ushort stringCollectionData[] __attribute__((aligned(16))) = { \n";
+print "#include \"data.h\"\n\n";
+
+print "const ushort stringCollectionData[] __attribute__((aligned(64))) = { \n";
 $count = 0;
 $offset = 0;
 $totalsize = 0;
@@ -160,12 +162,7 @@ while (1) {
 print "\n};\n";
 close IN;
 
-print "static struct StringCollection\n";
-print "{\n";
-print "    int len;\n";
-print "    int offset1, offset2;\n";
-print "    ushort align1, align2;\n";
-print "} stringCollection[] = {\n";
+print "struct StringCollection stringCollection[] = {\n";
 
 for $i (0..$count-1) {
     print "    {",
@@ -181,8 +178,8 @@ for $i (0..$count-1) {
 }
 print "};\n";
 
-print "static const int stringCollectionCount = $count;\n";
-print "static const int stringCollectionMaxLen = $maxlen;\n";
+print "const int stringCollectionCount = $count;\n";
+print "const int stringCollectionMaxLen = $maxlen;\n";
 printf "// average comparison length: %.4f\n", ($totalsize * 1.0 / $count);
 printf "// cache-line crosses: %d (%.1f%%)\n",
     $cachelinecrosses, ($cachelinecrosses * 100.0 / $count / 2);

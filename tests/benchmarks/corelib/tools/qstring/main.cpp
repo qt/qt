@@ -55,7 +55,7 @@
 
 #include <private/qsimd_p.h>
 
-#include "data.cpp"
+#include "data.h"
 
 class tst_QString: public QObject
 {
