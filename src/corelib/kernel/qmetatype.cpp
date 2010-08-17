@@ -311,6 +311,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("long long", QMetaType::LongLong),
     QT_ADD_STATIC_METATYPE("unsigned long long", QMetaType::ULongLong),
     QT_ADD_STATIC_METATYPE("qint8", QMetaType::Char),
+    QT_ADD_STATIC_METATYPE("signed char", QMetaType::Char),
     QT_ADD_STATIC_METATYPE("quint8", QMetaType::UChar),
     QT_ADD_STATIC_METATYPE("qint16", QMetaType::Short),
     QT_ADD_STATIC_METATYPE("quint16", QMetaType::UShort),
