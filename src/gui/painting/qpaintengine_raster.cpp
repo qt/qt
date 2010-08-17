@@ -1505,8 +1505,6 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    printf("drawRects (I)\n");
-
     // Fill
     ensureBrush();
     if (s->brushData.blend) {
@@ -1516,9 +1514,6 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
 
             int offset_x = int(s->matrix.dx());
             int offset_y = int(s->matrix.dy());
-
-            printf("drawing rect: %d %d %d %d, offset=%d %d\n",
-                   r->x(), r->y(), r->width(), r->height(), offset_x, offset_y);
             while (r < lastRect) {
                 QRect rect = r->normalized();
                 QRect rr = rect.translated(offset_x, offset_y);
