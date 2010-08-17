@@ -589,7 +589,7 @@ inline QT_DEPRECATED T qVariantValue(const QVariant &variant)
 
 template<typename T>
 inline QT_DEPRECATED bool qVariantCanConvert(const QVariant &variant)
-{ return variant.canConvert<T>(); }
+{ return variant.template canConvert<T>(); }
 #endif
 
 #endif
