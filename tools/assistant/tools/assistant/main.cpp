@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
     QHelpEngineCore cachedCollection(cachedCollectionFile);
     if (!cachedCollection.setupData()) {
         cmd.showMessage(QCoreApplication::translate("Assistant",
-                            "Error reading collection file '%1': %2").
+                            "Error reading collection file '%1': %2.").
                         arg(cachedCollectionFile).
                         arg(cachedCollection.error()), true);
         return EXIT_FAILURE;
