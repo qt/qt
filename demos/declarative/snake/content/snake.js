@@ -35,8 +35,11 @@ function startNewGame()
     if (heartbeat.running) {
         endGame();
         startNewGameTimer.running = true;
+        state = "starting";
         return;
     }
+
+    state = "starting";
 
     numRows = numRowsAvailable;
     numColumns = numColumnsAvailable;
@@ -80,7 +83,6 @@ function startNewGame()
     waitForCookie = 5;
     score = 0;
     startHeartbeatTimer.running = true;
-    heartbeat.running = true;
 }
 
 function endGame()
@@ -94,6 +96,7 @@ function endGame()
     }
     lastScore = score;
     highScores.saveScore(lastScore);
+    state = "";
 }
 
 function move() {

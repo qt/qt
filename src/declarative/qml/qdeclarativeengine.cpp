@@ -114,6 +114,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \qmlclass QtObject QObject
+  \ingroup qml-utility-elements
   \since 4.7
   \brief The QtObject element is the most basic element in QML.
 
@@ -184,11 +185,13 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
-\keyword QmlGlobalQtObject
-\qmlclass Qt QDeclarativeEnginePrivate
+\qmlclass QML:Qt QDeclarativeEnginePrivate
+  \ingroup qml-utility-elements
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\keyword QmlGlobalQtObject
+
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
 The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
 with enums and functions.  To use it, call the members of the global \c Qt object directly. 

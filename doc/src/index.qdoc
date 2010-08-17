@@ -65,10 +65,11 @@
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-                    <li><a href="qt-basic-concepts.html">Basic Qt Architecture</a></li>
-                    <li><a href="developing-with-qt.html">Cross-platform &amp; Platform-specific Development</a></li>
-                    <li><a href="technology-apis.html">Qt &amp; standard technologies </a></li>
-                    <li><a href="best-practices.html">Qt How-to's &amp; best practices</a></li>
+                    <li><a href="qt-basic-concepts.html">Basic Concepts</a></li>
+                    <li><a href="qt-gui-concepts.html">GUI Components</a></li>
+                    <li><a href="developing-with-qt.html">Cross-platform and Platform-specific</a></li>
+                    <li><a href="technology-apis.html">Qt APIs for standard technologies </a></li>
+                    <li><a href="best-practices.html">How-To Guides and Best Practices</a></li>
                 </ul>
               </div>
               <div class="sectionlist">
@@ -76,7 +77,9 @@
                     <li><a href="qtquick.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
-                    <li><a href="qt-gui-concepts.html">UI components</a></li>
+                    <li><a href="model-view-programming.html">Model/View Programming</a></li>
+                    <li><a href="qt-network.html">Network Programming</a></li>
+                    <li><a href="qt-graphics.html">Graphics and Printing</a></li>
                 </ul>
               </div>
             </div>
@@ -98,13 +101,12 @@
                   <li><a href="assistant-manual.html">Qt Assistant</a></li>
                   <li><a href="qmake-manual.html">Qt qmake</a></li>
                   <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a></li>
-                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Integration</a> and <a href="http://qt.nokia.com/products/appdev">add-ins</a></li>
+                  <li><a href="http://qt.nokia.com/developer/eclipse-integration">Eclipse Integration</a></li>
+                  <li><a href="http://qt.nokia.com/products/appdev">Add-On Products and Services</a></li>
                   <li><a href="qvfb.html">Virtual Framebuffer</a></li>
                 </ul>
               </div>
             </div>
           </div>
     \endraw
-
-
 */

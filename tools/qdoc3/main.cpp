@@ -194,10 +194,7 @@ static void processQdocconfFile(const QString &fileName)
 
     /*
       Set the application to which qdoc will create the output.
-      The three applications are:
-
-      base or assistant: simple, basic html output
-      for offline viewing in the Assistant application.
+      The two applications are:
 
       creator: additional formatting for viewing in
       the Creator application.
@@ -207,9 +204,9 @@ static void processQdocconfFile(const QString &fileName)
     */
     if (appArg.isEmpty()) {
         qDebug() << "Warning: Application flag not specified on"
-                 << "command line. Options are -assistant, -creator,"
-                 << "and -online (default).";
-        appArg = "online";
+                 << "command line. Options are -creator (default)"
+                 << "and -online.";
+        appArg = "creator";
     }
     config.setStringList(CONFIG_APPLICATION, QStringList(appArg));
 
@@ -484,10 +481,6 @@ int main(int argc, char **argv)
         else if (opt == "-obsoletelinks") {
             obsoleteLinks = true;
         }
-	else if (opt == "-base")
-		appArg = "base";
-	else if (opt == "-assistant")
-		appArg = "assistant";
 	else if (opt == "-creator")
 		appArg = "creator";
 	else if (opt == "-online")

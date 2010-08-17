@@ -326,6 +326,7 @@ void QDeclarativePathViewPrivate::regenerate()
 
 /*!
     \qmlclass PathView QDeclarativePathView
+    \ingroup qml-view-elements
     \since 4.7
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
@@ -1061,7 +1062,7 @@ void QDeclarativePathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->stealMouse) {
         QPointF delta = event->pos() - d->startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() && qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
             d->stealMouse = true;
     }
 

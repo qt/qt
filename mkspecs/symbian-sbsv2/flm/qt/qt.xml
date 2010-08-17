@@ -37,5 +37,6 @@
 
     <interface name="qt.qmake_store_build" extends="Symbian.UserFLM"
                 flm="qmake_store_build.flm">
+        <param name='VARIANTPLATFORM' />
     </interface>    
 </build>

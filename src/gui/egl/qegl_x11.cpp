@@ -165,7 +165,7 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
         if (chosenVisualInfo) {
             // Skip size checks if implementation supports non-matching visual
             // and config (http://bugreports.qt.nokia.com/browse/QTBUG-9444).
-            if (QEgl::hasExtension("EGL_NV_post_convert_replication"))
+            if (QEgl::hasExtension("EGL_NV_post_convert_rounding"))
                 return visualId;
 
             int visualRedSize = countBits(chosenVisualInfo->red_mask);

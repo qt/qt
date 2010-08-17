@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
     \since 4.7
+    \ingroup qm-basic-visual-elements
 
     A BorderImage breaks an image into 9 sections, as shown below:
 

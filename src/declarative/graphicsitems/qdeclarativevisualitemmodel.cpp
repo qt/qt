@@ -128,6 +128,7 @@ public:
 
 /*!
     \qmlclass VisualItemModel QDeclarativeVisualItemModel
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The VisualItemModel allows items to be provided to a view.
 
@@ -525,7 +526,7 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
             QVariant value = model->m_listModelInterface->data(data->m_index, *it);
             return value;
         } else if (model->m_roles.count() == 1 && propName == "modelData") {
-            //for compatability with other lists, assign modelData if there is only a single role
+            //for compatibility with other lists, assign modelData if there is only a single role
             QVariant value = model->m_listModelInterface->data(data->m_index, model->m_roles.first());
             return value;
         }
@@ -644,6 +645,7 @@ QDeclarativeVisualDataModelData *QDeclarativeVisualDataModelPrivate::data(QObjec
 
 /*!
     \qmlclass VisualDataModel QDeclarativeVisualDataModel
+    \ingroup qml-working-with-data
     \brief The VisualDataModel encapsulates a model and delegate
 
     A VisualDataModel encapsulates a model and the delegate that will
