@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qplatformdefs.h"
 #include "qlibrary.h"
 
@@ -61,6 +60,7 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qdir.h>
+#include "qelfparser_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -295,6 +295,7 @@ static bool qt_parse_pattern(const char *s, uint *version, bool *debug, QByteArr
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
+#if !defined (Q_OF_ELF) || !defined(Q_CC_GNU)
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
 {
@@ -330,6 +331,7 @@ static long qt_find_pattern(const char *s, ulong s_len,
 
     return -1;
 }
+#endif // !defined (Q_OF_ELF) || !defined(Q_CC_GNU)
 
 /*
   This opens the specified library, mmaps it into memory, and searches
@@ -365,10 +367,18 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         fdlen = data.size();
     }
 
-    // verify that the pattern is present in the plugin
+    /*
+       ELF binaries on GNU, have .qplugin sections.
+    */
+    long pos = 0;
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+    int r = QElfParser().parse(filedata, &fdlen, library, version, debug, key, lib, &pos);
+    return (r == QElfParser::Ok);
+#else
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
     const ulong plen = qstrlen(pattern);
-    long pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+    if (pos == 0)
+        pos = qt_find_pattern(filedata, fdlen, pattern, plen);
 
     bool ret = false;
     if (pos >= 0)
@@ -378,6 +388,7 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
     file.close();
     return ret;
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 }
 
 #endif // Q_OS_UNIX && !Q_OS_MAC && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)

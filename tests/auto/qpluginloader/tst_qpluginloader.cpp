@@ -100,6 +100,14 @@
 # define PREFIX         "lib"
 #endif
 
+#ifdef QT_NO_DEBUG
+#  define QLIBRARY_AS_DEBUG false
+#else
+#  define QLIBRARY_AS_DEBUG true
+#endif
+
+// #define SHOW_ERRORS 1
+
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
     QString currDir = QDir::currentPath();
@@ -119,10 +127,14 @@ public:
     virtual ~tst_QPluginLoader();
 
 private slots:
+    void clearPluginCache();
     void errorString();
     void loadHints();
     void deleteinstanceOnUnload();
     void checkingStubsFromDifferentDrives();
+    void loadDebugObj();
+    void loadCorruptElf();
+    void loadGarbage();
 };
 
 tst_QPluginLoader::tst_QPluginLoader()
@@ -134,7 +146,25 @@ tst_QPluginLoader::~tst_QPluginLoader()
 {
 }
 
-//#define SHOW_ERRORS 1
+void tst_QPluginLoader::clearPluginCache()
+{
+    QString regkey = QString::fromLatin1("Qt Plugin Cache %1.%2.%3")
+        .arg((QT_VERSION & 0xff0000) >> 16)
+        .arg((QT_VERSION & 0xff00) >> 8)
+        .arg(QLIBRARY_AS_DEBUG ? QLatin1String("debug") : QLatin1String("false"));
+#ifdef Q_WS_MAC
+#if defined(__x86_64__)
+    regkey += QLatin1String("-x86_64");
+#elif defined(__i386__)
+    regkey += QLatin1String("-i386");
+#elif defined(__ppc64__)
+    regkey += QLatin1String("-ppc64");
+#elif defined(__ppc__)
+    regkey += QLatin1String("-ppc");
+#endif
+#endif // Q_WS_MAC
+    QSettings(QSettings::UserScope, QLatin1String("Trolltech")).remove(regkey);
+}
 
 void tst_QPluginLoader::errorString()
 {
@@ -348,6 +378,55 @@ void tst_QPluginLoader::checkingStubsFromDifferentDrives()
     QVERIFY(test2);
 
 #endif//Q_OS_SYMBIAN
+}
+
+void tst_QPluginLoader::loadDebugObj()
+{
+#if defined (__ELF__)
+    QVERIFY(QFile::exists(SRCDIR "elftest/debugobj.so"));
+    QPluginLoader lib1(SRCDIR "elftest/debugobj.so");
+    QCOMPARE(lib1.load(), false);
+#endif
+}
+
+void tst_QPluginLoader::loadCorruptElf()
+{
+#if defined (__ELF__)
+if (sizeof(void*) == 8) {
+    QVERIFY(QFile::exists(SRCDIR "elftest/corrupt1.elf64.so"));
+
+    QPluginLoader lib1(SRCDIR "elftest/corrupt1.elf64.so");
+    QCOMPARE(lib1.load(), false);
+    QVERIFY(lib1.errorString().contains("not an ELF object"));
+
+    QPluginLoader lib2(SRCDIR "elftest/corrupt2.elf64.so");
+    QCOMPARE(lib2.load(), false);
+    QVERIFY(lib2.errorString().contains("invalid"));
+
+    QPluginLoader lib3(SRCDIR "elftest/corrupt3.elf64.so");
+    QCOMPARE(lib3.load(), false);
+    QVERIFY(lib3.errorString().contains("invalid"));
+} else if (sizeof(void*) == 4) {
+    QPluginLoader libW(SRCDIR "elftest/corrupt3.elf64.so");
+    QCOMPARE(libW.load(), false);
+    QVERIFY(libW.errorString().contains("architecture"));
+} else {
+    QFAIL("Please port QElfParser to this platform or blacklist this test.");
+}
+#endif
+}
+
+void tst_QPluginLoader::loadGarbage()
+{
+#if defined (Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    for (int i=0; i<5; i++) {
+        QPluginLoader lib(QString(SRCDIR "elftest/garbage%1.so").arg(i));
+        QCOMPARE(lib.load(), false);
+#ifdef SHOW_ERRORS
+        qDebug() << lib.errorString();
+#endif
+    }
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QPluginLoader)
