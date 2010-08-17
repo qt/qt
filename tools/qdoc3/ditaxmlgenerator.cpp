@@ -440,7 +440,6 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
                                           DITAXMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
-    offlineDocs = !config.getBool(CONFIG_ONLINE);
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
         projectDescription = project + " Reference Documentation";
@@ -1765,7 +1764,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         generateQmlInstantiates(qml_cn, marker);
         generateBrief(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
@@ -1782,7 +1781,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         generateAlsoList(fake, marker);
         out() << "<hr />\n";
 
-        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed,0);
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";

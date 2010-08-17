@@ -110,6 +110,8 @@ private Q_SLOTS:
 
     void getEmptyWithPipelining();
 
+    void getAndEverythingShouldBePipelined();
+
     void getAndThenDeleteObject();
     void getAndThenDeleteObject_data();
 };
@@ -1035,6 +1037,52 @@ void tst_QHttpNetworkConnection::getEmptyWithPipelining()
     qDeleteAll(requests);
     qDeleteAll(replies);
 }
+
+class GetAndEverythingShouldBePipelinedReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int receivedCount;
+    int requestCount;
+    GetAndEverythingShouldBePipelinedReceiver(int rq) : receivedCount(0),requestCount(rq) { }
+public Q_SLOTS:
+    void finishedSlot() {
+        QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        receivedCount++;
+
+        if (receivedCount == requestCount)
+            QTestEventLoop::instance().exitLoop();
+    }
+};
+
+void tst_QHttpNetworkConnection::getAndEverythingShouldBePipelined()
+{
+    quint16 requestCount = 100;
+    // use 1 connection.
+    QHttpNetworkConnection connection(1, QtNetworkSettings::serverName());
+    QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    GetAndEverythingShouldBePipelinedReceiver receiver(requestCount);
+
+    for (int i = 0; i < requestCount; i++) {
+        QHttpNetworkRequest *request = 0;
+        request = new QHttpNetworkRequest(url, QHttpNetworkRequest::Get);
+        request->setPipeliningAllowed(true);
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        connect(reply, SIGNAL(finished()), &receiver, SLOT(finishedSlot()));
+        replies.append(reply);
+    }
+    QTestEventLoop::instance().enterLoop(40);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+
+}
+
 
 void tst_QHttpNetworkConnection::getAndThenDeleteObject_data()
 {

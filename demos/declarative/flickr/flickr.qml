@@ -57,21 +57,20 @@ Item {
 
         Item {
             id: views
-            x: 2; width: parent.width - 4
+            width: parent.width
             anchors.top: titleBar.bottom; anchors.bottom: toolBar.top
 
-            Mobile.GridDelegate { id: gridDelegate }
             GridView {
-                x: (width/4-79)/2; y: x
-                id: photoGridView; model: rssModel; delegate: gridDelegate; cacheBuffer: 100
-                cellWidth: (parent.width-2)/4; cellHeight: cellWidth; width: parent.width; height: parent.height - 1; z: 6
+                id: photoGridView; model: rssModel; delegate: Mobile.GridDelegate {}
+                cacheBuffer: 100
+                cellWidth: (parent.width-2)/4; cellHeight: cellWidth; width: parent.width; height: parent.height
             }
 
-            Mobile.ListDelegate { id: listDelegate }
             ListView {
-                id: photoListView; model: rssModel; delegate: listDelegate; z: 6
+                id: photoListView; model: rssModel; delegate: Mobile.ListDelegate { }
                 width: parent.width; height: parent.height; x: -(parent.width * 1.5); cacheBuffer: 100;
             }
+
             states: State {
                 name: "ListView"; when: screen.inListView == true
                 PropertyChanges { target: photoListView; x: 0 }
@@ -81,13 +80,16 @@ Item {
             transitions: Transition {
                 NumberAnimation { properties: "x"; duration: 500; easing.type: Easing.InOutQuad }
             }
+
+            Mobile.ImageDetails { id: imageDetails; width: parent.width; anchors.left: views.right; height: parent.height }
+
+            Item { id: foreground; anchors.fill: parent }
         }
 
-        Mobile.ImageDetails { id: imageDetails; width: parent.width; anchors.left: views.right; height: parent.height; z:1 }
-        Mobile.TitleBar { id: titleBar; z: 5; width: parent.width; height: 40; opacity: 0.9 }
+        Mobile.TitleBar { id: titleBar; width: parent.width; height: 40; opacity: 0.9 }
 
         Mobile.ToolBar {
-            id: toolBar; z: 5
+            id: toolBar
             height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9
             button1Label: "Update"; button2Label: "View mode"
             onButton1Clicked: rssModel.reload()

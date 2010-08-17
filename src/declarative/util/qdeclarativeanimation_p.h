@@ -197,7 +197,7 @@ class QDeclarativePropertyAction : public QDeclarativeAbstractAnimation
     Q_DECLARE_PRIVATE(QDeclarativePropertyAction)
 
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY propertyChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> targets READ targets)
     Q_PROPERTY(QDeclarativeListProperty<QObject> exclude READ exclude)
@@ -225,7 +225,8 @@ public:
 Q_SIGNALS:
     void valueChanged(const QVariant &);
     void propertiesChanged(const QString &);
-    void targetChanged(QObject *, const QString &);
+    void targetChanged();
+    void propertyChanged();
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
@@ -246,7 +247,7 @@ class Q_AUTOTEST_EXPORT QDeclarativePropertyAnimation : public QDeclarativeAbstr
     Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(QEasingCurve easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY propertyChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
     Q_PROPERTY(QDeclarativeListProperty<QObject> targets READ targets)
     Q_PROPERTY(QDeclarativeListProperty<QObject> exclude READ exclude)
@@ -292,7 +293,8 @@ Q_SIGNALS:
     void toChanged(QVariant);
     void easingChanged(const QEasingCurve &);
     void propertiesChanged(const QString &);
-    void targetChanged(QObject *, const QString &);
+    void targetChanged();
+    void propertyChanged();
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativeColorAnimation : public QDeclarativePropertyAnimation

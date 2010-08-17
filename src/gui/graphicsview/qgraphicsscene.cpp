@@ -831,6 +831,11 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 #endif //QT_NO_IM
     }
 
+    // This handles the case that the item has been removed from the
+    // scene in response to the FocusOut event.
+    if (item && item->scene() != q)
+        item = 0;
+
     if (item)
         focusItem = item;
     updateInputMethodSensitivityInViews();

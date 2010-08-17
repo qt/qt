@@ -63,6 +63,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     pipeliningAllowed = other.pipeliningAllowed;
     customVerb = other.customVerb;
     withCredentials = other.withCredentials;
+    ssl = other.ssl;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -73,6 +74,7 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 {
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
+        && (ssl == other.ssl)
         && (uploadByteDevice == other.uploadByteDevice);
 }
 
@@ -197,6 +199,15 @@ QUrl QHttpNetworkRequest::url() const
 void QHttpNetworkRequest::setUrl(const QUrl &url)
 {
     d->url = url;
+}
+
+bool QHttpNetworkRequest::isSsl() const
+{
+    return d->ssl;
+}
+void QHttpNetworkRequest::setSsl(bool s)
+{
+    d->ssl = s;
 }
 
 qint64 QHttpNetworkRequest::contentLength() const

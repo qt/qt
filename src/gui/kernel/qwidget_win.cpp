@@ -166,7 +166,7 @@ static void qt_tablet_init()
     qt_tablet_widget = new QWidget(0);
     qt_tablet_widget->createWinId();
     qt_tablet_widget->setObjectName(QLatin1String("Qt internal tablet widget"));
-    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    // We don't need this internal widget to appear in QApplication::topLevelWidgets()
     if (QWidgetPrivate::allWidgets)
         QWidgetPrivate::allWidgets->remove(qt_tablet_widget);
     LOGCONTEXT lcMine;
@@ -1547,7 +1547,7 @@ bool QWidgetPrivate::shouldShowMaximizeButton()
 {
     if (data.window_flags & Qt::MSWindowsFixedSizeDialogHint)
         return false;
-    // if the user explicitely asked for the maximize button, we try to add
+    // if the user explicitly asked for the maximize button, we try to add
     // it even if the window has fixed size.
     if (data.window_flags & Qt::CustomizeWindowHint &&
         data.window_flags & Qt::WindowMaximizeButtonHint)

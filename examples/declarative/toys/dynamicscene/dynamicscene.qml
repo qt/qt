@@ -136,10 +136,11 @@ Item {
             Text { text: "Drag an item into the scene." }
 
             Rectangle {
-                width: childrenRect.width + 10; height: childrenRect.height + 10
+                width: palette.width + 10; height: palette.height + 10
                 border.color: "black"
 
                 Row {
+                    id: palette
                     anchors.centerIn: parent
                     spacing: 8
 

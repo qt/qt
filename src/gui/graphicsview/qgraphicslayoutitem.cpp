@@ -48,6 +48,7 @@
 #include "qgraphicslayoutitem.h"
 #include "qgraphicslayoutitem_p.h"
 #include "qwidget.h"
+#include "qgraphicswidget.h"
 
 #include <QtDebug>
 
@@ -139,9 +140,11 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
     if (!sizeHintCacheDirty && cachedConstraint == constraint)
         return cachedSizeHints;
 
+    const bool hasConstraint = constraint.width() >= 0 || constraint.height() >= 0;
+
     for (int i = 0; i < Qt::NSizeHints; ++i) {
         cachedSizeHints[i] = constraint;
-        if (userSizeHints)
+        if (userSizeHints && !hasConstraint)
             combineSize(cachedSizeHints[i], userSizeHints[i]);
     }
 
@@ -257,6 +260,52 @@ void QGraphicsLayoutItemPrivate::setSizeComponent(
         return;
     userValue = value;
     q->updateGeometry();
+}
+
+
+bool QGraphicsLayoutItemPrivate::hasHeightForWidth() const
+{
+    Q_Q(const QGraphicsLayoutItem);
+    if (isLayout) {
+        const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
+        for (int i = l->count() - 1; i >= 0; --i) {
+            if (QGraphicsLayoutItemPrivate::get(l->itemAt(i))->hasHeightForWidth())
+                return true;
+        }
+    } else if (QGraphicsItem *item = q->graphicsItem()) {
+        if (item->isWidget()) {
+            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            if (w->layout()) {
+                return QGraphicsLayoutItemPrivate::get(w->layout())->hasHeightForWidth();
+            }
+        }
+    }
+    return q->sizePolicy().hasHeightForWidth();
+}
+
+bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
+{
+    // enable this code when we add QSizePolicy::hasWidthForHeight() (For 4.8)
+#if 1
+    return false;
+#else
+    Q_Q(const QGraphicsLayoutItem);
+    if (isLayout) {
+        const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
+        for (int i = l->count() - 1; i >= 0; --i) {
+            if (QGraphicsLayoutItemPrivate::get(l->itemAt(i))->hasWidthForHeight())
+                return true;
+        }
+    } else if (QGraphicsItem *item = q->graphicsItem()) {
+        if (item->isWidget()) {
+            QGraphicsWidget *w = static_cast<QGraphicsWidget *>(item);
+            if (w->layout()) {
+                return QGraphicsLayoutItemPrivate::get(w->layout())->hasWidthForHeight();
+            }
+        }
+    }
+    return q->sizePolicy().hasWidthForHeight();
+#endif
 }
 
 /*!

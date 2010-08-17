@@ -690,7 +690,10 @@ my @ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dis
 my @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h" );
 my @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtSql}/drivers", "$modules{QtTest}", "$modules{QtDesigner}", "$modules{QtUiTools}", "$modules{QtDBus}", "$modules{phonon}" );
 my %colliding_headers = ();
-my %inject_headers = ( "$basedir/src/corelib/global" => ( "*qconfig.h" ) );
+my %inject_headers;
+# Force generation of forwarding header for qconfig.h if (and only if) we can't
+# find the header by normal means.
+%inject_headers = ( "$basedir/src/corelib/global" => ( "*qconfig.h" ) ) unless (-e "$basedir/src/corelib/global/qconfig.h");
 
 foreach (@modules_to_sync) {
     #iteration info
@@ -993,14 +996,12 @@ if($check_includes) {
     for (keys(%modules)) {
         #iteration info
         my $lib = $_;
-        my $dir = "$modules{$lib}";
-	{
-            my $current_dir = "$_";
+        {
             #calc subdirs
-            my @subdirs = ($current_dir);
+            my @subdirs = ($modules{$lib});
             foreach (@subdirs) {
                 my $subdir = "$_";
-                opendir DIR, "$subdir";
+                opendir DIR, "$subdir" or die "Huh, directory ".$subdir." cannot be opened.";
                 while(my $t = readdir(DIR)) {
                     push @subdirs, "$subdir/$t" if(-d "$subdir/$t" && !($t eq ".") &&
                                                    !($t eq "..") && !($t eq ".obj") &&

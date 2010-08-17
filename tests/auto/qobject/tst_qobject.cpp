@@ -1782,9 +1782,12 @@ class SuperObject : public QObject
     Q_OBJECT
 public:
     QObject *theSender;
+    int theSignalId;
+
     SuperObject()
     {
         theSender = 0;
+        theSignalId = 0;
     }
 
     friend class tst_QObject;
@@ -1795,16 +1798,17 @@ public slots:
     void rememberSender()
     {
         theSender = sender();
+        theSignalId = senderSignalIndex();
     }
 
     void deleteAndRememberSender()
     {
         delete theSender;
-        theSender = sender();
+        rememberSender();
     }
 signals:
+    void anotherSignal();
     void theSignal();
-
 };
 
 void tst_QObject::sender()
@@ -1812,12 +1816,23 @@ void tst_QObject::sender()
     {
         SuperObject sender;
         SuperObject receiver;
+        connect(&sender, SIGNAL(anotherSignal()),
+                &receiver, SLOT(rememberSender()));
         connect(&sender, SIGNAL(theSignal()),
                 &receiver, SLOT(rememberSender()));
         QCOMPARE(receiver.sender(), (QObject *)0);
+        QCOMPARE(receiver.senderSignalIndex(), -1);
         emit sender.theSignal();
         QCOMPARE(receiver.theSender, (QObject *)&sender);
         QCOMPARE(receiver.sender(), (QObject *)0);
+        QCOMPARE(receiver.theSignalId,
+                 sender.metaObject()->indexOfSignal("theSignal()"));
+        QCOMPARE(receiver.senderSignalIndex(), -1);
+
+        emit sender.anotherSignal();
+        QCOMPARE(receiver.theSignalId,
+                 sender.metaObject()->indexOfSignal("anotherSignal()"));
+        QCOMPARE(receiver.senderSignalIndex(), -1);
     }
 
     {
@@ -1834,11 +1849,16 @@ void tst_QObject::sender()
                 Qt::DirectConnection);
 
         QCOMPARE(receiver->sender(), (QObject *)0);
+        QCOMPARE(receiver->senderSignalIndex(), -1);
         receiver->theSender = 0;
+        receiver->theSignalId = -1;
         thread.start();
         emit sender->theSignal();
         QCOMPARE(receiver->theSender, (QObject *) sender);
         QCOMPARE(receiver->sender(), (QObject *)0);
+        QCOMPARE(receiver->theSignalId,
+                 sender->metaObject()->indexOfSignal("theSignal()"));
+        QCOMPARE(receiver->senderSignalIndex(), -1);
 
         QVERIFY(thread.wait(10000));
         delete receiver;

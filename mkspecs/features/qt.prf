@@ -31,9 +31,6 @@ plugin { #Qt plugins
    }
 }
 
-#handle modules
-for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)
-
 #handle includes
 INCLUDEPATH = $$QMAKE_INCDIR_QT $$INCLUDEPATH #prepending prevents us from picking up "stale" includes
 win32:INCLUDEPATH += $$QMAKE_INCDIR_QT/ActiveQt
@@ -209,3 +206,15 @@ wince*:static:gui {
 mac {
     !isEmpty(QT_NAMESPACE_MAC_CRC):DEFINES *= QT_NAMESPACE_MAC_CRC=$$QT_NAMESPACE_MAC_CRC
 }
+
+#SIMD defines:
+mmx:DEFINES += QT_HAVE_MMX
+3dnow:DEFINES += QT_HAVE_3DNOW
+sse:DEFINES += QT_HAVE_SSE QT_HAVE_MMXEXT
+sse2:DEFINES += QT_HAVE_SSE2
+sse3:DEFINES += QT_HAVE_SSE3
+ssse3:DEFINES += QT_HAVE_SSSE3
+sse4_1:DEFINES += QT_HAVE_SSE4_1
+sse4_2:DEFINES += QT_HAVE_SSE4_2
+avx:DEFINES += QT_HAVE_AVX
+iwmmxt:DEFINES += QT_HAVE_IWMMXT

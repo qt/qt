@@ -70,6 +70,8 @@ private slots:
     void single_data();
     void parallel();
     void parallel_data();
+    void massive();
+    void cancelcrash();
 
 private:
     QDeclarativeEngine engine;
@@ -274,6 +276,54 @@ void tst_qdeclarativepixmapcache::parallel()
     }
 
     qDeleteAll(pixmaps);
+}
+
+void tst_qdeclarativepixmapcache::massive()
+{
+    QUrl url = thisfile.resolved(QUrl("data/massive.png"));
+
+    // Confirm that massive images remain in the cache while they are
+    // in use by the application.
+    {
+    qint64 cachekey = 0;
+    QDeclarativePixmap p(0, url);
+    QVERIFY(p.isReady());
+    QVERIFY(p.pixmap().size() == QSize(10000, 1000));
+    cachekey = p.pixmap().cacheKey();
+
+    QDeclarativePixmap p2(0, url);
+    QVERIFY(p2.isReady());
+    QVERIFY(p2.pixmap().size() == QSize(10000, 1000));
+
+    QVERIFY(p2.pixmap().cacheKey() == cachekey);
+    }
+
+    // Confirm that massive images are removed from the cache when
+    // they become unused
+    {
+    qint64 cachekey = 0;
+    {
+        QDeclarativePixmap p(0, url);
+        QVERIFY(p.isReady());
+        QVERIFY(p.pixmap().size() == QSize(10000, 1000));
+        cachekey = p.pixmap().cacheKey();
+    }
+
+    QDeclarativePixmap p2(0, url);
+    QVERIFY(p2.isReady());
+    QVERIFY(p2.pixmap().size() == QSize(10000, 1000));
+
+    QVERIFY(p2.pixmap().cacheKey() != cachekey);
+    }
+}
+
+// QTBUG-12729
+void tst_qdeclarativepixmapcache::cancelcrash()
+{
+    QUrl url("http://127.0.0.1:14452/cancelcrash_notexist.png");
+    for (int ii = 0; ii < 1000; ++ii) {
+        QDeclarativePixmap pix(&engine, url);
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)

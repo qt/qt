@@ -64,6 +64,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_XMLSTREAM_EXPORT \
                           Q_XMLPATTERNS_EXPORT \
                           QDBUS_EXPORT \
+                          Q_DBUS_EXPORT \
                           QT_BEGIN_NAMESPACE \
                           QT_BEGIN_INCLUDE_NAMESPACE \
                           QT_END_NAMESPACE \

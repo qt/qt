@@ -30,7 +30,6 @@
     \title Drag and Drop
     \brief An overview of the drag and drop system provided by Qt.
 
-    \ingroup technology-apis
     \ingroup qt-gui-concepts
 
     Drag and drop provides a simple visual mechanism which users can use

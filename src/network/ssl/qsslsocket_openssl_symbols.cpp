@@ -761,74 +761,95 @@ bool q_resolveOpenSslSymbols()
 //==============================================================================
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 {
-    char lBuffer[24];
-    char *pBuffer = lBuffer;
-
     size_t lTimeLength = aTime->length;
     char *pString = (char *) aTime->data;
 
     if (aTime->type == V_ASN1_UTCTIME) {
+
+        char lBuffer[24];
+        char *pBuffer = lBuffer;
+
         if ((lTimeLength < 11) || (lTimeLength > 17))
             return QDateTime();
 
         memcpy(pBuffer, pString, 10);
         pBuffer += 10;
         pString += 10;
-    } else {
-        if (lTimeLength < 13)
-            return QDateTime();
 
-        memcpy(pBuffer, pString, 12);
-        pBuffer += 12;
-        pString += 12;
-    }
-
-    if ((*pString == 'Z') || (*pString == '-') || (*pString == '+')) {
-        *pBuffer++ = '0';
-        *pBuffer++ = '0';
-    } else {
-        *pBuffer++ = *pString++;
-        *pBuffer++ = *pString++;
-        // Skip any fractional seconds...
-        if (*pString == '.') {
-            pString++;
-            while ((*pString >= '0') && (*pString <= '9'))
+        if ((*pString == 'Z') || (*pString == '-') || (*pString == '+')) {
+            *pBuffer++ = '0';
+            *pBuffer++ = '0';
+        } else {
+            *pBuffer++ = *pString++;
+            *pBuffer++ = *pString++;
+            // Skip any fractional seconds...
+            if (*pString == '.') {
                 pString++;
+                while ((*pString >= '0') && (*pString <= '9'))
+                    pString++;
+            }
         }
-    }
 
-    *pBuffer++ = 'Z';
-    *pBuffer++ = '\0';
+        *pBuffer++ = 'Z';
+        *pBuffer++ = '\0';
 
-    time_t lSecondsFromUCT;
-    if (*pString == 'Z') {
-        lSecondsFromUCT = 0;
+        time_t lSecondsFromUCT;
+        if (*pString == 'Z') {
+            lSecondsFromUCT = 0;
+        } else {
+            if ((*pString != '+') && (*pString != '-'))
+                return QDateTime();
+
+            lSecondsFromUCT = ((pString[1] - '0') * 10 + (pString[2] - '0')) * 60;
+            lSecondsFromUCT += (pString[3] - '0') * 10 + (pString[4] - '0');
+            lSecondsFromUCT *= 60;
+            if (*pString == '-')
+                lSecondsFromUCT = -lSecondsFromUCT;
+        }
+
+        tm lTime;
+        lTime.tm_sec = ((lBuffer[10] - '0') * 10) + (lBuffer[11] - '0');
+        lTime.tm_min = ((lBuffer[8] - '0') * 10) + (lBuffer[9] - '0');
+        lTime.tm_hour = ((lBuffer[6] - '0') * 10) + (lBuffer[7] - '0');
+        lTime.tm_mday = ((lBuffer[4] - '0') * 10) + (lBuffer[5] - '0');
+        lTime.tm_mon = (((lBuffer[2] - '0') * 10) + (lBuffer[3] - '0')) - 1;
+        lTime.tm_year = ((lBuffer[0] - '0') * 10) + (lBuffer[1] - '0');
+        if (lTime.tm_year < 50)
+            lTime.tm_year += 100; // RFC 2459
+
+        QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
+        QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
+
+        QDateTime result(resDate, resTime, Qt::UTC);
+        result = result.addSecs(lSecondsFromUCT);
+        return result;
+
+    } else if (aTime->type == V_ASN1_GENERALIZEDTIME) {
+
+        if (lTimeLength < 15)
+            return QDateTime(); // hopefully never triggered
+
+        // generalized time is always YYYYMMDDHHMMSSZ (RFC 2459, section 4.1.2.5.2)
+        tm lTime;
+        lTime.tm_sec = ((pString[12] - '0') * 10) + (pString[13] - '0');
+        lTime.tm_min = ((pString[10] - '0') * 10) + (pString[11] - '0');
+        lTime.tm_hour = ((pString[8] - '0') * 10) + (pString[9] - '0');
+        lTime.tm_mday = ((pString[6] - '0') * 10) + (pString[7] - '0');
+        lTime.tm_mon = (((pString[4] - '0') * 10) + (pString[5] - '0'));
+        lTime.tm_year = ((pString[0] - '0') * 1000) + ((pString[1] - '0') * 100) +
+                        ((pString[2] - '0') * 10) + (pString[3] - '0');
+
+        QDate resDate(lTime.tm_year, lTime.tm_mon, lTime.tm_mday);
+        QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
+
+        QDateTime result(resDate, resTime, Qt::UTC);
+        return result;
+
     } else {
-        if ((*pString != '+') && (*pString != '-'))
-            return QDateTime();
-
-        lSecondsFromUCT = ((pString[1] - '0') * 10 + (pString[2] - '0')) * 60;
-        lSecondsFromUCT += (pString[3] - '0') * 10 + (pString[4] - '0');
-        lSecondsFromUCT *= 60;
-        if (*pString == '-')
-            lSecondsFromUCT = -lSecondsFromUCT;
+        qWarning("unsupported date format detected");
+        return QDateTime();
     }
 
-    tm lTime;
-    lTime.tm_sec = ((lBuffer[10] - '0') * 10) + (lBuffer[11] - '0');
-    lTime.tm_min = ((lBuffer[8] - '0') * 10) + (lBuffer[9] - '0');
-    lTime.tm_hour = ((lBuffer[6] - '0') * 10) + (lBuffer[7] - '0');
-    lTime.tm_mday = ((lBuffer[4] - '0') * 10) + (lBuffer[5] - '0');
-    lTime.tm_mon = (((lBuffer[2] - '0') * 10) + (lBuffer[3] - '0')) - 1;
-    lTime.tm_year = ((lBuffer[0] - '0') * 10) + (lBuffer[1] - '0');
-    if (lTime.tm_year < 50)
-        lTime.tm_year += 100; // RFC 2459
-
-    QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
-    QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
-    QDateTime result(resDate, resTime, Qt::UTC);
-    result = result.addSecs(lSecondsFromUCT);
-    return result;
 }
 
 QT_END_NAMESPACE

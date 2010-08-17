@@ -160,13 +160,25 @@ DEFINES *= QT_USE_FAST_OPERATOR_PLUS QT_USE_FAST_CONCATENATION
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
+qtPrepareTool(QMAKE_LUPDATE, lupdate)
+qtPrepareTool(QMAKE_LRELEASE, lrelease)
+
 moc_dir.name = moc_location
 moc_dir.variable = QMAKE_MOC
 
 uic_dir.name = uic_location
 uic_dir.variable = QMAKE_UIC
 
-QMAKE_PKGCONFIG_VARIABLES += moc_dir uic_dir
+rcc_dir.name = rcc_location
+rcc_dir.variable = QMAKE_RCC
+
+lupdate_dir.name = lupdate_location
+lupdate_dir.variable = QMAKE_LUPDATE
+
+lrelease_dir.name = lrelease_location
+lrelease_dir.variable = QMAKE_LRELEASE
+
+QMAKE_PKGCONFIG_VARIABLES += moc_dir uic_dir rcc_dir lupdate_dir lrelease_dir
 
 include(qt_targets.pri)
 

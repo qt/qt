@@ -32,7 +32,7 @@
 
     \ingroup frameworks-technologies
 
-    \previouspage {Implementing Styles and Style Aware Widgets}{Styles}
+    \previouspage {Styles and Style Aware Widgets}{Styles}
     \contentspage Widgets and Layouts
     \nextpage The Style Sheet Syntax
 
@@ -925,7 +925,7 @@
 
             The scroller is styled using the \l{#scroller-sub}{::scroller}.
 
-            The tear-off is styled using the \l{#tear-off-sub}{::tear-off}.
+            The tear-off is styled using the \l{#tearoff-sub}{::tearoff}.
 
            See \l{Qt Style Sheets Examples#Customizing QMenu}{Customizing QMenu}
            for an example.
@@ -3337,7 +3337,7 @@
         \o The tear indicator of a QTabBar.
 
     \row
-        \o \c ::tear-off \target tear-off-sub
+        \o \c ::tearoff \target tearoff-sub
         \o The tear-off indicator of a QMenu.
 
     \row

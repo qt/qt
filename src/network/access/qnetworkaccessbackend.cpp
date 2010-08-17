@@ -252,6 +252,17 @@ void QNetworkAccessBackend::writeDownstreamData(QIODevice *data)
     reply->appendDownstreamData(data);
 }
 
+// not actually appending data, it was already written to the user buffer
+void QNetworkAccessBackend::writeDownstreamDataDownloadBuffer(qint64 bytesReceived, qint64 bytesTotal)
+{
+    reply->appendDownstreamDataDownloadBuffer(bytesReceived, bytesTotal);
+}
+
+char* QNetworkAccessBackend::getDownloadBuffer(qint64 size)
+{
+    return reply->getDownloadBuffer(size);
+}
+
 QVariant QNetworkAccessBackend::header(QNetworkRequest::KnownHeaders header) const
 {
     return reply->q_func()->header(header);

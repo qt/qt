@@ -78,9 +78,13 @@ class RewriteBinding: protected AST::Visitor
 {
     unsigned _position;
     TextWriter *_writer;
+    QByteArray _name;
 
 public:
     QString operator()(const QString &code, bool *ok = 0);
+
+    //name of the function:  used for the debugger
+    void setName(const QByteArray &name) { _name = name; }
 
 protected:
     using AST::Visitor::visit;

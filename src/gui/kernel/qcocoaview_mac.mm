@@ -207,6 +207,7 @@ static int qCocoaViewCount = 0;
 
     composing = false;
     sendKeyEvents = true;
+    fromKeyDownEvent = false;
     [self setHidden:YES];
     return self;
 }
@@ -1215,7 +1216,9 @@ static int qCocoaViewCount = 0;
             && !(widgetToGetKey->inputMethodHints() & Qt::ImhDigitsOnly
                  || widgetToGetKey->inputMethodHints() & Qt::ImhFormattedNumbersOnly
                  || widgetToGetKey->inputMethodHints() & Qt::ImhHiddenText)) {
+        fromKeyDownEvent = true;
         [qt_mac_nativeview_for(widgetToGetKey) interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
+        fromKeyDownEvent = false;
     }
     if (sendKeyEvents && !composing) {
         bool keyOK = qt_dispatchKeyEvent(theEvent, widgetToGetKey);
@@ -1285,7 +1288,10 @@ static int qCocoaViewCount = 0;
         };
     }
 
-    if ([aString length] && composing) {
+    // When entering characters through Character Viewer or Keyboard Viewer, the text is passed
+    // through this insertText method. Since we dont receive a keyDown Event in such cases, the
+    // composing flag will be false.
+    if (([aString length] && composing) ||  !fromKeyDownEvent) {
         // Send the commit string to the widget.
         composing = false;
         sendKeyEvents = false;

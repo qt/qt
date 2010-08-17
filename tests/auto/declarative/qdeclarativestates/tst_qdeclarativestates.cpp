@@ -139,6 +139,7 @@ private slots:
     void urlResolution();
     void unnamedWhen();
     void returnToBase();
+    void extendsBug();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -1186,6 +1187,21 @@ void tst_qdeclarativestates::returnToBase()
     QCOMPARE(rect->property("stateString").toString(), QLatin1String("originalState"));
 }
 
+//QTBUG-12559
+void tst_qdeclarativestates::extendsBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/extendsBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    QDeclarativeRectangle *greenRect = rect->findChild<QDeclarativeRectangle*>("greenRect");
+
+    rectPrivate->setState("b");
+    QCOMPARE(greenRect->x(), qreal(100));
+    QCOMPARE(greenRect->y(), qreal(100));
+}
 
 QTEST_MAIN(tst_qdeclarativestates)
 

@@ -168,6 +168,29 @@ namespace QTest {
         }
     }
 
+void initLogger()
+{
+    switch (QTest::logMode) {
+        case QTestLog::Plain:
+            QTest::testLogger = new QPlainTestLogger;
+            break;
+        case QTestLog::XML:{
+            if(QTest::flushMode == QTestLog::FLushOn)
+                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
+            else
+                QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
+            break;
+        }case QTestLog::LightXML:{
+            if(QTest::flushMode == QTestLog::FLushOn)
+                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
+            else
+                QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
+            break;
+        }case QTestLog::XunitXML:
+            QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
+        }
+}
+
 }
 
 QTestLog::QTestLog()
@@ -268,32 +291,20 @@ void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
     QTest::testLogger->addBenchmarkResult(result);
 }
 
+void QTestLog::startLogging(unsigned int randomSeed)
+{
+    QTEST_ASSERT(!QTest::testLogger);
+    QTest::initLogger();
+    QTest::testLogger->registerRandomSeed(randomSeed);
+    QTest::testLogger->startLogging();
+    QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
+}
+
 void QTestLog::startLogging()
 {
     QTEST_ASSERT(!QTest::testLogger);
-
-    switch (QTest::logMode) {
-        case QTestLog::Plain:
-            QTest::testLogger = new QPlainTestLogger;
-            break;
-        case QTestLog::XML:{
-            if(QTest::flushMode == QTestLog::FLushOn)
-                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Complete);
-            else
-                QTest::testLogger = new QTestLogger(QTestLogger::TLF_XML);
-            break;
-        }case QTestLog::LightXML:{
-            if(QTest::flushMode == QTestLog::FLushOn)
-                QTest::testLogger = new QXmlTestLogger(QXmlTestLogger::Light);
-            else
-                QTest::testLogger = new QTestLogger(QTestLogger::TLF_LightXml);
-            break;
-        }case QTestLog::XunitXML:
-            QTest::testLogger = new QTestLogger(QTestLogger::TLF_XunitXml);
-        }
-
+    QTest::initLogger();
     QTest::testLogger->startLogging();
-
     QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
 }
 

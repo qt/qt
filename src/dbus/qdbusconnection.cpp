@@ -173,6 +173,9 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     The connection is then torn down using the disconnectFromBus()
     function.
 
+    Once disconnected, calling connectToBus() will not reestablish a
+    connection, you must create a new QDBusConnection instance.
+
     As a convenience for the two most common connection types, the
     sessionBus() and systemBus() functions return open connections to
     the session server daemon and the system server daemon,
@@ -209,6 +212,7 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportScriptableSlots                export this object's scriptable slots
     \value ExportScriptableSignals              export this object's scriptable signals
     \value ExportScriptableProperties           export this object's scriptable properties
+    \value ExportScriptableInvokables           export this object's scriptable invokables
     \value ExportScriptableContents             shorthand form for ExportScriptableSlots |
                                                 ExportScriptableSignals |
                                                 ExportScriptableProperties
@@ -216,6 +220,7 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportNonScriptableSlots             export this object's non-scriptable slots
     \value ExportNonScriptableSignals           export this object's non-scriptable signals
     \value ExportNonScriptableProperties        export this object's non-scriptable properties
+    \value ExportNonScriptableInvokables        export this object's non-scriptable invokables
     \value ExportNonScriptableContents          shorthand form for ExportNonScriptableSlots |
                                                 ExportNonScriptableSignals |
                                                 ExportNonScriptableProperties
@@ -223,8 +228,8 @@ void QDBusConnectionManager::setConnection(const QString &name, QDBusConnectionP
     \value ExportAllSlots                       export all of this object's slots
     \value ExportAllSignals                     export all of this object's signals
     \value ExportAllProperties                  export all of this object's properties
+    \value ExportAllInvokables                  export all of this object's invokables
     \value ExportAllContents                    export all of this object's contents
-
     \value ExportChildObjects                   export this object's child objects
 
     \sa registerObject(), QDBusAbstractAdaptor, {usingadaptors.html}{Using adaptors}
@@ -853,10 +858,6 @@ QDBusConnectionInterface *QDBusConnection::interface() const
 
 /*!
     Returns true if this QDBusConnection object is connected.
-
-    If it isn't connected, calling connectToBus() on the same
-    connection name will not make be connected. You need to call the
-    QDBusConnection constructor again.
 */
 bool QDBusConnection::isConnected() const
 {
@@ -916,7 +917,7 @@ QString QDBusConnection::name() const
 
 /*!
     Attempts to register the \a serviceName on the D-Bus server and
-    returns true if the registration succeded. The registration will
+    returns true if the registration succeeded. The registration will
     fail if the name is already registered by another application.
 
     \sa unregisterService(), QDBusConnectionInterface::registerService()

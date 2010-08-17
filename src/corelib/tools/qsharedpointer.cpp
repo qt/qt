@@ -67,8 +67,8 @@
 
     QSharedPointer and QWeakPointer are thread-safe and operate
     atomically on the pointer value. Different threads can also access
-    the same QSharedPointer or QWeakPointer object at the same time
-    without need for locking mechanisms.
+    the QSharedPointer or QWeakPointer pointing to the same object at
+    the same time without need for locking mechanisms.
 
     It should be noted that, while the pointer value can be accessed
     in this manner, QSharedPointer and QWeakPointer provide no
@@ -482,7 +482,7 @@
     becomes managed by this QSharedPointer and must not be passed to
     another QSharedPointer object or deleted outside this object.
 
-    The \a deleter paramter specifies the custom deleter for this
+    The \a deleter parameter specifies the custom deleter for this
     object. The custom deleter is called when the strong reference
     count drops to 0 instead of the operator delete(). This is useful,
     for instance, for calling deleteLater() in a QObject instead:

@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
     the Qt Concurrent functions will throw a QtConcurrent::UnhandledException
     in the receiver thread.
 
-    When using QFuture, transferred exceptions willl be thrown when calling the following functions:
+    When using QFuture, transferred exceptions will be thrown when calling the following functions:
     \list
     \o QFuture::waitForFinished()
     \o QFuture::result()

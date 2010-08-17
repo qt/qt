@@ -199,11 +199,26 @@ public:
         return widget;
     }
 
+    // destroys the share widget and prevents recreation
     void cleanup() {
         QGLWidget *w = widget;
         cleanedUp = true;
         widget = 0;
         delete w;
+    }
+
+    // destroys the share widget, but allows it to be recreated later on
+    void destroy() {
+        if (cleanedUp)
+            return;
+
+        QGLWidget *w = widget;
+
+        // prevent potential recursions
+        cleanedUp = true;
+        widget = 0;
+        delete w;
+        cleanedUp = false;
     }
 
     static bool cleanedUp;
@@ -233,6 +248,10 @@ QGLWidget* qt_gl_share_widget()
     return _qt_gl_share_widget()->shareWidget();
 }
 
+void qt_destroy_gl_share_widget()
+{
+    _qt_gl_share_widget()->destroy();
+}
 
 struct QGLWindowSurfacePrivate
 {

@@ -131,6 +131,7 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
 - (QFont)qtFont;
 - (void)finishOffWithCode:(NSInteger)result;
 - (void)cleanUpAfterMyself;
+- (void)setSubwindowStacking;
 @end
 
 static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
@@ -187,6 +188,12 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         [cancelButton setTarget:self];
     }
 
+    mQtFont = new QFont();
+    return self;
+}
+
+- (void)setSubwindowStacking
+{
 #ifdef QT_MAC_USE_COCOA
     // Stack the native dialog in front of its parent, if any:
     QFontDialog *q = mPriv->fontDialog();
@@ -199,9 +206,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         }
     }
 #endif
-
-    mQtFont = new QFont();
-    return self;
 }
 
 - (void)dealloc
@@ -610,6 +614,7 @@ void QFontDialogPrivate::createNSFontPanelDelegate()
         [ourPanel setFrame:frameRect display:NO];
         [ourPanel center];
     }
+    [del setSubwindowStacking];
     NSString *title = @"Select font";
     [ourPanel setTitle:title];
 }

@@ -114,6 +114,7 @@ The following table lists the QML elements provided by the \l {QtDeclarative}{Qt
 \row \o \l {Component} \o Encapsulate QML items as a component
 \row \o \l {Timer} \o Provides timed triggers 
 \row \o \l {QML:QtObject} {QtObject} \o Basic element containing only the objectName property
+\row \o \l {QML:Qt} {Qt} \o The QML global Qt object provides useful enums and functions from Qt.
 \row \o \l {WorkerScript} \o Enables the use of threads in QML
 \row \o \l {Loader} \o Controls the loading of items or components
 \row \o \l {Repeater} \o Uses a model to create multiples of components

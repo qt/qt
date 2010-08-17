@@ -147,11 +147,22 @@ your qmake.conf.
  #DEFINES += \"QT_DIRECTFB_DISABLE_RASTERFALLBACKS=$$DIRECTFB_DRAWINGOPERATIONS\"
 \endcode
 
-As demonstrated above, you need to Qt which drawing operations you want to
-warn/disable. Since there are varying implementations of DirectFB from
+As demonstrated above, you need to tell Qt which drawing operations you want
+to warn/disable. Since there are varying implementations of DirectFB from
 manufacturer to manufacture, different operations will be optimized. This
 require you to define the operations you want to warn about or disable.
 These are listed above in the DIRECTFB_DRAWINGOPERATIONS variable.
+
+You can also customize this with environment variables.
+
+E.g. If you want to disable fallbacks for drawPixmap and fillRect and also get
+a warning printed on stderr when a fallback would have happened.
+
+\code
+$ export QT_DIRECTFB_WARN_ON_RASTERFALLBACKS="FILL_RECT|DRAW_PIXMAP"
+$ export QT_DIRECTFB_DISABLE_RASTERFALLBACKS="FILL_RECT|DRAW_PIXMAP"
+$ ./app -qws -display directfb
+\endcode
 
 Following is a table showing which options you have.
 
