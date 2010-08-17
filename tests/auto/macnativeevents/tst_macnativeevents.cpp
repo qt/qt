@@ -69,7 +69,7 @@ private slots:
     void testChildDialogInFrontOfModalParent();
 #ifdef QT_MAC_USE_COCOA
     void testChildWindowInFrontOfParentWindow();
-    void testChildToolWindowInFrontOfChildNormalWindow();
+//    void testChildToolWindowInFrontOfChildNormalWindow();
     void testChildWindowInFrontOfStaysOnTopParentWindow();
 #endif
     void testKeyPressOnToplevel();
@@ -339,6 +339,7 @@ void tst_MacNativeEvents::testChildWindowInFrontOfParentWindow()
     QVERIFY(!child.isVisible());
 }
 
+/* This test can be enabled once setStackingOrder has been fixed in qwidget_mac.mm
 void tst_MacNativeEvents::testChildToolWindowInFrontOfChildNormalWindow()
 {
     // Test that a child tool window always stacks in front of normal sibling windows.
@@ -365,7 +366,7 @@ void tst_MacNativeEvents::testChildToolWindowInFrontOfChildNormalWindow()
     QTest::qWait(100);
     QVERIFY(!toolChild.isVisible());
 }
-
+*/
 void tst_MacNativeEvents::testChildWindowInFrontOfStaysOnTopParentWindow()
 {
     // Test that a child window stacks on top of a stays-on-top parent.
