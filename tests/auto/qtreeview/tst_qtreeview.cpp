@@ -239,6 +239,7 @@ private slots:
     void doubleClickedWithSpans();
     void taskQTBUG_6450_selectAllWith1stColumnHidden();
     void taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint();
+    void taskQTBUG_11466_keyboardNavigationRegression();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3783,6 +3784,130 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
     QCOMPARE(view.currentIndex(), model.index(12, 0));
     QTest::keyClick(view.viewport(), Qt::Key_Up);
     QCOMPARE(view.currentIndex(), model.index(6, 0));
+}
+
+class Model_11466 : public QAbstractItemModel
+{
+    Q_OBJECT
+public:
+    Model_11466(QObject *parent) :
+        m_block(false)
+    {
+        // set up the model to have two top level items and a few others
+        m_selectionModel = new QItemSelectionModel(this, this); // owned by this
+
+        connect(m_selectionModel, SIGNAL(currentChanged(const QModelIndex &,const QModelIndex &)),
+                this, SLOT(slotCurrentChanged(const QModelIndex &,const QModelIndex &)));
+    };
+
+    int rowCount(const QModelIndex &parent) const
+    {
+        if (parent.isValid())
+            return (parent.internalId() == 0) ? 4 : 0;
+        return 2; // two top level items
+    }
+
+    int columnCount(const QModelIndex &parent) const
+    {
+        return 2;
+    }
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        if (role == Qt::DisplayRole && index.isValid()) {
+            qint64 parentRowPlusOne = index.internalId();
+            QString str;
+            QTextStream stream(&str);
+            if (parentRowPlusOne > 0)
+                stream << parentRowPlusOne << " -> " << index.row() << " : " << index.column();
+            else
+                stream << index.row() << " : " << index.column();
+            return QVariant(str);
+        }
+        return QVariant();
+    }
+
+    QModelIndex parent(const QModelIndex &index) const
+    {
+        if (index.isValid()) {
+            qint64 parentRowPlusOne = index.internalId();
+            if (parentRowPlusOne > 0) {
+                int row = static_cast<int>(parentRowPlusOne - 1);
+                return createIndex(row, 0, (quint32)0);
+            }
+        }
+        return QModelIndex();
+    }
+
+    void bindView(QTreeView *view)
+    {
+        // sets the view to this model with a shared selection model
+        QItemSelectionModel *oldModel = view->selectionModel();
+        if (oldModel != m_selectionModel)
+            delete oldModel;
+        view->setModel(this); // this creates a new selection model for the view, but we dont want it either ...
+        oldModel = view->selectionModel();
+        view->setSelectionModel(m_selectionModel);
+        delete oldModel;
+    }
+
+    QModelIndex index(int row, int column, const QModelIndex &parent) const
+    {
+        return createIndex(row, column, parent.isValid() ? (quint32)(parent.row() + 1) : (quint32)0);
+    }
+
+public slots:
+    void slotCurrentChanged(const QModelIndex &current,const QModelIndex &)
+    {
+        if (m_block)
+            return;
+
+        if (current.isValid()) {
+            int selectedRow = current.row();
+            quint32 parentRowPlusOne = static_cast<quint32>(current.internalId());
+
+            for (int i = 0; i < 2; ++i) {
+                // announce the removal of all non top level items
+                beginRemoveRows(createIndex(i, 0, 0), 0, 3);
+                // nothing to actually do for the removal
+                endRemoveRows();
+
+                // put them back in again
+                beginInsertRows(createIndex(i, 0, 0), 0, 3);
+                // nothing to actually do for the insertion
+                endInsertRows();
+            }
+            // reselect the current item ...
+            QModelIndex selectedIndex = createIndex(selectedRow, 0, parentRowPlusOne);
+
+            m_block = true; // recursion block
+            m_selectionModel->select(selectedIndex, QItemSelectionModel::ClearAndSelect|QItemSelectionModel::Current|QItemSelectionModel::Rows);
+            m_selectionModel->setCurrentIndex(selectedIndex, QItemSelectionModel::NoUpdate);
+            m_block = false;
+        } else {
+            m_selectionModel->clear();
+        }
+    }
+
+private:
+    bool m_block;
+    QItemSelectionModel *m_selectionModel;
+};
+
+void tst_QTreeView::taskQTBUG_11466_keyboardNavigationRegression()
+{
+    QTreeView treeView;
+    treeView.setSelectionBehavior(QAbstractItemView::SelectRows);
+    treeView.setSelectionMode(QAbstractItemView::SingleSelection);
+    Model_11466 model(&treeView);
+    model.bindView(&treeView);
+    treeView.expandAll();
+    treeView.show();
+    QTest::qWaitForWindowShown(&treeView);
+
+    QTest::keyPress(treeView.viewport(), Qt::Key_Down);
+    QTest::qWait(10);
+    QTRY_COMPARE(treeView.currentIndex(), treeView.selectionModel()->selection().indexes().first());
 }
 
 QTEST_MAIN(tst_QTreeView)
