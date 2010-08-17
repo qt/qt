@@ -262,14 +262,14 @@
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:\br
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.\br
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.\br
-        * Neither the name of Research In Motion Limited nor the
-          names of its contributors may be used to endorse or promote products
-          derived from this software without specific prior written permission.
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.\br
+      * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.\br
+      * Neither the name of Research In Motion Limited nor the
+        names of its contributors may be used to endorse or promote products
+        derived from this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY Research In Motion Limited ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -472,6 +472,24 @@
 
     \list
     \o Parts of the FreeType library
+    \endlist
+
+    \hr
+
+    Copyright 2001, 2002 Catharon Productions Inc.
+
+    This file is part of the Catharon Typography Project and shall only
+    be used, modified, and distributed under the terms of the Catharon
+    Open Source License that should come with this file under the name
+    `CatharonLicense.txt'.  By continuing to use, modify, or distribute
+    this file you indicate that you have read the license and
+    understand and accept it fully.
+
+    Note that this license is compatible with the FreeType license.
+
+    \list
+    \o Included in the build system of the FreeType library
+    \o See \l{CatharonLicense.txt} for more information
     \endlist
 
     \hr
@@ -986,4 +1004,16 @@
     modify or redistribute them as long as you properly attribute my contribution
     and have given a quick thought about whether Roman might perhaps be interested
     to read what you did with his stuff. Horizontal rules don't apply.}
+*/
+
+/*!
+    \page catharon-license.html
+    \title CatharonLicense.txt
+    \ingroup licensing
+    \brief The Catharon License used in parts of FreeType.
+
+    See the \l{Other Licenses Used in Qt} document for information on the
+    context in which this license is applied to code in the FreeType library.
+
+    \quotefile doc/src/snippets/legal/CatharonLicense.txt
 */

@@ -13,6 +13,8 @@ wince*|symbian {
    addFiles.path = .
 
    DEPLOYMENT += addFiles
-   DEPLOYMENT_PLUGIN += qsvg
+   wince*|qt_not_deployed {
+       DEPLOYMENT_PLUGIN += qsvg
+   }
 }
 

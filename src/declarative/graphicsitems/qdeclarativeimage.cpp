@@ -51,6 +51,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Image QDeclarativeImage
     \since 4.7
+    \ingroup qml-vasic-visual-elements
+
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 

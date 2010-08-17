@@ -86,6 +86,7 @@ private slots:
     void timerIdPersistsAfterThreadExit();
     void cancelLongTimer();
     void singleShotStaticFunctionZeroTimeout();
+    void recurseOnTimeoutAndStopTimer();
 };
 
 class TimerHelper : public QObject
@@ -621,6 +622,49 @@ void tst_QTimer::singleShotStaticFunctionZeroTimeout()
     QCOMPARE(helper.count, 1);
     QTest::qWait(500);
     QCOMPARE(helper.count, 1);
+}
+
+class RecursOnTimeoutAndStopTimerTimer : public QObject
+{
+    Q_OBJECT
+
+public:
+    QTimer *one;
+    QTimer *two;
+
+public slots:
+    void onetrigger()
+    {
+        QCoreApplication::processEvents();
+    }
+
+    void twotrigger()
+    {
+        one->stop();
+    }
+};
+
+void tst_QTimer::recurseOnTimeoutAndStopTimer()
+{
+    QEventLoop eventLoop;
+    QTimer::singleShot(1000, &eventLoop, SLOT(quit()));
+
+    RecursOnTimeoutAndStopTimerTimer t;
+    t.one = new QTimer(&t);
+    t.two = new QTimer(&t);
+
+    QObject::connect(t.one, SIGNAL(timeout()), &t, SLOT(onetrigger()));
+    QObject::connect(t.two, SIGNAL(timeout()), &t, SLOT(twotrigger()));
+
+    t.two->setSingleShot(true);
+
+    t.one->start();
+    t.two->start();
+
+    (void) eventLoop.exec();
+
+    QVERIFY(!t.one->isActive());
+    QVERIFY(!t.two->isActive());
 }
 
 QTEST_MAIN(tst_QTimer)

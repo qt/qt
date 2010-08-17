@@ -1440,6 +1440,9 @@ QMacStylePrivate::QMacStylePrivate(QMacStyle *style)
 
 bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QWidget *w) const
 {
+    if (!w)
+        return false;
+
     if (as == AquaPushButton) {
         QPushButton *pb = const_cast<QPushButton *>(static_cast<const QPushButton *>(w));
         if (w->window()->isActiveWindow() && pb && !mouseDown) {

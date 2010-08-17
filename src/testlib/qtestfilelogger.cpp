@@ -44,6 +44,8 @@
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtestresult_p.h"
 
+#include <QtCore/qdir.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -69,11 +71,19 @@ QTestFileLogger::~QTestFileLogger()
 void QTestFileLogger::init()
 {
     char filename[100];
+    int index = 0;
+#if defined(Q_OS_SYMBIAN)
+    QByteArray ba(QDir::toNativeSeparators(QString(QDir::homePath()+QDir::separator())).toUtf8());
+    index = ba.length();
+    QTest::qt_snprintf(filename, sizeof(filename), "%s%s.log",
+                ba.constData(), QTestResult::currentTestObjectName());
+#else
     QTest::qt_snprintf(filename, sizeof(filename), "%s.log",
                 QTestResult::currentTestObjectName());
-
-    // Keep filenames simple
-    for (uint i = 0; i < sizeof(filename) && filename[i]; ++i) {
+#endif
+ 
+     // Keep filenames simple
+    for (uint i = index; i < sizeof(filename) && filename[i]; ++i) {
         char& c = filename[i];
         if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
               || (c >= '0' && c <= '9') || c == '-' || c == '.')) {

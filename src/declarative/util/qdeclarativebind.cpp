@@ -72,6 +72,7 @@ public:
 
 /*!
     \qmlclass Binding QDeclarativeBind
+  \ingroup qml-working-with-data
     \since 4.7
     \brief The Binding element allows arbitrary property bindings to be created.
 

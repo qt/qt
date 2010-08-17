@@ -97,7 +97,7 @@
     you are iterating, that won't affect the loop.
 
     For details about the new containers, see the
-    \l{Generic Containers} and \l{Generic Algorithms} overview documents.
+    \l{Container Classes} and \l{Generic Algorithms} overview documents.
 
     In addition to the new containers, considerable work has also gone into
     QByteArray and QString. The Qt 3 QCString class has been

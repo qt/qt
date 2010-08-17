@@ -71,6 +71,7 @@ private slots:
     void parallel();
     void parallel_data();
     void massive();
+    void cancelcrash();
 
 private:
     QDeclarativeEngine engine;
@@ -313,6 +314,15 @@ void tst_qdeclarativepixmapcache::massive()
     QVERIFY(p2.pixmap().size() == QSize(10000, 1000));
 
     QVERIFY(p2.pixmap().cacheKey() != cachekey);
+    }
+}
+
+// QTBUG-12729
+void tst_qdeclarativepixmapcache::cancelcrash()
+{
+    QUrl url("http://127.0.0.1:14452/cancelcrash_notexist.png");
+    for (int ii = 0; ii < 1000; ++ii) {
+        QDeclarativePixmap pix(&engine, url);
     }
 }
 

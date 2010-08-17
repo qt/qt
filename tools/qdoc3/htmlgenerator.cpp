@@ -293,12 +293,8 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         application = Online;
     else if (app == "creator")
         application = Creator;
-    else if (app == "assistant")
-        application = Assistant;
-    else if (app == "base")
-        application = Assistant;
     else 
-        application = Online;
+        application = Creator;
 
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
@@ -380,6 +376,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     funcIndex.clear();
     legaleseTexts.clear();
     serviceClasses.clear();
+    qmlClasses.clear();
     findAllClasses(tree->root());
     findAllFunctions(tree->root());
     findAllLegaleseTexts(tree->root());
@@ -614,6 +611,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         else if (atom->string() == "classes") {
             generateCompactList(relative, marker, nonCompatClasses, true);
+        }
+        else if (atom->string() == "qmlclasses") {
+            generateCompactList(relative, marker, qmlClasses, true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -1493,7 +1493,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     const QmlClassNode* qml_cn = 0;
     if (fake->subType() == Node::QmlClass) {
         qml_cn = static_cast<const QmlClassNode*>(fake);
-        sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         generateTableOfContents(fake,marker,&sections);
     }
     else if (fake->name() != QString("index.html"))
@@ -1575,6 +1575,13 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
+
+        QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
+        if (!allQmlMembersLink.isEmpty()) {
+            out() << "<li><a href=\"" << allQmlMembersLink << "\">"
+                  << "List of all members, including inherited members</a></li>\n";
+        }
+
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<a name=\"" << registerRef((*s).name.toLower())
@@ -1594,7 +1601,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateExtractionMark(fake, EndMark);
         //out() << "<hr />\n";
 
-        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed);
+        sections = marker->qmlSections(qml_cn,CodeMarker::Detailed,0);
         s = sections.begin();
         while (s != sections.end()) {
             out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
@@ -1717,7 +1724,7 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "</li>\n";
         }
         if (!cn->name().isEmpty())
-            out() << "              <li>" << cn->name() << "</li>\n";
+            out() << "              <li>" << protectEnc(cn->name()) << "</li>\n";
     }
     else if (node->type() == Node::Fake) {
         const FakeNode* fn = static_cast<const FakeNode*>(node);
@@ -1725,52 +1732,50 @@ void HtmlGenerator::generateBreadCrumbs(const QString& title,
             out() << "              <li><a href=\"modules.html\">Modules</a></li>";
             QString name =  node->name();
             if (!name.isEmpty())
-                out() << "              <li>" << name << "</li>\n";
+                out() << "              <li>" << protectEnc(name) << "</li>\n";
         }
         else if (node->subType() == Node::Group) {
             if (fn->name() == QString("modules"))
                 out() << "              <li>Modules</li>";
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::Page) {
             if (fn->name() == QString("qdeclarativeexamples.html")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>QML Examples & Demos</li>";
+                out() << "              <li>QML Examples &amp; Demos</li>";
             }
             else if (fn->name().startsWith("examples-")) {
                 out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
             else if (fn->name() == QString("namespaces.html")) {
                 out() << "              <li>Namespaces</li>";
             }
             else {
-                out() << "              <li>" << title << "</li>";
+                out() << "              <li>" << protectEnc(title) << "</li>";
             }
         }
         else if (node->subType() == Node::QmlClass) {
             out() << "              <li><a href=\"qdeclarativeelements.html\">QML Elements</a></li>";
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
         else if (node->subType() == Node::Example) {
             out() << "              <li><a href=\"all-examples.html\">Examples</a></li>";
             QStringList sl = fn->name().split('/');
             if (sl.contains("declarative"))
-                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples & Demos</a></li>";
+                out() << "              <li><a href=\"qdeclarativeexamples.html\">QML Examples &amp; Demos</a></li>";
             else {
-                QString name = "examples-" + sl.at(0) + ".html"; // this generates an empty link
+                QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
                 QString t = CodeParser::titleFromName(name);
-             //   out() << "              <li>  <a href=\"" << name << "\">"
-             //       << t << "</a></li>";
             }
-            out() << "              <li>" << title << "</li>";
+            out() << "              <li>" << protectEnc(title) << "</li>";
         }
     }
     else if (node->type() == Node::Namespace) {
         out() << "              <li><a href=\"namespaces.html\">Namespaces</a></li>";
-        out() << "              <li>" << title << "</li>";
+        out() << "              <li>" << protectEnc(title) << "</li>";
     }
 }
 
@@ -1836,10 +1841,6 @@ void HtmlGenerator::generateHeader(const QString& title,
 	// CheckEmptyAndLoadList activating search
 	out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
         break;
-    case Assistant:
-	out() << "</head>\n";
-	out() << "<body class=\"offline \">\n";
-        break;
     case Creator:
 	out() << "</head>\n";
 	out() << "<body class=\"offline narrow creator\">\n"; // offline narrow
@@ -1860,11 +1861,6 @@ void HtmlGenerator::generateHeader(const QString& title,
         out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         generateBreadCrumbs(title,node,marker);
         out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        break;
-    case Assistant:
-        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
         break;
     case Creator:
         out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
@@ -1983,9 +1979,6 @@ void HtmlGenerator::generateFooter(const Node *node)
         out() << "  </script> -->\n";
         out() << "</body>\n";
 	break;
-    case Assistant:
-        out() << "</body>\n";
-        break;
     case Creator:
         out() << "</body>\n";
 	break;
@@ -2027,7 +2020,7 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 }
 
 /*!
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2113,7 +2106,7 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
 
 /*!
   Revised for the new doc format.
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void HtmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2281,6 +2274,38 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
     out() << "<p>This is the complete list of members for ";
     generateFullName(inner, 0, marker);
+    out() << ", including inherited members.</p>\n";
+
+    Section section = sections.first();
+    generateSectionList(section, 0, marker, CodeMarker::SeparateList);
+
+    generateFooter();
+    endSubPage();
+    return fileName;
+}
+
+/*!
+  This function creates an html page on which are listed all
+  the members of QML class \a qml_cn, including the inherited
+  members. The \a marker is used for formatting stuff.
+ */
+QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
+                                                 CodeMarker* marker)
+{
+    QList<Section> sections;
+    QList<Section>::ConstIterator s;
+
+    sections = marker->qmlSections(qml_cn,CodeMarker::SeparateList,myTree);
+    if (sections.isEmpty())
+        return QString();
+
+    QString fileName = fileBase(qml_cn) + "-members." + fileExtension(qml_cn);
+    beginSubPage(qml_cn->location(), fileName);
+    QString title = "List of All Members for " + qml_cn->name();
+    generateHeader(title, qml_cn, marker);
+    generateTitle(title, Text(), SmallSubTitle, qml_cn, marker);
+    out() << "<p>This is the complete list of members for ";
+    generateFullName(qml_cn, 0, marker);
     out() << ", including inherited members.</p>\n";
 
     Section section = sections.first();
@@ -3685,6 +3710,12 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                     (static_cast<const ClassNode *>(*c))->serviceName();
                 if (!serviceName.isEmpty())
                     serviceClasses.insert(serviceName, *c);
+            }
+            else if ((*c)->type() == Node::Fake &&
+                     (*c)->subType() == Node::QmlClass &&
+                     !(*c)->doc().isEmpty()) {
+                QString qmlClassName = (*c)->name();
+                qmlClasses.insert(qmlClassName,*c);
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));

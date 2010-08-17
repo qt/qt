@@ -498,7 +498,7 @@
 </phrase>
 <phrase>
     <source>Next</source>
-    <target>Следующий</target>
+    <target>Далее</target>
 </phrase>
 <phrase>
     <source>object</source>
@@ -1070,7 +1070,7 @@
 </phrase>
 <phrase>
     <source>Next</source>
-    <target>Далее</target>
+    <target>Следующий</target>
 </phrase>
 <phrase>
     <source>tree view</source>
@@ -1203,5 +1203,17 @@
 <phrase>
     <source>Permission denied</source>
     <target>Доступ запрещён</target>
+</phrase>
+<phrase>
+    <source>Previous</source>
+    <target>Предыдущий</target>
+</phrase>
+<phrase>
+    <source>Next</source>
+    <target>Следующее</target>
+</phrase>
+<phrase>
+    <source>Previous</source>
+    <target>Предыдущее</target>
 </phrase>
 </QPH>

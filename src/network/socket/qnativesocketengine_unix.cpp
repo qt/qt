@@ -562,7 +562,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
 #else
     int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
 #endif
-    //check if we have vaild descriptor at all
+    //check if we have valid descriptor at all
     if(acceptedDescriptor > 0) {
         // Ensure that the socket is closed on exec*()
         ::fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);

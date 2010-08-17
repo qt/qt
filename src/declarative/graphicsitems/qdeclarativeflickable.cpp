@@ -345,6 +345,8 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 /*!
     \qmlclass Flickable QDeclarativeFlickable
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 
@@ -1027,7 +1029,7 @@ void QDeclarativeFlickable::cancelFlick()
 
 void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
-    QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
+    QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
     if (i)
         i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
     else

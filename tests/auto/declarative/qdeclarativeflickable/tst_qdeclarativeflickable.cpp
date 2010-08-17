@@ -44,6 +44,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeflickable_p.h>
 #include <private/qdeclarativevaluetype_p.h>
+#include <QtGui/qgraphicswidget.h>
 #include <math.h>
 
 #ifdef Q_OS_SYMBIAN
@@ -67,9 +68,13 @@ private slots:
     void flickDeceleration();
     void pressDelay();
     void flickableDirection();
+    void qgraphicswidget();
 
 private:
     QDeclarativeEngine engine;
+
+    template<typename T>
+    T *findItem(QGraphicsObject *parent, const QString &objectName);
 };
 
 tst_qdeclarativeflickable::tst_qdeclarativeflickable()
@@ -259,6 +264,38 @@ void tst_qdeclarativeflickable::flickableDirection()
     flickable->setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
     QCOMPARE(flickable->flickableDirection(), QDeclarativeFlickable::HorizontalFlick);
     QCOMPARE(spy.count(),3);
+}
+
+void tst_qdeclarativeflickable::qgraphicswidget()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickableqgraphicswidget.qml"));
+    QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(c.create());
+
+    QVERIFY(flickable != 0);
+    QGraphicsWidget *widget = findItem<QGraphicsWidget>(flickable->contentItem(), "widget1");
+    QVERIFY(widget);
+}
+
+template<typename T>
+T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)
+{
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->childItems().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QGraphicsObject *item = qobject_cast<QGraphicsObject*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+            return static_cast<T*>(item);
+        }
+        item = findItem<T>(item, objectName);
+        if (item)
+            return static_cast<T*>(item);
+    }
+
+    return 0;
 }
 
 QTEST_MAIN(tst_qdeclarativeflickable)

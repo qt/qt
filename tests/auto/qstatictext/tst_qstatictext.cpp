@@ -85,6 +85,10 @@ private slots:
     void setPenPlainText();
     void setPenRichText();
     void richTextOverridesPen();
+
+    void drawStruckOutText();
+    void drawOverlinedText();
+    void drawUnderlinedText();
 };
 
 void tst_QStaticText::init()
@@ -618,6 +622,108 @@ void tst_QStaticText::richTextOverridesPen()
                     || pixel == QColor(Qt::red).rgba());
         }
     }
+}
+
+void tst_QStaticText::drawStruckOutText()
+{
+    QPixmap imageDrawText(1000, 1000);
+    QPixmap imageDrawStaticText(1000, 1000);
+
+    imageDrawText.fill(Qt::white);
+    imageDrawStaticText.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setStrikeOut(true);
+
+    {
+        QPainter p(&imageDrawText);
+        p.setFont(font);
+        p.drawText(QPointF(50, 50), s);
+    }
+
+    {
+        QPainter p(&imageDrawStaticText);
+        QStaticText text = QStaticText(s);
+        p.setFont(font);
+        p.drawStaticText(QPointF(50, 50 - QFontMetricsF(p.font()).ascent()), text);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawStruckOutText_imageDrawText.png");
+    imageDrawStaticText.save("drawStruckOutText_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawText, imageDrawStaticText);
+}
+
+void tst_QStaticText::drawOverlinedText()
+{
+    QPixmap imageDrawText(1000, 1000);
+    QPixmap imageDrawStaticText(1000, 1000);
+
+    imageDrawText.fill(Qt::white);
+    imageDrawStaticText.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setOverline(true);
+
+    {
+        QPainter p(&imageDrawText);
+        p.setFont(font);
+        p.drawText(QPointF(50, 50), s);
+    }
+
+    {
+        QPainter p(&imageDrawStaticText);
+        QStaticText text = QStaticText(s);
+        p.setFont(font);
+        p.drawStaticText(QPointF(50, 50 - QFontMetricsF(p.font()).ascent()), text);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawOverlinedText_imageDrawText.png");
+    imageDrawStaticText.save("drawOverlinedText_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawText, imageDrawStaticText);
+}
+
+void tst_QStaticText::drawUnderlinedText()
+{
+    QPixmap imageDrawText(1000, 1000);
+    QPixmap imageDrawStaticText(1000, 1000);
+
+    imageDrawText.fill(Qt::white);
+    imageDrawStaticText.fill(Qt::white);
+
+    QString s = QString::fromLatin1("Foobar");
+
+    QFont font;
+    font.setUnderline(true);
+
+    {
+        QPainter p(&imageDrawText);
+        p.setFont(font);
+        p.drawText(QPointF(50, 50), s);
+    }
+
+    {
+        QPainter p(&imageDrawStaticText);
+        QStaticText text = QStaticText(s);
+        p.setFont(font);
+        p.drawStaticText(QPointF(50, 50 - QFontMetricsF(p.font()).ascent()), text);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawUnderlinedText_imageDrawText.png");
+    imageDrawStaticText.save("drawUnderlinedText_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawText, imageDrawStaticText);
 }
 
 QTEST_MAIN(tst_QStaticText)

@@ -255,5 +255,10 @@ QT_USE_NAMESPACE
         qApp->quit();
     }
 }
+
+ - (void)orderFrontCharacterPalette:(id)sender
+ {
+     [NSApp orderFrontCharacterPalette:sender];
+ }
 @end
 #endif // QT_MAC_USE_COCOA
