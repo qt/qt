@@ -538,6 +538,7 @@ MakefileGenerator::init()
                         continue;
                     }
                 }
+                mkdir(QFileInfo(out).absolutePath());
                 if(out.open(QFile::WriteOnly)) {
                     v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
                     out.write(contents.toUtf8());
