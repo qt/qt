@@ -482,14 +482,14 @@ void tst_qmake::substitutes()
 {
     QString workDir = base_path + "/testdata/substitutes";
     QVERIFY( test_compiler.qmake( workDir, "test" ));
-    QVERIFY( test_compiler.exists( workDir, "test", Exe, "1.0.0" ));
-    //QVERIFY( test_compiler.exists( workDir, "sub/test2", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( workDir, "test", Plain, "" ));
+    //QVERIFY( test_compiler.exists( workDir, "sub/test2", Plain, "" ));
     QVERIFY( test_compiler.makeDistClean( workDir ));
 
     QString buildDir = base_path + "/testdata/substitutes_build";
     QVERIFY( test_compiler.qmake( workDir, "test", buildDir ));
-    QVERIFY( test_compiler.exists( buildDir, "test", Exe, "1.0.0" ));
-    //QVERIFY( test_compiler.exists( buildDir, "sub/test2", Exe, "1.0.0" ));
+    QVERIFY( test_compiler.exists( buildDir, "test", Plain, "" ));
+    //QVERIFY( test_compiler.exists( buildDir, "sub/test2", Plain, "" ));
     QVERIFY( test_compiler.makeDistClean( buildDir ));
 }
 
