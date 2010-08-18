@@ -987,7 +987,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
+static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     while (len >= 8) {
