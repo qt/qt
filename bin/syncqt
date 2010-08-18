@@ -961,7 +961,7 @@ if($check_includes) {
 	my $lib = $_;
 	my $dir = "$modules{$lib}";
 	{
-	    my $current_dir = "$_";
+	    my $current_dir = $dir;
 	    #calc subdirs
 	    my @subdirs = ($current_dir);
 	    foreach (@subdirs) {
