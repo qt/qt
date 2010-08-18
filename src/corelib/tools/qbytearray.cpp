@@ -542,12 +542,14 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
-        d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + alloc))));
-        if (!d) {
+        QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc));
+        if (!p) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
             qWarning("qUncompress: could not allocate enough memory to uncompress data");
             return QByteArray();
         }
+        d.take(); // realloc was successful
+        d.reset(p);
 
         int res = ::uncompress((uchar*)d->array, &len,
                                (uchar*)data+4, nbytes-4);
@@ -555,12 +557,14 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
-                d.reset(q_check_ptr(static_cast<QByteArray::Data *>(qRealloc(d.take(), sizeof(QByteArray::Data) + len))));
-                if (!d) {
+                QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len));
+                if (!p) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
                     qWarning("qUncompress: could not allocate enough memory to uncompress data");
                     return QByteArray();
                 }
+                d.take(); // realloc was successful
+                d.reset(p);
             }
             d->ref = 1;
             d->alloc = d->size = len;
