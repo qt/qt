@@ -880,6 +880,41 @@ static int ucstrncmp_intwise(const ushort *a, const ushort *b, int len)
     }
 }
 
+#ifdef __SSE2__
+static inline int bsf_nonzero(register long val)
+{
+    int result;
+# ifdef Q_CC_GNU
+    // returns the first non-zero bit on a non-zero reg
+    asm ("bsf   %1, %0" : "=r" (result) : "r" (val));
+    return result;
+# elif defined(Q_CC_MSVC)
+    _BitScanForward(&result, val);
+    return result;
+# endif
+}
+
+static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ushort *a, const ushort *b, int len)
+{
+    qptrdiff counter = 0;
+    while (len >= 8) {
+        __m128i m1 = _mm_loadu_si128((__m128i *)(a + counter));
+        __m128i m2 = _mm_loadu_si128((__m128i *)(b + counter));
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    }
+    return ucstrncmp_shortwise(a + counter, b + counter, len);
+}
+#endif
+
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
 Q_DECLARE_METATYPE(UcstrncmpFunction)
 
@@ -889,6 +924,7 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("selftest") << UcstrncmpFunction(0);
     QTest::newRow("shortwise") << &ucstrncmp_shortwise;
     QTest::newRow("intwise") << &ucstrncmp_intwise;
+    QTest::newRow("sse2") << &ucstrncmp_sse2;
 }
 
 void tst_QString::ucstrncmp() const
@@ -897,7 +933,8 @@ void tst_QString::ucstrncmp() const
     if (!function) {
         static const UcstrncmpFunction func[] = {
             &ucstrncmp_shortwise,
-            &ucstrncmp_intwise
+            &ucstrncmp_intwise,
+            &ucstrncmp_sse2
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
