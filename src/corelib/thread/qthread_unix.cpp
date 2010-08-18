@@ -465,7 +465,7 @@ void QThread::usleep(unsigned long usecs)
 // Does some magic and calculate the Unix scheduler priorities
 // sched_policy is IN/OUT: it must be set to a valid policy before calling this function
 // sched_priority is OUT only
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && !defined(Q_OS_SYMBIAN) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
 static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_priority)
 {
 #ifdef SCHED_IDLE
