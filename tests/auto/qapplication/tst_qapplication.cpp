@@ -146,6 +146,7 @@ private slots:
 
     void symbianNeedForTraps();
     void symbianLeaveThroughMain();
+    void qtbug_12673();
 };
 
 class EventSpy : public QObject
@@ -2237,6 +2238,23 @@ void tst_QApplication::symbianLeaveThroughMain()
 
     QCOMPARE(numDestroyed, 2);
 #endif
+}
+
+void tst_QApplication::qtbug_12673()
+{
+#ifdef Q_OS_SYMBIAN
+    QSKIP("This might not make sense in Symbian, but since I do not know how to test it I'll just skip it for now.", SkipAll);
+#else
+    QProcess testProcess;
+    QStringList arguments;
+#ifdef Q_OS_MAC
+    testProcess.start("modal/modal.app", arguments);
+#else
+    testProcess.start("modal/modal", arguments);
+#endif
+    QVERIFY(testProcess.waitForFinished(20000));
+    QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
+#endif //  Q_OS_SYMBIAN
 }
 
 //QTEST_APPLESS_MAIN(tst_QApplication)
