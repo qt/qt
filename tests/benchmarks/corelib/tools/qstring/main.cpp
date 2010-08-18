@@ -1063,6 +1063,55 @@ static int ucstrncmp_ssse3(const ushort *a, const ushort *b, int len)
     return ucstrncmp_short_tail(a, b, len);
 }
 
+static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
+{
+    if (len >= 8) {
+        __m128i m1 = _mm_loadu_si128((__m128i *)a);
+        __m128i m2 = _mm_loadu_si128((__m128i *)b);
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            int counter = bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+
+        // now 'b' align to do 16-byte loads
+        int diff = 8 - (quintptr(b) & 0xf)/2;
+        len -= diff;
+        a += diff;
+        b += diff;
+    }
+
+    if (len < 8)
+        return ucstrncmp_short_tail(a, b, len);
+
+    // 'b' is aligned
+    int val = quintptr(a) & 0xf;
+    a -= val/2;
+
+    if (val == 8)
+        return ucstrncmp_ssse3_alignr<8>(a, b, len);
+    else if (val == 0)
+        return ucstrncmp_sse2_aligned(a, b, len);
+    if (val < 8) {
+        if (val < 4)
+            return ucstrncmp_ssse3_alignr<2>(a, b, len);
+        else if (val == 4)
+            return ucstrncmp_ssse3_alignr<4>(a, b, len);
+        else
+            return ucstrncmp_ssse3_alignr<6>(a, b, len);
+    } else {
+        if (val < 12)
+            return ucstrncmp_ssse3_alignr<10>(a, b, len);
+        else if (val == 12)
+            return ucstrncmp_ssse3_alignr<12>(a, b, len);
+        else
+            return ucstrncmp_ssse3_alignr<14>(a, b, len);
+    }
+}
+
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
@@ -1077,6 +1126,7 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("sse2") << &ucstrncmp_sse2;
     QTest::newRow("sse2_aligning") << &ucstrncmp_sse2_aligning;
     QTest::newRow("ssse3") << &ucstrncmp_ssse3;
+    QTest::newRow("ssse3_aligning") << &ucstrncmp_ssse3_aligning;
 }
 
 void tst_QString::ucstrncmp() const
@@ -1088,7 +1138,8 @@ void tst_QString::ucstrncmp() const
             &ucstrncmp_intwise,
             &ucstrncmp_sse2,
             &ucstrncmp_sse2_aligning,
-            &ucstrncmp_ssse3
+            &ucstrncmp_ssse3,
+            &ucstrncmp_ssse3_aligning
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
