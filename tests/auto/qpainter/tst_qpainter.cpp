@@ -118,12 +118,10 @@ private slots:
     void drawLine_task190634();
     void drawLine_task229459();
     void drawLine_task234891();
-    void drawHorizontalLineF();
 
     void drawRect_data() { fillData(); }
     void drawRect();
     void drawRect2();
-    void drawRectFHorizontalLine();
 
     void fillRect();
     void fillRect2();
@@ -253,7 +251,6 @@ private slots:
     void setPenColorOnPixmap();
 
     void QTBUG5939_attachPainterPrivate();
-    void drawHorizontalLine();
 
 private:
     void fillData();
@@ -1221,26 +1218,6 @@ void tst_QPainter::drawLine_task234891()
     QCOMPARE(expected, img);
 }
 
-void tst_QPainter::drawHorizontalLineF()
-{
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
-
-    {
-        QPainter painter(&pixmap);
-        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
-}
-
 void tst_QPainter::drawLine_task216948()
 {
     QImage img(1, 10, QImage::Format_ARGB32_Premultiplied);
@@ -1323,26 +1300,6 @@ void tst_QPainter::drawRect2()
         QRect stroke = getPaintedSize(image, Qt::white);
         QCOMPARE(stroke.adjusted(1, 1, 0, 0), fill.adjusted(0, 0, 1, 1));
     }
-}
-
-void tst_QPainter::drawRectFHorizontalLine()
-{
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
-
-    {
-        QPainter painter(&pixmap);
-        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
 }
 
 void tst_QPainter::fillRect()
@@ -4547,28 +4504,6 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
 
     QVERIFY(widget->worldTransform.isIdentity());
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
-}
-
-void tst_QPainter::drawHorizontalLine()
-{
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
-
-    {
-        QPainter painter(&pixmap);
-        painter.translate(0.3, 0.3);
-        painter.drawLine(QLine(1, 1, 99, 1));
-    }
-
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.translate(0.3, 0.3);
-        painter.drawLine(QLine(1, 1, 99, 1));
-    }
-
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
 }
 
 QTEST_MAIN(tst_QPainter)
