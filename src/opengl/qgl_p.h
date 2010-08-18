@@ -393,6 +393,9 @@ public:
     uint workaround_brokenFBOReadBack : 1;
     uint workaroundsCached : 1;
 
+    uint workaround_brokenTextureFromPixmap : 1;
+    uint workaround_brokenTextureFromPixmap_init : 1;
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
