@@ -122,7 +122,8 @@ QByteArray QSymbianTypeFaceExtras::getSfntTable(uint tag) const
     Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
     TInt error = KErrNone;
     TInt tableByteLength = 0;
-    TAny *table = q_check_ptr(m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength));
+    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+    Q_CHECK_PTR(table);
     QByteArray result(static_cast<const char*>(table), tableByteLength);
     m_trueTypeExtension->ReleaseTrueTypeTable(table);
     return result;
@@ -136,8 +137,8 @@ bool QSymbianTypeFaceExtras::getSfntTableData(uint tag, uchar *buffer, uint *len
     bool result = true;
     TInt error = KErrNone;
     TInt tableByteLength;
-    TAny *table =
-        q_check_ptr(m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength));
+    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+    Q_CHECK_PTR(table);
 
     if (error != KErrNone) {
         return false;

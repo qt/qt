@@ -77,7 +77,8 @@ extern int qt_vg_pixmap_serial;
 
 static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
 {
-    CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
+    CFbsBitmap *copy = new CFbsBitmap;
+    Q_CHECK_PTR(copy);
     if(!copy)
         return 0;
 
@@ -255,7 +256,8 @@ void* QVGPixmapData::toNativeType(NativeType type)
         sgInfo.iSizeInPixels.SetSize(w, h);
         sgInfo.iUsage = ESgUsageBitOpenVgImage | ESgUsageBitOpenVgSurface;
 
-        RSgImage *sgImage = q_check_ptr(new RSgImage());
+        RSgImage *sgImage = new RSgImage();
+        Q_CHECK_PTR(sgImage);
         err = sgImage->Create(sgInfo, NULL, NULL);
         if (err != KErrNone) {
             driver.Close();
@@ -297,7 +299,8 @@ void* QVGPixmapData::toNativeType(NativeType type)
         return reinterpret_cast<void*>(sgImage);
 #endif
     } else if (type == QPixmapData::FbsBitmap) {
-                CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
+        CFbsBitmap *bitmap = new CFbsBitmap;
+        Q_CHECK_PTR(bitmap);
 
         if (bitmap) {
             if (bitmap->Create(TSize(source.width(), source.height()),
