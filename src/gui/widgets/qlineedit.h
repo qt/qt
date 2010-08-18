@@ -283,6 +283,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_editFocusChange(bool))
 #endif
     Q_PRIVATE_SLOT(d_func(), void _q_selectionChanged())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateNeeded(const QRect &))
 };
 
 #endif // QT_NO_LINEEDIT
