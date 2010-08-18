@@ -47,7 +47,7 @@ Rectangle {
     height: 300
 
     ListView {
-
+        anchors.fill: parent
         model: listModel
         delegate: Component {
             Text { text: time }
