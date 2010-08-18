@@ -1007,7 +1007,9 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(c
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
-template<int N> static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
+typedef __m128i (* MMLoadFunction)(const __m128i *);
+template<int N, MMLoadFunction LoadFunction = _mm_lddqu_si128>
+static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
     __m128i lower, upper;
@@ -1018,7 +1020,7 @@ template<int N> static __attribute__((optimize("no-unroll-loops"))) int ucstrncm
         upper = _mm_load_si128((__m128i *)(a + counter) + 1);
         __m128i merged = _mm_alignr_epi8(upper, lower, N);
 
-        __m128i m2 = _mm_lddqu_si128((__m128i *)(b + counter));
+        __m128i m2 = LoadFunction((__m128i *)(b + counter));
         __m128i cmp = _mm_cmpeq_epi16(merged, m2);
         ushort mask = ~uint(_mm_movemask_epi8(cmp));
         if (mask) {
@@ -1092,23 +1094,23 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
     a -= val/2;
 
     if (val == 8)
-        return ucstrncmp_ssse3_alignr<8>(a, b, len);
+        return ucstrncmp_ssse3_alignr<8, _mm_load_si128>(a, b, len);
     else if (val == 0)
         return ucstrncmp_sse2_aligned(a, b, len);
     if (val < 8) {
         if (val < 4)
-            return ucstrncmp_ssse3_alignr<2>(a, b, len);
+            return ucstrncmp_ssse3_alignr<2, _mm_load_si128>(a, b, len);
         else if (val == 4)
-            return ucstrncmp_ssse3_alignr<4>(a, b, len);
+            return ucstrncmp_ssse3_alignr<4, _mm_load_si128>(a, b, len);
         else
-            return ucstrncmp_ssse3_alignr<6>(a, b, len);
+            return ucstrncmp_ssse3_alignr<6, _mm_load_si128>(a, b, len);
     } else {
         if (val < 12)
-            return ucstrncmp_ssse3_alignr<10>(a, b, len);
+            return ucstrncmp_ssse3_alignr<10, _mm_load_si128>(a, b, len);
         else if (val == 12)
-            return ucstrncmp_ssse3_alignr<12>(a, b, len);
+            return ucstrncmp_ssse3_alignr<12, _mm_load_si128>(a, b, len);
         else
-            return ucstrncmp_ssse3_alignr<14>(a, b, len);
+            return ucstrncmp_ssse3_alignr<14, _mm_load_si128>(a, b, len);
     }
 }
 
