@@ -881,6 +881,40 @@ static int ucstrncmp_intwise(const ushort *a, const ushort *b, int len)
 }
 
 #ifdef __SSE2__
+static inline int ucstrncmp_short_tail(const ushort *p1, const ushort *p2, int len)
+{
+    if (len) {
+        if (*p1 != *p2)
+            return *p1 - *p2;
+        if (--len) {
+            if (p1[1] != p2[1])
+                return p1[1] - p2[1];
+            if (--len) {
+                if (p1[2] != p2[2])
+                    return p1[2] - p2[2];
+                if (--len) {
+                    if (p1[3] != p2[3])
+                        return p1[3] - p2[3];
+                    if (--len) {
+                        if (p1[4] != p2[4])
+                            return p1[4] - p2[4];
+                        if (--len) {
+                            if (p1[5] != p2[5])
+                                return p1[5] - p2[5];
+                            if (--len) {
+                                if (p1[6] != p2[6])
+                                    return p1[6] - p2[6];
+                                return p1[7] - p2[7];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 static inline int bsf_nonzero(register long val)
 {
     int result;
@@ -911,7 +945,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ush
         counter += 8;
         len -= 8;
     }
-    return ucstrncmp_shortwise(a + counter, b + counter, len);
+    return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
 static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
@@ -950,7 +984,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
         counter += 8;
         len -= 8;
     }
-    return ucstrncmp_shortwise(a + counter, b + counter, len);
+    return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
 #endif
