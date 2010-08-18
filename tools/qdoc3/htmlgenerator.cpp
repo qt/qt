@@ -4422,57 +4422,98 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
         return true;
     if (node->access() == Node::Private)
         return false;
-    if (!node->isInnerNode())
-        return false;
 
+    QString t;
+    QString url = PageGenerator::fileName(node);
     QString title;
     QString rawTitle;
     QString fullTitle;
-    const InnerNode* inner = static_cast<const InnerNode*>(node);
-        
-    writer.writeStartElement("page");
+    QStringList pageWords;
     QXmlStreamAttributes attributes;
-    QString t;
+
+    writer.writeStartElement("page");
     t.setNum(id++);
-    switch (node->type()) {
-    case Node::Fake:
-        {
-            const FakeNode* fake = static_cast<const FakeNode*>(node);
-            title = fake->fullTitle();
+
+    if (node->isInnerNode()) {
+        const InnerNode* inner = static_cast<const InnerNode*>(node);
+        switch (node->type()) {
+        case Node::Fake:
+            {
+                const FakeNode* fake = static_cast<const FakeNode*>(node);
+                title = fake->fullTitle();
+                pageWords << title;
+                break;
+            }
+        case Node::Class:
+            {
+                title = node->name() + " Class Reference";
+                pageWords << node->name() << "class" << "reference";
+                break;
+            }
+        case Node::Namespace:
+            {
+                rawTitle = marker->plainName(inner);
+                fullTitle = marker->plainFullName(inner);
+                title = rawTitle + " Namespace Reference";
+                pageWords << rawTitle << "namespace" << "reference";
+                break;
+            }
+        default:
+            title = node->name();
+            pageWords << title;
             break;
         }
-    case Node::Class:
-        {
-            title = node->name() + " Class Reference";
-            break;
-        }
-    case Node::Namespace:
-        {
-            rawTitle = marker->plainName(inner);
-            fullTitle = marker->plainFullName(inner);
-            title = rawTitle + " Namespace Reference";
-            break;
-        }
-    default:
-        title = node->name();
-        break;
+
+        if (!inner->pageKeywords().isEmpty())
+            pageWords << inner->pageKeywords();
     }
+    else {
+        switch (node->type()) {
+        case Node::Enum:
+            {
+                title = node->name() + " Enum Reference";
+                pageWords << node->name() << "enum" << "type";
+                url += "#" + node->name() + "-enum";
+                break;
+            }
+        case Node::Function:
+            {
+                title = node->name() + " Function Reference";
+                pageWords << node->name() << "function";
+                url += "#" + node->name();
+                break;
+            }
+        case Node::Property:
+            {
+                title = node->name() + " Property Reference";
+                pageWords << node->name() << "property";
+                url += "#" + node->name() + "-prop";
+                break;
+            }
+        case Node::Typedef:
+            {
+                title = node->name() + " Type Reference";
+                pageWords << node->name() << "typedef" << "type";
+                url += "#" + node->name();
+                break;
+            }
+        default:
+            title = node->name();
+            pageWords << title;
+            break;
+        }
+    }
+
     writer.writeAttribute("id",t);
     writer.writeStartElement("pageWords");
-    writer.writeCharacters(title);
-    if (!inner->pageKeywords().isEmpty()) {
-        const QStringList& w = inner->pageKeywords();
-        for (int i = 0; i < w.size(); ++i) {
-            writer.writeCharacters(" ");
-            writer.writeCharacters(w.at(i).toLocal8Bit().constData());
-        }
-    }
+    writer.writeCharacters(pageWords.join(" "));
+
     writer.writeEndElement();
     writer.writeStartElement("pageTitle");
     writer.writeCharacters(title);
     writer.writeEndElement();
     writer.writeStartElement("pageUrl");
-    writer.writeCharacters(PageGenerator::fileName(node));
+    writer.writeCharacters(url);
     writer.writeEndElement();
     writer.writeStartElement("pageType");
     switch (node->pageType()) {
