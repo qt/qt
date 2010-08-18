@@ -1298,7 +1298,9 @@ void QString::realloc(int alloc)
             asciiCache->remove(d);
         }
 #endif
-        d = static_cast<Data *>(q_check_ptr(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar))));
+        Data *p = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
+        Q_CHECK_PTR(p);
+        d = p;
         d->alloc = alloc;
         d->data = d->array;
     }
