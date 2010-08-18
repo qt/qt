@@ -987,6 +987,82 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
+static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
+{
+    qptrdiff counter = 0;
+    while (len >= 8) {
+        __m128i m1 = _mm_load_si128((__m128i *)(a + counter));
+        __m128i m2 = _mm_load_si128((__m128i *)(b + counter));
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    }
+    return ucstrncmp_short_tail(a + counter, b + counter, len);
+}
+
+template<int N> static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
+{
+    qptrdiff counter = 0;
+    __m128i lower, upper;
+    upper = _mm_load_si128((__m128i *)a);
+
+    do {
+        lower = upper;
+        upper = _mm_load_si128((__m128i *)(a + counter) + 1);
+        __m128i merged = _mm_alignr_epi8(upper, lower, N);
+
+        __m128i m2 = _mm_lddqu_si128((__m128i *)(b + counter));
+        __m128i cmp = _mm_cmpeq_epi16(merged, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter + N/2] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    } while (len >= 8);
+
+    return ucstrncmp_short_tail(a + counter + N/2, b + counter, len);
+}
+
+static int ucstrncmp_ssse3(const ushort *a, const ushort *b, int len)
+{
+    if (len >= 8) {
+        int val = quintptr(a) & 0xf;
+        a -= val/2;
+
+        if (val == 10)
+            return ucstrncmp_ssse3_alignr<10>(a, b, len);
+        else if (val == 2)
+            return ucstrncmp_ssse3_alignr<2>(a, b, len);
+        if (val < 8) {
+            if (val < 4)
+                return ucstrncmp_sse2_aligned(a, b, len);
+            else if (val == 4)
+                    return ucstrncmp_ssse3_alignr<4>(a, b, len);
+            else
+                    return ucstrncmp_ssse3_alignr<6>(a, b, len);
+        } else {
+            if (val < 12)
+                return ucstrncmp_ssse3_alignr<8>(a, b, len);
+            else if (val == 12)
+                return ucstrncmp_ssse3_alignr<12>(a, b, len);
+            else
+                return ucstrncmp_ssse3_alignr<14>(a, b, len);
+        }
+    }
+    return ucstrncmp_short_tail(a, b, len);
+}
+
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
@@ -1000,6 +1076,7 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("intwise") << &ucstrncmp_intwise;
     QTest::newRow("sse2") << &ucstrncmp_sse2;
     QTest::newRow("sse2_aligning") << &ucstrncmp_sse2_aligning;
+    QTest::newRow("ssse3") << &ucstrncmp_ssse3;
 }
 
 void tst_QString::ucstrncmp() const
@@ -1010,7 +1087,8 @@ void tst_QString::ucstrncmp() const
             &ucstrncmp_shortwise,
             &ucstrncmp_intwise,
             &ucstrncmp_sse2,
-            &ucstrncmp_sse2_aligning
+            &ucstrncmp_sse2_aligning,
+            &ucstrncmp_ssse3
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
