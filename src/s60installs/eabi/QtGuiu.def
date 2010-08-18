@@ -12091,5 +12091,5 @@ EXPORTS
 	_ZN14QGraphicsScale13xScaleChangedEv @ 12090 NONAME
 	_ZN14QGraphicsScale13yScaleChangedEv @ 12091 NONAME
 	_ZN14QGraphicsScale13zScaleChangedEv @ 12092 NONAME
-	_ZN19QApplicationPrivate14_q_aboutToQuitEv @ 12093 NONAME
+	_ZN19QApplicationPrivate14_q_aboutToQuitEv @ 12093 NONAME ABSENT
 
