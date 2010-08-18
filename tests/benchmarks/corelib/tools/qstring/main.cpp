@@ -913,6 +913,46 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2(const ush
     }
     return ucstrncmp_shortwise(a + counter, b + counter, len);
 }
+
+static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(const ushort *a, const ushort *b, int len)
+{
+    if (len >= 8) {
+        __m128i m1 = _mm_loadu_si128((__m128i *)a);
+        __m128i m2 = _mm_loadu_si128((__m128i *)b);
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            int counter = bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+
+        // now align to do 16-byte loads
+        int diff = 8 - (quintptr(a) & 0xf)/2;
+        len -= diff;
+        a += diff;
+        b += diff;
+    }
+
+    qptrdiff counter = 0;
+    while (len >= 8) {
+        __m128i m1 = _mm_load_si128((__m128i *)(a + counter));
+        __m128i m2 = _mm_loadu_si128((__m128i *)(b + counter));
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    }
+    return ucstrncmp_shortwise(a + counter, b + counter, len);
+}
+
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
@@ -925,6 +965,7 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("shortwise") << &ucstrncmp_shortwise;
     QTest::newRow("intwise") << &ucstrncmp_intwise;
     QTest::newRow("sse2") << &ucstrncmp_sse2;
+    QTest::newRow("sse2_aligning") << &ucstrncmp_sse2_aligning;
 }
 
 void tst_QString::ucstrncmp() const
@@ -934,7 +975,8 @@ void tst_QString::ucstrncmp() const
         static const UcstrncmpFunction func[] = {
             &ucstrncmp_shortwise,
             &ucstrncmp_intwise,
-            &ucstrncmp_sse2
+            &ucstrncmp_sse2,
+            &ucstrncmp_sse2_aligning
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
