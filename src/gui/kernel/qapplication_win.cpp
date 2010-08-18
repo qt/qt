@@ -951,7 +951,7 @@ Q_GLOBAL_STATIC(WinClassNameHash, winclassNames)
 //
 const QString qt_reg_winclass(QWidget *w)        // register window class
 {
-    int flags = w ? w->windowFlags() : 0;
+    int flags = w ? int(w->windowFlags()) : 0;
     int type = flags & Qt::WindowType_Mask;
 
     uint style;
