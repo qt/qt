@@ -52,6 +52,9 @@
 #include <QtCore/QList>
 #include <QtCore/QMap>
 #include <QtCore/QPointer>
+#include <QtCore/QXmlStreamReader>
+#include <QtCore/QXmlStreamWriter>
+#include <QtCore/QXmlStreamAttributes>
 
 #include <QtGui/QAction>
 #include <QtGui/QColorDialog>
@@ -74,28 +77,129 @@
 
 QT_BEGIN_NAMESPACE
 
-static const char *RichTextDialogC = "RichTextDialog";
-static const char *Geometry = "Geometry";
+static const char RichTextDialogGroupC[] = "RichTextDialog";
+static const char GeometryKeyC[] = "Geometry";
+static const char TabKeyC[] = "Tab";
+
+const bool simplifyRichTextDefault = true;
 
 namespace qdesigner_internal {
+
+// Richtext simplification filter helpers: Elements to be discarded
+static inline bool filterElement(const QStringRef &name)
+{
+    return name != QLatin1String("meta") && name != QLatin1String("style");
+}
+
+// Richtext simplification filter helpers: Filter attributes of elements
+static inline void filterAttributes(const QStringRef &name,
+                                    QXmlStreamAttributes *atts,
+                                    bool *paragraphAlignmentFound)
+{
+    typedef QXmlStreamAttributes::iterator AttributeIt;
+
+    if (atts->isEmpty())
+        return;
+
+     // No style attributes for <body>
+    if (name == QLatin1String("body")) {
+        atts->clear();
+        return;
+    }
+
+    // Clean out everything except 'align' for 'p'
+    if (name == QLatin1String("p")) {
+        for (AttributeIt it = atts->begin(); it != atts->end(); ) {
+            if (it->name() == QLatin1String("align")) {
+                ++it;
+                *paragraphAlignmentFound = true;
+            } else {
+                it = atts->erase(it);
+            }
+        }
+        return;
+    }
+}
+
+// Richtext simplification filter helpers: Check for blank QStringRef.
+static inline bool isWhiteSpace(const QStringRef &in)
+{
+    const int count = in.size();
+    for (int i = 0; i < count; i++)
+        if (!in.at(i).isSpace())
+            return false;
+    return true;
+}
+
+// Richtext simplification filter: Remove hard-coded font settings,
+// <style> elements, <p> attributes other than 'align' and
+// and unnecessary meta-information.
+QString simplifyRichTextFilter(const QString &in, bool *isPlainTextPtr = 0)
+{
+    unsigned elementCount = 0;
+    bool paragraphAlignmentFound = false;
+    QString out;
+    QXmlStreamReader reader(in);
+    QXmlStreamWriter writer(&out);
+    writer.setAutoFormatting(false);
+    writer.setAutoFormattingIndent(0);
+
+    while (!reader.atEnd()) {
+        switch (reader.readNext()) {
+        case QXmlStreamReader::StartElement:
+            elementCount++;
+            if (filterElement(reader.name())) {
+                const QStringRef name = reader.name();
+                QXmlStreamAttributes attributes = reader.attributes();
+                filterAttributes(name, &attributes, &paragraphAlignmentFound);
+                writer.writeStartElement(name.toString());
+                if (!attributes.isEmpty())
+                    writer.writeAttributes(attributes);
+            } else {
+                reader.readElementText(); // Skip away all nested elements and characters.
+            }
+            break;
+        case QXmlStreamReader::Characters:
+            if (!isWhiteSpace(reader.text()))
+                writer.writeCharacters(reader.text().toString());
+            break;
+        case QXmlStreamReader::EndElement:
+            writer.writeEndElement();
+            break;
+        default:
+            break;
+        }
+    }
+    // Check for plain text (no spans, just <html><head><body><p>)
+    if (isPlainTextPtr)
+        *isPlainTextPtr = !paragraphAlignmentFound && elementCount == 4u; //
+    return out;
+}
 
 class RichTextEditor : public QTextEdit
 {
     Q_OBJECT
 public:
-    RichTextEditor(QWidget *parent = 0);
-    void setDefaultFont(const QFont &font);
+    explicit RichTextEditor(QWidget *parent = 0);
+    void setDefaultFont(QFont font);
 
     QToolBar *createToolBar(QDesignerFormEditorInterface *core, QWidget *parent = 0);
+
+    bool simplifyRichText() const      { return m_simplifyRichText; }
 
 public slots:
     void setFontBold(bool b);
     void setFontPointSize(double);
     void setText(const QString &text);
+    void setSimplifyRichText(bool v);
     QString text(Qt::TextFormat format) const;
 
 signals:
     void stateChanged();
+    void simplifyRichTextChanged(bool);
+
+private:
+    bool m_simplifyRichText;
 };
 
 class AddLinkDialog : public QDialog
@@ -303,6 +407,7 @@ private:
     QAction *m_align_justify_action;
     QAction *m_link_action;
     QAction *m_image_action;
+    QAction *m_simplify_richtext_action;
     ColorAction *m_color_action;
     QComboBox *m_font_size_input;
 
@@ -432,6 +537,17 @@ RichTextEditorToolBar::RichTextEditorToolBar(QDesignerFormEditorInterface *core,
             this, SLOT(colorChanged(QColor)));
     addAction(m_color_action);
 
+    addSeparator();
+
+    // Simplify rich text
+    m_simplify_richtext_action
+        = createCheckableAction(createIconSet(QLatin1String("simplifyrichtext.png")),
+                                tr("Simplify Rich Text"), m_editor, SLOT(setSimplifyRichText(bool)));
+    m_simplify_richtext_action->setChecked(m_editor->simplifyRichText());
+    connect(m_editor, SIGNAL(simplifyRichTextChanged(bool)),
+            m_simplify_richtext_action, SLOT(setChecked(bool)));
+    addAction(m_simplify_richtext_action);
+
     connect(editor, SIGNAL(textChanged()), this, SLOT(updateActions()));
     connect(editor, SIGNAL(stateChanged()), this, SLOT(updateActions()));
 
@@ -551,7 +667,7 @@ void RichTextEditorToolBar::updateActions()
 }
 
 RichTextEditor::RichTextEditor(QWidget *parent)
-    : QTextEdit(parent)
+    : QTextEdit(parent), m_simplifyRichText(simplifyRichTextDefault)
 {
     connect(this, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
             this, SIGNAL(stateChanged()));
@@ -579,14 +695,31 @@ void RichTextEditor::setFontPointSize(double d)
 
 void RichTextEditor::setText(const QString &text)
 {
+
     if (Qt::mightBeRichText(text))
         setHtml(text);
     else
         setPlainText(text);
 }
 
-void RichTextEditor::setDefaultFont(const QFont &font)
+void RichTextEditor::setSimplifyRichText(bool v)
 {
+    if (v != m_simplifyRichText) {
+        m_simplifyRichText = v;
+        emit simplifyRichTextChanged(v);
+    }
+}
+
+void RichTextEditor::setDefaultFont(QFont font)
+{
+    // Some default fonts on Windows have a default size of 7.8,
+    // which results in complicated rich text generated by toHtml().
+    // Use an integer value.
+    const int pointSize = qRound(font.pointSizeF());
+    if (pointSize > 0 && !qFuzzyCompare(qreal(pointSize), font.pointSizeF())) {
+        font.setPointSize(pointSize);
+    }
+
     document()->setDefaultFont(font);
     if (font.pointSize() > 0)
         setFontPointSize(font.pointSize());
@@ -602,15 +735,16 @@ QString RichTextEditor::text(Qt::TextFormat format) const
     case Qt::PlainText:
         return toPlainText();
     case Qt::RichText:
-        return toHtml();
+        return m_simplifyRichText ? simplifyRichTextFilter(toHtml()) : toHtml();
     case Qt::AutoText:
         break;
     }
     const QString html = toHtml();
-    const QString plain = toPlainText();
-    QTextEdit tester;
-    tester.setPlainText(plain);
-    return tester.toHtml() == html ? plain : html;
+    bool isPlainText;
+    const QString simplifiedHtml = simplifyRichTextFilter(html, &isPlainText);
+    if (isPlainText)
+        return toPlainText();
+    return m_simplifyRichText ? simplifiedHtml : html;
 }
 
 RichTextEditorDialog::RichTextEditorDialog(QDesignerFormEditorInterface *core, QWidget *parent)  :
@@ -619,15 +753,25 @@ RichTextEditorDialog::RichTextEditorDialog(QDesignerFormEditorInterface *core, Q
     m_text_edit(new HtmlTextEdit),
     m_tab_widget(new QTabWidget),
     m_state(Clean),
-    m_core(core)
+    m_core(core),
+    m_initialTab(RichTextIndex)
 {
     setWindowTitle(tr("Edit text"));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    // Read settings
+    const QDesignerSettingsInterface *settings = core->settingsManager();
+    const QString rootKey = QLatin1String(RichTextDialogGroupC) + QLatin1Char('/');
+    const QByteArray lastGeometry = settings->value(rootKey + QLatin1String(GeometryKeyC)).toByteArray();
+    const int initialTab = settings->value(rootKey + QLatin1String(TabKeyC), QVariant(m_initialTab)).toInt();
+    if (initialTab == RichTextIndex || initialTab == SourceIndex)
+        m_initialTab = initialTab;
 
     m_text_edit->setAcceptRichText(false);
     new HtmlHighlighter(m_text_edit);
 
     connect(m_editor, SIGNAL(textChanged()), this, SLOT(richTextChanged()));
+    connect(m_editor, SIGNAL(simplifyRichTextChanged(bool)), this, SLOT(richTextChanged()));
     connect(m_text_edit, SIGNAL(textChanged()), this, SLOT(sourceChanged()));
 
     // The toolbar needs to be created after the RichTextEditor
@@ -661,32 +805,33 @@ RichTextEditorDialog::RichTextEditorDialog(QDesignerFormEditorInterface *core, Q
     layout->addWidget(m_tab_widget);
     layout->addWidget(buttonBox);
 
-    m_editor->setFocus();
-
-    QDesignerSettingsInterface *settings = core->settingsManager();
-    settings->beginGroup(QLatin1String(RichTextDialogC));
-
-    if (settings->contains(QLatin1String(Geometry)))
-        restoreGeometry(settings->value(QLatin1String(Geometry)).toByteArray());
-
-    settings->endGroup();
+    if (!lastGeometry.isEmpty())
+        restoreGeometry(lastGeometry);
 }
 
 RichTextEditorDialog::~RichTextEditorDialog()
 {
     QDesignerSettingsInterface *settings = m_core->settingsManager();
-    settings->beginGroup(QLatin1String(RichTextDialogC));
+    settings->beginGroup(QLatin1String(RichTextDialogGroupC));
 
-    settings->setValue(QLatin1String(Geometry), saveGeometry());
+    settings->setValue(QLatin1String(GeometryKeyC), saveGeometry());
+    settings->setValue(QLatin1String(TabKeyC), m_tab_widget->currentIndex());
     settings->endGroup();
 }
 
 int RichTextEditorDialog::showDialog()
 {
-    m_tab_widget->setCurrentIndex(0);
-    m_editor->selectAll();
-    m_editor->setFocus();
-
+    m_tab_widget->setCurrentIndex(m_initialTab);
+    switch (m_initialTab) {
+    case RichTextIndex:
+        m_editor->selectAll();
+        m_editor->setFocus();
+        break;
+    case SourceIndex:
+        m_text_edit->selectAll();
+        m_text_edit->setFocus();
+        break;
+    }
     return exec();
 }
 
@@ -697,6 +842,9 @@ void RichTextEditorDialog::setDefaultFont(const QFont &font)
 
 void RichTextEditorDialog::setText(const QString &text)
 {
+    // Generally simplify rich text unless verbose text is found.
+    const bool isSimplifiedRichText = !text.startsWith("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">");
+    m_editor->setSimplifyRichText(isSimplifiedRichText);
     m_editor->setText(text);
     m_text_edit->setPlainText(text);
     m_state = Clean;
