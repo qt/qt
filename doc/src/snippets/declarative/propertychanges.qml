@@ -38,30 +38,55 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![import]
+import Qt 4.7
+//![import]
+
+Column {
 
 //![0]
-import Qt 4.7
-
 Item {
+    id: container
     width: 300; height: 300
 
     Rectangle {
         id: rect
-        width: 150; height: 100; anchors.centerIn: parent
+        width: 100; height: 100
         color: "red"
-        smooth: true
 
-        states: State { 
-            name: "rotated"
-            PropertyChanges { target: rect; rotation: 180 } 
+        MouseArea { 
+           id: mouseArea
+           anchors.fill: parent 
         }
 
-        transitions: Transition {
-            RotationAnimation { duration: 1000; direction: RotationAnimation.Counterclockwise }
+        states: State {
+           name: "resized"; when: mouseArea.pressed
+           PropertyChanges { target: rect; color: "blue"; height: container.height }
         }
     }
-
-    MouseArea { anchors.fill: parent; onClicked: rect.state = "rotated" }
 }
 //![0]
 
+//![reset]
+Rectangle {
+    width: 300; height: 200
+
+    Text {
+        id: myText
+        width: 50
+        wrapMode: Text.WordWrap
+        text: "a text string that is longer than 50 pixels"
+
+        states: State {
+            name: "widerText"
+            PropertyChanges { target: myText; width: undefined }
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: myText.state = "widerText"
+    }
+}
+//![reset]
+}

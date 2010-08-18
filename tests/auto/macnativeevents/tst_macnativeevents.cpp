@@ -67,6 +67,11 @@ private slots:
     void testDragWindow();
     void testMouseEnter();
     void testChildDialogInFrontOfModalParent();
+#ifdef QT_MAC_USE_COCOA
+    void testChildWindowInFrontOfParentWindow();
+//    void testChildToolWindowInFrontOfChildNormalWindow();
+    void testChildWindowInFrontOfStaysOnTopParentWindow();
+#endif
     void testKeyPressOnToplevel();
 };
 
@@ -307,6 +312,82 @@ void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
     QTest::qWait(100);
     QVERIFY(!child.isVisible());
 }
+
+#ifdef QT_MAC_USE_COCOA
+void tst_MacNativeEvents::testChildWindowInFrontOfParentWindow()
+{
+    // Test that a child window always stacks in front of its parent window.
+    // Do this by first click on the parent, then on the child window button.
+    QWidget parent;
+    QPushButton child("a button", &parent);
+    child.setWindowFlags(Qt::Window);
+    connect(&child, SIGNAL(clicked()), &child, SLOT(close()));
+    parent.show();
+    child.show();
+
+    QPoint parent_p = parent.geometry().bottomLeft() + QPoint(20, -20);
+    QPoint child_p = child.geometry().center();
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(parent_p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(parent_p, Qt::LeftButton, 0, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(child_p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(child_p, Qt::LeftButton, 0, Qt::NoModifier));
+
+    native.play();
+    QTest::qWait(100);
+    QVERIFY(!child.isVisible());
+}
+
+/* This test can be enabled once setStackingOrder has been fixed in qwidget_mac.mm
+void tst_MacNativeEvents::testChildToolWindowInFrontOfChildNormalWindow()
+{
+    // Test that a child tool window always stacks in front of normal sibling windows.
+    // Do this by first click on the sibling, then on the tool window button.
+    QWidget parent;
+    QWidget normalChild(&parent, Qt::Window);
+    QPushButton toolChild("a button", &parent);
+    toolChild.setWindowFlags(Qt::Tool);
+    connect(&toolChild, SIGNAL(clicked()), &toolChild, SLOT(close()));
+    parent.show();
+    normalChild.show();
+    toolChild.show();
+
+    QPoint normalChild_p = normalChild.geometry().bottomLeft() + QPoint(20, -20);
+    QPoint toolChild_p = toolChild.geometry().center();
+
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(normalChild_p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(normalChild_p, Qt::LeftButton, 0, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(toolChild_p, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(toolChild_p, Qt::LeftButton, 0, Qt::NoModifier));
+
+    native.play();
+    QTest::qWait(100);
+    QVERIFY(!toolChild.isVisible());
+}
+*/
+void tst_MacNativeEvents::testChildWindowInFrontOfStaysOnTopParentWindow()
+{
+    // Test that a child window stacks on top of a stays-on-top parent.
+    QWidget parent(0, Qt::WindowStaysOnTopHint);
+    QPushButton button("close", &parent);
+    button.setWindowFlags(Qt::Window);
+    connect(&button, SIGNAL(clicked()), &button, SLOT(close()));
+    parent.show();
+    button.show();
+    QPoint inside = button.geometry().center();
+
+    // Post a click on the button to close the child dialog:
+    NativeEventList native;
+    native.append(new QNativeMouseButtonEvent(inside, Qt::LeftButton, 1, Qt::NoModifier));
+    native.append(new QNativeMouseButtonEvent(inside, Qt::LeftButton, 0, Qt::NoModifier));
+
+    native.play();
+    QTest::qWait(100);
+    QVERIFY(!button.isVisible());
+}
+#endif
 
 void tst_MacNativeEvents::testKeyPressOnToplevel()
 {

@@ -38,30 +38,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-//![0]
 import Qt 4.7
 
+Row {
+
+//![transition]
 Item {
-    width: 300; height: 300
+    width: 400; height: 400
 
     Rectangle {
         id: rect
-        width: 150; height: 100; anchors.centerIn: parent
+        width: 200; height: 100
         color: "red"
-        smooth: true
 
-        states: State { 
+        states: State {
             name: "rotated"
-            PropertyChanges { target: rect; rotation: 180 } 
+            PropertyChanges { target: rect; rotation: 180; transformOrigin: Item.BottomRight }
         }
 
         transitions: Transition {
             RotationAnimation { duration: 1000; direction: RotationAnimation.Counterclockwise }
         }
-    }
 
-    MouseArea { anchors.fill: parent; onClicked: rect.state = "rotated" }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: rect.state = "rotated"
+        }
+    }
 }
-//![0]
+//![transition]
+
+Item {
+    width: 300; height: 300
+
+    Image { id: img; source: "pics/qt.png" }
+
+//![standalone]
+SequentialAnimation {
+    PropertyAction { target: img; property: "smooth"; value: "true" }
+    NumberAnimation { target: img; property: "width"; to: 300; duration: 1000 }
+    PropertyAction { target: img; property: "smooth"; value: "false" }
+}
+//![standalone]
+}
+
+}
 

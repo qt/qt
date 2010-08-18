@@ -2796,10 +2796,14 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
 
     if (QWidget *parent = q->parentWidget()) {
         if (parent->testAttribute(Qt::WA_WState_Created)) {
-            if (set)
-                [qt_mac_window_for(parent) addChildWindow:qt_mac_window_for(q) ordered:NSWindowAbove];
-            else
+            if (set) {
+                if (parent->isVisible()) {
+                    NSWindow *childwin = qt_mac_window_for(q);
+                    [qt_mac_window_for(parent) addChildWindow:childwin ordered:NSWindowAbove];
+                }
+            } else {
                 [qt_mac_window_for(parent) removeChildWindow:qt_mac_window_for(q)];
+            }
         }
     }
 
@@ -2807,10 +2811,12 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     for (int i=0; i<widgets.size(); ++i) {
         QWidget *child = widgets.at(i);
         if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created) && child->isVisibleTo(q)) {
-            if (set)
-                [qt_mac_window_for(q) addChildWindow:qt_mac_window_for(child) ordered:NSWindowAbove];
-            else
+            if (set) {
+                NSWindow *childwin = qt_mac_window_for(child);
+                [qt_mac_window_for(q) addChildWindow:childwin ordered:NSWindowAbove];
+            } else {
                 [qt_mac_window_for(q) removeChildWindow:qt_mac_window_for(child)];
+            }
         }
     }
 }
