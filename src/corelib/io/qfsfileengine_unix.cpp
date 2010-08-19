@@ -1092,7 +1092,8 @@ QString QFSFileEngine::fileName(FileName file) const
             int size = PATH_CHUNK_SIZE;
 
             while (1) {
-                s = q_check_ptr((char *) ::realloc(s, size));
+                s = (char *) ::realloc(s, size);
+                Q_CHECK_PTR(s);
                 len = ::readlink(d->nativeFilePath.constData(), s, size);
                 if (len < 0) {
                     ::free(s);

@@ -1984,7 +1984,7 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 */
 void qt_check_pointer(const char *n, int l)
 {
-    qWarning("In file %s, line %d: Out of memory", n, l);
+    qFatal("In file %s, line %d: Out of memory", n, l);
 }
 
 /* \internal
@@ -2215,7 +2215,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         _LIT(format, "[Qt Message] %S");
         const int maxBlockSize = 256 - ((const TDesC &)format).Length();
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = q_check_ptr(HBufC::New(qMin(maxBlockSize, ptr.Length())));
+        HBufC* hbuffer = HBufC::New(qMin(maxBlockSize, ptr.Length()));
+        Q_CHECK_PTR(hbuffer);
         for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
             hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
             RDebug::Print(format, hbuffer);

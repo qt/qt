@@ -61,7 +61,8 @@ Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString)
 #else
     TPtrC16 ptr(qt_QString2TPtrC(aString));
 #endif
-    buffer = q_check_ptr(HBufC::New(ptr.Length()));
+    buffer = HBufC::New(ptr.Length());
+    Q_CHECK_PTR(buffer);
     buffer->Des().Copy(ptr);
     return buffer;
 }
@@ -81,8 +82,9 @@ QHBufC::QHBufC()
 }
 
 QHBufC::QHBufC(const QHBufC &src)
-	: m_hBufC(q_check_ptr(src.m_hBufC->Alloc()))
+	: m_hBufC(src.m_hBufC->Alloc())
 {
+    Q_CHECK_PTR(m_hBufC);
 }
 
 /*!
