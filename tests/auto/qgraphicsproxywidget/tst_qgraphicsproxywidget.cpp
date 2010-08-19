@@ -788,7 +788,7 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
     if (hasScene) {
         scene.addItem(proxy);
         proxy->show();
@@ -837,7 +837,7 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     view.setFocus();
     QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(view.isVisible());
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     QWidget *widget = new QWidget;
     widget->setFocusPolicy(Qt::WheelFocus);
@@ -1093,7 +1093,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
     view.viewport()->setFocus();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1134,7 +1134,7 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
@@ -1178,7 +1178,7 @@ void tst_QGraphicsProxyWidget::mouseDoubleClickEvent()
 
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -3472,7 +3472,7 @@ void tst_QGraphicsProxyWidget::clickFocus()
         qt_x11_wait_for_window_manager(&view);
 #endif
         QApplication::setActiveWindow(&view);
-        QTRY_COMPARE(QApplication::activeWindow(), &view);
+        QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
         QVERIFY(!proxy->hasFocus());
         QVERIFY(!proxy->widget()->hasFocus());

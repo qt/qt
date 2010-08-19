@@ -1491,7 +1491,7 @@ void tst_QGraphicsScene::clear()
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     scene.addItem(firstItem);
     scene.addItem(secondItem);
-    QCOMPARE(scene.items().at(0), firstItem);
+    QCOMPARE(scene.items().at(0), (QGraphicsItem*)firstItem);
     QCOMPARE(scene.items().at(1), secondItem);
 
     ClearTestItem *thirdItem = new ClearTestItem(firstItem);
