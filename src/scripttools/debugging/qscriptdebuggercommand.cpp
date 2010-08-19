@@ -256,7 +256,7 @@ QScriptBreakpointData QScriptDebuggerCommand::breakpointData() const
 void QScriptDebuggerCommand::setBreakpointData(const QScriptBreakpointData &data)
 {
     Q_D(QScriptDebuggerCommand);
-    d->attributes[BreakpointData] = qVariantFromValue(data);
+    d->attributes[BreakpointData] = QVariant::fromValue(data);
 }
 
 QScriptDebuggerValue QScriptDebuggerCommand::scriptValue() const
@@ -268,7 +268,7 @@ QScriptDebuggerValue QScriptDebuggerCommand::scriptValue() const
 void QScriptDebuggerCommand::setScriptValue(const QScriptDebuggerValue &value)
 {
     Q_D(QScriptDebuggerCommand);
-    d->attributes[ScriptValue] = qVariantFromValue(value);
+    d->attributes[ScriptValue] = QVariant::fromValue(value);
 }
 
 int QScriptDebuggerCommand::contextIndex() const
@@ -316,7 +316,7 @@ QScriptDebuggerValue QScriptDebuggerCommand::subordinateScriptValue() const
 void QScriptDebuggerCommand::setSubordinateScriptValue(const QScriptDebuggerValue &value)
 {
     Q_D(QScriptDebuggerCommand);
-    d->attributes[SubordinateScriptValue] = qVariantFromValue(value);
+    d->attributes[SubordinateScriptValue] = QVariant::fromValue(value);
 }
 
 int QScriptDebuggerCommand::snapshotId() const

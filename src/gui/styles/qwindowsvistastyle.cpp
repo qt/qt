@@ -841,10 +841,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             const QDialogButtonBox *buttonBox = 0;
 
             if (qobject_cast<const QMessageBox *> (widget))
-                buttonBox = qFindChild<const QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+                buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
 #ifndef QT_NO_INPUTDIALOG
             else if (qobject_cast<const QInputDialog *> (widget))
-                buttonBox = qFindChild<const QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+                buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
 #endif // QT_NO_INPUTDIALOG
 
             if (buttonBox) {
@@ -2395,14 +2395,14 @@ void QWindowsVistaStyle::polish(QWidget *widget)
         }
     } else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 9, 0, 0);
     }
@@ -2434,14 +2434,14 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover, false);
     else if (qobject_cast<QMessageBox *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_msgbox_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
     }
 #ifndef QT_NO_INPUTDIALOG
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
-        QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox *>(widget,QLatin1String("qt_inputdlg_buttonbox"));
+        QDialogButtonBox *buttonBox = widget->findChild<QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
         if (buttonBox)
             buttonBox->setContentsMargins(0, 0, 0, 0);
     }

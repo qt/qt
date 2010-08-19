@@ -432,15 +432,15 @@ namespace Utils {
 
 inline int valueOf(const QVariant &value, bool *ok = 0)
 {
-    if (qVariantCanConvert<PropertySheetEnumValue>(value)) {
+    if (value.canConvert<PropertySheetEnumValue>()) {
         if (ok)
             *ok = true;
-        return qVariantValue<PropertySheetEnumValue>(value).value;
+        return qvariant_cast<PropertySheetEnumValue>(value).value;
     }
-    else if (qVariantCanConvert<PropertySheetFlagValue>(value)) {
+    else if (value.canConvert<PropertySheetFlagValue>()) {
         if (ok)
             *ok = true;
-        return qVariantValue<PropertySheetFlagValue>(value).value;
+        return qvariant_cast<PropertySheetFlagValue>(value).value;
     }
     return value.toInt(ok);
 }

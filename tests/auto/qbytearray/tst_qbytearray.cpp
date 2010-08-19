@@ -142,6 +142,8 @@ private slots:
     void repeated_data() const;
 
     void byteRefDetaching() const;
+
+    void reserve();
 };
 
 tst_QByteArray::tst_QByteArray()
@@ -1513,6 +1515,22 @@ void tst_QByteArray::byteRefDetaching() const
         str[0] = 'S';
 
         QCOMPARE(buf[0], char('s'));
+    }
+}
+
+void tst_QByteArray::reserve()
+{
+    int capacity = 100;
+    QByteArray qba;
+    qba.reserve(capacity);
+    QVERIFY(qba.capacity() == capacity);
+    char *data = qba.data();
+
+    // FIXME count from 0 to make it fail
+    for (int i = 1; i < capacity; i++) {
+        qba.resize(i);
+        QVERIFY(capacity == qba.capacity());
+        QVERIFY(data == qba.data());
     }
 }
 

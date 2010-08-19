@@ -239,7 +239,7 @@ void TabOrderEditor::initTabOrder()
     childQueue.append(formWindow()->mainContainer());
     while (!childQueue.isEmpty()) {
         QWidget *child = childQueue.takeFirst();
-        childQueue += qVariantValue<QWidgetList>(child->property("_q_widgetOrder"));
+        childQueue += qvariant_cast<QWidgetList>(child->property("_q_widgetOrder"));
 
         if (skipWidget(child))
             continue;

@@ -206,7 +206,7 @@ void QNativeWifiEngine::scanComplete()
                 ptr->id = id;
                 ptr->state = state;
                 ptr->type = QNetworkConfiguration::InternetAccessPoint;
-                ptr->bearer = QLatin1String("WLAN");
+                ptr->bearerType = QNetworkConfiguration::BearerWLAN;
 
                 accessPointConfigurations.insert(id, ptr);
 
@@ -349,11 +349,6 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
 
     return false;
 }
-
-/*QString QNativeWifiEngine::bearerName(const QString &)
-{
-    return QLatin1String("WLAN");
-}*/
 
 void QNativeWifiEngine::connectToId(const QString &id)
 {

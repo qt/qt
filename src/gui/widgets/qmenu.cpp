@@ -262,7 +262,7 @@ void QMenuPrivate::updateActionRects() const
     const int deskFw = style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, &opt, q);
     const int tearoffHeight = tearoff ? style->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, q) : 0;
 
-    //for compatability now - will have to refactor this away..
+    //for compatibility now - will have to refactor this away
     tabWidth = 0;
     maxIconWidth = 0;
     hasCheckableItems = false;
@@ -1154,7 +1154,7 @@ void QMenuPrivate::_q_actionHovered()
 
 bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
 {
-    //determines if the mouse has moved (ie its intial position has
+    //determines if the mouse has moved (ie its initial position has
     //changed by more than QApplication::startDragDistance()
     //or if there were at least 6 mouse motions)
     return motions > 6 ||

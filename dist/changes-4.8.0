@@ -43,6 +43,12 @@ QtGui
 
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
 
+ QtOpenGL
+ --------
+ - Removed dependency of OpenGL Utility Library (GLU)
+ - Added QGLFunctions, which provides cross-platform access to the
+   OpenGL/ES 2.0 API.
+
 
 ****************************************************************************
 *                          Database Drivers                                *

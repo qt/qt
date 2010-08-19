@@ -542,6 +542,9 @@ void QNetworkAccessHttpBackend::postRequest()
         break;                  // can't happen
     }
 
+    bool encrypt = (url().scheme().toLower() == QLatin1String("https"));
+    httpRequest.setSsl(encrypt);
+
     httpRequest.setUrl(url());
 
     QList<QByteArray> headers = request().rawHeaderList();
@@ -595,7 +598,6 @@ void QNetworkAccessHttpBackend::postRequest()
     httpReply->ignoreSslErrors(pendingIgnoreSslErrorsList);
 #endif
 
-    connect(httpReply, SIGNAL(readyRead()), SLOT(replyReadyRead()));
     connect(httpReply, SIGNAL(finished()), SLOT(replyFinished()));
     connect(httpReply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
@@ -859,7 +861,31 @@ void QNetworkAccessHttpBackend::replyHeaderChanged()
         if (!isCachingEnabled())
             setCachingEnabled(true);
     }
+
+    // Check if a download buffer is supported from the HTTP reply
+    char *buf = 0;
+    if (httpReply->supportsUserProvidedDownloadBuffer()) {
+        // Check if a download buffer is supported by the user
+        buf = getDownloadBuffer(httpReply->contentLength());
+        if (buf) {
+            httpReply->setUserProvidedDownloadBuffer(buf);
+            // If there is a download buffer we react on the progress signal
+            connect(httpReply, SIGNAL(dataReadProgress(int,int)), SLOT(replyDownloadProgressSlot(int,int)));
+        }
+    }
+
+    // If there is no buffer, we react on the readyRead signal
+    if (!buf) {
+        connect(httpReply, SIGNAL(readyRead()), SLOT(replyReadyRead()));
+    }
+
     metaDataChanged();
+}
+
+void QNetworkAccessHttpBackend::replyDownloadProgressSlot(int received,  int total)
+{
+    // we can be sure here that there is a download buffer
+    writeDownstreamDataDownloadBuffer(received, total);
 }
 
 void QNetworkAccessHttpBackend::httpAuthenticationRequired(const QHttpNetworkRequest &,
@@ -1168,6 +1194,11 @@ bool QNetworkAccessHttpBackend::canResume() const
         if (!range.startsWith("bytes="))
             return false;
     }
+
+    // If we're using a download buffer then we don't support resuming/migration
+    // right now. Too much trouble.
+    if (httpReply->userProvidedDownloadBuffer())
+        return false;
 
     return true;
 }

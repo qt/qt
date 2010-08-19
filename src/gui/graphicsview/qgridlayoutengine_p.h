@@ -91,6 +91,14 @@ enum LayoutSide {
     Bottom
 };
 
+enum {
+    NoConstraint,
+    HorizontalConstraint,
+    VerticalConstraint,
+    UnknownConstraint,      // need to update cache
+    UnfeasibleConstraint    // not feasible, it be has some items with Vertical and others with Horizontal constraints
+};
+
 template <typename T>
 class QLayoutParameter
 {
@@ -270,6 +278,10 @@ public:
     inline void setAlignment(Qt::Alignment alignment) { q_alignment = alignment; }
 
     QSizePolicy::Policy sizePolicy(Qt::Orientation orientation) const;
+
+    bool hasDynamicConstraint() const;
+    Qt::Orientation dynamicConstraintOrientation() const;
+
     QSizePolicy::ControlTypes controlTypes(LayoutSide side) const;
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
     QGridLayoutBox box(Qt::Orientation orientation, qreal constraint = -1.0) const;
@@ -280,7 +292,7 @@ public:
     void setGeometry(const QRectF &rect);
     void transpose();
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
-    QSizeF effectiveMaxSize() const;
+    QSizeF effectiveMaxSize(const QSizeF &constraint) const;
 
 #ifdef QT_DEBUG
     void dump(int indent = 0) const;
@@ -326,6 +338,7 @@ public:
     // returns the number of items inserted, which may be less than (rowCount * columnCount)
     int itemCount() const;
     QGridLayoutItem *itemAt(int index) const;
+    int indexOf(QGraphicsLayoutItem *item) const;
 
     int effectiveFirstRow(Qt::Orientation orientation = Qt::Vertical) const;
     int effectiveLastRow(Qt::Orientation orientation = Qt::Vertical) const;
@@ -372,6 +385,14 @@ public:
                     int column, int rowSpan, int columnSpan) const;
     QSizeF sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHint which,
                     const QSizeF &constraint) const;
+
+    // heightForWidth / widthForHeight support
+    QSizeF dynamicallyConstrainedSizeHint(Qt::SizeHint which, const QSizeF &constraint) const;
+    bool ensureDynamicConstraint() const;
+    bool hasDynamicConstraint() const;
+    Qt::Orientation constraintOrientation() const;
+
+
     QSizePolicy::ControlTypes controlTypes(LayoutSide side) const;
     void transpose();
     void setVisualDirection(Qt::LayoutDirection direction);
@@ -405,6 +426,7 @@ private:
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];
     mutable int q_cachedEffectiveLastRows[NOrientations];
+    mutable quint8 q_cachedConstraintOrientation : 2;
 
     // Layout item input
     mutable QLayoutStyleInfo q_cachedDataForStyleInfo;

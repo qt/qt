@@ -184,11 +184,12 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
-\keyword QmlGlobalQtObject
-\qmlclass Qt QDeclarativeEnginePrivate
+\qmlclass QML:Qt QDeclarativeEnginePrivate
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\keyword QmlGlobalQtObject
+
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
 The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
 with enums and functions.  To use it, call the members of the global \c Qt object directly. 
@@ -206,10 +207,9 @@ Text {
 
 \section1 Enums
 
-The Qt object contains all enums in the Qt namespace. For example, you can
-access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
+the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
 
-For a full list of enums, see the \l{Qt Namespace} documentation.
 
 \section1 Types
 The Qt object also contains helper functions for creating objects of specific
@@ -1289,7 +1289,7 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QVector3D(x, y, z)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QVector3D(x, y, z)));
 }
 
 /*!
@@ -1309,14 +1309,14 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatDate(): Invalid date format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
 
 /*!
@@ -1337,14 +1337,14 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
 
 /*!
@@ -1428,14 +1428,14 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(QVariant::fromValue(date.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else { 
             return ctxt->throwError(QLatin1String("Qt.formatDateTime(): Invalid datetime format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(QVariant::fromValue(date.toString(enumFormat)));
 }
 #endif // QT_NO_DATESTRING
 
@@ -1464,7 +1464,7 @@ QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromRgbF(r, g, b, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromRgbF(r, g, b, a)));
 }
 
 /*!
@@ -1492,7 +1492,7 @@ QScriptValue QDeclarativeEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine
     if (a < 0.0) a=0.0;
     if (a > 1.0) a=1.0;
 
-    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromHslF(h, s, l, a)));
+    return engine->toScriptValue(QVariant::fromValue(QColor::fromHslF(h, s, l, a)));
 }
 
 /*!
@@ -1515,7 +1515,7 @@ QScriptValue QDeclarativeEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine
     if (w < 0 || h < 0)
         return engine->nullValue();
 
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QRectF(x, y, w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QRectF(x, y, w, h)));
 }
 
 /*!
@@ -1528,7 +1528,7 @@ QScriptValue QDeclarativeEnginePrivate::point(QScriptContext *ctxt, QScriptEngin
         return ctxt->throwError(QLatin1String("Qt.point(): Invalid arguments"));
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QPointF(x, y)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QPointF(x, y)));
 }
 
 /*!
@@ -1541,7 +1541,7 @@ QScriptValue QDeclarativeEnginePrivate::size(QScriptContext *ctxt, QScriptEngine
         return ctxt->throwError(QLatin1String("Qt.size(): Invalid arguments"));
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
-    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(qVariantFromValue(QSizeF(w, h)));
+    return QDeclarativeEnginePrivate::get(engine)->scriptValueFromVariant(QVariant::fromValue(QSizeF(w, h)));
 }
 
 /*!
@@ -1577,7 +1577,7 @@ QScriptValue QDeclarativeEnginePrivate::lighter(QScriptContext *ctxt, QScriptEng
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.lighter(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, qVariantFromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1614,7 +1614,7 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
     if (ctxt->argumentCount() == 2)
         factor = ctxt->argument(1).toNumber();
     color = color.darker(int(qRound(factor*100.)));
-    return qScriptValueFromValue(engine, qVariantFromValue(color));
+    return engine->toScriptValue(QVariant::fromValue(color));
 }
 
 /*!
@@ -1849,7 +1849,7 @@ QScriptValue QDeclarativeEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine
                            a + inv_a * color.alphaF());
     }
 
-    return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
+    return engine->toScriptValue(QVariant::fromValue(finalColor));
 }
 
 QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &val)
@@ -1879,7 +1879,7 @@ QScriptValue QDeclarativeEnginePrivate::scriptValueFromVariant(const QVariant &v
     if (objOk) {
         return objectClass->newQObject(obj);
     } else {
-        return qScriptValueFromValue(&scriptEngine, val);
+        return scriptEngine.toScriptValue(val);
     }
 }
 

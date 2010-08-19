@@ -624,7 +624,9 @@ QString CodeMarker::macName(const Node *node, const QString &name)
   Get the list of documentation sections for the children of
   the specified QmlClassNode.
  */
-QList<Section> CodeMarker::qmlSections(const QmlClassNode* , SynopsisStyle )
+QList<Section> CodeMarker::qmlSections(const QmlClassNode* ,
+                                       SynopsisStyle ,
+                                       const Tree* )
 {
     return QList<Section>();
 }

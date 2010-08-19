@@ -87,7 +87,7 @@ QScriptStaticScopeObject::QScriptStaticScopeObject(WTF::NonNullPassRefPtr<JSC::S
 
 QScriptStaticScopeObject::~QScriptStaticScopeObject()
 {
-    delete d;
+    delete d_ptr();
 }
 
 bool QScriptStaticScopeObject::getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot& slot)

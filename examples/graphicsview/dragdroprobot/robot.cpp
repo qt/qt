@@ -77,7 +77,7 @@ void RobotPart::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     dragOver = false;
     if (event->mimeData()->hasColor())
-        color = qVariantValue<QColor>(event->mimeData()->colorData());
+        color = qvariant_cast<QColor>(event->mimeData()->colorData());
     update();
 }
 //! [3]
@@ -139,7 +139,7 @@ void RobotHead::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     if (event->mimeData()->hasImage()) {
         dragOver = false;
-        pixmap = qVariantValue<QPixmap>(event->mimeData()->imageData());
+        pixmap = qvariant_cast<QPixmap>(event->mimeData()->imageData());
         update();
     } else {
         RobotPart::dropEvent(event);

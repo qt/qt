@@ -88,14 +88,19 @@ bool qt_show_painter_debug_output = true;
 
 extern QPixmap qt_pixmapForBrush(int style, bool invert);
 
-static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, QFontEngine *fe,
-                                   QTextCharFormat::UnderlineStyle underlineStyle,
-                                   QTextItemInt::RenderFlags flags, qreal width,
-                                   const QTextCharFormat &charFormat);
 void qt_format_text(const QFont &font,
                     const QRectF &_r, int tf, const QTextOption *option, const QString& str, QRectF *brect,
                     int tabstops, int* tabarray, int tabarraylen,
                     QPainter *painter);
+static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe,
+                                   QTextCharFormat::UnderlineStyle underlineStyle,
+                                   QTextItem::RenderFlags flags, qreal width,
+                                   const QTextCharFormat &charFormat);
+// Helper function to calculate left most position, width and flags for decoration drawing
+static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
+                                    const QFixedPoint *positions, int glyphCount,
+                                    QFontEngine *fontEngine, const QFont &font,
+                                    const QTextCharFormat &charFormat);
 
 static inline QGradient::CoordinateMode coordinateMode(const QBrush &brush)
 {
@@ -2699,6 +2704,61 @@ QPainterPath QPainter::clipPath() const
             return qt_regionToPath(clipRegion());
         }
     }
+}
+
+/*!
+    Returns the bounding rectangle of the current clip if there is a clip;
+    otherwise returns an empty rectangle. Note that the clip region is
+    given in logical coordinates.
+
+    The bounding rectangle is not guaranteed to be tight.
+
+    \sa setClipRect(), setClipPath(), setClipRegion()
+
+    \since 4.8
+ */
+
+QRectF QPainter::clipBoundingRect() const
+{
+    Q_D(const QPainter);
+
+    if (!d->engine) {
+        qWarning("QPainter::clipBoundingRect: Painter not active");
+        return QRectF();
+    }
+
+    // Accumulate the bounding box in device space. This is not 100%
+    // precise, but it fits within the guarantee and it is resonably
+    // fast.
+    QRectF bounds;
+    for (int i=0; i<d->state->clipInfo.size(); ++i) {
+         QRectF r;
+         const QPainterClipInfo &info = d->state->clipInfo.at(i);
+
+         if (info.clipType == QPainterClipInfo::RectClip)
+             r = info.rect;
+         else if (info.clipType == QPainterClipInfo::RegionClip)
+             r = info.region.boundingRect();
+         else
+             r = info.path.boundingRect();
+
+         r = info.matrix.mapRect(r);
+
+         if (i == 0)
+             bounds = r;
+         else if (info.operation == Qt::IntersectClip)
+             bounds &= r;
+         else if (info.operation == Qt::UniteClip)
+             bounds |= r;
+    }
+
+
+    // Map the rectangle back into logical space using the inverse
+    // matrix.
+    if (!d->txinv)
+        const_cast<QPainter *>(this)->d_ptr->updateInvMatrix();
+
+    return d->invMatrix.mapRect(bounds);
 }
 
 /*!
@@ -5996,6 +6056,10 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
             currentColor = item->color;
         }
         d->extended->drawStaticTextItem(item);
+
+        drawDecorationForGlyphs(this, item->glyphs, item->glyphPositions,
+                                item->numGlyphs, item->fontEngine, staticText_d->font,
+                                QTextCharFormat());
     }
     if (currentColor != oldPen.color())
         setPen(oldPen);
@@ -6363,9 +6427,9 @@ static QPixmap generateWavyPixmap(qreal maxRadius, const QPen &pen)
     return pixmap;
 }
 
-static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, QFontEngine *fe,
+static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const QFontEngine *fe,
                                    QTextCharFormat::UnderlineStyle underlineStyle,
-                                   QTextItemInt::RenderFlags flags, qreal width,
+                                   QTextItem::RenderFlags flags, qreal width,
                                    const QTextCharFormat &charFormat)
 {
     if (underlineStyle == QTextCharFormat::NoUnderline
@@ -6437,6 +6501,50 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, QFontE
 
     painter->setPen(oldPen);
     painter->setBrush(oldBrush);
+}
+
+static void drawDecorationForGlyphs(QPainter *painter, const glyph_t *glyphArray,
+                                    const QFixedPoint *positions, int glyphCount,
+                                    QFontEngine *fontEngine, const QFont &font,
+                                    const QTextCharFormat &charFormat)
+{
+    if (!(font.underline() || font.strikeOut() || font.overline()))
+        return;
+
+    QFixed leftMost;
+    QFixed rightMost;
+    QFixed baseLine;
+    for (int i=0; i<glyphCount; ++i) {
+        glyph_metrics_t gm = fontEngine->boundingBox(glyphArray[i]);
+        if (i == 0 || leftMost > positions[i].x)
+            leftMost = positions[i].x;
+
+        // We don't support glyphs that do not share a common baseline. If this turns out to
+        // be a relevant use case, then we need to find clusters of glyphs that share a baseline
+        // and do a drawTextItemDecorations call per cluster.
+        if (i == 0 || baseLine < positions[i].y)
+            baseLine = positions[i].y;
+
+        // We use the advance rather than the actual bounds to match the algorithm in drawText()
+        if (i == 0 || rightMost < positions[i].x + gm.xoff)
+            rightMost = positions[i].x + gm.xoff;
+    }
+
+    QFixed width = rightMost - leftMost;
+    QTextItem::RenderFlags flags = 0;
+
+    if (font.underline())
+        flags |= QTextItem::Underline;
+    if (font.overline())
+        flags |= QTextItem::Overline;
+    if (font.strikeOut())
+        flags |= QTextItem::StrikeOut;
+
+    drawTextItemDecoration(painter, QPointF(leftMost.toReal(), baseLine.toReal()),
+                           fontEngine,
+                           font.underline() ? QTextCharFormat::SingleUnderline
+                                            : QTextCharFormat::NoUnderline, flags,
+                           width.toReal(), charFormat);
 }
 
 void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)

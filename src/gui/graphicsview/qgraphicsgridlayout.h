@@ -114,6 +114,7 @@ public:
     int count() const;
     QGraphicsLayoutItem *itemAt(int index) const;
     void removeAt(int index);
+    void removeItem(QGraphicsLayoutItem *item);
 
     void invalidate();
 

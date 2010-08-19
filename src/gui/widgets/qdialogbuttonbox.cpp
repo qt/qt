@@ -1229,7 +1229,7 @@ bool QDialogButtonBox::event(QEvent *event)
                 break;
         }
 
-        foreach (QPushButton *pb, qFindChildren<QPushButton *>(dialog ? dialog : this)) {
+        foreach (QPushButton *pb, (dialog ? dialog : this)->findChildren<QPushButton *>()) {
             if (pb->isDefault() && pb != firstAcceptButton) {
                 hasDefault = true;
                 break;

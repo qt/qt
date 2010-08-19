@@ -152,8 +152,8 @@ void TableWidgetEditor::setItemData(int role, const QVariant &v)
     QVariant newValue = v;
     if (role == Qt::FontRole && newValue.type() == QVariant::Font) {
         QFont oldFont = ui.tableWidget->font();
-        QFont newFont = qVariantValue<QFont>(newValue).resolve(oldFont);
-        newValue = qVariantFromValue(newFont);
+        QFont newFont = qvariant_cast<QFont>(newValue).resolve(oldFont);
+        newValue = QVariant::fromValue(newFont);
         item->setData(role, QVariant()); // force the right font with the current resolve mask is set (item view bug)
     }
     item->setData(role, newValue);
@@ -179,10 +179,10 @@ void TableWidgetEditor::on_tableWidget_itemChanged(QTableWidgetItem *item)
     if (m_updatingBrowser)
         return;
 
-    PropertySheetStringValue val = qVariantValue<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
+    PropertySheetStringValue val = qvariant_cast<PropertySheetStringValue>(item->data(Qt::DisplayPropertyRole));
     val.setValue(item->text());
     BoolBlocker block(m_updatingBrowser);
-    item->setData(Qt::DisplayPropertyRole, qVariantFromValue(val));
+    item->setData(Qt::DisplayPropertyRole, QVariant::fromValue(val));
 
     updateBrowser();
 }
@@ -317,7 +317,7 @@ void TableWidgetEditor::on_columnEditor_itemInserted(int idx)
     ui.tableWidget->setColumnCount(columnCount + 1);
 
     QTableWidgetItem *newItem = new QTableWidgetItem(m_columnEditor->newItemText());
-    newItem->setData(Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(m_columnEditor->newItemText())));
+    newItem->setData(Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(m_columnEditor->newItemText())));
     ui.tableWidget->setHorizontalHeaderItem(columnCount, newItem);
 
     moveColumnsLeft(idx, columnCount);
@@ -359,7 +359,7 @@ void TableWidgetEditor::on_rowEditor_itemInserted(int idx)
     ui.tableWidget->setRowCount(rowCount + 1);
 
     QTableWidgetItem *newItem = new QTableWidgetItem(m_rowEditor->newItemText());
-    newItem->setData(Qt::DisplayPropertyRole, qVariantFromValue(PropertySheetStringValue(m_rowEditor->newItemText())));
+    newItem->setData(Qt::DisplayPropertyRole, QVariant::fromValue(PropertySheetStringValue(m_rowEditor->newItemText())));
     ui.tableWidget->setVerticalHeaderItem(rowCount, newItem);
 
     moveRowsDown(idx, rowCount);

@@ -148,6 +148,7 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor);
 // These methods exists only for supporting unified mode.
 void macDrawRectOnTop(void * /*OSWindowRef */ window);
 void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window);
+void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *widget);
 #endif
 void qt_mac_menu_collapseSeparators(void * /*NSMenu */ menu, bool collapse);
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);

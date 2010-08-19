@@ -856,7 +856,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
                     uint tl = fetch(s1, x1, data->texture.colorTable);
                     uint tr = fetch(s1, x2, data->texture.colorTable);
                     uint bl = fetch(s2, x1, data->texture.colorTable);
@@ -883,7 +883,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
                     uint tl = fetch(s1, x1, data->texture.colorTable);
                     uint tr = fetch(s1, x2, data->texture.colorTable);
                     uint bl = fetch(s2, x1, data->texture.colorTable);
@@ -7938,8 +7938,10 @@ void qInitDrawhelperAsm()
                                                   uint const_alpha);
             extern void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, uint color, uint const_alpha);
             extern void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha);
+            extern void QT_FASTCALL comp_func_Source_sse2(uint *dst, const uint *src, int length, uint const_alpha);
 
             functionForModeAsm[0] = comp_func_SourceOver_sse2;
+            functionForModeAsm[QPainter::CompositionMode_Source] = comp_func_Source_sse2;
             functionForModeAsm[QPainter::CompositionMode_Plus] = comp_func_Plus_sse2;
             functionForModeSolidAsm[0] = comp_func_solid_SourceOver_sse2;
 

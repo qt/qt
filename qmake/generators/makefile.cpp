@@ -2712,7 +2712,7 @@ MakefileGenerator::fileInfo(QString file) const
     static QFileInfo noInfo = QFileInfo();
     if(!cache) {
         cache = new QHash<FileInfoCacheKey, QFileInfo>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFileInfoCacheKeyQFileInfo, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileInfoCacheKey, QFileInfo> >, (void**)&cache);
     }
     FileInfoCacheKey cacheKey(file);
     QFileInfo value = cache->value(cacheKey, noInfo);
@@ -2791,7 +2791,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
     static QHash<FileFixifyCacheKey, QString> *cache = 0;
     if(!cache) {
         cache = new QHash<FileFixifyCacheKey, QString>;
-        qmakeAddCacheClear(qmakeDeleteCacheClear_QHashFileFixifyCacheKeyQString, (void**)&cache);
+        qmakeAddCacheClear(qmakeDeleteCacheClear<QHash<FileFixifyCacheKey, QString> >, (void**)&cache);
     }
     FileFixifyCacheKey cacheKey(ret, out_d, in_d, fix, canon);
     QString cacheVal = cache->value(cacheKey);

@@ -105,6 +105,7 @@ static bool showInternal = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
+static QString appArg; // application
 
 /*!
   Find the Tree for language \a lang and return a pointer to it.
@@ -190,6 +191,24 @@ static void processQdocconfFile(const QString &fileName)
      */
     Location::initialize(config);
     config.load(fileName);
+
+    /*
+      Set the application to which qdoc will create the output.
+      The two applications are:
+
+      creator: additional formatting for viewing in
+      the Creator application.
+
+      online: full-featured online version with search and
+      links to Qt topics
+    */
+    if (appArg.isEmpty()) {
+        qDebug() << "Warning: Application flag not specified on"
+                 << "command line. Options are -creator (default)"
+                 << "and -online.";
+        appArg = "creator";
+    }
+    config.setStringList(CONFIG_APPLICATION, QStringList(appArg));
 
     /*
       Add the defines to the configuration variables.
@@ -462,12 +481,16 @@ int main(int argc, char **argv)
         else if (opt == "-obsoletelinks") {
             obsoleteLinks = true;
         }
+	else if (opt == "-creator")
+		appArg = "creator";
+	else if (opt == "-online")
+		appArg = "online";
         else {
 	    qdocFiles.append(opt);
 	}
     }
 
-    if (qdocFiles.isEmpty()) {
+	if (qdocFiles.isEmpty()) {
         printHelp();
         return EXIT_FAILURE;
     }
@@ -475,8 +498,10 @@ int main(int argc, char **argv)
     /*
       Main loop.
      */
-    foreach (QString qf, qdocFiles)
+    foreach (QString qf, qdocFiles) {
+        //qDebug() << "PROCESSING:" << qf;
 	processQdocconfFile(qf);
+    }
 
     qDeleteAll(trees);
     return EXIT_SUCCESS;

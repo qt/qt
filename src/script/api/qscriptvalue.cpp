@@ -688,10 +688,6 @@ static bool LessThan(QScriptValue lhs, QScriptValue rhs)
             return false;
 
         case Number:
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-            if (qIsNaN(lhs.toNumber()) || qIsNaN(rhs.toNumber()))
-                return false;
-#endif
             return lhs.toNumber() < rhs.toNumber();
 
         case Boolean:
@@ -714,13 +710,7 @@ static bool LessThan(QScriptValue lhs, QScriptValue rhs)
     if (lhs.isString() && rhs.isString())
         return lhs.toString() < rhs.toString();
 
-    qsreal n1 = lhs.toNumber();
-    qsreal n2 = rhs.toNumber();
-#if defined Q_CC_MSVC && !defined Q_CC_MSVC_NET
-    if (qIsNaN(n1) || qIsNaN(n2))
-        return false;
-#endif
-    return n1 < n2;
+    return lhs.toNumber() < rhs.toNumber();
 }
 
 static bool Equals(QScriptValue lhs, QScriptValue rhs)

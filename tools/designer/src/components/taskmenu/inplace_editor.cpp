@@ -106,7 +106,7 @@ void TaskMenuInlineEditor::editText()
     const int index = sheet->indexOf(m_property);
     if (index == -1)
         return;
-    m_value = qVariantValue<PropertySheetStringValue>(sheet->property(index));
+    m_value = qvariant_cast<PropertySheetStringValue>(sheet->property(index));
     const QString oldValue = m_value.value();
 
     m_editor = new InPlaceEditor(m_widget, m_vm, m_formWindow, oldValue, editRectangle());
@@ -119,9 +119,9 @@ void TaskMenuInlineEditor::updateText(const QString &text)
     // do not use the cursor selection
     m_value.setValue(text);
     if (m_managed) {
-        m_formWindow->cursor()->setProperty(m_property, qVariantFromValue(m_value));
+        m_formWindow->cursor()->setProperty(m_property, QVariant::fromValue(m_value));
     } else {
-        m_formWindow->cursor()->setWidgetProperty(m_widget, m_property, qVariantFromValue(m_value));
+        m_formWindow->cursor()->setWidgetProperty(m_widget, m_property, QVariant::fromValue(m_value));
     }
 }
 

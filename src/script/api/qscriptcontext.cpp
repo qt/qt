@@ -324,7 +324,7 @@ QScriptValue QScriptContext::argumentsObject() const
   When a function is called as constructor, the thisObject()
   contains the newly constructed object to be initialized.
 
-  \note This function is only guarenteed to work for a context
+  \note This function is only guaranteed to work for a context
   corresponding to native functions.
 */
 bool QScriptContext::isCalledAsConstructor() const

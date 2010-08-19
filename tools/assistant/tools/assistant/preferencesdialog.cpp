@@ -421,13 +421,13 @@ void PreferencesDialog::updateFontSettingsPage()
     connect(m_browserFontPanel, SIGNAL(toggled(bool)), this,
         SLOT(browserFontSettingToggled(bool)));
 
-    QList<QComboBox*> allCombos = qFindChildren<QComboBox*>(m_appFontPanel);
+    QList<QComboBox*> allCombos = m_appFontPanel->findChildren<QComboBox*>();
     foreach (QComboBox* box, allCombos) {
         connect(box, SIGNAL(currentIndexChanged(int)), this,
             SLOT(appFontSettingChanged(int)));
     }
 
-    allCombos = qFindChildren<QComboBox*>(m_browserFontPanel);
+    allCombos = m_browserFontPanel->findChildren<QComboBox*>();
     foreach (QComboBox* box, allCombos) {
         connect(box, SIGNAL(currentIndexChanged(int)), this,
             SLOT(browserFontSettingChanged(int)));

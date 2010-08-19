@@ -232,7 +232,7 @@ void ToolBar::updateMenu()
 void ToolBar::order()
 {
     QList<QAction *> ordered, actions1 = actions(),
-                              actions2 = qFindChildren<QAction *>(this);
+                              actions2 = findChildren<QAction *>();
     while (!actions2.isEmpty()) {
         QAction *action = actions2.takeFirst();
         if (!actions1.contains(action))

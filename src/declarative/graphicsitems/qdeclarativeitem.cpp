@@ -1432,11 +1432,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 */
 
 /*!
-    \fn void QDeclarativeItem::childrenChanged()
-    \internal
-*/
-
-/*!
     \fn void QDeclarativeItem::focusChanged(bool)
     \internal
 */
@@ -2411,18 +2406,7 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     Q_Q(QDeclarativeItem);
     if (!(flags & QGraphicsItem::ItemIsFocusScope) && parent)
         emit q->activeFocusChanged(flag);   //see also QDeclarativeItemPrivate::subFocusItemChange()
-
-    bool inScope = false;
-    QGraphicsItem *p = parent;
-    while (p) {
-        if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-            inScope = true;
-            break;
-        }
-        p = p->parentItem();
-    }
-    if (!inScope)
-        emit q->focusChanged(flag);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
@@ -2470,7 +2454,7 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
   }
   \endqml
 
-  \sa {state-transitions}{Transitions}
+  \sa {qdeclarativeanimation.html#transitions}{QML Transitions}
 */
 
 
@@ -2516,7 +2500,9 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   This property holds whether clipping is enabled.
 
   if clipping is enabled, an item will clip its own painting, as well
-  as the painting of its children, to its bounding rectangle.
+  as the painting of its children, to its bounding rectangle. If you set
+  clipping during an item's paint operation, remember to re-set it to 
+  prevent clipping the rest of your scene.
 
   Non-rectangular clipping regions are not supported for performance reasons.
 */
@@ -2740,12 +2726,12 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
         }
         break;
     case ItemChildAddedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childAdded(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
     case ItemChildRemovedChange:
-        if (d->_contents)
+        if (d->_contents && d->componentComplete)
             d->_contents->childRemoved(qobject_cast<QDeclarativeItem*>(
                     value.value<QGraphicsItem*>()));
         break;
@@ -2855,6 +2841,41 @@ void QDeclarativeItem::setSmooth(bool smooth)
 }
 
 /*!
+  \property QDeclarativeItem::anchors
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::left
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::right
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::horizontalCenter
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::top
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::bottom
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::verticalCenter
+  \internal
+*/
+
+/*!
   \property QDeclarativeItem::focus
   \internal
 */
@@ -2871,6 +2892,41 @@ void QDeclarativeItem::setSmooth(bool smooth)
 
 /*!
   \property QDeclarativeItem::activeFocus
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::baseline
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::data
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::resources
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::state
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::states
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transformOriginPoint
+  \internal
+*/
+
+/*!
+  \property QDeclarativeItem::transitions
   \internal
 */
 
@@ -3142,8 +3198,7 @@ bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
     return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0) ||
-           (!parentItem() && focusItem() != 0);
+           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
 }
 
 /*!
@@ -3163,10 +3218,8 @@ bool QDeclarativeItem::hasActiveFocus() const
   }
   \endqml
 
-  For the purposes of this property, the top level item in the scene
-  is assumed to act like a focus scope, and to always have active focus
-  when the scene has focus. On a practical level, that means the following
-  QML will give active focus to \c input on startup.
+  For the purposes of this property, the scene as a whole is assumed to act like a focus scope.
+  On a practical level, that means the following QML will give active focus to \c input on startup.
 
   \qml
   Rectangle {
@@ -3192,7 +3245,7 @@ bool QDeclarativeItem::hasFocus() const
         p = p->parentItem();
     }
 
-    return hasActiveFocus() ? true : (!QGraphicsItem::parentItem() ? true : false);
+    return hasActiveFocus();
 }
 
 /*! \internal */

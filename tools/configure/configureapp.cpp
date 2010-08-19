@@ -988,7 +988,6 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
             dictionary[ "QT_NAMESPACE" ] = configCmdLine.at(i);
         } else if (configCmdLine.at(i) == "-qtlibinfix") {
             ++i;
@@ -1029,6 +1028,10 @@ void Configure::parseCmdLine()
             opensslLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
+            sybase = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
+            sybaseLibs = configCmdLine.at(i);
         }
 
         else if ((configCmdLine.at(i) == "-override-version") || (configCmdLine.at(i) == "-version-override")){
@@ -1157,6 +1160,13 @@ void Configure::parseCmdLine()
                 || system == QLatin1String("openvg")
                 || system == QLatin1String("runtime"))
                 dictionary["GRAPHICS_SYSTEM"] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-runtimegraphicssystem") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary["RUNTIME_SYSTEM"] = configCmdLine.at(i);
         }
 
         else if (configCmdLine.at(i).indexOf(QRegExp("^-(en|dis)able-")) != -1) {
@@ -1624,7 +1634,7 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg|runtime]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1729,9 +1739,7 @@ bool Configure::displayHelp()
                                 "Available values for <sys>:");
         desc("GRAPHICS_SYSTEM", "raster", "",  "  raster - Software rasterizer", ' ');
         desc("GRAPHICS_SYSTEM", "opengl", "",  "  opengl - Using OpenGL acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!", ' ');
-        desc("GRAPHICS_SYSTEM", "runtime", "", "  runtime - Runtime switching of graphics sytems", ' ');
-
+        desc("GRAPHICS_SYSTEM", "openvg", "",  "  openvg - Using OpenVG acceleration, experimental!\n", ' ');
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
@@ -2098,12 +2106,7 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "INCREDIBUILD_XGE")
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
     else if (part == "XMLPATTERNS")
-    {
-        /* MSVC 6.0 and MSVC 2002/7.0 has too poor C++ support for QtXmlPatterns. */
-        return dictionary.value("QMAKESPEC") != "win32-msvc"
-               && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
-               && dictionary.value("QMAKESPEC") != "win32-msvc2002"
-               && dictionary.value("EXCEPTIONS") == "yes";
+        available = dictionary.value("EXCEPTIONS") == "yes";
     } else if (part == "PHONON") {
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             available = true;
@@ -2767,6 +2770,17 @@ void Configure::generateOutputVars()
         }
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
+
+    {
+        QStringList lflagsTDS;
+        if (!sybase.isEmpty())
+            lflagsTDS += QString("-L") + fixSeparators(sybase.section("=", 1) + "/lib");
+        if (!sybaseLibs.isEmpty())
+            lflagsTDS += sybaseLibs.section("=", 1);
+        if (!lflagsTDS.isEmpty())
+            qmakeVars += QString("QT_LFLAGS_TDS=") + lflagsTDS.join(" ");
+    }
+
     if (!qmakeSql.isEmpty())
         qmakeVars += QString("sql-drivers    += ") + qmakeSql.join(" ");
     if (!qmakeSqlPlugins.isEmpty())
@@ -2945,8 +2959,6 @@ void Configure::generateCachefile()
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
 
-        configStream << "#modules" << endl << "for(mod,$$list($$files($$[QMAKE_MKSPECS]/modules/qt_*.pri))):include($$mod)" << endl;
-
         configStream.flush();
         configFile.close();
     }
@@ -3045,6 +3057,9 @@ void Configure::generateConfigfiles()
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
+        if (dictionary["GRAPHICS_SYSTEM"] == "runtime" && dictionary["RUNTIME_SYSTEM"] != "runtime")
+            tmpStream << "#define QT_DEFAULT_RUNTIME_SYSTEM \"" << dictionary["RUNTIME_SYSTEM"] << "\"" << endl;
+
         QStringList qconfigList;
         if (dictionary["STL"] == "no")                qconfigList += "QT_NO_STL";
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";

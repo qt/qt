@@ -75,10 +75,6 @@
 #  define FM_DEBUG if (false) qDebug
 #endif
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-#  define for if(0){}else for
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #define SMOOTH_SCALABLE 0xffff

@@ -1746,11 +1746,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 11
 
-    \warning This function is not available with MSVC 6. Use
-    qFindChild() instead if you need to support that version of the
-    compiler.
-
-    \sa findChildren(), qFindChild()
+    \sa findChildren()
 */
 
 /*!
@@ -1770,11 +1766,7 @@ QObjectList QObject::queryList(const char *inheritsClass,
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 13
 
-    \warning This function is not available with MSVC 6. Use
-    qFindChildren() instead if you need to support that version of the
-    compiler.
-
-    \sa findChild(), qFindChildren()
+    \sa findChild()
 */
 
 /*!
@@ -1785,20 +1777,19 @@ QObjectList QObject::queryList(const char *inheritsClass,
     and that have names matching the regular expression \a regExp,
     or an empty list if there are no such objects.
     The search is performed recursively.
-
-    \warning This function is not available with MSVC 6. Use
-    qFindChildren() instead if you need to support that version of the
-    compiler.
 */
 
 /*!
     \fn T qFindChild(const QObject *obj, const QString &name)
     \relates QObject
+    \obsolete
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChild()
 */
@@ -1806,11 +1797,14 @@ QObjectList QObject::queryList(const char *inheritsClass,
 /*!
     \fn QList<T> qFindChildren(const QObject *obj, const QString &name)
     \relates QObject
+    \obsolete
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChildren()
 */
@@ -1821,9 +1815,13 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a regExp).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
+
+    \sa QObject::findChildren()
 */
 
 /*!
@@ -1833,9 +1831,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChild()}{findChild}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChild()
 */
@@ -1847,9 +1847,11 @@ QObjectList QObject::queryList(const char *inheritsClass,
     \overload qFindChildren()
 
     This function is equivalent to
-    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name). It is
-    provided as a work-around for MSVC 6, which doesn't support
-    member template functions.
+    \a{obj}->\l{QObject::findChildren()}{findChildren}<T>(\a name).
+
+    \note This function was provided as a workaround for MSVC 6
+    which did not support member template functions. It is advised
+    to use the other form in new code.
 
     \sa QObject::findChildren()
 */
@@ -2285,7 +2287,7 @@ static void err_info_about_objects(const char * func,
     a thread different from this object's thread. Do not use this
     function in this type of scenario.
 
-    \sa QSignalMapper
+    \sa senderSignalIndex(), QSignalMapper
 */
 
 QObject *QObject::sender() const
@@ -2296,13 +2298,53 @@ QObject *QObject::sender() const
     if (!d->currentSender)
         return 0;
 
-    // Return 0 if d->currentSender isn't in d->senders
-    bool found = false;
-    for (QObjectPrivate::Connection *c = d->senders; c && !found; c = c->next)
-        found = (c->sender == d->currentSender->sender);
-    if (!found)
-        return 0;
-    return d->currentSender->sender;
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender)
+            return d->currentSender->sender;
+    }
+
+    return 0;
+}
+
+/*!
+    \since 4.8
+
+    Returns the meta-method index of the signal that called the currently
+    executing slot, which is a member of the class returned by sender().
+    If called outside of a slot activated by a signal, -1 is returned.
+
+    For signals with default parameters, this function will always return
+    the index with all parameters, regardless of which was used with
+    connect(). For example, the signal \c {destroyed(QObject *obj = 0)}
+    will have two different indexes (with and without the parameter), but
+    this function will always return the index with a parameter. This does
+    not apply when overloading signals with different parameters.
+
+    \warning This function violates the object-oriented principle of
+    modularity. However, getting access to the signal index might be useful
+    when many signals are connected to a single slot.
+
+    \warning The return value of this function is not valid when the slot
+    is called via a Qt::DirectConnection from a thread different from this
+    object's thread. Do not use this function in this type of scenario.
+
+    \sa sender(), QMetaObject::indexOfSignal(), QMetaObject::method()
+*/
+
+int QObject::senderSignalIndex() const
+{
+    Q_D(const QObject);
+
+    QMutexLocker locker(signalSlotLock(this));
+    if (!d->currentSender)
+        return -1;
+
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender)
+            return d->currentSender->signal;
+    }
+
+    return -1;
 }
 
 /*!
@@ -3312,7 +3354,7 @@ void QMetaObject::connectSlotsByName(QObject *o)
         return;
     const QMetaObject *mo = o->metaObject();
     Q_ASSERT(mo);
-    const QObjectList list = qFindChildren<QObject *>(o, QString());
+    const QObjectList list = o->findChildren<QObject *>(QString());
     for (int i = 0; i < mo->methodCount(); ++i) {
         const char *slot = mo->method(i).signature();
         Q_ASSERT(slot);

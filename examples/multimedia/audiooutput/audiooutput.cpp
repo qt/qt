@@ -176,7 +176,7 @@ void AudioTest::initializeWindow()
 
     m_deviceBox = new QComboBox(this);
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
-        m_deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
+        m_deviceBox->addItem(deviceInfo.deviceName(), QVariant::fromValue(deviceInfo));
     connect(m_deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(m_deviceBox);
 

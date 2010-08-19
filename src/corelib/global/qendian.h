@@ -89,7 +89,7 @@ template <typename T> inline void qToUnaligned(const T src, uchar *dest)
  * and return the value in host-endian encoding.
  * There is no requirement that \a src must be aligned.
 */
-#if defined Q_CC_MSVC && _MSC_VER < 1300 || defined Q_CC_SUN
+#if defined Q_CC_SUN
 inline quint64 qFromLittleEndian_helper(const uchar *src, quint64 *dest)
 {
     return 0
@@ -177,7 +177,7 @@ template <> inline qint16 qFromLittleEndian<qint16>(const uchar *src)
  * and return the value in host-endian encoding.
  * There is no requirement that \a src must be aligned.
 */
-#if defined Q_CC_MSVC && _MSC_VER < 1300 || defined Q_CC_SUN
+#if defined Q_CC_SUN
 inline quint64 qFromBigEndian_helper(const uchar *src, quint64 *dest)
 {
     return 0

@@ -3447,27 +3447,16 @@ void tst_Collections::containerTypedefs()
     testSetContainerTypedefs(QSet<int>());
 }
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-class Key1
-{};
-class T1
-{};
-class T2
-{};
-#else
 class Key1;
 class T1;
 class T2;
-#endif
 
 void tst_Collections::forwardDeclared()
 {
     { typedef QHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QMultiHash<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-#if !defined(Q_CC_MSVC_NET) || _MSC_VER >= 1310
     { typedef QMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
-#endif
 #if !defined(Q_CC_RVCT)
     // RVCT can't handle forward declared template parameters if those are used to declare
     // class members inside templated class.

@@ -67,10 +67,14 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
     bool isOpaque = qt_widget_private(widget)->isOpaque;
-    if (mode == EColor16MA && isOpaque)
-        mode = EColor16MU; // Faster since 16MU -> 16MA is typically accelerated
-    else if (mode == EColor16MU && !isOpaque)
-        mode = EColor16MA; // Try for transparency anyway
+    if (isOpaque) {
+        mode = EColor16MU;
+    } else  {
+        if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_3)
+            mode = Q_SYMBIAN_ECOLOR16MAP; // Symbian^3 WServ has support for ARGB32_PRE
+        else
+            mode = EColor16MA; // Symbian prior to Symbian^3 sw accelerates EColor16MA
+    }
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
     CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new

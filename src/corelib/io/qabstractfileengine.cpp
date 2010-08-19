@@ -41,12 +41,16 @@
 
 #include "qabstractfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#ifdef QT_BUILD_CORE_LIB
+#include "private/qresource_p.h"
+#endif
 #include "qdatetime.h"
 #include "qreadwritelock.h"
 #include "qvariant.h"
 // built-in handlers
 #include "qfsfileengine.h"
 #include "qdiriterator.h"
+#include "qstringbuilder.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -94,6 +98,8 @@ QT_BEGIN_NAMESPACE
     \sa QAbstractFileEngine, QAbstractFileEngine::create()
 */
 
+static bool qt_file_engine_handlers_in_use = false;
+
 /*
     All application-wide handlers are stored in this list. The mutex must be
     acquired to ensure thread safety.
@@ -123,6 +129,7 @@ Q_GLOBAL_STATIC(QAbstractFileEngineHandlerList, fileEngineHandlers)
 QAbstractFileEngineHandler::QAbstractFileEngineHandler()
 {
     QWriteLocker locker(fileEngineHandlerMutex());
+    qt_file_engine_handlers_in_use = true;
     fileEngineHandlers()->prepend(this);
 }
 
@@ -134,8 +141,12 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 {
     QWriteLocker locker(fileEngineHandlerMutex());
     // Remove this handler from the handler list only if the list is valid.
-    if (!qt_abstractfileenginehandlerlist_shutDown)
-        fileEngineHandlers()->removeAll(this);
+    if (!qt_abstractfileenginehandlerlist_shutDown) {
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        handlers->removeOne(this);
+        if (handlers->isEmpty())
+            qt_file_engine_handlers_in_use = false;
+    }
 }
 
 /*!
@@ -166,33 +177,48 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 */
 QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 {
-    {
+    if (qt_file_engine_handlers_in_use) {
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file
-        for (int i = 0; i < fileEngineHandlers()->size(); i++) {
-            if (QAbstractFileEngine *ret = fileEngineHandlers()->at(i)->create(fileName))
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        for (int i = 0; i < handlers->size(); i++) {
+            if (QAbstractFileEngine *ret = handlers->at(i)->create(fileName))
                 return ret;
         }
     }
 
 #ifdef QT_BUILD_CORE_LIB
-    if (!fileName.startsWith(QLatin1Char('/'))) {
-        int prefixSeparator = fileName.indexOf(QLatin1Char(':'));
-        if (prefixSeparator > 1) {
-            QString prefix = fileName.left(prefixSeparator);
-            QString fileNameWithoutPrefix = fileName.mid(prefixSeparator + 1).prepend(QLatin1Char('/'));
-            const QStringList &paths = QDir::searchPaths(prefix);
+    for (int prefixSeparator = 0; prefixSeparator < fileName.size(); ++prefixSeparator) {
+        QChar const ch = fileName[prefixSeparator];
+        if (ch == QLatin1Char('/'))
+            break;
+
+        if (ch == QLatin1Char(':')) {
+            if (prefixSeparator == 0)
+                return new QResourceFileEngine(fileName);
+
+            if (prefixSeparator == 1)
+                break;
+
+            const QStringList &paths = QDir::searchPaths(fileName.left(prefixSeparator));
             for (int i = 0; i < paths.count(); i++) {
-                QString path = paths.at(i);
-                path.append(fileNameWithoutPrefix);
-                QAbstractFileEngine *engine = create(path);
+                QAbstractFileEngine *engine = create(paths.at(i) % QLatin1Char('/') % fileName.mid(prefixSeparator + 1));
                 if (engine && (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
                     return engine;
                 }
                 delete engine;
             }
+
+            break;
         }
+
+        //  There's no need to fully validate the prefix here. Consulting the
+        //  unicode tables could be expensive and validation is already
+        //  performed in QDir::setSearchPaths.
+        //
+        //  if (!ch.isLetterOrNumber())
+        //      break;
     }
 #endif
 

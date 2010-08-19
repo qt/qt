@@ -336,11 +336,7 @@ inline char qToLower(char ch)
         return ch;
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300
-const QString::Null QString::null;
-#else
 const QString::Null QString::null = { };
-#endif
 
 /*!
   \macro QT_NO_CAST_FROM_ASCII
@@ -6670,8 +6666,9 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillCha
     QString locale_arg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
-        locale_arg = locale.d()->longLongToString(a, -1, base, fieldWidth,
-                                                  flags | QLocalePrivate::ThousandsGroup);
+        if (!locale.numberOptions() & QLocale::OmitGroupSeparator)
+            flags |= QLocalePrivate::ThousandsGroup;
+        locale_arg = locale.d()->longLongToString(a, -1, base, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
@@ -6713,8 +6710,9 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
     QString locale_arg;
     if (d.locale_occurrences > 0) {
         QLocale locale;
-        locale_arg = locale.d()->unsLongLongToString(a, -1, base, fieldWidth,
-                                                     flags | QLocalePrivate::ThousandsGroup);
+        if (!locale.numberOptions() & QLocale::OmitGroupSeparator)
+            flags |= QLocalePrivate::ThousandsGroup;
+        locale_arg = locale.d()->unsLongLongToString(a, -1, base, fieldWidth, flags);
     }
 
     return replaceArgEscapes(*this, d, fieldWidth, arg, locale_arg, fillChar);
@@ -6847,7 +6845,8 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, const QChar &
     if (d.locale_occurrences > 0) {
         QLocale locale;
 
-        flags |= QLocalePrivate::ThousandsGroup;
+        if (!locale.numberOptions() & QLocale::OmitGroupSeparator)
+            flags |= QLocalePrivate::ThousandsGroup;
         locale_arg = locale.d()->doubleToString(a, prec, form, fieldWidth, flags);
     }
 

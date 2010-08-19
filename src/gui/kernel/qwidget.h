@@ -913,13 +913,6 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWidget::RenderFlags)
 
-#if defined Q_CC_MSVC && _MSC_VER < 1300
-template <> inline QWidget *qobject_cast_helper<QWidget*>(QObject *o, QWidget *)
-{
-    if (!o || !o->isWidgetType()) return 0;
-    return (QWidget*)(o);
-}
-#else
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
     if (!o || !o->isWidgetType()) return 0;
@@ -930,7 +923,6 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
     if (!o || !o->isWidgetType()) return 0;
     return static_cast<const QWidget*>(o);
 }
-#endif
 
 inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }

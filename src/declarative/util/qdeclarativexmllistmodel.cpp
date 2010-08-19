@@ -560,7 +560,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     ListView {
         width: 180; height: 300
         model: xmlModel
-        delegate: Text { text: title + " (" + pubDate + ")" }
+        delegate: Text { text: title + ": " + pubDate }
     }
     \endqml
 
@@ -809,7 +809,7 @@ QScriptValue QDeclarativeXmlListModel::get(int index) const
 
     QScriptValue sv = sengine->newObject();
     for (int i=0; i<d->roleObjects.count(); i++) 
-        sv.setProperty(d->roleObjects[i]->name(), qScriptValueFromValue(sengine, d->data.value(i).value(index)));
+        sv.setProperty(d->roleObjects[i]->name(), sengine->toScriptValue(d->data.value(i).value(index)));
     return sv;    
 }
 
@@ -855,6 +855,12 @@ qreal QDeclarativeXmlListModel::progress() const
     return d->progress;
 }
 
+/*!
+    \qmlmethod void XmlListModel::errorString()
+
+    Returns a string description of the last error that occurred
+    if \l status is XmlListModel::Error.
+*/
 QString QDeclarativeXmlListModel::errorString() const
 {
     Q_D(const QDeclarativeXmlListModel);

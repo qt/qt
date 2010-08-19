@@ -188,11 +188,11 @@ QVariant QDBusDemarshaller::toVariantInternal()
 {
     switch (q_dbus_message_iter_get_arg_type(&iterator)) {
     case DBUS_TYPE_BYTE:
-        return qVariantFromValue(toByte());
+        return QVariant::fromValue(toByte());
     case DBUS_TYPE_INT16:
-	return qVariantFromValue(toShort());
+	return QVariant::fromValue(toShort());
     case DBUS_TYPE_UINT16:
-	return qVariantFromValue(toUShort());
+	return QVariant::fromValue(toUShort());
     case DBUS_TYPE_INT32:
         return toInt();
     case DBUS_TYPE_UINT32:
@@ -208,11 +208,11 @@ QVariant QDBusDemarshaller::toVariantInternal()
     case DBUS_TYPE_STRING:
         return toString();
     case DBUS_TYPE_OBJECT_PATH:
-        return qVariantFromValue(toObjectPath());
+        return QVariant::fromValue(toObjectPath());
     case DBUS_TYPE_SIGNATURE:
-        return qVariantFromValue(toSignature());
+        return QVariant::fromValue(toSignature());
     case DBUS_TYPE_VARIANT:
-        return qVariantFromValue(toVariant());
+        return QVariant::fromValue(toVariant());
 
     case DBUS_TYPE_ARRAY:
         switch (q_dbus_message_iter_get_element_type(&iterator)) {
@@ -222,14 +222,14 @@ QVariant QDBusDemarshaller::toVariantInternal()
         case DBUS_TYPE_STRING:
             return toStringList();
         case DBUS_TYPE_DICT_ENTRY:
-            return qVariantFromValue(duplicate());
+            return QVariant::fromValue(duplicate());
 
         default:
-            return qVariantFromValue(duplicate());
+            return QVariant::fromValue(duplicate());
         }
 
     case DBUS_TYPE_STRUCT:
-        return qVariantFromValue(duplicate());
+        return QVariant::fromValue(duplicate());
 
     default:
         qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",

@@ -319,7 +319,7 @@ QWidget *QFormBuilder::widgetByName(QWidget *topLevel, const QString &name)
     if (topLevel->objectName() == name)
         return topLevel;
 
-    return qFindChild<QWidget*>(topLevel, name);
+    return topLevel->findChild<QWidget*>(name);
 }
 
 static QObject *objectByName(QWidget *topLevel, const QString &name)
@@ -328,7 +328,7 @@ static QObject *objectByName(QWidget *topLevel, const QString &name)
     if (topLevel->objectName() == name)
         return topLevel;
 
-    return qFindChild<QObject*>(topLevel, name);
+    return topLevel->findChild<QObject*>(name);
 }
 
 /*!

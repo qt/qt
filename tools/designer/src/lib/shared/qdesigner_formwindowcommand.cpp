@@ -115,7 +115,7 @@ void QDesignerFormWindowCommand::updateBuddies(QDesignerFormWindowInterface *for
 
     typedef QList<QLabel*> LabelList;
 
-    const LabelList label_list = qFindChildren<QLabel*>(form);
+    const LabelList label_list = form->findChildren<QLabel*>();
     if (label_list.empty())
         return;
 

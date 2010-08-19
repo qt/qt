@@ -151,8 +151,8 @@ QT_BEGIN_NAMESPACE
   \endcode
 
   \note For the current release, XSLT support should be considered
-        experimental. See section \l{Using XML technologies#XSLT
-        2.0}{XSLT conformance} for details.
+  experimental. See section \l{XQuery#XSLT 2.0} {XSLT conformance} for
+  details.
 
   Stylesheet parameters are bound using bindVariable().
 
@@ -291,8 +291,7 @@ QXmlQuery::QXmlQuery(const QXmlNamePool &np) : d(new QXmlQueryPrivate(np))
   create instances of QXmlQuery for running XQueries.
 
   \note The XSL-T support in this release is considered experimental.
-  See the \l{Using XML technologies#XSLT 2.0}{XSLT conformance} for
-  details.
+  See the \l{XQuery#XSLT 2.0} {XSLT conformance} for details.
 
  \since 4.5
  \sa queryLanguage()
@@ -535,7 +534,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, const QXmlItem &value)
     }
 
     const QPatternist::VariableLoader::Ptr vl(d->variableLoader());
-    const QVariant variant(qVariantFromValue(value));
+    const QVariant variant(QVariant::fromValue(value));
 
     /* If the type of the variable changed(as opposed to only the value),
      * we will have to recompile. */
@@ -611,7 +610,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, QIODevice *device)
 
     if(device)
     {
-        const QVariant variant(qVariantFromValue(device));
+        const QVariant variant(QVariant::fromValue(device));
 
         if(vl->invalidationRequired(name, variant))
             d->recompileRequired();
@@ -1185,7 +1184,7 @@ void QXmlQuery::bindVariable(const QXmlName &name, const QXmlQuery &query)
     Q_ASSERT_X(query.isValid(), Q_FUNC_INFO, "The query being bound must be valid.");
 
     const QPatternist::VariableLoader::Ptr vl(d->variableLoader());
-    const QVariant variant(qVariantFromValue(query));
+    const QVariant variant(QVariant::fromValue(query));
 
     if(vl->invalidationRequired(name, variant))
         d->recompileRequired();

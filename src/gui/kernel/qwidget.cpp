@@ -6552,7 +6552,7 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         // that can take keyboard focus so that second is inserted after
         // that last child, and the focus order within first is (more
         // likely to be) preserved.
-        QList<QWidget *> l = qFindChildren<QWidget *>(first);
+        QList<QWidget *> l = first->findChildren<QWidget *>();
         for (int i = l.size()-1; i >= 0; --i) {
             QWidget * next = l.at(i);
             if (next->window() == fp->window()) {

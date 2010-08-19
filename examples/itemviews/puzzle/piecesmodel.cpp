@@ -124,7 +124,7 @@ QMimeData *PiecesModel::mimeData(const QModelIndexList &indexes) const
 
     foreach (QModelIndex index, indexes) {
         if (index.isValid()) {
-            QPixmap pixmap = qVariantValue<QPixmap>(data(index, Qt::UserRole));
+            QPixmap pixmap = qvariant_cast<QPixmap>(data(index, Qt::UserRole));
             QPoint location = data(index, Qt::UserRole+1).toPoint();
             stream << pixmap << location;
         }

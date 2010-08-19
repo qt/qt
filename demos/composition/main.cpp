@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     QStyle *arthurStyle = new ArthurStyle();
     compWidget.setStyle(arthurStyle);
 
-    QList<QWidget *> widgets = qFindChildren<QWidget *>(&compWidget);
+    QList<QWidget *> widgets = compWidget.findChildren<QWidget *>();
     foreach (QWidget *w, widgets)
         w->setStyle(arthurStyle);
     compWidget.show();

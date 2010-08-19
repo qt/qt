@@ -589,6 +589,18 @@ void QGraphicsGridLayout::removeAt(int index)
 }
 
 /*!
+    Removes the layout item \a item without destroying it.
+    Ownership of the item is transferred to the caller.
+
+    \sa addItem()
+*/
+void QGraphicsGridLayout::removeItem(QGraphicsLayoutItem *item)
+{
+    Q_D(QGraphicsGridLayout);
+    int index = d->engine.indexOf(item);
+    removeAt(index);
+}
+/*!
     \reimp
 */
 void QGraphicsGridLayout::invalidate()
@@ -641,7 +653,8 @@ QSizeF QGraphicsGridLayout::sizeHint(Qt::SizeHint which, const QSizeF &constrain
     Q_D(const QGraphicsGridLayout);
     qreal left, top, right, bottom;
     getContentsMargins(&left, &top, &right, &bottom);
-    return d->engine.sizeHint(d->styleInfo(), which , constraint) + QSizeF(left + right, top + bottom);
+    const QSizeF extraMargins(left + right, top + bottom);
+    return d->engine.sizeHint(d->styleInfo(), which , constraint - extraMargins) + extraMargins;
 }
 
 

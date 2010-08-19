@@ -104,14 +104,23 @@ void QNetworkManagerEngine::initialize()
     QMutexLocker locker(&mutex);
 
     // Get current list of access points.
-    foreach (const QDBusObjectPath &devicePath, interface->getDevices())
+    foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
+        locker.unlock();
         deviceAdded(devicePath);
+        locker.relock();
+    }
 
     // Get connections.
-    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections())
+    foreach (const QDBusObjectPath &settingsPath, systemSettings->listConnections()) {
+        locker.unlock();
         newConnection(settingsPath, systemSettings);
-    foreach (const QDBusObjectPath &settingsPath, userSettings->listConnections())
+        locker.relock();
+    }
+    foreach (const QDBusObjectPath &settingsPath, userSettings->listConnections()) {
+        locker.unlock();
         newConnection(settingsPath, userSettings);
+        locker.relock();
+    }
 
     // Get active connections.
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
@@ -130,11 +139,6 @@ bool QNetworkManagerEngine::networkManagerAvailable() const
     QMutexLocker locker(&mutex);
 
     return interface->isValid();
-}
-
-void QNetworkManagerEngine::doRequestUpdate()
-{
-    emit updateCompleted();
 }
 
 QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
@@ -179,30 +183,6 @@ bool QNetworkManagerEngine::hasIdentifier(const QString &id)
     }
 
     return false;
-}
-
-QString QNetworkManagerEngine::bearerName(const QString &id)
-{
-    QMutexLocker locker(&mutex);
-
-    QNetworkManagerSettingsConnection *connection = connectionFromId(id);
-
-    if (!connection)
-        return QString();
-
-    QNmSettingsMap map = connection->getSettings();
-    const QString connectionType = map.value("connection").value("type").toString();
-
-    if (connectionType == "802-3-ethernet")
-        return QLatin1String("Ethernet");
-    else if (connectionType == "802-11-wireless")
-        return QLatin1String("WLAN");
-    else if (connectionType == "gsm")
-        return QLatin1String("2G");
-    else if (connectionType == "cdma")
-        return QLatin1String("CDMA2000");
-    else
-        return QString();
 }
 
 void QNetworkManagerEngine::connectToId(const QString &id)
@@ -257,9 +237,7 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
 
 void QNetworkManagerEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
-
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    QMetaObject::invokeMethod(this, "updateCompleted", Qt::QueuedConnection);
 }
 
 void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
@@ -385,13 +363,10 @@ void QNetworkManagerEngine::devicePropertiesChanged(const QString &path,
 
 void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkManagerInterfaceDevice device(path.path());
     if (device.deviceType() == DEVICE_TYPE_802_11_WIRELESS) {
         QNetworkManagerInterfaceDeviceWireless *wirelessDevice =
             new QNetworkManagerInterfaceDeviceWireless(device.connectionInterface()->path());
-        wirelessDevices.insert(path.path(), wirelessDevice);
 
         wirelessDevice->setConnections();
         connect(wirelessDevice, SIGNAL(accessPointAdded(QString,QDBusObjectPath)),
@@ -403,6 +378,10 @@ void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 
         foreach (const QDBusObjectPath &apPath, wirelessDevice->getAccessPoints())
             newAccessPoint(QString(), apPath);
+
+        mutex.lock();
+        wirelessDevices.insert(path.path(), wirelessDevice);
+        mutex.unlock();
     }
 }
 
@@ -611,7 +590,7 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
         ptr->purpose = QNetworkConfiguration::PublicPurpose;
     }
     ptr->state = QNetworkConfiguration::Undefined;
-    ptr->bearer = QLatin1String("WLAN");
+    ptr->bearerType = QNetworkConfiguration::BearerWLAN;
 
     accessPointConfigurations.insert(ptr->id, ptr);
 
@@ -709,8 +688,6 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                                                                      const QString &settingsPath,
                                                                      const QNmSettingsMap &map)
 {
-    QMutexLocker locker(&mutex);
-
     QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
     cpPriv->name = map.value("connection").value("id").toString();
     cpPriv->isValid = true;
@@ -724,7 +701,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
     const QString connectionType = map.value("connection").value("type").toString();
 
     if (connectionType == QLatin1String("802-3-ethernet")) {
-        cpPriv->bearer = QLatin1String("Ethernet");
+        cpPriv->bearerType = QNetworkConfiguration::BearerEthernet;
         cpPriv->purpose = QNetworkConfiguration::PublicPurpose;
 
         foreach (const QDBusObjectPath &devicePath, interface->getDevices()) {
@@ -739,7 +716,7 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
             }
         }
     } else if (connectionType == QLatin1String("802-11-wireless")) {
-        cpPriv->bearer = QLatin1String("WLAN");
+        cpPriv->bearerType = QNetworkConfiguration::BearerWLAN;
 
         const QString connectionSsid = map.value("802-11-wireless").value("ssid").toString();
         const QString connectionSecurity = map.value("802-11-wireless").value("security").toString();
@@ -759,17 +736,17 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
 
-                    locker.unlock();
+                    mutex.unlock();
                     emit configurationRemoved(ptr);
-                    locker.relock();
+                    mutex.lock();
                 }
                 break;
             }
         }
     } else if (connectionType == "gsm") {
-        cpPriv->bearer = QLatin1String("2G");
+        cpPriv->bearerType = QNetworkConfiguration::Bearer2G;
     } else if (connectionType == "cdma") {
-        cpPriv->bearer = QLatin1String("CDMA2000");
+        cpPriv->bearerType = QNetworkConfiguration::BearerCDMA2000;
     }
 
     return cpPriv;
@@ -777,8 +754,6 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
 QNetworkManagerSettingsConnection *QNetworkManagerEngine::connectionFromId(const QString &id) const
 {
-    QMutexLocker locker(&mutex);
-
     for (int i = 0; i < connections.count(); ++i) {
         QNetworkManagerSettingsConnection *connection = connections.at(i);
         const QString service = connection->connectionInterface()->service();

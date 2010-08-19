@@ -82,8 +82,8 @@ namespace qdesigner_internal
 
         for (int c = 0; c < item->columnCount(); c++) {
             const QVariant v = item->data(c, Qt::DecorationPropertyRole);
-            if (qVariantCanConvert<PropertySheetIconValue>(v))
-                item->setIcon(c, iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+            if (v.canConvert<PropertySheetIconValue>())
+                item->setIcon(c, iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
         }
     }
 
@@ -93,8 +93,8 @@ namespace qdesigner_internal
             return;
 
         const QVariant v = item->data(Qt::DecorationPropertyRole);
-        if (qVariantCanConvert<PropertySheetIconValue>(v))
-            item->setIcon(iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+        if (v.canConvert<PropertySheetIconValue>())
+            item->setIcon(iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
     }
 
     void reloadTableItem(DesignerIconCache *iconCache, QTableWidgetItem *item)
@@ -103,8 +103,8 @@ namespace qdesigner_internal
             return;
 
         const QVariant v = item->data(Qt::DecorationPropertyRole);
-        if (qVariantCanConvert<PropertySheetIconValue>(v))
-            item->setIcon(iconCache->icon(qVariantValue<PropertySheetIconValue>(v)));
+        if (v.canConvert<PropertySheetIconValue>())
+            item->setIcon(iconCache->icon(qvariant_cast<PropertySheetIconValue>(v)));
     }
 
     void reloadIconResources(DesignerIconCache *iconCache, QObject *object)
@@ -115,8 +115,8 @@ namespace qdesigner_internal
         } else if (QComboBox *comboBox = qobject_cast<QComboBox *>(object)) {
             for (int i = 0; i < comboBox->count(); i++) {
                 const QVariant v = comboBox->itemData(i, Qt::DecorationPropertyRole);
-                if (qVariantCanConvert<PropertySheetIconValue>(v)) {
-                    QIcon icon = iconCache->icon(qVariantValue<PropertySheetIconValue>(v));
+                if (v.canConvert<PropertySheetIconValue>()) {
+                    QIcon icon = iconCache->icon(qvariant_cast<PropertySheetIconValue>(v));
                     comboBox->setItemIcon(i, icon);
                     comboBox->setItemData(i, icon);
                 }

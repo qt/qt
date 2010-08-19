@@ -109,7 +109,6 @@ namespace QtSharedPointer {
     template <class T> inline void normalDeleter(T *t) { delete t; }
 
     // this uses partial template specialization
-    // the only compilers that didn't support this were MSVC 6.0 and 2002
     template <class T> struct RemovePointer;
     template <class T> struct RemovePointer<T *> { typedef T Type; };
     template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };
@@ -323,7 +322,6 @@ namespace QtSharedPointer {
     protected:
         typedef ExternalRefCountData Data;
 
-        inline void ref() const { d->weakref.ref(); d->strongref.ref(); }
         inline void deref()
         { deref(d, this->value); }
         static inline void deref(Data *d, T *value)
@@ -388,7 +386,13 @@ namespace QtSharedPointer {
         template <class X>
         inline void internalCopy(const ExternalRefCount<X> &other)
         {
-            internalSet(other.d, other.data());
+            Data *o = other.d;
+            T *actual = other.value;
+            if (o)
+                other.ref();
+            qSwap(d, o);
+            qSwap(this->value, actual);
+            deref(o, actual);
         }
 
         inline void internalSwap(ExternalRefCount &other)
@@ -404,6 +408,7 @@ namespace QtSharedPointer {
         template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
         template <class X, class Y> friend QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
+        inline void ref() const { d->weakref.ref(); d->strongref.ref(); }
 
         inline void internalSet(Data *o, T *actual)
         {

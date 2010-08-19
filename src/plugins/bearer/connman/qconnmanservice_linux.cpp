@@ -53,6 +53,8 @@
 
 #include "qconnmanservice_linux_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 static QDBusConnection dbusConnection = QDBusConnection::systemBus();
@@ -129,8 +131,10 @@ QVariant QConnmanManagerInterface::getProperty(const QString &property)
 
 QVariantMap QConnmanManagerInterface::getProperties()
 {
-    QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    } else return QVariantMap();
 }
 
 QString QConnmanManagerInterface::getState()
@@ -551,8 +555,12 @@ void QConnmanServiceInterface::disconnectNotify(const char *signal)
 
 QVariantMap QConnmanServiceInterface::getProperties()
 {
-    QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    }
+    else
+        return QVariantMap();
 }
 
 QVariant QConnmanServiceInterface::getProperty(const QString &property)
@@ -724,6 +732,99 @@ QVariantMap QConnmanServiceInterface::getEthernet()
     QVariant var = getProperty("Ethernet");
     return qdbus_cast<QVariantMap >(var);
 }
+
+QString QConnmanServiceInterface::getMethod()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Method") {
+            return it.value().toString();
+        }
+    }
+ return QString();
+}
+
+QString QConnmanServiceInterface::getInterface()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Interface") {
+            return it.value().toString();
+        }
+    }
+
+    return QString();
+}
+
+QString QConnmanServiceInterface::getMacAddress()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Address") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
+quint16 QConnmanServiceInterface::getMtu()
+{
+    quint16 mtu=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "MTU") {
+            return it.value().toUInt();
+        }
+    }
+    return mtu;
+}
+
+quint16 QConnmanServiceInterface::getSpeed()
+{
+    quint16 speed=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Speed") {
+            return it.value().toUInt();
+        }
+    }
+    return speed;
+}
+
+QString QConnmanServiceInterface::getDuplex()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Duplex") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
 
 bool QConnmanServiceInterface::isOfflineMode()
 {
@@ -953,10 +1054,10 @@ bool QConnmanDeviceInterface::setProperty(const QString &name, const QDBusVarian
 
 //    QList<QVariant> args;
     qWarning() << __FUNCTION__ << name << value.variant();
-//    args << qVariantFromValue(name);
-//    args << qVariantFromValue(value);
+//    args << QVariant::fromValue(name);
+//    args << QVariant::fromValue(value);
 
-    QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, qVariantFromValue(value));
+    QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, QVariant::fromValue(value));
 qWarning() << reply.errorMessage();
 
     return true;
@@ -1020,7 +1121,7 @@ quint16 QConnmanDeviceInterface::getScanInterval()
 bool QConnmanDeviceInterface::setScanInterval(const QString & interval)
 {
 //    QList<QVariant> args;
-//    args << qVariantFromValue(name)
+//    args << QVariant::fromValue(name)
 //    << value.variant();
 
 //    QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
@@ -1043,8 +1144,8 @@ QStringList QConnmanDeviceInterface::getNetworks()
 bool QConnmanDeviceInterface::setEnabled(bool powered)
 {
     QList<QVariant> args;
-    args << qVariantFromValue(QString("Powered"))
-    << qVariantFromValue(QDBusVariant(powered));
+    args << QVariant::fromValue(QString("Powered"))
+    << QVariant::fromValue(QDBusVariant(powered));
 
     QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
     qWarning() << reply.errorMessage() << reply.errorName();
@@ -1070,3 +1171,7 @@ void QConnmanDBusHelper::propertyChanged(const QString &item, const QDBusVariant
 
 /////////////////
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT
+

@@ -185,7 +185,7 @@ static QWidget *decorationFromDomWidget(DomUI *dom_ui, QDesignerFormEditorInterf
     fakeTopLevel->setParent(0, Qt::ToolTip); // Container
     // Actual widget
     const DomWidget *domW = dom_ui->elementWidget()->elementWidget().front();
-    QWidget *w = qFindChildren<QWidget*>(fakeTopLevel).front();
+    QWidget *w = fakeTopLevel->findChildren<QWidget*>().front();
     Q_ASSERT(w);
     // hack begin;
     // We set _q_dockDrag dynamic property which will be detected in drag enter event of form window.

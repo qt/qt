@@ -222,6 +222,8 @@ public:
     void setClipping(bool enable);
     bool hasClipping() const;
 
+    QRectF clipBoundingRect() const;
+
     void save();
     void restore();
 

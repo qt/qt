@@ -73,7 +73,7 @@
 #endif
 #ifdef Q_WS_S60
 #include "qcoefepinputcontext_p.h"
-#include "akninputlanguageinfo.h"
+#include "AknInputLanguageInfo.h"
 #endif
 
 #include "private/qfactoryloader_p.h"

@@ -67,8 +67,8 @@
 
     QSharedPointer and QWeakPointer are thread-safe and operate
     atomically on the pointer value. Different threads can also access
-    the same QSharedPointer or QWeakPointer object at the same time
-    without need for locking mechanisms.
+    the QSharedPointer or QWeakPointer pointing to the same object at
+    the same time without need for locking mechanisms.
 
     It should be noted that, while the pointer value can be accessed
     in this manner, QSharedPointer and QWeakPointer provide no
@@ -1275,8 +1275,6 @@ QT_END_NAMESPACE
 
 
 
-#if !defined(QT_NO_MEMBER_TEMPLATES)
-
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #  ifdef QT_SHARED_POINTER_BACKTRACE_SUPPORT
 #    if defined(__GLIBC__) && (__GLIBC__ >= 2) && !defined(__UCLIBC__) && !defined(QT_LINUXBASE)
@@ -1501,5 +1499,3 @@ void QtSharedPointer::internalSafetyCheckCleanCheck()
 }
 
 QT_END_NAMESPACE
-
-#endif

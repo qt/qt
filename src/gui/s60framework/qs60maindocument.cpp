@@ -105,11 +105,17 @@ CEikAppUi *QS60MainDocument::CreateAppUiL()
     return (static_cast <CEikAppUi*>(new(ELeave)QS60MainAppUi));
 }
 
+/*!
+  \internal
+ */
 CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, RFs &aFs)
 {
     return QS60MainDocumentBase::OpenFileL(aDoOpen, aFilename, aFs);
 }
 
+/*!
+  \internal
+ */
 void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
 {
     QS60MainDocumentBase::OpenFileL(aFileStore, aFile);

@@ -7,4 +7,4 @@ for(p, QMAKE_LIBDIR_OPENGL) {
 }
 
 CONFIG -= qt
-LIBS += -lGL -lGLU
+LIBS += -lGL

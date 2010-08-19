@@ -210,6 +210,9 @@ public:
     void setColorTable(const QVector<QRgb> colors);
 
     void fill(uint pixel);
+    void fill(const QColor &color);
+    void fill(Qt::GlobalColor color);
+
 
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QImage &alphaChannel);

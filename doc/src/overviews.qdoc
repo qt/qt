@@ -55,15 +55,14 @@
 
     These pages are about Qt's traditional set of GUI components for
     building both native look ^ feel and custom UI's for the desktop
-    environment. Use \l {declarativeui.html} {Qt Quick} for building 
-    UI's for mobile devices.
+    environment. Use \l{Qt Quick} for building UI's for mobile devices.
 
     \generatelist {related}
  */
 
 /*!
     \group qt-graphics
-    \title Qt Graphics and Painting
+    \title Qt Graphics and Printing
 
     \brief The Qt components for doing graphics.
 
@@ -91,10 +90,11 @@
 
 /*!
   \group qt-activex
-  \title Qt For ActiveX
-  \brief Qt API's for using ActiveX controls, servers, and COM.
+  \title ActiveX in Qt
   \ingroup technology-apis
   \ingroup platform-specific
+
+  \brief Qt API's for using ActiveX controls, servers, and COM.
 
   These pages document Qt's API's for developing with ActiveX
   controls, servers, and COM.
@@ -104,7 +104,7 @@
 
 /*!
   \group qt-sql
-  \title Using SQL in Qt
+  \title SQL in Qt
   \brief Qt API's for using SQL.
   \ingroup technology-apis
   \ingroup best-practices

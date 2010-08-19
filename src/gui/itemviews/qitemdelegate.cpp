@@ -850,7 +850,7 @@ void QItemDelegate::drawBackground(QPainter *painter,
         painter->fillRect(option.rect, option.palette.brush(cg, QPalette::Highlight));
     } else {
         QVariant value = index.data(Qt::BackgroundRole);
-        if (qVariantCanConvert<QBrush>(value)) {
+        if (value.canConvert<QBrush>()) {
             QPointF oldBO = painter->brushOrigin();
             painter->setBrushOrigin(option.rect.topLeft());
             painter->fillRect(option.rect, qvariant_cast<QBrush>(value));
@@ -1326,7 +1326,7 @@ QStyleOptionViewItem QItemDelegate::setOptions(const QModelIndex &index,
 
     // set foreground brush
     value = index.data(Qt::ForegroundRole);
-    if (qVariantCanConvert<QBrush>(value))
+    if (value.canConvert<QBrush>())
         opt.palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
     return opt;

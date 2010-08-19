@@ -76,6 +76,8 @@ static inline QFixed leadingSpaceWidth(QTextEngine *eng, const QScriptLine &line
 
     int pos = line.length;
     const HB_CharAttributes *attributes = eng->attributes();
+    if (!attributes)
+        return QFixed();
     while (pos > 0 && attributes[line.from + pos - 1].whiteSpace)
         --pos;
     return eng->width(line.from + pos, line.length - pos);
@@ -612,7 +614,7 @@ bool QTextLayout::cacheEnabled() const
 void QTextLayout::beginLayout()
 {
 #ifndef QT_NO_DEBUG
-    if (d->layoutData && d->layoutData->inLayout) {
+    if (d->layoutData && d->layoutData->layoutState == QTextEngine::InLayout) {
         qWarning("QTextLayout::beginLayout: Called while already doing layout");
         return;
     }
@@ -620,7 +622,7 @@ void QTextLayout::beginLayout()
     d->invalidate();
     d->clearLineData();
     d->itemize();
-    d->layoutData->inLayout = true;
+    d->layoutData->layoutState = QTextEngine::InLayout;
 }
 
 /*!
@@ -631,7 +633,7 @@ void QTextLayout::beginLayout()
 void QTextLayout::endLayout()
 {
 #ifndef QT_NO_DEBUG
-    if (!d->layoutData || !d->layoutData->inLayout) {
+    if (!d->layoutData || d->layoutData->layoutState == QTextEngine::LayoutEmpty) {
         qWarning("QTextLayout::endLayout: Called without beginLayout()");
         return;
     }
@@ -640,7 +642,7 @@ void QTextLayout::endLayout()
     if (l && d->lines.at(l-1).length < 0) {
         QTextLine(l-1, d).setNumColumns(INT_MAX);
     }
-    d->layoutData->inLayout = false;
+    d->layoutData->layoutState = QTextEngine::LayoutEmpty;
     if (!d->cacheGlyphs)
         d->freeMemory();
 }
@@ -768,11 +770,14 @@ bool QTextLayout::isValidCursorPosition(int pos) const
 QTextLine QTextLayout::createLine()
 {
 #ifndef QT_NO_DEBUG
-    if (!d->layoutData || !d->layoutData->inLayout) {
+    if (!d->layoutData || d->layoutData->layoutState == QTextEngine::LayoutEmpty) {
         qWarning("QTextLayout::createLine: Called without layouting");
         return QTextLine();
     }
 #endif
+    if (d->layoutData->layoutState == QTextEngine::LayoutFailed)
+        return QTextLine();
+
     int l = d->lines.size();
     if (l && d->lines.at(l-1).length < 0) {
         QTextLine(l-1, d).setNumColumns(INT_MAX);
@@ -1035,6 +1040,35 @@ QScriptItem &QTextLineItemIterator::next()
     return *si;
 }
 
+static QFixed offsetInLigature(const unsigned short *logClusters,
+                               const QGlyphLayout &glyphs,
+                               int pos, int max, int glyph_pos)
+{
+    int offsetInCluster = 0;
+    for (int i = pos - 1; i >= 0; i--) {
+        if (logClusters[i] == glyph_pos)
+            offsetInCluster++;
+        else
+            break;
+    }
+
+    // in the case that the offset is inside a (multi-character) glyph,
+    // interpolate the position.
+    if (offsetInCluster > 0) {
+        int clusterLength = 0;
+        for (int i = pos - offsetInCluster; i < max; i++) {
+            if (logClusters[i] == glyph_pos)
+                clusterLength++;
+            else
+                break;
+        }
+        if (clusterLength)
+            return glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
+    }
+
+    return 0;
+}
+
 bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selectionWidth) const
 {
     *selectionX = *selectionWidth = 0;
@@ -1074,8 +1108,19 @@ bool QTextLineItemIterator::getSelectionBounds(QFixed *selectionX, QFixed *selec
                 swidth += glyphs.effectiveAdvance(g);
         }
 
-        *selectionX = x + soff;
-        *selectionWidth = swidth;
+        // If the starting character is in the middle of a ligature,
+        // selection should only contain the right part of that ligature
+        // glyph, so we need to get the width of the left part here and
+        // add it to *selectionX
+        QFixed leftOffsetInLigature = offsetInLigature(logClusters, glyphs, from,
+                                                       to, start_glyph);
+        *selectionX = x + soff + leftOffsetInLigature;
+        *selectionWidth = swidth - leftOffsetInLigature;
+        // If the ending character is also part of a ligature, swidth does
+        // not contain that part yet, we also need to find out the width of
+        // that left part
+        *selectionWidth += offsetInLigature(logClusters, glyphs, to,
+                                            eng->length(item), end_glyph);
     }
     return true;
 }
@@ -1736,14 +1781,18 @@ namespace {
             return glyphs.glyphs[logClusters[currentPosition - 1]];
         }
 
+        inline void adjustRightBearing(glyph_t glyph)
+        {
+            qreal rb;
+            fontEngine->getGlyphBearings(glyph, 0, &rb);
+            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+        }
+
         inline void adjustRightBearing()
         {
             if (currentPosition <= 0)
                 return;
-
-            qreal rb;
-            fontEngine->getGlyphBearings(currentGlyph(), 0, &rb);
-            rightBearing = qMin(QFixed(), QFixed::fromReal(rb));
+            adjustRightBearing(currentGlyph());
         }
 
         inline void resetRightBearing()
@@ -1844,6 +1893,8 @@ void QTextLine::layout_helper(int maxGlyphs)
     Qt::Alignment alignment = eng->option.alignment();
 
     const HB_CharAttributes *attributes = eng->attributes();
+    if (!attributes)
+        return;
     lbh.currentPosition = line.from;
     int end = 0;
     lbh.logClusters = eng->layoutData->logClustersPtr;
@@ -1857,6 +1908,8 @@ void QTextLine::layout_helper(int maxGlyphs)
             if (!current.num_glyphs) {
                 eng->shape(item);
                 attributes = eng->attributes();
+                if (!attributes)
+                    return;
                 lbh.logClusters = eng->layoutData->logClustersPtr;
             }
             lbh.currentPosition = qMax(line.from, current.position);
@@ -1935,6 +1988,9 @@ void QTextLine::layout_helper(int maxGlyphs)
         } else {
             lbh.whiteSpaceOrObject = false;
             bool sb_or_ws = false;
+            glyph_t previousGlyph = 0;
+            if (lbh.currentPosition > 0 && lbh.logClusters[lbh.currentPosition - 1] <lbh.glyphs.numGlyphs)
+                previousGlyph = lbh.currentGlyph(); // needed to calculate right bearing later
             do {
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
@@ -1978,9 +2034,17 @@ void QTextLine::layout_helper(int maxGlyphs)
             // We ignore the right bearing if the minimum negative bearing is too little to
             // expand the text beyond the edge.
             if (sb_or_ws|breakany) {
+                QFixed rightBearing = lbh.rightBearing; // store previous right bearing
+#if !defined(Q_WS_MAC)
                 if (lbh.calculateNewWidth(line) - lbh.minimumRightBearing > line.width)
+#endif
                     lbh.adjustRightBearing();
                 if (lbh.checkFullOtherwiseExtend(line)) {
+                    // we are too wide, fix right bearing
+                    if (rightBearing <= 0)
+                        lbh.rightBearing = rightBearing; // take from cache
+                    else if (previousGlyph > 0)
+                        lbh.adjustRightBearing(previousGlyph);
                     if (!breakany) {
                         line.textWidth += lbh.softHyphenWidth;
                     }
@@ -2633,14 +2697,6 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
         if(pos == l)
             x += si->width;
     } else {
-        int offsetInCluster = 0;
-        for (int i=pos-1; i >= 0; i--) {
-            if (logClusters[i] == glyph_pos)
-                offsetInCluster++;
-            else
-                break;
-        }
-
         if (reverse) {
             int end = qMin(lineEnd, si->position + l) - si->position;
             int glyph_end = end == l ? si->num_glyphs : logClusters[end];
@@ -2652,17 +2708,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
             for (int i = glyph_start; i < glyph_pos; i++)
                 x += glyphs.effectiveAdvance(i);
         }
-        if (offsetInCluster > 0) { // in the case that the offset is inside a (multi-character) glyph, interpolate the position.
-            int clusterLength = 0;
-            for (int i=pos - offsetInCluster; i < line.length; i++) {
-                if (logClusters[i] == glyph_pos)
-                    clusterLength++;
-                else
-                    break;
-            }
-            if (clusterLength)
-                x+= glyphs.advances_x[glyph_pos] * offsetInCluster / clusterLength;
-        }
+        x += offsetInLigature(logClusters, glyphs, pos, line.length, glyph_pos);
     }
 
     *cursorPos = pos + si->position;

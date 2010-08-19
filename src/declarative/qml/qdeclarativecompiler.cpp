@@ -2215,10 +2215,11 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         if (propNames.contains(prop.name))
             COMPILE_EXCEPTION(&prop, tr("Duplicate property name"));
 
-        if (QString::fromUtf8(prop.name).at(0).isUpper()) 
+        QString propName = QString::fromUtf8(prop.name);
+        if (propName.at(0).isUpper())
             COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
 
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(prop.name))
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(propName))
             COMPILE_EXCEPTION(&prop, tr("Illegal property name"));
 
         propNames.insert(prop.name);
@@ -2228,9 +2229,10 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QByteArray name = obj->dynamicSignals.at(ii).name;
         if (methodNames.contains(name))
             COMPILE_EXCEPTION(obj, tr("Duplicate signal name"));
-        if (QString::fromUtf8(name).at(0).isUpper()) 
+        QString nameStr = QString::fromUtf8(name);
+        if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(name))
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal signal name"));
         methodNames.insert(name);
     }
@@ -2238,9 +2240,10 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QByteArray name = obj->dynamicSlots.at(ii).name;
         if (methodNames.contains(name))
             COMPILE_EXCEPTION(obj, tr("Duplicate method name"));
-        if (QString::fromUtf8(name).at(0).isUpper()) 
+        QString nameStr = QString::fromUtf8(name);
+        if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(name))
+        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal method name"));
         methodNames.insert(name);
     }

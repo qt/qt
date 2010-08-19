@@ -279,7 +279,7 @@ QPSQLResult::~QPSQLResult()
 
 QVariant QPSQLResult::handle() const
 {
-    return qVariantFromValue(d->result);
+    return QVariant::fromValue(d->result);
 }
 
 void QPSQLResult::cleanup()
@@ -706,7 +706,7 @@ QPSQLDriver::~QPSQLDriver()
 
 QVariant QPSQLDriver::handle() const
 {
-    return qVariantFromValue(d->connection);
+    return QVariant::fromValue(d->connection);
 }
 
 bool QPSQLDriver::hasFeature(DriverFeature f) const

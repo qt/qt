@@ -166,12 +166,9 @@ struct FileFixifyCacheKey
 inline uint qHash(const FileFixifyCacheKey &f) { return f.hashCode(); }
 // -------------------------------------------------------------------------------------------------
 
-// As MSVC 6.0 can't handle template functions that well, we need a separate function for each type
-inline void qmakeDeleteCacheClear_QMapStringInt(void *i) { delete reinterpret_cast<QMap<QString,int> *>(i); }
-inline void qmakeDeleteCacheClear_QStringList(void *i) { delete reinterpret_cast<QStringList *>(i); }
-inline void qmakeDeleteCacheClear_QHashFixStringCacheKeyQString(void *i) { delete reinterpret_cast<QHash<FixStringCacheKey, QString> *>(i); }
-inline void qmakeDeleteCacheClear_QHashFileInfoCacheKeyQFileInfo(void *i) { delete reinterpret_cast<QHash<FileInfoCacheKey, QFileInfo> *>(i); }
-inline void qmakeDeleteCacheClear_QHashFileFixifyCacheKeyQString(void *i) { delete reinterpret_cast<QHash<FileFixifyCacheKey, QString> *>(i); }
+template <typename T>
+inline void qmakeDeleteCacheClear(void *i) { delete reinterpret_cast<T*>(i); }
+
 inline void qmakeFreeCacheClear(void *i) { free(i); }
 
 typedef void (*qmakeCacheClearFunc)(void *);
