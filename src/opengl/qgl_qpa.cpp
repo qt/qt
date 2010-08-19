@@ -105,7 +105,8 @@ static QPlatformWindowFormat qt_glformat_to_platformwindowformat(const QGLFormat
         retFormat.setRedBufferSize(format.redBufferSize());
     retFormat.setRgba(format.rgba());
     retFormat.setSampleBuffers(format.sampleBuffers());
-    retFormat.setSamples(format.sampleBuffers());
+    if (format.samples() >= 0)
+        retFormat.setSamples(format.samples());
     retFormat.setStencil(format.stencil());
     if (format.stencilBufferSize() >= 0)
         retFormat.setStencilBufferSize(format.stencilBufferSize());
@@ -243,19 +244,30 @@ class QGLTemporaryContextPrivate
 {
 public:
     QWidget *widget;
+    QGLContext *context;
 };
 
 QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     : d(new QGLTemporaryContextPrivate)
 {
+    d->context = const_cast<QGLContext *>(QGLContext::currentContext());
+    if (d->context)
+        d->context->doneCurrent();
     d->widget = new QWidget;
     d->widget->setGeometry(0,0,3,3);
+    QPlatformWindowFormat format = d->widget->platformWindowFormat();
+    format.setWindowApi(QPlatformWindowFormat::OpenGL);
     d->widget->winId();
+
+
     d->widget->platformWindow()->glContext()->makeCurrent();
 }
 
 QGLTemporaryContext::~QGLTemporaryContext()
 {
+    d->widget->platformWindow()->glContext()->doneCurrent();
+    if (d->context)
+        d->context->makeCurrent();
     delete d->widget;
 }
 

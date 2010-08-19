@@ -785,7 +785,7 @@ void QEventDispatcherMacPrivate::temporarilyStopAllModalSessions()
     // the stacking order of the windows while doing so, we put
     // up a block that is used in QCocoaWindow and QCocoaPanel:
     int stackSize = cocoaModalSessionStack.size();
-    for (int i=stackSize-1; i>=0; --i) {
+    for (int i=0; i<stackSize; ++i) {
         QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
         if (info.session) {
             [NSApp endModalSession:info.session];
@@ -822,12 +822,12 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
             QBoolBlocker block1(blockSendPostedEvents, true);
             info.nswindow = window;
             [(NSWindow*) info.nswindow retain];
-            // When creating a modal session cocoa will rearrange the windows.
-            // In order to avoid windows to be put behind another we need to
-            // keep the window level.
-            int level = [window level];
+            int levelBeforeEnterModal = [window level];
             info.session = [NSApp beginModalSessionForWindow:window];
-            [window setLevel:level];
+            // Make sure we don't stack the window lower that it was before
+            // entering modal, in case it e.g. had the stays-on-top flag set:
+            if (levelBeforeEnterModal > [window level])
+                [window setLevel:levelBeforeEnterModal];
         }
         currentModalSessionCached = info.session;
     }

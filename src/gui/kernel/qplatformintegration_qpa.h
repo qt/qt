@@ -43,6 +43,7 @@
 #define QPLATFORMINTEGRATION_H
 
 #include <QtGui/qwindowdefs.h>
+#include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/qplatformscreen_qpa.h>
 

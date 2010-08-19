@@ -68,6 +68,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
 /*!
     \qmlclass ListModel QDeclarativeListModel
+    \ingroup qml-working-with-data
     \since 4.7
     \brief The ListModel element defines a free-form list data source.
 
@@ -129,7 +130,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
-    The application's \tt Timer object periodically sends a message to the
+working-with-data
     worker script by calling \l WorkerScript::sendMessage(). When this message
     is received, \l {WorkerScript::onMessage}{WorkerScript.onMessage()} is invoked in
     \tt dataloader.js, which appends the current time to the list model.
@@ -769,6 +770,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 
 /*!
     \qmlclass ListElement
+    \ingroup qml-working-with-data
     \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
 

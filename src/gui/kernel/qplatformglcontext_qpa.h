@@ -42,7 +42,8 @@
 #ifndef QPLATFORM_GL_CONTEXT_H
 #define QPLATFORM_GL_CONTEXT_H
 
-#include <QtOpenGL/qgl.h>
+#include <QtCore/qnamespace.h>
+#include <QPlatformWindowFormat>
 
 QT_BEGIN_HEADER
 

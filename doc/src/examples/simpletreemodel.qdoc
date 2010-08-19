@@ -41,10 +41,9 @@
     of the data to simplify and standardize the way it is accessed.
     Simple models represent data as a table of items, and allow views
     to access this data via an
-    \l{Model/View Programming#model-indexes} {index-based}
-    system. More generally, models can be used to represent data in
-    the form of a tree structure by allowing each item to act as a
-    parent to a table of child items.
+    \l{Model/View Programming#Models}{index-based} system. More generally,
+    models can be used to represent data in the form of a tree structure
+    by allowing each item to act as a parent to a table of child items.
 
     Before attempting to implement a tree model, it is worth considering whether
     the data is supplied by an external source, or whether it is going to be

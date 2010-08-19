@@ -52,7 +52,8 @@ Item {
         smooth: true
 
         states: State { 
-            name: "rotated"; PropertyChanges { target: rect; rotation: 180 } 
+            name: "rotated"
+            PropertyChanges { target: rect; rotation: 180 } 
         }
 
         transitions: Transition {

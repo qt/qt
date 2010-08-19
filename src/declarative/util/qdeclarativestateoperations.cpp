@@ -161,6 +161,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
 /*!
     \preliminary
     \qmlclass ParentChange QDeclarativeParentChange
+    \ingroup qml-state-elements
     \brief The ParentChange element allows you to reparent an Item in a state change.
 
     ParentChange reparents an item while preserving its visual appearance (position, size,
@@ -589,6 +590,7 @@ public:
 
 /*!
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
+    \ingroup qml-state-elements
     \brief The StateChangeScript element allows you to run a script in a state.
 
     A StateChangeScript is run upon entering a state. You can optionally use
@@ -693,6 +695,7 @@ QString QDeclarativeStateChangeScript::typeName() const
 
 /*!
     \qmlclass AnchorChanges QDeclarativeAnchorChanges
+    \ingroup qml-state-elements
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
     The AnchorChanges element is used to modify the anchors of an item in a \l State.

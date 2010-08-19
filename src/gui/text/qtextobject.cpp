@@ -1156,6 +1156,10 @@ Qt::LayoutDirection QTextBlock::textDirection() const
     if (dir != Qt::LayoutDirectionAuto)
         return dir;
 
+    dir = p->defaultTextOption.textDirection();
+    if (dir != Qt::LayoutDirectionAuto)
+        return dir;
+
     const QString buffer = p->buffer();
 
     const int pos = position();

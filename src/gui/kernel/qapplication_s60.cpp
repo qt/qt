@@ -135,6 +135,38 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
 }
 #endif
 
+void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
+{
+    if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control)) {
+        QWidget *const widget = QWidgetPrivate::mapper->value(control);
+        QWidget *const window = widget->window();
+        if (QTLWExtra *topData = qt_widget_private(window)->maybeTopData()) {
+            QWidgetBackingStoreTracker &backingStore = topData->backingStore;
+            if (visible) {
+                if (backingStore.data()) {
+                    backingStore.registerWidget(widget);
+                } else {
+#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
+#endif
+                    backingStore.create(window);
+                    backingStore.registerWidget(widget);
+                    qt_widget_private(widget)->invalidateBuffer(widget->rect());
+                    widget->repaint();
+                }
+            } else {
+#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
+#endif
+                backingStore.unregisterWidget(widget);
+                // In order to ensure that any resources used by the window surface
+                // are immediately freed, we flush the WSERV command buffer.
+                S60->wsSession().Flush();
+            }
+        }
+    }
+}
+
 bool qt_nograb()                                // application no-grab option
 {
 #if defined(QT_DEBUG)
@@ -1475,6 +1507,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
         }
     }
+    delete repository;
+    repository = 0;
 #endif
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1920,35 +1954,10 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             if (callSymbianEventFilters(symbianEvent))
                 return 1;
             const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
-            QWidget *w = QWidgetPrivate::mapper->value(control);
-            QWidget *const window = w->window();
-            if (!window->d_func()->maybeTopData())
-                break;
-            QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
-            if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
-#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
-#endif
-                // Decrement backing store reference count
-                backingStore.deref();
-                // In order to ensure that any resources used by the window surface
-                // are immediately freed, we flush the WSERV command buffer.
-                S60->wsSession().Flush();
-            } else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
-                if (backingStore.data()) {
-                    // Increment backing store reference count
-                    backingStore.ref();
-                } else {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
-#endif
-                    // Create backing store with an initial reference count of 1
-                    backingStore.create(window);
-                    backingStore.ref();
-                    w->d_func()->invalidateBuffer(w->rect());
-                    w->repaint();
-                }
-            }
+            if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible)
+                S60->controlVisibilityChanged(control, false);
+            else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                S60->controlVisibilityChanged(control, true);
             return 1;
         }
         break;

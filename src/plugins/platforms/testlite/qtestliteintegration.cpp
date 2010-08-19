@@ -52,10 +52,9 @@
 
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
-#include "qglxintegration.h"
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qpixmapdata_gl_p.h>
-#endif
+#endif //QT_NO_OPENGL
 
 QT_BEGIN_NAMESPACE
 
@@ -84,9 +83,7 @@ public:
 
 
 QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
-#ifndef QT_NO_OPENGL
     : mUseOpenGL(useOpenGL)
-#endif
 {
 
     xd = new MyDisplay;

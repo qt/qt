@@ -41,6 +41,8 @@
 
 #include "qplatformwindowformat_qpa.h"
 
+#include <QtCore/QDebug>
+
 Q_GLOBAL_STATIC(QPlatformWindowFormat, q_platformwindow_default_format);
 
 class QPlatformWindowFormatPrivate
@@ -986,3 +988,25 @@ bool operator!=(const QPlatformWindowFormat& a, const QPlatformWindowFormat& b)
 {
     return !(a == b);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QPlatformWindowFormat &f)
+{
+    const QPlatformWindowFormatPrivate * const d = f.d;
+
+    dbg.nospace() << "QGLFormat("
+                  << "options " << d->opts
+                  << ", depthBufferSize " << d->depthSize
+                  << ", accumBufferSize " << d->accumSize
+                  << ", stencilBufferSize " << d->stencilSize
+                  << ", redBufferSize " << d->redSize
+                  << ", greenBufferSize " << d->greenSize
+                  << ", blueBufferSize " << d->blueSize
+                  << ", alphaBufferSize " << d->alphaSize
+                  << ", samples " << d->numSamples
+                  << ", swapInterval " << d->swapInterval
+                  << ')';
+
+    return dbg.space();
+}
+#endif

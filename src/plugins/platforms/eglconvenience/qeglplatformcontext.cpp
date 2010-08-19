@@ -41,11 +41,12 @@
 
 #include "qeglplatformcontext.h"
 
-#include <EGL/egl.h>
 
 #include <QtGui/QPlatformWindow>
 
 #include "qeglconvenience.h"
+
+#include <EGL/egl.h>
 
 QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
     : QPlatformGLContext()

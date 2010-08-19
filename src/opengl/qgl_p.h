@@ -401,6 +401,9 @@ public:
     uint workaround_brokenFBOReadBack : 1;
     uint workaroundsCached : 1;
 
+    uint workaround_brokenTextureFromPixmap : 1;
+    uint workaround_brokenTextureFromPixmap_init : 1;
+
 #ifndef QT_NO_EGL
     uint ownsEglContext : 1;
 #endif

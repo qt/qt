@@ -42,9 +42,16 @@
 #ifndef QPLATFORMSCREEN_H
 #define QPLATFORMSCREEN_H
 
+#include <QtCore/qmetatype.h>
+#include <QtCore/qnamespace.h>
+#include <QtCore/qcoreevent.h>
+#include <QtCore/qvariant.h>
 #include <QtCore/qrect.h>
-#include <QtGui/qimage.h>
 #include <QtCore/qobject.h>
+
+#include <QtGui/qcursor.h>
+#include <QtGui/qimage.h>
+#include <QtGui/qwidget.h>
 
 QT_BEGIN_HEADER
 
