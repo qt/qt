@@ -847,6 +847,7 @@ void tst_QGL::graphicsViewClipping()
     scene.addWidget(widget)->setPos(0, 0);
 
     QGraphicsView view(&scene);
+    view.setBackgroundBrush(Qt::white);
 #ifdef Q_WS_QWS
     view.setWindowFlags(Qt::FramelessWindowHint);
 #endif

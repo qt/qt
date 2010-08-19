@@ -65,7 +65,11 @@ QT_BEGIN_NAMESPACE
 
 // Quick sort.
 template <class T, class LessThan>
+#ifdef Q_CC_RVCT // RVCT 2.2 doesn't see recursive _static_ template function
+void sort(T *array, int count, LessThan lessThan)
+#else
 static void sort(T *array, int count, LessThan lessThan)
+#endif
 {
     // If the number of elements fall below some threshold, use insertion sort.
     const int INSERTION_SORT_LIMIT = 7; // About 7 is fastest on my computer...
@@ -122,7 +126,11 @@ sort_loop_end:
 
 // Quick sort.
 template <class T>
+#ifdef Q_CC_RVCT
+void sort(T *array, int count) // RVCT 2.2 doesn't see recursive _static_ template function
+#else
 static void sort(T *array, int count)
+#endif
 {
     // If the number of elements fall below some threshold, use insertion sort.
     const int INSERTION_SORT_LIMIT = 25; // About 25 is fastest on my computer...

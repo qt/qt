@@ -96,7 +96,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
@@ -2264,7 +2264,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
 {
     return qt_extensionFuncs;
@@ -4197,6 +4197,34 @@ bool QGLWidget::event(QEvent *e)
         d->glcx->d_ptr->clearDrawable();
 #  endif
     }
+#elif defined(Q_OS_SYMBIAN)
+    // prevents errors on some systems, where we get a flush to a
+    // hidden widget
+    if (e->type() == QEvent::Hide) {
+        makeCurrent();
+        glFinish();
+        doneCurrent();
+    } else if (e->type() == QEvent::ParentChange) {
+        // if we've reparented a window that has the current context
+        // bound, we need to rebind that context to the new window id
+        if (d->glcx == QGLContext::currentContext())
+            makeCurrent();
+
+        if (testAttribute(Qt::WA_TranslucentBackground))
+            setContext(new QGLContext(d->glcx->requestedFormat(), this));
+    }
+
+    // A re-parent is likely to destroy the Symbian window and re-create it. It is important
+    // that we free the EGL surface _before_ the winID changes - otherwise we can leak.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->glcx->d_func()->destroyEglSurfaceForDevice();
+
+    if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
+        // The window may have been re-created during re-parent or state change - if so, the EGL
+        // surface will need to be re-created.
+        d->recreateEglSurface();
+    }
+
 #endif
 
     return QWidget::event(e);
