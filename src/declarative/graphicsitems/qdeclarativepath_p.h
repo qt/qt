@@ -190,7 +190,7 @@ private:
 class Q_AUTOTEST_EXPORT QDeclarativePathPercent : public QDeclarativePathElement
 {
     Q_OBJECT
-    Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY changed)
+    Q_PROPERTY(qreal value READ value WRITE setValue)
 public:
     QDeclarativePathPercent(QObject *parent=0) : QDeclarativePathElement(parent) {}
 
