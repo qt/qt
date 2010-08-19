@@ -1056,6 +1056,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 /*!
     \qmlclass GridView QDeclarativeGridView
     \since 4.7
+    \ingroup qml-view-elements
+
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 

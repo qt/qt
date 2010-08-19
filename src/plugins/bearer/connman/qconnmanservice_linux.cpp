@@ -1053,7 +1053,9 @@ bool QConnmanDeviceInterface::setProperty(const QString &name, const QDBusVarian
 {
 
 //    QList<QVariant> args;
+#ifndef QT_NO_TEXTSTREAM
     qWarning() << __FUNCTION__ << name << value.variant();
+#endif
 //    args << qVariantFromValue(name);
 //    args << qVariantFromValue(value);
 

@@ -88,6 +88,7 @@ public:
 
 /*!
    \qmlclass StateGroup QDeclarativeStateGroup
+    \ingroup qml-state-elements
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 

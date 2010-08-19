@@ -41,31 +41,35 @@
 // ![0]
 import Qt 4.7
 
-ListView {
+Rectangle {
+    color: "white"
     width: 200
     height: 300
 
-    model: listModel
-    delegate: Component {
-        Text { text: time }
-    }
+    ListView {
+        anchors.fill: parent
+        model: listModel
+        delegate: Component {
+            Text { text: time }
+        }
 
-    ListModel { id: listModel }
+        ListModel { id: listModel }
 
-    WorkerScript {
-        id: worker
-        source: "dataloader.js"
-    }
+        WorkerScript {
+            id: worker
+            source: "dataloader.js"
+        }
 
-    Timer {
-        id: timer
-        interval: 2000; repeat: true
-        running: true
-        triggeredOnStart: true
+        Timer {
+            id: timer
+            interval: 2000; repeat: true
+            running: true
+            triggeredOnStart: true
 
-        onTriggered: {
-            var msg = {'action': 'appendCurrentTime', 'model': listModel};
-            worker.sendMessage(msg);
+            onTriggered: {
+                var msg = {'action': 'appendCurrentTime', 'model': listModel};
+                worker.sendMessage(msg);
+            }
         }
     }
 }

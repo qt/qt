@@ -376,6 +376,7 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     funcIndex.clear();
     legaleseTexts.clear();
     serviceClasses.clear();
+    qmlClasses.clear();
     findAllClasses(tree->root());
     findAllFunctions(tree->root());
     findAllLegaleseTexts(tree->root());
@@ -610,6 +611,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         else if (atom->string() == "classes") {
             generateCompactList(relative, marker, nonCompatClasses, true);
+        }
+        else if (atom->string() == "qmlclasses") {
+            generateCompactList(relative, marker, qmlClasses, true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -3707,6 +3711,12 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                 if (!serviceName.isEmpty())
                     serviceClasses.insert(serviceName, *c);
             }
+            else if ((*c)->type() == Node::Fake &&
+                     (*c)->subType() == Node::QmlClass &&
+                     !(*c)->doc().isEmpty()) {
+                QString qmlClassName = (*c)->name();
+                qmlClasses.insert(qmlClassName,*c);
+            }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));
             }
@@ -4412,57 +4422,98 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
         return true;
     if (node->access() == Node::Private)
         return false;
-    if (!node->isInnerNode())
-        return false;
 
+    QString t;
+    QString url = PageGenerator::fileName(node);
     QString title;
     QString rawTitle;
     QString fullTitle;
-    const InnerNode* inner = static_cast<const InnerNode*>(node);
-        
-    writer.writeStartElement("page");
+    QStringList pageWords;
     QXmlStreamAttributes attributes;
-    QString t;
+
+    writer.writeStartElement("page");
     t.setNum(id++);
-    switch (node->type()) {
-    case Node::Fake:
-        {
-            const FakeNode* fake = static_cast<const FakeNode*>(node);
-            title = fake->fullTitle();
+
+    if (node->isInnerNode()) {
+        const InnerNode* inner = static_cast<const InnerNode*>(node);
+        switch (node->type()) {
+        case Node::Fake:
+            {
+                const FakeNode* fake = static_cast<const FakeNode*>(node);
+                title = fake->fullTitle();
+                pageWords << title;
+                break;
+            }
+        case Node::Class:
+            {
+                title = node->name() + " Class Reference";
+                pageWords << node->name() << "class" << "reference";
+                break;
+            }
+        case Node::Namespace:
+            {
+                rawTitle = marker->plainName(inner);
+                fullTitle = marker->plainFullName(inner);
+                title = rawTitle + " Namespace Reference";
+                pageWords << rawTitle << "namespace" << "reference";
+                break;
+            }
+        default:
+            title = node->name();
+            pageWords << title;
             break;
         }
-    case Node::Class:
-        {
-            title = node->name() + " Class Reference";
-            break;
-        }
-    case Node::Namespace:
-        {
-            rawTitle = marker->plainName(inner);
-            fullTitle = marker->plainFullName(inner);
-            title = rawTitle + " Namespace Reference";
-            break;
-        }
-    default:
-        title = node->name();
-        break;
+
+        if (!inner->pageKeywords().isEmpty())
+            pageWords << inner->pageKeywords();
     }
+    else {
+        switch (node->type()) {
+        case Node::Enum:
+            {
+                title = node->name() + " Enum Reference";
+                pageWords << node->name() << "enum" << "type";
+                url += "#" + node->name() + "-enum";
+                break;
+            }
+        case Node::Function:
+            {
+                title = node->name() + " Function Reference";
+                pageWords << node->name() << "function";
+                url += "#" + node->name();
+                break;
+            }
+        case Node::Property:
+            {
+                title = node->name() + " Property Reference";
+                pageWords << node->name() << "property";
+                url += "#" + node->name() + "-prop";
+                break;
+            }
+        case Node::Typedef:
+            {
+                title = node->name() + " Type Reference";
+                pageWords << node->name() << "typedef" << "type";
+                url += "#" + node->name();
+                break;
+            }
+        default:
+            title = node->name();
+            pageWords << title;
+            break;
+        }
+    }
+
     writer.writeAttribute("id",t);
     writer.writeStartElement("pageWords");
-    writer.writeCharacters(title);
-    if (!inner->pageKeywords().isEmpty()) {
-        const QStringList& w = inner->pageKeywords();
-        for (int i = 0; i < w.size(); ++i) {
-            writer.writeCharacters(" ");
-            writer.writeCharacters(w.at(i).toLocal8Bit().constData());
-        }
-    }
+    writer.writeCharacters(pageWords.join(" "));
+
     writer.writeEndElement();
     writer.writeStartElement("pageTitle");
     writer.writeCharacters(title);
     writer.writeEndElement();
     writer.writeStartElement("pageUrl");
-    writer.writeCharacters(PageGenerator::fileName(node));
+    writer.writeCharacters(url);
     writer.writeEndElement();
     writer.writeStartElement("pageType");
     switch (node->pageType()) {

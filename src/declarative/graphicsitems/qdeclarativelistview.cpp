@@ -1357,6 +1357,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
 /*!
     \qmlclass ListView QDeclarativeListView
+    \ingroup qml-view-elements
     \since 4.7
     \inherits Flickable
     \brief The ListView item provides a list view of items provided by a model.

@@ -74,6 +74,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QDeclarativeAbstractAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \brief The Animation element is the base of all QML animations.
 
@@ -554,6 +555,7 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QDeclarativePauseAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
@@ -630,6 +632,7 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QDeclarativeColorAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The ColorAnimation element animates changes in color values.
@@ -691,9 +694,12 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
     }
     \endqml
 
-    If this value is not set and the ColorAnimation is defined within
-    a \l Transition, it defaults to the value defined in the starting 
-    state of the \l Transition.
+    If the ColorAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the starting state of the
+    \l Transition, or the current value of the property at the moment the 
+    \l Behavior is triggered.
+
+    \sa {QML Animation}
 */
 QColor QDeclarativeColorAnimation::from() const
 {
@@ -711,9 +717,12 @@ void QDeclarativeColorAnimation::setFrom(const QColor &f)
 
     This property holds the color value at which the animation should end.
 
-    If this value is not set and the ColorAnimation is defined within
-    a \l Transition or \l Behavior, it defaults to the value defined in the end 
-    state of the \l Transition or \l Behavior.
+    If the ColorAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
+
+    \sa {QML Animation}
 */
 QColor QDeclarativeColorAnimation::to() const
 {
@@ -730,6 +739,7 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QDeclarativeScriptAction
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
@@ -878,33 +888,50 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QDeclarativePropertyAction
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
 
-    PropertyAction is used to specify an immediate property change
-    during an animation. The property change is not animated.
+    PropertyAction is used to specify an immediate property change during an 
+    animation. The property change is not animated.
 
-    For example, to explicitly set \c {theImage.smooth = true} during a \l Transition:
-    \code
+    It is useful for setting non-animated property values during an animation.
+
+    For example, here is a SequentialAnimation that sets the image's
+    \l {Image::}{smooth} property to \c true, animates the width of the image,
+    then sets \l {Image::}{smooth} back to \c false:
+
+    \snippet doc/src/snippets/declarative/propertyaction.qml standalone
+
+    PropertyAction is also useful for setting the exact point at which a property 
+    change should occur during a \l Transition. For example, if PropertyChanges 
+    was used in a \l State to rotate an item around a particular 
+    \l {Item::}{transformOrigin}, it might be implemented like this:
+
+    \snippet doc/src/snippets/declarative/propertyaction.qml transition
+
+    However, with this code, the \c transformOrigin is not set until \e after
+    the animation, as a \l State is taken to define the values at the \e end of
+    a transition. The animation would rotate at the default \c transformOrigin,
+    then jump to \c Item.BottomRight. To fix this, insert a PropertyChanges 
+    before the RotationAnimation begins:
+
+    \qml
     transitions: Transition {
-        ...
-        PropertyAction { target: theImage; property: "smooth"; value: true }
-        ...
+        SequentialAnimation {
+            PropertyAction { target: rect; property: "transformOrigin" }
+            RotationAnimation { ... }
+        }
     }
-    \endcode
+    \endqml
+    
+    This immediately sets the \c transformOrigin property to the value defined
+    in the end state of the \l Transition (i.e. the value defined in the 
+    PropertyChanges object) so that the rotation animation begins with the
+    correct transform origin.
 
-    Or, to set \c theWebView.url to the value set for the destination state:
-    \code
-    transitions: Transition {
-        ...
-        PropertyAction { target: theWebView; property: "url" }
-        ...
-    }
-    \endcode
-
-
-    \sa QtDeclarative
+    \sa {QML Animation}, QtDeclarative
 */
 /*!
     \internal
@@ -1009,7 +1036,11 @@ QDeclarativeListProperty<QObject> QDeclarativePropertyAction::exclude()
 /*!
     \qmlproperty any PropertyAction::value
     This property holds the value to be set on the property.
-    If not set, then the value defined for the end state of the transition.
+
+    If the PropertyAction is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
 */
 QVariant QDeclarativePropertyAction::value() const
 {
@@ -1129,6 +1160,7 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
 
 /*!
     \qmlclass NumberAnimation QDeclarativeNumberAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The NumberAnimation element animates changes in qreal-type values.
@@ -1184,7 +1216,7 @@ void QDeclarativeNumberAnimation::init()
 
 /*!
     \qmlproperty real NumberAnimation::from
-    This property holds the starting number value.
+    This property holds the starting value for the animation.
 
     For example, the following animation is not applied until the \c x value
     has reached 100:
@@ -1199,9 +1231,12 @@ void QDeclarativeNumberAnimation::init()
     }
     \endqml
 
-    If this value is not set and the NumberAnimation is defined within
-    a \l Transition, it defaults to the value defined in the start 
-    state of the \l Transition.
+    If the NumberAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the starting state of the
+    \l Transition, or the current value of the property at the moment the 
+    \l Behavior is triggered.
+
+    \sa {QML Animation}
 */
 
 qreal QDeclarativeNumberAnimation::from() const
@@ -1217,11 +1252,14 @@ void QDeclarativeNumberAnimation::setFrom(qreal f)
 
 /*!
     \qmlproperty real NumberAnimation::to
-    This property holds the ending number value.
+    This property holds the end value for the animation.
 
-    If this value is not set and the NumberAnimation is defined within
-    a \l Transition or \l Behavior, it defaults to the value defined in the end 
-    state of the \l Transition or \l Behavior.
+    If the NumberAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
+
+    \sa {QML Animation}
 */
 qreal QDeclarativeNumberAnimation::to() const
 {
@@ -1238,6 +1276,7 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
 
 /*!
     \qmlclass Vector3dAnimation QDeclarativeVector3dAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element animates changes in QVector3d values.
@@ -1273,10 +1312,14 @@ QDeclarativeVector3dAnimation::~QDeclarativeVector3dAnimation()
 
 /*!
     \qmlproperty real Vector3dAnimation::from
-    This property holds the starting value.
+    This property holds the starting value for the animation.
 
-    If this value is not set, it defaults to the value defined in the start 
-    state of the \l Transition.
+    If the Vector3dAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the starting state of the
+    \l Transition, or the current value of the property at the moment the 
+    \l Behavior is triggered.
+
+    \sa {QML Animation}
 */
 QVector3D QDeclarativeVector3dAnimation::from() const
 {
@@ -1291,10 +1334,14 @@ void QDeclarativeVector3dAnimation::setFrom(QVector3D f)
 
 /*!
     \qmlproperty real Vector3dAnimation::to
-    This property holds the ending value.
+    This property holds the end value for the animation.
 
-    If this value is not set, it defaults to the value defined in the end 
-    state of the \l Transition or \l Behavior.
+    If the Vector3dAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
+
+    \sa {QML Animation}
 */
 QVector3D QDeclarativeVector3dAnimation::to() const
 {
@@ -1311,6 +1358,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
 /*!
     \qmlclass RotationAnimation QDeclarativeRotationAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The RotationAnimation element animates changes in rotation values.
@@ -1334,6 +1382,12 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     properties named "rotation" or "angle". You can override this by providing
     your own properties via \l {PropertyAnimation::properties}{properties} or 
     \l {PropertyAnimation::property}{property}.
+
+    Also, note the \l Rectangle will be rotated around its default
+    \l {Item::}{transformOrigin} (which is \c Item.Center). To use a different
+    transform origin, set the origin in the PropertyChanges object and apply
+    the change at the start of the animation using PropertyAction. See the
+    PropertyAction documentation for more details.
 
     Like any other animation element, a RotationAnimation can be applied in a
     number of ways, including transitions, behaviors and property value 
@@ -1400,7 +1454,7 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
 
 /*!
     \qmlproperty real RotationAnimation::from
-    This property holds the starting number value.
+    This property holds the starting value for the animation.
 
     For example, the following animation is not applied until the \c angle value
     has reached 100:
@@ -1415,8 +1469,12 @@ QDeclarativeRotationAnimation::~QDeclarativeRotationAnimation()
     }
     \endqml
 
-    If this value is not set, it defaults to the value defined in the start 
-    state of the \l Transition.
+    If the RotationAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the starting state of the
+    \l Transition, or the current value of the property at the moment the 
+    \l Behavior is triggered.
+
+    \sa {QML Animation}
 */
 qreal QDeclarativeRotationAnimation::from() const
 {
@@ -1431,10 +1489,14 @@ void QDeclarativeRotationAnimation::setFrom(qreal f)
 
 /*!
     \qmlproperty real RotationAnimation::to
-    This property holds the ending value.
+    This property holds the end value for the animation..
 
-    If this value is not set, it defaults to the value defined in the end 
-    state of the \l Transition or \l Behavior.
+    If the RotationAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
+
+    \sa {QML Animation}
 */
 qreal QDeclarativeRotationAnimation::to() const
 {
@@ -1540,6 +1602,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
 
 /*!
     \qmlclass SequentialAnimation QDeclarativeSequentialAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The SequentialAnimation element allows animations to be run sequentially.
@@ -1613,6 +1676,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
 
 /*!
     \qmlclass ParallelAnimation QDeclarativeParallelAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ParallelAnimation element allows animations to be run in parallel.
@@ -1731,6 +1795,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
 
 /*!
     \qmlclass PropertyAnimation QDeclarativePropertyAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The PropertyAnimation element animates changes in property values.
@@ -1843,8 +1908,14 @@ void QDeclarativePropertyAnimation::setDuration(int duration)
 
 /*!
     \qmlproperty real PropertyAnimation::from
-    This property holds the starting value.
-    If not set, then the value defined in the start state of the transition.
+    This property holds the starting value for the animation.
+
+    If the PropertyAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the starting state of the
+    \l Transition, or the current value of the property at the moment the 
+    \l Behavior is triggered.
+
+    \sa {QML Animation}
 */
 QVariant QDeclarativePropertyAnimation::from() const
 {
@@ -1864,8 +1935,14 @@ void QDeclarativePropertyAnimation::setFrom(const QVariant &f)
 
 /*!
     \qmlproperty real PropertyAnimation::to
-    This property holds the ending value.
-    If not set, then the value defined in the end state of the transition or \l Behavior.
+    This property holds the end value for the animation.
+
+    If the PropertyAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
+
+    \sa {QML Animation}
 */
 QVariant QDeclarativePropertyAnimation::to() const
 {
@@ -2400,6 +2477,7 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
 
 /*!
     \qmlclass ParentAnimation QDeclarativeParentAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The ParentAnimation element animates changes in parent values.
@@ -2490,7 +2568,10 @@ void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
     \qmlproperty Item ParentAnimation::newParent
     The new parent to animate to.
 
-    If not set, then the parent defined in the end state of the transition.
+    If the ParentAnimation is defined within a \l Transition or \l Behavior,
+    this value defaults to the value defined in the end state of the
+    \l Transition, or the value of the property change that triggered the
+    \l Behavior.
 */
 QDeclarativeItem *QDeclarativeParentAnimation::newParent() const
 {
@@ -2759,6 +2840,7 @@ QAbstractAnimation *QDeclarativeParentAnimation::qtAnimation()
 
 /*!
     \qmlclass AnchorAnimation QDeclarativeAnchorAnimation
+  \ingroup qml-animation-transition
     \since 4.7
     \inherits Animation
     \brief The AnchorAnimation element animates changes in anchor values.

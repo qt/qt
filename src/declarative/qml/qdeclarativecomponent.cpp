@@ -104,6 +104,7 @@ class QByteArray;
 
 /*!
     \qmlclass Component QDeclarativeComponent
+    \ingroup qml-utility-elements
     \since 4.7
     \brief The Component element encapsulates a QML component definition.
 
@@ -599,7 +600,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     property, or else the object will not be visible.
 
     Dynamically created instances can be deleted with the \c destroy() method.
-    See \l {Dynamic Object Management} for more information.
+    See \l {Dynamic Object Management in QML} for more information.
 */
 
 /*!

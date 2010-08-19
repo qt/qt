@@ -78,6 +78,7 @@ public:
 
 /*!
     \qmlclass FontLoader QDeclarativeFontLoader
+  \ingroup qml-utility-elements
     \since 4.7
     \brief The FontLoader element allows fonts to be loaded by name or URL.
 

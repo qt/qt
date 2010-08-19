@@ -98,6 +98,7 @@ private slots:
     void validators();
     void inputMethods();
 
+    void passwordCharacter();
     void cursorDelegate();
     void navigation();
     void copyAndPaste();
@@ -766,6 +767,21 @@ void tst_qdeclarativetextinput::copyAndPaste() {
         index++;
     }
 #endif
+}
+
+void tst_qdeclarativetextinput::passwordCharacter()
+{
+    QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
+    QDeclarativeComponent textInputComponent(&engine);
+    textInputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
+    QVERIFY(textInput != 0);
+
+    textInput->setPasswordCharacter("X");
+    QSize contentsSize = textInput->contentsSize();
+    textInput->setPasswordCharacter(".");
+    // QTBUG-12383 content is updated and redrawn
+    QVERIFY(contentsSize != textInput->contentsSize());
 }
 
 void tst_qdeclarativetextinput::cursorDelegate()
