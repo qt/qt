@@ -193,7 +193,7 @@ void tst_qdeclarativetextinput::width()
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
-        int delta = abs(int(textinputObject->width()) - metricWidth);
+        int delta = abs(int(int(textinputObject->width()) - metricWidth));
         QVERIFY(delta <= 3.0); // As best as we can hope for cross-platform.
 
         delete textinputObject;
@@ -450,7 +450,7 @@ void tst_qdeclarativetextinput::positionAt()
     QFontMetrics fm(textinputObject->font());
 
     int pos = textinputObject->positionAt(textinputObject->width()/2);
-    int diff = abs(fm.width(textinputObject->text()) - (fm.width(textinputObject->text().left(pos))+textinputObject->width()/2));
+    int diff = abs(int(fm.width(textinputObject->text()) - (fm.width(textinputObject->text().left(pos))+textinputObject->width()/2)));
 
     // some tollerance for different fonts.
 #ifdef Q_OS_LINUX
@@ -462,7 +462,7 @@ void tst_qdeclarativetextinput::positionAt()
     // Check without autoscroll...
     textinputObject->setAutoScroll(false);
     pos = textinputObject->positionAt(textinputObject->width()/2);
-    diff = abs(fm.width(textinputObject->text().left(pos))-textinputObject->width()/2);
+    diff = abs(int(fm.width(textinputObject->text().left(pos))-textinputObject->width()/2));
 
     // some tollerance for different fonts.
 #ifdef Q_OS_LINUX
@@ -1022,7 +1022,7 @@ void tst_qdeclarativetextinput::openInputPanelOnFocus()
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
-    QCOMPARE(view.inputContext(), &ic);
+    QCOMPARE(view.inputContext(), (QInputContext*)&ic);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
     // input method should be disabled if focus
