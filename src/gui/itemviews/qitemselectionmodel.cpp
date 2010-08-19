@@ -212,6 +212,7 @@ bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
 {
     return (isValid() && other.isValid()
             && parent() == other.parent()
+            && model() == other.model()
             && ((top() <= other.top() && bottom() >= other.top())
                 || (top() >= other.top() && top() <= other.bottom()))
             && ((left() <= other.left() && right() >= other.left())
@@ -508,7 +509,7 @@ void QItemSelection::merge(const QItemSelection &other, QItemSelectionModel::Sel
 void QItemSelection::split(const QItemSelectionRange &range,
                            const QItemSelectionRange &other, QItemSelection *result)
 {
-    if (range.parent() != other.parent())
+    if (range.parent() != other.parent() || range.model() != other.model())
         return;
 
     QModelIndex parent = other.parent();
