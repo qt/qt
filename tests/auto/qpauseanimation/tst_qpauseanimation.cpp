@@ -280,7 +280,7 @@ void tst_QPauseAnimation::sequentialPauseGroup()
 
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation1.state() == QAbstractAnimation::Stopped);
-    QCOMPARE(&animation2, group.currentAnimation());
+    QCOMPARE((QAbstractAnimation*)&animation2, group.currentAnimation());
     QVERIFY(animation2.state() == QAbstractAnimation::Running);
     QVERIFY(animation3.state() == QAbstractAnimation::Stopped);
 
@@ -292,7 +292,7 @@ void tst_QPauseAnimation::sequentialPauseGroup()
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation1.state() == QAbstractAnimation::Stopped);
     QVERIFY(animation2.state() == QAbstractAnimation::Stopped);
-    QCOMPARE(&animation3, group.currentAnimation());
+    QCOMPARE((QAbstractAnimation*)&animation3, group.currentAnimation());
     QVERIFY(animation3.state() == QAbstractAnimation::Running);
 
     group.setCurrentTime(750);
@@ -329,7 +329,7 @@ void tst_QPauseAnimation::sequentialGroupWithPause()
 
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
-    QCOMPARE(&pause, group.currentAnimation());
+    QCOMPARE((QAbstractAnimation*)&pause, group.currentAnimation());
     QVERIFY(pause.state() == QAbstractAnimation::Running);
 
     group.setCurrentTime(600);
