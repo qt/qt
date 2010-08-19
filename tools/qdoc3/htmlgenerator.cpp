@@ -4436,6 +4436,9 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
 
     if (node->isInnerNode()) {
         const InnerNode* inner = static_cast<const InnerNode*>(node);
+        if (!inner->pageKeywords().isEmpty())
+            pageWords << inner->pageKeywords();
+
         switch (node->type()) {
         case Node::Fake:
             {
@@ -4463,9 +4466,6 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
-
-        if (!inner->pageKeywords().isEmpty())
-            pageWords << inner->pageKeywords();
     }
     else {
         switch (node->type()) {
