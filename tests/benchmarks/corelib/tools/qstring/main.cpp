@@ -259,7 +259,7 @@ static inline bool equals2_short_tail(const ushort *p1, const ushort *p2, int le
     return true;
 }
 
-#pragma GCC optimize("no-unroll-loops")
+#pragma GCC optimize("unroll-loops off")
 #ifdef __SSE2__
 static bool equals2_sse2_aligned(const ushort *p1, const ushort *p2, int len)
 {
@@ -989,7 +989,7 @@ static __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligning(
 
 static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_aligned(const ushort *a, const ushort *b, int len)
 {
-    qptrdiff counter = 0;
+    quintptr counter = 0;
     while (len >= 8) {
         __m128i m1 = _mm_load_si128((__m128i *)(a + counter));
         __m128i m2 = _mm_load_si128((__m128i *)(b + counter));
@@ -1007,8 +1007,29 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_al
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
+static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
+{
+    quintptr counter = 0;
+    while (len >= 8) {
+        __m128i m1 = _mm_load_si128((__m128i *)(a + counter));
+        __m128i m2 = _mm_lddqu_si128((__m128i *)(b + counter));
+        __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    }
+    return ucstrncmp_short_tail(a + counter, b + counter, len);
+}
+
+
 typedef __m128i (* MMLoadFunction)(const __m128i *);
-template<int N, MMLoadFunction LoadFunction = _mm_lddqu_si128>
+template<int N, MMLoadFunction LoadFunction>
 static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr(const ushort *a, const ushort *b, int len)
 {
     qptrdiff counter = 0;
@@ -1043,23 +1064,23 @@ static int ucstrncmp_ssse3(const ushort *a, const ushort *b, int len)
         a -= val/2;
 
         if (val == 10)
-            return ucstrncmp_ssse3_alignr<10>(a, b, len);
+            return ucstrncmp_ssse3_alignr<10, _mm_lddqu_si128>(a, b, len);
         else if (val == 2)
-            return ucstrncmp_ssse3_alignr<2>(a, b, len);
+            return ucstrncmp_ssse3_alignr<2, _mm_lddqu_si128>(a, b, len);
         if (val < 8) {
             if (val < 4)
-                return ucstrncmp_sse2_aligned(a, b, len);
+                return ucstrncmp_ssse3_alignr_aligned(a, b, len);
             else if (val == 4)
-                    return ucstrncmp_ssse3_alignr<4>(a, b, len);
+                    return ucstrncmp_ssse3_alignr<4, _mm_lddqu_si128>(a, b, len);
             else
-                    return ucstrncmp_ssse3_alignr<6>(a, b, len);
+                    return ucstrncmp_ssse3_alignr<6, _mm_lddqu_si128>(a, b, len);
         } else {
             if (val < 12)
-                return ucstrncmp_ssse3_alignr<8>(a, b, len);
+                return ucstrncmp_ssse3_alignr<8, _mm_lddqu_si128>(a, b, len);
             else if (val == 12)
-                return ucstrncmp_ssse3_alignr<12>(a, b, len);
+                return ucstrncmp_ssse3_alignr<12, _mm_lddqu_si128>(a, b, len);
             else
-                return ucstrncmp_ssse3_alignr<14>(a, b, len);
+                return ucstrncmp_ssse3_alignr<14, _mm_lddqu_si128>(a, b, len);
         }
     }
     return ucstrncmp_short_tail(a, b, len);
@@ -1115,18 +1136,9 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
 }
 
 static inline __attribute__((optimize("no-unroll-loops")))
-int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len)
+int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
-    // align(b) == align(a)
-
-    // round down the alignment so align(b) == align(a) == 0
-    // calculate how many garbage bytes we'll read on the first load
-    // corresponds to how many bits we must ignore from movemask's result
-    int garbage = (quintptr(b) & 0xf);
-    a -= garbage / 2;
-    b -= garbage / 2;
-
     __m128i m1 = _mm_load_si128((const __m128i *)a);
     __m128i m2 = _mm_load_si128((const __m128i *)b);
     __m128i cmp = _mm_cmpeq_epi16(m1, m2);
@@ -1134,8 +1146,8 @@ int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len)
     mask >>= garbage;
     if (~mask) {
         // which ushort isn't equal?
-        int counter = (garbage + bsf_nonzero(~mask))/2;
-        return a[counter] - b[counter];
+        uint counter = (garbage + bsf_nonzero(~mask));
+        return a[counter/2] - b[counter/2];
     }
 
     // the first 16-garbage bytes (8-garbage/2 ushorts) were equal
@@ -1144,9 +1156,53 @@ int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len)
 }
 
 template<int N> static inline __attribute__((optimize("no-unroll-loops")))
-int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len)
+int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len, int garbage)
 {
-    return ucstrncmp_intwise(a, b, len);
+    // len >= 8
+    __m128i lower, upper, merged;
+    lower = _mm_load_si128((const __m128i*)a);
+    upper = _mm_load_si128((const __m128i*)(a + 8));
+    merged = _mm_alignr_epi8(upper, lower, N);
+
+    __m128i m2 = _mm_load_si128((const __m128i*)b);
+    __m128i cmp = _mm_cmpeq_epi16(merged, m2);
+    int mask = short(_mm_movemask_epi8(cmp)); // force sign extension
+    mask >>= garbage;
+    if (~mask) {
+        // which ushort isn't equal?
+        uint counter = (garbage + bsf_nonzero(~mask));
+        return a[counter/2 + N/2] - b[counter/2];
+    }
+
+    // the first 16-garbage bytes (8-garbage/2 ushorts) were equal
+    quintptr counter = 8;
+    len -= 8 - garbage/2;
+    while (len >= 8) {
+        lower = upper;
+        upper = _mm_load_si128((__m128i *)(a + counter) + 1);
+        merged = _mm_alignr_epi8(upper, lower, N);
+
+        m2 = _mm_load_si128((__m128i *)(b + counter));
+        cmp = _mm_cmpeq_epi16(merged, m2);
+        ushort mask = ~uint(_mm_movemask_epi8(cmp));
+        if (mask) {
+            // which ushort isn't equal?
+            counter += bsf_nonzero(mask)/2;
+            return a[counter + N/2] - b[counter];
+        }
+
+        counter += 8;
+        len -= 8;
+    }
+
+    return ucstrncmp_short_tail(a + counter + N/2, b + counter, len);
+}
+
+static inline int conditional_invert(int result, bool invert)
+{
+    if (invert)
+        return -result;
+    return result;
 }
 
 static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
@@ -1157,40 +1213,47 @@ static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
     // in the beginning of the string, which we'll shift out of the way
     // (after _mm_movemask_epi8)
 
-    if (len < 16)
+    if (len < 8)
         return ucstrncmp_intwise(a, b, len);
 
     // both a and b are misaligned
     // we'll call the alignr function with the alignment *difference* between the two
-    int val = (quintptr(b) & 0xf) - (quintptr(a) & 0xf);
-    int sign = 1;
+    int val = (quintptr(a) & 0xf) - (quintptr(b) & 0xf);
+    bool invert = false;
     if (val < 0) {
         val = -val;
-        qSwap(a, b);
-        sign = -1;
+        //qSwap(a, b);
+        asm ("xchg %0, %1" : "+r" (a), "+r" (b));
+        invert = true;
     }
 
     // from this point on, b has the shortest alignment
     // and align(a) = align(b) + val
+    // round down the alignment so align(b) == align(a) == 0
+    int garbage = (quintptr(b) & 0xf);
+    a = (const ushort*)(quintptr(a) & ~0xf);
+    b = (const ushort*)(quintptr(b) & ~0xf);
 
+    // now the first load of b will load 'garbage' extra bytes
+    // and the first load of a will load 'garbage + val' extra bytes
     if (val == 8)
-        return ucstrncmp_ssse3_aligning2_alignr<8>(a, b, len) * sign;
+        return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<8>(a, b, len, garbage), invert);
     else if (val == 0)
-        return ucstrncmp_ssse3_aligning2_aligned(a, b, len) * sign;
+        return conditional_invert(ucstrncmp_ssse3_aligning2_aligned(a, b, len, garbage), invert);
     if (val < 8) {
         if (val < 4)
-            return ucstrncmp_ssse3_aligning2_alignr<2>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<2>(a, b, len, garbage), invert);
         else if (val == 4)
-            return ucstrncmp_ssse3_aligning2_alignr<4>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<4>(a, b, len, garbage), invert);
         else
-            return ucstrncmp_ssse3_aligning2_alignr<6>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<6>(a, b, len, garbage), invert);
     } else {
         if (val < 12)
-            return ucstrncmp_ssse3_aligning2_alignr<10>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<10>(a, b, len, garbage), invert);
         else if (val == 12)
-            return ucstrncmp_ssse3_aligning2_alignr<12>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<12>(a, b, len, garbage), invert);
         else
-            return ucstrncmp_ssse3_aligning2_alignr<14>(a, b, len) * sign;
+            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<14>(a, b, len, garbage), invert);
     }
 }
 
