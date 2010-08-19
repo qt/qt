@@ -4502,6 +4502,12 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
+
+        Node* parent = node->parent();
+        if (parent && ((parent->type() == Node::Class) ||
+                       (parent->type() == Node::Namespace))) {
+            pageWords << parent->name();
+        }
     }
 
     writer.writeAttribute("id",t);
