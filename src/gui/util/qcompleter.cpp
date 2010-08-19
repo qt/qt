@@ -921,10 +921,12 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
+#ifndef QT_NO_LINEEDIT
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>(widget);
     //the path given by QFileSystemModel does not end with /
     if (lineEdit && !lineEdit->text().isEmpty() && !q->completionPrefix().isEmpty() && q->completionPrefix() != path + QLatin1Char('/'))
         q->complete();
+#endif
 }
 
 /*!

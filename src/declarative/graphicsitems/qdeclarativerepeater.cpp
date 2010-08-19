@@ -62,6 +62,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlclass Repeater QDeclarativeRepeater
+    \ingroup qml-utility-elements
     \since 4.7
     \inherits Item
 
@@ -133,13 +134,13 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     create items as they are required.
 
     Also, note that Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
-    For example, it cannot be used to repeat QtObjects:
+    For example, it cannot be used to repeat QObjects:
     \badcode
     Item {
-        //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.
+        //XXX does not work! Can't repeat QObject as it doesn't derive from Item.
         Repeater {
             model: 10
-            QtObject {}
+            QObject {}
         }
     }
     \endcode
@@ -245,8 +246,8 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         */
         regenerate();
-        emit countChanged();
     }
+    emit countChanged();
 }
 
 /*!
@@ -377,6 +378,7 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
             d->deletables.insert(modelIndex, item);
         }
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsRemoved(int index, int count)
@@ -391,6 +393,7 @@ void QDeclarativeRepeater::itemsRemoved(int index, int count)
         else
             break;
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
@@ -420,6 +423,7 @@ void QDeclarativeRepeater::modelReset()
     if (!isComponentComplete())
         return;
     regenerate();
+    emit countChanged();
 }
 
 QT_END_NAMESPACE

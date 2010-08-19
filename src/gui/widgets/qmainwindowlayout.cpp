@@ -943,7 +943,7 @@ void QMainWindowLayout::toggleToolBarsVisible()
 #ifdef Q_WS_MAC
     if (layoutState.mainWindow->unifiedTitleAndToolBarOnMac()) {
         // If we hit this case, someone has pressed the "toolbar button" which will
-        // toggle the unified toolbar visiblity, because that's what the user wants.
+        // toggle the unified toolbar visibility, because that's what the user wants.
         // We might be in a situation where someone has hidden all the toolbars
         // beforehand (maybe in construction), but now they've hit this button and
         // and are expecting the items to show. What do we do?

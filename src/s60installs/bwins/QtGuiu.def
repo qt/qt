@@ -4148,7 +4148,7 @@ EXPORTS
 	?ensureSceneTransformRecursive@QGraphicsItemPrivate@@QAEXPAPAVQGraphicsItem@@@Z @ 4147 NONAME ; void QGraphicsItemPrivate::ensureSceneTransformRecursive(class QGraphicsItem * *)
 	?ensureSequentialSiblingIndex@QGraphicsItemPrivate@@QAEXXZ @ 4148 NONAME ; void QGraphicsItemPrivate::ensureSequentialSiblingIndex(void)
 	?ensureSortedChildren@QGraphicsItemPrivate@@QAEXXZ @ 4149 NONAME ; void QGraphicsItemPrivate::ensureSortedChildren(void)
-	?ensureSpace@QTextEngine@@QBEXH@Z @ 4150 NONAME ; void QTextEngine::ensureSpace(int) const
+	?ensureSpace@QTextEngine@@QBEXH@Z @ 4150 NONAME ABSENT ; void QTextEngine::ensureSpace(int) const
 	?ensureVisible@QGraphicsItem@@QAEXABVQRectF@@HH@Z @ 4151 NONAME ; void QGraphicsItem::ensureVisible(class QRectF const &, int, int)
 	?ensureVisible@QGraphicsItem@@QAEXMMMMHH@Z @ 4152 NONAME ; void QGraphicsItem::ensureVisible(float, float, float, float, int, int)
 	?ensureVisible@QGraphicsView@@QAEXABVQRectF@@HH@Z @ 4153 NONAME ; void QGraphicsView::ensureVisible(class QRectF const &, int, int)
@@ -12832,7 +12832,7 @@ EXPORTS
 	?readBackInfo@QRuntimePixmapData@@QAEXXZ @ 12831 NONAME ; void QRuntimePixmapData::readBackInfo(void)
 	??_EQRuntimePixmapData@@UAE@I@Z @ 12832 NONAME ; QRuntimePixmapData::~QRuntimePixmapData(unsigned int)
 	?paintEngine@QRuntimePixmapData@@UBEPAVQPaintEngine@@XZ @ 12833 NONAME ; class QPaintEngine * QRuntimePixmapData::paintEngine(void) const
-	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ; unsigned int QRuntimePixmapData::memoryUsage(void) const
+	?memoryUsage@QRuntimePixmapData@@UBEIXZ @ 12834 NONAME ABSENT ; unsigned int QRuntimePixmapData::memoryUsage(void) const
 	?toImage@QRasterPixmapData@@UBE?AVQImage@@ABVQRect@@@Z @ 12835 NONAME ; class QImage QRasterPixmapData::toImage(class QRect const &) const
 	?fromImageReader@QRasterPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 12836 NONAME ; void QRasterPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
 	?fill@QRuntimePixmapData@@UAEXABVQColor@@@Z @ 12837 NONAME ; void QRuntimePixmapData::fill(class QColor const &)
@@ -12886,4 +12886,6 @@ EXPORTS
 	?zScaleChanged@QGraphicsScale@@IAEXXZ @ 12885 NONAME ; void QGraphicsScale::zScaleChanged(void)
 	?xScaleChanged@QGraphicsScale@@IAEXXZ @ 12886 NONAME ; void QGraphicsScale::xScaleChanged(void)
 	?yScaleChanged@QGraphicsScale@@IAEXXZ @ 12887 NONAME ; void QGraphicsScale::yScaleChanged(void)
+	?_q_aboutToQuit@QApplicationPrivate@@QAEXXZ @ 12888 NONAME ; void QApplicationPrivate::_q_aboutToQuit(void)
+	?ensureSpace@QTextEngine@@QBE_NH@Z @ 12889 NONAME ; bool QTextEngine::ensureSpace(int) const
 

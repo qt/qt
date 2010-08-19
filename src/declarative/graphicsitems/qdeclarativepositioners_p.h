@@ -91,14 +91,16 @@ Q_SIGNALS:
 
 protected Q_SLOTS:
     void prePositioning();
+    void graphicsWidgetGeometryChanged();
 
 protected:
     virtual void doPositioning(QSizeF *contentSize)=0;
     virtual void reportConflictingAnchors()=0;
-    struct PositionedItem {
-        PositionedItem(QDeclarativeItem *i) : item(i), isNew(false), isVisible(true) {}
+    class PositionedItem {
+    public :
+        PositionedItem(QGraphicsObject *i) : item(i), isNew(false), isVisible(true) {}
         bool operator==(const PositionedItem &other) const { return other.item == item; }
-        QDeclarativeItem *item;
+        QGraphicsObject *item;
         bool isNew;
         bool isVisible;
     };

@@ -12046,7 +12046,7 @@ EXPORTS
 	_ZN18QRuntimePixmapDataD1Ev @ 12045 NONAME
 	_ZN18QRuntimePixmapDataD2Ev @ 12046 NONAME
 	_ZN7QPixmap15fromImageReaderEP12QImageReader6QFlagsIN2Qt19ImageConversionFlagEE @ 12047 NONAME
-	_ZNK18QRuntimePixmapData11memoryUsageEv @ 12048 NONAME
+	_ZNK18QRuntimePixmapData11memoryUsageEv @ 12048 NONAME ABSENT
 	_ZNK18QRuntimePixmapData11paintEngineEv @ 12049 NONAME
 	_ZNK18QRuntimePixmapData11runtimeDataEv @ 12050 NONAME
 	_ZNK18QRuntimePixmapData11transformedERK10QTransformN2Qt18TransformationModeE @ 12051 NONAME
@@ -12091,4 +12091,5 @@ EXPORTS
 	_ZN14QGraphicsScale13xScaleChangedEv @ 12090 NONAME
 	_ZN14QGraphicsScale13yScaleChangedEv @ 12091 NONAME
 	_ZN14QGraphicsScale13zScaleChangedEv @ 12092 NONAME
+	_ZN19QApplicationPrivate14_q_aboutToQuitEv @ 12093 NONAME
 

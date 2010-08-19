@@ -37,9 +37,9 @@
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
     
-    \previouspage Widget Classes
+    \previouspage Widgets and Layouts
     \contentspage Widgets and Layouts
-    \nextpage {Implementing Styles and Style Aware Widgets}{Styles}
+    \nextpage {Styles and Style Aware Widgets}{Styles}
 
     \ingroup frameworks-technologies
 
@@ -242,7 +242,7 @@
 
     For further guidance when implementing these functions, see the
     \e{Qt Quarterly} article
-    \l{http://qt.nokia.com/doc/qq/qq04-height-for-width.html}
+    \l{http://doc.qt.nokia.com/qq/qq04-height-for-width.html}
     {Trading Height for Width}.
 
 

@@ -78,7 +78,7 @@ private:
     QString q_pattern;
     Qt::CaseSensitivity q_cs;
 #ifdef Q_CC_RVCT
-// explicitely allow anonymous unions for RVCT to prevent compiler warnings
+// explicitly allow anonymous unions for RVCT to prevent compiler warnings
 #  pragma push
 #  pragma anon_unions
 #endif

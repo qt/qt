@@ -103,6 +103,12 @@ class BlendBench : public QObject
 private slots:		
     void blendBench_data();
     void blendBench();
+
+    void blendBenchAlpha_data();
+    void blendBenchAlpha();
+
+    void unalignedBlendArgb32_data();
+    void unalignedBlendArgb32();
 };
 
 void BlendBench::blendBench_data()
@@ -145,6 +151,75 @@ void BlendBench::blendBench()
     QBENCHMARK {
         p.drawRect(0, 0, 512, 512);
     }
+}
+
+void BlendBench::blendBenchAlpha_data()
+{
+    blendBench_data();
+}
+
+void BlendBench::blendBenchAlpha()
+{
+    QFETCH(int, brushType);
+    QFETCH(int, compositionMode);
+
+    QImage img(512, 512, QImage::Format_ARGB32_Premultiplied);
+    QImage src(512, 512, QImage::Format_ARGB32_Premultiplied);
+    paint(&src);
+    QPainter p(&img);
+    p.setPen(Qt::NoPen);
+
+    p.setCompositionMode(QPainter::CompositionMode(compositionMode));
+    if (brushType == ImageBrush) {
+        p.setBrush(QBrush(src));
+    } else if (brushType == SolidBrush) {
+        p.setBrush(QColor(127, 127, 127, 127));
+    }
+    p.setOpacity(0.7f);
+
+    QBENCHMARK {
+        p.drawRect(0, 0, 512, 512);
+    }
+}
+
+void BlendBench::unalignedBlendArgb32_data()
+{
+    // The performance of blending can depend of the alignment of the data
+    // on 16 bytes. Some SIMD instruction set have significantly better
+    // memory access when the memory is aligned on 16 bytes boundary.
+
+    // offset in 32 bits words
+    QTest::addColumn<int>("offset");
+    QTest::newRow("aligned on 16 bytes") << 0;
+    QTest::newRow("unaligned by 4 bytes") << 1;
+    QTest::newRow("unaligned by 8 bytes") << 2;
+    QTest::newRow("unaligned by 12 bytes") << 3;
+}
+
+void BlendBench::unalignedBlendArgb32()
+{
+    const int dimension = 1024;
+
+    // We use dst aligned by design. We don't want to test all the combination of alignemnt for src and dst.
+    // Moreover, it make sense for us to align dst in the implementation because it is accessed more often.
+    uchar *dstMemory = static_cast<uchar*>(qMallocAligned((dimension * dimension * sizeof(quint32)), 16));
+    QImage destination(dstMemory, dimension, dimension, QImage::Format_ARGB32_Premultiplied);
+    destination.fill(0x12345678); // avoid special cases of alpha
+
+    uchar *srcMemory = static_cast<uchar*>(qMallocAligned((dimension * dimension * sizeof(quint32)) + 16, 16));
+    QFETCH(int, offset);
+    srcMemory += (offset * sizeof(quint32));
+
+    QImage src(srcMemory, dimension, dimension, QImage::Format_ARGB32_Premultiplied);
+    src.fill(0x87654321);
+
+    QPainter painter(&destination);
+    QBENCHMARK {
+        painter.drawImage(QPoint(), src);
+    }
+
+    qFreeAligned(srcMemory);
+    qFreeAligned(dstMemory);
 }
 
 QTEST_MAIN(BlendBench)

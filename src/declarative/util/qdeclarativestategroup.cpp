@@ -88,6 +88,7 @@ public:
 
 /*!
    \qmlclass StateGroup QDeclarativeStateGroup
+    \ingroup qml-state-elements
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
@@ -112,7 +113,7 @@ public:
    }
    \endqml
 
-   \sa {qmlstate}{States} {state-transitions}{Transitions}, {QtDeclarative}
+   \sa {qmlstate}{States} {Transitions}, {QtDeclarative}
 */
 
 QDeclarativeStateGroup::QDeclarativeStateGroup(QObject *parent)
@@ -204,7 +205,7 @@ void QDeclarativeStateGroupPrivate::clear_states(QDeclarativeListProperty<QDecla
   }
   \endqml
 
-  \sa {state-transitions}{Transitions}
+  \sa {Transitions}
 */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transitionsProperty()
 {

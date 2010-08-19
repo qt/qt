@@ -343,8 +343,8 @@
 /*!
     \page examples-draganddrop.html
     \ingroup all-examples
-    \title Drag &amp; Drop Examples
-    \brief How to access your platform's native darg &amp; drop functionality
+    \title Drag and Drop Examples
+    \brief How to access your platform's native drag and drop functionality.
 
     \image draganddrop-examples.png
 
@@ -529,7 +529,7 @@
     \title OpenVG Examples
     \brief Accessing OpenVG from Qt
 
-    \image openvg-examples.png
+    \image opengl-examples.png
 
     Qt provides support for integration with OpenVG implementations on
     platforms with suitable drivers.

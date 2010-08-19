@@ -35,7 +35,7 @@
     pair type is not available. It stores one value of type T1 and
     one value of type T2. It can be used as a return value for a
     function that needs to return two values, or as the value type of
-    a \l{generic container}.
+    a \l{Container classes}{generic container}.
 
     Here's an example of a QPair that stores one QString and one \c
     double value:
@@ -53,7 +53,7 @@
     requirements; these requirements are documented on a per-function
     basis.
 
-    \sa {Generic Containers}
+    \sa {Container Classes}
 */
 
 /*! \typedef QPair::first_type

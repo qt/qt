@@ -58,7 +58,7 @@ protected:
     virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath);
 
     bool writeDeploymentTargets(QTextStream &t, bool isRom);
-
+    QString gnuMakefileName;
 public:
 
     SymbianAbldMakefileGenerator();

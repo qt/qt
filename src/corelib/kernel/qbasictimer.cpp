@@ -54,7 +54,8 @@ QT_BEGIN_NAMESPACE
     This is a fast, lightweight, and low-level class used by Qt
     internally. We recommend using the higher-level QTimer class
     rather than this class if you want to use timers in your
-    applications.
+    applications. Note that this timer is a repeating timer that
+    will send subsequent timer events unless the stop() function is called.
 
     To use this class, create a QBasicTimer, and call its start()
     function with a timeout interval and with a pointer to a QObject
@@ -88,8 +89,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QBasicTimer::isActive() const
 
-    Returns true if the timer is running, has not yet timed
-    out, and has not been stopped; otherwise returns false.
+    Returns true if the timer is running and has not been stopped; otherwise
+    returns false.
 
     \sa start() stop()
 */

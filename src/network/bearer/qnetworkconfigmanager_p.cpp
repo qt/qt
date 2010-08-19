@@ -63,6 +63,7 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
 :   pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
+    qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");
 
     moveToThread(QCoreApplicationPrivate::mainThread());
     updateConfigurations();
@@ -150,25 +151,29 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
              end = engine->accessPointConfigurations.end(); it != end; ++it) {
             QNetworkConfigurationPrivatePointer ptr = it.value();
 
-            const QString bearerName = ptr->bearerName();
             QMutexLocker configLocker(&ptr->mutex);
+            QNetworkConfiguration::BearerType bearerType = ptr->bearerType;
 
             if ((ptr->state & QNetworkConfiguration::Discovered) ==
                 QNetworkConfiguration::Discovered) {
                 if (!defaultConfiguration) {
                     defaultConfiguration = ptr;
                 } else {
+                    QMutexLocker defaultConfigLocker(&defaultConfiguration->mutex);
+
                     if (defaultConfiguration->state == ptr->state) {
-                        if (defaultConfiguration->bearerName() == QLatin1String("Ethernet")) {
+                        switch (defaultConfiguration->bearerType) {
+                        case QNetworkConfiguration::BearerEthernet:
                             // do nothing
-                        } else if (defaultConfiguration->bearerName() == QLatin1String("WLAN")) {
-                            // ethernet beats wlan
-                            if (bearerName == QLatin1String("Ethernet"))
-                                defaultConfiguration = ptr;
-                        } else {
-                            // ethernet and wlan beats other
-                            if (bearerName == QLatin1String("Ethernet") ||
-                                bearerName == QLatin1String("WLAN")) {
+                            break;
+                        case QNetworkConfiguration::BearerWLAN:
+                            // Ethernet beats WLAN
+                            defaultConfiguration = ptr;
+                            break;
+                        default:
+                            // Ethernet and WLAN beats other
+                            if (bearerType == QNetworkConfiguration::BearerEthernet ||
+                                bearerType == QNetworkConfiguration::BearerWLAN) {
                                 defaultConfiguration = ptr;
                             }
                         }

@@ -186,7 +186,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
                       $$elf2e32_LIBPATH \
                       $$capability \
                       $$QMAKE_ELF2E32_FLAGS \
-                      && ln "$${symbianDestdir}/$${baseTarget}.exe" "$${symbianDestdir}/$${baseTarget}" \
+                      && $$QMAKE_COPY "$${symbianDestdir}/$${baseTarget}.exe" "$${symbianDestdir}/$${baseTarget}" \
                       $$QMAKE_POST_LINK
     silent:QMAKE_POST_LINK = @echo postlinking $@ && $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.sym

@@ -55,27 +55,28 @@ Rectangle {
 
         GridMenu {
             id: gridMenu
-
             width: parent.width; height: 320
+
             focus: true
             interactive: parent.activeFocus
         }
 
-        ListViews {
-            id: listViews
+        ListMenu {
+            id: listMenu
             y: 320; width: parent.width; height: 320
         }
 
         Rectangle { 
             id: shade
             anchors.fill: parent
-            color: "black"; opacity: 0 
+            color: "black"
+            opacity: 0 
         }
 
         states: State {
             name: "showListViews"
             PropertyChanges { target: gridMenu; y: -160 }
-            PropertyChanges { target: listViews; y: 160 }
+            PropertyChanges { target: listMenu; y: 160 }
         }
 
         transitions: Transition {

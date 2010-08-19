@@ -114,6 +114,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \qmlclass QtObject QObject
+  \ingroup qml-utility-elements
   \since 4.7
   \brief The QtObject element is the most basic element in QML.
 
@@ -184,11 +185,13 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
-\keyword QmlGlobalQtObject
-\qmlclass Qt QDeclarativeEnginePrivate
+\qmlclass QML:Qt QDeclarativeEnginePrivate
+  \ingroup qml-utility-elements
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\keyword QmlGlobalQtObject
+
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
 The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
 with enums and functions.  To use it, call the members of the global \c Qt object directly. 
@@ -206,10 +209,9 @@ Text {
 
 \section1 Enums
 
-The Qt object contains all enums in the Qt namespace. For example, you can
-access the \c AlignLeft member of the \c Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+The Qt object contains enums that declared into Qt's Meta-Object System. For example, you can access
+the \c Leftbutton member of the \c Qt::MouseButton enum with \c Qt.LeftButton.
 
-For a full list of enums, see the \l{Qt Namespace} documentation.
 
 \section1 Types
 The Qt object also contains helper functions for creating objects of specific
@@ -241,7 +243,7 @@ The format specification is described at \l{QML:Qt::formatDateTime}{Qt.formatDat
 
 \section1 Dynamic Object Creation
 The following functions on the global object allow you to dynamically create QML
-items from files or strings. See \l{Dynamic Object Management} for an overview
+items from files or strings. See \l{Dynamic Object Management in QML} for an overview
 of their use.
 
 \list
@@ -1119,7 +1121,7 @@ For example:
 
 \snippet doc/src/snippets/declarative/createComponent-simple.qml 0
 
-See \l {Dynamic Object Management} for more information on using this function.
+See \l {Dynamic Object Management in QML} for more information on using this function.
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
@@ -1171,7 +1173,7 @@ Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
 
-See \l {Dynamic Object Management} for more information on using this function.
+See \l {Dynamic Object Management in QML} for more information on using this function.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)

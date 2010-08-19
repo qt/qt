@@ -507,7 +507,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObject(const QDeclar
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
-           << false;
+           << false << true;
         d->client->sendMessage(message);
     } else {
         query->m_state = QDeclarativeDebugQuery::Error;
@@ -530,7 +530,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObjectRecursive(cons
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
-           << true;
+           << true << true;
         d->client->sendMessage(message);
     } else {
         query->m_state = QDeclarativeDebugQuery::Error;

@@ -141,7 +141,6 @@ public:
     int supportsPremultipliedAlpha : 1;
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
-    int memoryLimitForHwRendering;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
 
     enum ScanCodeState {
@@ -165,6 +164,7 @@ public:
     static inline CEikButtonGroupContainer* buttonGroupContainer();
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
 #endif
+    static void controlVisibilityChanged(CCoeControl *control, bool visible);
 
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
@@ -291,7 +291,6 @@ inline QS60Data::QS60Data()
   supportsPremultipliedAlpha(0),
   avkonComponentsSupportTransparency(0),
   menuBeingConstructed(0),
-  memoryLimitForHwRendering(0),
   s60ApplicationFactory(0)
 #ifdef Q_OS_SYMBIAN
   ,s60InstalledTrapHandler(0)

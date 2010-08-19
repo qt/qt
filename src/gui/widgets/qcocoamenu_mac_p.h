@@ -76,6 +76,7 @@ QT_FORWARD_DECLARE_CLASS(QAction)
 }
 - (id)initWithQMenu:(QMenu*)menu;
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action;
+- (NSInteger)indexOfItemWithTarget:(id)anObject andAction:(SEL)actionSelector;
 @end
 #endif
 

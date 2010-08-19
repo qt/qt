@@ -48,6 +48,8 @@
 #include <QVariantAnimation>
 #include <QEasingCurve>
 
+#include "../../../shared/util.h"
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
@@ -82,6 +84,7 @@ private slots:
     void easingProperties();
     void rotation();
     void runningTrueBug();
+    void nonTransitionBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -551,6 +554,20 @@ void tst_qdeclarativeanimations::propertiesTransition()
         QTest::qWait(waitDuration);
         QTIMED_COMPARE(myRect->x(),qreal(100));
     }*/
+
+    {
+        QDeclarativeEngine engine;
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition7.qml"));
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QDeclarativeItemPrivate::get(rect)->setState("moved");
+        QDeclarativeRectangle *myRect = rect->findChild<QDeclarativeRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
+    }
+
 }
 
 void tst_qdeclarativeanimations::invalidDuration()
@@ -746,6 +763,34 @@ void tst_qdeclarativeanimations::runningTrueBug()
     QVERIFY(cloud);
     QTest::qWait(1000);
     QVERIFY(cloud->x() > qreal(0));
+}
+
+//QTBUG-12805
+void tst_qdeclarativeanimations::nonTransitionBug()
+{
+    //tests that the animation values from the previous transition are properly cleared
+    //in the case where an animation in the transition doesn't match anything (but previously did)
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/nonTransitionBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    QDeclarativeRectangle *mover = rect->findChild<QDeclarativeRectangle*>("mover");
+
+    mover->setX(100);
+    QCOMPARE(mover->x(), qreal(100));
+
+    rectPrivate->setState("left");
+    QTRY_COMPARE(mover->x(), qreal(0));
+
+    mover->setX(100);
+    QCOMPARE(mover->x(), qreal(100));
+
+    //make sure we don't try to animate back to 0
+    rectPrivate->setState("free");
+    QTest::qWait(300);
+    QCOMPARE(mover->x(), qreal(100));
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

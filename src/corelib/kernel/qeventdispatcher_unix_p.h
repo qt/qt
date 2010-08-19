@@ -77,7 +77,7 @@ struct QTimerInfo {
     timeval interval; // - timer interval
     timeval timeout;  // - when to sent event
     QObject *obj;     // - object to receive event
-    bool inTimerEvent;
+    QTimerInfo **activateRef; // - ref from activateTimers
 };
 
 class QTimerInfoList : public QList<QTimerInfo*>
@@ -92,7 +92,7 @@ class QTimerInfoList : public QList<QTimerInfo*>
 #endif
 
     // state variables used by activateTimers()
-    QTimerInfo *firstTimerInfo, *currentTimerInfo;
+    QTimerInfo *firstTimerInfo;
 
 public:
     QTimerInfoList();

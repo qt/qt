@@ -1,3 +1,36 @@
+2010-08-05  David Leong  <david.leong@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Input mode states are not reset after entering a password field
+        https://bugs.webkit.org/show_bug.cgi?id=43530
+
+        Input mode hints are not reset if clicking on password <input> elements then
+        clicking on <textarea> elements
+
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::setInputMethodState):
+        * tests/qwebview/resources/input_types.html:
+        * tests/qwebview/tst_qwebview.cpp:
+        (tst_QWebView::focusInputTypes):
+
+
+2010-07-27  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Incorrect input method hints
+        https://bugs.webkit.org/show_bug.cgi?id=43037
+
+        Properly set or reset all input method hints when
+        activating input fields.
+
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::setInputMethodState):
+        * tests/qwebview/tst_qwebview.cpp:
+        (tst_QWebView::focusInputTypes): Extended unit test to verify that we
+        reset hints.
+
 2009-10-30  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

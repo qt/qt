@@ -133,6 +133,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
 /*!
     \qmlclass State QDeclarativeState
+    \ingroup qml-state-elements
     \since 4.7
     \brief The State element defines configurations of objects and properties.
 
@@ -154,13 +155,14 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
     Notice the default state is referred to using an empty string ("").
 
-    States are commonly used together with \l {state-transitions}{Transitions} to provide
+    States are commonly used together with \l {Transitions} to provide
     animations when state changes occur.
 
     \note Setting the state of an object from within another state of the same object is
     not allowed.
 
-    \sa {declarative/animation/states}{states example}, {qmlstates}{States}, {state-transitions}{Transitions}, QtDeclarative
+    \sa {declarative/animation/states}{states example}, {qmlstates}{States},
+    {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
 */
 
 /*!

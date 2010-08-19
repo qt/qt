@@ -1,0 +1,61 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example demos/spectrum
+    \title Spectrum Analyzer
+
+    The Spectrum Analyzer demo shows how the \l{QtMultimedia Module} can be
+    used in Qt applications to capture and then play back an audio stream.
+
+    \image spectrum-demo.png
+
+    Because QtMultimedia allows the application to access the raw audio
+    stream, the data can either be inspected or modified by the application.
+    The Spectrum Analyzer demo displays three pieces of information while
+    audio is being either captured or played back:
+
+    \list
+    \o Information about the raw audio stream, shown in the uppermost widget:
+    \list
+        \o The amount of data currently in the buffer, shown in blue
+        \o The segment of data which was most recently analysed to compute
+        the frequency spectrum, shown in green
+        \o The raw audio waveform, shown in white and scrolling from right to
+        left
+    \endlist
+    \o A representation of the frequency spectrum, shown at the lower left
+    \o The current RMS level of the audio stream, and the recent 'high
+    watermark' level, shown at the lower right
+    \endlist
+
+    Spectrum analysis is performed by calculating the Fast Fourier Transform
+    (FFT) of a segment of audio data.  An open-source library,
+    \l{http://ldesoras.free.fr/prod.html}{FFTReal}, against which the
+    application is dynamically linked, is used to compute the transform.
+*/
+

@@ -46,7 +46,7 @@
     \o \inlineimage qtdemo-small.png
     \o If you run the \l{Examples and Demos Launcher}, you'll see many of Qt's
     widgets in action.
-	
+
     The \l{Qt Widget Gallery} also provides overviews of selected Qt
     widgets in each of the styles used on various supported platforms.
     \endtable
@@ -134,18 +134,35 @@
     \section1 QtWebKit
 
     \list
-    \o \l{Web Browser} demonstrates how Qt's \l{QtWebKit Module}{WebKit module}
-        can be used to implement a small Web browser.
+    \o \l{Web Browser} demonstrates how Qt's \l{QtWebKit} module can be used to
+       implement a small Web browser.
+    \endlist
+
+    \section1 Multimedia
+
+    \list
+    \o \l{demos/spectrum}{Spectrum Analyser} shows how the \l{QtMultimedia}
+       module can be used to manipulate audio as it is played.
     \endlist
 
     \section1 Phonon
 
     \list
-    \o \l{demos/qmediaplayer}{Media Player} demonstrates how the \l{Phonon Module} can be
-    used to implement a basic media player application.
+    \o \l{demos/qmediaplayer}{Media Player} demonstrates how the
+    \l{Phonon Module}{Phonon module} can be used to implement a basic media player
+    application.
     \endlist
 
     \note The Phonon demos are currently not available for the MinGW platform.
+
+    \section1 Multimedia
+
+    \list
+    \o \l{demos/spectrum}{Spectrum Analyzer} demonstrates how the \l{QtMultimedia Module}
+    can be used to capture and play back an audio stream, at the same time allowing the
+    application to access the raw audio data.  This application analyzes the audio stream
+    in order to display a frequency spectrum.
+    \endlist
 
     \section1 Animation
 

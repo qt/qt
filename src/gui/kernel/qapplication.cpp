@@ -477,7 +477,7 @@ int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
 #ifdef Q_OS_SYMBIAN
 // The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
-static int drag_distance = 8;
+static int drag_distance = 12;
 #else
 static int drag_distance = 4;
 #endif
@@ -1060,6 +1060,18 @@ QApplication::~QApplication()
     QApplicationPrivate::is_app_closing = true;
     QApplicationPrivate::is_app_running = false;
 
+    // delete all widgets
+    if (QWidgetPrivate::allWidgets) {
+        QWidgetSet *mySet = QWidgetPrivate::allWidgets;
+        QWidgetPrivate::allWidgets = 0;
+        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
+            register QWidget *w = *it;
+            if (!w->parent())                        // window
+                w->destroy(true, true);
+        }
+        delete mySet;
+    }
+
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
 
@@ -1079,18 +1091,6 @@ QApplication::~QApplication()
 
     delete QWidgetPrivate::mapper;
     QWidgetPrivate::mapper = 0;
-
-    // delete all widgets
-    if (QWidgetPrivate::allWidgets) {
-        QWidgetSet *mySet = QWidgetPrivate::allWidgets;
-        QWidgetPrivate::allWidgets = 0;
-        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
-            register QWidget *w = *it;
-            if (!w->parent())                        // window
-                w->destroy(true, true);
-        }
-        delete mySet;
-    }
 
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = 0;
@@ -2548,6 +2548,13 @@ void QApplication::setActiveWindow(QWidget* act)
         sendSpontaneousEvent(w, &windowActivate);
         sendSpontaneousEvent(w, &activationChange);
     }
+
+#ifdef QT_MAC_USE_COCOA
+    // In case the user clicked on a child window, we need to
+    // reestablish the stacking order of the window so
+    // it pops in front of other child windows in cocoa:
+    qt_cocoaStackChildWindowOnTopOfOtherChildren(window);
+#endif
 
     for(int i = 0; i < toBeDeactivated.size(); ++i) {
         QWidget *w = toBeDeactivated.at(i);

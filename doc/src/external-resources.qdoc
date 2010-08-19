@@ -416,5 +416,30 @@
 
 /*!
     \externalpage http://opensource.org/licenses/bsd-license.php
-    \title BSD License
+    \title New and Modified BSD Licenses
+*/
+
+/*!
+    \externalpage http://developer.symbian.org/wiki/index.php/Platform_Security_%28Fundamentals_of_Symbian_C%2B%2B%29#Self-Signed_Applications
+    \title Symbian Platform Security
+*/
+
+/*!
+    \externalpage http://developer.symbian.org/wiki/index.php/Deploying_a_Qt_Application
+    \title Deploying a Qt Application article
+*/
+
+/*!
+    \externalpage http://www.ecma-international.org/publications/standards/Ecma-262.htm
+    \title ECMAScript Language Specification
+*/
+
+/*!
+    \externalpage https://developer.mozilla.org/en/JavaScript
+    \title JavaScript
+*/
+
+/*!
+    \externalpage https://developer.mozilla.org/en/JavaScript/About_JavaScript
+    \title About JavaScript
 */

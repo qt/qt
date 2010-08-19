@@ -30,7 +30,6 @@
     \title Using QtDBus Adaptors
     \brief How to create and use DBus adaptors in Qt.
 
-    \ingroup technology-apis
     \ingroup best-practices
 
     Adaptors are special classes that are attached to any QObject-derived class

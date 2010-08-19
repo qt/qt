@@ -161,7 +161,7 @@
     function, and should merge the \e{intermediate} into the \e{result}
     variable.  QtConcurrent::mappedReduced() guarantees that only one thread
     will call reduce at a time, so using a mutex to lock the result variable
-    is not neccesary. The QtConcurrent::ReduceOptions enum provides a way to
+    is not necessary. The QtConcurrent::ReduceOptions enum provides a way to
     control the order in which the reduction is done. If
     QtConcurrent::UnorderedReduce is used (the default), the order is
     undefined, while QtConcurrent::OrderedReduce ensures that the reduction

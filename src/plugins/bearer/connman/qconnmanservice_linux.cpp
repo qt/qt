@@ -53,6 +53,8 @@
 
 #include "qconnmanservice_linux_p.h"
 
+#ifndef QT_NO_BEARERMANAGEMENT
+#ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 static QDBusConnection dbusConnection = QDBusConnection::systemBus();
@@ -129,8 +131,10 @@ QVariant QConnmanManagerInterface::getProperty(const QString &property)
 
 QVariantMap QConnmanManagerInterface::getProperties()
 {
-    QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    } else return QVariantMap();
 }
 
 QString QConnmanManagerInterface::getState()
@@ -477,9 +481,7 @@ QVariant QConnmanProfileInterface::getProperty(const QString &property)
     QVariantMap map = getProperties();
     if (map.contains(property)) {
         var = map.value(property);
-    } else {
-        qDebug() <<__FUNCTION__<< "Could not find" << property;
-    }
+    } 
     return var;
 }
 
@@ -518,8 +520,6 @@ QConnmanServiceInterface::~QConnmanServiceInterface()
 
 void QConnmanServiceInterface::connectNotify(const char *signal)
 {
-//    qWarning() << __FUNCTION__ << signal << this->path();
-
     if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
         dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
@@ -551,8 +551,12 @@ void QConnmanServiceInterface::disconnectNotify(const char *signal)
 
 QVariantMap QConnmanServiceInterface::getProperties()
 {
-    QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
-    return reply.value();
+    if(this->isValid()) {
+        QDBusReply<QVariantMap> reply =  this->call(QLatin1String("GetProperties"));
+        return reply.value();
+    }
+    else
+        return QVariantMap();
 }
 
 QVariant QConnmanServiceInterface::getProperty(const QString &property)
@@ -561,9 +565,7 @@ QVariant QConnmanServiceInterface::getProperty(const QString &property)
     QVariantMap map = getProperties();
     if (map.contains(property)) {
         var = map.value(property);
-    } else {
-//        qDebug() <<__FUNCTION__<< "Could not find" << property;
-    }
+    } 
     return var;
 }
 
@@ -724,6 +726,99 @@ QVariantMap QConnmanServiceInterface::getEthernet()
     QVariant var = getProperty("Ethernet");
     return qdbus_cast<QVariantMap >(var);
 }
+
+QString QConnmanServiceInterface::getMethod()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Method") {
+            return it.value().toString();
+        }
+    }
+ return QString();
+}
+
+QString QConnmanServiceInterface::getInterface()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Interface") {
+            return it.value().toString();
+        }
+    }
+
+    return QString();
+}
+
+QString QConnmanServiceInterface::getMacAddress()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Address") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
+quint16 QConnmanServiceInterface::getMtu()
+{
+    quint16 mtu=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "MTU") {
+            return it.value().toUInt();
+        }
+    }
+    return mtu;
+}
+
+quint16 QConnmanServiceInterface::getSpeed()
+{
+    quint16 speed=0;
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Speed") {
+            return it.value().toUInt();
+        }
+    }
+    return speed;
+}
+
+QString QConnmanServiceInterface::getDuplex()
+{
+    QVariant var;
+    QVariantMap map = getEthernet();
+
+    QMapIterator<QString,QVariant> it(map);
+    while(it.hasNext()) {
+        it.next();
+        if(it.key() == "Duplex") {
+            return it.value().toString();
+        }
+    }
+    return QString();
+}
+
 
 bool QConnmanServiceInterface::isOfflineMode()
 {
@@ -950,15 +1045,7 @@ QVariantMap QConnmanDeviceInterface::getProperties()
 
 bool QConnmanDeviceInterface::setProperty(const QString &name, const QDBusVariant &value)
 {
-
-//    QList<QVariant> args;
-    qWarning() << __FUNCTION__ << name << value.variant();
-//    args << qVariantFromValue(name);
-//    args << qVariantFromValue(value);
-
     QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, qVariantFromValue(value));
-qWarning() << reply.errorMessage();
-
     return true;
 }
 
@@ -1047,7 +1134,6 @@ bool QConnmanDeviceInterface::setEnabled(bool powered)
     << qVariantFromValue(QDBusVariant(powered));
 
     QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
-    qWarning() << reply.errorMessage() << reply.errorName();
     return true;
 }
 
@@ -1063,10 +1149,12 @@ QConnmanDBusHelper::~QConnmanDBusHelper()
 void QConnmanDBusHelper::propertyChanged(const QString &item, const QDBusVariant &var)
 {
     QDBusMessage msg = this->message();
-//    qWarning() << sender();
- //   qWarning()  << msg.interface() << msg.path() << item << var.variant() <<"\n";
     Q_EMIT propertyChangedContext(msg.path() ,item, var);
 }
 
 /////////////////
 QT_END_NAMESPACE
+
+#endif // QT_NO_DBUS
+#endif // QT_NO_BEARERMANAGEMENT
+
