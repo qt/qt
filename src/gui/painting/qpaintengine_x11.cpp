@@ -696,10 +696,11 @@ void QX11PaintEngine::drawLines(const QLine *lines, int lineCount)
                 linef = d->matrix.map(QLineF(lines[i]));
             }
             if (clipLine(&linef, d->polygonClipper.boundingRect())) {
-                int x1 = qFloor(linef.x1() + aliasedCoordinateDelta);
-                int y1 = qFloor(linef.y1() + aliasedCoordinateDelta);
-                int x2 = qFloor(linef.x2() + aliasedCoordinateDelta);
-                int y2 = qFloor(linef.y2() + aliasedCoordinateDelta);
+                int x1 = qRound(linef.x1() + aliasedCoordinateDelta);
+                int y1 = qRound(linef.y1() + aliasedCoordinateDelta);
+                int x2 = qRound(linef.x2() + aliasedCoordinateDelta);
+                int y2 = qRound(linef.y2() + aliasedCoordinateDelta);
+
                 XDrawLine(d->dpy, d->hd, d->gc, x1, y1, x2, y2);
             }
         }
@@ -729,10 +730,11 @@ void QX11PaintEngine::drawLines(const QLineF *lines, int lineCount)
         for (int i = 0; i < lineCount; ++i) {
             QLineF linef = d->matrix.map(lines[i]);
             if (clipLine(&linef, d->polygonClipper.boundingRect())) {
-                int x1 = qFloor(linef.x1() + aliasedCoordinateDelta);
-                int y1 = qFloor(linef.y1() + aliasedCoordinateDelta);
-                int x2 = qFloor(linef.x2() + aliasedCoordinateDelta);
-                int y2 = qFloor(linef.y2() + aliasedCoordinateDelta);
+                int x1 = qRound(linef.x1() + aliasedCoordinateDelta);
+                int y1 = qRound(linef.y1() + aliasedCoordinateDelta);
+                int x2 = qRound(linef.x2() + aliasedCoordinateDelta);
+                int y2 = qRound(linef.y2() + aliasedCoordinateDelta);
+
                 XDrawLine(d->dpy, d->hd, d->gc, x1, y1, x2, y2);
             }
         }
@@ -1516,8 +1518,8 @@ void QX11PaintEnginePrivate::fillPolygon_translated(const QPointF *polygonPoints
     for (int i = 0; i < pointCount; ++i) {
         translated_points[i] = polygonPoints[i] + offset;
 
-        translated_points[i].rx() = qFloor(translated_points[i].x()) + offs;
-        translated_points[i].ry() = qFloor(translated_points[i].y()) + offs;
+        translated_points[i].rx() = qRound(translated_points[i].x()) + offs;
+        translated_points[i].ry() = qRound(translated_points[i].y()) + offs;
     }
 
     fillPolygon_dev(translated_points.data(), pointCount, gcMode, mode);
@@ -1688,8 +1690,8 @@ void QX11PaintEnginePrivate::strokePolygon_dev(const QPointF *polygonPoints, int
     if (clippedCount > 0) {
         QVarLengthArray<XPoint> xpoints(clippedCount);
         for (int i = 0; i < clippedCount; ++i) {
-            xpoints[i].x = qFloor(clippedPoints[i].x + aliasedCoordinateDelta);
-            xpoints[i].y = qFloor(clippedPoints[i].y + aliasedCoordinateDelta);
+            xpoints[i].x = qRound(clippedPoints[i].x + aliasedCoordinateDelta);
+            xpoints[i].y = qRound(clippedPoints[i].y + aliasedCoordinateDelta);
         }
         uint numberPoints = qMin(clippedCount, xlibMaxLinePoints);
         XPoint *pts = xpoints.data();
@@ -1754,8 +1756,8 @@ void QX11PaintEnginePrivate::fillPath(const QPainterPath &path, QX11PaintEngineP
         for (int j = 0; j < polys.at(i).size(); ++j) {
             translated_points[j] = polys.at(i).at(j);
             if (!X11->use_xrender || !(render_hints & QPainter::Antialiasing)) {
-                translated_points[j].rx() = qFloor(translated_points[j].rx() + aliasedCoordinateDelta) + offs;
-                translated_points[j].ry() = qFloor(translated_points[j].ry() + aliasedCoordinateDelta) + offs;
+                translated_points[j].rx() = qRound(translated_points[j].rx() + aliasedCoordinateDelta) + offs;
+                translated_points[j].ry() = qRound(translated_points[j].ry() + aliasedCoordinateDelta) + offs;
             }
         }
 
@@ -1914,6 +1916,8 @@ void QX11PaintEngine::drawPixmap(const QRectF &r, const QPixmap &px, const QRect
     int sh = qRound(sr.height());
 
     QPixmap pixmap = qt_toX11Pixmap(px);
+    if(pixmap.isNull())
+        return;
 
     if ((d->xinfo && d->xinfo->screen() != pixmap.x11Info().screen())
         || (pixmap.x11Info().screen() != DefaultScreen(X11->display))) {

@@ -2414,10 +2414,15 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     # Special case for mkspecs/features directory.
     # To be able to place .prf files into a shadow build directory,
     # we're creating links for files only. The directory structure is reproduced.
-    # A simple "cp -rs" doesn't work on Mac. :(
     rm -rf "$outpath/mkspecs/features"
-    find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-    find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+    if [ "$UNAME_SYSTEM" = "Linux" ]; then
+        # This works with GNU coreutils, and is needed for ScratchBox
+        cp -rs "$relpath/mkspecs/features" "$outpath/mkspecs/features"
+    else
+        # A simple "cp -rs" doesn't work on Mac. :(
+        find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+        find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+    fi
 
     # symlink the doc directory
     rm -rf "$outpath/doc"
