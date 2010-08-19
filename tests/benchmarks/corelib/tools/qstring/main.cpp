@@ -1114,6 +1114,86 @@ static int ucstrncmp_ssse3_aligning(const ushort *a, const ushort *b, int len)
     }
 }
 
+static inline __attribute__((optimize("no-unroll-loops")))
+int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len)
+{
+    // len >= 8
+    // align(b) == align(a)
+
+    // round down the alignment so align(b) == align(a) == 0
+    // calculate how many garbage bytes we'll read on the first load
+    // corresponds to how many bits we must ignore from movemask's result
+    int garbage = (quintptr(b) & 0xf);
+    a -= garbage / 2;
+    b -= garbage / 2;
+
+    __m128i m1 = _mm_load_si128((const __m128i *)a);
+    __m128i m2 = _mm_load_si128((const __m128i *)b);
+    __m128i cmp = _mm_cmpeq_epi16(m1, m2);
+    int mask = short(_mm_movemask_epi8(cmp)); // force sign extension
+    mask >>= garbage;
+    if (~mask) {
+        // which ushort isn't equal?
+        int counter = (garbage + bsf_nonzero(~mask))/2;
+        return a[counter] - b[counter];
+    }
+
+    // the first 16-garbage bytes (8-garbage/2 ushorts) were equal
+    len -= 8 - garbage/2;
+    return ucstrncmp_sse2_aligned(a + 8, b + 8, len);
+}
+
+template<int N> static inline __attribute__((optimize("no-unroll-loops")))
+int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len)
+{
+    return ucstrncmp_intwise(a, b, len);
+}
+
+static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
+{
+    // Different strategy from above: instead of doing two unaligned loads
+    // when trying to align, we'll only do aligned loads and round down the
+    // addresses of a and b. This means the first load will contain garbage
+    // in the beginning of the string, which we'll shift out of the way
+    // (after _mm_movemask_epi8)
+
+    if (len < 16)
+        return ucstrncmp_intwise(a, b, len);
+
+    // both a and b are misaligned
+    // we'll call the alignr function with the alignment *difference* between the two
+    int val = (quintptr(b) & 0xf) - (quintptr(a) & 0xf);
+    int sign = 1;
+    if (val < 0) {
+        val = -val;
+        qSwap(a, b);
+        sign = -1;
+    }
+
+    // from this point on, b has the shortest alignment
+    // and align(a) = align(b) + val
+
+    if (val == 8)
+        return ucstrncmp_ssse3_aligning2_alignr<8>(a, b, len) * sign;
+    else if (val == 0)
+        return ucstrncmp_ssse3_aligning2_aligned(a, b, len) * sign;
+    if (val < 8) {
+        if (val < 4)
+            return ucstrncmp_ssse3_aligning2_alignr<2>(a, b, len) * sign;
+        else if (val == 4)
+            return ucstrncmp_ssse3_aligning2_alignr<4>(a, b, len) * sign;
+        else
+            return ucstrncmp_ssse3_aligning2_alignr<6>(a, b, len) * sign;
+    } else {
+        if (val < 12)
+            return ucstrncmp_ssse3_aligning2_alignr<10>(a, b, len) * sign;
+        else if (val == 12)
+            return ucstrncmp_ssse3_aligning2_alignr<12>(a, b, len) * sign;
+        else
+            return ucstrncmp_ssse3_aligning2_alignr<14>(a, b, len) * sign;
+    }
+}
+
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);
@@ -1129,6 +1209,7 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("sse2_aligning") << &ucstrncmp_sse2_aligning;
     QTest::newRow("ssse3") << &ucstrncmp_ssse3;
     QTest::newRow("ssse3_aligning") << &ucstrncmp_ssse3_aligning;
+    QTest::newRow("ssse3_aligning2") << &ucstrncmp_ssse3_aligning2;
 }
 
 void tst_QString::ucstrncmp() const
@@ -1141,7 +1222,8 @@ void tst_QString::ucstrncmp() const
             &ucstrncmp_sse2,
             &ucstrncmp_sse2_aligning,
             &ucstrncmp_ssse3,
-            &ucstrncmp_ssse3_aligning
+            &ucstrncmp_ssse3_aligning,
+            &ucstrncmp_ssse3_aligning2
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
