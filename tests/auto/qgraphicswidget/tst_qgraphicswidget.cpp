@@ -890,7 +890,7 @@ void tst_QGraphicsWidget::initStyleOption()
     qt_x11_wait_for_window_manager(&view);
 #endif
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
@@ -1222,7 +1222,7 @@ void tst_QGraphicsWidget::setTabOrder()
     qt_x11_wait_for_window_manager(&view);
 #endif
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     QGraphicsWidget *lastItem = 0;
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsWidget::setTabOrder(0, 0) is undefined");
@@ -1285,7 +1285,7 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     int i;
     QGraphicsWidget *w1, *w2, *w3, *w4;
@@ -1425,7 +1425,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     {
         // parent/child focus
@@ -1552,7 +1552,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     qt_x11_wait_for_window_manager(&view);
 #endif
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
     // delete item in focus chain with no focus and verify chain
     SubQGraphicsWidget *parent = new SubQGraphicsWidget(0, Qt::Window);
@@ -2503,7 +2503,7 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
     view.setScene(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), &view);
+    QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
     // *** Event: ***
