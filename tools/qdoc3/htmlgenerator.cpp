@@ -4537,6 +4537,35 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     }
     writer.writeEndElement();
     writer.writeEndElement();
+
+    if (node->type() == Node::Fake && node->doc().hasTableOfContents()) {
+        QList<Atom*> toc = node->doc().tableOfContents();
+        if (!toc.isEmpty()) {
+            for (int i = 0; i < toc.size(); ++i) {
+                Text headingText = Text::sectionHeading(toc.at(i));
+                QString s = headingText.toString();
+                writer.writeStartElement("page");
+                t.setNum(id++);
+                QString internalUrl = url + "#" + Doc::canonicalTitle(s);
+                writer.writeAttribute("id",t);
+                writer.writeStartElement("pageWords");
+                writer.writeCharacters(pageWords.join(" "));
+                writer.writeCharacters(" ");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageTitle");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageUrl");
+                writer.writeCharacters(internalUrl);
+                writer.writeEndElement();
+                writer.writeStartElement("pageType");
+                writer.writeCharacters("Article");
+                writer.writeEndElement();
+                writer.writeEndElement();
+            }
+        }
+    }
     return true;
 }
 
