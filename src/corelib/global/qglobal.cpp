@@ -1984,7 +1984,7 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 */
 void qt_check_pointer(const char *n, int l)
 {
-    qWarning("In file %s, line %d: Out of memory", n, l);
+    qFatal("In file %s, line %d: Out of memory", n, l);
 }
 
 /* \internal
