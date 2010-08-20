@@ -52,13 +52,9 @@
 
 QT_BEGIN_NAMESPACE
 
-uint qDetectCPUFeatures()
-{
-    static uint features = 0xffffffff;
-    if (features != 0xffffffff)
-        return features;
-
 #if defined (Q_OS_WINCE)
+static inline uint detectProcessorFeatures()
+{
 #if defined (ARM)
     if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX)) {
         features = IWMMXT;
@@ -78,7 +74,14 @@ uint qDetectCPUFeatures()
 #endif
     features = 0;
     return features;
-#elif defined(QT_HAVE_IWMMXT)
+}
+
+#elif defined(__arm__) || defined(__arm) || defined(QT_HAVE_IWMMXT) || defined(QT_HAVE_NEON)
+static inline uint detectProcessorFeatures()
+{
+    uint features = 0;
+
+#if defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
     features = doIWMMXT ? IWMMXT : 0;
@@ -87,13 +90,14 @@ uint qDetectCPUFeatures()
     static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
     features = doNEON ? NEON : 0;
     return features;
-#else
-    features = 0;
-#if defined(__x86_64__) || defined(Q_OS_WIN64)
-    features = MMX|SSE|SSE2|CMOV;
-#elif defined(__ia64__)
-    features = MMX|SSE|SSE2;
+#endif
+}
+
 #elif defined(__i386__) || defined(_M_IX86)
+static inline uint detectProcessorFeatures()
+{
+    uint features = 0;
+
     unsigned int extended_result = 0;
     unsigned int feature_result = 0;
     uint result = 0;
@@ -149,6 +153,7 @@ uint qDetectCPUFeatures()
         :
         : "%eax", "%ecx", "%edx"
         );
+
 #elif defined (Q_OS_WIN)
     _asm {
         push eax
@@ -210,6 +215,7 @@ uint qDetectCPUFeatures()
     }
 #endif
 
+
     // result now contains the standard feature bits
     if (result & (1u << 15))
         features |= CMOV;
@@ -236,9 +242,36 @@ uint qDetectCPUFeatures()
     if (feature_result & (1u << 28))
         features |= AVX;
 
-#endif // i386
+#if defined(QT_HAVE_MMX)
+    if (qgetenv("QT_NO_MMX").toInt())
+        features ^= MMX;
+#endif
+    if (qgetenv("QT_NO_MMXEXT").toInt())
+        features ^= MMXEXT;
 
-#if defined(__x86_64__) || defined(Q_OS_WIN64)
+#if defined(QT_HAVE_3DNOW)
+    if (qgetenv("QT_NO_3DNOW").toInt())
+        features ^= MMX3DNOW;
+#endif
+    if (qgetenv("QT_NO_3DNOWEXT").toInt())
+        features ^= MMX3DNOWEXT;
+
+#if defined(QT_HAVE_SSE)
+    if (qgetenv("QT_NO_SSE").toInt())
+        features ^= SSE;
+#endif
+#if defined(QT_HAVE_SSE2)
+    if (qgetenv("QT_NO_SSE2").toInt())
+        features ^= SSE2;
+#endif
+
+    return features;
+}
+
+#elif defined(__x86_64) || defined(Q_OS_WIN64)
+static inline uint detectProcessorFeatures()
+{
+    uint features = MMX|SSE|SSE2|CMOV;
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
@@ -282,7 +315,6 @@ uint qDetectCPUFeatures()
         features |= SSE4_2;
     if (feature_result & (1u << 28))
         features |= AVX;
-#endif // x86_64
 
 #if defined(QT_HAVE_MMX)
     if (qgetenv("QT_NO_MMX").toInt())
@@ -306,9 +338,29 @@ uint qDetectCPUFeatures()
     if (qgetenv("QT_NO_SSE2").toInt())
         features ^= SSE2;
 #endif
+}
 
-    return features;
+#elif defined(__ia64__)
+static inline uint detectProcessorFeatures()
+{
+    return MMX|SSE|SSE2;
+}
+
+#else
+static inline uint detectProcessorFeatures()
+{
+    return 0;
+}
 #endif
+
+uint qDetectCPUFeatures()
+{
+    static QBasicAtomicInt features = Q_BASIC_ATOMIC_INITIALIZER(-1);
+    if (features != -1)
+        return features;
+
+    features = detectProcessorFeatures();
+    return features;
 }
 
 QT_END_NAMESPACE
