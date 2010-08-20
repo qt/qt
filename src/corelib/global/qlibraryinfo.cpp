@@ -525,6 +525,9 @@ void qt_core_boilerplate()
            qt_configure_libraries_path_str + 12,
            qt_configure_headers_path_str + 12);
 
+    extern void qDumpCPUFeatures();
+    qDumpCPUFeatures();
+
 #ifdef QT_EVAL
     extern void qt_core_eval_init(uint);
     qt_core_eval_init(1);

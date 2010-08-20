@@ -41,6 +41,7 @@
 
 #include "qsimd_p.h"
 #include <QByteArray>
+#include <stdio.h>
 
 #if defined(Q_OS_WINCE)
 #include <windows.h>
@@ -402,6 +403,58 @@ uint qDetectCPUFeatures()
 
     features = detectProcessorFeatures();
     return features;
+}
+
+void qDumpCPUFeatures()
+{
+    /*
+     * Use kdesdk/scripts/generate_string_table.pl to update the table below.
+     * Here's the data:
+mmx
+mmxext
+mmx3dnow
+mmx3dnowext
+sse
+sse2
+cmov
+iwmmxt
+neon
+sse3
+ssse3
+sse4.1
+sse4.2
+avx
+      */
+    static const char features_string[] =
+        "mmx\0"
+        "mmxext\0"
+        "mmx3dnow\0"
+        "mmx3dnowext\0"
+        "sse\0"
+        "sse2\0"
+        "cmov\0"
+        "iwmmxt\0"
+        "neon\0"
+        "sse3\0"
+        "ssse3\0"
+        "sse4.1\0"
+        "sse4.2\0"
+        "avx\0"
+        "\0";
+
+    static const int features_indices[] = {
+           0,    4,   11,   20,   32,   36,   41,   46,
+          53,   58,   63,   69,   76,   83,   -1
+    };
+    const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+
+    uint features = qDetectCPUFeatures();
+    printf("Processor features: ");
+    for (int i = 0; i < features_count; ++i) {
+        if (features & (1 << i))
+            printf(" %s", features_string + features_indices[i]);
+    }
+    puts("");
 }
 
 QT_END_NAMESPACE
