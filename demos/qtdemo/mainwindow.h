@@ -43,7 +43,6 @@
 #define MAIN_WINDOW_H
 
 #include <QtGui>
-#include <QtDeclarative>
 #include <QPixmap>
 
 class DemoTextItem;

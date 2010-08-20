@@ -551,7 +551,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 }
 
 /*! \fn void QDeclarativeEngine::quit()
-    This signal is emitted when the QDeclarativeEngine quits.
+    This signal is emitted when the QML loaded by the engine would like to quit.
  */
 
 /*! \fn void QDeclarativeEngine::warnings(const QList<QDeclarativeError> &warnings)
