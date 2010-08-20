@@ -4436,6 +4436,9 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
 
     if (node->isInnerNode()) {
         const InnerNode* inner = static_cast<const InnerNode*>(node);
+        if (!inner->pageKeywords().isEmpty())
+            pageWords << inner->pageKeywords();
+
         switch (node->type()) {
         case Node::Fake:
             {
@@ -4463,9 +4466,6 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
-
-        if (!inner->pageKeywords().isEmpty())
-            pageWords << inner->pageKeywords();
     }
     else {
         switch (node->type()) {
@@ -4502,6 +4502,12 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
+
+        Node* parent = node->parent();
+        if (parent && ((parent->type() == Node::Class) ||
+                       (parent->type() == Node::Namespace))) {
+            pageWords << parent->name();
+        }
     }
 
     writer.writeAttribute("id",t);
@@ -4531,6 +4537,35 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     }
     writer.writeEndElement();
     writer.writeEndElement();
+
+    if (node->type() == Node::Fake && node->doc().hasTableOfContents()) {
+        QList<Atom*> toc = node->doc().tableOfContents();
+        if (!toc.isEmpty()) {
+            for (int i = 0; i < toc.size(); ++i) {
+                Text headingText = Text::sectionHeading(toc.at(i));
+                QString s = headingText.toString();
+                writer.writeStartElement("page");
+                t.setNum(id++);
+                QString internalUrl = url + "#" + Doc::canonicalTitle(s);
+                writer.writeAttribute("id",t);
+                writer.writeStartElement("pageWords");
+                writer.writeCharacters(pageWords.join(" "));
+                writer.writeCharacters(" ");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageTitle");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageUrl");
+                writer.writeCharacters(internalUrl);
+                writer.writeEndElement();
+                writer.writeStartElement("pageType");
+                writer.writeCharacters("Article");
+                writer.writeEndElement();
+                writer.writeEndElement();
+            }
+        }
+    }
     return true;
 }
 

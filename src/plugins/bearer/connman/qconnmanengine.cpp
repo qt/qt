@@ -328,7 +328,6 @@ QString QConnmanEngine::getServiceForNetwork(const QString &netPath)
 void QConnmanEngine::propertyChangedContext(const QString &path,const QString &item, const QDBusVariant &value)
 {
     Q_UNUSED(path);
-//    qDebug() << __FUNCTION__ << path << item << value.variant();
 
     QMutexLocker locker(&mutex);
     if(item == "Services") {
@@ -380,12 +379,10 @@ void QConnmanEngine::servicePropertyChangedContext(const QString &path,const QSt
 void QConnmanEngine::networkPropertyChangedContext(const QString &path,const QString &item, const QDBusVariant &value)
 {
     QMutexLocker locker(&mutex);
-//    qDebug() << __FUNCTION__ << path << item << value.variant();
 }
 
 void QConnmanEngine::devicePropertyChangedContext(const QString &devpath,const QString &item,const QDBusVariant &value)
 {
-//        qDebug() << __FUNCTION__ << devpath << item << value.variant();
     QMutexLocker locker(&mutex);
     if(item == "Networks") {
 
@@ -429,7 +426,6 @@ void QConnmanEngine::devicePropertyChangedContext(const QString &devpath,const Q
 
 void QConnmanEngine::technologyPropertyChangedContext(const QString & path, const QString &item, const QDBusVariant &value)
 {
-//    qDebug() << __FUNCTION__ << path << item << value.variant();
   if(item == "Devices") {
       QDBusArgument arg = qvariant_cast<QDBusArgument>(value.variant());
       QStringList list = qdbus_cast<QStringList>(arg);
