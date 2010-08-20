@@ -41,15 +41,19 @@
 #ifndef QGRAPHICSSYSTEMCURSOR_H
 #define QGRAPHICSSYSTEMCURSOR_H
 
-#include <QList>
-#include <QImage>
-#include <QMouseEvent>
-#include <QWeakPointer>
-#include <QObject>
-#include <QPlatformScreen>
-#include <QCursor>
+#include <QtCore/QList>
+#include <QtGui/QImage>
+#include <QtGui/QMouseEvent>
+#include <QtCore/QWeakPointer>
+#include <QtCore/QObject>
+#include <QtGui/QPlatformScreen>
+#include <QtGui/QCursor>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 // Cursor graphics management
 class Q_GUI_EXPORT QPlatformCursorImage {
@@ -93,5 +97,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QGRAPHICSSYSTEMCURSOR_H

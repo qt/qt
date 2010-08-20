@@ -50,6 +50,10 @@
 #define PTHREAD_CANCEL_ENABLE 2
 #define PTHREAD_INHERIT_SCHED 3
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
 extern "C" {
 
 void pthread_cleanup_push(void (*handler)(void *), void *arg);
@@ -79,6 +83,10 @@ int open64(const char *path, int oflag, ...);
 }
 
 int select(int nfds, fd_set * readfds, fd_set * writefds, fd_set * errorfds, struct timeval * timeout);
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif //Q_OS_NACL
 

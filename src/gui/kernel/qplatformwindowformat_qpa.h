@@ -41,11 +41,13 @@
 #ifndef QPLATFORMWINDOWFORMAT_QPA_H
 #define QPLATFORMWINDOWFORMAT_QPA_H
 
-#include <QPlatformWindow>
+#include <QtGui/QPlatformWindow>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 class QPlatformWindowFormatPrivate;
 
