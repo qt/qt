@@ -188,10 +188,7 @@ embedded {
 qpa {
         SOURCES += \
                 painting/qcolormap_qpa.cpp \
-                painting/qpaintdevice_qpa.cpp \
-                painting/qplatformcursor_qpa.cpp
-        HEADERS += \
-                painting/qplatformcursor_qpa.h
+                painting/qpaintdevice_qpa.cpp
 }
 
 symbian {
