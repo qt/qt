@@ -313,7 +313,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
     dictionary[ "OPENVG" ]          = "no";
-    dictionary[ "IPV6" ]            = "yes"; // Always, dynamicly loaded
+    dictionary[ "IPV6" ]            = "yes"; // Always, dynamically loaded
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
     dictionary[ "S60" ]             = "yes";
@@ -2094,7 +2094,7 @@ bool Configure::checkAvailability(const QString &part)
 
                 available = (paths.size() == 0);
                 if (!available) {
-                    if (epocRoot.isNull() || epocRoot == "")
+                    if (epocRoot.isEmpty())
                         epocRoot = "<empty string>";
                     cout << endl
                          << "The QtMultimedia audio backend will not be built because required" << endl
@@ -2625,7 +2625,7 @@ void Configure::generateOutputVars()
 
     QString set_config = dictionary["QCONFIG"];
     if (possible_configs.contains(set_config)) {
-        foreach(QString cfg, possible_configs) {
+        foreach (const QString &cfg, possible_configs) {
             qtConfig += (cfg + "-config");
             if (cfg == set_config)
                 break;
@@ -2736,7 +2736,7 @@ void Configure::generateCachefile()
 
         QStringList buildParts;
         buildParts << "libs" << "tools" << "examples" << "demos" << "docs" << "translations";
-        foreach(QString item, disabledBuildParts) {
+        foreach (const QString &item, disabledBuildParts) {
             buildParts.removeAll(item);
         }
         cacheStream << "QT_BUILD_PARTS  = " << buildParts.join( " " ) << endl;
@@ -3041,7 +3041,7 @@ void Configure::generateConfigfiles()
             QStringList kbdDrivers = dictionary["KBD_DRIVERS"].split(" ");;
             QStringList allKbdDrivers;
             allKbdDrivers<<"tty"<<"usb"<<"sl5000"<<"yopy"<<"vr41xx"<<"qvfb"<<"um";
-            foreach(QString kbd, allKbdDrivers) {
+            foreach (const QString &kbd, allKbdDrivers) {
                 if( !kbdDrivers.contains(kbd))
                     tmpStream<<"#define QT_NO_QWS_KBD_"<<kbd.toUpper()<<endl;
             }
@@ -3049,7 +3049,7 @@ void Configure::generateConfigfiles()
             QStringList mouseDrivers = dictionary["MOUSE_DRIVERS"].split(" ");
             QStringList allMouseDrivers;
             allMouseDrivers << "pc"<<"bus"<<"linuxtp"<<"yopy"<<"vr41xx"<<"tslib"<<"qvfb";
-            foreach(QString mouse, allMouseDrivers) {
+            foreach (const QString &mouse, allMouseDrivers) {
                 if( !mouseDrivers.contains(mouse) )
                     tmpStream<<"#define QT_NO_QWS_MOUSE_"<<mouse.toUpper()<<endl;
             }
@@ -3057,7 +3057,7 @@ void Configure::generateConfigfiles()
             QStringList gfxDrivers = dictionary["GFX_DRIVERS"].split(" ");
             QStringList allGfxDrivers;
             allGfxDrivers<<"linuxfb"<<"transformed"<<"qvfb"<<"vnc"<<"multiscreen"<<"ahi";
-            foreach(QString gfx, allGfxDrivers) {
+            foreach (const QString &gfx, allGfxDrivers) {
                 if( !gfxDrivers.contains(gfx))
                     tmpStream<<"#define QT_NO_QWS_"<<gfx.toUpper()<<endl;
             }
@@ -3065,7 +3065,7 @@ void Configure::generateConfigfiles()
             tmpStream<<"#define Q_WS_QWS"<<endl;
 
             QStringList depths = dictionary[ "QT_QWS_DEPTH" ].split(" ");
-            foreach(QString depth, depths)
+            foreach (const QString &depth, depths)
               tmpStream<<"#define QT_QWS_DEPTH_"+depth<<endl;
         }
 
