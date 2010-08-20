@@ -4424,7 +4424,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     if (node->access() == Node::Private)
         return false;
 
-    QString t;
+    QString guid = QUuid::createUuid().toString();
     QString url = PageGenerator::fileName(node);
     QString title;
     QString rawTitle;
@@ -4433,7 +4433,6 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     QXmlStreamAttributes attributes;
 
     writer.writeStartElement("page");
-    t.setNum(id++);
 
     if (node->isInnerNode()) {
         const InnerNode* inner = static_cast<const InnerNode*>(node);
@@ -4511,7 +4510,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
         }
     }
 
-    writer.writeAttribute("id",t);
+    writer.writeAttribute("id",guid);
     writer.writeStartElement("pageWords");
     writer.writeCharacters(pageWords.join(" "));
 
@@ -4546,9 +4545,9 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
                 Text headingText = Text::sectionHeading(toc.at(i));
                 QString s = headingText.toString();
                 writer.writeStartElement("page");
-                t.setNum(id++);
+                guid = QUuid::createUuid().toString();
                 QString internalUrl = url + "#" + Doc::canonicalTitle(s);
-                writer.writeAttribute("id",t);
+                writer.writeAttribute("id",guid);
                 writer.writeStartElement("pageWords");
                 writer.writeCharacters(pageWords.join(" "));
                 writer.writeCharacters(" ");
