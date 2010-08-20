@@ -224,15 +224,13 @@
     \code
         import Qt 4.7                \\import the main Qt QML module
         import "folderName"            \\import the contents of the folder    
-        import "Button.qml"            \\import a QML file
-        import "NewButton.qml" as ButtonModule    \\import a QML file and give it a name
         import "script.js" as Script        \\import a Javascript file and name it as Script
     \endcode
 
-    To use the \c Button element in \c FileMenu.qml, we need to import \c Button.qml.
-    The syntax shown above, shows how to use the \c import keyword. However, the
-    \c {import Button.qml} is not necessary; qmlviewer will import all the contents
-    of the current directory. We can directly create a \c Button element by declaring
+    The syntax shown above shows how to use the \c import keyword. This is required to
+    use JavaScript files, or QML files that are not within the same directory. Since 
+    \c Button.qml is in the same directory as \c FileMenu.qml, we do not need to import
+    the \c Button.qml file to use it. We can directly create a \c Button element by declaring
     \c Button{}, similar to a \c Rectangle{} declaration.
 
     \code
