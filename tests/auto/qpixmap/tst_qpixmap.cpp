@@ -1558,6 +1558,8 @@ void tst_QPixmap::loadFromDataImage_data()
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
+    // When no extension is provided we try all extensions that has been registered by image providers
+    QTest::newRow("designer_argb32") << prefix + "/designer_argb32.png";
     QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
     QTest::newRow("designer_indexed8_with_alpha.png") << prefix + "/designer_indexed8_with_alpha.png";
     QTest::newRow("designer_rgb32.png") << prefix + "/designer_rgb32.png";
