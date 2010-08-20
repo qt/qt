@@ -570,6 +570,7 @@ bool VCXCLCompilerTool::parseOption(const char* option)
                 break;
             case 'd':
                 ProgramDataBaseFileName += option+3;
+                break;
             case 'I':
                 ForcedIncludeFiles += option+3;
                 break;
