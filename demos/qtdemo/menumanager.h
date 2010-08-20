@@ -95,6 +95,8 @@ private slots:
     void exampleFinished();
     void exampleError(QProcess::ProcessError error);
 
+    void quitQML();
+
 private:
     // singleton pattern:
     MenuManager();

@@ -390,6 +390,12 @@ void MenuManager::launchQmlExample(const QString &name)
 #endif
 }
 
+void MenuManager::quitQML()
+{
+    if(qmlRoot)
+        qmlRoot->setProperty("show", QVariant(false));
+}
+
 void MenuManager::exampleFinished()
 {
 }
@@ -437,6 +443,8 @@ void MenuManager::init(MainWindow *window)
 #ifndef QT_NO_DECLARATIVE
     // Create QML Loader
     declarativeEngine = new QDeclarativeEngine(this);
+    connect(declarativeEngine, SIGNAL(quit()),
+            this, SLOT(quitQML()));
 
     QDeclarativeComponent component(declarativeEngine, QUrl("qrc:qml/qmlShell.qml"), this);
     QDeclarativeItem* qmlRootItem = 0;
