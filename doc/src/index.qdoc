@@ -52,7 +52,7 @@
           </div>
           <div class="indexbox api">
             <div class="heading">
-              Qt API Overviews</div>
+              Qt API</div>
             <div class="indexboxcont indexboxbar ">
               <div class="sectionlist tricol">
                 <ul>
@@ -65,21 +65,19 @@
               </div>
               <div class="sectionlist  tricol">
                 <ul>
-                    <li><a href="qt-basic-concepts.html">Basic Concepts</a></li>
+                    <li><a href="qt-basic-concepts.html">Programming with Qt</a></li>
                     <li><a href="qt-gui-concepts.html">GUI Components</a></li>
                     <li><a href="developing-with-qt.html">Cross-platform and Platform-specific</a></li>
                     <li><a href="technology-apis.html">Qt APIs for standard technologies </a></li>
                     <li><a href="best-practices.html">How-To Guides and Best Practices</a></li>
-                </ul>
+                    <li><a href="qt-gui-concepts.html">Desktop UI components</a></li>
+               </ul>
               </div>
               <div class="sectionlist">
                 <ul>
                     <li><a href="qtquick.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
                     <li><a href="qdeclarativeelements.html">QML Elements</a></li>
-                    <li><a href="model-view-programming.html">Model/View Programming</a></li>
-                    <li><a href="qt-network.html">Network Programming</a></li>
-                    <li><a href="qt-graphics.html">Graphics and Printing</a></li>
                 </ul>
               </div>
             </div>
