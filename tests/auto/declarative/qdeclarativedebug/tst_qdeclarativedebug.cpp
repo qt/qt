@@ -636,7 +636,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QCOMPARE(context.objects()[0].properties().count(), 0);
     QCOMPARE(context.objects()[0].children().count(), 0);
 
-    QCOMPARE(context.contexts().count(), 1);
+    QCOMPARE(context.contexts().count(), 4);
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 

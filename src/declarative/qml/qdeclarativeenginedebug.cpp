@@ -264,8 +264,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     QDeclarativeContextData *child = p->childContexts;
     while (child) {
-        if (!child->isInternal)
-            ++count;
+        ++count;
         child = child->nextChild;
     }
 
@@ -273,8 +272,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     child = p->childContexts;
     while (child) {
-        if (!child->isInternal) 
-            buildObjectList(message, child->asQDeclarativeContext());
+        buildObjectList(message, child->asQDeclarativeContext());
         child = child->nextChild;
     }
 
