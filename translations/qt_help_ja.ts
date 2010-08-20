@@ -1,355 +1,318 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.0" language="ja_JP">
 <context>
     <name>QCLuceneResultWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+110"/>
         <source>Search Results</source>
-        <translation type="unfinished"></translation>
+        <translation>検索結果</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Note:</source>
-        <translation type="unfinished"></translation>
+        <translation>注:</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>The search results may not be complete since the documentation is still being indexed!</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントの索引の作成が終了していないため、検索結果は不完全な可能性があります!</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Your search did not match any documents.</source>
-        <translation type="unfinished"></translation>
+        <translation>その語句はどのドキュメントにも見つかりません。</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>(The reason for this might be that the documentation is still being indexed.)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ドキュメントの索引の作成が終了していないためかもしれません。)</translation>
+    </message>
+</context>
+<context>
+    <name>QHelp</name>
+    <message>
+        <source>Untitled</source>
+        <translation>タイトルなし</translation>
     </message>
 </context>
 <context>
     <name>QHelpCollectionHandler</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
-        <source>The collection file is not set up yet!</source>
-        <translation type="unfinished"></translation>
+        <source>The collection file &apos;%1&apos; is not set up yet!</source>
+        <translation>コレクションファイル &apos;%1&apos; がまだ設定されていません!</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation type="unfinished"></translation>
+        <translation>SQLite データベースドライバがロードできません!</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+48"/>
         <source>Cannot open collection file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>コレクションファイルをオープンできません: %1</translation>
     </message>
     <message>
-        <location line="-39"/>
         <source>Cannot create tables in file %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル %1 にテーブルを作成できません!</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>The specified collection file already exists!</source>
-        <translation type="unfinished"></translation>
+        <source>The collection file &apos;%1&apos; already exists!</source>
+        <translation>コレクションファイル &apos;%1&apos; が既に存在します!</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <source>Unknown filter &apos;%1&apos;!</source>
+        <translation>不明なフィルタ &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <source>Invalid documentation file &apos;%1&apos;!</source>
+        <translation>無効なドキュメントファイル &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <source>Cannot register namespace &apos;%1&apos;!</source>
+        <translation>ネームスペース &apos;%1&apos; を登録できません!</translation>
+    </message>
+    <message>
+        <source>Cannot open database &apos;%1&apos; to optimize!</source>
+        <translation>最適化用にデータベース &apos;%1&apos; をオープンできません!</translation>
+    </message>
+    <message>
         <source>Cannot create directory: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ディレクトリを作成できません: %1</translation>
     </message>
     <message>
-        <location line="+23"/>
         <source>Cannot copy collection file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>コレクションファイルをコピーできません: %1</translation>
     </message>
     <message>
-        <location line="+119"/>
-        <source>Unknown filter!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+55"/>
         <source>Cannot register filter %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルタ %1 を登録できません!</translation>
     </message>
     <message>
-        <location line="+44"/>
         <source>Cannot open documentation file %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントファイル %1 をオープンできません!</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Invalid documentation file!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
         <source>The namespace %1 was not registered!</source>
-        <translation type="unfinished"></translation>
+        <translation>ネームスペース %1 は登録されていません!</translation>
     </message>
     <message>
-        <location line="+120"/>
         <source>Namespace %1 already exists!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot register namespace!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Cannot open database to optimize!</source>
-        <translation type="unfinished"></translation>
+        <translation>ネームスペース %1 は既に存在します!</translation>
     </message>
 </context>
 <context>
     <name>QHelpDBReader</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+95"/>
         <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
-        <translation type="unfinished"></translation>
+        <extracomment>The placeholders are: %1 - The name of the database which cannot be opened %2 - The unique id for the connection %3 - The actual error string</extracomment>
+        <translation>データベース &apos;%1&apos; &apos;%2&apos; がオープンできません: %3</translation>
     </message>
 </context>
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
-        <source>The specified namespace does not exist!</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QHelpEngineCorePrivate</name>
-    <message>
-        <location line="-394"/>
         <source>Cannot open documentation file %1: %2!</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントファイル %1 をオープンできません: %2!</translation>
+    </message>
+    <message>
+        <source>The specified namespace does not exist!</source>
+        <translation>そのネームスペースは存在しません!</translation>
     </message>
 </context>
 <context>
     <name>QHelpGenerator</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
         <source>Invalid help data!</source>
-        <translation type="unfinished"></translation>
+        <translation>無効なヘルプデータ!</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>No output file name specified!</source>
-        <translation type="unfinished"></translation>
+        <translation>出力ファイル名が指定されていません!</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Building up file structure...</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル構造の構築中...</translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>The file %1 cannot be overwritten!</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル %1 は上書きできません!</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Cannot open data base file %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>データベースファイル %1 をオープンできません!</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Cannot register namespace %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>ネームスペース %1 を登録できません!</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Insert custom filters...</source>
-        <translation type="unfinished"></translation>
+        <translation>カスタムフィルターの登録中...</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Insert help data for filter section (%1 of %2)...</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルターにヘルプデータを登録中 (%1 / %2)...</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Documentation successfully generated.</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントの作成に成功しました。</translation>
     </message>
     <message>
-        <location line="+76"/>
         <source>Some tables already exist!</source>
-        <translation type="unfinished"></translation>
+        <translation>テーブルが既に存在します!</translation>
     </message>
     <message>
-        <location line="+61"/>
         <source>Cannot create tables!</source>
-        <translation type="unfinished"></translation>
+        <translation>テーブルが作成できません!</translation>
     </message>
     <message>
-        <location line="+86"/>
         <source>Cannot register virtual folder!</source>
-        <translation type="unfinished"></translation>
+        <translation>仮装フォルダを登録できません!</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Insert files...</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルの挿入...</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <source>The referenced file %1 must be inside or within a subdirectory of (%2). Skipping it.</source>
+        <translation>参照されるファイル %1 は (%2) のサブディレクトリに存在する必要があります。スキップします。</translation>
+    </message>
+    <message>
         <source>The file %1 does not exist! Skipping it.</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル %1 が存在しません! スキップします。</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Cannot open file %1! Skipping it.</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル %1 をオープンできません! スキップします。</translation>
     </message>
     <message>
-        <location line="+134"/>
         <source>The filter %1 is already registered!</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルタ %1 は既に登録されています!</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cannot register filter %1!</source>
-        <translation type="unfinished"></translation>
+        <translation>フィルタ %1 を登録できません!</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>Insert indices...</source>
-        <translation type="unfinished"></translation>
+        <translation>索引の挿入...</translation>
     </message>
     <message>
-        <location line="+80"/>
         <source>Insert contents...</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテンツの挿入...</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Cannot insert contents!</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテンツを挿入できません!</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Cannot register contents!</source>
-        <translation type="unfinished"></translation>
+        <translation>コンテンツを登録できません!</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; does not exist.</source>
+        <translation>ファイル &apos;%1&apos; が存在しません。</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; cannot be opened.</source>
+        <translation>ファイル &apos;%1&apos; をオープンできません。</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
+        <translation>ファイル &apos;%1&apos; にファイル &apos;%2&apos; への無効なリンクが見つかりました</translation>
+    </message>
+    <message>
+        <source>Invalid links in HTML files.</source>
+        <translation>HTML に無効なリンクが見つかりました。</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpProject</name>
+    <message>
+        <source>Unknown token.</source>
+        <translation>不明なトークン。</translation>
+    </message>
+    <message>
+        <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
+        <translation>&quot;QtHelpProject&quot; があるべき場所に不明なトークン!</translation>
+    </message>
+    <message>
+        <source>Error in line %1: %2</source>
+        <translation>%1 行でエラー: %2</translation>
+    </message>
+    <message>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation>仮装フォルダに無効な構文があります。</translation>
+    </message>
+    <message>
+        <source>Namespace has invalid syntax.</source>
+        <translation>ネームスペースに無効な構文があります。</translation>
+    </message>
+    <message>
+        <source>Missing namespace in QtHelpProject.</source>
+        <translation>QtHelpProject にネームスペースがありません。</translation>
+    </message>
+    <message>
+        <source>Missing virtual folder in QtHelpProject</source>
+        <translation>QtHelpProject に仮装フォルダがありません</translation>
+    </message>
+    <message>
+        <source>Missing attribute in keyword at line %1.</source>
+        <translation>%1 行目のキーワードに属性がありません。</translation>
+    </message>
+    <message>
+        <source>The input file %1 could not be opened!</source>
+        <translation>入力ファイル %1 がオープンできません!</translation>
     </message>
 </context>
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+200"/>
         <source>Search for:</source>
-        <translation type="unfinished"></translation>
+        <translation>検索キーワード:</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <source>Previous search</source>
+        <translation>前の検索結果</translation>
+    </message>
+    <message>
+        <source>Next search</source>
+        <translation>次の検索結果</translation>
+    </message>
+    <message>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>検索</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Advanced search</source>
-        <translation type="unfinished"></translation>
+        <translation>詳細な検索</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;類似語&lt;/b&gt;:</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
-        <translation type="unfinished"></translation>
+        <translation>キーワードを&lt;b&gt;含めない&lt;/b&gt;:</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;フレーズ&lt;/b&gt;を含む:</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;すべての&lt;/b&gt;キーワードを含む:</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;いずれか&lt;/b&gt;のキーワードを含む:</translation>
     </message>
 </context>
 <context>
     <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 / %n 件</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+235"/>
         <source>0 - 0 of 0 Hits</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QHelpSearchResultWidgetPrivate</name>
-    <message>
-        <location line="-61"/>
-        <source>%1 - %2 of %3 Hits</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelp_global.h" line="+83"/>
-        <source>Untitled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+80"/>
-        <source>Unknown token.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Error in line %1: %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Missing namespace in QtHelpProject.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Missing virtual folder in QtHelpProject</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+88"/>
-        <source>Missing attribute in keyword at line %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+83"/>
-        <source>The input file %1 could not be opened!</source>
-        <translation type="unfinished"></translation>
+        <translation>0 - 0 / 0 件</translation>
     </message>
 </context>
 </TS>
