@@ -1836,7 +1836,7 @@ void tst_QGL::clipTest()
     // Sample pixels in a grid pattern which avoids false failures due to
     // off-by-one pixel errors on some buggy GL implementations
     for (int x = 2; x < reference.width(); x += 5) {
-        for (int y = 2; y < reference.width(); y += 5) {
+        for (int y = 2; y < reference.height(); y += 5) {
             QFUZZY_COMPARE_PIXELS(widgetFB.pixel(x, y), reference.pixel(x, y));
         }
     }
