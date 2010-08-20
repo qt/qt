@@ -55,7 +55,7 @@ QVFbRateDialog::QVFbRateDialog(int rate, QWidget *parent)
     QVBoxLayout *tl = new QVBoxLayout(this);
     tl->setMargin(5);
 
-    QLabel *label = new QLabel("Target frame rate:", this);
+    QLabel *label = new QLabel(tr("Target frame rate:"), this);
     tl->addWidget(label);
 
     QHBoxLayout *hl = new QHBoxLayout();
@@ -67,15 +67,15 @@ QVFbRateDialog::QVFbRateDialog(int rate, QWidget *parent)
     rateSlider->setValue(rate);
     hl->addWidget(rateSlider);
     connect(rateSlider, SIGNAL(valueChanged(int)), this, SLOT(rateChanged(int)));
-    rateLabel = new QLabel(QString("%1fps").arg(rate), this);
+    rateLabel = new QLabel(tr("%1fps").arg(rate), this);
     hl->addWidget(rateLabel);
 
     hl = new QHBoxLayout();
     tl->addItem(hl);
-    QPushButton *pb = new QPushButton("OK", this);
+    QPushButton *pb = new QPushButton(tr("OK"), this);
     connect(pb, SIGNAL(clicked()), this, SLOT(ok()));
     hl->addWidget(pb);
-    pb = new QPushButton("Cancel", this);
+    pb = new QPushButton(tr("Cancel"), this);
     connect(pb, SIGNAL(clicked()), this, SLOT(cancel()));
     hl->addWidget(pb);
 }
@@ -84,7 +84,7 @@ void QVFbRateDialog::rateChanged(int r)
 {
     if (rateSlider->value() != r)
 	rateSlider->setValue(r);
-    rateLabel->setText(QString("%1fps").arg(r));
+    rateLabel->setText(tr("%1fps").arg(r));
     emit updateRate(r);
 }
 
