@@ -1808,18 +1808,19 @@ void HtmlGenerator::generateHeader(const QString& title,
     // Adding jquery and functions - providing online tools and search features
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
     out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+
+	
+    // Adding syntax highlighter 	// future release
+	
+    // Setting some additional style sheet related details depending on configuration (e.g. Online/Creator)
+
+    switch (application) {
+    case Online:
     // Adding style and js for small windows
     out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
     out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
     out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
-    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";
-	
-    // Adding syntax highlighter 	// future release
-	
-    // Setting some additional style sheet related details depending on configuration (e.g. online/offline)
-
-    switch (application) {
-    case Online:
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";	
         // Browser spec styles
 	out() << "  <!--[if IE]>\n";
 	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
