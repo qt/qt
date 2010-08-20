@@ -45,6 +45,9 @@
 #include <QtGui>
 #include <QtXml>
 #include <QtHelp/QHelpEngineCore>
+#ifndef QT_NO_DECLARATIVE
+#include <QtDeclarative>
+#endif
 
 #include "score.h"
 #include "textbutton.h"
@@ -83,8 +86,10 @@ public:
     Score *score;
     int currentMenuCode;
 
+    QObject *qmlRoot;
+#ifndef QT_NO_DECLARATIVE
     QDeclarativeEngine* declarativeEngine;
-    QDeclarativeItem *qmlRoot;
+#endif
 
 private slots:
     void exampleFinished();

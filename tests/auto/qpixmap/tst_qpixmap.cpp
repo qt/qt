@@ -1673,31 +1673,39 @@ void tst_QPixmap::preserveDepth()
 void tst_QPixmap::loadAsBitmapOrPixmap()
 {
     QImage tmp(10, 10, QImage::Format_RGB32);
-    tmp.save("tmp.png");
+    tmp.save("temp_image.png");
 
     bool ok;
 
     // Check that we can load the pixmap as a pixmap and that it then turns into a pixmap
-    QPixmap pixmap("tmp.png");
+    QPixmap pixmap("temp_image.png");
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     pixmap = QPixmap();
-    ok = pixmap.load("tmp.png");
+    ok = pixmap.load("temp_image.png");
+    QVERIFY(ok);
+    QVERIFY(!pixmap.isNull());
+    QVERIFY(pixmap.depth() > 1);
+    QVERIFY(!pixmap.isQBitmap());
+
+    //now we can try to load it without an extension
+    pixmap = QPixmap();
+    ok = pixmap.load("temp_image");
     QVERIFY(ok);
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     // The do the same check for bitmaps..
-    QBitmap bitmap("tmp.png");
+    QBitmap bitmap("temp_image.png");
     QVERIFY(!bitmap.isNull());
     QVERIFY(bitmap.depth() == 1);
     QVERIFY(bitmap.isQBitmap());
 
     bitmap = QBitmap();
-    ok = bitmap.load("tmp.png");
+    ok = bitmap.load("temp_image.png");
     QVERIFY(ok);
     QVERIFY(!bitmap.isNull());
     QVERIFY(bitmap.depth() == 1);

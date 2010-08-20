@@ -274,14 +274,10 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 300);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
-#if defined(Q_OS_MAC)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-mac.png"));
+#if defined(Q_OS_LINUX)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-win32.png"));
-#elif defined(QT_ARCH_ARM)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-arm.png"));
-#else
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 #endif
 
     obj->setSourceSize(QSize(200,200));
@@ -290,14 +286,10 @@ void tst_qdeclarativeimage::svg()
     QCOMPARE(obj->pixmap().height(), 200);
     QCOMPARE(obj->width(), 550.0);
     QCOMPARE(obj->height(), 500.0);
-#if defined(Q_OS_MAC)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-mac.png"));
+#if defined(Q_OS_LINUX)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-win32.png"));
-#elif defined(QT_ARCH_ARM)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-arm.png"));
-#else
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
 #endif
     delete obj;
 }
