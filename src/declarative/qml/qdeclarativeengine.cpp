@@ -674,7 +674,7 @@ void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativ
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    d->imageProviders.insert(providerId, provider);
+    d->imageProviders.insert(providerId, QSharedPointer<QDeclarativeImageProvider>(provider));
 }
 
 /*!
@@ -684,7 +684,7 @@ QDeclarativeImageProvider *QDeclarativeEngine::imageProvider(const QString &prov
 {
     Q_D(const QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    return d->imageProviders.value(providerId);
+    return d->imageProviders.value(providerId).data();
 }
 
 /*!
@@ -698,13 +698,14 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    delete d->imageProviders.take(providerId);
+    d->imageProviders.take(providerId);
 }
 
 QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProviderType(const QUrl &url)
 {
     QMutexLocker locker(&mutex);
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         return provider->imageType();
     return static_cast<QDeclarativeImageProvider::ImageType>(-1);
@@ -714,7 +715,8 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
 {
     QMutexLocker locker(&mutex);
     QImage image;
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         image = provider->requestImage(url.path().mid(1), size, req_size);
     return image;
@@ -724,7 +726,8 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
 {
     QMutexLocker locker(&mutex);
     QPixmap pixmap;
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
     return pixmap;
