@@ -696,7 +696,7 @@ int Lexer::lex()
             } else if (current == '*' && next1 == '/') {
                 state = Start;
                 shift(1);
-                if (driver) driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
+                if (driver) driver->addComment(startpos, tokenLength()+1, startlineno, startcolumn);
             }
 
             break;
