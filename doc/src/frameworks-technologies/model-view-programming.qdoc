@@ -27,6 +27,7 @@
 
 /*!
     \group model-view
+	\ingroup qt-basic-concepts
     \title Model/View Classes
 */
 

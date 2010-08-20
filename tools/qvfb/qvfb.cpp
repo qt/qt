@@ -398,47 +398,47 @@ void QVFb::createMenu(T *menu)
 
 QMenu* QVFb::createFileMenu()
 {
-    QMenu *file = new QMenu( "File", this );
-    file->addAction( "Configure...", this, SLOT(configure()), 0 );
+    QMenu *file = new QMenu( tr("&File"), this );
+    file->addAction( tr("&Configure..."), this, SLOT(configure()), QKeySequence::Preferences );
     file->addSeparator();
-    file->addAction( "&Save image...", this, SLOT(saveImage()), 0 );
-    file->addAction( "&Animation...", this, SLOT(toggleAnimation()), 0 );
+    file->addAction( tr("&Save image..."), this, SLOT(saveImage()), QKeySequence::Save );
+    file->addAction( tr("&Animation..."), this, SLOT(toggleAnimation()), 0 );
     file->addSeparator();
-    file->addAction( "&Quit", qApp, SLOT(quit()) );
+    file->addAction( tr("&Quit"), qApp, SLOT(quit()), QKeySequence::Quit );
     return file;
 }
 
 QMenu* QVFb::createViewMenu()
 {
-    viewMenu = new QMenu( "View", this );
-    cursorAction = viewMenu->addAction( "Show &Cursor", this,
+    viewMenu = new QMenu( tr("&View"), this );
+    cursorAction = viewMenu->addAction( tr("Show &Cursor"), this,
                                         SLOT(toggleCursor()) );
     cursorAction->setCheckable(true);
     if ( view )
 	enableCursor(true);
-    viewMenu->addAction( "&Refresh Rate...", this, SLOT(changeRate()) );
+    viewMenu->addAction( tr("&Refresh Rate..."), this, SLOT(changeRate()) );
     viewMenu->addSeparator();
-    viewMenu->addAction( "No rotation", this, SLOT(setRot0()) );
-    viewMenu->addAction( "90\260 rotation", this, SLOT(setRot90()) );
-    viewMenu->addAction( "180\260 rotation", this, SLOT(setRot180()) );
-    viewMenu->addAction( "270\260 rotation", this, SLOT(setRot270()) );
+    viewMenu->addAction( tr("&No rotation"), this, SLOT(setRot0()) );
+    viewMenu->addAction( tr("&90\260 rotation"), this, SLOT(setRot90()) );
+    viewMenu->addAction( tr("1&80\260 rotation"), this, SLOT(setRot180()) );
+    viewMenu->addAction( tr("2&70\260 rotation"), this, SLOT(setRot270()) );
     viewMenu->addSeparator();
-    viewMenu->addAction( "Zoom scale &0.5", this, SLOT(setZoomHalf()) );
-    viewMenu->addAction( "Zoom scale 0.75", this, SLOT(setZoom075()) );
-    viewMenu->addAction( "Zoom scale &1", this, SLOT(setZoom1()) );
-    viewMenu->addAction( "Zoom scale &2", this, SLOT(setZoom2()) );
-    viewMenu->addAction( "Zoom scale &3", this, SLOT(setZoom3()) );
-    viewMenu->addAction( "Zoom scale &4", this, SLOT(setZoom4()) );
+    viewMenu->addAction( tr("Zoom scale &0.5"), this, SLOT(setZoomHalf()) );
+    viewMenu->addAction( tr("Zoom scale 0.7&5"), this, SLOT(setZoom075()) );
+    viewMenu->addAction( tr("Zoom scale &1"), this, SLOT(setZoom1()) );
+    viewMenu->addAction( tr("Zoom scale &2"), this, SLOT(setZoom2()) );
+    viewMenu->addAction( tr("Zoom scale &3"), this, SLOT(setZoom3()) );
+    viewMenu->addAction( tr("Zoom scale &4"), this, SLOT(setZoom4()) );
     viewMenu->addSeparator();
-    viewMenu->addAction( "Zoom scale...", this, SLOT(setZoom()) );
+    viewMenu->addAction( tr("Zoom &scale..."), this, SLOT(setZoom()) );
     return viewMenu;
 }
 
 
 QMenu* QVFb::createHelpMenu()
 {
-    QMenu *help = new QMenu( "Help", this );
-    help->addAction("About...", this, SLOT(about()));
+    QMenu *help = new QMenu( tr("&Help"), this );
+    help->addAction(tr("&About..."), this, SLOT(about()));
     return help;
 }
 
@@ -525,17 +525,17 @@ void QVFb::setZoom4()
 void QVFb::saveImage()
 {
     QImage img = view->image();
-    QString filename = QFileDialog::getSaveFileName(this, "Save Main Screen image", "snapshot.png", "Portable Network Graphics (*.png)");
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Main Screen image"), tr("snapshot.png"), tr("Portable Network Graphics (*.png)"));
     if (!filename.isEmpty()){
         if(!img.save(filename,"PNG"))
-                QMessageBox::critical(this, "Save Main Screen Image", "Save failed. Check that you have permission to write to the target directory.");
+                QMessageBox::critical(this, tr("Save Main Screen Image"), tr("Save failed. Check that you have permission to write to the target directory."));
     }
     if (secondaryView) {
         QImage img = view->image();
-        QString filename = QFileDialog::getSaveFileName(this, "Save Second Screen image", "snapshot.png", "Portable Network Graphics (*.png)");
+        QString filename = QFileDialog::getSaveFileName(this, tr("Save Second Screen image"), tr("snapshot.png"), tr("Portable Network Graphics (*.png)"));
         if (!filename.isEmpty()) {
             if(!img.save(filename,"PNG"))
-                QMessageBox::critical(this, "Save Second Screen Image", "Save failed. Check that you have permission to write to the target directory.");
+                QMessageBox::critical(this, tr("Save Second Screen Image"), tr("Save failed. Check that you have permission to write to the target directory."));
         }
     }
 }
@@ -577,7 +577,7 @@ void QVFb::setRate(int i)
 
 void QVFb::about()
 {
-    QMessageBox::about(this, "About QVFB",
+    QMessageBox::about(this, tr("About QVFB"), tr(
 	"<h2>The Qt for Embedded Linux Virtual X11 Framebuffer</h2>"
 	"<p>This application runs under Qt for X11, emulating a simple framebuffer, "
 	"which the Qt for Embedded Linux server and clients can attach to just as if "
@@ -586,7 +586,7 @@ void QVFb::about()
 	"Linux applications under X11 without having to switch to a virtual console. "
 	"This means you can comfortably use your other development tools such "
 	"as GUI profilers and debuggers."
-    );
+    ));
 }
 
 void QVFb::findSkins(const QString &currentSkin)

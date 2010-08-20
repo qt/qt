@@ -1011,7 +1011,7 @@ CentralWidget::highlightSearchTerms()
             case QHelpSearchQuery::DEFAULT:
             case QHelpSearchQuery::ATLEAST:
                 foreach (QString term, query.wordList)
-                    terms.append(term.remove(QLatin1String("\"")));
+                    terms.append(term.remove(QLatin1Char('"')));
             }
         }
     }
