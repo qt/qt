@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,59 +38,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QObject>
 
-#ifndef QDECLARATIVEFONTLOADER_H
-#define QDECLARATIVEFONTLOADER_H
-
-#include <qdeclarative.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qurl.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QDeclarativeFontLoaderPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeFontLoader : public QObject
+class ClassWithWrongNOTIFY : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeFontLoader)
-    Q_ENUMS(Status)
+    Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged)
 
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-
+    int m_foo;
 public:
-    enum Status { Null = 0, Ready, Loading, Error };
-
-    QDeclarativeFontLoader(QObject *parent = 0);
-    ~QDeclarativeFontLoader();
-
-    QUrl source() const;
-    void setSource(const QUrl &url);
-
-    QString name() const;
-    void setName(const QString &name);
-
-    Status status() const;
-
-private Q_SLOTS:
-    void replyFinished();
-
-Q_SIGNALS:
-    void nameChanged();
-    void statusChanged();
+    void setFoo(int i) { m_foo = i; }
+    int foo() { return m_foo; }
 };
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QDeclarativeFontLoader)
-
-QT_END_HEADER
-
-#endif // QDECLARATIVEFONTLOADER_H
 
