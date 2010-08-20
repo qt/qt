@@ -64,15 +64,15 @@ private:
 class QHELP_EXPORT QCLuceneSort
 {
 public:
-	QCLuceneSort();
-	QCLuceneSort(const QStringList &fieldNames);
-    QCLuceneSort(const QString &field, bool reverse = false);
+    QCLuceneSort();
+    explicit QCLuceneSort(const QStringList &fieldNames);
+    explicit QCLuceneSort(const QString &field, bool reverse = false);
 
     virtual ~QCLuceneSort();
 
     QString toString() const;
     void setSort(const QStringList &fieldNames);
-	void setSort(const QString &field, bool reverse = false);
+    void setSort(const QString &field, bool reverse = false);
 
 protected:
     friend class QCLuceneHits;

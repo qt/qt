@@ -66,7 +66,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(CmdLineParser *cmdLine, QWidget *parent = 0);
+    explicit MainWindow(CmdLineParser *cmdLine, QWidget *parent = 0);
     ~MainWindow();
 
     static void activateCurrentBrowser();
