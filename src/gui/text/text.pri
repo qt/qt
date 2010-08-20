@@ -25,7 +25,7 @@ HEADERS += \
 	text/qabstracttextdocumentlayout.h \
 	text/qtextdocumentlayout_p.h \
 	text/qtextcursor.h \
-	text/qtextcursor_p.h \
+        text/qtextcursor_p.h \
 	text/qtextdocumentfragment.h \
 	text/qtextdocumentfragment_p.h \
 	text/qtextimagehandler_p.h \
@@ -39,7 +39,7 @@ HEADERS += \
 	text/qzipwriter_p.h \
 	text/qtextodfwriter_p.h \
 	text/qstatictext_p.h \
-	text/qstatictext.h
+        text/qstatictext.h
 
 SOURCES += \
 	text/qfont.cpp \
@@ -69,7 +69,7 @@ SOURCES += \
 	text/qcssparser.cpp \
 	text/qzip.cpp \
 	text/qtextodfwriter.cpp \
-	text/qstatictext.cpp
+        text/qstatictext.cpp
 
 win32 {
 	SOURCES += \
@@ -112,15 +112,15 @@ embedded {
 
 qpa {
 	SOURCES += \
-		text/qfont_qws.cpp \
-		text/qfontengine_ft.cpp \
-		text/qfontengine_qpf.cpp \
-		text/qabstractfontengine_qws.cpp
+                text/qfont_qpa.cpp \
+                text/qfontengine_qpa.cpp \
+                text/qplatformfontdatabase_qpa.cpp
+
 	HEADERS += \
-		text/qfontengine_ft_p.h \
-		text/qabstractfontengine_qws.h \
-		text/qabstractfontengine_p.h
+                text/qplatformfontdatabase_qpa.h
+
 	DEFINES += QT_NO_FONTCONFIG
+        DEFINES += QT_NO_FREETYPE
 }
 
 symbian {
@@ -142,6 +142,7 @@ symbian {
 	}
 }
 
+!qpa {
 contains(QT_CONFIG, freetype) {
     SOURCES += \
 	../3rdparty/freetype/src/base/ftbase.c \
@@ -215,6 +216,7 @@ contains(QT_CONFIG, freetype) {
 contains(QT_CONFIG, fontconfig) {
     CONFIG += opentype
 }
+}#!qpa
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

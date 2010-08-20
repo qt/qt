@@ -41,6 +41,7 @@
 
 #include "qlinuxfbintegration.h"
 #include "../fb_base/fb_base.h"
+#include "qgenericunixfontdatabase.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
 #include <qimage.h>
@@ -156,6 +157,7 @@ void QLinuxFbIntegrationPrivate::closeTty()
 }
 
 QLinuxFbIntegration::QLinuxFbIntegration()
+    :fontDb(new QGenericUnixFontDatabase())
 {
     d_ptr = new QLinuxFbIntegrationPrivate();
 
@@ -797,6 +799,11 @@ QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWidget *widget, WId 
     QFbWindow *w = new QFbWindow(widget);
     mPrimaryScreen->addWindow(w);
     return w;
+}
+
+QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
+{
+    return fontDb;
 }
 
 QLinuxFbScreen::QLinuxFbScreen(uchar * d, int w,

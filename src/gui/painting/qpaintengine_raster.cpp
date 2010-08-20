@@ -3396,9 +3396,36 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 #endif // Q_WS_QWS
 
-#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN) || defined(Q_WS_QPA)) && !defined(QT_NO_FREETYPE)
+#ifdef Q_WS_QPA
+    if (s->matrix.type() < QTransform::TxScale) {
 
-#if (defined(Q_WS_QWS) || defined(Q_WS_QPA)) && !defined(QT_NO_QWS_QPF2)
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        QTransform matrix = state()->transform();
+
+        qreal _x = qFloor(p.x() + aliasedCoordinateDelta);
+        qreal _y = qFloor(p.y() + aliasedCoordinateDelta);
+        matrix.translate(_x, _y);
+
+        fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+        if (glyphs.size() == 0)
+            return;
+
+        for(int i = 0; i < glyphs.size(); i++) {
+            QImage img = fontEngine->alphaMapForGlyph(glyphs[i]);
+            glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
+            alphaPenBlt(img.bits(), img.bytesPerLine(), img.depth(),
+                                         qRound(positions[i].x + metrics.x),
+                                         qRound(positions[i].y + metrics.y),
+                                         img.width(), img.height());
+        }
+        return;
+    }
+#endif //Q_WS_QPA
+
+#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
+
+#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_QPF2)
     if (fontEngine->type() == QFontEngine::QPF2) {
         QFontEngine *renderingEngine = static_cast<QFontEngineQPF *>(fontEngine)->renderingEngine();
         if (renderingEngine)

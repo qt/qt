@@ -48,11 +48,14 @@
 #include <QtGui/QPlatformWindowFormat>
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
 
+#include "qgenericunixfontdatabase.h"
+
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
+    mFontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
 
@@ -88,6 +91,11 @@ QWindowSurface *QEglFSIntegration::createWindowSurface(QWidget *widget, WId winI
     qWarning("QEglIntegration::createWindowSurface %p\n",widget);
 #endif
     return new QEglFSWindowSurface(m_primaryScreen,widget);
+}
+
+QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
+{
+    return mFontDb;
 }
 
 QT_END_NAMESPACE

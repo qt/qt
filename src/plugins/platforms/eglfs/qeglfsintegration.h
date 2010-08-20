@@ -62,7 +62,10 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
+    QPlatformFontDatabase *fontDatabase() const;
+
 private:
+    QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen *> mScreens;
     QEglFSScreen *m_primaryScreen;
 };

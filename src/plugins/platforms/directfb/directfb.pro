@@ -27,5 +27,7 @@ HEADERS = qdirectfbintegration.h \
     qdirectfbinput.h \
     qdirectfbcursor.h \
     qdirectfbwindow.h
+
+include(../fontdatabases/genericunix/genericunix.pri)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

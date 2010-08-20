@@ -39,39 +39,76 @@
 **
 ****************************************************************************/
 
-#include "qplatformintegration_qpa.h"
-
+#include <QtGui/private/qapplication_p.h>
 #include <QtGui/QPlatformFontDatabase>
 
 QT_BEGIN_NAMESPACE
 
-QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
+void QFont::initialize()
 {
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    return QPixmap();
+    QApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
 }
 
-QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration() const
+void QFont::cleanup()
+{
+    QFontCache::cleanup();
+}
+
+
+/*****************************************************************************
+  QFont member functions
+ *****************************************************************************/
+
+Qt::HANDLE QFont::handle() const
 {
     return 0;
 }
 
-bool QPlatformIntegration::hasOpenGL() const
+QString QFont::rawName() const
 {
-    return false;
+    return QLatin1String("unknown");
 }
 
-QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
+void QFont::setRawName(const QString &)
 {
-    static QPlatformFontDatabase *db = 0;
-    if (!db) {
-        db = new QPlatformFontDatabase;
-    }
-    return db;
 }
+
+QString QFont::defaultFamily() const
+{
+    QString familyName;
+    switch(d->request.styleHint) {
+        case QFont::Times:
+            familyName = QString::fromLatin1("times");
+        case QFont::Courier:
+        case QFont::Monospace:
+            familyName = QString::fromLatin1("monospace");
+        case QFont::Decorative:
+            familyName = QString::fromLatin1("old english");
+        case QFont::Helvetica:
+        case QFont::System:
+        default:
+            familyName = QString::fromLatin1("helvetica");
+    }
+
+    QStringList list = QApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(familyName,QFont::StyleNormal,QUnicodeTables::Common);
+    if (list.size()) {
+        familyName = list.at(0);
+    }
+    return familyName;
+}
+
+QString QFont::lastResortFamily() const
+{
+    return QString::fromLatin1("helvetica");
+}
+
+QString QFont::lastResortFont() const
+{
+    qFatal("QFont::lastResortFont: Cannot find any reasonable font");
+    // Shut compiler up
+    return QString();
+}
+
 
 QT_END_NAMESPACE
+

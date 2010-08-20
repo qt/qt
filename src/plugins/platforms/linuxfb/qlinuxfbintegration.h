@@ -82,6 +82,8 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
+    QPlatformFontDatabase *fontDatabase() const;
+
 private:
     QLinuxFbScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
@@ -122,6 +124,7 @@ private:
     void setPixelFormat(struct fb_var_screeninfo);
     void createPalette(fb_cmap &cmap, fb_var_screeninfo &vinfo, fb_fix_screeninfo &finfo);
     void blank(bool on);
+    QPlatformFontDatabase *fontDb;
 };
 
 QT_END_NAMESPACE

@@ -87,14 +87,16 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-    QBlittable *createBlittable(const QSize &size) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
+
+    QPlatformFontDatabase *fontDatabase() const;
 
 private:
     QList<QPlatformScreen *> mScreens;
     QDirectFbInput *mInput;
     QThread *mInputRunner;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

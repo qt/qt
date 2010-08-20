@@ -272,7 +272,7 @@ private:
     friend class QProxyFontEngine;
 #endif
 #ifdef Q_WS_QPA
-    friend class QProxyFontEngine;
+    friend class QFontEngineQPA;
 #endif
     friend class QPainter;
     friend class QPainterPrivate;

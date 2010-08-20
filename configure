@@ -6093,6 +6093,30 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
             exit 1
         fi
     fi
+
+    # auto-detect FontConfig support
+    if [ "$CFG_FONTCONFIG" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists fontconfig --exists freetype2 2>/dev/null; then
+            QT_CFLAGS_FONTCONFIG=`$PKG_CONFIG --cflags fontconfig --cflags freetype2 2>/dev/null`
+            QT_LIBS_FONTCONFIG=`$PKG_CONFIG --libs fontconfig --libs freetype2 2>/dev/null`
+        else
+            QT_CFLAGS_FONTCONFIG=
+            QT_LIBS_FONTCONFIG="-lfreetype -lfontconfig"
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/fontconfig "FontConfig" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS $QT_CFLAGS_FONTCONFIG $QT_LIBS_FONTCONFIG; then
+                QT_CONFIG="$QT_CONFIG fontconfig"
+                QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
+                QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
+                CFG_LIBFREETYPE=system
+        fi
+    fi
+
+    # MIT_SHM is required for testlite
+    if [ "$CFG_MITSHM" != "no" ]; then
+	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/mitshm "mitshm" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+            QT_CONFIG="$QT_CONFIG mitshm"
+	fi
+    fi
 fi
 
 
