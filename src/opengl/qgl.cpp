@@ -2287,11 +2287,19 @@ QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_prem
 QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                            QGLContext::BindOptions options)
 {
+    Q_Q(QGLContext);
+
     const qint64 key = image.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
-        glBindTexture(target, texture->id);
-        return texture;
+        if (image.paintingActive()) {
+            // A QPainter is active on the image - take the safe route and replace the texture.
+            q->deleteTexture(texture->id);
+            texture = 0;
+        } else {
+            glBindTexture(target, texture->id);
+            return texture;
+        }
     }
 
     if (!texture)
@@ -2557,14 +2565,19 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     }
 #else
     Q_UNUSED(pd);
-    Q_UNUSED(q);
 #endif
 
     const qint64 key = pixmap.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);
     if (texture) {
-        glBindTexture(target, texture->id);
-        return texture;
+        if (pixmap.paintingActive()) {
+            // A QPainter is active on the pixmap - take the safe route and replace the texture.
+            q->deleteTexture(texture->id);
+            texture = 0;
+        } else {
+            glBindTexture(target, texture->id);
+            return texture;
+        }
     }
 
 #if defined(Q_WS_X11)
