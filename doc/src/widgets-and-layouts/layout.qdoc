@@ -33,6 +33,7 @@
 /*!
     \page layout.html
     \title Layout Management
+    \ingroup qt-basic-concepts
     \ingroup qt-gui-concepts
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
