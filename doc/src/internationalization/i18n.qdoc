@@ -39,6 +39,8 @@
     \brief Information about Qt's support for internationalization and multiple languages.
     \nextpage Writing Source Code for Translation
 
+    \ingroup qt-basic-concepts
+	
     \keyword internationalization
     \keyword i18n
 
