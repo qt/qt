@@ -45,11 +45,11 @@ Rectangle {
     color: "white"
     width: 120; height: 120
 
-//! [scaled border image]
+//! [normal image]
 Image {
     source: "pics/borderframe.png"
 }
-//! [scaled border image]
+//! [normal image]
 
     Rectangle {
         x: 30; y: 0

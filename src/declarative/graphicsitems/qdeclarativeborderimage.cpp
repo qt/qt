@@ -56,27 +56,97 @@ QT_BEGIN_NAMESPACE
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
     \since 4.7
-    \ingroup qm-basic-visual-elements
+    \ingroup qml-basic-visual-elements
 
-    A BorderImage breaks an image into 9 sections, as shown below:
+    The BorderImage element is used to create borders out of images by scaling or tiling
+    parts of each image.
+
+    A BorderImage element breaks a source image, specified using the \l url property,
+    into 9 regions, as shown below:
 
     \image declarative-scalegrid.png
 
-    When the image is scaled:
+    When the image is scaled, regions of the source image are scaled or tiled to
+    create the displayed border image in the following way:
+
     \list
-    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i sections 2 and 8 are scaled according to \l{BorderImage::horizontalTileMode}{horizontalTileMode}
-    \i sections 4 and 6 are scaled according to \l{BorderImage::verticalTileMode}{verticalTileMode}
-    \i the middle (section 5) is scaled according to both \l{BorderImage::horizontalTileMode}{horizontalTileMode} and \l{BorderImage::verticalTileMode}{verticalTileMode}
+    \i The corners (regions 1, 3, 7, and 9) are not scaled at all.
+    \i Regions 2 and 8 are scaled according to
+       \l{BorderImage::horizontalTileMode}{horizontalTileMode}.
+    \i Regions 4 and 6 are scaled according to
+       \l{BorderImage::verticalTileMode}{verticalTileMode}.
+    \i The middle (region 5) is scaled according to both
+       \l{BorderImage::horizontalTileMode}{horizontalTileMode} and
+       \l{BorderImage::verticalTileMode}{verticalTileMode}.
     \endlist
 
-    Examples:
-    \snippet snippets/declarative/borderimage.qml 0
+    The regions of the image are defined using the \l border property group, which
+    describes the distance from each edge of the source image to use as a border.
 
-    \image BorderImage.png
+    \section1 Example Usage
 
-    The \l{declarative/imageelements/borderimage}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
-    rectangular item.
+    The following examples show the effects of the different modes on an image.
+    Guide lines are overlaid onto the image to show the different regions of the
+    image as described above.
+
+    \beginfloatleft
+    \image qml-borderimage-normal-image.png
+    \endfloat
+
+    An unscaled image is displayed using an Image element. The \l border property is
+    used to determine the parts of the image that will lie inside the unscaled corner
+    areas and the parts that will be stretched horizontally and vertically.
+
+    \snippet doc/src/snippets/declarative/borderimage/normal-image.qml normal image
+
+    \clearfloat
+    \beginfloatleft
+    \image qml-borderimage-scaled.png
+    \endfloat
+
+    A BorderImage element is used to display the image, and it is given a size that is
+    larger than the original image. Since the \l horizontalTileMode property is set to
+    \l{BorderImage::horizontalTileMode}{BorderImage.Stretch}, the parts of image in
+    regions 2 and 8 are stretched horizontally. Since the \l verticalTileMode property
+    is set to \l{BorderImage::verticalTileMode}{BorderImage.Stretch}, the parts of image
+    in regions 4 and 6 are stretched vertically.
+
+    \snippet doc/src/snippets/declarative/borderimage/borderimage-scaled.qml scaled border image
+
+    \clearfloat
+    \beginfloatleft
+    \image qml-borderimage-tiled.png
+    \endfloat
+
+    Again, a large BorderImage element is used to display the image. With the
+    \l horizontalTileMode property set to \l{BorderImage::horizontalTileMode}{BorderImage.Repeat},
+    the parts of image in regions 2 and 8 are tiled so that they fill the space at the
+    top and bottom of the element. Similarly, the \l verticalTileMode property is set to
+    \l{BorderImage::verticalTileMode}{BorderImage.Repeat}, the parts of image in regions
+    4 and 6 are tiled so that they fill the space at the left and right of the element.
+
+    \snippet doc/src/snippets/declarative/borderimage/borderimage-tiled.qml tiled border image
+
+    \clearfloat
+    In some situations, the width of regions 2 and 8 may not be an exact multiple of the width
+    of the corresponding regions in the source image. Similarly, the height of regions 4 and 6
+    may not be an exact multiple of the height of the corresponding regions. It can be useful
+    to use \l{BorderImage::horizontalTileMode}{BorderImage.Round} instead of
+    \l{BorderImage::horizontalTileMode}{BorderImage.Repeat} in cases like these.
+
+    The \l{declarative/imageelements/borderimage}{BorderImage example} shows how a BorderImage
+    can be used to simulate a shadow effect on a rectangular item.
+
+    \section1 Quality and Performance
+
+    By default, any scaled regions of the image are rendered without smoothing to improve
+    rendering speed. Setting the \l smooth property improves rendering quality of scaled
+    regions, but may slow down rendering.
+
+    The source image may not be loaded instantaneously, depending on its original location.
+    Loading progress can be monitored with the \l progress property.
+
+    \sa Image, AnimatedImage
  */
 
 /*!
@@ -126,6 +196,8 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
     transformed.  Smooth filtering gives better visual quality, but is slower.  If
     the image is displayed at its natural size, this property has no visual or
     performance effect.
+
+    By default, this property is set to false.
 
     \note Generally scaling artifacts are only visible if the image is stationary on
     the screen.  A common pattern when animating an image is to disable smooth
@@ -251,17 +323,21 @@ void QDeclarativeBorderImage::load()
     \qmlproperty int BorderImage::border.top
     \qmlproperty int BorderImage::border.bottom
 
-    The 4 border lines (2 horizontal and 2 vertical) break the image into 9 sections, as shown below:
+    The 4 border lines (2 horizontal and 2 vertical) break the image into 9 sections,
+    as shown below:
 
     \image declarative-scalegrid.png
 
-    Each border line (left, right, top, and bottom) specifies an offset in pixels from the respective side.
+    Each border line (left, right, top, and bottom) specifies an offset in pixels
+    from the respective edge of the source image. By default, each border line has
+    a value of 0.
 
-    For example:
+    For example, the following definition sets the bottom line 10 pixels up from
+    the bottom of the image:
+
     \qml
     border.bottom: 10
     \endqml
-    sets the bottom line 10 pixels up from the bottom of the image.
 
     The border lines can also be specified using a
     \l {BorderImage::source}{.sci file}.
