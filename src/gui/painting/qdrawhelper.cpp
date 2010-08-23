@@ -1757,9 +1757,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl(uint *dest, int
     for (int i = 0; i < length; ++i) {
         PRELOAD_COND(dest)
         uint d = dest[i];
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
         coverage.store(&dest[i], d);
     }
 }
@@ -1781,9 +1779,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Plus_impl(uint *dest, const uin
         uint d = dest[i];
         uint s = src[i];
 
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
 
         coverage.store(&dest[i], d);
     }
@@ -7911,6 +7907,7 @@ void qInitDrawhelperAsm()
 
             functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
             functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+            functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
             destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
             destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 

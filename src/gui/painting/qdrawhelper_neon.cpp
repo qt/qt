@@ -622,6 +622,61 @@ void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, u
     }
 }
 
+void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        uint *const end = dst + length;
+        uint *const neonEnd = end - 3;
+
+        while (dst < neonEnd) {
+            asm volatile (
+                "vld2.8     { d0, d1 }, [%[SRC]] !\n\t"
+                "vld2.8     { d2, d3 }, [%[DST]]\n\t"
+                "vqadd.u8 q0, q0, q1\n\t"
+                "vst2.8     { d0, d1 }, [%[DST]] !\n\t"
+                : [DST]"+r" (dst), [SRC]"+r" (src)
+                :
+                : "memory", "d0", "d1", "d2", "d3", "q0", "q1"
+            );
+        }
+
+        while (dst != end) {
+            *dst = comp_func_Plus_one_pixel(*dst, *src);
+            ++dst;
+            ++src;
+        }
+    } else {
+        int x = 0;
+        const int one_minus_const_alpha = 255 - const_alpha;
+        const uint16x8_t constAlphaVector = vdupq_n_u16(const_alpha);
+        const uint16x8_t oneMinusconstAlphaVector = vdupq_n_u16(one_minus_const_alpha);
+
+        const uint16x8_t half = vdupq_n_u16(0x80);
+        for (; x < length - 3; x += 4) {
+            const uint32x4_t src32 = vld1q_u32((uint32_t *)&src[x]);
+            const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
+            uint8x16_t dst8 = vld1q_u8((uint8_t *)&dst[x]);
+            uint8x16_t result = vqaddq_u8(dst8, src8);
+
+            uint16x8_t result_low = vmovl_u8(vget_low_u8(result));
+            uint16x8_t result_high = vmovl_u8(vget_high_u8(result));
+
+            uint16x8_t dst_low = vmovl_u8(vget_low_u8(dst8));
+            uint16x8_t dst_high = vmovl_u8(vget_high_u8(dst8));
+
+            result_low = qvinterpolate_pixel_255(result_low, constAlphaVector, dst_low, oneMinusconstAlphaVector, half);
+            result_high = qvinterpolate_pixel_255(result_high, constAlphaVector, dst_high, oneMinusconstAlphaVector, half);
+
+            const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result_low));
+            const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result_high));
+            vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
+        }
+
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
+    }
+}
+
 static const int tileSize = 32;
 
 extern "C" void qt_rotate90_16_neon(quint16 *dst, const quint16 *src, int sstride, int dstride, int count);
