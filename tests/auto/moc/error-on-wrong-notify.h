@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,34 +38,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QObject>
 
-#ifndef INPUTPAGE_H
-#define INPUTPAGE_H
-
-#include <QtGui/QWizardPage>
-#include "ui_inputpage.h"
-
-QT_BEGIN_NAMESPACE
-
-class AdpReader;
-
-class InputPage : public QWizardPage
+class ClassWithWrongNOTIFY : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int foo READ foo WRITE setFoo NOTIFY fooChanged)
 
+    int m_foo;
 public:
-    explicit InputPage(AdpReader *reader, QWidget *parent = 0);
-    
-private slots:
-    void getFileName();
-
-private:
-    bool validatePage();
-
-    Ui::InputPage m_ui;
-    AdpReader *m_adpReader;
+    void setFoo(int i) { m_foo = i; }
+    int foo() { return m_foo; }
 };
 
-QT_END_NAMESPACE
-
-#endif

@@ -486,7 +486,7 @@ void QWidgetPrivate::show_sys()
 
 #ifdef Q_WS_S60
         // Lazily initialize the S60 screen furniture when the first window is shown.
-        if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+        if (q->isWindow() && !QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
                 && !S60->buttonGroupContainer() && !S60->statusPane()) {
 
             if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {

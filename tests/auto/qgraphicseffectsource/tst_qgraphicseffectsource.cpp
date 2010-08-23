@@ -209,7 +209,7 @@ void tst_QGraphicsEffectSource::init()
 void tst_QGraphicsEffectSource::graphicsItem()
 {
     QVERIFY(effect->source());
-    QCOMPARE(effect->source()->graphicsItem(), item);
+    QCOMPARE(effect->source()->graphicsItem(), (const QGraphicsItem*)item);
 }
 
 void tst_QGraphicsEffectSource::styleOption()
@@ -237,7 +237,7 @@ void tst_QGraphicsEffectSource::isPixmap()
     CustomEffect *anotherEffect = new CustomEffect;
     pixmapItem->setGraphicsEffect(anotherEffect);
     QVERIFY(anotherEffect->source());
-    QCOMPARE(anotherEffect->source()->graphicsItem(), static_cast<QGraphicsItem *>(pixmapItem));
+    QCOMPARE(anotherEffect->source()->graphicsItem(), static_cast<const QGraphicsItem *>(pixmapItem));
     QVERIFY(anotherEffect->source()->isPixmap());
     delete pixmapItem;
 }

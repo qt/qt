@@ -68,8 +68,6 @@ Item {
                     loader.item.width = 640;
                 if(loader.item.height > 480)
                     loader.item.height = 480;
-                if(loader.item.inAnotherDemo != undefined)
-                    loader.item.inAnotherDemo = true;
             }}
 
         }

@@ -85,6 +85,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QTimer>
 #include <QGraphicsObject>
 #include <QNetworkProxyFactory>
@@ -715,6 +716,9 @@ void QDeclarativeViewer::createMenu()
     openAction->setShortcuts(QKeySequence::Open);
     connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
+    QAction *openUrlAction = new QAction(tr("Open &URL..."), this);
+    connect(openUrlAction, SIGNAL(triggered()), this, SLOT(openUrl()));
+
     QAction *reloadAction = new QAction(tr("&Reload"), this);
     reloadAction->setShortcuts(QKeySequence::Refresh);
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
@@ -789,6 +793,7 @@ void QDeclarativeViewer::createMenu()
 
 #if defined(Q_WS_MAEMO_5)
     menu->addAction(openAction);
+    menu->addAction(openUrlAction);
     menu->addAction(reloadAction);
 
     menu->addAction(snapshotAction);
@@ -809,6 +814,7 @@ void QDeclarativeViewer::createMenu()
 
     QMenu *fileMenu = menu->addMenu(tr("&File"));
     fileMenu->addAction(openAction);
+    fileMenu->addAction(openUrlAction);
     fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
     fileMenu->addAction(closeAction);
@@ -1019,6 +1025,14 @@ void QDeclarativeViewer::openFile()
             open(fi.absoluteFilePath());
         }
     }
+}
+
+void QDeclarativeViewer::openUrl()
+{
+    QString cur = canvas->source().toLocalFile();
+    QString url= QInputDialog::getText(this, tr("Open QML file"), tr("URL of main QML file:"), QLineEdit::Normal, cur);
+    if (!url.isEmpty())
+        open(url);
 }
 
 void QDeclarativeViewer::statusChanged()
