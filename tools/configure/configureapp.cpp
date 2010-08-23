@@ -2667,7 +2667,13 @@ void Configure::generateOutputVars()
             qtConfig += "audio-backend";
     }
 
-    // Don't add "webkit" to QT_CONFIG here - it injects itself via the module.
+    if (dictionary["WEBKIT"] == "yes") {
+        // This include takes care of adding "webkit" to QT_CONFIG.
+        QString src = sourcePath + "/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri";
+        QString dst = buildPath + "/mkspecs/modules/qt_webkit_version.pri";
+        QFile::remove(dst);
+        QFile::copy(src, dst);
+    }
 
     if (dictionary["DECLARATIVE"] == "yes") {
         if (dictionary[ "SCRIPT" ] == "no") {
