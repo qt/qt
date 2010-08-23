@@ -1275,9 +1275,9 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 
     //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
 #ifdef Q_OS_SYMBIAN
-    if(q->inherits("QGLWidget")) {
+    if (isGLWidget) {
         // Don't waste GPU mem for unnecessary large egl surface
-        data.crect = parentWidget ? QRect(0,0,2,2) : QRect(0,0,2,2);
+        data.crect = QRect(0,0,2,2);
     } else {
         data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,360,640);
     }
