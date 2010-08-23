@@ -34,3 +34,9 @@ symbian {
 }
 
 include(WebKit/qt/docs/docs.pri)
+
+!isEmpty(QT_BUILD_TREE) {
+    QMAKE_SUBSTITUTES += qt_webkit_version
+    qt_webkit_version.input = WebKit/qt/qt_webkit_version.pri
+    qt_webkit_version.output = $$QT_BUILD_TREE/mkspecs/modules/qt_webkit_version.pri
+}
