@@ -99,7 +99,7 @@
     Arcsine is the inverse operation of sine.
 
     \relates <QtCore/qmath.h>
-    \sa qSine(), qAtan(), qAcos()
+    \sa qSin(), qAtan(), qAcos()
 */
 
 /*!
@@ -131,7 +131,7 @@
 
 /*!
     \fn qreal qLn(qreal v)
-    Returns the natural logarithm of v. Natural logarithm uses base e.
+    Returns the natural logarithm of \a v. Natural logarithm uses base e.
 
     \relates <QtCore/qmath.h>
     \sa qExp()
