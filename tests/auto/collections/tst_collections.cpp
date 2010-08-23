@@ -3653,6 +3653,44 @@ bool operator==(const QTBUG13079_Node<QSet> &a, const QTBUG13079_Node<QSet> &b)
     return a.s == b.s && a.children == b.children;
 }
 
+template<template<class> class C>
+struct QTBUG13079_NodePtr : QSharedData {
+    C<QTBUG13079_NodePtr> child;
+    QTBUG13079_NodePtr *next;
+    QString s;
+
+    ~QTBUG13079_NodePtr() {
+        child.data(); //play with memory
+        next = 0;
+    }
+};
+template<template<class> class C> void QTBUG13079_collectionInsidePtrImpl()
+{
+    typedef C<QTBUG13079_NodePtr<C> > Ptr;
+    {
+        Ptr nodePtr;
+        nodePtr = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->s = "parent";
+        nodePtr->child = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->child->s = "child";
+        nodePtr = nodePtr->child;
+        QCOMPARE(nodePtr->s, QString::fromLatin1("child"));
+        nodePtr = nodePtr->child;
+        QVERIFY(!nodePtr);
+    }
+    {
+        Ptr nodePtr;
+        nodePtr = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->s = "parent";
+        nodePtr->next = new QTBUG13079_NodePtr<C>();
+        nodePtr->next->s = "next";
+        nodePtr = Ptr(nodePtr->next);
+        QCOMPARE(nodePtr->s, QString::fromLatin1("next"));
+        nodePtr = Ptr(nodePtr->next);
+        QVERIFY(!nodePtr);
+    }
+}
+
 #endif
 
 void tst_Collections::QTBUG13079_collectionInsideCollection()
@@ -3673,6 +3711,10 @@ void tst_Collections::QTBUG13079_collectionInsideCollection()
 
     QTBUG13079_collectionInsideCollectionAssocImpl<QMap>();
     QTBUG13079_collectionInsideCollectionAssocImpl<QHash>();
+
+    QTBUG13079_collectionInsidePtrImpl<QSharedPointer>();
+    QTBUG13079_collectionInsidePtrImpl<QExplicitlySharedDataPointer>();
+    QTBUG13079_collectionInsidePtrImpl<QSharedDataPointer>();
 #endif
 }
 
