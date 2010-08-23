@@ -194,7 +194,6 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 /*!
     \internal
     \class QDeclarativeText
-    \qmlclass Text
 
     \brief The QDeclarativeText class provides a formatted text item that you can add to a QDeclarativeView.
 
