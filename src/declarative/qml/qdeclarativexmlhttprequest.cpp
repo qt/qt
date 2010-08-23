@@ -1080,10 +1080,9 @@ QString QDeclarativeXMLHttpRequest::headers()
 
     foreach (const HeaderPair &header, m_headersList) {
         if (ret.length())
-            ret.append(QString::fromUtf8("\r\n"));
-        ret.append(QString::fromUtf8(header.first));
-        ret.append(QString::fromUtf8(": "));
-        ret.append(QString::fromUtf8(header.second));
+            ret.append(QLatin1String("\r\n"));
+        ret = ret % QString::fromUtf8(header.first) % QLatin1String(": ")
+                % QString::fromUtf8(header.second);
     }
     return ret;
 }
@@ -1095,8 +1094,8 @@ void QDeclarativeXMLHttpRequest::fillHeadersList()
     m_headersList.clear();
     foreach (const QByteArray &header, headerList) {
         HeaderPair pair (header.toLower(), m_network->rawHeader(header));
-	if (pair.first == "set-cookie" ||
-	    pair.first == "set-cookie2") 
+    if (pair.first == "set-cookie" ||
+        pair.first == "set-cookie2")
 	    continue;
 
         m_headersList << pair;
@@ -1307,7 +1306,7 @@ QString QDeclarativeXMLHttpRequest::responseBody() const
     QXmlStreamReader reader(m_responseEntityBody);
     reader.readNext();
 #ifndef QT_NO_TEXTCODEC
-    QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
+    QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toUtf8());
     if (codec)
         return codec->toUnicode(m_responseEntityBody);
 #endif
