@@ -41,5 +41,5 @@
 import Qt 4.7
 
 Image {
-    source: "qtlogo.png"
+    source: "pics/qtlogo.png"
 }

@@ -45,15 +45,15 @@ Rectangle {
     color: "white"
     width: 180; height: 180
 
-//! [scaled border image]
+//! [tiled border image]
 BorderImage {
     width: 180; height: 180
     border { left: 30; top: 30; right: 30; bottom: 30 }
-    horizontalTileMode: BorderImage.Round
-    verticalTileMode: BorderImage.Round
+    horizontalTileMode: BorderImage.Repeat
+    verticalTileMode: BorderImage.Repeat
     source: "pics/borderframe.png"
 }
-//! [scaled border image]
+//! [tiled border image]
 
     Rectangle {
         x: 30; y: 0
