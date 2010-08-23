@@ -4445,6 +4445,11 @@ void QGLWidget::glDraw()
     Q_D(QGLWidget);
     if (!isValid())
         return;
+#ifdef Q_OS_SYMBIAN
+    // Crashes on Symbian if trying to render to invisible surfaces
+    if (!isVisible() && d->glcx->device()->devType() == QInternal::Widget)
+        return;
+#endif
     makeCurrent();
 #ifndef QT_OPENGL_ES
     if (d->glcx->deviceIsPixmap())
