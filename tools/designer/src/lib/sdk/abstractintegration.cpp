@@ -62,7 +62,9 @@ struct QDesignerIntegrationInterfacePrivate {
 
 typedef QSharedPointer<QDesignerIntegrationInterfacePrivate> QDesignerIntegrationInterfacePrivatePtr;
 
-Q_DECLARE_METATYPE(QDesignerIntegrationInterfacePrivatePtr)
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QDesignerIntegrationInterfacePrivatePtr))
+QT_BEGIN_NAMESPACE
 
 static QDesignerIntegrationInterfacePrivatePtr integrationD(const QObject *o)
 {
