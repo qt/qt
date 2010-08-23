@@ -255,6 +255,7 @@
     \o \l{graphicsview/flowlayout}{Flow Layout}
     \o \l{graphicsview/simpleanchorlayout}{Simple Anchor Layout}
     \o \l{graphicsview/weatheranchorlayout}{Weather Anchor Layout}
+    \o \l{graphicsview/basicgraphicslayouts}{Basic Graphics Layouts}
     \endlist
 
     Some examples demonstrate the use of graphics effects with canvas items.
@@ -471,6 +472,7 @@
     \o  \l{network/googlesuggest}{Google Suggest}
     \o  \l{network/bearercloud}{Bearer Cloud}\raisedaster
     \o  \l{network/bearermonitor}{Bearer Monitor}
+    \o  \l{network/securesocketclient}{Secure Socket Client}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.
@@ -609,6 +611,7 @@
     \o \l{sql/querymodel}{Query Model}
     \o \l{sql/relationaltablemodel}{Relational Table Model}
     \o \l{sql/tablemodel}{Table Model}
+    \o \l{sql/masterdetail}{Master Detail}
     \o \l{sql/sqlwidgetmapper}{SQL Widget Mapper}\raisedaster
     \endlist
 
@@ -633,6 +636,7 @@
     \o \l{xml/streambookmarks}{QXmlStream Bookmarks}\raisedaster
     \o \l{xml/rsslisting}{RSS-Listing}
     \o \l{xml/xmlstreamlint}{XML Stream Lint Example}\raisedaster
+    \o \l{xml/htmlinfo}{XML HTML Info}
     \endlist
 
     The XQuery/XPath and XML Schema engines in the QtXmlPatterns modules
