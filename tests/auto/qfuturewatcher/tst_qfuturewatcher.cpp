@@ -81,6 +81,7 @@ private slots:
     void incrementalMapResults();
     void incrementalFilterResults();
     void qfutureSynchornizer();
+    void warnRace();
 };
 
 QTEST_MAIN(tst_QFutureWatcher)
@@ -466,12 +467,12 @@ void tst_QFutureWatcher::toMuchProgress()
     ProgressObject o;
 
     QFutureWatcher<void> f;
-    f.setFuture((new ProgressEmitterTask())->start());
     QObject::connect(&f, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 #ifdef PRINT
     QObject::connect(&f, SIGNAL(progressValueChanged(int)), &o, SLOT(printProgress(int)));
 #endif
     QObject::connect(&f, SIGNAL(progressValueChanged(int)), &o, SLOT(registerProgress(int)));
+    f.setFuture((new ProgressEmitterTask())->start());
 
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -885,6 +886,27 @@ void tst_QFutureWatcher::qfutureSynchornizer()
     // Test that we're not running each task.
     QVERIFY(t.elapsed() < taskCount * 10);
 }
+
+class DummyObject : public QObject {
+    Q_OBJECT
+public slots:
+    void dummySlot() {}
+};
+
+void tst_QFutureWatcher::warnRace()
+{
+#ifndef QT_NO_DEBUG
+    QTest::ignoreMessage(QtWarningMsg, "QFutureWatcher::connect: connecting after calling setFuture() is likely to produce race");
+#endif
+    QFutureWatcher<void> watcher;
+    DummyObject object;
+
+    QFuture<void> future = QtConcurrent::run(sleeper);
+    watcher.setFuture(future);
+    connect(&watcher, SIGNAL(finished()), &object, SLOT(dummySlot()));
+    future.waitForFinished();
+}
+
 
 #include "tst_qfuturewatcher.moc"
 

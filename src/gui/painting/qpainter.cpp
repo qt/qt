@@ -7997,7 +7997,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 }
 void qt_format_text(const QFont &fnt, const QRectF &_r,
                     int tf, const QTextOption *option, const QString& str, QRectF *brect,
-                    int tabstops, int *, int tabarraylen,
+                    int tabstops, int *ta, int tabarraylen,
                     QPainter *painter)
 {
 
@@ -8119,6 +8119,13 @@ start_lengthVariant:
 
     if (engine.option.tabStop() < 0 && tabstops > 0)
         engine.option.setTabStop(tabstops);
+
+    if (engine.option.tabs().isEmpty() && ta) {
+        QList<qreal> tabs;
+        for (int i = 0; i < tabarraylen; i++)
+            tabs.append(qreal(ta[i]));
+        engine.option.setTabArray(tabs);
+    }
 
     engine.option.setTextDirection(layout_direction);
     if (tf & Qt::AlignJustify)
