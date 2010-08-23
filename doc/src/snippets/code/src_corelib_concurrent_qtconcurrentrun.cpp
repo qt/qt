@@ -73,15 +73,13 @@ QFuture<QString> future = QtConcurrent::run(someFunction, bytearray);
 QString result = future.result();
 //! [3]
 
-
 //! [4]
-// call 'QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const' in a separate thread
-QString string = ...;
-QFuture<QStringList> future = QtConcurrent::run(string, &QString::split, QString(", "), QString::KeepEmptyParts, Qt::CaseSensitive);
+// call 'QList<QByteArray>  QByteArray::split(char sep) const' in a separate thread
+QByteArray bytearray = "hello world;
+QFuture<QList<QByteArray> > future = QtConcurrent::run(bytearray, &QByteArray::split), ',');
 ...
-QStringList result = future.result();
+QList<QByteArray> result = future.result();
 //! [4]
-
 
 //! [5]
 // call 'void QImage::invertPixels(InvertMode mode)' in a separate thread
