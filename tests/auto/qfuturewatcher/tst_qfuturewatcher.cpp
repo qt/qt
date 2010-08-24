@@ -893,11 +893,9 @@ class DummyObject : public QObject {
 public slots:
     void dummySlot() {}
 public:
-    static void function(QWaitCondition *cond)
+    static void function(QMutex *m)
     {
-        QMutex m;
-        QMutexLocker lock(&m);
-        cond->wait(&m);
+        QMutexLocker lock(m);
     }
 };
 
@@ -908,13 +906,14 @@ void tst_QFutureWatcher::warnRace()
 #endif
     QFutureWatcher<void> watcher;
     DummyObject object;
-    QWaitCondition cond;
+    QMutex mutex;
+    mutex.lock();
 
-    QFuture<void> future = QtConcurrent::run(DummyObject::function, &cond);
+    QFuture<void> future = QtConcurrent::run(DummyObject::function, &mutex);
     watcher.setFuture(future);
     QTRY_VERIFY(future.isStarted());
     connect(&watcher, SIGNAL(finished()), &object, SLOT(dummySlot()));
-    cond.wakeAll();
+    mutex.unlock();
     future.waitForFinished();
 }
 
