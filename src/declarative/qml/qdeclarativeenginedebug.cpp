@@ -604,4 +604,19 @@ void QDeclarativeEngineDebugServer::remEngine(QDeclarativeEngine *engine)
     m_engines.removeAll(engine);
 }
 
+void QDeclarativeEngineDebugServer::objectCreated(QDeclarativeEngine *engine, QObject *object)
+{
+    Q_ASSERT(engine);
+    Q_ASSERT(m_engines.contains(engine));
+
+    int engineId = QDeclarativeDebugService::idForObject(engine);
+    int objectId = QDeclarativeDebugService::idForObject(object);
+
+    QByteArray reply;
+    QDataStream rs(&reply, QIODevice::WriteOnly);
+
+    rs << QByteArray("OBJECT_CREATED") << engineId << objectId;
+    sendMessage(reply);
+}
+
 QT_END_NAMESPACE

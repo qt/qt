@@ -94,6 +94,7 @@ public:
 
     void addEngine(QDeclarativeEngine *);
     void remEngine(QDeclarativeEngine *);
+    void objectCreated(QDeclarativeEngine *, QObject *);
 
     static QDeclarativeEngineDebugServer *instance();
 
