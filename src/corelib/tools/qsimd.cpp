@@ -41,6 +41,7 @@
 
 #include "qsimd_p.h"
 #include <QByteArray>
+#include <stdio.h>
 
 #if defined(Q_OS_WINCE)
 #include <windows.h>
@@ -50,15 +51,18 @@
 #include <intrin.h>
 #endif
 
+#if defined(Q_OS_LINUX) && defined(__arm__)
+#include "private/qcore_unix_p.h"
+
+#include <asm/hwcap.h>
+#include <linux/auxvec.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
-uint qDetectCPUFeatures()
-{
-    static uint features = 0xffffffff;
-    if (features != 0xffffffff)
-        return features;
-
 #if defined (Q_OS_WINCE)
+static inline uint detectProcessorFeatures()
+{
 #if defined (ARM)
     if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX)) {
         features = IWMMXT;
@@ -78,22 +82,57 @@ uint qDetectCPUFeatures()
 #endif
     features = 0;
     return features;
-#elif defined(QT_HAVE_IWMMXT)
+}
+
+#elif defined(__arm__) || defined(__arm) || defined(QT_HAVE_IWMMXT) || defined(QT_HAVE_NEON)
+static inline uint detectProcessorFeatures()
+{
+    uint features = 0;
+
+#if defined(Q_OS_LINUX)
+    int auxv = ::qt_safe_open("/proc/self/auxv", O_RDONLY);
+    if (auxv != -1) {
+        unsigned long vector[64];
+        int nread;
+        while (features == 0) {
+            nread = ::qt_safe_read(auxv, (char *)vector, sizeof vector);
+            if (nread <= 0) {
+                // EOF or error
+                break;
+            }
+
+            int max = nread / (sizeof vector[0]);
+            for (int i = 0; i < max; i += 2)
+                if (vector[i] == AT_HWCAP) {
+                    if (vector[i+1] & HWCAP_IWMMXT)
+                        features |= IWMMXT;
+                    if (vector[i+1] & HWCAP_NEON)
+                        features |= NEON;
+                    break;
+                }
+        }
+
+        ::qt_safe_close(auxv);
+        return features;
+    }
+    // fall back if /proc/self/auxv wasn't found
+#endif
+
+#if defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
-    static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
-    features = doIWMMXT ? IWMMXT : 0;
-    return features;
+    features = IWMMXT;
 #elif defined(QT_HAVE_NEON)
-    static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
-    features = doNEON ? NEON : 0;
+    features = NEON;
+#endif
+
     return features;
-#else
-    features = 0;
-#if defined(__x86_64__) || defined(Q_OS_WIN64)
-    features = MMX|SSE|SSE2|CMOV;
-#elif defined(__ia64__)
-    features = MMX|SSE|SSE2;
+}
+
 #elif defined(__i386__) || defined(_M_IX86)
+static inline uint detectProcessorFeatures()
+{
+    uint features = 0;
+
     unsigned int extended_result = 0;
     unsigned int feature_result = 0;
     uint result = 0;
@@ -149,6 +188,7 @@ uint qDetectCPUFeatures()
         :
         : "%eax", "%ecx", "%edx"
         );
+
 #elif defined (Q_OS_WIN)
     _asm {
         push eax
@@ -210,6 +250,7 @@ uint qDetectCPUFeatures()
     }
 #endif
 
+
     // result now contains the standard feature bits
     if (result & (1u << 15))
         features |= CMOV;
@@ -236,9 +277,13 @@ uint qDetectCPUFeatures()
     if (feature_result & (1u << 28))
         features |= AVX;
 
-#endif // i386
+    return features;
+}
 
-#if defined(__x86_64__) || defined(Q_OS_WIN64)
+#elif defined(__x86_64) || defined(Q_OS_WIN64)
+static inline uint detectProcessorFeatures()
+{
+    uint features = MMX|SSE|SSE2|CMOV;
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
@@ -282,33 +327,97 @@ uint qDetectCPUFeatures()
         features |= SSE4_2;
     if (feature_result & (1u << 28))
         features |= AVX;
-#endif // x86_64
-
-#if defined(QT_HAVE_MMX)
-    if (qgetenv("QT_NO_MMX").toInt())
-        features ^= MMX;
-#endif
-    if (qgetenv("QT_NO_MMXEXT").toInt())
-        features ^= MMXEXT;
-
-#if defined(QT_HAVE_3DNOW)
-    if (qgetenv("QT_NO_3DNOW").toInt())
-        features ^= MMX3DNOW;
-#endif
-    if (qgetenv("QT_NO_3DNOWEXT").toInt())
-        features ^= MMX3DNOWEXT;
-
-#if defined(QT_HAVE_SSE)
-    if (qgetenv("QT_NO_SSE").toInt())
-        features ^= SSE;
-#endif
-#if defined(QT_HAVE_SSE2)
-    if (qgetenv("QT_NO_SSE2").toInt())
-        features ^= SSE2;
-#endif
 
     return features;
+}
+
+#elif defined(__ia64__)
+static inline uint detectProcessorFeatures()
+{
+    return MMX|SSE|SSE2;
+}
+
+#else
+static inline uint detectProcessorFeatures()
+{
+    return 0;
+}
 #endif
+
+/*
+ * Use kdesdk/scripts/generate_string_table.pl to update the table below.
+ * Here's the data (don't forget the ONE leading space):
+ mmx
+ mmxext
+ mmx3dnow
+ mmx3dnowext
+ sse
+ sse2
+ cmov
+ iwmmxt
+ neon
+ sse3
+ ssse3
+ sse4.1
+ sse4.2
+ avx
+  */
+
+// begin generated
+static const char features_string[] =
+    " mmx\0"
+    " mmxext\0"
+    " mmx3dnow\0"
+    " mmx3dnowext\0"
+    " sse\0"
+    " sse2\0"
+    " cmov\0"
+    " iwmmxt\0"
+    " neon\0"
+    " sse3\0"
+    " ssse3\0"
+    " sse4.1\0"
+    " sse4.2\0"
+    " avx\0"
+    "\0";
+
+static const int features_indices[] = {
+       0,    5,   13,   23,   36,   41,   47,   53,
+      61,   67,   73,   80,   88,   96,   -1
+};
+// end generated
+
+const int features_count = (sizeof features_indices - 1) / (sizeof features_indices[0]);
+
+uint qDetectCPUFeatures()
+{
+    static QBasicAtomicInt features = Q_BASIC_ATOMIC_INITIALIZER(-1);
+    if (features != -1)
+        return features;
+
+    uint f = detectProcessorFeatures();
+    QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
+    if (!disable.isEmpty()) {
+        disable.prepend(' ');
+        for (int i = 0; i < features_count; ++i) {
+            if (disable.contains(features_string + features_indices[i]))
+                f &= ~(1 << i);
+        }
+    }
+
+    features = f;
+    return features;
+}
+
+void qDumpCPUFeatures()
+{
+    uint features = qDetectCPUFeatures();
+    printf("Processor features: ");
+    for (int i = 0; i < features_count; ++i) {
+        if (features & (1 << i))
+            printf("%s", features_string + features_indices[i]);
+    }
+    puts("");
 }
 
 QT_END_NAMESPACE
