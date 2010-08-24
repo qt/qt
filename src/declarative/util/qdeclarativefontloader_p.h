@@ -60,7 +60,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeFontLoader : public QObject
     Q_DECLARE_PRIVATE(QDeclarativeFontLoader)
     Q_ENUMS(Status)
 
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
 

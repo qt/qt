@@ -657,7 +657,7 @@
     </message>
     <message>
         <source>Please run it through &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt; to convert it to Qt-4&apos;s ui format.</source>
-        <translation>Будь-ласка, пропустіть його через &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt;, щоб сконвертувати до формату Qt-4.</translation>
+        <translation>Будь ласка, пропустіть його через &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt;, щоб сконвертувати до формату Qt-4.</translation>
     </message>
     <message>
         <source>This file cannot be read because the extra info extension failed to load.</source>
@@ -725,15 +725,15 @@
     </message>
     <message>
         <source>The skin directory &apos;%1&apos; does not contain a configuration file.</source>
-        <translation>Тека обкладинки &apos;%1&apos; не містить конфігураційного файлу.</translation>
+        <translation>Тека обкладинки &apos;%1&apos; не містить файлу налаштувань.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be opened.</source>
-        <translation>Неможливо відкрити конфігураційний файл &apos;%1&apos;.</translation>
+        <translation>Неможливо відкрити файл налаштувань &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be read: %2</source>
-        <translation>Неможливо прочитати конфігураційний файл &apos;%1&apos;: %2</translation>
+        <translation>Неможливо прочитати файл налаштувань &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Syntax error: %1</source>
@@ -761,7 +761,7 @@
     </message>
     <message>
         <source>Mismatch in number of areas, expected %1, got %2.</source>
-        <translation>Не співпадає кількість областей, очікувалось %1, отримано %2.</translation>
+        <translation>Не збігається кількість областей, очікувалось %1, отримано %2.</translation>
     </message>
 </context>
 <context>
@@ -1532,7 +1532,7 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>Please close all forms to enable the loading of additional fonts.</source>
-        <translation>Будь-ласка, закрийте усі форми, щоб дозволити завантаження додаткових шрифтів.</translation>
+        <translation>Будь ласка, закрийте усі форми, щоб дозволити завантаження додаткових шрифтів.</translation>
     </message>
     <message>
         <source>Printed %1.</source>
@@ -1693,7 +1693,7 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>The class attribute for the class %1 does not match the class name %2.</source>
-        <translation>Атрибут &quot;клас&quot; для класу %1 не співпадає з іменем класу %2.</translation>
+        <translation>Атрибут &quot;клас&quot; для класу %1 не збігається з іменем класу %2.</translation>
     </message>
 </context>
 <context>
@@ -2736,7 +2736,7 @@ This could for example be a language extension like &quot;_de&quot;.</source>
     </message>
     <message>
         <source>&lt;p&gt;The selected file:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s directory:&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Please select another path within this directory.&lt;p&gt;</source>
-        <translation>&lt;p&gt;Обраний файл&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;знаходиться поза межами батьківської теки поточного файлу ресурсів.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;Будь-ласка, оберіть інший шлях всередині цієї теки.&lt;p&gt;&lt;p&gt;</translation>
+        <translation>&lt;p&gt;Обраний файл&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;знаходиться поза межами батьківської теки поточного файлу ресурсів.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;Будь ласка, оберіть інший шлях всередині цієї теки.&lt;p&gt;&lt;p&gt;</translation>
     </message>
     <message>
         <source>Could not overwrite %1.</source>
@@ -4480,13 +4480,13 @@ Do you want overwrite the template?</source>
         <source>The current object already has a property named &apos;%1&apos;.
 Please select another, unique one.</source>
         <translation>Поточний об&apos;єкт вже має властивість з іменем &apos;%1&apos;.
-Будь-ласка, оберіть інше, унікальне ім&apos;я.</translation>
+Будь ласка, оберіть інше, унікальне ім&apos;я.</translation>
     </message>
     <message>
         <source>The &apos;_q_&apos; prefix is reserved for the Qt library.
 Please select another name.</source>
         <translation>Префікс &apos;_q_&apos; зарезервовано для бібліотеки Qt.
-Будь-ласка, оберіть інше ім&apos;я.</translation>
+Будь ласка, оберіть інше ім&apos;я.</translation>
     </message>
 </context>
 <context>
@@ -5715,7 +5715,7 @@ Class: %2</source>
     <name>qdesigner_internal::WidgetDataBase</name>
     <message>
         <source>A custom widget plugin whose class name (%1) matches that of an existing class has been found.</source>
-        <translation>Користувацький додаток віджета з іменем класу (%1) співпадає з існуючим класом.</translation>
+        <translation>Користувацький додаток віджета з іменем класу (%1) збігається з існуючим класом.</translation>
     </message>
 </context>
 <context>
@@ -5733,7 +5733,7 @@ Class: %2</source>
     </message>
     <message>
         <source>A class name mismatch occurred when creating a widget using the custom widget factory registered for widgets of class %1. It returned a widget of class %2.</source>
-        <translation>Сталося неспівпадіння імені класу під час створення віджета, використовуючи користувацьку фабрику віджетів, що зареєстрована для класу %1. Вона повернула віджет класу %2.</translation>
+        <translation>Сталася розбіжність імені класу під час створення віджета, використовуючи користувацьку фабрику віджетів, що зареєстрована для класу %1. Вона повернула віджет класу %2.</translation>
     </message>
     <message>
         <source>%1 Widget</source>

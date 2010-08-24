@@ -426,10 +426,11 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE QMap<Key, T> &QMap<Key, T>::operator=(const QMap<Key, T> &other)
 {
     if (d != other.d) {
-        other.d->ref.ref();
+        QMapData* o = other.d;
+        o->ref.ref();
         if (!d->ref.deref())
             freeData(d);
-        d = other.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }

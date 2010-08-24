@@ -277,8 +277,10 @@ void QDeclarativeTextInput::setSelectionColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::Highlight, d->selectionColor);
     d->control->setPalette(p);
-    clearCache();
-    update();
+    if (d->control->hasSelectedText()) {
+        clearCache();
+        update();
+    }
     emit selectionColorChanged(color);
 }
 
@@ -303,8 +305,10 @@ void QDeclarativeTextInput::setSelectedTextColor(const QColor &color)
     QPalette p = d->control->palette();
     p.setColor(QPalette::HighlightedText, d->selectedTextColor);
     d->control->setPalette(p);
-    clearCache();
-    update();
+    if (d->control->hasSelectedText()) {
+        clearCache();
+        update();
+    }
     emit selectedTextColorChanged(color);
 }
 
@@ -1233,8 +1237,12 @@ void QDeclarativeTextInput::setPasswordCharacter(const QString &str)
     Q_D(QDeclarativeTextInput);
     if(str.length() < 1)
         return;
-    emit passwordCharacterChanged();
     d->control->setPasswordCharacter(str.constData()[0]);
+    EchoMode echoMode_ = echoMode();
+    if (echoMode_ == Password || echoMode_ == PasswordEchoOnEdit) {
+        updateSize();
+    }
+    emit passwordCharacterChanged();
 }
 
 /*!

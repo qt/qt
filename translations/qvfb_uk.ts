@@ -60,7 +60,7 @@
     <name>Config</name>
     <message>
         <source>Configure</source>
-        <translation>Конфігурування</translation>
+        <translation>Налаштувати</translation>
     </message>
     <message>
         <source>Size</source>
@@ -219,15 +219,15 @@
     </message>
     <message>
         <source>The skin directory &apos;%1&apos; does not contain a configuration file.</source>
-        <translation>Тека обкладинки &apos;%1&apos; не містить конфігураційного файлу.</translation>
+        <translation>Тека обкладинки &apos;%1&apos; не містить файлу налаштувань.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be opened.</source>
-        <translation>Неможливо відкрити конфігураційний файл &apos;%1&apos;.</translation>
+        <translation>Неможливо відкрити файл налаштувань &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be read: %2</source>
-        <translation>Неможливо прочитати конфігураційний файл &apos;%1&apos;: %2</translation>
+        <translation>Неможливо прочитати файл налаштувань &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Syntax error: %1</source>
@@ -255,7 +255,7 @@
     </message>
     <message>
         <source>Mismatch in number of areas, expected %1, got %2.</source>
-        <translation>Не співпадає кількість областей, очікувалось %1, отримано %2.</translation>
+        <translation>Не збігається кількість областей, очікувалось %1, отримано %2.</translation>
     </message>
 </context>
 <context>

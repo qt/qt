@@ -471,9 +471,9 @@ MakefileGenerator::init()
                          subs.at(i).toLatin1().constData());
                 continue;
             }
-            QFile in(fileFixify(subs.at(i))), out(fileInfo(subs.at(i)).fileName());
-            if(out.fileName().endsWith(".in"))
-                out.setFileName(out.fileName().left(out.fileName().length()-3));
+            QFile in(fileFixify(subs.at(i)));
+            QFile out(fileFixify(subs.at(i).left(subs.at(i).length()-3),
+                                 qmake_getpwd(), Option::output_dir));
             if(in.open(QFile::ReadOnly)) {
                 QString contents;
                 QStack<int> state;
@@ -538,6 +538,7 @@ MakefileGenerator::init()
                         continue;
                     }
                 }
+                mkdir(QFileInfo(out).absolutePath());
                 if(out.open(QFile::WriteOnly)) {
                     v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
                     out.write(contents.toUtf8());

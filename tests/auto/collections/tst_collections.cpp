@@ -165,6 +165,7 @@ private slots:
     void containerTypedefs();
     void forwardDeclared();
     void alignment();
+    void QTBUG13079_collectionInsideCollection();
 };
 
 struct LargeStatic {
@@ -3588,6 +3589,134 @@ void tst_Collections::alignment()
     QSKIP("Compiler doesn't support necessary extension keywords", SkipAll);
 }
 #endif
+
+#ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+
+template<template<class> class C>
+struct QTBUG13079_Node {
+    C<QTBUG13079_Node> children;
+    QString s;
+
+    ~QTBUG13079_Node() {
+        children.begin(); //play with memory
+    }
+};
+template<template<class> class C> void QTBUG13079_collectionInsideCollectionImpl()
+{
+    C<QTBUG13079_Node<C> > nodeList;
+    nodeList << QTBUG13079_Node<C>();
+    nodeList.first().s = "parent";
+    nodeList.first().children << QTBUG13079_Node<C>();
+    nodeList.first().children.first().s = "child";
+
+    nodeList = nodeList.first().children;
+    QCOMPARE(nodeList.first().s, QString::fromLatin1("child"));
+
+    nodeList = nodeList.first().children;
+    QCOMPARE(nodeList.count(), 0);
+    nodeList << QTBUG13079_Node<C>();
+}
+
+template<template<class, class> class C>
+struct QTBUG13079_NodeAssoc {
+    C<int, QTBUG13079_NodeAssoc> children;
+    QString s;
+
+    ~QTBUG13079_NodeAssoc() {
+        children.begin(); //play with memory
+    }
+};
+template<template<class, class> class C> void QTBUG13079_collectionInsideCollectionAssocImpl()
+{
+    C<int, QTBUG13079_NodeAssoc<C> > nodeMap;
+    nodeMap[18] = QTBUG13079_NodeAssoc<C>();
+    nodeMap[18].s = "parent";
+    nodeMap[18].children[12] = QTBUG13079_NodeAssoc<C>();
+    nodeMap[18].children[12].s = "child";
+
+    nodeMap = nodeMap[18].children;
+    QCOMPARE(nodeMap[12].s, QString::fromLatin1("child"));
+
+    nodeMap = nodeMap[12].children;
+    QCOMPARE(nodeMap.count(), 0);
+    nodeMap[42] = QTBUG13079_NodeAssoc<C>();
+}
+
+
+static quint32 qHash(const QTBUG13079_Node<QSet> &)
+{
+    return 0;
+}
+
+bool operator==(const QTBUG13079_Node<QSet> &a, const QTBUG13079_Node<QSet> &b)
+{
+    return a.s == b.s && a.children == b.children;
+}
+
+template<template<class> class C>
+struct QTBUG13079_NodePtr : QSharedData {
+    C<QTBUG13079_NodePtr> child;
+    QTBUG13079_NodePtr *next;
+    QString s;
+
+    QTBUG13079_NodePtr() : next(0) {}
+    ~QTBUG13079_NodePtr() {
+        next = child.data(); //play with memory
+    }
+};
+template<template<class> class C> void QTBUG13079_collectionInsidePtrImpl()
+{
+    typedef C<QTBUG13079_NodePtr<C> > Ptr;
+    {
+        Ptr nodePtr;
+        nodePtr = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->s = "parent";
+        nodePtr->child = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->child->s = "child";
+        nodePtr = nodePtr->child;
+        QCOMPARE(nodePtr->s, QString::fromLatin1("child"));
+        nodePtr = nodePtr->child;
+        QVERIFY(!nodePtr);
+    }
+    {
+        Ptr nodePtr;
+        nodePtr = Ptr(new QTBUG13079_NodePtr<C>());
+        nodePtr->s = "parent";
+        nodePtr->next = new QTBUG13079_NodePtr<C>();
+        nodePtr->next->s = "next";
+        nodePtr = Ptr(nodePtr->next);
+        QCOMPARE(nodePtr->s, QString::fromLatin1("next"));
+        nodePtr = Ptr(nodePtr->next);
+        QVERIFY(!nodePtr);
+    }
+}
+
+#endif
+
+void tst_Collections::QTBUG13079_collectionInsideCollection()
+{
+#ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
+    QTBUG13079_collectionInsideCollectionImpl<QVector>();
+    QTBUG13079_collectionInsideCollectionImpl<QStack>();
+    QTBUG13079_collectionInsideCollectionImpl<QList>();
+    QTBUG13079_collectionInsideCollectionImpl<QLinkedList>();
+    QTBUG13079_collectionInsideCollectionImpl<QQueue>();
+
+    {
+        QSet<QTBUG13079_Node<QSet> > nodeSet;
+        nodeSet << QTBUG13079_Node<QSet>();
+        nodeSet = nodeSet.begin()->children;
+        QCOMPARE(nodeSet.count(), 0);
+    }
+
+    QTBUG13079_collectionInsideCollectionAssocImpl<QMap>();
+    QTBUG13079_collectionInsideCollectionAssocImpl<QHash>();
+
+    QTBUG13079_collectionInsidePtrImpl<QSharedPointer>();
+    QTBUG13079_collectionInsidePtrImpl<QExplicitlySharedDataPointer>();
+    QTBUG13079_collectionInsidePtrImpl<QSharedDataPointer>();
+#endif
+}
 
 QTEST_APPLESS_MAIN(tst_Collections)
 #include "tst_collections.moc"

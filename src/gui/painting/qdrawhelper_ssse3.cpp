@@ -118,22 +118,12 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
 \
         /* We use two vectors to extract the src: prevLoaded for the first pixels, lastLoaded for the current pixels. */\
         __m128i srcVectorPrevLoaded;\
-        if (minusOffsetToAlignSrcOn16Bytes <= prologLength) {\
-            srcVectorPrevLoaded = _mm_load_si128((__m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);\
-        } else {\
-            quint32 temp[4] Q_DECL_ALIGN(16);\
-            switch (prologLength) {\
-                case 3:\
-                    temp[1] = src[x - 3];\
-                case 2:\
-                    temp[2] = src[x - 2];\
-                case 1:\
-                    temp[3] = src[x - 1];\
-                default:\
-                    break;\
-            }\
-            srcVectorPrevLoaded = _mm_load_si128((__m128i *)temp);\
+        if (minusOffsetToAlignSrcOn16Bytes > prologLength) {\
+            /* We go forward 4 pixels to avoid reading before src. */\
+            for (; x < prologLength + 4; ++x)\
+                blend_pixel(dst[x], src[x]); \
         }\
+        srcVectorPrevLoaded = _mm_load_si128((__m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);\
         const int palignrOffset = minusOffsetToAlignSrcOn16Bytes << 2;\
 \
         const __m128i alphaShuffleMask = _mm_set_epi8(0xff,15,0xff,15,0xff,11,0xff,11,0xff,7,0xff,7,0xff,3,0xff,3);\

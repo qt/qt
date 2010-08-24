@@ -569,7 +569,8 @@ bool VCXCLCompilerTool::parseOption(const char* option)
                 UseFullPaths = _True;
                 break;
             case 'd':
-                ProgramDataBaseFileName += option+3;
+                ProgramDataBaseFileName = option+3;
+                break;
             case 'I':
                 ForcedIncludeFiles += option+3;
                 break;
