@@ -47,6 +47,8 @@
     functionality provided by Qt.
 
     \ingroup frameworks-technologies
+    \ingroup qt-basic-concepts
+	
 
     \keyword QT_DEBUG_PLUGINS
     \keyword QT_NO_PLUGIN_CHECK

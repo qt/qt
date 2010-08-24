@@ -1217,7 +1217,7 @@ void QTextLayout::draw(QPainter *p, const QPointF &pos, const QVector<FormatRang
 
         bool hasText = (selection.format.foreground().style() != Qt::NoBrush);
         bool hasBackground= (selection.format.background().style() != Qt::NoBrush);
-        
+
         if (hasBackground) {
             selection.format.setProperty(ObjectSelectionBrush, selection.format.property(QTextFormat::BackgroundBrush));
             // don't just clear the property, set an empty brush that overrides a potential
@@ -1731,7 +1731,7 @@ namespace {
     };
 
 inline bool LineBreakHelper::checkFullOtherwiseExtend(QScriptLine &line)
-{        
+{
     LB_DEBUG("possible break width %f, spacew=%f", tmpData.textWidth.toReal(), spaceData.textWidth.toReal());
 
     QFixed newWidth = calculateNewWidth(line);
@@ -1797,13 +1797,23 @@ void QTextLine::layout_helper(int maxGlyphs)
     bool breakany = (wrapMode == QTextOption::WrapAnywhere);
     lbh.manualWrap = (wrapMode == QTextOption::ManualWrap || wrapMode == QTextOption::NoWrap);
 
-    // #### binary search!
     int item = -1;
-    int newItem;
-    for (newItem = eng->layoutData->items.size()-1; newItem > 0; --newItem) {
-        if (eng->layoutData->items[newItem].position <= line.from)
+    int newItem = -1;
+    int left = 0;
+    int right = eng->layoutData->items.size()-1;
+    while(left <= right) {
+        int middle = ((right-left)/2)+left;
+        if (line.from > eng->layoutData->items[middle].position)
+            left = middle+1;
+        else if(line.from < eng->layoutData->items[middle].position)
+            right = middle-1;
+        else {
+            newItem = middle;
             break;
+        }
     }
+    if (newItem == -1)
+        newItem = right;
 
     LB_DEBUG("from: %d: item=%d, total %d, width available %f", line.from, newItem, eng->layoutData->items.size(), line.width.toReal());
 
@@ -1975,7 +1985,7 @@ void QTextLine::layout_helper(int maxGlyphs)
     }
     LB_DEBUG("reached end of line");
     lbh.checkFullOtherwiseExtend(line);
-found:       
+found:
     if (lbh.rightBearing > 0 && !lbh.whiteSpaceOrObject) // If right bearing has not yet been adjusted
         lbh.adjustRightBearing();
     line.textAdvance = line.textWidth;

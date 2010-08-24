@@ -1101,14 +1101,6 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
                 }
             }
             break;
-        case QEvent::LayoutDirectionChange: {
-            if (contextWidget) {
-                QTextOption opt = document()->defaultTextOption();
-                opt.setTextDirection(contextWidget->layoutDirection());
-                document()->setDefaultTextOption(opt);
-            }
-        }
-            // FALL THROUGH
         default:
             break;
     }

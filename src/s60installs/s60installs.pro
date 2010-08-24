@@ -189,6 +189,11 @@ symbian: {
             "[0x1028315F],0,0,0,{\"S60ProductID\"}"
     }
 
+    contains(QT_CONFIG, opengl) {
+        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenGL$${QT_LIBINFIX}.dll
+        graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qglgraphicssystem$${QT_LIBINFIX}.dll
+    }
+
     contains(QT_CONFIG, multimedia){
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
     }

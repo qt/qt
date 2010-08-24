@@ -456,7 +456,8 @@ QClipboard::QClipboard(QObject *parent)
         XCheckIfEvent(X11->display, &ev, &qt_init_timestamp_scanner, (XPointer)&data);
         if (data.timestamp == CurrentTime) {
             setupOwner();
-            int dummy = 0;
+            // We need this value just for completeness, we don't use it.
+            long dummy = 0;
             Window ownerId = owner->internalWinId();
             XChangeProperty(X11->display, ownerId,
                             ATOM(CLIP_TEMPORARY), XA_INTEGER, 32,

@@ -307,14 +307,14 @@
     <message numerus="yes">
         <source>%1 - %2 of %n Hits</source>
         <translation>
-            <numerusform>%1 - %2 з %n співпадіння</numerusform>
-            <numerusform>%1 - %2 з %n співпадінь</numerusform>
-            <numerusform>%1 - %2 з %n співпадінь</numerusform>
+            <numerusform>%1 - %2 з %n збіг</numerusform>
+            <numerusform>%1 - %2 з %n збіги</numerusform>
+            <numerusform>%1 - %2 з %n збігів</numerusform>
         </translation>
     </message>
     <message>
         <source>0 - 0 of 0 Hits</source>
-        <translation>0 - 0 з 0 співпадінь</translation>
+        <translation>0 - 0 з 0 збігів</translation>
     </message>
 </context>
 </TS>
