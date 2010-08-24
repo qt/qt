@@ -1218,42 +1218,60 @@ static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
 
     // both a and b are misaligned
     // we'll call the alignr function with the alignment *difference* between the two
-    int val = (quintptr(a) & 0xf) - (quintptr(b) & 0xf);
-    bool invert = false;
-    if (val < 0) {
-        val = -val;
-        //qSwap(a, b);
-        asm ("xchg %0, %1" : "+r" (a), "+r" (b));
-        invert = true;
-    }
+    int offset = (quintptr(a) & 0xf) - (quintptr(b) & 0xf);
+    if (offset >= 0) {
+        // from this point on, b has the shortest alignment
+        // and align(a) = align(b) + offset
+        // round down the alignment so align(b) == align(a) == 0
+        int garbage = (quintptr(b) & 0xf);
+        a = (const ushort*)(quintptr(a) & ~0xf);
+        b = (const ushort*)(quintptr(b) & ~0xf);
 
-    // from this point on, b has the shortest alignment
-    // and align(a) = align(b) + val
-    // round down the alignment so align(b) == align(a) == 0
-    int garbage = (quintptr(b) & 0xf);
-    a = (const ushort*)(quintptr(a) & ~0xf);
-    b = (const ushort*)(quintptr(b) & ~0xf);
-
-    // now the first load of b will load 'garbage' extra bytes
-    // and the first load of a will load 'garbage + val' extra bytes
-    if (val == 8)
-        return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<8>(a, b, len, garbage), invert);
-    else if (val == 0)
-        return conditional_invert(ucstrncmp_ssse3_aligning2_aligned(a, b, len, garbage), invert);
-    if (val < 8) {
-        if (val < 4)
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<2>(a, b, len, garbage), invert);
-        else if (val == 4)
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<4>(a, b, len, garbage), invert);
-        else
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<6>(a, b, len, garbage), invert);
+        // now the first load of b will load 'garbage' extra bytes
+        // and the first load of a will load 'garbage + offset' extra bytes
+        if (offset == 8)
+            return ucstrncmp_ssse3_aligning2_alignr<8>(a, b, len, garbage);
+        if (offset == 0)
+            return ucstrncmp_ssse3_aligning2_aligned(a, b, len, garbage);
+        if (offset < 8) {
+            if (offset < 4)
+                return ucstrncmp_ssse3_aligning2_alignr<2>(a, b, len, garbage);
+            else if (offset == 4)
+                return ucstrncmp_ssse3_aligning2_alignr<4>(a, b, len, garbage);
+            else
+                return ucstrncmp_ssse3_aligning2_alignr<6>(a, b, len, garbage);
+        } else {
+            if (offset < 12)
+                return ucstrncmp_ssse3_aligning2_alignr<10>(a, b, len, garbage);
+            else if (offset == 12)
+                return ucstrncmp_ssse3_aligning2_alignr<12>(a, b, len, garbage);
+            else
+                return ucstrncmp_ssse3_aligning2_alignr<14>(a, b, len, garbage);
+        }
     } else {
-        if (val < 12)
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<10>(a, b, len, garbage), invert);
-        else if (val == 12)
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<12>(a, b, len, garbage), invert);
-        else
-            return conditional_invert(ucstrncmp_ssse3_aligning2_alignr<14>(a, b, len, garbage), invert);
+        // same as above but inverted
+        int garbage = (quintptr(a) & 0xf);
+        a = (const ushort*)(quintptr(a) & ~0xf);
+        b = (const ushort*)(quintptr(b) & ~0xf);
+
+        offset = -offset;
+        if (offset == 8)
+            return -ucstrncmp_ssse3_aligning2_alignr<8>(b, a, len, garbage);
+        if (offset < 8) {
+            if (offset < 4)
+                return -ucstrncmp_ssse3_aligning2_alignr<2>(b, a, len, garbage);
+            else if (offset == 4)
+                return -ucstrncmp_ssse3_aligning2_alignr<4>(b, a, len, garbage);
+            else
+                return -ucstrncmp_ssse3_aligning2_alignr<6>(b, a, len, garbage);
+        } else {
+            if (offset < 12)
+                return -ucstrncmp_ssse3_aligning2_alignr<10>(b, a, len, garbage);
+            else if (offset == 12)
+                return -ucstrncmp_ssse3_aligning2_alignr<12>(b, a, len, garbage);
+            else
+                return -ucstrncmp_ssse3_aligning2_alignr<14>(b, a, len, garbage);
+        }
     }
 }
 
