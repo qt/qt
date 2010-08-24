@@ -29,7 +29,8 @@ HEADERS +=  \
         io/qfsfileengine_p.h \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystemwatcher.h \
-        io/qfilesystemwatcher_p.h
+        io/qfilesystemwatcher_p.h \
+        io/qfilesystementry_p.h
 
 SOURCES += \
         io/qabstractfileengine.cpp \
@@ -52,7 +53,8 @@ SOURCES += \
         io/qsettings.cpp \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \
-        io/qfilesystemwatcher.cpp
+        io/qfilesystemwatcher.cpp \
+        io/qfilesystementry.cpp
 
 win32 {
         SOURCES += io/qsettings_win.cpp
