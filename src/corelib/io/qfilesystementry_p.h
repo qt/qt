@@ -53,10 +53,34 @@
 // We mean it.
 //
 
+#include <QtCore/qstring.h>
+#include <QtCore/qbytearray.h>
+
 QT_BEGIN_NAMESPACE
 
 class QFileSystemEntry
 {
+    QFileSystemEntry(const QString &filePath);
+    QFileSystemEntry(const QByteArray &nativeFilePath);
+    QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath);
+
+    QString filePath() const;
+    QString fileName() const;
+    QByteArray nativeFileName() const;
+
+private:
+    // creates the QString version out of the bytearray version
+    void resolveFilePath() const;
+    // creates the bytearray version out of the QString version
+    void resolveNativeFilePath() const;
+    void findLastSeparator() const;
+
+    mutable QString m_filePath; // always has slashes as separator
+    mutable QByteArray m_nativeFilePath; // native encoding and separators
+
+    mutable int m_lastSeparator : 16;
+
+    int dummy : 16;
 };
 
 QT_END_NAMESPACE

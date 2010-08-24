@@ -39,3 +39,70 @@
 **
 ****************************************************************************/
 
+#include "qfilesystementry_p.h"
+#include "qdir.h"
+
+QFileSystemEntry::QFileSystemEntry(const QString &filePath)
+    : m_filePath(filePath),
+    m_lastSeparator(-2)
+{
+}
+
+QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath)
+    : m_nativeFilePath(nativeFilePath),
+    m_lastSeparator(-2)
+{
+}
+
+QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath)
+    : m_filePath(filePath),
+    m_nativeFilePath(nativeFilePath),
+    m_lastSeparator(-2)
+{
+}
+
+QString QFileSystemEntry::filePath() const
+{
+    resolveFilePath();
+    return m_filePath;
+}
+
+QByteArray QFileSystemEntry::nativeFileName() const
+{
+    resolveNativeFilePath();
+    return m_nativeFilePath;
+}
+
+void QFileSystemEntry::resolveFilePath() const
+{
+    if (m_filePath.isEmpty() && !m_nativeFilePath.isEmpty()) {
+        m_filePath = QDir::fromNativeSeparators(QString::fromLocal8Bit(m_nativeFilePath));
+    }
+}
+
+void QFileSystemEntry::resolveNativeFilePath() const
+{
+    if (!m_filePath.isEmpty() && m_nativeFilePath.isEmpty()) {
+        m_nativeFilePath = m_filePath.toLocal8Bit();
+    }
+}
+
+QString QFileSystemEntry::fileName() const
+{
+    findLastSeparator();
+    return m_filePath.mid(m_lastSeparator + 1);
+}
+
+void QFileSystemEntry::findLastSeparator() const
+{
+    resolveFilePath();
+    if (m_lastSeparator == -2) {
+        m_lastSeparator = -1;
+        for (int i = m_filePath.size() - 1; i >= 0; --i) {
+            if (m_filePath[i].unicode() == '/') {
+                m_lastSeparator = i;
+                break;
+            }
+        }
+    }
+}
