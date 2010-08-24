@@ -58,6 +58,8 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
 
+#include <QtCore/QStringBuilder>
+
 #ifndef QT_NO_XMLSTREAMREADER
 
 // From DOM-Level-3-Core spec
@@ -1094,9 +1096,9 @@ void QDeclarativeXMLHttpRequest::fillHeadersList()
     m_headersList.clear();
     foreach (const QByteArray &header, headerList) {
         HeaderPair pair (header.toLower(), m_network->rawHeader(header));
-    if (pair.first == "set-cookie" ||
-        pair.first == "set-cookie2")
-	    continue;
+        if (pair.first == "set-cookie" ||
+            pair.first == "set-cookie2")
+            continue;
 
         m_headersList << pair;
     }
