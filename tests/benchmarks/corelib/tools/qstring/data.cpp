@@ -1,3 +1,4 @@
+// This is a generated file - DO NOT EDIT
 static const ushort stringCollectionData[] __attribute__((aligned(16))) = { 
     // #0
     65535,

@@ -105,7 +105,8 @@ sub printUshortArray($$$) {
 
 print "#include \"data.h\"\n\n";
 
-print "const ushort stringCollectionData[] __attribute__((aligned(64))) = { \n";
+print "// This is a generated file - DO NOT EDIT\n";
+print "const ushort stringCollectionData[] __attribute__((aligned(64))) = {\n";
 $count = 0;
 $offset = 0;
 $totalsize = 0;
