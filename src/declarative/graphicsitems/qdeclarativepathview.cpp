@@ -480,7 +480,8 @@ void QDeclarativePathView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
     }
-    d->offset = qmlMod(d->offset, qreal(d->model->count()));
+    if (d->model->count())
+        d->offset = qmlMod(d->offset, qreal(d->model->count()));
     if (d->offset < 0)
         d->offset = d->model->count() + d->offset;
     d->regenerate();
