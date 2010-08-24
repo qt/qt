@@ -7163,7 +7163,8 @@ if [ "$CFG_WEBKIT" = "auto" ]; then
 fi
 
 if [ "$CFG_WEBKIT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG webkit"
+    # This include takes care of adding "webkit" to QT_CONFIG.
+    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     CFG_WEBKIT="yes"
 else
