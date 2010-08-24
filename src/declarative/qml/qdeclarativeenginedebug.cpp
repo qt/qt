@@ -58,7 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QList<QDeclarativeEngine *> QDeclarativeEngineDebugServer::m_engines;
+Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
+
+QDeclarativeEngineDebugServer *QDeclarativeEngineDebugServer::instance()
+{
+    return qmlEngineDebugServer();
+}
+
 QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 : QDeclarativeDebugService(QLatin1String("QDeclarativeEngine"), parent),
     m_watch(new QDeclarativeWatcher(this))
