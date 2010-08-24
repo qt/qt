@@ -66,13 +66,6 @@ public:
     QFileInfoPrivate(const QFileInfo *copy=0);
     ~QFileInfoPrivate();
 
-    void initFileEngine(const QString &);
-
-    uint getFileFlags(QAbstractFileEngine::FileFlags) const;
-    QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
-    QString getFileName(QAbstractFileEngine::FileName) const;
-    QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
-
     enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
            CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
            CachedSize =0x08, CachedPerms=0x80 };
@@ -87,7 +80,7 @@ public:
               cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
         {}
         inline ~Data() { delete fileEngine; }
-        inline void clearFlags() {
+        inline void clearFlags() const {
             fileFlags = 0;
             cachedFlags = 0;
             if (fileEngine)
@@ -100,6 +93,15 @@ public:
             fileOwners[1].clear();
             fileOwners[0].clear();
         }
+        void initFileEngine(const QString &);
+
+        uint getFileFlags(QAbstractFileEngine::FileFlags) const;
+        QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
+        QString getFileName(QAbstractFileEngine::FileName) const;
+        QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
+
+        static void detach(QFileInfoPrivate::Data *&data);
+
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
@@ -114,14 +116,9 @@ public:
         mutable QDateTime fileTimes[3];
         inline bool getCachedFlag(uint c) const
         { return cache_enabled ? (cachedFlags & c) : 0; }
-        inline void setCachedFlag(uint c)
+        inline void setCachedFlag(uint c) const
         { if (cache_enabled) cachedFlags |= c; }
     } *data;
-    inline void reset() {
-        detach();
-        data->clear();
-    }
-    void detach();
 };
 
 QT_END_NAMESPACE
