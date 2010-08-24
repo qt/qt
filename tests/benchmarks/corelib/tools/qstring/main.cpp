@@ -163,7 +163,7 @@ static bool equals2_bytewise(const ushort *p1, const ushort *p2, int len)
     return true;
 }
 
-static bool __attribute__((optimize("unroll-loops"))) equals2_shortwise(const ushort *p1, const ushort *p2, int len)
+static bool equals2_shortwise(const ushort *p1, const ushort *p2, int len)
 {
     if (p1 == p2 || !len)
         return true;
@@ -259,7 +259,7 @@ static inline bool equals2_short_tail(const ushort *p1, const ushort *p2, int le
     return true;
 }
 
-#pragma GCC optimize("unroll-loops off")
+//#pragma GCC optimize("no-unroll-loops")
 #ifdef __SSE2__
 static bool equals2_sse2_aligned(const ushort *p1, const ushort *p2, int len)
 {
@@ -1155,7 +1155,7 @@ int ucstrncmp_ssse3_aligning2_aligned(const ushort *a, const ushort *b, int len,
     return ucstrncmp_sse2_aligned(a + 8, b + 8, len);
 }
 
-template<int N> static inline __attribute__((optimize("no-unroll-loops")))
+template<int N> static inline __attribute__((optimize("no-unroll-loops"),always_inline))
 int ucstrncmp_ssse3_aligning2_alignr(const ushort *a, const ushort *b, int len, int garbage)
 {
     // len >= 8
@@ -1268,11 +1268,15 @@ void tst_QString::ucstrncmp_data() const
     QTest::newRow("selftest") << UcstrncmpFunction(0);
     QTest::newRow("shortwise") << &ucstrncmp_shortwise;
     QTest::newRow("intwise") << &ucstrncmp_intwise;
+#ifdef __SSE2__
     QTest::newRow("sse2") << &ucstrncmp_sse2;
     QTest::newRow("sse2_aligning") << &ucstrncmp_sse2_aligning;
+#ifdef __SSSE3__
     QTest::newRow("ssse3") << &ucstrncmp_ssse3;
     QTest::newRow("ssse3_aligning") << &ucstrncmp_ssse3_aligning;
     QTest::newRow("ssse3_aligning2") << &ucstrncmp_ssse3_aligning2;
+#endif
+#endif
 }
 
 void tst_QString::ucstrncmp() const
@@ -1282,11 +1286,15 @@ void tst_QString::ucstrncmp() const
         static const UcstrncmpFunction func[] = {
             &ucstrncmp_shortwise,
             &ucstrncmp_intwise,
+#ifdef __SSE2__
             &ucstrncmp_sse2,
             &ucstrncmp_sse2_aligning,
+#ifdef __SSSE3__
             &ucstrncmp_ssse3,
             &ucstrncmp_ssse3_aligning,
             &ucstrncmp_ssse3_aligning2
+#endif
+#endif
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
