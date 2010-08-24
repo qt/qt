@@ -630,7 +630,7 @@ Binary Package} document.
     is a next-generation Symbian build system. SBSv2 is not officially supported
     by any of the S60 SDKs currently available from Forum Nokia.
 
-\section1 Step 6: Build Qt
+\section1 Step 5: Build Qt
 
     To build Qt for the emulator, type:
 
