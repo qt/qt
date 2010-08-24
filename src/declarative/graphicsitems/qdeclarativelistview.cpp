@@ -983,7 +983,7 @@ void QDeclarativeListViewPrivate::updateSections()
 void QDeclarativeListViewPrivate::updateCurrentSection()
 {
     if (!sectionCriteria || visibleItems.isEmpty()) {
-        currentSection = QString();
+        currentSection.clear();
         return;
     }
     int index = 0;
