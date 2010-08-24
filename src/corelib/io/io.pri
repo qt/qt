@@ -30,7 +30,9 @@ HEADERS +=  \
         io/qfsfileengine_iterator_p.h \
         io/qfilesystemwatcher.h \
         io/qfilesystemwatcher_p.h \
-        io/qfilesystementry_p.h
+        io/qfilesystementry_p.h \
+        io/qfilesystemengine_p.h \
+        io/qfilesystemmetadata_p.h
 
 SOURCES += \
         io/qabstractfileengine.cpp \
