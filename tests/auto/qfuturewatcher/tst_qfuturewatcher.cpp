@@ -47,6 +47,7 @@
 #include <qfuturewatcher.h>
 #include <qtconcurrentrun.h>
 #include <qtconcurrentmap.h>
+#include "../../shared/util.h"
 
 #ifndef QT_NO_CONCURRENT_TEST
 #include <private/qfutureinterface_p.h>
@@ -891,6 +892,13 @@ class DummyObject : public QObject {
     Q_OBJECT
 public slots:
     void dummySlot() {}
+public:
+    static void function(QWaitCondition *cond)
+    {
+        QMutex m;
+        QMutexLocker lock(&m);
+        cond->wait(&m);
+    }
 };
 
 void tst_QFutureWatcher::warnRace()
@@ -900,13 +908,15 @@ void tst_QFutureWatcher::warnRace()
 #endif
     QFutureWatcher<void> watcher;
     DummyObject object;
+    QWaitCondition cond;
 
-    QFuture<void> future = QtConcurrent::run(sleeper);
+    QFuture<void> future = QtConcurrent::run(DummyObject::function, &cond);
     watcher.setFuture(future);
+    QTRY_VERIFY(future.isStarted());
     connect(&watcher, SIGNAL(finished()), &object, SLOT(dummySlot()));
+    cond.wakeAll();
     future.waitForFinished();
 }
-
 
 #include "tst_qfuturewatcher.moc"
 
