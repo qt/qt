@@ -5862,10 +5862,13 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    if (d->extended->type() == QPaintEngine::OpenGL2 && !staticText_d->untransformedCoordinates) {
+    bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
+                                           || d->extended->type() == QPaintEngine::OpenVG;
+
+    if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
-    } else if (d->extended->type() != QPaintEngine::OpenGL2 && staticText_d->untransformedCoordinates) {
+    } else if (!paintEngineSupportsTransformations && staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = false;
         staticText_d->needsRelayout = true;
     }
