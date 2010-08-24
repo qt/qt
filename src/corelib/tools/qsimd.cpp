@@ -50,6 +50,13 @@
 #include <intrin.h>
 #endif
 
+#if defined(Q_OS_LINUX) && defined(__arm__)
+#include "private/qcore_unix_p.h"
+
+#include <asm/hwcap.h>
+#include <linux/auxvec.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if defined (Q_OS_WINCE)
@@ -81,16 +88,50 @@ static inline uint detectProcessorFeatures()
 {
     uint features = 0;
 
+#if defined(Q_OS_LINUX)
+    int auxv = ::qt_safe_open("/proc/self/auxv", O_RDONLY);
+    if (auxv != -1) {
+        unsigned long vector[64];
+        int nread;
+        while (features == 0) {
+            nread = ::qt_safe_read(auxv, (char *)vector, sizeof vector);
+            if (nread <= 0) {
+                // EOF or error
+                break;
+            }
+
+            int max = nread / (sizeof vector[0]);
+            for (int i = 0; i < max; i += 2)
+                if (vector[i] == AT_HWCAP) {
+                    if (vector[i+1] & HWCAP_IWMMXT)
+                        features |= IWMMXT;
+                    if (vector[i+1] & HWCAP_NEON)
+                        features |= NEON;
+                    break;
+                }
+        }
+
+        if (qgetenv("QT_NO_IWMMXT").toInt())
+            features ^= IWMMXT;
+        if (qgetenv("QT_NO_NEON").toInt())
+            features ^= NEON;
+
+        ::qt_safe_close(auxv);
+        return features;
+    }
+    // fall back if /proc/self/auxv wasn't found
+#endif
+
 #if defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
     features = doIWMMXT ? IWMMXT : 0;
-    return features;
 #elif defined(QT_HAVE_NEON)
     static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
     features = doNEON ? NEON : 0;
-    return features;
 #endif
+
+    return features;
 }
 
 #elif defined(__i386__) || defined(_M_IX86)
