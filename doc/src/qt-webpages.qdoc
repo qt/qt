@@ -234,3 +234,8 @@
     \externalpage http://qt.gitorious.org
     \title Public Qt Repository
 */
+
+/*!
+    \externalpage http://get.qt.nokia.com/nokiasmartinstaller/
+    \title Smart Installer
+*/

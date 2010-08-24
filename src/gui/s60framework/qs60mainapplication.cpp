@@ -145,7 +145,7 @@ void QS60MainApplication::PreDocConstructL()
 }
 
 /*!
-  \internal
+    \internal
 */
 CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 {
@@ -153,7 +153,7 @@ CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 }
 
 /*!
-  \internal
+    \internal
 */
 void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
 {

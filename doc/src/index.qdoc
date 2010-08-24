@@ -72,7 +72,7 @@
                     <li><a href="technology-apis.html">Qt and Key Technologies</a></li>
                     <li><a href="best-practices.html">Best Practices Guides</a></li>
                </ul>
-              </div>
+             </div>
               <div class="sectionlist">
                 <ul>
                     <li><a href="qtquick.html">Qt Quick</a></li>
