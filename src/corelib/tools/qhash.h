@@ -589,10 +589,11 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::operator=(const QHash<Key, T> &other)
 {
     if (d != other.d) {
-        other.d->ref.ref();
+        QHashData *o = other.d;
+        o->ref.ref();
         if (!d->ref.deref())
             freeData(d);
-        d = other.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }
