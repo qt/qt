@@ -2132,7 +2132,7 @@ void QODBCDriverPrivate::checkSqlServer()
         serverType = QString::fromUtf8((const char *)serverString.constData(), t);
 #endif
         isFreeTDSDriver = serverType.contains(QLatin1String("tdsodbc"), Qt::CaseInsensitive);
-        unicode = isFreeTDSDriver == false;
+        unicode = unicode && !isFreeTDSDriver;
     }
 }
 
