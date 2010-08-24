@@ -3659,9 +3659,9 @@ struct QTBUG13079_NodePtr : QSharedData {
     QTBUG13079_NodePtr *next;
     QString s;
 
+    QTBUG13079_NodePtr() : next(0) {}
     ~QTBUG13079_NodePtr() {
-        child.data(); //play with memory
-        next = 0;
+        next = child.data(); //play with memory
     }
 };
 template<template<class> class C> void QTBUG13079_collectionInsidePtrImpl()
