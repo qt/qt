@@ -438,8 +438,6 @@ void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeParserStatus> &pss)
     pss.clear();
 }
 
-Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
-
 void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
 {
     QObjectPrivate *p = QObjectPrivate::get(o);
@@ -481,9 +479,8 @@ void QDeclarativeEnginePrivate::init()
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
-        qmlEngineDebugServer();
         isDebugging = true;
-        QDeclarativeEngineDebugServer::addEngine(q);
+        QDeclarativeEngineDebugServer::instance()->addEngine(q);
     }
 }
 
@@ -547,7 +544,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 {
     Q_D(QDeclarativeEngine);
     if (d->isDebugging)
-        QDeclarativeEngineDebugServer::remEngine(this);
+        QDeclarativeEngineDebugServer::instance()->remEngine(this);
 }
 
 /*! \fn void QDeclarativeEngine::quit()
