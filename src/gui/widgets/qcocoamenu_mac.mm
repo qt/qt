@@ -188,6 +188,18 @@ QT_USE_NAMESPACE
     return NO;
 }
 
+- (NSInteger)indexOfItemWithTarget:(id)anObject andAction:(SEL)actionSelector
+{
+     NSInteger index = [super indexOfItemWithTarget:anObject andAction:actionSelector];
+     static SEL selForOFCP = NSSelectorFromString(@"orderFrontCharacterPalette:");
+     if (index == -1 && selForOFCP == actionSelector) {
+         // Check if the 'orderFrontCharacterPalette' SEL exists for QCocoaMenuLoader object
+         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
+         return [super indexOfItemWithTarget:loader andAction:actionSelector];
+     }
+     return index;
+}
+
 @end
 
 QT_BEGIN_NAMESPACE

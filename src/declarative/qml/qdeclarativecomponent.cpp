@@ -104,6 +104,7 @@ class QByteArray;
 
 /*!
     \qmlclass Component QDeclarativeComponent
+    \ingroup qml-utility-elements
     \since 4.7
     \brief The Component element encapsulates a QML component definition.
 
@@ -192,7 +193,7 @@ class QByteArray;
     \value Null This QDeclarativeComponent has no data.  Call loadUrl() or setData() to add QML content.
     \value Ready This QDeclarativeComponent is ready and create() may be called.
     \value Loading This QDeclarativeComponent is loading network data.
-    \value Error An error has occured.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
+    \value Error An error has occurred.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
 */
 
 void QDeclarativeComponentPrivate::typeDataReady()
@@ -518,7 +519,7 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
 }
 
 /*!
-    Return the list of errors that occured during the last compile or create
+    Return the list of errors that occurred during the last compile or create
     operation.  An empty list is returned if isError() is not set.
 */
 QList<QDeclarativeError> QDeclarativeComponent::errors() const
@@ -599,7 +600,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     property, or else the object will not be visible.
 
     Dynamically created instances can be deleted with the \c destroy() method.
-    See \l {Dynamic Object Management} for more information.
+    See \l {Dynamic Object Management in QML} for more information.
 */
 
 /*!

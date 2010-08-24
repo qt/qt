@@ -1714,4 +1714,5 @@ EXPORTS
 	_ZNK16QDeclarativeView6engineEv @ 1713 NONAME
 	_ZNK18QDeclarativeEngine11rootContextEv @ 1714 NONAME
 	_ZN19QDeclarativePrivate11qmlregisterENS_16RegistrationTypeEPv @ 1715 NONAME
+	_ZNK26QDeclarativeOpenMetaObject8hasValueEi @ 1716 NONAME
 

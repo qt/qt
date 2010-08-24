@@ -162,47 +162,76 @@ static inline bool hasBackingStoreSupport()
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
+/*!
+    \internal
+    \class QWidgetBackingStoreTracker
+    \brief Class which allows tracking of which widgets are using a given backing store
 
-QRefCountedWidgetBackingStore::QRefCountedWidgetBackingStore()
+    QWidgetBackingStoreTracker is a thin wrapper around a QWidgetBackingStore pointer,
+    which maintains a list of the QWidgets which are currently using the backing
+    store.  This list is modified via the registerWidget and unregisterWidget functions.
+ */
+
+QWidgetBackingStoreTracker::QWidgetBackingStoreTracker()
     :   m_ptr(0)
-    ,   m_count(0)
 {
 
 }
 
-QRefCountedWidgetBackingStore::~QRefCountedWidgetBackingStore()
+QWidgetBackingStoreTracker::~QWidgetBackingStoreTracker()
 {
     delete m_ptr;
 }
 
-void QRefCountedWidgetBackingStore::create(QWidget *widget)
+/*!
+    \internal
+    Destroy the contained QWidgetBackingStore, if not null, and clear the list of
+    widgets using the backing store, then create a new QWidgetBackingStore, providing
+    the QWidget.
+ */
+void QWidgetBackingStoreTracker::create(QWidget *widget)
 {
     destroy();
     m_ptr = new QWidgetBackingStore(widget);
-    m_count = 0;
 }
 
-void QRefCountedWidgetBackingStore::destroy()
+/*!
+    \internal
+    Destroy the contained QWidgetBackingStore, if not null, and clear the list of
+    widgets using the backing store.
+ */
+void QWidgetBackingStoreTracker::destroy()
 {
     delete m_ptr;
     m_ptr = 0;
-    m_count = 0;
+    m_widgets.clear();
 }
 
-void QRefCountedWidgetBackingStore::ref()
+/*!
+    \internal
+    Add the widget to the list of widgets currently using the backing store.
+    If the widget was already in the list, this function is a no-op.
+ */
+void QWidgetBackingStoreTracker::registerWidget(QWidget *w)
 {
     Q_ASSERT(m_ptr);
-    ++m_count;
+    Q_ASSERT(w->internalWinId());
+    Q_ASSERT(qt_widget_private(w)->maybeBackingStore() == m_ptr);
+    m_widgets.insert(w);
 }
 
-void QRefCountedWidgetBackingStore::deref()
+/*!
+    \internal
+    Remove the widget from the list of widgets currently using the backing store.
+    If the widget was in the list, and removing it causes the list to be empty,
+    the backing store is deleted.
+    If the widget was not in the list, this function is a no-op.
+ */
+void QWidgetBackingStoreTracker::unregisterWidget(QWidget *w)
 {
-    if (m_count) {
-        Q_ASSERT(m_ptr);
-        if (0 == --m_count) {
-            delete m_ptr;
-            m_ptr = 0;
-        }
+    if (m_widgets.remove(w) && m_widgets.isEmpty()) {
+        delete m_ptr;
+        m_ptr = 0;
     }
 }
 
@@ -1245,7 +1274,16 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Hidden);
 
     //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
+#ifdef Q_OS_SYMBIAN
+    if (isGLWidget) {
+        // Don't waste GPU mem for unnecessary large egl surface
+        data.crect = QRect(0,0,2,2);
+    } else {
+        data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,360,640);
+    }
+#else
     data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,640,480);
+#endif
 
     focus_next = focus_prev = q;
 
@@ -9928,7 +9966,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         desktopWidget = parent;
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
     if (newParent && parent && !desktopWidget) {
         if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
             parent->d_func()->enforceNativeChildren();
@@ -10582,7 +10620,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
         // Recreate the widget if it's already created as an alien widget and
         // WA_PaintOnScreen is enabled. Paint on screen widgets must have win id.
         // So must their children.

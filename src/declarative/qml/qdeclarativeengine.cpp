@@ -114,6 +114,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \qmlclass QtObject QObject
+  \ingroup qml-utility-elements
   \since 4.7
   \brief The QtObject element is the most basic element in QML.
 
@@ -184,11 +185,13 @@ void QDeclarativeEnginePrivate::defineModule()
 }
 
 /*!
-\keyword QmlGlobalQtObject
-\qmlclass Qt QDeclarativeEnginePrivate
+\qmlclass QML:Qt QDeclarativeEnginePrivate
+  \ingroup qml-utility-elements
 \brief The QML global Qt object provides useful enums and functions from Qt.
 
-The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
+\keyword QmlGlobalQtObject
+
+\brief The \c Qt object provides useful enums and functions from Qt, for use in all QML files. 
 
 The \c Qt object is not a QML element; it cannot be instantiated. It is a global object 
 with enums and functions.  To use it, call the members of the global \c Qt object directly. 
@@ -240,7 +243,7 @@ The format specification is described at \l{QML:Qt::formatDateTime}{Qt.formatDat
 
 \section1 Dynamic Object Creation
 The following functions on the global object allow you to dynamically create QML
-items from files or strings. See \l{Dynamic Object Management} for an overview
+items from files or strings. See \l{Dynamic Object Management in QML} for an overview
 of their use.
 
 \list
@@ -548,7 +551,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 }
 
 /*! \fn void QDeclarativeEngine::quit()
-    This signal is emitted when the QDeclarativeEngine quits.
+    This signal is emitted when the QML loaded by the engine would like to quit.
  */
 
 /*! \fn void QDeclarativeEngine::warnings(const QList<QDeclarativeError> &warnings)
@@ -671,7 +674,7 @@ void QDeclarativeEngine::addImageProvider(const QString &providerId, QDeclarativ
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    d->imageProviders.insert(providerId, provider);
+    d->imageProviders.insert(providerId, QSharedPointer<QDeclarativeImageProvider>(provider));
 }
 
 /*!
@@ -681,7 +684,7 @@ QDeclarativeImageProvider *QDeclarativeEngine::imageProvider(const QString &prov
 {
     Q_D(const QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    return d->imageProviders.value(providerId);
+    return d->imageProviders.value(providerId).data();
 }
 
 /*!
@@ -695,13 +698,14 @@ void QDeclarativeEngine::removeImageProvider(const QString &providerId)
 {
     Q_D(QDeclarativeEngine);
     QMutexLocker locker(&d->mutex);
-    delete d->imageProviders.take(providerId);
+    d->imageProviders.take(providerId);
 }
 
 QDeclarativeImageProvider::ImageType QDeclarativeEnginePrivate::getImageProviderType(const QUrl &url)
 {
     QMutexLocker locker(&mutex);
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         return provider->imageType();
     return static_cast<QDeclarativeImageProvider::ImageType>(-1);
@@ -711,7 +715,8 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
 {
     QMutexLocker locker(&mutex);
     QImage image;
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         image = provider->requestImage(url.path().mid(1), size, req_size);
     return image;
@@ -721,7 +726,8 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
 {
     QMutexLocker locker(&mutex);
     QPixmap pixmap;
-    QDeclarativeImageProvider *provider = imageProviders.value(url.host());
+    QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
+    locker.unlock();
     if (provider)
         pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
     return pixmap;
@@ -1118,7 +1124,7 @@ For example:
 
 \snippet doc/src/snippets/declarative/createComponent-simple.qml 0
 
-See \l {Dynamic Object Management} for more information on using this function.
+See \l {Dynamic Object Management in QML} for more information on using this function.
 
 To create a QML object from an arbitrary string of QML (instead of a file),
 use \l{QML:Qt::createQmlObject()}{Qt.createQmlObject()}.
@@ -1170,7 +1176,7 @@ Note that this function returns immediately, and therefore may not work if
 the \a qml string loads new components (that is, external QML files that have not yet been loaded).
 If this is the case, consider using \l{QML:Qt::createComponent()}{Qt.createComponent()} instead.
 
-See \l {Dynamic Object Management} for more information on using this function.
+See \l {Dynamic Object Management in QML} for more information on using this function.
 */
 
 QScriptValue QDeclarativeEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)

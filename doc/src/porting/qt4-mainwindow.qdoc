@@ -28,7 +28,12 @@
 /*!
     \page qt4-mainwindow.html
     \title The Qt 4 Main Window Classes
+	\ingroup qt-basic-concepts
+    
+	\brief Overview of the Main Window concept and Classes
+	
 
+	
     \contentspage {What's New in Qt 4}{Home}
     \previouspage The Scribe Classes
     \nextpage The New Qt Designer

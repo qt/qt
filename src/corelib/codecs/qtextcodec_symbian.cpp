@@ -53,8 +53,10 @@ struct QSymbianCodecInitData {
     const char *aliases;
 };
 
-/* This table contains the known Symbian codecs aliases. It is ordered by charsetId.
-   It is required as symbian does not provide have aliases.
+/* This table contains the known Symbian codecs aliases.
+   It is required because symbian does not provide aliases for codecs.
+   It is also faster to have a name here than asking the system.
+   It is ordered by charsetId to allow binary search lookup
  */
 static const QSymbianCodecInitData codecsData[] = {
     { /*268439485*/ KCharacterSetIdentifierShiftJis,            17, "Shift_JIS\0MS_Kanji\0csShiftJIS\0MS_KANJI\0SJIS\0" },

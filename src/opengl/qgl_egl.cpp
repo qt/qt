@@ -230,7 +230,7 @@ void QGLContext::swapBuffers() const
 void QGLContextPrivate::destroyEglSurfaceForDevice()
 {
     if (eglSurface != EGL_NO_SURFACE) {
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_SYMBIAN)
         // Make sure we don't call eglDestroySurface on a surface which
         // was created for a different winId. This applies only to QGLWidget
         // paint device, so make sure this is the one we're operating on
@@ -240,6 +240,7 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
             if (QGLWidget *wgl = qobject_cast<QGLWidget *>(w)) {
                 if (wgl->d_func()->eglSurfaceWindowId != wgl->winId()) {
                     qWarning("WARNING: Potential EGL surface leak! Not destroying surface.");
+                    eglSurface = EGL_NO_SURFACE;
                     return;
                 }
             }

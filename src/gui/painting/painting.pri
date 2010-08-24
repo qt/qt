@@ -212,6 +212,7 @@ if(mmx|3dnow|sse|sse2|iwmmxt) {
     SSE3DNOW_SOURCES += painting/qdrawhelper_sse3dnow.cpp
     SSE_SOURCES += painting/qdrawhelper_sse.cpp
     SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
+    SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
     IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 }
 
@@ -246,23 +247,8 @@ symbian {
         QMAKE_CXXFLAGS.ARMCC *= -O3
 }
 
-neon:*-g++* {
-    DEFINES += QT_HAVE_NEON
-    HEADERS += painting/qdrawhelper_neon_p.h
-    SOURCES += painting/qdrawhelper_neon.cpp
-    QMAKE_CXXFLAGS *= -mfpu=neon
-
-    DRAWHELPER_NEON_ASM_FILES = ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
-
-    neon_compiler.commands = $$QMAKE_CXX -c
-    neon_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-    neon_compiler.dependency_type = TYPE_C
-    neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-    neon_compiler.input = DRAWHELPER_NEON_ASM_FILES
-    neon_compiler.variable_out = OBJECTS
-    neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
-    silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
-    QMAKE_EXTRA_COMPILERS += neon_compiler
-}
+NEON_SOURCES += painting/qdrawhelper_neon.cpp
+NEON_HEADERS += painting/qdrawhelper_neon_p.h
+NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
 
 include($$PWD/../../3rdparty/zlib_dependency.pri)

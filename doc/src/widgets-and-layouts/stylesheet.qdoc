@@ -31,8 +31,9 @@
     \brief How to use style sheets to customize the appearance of widgets.
 
     \ingroup frameworks-technologies
+    \ingroup qt-basic-concepts
 
-    \previouspage {Implementing Styles and Style Aware Widgets}{Styles}
+    \previouspage {Styles and Style Aware Widgets}{Styles}
     \contentspage Widgets and Layouts
     \nextpage The Style Sheet Syntax
 

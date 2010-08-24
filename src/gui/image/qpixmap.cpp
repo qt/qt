@@ -830,14 +830,16 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    if (!info.exists())
-        return false;
-
     QString key = QLatin1Literal("qt_pixmap")
                   % info.absoluteFilePath()
                   % HexString<uint>(info.lastModified().toTime_t())
                   % HexString<quint64>(info.size())
                   % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
+
+    // Note: If no extension is provided, we try to match the 
+    // file against known plugin extensions
+    if (!info.completeSuffix().isEmpty() && !info.exists())
+        return false;
 
     if (QPixmapCache::find(key, *this))
         return true;

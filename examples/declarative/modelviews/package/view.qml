@@ -40,7 +40,8 @@
 
 import Qt 4.7
 
-Item {
+Rectangle {
+    color: "white"
     width: 400
     height: 200
 

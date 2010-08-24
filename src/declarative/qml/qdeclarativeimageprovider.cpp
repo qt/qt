@@ -59,13 +59,13 @@ public:
 
     \list
     \o Loaded using QPixmaps rather than actual image files
-    \o Loaded asynchronously in a separate thread, if imageType() is \l ImageType::Image
+    \o Loaded asynchronously in a separate thread, if imageType() is \l{QDeclarativeImageProvider::ImageType}{ImageType::Image}
     \endlist
 
     To specify that an image should be loaded by an image provider, use the
     \bold {"image:"} scheme for the URL source of the image, followed by the 
     identifiers of the image provider and the requested image. For example:
-   
+
     \qml
     Image { source: "image://myimageprovider/image.png" }
     \endqml
@@ -83,7 +83,7 @@ public:
     and "red", respectively:
 
     \snippet examples/declarative/cppextensions/imageprovider/imageprovider-example.qml 0
- 
+
     When these images are loaded by QML, it looks for a matching image provider
     and calls its requestImage() or requestPixmap() method (depending on its
     imageType()) to load the image. The method is called with the \c id 
@@ -112,7 +112,7 @@ public:
     }
     \endcode
 
-    Now the images can be succesfully loaded in QML:
+    Now the images can be successfully loaded in QML:
 
     \image imageprovider.png
 
@@ -136,7 +136,7 @@ public:
     main thread. In this case, if \l {Image::}{asynchronous} is set to 
     \c true, the value is ignored and the image is loaded
     synchronously.
-   
+
     \sa QDeclarativeEngine::addImageProvider()
 */
 
@@ -161,7 +161,9 @@ QDeclarativeImageProvider::QDeclarativeImageProvider(ImageType type)
 }
 
 /*!
-   \internal
+    Destroys the QDeclarativeImageProvider
+
+    \note The destructor of your derived class need to be thread safe.
 */
 QDeclarativeImageProvider::~QDeclarativeImageProvider()
 {

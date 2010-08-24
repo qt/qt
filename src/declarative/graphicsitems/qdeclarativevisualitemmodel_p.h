@@ -79,7 +79,6 @@ public:
     virtual ReleaseFlags release(QDeclarativeItem *item) = 0;
     virtual bool completePending() const = 0;
     virtual void completeItem() = 0;
-    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
     virtual QString stringValue(int, const QString &) { return QString(); }
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const = 0;
@@ -122,7 +121,6 @@ public:
     virtual bool completePending() const;
     virtual void completeItem();
     virtual QString stringValue(int index, const QString &role);
-    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 
@@ -177,7 +175,6 @@ public:
     bool completePending() const;
     void completeItem();
     virtual QString stringValue(int index, const QString &role);
-    QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 

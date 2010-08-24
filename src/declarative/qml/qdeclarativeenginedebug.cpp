@@ -182,7 +182,7 @@ QVariant QDeclarativeEngineDebugServer::valueContents(const QVariant &value) con
 }
 
 void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message, 
-                                           QObject *object, bool recur)
+                                           QObject *object, bool recur, bool dumpProperties)
 {
     message << objectData(object);
 
@@ -209,6 +209,8 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
             continue;
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
         if (signal) {
+            if (!dumpProperties)
+                continue;
             QDeclarativeObjectProperty prop;
             prop.type = QDeclarativeObjectProperty::SignalProperty;
             prop.hasNotifySignal = false;
@@ -229,10 +231,15 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
             fakeProperties << prop;
         } else {
             if (recur)
-                buildObjectDump(message, child, recur);
+                buildObjectDump(message, child, recur, dumpProperties);
             else
                 message << objectData(child);
         }
+    }
+
+    if (!dumpProperties) {
+        message << 0;
+        return;
     }
 
     message << (object->metaObject()->propertyCount() + fakeProperties.count());
@@ -257,8 +264,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     QDeclarativeContextData *child = p->childContexts;
     while (child) {
-        if (!child->isInternal)
-            ++count;
+        ++count;
         child = child->nextChild;
     }
 
@@ -266,8 +272,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     child = p->childContexts;
     while (child) {
-        if (!child->isInternal) 
-            buildObjectList(message, child->asQDeclarativeContext());
+        buildObjectList(message, child->asQDeclarativeContext());
         child = child->nextChild;
     }
 
@@ -372,8 +377,9 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         int queryId;
         int objectId;
         bool recurse;
+        bool dumpProperties = true;
 
-        ds >> queryId >> objectId >> recurse;
+        ds >> queryId >> objectId >> recurse >> dumpProperties;
 
         QObject *object = QDeclarativeDebugService::objectForId(objectId);
 
@@ -382,7 +388,7 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         rs << QByteArray("FETCH_OBJECT_R") << queryId;
 
         if (object) 
-            buildObjectDump(rs, object, recurse);
+            buildObjectDump(rs, object, recurse, dumpProperties);
 
         sendMessage(reply);
     } else if (type == "WATCH_OBJECT") {

@@ -31,6 +31,7 @@
     \brief Inter-Process communication in Qt applications.
 
     \ingroup technology-apis
+    \ingroup qt-basic-concepts
     \ingroup qt-network
 
     Qt provides several ways to implement Inter-Process Communication
@@ -56,13 +57,12 @@
 
     \section1 D-Bus
 
-    The \l{QtDBus} module is a Unix-only library
-    you can use to implement IPC using the D-Bus protocol. It extends
-    Qt's \l{signalsandslots.html} {Signals and Slots} mechanism to the
-    IPC level, allowing a signal emitted by one process to be
-    connected to a slot in another process. This \l {Introduction to
-    D-Bus} page has detailed information on how to use the \l{QtDBus}
-    module.
+    The \l{QtDBus} module is a Unix-only library you can use to
+    implement IPC using the D-Bus protocol. It extends Qt's
+    \l{signalsandslots.html} {Signals and Slots} mechanism to the IPC
+    level, allowing a signal emitted by one process to be connected to
+    a slot in another process. This \l {D-Bus} page has detailed
+    information on how to use the \l{QtDBus} module.
 
     \section1 Qt COmmunications Protocol (QCOP)
 

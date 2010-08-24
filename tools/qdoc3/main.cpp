@@ -105,8 +105,7 @@ static bool showInternal = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
-static QString application = "base";	//application
-static bool applicationArg = 0; 		//if 1, then the argument is provided and it will override the qdocconf file
+static QString appArg; // application
 
 /*!
   Find the Tree for language \a lang and return a pointer to it.
@@ -194,36 +193,22 @@ static void processQdocconfFile(const QString &fileName)
     config.load(fileName);
 
     /*
-	Set the application to which qdoc will create the output.
-	The three applications are:
-		base: simple, basic html output. Best suited for offline viewing
-		creator: additional formatting.
-		online: full-featured online version with search and links to Qt topics
-	
-	Note: This will override the offline, online, creator defines.
+      Set the application to which qdoc will create the output.
+      The two applications are:
+
+      creator: additional formatting for viewing in
+      the Creator application.
+
+      online: full-featured online version with search and
+      links to Qt topics
     */
-    if(applicationArg == false){
-	
-	QString appConfig = config.getString(CONFIG_APPLICATION);
-	if (!appConfig.isEmpty()){
-		application = appConfig;
-	}
+    if (appArg.isEmpty()) {
+        qDebug() << "Warning: Application flag not specified on"
+                 << "command line. Options are -creator (default)"
+                 << "and -online.";
+        appArg = "creator";
     }
-    if(application == "online"){
-	config.setStringList(CONFIG_ONLINE, QStringList("true"));
-	config.setStringList(CONFIG_OFFLINE, QStringList("false"));
-	config.setStringList(CONFIG_CREATOR, QStringList("false"));
-    }
-    else if(application == "creator"){
-	config.setStringList(CONFIG_ONLINE, QStringList("false"));
-	config.setStringList(CONFIG_OFFLINE, QStringList("true"));
-	config.setStringList(CONFIG_CREATOR, QStringList("false"));
-    }
-    else if(application == "base"){
-	    config.setStringList(CONFIG_ONLINE, QStringList("false"));
-	    config.setStringList(CONFIG_OFFLINE, QStringList("false"));
-	    config.setStringList(CONFIG_CREATOR, QStringList("true"));
-    }
+    config.setStringList(CONFIG_APPLICATION, QStringList(appArg));
 
     /*
       Add the defines to the configuration variables.
@@ -496,18 +481,10 @@ int main(int argc, char **argv)
         else if (opt == "-obsoletelinks") {
             obsoleteLinks = true;
         }
-	else if (opt == "-base") {
-		application = "base";
-		applicationArg = true;
-	}
-	else if (opt == "-creator") {
-		application = "creator";
-		applicationArg = true;
-	}
-	else if (opt == "-online") {
-		application = "online";
-		applicationArg = true;
-	}
+	else if (opt == "-creator")
+		appArg = "creator";
+	else if (opt == "-online")
+		appArg = "online";
         else {
 	    qdocFiles.append(opt);
 	}
@@ -522,7 +499,7 @@ int main(int argc, char **argv)
       Main loop.
      */
     foreach (QString qf, qdocFiles) {
-        qDebug() << "PROCESSING:" << qf;
+        //qDebug() << "PROCESSING:" << qf;
 	processQdocconfFile(qf);
     }
 

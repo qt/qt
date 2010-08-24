@@ -58,7 +58,7 @@ class HelpViewer : public QWebView, public AbstractHelpViewer
     Q_OBJECT
 
 public:
-    HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
+    explicit HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
     ~HelpViewer();
 
     QFont viewerFont() const;

@@ -4094,7 +4094,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     if (pe1 != PseudoElement_None) {
         QRenderRule subRule = renderRule(w, opt, pe1);
         if (subRule.bg != 0 || subRule.hasDrawable()) {
-            //We test subRule.bg dirrectly because hasBackground() would return false for background:none.
+            //We test subRule.bg directly because hasBackground() would return false for background:none.
             //But we still don't want the default drawning in that case (example for QScrollBar::add-page) (task 198926)
             subRule.drawRule(p, opt->rect);
         } else if (fallback) {

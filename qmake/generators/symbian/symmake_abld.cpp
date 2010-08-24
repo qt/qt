@@ -70,10 +70,6 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 
 void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
-    QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-    removeEpocSpecialCharacters(gnuMakefileName);
-    gnuMakefileName.append(".mk");
-
     QFile ft(gnuMakefileName);
     if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
@@ -253,13 +249,17 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     } else {
         t << "all: debug release" << endl;
         t << endl;
+
+        QString qmakeCmd = "\t$(QMAKE) \"" + project->projectFile() + "\" " + buildArgs();
+
         t << "qmake:" << endl;
-        t << "\t$(QMAKE) -spec symbian-abld -o \"" << fileInfo(Option::output.fileName()).fileName()
-          << "\" \"" << project->projectFile() << "\"" << endl;
+        t << qmakeCmd << endl;
         t << endl;
-        t << BLD_INF_FILENAME ":" << endl;
-        t << "\t$(QMAKE)" << endl;
+
+        t << BLD_INF_FILENAME ": " << project->projectFile() << endl;
+        t << qmakeCmd << endl;
         t << endl;
+
         t << "$(ABLD): " BLD_INF_FILENAME << endl;
         t << "\tbldmake bldfiles" << endl;
         t << endl;
@@ -471,9 +471,8 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
     // Normally emulator deployment gets done via regular makefile, but since subdirs
     // do not get that, special deployment only makefile is generated for them if needed.
     if (targetType != TypeSubdirs || addDeploymentExtension) {
-        QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-        removeEpocSpecialCharacters(gnuMakefileName);
-        gnuMakefileName.append(".mk");
+        gnuMakefileName = QLatin1String("Makefile_") + fileInfo(mmpFileName).completeBaseName()
+            + QLatin1String(".mk");
         t << "gnumakefile " << gnuMakefileName << endl;
     }
 }

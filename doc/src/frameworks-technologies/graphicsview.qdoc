@@ -34,6 +34,8 @@
     \page graphicsview.html
     \title Graphics View Framework
     \ingroup qt-graphics
+    \ingroup qt-basic-concepts
+	
     \brief An overview of the Graphics View framework for interactive 2D
     graphics.
 

@@ -94,6 +94,7 @@ Rectangle {
     Timer {
         id: startHeartbeatTimer;
         interval: 1000 ;
+        onTriggered: { state = "running"; heartbeat.running = true; }
     }
 
 
@@ -207,21 +208,6 @@ Rectangle {
     Keys.onRightPressed: if (state == "starting" || direction != 3) Logic.scheduleDirection(1);
     Keys.onUpPressed: if (state == "starting" || direction != 2) Logic.scheduleDirection(0);
     Keys.onDownPressed: if (state == "starting" || direction != 0) Logic.scheduleDirection(2);
-
-    Connections {
-        target: startHeartbeatTimer
-        onRunningChanged: {
-            if (startHeartbeatTimer.running)
-                screen.state = "starting";
-            else
-                screen.state = "running"
-        }
-    }
-    Connections {
-        target: heartbeat
-        onRunningChanged: if (!heartbeat.running) screen.state = "";
-    }
-
 
     states: [
         State {

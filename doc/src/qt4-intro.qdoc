@@ -86,7 +86,7 @@
 
     In Qt 4.4:
     \list
-    \o \l{QtWebkit Module}{Qt WebKit integration}, making it possible for developers
+    \o \l{Webkit in QT}{Qt WebKit integration}, making it possible for developers
     to use a fully-featured Web browser to display documents and access online
     services.
     \o A multimedia API provided by the \l{Phonon Overview}{Phonon Multimedia Framework}.
@@ -455,10 +455,10 @@
 
     \image quick_screens.png
 
-    Qt 4.7 introduces Quick, the Qt UI Creation Kit. that enables the creation
-    of dynamic user interfaces, easier and more effective than possible
-    with existing UI technologies. This UI Creation Kit consist of three
-    technologies:
+    Qt 4.7 introduces \l{Qt Quick}, the Qt UI Creation Kit. that enables
+    the creation of dynamic user interfaces, easier and more effective
+    than possible with existing UI technologies. This UI Creation Kit
+    consists of three technologies:
 
     \list
     \i QML is a declarative language oriented on JavaScript that utilizes

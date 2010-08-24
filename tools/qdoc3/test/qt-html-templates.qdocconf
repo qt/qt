@@ -4,15 +4,12 @@ HTML.stylesheets        =  style/style.css \
 									style/style_ie8.css \
 									style/style_ie6.css
 
-HTML.creatorpostheader         = "**\n"
-HTML.creatorpostpostheader         = "***\n"
-									
 HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <div class=\"content\"> \n" \
 			  "    <div id=\"nav-logo\">\n" \
 			  "      <a href=\"index.html\">Home</a></div>\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
-			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearch\">\n" \
+			  "		<div id=\"narrowsearch\"><form onsubmit=\"return false;\" action=\"\" id=\"qtdocsearchTop\">\n" \
 			  "		<fieldset>\n" \
               "		<input type=\"text\" value=\"\" id=\"pageType2\" name=\"searchstring\"/>\n" \
 			  "		 </fieldset>\n" \
@@ -41,16 +38,18 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			" 			  <li><a href=\"functions.html\">Function index</a></li> \n" \
 			"			   <li><a href=\"modules.html\">Modules</a></li> \n" \
 			"			   <li><a href=\"namespaces.html\">Namespaces</a></li> \n" \
-			"			   <li><a href=\"qtglobal.html\">Global stuff</a></li> \n" \
-			"			   <li><a href=\"qdeclarativeelements.html\">QML elements</a></li> \n" \
+			"			   <li><a href=\"qtglobal.html\">Global Declarations</a></li> \n" \
+			"			   <li><a href=\"licensing.html\">Licenses and Credits</a></li> \n" \
 			"			   </ul> \n" \
 			"		 </li> \n" \
 			"		 <li><a href=\"#\">Qt Topics</a> \n" \
 			"			 <ul id=\"topmenuTopic\"> \n" \
-			"			   <li><a href=\"qt-basic-concepts.html\">Basic Qt architecture</a></li> \n" \
-			"			   <li><a href=\"declarativeui.html\">Device UI's &amp; Qt Quick</a></li> \n" \
-			"			   <li><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li> \n" \
+			"			   <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
+			"			   <li><a href=\"qtquick.html\">Device UI's &amp; Qt Quick</a></li> \n" \
+			"			   <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
+			"			   <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
 			"			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+			"			   <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
 			"			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
 			"			 </ul> \n" \
 			"		</li> \n" \
@@ -89,7 +88,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"functions.html\">Function index</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global stuff</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global Declarations</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
@@ -100,7 +99,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "          <div id=\"list002\" class=\"list\">\n" \
 			  "            <ul id=\"ul002\" >\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Basic Qt architecture</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"declarativeui.html\">Device UI's &amp; Qt Quick</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qtquick.html\">Device UI's &amp; Qt Quick</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li>\n" \
 			  "            </ul>  \n" \
@@ -149,6 +148,7 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "      <span></span>\n" \
 			  "    </div>\n" \
 			  "  </div> \n" \
+			  "  </div> \n" \
 			  "  <div class=\"footer\">\n" \
 			  "    <p>\n" \
 			  "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
@@ -161,11 +161,12 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p id=\"noteHead\">Thank you for giving your feedback. <div class=\"note\">Make sure it is related to this specific page. For more general bugs and \n" \
-			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</div></p>\n" \
+			  "      <p id=\"noteHead\">Thank you for giving your feedback.</p> <div class=\"note\"><p>Make sure it is related to this specific page. For more general bugs and \n" \
+			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</p></div>\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\"></textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"blurpage\">\n" \
-			  "  </div>\n"
+			  "  </div>\n" \
+                          "  </div>\n"

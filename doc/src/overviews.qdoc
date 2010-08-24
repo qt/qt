@@ -35,35 +35,35 @@
 
 /*!
     \group qt-basic-concepts
-    \title Basic Qt Architecture
+    \title Programming with Qt
 
     \brief The basic architecture of the Qt cross-platform application and UI framework.
 
     Qt is a cross-platform application and UI framework for writing
     web-enabled applications for desktop, mobile, and embedded
-    operating systems. These pages explain basic architectural
-    concepts of Qt:
-
+    operating systems. This page contains links to articles and overviews
+	explaining key components and techniuqes used in Qt development.
+	
     \generatelist {related}
  */
 
 /*!
     \group qt-gui-concepts
-    \title Qt Desktop UI Components
+    \title UI Design with Qt
 
     \brief The Qt components for constructing native look & feel desktop UI's.
 
     These pages are about Qt's traditional set of GUI components for
     building both native look ^ feel and custom UI's for the desktop
-    environment. Use \l {declarativeui.html} {Qt Quick} for building 
-    UI's for mobile devices.
+    environment. Use \l{Qt Quick} for building UI's for mobile devices.
 
     \generatelist {related}
  */
 
 /*!
     \group qt-graphics
-    \title Qt Graphics and Painting
+	\ingroup qt-basic-concepts
+    \title Qt Graphics and Printing
 
     \brief The Qt components for doing graphics.
 
@@ -72,6 +72,7 @@
 
 /*!
     \group qt-network
+	\ingroup qt-basic-concepts
     \title Network programming with Qt
 
     \brief The these pages are about Qt's support for network programming.
@@ -81,7 +82,7 @@
 
 /*!
     \group technology-apis
-    \title Qt API's for other technologies
+    \title Qt and Key Technologies
 
     These pages document Qt's API's for some widely-used standards and
     technologies.
@@ -91,10 +92,12 @@
 
 /*!
   \group qt-activex
-  \title Qt For ActiveX
-  \brief Qt API's for using ActiveX controls, servers, and COM.
+  \title ActiveX in Qt
+  \ingroup qt-basic-concepts
   \ingroup technology-apis
   \ingroup platform-specific
+
+  \brief Qt API's for using ActiveX controls, servers, and COM.
 
   These pages document Qt's API's for developing with ActiveX
   controls, servers, and COM.
@@ -104,10 +107,12 @@
 
 /*!
   \group qt-sql
-  \title Using SQL in Qt
+  \title SQL in Qt
   \brief Qt API's for using SQL.
   \ingroup technology-apis
   \ingroup best-practices
+  \ingroup qt-basic-concepts
+  
 
   These pages document Qt's API's for using SQL database systems
   in Qt applications.
@@ -117,7 +122,7 @@
 
 /*!
     \group best-practices
-    \title How-To's and Best Practices
+    \title Best Practices Guides
 
     \brief How-To Guides and Best Practices
 
@@ -127,4 +132,17 @@
     list to find what you want.
 
     \generatelist{related}
+*/
+/*! 
+
+	\group licensing
+	\title Qt Licenses and Credits
+
+	\brief About the licenses used for Qt, and some credits to our contributors.
+
+	This page contains information on the different licenses Qt is shipped with,
+	and credits to some of our many contributers.
+
+	\generatelist {related}
+
 */

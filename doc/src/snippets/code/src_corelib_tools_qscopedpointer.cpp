@@ -87,14 +87,9 @@ void myFunction(bool useSubClass)
     // is equivalent to:
     const QScopedPointer<QWidget> p(new QWidget());
 
-    QWidget *const p = new QWidget();
-    // is equivalent to:
-    const QScopedPointer<QWidget> p(new QWidget());
-
     const QWidget *p = new QWidget();
     // is equivalent to:
     QScopedPointer<const QWidget> p(new QWidget());
-
 //! [2]
 
 //! [3]

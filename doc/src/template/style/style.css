@@ -114,6 +114,8 @@
     {
         border: 1px solid #DDDDDD;
 		-moz-border-radius: 7px 7px 7px 7px;
+		-webkit-border-radius: 7px 7px 7px 7px;
+		border-radius: 7px 7px 7px 7px;
         margin: 0 20px 10px 10px;
         padding: 20px 15px 20px 20px;
         overflow-x: auto;
@@ -121,6 +123,8 @@
     table, pre
     {
         -moz-border-radius: 7px 7px 7px 7px;
+        -webkit-border-radius: 7px 7px 7px 7px;
+        border-radius: 7px 7px 7px 7px;
         background-color: #F6F6F6;
         border: 1px solid #E6E6E6;
         border-collapse: separate;
@@ -384,9 +388,9 @@
     .shortCut-topleft-inactive
     {
         padding-left: 3px;
+        padding-right: 3px;
         background: transparent url( ../images/sprites-combined.png) no-repeat 0px -58px;
         height: 20px;
-        width: 47px;
     }
     .shortCut-topleft-inactive span
     {
@@ -855,6 +859,8 @@
 	background-color:#F6F6F6;
 	border:1px solid #E6E6E6;
 	-moz-border-radius: 7px 7px 7px 7px;
+	border-radius: 7px 7px 7px 7px;
+	-webkit-border-radius: 7px 7px 7px 7px;
 	font-size:12pt;
 	padding-left:10px;
 	margin-top:10px;
@@ -911,6 +917,8 @@
     {
         display: none;
         -moz-border-radius: 7px 7px 7px 7px;
+        -webkit-border-radius: 7px 7px 7px 7px;
+        border-radius: 7px 7px 7px 7px;
         border: 1px solid #DDDDDD;
         position: fixed;
         top: 100px;
@@ -974,6 +982,8 @@
     {
         float: right;
         -moz-border-radius: 7px 7px 7px 7px;
+        -webkit-border-radius: 7px 7px 7px 7px;
+        border-radius: 7px 7px 7px 7px;
         background-color: #F6F6F6;
         border: 1px solid #DDDDDD;
         margin: 0 20px 10px 10px;
@@ -1068,6 +1078,8 @@
     .relpage
     {
         -moz-border-radius: 7px 7px 7px 7px;
+        -webkit-border-radius: 7px 7px 7px 7px;
+        border-radius: 7px 7px 7px 7px;
         border: 1px solid #DDDDDD;
         padding: 25px 25px;
         clear: both;
@@ -1084,6 +1096,8 @@
     h3.fn, span.fn
     {
 		-moz-border-radius:7px 7px 7px 7px;
+		-webkit-border-radius:7px 7px 7px 7px;
+		border-radius:7px 7px 7px 7px;
         background-color: #F6F6F6;
         border-width: 1px;
         border-style: solid;
@@ -1102,6 +1116,8 @@
     border-style: solid;
     border-color: #E6E6E6;
     -moz-border-radius: 7px 7px 7px 7px;
+    -webkit-border-radius: 7px 7px 7px 7px;
+    border-radius: 7px 7px 7px 7px;
 	width:100%;
 	}
 	
@@ -1267,43 +1283,6 @@
 	
 
 
-/* start of offline spec*/
-    .offline .wrapper .hd
-    {
-        background: url(../images/page.png) no-repeat 0 -15px;
-    }
-	    .offline .wrapper .bd
-    {
-        background: url(../images/bg_l_blank.png) repeat-y 0 0;
-    }
-    .offline .wrapper .ft
-    {
-        background: url(../images/page.png) no-repeat 0 -90px;
-    }
-    .offline .sidebar,
-	.offline .feedback,
-	.offline .t_button,
-	.offline #narrowsearch,
-	.offline #narrowmenu
-    {
-        display: none;
-    }
-    .offline .wrap
-    {
-        margin: 0 5px 0 5px;
-    }
-    .offline .wrap .breadcrumb
-    {
-    }
-
-    .offline .wrap .content
-    {
-        padding-top: 15px;
-    }
-
-
-/* end of offline spec*/
-	
 /* start of creator spec*/
 	.creator
 	{
@@ -1323,9 +1302,9 @@
 	.creator #feedbackBox,
 	.creator #feedback,
 	.creator #blurpage,
-	.creator .indexbox .indexIcon span,
+	/*.creator .indexbox .indexIcon span,*/
 	.creator .wrapper .hd,
-	.creator  .indexbox .indexIcon,
+/*	.creator  .indexbox .indexIcon,*/
 	.creator .header #nav-logo,
 	.creator #offlinemenu,
 	.creator #offlinesearch,
@@ -1359,7 +1338,7 @@
    .creator .wrapper
     {
 	position:relative;
-	top:50px;
+	top:5px;
     }
     .creator .wrapper .bd
 	{
@@ -1470,7 +1449,7 @@
 
 
 
-	  position:fixed;
+	/*  position:fixed;*/
     }
 
 
@@ -1542,6 +1521,10 @@
 	.creator .toc {
 	margin:10px 20px 10px 10px;
 	}	
+	
+	.creator #narrowsearch, .creator #narrowmenu{
+		display:none;
+	}
 /* end of creator spec*/
 	
 }

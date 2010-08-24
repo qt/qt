@@ -155,7 +155,7 @@
     \row    \o QtWebKit   \o WebKit
     \o WebKit is licensed under the GNU LGPL version 2 or later.
     This has implications for developers of closed source applications.
-    Please see \l{QtWebKit Module#License Information}{the QtWebKit module
+    Please see \l{WebKit in Qt#License Information}{the QtWebKit module
     documentation} for more information.
 
     \row    \o \l{Phonon Module}{Phonon}     \o Phonon
@@ -1442,10 +1442,8 @@
     \endlist
 
     \note If you want a 3rd party library to be included in your
-    application bundle, then you must add an excplicit lib entry for
-    that library to your application's .pro file.  Otherwise, the
-    \c macdeployqt tool will not copy the 3rd party .dylib into the
-    bundle.
+    application bundle, then you must copy the library into the
+    bundle manually, after the bundle is created.
 
     \c macdeployqt supports the following options:
     \list
@@ -1458,8 +1456,10 @@
 /*!
     \page deployment-symbian.html
     \contentspage Deploying Qt Applications
+    \ingroup qtsymbian
+    \title Deploying an Application on the Symbian Platform
 
-    \title Deploying an Application on the Symbian platform
+    \section1 Overview
 
     Applications are deployed to Symbian devices in signed \c .sis package files.
     The \c .sis file content is controlled with \c .pkg files. The \c .pkg file contains a set
@@ -1469,10 +1469,17 @@
     to end-users some changes are needed. This document describes what changes are
     typically needed and how to implement them.
 
+    \section1 Requirements
+
+    Download the latest release of the Smart Installer from
+    \l{http://get.qt.nokia.com/nokiasmartinstaller/}, and install it on top
+    of the Qt package.
+
     \section1 Static Linking
 
-    Qt for the Symbian platform does currently not support static linking of
-    Qt libraries.
+    Qt for the Symbian platform does not currently support static linking of
+    Qt libraries with application binaries. You will need to build shared
+    libraries as described below and link your application with them.
 
     \section1 Shared Libraries
 
@@ -1518,7 +1525,7 @@
     S60 3rd edition FP1, S60 3rd edition FP2 and S60 5th edition devices.
 
     Now we are ready to compile the application and create the application
-    deployment file. Run \c qmake to create Symbian specific makefiles, resources (\.rss)
+    deployment file. Run \c qmake to create Symbian specific makefiles, resources (\c .rss)
     and deployment packaging files (\c .pkg). And do build to create the
     application binaries and resources.
 
@@ -1548,4 +1555,14 @@
     For more information about creating a \c .sis file and installing it to device see also
     \l {The Symbian platform - Introduction to Qt#Installing your own applications}{here}.
 
+    \section1 Further Reading
+
+    This document aims to cover the common case for developers who want to
+    deploy Qt applications on devices using the Smart Installer. It does not
+    aim to cover every possible way of installing applications, Qt and other
+    dependencies on a device.
+
+    A wider selection of deployment methods is described in the
+    \l{Deploying a Qt Application article} on the Symbian Foundation
+    Developer Wiki.
 */

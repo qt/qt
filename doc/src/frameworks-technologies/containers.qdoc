@@ -43,9 +43,10 @@
 
 /*!
     \page containers.html
-    \title Generic Containers
+    \title Container Classes
     \ingroup technology-apis
     \ingroup groups
+    \ingroup qt-basic-concepts
     \keyword container class
     \keyword container classes
 

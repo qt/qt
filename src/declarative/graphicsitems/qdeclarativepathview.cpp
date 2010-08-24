@@ -326,6 +326,7 @@ void QDeclarativePathViewPrivate::regenerate()
 
 /*!
     \qmlclass PathView QDeclarativePathView
+    \ingroup qml-view-elements
     \since 4.7
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
@@ -426,7 +427,7 @@ QDeclarativePathView::~QDeclarativePathView()
 
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
-    Models can also be created directly in XML, using the ListModel element.
+    Models can also be created directly in QML, using the ListModel element.
 
     \sa {qmlmodels}{Data Models}
 */
@@ -479,7 +480,8 @@ void QDeclarativePathView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
     }
-    d->offset = qmlMod(d->offset, qreal(d->model->count()));
+    if (d->model->count())
+        d->offset = qmlMod(d->offset, qreal(d->model->count()));
     if (d->offset < 0)
         d->offset = d->model->count() + d->offset;
     d->regenerate();
@@ -650,8 +652,8 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
     so as to stay with the current item.
 
     The below example demonstrates how to make a simple highlight.  Note the use
-    of the PathView.onPath property to ensure that the highlight is hidden
-    when flicked off of the path.
+    of the \l{PathView::onPath}{PathView.onPath} attached property to ensure that
+    the highlight is hidden when flicked away from the path.
 
     \code
     Component {
@@ -1061,7 +1063,7 @@ void QDeclarativePathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->stealMouse) {
         QPointF delta = event->pos() - d->startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() && qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
             d->stealMouse = true;
     }
 

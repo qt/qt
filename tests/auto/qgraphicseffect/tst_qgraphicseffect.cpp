@@ -183,20 +183,20 @@ void tst_QGraphicsEffect::source()
     QGraphicsItem *item = new QGraphicsRectItem(0, 0, 10, 10);
     item->setGraphicsEffect(effect);
     QVERIFY(effect->source());
-    QCOMPARE(effect->source()->graphicsItem(), item);
+    QCOMPARE(effect->source()->graphicsItem(), (const QGraphicsItem*)item);
     QVERIFY(effect->m_sourceChangedFlags & QGraphicsEffect::SourceAttached);
     effect->reset();
 
     // Make sure disabling/enabling the effect doesn't change the source.
     effect->setEnabled(false);
     QVERIFY(effect->source());
-    QCOMPARE(effect->source()->graphicsItem(), item);
+    QCOMPARE(effect->source()->graphicsItem(), (const QGraphicsItem*)item);
     QVERIFY(!effect->m_sourceChangedFlags);
     effect->reset();
 
     effect->setEnabled(true);
     QVERIFY(effect->source());
-    QCOMPARE(effect->source()->graphicsItem(), item);
+    QCOMPARE(effect->source()->graphicsItem(), (const QGraphicsItem*)item);
     QVERIFY(!effect->m_sourceChangedFlags);
     effect->reset();
 
@@ -210,7 +210,7 @@ void tst_QGraphicsEffect::source()
     item->setGraphicsEffect(effect);
     QPointer<QGraphicsEffectSource> source = effect->source();
     QVERIFY(source);
-    QCOMPARE(source->graphicsItem(), item);
+    QCOMPARE(source->graphicsItem(), (const QGraphicsItem*)item);
     delete item;
     QVERIFY(!effect);
     QVERIFY(!source);

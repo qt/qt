@@ -19,8 +19,8 @@ $$unixstyle {
     QDOC = cd $$QT_SOURCE_TREE/tools/qdoc3/test && set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QT_BUILD_TREE/bin/qdoc3.exe $$DOCS_GENERATION_DEFINES
     QDOC = $$replace(QDOC, "/", "\\")
 }
-ADP_DOCS_QDOCCONF_FILE = qt-build-docs.qdocconf
-QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
+ADP_DOCS_QDOCCONF_FILE = -online qt-build-docs.qdocconf
+QT_DOCUMENTATION = ($$QDOC -creator qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
                     linguist.qdocconf qmake.qdocconf qdeclarative.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
                     $$GENERATOR doc-build/html-qt/qt.qhp -o doc/qch/qt.qch && \

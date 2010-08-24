@@ -94,6 +94,7 @@ public:
 
 /*!
     \qmlclass FolderListModel QDeclarativeFolderListModel
+    \ingroup qml-working-with-data
     \brief The FolderListModel provides a model of the contents of a folder in a filesystem.
 
     FolderListModel provides access to the local filesystem.  The \e folder property

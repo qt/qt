@@ -51,13 +51,13 @@ int main(int argc, char ** argv)
 //![0]
 
     QDeclarativeEngine engine;
-    QDeclarativeComponent component(&engine, ":example.qml");
+    QDeclarativeComponent component(&engine, QUrl("qrc:example.qml"));
     Person *person = qobject_cast<Person *>(component.create());
     if (person) {
         qWarning() << "The person's name is" << person->name();
         qWarning() << "They wear a" << person->shoeSize() << "sized shoe";
     } else {
-        qWarning() << "An error occurred";
+        qWarning() << component.errors();
     }
 
     return 0;

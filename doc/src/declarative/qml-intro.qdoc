@@ -28,13 +28,10 @@
 
 
 /*!
-
-\page  qml-intro.html
+\page qml-intro.html
 \title Beginning Qt Quick
 
-
 \section1 Overview
-
 
 QML is a high level, scripted language. Its commands, more correctly \e elements,
 leverage the power and efficiency of the Qt libraries to make easy to use
@@ -61,12 +58,7 @@ would be a property.
 
 The basic syntax of an \l {QML Elements}{element} is
 
-    \code
-    SomeElement {
-        id: myObject
-        ... some other things here ...
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/basic-syntax.qml basic syntax
 
 Here we are defining a new object. We specify its 'type' first as SomeElement.
 Then within matching braces { ... } we specify the various parts of our 
@@ -90,61 +82,38 @@ want a rectangle that is 500 pixels by 400 pixels in the x and y directions
 
 We can implement this \l Rectangle with these properties this way
 
-    \code
-    import Qt 4.7
-
-    // This is a comment. And below myRectangle is defined.
-    Rectangle {
-        id: myRectangle
-        width: 500
-        height: 400
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/qml-intro/rectangle.qml
 
 This is a valid QML script. To run it, copy it and save it to a file, say
-myexample.qml, and on the command line run the command
+myexample.qml, and on the command line run the following command:
 
-    \code
-    qmlviewer myexample.qml
-    \endcode
+\code
+qmlviewer myexample.qml
+\endcode
 
 On Mac OS X, open the "QMLViewer" application instead and open the
 \c myexample.qml file, or run it from the command line:
 
-    \code
-    QMLViewer.app/Contents/MacOS/QMLViewer myexample.qml
-    \endcode
-    
+\code
+QMLViewer.app/Contents/MacOS/QMLViewer myexample.qml
+\endcode
 
 It will create a very boring rectangle in its own window.
-
 
 
 \section1 Hello World!
 
 We can now add some color and text to make a Hello World QML program.
 
-\l Rectangle has the property \l {Rectangle::color}{color} to produce a
+\l Rectangle has the property \l{Rectangle::color}{color} to produce a
 background color.
 
 Text is handled by a different element called \l Text. We need to create a
-\l Text object inside the \l Rectangle and set its \l {Text::text}{text}
-property to "Hello World!". So to set the text to 'Hello world' and the
+\l Text object inside the \l Rectangle and set its \l{Text::}{text}
+property to "Hello World!". So to set the text to "Hello world" and the
 background colour to light gray,
 
-    \code
-    import Qt 4.7
-    
-    Rectangle {
-        id: myRectangle
-        width: 500
-        height: 400
-
-        Text { text: "Hello World!" }
-
-        color: "lightgray"
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/qml-intro/hello-world1.qml
 
 
 \section1 Hello World Again
@@ -158,12 +127,7 @@ position belongs to the \l Text element so we set the position inside its
 definition. Note that we separate different QML statements on the same line
 with a semi-colon, or we could have simply put each statement on a new line
 
-    \code
-    Text {
-        text: "<h2>Hello World</h2>"; color: "darkgreen"
-        x: 100; y:100
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/hello-world2.qml updated text
 
 Not only did we reposition the text, but the text was altered by adding
 HTML tags to change the font size. The text color was also changed from the
@@ -174,13 +138,7 @@ We could also have used a hexadecimal string for the RGB (red-green-blue, as
 #rrggbb) values of the color similar to the method used in HTML. For
 example, mostly blue with a green tint,
 
-    \code
-    Text {
-        text: "<h1>Hello world again</h1>"
-        color: "#002288"
-        x: 100; y: 100
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/hello-world3.qml updated text
 
 All of these changes occurred within the \l Text object which is the scope
 of these property changes.
@@ -198,11 +156,7 @@ source of the image, the path to the file, is a URL. Therefore the file can
 be local: \e {mydir/myimage1.png}. Or it can be remote:
 \e {"http://www.example.com/images/myimage1.png"}.
 
-    \code
-    Image {
-        source: "images/qt-logo.png"
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/hello-world4.qml added an image
 
 This displays the image, as we would expect, at the top left of the window.
 The position of the default x = 0, y = 0 coordinate. The example here uses
@@ -213,44 +167,12 @@ Let us reposition the image and enlarge it. Place it at the same 'x' offset
 as the "Hello world again" text, but put it another 50 pixels below the
 text, also make it 150 by 150 pixels in size,
 
-    \code
-    Image {
-        source: "images/qt-logo.png"
-        x: 100; y: 150
-        width: 150; height: 150
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/hello-world5.qml positioning the image
 
 Adding the Hello World example, with the text and the image example we can
 write a simple piece of QML that starts to look a bit better.
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: myRectangle
-        width: 500
-        height: 400
-        
-        // A light gray background
-        color: "lightgray"
-
-        // Position and color some text
-        Text {
-            text: "<h1>Hello world again</h1>"
-            color: "darkgreen"
-            x: 100; y: 100
-        }
-
-        // Using the opportunity to resize the image.
-        Image {
-            source: "images/qt-logo.png"
-            x: 100; y: 150
-            width: 150; height: 150
-        }
-
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/qml-intro/hello-world5.qml
 
 The result is still quite simple
 
@@ -281,22 +203,7 @@ If we want to position an image at the bottom of the rectangle it is
 inside. I have to specify that the bottom of the image is also at the
 bottom of the rectangle
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: myWin
-        width: 500
-        height: 400
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            width: 150; height: 150
-            anchors.bottom: myWin.bottom
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/qml-intro/anchors1.qml
 
 This places the logo at the bottom left of the window.
 
@@ -315,25 +222,7 @@ the bottomMargin property is used. So the new actions for the script are
 
 Encoded into QML the script becomes
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: myWin
-        width: 500
-        height: 400
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            width: 150; height: 150
-            anchors.bottom: myWin.bottom
-            anchors.horizontalCenter: myWin.horizontalCenter
-            anchors.bottomMargin: 10
-        }
-    }
-    \endcode
-
+\quotefile doc/src/snippets/declarative/qml-intro/anchors2.qml
 
 Run this and resize the window. You will see that now the position of the
 image adjusts during the resize.
@@ -344,14 +233,7 @@ You can also add another object say a block of descriptive text and place
 it above or below the image or to the side. This code places some text just
 above the image
 
-    \code
-    Text {
-        text: "<h2>The Qt Logo</h2>"
-        anchors.bottom: image1.top
-        anchors.horizontalCenter: myWin.horizontalCenter
-        anchors.bottomMargin: 15
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/qml-intro/anchors3.qml adding some text
 
 \image qml-intro-anchors3.png
 
@@ -359,17 +241,15 @@ above the image
 referencing these properties from another object we use the property
 directly, instead of saying:
 
-    \code
-    myRectangle.anchors.top  // Wrong
-    \endcode
+\qml
+myRectangle.anchors.top  // Wrong
+\endqml
 
 we use
 
-    \code
-    myRectangle.top         // Correct
-    \endcode
-
-
+\qml
+myRectangle.top         // Correct
+\endqml
 
 
 \section1 Transformations
@@ -391,9 +271,9 @@ Rotation of text was also suggested. It could also be useful to scale the
 text. We can do both. The \l {Item::transform}{transform} property is a
 \e list of \l Transform elements, so using the list syntax
 
-    \code
-    myList: [ listElement1, listElement2, ... } ]
-    \endcode
+\qml
+myList: [ listElement1, listElement2, ... } ]
+\endqml
 
 we can produce a list of transformations.
 
@@ -402,46 +282,7 @@ vertically by a factor of 1.5 and by 1.2 horizontally.
 
 Using the example above as the basis for this we have,
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: myWin
-        width: 500
-        height: 400
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            width: 150; height: 150
-            anchors.bottom: myWin.bottom
-            anchors.horizontalCenter: myWin.horizontalCenter
-            anchors.bottomMargin: 10
-
-            transform: Rotation {
-                origin.x: 75; origin.y: 75
-                axis{ x: 0; y: 0; z:1 }  angle: -90
-            }
-
-        }
-        
-        Text {
-            text: "<h2>The Qt Logo -- taking it easy</h2>"
-            anchors.bottom: image1.top
-            anchors.horizontalCenter: myWin.horizontalCenter
-            anchors.bottomMargin: 15
-
-            transform: [
-                Scale { xScale: 1.5; yScale: 1.2 } ,
-            
-                Rotation {
-                    origin.x: 75; origin.y: 75
-                    axis{ x: 0; y: 0; z:1 }  angle: -45
-                }
-            ]
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/qml-intro/transformations1.qml
 
 The code block in \c image1 starting with \c transform specifies that the
 \l {Item::transform}{transform} property will be a Rotation through -90
@@ -479,30 +320,7 @@ from \l Item. The rotation property is a real number that specifies the
 angle in a clockwise direction for the rotation of the object. Here is the
 code for our animated rotating image.
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: mainRec
-        width:  600
-        height: 400
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            x: 200; y: 100
-            width: 100; height: 100
-            
-            // Animate a rotation
-            transformOrigin: Item.Center
-            NumberAnimation on rotation {
-                from: 0; to: 360
-                duration: 2000
-                loops: Animation.Infinite
-            }
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/number-animation1.qml
 
 The \c {transformOrigin: Item.Center} is redundant since this is the default
 axis of rotation anyway. But if you change \c Center to \c BottomRight you
@@ -515,32 +333,7 @@ combination. For example, if the task had been to animate the rotation
 about the y-axis passing through the center of the image then the following
 code would do it.
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: mainRec
-        width:  600
-        height: 400
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            x: 200; y: 100
-            width: 100; height: 100
-
-            // Animate a rotation
-            transform: Rotation {
-                origin.x: 50; origin.y: 50; axis {x:0; y:1; z:0} angle:0
-                NumberAnimation on angle  {
-                    from: 0; to: 360;
-                    duration: 3000;
-                    loops: Animation.Infinite
-                }
-            }
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/number-animation2.qml
 
 Here there is a rectangle 600 by 400 pixels. Placed within that rectangle
 is an image 100 by 100 pixels. It is rotated about the center of the image
@@ -569,31 +362,7 @@ will be animating the position and the size of the image.
 
 First create two images
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: mainRec
-        width:  600
-        height: 400
-        z: 0
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            x: 20; y: 20 ; z: 1
-            width: 100; height: 100
-        }
-
-        Image {
-            id: image2
-            source: "images/qt-logo.png"
-            width: 100; height: 100
-            x: (mainRec.width - 100)/2; y: (mainRec.height - 100)/2
-            z: 2
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/sequential-animation1.qml
 
 We will add to 'image1' a SequentialAnimation from x = 20 to the target of
 x = 450. The 'from' values will be used because we will be repeating the
@@ -606,14 +375,7 @@ between the x values and over a given duration. After the NumberAnimation
 there will be a PauseAnimation that will pause the animation for 500
 milliseconds (half a second) simply for the visual effect.
 
-    \code
-    SequentialAnimation on x {
-        loops: Animation.Infinite
-        NumberAnimation { from: 20; to: 450; easing.type: "InOutQuad";
-duration: 2000 }
-        PauseAnimation { duration: 500 }
-    }
-    \endcode
+\snippet doc/src/snippets/declarative/sequential-animation2.qml adding a sequential animation
 
 A similar block of code is written for the animation of the 'y' value of
 the position.
@@ -628,54 +390,7 @@ and image1 to 1 and image2 to 2 then image2 will be in the foreground and
 image1 in the background. When image1 passes image2 it will pass behind it.
 The completed code looks like
 
-    \code
-    Rectangle {
-        id: mainRec
-        width:  600
-        height: 400
-        z: 0
-
-        Image {
-            id: image2
-            source: "images/qt-logo.png"
-            width: 100; height: 100
-            x: (mainRec.width - 100)/2; y: (mainRec.height - 100)/2
-            z: 2
-        }
-
-        Image {
-            id: image1
-            source: "images/qt-logo.png"
-            x: 20; y: 20 ; z: 1
-            width: 100; height: 100
-
-            SequentialAnimation on x {
-                loops: Animation.Infinite
-                NumberAnimation {
-                    from: 20; to: 450
-                    easing.type: "InOutQuad"; duration: 2000
-                }
-                PauseAnimation { duration: 500 }
-            }
-            
-            SequentialAnimation on y {
-                loops: Animation.Infinite
-                NumberAnimation {
-                    from: 20; to: 250
-                    easing.type: "InOutQuad"; duration: 2000
-                }
-                PauseAnimation { duration: 500 }
-            }
-
-            SequentialAnimation on scale {
-                loops: Animation.Infinite
-                NumberAnimation { from: 1; to: 0.5; duration: 1000 }
-                NumberAnimation { from: 0.5; to: 1; duration: 1000 }
-                PauseAnimation { duration: 500 }
-            }
-        }
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/sequential-animation3.qml
 
 The \c {easing.type} has many options, expressed as a string. It specifies the
 kind of equation that describes the acceleration of the property value, not
@@ -756,60 +471,7 @@ will be the default state. We will just go to 'night' by clicking and
 holding the left mouse button down, releasing the mouse button will reverse
 the process
 
-    \code
-    import Qt 4.7
-
-    Rectangle {
-        id: mainRectangle
-        width:  600
-        height: 400
-        color: "black"
-
-        Rectangle {
-            id: sky
-            width: 600
-            height: 200
-            y: 0
-            color: "lightblue"
-        }
-
-        Rectangle {
-            id: ground
-            width: 600; height: 200
-            y: 200
-            color: "green"
-        }
-
-        MouseArea {
-            id: mousearea
-            anchors.fill: mainRectangle
-        }
-
-        states: [ State {
-                name: "night"
-                when: mousearea.pressed == true
-                PropertyChanges { target: sky; color: "darkblue" }
-                PropertyChanges { target: ground; color: "black" }
-            },
-            State {
-                name: "daylight"
-                when: mousearea.pressed == false
-                PropertyChanges { target: sky; color: "lightblue" }
-                PropertyChanges { target: ground; color: "green" }
-            }
-        ]
-
-        transitions: [ Transition {
-                from: "daylight"; to: "night"
-                ColorAnimation { duration: 1000 }
-            },
-            Transition {
-                from: "night"; to: "daylight"
-                ColorAnimation { duration: 500 }
-            }
-        ]
-    }
-    \endcode
+\quotefile doc/src/snippets/declarative/states1.qml
 
 Several new things appear in this sample. Firstly, we use a \l MouseArea
 element to detect mouse clicks in the \e mainRectangle. Secondly, we use

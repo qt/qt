@@ -128,6 +128,7 @@ public:
 
 /*!
     \qmlclass VisualItemModel QDeclarativeVisualItemModel
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The VisualItemModel allows items to be provided to a view.
 
@@ -235,20 +236,6 @@ QString QDeclarativeVisualItemModel::stringValue(int index, const QString &name)
     if (index < 0 || index >= d->children.count())
         return QString();
     return QDeclarativeEngine::contextForObject(d->children.at(index).item)->contextProperty(name).toString();
-}
-
-QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
-{
-    Q_D(QDeclarativeVisualItemModel);
-    if (index < 0 || index >= d->children.count())
-        return QVariant();
-    QDeclarativeContext *ccontext = qmlContext(this);
-    QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
-    ctxt->setContextObject(d->children.at(index).item);
-    QDeclarativeExpression e(ctxt, objectContext, expression);
-    QVariant value = e.evaluate();
-    delete ctxt;
-    return value;
 }
 
 int QDeclarativeVisualItemModel::indexOf(QDeclarativeItem *item, QObject *) const
@@ -525,7 +512,7 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
             QVariant value = model->m_listModelInterface->data(data->m_index, *it);
             return value;
         } else if (model->m_roles.count() == 1 && propName == "modelData") {
-            //for compatability with other lists, assign modelData if there is only a single role
+            //for compatibility with other lists, assign modelData if there is only a single role
             QVariant value = model->m_listModelInterface->data(data->m_index, model->m_roles.first());
             return value;
         }
@@ -644,6 +631,7 @@ QDeclarativeVisualDataModelData *QDeclarativeVisualDataModelPrivate::data(QObjec
 
 /*!
     \qmlclass VisualDataModel QDeclarativeVisualDataModel
+    \ingroup qml-working-with-data
     \brief The VisualDataModel encapsulates a model and delegate
 
     A VisualDataModel encapsulates a model and the delegate that will
@@ -726,6 +714,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
+        d->m_abstractItemModel = 0;
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
@@ -1163,38 +1152,6 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
         delete data;
 
     return val;
-}
-
-QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
-{
-    Q_D(QDeclarativeVisualDataModel);
-    if (d->m_visualItemModel)
-        return d->m_visualItemModel->evaluate(index, expression, objectContext);
-
-    if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
-        return QVariant();
-
-    QVariant value;
-    QObject *nobj = d->m_cache.item(index);
-    if (nobj) {
-        QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
-        if (item) {
-            QDeclarativeExpression e(qmlContext(item), objectContext, expression);
-            value = e.evaluate();
-        }
-    } else {
-        QDeclarativeContext *ccontext = d->m_context;
-        if (!ccontext) ccontext = qmlContext(this);
-        QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
-        QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
-        ctxt->setContextObject(data);
-        QDeclarativeExpression e(ctxt, objectContext, expression);
-        value = e.evaluate();
-        delete data;
-        delete ctxt;
-    }
-
-    return value;
 }
 
 int QDeclarativeVisualDataModel::indexOf(QDeclarativeItem *item, QObject *) const

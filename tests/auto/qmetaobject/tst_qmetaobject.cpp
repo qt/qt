@@ -107,7 +107,7 @@ class tst_QMetaObject : public QObject
     Q_PROPERTY(QVariantList value5 WRITE setVal5 READ val5)
     Q_PROPERTY(int value6 READ value6 NOTIFY value6Changed)
     Q_PROPERTY(MyStruct value7 READ value7 WRITE setVal7 NOTIFY value7Changed)
-    Q_PROPERTY(int value8 READ value8 NOTIFY value8Changed)
+    Q_PROPERTY(int value8 READ value8)
     Q_PROPERTY(int value9 READ value9 CONSTANT)
     Q_PROPERTY(int value10 READ value10 FINAL)
 
@@ -714,6 +714,8 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
     QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
     QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
+
+    QTest::newRow("invalid1") << "a( b" << "a(b";
 }
 
 void tst_QMetaObject::normalizedSignature()
@@ -721,7 +723,7 @@ void tst_QMetaObject::normalizedSignature()
     QFETCH(QString, signature);
     QFETCH(QString, result);
 
-    QCOMPARE(QString::fromLatin1(QMetaObject::normalizedSignature(signature.toLatin1())), result);
+    QCOMPARE(QMetaObject::normalizedSignature(signature.toLatin1()), result.toLatin1());
 }
 
 void tst_QMetaObject::normalizedType_data()
@@ -759,7 +761,7 @@ void tst_QMetaObject::normalizedType()
     QFETCH(QString, type);
     QFETCH(QString, result);
 
-    QCOMPARE(QString::fromLatin1(QMetaObject::normalizedType(type.toLatin1())), result);
+    QCOMPARE(QMetaObject::normalizedType(type.toLatin1()), result.toLatin1());
 }
 
 void tst_QMetaObject::customPropertyType()

@@ -16,6 +16,7 @@ wince*:|symbian: {
 symbian {
     TARGET.CAPABILITY=AllFiles
     LIBS *= -lefsrv
+    INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
     }
 
 # support for running test from shadow build directory

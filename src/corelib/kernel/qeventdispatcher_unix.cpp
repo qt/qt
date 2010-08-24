@@ -331,7 +331,7 @@ QTimerInfoList::QTimerInfoList()
     }
 #endif
 
-    firstTimerInfo = currentTimerInfo = 0;
+    firstTimerInfo = 0;
 }
 
 timeval QTimerInfoList::updateCurrentTime()
@@ -445,7 +445,7 @@ bool QTimerInfoList::timerWait(timeval &tm)
     // Find first waiting timer not already active
     QTimerInfo *t = 0;
     for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
-        if (!(*it)->inTimerEvent) {
+        if (!(*it)->activateRef) {
             t = *it;
             break;
         }
@@ -474,7 +474,7 @@ void QTimerInfoList::registerTimer(int timerId, int interval, QObject *object)
     t->interval.tv_usec = (interval % 1000) * 1000;
     t->timeout = updateCurrentTime() + t->interval;
     t->obj = object;
-    t->inTimerEvent = false;
+    t->activateRef = 0;
 
     timerInsert(t);
 }
@@ -489,8 +489,8 @@ bool QTimerInfoList::unregisterTimer(int timerId)
             removeAt(i);
             if (t == firstTimerInfo)
                 firstTimerInfo = 0;
-            if (t == currentTimerInfo)
-                currentTimerInfo = 0;
+            if (t->activateRef)
+                *(t->activateRef) = 0;
 
             // release the timer id
             if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
@@ -515,8 +515,8 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
             removeAt(i);
             if (t == firstTimerInfo)
                 firstTimerInfo = 0;
-            if (t == currentTimerInfo)
-                currentTimerInfo = 0;
+            if (t->activateRef)
+                *(t->activateRef) = 0;
 
             // release the timer id
             if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
@@ -552,10 +552,7 @@ int QTimerInfoList::activateTimers()
     bool firstTime = true;
     timeval currentTime;
     int n_act = 0, maxCount = count();
-
-    QTimerInfo *saveFirstTimerInfo = firstTimerInfo;
-    QTimerInfo *saveCurrentTimerInfo = currentTimerInfo;
-    firstTimerInfo = currentTimerInfo = 0;
+    firstTimerInfo = 0;
 
     while (maxCount--) {
         currentTime = updateCurrentTime();
@@ -567,7 +564,7 @@ int QTimerInfoList::activateTimers()
         if (isEmpty())
             break;
 
-        currentTimerInfo = first();
+        QTimerInfo *currentTimerInfo = first();
         if (currentTime < currentTimerInfo->timeout)
             break; // no timer has expired
 
@@ -594,21 +591,19 @@ int QTimerInfoList::activateTimers()
         if (currentTimerInfo->interval.tv_usec > 0 || currentTimerInfo->interval.tv_sec > 0)
             n_act++;
 
-        if (!currentTimerInfo->inTimerEvent) {
+        if (!currentTimerInfo->activateRef) {
             // send event, but don't allow it to recurse
-            currentTimerInfo->inTimerEvent = true;
+            currentTimerInfo->activateRef = &currentTimerInfo;
 
             QTimerEvent e(currentTimerInfo->id);
             QCoreApplication::sendEvent(currentTimerInfo->obj, &e);
 
             if (currentTimerInfo)
-                currentTimerInfo->inTimerEvent = false;
+                currentTimerInfo->activateRef = 0;
         }
     }
 
-    firstTimerInfo = saveFirstTimerInfo;
-    currentTimerInfo = saveCurrentTimerInfo;
-
+    firstTimerInfo = 0;
     return n_act;
 }
 
