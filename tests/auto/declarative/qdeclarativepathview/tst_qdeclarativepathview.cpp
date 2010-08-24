@@ -84,7 +84,7 @@ private slots:
     void modelChanges();
     void pathUpdateOnStartChanged();
     void package();
-
+    void emptyModel();
 
 private:
     QDeclarativeView *createView();
@@ -754,6 +754,28 @@ void tst_QDeclarativePathView::package()
 
     delete canvas;
 }
+
+//QTBUG-13017
+void tst_QDeclarativePathView::emptyModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringListModel model;
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("emptyModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/emptymodel.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    QCOMPARE(pathview->offset(), qreal(0.0));
+
+    delete canvas;
+}
+
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {
