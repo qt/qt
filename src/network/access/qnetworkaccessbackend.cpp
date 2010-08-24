@@ -146,7 +146,7 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 // and the special backends need to access this.
 void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
-    if (reply->isFinished())
+    if (reply->isFinished)
         return;
     reply->emitUploadProgress(bytesSent, bytesTotal);
 }

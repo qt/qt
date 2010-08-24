@@ -68,6 +68,7 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     setRequest(req);
     setUrl(req.url());
     setOperation(op);
+    setFinished(true);
     QNetworkReply::open(QIODevice::ReadOnly);
 
     qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
@@ -141,12 +142,6 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
-
-bool QFileNetworkReplyPrivate::isFinished() const
-{
-    return true;
-}
-
 void QFileNetworkReply::close()
 {
     Q_D(QFileNetworkReply);

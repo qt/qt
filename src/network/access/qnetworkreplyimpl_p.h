@@ -173,8 +173,6 @@ public:
     void redirectionRequested(const QUrl &target);
     void sslErrors(const QList<QSslError> &errors);
 
-    bool isFinished() const;
-
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
     QRingBuffer *outgoingDataBuffer;
