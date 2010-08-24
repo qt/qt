@@ -67,20 +67,29 @@ class QFileSystemEntry
     QString filePath() const;
     QString fileName() const;
     QByteArray nativeFileName() const;
+    QString suffix() const;
+    QString completeSuffix() const;
+    bool isAbsolute() const;
+    bool isRelative() const {
+        return !isAbsolute();
+    }
 
 private:
     // creates the QString version out of the bytearray version
     void resolveFilePath() const;
     // creates the bytearray version out of the QString version
     void resolveNativeFilePath() const;
+    // resolves the separator
     void findLastSeparator() const;
+    /// resolves the dots and the separator
+    void findFileNameSeparators() const;
 
     mutable QString m_filePath; // always has slashes as separator
     mutable QByteArray m_nativeFilePath; // native encoding and separators
 
-    mutable int m_lastSeparator : 16;
-
-    int dummy : 16;
+    mutable int m_lastSeparator : 16; // index in m_filePath of last separator
+    mutable int m_firstDotInFileName : 11; // index after m_filePath for first dot (.)
+    mutable int m_lastDotInFileName : 5; // index after m_firstDotInFileName for last dot (.)
 };
 
 QT_END_NAMESPACE
