@@ -2079,7 +2079,7 @@ void QDeclarativeEnginePrivate::registerCompositeType(QDeclarativeCompiledData *
     QByteArray name = data->root->className();
 
     QByteArray ptr = name + '*';
-    QByteArray lst = "QDeclarativeListProperty<" + name + ">";
+    QByteArray lst = "QDeclarativeListProperty<" + name + '>';
 
     int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,
                                            voidptr_constructor);
