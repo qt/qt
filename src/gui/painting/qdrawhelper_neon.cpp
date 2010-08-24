@@ -51,6 +51,44 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_memfill32_neon(quint32 *dest, quint32 value, int count)
+{
+    const int epilogueSize = count % 16;
+    if (count >= 16) {
+        quint32 *const neonEnd = dest + count - epilogueSize;
+        register uint32x4_t valueVector1 asm ("q0") = vdupq_n_u32(value);
+        register uint32x4_t valueVector2 asm ("q1") = valueVector1;
+        while (dest != neonEnd) {
+            asm volatile (
+                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
+                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
+                : [DST]"+r" (dest)
+                : [VALUE1]"w"(valueVector1), [VALUE2]"w"(valueVector2)
+                : "memory"
+            );
+        }
+    }
+
+    switch (epilogueSize)
+    {
+    case 15:     *dest++ = value;
+    case 14:     *dest++ = value;
+    case 13:     *dest++ = value;
+    case 12:     *dest++ = value;
+    case 11:     *dest++ = value;
+    case 10:     *dest++ = value;
+    case 9:      *dest++ = value;
+    case 8:      *dest++ = value;
+    case 7:      *dest++ = value;
+    case 6:      *dest++ = value;
+    case 5:      *dest++ = value;
+    case 4:      *dest++ = value;
+    case 3:      *dest++ = value;
+    case 2:      *dest++ = value;
+    case 1:      *dest++ = value;
+    }
+}
+
 static inline uint16x8_t qvdiv_255_u16(uint16x8_t x, uint16x8_t half)
 {
     // result = (x + (x >> 8) + 0x80) >> 8

@@ -7913,6 +7913,7 @@ void qInitDrawhelperAsm()
 
             qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
             qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+            qt_memfill32 = qt_memfill32_neon;
         }
 #endif
 
