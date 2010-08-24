@@ -71,8 +71,6 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     setFinished(true);
     QNetworkReply::open(QIODevice::ReadOnly);
 
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
-
     QFileNetworkReplyPrivate *d = (QFileNetworkReplyPrivate*) d_func();
 
     QUrl url = req.url();
