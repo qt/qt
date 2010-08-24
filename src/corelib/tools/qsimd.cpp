@@ -63,6 +63,8 @@ QT_BEGIN_NAMESPACE
 #if defined (Q_OS_WINCE)
 static inline uint detectProcessorFeatures()
 {
+    uint features = 0;
+
 #if defined (ARM)
     if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX)) {
         features = IWMMXT;
