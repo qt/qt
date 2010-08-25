@@ -92,8 +92,6 @@ public:
     qint64 fileSize;
     qint64 filePos;
 
-    virtual bool isFinished() const;
-
     Q_DECLARE_PUBLIC(QFileNetworkReply)
 };
 

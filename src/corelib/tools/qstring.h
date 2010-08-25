@@ -1161,6 +1161,12 @@ public:
     inline const QChar *data() const { return unicode(); }
     inline const QChar *constData() const {  return unicode(); }
 
+    QByteArray toAscii() const Q_REQUIRED_RESULT;
+    QByteArray toLatin1() const Q_REQUIRED_RESULT;
+    QByteArray toUtf8() const Q_REQUIRED_RESULT;
+    QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
+    QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
+
     inline void clear() { m_string = 0; m_position = m_size = 0; }
     QString toString() const;
     inline bool isEmpty() const { return m_size == 0; }
