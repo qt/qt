@@ -1757,9 +1757,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl(uint *dest, int
     for (int i = 0; i < length; ++i) {
         PRELOAD_COND(dest)
         uint d = dest[i];
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
         coverage.store(&dest[i], d);
     }
 }
@@ -1781,9 +1779,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Plus_impl(uint *dest, const uin
         uint d = dest[i];
         uint s = src[i];
 
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
 
         coverage.store(&dest[i], d);
     }
@@ -5163,6 +5159,61 @@ static void blend_tiled_rgb444(int count, const QSpan *spans, void *userData)
         blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
+template<int>
+Q_STATIC_INLINE_FUNCTION void blend_transformed_bilinear_argb_clamp_coordinates  (int &x1, int &x2, int &y1, int &y2,
+                                                                                  const int image_width, const int image_height,
+                                                                                  const int image_x1, const int image_x2,
+                                                                                  const int image_y1, const int image_y2);
+
+template<>
+Q_STATIC_INLINE_FUNCTION void blend_transformed_bilinear_argb_clamp_coordinates <BlendTransformedBilinearTiled> (int &x1, int &x2, int &y1, int &y2,
+                                                                                                                 const int image_width, const int image_height,
+                                                                                                                 const int image_x1, const int image_x2,
+                                                                                                                 const int image_y1, const int image_y2)
+{
+    Q_UNUSED(image_x1)
+    Q_UNUSED(image_x2)
+    Q_UNUSED(image_y1)
+    Q_UNUSED(image_y2)
+    x1 %= image_width;
+    if (x1 < 0) x1 += image_width;
+    x2 = x1 + 1;
+    x2 %= image_width;
+
+    y1 %= image_height;
+    if (y1 < 0) y1 += image_height;
+    y2 = y1 + 1;
+    y2 %= image_height;
+
+    Q_ASSERT(x1 >= 0 && x1 < image_width);
+    Q_ASSERT(x2 >= 0 && x2 < image_width);
+    Q_ASSERT(y1 >= 0 && y1 < image_height);
+    Q_ASSERT(y2 >= 0 && y2 < image_height);
+}
+
+template <>
+Q_STATIC_INLINE_FUNCTION void blend_transformed_bilinear_argb_clamp_coordinates<BlendTransformedBilinear>(int &x1, int &x2, int &y1, int &y2,
+                                                                                               const int image_width, const int image_height,
+                                                                                               const int image_x1, const int image_x2,
+                                                                                               const int image_y1, const int image_y2)
+{
+    Q_UNUSED(image_width)
+    Q_UNUSED(image_height)
+    if (x1 < image_x1) {
+        x2 = x1 = image_x1;
+    } else if (x1 >= image_x2) {
+        x2 = x1 = image_x2;
+    } else {
+        x2 = x1 + 1;
+    }
+    if (y1 < image_y1) {
+        y2 = y1 = image_y1;
+    } else if (y1 >= image_y2) {
+        y2 = y1 = image_y2;
+    } else {
+        y2 = y1 + 1;
+    }
+}
 
 template <SpanMethod spanMethod, TextureBlendType blendType>  /* blendType must be either BlendTransformedBilinear or BlendTransformedBilinearTiled */
 Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const QSpan *spans, void *userData)
@@ -5179,8 +5230,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
 
     const int image_x1 = data->texture.x1;
     const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2;
-    const int image_y2 = data->texture.y2;
+    const int image_x2 = data->texture.x2 - 1;
+    const int image_y2 = data->texture.y2 - 1;
     const int image_width = data->texture.width;
     const int image_height = data->texture.height;
     const int scanline_offset = data->texture.bytesPerLine / 4;
@@ -5210,43 +5261,16 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                 int l = qMin(length, buffer_size);
                 const uint *end = buffer + l;
                 uint *b = buffer;
-                while (b < end) {
+                while (b != end) {
                     int x1 = (x >> 16);
                     int x2;
                     int y1 = (y >> 16);
                     int y2;
 
-                    if (blendType == BlendTransformedBilinearTiled) {
-                        x1 %= image_width;
-                        if (x1 < 0) x1 += image_width;
-                        x2 = x1 + 1;
-                        x2 %= image_width;
-
-                        y1 %= image_height;
-                        if (y1 < 0) y1 += image_height;
-                        y2 = y1 + 1;
-                        y2 %= image_height;
-
-                        Q_ASSERT(x1 >= 0 && x1 < image_width);
-                        Q_ASSERT(x2 >= 0 && x2 < image_width);
-                        Q_ASSERT(y1 >= 0 && y1 < image_height);
-                        Q_ASSERT(y2 >= 0 && y2 < image_height);
-                    } else {
-                        if (x1 < image_x1) {
-                            x2 = x1 = image_x1;
-                        } else if (x1 >= image_x2 - 1) {
-                            x2 = x1 = image_x2 - 1;
-                        } else {
-                            x2 = x1 + 1;
-                        }
-                        if (y1 < image_y1) {
-                            y2 = y1 = image_y1;
-                        } else if (y1 >= image_y2 - 1) {
-                            y2 = y1 = image_y2 - 1;
-                        } else {
-                            y2 = y1 + 1;
-                        }
-                    }
+                    blend_transformed_bilinear_argb_clamp_coordinates<blendType>(x1, x2, y1, y2,
+                                                                                 image_width, image_height,
+                                                                                 image_x1, image_x2,
+                                                                                 image_y1, image_y2);
 
                     int y1_offset = y1 * scanline_offset;
                     int y2_offset = y2 * scanline_offset;
@@ -5311,7 +5335,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                 int l = qMin(length, buffer_size);
                 const uint *end = buffer + l;
                 uint *b = buffer;
-                while (b < end) {
+                while (b != end) {
                     const qreal iw = w == 0 ? 1 : 1 / w;
                     const qreal px = x * iw - 0.5;
                     const qreal py = y * iw - 0.5;
@@ -5326,37 +5350,10 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                     int idistx = 256 - distx;
                     int idisty = 256 - disty;
 
-                    if (blendType == BlendTransformedBilinearTiled) {
-                        x1 %= image_width;
-                        if (x1 < 0) x1 += image_width;
-                        x2 = x1 + 1;
-                        x2 %= image_width;
-
-                        y1 %= image_height;
-                        if (y1 < 0) y1 += image_height;
-                        y2 = y1 + 1;
-                        y2 %= image_height;
-
-                        Q_ASSERT(x1 >= 0 && x1 < image_width);
-                        Q_ASSERT(x2 >= 0 && x2 < image_width);
-                        Q_ASSERT(y1 >= 0 && y1 < image_height);
-                        Q_ASSERT(y2 >= 0 && y2 < image_height);
-                    } else {
-                        if (x1 < image_x1) {
-                            x2 = x1 = image_x1;
-                        } else if (x1 >= image_x2 - 1) {
-                            x2 = x1 = image_x2 - 1;
-                        } else {
-                            x2 = x1 + 1;
-                        }
-                        if (y1 < image_y1) {
-                            y2 = y1 = image_y1;
-                        } else if (y1 >= image_y2 - 1) {
-                            y2 = y1 = image_y2 - 1;
-                        } else {
-                            y2 = y1 + 1;
-                        }
-                    }
+                    blend_transformed_bilinear_argb_clamp_coordinates<blendType>(x1, x2, y1, y2,
+                                                                                 image_width, image_height,
+                                                                                 image_x1, image_x2,
+                                                                                 image_y1, image_y2);
 
                     int y1_offset = y1 * scanline_offset;
                     int y2_offset = y2 * scanline_offset;
@@ -7911,11 +7908,13 @@ void qInitDrawhelperAsm()
 
             functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
             functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+            functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
             destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
             destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
             qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
             qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+            qt_memfill32 = qt_memfill32_neon;
         }
 #endif
 
