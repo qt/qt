@@ -101,6 +101,7 @@ SUBDIRS=\
    qwritelocker \
    selftests \
    utf8 \
+   qfilesystementry \
 
 symbian:SUBDIRS -= \
    qtconcurrentfilter \

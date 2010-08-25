@@ -60,13 +60,14 @@ QT_BEGIN_NAMESPACE
 
 class QFileSystemEntry
 {
+public:
     QFileSystemEntry(const QString &filePath);
     QFileSystemEntry(const QByteArray &nativeFilePath);
     QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath);
 
     QString filePath() const;
     QString fileName() const;
-    QByteArray nativeFileName() const;
+    QByteArray nativeFilePath() const;
     QString suffix() const;
     QString completeSuffix() const;
     bool isAbsolute() const;

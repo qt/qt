@@ -73,7 +73,7 @@ QString QFileSystemEntry::filePath() const
     return m_filePath;
 }
 
-QByteArray QFileSystemEntry::nativeFileName() const
+QByteArray QFileSystemEntry::nativeFilePath() const
 {
     resolveNativeFilePath();
     return m_nativeFilePath;
@@ -106,7 +106,7 @@ QString QFileSystemEntry::suffix() const
     if (m_lastDotInFileName == -1)
         return QString();
 
-    return m_filePath.mid(m_lastSeparator + m_lastDotInFileName + 1);
+    return m_filePath.mid(m_lastSeparator + m_firstDotInFileName + m_lastDotInFileName + 1);
 }
 
 QString QFileSystemEntry::completeSuffix() const
@@ -180,6 +180,11 @@ void QFileSystemEntry::findFileNameSeparators() const
 
         m_lastSeparator = lastSeparator;
         m_firstDotInFileName = firstDotInFileName == -1 ? -1 : firstDotInFileName - lastSeparator;
-        m_lastDotInFileName = lastDotInFileName == -1 ? -1 : lastDotInFileName - firstDotInFileName - lastSeparator;
+        if (lastDotInFileName == -1)
+            m_lastDotInFileName = -1;
+        else if (firstDotInFileName == lastDotInFileName)
+            m_lastDotInFileName = 0;
+        else
+            m_lastDotInFileName = firstDotInFileName - lastSeparator;
     }
 }
