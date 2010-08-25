@@ -98,7 +98,7 @@ public:
         , matchAllDirs(false)
 #endif
         , fileEngine(0)
-        , listsDirty(1)
+        , fileListsInitialized(false)
     {
         setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
 
@@ -127,7 +127,7 @@ public:
         , matchAllDirs(copy.matchAllDirs)
 #endif
         , fileEngine(0)
-        , listsDirty(1)
+        , fileListsInitialized(false)
     {
     }
 
@@ -137,7 +137,7 @@ public:
     }
 
     void initFileEngine();
-    void updateFileLists() const;
+    void initFileLists() const;
 
     static void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *);
 
@@ -175,11 +175,11 @@ public:
 
         // set the path to be the qt friendly version so then we can operate on it using just /
         path = fileEngine->fileName(QAbstractFileEngine::DefaultName);
-        clear();
+        clearFileLists();
     }
 
-    inline void clear() {
-        listsDirty = 1;
+    inline void clearFileLists() {
+        fileListsInitialized = false;
         files.clear();
         fileInfos.clear();
     }
@@ -196,7 +196,7 @@ public:
 
     QAbstractFileEngine *fileEngine;
 
-    mutable uint listsDirty : 1;
+    mutable bool fileListsInitialized;
     mutable QStringList files;
     mutable QFileInfoList fileInfos;
 };
@@ -312,9 +312,9 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
     }
 }
 
-inline void QDirPrivate::updateFileLists() const
+inline void QDirPrivate::initFileLists() const
 {
-    if (listsDirty) {
+    if (!fileListsInitialized) {
         QFileInfoList l;
         QDirIterator it(path, nameFilters, filters);
         while (it.hasNext()) {
@@ -322,7 +322,7 @@ inline void QDirPrivate::updateFileLists() const
             l.append(it.fileInfo());
         }
         sortFileList(sort, l, &files, &fileInfos);
-        listsDirty = 0;
+        fileListsInitialized = true;
     }
 }
 
@@ -948,7 +948,7 @@ void QDir::setNameFilters(const QStringList &nameFilters)
 {
     Q_D(QDir);
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 
     d->nameFilters = nameFilters;
 }
@@ -1137,7 +1137,7 @@ void QDir::setFilter(Filters filters)
 {
     Q_D(QDir);
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 
     d->filters = filters;
 }
@@ -1195,7 +1195,7 @@ void QDir::setSorting(SortFlags sort)
 {
     Q_D(QDir);
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 
     d->sort = sort;
 }
@@ -1210,7 +1210,7 @@ void QDir::setSorting(SortFlags sort)
 uint QDir::count() const
 {
     Q_D(const QDir);
-    d->updateFileLists();
+    d->initFileLists();
     return d->files.count();
 }
 
@@ -1224,7 +1224,7 @@ uint QDir::count() const
 QString QDir::operator[](int pos) const
 {
     Q_D(const QDir);
-    d->updateFileLists();
+    d->initFileLists();
     return d->files[pos];
 }
 
@@ -1307,7 +1307,7 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         sort = d->sort;
 
     if (filters == d->filters && sort == d->sort && nameFilters == d->nameFilters) {
-        d->updateFileLists();
+        d->initFileLists();
         return d->files;
     }
 
@@ -1353,7 +1353,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         sort = d->sort;
 
     if (filters == d->filters && sort == d->sort && nameFilters == d->nameFilters) {
-        d->updateFileLists();
+        d->initFileLists();
         return d->fileInfos;
     }
 
@@ -1589,7 +1589,7 @@ bool QDir::makeAbsolute() // ### What do the return values signify?
 
     d->path = absolutePath;
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 
     if (!(d->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
         return false;
@@ -2141,7 +2141,7 @@ void QDir::refresh() const
 {
     QDirPrivate *d = const_cast<QDir*>(this)->d_func();
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 }
 
 /*!
@@ -2231,7 +2231,7 @@ void QDir::setMatchAllDirs(bool on)
 {
     Q_D(QDir);
     d->initFileEngine();
-    d->clear();
+    d->clearFileLists();
 
     d->matchAllDirs = on;
 }
