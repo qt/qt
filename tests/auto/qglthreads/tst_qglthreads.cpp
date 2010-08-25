@@ -573,7 +573,15 @@ private:
     int numThreads;
 };
 
-
+/*
+   This test uses QPainter to draw onto different QGLWidgets in
+   different threads at the same time. The ThreadSafeGLWidget is
+   necessary to handle paint and resize events that might come from
+   the main thread at any time while the test is running. The resize
+   and paint events would cause makeCurrent() calls to be issued from
+   within the QGLWidget while the widget's context was current in
+   another thread, which would cause errors.
+*/
 void tst_QGLThreads::painterOnGLWidgetInThread()
 {
 #ifdef Q_OS_MAC
@@ -599,6 +607,10 @@ public:
     Pixmap() : QPixmap(200, 200) {}
 };
 
+/*
+   This test uses QPainter to draw onto different QPixmaps in
+   different threads at the same time.
+*/
 void tst_QGLThreads::painterOnPixmapInThread()
 {
 #ifdef Q_WS_X11
