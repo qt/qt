@@ -247,7 +247,10 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #ifndef QT_NO_IPV6
             else if (node->ai_family == AF_INET6) {
                 QHostAddress addr;
-                addr.setAddress(((sockaddr_in6 *) node->ai_addr)->sin6_addr.s6_addr);
+                sockaddr_in6 *sa6 = (sockaddr_in6 *) node->ai_addr;
+                addr.setAddress(sa6->sin6_addr.s6_addr);
+                if (sa6->sin6_scope_id)
+                    addr.setScopeId(QString::number(sa6->sin6_scope_id));
                 if (!addresses.contains(addr))
                     addresses.append(addr);
             }
