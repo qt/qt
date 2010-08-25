@@ -56,6 +56,8 @@ private slots:
 
     void renderInThread_data();
     void renderInThread();
+    void painterOnGLWidgetInThread();
+    void painterOnPixmapInThread();
 };
 
 #endif // TST_QGLTHREADS_H
