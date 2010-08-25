@@ -54,6 +54,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
 
 #include <QStack>
 #include <QStringList>
@@ -104,6 +105,7 @@ class QByteArray;
 
 /*!
     \qmlclass Component QDeclarativeComponent
+    \ingroup qml-utility-elements
     \since 4.7
     \brief The Component element encapsulates a QML component definition.
 
@@ -599,7 +601,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     property, or else the object will not be visible.
 
     Dynamically created instances can be deleted with the \c destroy() method.
-    See \l {Dynamic Object Management} for more information.
+    See \l {Dynamic Object Management in QML} for more information.
 */
 
 /*!
@@ -764,8 +766,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
-    if (rv && !context->isInternal && ep->isDebugging)
-        context->asQDeclarativeContextPrivate()->instances.append(rv);
+    if (ep->isDebugging && rv) {
+        if  (!context->isInternal)
+            context->asQDeclarativeContextPrivate()->instances.append(rv);
+        QDeclarativeEngineDebugServer::instance()->objectCreated(engine, rv);
+    }
 
     return rv;
 }

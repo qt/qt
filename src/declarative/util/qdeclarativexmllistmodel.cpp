@@ -72,6 +72,7 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!
     \qmlclass XmlRole QDeclarativeXmlListModelRole
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
 
@@ -505,6 +506,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 
 /*!
     \qmlclass XmlListModel QDeclarativeXmlListModel
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The XmlListModel element is used to specify a model using XPath expressions.
 

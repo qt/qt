@@ -6,11 +6,15 @@ DESTDIR = $$DEMO_DESTDIR/bin
 INSTALLS += target sources
 
 
-QT += xml network declarative
+QT += xml network
 
 contains(QT_CONFIG, opengl) {
     DEFINES += QT_OPENGL_SUPPORT
     QT += opengl
+}
+
+contains(QT_CONFIG, declarative) {
+    QT += declarative
 }
 
 build_all:!build_pass {

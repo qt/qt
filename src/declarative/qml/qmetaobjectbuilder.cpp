@@ -1142,7 +1142,7 @@ static QByteArray buildParameterNames
     if (!parameterNames.isEmpty()) {
         QByteArray names;
         bool first = true;
-        foreach (QByteArray name, parameterNames) {
+        foreach (const QByteArray &name, parameterNames) {
             if (first)
                 first = false;
             else

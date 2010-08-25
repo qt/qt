@@ -30,6 +30,8 @@
     \title OpenVG Rendering in Qt
     \since 4.6
     \ingroup best-practices
+    \ingroup technology-apis
+
 
     \brief Efficient rendering on embedded devices with OpenVG
 

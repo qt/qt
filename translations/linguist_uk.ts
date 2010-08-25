@@ -64,7 +64,7 @@
     </message>
     <message>
         <source>Searching, please wait...</source>
-        <translation>Здійснюється пошук, будь-ласка, зачекайте...</translation>
+        <translation>Здійснюється пошук, будь ласка, зачекайте...</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
@@ -211,7 +211,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Клацніть тут, щоб знайти наступне співпадіння для введеного вами тексту.</translation>
+        <translation>Клацніть тут, щоб знайти наступний збіг для введеного вами тексту.</translation>
     </message>
     <message>
         <source>Find Next</source>
@@ -291,6 +291,147 @@ Will assume a single universal form.</source>
             <numerusform>    Зігноровано %n неперекладені оригінальні тексти</numerusform>
             <numerusform>    Зігноровано %n неперекладених оригінальних текстів</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>LUpdate</name>
+    <message>
+        <source>lupdate warning: Codec for tr() &apos;%1&apos; disagrees with existing file&apos;s codec &apos;%2&apos;. Expect trouble.
+</source>
+        <translation>попередження lupdate: Кодек для tr() &apos;%1&apos; не узгоджується з існуючим кодеком файлу &apos;%2&apos;. Очікуйте неприємностей.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Specified target language &apos;%1&apos; disagrees with existing file&apos;s language &apos;%2&apos;. Ignoring.
+</source>
+        <translation>попередження lupdate: Вказана мова перекладу &apos;%1&apos; не узгоджується з існуючою мовою файлу &apos;%2&apos;. Ігнорую.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Specified source language &apos;%1&apos; disagrees with existing file&apos;s language &apos;%2&apos;. Ignoring.
+</source>
+        <translation>попередження lupdate: Вказана мова оригіналу &apos;%1&apos; не узгоджується з існуючою мовою файлу &apos;%2&apos;. Ігнорую.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Codec for source &apos;%1&apos; is invalid. Falling back to codec for tr().
+</source>
+        <translation>попередження lupdate: Кодек для джерела &apos;%1&apos; неправильний. Повертаємось до використання кодеку для tr().
+</translation>
+    </message>
+    <message>
+        <source>The option -target-language requires a parameter.
+</source>
+        <translation>Опція -target-language вимагає параметра.
+</translation>
+    </message>
+    <message>
+        <source>The option -source-language requires a parameter.
+</source>
+        <translation>Опція -source-language вимагає параметра.
+</translation>
+    </message>
+    <message>
+        <source>The option -disable-heuristic requires a parameter.
+</source>
+        <translation>Опція -disable-heuristic вимагає параметра.
+</translation>
+    </message>
+    <message>
+        <source>Invalid heuristic name passed to -disable-heuristic.
+</source>
+        <translation>Неправильна назва евристики для -disable-heuristic.
+</translation>
+    </message>
+    <message>
+        <source>The option -locations requires a parameter.
+</source>
+        <translation>Опція -locations вимагає параметра.
+</translation>
+    </message>
+    <message>
+        <source>Invalid parameter passed to -locations.
+</source>
+        <translation>Неправильний параметр для -locations.
+</translation>
+    </message>
+    <message>
+        <source>The -codecfortr option should be followed by a codec name.
+</source>
+        <translation>За опцією -codecfortr має слідувати назва кодека.
+</translation>
+    </message>
+    <message>
+        <source>The -extensions option should be followed by an extension list.
+</source>
+        <translation>За опцією -extensions має слідувати список розширень.
+</translation>
+    </message>
+    <message>
+        <source>The -pro option should be followed by a filename of .pro file.
+</source>
+        <translation>За опцією -pro має слідувати ім&apos;я .pro файлу.
+</translation>
+    </message>
+    <message>
+        <source>The -I option should be followed by a path.
+</source>
+        <translation>За опцією -l має слідувати шлях.
+</translation>
+    </message>
+    <message>
+        <source>Unrecognized option &apos;%1&apos;.
+</source>
+        <translation>Нерозпізнана опція &apos;%1&apos;.
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: List file &apos;%1&apos; is not readable.
+</source>
+        <translation>помилка lupdate: Неможливо прочитати файл списку &apos;%1&apos;.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: For some reason, &apos;%1&apos; is not writable.
+</source>
+        <translation>попередження lupdate: З певних причин в &apos;%1&apos; не можливо записати.
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: File &apos;%1&apos; has no recognized extension.
+</source>
+        <translation>помилка lupdate: Файл &apos;%1&apos; має невідоме розширення.
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: File &apos;%1&apos; does not exist.
+</source>
+        <translation>помилка lupdate: Файл &apos;%1&apos; не існує.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: -target-language usually only makes sense with exactly one TS file.
+</source>
+        <translation>попередження lupdate: Використання -target-language, зазвичай, має сенс лише з одним файлом TS.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: -codecfortr has no effect without -ts.
+</source>
+        <translation>попередження lupdate: -codecfortr не дає ефекту без -ts.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: no TS files specified. Only diagnostics will be produced.
+</source>
+        <translation>попередження lupdate: не вказано файлів TS. Здійснюватиметься лише діагностика.
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: Both project and source files / include paths specified.
+</source>
+        <translation>помилка lupdate: Одночасно вказані файл проекту та вхідні файли / шляхи для включення.
+</translation>
     </message>
 </context>
 <context>
@@ -613,7 +754,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Перемикання перевірки акселераторів, тобто чи співпадає кількість амперсандів в оригінальному та перекладеному тексті. Якщо виявлено неспівпадіння, то у вікні попереджень буде показано повідомлення.</translation>
+        <translation>Перемикання перевірки акселераторів, тобто чи збігається кількість амперсандів в оригінальному та перекладеному тексті. Якщо буде виявлено розбіжність, то у вікні попереджень буде показано повідомлення.</translation>
     </message>
     <message>
         <source>&amp;Ending Punctuation</source>
@@ -625,11 +766,11 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Перемикання перевірки кінцевої пунктуації. Якщо виявлено неспівпадіння, то у вікні попереджень буде показано повідомлення.</translation>
+        <translation>Перемикання перевірки кінцевої пунктуації. Якщо буде виявлено розбіжність, то у вікні попереджень буде показано повідомлення.</translation>
     </message>
     <message>
         <source>&amp;Phrase matches</source>
-        <translation>Співпадіння &amp;фраз</translation>
+        <translation>Збіги &amp;фраз</translation>
     </message>
     <message>
         <source>Toggle checking that phrase suggestions are used</source>
@@ -637,11 +778,11 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Перемикання перевірки про використання запропонованих фраз. Якщо виявлено неспівпадіння, то у вікні попереджень буде показано повідомлення.</translation>
+        <translation>Перемикання перевірки про використання запропонованих фраз. Якщо буде виявлено розбіжність, то у вікні попереджень буде показано повідомлення.</translation>
     </message>
     <message>
         <source>Place &amp;Marker Matches</source>
-        <translation>Співпадіння &amp;маркерів положення</translation>
+        <translation>Збіги &amp;маркерів положення</translation>
     </message>
     <message>
         <source>Toggle the validity check of place markers</source>
@@ -649,7 +790,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
-        <translation>Перемикання перевірки правильності маркерів розташування, тобто чи усі %1, %2, ... співпадають в оригінальному та перекладеному тексті. Якщо виявлено неспівпадіння, то у вікні попереджень буде показано повідомлення.</translation>
+        <translation>Перемикання перевірки правильності маркерів розташування, тобто чи усі %1, %2, ... збігаються в оригінальному та перекладеному тексті. Якщо буде виявлено розбіжність, то у вікні попереджень буде показано повідомлення.</translation>
     </message>
     <message>
         <source>&amp;New Phrase Book...</source>
@@ -741,7 +882,7 @@ Will assume a single universal form.</source>
     </message>
     <message>
         <source>Replace the translation on all entries that matches the search source text.</source>
-        <translation>Замінити переклад усіх елементів, що співпадають з оригінальним текстом, що шукається.</translation>
+        <translation>Замінити переклад усіх елементів, що збігаються з оригінальним текстом, що шукається.</translation>
     </message>
     <message>
         <source>&amp;Batch Translation...</source>
@@ -998,7 +1139,7 @@ All files (*)</source>
     </message>
     <message>
         <source>No more occurrences of &apos;%1&apos;. Start over?</source>
-        <translation>Більше співпадінь &apos;%1&apos; немає. Почати спочатку?</translation>
+        <translation>Більше збігів &apos;%1&apos; немає. Почати спочатку?</translation>
     </message>
     <message>
         <source>Create New Phrase Book</source>
@@ -1417,6 +1558,83 @@ Line: %2</source>
     </message>
 </context>
 <context>
+    <name>QCoreApplication</name>
+    <message>
+        <source>Usage:
+    lrelease [options] project-file
+    lrelease [options] ts-files [-qm qm-file]
+
+lrelease is part of Qt&apos;s Linguist tool chain. It can be used as a
+stand-alone tool to convert XML-based translations files in the TS
+format into the &apos;compiled&apos; QM format used by QTranslator objects.
+
+Options:
+    -help  Display this information and exit
+    -idbased
+           Use IDs instead of source strings for message keying
+    -compress
+           Compress the QM files
+    -nounfinished
+           Do not include unfinished translations
+    -removeidentical
+           If the translated text is the same as
+           the source text, do not include the message
+    -markuntranslated &lt;prefix&gt;
+           If a message has no real translation, use the source text
+           prefixed with the given string instead
+    -silent
+           Do not explain what is being done
+    -version
+           Display the version of lrelease and exit
+</source>
+        <translation>Використання:
+    lrelease [опції] файл-проект
+    lrelease [опції] файли-ts [-qm файл-qm]
+
+lrelease - це частина набору програм Qt Linguist. Вона може використовуватися
+як окремий засіб для перетворення файлів перекладу на базі XML в форматі TS
+до &apos;скомпільованого&apos; формату QM, що використовується об&apos;єктами QTranslator.
+
+Опції:
+    -help  Показати цю інформацію та вийти
+    -idbased
+           Використовувати ID замість рядків оригіналу як ключі повідомлень
+    -compress
+           Стискати файли QM
+    -nounfinished
+           Не включати незавершені переклади
+    -removeidentical
+           Якщо перекладений текст однаковий з оригіналом, то
+           не включати повідомлення
+    -markuntranslated &lt;prefix&gt;
+           If a message has no real translation, use the source text
+           prefixed with the given string instead
+    -silent
+           Не пояснювати, що відбувається
+    -version
+           Показати версію lrelease та вийти
+</translation>
+    </message>
+    <message>
+        <source>Updating &apos;%1&apos;...
+</source>
+        <translation>Оновлюю &apos;%1&apos;...
+</translation>
+    </message>
+    <message>
+        <source>Removing translations equal to source text in &apos;%1&apos;...
+</source>
+        <translation>Видалення перекладів однакових з оригінальним текстом в &apos;%1&apos;...
+</translation>
+    </message>
+    <message>
+        <source>lrelease version %1
+</source>
+        <translation>lrelease версії %1
+</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <source>Translation files (%1);;</source>
@@ -1461,6 +1679,216 @@ Line: %2</source>
     <message>
         <source>XLIFF localization files</source>
         <translation>Файли локалізації XLIFF</translation>
+    </message>
+    <message>
+        <source>Usage:
+    lupdate [options] [project-file]...
+    lupdate [options] [source-file|path|@lst-file]... -ts ts-files|@lst-file
+
+lupdate is part of Qt&apos;s Linguist tool chain. It extracts translatable
+messages from Qt UI files, C++, Java and JavaScript/QtScript source code.
+Extracted messages are stored in textual translation source files (typically
+Qt TS XML). New and modified messages can be merged into existing TS files.
+
+Options:
+    -help  Display this information and exit.
+    -no-obsolete
+           Drop all obsolete strings.
+    -extensions &lt;ext&gt;[,&lt;ext&gt;]...
+           Process files with the given extensions only.
+           The extension list must be separated with commas, not with whitespace.
+           Default: &apos;%1&apos;.
+    -pluralonly
+           Only include plural form messages.
+    -silent
+           Do not explain what is being done.
+    -no-sort
+           Do not sort contexts in TS files.
+    -no-recursive
+           Do not recursively scan the following directories.
+    -recursive
+           Recursively scan the following directories (default).
+    -I &lt;includepath&gt; or -I&lt;includepath&gt;
+           Additional location to look for include files.
+           May be specified multiple times.
+    -locations {absolute|relative|none}
+           Specify/override how source code references are saved in TS files.
+           Default is absolute.
+    -no-ui-lines
+           Do not record line numbers in references to UI files.
+    -disable-heuristic {sametext|similartext|number}
+           Disable the named merge heuristic. Can be specified multiple times.
+    -pro &lt;filename&gt;
+           Name of a .pro file. Useful for files with .pro file syntax but
+           different file suffix. Projects are recursed into and merged.
+    -source-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the source strings for new files.
+           Defaults to POSIX if not specified.
+    -target-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the translations for new files.
+           Guessed from the file name if not specified.
+    -ts &lt;ts-file&gt;...
+           Specify the output file(s). This will override the TRANSLATIONS
+           and nullify the CODECFORTR from possibly specified project files.
+    -codecfortr &lt;codec&gt;
+           Specify the codec assumed for tr() calls. Effective only with -ts.
+    -version
+           Display the version of lupdate and exit.
+    @lst-file
+           Read additional file names (one per line) from lst-file.
+</source>
+        <translation>Використання:
+    lupdate [опції] [файл-проект]...
+    lupdate [опції] [вхідний-файл|шлях|@файл-список]... -ts ts-файли|@файл-список
+
+lupdate - це частина набору програм Qt Linguist. Вона It витягає придатні для перекладу 
+повідомлення з файлів Qt UI, коду C++, Java та JavaScript/QtScript. Витягнуті повідомлення
+зберігаються в текстовому файлі перекладу (типово Qt TS XML). Нові та модифіковані 
+повідомлення можуть бути об&apos;єднанні з існуючими файлами TS.
+
+Опції:
+    -help  Показати цю інформацію та вийти.
+    -no-obsolete
+           Видалити всі застарілі рядки.
+    -extensions &lt;розширення&gt;[,&lt;розширення&gt;]...
+           Обробляти файли лише з вказаними розширеннями.
+           Список розширень має розділюватись комами, а не пропусками.
+           Типово: &apos;%1&apos;.
+    -pluralonly
+           Включати лише повідомлення з формою множини.
+    -silent
+           Не пояснювати, що відбувається.
+    -no-sort
+           Не сортувати контексти в файлах TS.
+    -no-recursive
+           Не сканувати рекурсивно наступні теки.
+    -recursive
+           Рекурсивно сканувати наступні теки (типово).
+    -I &lt;шлях-включення&gt; або -I&lt;шлях-включення&gt;
+           Додаткові місця для пошуку файлів включення.
+           Може бути вказано декілька разів.
+    -locations {absolute|relative|none}
+           Вказати/замістити як посилання на код зберігаються в файлі TS.
+           Типово - абсолютно.
+    -no-ui-lines
+           Не записувати номери рядків в посиланнях на файли UI.
+    -disable-heuristic {sametext|similartext|number}
+           Вимкнути вказану евристику об&apos;єдання. Може бути вказано декілька разів.
+    -pro &lt;ім&apos;я-файлу&gt;
+           Ім&apos;я .pro файлу. Корисно для файлів із синтаксисом фалів .pro, але з
+           іншим розширенням. Projects are recursed into and merged.
+    -source-language &lt;мова&gt;[_&lt;регіон&gt;]
+           Вказати мову оригінальних рядків для нових файлів.
+           Типово, якщо не вказано - POSIX.
+    -target-language &lt;мова&gt;[_&lt;регіон&gt;]
+           Вказати мову перекладу для нових файлів.
+           Вгадується з імені файла, якщо не вказано.
+    -ts &lt;файл-ts&gt;...
+           Вказати вихідний файл(и). Це замістить TRANSLATIONS
+           та скине CODECFORTR з, можливо, вказаних файлів проекту.
+    -codecfortr &lt;кодек&gt;
+           Вказати кодек, що Specify the codec вживається для викликів tr(). Ефективно лише з -ts.
+    -version
+           Показати версію lupdate та вийти.
+    @файл-список
+           Читати додаткові імена файлів (одне на рядок) з файла-списку.
+</translation>
+    </message>
+    <message>
+        <source>Updating &apos;%1&apos;...
+</source>
+        <translation>Оновлюю &apos;%1&apos;...
+</translation>
+    </message>
+    <message>
+        <source>Stripping non plural forms in &apos;%1&apos;...
+</source>
+        <translation>Видалення не множинних форм в &apos;%1&apos;...
+</translation>
+    </message>
+    <message>
+        <source>lupdate version %1
+</source>
+        <translation>lupdate версії %1
+</translation>
+    </message>
+    <message>
+        <source>Scanning directory &apos;%1&apos;...
+</source>
+        <translation>Сканування теки &apos;%1&apos;...
+</translation>
+    </message>
+    <message numerus="yes">
+        <source>    Found %n source text(s) (%1 new and %2 already existing)
+</source>
+        <translation>
+            <numerusform>    Знайдено %n оригінальний текст (%1 новий та %2 вже існує)
+</numerusform>
+            <numerusform>    Знайдено %n оригінальних тексти (%1 нових та %2 вже існує)
+</numerusform>
+            <numerusform>    Знайдено %n оригінальних текстів (%1 нових та %2 вже існує)
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Removed %n obsolete entries
+</source>
+        <translation>
+            <numerusform>    Видалено %n застарілий елемент
+</numerusform>
+            <numerusform>    Видалено %n застарілих елементи
+</numerusform>
+            <numerusform>    Видалено %n застарілих елементів
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Kept %n obsolete entries
+</source>
+        <translation>
+            <numerusform>    Залишено %n застарілий елемент
+</numerusform>
+            <numerusform>    Залишено %n застарілих елементи
+</numerusform>
+            <numerusform>    Залишено %n застарілих елементів
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Number heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>Числова евристика надала %n переклад
+</numerusform>
+            <numerusform>Числова евристика надала %n переклади
+</numerusform>
+            <numerusform>Числова евристика надала %n перекладів
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Same-text heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>Евристика &quot;однаковий текст&quot; надала %n переклад
+</numerusform>
+            <numerusform>Евристика &quot;однаковий текст&quot; надала %n переклади
+</numerusform>
+            <numerusform>Евристика &quot;однаковий текст&quot; надала %n перекладів
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Similar-text heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>Евристика &quot;схожий текст&quot; надала %n переклад
+</numerusform>
+            <numerusform>Евристика &quot;схожий текст&quot; надала %n переклади
+</numerusform>
+            <numerusform>Евристика &quot;схожий текст&quot; надала %n перекладів
+</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -1549,7 +1977,7 @@ Line: %2</source>
     </message>
     <message>
         <source>Click here to find the next occurrence of the text you typed in.</source>
-        <translation>Клацніть тут, щоб знайти наступне співпадіння для введеного вами тексту.</translation>
+        <translation>Клацніть тут, щоб знайти наступний збіг для введеного вами тексту.</translation>
     </message>
     <message>
         <source>Find Next</source>

@@ -339,8 +339,6 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     isOpen = false;
     opened = false;
 
-    connect(&manager, SIGNAL(updateCompleted()), this, SLOT(networkConfigurationsChanged()));
-
     connect(engine, SIGNAL(iapStateChanged(const QString&, uint)),
             this, SLOT(iapStateChanged(const QString&, uint)));
 
@@ -460,14 +458,15 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 			else
                 ptr->name = ptr->id;
 
+            const QString identifier = ptr->id;
+
+            configLocker.unlock();
+
             // Add the new active configuration to manager or update the old config
-            if (!engine->hasIdentifier(ptr->id)) {
-                configLocker.unlock();
+            if (!engine->hasIdentifier(identifier))
                 engine->addSessionConfiguration(ptr);
-            } else {
-                configLocker.unlock();
+            else
                 engine->changedSessionConfiguration(ptr);
-            }
         }
         break;
 

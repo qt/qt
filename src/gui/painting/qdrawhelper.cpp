@@ -7958,6 +7958,17 @@ void qInitDrawhelperAsm()
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
             qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+
+#if defined(QT_HAVE_SSSE3)
+            if (features & SSSE3) {
+                extern void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
+                                                            const uchar *srcPixels, int sbpl,
+                                                            int w, int h,
+                                                            int const_alpha);
+                qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
+                qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
+            }
+#endif // QT_HAVE_SSSE3
         } else
 #endif
         {

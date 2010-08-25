@@ -75,6 +75,7 @@ FocusScope {
         id: textInput
         anchors { left: parent.left; leftMargin: 8; right: clear.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
         focus: true
+        selectByMouse: true
     }
 
     Image {

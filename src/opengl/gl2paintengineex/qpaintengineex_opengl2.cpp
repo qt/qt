@@ -90,7 +90,10 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define QT_GL_NO_SCISSOR_TEST
+#if defined(Q_OS_SYMBIAN)
+#define QT_GL_NO_SCISSOR_TEST
+#endif
+
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -374,12 +377,12 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         dx = ceilf(dx - 0.5f);
         dy = ceilf(dy - 0.5f);
     }
-
+#ifndef Q_OS_SYMBIAN
     if (addOffset) {
         dx += 0.49f;
         dy += 0.49f;
     }
-
+#endif
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
     pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
@@ -686,7 +689,12 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
     const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
 
     // ### Remove before release...
-    static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
+#ifdef Q_OS_SYMBIAN
+    // ### There are some unresolved issues in Symbian vector path caching.
+    static bool do_vectorpath_cache = false;
+#else
+    static bool do_vectorpath_cache = true;
+#endif
 
     // Check to see if there's any hints
     if (path.shape() == QVectorPath::RectangleHint) {

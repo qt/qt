@@ -70,6 +70,8 @@ public:
 /*!
     \qmlclass Flipable QDeclarativeFlipable
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
     \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 
