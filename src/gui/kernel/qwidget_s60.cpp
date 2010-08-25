@@ -366,7 +366,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -410,7 +410,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -954,7 +954,10 @@ void QWidgetPrivate::registerTouchWindow()
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-        rwindow->EnableAdvancedPointers();
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->effectiveWinId());
+        //Enabling advanced pointer events for controls that already have active windows causes a panic.
+        if (!window->isControlActive())
+            rwindow->EnableAdvancedPointers();
     }
 #endif
 }
