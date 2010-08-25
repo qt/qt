@@ -2268,8 +2268,10 @@ QString QDir::nameFilter() const
 void QDir::setNameFilter(const QString &nameFilter)
 {
     Q_D(QDir);
+    d->initFileEngine();
+
     d->filterSepChar = QDirPrivate::getFilterSepChar(nameFilter);
-    setNameFilters(QDirPrivate::splitFilters(nameFilter, d->filterSepChar));
+    d->nameFilters = QDirPrivate::splitFilters(nameFilter, d->filterSepChar);
 }
 
 /*!
