@@ -813,8 +813,7 @@ applications using Qt for Symbian can start right away.
                second part of the identifier in place of \c XXX,
                respectively.
 
-               \snippet doc/src/snippets/code/doc_src_in/
-stallation.qdoc 44
+               \snippet doc/src/snippets/code/doc_src_installation.qdoc 44
 
                The \c rmmod step may fail if the module is not already
                loaded, but that is harmless.
