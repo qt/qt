@@ -121,7 +121,14 @@ QString QFileSystemEntry::completeSuffix() const
 bool QFileSystemEntry::isAbsolute() const
 {
     resolveFilePath();
-    return !m_filePath.isEmpty() && (m_filePath[0].unicode() == '/' /*|| hasScheme()*/);
+    return (!m_filePath.isEmpty() && (m_filePath[0].unicode() == '/')
+#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
+        || (m_filePath.length() >= 2
+                && ((m_filePath[0].isLetter() && m_filePath[1] == QLatin1Char(':'))
+                    || (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/'))))
+#endif
+    );
+
 }
 
 // private methods
