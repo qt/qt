@@ -45,7 +45,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -58,9 +58,19 @@ class QDirPrivate;
 class Q_CORE_EXPORT QDir
 {
 protected:
-    QScopedPointer<QDirPrivate> d_ptr;
+    QSharedDataPointer<QDirPrivate> d_ptr;
 private:
-    Q_DECLARE_PRIVATE(QDir)
+    inline QDirPrivate* d_func()
+    {
+        detach();
+        return const_cast<QDirPrivate *>(d_ptr.constData());
+    }
+
+    inline const QDirPrivate* d_func() const
+    {
+        return d_ptr.constData();
+    }
+
 public:
     enum Filter { Dirs        = 0x001,
                   Files       = 0x002,
@@ -129,6 +139,8 @@ public:
 
     QDir &operator=(const QDir &);
     QDir &operator=(const QString &path);
+
+    void detach();
 
     void setPath(const QString &path);
     QString path() const;
