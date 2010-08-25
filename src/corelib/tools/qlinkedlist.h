@@ -312,10 +312,11 @@ template <typename T>
 QLinkedList<T> &QLinkedList<T>::operator=(const QLinkedList<T> &l)
 {
     if (d != l.d) {
-        l.d->ref.ref();
+        QLinkedListData *o = l.d;
+        o->ref.ref();
         if (!d->ref.deref())
             free(d);
-        d = l.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }
