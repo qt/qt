@@ -85,8 +85,14 @@ class QDirPrivate
     : public QSharedData
 {
 public:
-    QDirPrivate()
+    QDirPrivate(const QString &path,
+            const QStringList &nameFilters_ = QStringList(),
+            QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
+            QDir::Filters filters_ = QDir::AllEntries)
         : QSharedData()
+        , nameFilters(nameFilters_)
+        , sort(sort_)
+        , filters(filters_)
 #ifdef QT3_SUPPORT
         , filterSepChar(0)
         , matchAllDirs(false)
@@ -94,6 +100,20 @@ public:
         , fileEngine(0)
         , listsDirty(1)
     {
+        setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
+
+        bool empty = nameFilters.isEmpty();
+        if (!empty) {
+            empty = true;
+            for (int i = 0; i < nameFilters.size(); ++i) {
+                if (!nameFilters.at(i).isEmpty()) {
+                    empty = false;
+                    break;
+                }
+            }
+        }
+        if (empty)
+            nameFilters = QStringList(QString::fromLatin1("*"));
     }
 
     QDirPrivate(const QDirPrivate &copy)
@@ -494,13 +514,8 @@ void QDirPrivate::initFileEngine()
 
     \sa currentPath()
 */
-QDir::QDir(const QString &path) : d_ptr(new QDirPrivate)
+QDir::QDir(const QString &path) : d_ptr(new QDirPrivate(path))
 {
-    Q_D(QDir);
-    d->setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
-    d->nameFilters = QStringList(QString::fromLatin1("*"));
-    d->filters = AllEntries;
-    d->sort = SortFlags(Name | IgnoreCase);
 }
 
 /*!
@@ -522,25 +537,9 @@ QDir::QDir(const QString &path) : d_ptr(new QDirPrivate)
     \sa exists(), setPath(), setNameFilter(), setFilter(), setSorting()
 */
 QDir::QDir(const QString &path, const QString &nameFilter,
-           SortFlags sort, Filters filters) : d_ptr(new QDirPrivate)
+           SortFlags sort, Filters filters)
+    : d_ptr(new QDirPrivate(path, QDir::nameFiltersFromString(nameFilter), sort, filters))
 {
-    Q_D(QDir);
-    d->setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
-    d->nameFilters = QDir::nameFiltersFromString(nameFilter);
-    bool empty = d->nameFilters.isEmpty();
-    if (!empty) {
-        empty = true;
-        for (int i = 0; i < d->nameFilters.size(); ++i) {
-            if (!d->nameFilters.at(i).isEmpty()) {
-                empty = false;
-                break;
-            }
-        }
-    }
-    if (empty)
-        d->nameFilters = QStringList(QString::fromLatin1("*"));
-    d->sort = sort;
-    d->filters = filters;
 }
 
 /*!
