@@ -247,13 +247,13 @@ void tst_QFileInfo::copy()
     QFileInfo info2(info);
     QFileInfoPrivate *privateInfo = getPrivate(info);
     QFileInfoPrivate *privateInfo2 = getPrivate(info2);
-    QCOMPARE(privateInfo->data, privateInfo2->data);
+    QCOMPARE(privateInfo, privateInfo2);
 
     //operator =
     QFileInfo info3 = info;
     QFileInfoPrivate *privateInfo3 = getPrivate(info3);
-    QCOMPARE(privateInfo->data, privateInfo3->data);
-    QCOMPARE(privateInfo2->data, privateInfo3->data);
+    QCOMPARE(privateInfo, privateInfo3);
+    QCOMPARE(privateInfo2, privateInfo3);
 
     //refreshing info3 will detach it
     QFile file(info.absoluteFilePath());
@@ -275,9 +275,10 @@ void tst_QFileInfo::copy()
     QTest::qWait(5000);
 #endif
     info3.refresh();
-    QVERIFY(privateInfo->data != privateInfo3->data);
-    QVERIFY(privateInfo2->data != privateInfo3->data);
-    QCOMPARE(privateInfo->data, privateInfo2->data);
+    privateInfo3 = getPrivate(info3);
+    QVERIFY(privateInfo != privateInfo3);
+    QVERIFY(privateInfo2 != privateInfo3);
+    QCOMPARE(privateInfo, privateInfo2);
 }
 
 void tst_QFileInfo::isFile_data()
@@ -1241,8 +1242,8 @@ void tst_QFileInfo::isLocalFs()
 
     QFileInfo info(path);
     QFileInfoPrivate *privateInfo = getPrivate(info);
-    QVERIFY(privateInfo->data->fileEngine);
-    QCOMPARE(bool(privateInfo->data->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+    QVERIFY(privateInfo->fileEngine);
+    QCOMPARE(bool(privateInfo->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
                   & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 

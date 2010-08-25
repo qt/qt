@@ -57,68 +57,72 @@
 #include "qabstractfileengine.h"
 #include "qdatetime.h"
 #include "qatomic.h"
+#include "qshareddata.h"
 
 QT_BEGIN_NAMESPACE
 
-class QFileInfoPrivate
+class QFileInfoPrivate : public QSharedData
 {
 public:
-    QFileInfoPrivate(const QFileInfo *copy=0);
-    ~QFileInfoPrivate();
 
     enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
            CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
            CachedSize =0x08, CachedPerms=0x80 };
-    struct Data {
-        inline Data()
-            : ref(1), fileEngine(0),
-              cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
-        {}
-        inline Data(const Data &copy)
-            : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
-              fileName(copy.fileName),
-              cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
-        {}
-        inline ~Data() { delete fileEngine; }
-        inline void clearFlags() const {
-            fileFlags = 0;
-            cachedFlags = 0;
-            if (fileEngine)
-                (void)fileEngine->fileFlags(QAbstractFileEngine::Refresh);
-        }
-        inline void clear() {
-            clearFlags();
-            for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
-                fileNames[i].clear();
-            fileOwners[1].clear();
-            fileOwners[0].clear();
-        }
-        void initFileEngine(const QString &);
 
-        uint getFileFlags(QAbstractFileEngine::FileFlags) const;
-        QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
-        QString getFileName(QAbstractFileEngine::FileName) const;
-        QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
+    inline QFileInfoPrivate()
+        : QSharedData(), fileEngine(0),
+        cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+    {}
+    inline QFileInfoPrivate(const QFileInfoPrivate &copy)
+        : QSharedData(copy), fileEngine(QAbstractFileEngine::create(copy.fileName)),
+        fileName(copy.fileName),
+        cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
+    {}
+    inline QFileInfoPrivate(const QString &file)
+        : QSharedData(), fileEngine(0),
+        cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+    {
+        initFileEngine(file);
+    }
+    inline ~QFileInfoPrivate()
+    {
+        delete fileEngine;
+    }
+    void initFileEngine(const QString &);
 
-        static void detach(QFileInfoPrivate::Data *&data);
+    inline void clearFlags() const {
+        fileFlags = 0;
+        cachedFlags = 0;
+        if (fileEngine)
+            (void)fileEngine->fileFlags(QAbstractFileEngine::Refresh);
+    }
+    inline void clear() {
+        clearFlags();
+        for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
+            fileNames[i].clear();
+        fileOwners[1].clear();
+        fileOwners[0].clear();
+    }
 
-        mutable QAtomicInt ref;
+    uint getFileFlags(QAbstractFileEngine::FileFlags) const;
+    QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
+    QString getFileName(QAbstractFileEngine::FileName) const;
+    QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
 
-        QAbstractFileEngine *fileEngine;
-        mutable QString fileName;
-        mutable QString fileNames[QAbstractFileEngine::NFileNames];
-        mutable QString fileOwners[2];
+    QAbstractFileEngine *fileEngine;
+    mutable QString fileName;
+    mutable QString fileNames[QAbstractFileEngine::NFileNames];
+    mutable QString fileOwners[2];
 
-        mutable uint cachedFlags : 31;
-        mutable uint cache_enabled : 1;
-        mutable uint fileFlags;
-        mutable qint64 fileSize;
-        mutable QDateTime fileTimes[3];
-        inline bool getCachedFlag(uint c) const
-        { return cache_enabled ? (cachedFlags & c) : 0; }
-        inline void setCachedFlag(uint c) const
-        { if (cache_enabled) cachedFlags |= c; }
-    } *data;
+    mutable uint cachedFlags : 31;
+    mutable uint cache_enabled : 1;
+    mutable uint fileFlags;
+    mutable qint64 fileSize;
+    mutable QDateTime fileTimes[3];
+    inline bool getCachedFlag(uint c) const
+    { return cache_enabled ? (cachedFlags & c) : 0; }
+    inline void setCachedFlag(uint c) const
+    { if (cache_enabled) cachedFlags |= c; }
 };
 
 QT_END_NAMESPACE
