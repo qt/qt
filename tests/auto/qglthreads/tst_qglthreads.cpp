@@ -510,39 +510,35 @@ private:
     bool fail;
 };
 
-class PainterThreads
+template <class T>
+class PaintThreadManager
 {
 public:
-    PainterThreads(int count, bool drawOnWidgets) : numThreads(count)
-                                                  , useWidgets(drawOnWidgets)
+    PaintThreadManager(int count) : numThreads(count)
     {
         for (int i=0; i<numThreads; ++i) {
-            if (useWidgets)
-                widgets.append(new ThreadSafeGLWidget);
-            else
-                pixmaps.append(new QPixmap(200, 200));
+            devices.append(new T);
             threads.append(new QThread);
-            if (useWidgets) {
-                painters.append(new ThreadPainter(widgets.at(i)));
-                widgets.at(i)->resize(150, 150);
-                widgets.at(i)->show();
-                QTest::qWaitForWindowShown(widgets.at(i));
-                widgets.at(i)->doneCurrent();
-            } else {
-                painters.append(new ThreadPainter(pixmaps.at(i)));
+            painters.append(new ThreadPainter(devices.at(i)));
+            if (devices.at(i)->devType() == QInternal::Widget) {
+                QWidget *widget = static_cast<QWidget *>(devices.at(i));
+                widget->resize(150, 150);
+                widget->show();
+                QTest::qWaitForWindowShown(widget);
+                if (widget->inherits("QGLWidget")) {
+                    QGLWidget *glWidget = static_cast<QGLWidget *>(widget);
+                    glWidget->doneCurrent();
+                }
             }
             painters.at(i)->moveToThread(threads.at(i));
             painters.at(i)->connect(threads.at(i), SIGNAL(started()), painters.at(i), SLOT(draw()));
         }
     }
 
-    ~PainterThreads() {
+    ~PaintThreadManager() {
         qDeleteAll(threads);
         qDeleteAll(painters);
-        if (useWidgets)
-            qDeleteAll(widgets);
-        else
-            qDeleteAll(pixmaps);
+        qDeleteAll(devices);
     }
 
 
@@ -572,11 +568,9 @@ public:
 
 private:
     QList<QThread *> threads;
-    QList<QPixmap *> pixmaps;
-    QList<ThreadSafeGLWidget *> widgets;
+    QList<QPaintDevice *> devices;
     QList<ThreadPainter *> painters;
     int numThreads;
-    bool useWidgets;
 };
 
 
@@ -585,10 +579,10 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
 #endif
-    PainterThreads threads(5, true);
-    threads.start();
+    PaintThreadManager<ThreadSafeGLWidget> painterThreads(5);
+    painterThreads.start();
 
-    while (threads.areRunning()) {
+    while (painterThreads.areRunning()) {
         qApp->processEvents();
 #ifdef Q_WS_WIN
         Sleep(100);
@@ -596,18 +590,24 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
         usleep(100 * 1000);
 #endif
     }
-    QVERIFY(!threads.failed());
+    QVERIFY(!painterThreads.failed());
 }
+
+class Pixmap : public QPixmap
+{
+public:
+    Pixmap() : QPixmap(200, 200) {}
+};
 
 void tst_QGLThreads::painterOnPixmapInThread()
 {
 #ifdef Q_WS_X11
-    QSKIP("Drawing text to XPixmaps in threads currently doesn't work.", SkipAll);
+    QSKIP("Drawing text in threads onto X11 drawables currently crashes on some X11 servers.", SkipAll);
 #endif
-    PainterThreads threads(5, false);
-    threads.start();
+    PaintThreadManager<Pixmap> painterThreads(5);
+    painterThreads.start();
 
-    while (threads.areRunning()) {
+    while (painterThreads.areRunning()) {
         qApp->processEvents();
 #ifdef Q_WS_WIN
         Sleep(100);
@@ -615,7 +615,7 @@ void tst_QGLThreads::painterOnPixmapInThread()
         usleep(100 * 1000);
 #endif
     }
-    QVERIFY(!threads.failed());
+    QVERIFY(!painterThreads.failed());
 }
 
 int main(int argc, char **argv)
