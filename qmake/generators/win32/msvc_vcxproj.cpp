@@ -202,7 +202,6 @@ void VcxprojGenerator::initConfiguration()
                 conf.CharacterSet = "NotSet";
                 break;
         }
-        conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
     }
     conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean");
     conf.ImportLibrary = conf.linker.ImportLibrary;
