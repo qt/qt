@@ -221,8 +221,8 @@ void tst_qdeclarativeimageprovider::runTest(bool async, QDeclarativeImageProvide
             TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
         else
             QVERIFY(obj->status() == QDeclarativeImage::Ready);
-        QCOMPARE(obj->width(), 100.0);
-        QCOMPARE(obj->height(), 100.0);
+        QCOMPARE(obj->width(), qreal(size.width()));
+        QCOMPARE(obj->height(), qreal(size.height()));
         QCOMPARE(obj->pixmap().width(), size.width());
         QCOMPARE(obj->pixmap().height(), size.height());
         QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);

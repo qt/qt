@@ -130,6 +130,7 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
 
     d->status = Loading;
     emit statusChanged();
+    emit sourceChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
     if (!lf.isEmpty()) {

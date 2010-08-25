@@ -104,6 +104,7 @@ private slots:
     void invalidMethodUsage();
     void redirects();
     void nonUtf8();
+    void nonUtf8_data();
 
     // Attributes
     void document();
@@ -919,26 +920,43 @@ void tst_qdeclarativexmlhttprequest::responseText_data()
 
 void tst_qdeclarativexmlhttprequest::nonUtf8()
 {
+    QFETCH(QString, fileName);
+    QFETCH(QString, responseText);
+    QFETCH(QString, xmlRootNodeValue);
+
     QDeclarativeComponent component(&engine, TEST_FILE("utf16.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+
+    object->setProperty("fileName", fileName);
+    QMetaObject::invokeMethod(object, "startRequest");
+
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+    
+    QCOMPARE(object->property("responseText").toString(), responseText);
+
+    if (!xmlRootNodeValue.isEmpty()) {
+        QString rootNodeValue = object->property("responseXmlRootNodeValue").toString();
+        QCOMPARE(rootNodeValue, xmlRootNodeValue);
+    }
+
+    delete object;
+}
+
+void tst_qdeclarativexmlhttprequest::nonUtf8_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("responseText");
+    QTest::addColumn<QString>("xmlRootNodeValue");
 
     QString uc;
     uc.resize(3);
     uc[0] = QChar(0x10e3);
     uc[1] = QChar(' ');
     uc[2] = QChar(0x03a3);
-    QString xml = "<?xml version=\"1.0\" encoding=\"UTF-16\" standalone='yes'?>\n<root>\n" + uc + "\n</root>\n";
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
-
-    QString responseText = object->property("responseText").toString();
-    QCOMPARE(responseText, xml);
-
-    QString responseXmlText = object->property("responseXmlRootNodeValue").toString();
-    QCOMPARE(responseXmlText, '\n' + uc + '\n');
-
-    delete object;
+    QTest::newRow("responseText") << "utf16.html" << uc + '\n' << "";
+    QTest::newRow("responseXML") << "utf16.xml" << "<?xml version=\"1.0\" encoding=\"UTF-16\" standalone='yes'?>\n<root>\n" + uc + "\n</root>\n" << QString('\n' + uc + '\n');
 }
 
 // Test that calling hte XMLHttpRequest methods on a non-XMLHttpRequest object
