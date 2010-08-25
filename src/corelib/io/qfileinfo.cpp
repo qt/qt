@@ -47,24 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QFileInfoPrivate::QFileInfoPrivate(const QFileInfo *copy)
-{
-    if (copy) {
-        copy->d_func()->data->ref.ref();
-        data = copy->d_func()->data;
-    } else {
-        data = new QFileInfoPrivate::Data;
-    }
-}
-
-QFileInfoPrivate::~QFileInfoPrivate()
-{
-    if (!data->ref.deref())
-        delete data;
-    data = 0;
-}
-
-void QFileInfoPrivate::Data::initFileEngine(const QString &file)
+void QFileInfoPrivate::initFileEngine(const QString &file)
 {
     delete fileEngine;
     fileEngine = 0;
@@ -73,12 +56,7 @@ void QFileInfoPrivate::Data::initFileEngine(const QString &file)
     fileName = file;
 }
 
-void QFileInfoPrivate::Data::detach(QFileInfoPrivate::Data *&data)
-{
-    qAtomicDetach(data);
-}
-
-QString QFileInfoPrivate::Data::getFileName(QAbstractFileEngine::FileName name) const
+QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
     if (cache_enabled && !fileNames[(int)name].isNull())
         return fileNames[(int)name];
@@ -90,7 +68,7 @@ QString QFileInfoPrivate::Data::getFileName(QAbstractFileEngine::FileName name) 
     return ret;
 }
 
-QString QFileInfoPrivate::Data::getFileOwner(QAbstractFileEngine::FileOwner own) const
+QString QFileInfoPrivate::getFileOwner(QAbstractFileEngine::FileOwner own) const
 {
     if (cache_enabled && !fileOwners[(int)own].isNull())
         return fileOwners[(int)own];
@@ -102,7 +80,7 @@ QString QFileInfoPrivate::Data::getFileOwner(QAbstractFileEngine::FileOwner own)
     return ret;
 }
 
-uint QFileInfoPrivate::Data::getFileFlags(QAbstractFileEngine::FileFlags request) const
+uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) const
 {
     // We split the testing into tests for for LinkType, BundleType, PermsMask
     // and the rest.
@@ -162,7 +140,7 @@ uint QFileInfoPrivate::Data::getFileFlags(QAbstractFileEngine::FileFlags request
     return fileFlags & request;
 }
 
-QDateTime &QFileInfoPrivate::Data::getFileTime(QAbstractFileEngine::FileTime request) const
+QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
 {
     if (!cache_enabled)
         clearFlags();
@@ -284,10 +262,8 @@ QFileInfo::QFileInfo() : d_ptr(new QFileInfoPrivate())
 
     \sa setFile(), isRelative(), QDir::setCurrent(), QDir::isRelativePath()
 */
-QFileInfo::QFileInfo(const QString &file) : d_ptr(new QFileInfoPrivate())
+QFileInfo::QFileInfo(const QString &file) : d_ptr(new QFileInfoPrivate(file))
 {
-    QFileInfoPrivate::Data::detach(d_ptr->data);
-    d_ptr->data->initFileEngine(file);
 }
 
 /*!
@@ -299,10 +275,8 @@ QFileInfo::QFileInfo(const QString &file) : d_ptr(new QFileInfoPrivate())
 
     \sa isRelative()
 */
-QFileInfo::QFileInfo(const QFile &file) : d_ptr(new QFileInfoPrivate())
+QFileInfo::QFileInfo(const QFile &file) : d_ptr(new QFileInfoPrivate(file.fileName()))
 {
-    QFileInfoPrivate::Data::detach(d_ptr->data);
-    d_ptr->data->initFileEngine(file.fileName());
 }
 
 /*!
@@ -317,16 +291,16 @@ QFileInfo::QFileInfo(const QFile &file) : d_ptr(new QFileInfoPrivate())
 
     \sa isRelative()
 */
-QFileInfo::QFileInfo(const QDir &dir, const QString &file) : d_ptr(new QFileInfoPrivate())
+QFileInfo::QFileInfo(const QDir &dir, const QString &file)
+    : d_ptr(new QFileInfoPrivate(dir.filePath(file)))
 {
-    QFileInfoPrivate::Data::detach(d_ptr->data);
-    d_ptr->data->initFileEngine(dir.filePath(file));
 }
 
 /*!
     Constructs a new QFileInfo that is a copy of the given \a fileinfo.
 */
-QFileInfo::QFileInfo(const QFileInfo &fileinfo) : d_ptr(new QFileInfoPrivate(&fileinfo))
+QFileInfo::QFileInfo(const QFileInfo &fileinfo)
+    : d_ptr(fileinfo.d_ptr)
 {
 
 }
@@ -361,17 +335,17 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     Q_D(const QFileInfo);
     // ### Qt 5: understand long and short file names on Windows
     // ### (GetFullPathName()).
-    if (fileinfo.d_func()->data == d->data)
+    if (fileinfo.d_ptr == d_ptr)
         return true;
-    if (!d->data->fileEngine || !fileinfo.d_func()->data->fileEngine)
+    if (!d->fileEngine || !fileinfo.d_ptr->fileEngine)
         return false;
-    if (d->data->fileEngine->caseSensitive() != fileinfo.d_func()->data->fileEngine->caseSensitive())
+    if (d->fileEngine->caseSensitive() != fileinfo.d_ptr->fileEngine->caseSensitive())
         return false;
     if (fileinfo.size() == size()) { //if the size isn't the same...
         QString file1 = canonicalFilePath(),
                 file2 = fileinfo.canonicalFilePath();
         if (file1.length() == file2.length()) {
-            if (!fileinfo.d_func()->data->fileEngine->caseSensitive()) {
+            if (!fileinfo.d_ptr->fileEngine->caseSensitive()) {
                 for (int i = 0; i < file1.length(); i++) {
                     if (file1.at(i).toLower() != file2.at(i).toLower())
                         return false;
@@ -409,8 +383,7 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo)
 */
 QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 {
-    Q_D(QFileInfo);
-    qAtomicAssign(d->data, fileinfo.d_func()->data);
+    d_ptr = fileinfo.d_ptr;
     return *this;
 }
 
@@ -490,9 +463,9 @@ void QFileInfo::setFile(const QDir &dir, const QString &file)
 QString QFileInfo::absoluteFilePath() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::AbsoluteName);
+    return d->getFileName(QAbstractFileEngine::AbsoluteName);
 }
 
 /*!
@@ -507,9 +480,9 @@ QString QFileInfo::absoluteFilePath() const
 QString QFileInfo::canonicalFilePath() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::CanonicalName);
+    return d->getFileName(QAbstractFileEngine::CanonicalName);
 }
 
 
@@ -534,13 +507,13 @@ QString QFileInfo::absolutePath() const
 {
     Q_D(const QFileInfo);
 
-    if (!d->data->fileEngine) {
+    if (!d->fileEngine) {
         return QLatin1String("");
-    } else if (d->data->fileName.isEmpty()) {
+    } else if (d->fileName.isEmpty()) {
         qWarning("QFileInfo::absolutePath: Constructed with empty filename");
         return QLatin1String("");
     }
-    return d->data->getFileName(QAbstractFileEngine::AbsolutePathName);
+    return d->getFileName(QAbstractFileEngine::AbsolutePathName);
 }
 
 /*!
@@ -554,9 +527,9 @@ QString QFileInfo::absolutePath() const
 QString QFileInfo::canonicalPath() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::CanonicalPathName);
+    return d->getFileName(QAbstractFileEngine::CanonicalPathName);
 }
 
 /*!
@@ -571,9 +544,9 @@ QString QFileInfo::canonicalPath() const
 QString QFileInfo::path() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::PathName);
+    return d->getFileName(QAbstractFileEngine::PathName);
 }
 
 /*!
@@ -595,9 +568,9 @@ QString QFileInfo::path() const
 bool QFileInfo::isRelative() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return true;
-    return d->data->fileEngine->isRelativePath();
+    return d->fileEngine->isRelativePath();
 }
 
 /*!
@@ -609,12 +582,11 @@ bool QFileInfo::isRelative() const
 */
 bool QFileInfo::makeAbsolute()
 {
-    Q_D(QFileInfo);
-    if (!d->data->fileEngine || !d->data->fileEngine->isRelativePath())
+    if (!d_ptr.constData()->fileEngine || !d_ptr.constData()->fileEngine->isRelativePath())
         return false;
-    QString absFileName = d->data->getFileName(QAbstractFileEngine::AbsoluteName);
-    QFileInfoPrivate::Data::detach(d_ptr->data);
-    d->data->initFileEngine(absFileName);
+    QString absFileName = d_ptr.constData()->getFileName(QAbstractFileEngine::AbsoluteName);
+    // QSharedDataPointer::operator->() will detach.
+    d_ptr->initFileEngine(absFileName);
     return true;
 }
 
@@ -627,9 +599,9 @@ bool QFileInfo::makeAbsolute()
 bool QFileInfo::exists() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::ExistsFlag);
+    return d->getFileFlags(QAbstractFileEngine::ExistsFlag);
 }
 
 /*!
@@ -642,8 +614,7 @@ bool QFileInfo::exists() const
 void QFileInfo::refresh()
 {
     Q_D(QFileInfo);
-    QFileInfoPrivate::Data::detach(d->data);
-    d->data->clear();
+    d->clear();
 }
 
 /*!
@@ -655,9 +626,9 @@ void QFileInfo::refresh()
 QString QFileInfo::filePath() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::DefaultName);
+    return d->getFileName(QAbstractFileEngine::DefaultName);
 }
 
 /*!
@@ -674,9 +645,9 @@ QString QFileInfo::filePath() const
 QString QFileInfo::fileName() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::BaseName);
+    return d->getFileName(QAbstractFileEngine::BaseName);
 }
 
 /*!
@@ -694,9 +665,9 @@ QString QFileInfo::fileName() const
 QString QFileInfo::bundleName() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::BundleName);
+    return d->getFileName(QAbstractFileEngine::BundleName);
 }
 
 /*!
@@ -718,9 +689,9 @@ QString QFileInfo::bundleName() const
 QString QFileInfo::baseName() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::BaseName).section(QLatin1Char('.'), 0, 0);
+    return d->getFileName(QAbstractFileEngine::BaseName).section(QLatin1Char('.'), 0, 0);
 }
 
 /*!
@@ -737,9 +708,9 @@ QString QFileInfo::baseName() const
 QString QFileInfo::completeBaseName() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    QString name = d->data->getFileName(QAbstractFileEngine::BaseName);
+    QString name = d->getFileName(QAbstractFileEngine::BaseName);
     int index = name.lastIndexOf(QLatin1Char('.'));
     return (index == -1) ? name : name.left(index);
 }
@@ -758,9 +729,9 @@ QString QFileInfo::completeBaseName() const
 QString QFileInfo::completeSuffix() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    QString fileName = d->data->getFileName(QAbstractFileEngine::BaseName);
+    QString fileName = d->getFileName(QAbstractFileEngine::BaseName);
     int firstDot = fileName.indexOf(QLatin1Char('.'));
     if (firstDot == -1)
         return QLatin1String("");
@@ -785,9 +756,9 @@ QString QFileInfo::completeSuffix() const
 QString QFileInfo::suffix() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    QString fileName = d->data->getFileName(QAbstractFileEngine::BaseName);
+    QString fileName = d->getFileName(QAbstractFileEngine::BaseName);
     int lastDot = fileName.lastIndexOf(QLatin1Char('.'));
     if (lastDot == -1)
         return QLatin1String("");
@@ -850,9 +821,9 @@ QDir QFileInfo::dir(bool absPath) const
 bool QFileInfo::isReadable() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::ReadUserPerm);
+    return d->getFileFlags(QAbstractFileEngine::ReadUserPerm);
 }
 
 /*!
@@ -863,9 +834,9 @@ bool QFileInfo::isReadable() const
 bool QFileInfo::isWritable() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::WriteUserPerm);
+    return d->getFileFlags(QAbstractFileEngine::WriteUserPerm);
 }
 
 /*!
@@ -876,9 +847,9 @@ bool QFileInfo::isWritable() const
 bool QFileInfo::isExecutable() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::ExeUserPerm);
+    return d->getFileFlags(QAbstractFileEngine::ExeUserPerm);
 }
 
 /*!
@@ -890,9 +861,9 @@ bool QFileInfo::isExecutable() const
 bool QFileInfo::isHidden() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::HiddenFlag);
+    return d->getFileFlags(QAbstractFileEngine::HiddenFlag);
 }
 
 /*!
@@ -905,9 +876,9 @@ bool QFileInfo::isHidden() const
 bool QFileInfo::isFile() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::FileType);
+    return d->getFileFlags(QAbstractFileEngine::FileType);
 }
 
 /*!
@@ -919,9 +890,9 @@ bool QFileInfo::isFile() const
 bool QFileInfo::isDir() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::DirectoryType);
+    return d->getFileFlags(QAbstractFileEngine::DirectoryType);
 }
 
 
@@ -935,9 +906,9 @@ bool QFileInfo::isDir() const
 bool QFileInfo::isBundle() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::BundleType);
+    return d->getFileFlags(QAbstractFileEngine::BundleType);
 }
 
 /*!
@@ -960,9 +931,9 @@ bool QFileInfo::isBundle() const
 bool QFileInfo::isSymLink() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::LinkType);
+    return d->getFileFlags(QAbstractFileEngine::LinkType);
 }
 
 /*!
@@ -973,9 +944,9 @@ bool QFileInfo::isSymLink() const
 bool QFileInfo::isRoot() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return true;
-    return d->data->getFileFlags(QAbstractFileEngine::RootFlag);
+    return d->getFileFlags(QAbstractFileEngine::RootFlag);
 }
 
 /*!
@@ -1001,9 +972,9 @@ bool QFileInfo::isRoot() const
 QString QFileInfo::readLink() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileName(QAbstractFileEngine::LinkName);
+    return d->getFileName(QAbstractFileEngine::LinkName);
 }
 
 /*!
@@ -1019,9 +990,9 @@ QString QFileInfo::readLink() const
 QString QFileInfo::owner() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileOwner(QAbstractFileEngine::OwnerUser);
+    return d->getFileOwner(QAbstractFileEngine::OwnerUser);
 }
 
 /*!
@@ -1035,9 +1006,9 @@ QString QFileInfo::owner() const
 uint QFileInfo::ownerId() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return 0;
-    return d->data->fileEngine->ownerId(QAbstractFileEngine::OwnerUser);
+    return d->fileEngine->ownerId(QAbstractFileEngine::OwnerUser);
 }
 
 /*!
@@ -1053,9 +1024,9 @@ uint QFileInfo::ownerId() const
 QString QFileInfo::group() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QLatin1String("");
-    return d->data->getFileOwner(QAbstractFileEngine::OwnerGroup);
+    return d->getFileOwner(QAbstractFileEngine::OwnerGroup);
 }
 
 /*!
@@ -1069,9 +1040,9 @@ QString QFileInfo::group() const
 uint QFileInfo::groupId() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return 0;
-    return d->data->fileEngine->ownerId(QAbstractFileEngine::OwnerGroup);
+    return d->fileEngine->ownerId(QAbstractFileEngine::OwnerGroup);
 }
 
 /*!
@@ -1090,9 +1061,9 @@ uint QFileInfo::groupId() const
 bool QFileInfo::permission(QFile::Permissions permissions) const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return false;
-    return d->data->getFileFlags(QAbstractFileEngine::FileFlags((int)permissions)) == (uint)permissions;
+    return d->getFileFlags(QAbstractFileEngine::FileFlags((int)permissions)) == (uint)permissions;
 }
 
 /*!
@@ -1102,9 +1073,9 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
 QFile::Permissions QFileInfo::permissions() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return 0;
-    return QFile::Permissions(d->data->getFileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask);
+    return QFile::Permissions(d->getFileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask);
 }
 
 
@@ -1117,13 +1088,13 @@ QFile::Permissions QFileInfo::permissions() const
 qint64 QFileInfo::size() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return 0;
-    if (!d->data->getCachedFlag(QFileInfoPrivate::CachedSize)) {
-        d->data->setCachedFlag(QFileInfoPrivate::CachedSize);
-        d->data->fileSize = d->data->fileEngine->size();
+    if (!d->getCachedFlag(QFileInfoPrivate::CachedSize)) {
+        d->setCachedFlag(QFileInfoPrivate::CachedSize);
+        d->fileSize = d->fileEngine->size();
     }
-    return d->data->fileSize;
+    return d->fileSize;
 }
 
 /*!
@@ -1142,9 +1113,9 @@ qint64 QFileInfo::size() const
 QDateTime QFileInfo::created() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QDateTime();
-    return d->data->getFileTime(QAbstractFileEngine::CreationTime);
+    return d->getFileTime(QAbstractFileEngine::CreationTime);
 }
 
 /*!
@@ -1155,9 +1126,9 @@ QDateTime QFileInfo::created() const
 QDateTime QFileInfo::lastModified() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QDateTime();
-    return d->data->getFileTime(QAbstractFileEngine::ModificationTime);
+    return d->getFileTime(QAbstractFileEngine::ModificationTime);
 }
 
 /*!
@@ -1171,9 +1142,9 @@ QDateTime QFileInfo::lastModified() const
 QDateTime QFileInfo::lastRead() const
 {
     Q_D(const QFileInfo);
-    if (!d->data->fileEngine)
+    if (!d->fileEngine)
         return QDateTime();
-    return d->data->getFileTime(QAbstractFileEngine::AccessTime);
+    return d->getFileTime(QAbstractFileEngine::AccessTime);
 }
 
 /*! \internal
@@ -1181,8 +1152,7 @@ QDateTime QFileInfo::lastRead() const
 */
 void QFileInfo::detach()
 {
-    Q_D(QFileInfo);
-    QFileInfoPrivate::Data::detach(d->data);
+    d_ptr.detach();
 }
 
 /*!
@@ -1193,7 +1163,7 @@ void QFileInfo::detach()
 bool QFileInfo::caching() const
 {
     Q_D(const QFileInfo);
-    return d->data->cache_enabled;
+    return d->cache_enabled;
 }
 
 /*!
@@ -1211,8 +1181,7 @@ bool QFileInfo::caching() const
 void QFileInfo::setCaching(bool enable)
 {
     Q_D(QFileInfo);
-    QFileInfoPrivate::Data::detach(d->data);
-    d->data->cache_enabled = enable;
+    d->cache_enabled = enable;
 }
 
 /*!
