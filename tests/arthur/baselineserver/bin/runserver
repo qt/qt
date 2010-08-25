@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while true; do
+	./baselineserver
+	sleep 5
+done
