@@ -747,7 +747,6 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
             if (fdx <= fixed_scale && fdx > 0) { // scale up on X
                 int disty = (fy & 0x0000ffff) >> 8;
                 int idisty = 256 - disty;
-                int count = length * data->m11 + 2;
                 int x = fx >> 16;
 
                 // The idea is first to do the interpolation between the row s1 and the row s2
@@ -756,7 +755,9 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
                 // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
                 quint32 intermediate_buffer[2][buffer_size + 2];
-                Q_ASSERT(length * data->m11 <= buffer_size);
+                // count is the size used in the intermediate_buffer.
+                int count = qCeil(length * data->m11) + 2; //+1 for the last pixel to interpolate with, and +1 for rounding errors.
+                Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
                 int f = 0;
                 int lim = count;
                 if (blendType == BlendTransformedBilinearTiled) {

@@ -359,6 +359,15 @@ void QFutureWatcherBase::connectNotify(const char * signal)
     Q_D(QFutureWatcherBase);
     if (qstrcmp(signal, SIGNAL(resultReadyAt(int))) == 0)
         d->resultAtConnected.ref();
+#ifndef QT_NO_DEBUG
+    if (qstrcmp(signal, SIGNAL(finished())) == 0) {
+        if (futureInterface().isRunning()) {
+            //connections should be established before calling stFuture to avoid race.
+            // (The future could finish before the connection is made.)
+            qWarning("QFutureWatcher::connect: connecting after calling setFuture() is likely to produce race");
+        }
+    }
+#endif
 }
 
 void QFutureWatcherBase::disconnectNotify(const char * signal)
