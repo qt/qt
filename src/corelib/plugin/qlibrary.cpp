@@ -790,9 +790,12 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
             .arg(qt_version&0xff)
             .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
     } else if (key != QT_BUILD_KEY
+               // we may have some compatibility keys, try them too:
 #ifdef QT_BUILD_KEY_COMPAT
-               // be sure to load plugins using an older but compatible build key
                && key != QT_BUILD_KEY_COMPAT
+#endif
+#ifdef QT_BUILD_KEY_COMPAT2
+               && key != QT_BUILD_KEY_COMPAT2
 #endif
                ) {
         if (qt_debug_component()) {

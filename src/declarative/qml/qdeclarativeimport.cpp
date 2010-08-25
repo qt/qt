@@ -338,7 +338,7 @@ QString QDeclarativeImportsPrivate::resolvedUri(const QString &dir_arg, QDeclara
     qSort(paths.begin(), paths.end(), greaterThan); // Ensure subdirs preceed their parents.
 
     QString stableRelativePath = dir;
-    foreach( QString path, paths) {
+    foreach(const QString &path, paths) {
         if (dir.startsWith(path)) {
             stableRelativePath = dir.mid(path.length()+1);
             break;

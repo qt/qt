@@ -54,7 +54,15 @@ Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
 
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
-    return connManager();
+    static bool initialized = false;
+
+    QNetworkConfigurationManagerPrivate *m = connManager();
+    if (!initialized) {
+        initialized = true;
+        m->updateConfigurations();
+    }
+
+    return m;
 }
 
 /*!
@@ -178,7 +186,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
     : QObject(parent)
 {
-    QNetworkConfigurationManagerPrivate *priv = connManager();
+    QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
     connect(priv, SIGNAL(configurationAdded(QNetworkConfiguration)),
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));

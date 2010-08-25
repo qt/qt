@@ -85,6 +85,7 @@ QT_BEGIN_HEADER
 // SSE4.1 and SSE4.2 intrinsics
 #if (defined(QT_HAVE_SSE4_1) || defined(QT_HAVE_SSE4_2)) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
 #include <smmintrin.h>
+#include <nmmintrin.h>
 #endif
 
 // AVX intrinsics

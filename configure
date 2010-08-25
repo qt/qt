@@ -7278,6 +7278,7 @@ fi
 
 # some compilers generate binary incompatible code between different versions,
 # so we need to generate a build key that is different between these compilers
+COMPAT_COMPILER=
 case "$COMPILER" in
 g++*)
     # GNU C++
@@ -7310,6 +7311,22 @@ g++*)
         ;;
     esac
     [ '!' -z "$COMPILER_VERSION" ] && COMPILER="g++-${COMPILER_VERSION}"
+    ;;
+icc*)
+    # The Intel CC compiler on Unix systems matches the ABI of the g++
+    # that is found on PATH
+    COMPILER="icc"
+    COMPAT_COMPILER="g++-4"
+    case "`g++ -dumpversion` 2>/dev/null" in
+    2.95.*)
+        COMPAT_COMPILER="g++-2.95.*"
+        ;;
+    3.*)
+        COMPAT_COMPILER="g++-3.*"
+        ;;
+    *)
+        ;;
+    esac
     ;;
 *)
     #
@@ -7453,9 +7470,20 @@ if [ "$QT_CROSS_COMPILE" = "no" ]; then
         QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
     fi
 fi
+
+# is this compiler compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_COMPILER=
+if [ ! -z "$COMPAT_COMPILER" ]; then
+    QT_BUILD_KEY_COMPAT_COMPILER="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPAT_COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_COMPILER $QT_NAMESPACE"
+    fi
+fi
+
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7502,6 +7530,10 @@ fi
 
 if [ -n "$QT_BUILD_KEY_COMPAT" ]; then
     echo "#define QT_BUILD_KEY_COMPAT \"$QT_BUILD_KEY_COMPAT\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"

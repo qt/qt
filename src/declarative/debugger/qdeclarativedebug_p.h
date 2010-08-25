@@ -99,6 +99,9 @@ public:
     bool resetBindingForObject(int objectDebugId, const QString &propertyName);
     bool setMethodBody(int objectDebugId, const QString &methodName, const QString &methodBody);
 
+Q_SIGNALS:
+    void newObjects();
+
 private:
     Q_DECLARE_PRIVATE(QDeclarativeEngineDebug)
 };

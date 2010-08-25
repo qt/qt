@@ -1218,7 +1218,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->richText || !d->doc || d->doc->documentLayout()->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
-        d->activeLink = QString();
+        d->activeLink.clear();
     } else {
         d->activeLink = d->doc->documentLayout()->anchorAt(event->pos());
     }
