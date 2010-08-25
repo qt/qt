@@ -162,7 +162,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
-  \since 4.7
+    \ingroup qml-basic-visual-elements
+    \since 4.7
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
@@ -1046,10 +1047,10 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
 
     QAbstractTextDocumentLayout::PaintContext context;
 
+    QTextOption oldOption(doc->defaultTextOption());
     if (drawStyle) {
         context.palette.setColor(QPalette::Text, styleColor);
-        // ### Do we really want this?
-        QTextOption colorOption;
+        QTextOption colorOption(doc->defaultTextOption());
         colorOption.setFlags(QTextOption::SuppressColors);
         doc->setDefaultTextOption(colorOption);
     } else {
@@ -1057,7 +1058,7 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
     }
     doc->documentLayout()->draw(&p, context);
     if (drawStyle)
-        doc->setDefaultTextOption(QTextOption());
+        doc->setDefaultTextOption(oldOption);
     return img;
 }
 
@@ -1217,7 +1218,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->richText || !d->doc || d->doc->documentLayout()->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
-        d->activeLink = QString();
+        d->activeLink.clear();
     } else {
         d->activeLink = d->doc->documentLayout()->anchorAt(event->pos());
     }

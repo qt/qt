@@ -90,6 +90,7 @@ private slots:
     void bundle_spaces();
 #endif
     void includefunction();
+    void substitutes();
 
 private:
     TestCompiler test_compiler;
@@ -475,6 +476,21 @@ void tst_qmake::includefunction()
     workDir = base_path + "/testdata/include_function";
     QVERIFY(test_compiler.qmake( workDir, "include_missing_file2" ));
     QVERIFY(test_compiler.commandOutput().contains(warningMsg));
+}
+
+void tst_qmake::substitutes()
+{
+    QString workDir = base_path + "/testdata/substitutes";
+    QVERIFY( test_compiler.qmake( workDir, "test" ));
+    QVERIFY( test_compiler.exists( workDir, "test", Plain, "" ));
+    QVERIFY( test_compiler.exists( workDir, "sub/test2", Plain, "" ));
+    QVERIFY( test_compiler.makeDistClean( workDir ));
+
+    QString buildDir = base_path + "/testdata/substitutes_build";
+    QVERIFY( test_compiler.qmake( workDir, "test", buildDir ));
+    QVERIFY( test_compiler.exists( buildDir, "test", Plain, "" ));
+    QVERIFY( test_compiler.exists( buildDir, "sub/test2", Plain, "" ));
+    QVERIFY( test_compiler.makeDistClean( buildDir ));
 }
 
 QTEST_MAIN(tst_qmake)

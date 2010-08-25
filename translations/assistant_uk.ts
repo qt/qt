@@ -76,12 +76,8 @@ Reason:
         <translation>Помилка створення файлу колекції &apos;%1&apos;: %2.</translation>
     </message>
     <message>
-        <source>Error reading collection file &apos;%1&apos;: %2</source>
-        <translation>Помилка читання файлу колекції &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
         <source>Cannot load sqlite database driver!</source>
-        <translation>Не можу завантажити драйвер бази даний SQLite!</translation>
+        <translation>Не можу завантажити драйвер бази даних SQLite!</translation>
     </message>
 </context>
 <context>
@@ -123,7 +119,7 @@ Reason:
     </message>
     <message>
         <source>You are going to delete a Folder, this will also&lt;br&gt;remove it&apos;s content. Are you sure to continue?</source>
-        <translation>Ви збираєтесь видалити теку, що призведе до видалення її змісту.&lt;br&gt;Ви впевнені, що хочете продовжити?</translation>
+        <translation>Ви збираєтесь видалити теку, що призведе до видалення її вмісту.&lt;br&gt;Ви впевнені, що хочете продовжити?</translation>
     </message>
     <message>
         <source>Manage Bookmarks...</source>
@@ -214,7 +210,7 @@ Reason:
     </message>
     <message>
         <source>You are goingto delete a Folder, this will also&lt;br&gt; remove it&apos;s content. Are you sure to continue?</source>
-        <translation>Ви збираєтесь видалити теку, що призведе до видалення її змісту.&lt;br&gt;Ви впевнені, що хочете продовжити?</translation>
+        <translation>Ви збираєтесь видалити теку, що призведе до видалення її вмісту.&lt;br&gt;Ви впевнені, що хочете продовжити?</translation>
     </message>
     <message>
         <source>Delete Folder</source>
@@ -354,7 +350,7 @@ Reason:
     </message>
     <message>
         <source>Missing filter argument.</source>
-        <translation>Відсутній аргумент фільтру.</translation>
+        <translation>Відсутній аргумент фільтра.</translation>
     </message>
     <message>
         <source>Error</source>
@@ -377,14 +373,119 @@ Reason:
     </message>
 </context>
 <context>
+    <name>ConversionWizard</name>
+    <message>
+        <source>Help Conversion Wizard</source>
+        <translation>Майстер конвертування довідки</translation>
+    </message>
+    <message>
+        <source>Converting %1...</source>
+        <translation>Конвертую %1...</translation>
+    </message>
+    <message>
+        <source>Writing help collection file...</source>
+        <translation>Записую файл колекції довідки...</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>Виконано.</translation>
+    </message>
+</context>
+<context>
+    <name>FilesPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Files:</source>
+        <translation>Файли:</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <translation>Видалити все</translation>
+    </message>
+    <message>
+        <source>Unreferenced Files</source>
+        <translation>Файли,на які немає посилань</translation>
+    </message>
+    <message>
+        <source>Remove files which are neither referenced by a keyword nor by the TOC.</source>
+        <translation>Видаліть файли, на які немає посилань ні за ключовим словом, ні зі змісту.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; Be aware when removing images or stylesheets since those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Попередження:&lt;/b&gt; Будьте уважними, при видаленні зображень чи таблиць стилів, оскільки на ці файли не має прямих посилань файла .adp чи .dcf.&lt;/p&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FilterNameDialogClass</name>
     <message>
         <source>Add Filter Name</source>
-        <translation>Додати назву фільтру</translation>
+        <translation>Додати назву фільтра</translation>
     </message>
     <message>
         <source>Filter Name:</source>
-        <translation>Назва фільтру:</translation>
+        <translation>Назва фільтра:</translation>
+    </message>
+</context>
+<context>
+    <name>FilterPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Filter attributes for current documentation (comma separated list):</source>
+        <translation>Атрибути фільтра для поточної документації (список, розділений комою):</translation>
+    </message>
+    <message>
+        <source>Custom Filters</source>
+        <translation>Користувацькі фільтри</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Додати</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <source>Filter Settings</source>
+        <translation>Налаштування фільтрів</translation>
+    </message>
+    <message>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both, the filter attributes and the custom filters are optional.</source>
+        <translation>Вкажіть атрибути фільтра для документації. Якщо використовуються атрибути фільтра, то, також, визначіть користувацький фільтр для нього. Як атрибути фільтра, так і користувацькі фільтри, є необов&apos;язковими.</translation>
+    </message>
+    <message>
+        <source>Filter Name</source>
+        <translation>Назва фільтра</translation>
+    </message>
+    <message>
+        <source>Filter Attributes</source>
+        <translation>Атрибути фільтра</translation>
+    </message>
+    <message>
+        <source>The custom filter &apos;%1&apos; is defined multiple times.</source>
+        <translation>Користувацький фільтр &apos;%1&apos; визначено декілька раз.</translation>
+    </message>
+    <message>
+        <source>The attributes for custom filter &apos;%1&apos; are defined multiple times.</source>
+        <translation>Атрибути для користувацького фільтра &apos;%1&apos; визначено декілька раз.</translation>
     </message>
 </context>
 <context>
@@ -407,6 +508,13 @@ Reason:
     </message>
 </context>
 <context>
+    <name>FinishPage</name>
+    <message>
+        <source>Converting File</source>
+        <translation>Конвертування файлу</translation>
+    </message>
+</context>
+<context>
     <name>FontPanel</name>
     <message>
         <source>Font</source>
@@ -414,7 +522,7 @@ Reason:
     </message>
     <message>
         <source>&amp;Writing system</source>
-        <translation>Система &amp;письма</translation>
+        <translation>Система &amp;писемності</translation>
     </message>
     <message>
         <source>&amp;Family</source>
@@ -427,6 +535,45 @@ Reason:
     <message>
         <source>&amp;Point size</source>
         <translation>&amp;Розмір</translation>
+    </message>
+</context>
+<context>
+    <name>GeneralPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Namespace:</source>
+        <translation>Простір імен:</translation>
+    </message>
+    <message>
+        <source>Virtual Folder:</source>
+        <translation>Віртуальна тека:</translation>
+    </message>
+    <message>
+        <source>General Settings</source>
+        <translation>Загальні налаштування</translation>
+    </message>
+    <message>
+        <source>Specify the namespace and the virtual folder for the documentation.</source>
+        <translation>Вкажіть простір імен та віртуальну теку для документації.</translation>
+    </message>
+    <message>
+        <source>Namespace Error</source>
+        <translation>Помилка простору імен</translation>
+    </message>
+    <message>
+        <source>The namespace contains some invalid characters.</source>
+        <translation>Простір імен містить деякі неприпустимі символи.</translation>
+    </message>
+    <message>
+        <source>Virtual Folder Error</source>
+        <translation>Помилка віртуальної теки</translation>
+    </message>
+    <message>
+        <source>The virtual folder contains some invalid characters.</source>
+        <translation>Віртуальна тека містить деякі неприпустимі символи.</translation>
     </message>
 </context>
 <context>
@@ -453,10 +600,37 @@ Reason:
     </message>
 </context>
 <context>
+    <name>IdentifierPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Create identifiers</source>
+        <translation>Створювати ідентифікатори</translation>
+    </message>
+    <message>
+        <source>Global prefix:</source>
+        <translation>Глобальний префікс:</translation>
+    </message>
+    <message>
+        <source>Inherit prefix from file names</source>
+        <translation>Успадковувати префікс з імен файлів</translation>
+    </message>
+    <message>
+        <source>Identifiers</source>
+        <translation>Ідентифікатори</translation>
+    </message>
+    <message>
+        <source>This page allows you to create identifiers from the keywords found in the .adp or .dcf file.</source>
+        <translation>Ця сторінка дозволяє вам створювати ідентифікатори з ключових слів, знайдених в файлі .adp чи .dcf.</translation>
+    </message>
+</context>
+<context>
     <name>IndexWindow</name>
     <message>
         <source>&amp;Look for:</source>
-        <translation></translation>
+        <translation>&amp;Шукати:</translation>
     </message>
     <message>
         <source>Open Link</source>
@@ -465,6 +639,53 @@ Reason:
     <message>
         <source>Open Link in New Tab</source>
         <translation>Відкрити посилання в новій вкладці</translation>
+    </message>
+</context>
+<context>
+    <name>InputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>File name:</source>
+        <translation>Ім&apos;я файлу:</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <source>Input File</source>
+        <translation>Вхідний файл</translation>
+    </message>
+    <message>
+        <source>Specify the .adp or .dcf file you want to convert to the new Qt help project format and/or collection format.</source>
+        <translation>Вкажіть файл .adp чи .dcf, який ви бажаєте сконвертувати до нового формату проекту довідки Qt та/або формату колекції.</translation>
+    </message>
+    <message>
+        <source>Open file</source>
+        <translation>Відкрити файл</translation>
+    </message>
+    <message>
+        <source>Qt Help Files (*.adp *.dcf)</source>
+        <translation>Файли довідки Qt (*.adp *.dcf)</translation>
+    </message>
+    <message>
+        <source>File Open Error</source>
+        <translation>Помилка відкриття файлу</translation>
+    </message>
+    <message>
+        <source>The specified file could not be opened!</source>
+        <translation>Не вдалось відкрити вказаний файл!</translation>
+    </message>
+    <message>
+        <source>File Parsing Error</source>
+        <translation>Помилка розбору файлу</translation>
+    </message>
+    <message>
+        <source>Parsing error in line %1!</source>
+        <translation>Помилка розбору в рядку %1!</translation>
     </message>
 </context>
 <context>
@@ -499,11 +720,11 @@ Reason:
     </message>
     <message>
         <source>Downloading documentation info...</source>
-        <translation>Завантажую інформацію про документацію...</translation>
+        <translation>Звантажую інформацію про документацію...</translation>
     </message>
     <message>
         <source>Download canceled.</source>
-        <translation>Завантаження скасоване.</translation>
+        <translation>Звантаження скасоване.</translation>
     </message>
     <message>
         <source>Done.</source>
@@ -519,19 +740,19 @@ Reason:
     </message>
     <message>
         <source>Downloading %1...</source>
-        <translation>Завантажую %1...</translation>
+        <translation>Звантажую %1...</translation>
     </message>
     <message>
         <source>Download failed: %1.</source>
-        <translation>Завантаження провалилось: %1.</translation>
+        <translation>Звантаження провалилось: %1.</translation>
     </message>
     <message>
         <source>Documentation info file is corrupt!</source>
-        <translation>Файл інформації про документації пошкоджений!</translation>
+        <translation>Файл інформації про документацію пошкоджений!</translation>
     </message>
     <message>
         <source>Download failed: Downloaded file is corrupted.</source>
-        <translation>Завантаження провалилось: Завантажений файл пошкоджений.</translation>
+        <translation>Звантаження провалилось: Звантажений файл пошкоджений.</translation>
     </message>
     <message>
         <source>Installing documentation %1...</source>
@@ -548,7 +769,7 @@ Reason:
     <name>MainWindow</name>
     <message>
         <source>Index</source>
-        <translation>Індекс</translation>
+        <translation>Покажчик</translation>
     </message>
     <message>
         <source>Contents</source>
@@ -564,7 +785,7 @@ Reason:
     </message>
     <message>
         <source>Looking for Qt Documentation...</source>
-        <translation></translation>
+        <translation>Пошук документації Qt...</translation>
     </message>
     <message>
         <source>&amp;File</source>
@@ -672,7 +893,7 @@ Reason:
     </message>
     <message>
         <source>&amp;Home</source>
-        <translation>&amp;Додому</translation>
+        <translation>&amp;Домівка</translation>
     </message>
     <message>
         <source>ALT+Home</source>
@@ -748,7 +969,7 @@ Reason:
     </message>
     <message>
         <source>Filter Toolbar</source>
-        <translation>Панель фільтру</translation>
+        <translation>Панель фільтрування</translation>
     </message>
     <message>
         <source>Filtered by:</source>
@@ -772,11 +993,97 @@ Reason:
     </message>
     <message>
         <source>Updating search index</source>
-        <translation>Оновлюється індекс пошуку</translation>
+        <translation>Оновлюється покажчик пошуку</translation>
     </message>
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>Не можу зареєструвати файл &apos;%1&apos;: %2</translation>
+    </message>
+</context>
+<context>
+    <name>OutputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Project file name:</source>
+        <translation>Ім&apos;я файлу проекту:</translation>
+    </message>
+    <message>
+        <source>Collection file name:</source>
+        <translation>Ім&apos;я файлу колекції:</translation>
+    </message>
+    <message>
+        <source>Output File Names</source>
+        <translation>Імена вихідний файлів</translation>
+    </message>
+    <message>
+        <source>Specify the file names for the output files.</source>
+        <translation>Вкажіть імена вихідних файлів.</translation>
+    </message>
+    <message>
+        <source>Convert...</source>
+        <translation>Конвертувати...</translation>
+    </message>
+    <message>
+        <source>Qt Help Project File</source>
+        <translation>Файл проекту довідки Qt</translation>
+    </message>
+    <message>
+        <source>Qt Help Collection Project File</source>
+        <translation>Файл проекту колекції довідки Qt</translation>
+    </message>
+    <message>
+        <source>The specified file %1 already exist.
+
+Do you want to remove it?</source>
+        <translation>Вказаний файл %1 вже існує
+
+Бажаєте видалити його?</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
+    </message>
+</context>
+<context>
+    <name>PathPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>File filters:</source>
+        <translation>Фільтри файлів:</translation>
+    </message>
+    <message>
+        <source>Documentation source file paths:</source>
+        <translation>Шляхи вхідних файлів документації:</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Додати</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Видалити</translation>
+    </message>
+    <message>
+        <source>Source File Paths</source>
+        <translation>Шляхи вхідних файлів</translation>
+    </message>
+    <message>
+        <source>Specify the paths where the sources files are located. By default, all files in those directories matched by the file filter will be included.</source>
+        <translation>Вкажіть шляхи, де розташовані вхідні файли. Зазвичай, усі файли в цих теках, що відповідають фільтру файлів, будуть включені.</translation>
+    </message>
+    <message>
+        <source>Source File Path</source>
+        <translation>Шлях вхідного файлу</translation>
     </message>
 </context>
 <context>
@@ -803,7 +1110,7 @@ Reason:
     </message>
     <message>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation>Деякі документи, що зараз відкриті в Assistant пов&apos;язані з документацією, яку ви намагаєтесь видалити. Видалення документації призведе до закриття цих документів.</translation>
+        <translation>Деякі документи, що зараз відкриті в Assistant, пов&apos;язані з документацією, яку ви намагаєтесь видалити. Видалення документації призведе до закриття цих документів.</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -838,7 +1145,7 @@ Reason:
     </message>
     <message>
         <source>Application</source>
-        <translation>Додаток</translation>
+        <translation>Програма</translation>
     </message>
     <message>
         <source>Filters</source>
@@ -890,7 +1197,7 @@ Reason:
     </message>
     <message>
         <source>Show a blank page</source>
-        <translation>Показувати пусту сторінку</translation>
+        <translation>Показувати порожню сторінку</translation>
     </message>
     <message>
         <source>Show my tabs from last session</source>
@@ -906,11 +1213,413 @@ Reason:
     </message>
     <message>
         <source>Blank Page</source>
-        <translation>Пуста сторінка</translation>
+        <translation>Порожня сторінка</translation>
     </message>
     <message>
         <source>Restore to default</source>
         <translation>Відновити типово</translation>
+    </message>
+</context>
+<context>
+    <name>QCLuceneResultWidget</name>
+    <message>
+        <source>Search Results</source>
+        <translation>Результати пошуку</translation>
+    </message>
+    <message>
+        <source>Note:</source>
+        <translation>Примітка:</translation>
+    </message>
+    <message>
+        <source>The search results may not be complete since the documentation is still being indexed!</source>
+        <translation>Результати пошуку можуть бути не повні, оскільки документація досі індексується!</translation>
+    </message>
+    <message>
+        <source>Your search did not match any documents.</source>
+        <translation>Ваш пошук не повернув результатів.</translation>
+    </message>
+    <message>
+        <source>(The reason for this might be that the documentation is still being indexed.)</source>
+        <translation>(Причиною цього може бути те, що документація досі індексується.)</translation>
+    </message>
+</context>
+<context>
+    <name>QCollectionGenerator</name>
+    <message>
+        <source>Unknown token at line %1.</source>
+        <translation>Невідомий токен в рядку %1.</translation>
+    </message>
+    <message>
+        <source>Unknown token at line %1. Expected &quot;QtHelpCollectionProject&quot;!</source>
+        <translation>Невідомий токен в рядку %1. Очікувався &quot;QtHelpCollectionProject&quot;!</translation>
+    </message>
+    <message>
+        <source>Missing output file name!</source>
+        <translation>Відсутнє ім&apos;я вихідного файлу!</translation>
+    </message>
+    <message>
+        <source>Missing collection config file!</source>
+        <translation>Відсутній файл налаштувань колекції!</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qcollectiongenerator &lt;collection-config-file&gt; [options]
+
+  -o &lt;collection-file&gt;   Generates a collection file
+                         called &lt;collection-file&gt;. If
+                         this option is not specified
+                         a default name will be used.
+  -v                     Displays the version of
+                         qcollectiongenerator.
+
+</source>
+        <translation>
+Використання:
+
+qcollectiongenerator &lt;файл-налаштувань-колекції&gt; [опції]
+
+  -o &lt;файл-колекції&gt;   Згенерувати файл колекції з іменем
+                                   &lt;файл-колекції&gt;. Якщо цю опцію не
+                                   вказано, то використовуватиметься
+                                   типове ім&apos;я
+  -v                               Показати версію qcollectiongenerator.
+
+</translation>
+    </message>
+</context>
+<context>
+    <name>QHelp</name>
+    <message>
+        <source>Untitled</source>
+        <translation>Без назви</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpCollectionHandler</name>
+    <message>
+        <source>The collection file &apos;%1&apos; is not set up yet!</source>
+        <translation>Файл колекції &apos;%1&apos; ще не встановлено!</translation>
+    </message>
+    <message>
+        <source>Cannot load sqlite database driver!</source>
+        <translation>Не можу завантажити драйвер бази даних SQLite!</translation>
+    </message>
+    <message>
+        <source>Cannot open collection file: %1</source>
+        <translation>Неможливо відкрити файл колекції: %1</translation>
+    </message>
+    <message>
+        <source>Cannot create tables in file %1!</source>
+        <translation>Неможливо створити таблиці в файлі %1!</translation>
+    </message>
+    <message>
+        <source>The collection file &apos;%1&apos; already exists!</source>
+        <translation>Файл колекції &apos;%1&apos; вже існує!</translation>
+    </message>
+    <message>
+        <source>Cannot create directory: %1</source>
+        <translation>Неможливо створити теку: %1</translation>
+    </message>
+    <message>
+        <source>Cannot copy collection file: %1</source>
+        <translation>Неможливо скопіювати файл колекції: %1</translation>
+    </message>
+    <message>
+        <source>Unknown filter &apos;%1&apos;!</source>
+        <translation>Невідомий фільтр &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <source>Cannot register filter %1!</source>
+        <translation>Неможливо зареєструвати фільтр %1!</translation>
+    </message>
+    <message>
+        <source>Cannot open documentation file %1!</source>
+        <translation>Неможливо відкрити файл документації %1!</translation>
+    </message>
+    <message>
+        <source>Invalid documentation file &apos;%1&apos;!</source>
+        <translation>Неправильний файл документації &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <source>The namespace %1 was not registered!</source>
+        <translation>Простір імен %1 не зареєстровано!</translation>
+    </message>
+    <message>
+        <source>Namespace %1 already exists!</source>
+        <translation>Простір імен %1 вже існує!</translation>
+    </message>
+    <message>
+        <source>Cannot register namespace &apos;%1&apos;!</source>
+        <translation>Неможливо зареєструвати простір імен &apos;%1&apos;!</translation>
+    </message>
+    <message>
+        <source>Cannot open database &apos;%1&apos; to optimize!</source>
+        <translation>Неможливо відкрити базу даних &apos;%1&apos; для оптимізації!</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpDBReader</name>
+    <message>
+        <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
+        <extracomment>The placeholders are: %1 - The name of the database which cannot be opened %2 - The unique id for the connection %3 - The actual error string</extracomment>
+        <translation>Неможливо відкрити базу даних: &apos;%1&apos; &apos;%2&apos;: %3</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpEngineCore</name>
+    <message>
+        <source>Cannot open documentation file %1: %2!</source>
+        <translation>Неможливо файл документації %1: %2!</translation>
+    </message>
+    <message>
+        <source>The specified namespace does not exist!</source>
+        <translation>Вказаний простір імен не існує!</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpGenerator</name>
+    <message>
+        <source>Invalid help data!</source>
+        <translation>Неправильні дані довідки!</translation>
+    </message>
+    <message>
+        <source>No output file name specified!</source>
+        <translation>Не вказане ім&apos;я вихідного файлу!</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be overwritten!</source>
+        <translation>Неможливо перезаписати файл %1!</translation>
+    </message>
+    <message>
+        <source>Building up file structure...</source>
+        <translation>Побудова структури файлу....</translation>
+    </message>
+    <message>
+        <source>Cannot open data base file %1!</source>
+        <translation>Неможливо відкрити файл бази даних %1!</translation>
+    </message>
+    <message>
+        <source>Cannot register namespace %1!</source>
+        <translation>Неможливо зареєструвати простір імен %1!</translation>
+    </message>
+    <message>
+        <source>Insert custom filters...</source>
+        <translation>Вставка фільтрів користувача...</translation>
+    </message>
+    <message>
+        <source>Insert help data for filter section (%1 of %2)...</source>
+        <translation>Вставка даних довідки для розділу фільтра (%1 з %2)...</translation>
+    </message>
+    <message>
+        <source>Documentation successfully generated.</source>
+        <translation>Документацію успішно згенеровано.</translation>
+    </message>
+    <message>
+        <source>Some tables already exist!</source>
+        <translation>Деякі таблиці вже існують!</translation>
+    </message>
+    <message>
+        <source>Cannot create tables!</source>
+        <translation>Неможливо створити таблиці!</translation>
+    </message>
+    <message>
+        <source>Cannot register virtual folder!</source>
+        <translation>Неможливо зареєструвати віртуальну теку!</translation>
+    </message>
+    <message>
+        <source>Insert files...</source>
+        <translation>Вставка файлів...</translation>
+    </message>
+    <message>
+        <source>The referenced file %1 must be inside or within a subdirectory of (%2). Skipping it.</source>
+        <translation>Файл %1 має бути всередині підтеки (%2). Пропускаємо його.</translation>
+    </message>
+    <message>
+        <source>The file %1 does not exist! Skipping it.</source>
+        <translation>Файл %1 не існує! Пропускаємо його.</translation>
+    </message>
+    <message>
+        <source>Cannot open file %1! Skipping it.</source>
+        <translation>Неможливо відкрити файл %1! Пропускаємо його.</translation>
+    </message>
+    <message>
+        <source>The filter %1 is already registered!</source>
+        <translation>Фільтр %1 вже зареєстровано!</translation>
+    </message>
+    <message>
+        <source>Cannot register filter %1!</source>
+        <translation>Неможливо зареєструвати фільтр %1!</translation>
+    </message>
+    <message>
+        <source>Insert indices...</source>
+        <translation>Вставка індексів...</translation>
+    </message>
+    <message>
+        <source>Insert contents...</source>
+        <translation>Вставка змісту...</translation>
+    </message>
+    <message>
+        <source>Cannot insert contents!</source>
+        <translation>Неможливо вставити зміст!</translation>
+    </message>
+    <message>
+        <source>Cannot register contents!</source>
+        <translation>Неможливо зареєструвати зміст!</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; does not exist.</source>
+        <translation>Файл &apos;%1&apos; не існує.</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; cannot be opened.</source>
+        <translation>Неможливо відкрити файл &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <source>File &apos;%1&apos; contains an invalid link to file &apos;%2&apos;</source>
+        <translation>Файл &apos;%1&apos; містить неправильне посилання до файлу &apos;%2&apos;</translation>
+    </message>
+    <message>
+        <source>Invalid links in HTML files.</source>
+        <translation>Неправильні посилання в файлах HTML.</translation>
+    </message>
+    <message>
+        <source>Missing output file name!</source>
+        <translation>Відсутнє ім&apos;я вихідного файлу!</translation>
+    </message>
+    <message>
+        <source>Missing Qt help project file!</source>
+        <translation>Відсутній файл проекту колекції довідки Qt!</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qhelpgenerator &lt;help-project-file&gt; [options]
+
+  -o &lt;compressed-file&gt;   Generates a Qt compressed help
+                         file called &lt;compressed-file&gt;.
+                         If this option is not specified
+                         a default name will be used.
+  -c                     Checks whether all links in HTML files
+                         point to files in this help project.
+  -v                     Displays the version of 
+                         qhelpgenerator.
+
+</source>
+        <translation>
+Використання:
+
+qhelpgenerator &lt;файл-проекту-довідки&gt; [опції]
+
+  -o &lt;стиснений-файл&gt;   Згенерувати стиснений файл довідки
+                                      з іменем &lt;стиснений-файл&gt;. Якщо цю
+                                      опцію не вказано, то буде використане
+                                      типове ім&apos;я.
+  -c                                 Перевірити, що усі посилання в файлах
+                                      HTML files вказують на файли в цьому
+                                      проекті довідки.
+  -v                                 Показати версію qhelpgenerator.
+
+</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpProject</name>
+    <message>
+        <source>Unknown token.</source>
+        <translation>Невідомий токен.</translation>
+    </message>
+    <message>
+        <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
+        <translation>Невідомий токен. Очікувався &quot;QtHelpProject&quot;!</translation>
+    </message>
+    <message>
+        <source>Error in line %1: %2</source>
+        <translation>Помилка в рядку %1: %2</translation>
+    </message>
+    <message>
+        <source>Virtual folder has invalid syntax.</source>
+        <translation>Віртуальна тека має неправильний синтаксис.</translation>
+    </message>
+    <message>
+        <source>Namespace has invalid syntax.</source>
+        <translation>Простір імен має неправильний синтаксис.</translation>
+    </message>
+    <message>
+        <source>Missing namespace in QtHelpProject.</source>
+        <translation>Відсутній простір імен в QtHelpProject.</translation>
+    </message>
+    <message>
+        <source>Missing virtual folder in QtHelpProject</source>
+        <translation>Відсутня віртуальна тека в QtHelpProject</translation>
+    </message>
+    <message>
+        <source>Missing attribute in keyword at line %1.</source>
+        <translation>Відсутній атрибут в ключовому слові на рядку %1.</translation>
+    </message>
+    <message>
+        <source>The input file %1 could not be opened!</source>
+        <translation>Неможливо відкрити вхідний файл %1!</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchQueryWidget</name>
+    <message>
+        <source>Search for:</source>
+        <translation>Шукати:</translation>
+    </message>
+    <message>
+        <source>Previous search</source>
+        <translation>Попередній пошук</translation>
+    </message>
+    <message>
+        <source>Next search</source>
+        <translation>Наступний пошук</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Пошук</translation>
+    </message>
+    <message>
+        <source>Advanced search</source>
+        <translation>Розширений пошук</translation>
+    </message>
+    <message>
+        <source>words &lt;B&gt;similar&lt;/B&gt; to:</source>
+        <translation>слова &lt;B&gt;схожі&lt;/B&gt; на:</translation>
+    </message>
+    <message>
+        <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
+        <translation>&lt;B&gt;без&lt;/B&gt; слів:</translation>
+    </message>
+    <message>
+        <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
+        <translation>з &lt;B&gt;точною фразою&lt;/B&gt;:</translation>
+    </message>
+    <message>
+        <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
+        <translation>з &lt;B&gt;усіма&lt;/B&gt; словами:</translation>
+    </message>
+    <message>
+        <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
+        <translation>з &lt;B&gt;щонайменше одним&lt;/B&gt; зі слів:</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpSearchResultWidget</name>
+    <message numerus="yes">
+        <source>%1 - %2 of %n Hits</source>
+        <translation>
+            <numerusform>%1 - %2 з %n збігу</numerusform>
+            <numerusform>%1 - %2 з %n збігів</numerusform>
+            <numerusform>%1 - %2 з %n збігів</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>0 - 0 of 0 Hits</source>
+        <translation>0 - 0 of 0 збігів</translation>
     </message>
 </context>
 <context>

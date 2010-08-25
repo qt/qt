@@ -82,6 +82,7 @@ private Q_SLOTS:
     void replyFinished();
 
 Q_SIGNALS:
+    void sourceChanged();
     void nameChanged();
     void statusChanged();
 };

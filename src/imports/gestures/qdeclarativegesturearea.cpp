@@ -79,6 +79,8 @@ public:
 
 /*!
     \qmlclass GestureArea QDeclarativeGestureArea
+    \ingroup qml-basic-interaction-elements
+
     \brief The GestureArea item enables simple gesture handling.
     \inherits Item
 

@@ -1684,4 +1684,5 @@ EXPORTS
 	?rootContext@QDeclarativeView@@QBEPAVQDeclarativeContext@@XZ @ 1683 NONAME ; class QDeclarativeContext * QDeclarativeView::rootContext(void) const
 	?rootContext@QDeclarativeEngine@@QBEPAVQDeclarativeContext@@XZ @ 1684 NONAME ; class QDeclarativeContext * QDeclarativeEngine::rootContext(void) const
 	?qmlregister@QDeclarativePrivate@@YAHW4RegistrationType@1@PAX@Z @ 1685 NONAME ; int QDeclarativePrivate::qmlregister(enum QDeclarativePrivate::RegistrationType, void *)
+	?hasValue@QDeclarativeOpenMetaObject@@QBE_NH@Z @ 1686 NONAME ; bool QDeclarativeOpenMetaObject::hasValue(int) const
 

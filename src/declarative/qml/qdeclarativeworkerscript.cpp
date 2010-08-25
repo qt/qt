@@ -514,6 +514,7 @@ void QDeclarativeWorkerScriptEngine::run()
 
 /*!
     \qmlclass WorkerScript QDeclarativeWorkerScript
+  \ingroup qml-utility-elements
     \brief The WorkerScript element enables the use of threads in QML.
 
     Use WorkerScript to run operations in a new thread.

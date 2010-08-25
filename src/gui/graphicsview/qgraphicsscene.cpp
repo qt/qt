@@ -5126,7 +5126,9 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 q->update(itemBoundingRect.translated(item->d_ptr->sceneTransform.dx(),
                                                       item->d_ptr->sceneTransform.dy()));
             } else {
-                q->update(item->d_ptr->sceneTransform.mapRect(itemBoundingRect));
+                QRectF rect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
+                if (!rect.isEmpty())
+                    q->update(rect);
             }
         } else {
             QRectF dirtyRect;

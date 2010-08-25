@@ -272,32 +272,24 @@ void tst_qdeclarativeimage::svg()
     QVERIFY(obj != 0);
     QCOMPARE(obj->pixmap().width(), 300);
     QCOMPARE(obj->pixmap().height(), 300);
-    QCOMPARE(obj->width(), 550.0);
-    QCOMPARE(obj->height(), 500.0);
-#if defined(Q_OS_MAC)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-mac.png"));
+    QCOMPARE(obj->width(), 300.0);
+    QCOMPARE(obj->height(), 300.0);
+#if defined(Q_OS_LINUX)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-win32.png"));
-#elif defined(QT_ARCH_ARM)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart-arm.png"));
-#else
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart.png"));
 #endif
 
     obj->setSourceSize(QSize(200,200));
 
     QCOMPARE(obj->pixmap().width(), 200);
     QCOMPARE(obj->pixmap().height(), 200);
-    QCOMPARE(obj->width(), 550.0);
-    QCOMPARE(obj->height(), 500.0);
-#if defined(Q_OS_MAC)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-mac.png"));
+    QCOMPARE(obj->width(), 200.0);
+    QCOMPARE(obj->height(), 200.0);
+#if defined(Q_OS_LINUX)
+    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
 #elif defined(Q_OS_WIN32)
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-win32.png"));
-#elif defined(QT_ARCH_ARM)
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200-arm.png"));
-#else
-    QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/heart200.png"));
 #endif
     delete obj;
 }
@@ -308,7 +300,7 @@ void tst_qdeclarativeimage::big()
     // have to build a 400 MB image. That would be a bug in the JPEG loader.
 
     QString src = QUrl::fromLocalFile(SRCDIR "/data/big.jpeg").toString();
-    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; sourceSize.width: 256; sourceSize.height: 256 }";
+    QString componentStr = "import Qt 4.7\nImage { source: \"" + src + "\"; width: 100; sourceSize.height: 256 }";
 
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
@@ -316,8 +308,8 @@ void tst_qdeclarativeimage::big()
     QVERIFY(obj != 0);
     QCOMPARE(obj->pixmap().width(), 256);
     QCOMPARE(obj->pixmap().height(), 256);
-    QCOMPARE(obj->width(), 10240.0);
-    QCOMPARE(obj->height(), 10240.0);
+    QCOMPARE(obj->width(), 100.0);
+    QCOMPARE(obj->height(), 256.0);
     QCOMPARE(obj->pixmap(), QPixmap(SRCDIR "/data/big256.png"));
 
     delete obj;

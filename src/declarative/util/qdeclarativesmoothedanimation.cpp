@@ -249,6 +249,7 @@ void QSmoothedAnimation::init()
 
 /*!
     \qmlclass SmoothedAnimation QDeclarativeSmoothedAnimation
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits NumberAnimation
     \brief The SmoothedAnimation element allows a property to smoothly track a value.

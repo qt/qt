@@ -76,7 +76,8 @@ public:
     };
     typedef QList<DocInfo> DocInfoList;
 
-    QHelpCollectionHandler(const QString &collectionFile, QObject *parent = 0);
+    explicit QHelpCollectionHandler(const QString &collectionFile,
+        QObject *parent = 0);
     ~QHelpCollectionHandler();
 
     QString collectionFile() const;
