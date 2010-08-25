@@ -213,7 +213,8 @@ void tst_Headers::licenseCheck()
         return;
 
     if (content.first().contains("generated")) {
-        content.takeFirst();
+        // don't scan generated files
+        return;
     }
 
     if (sourceFile.endsWith("/tests/auto/linguist/lupdate/testdata/good/merge_ordering/foo.cpp")

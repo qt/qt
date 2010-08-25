@@ -1430,7 +1430,8 @@ bool VCLinkerTool::parseOption(const char* option)
         break;
     case 0x0034160: // /MAP[:filename]
         GenerateMapFile = _True;
-        MapFileName = option+5;
+        if (option[4] == ':')
+            MapFileName = option+5;
         break;
     case 0x164e1ef: // /MAPINFO:{EXPORTS|LINES}
         if(*(option+9) == 'E')
