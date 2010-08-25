@@ -37,8 +37,8 @@ BaselineProtocol::~BaselineProtocol()
 bool BaselineProtocol::connect()
 {
     errMsg.clear();
-    //TBD: determine server address; for now localhost
-    QLatin1String serverName("localhost");
+    //###TBD: determine server address; for now local devhost
+    QLatin1String serverName("chimera.europe.nokia.com");
 
     socket.connectToHost(serverName, ServerPort);
 

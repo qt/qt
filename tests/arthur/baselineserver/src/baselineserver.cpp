@@ -79,24 +79,28 @@ BaselineHandler::BaselineHandler(int socketDescriptor)
     proto.socket.setSocketDescriptor(socketDescriptor);
 }
 
+QString BaselineHandler::logtime()
+{
+    return QTime::currentTime().toString(QLatin1String("mm:ss.zzz"));
+}
 
 void BaselineHandler::receiveRequest()
 {
     if (!connectionEstablished) {
         if (!proto.acceptConnection(&plat)) {
-            qWarning() << runId << "Accepting new connection failed. " << proto.errorMessage();
+            qWarning() << runId << logtime() << "Accepting new connection failed. " << proto.errorMessage();
             QThread::currentThread()->exit(1);
             return;
         }
         connectionEstablished = true;
-        qDebug() << runId << "Connection established with" << plat.hostname << "Qt version:" << plat.qtVersion << plat.buildKey;
+        qDebug() << runId << logtime() << "Connection established with" << plat.hostname << "Qt version:" << plat.qtVersion << plat.buildKey;
         return;
     }
 
     QByteArray block;
     BaselineProtocol::Command cmd;
     if (!proto.receiveBlock(&cmd, &block)) {
-        qWarning() << runId << "Command reception failed. "<< proto.errorMessage();
+        qWarning() << runId << logtime() << "Command reception failed. "<< proto.errorMessage();
         QThread::currentThread()->exit(1);
         return;
     }
@@ -112,7 +116,7 @@ void BaselineHandler::receiveRequest()
         storeImage(block, false);
         break;
     default:
-        qWarning() << runId << "Unknown command received. " << proto.errorMessage();
+        qWarning() << runId << logtime() << "Unknown command received. " << proto.errorMessage();
         QThread::currentThread()->exit(1);
     }
 }
@@ -120,11 +124,11 @@ void BaselineHandler::receiveRequest()
 
 void BaselineHandler::provideBaseline(const QByteArray &caseId)
 {
-    qDebug() << runId << "Received request for baseline" << caseId;
+    qDebug() << runId << logtime() << "Received request for baseline" << caseId;
 
     QFile file(pathForCaseId(caseId));
     if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << runId << "baseline not found.";
+        qDebug() << runId << logtime() << "baseline not found.";
         proto.sendBlock(BaselineProtocol::BaselineNotPresent, caseId);
         return;
     }
@@ -142,13 +146,13 @@ void BaselineHandler::storeImage(const QByteArray &imageBlock, bool isBaseline)
     ds >> caseId;
     //# For futuresafeness, should make caseId FS-safe - but revertable...
     QFile file(pathForCaseId(caseId, isBaseline));
-    qDebug() << runId << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << caseId << "Storing in" << file.fileName();
+    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << caseId << "Storing in" << file.fileName();
     QString path = file.fileName().section(QDir::separator(), 0, -2);
     QDir cwd;
     if (!cwd.exists(path))
         cwd.mkpath(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        qWarning() << runId << "Failed to store" << file.fileName();
+        qWarning() << runId << logtime() << "Failed to store" << file.fileName();
         return;
     }
     file.write(imageBlock.constData()+buf.pos(), imageBlock.size()-buf.pos());
@@ -159,13 +163,13 @@ void BaselineHandler::storeImage(const QByteArray &imageBlock, bool isBaseline)
            + QHostInfo::localDomainName().toLatin1() + ':'
            + QFileInfo(file).absoluteFilePath().toLatin1();
     proto.sendBlock(BaselineProtocol::Ack, msg);
-    qDebug() << runId << "Storing done.";
+    qDebug() << runId << logtime() << "Storing done.";
 }
 
 
 void BaselineHandler::receiveDisconnect()
 {
-    qDebug() << runId << "Client disconnected.";
+    qDebug() << runId << logtime() << "Client disconnected.";
     QThread::currentThread()->exit(0);
 }
 

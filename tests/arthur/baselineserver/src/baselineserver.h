@@ -64,6 +64,7 @@ private:
     void provideBaseline(const QByteArray &caseId);
     void storeImage(const QByteArray &imageBlock, bool isBaseline);
     QString pathForCaseId(const QByteArray &caseId, bool isBaseline = true);
+    QString logtime();
 
     BaselineProtocol proto;
     PlatformInfo plat;
