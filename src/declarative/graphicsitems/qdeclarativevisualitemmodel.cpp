@@ -966,7 +966,7 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
         Q_ASSERT(p->declarativeData);
         QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
         if (d->ownContext && d->context)
-            d->context->clearExpressions();
+            d->context->clearContext();
 
         if (inPackage) {
             emit destroyingPackage(qobject_cast<QDeclarativePackage*>(obj));
