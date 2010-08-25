@@ -42,7 +42,7 @@
 
 #include <QtCore/private/qfilesystementry_p.h>
 
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 #   define WIN_STUFF
 #endif
 
@@ -79,8 +79,8 @@ void tst_QFileSystemEntry::getSetCheck_data()
 
     QTest::newRow("relative")
 #if defined(WIN_STUFF)
-        << QByteArray("\\in\\a\\dir.tar.gz")
-        << "/in/a/dir.tar.gz"
+        << QByteArray("in\\a\\dir.tar.gz")
+        << "in/a/dir.tar.gz"
 #else
         << QByteArray("in/a/dir.tar.gz")
         << "in/a/dir.tar.gz"
