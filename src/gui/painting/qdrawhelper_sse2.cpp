@@ -161,22 +161,6 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
     }
 }
 
-inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
-}
-
-inline int comp_func_Plus_one_pixel(uint d, const uint s)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return result;
-}
-
 void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
 {
     int x = 0;

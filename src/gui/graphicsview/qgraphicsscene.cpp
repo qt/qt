@@ -1074,7 +1074,7 @@ void QGraphicsScenePrivate::enableMouseTrackingOnViews()
 /*!
     Returns all items for the screen position in \a event.
 */
-QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &screenPos,
+QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &/*screenPos*/,
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
@@ -1083,16 +1083,12 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     if (!view)
         return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
-    const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
+    const QRectF pointRect(scenePos, QSizeF(1, 1));
     if (!view->isTransformed())
         return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
-    if (viewTransform.type() <= QTransform::TxScale) {
-        return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
-                        Qt::DescendingOrder, viewTransform);
-    }
-    return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
+    return q->items(pointRect, Qt::IntersectsItemShape,
                     Qt::DescendingOrder, viewTransform);
 }
 
