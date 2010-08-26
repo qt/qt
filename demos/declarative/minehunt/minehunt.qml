@@ -67,6 +67,18 @@ Item {
         x: 20; spacing: 20
         anchors.bottom: field.bottom; anchors.bottomMargin: 15
 
+        Image {
+            source: "MinehuntCore/pics/quit.png"
+            scale: quitMouse.pressed ? 0.8 : 1.0
+            smooth: quitMouse.pressed
+            y: 10
+            MouseArea {
+                id: quitMouse
+                anchors.fill: parent
+                anchors.margins: -20
+                onClicked: Qt.quit()
+            }
+        }
         Column {
             spacing: 2
             Image { source: "MinehuntCore/pics/bomb-color.png" }
