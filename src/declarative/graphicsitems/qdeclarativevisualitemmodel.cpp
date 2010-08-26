@@ -714,7 +714,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
-        QObject::disconnect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_modelReset()));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_abstractItemModel = 0;
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
@@ -762,7 +762,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
-        QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_modelReset()));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
         return;
     }
@@ -1332,6 +1332,12 @@ void QDeclarativeVisualDataModel::_q_dataChanged(const QModelIndex &begin, const
     Q_D(QDeclarativeVisualDataModel);
     if (!begin.parent().isValid())
         _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
+}
+
+void QDeclarativeVisualDataModel::_q_layoutChanged()
+{
+    Q_D(QDeclarativeVisualDataModel);
+    _q_itemsChanged(0, count(), d->m_roles);
 }
 
 void QDeclarativeVisualDataModel::_q_modelReset()

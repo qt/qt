@@ -590,7 +590,7 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->currentIndex(), 35);
     QCOMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 35));
     QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
-    QCOMPARE(gridview->contentY(), 399.0);
+    QCOMPARE(gridview->contentY(), 400.0);
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 36);
@@ -629,7 +629,7 @@ void tst_QDeclarativeGridView::currentIndex()
     gridview->moveCurrentIndexLeft();
     QCOMPARE(gridview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(gridview->contentY(), 879.0);
+    QTRY_COMPARE(gridview->contentY(), 880.0);
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 0);
