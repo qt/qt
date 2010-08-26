@@ -2596,9 +2596,11 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Convert scene rects to viewport rects.
     foreach (const QRectF &rect, rects) {
-        QRect xrect = transform.mapRect(rect).toRect();
+        QRect xrect = transform.mapRect(rect).toAlignedRect();
         if (!(d->optimizationFlags & DontAdjustForAntialiasing))
             xrect.adjust(-2, -2, 2, 2);
+        else
+            xrect.adjust(-1, -1, 1, 1);
         if (!viewportRect.intersects(xrect))
             continue;
         dirtyViewportRects << xrect;

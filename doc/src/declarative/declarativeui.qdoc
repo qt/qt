@@ -28,6 +28,8 @@
 /*!
 \title Qt Quick
 \page qtquick.html
+\ingroup qt-gui-concepts
+
 
 \brief Qt Quick provides a declarative framework for building highly
 dynamic, custom user interfaces.
@@ -88,11 +90,11 @@ Module.
 \o \l{QML Modules}
 \o \l{Extending types from QML}
 \o \l{Dynamic Object Management in QML}
-\o \l{Qt Declarative UI Runtime}
 \endlist
 
 \section1 Using QML with C++
 \list
+\o \l{Qt Declarative UI Runtime}
 \o \l{Using QML in C++ Applications}
 \o \l{Integrating QML with existing Qt UI code}
 \o \l{Tutorial: Writing QML extensions with C++}

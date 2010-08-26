@@ -927,6 +927,24 @@ QString QString::fromWCharArray(const wchar_t *string, int size)
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
 
+template<typename T> int toUcs4_helper(const unsigned short *uc, int length, T *out)
+{
+    int i = 0;
+    for (; i < length; ++i) {
+        uint u = uc[i];
+        if (QChar::isHighSurrogate(u) && i < length-1) {
+            ushort low = uc[i+1];
+            if (QChar::isLowSurrogate(low)) {
+                ++i;
+                u = QChar::surrogateToUcs4(u, low);
+            }
+        }
+        *out = T(u);
+        ++out;
+    }
+    return i;
+}
+
 /*!
   \since 4.2
 
@@ -951,21 +969,7 @@ int QString::toWCharArray(wchar_t *array) const
         memcpy(array, utf16(), sizeof(wchar_t)*length());
         return length();
     } else {
-        wchar_t *a = array;
-        const unsigned short *uc = utf16();
-        for (int i = 0; i < length(); ++i) {
-            uint u = uc[i];
-            if (QChar::isHighSurrogate(u) && i + 1 < length()) {
-                ushort low = uc[i+1];
-                if (QChar::isLowSurrogate(low)) {
-                    u = QChar::surrogateToUcs4(u, low);
-                    ++i;
-                }
-            }
-            *a = wchar_t(u);
-            ++a;
-        }
-        return a - array;
+        return toUcs4_helper<wchar_t>(utf16(), length(), array);
     }
 }
 
@@ -1298,7 +1302,9 @@ void QString::realloc(int alloc)
             asciiCache->remove(d);
         }
 #endif
-        d = static_cast<Data *>(q_check_ptr(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar))));
+        Data *p = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
+        Q_CHECK_PTR(p);
+        d = p;
         d->alloc = alloc;
         d->data = d->array;
     }
@@ -3707,20 +3713,8 @@ QVector<uint> QString::toUcs4() const
 {
     QVector<uint> v(length());
     uint *a = v.data();
-    const unsigned short *uc = utf16();
-    for (int i = 0; i < length(); ++i) {
-        uint u = uc[i];
-        if (QChar(u).isHighSurrogate() && i < length()-1) {
-            ushort low = uc[i+1];
-            if (QChar(low).isLowSurrogate()) {
-                ++i;
-                u = QChar::surrogateToUcs4(u, low);
-            }
-        }
-        *a = u;
-        ++a;
-    }
-    v.resize(a - v.data());
+    int len = toUcs4_helper<uint>(utf16(), length(), a);
+    v.resize(len);
     return v;
 }
 
@@ -8957,6 +8951,116 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                 return false;
     }
     return true;
+}
+
+/*!
+    \since 4.8
+
+    Returns a Latin-1 representation of the string as a QByteArray.
+
+    The returned byte array is undefined if the string contains non-Latin1
+    characters. Those characters may be suppressed or replaced with a
+    question mark.
+
+    \sa toAscii(), toUtf8(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toLatin1() const
+{
+    return toLatin1_helper(unicode(), length());
+}
+
+/*!
+    \since 4.8
+
+    Returns an 8-bit representation of the string as a QByteArray.
+
+    If a codec has been set using QTextCodec::setCodecForCStrings(),
+    it is used to convert Unicode to 8-bit char; otherwise this
+    function does the same as toLatin1().
+
+    Note that, despite the name, this function does not necessarily return an US-ASCII
+    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
+
+    \sa toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toAscii() const
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QString::codecForCStrings)
+        return QString::codecForCStrings->fromUnicode(unicode(), length());
+#endif // QT_NO_TEXTCODEC
+    return toLatin1();
+}
+
+/*!
+    \since 4.8
+
+    Returns the local 8-bit representation of the string as a
+    QByteArray. The returned byte array is undefined if the string
+    contains characters not supported by the local 8-bit encoding.
+
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale encoding could not be determined, this function
+    does the same as toLatin1().
+
+    If this string contains any characters that cannot be encoded in the
+    locale, the returned byte array is undefined. Those characters may be
+    suppressed or replaced by another.
+
+    \sa toAscii(), toLatin1(), toUtf8(), QTextCodec
+*/
+QByteArray QStringRef::toLocal8Bit() const
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QTextCodec::codecForLocale())
+        return QTextCodec::codecForLocale()->fromUnicode(unicode(), length());
+#endif // QT_NO_TEXTCODEC
+    return toLatin1();
+}
+
+/*!
+    \since 4.8
+
+    Returns a UTF-8 representation of the string as a QByteArray.
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString.
+
+    However, in the Unicode range, there are certain codepoints that are not
+    considered characters. The Unicode standard reserves the last two
+    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
+    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
+    inclusive, as non-characters. If any of those appear in the string, they
+    may be discarded and will not appear in the UTF-8 representation, or they
+    may be replaced by one or more replacement characters.
+
+    \sa toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toUtf8() const
+{
+    if (isNull())
+        return QByteArray();
+
+    return QUtf8::convertFromUnicode(constData(), length(), 0);
+}
+
+/*!
+    \since 4.8
+
+    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and is lossless. All characters from this string
+    can be encoded in UCS-4.
+
+    \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+*/
+QVector<uint> QStringRef::toUcs4() const
+{
+    QVector<uint> v(length());
+    uint *a = v.data();
+    int len = toUcs4_helper<uint>(reinterpret_cast<const unsigned short *>(unicode()), length(), a);
+    v.resize(len);
+    return v;
 }
 
 QT_END_NAMESPACE

@@ -1009,7 +1009,8 @@ bool QEventDispatcherSymbian::hasPendingEvents()
 
 void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifier )
 {
-    QSocketActiveObject *socketAO = q_check_ptr(new QSocketActiveObject(this, notifier));
+    QSocketActiveObject *socketAO = new QSocketActiveObject(this, notifier);
+    Q_CHECK_PTR(socketAO);
     m_notifiers.insert(notifier, socketAO);
     selectThread().requestSocketEvents(notifier, &socketAO->iStatus);
 }

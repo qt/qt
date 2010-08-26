@@ -71,11 +71,10 @@ public:
     qint64 readBufferMaxSize;
     QNetworkAccessManager::Operation operation;
     QNetworkReply::NetworkError errorCode;
+    bool isFinished;
 
     static inline void setManager(QNetworkReply *reply, QNetworkAccessManager *manager)
     { reply->d_func()->manager = manager; }
-
-    virtual bool isFinished() const { return false; }
 
     Q_DECLARE_PUBLIC(QNetworkReply)
 };

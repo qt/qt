@@ -1278,7 +1278,8 @@ bool QItemDelegate::editorEvent(QEvent *event,
 
     // make sure that we have the right event type
     if ((event->type() == QEvent::MouseButtonRelease)
-        || (event->type() == QEvent::MouseButtonDblClick)) {
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
         QRect checkRect = check(option, option.rect, Qt::Checked);
         QRect emptyRect;
         doLayout(option, &checkRect, &emptyRect, &emptyRect, false);
@@ -1287,7 +1288,8 @@ bool QItemDelegate::editorEvent(QEvent *event,
             return false;
 
         // eat the double click events inside the check rect
-        if (event->type() == QEvent::MouseButtonDblClick)
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick))
             return true;
 
     } else if (event->type() == QEvent::KeyPress) {

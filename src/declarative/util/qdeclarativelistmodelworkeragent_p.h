@@ -57,6 +57,8 @@
 
 #include <QtScript/qscriptvalue.h>
 #include <QtGui/qevent.h>
+#include <QMutex>
+#include <QWaitCondition>
 
 QT_BEGIN_HEADER
 
@@ -142,6 +144,8 @@ private:
     QAtomicInt m_ref;
     QDeclarativeListModel *m_orig;
     QDeclarativeListModel *m_copy;
+    QMutex mutex;
+    QWaitCondition syncDone;
 };
 
 QT_END_NAMESPACE

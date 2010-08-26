@@ -77,7 +77,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
     }
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-    CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    CFbsBitmap *bitmap = new CFbsBitmap;	// CBase derived object needs check on new
+    Q_CHECK_PTR(bitmap);
     qt_symbian_throwIfError( bitmap->Create( TSize(0, 0), mode ) );
 
     QS60PixmapData *data = new QS60PixmapData(QPixmapData::PixmapType);

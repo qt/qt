@@ -3048,6 +3048,13 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 titleRule.configurePalette(&pal, QPalette::WindowText, QPalette::Window);
                 drawItemText(p, labelRect,  alignment, pal, gb->state & State_Enabled,
                              gb->text, QPalette::WindowText);
+
+                if (gb->state & State_HasFocus) {
+                    QStyleOptionFocusRect fropt;
+                    fropt.QStyleOption::operator=(*gb);
+                    fropt.rect = labelRect;
+                    drawPrimitive(PE_FrameFocusRect, &fropt, p, w);
+                }
             }
 
                         return;

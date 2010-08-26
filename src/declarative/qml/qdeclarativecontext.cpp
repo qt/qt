@@ -533,8 +533,21 @@ void QDeclarativeContextData::invalidate()
     parent = 0;
 }
 
-void QDeclarativeContextData::clearExpressions()
+void QDeclarativeContextData::clearContext()
 {
+    if (engine) {
+        while (componentAttached) {
+            QDeclarativeComponentAttached *a = componentAttached;
+            componentAttached = a->next;
+            if (componentAttached) componentAttached->prev = &componentAttached;
+
+            a->next = 0;
+            a->prev = 0;
+
+            emit a->destruction();
+        }
+    }
+
     QDeclarativeAbstractExpression *expression = expressions;
     while (expression) {
         QDeclarativeAbstractExpression *nextExpression = expression->m_nextExpression;
@@ -555,7 +568,7 @@ void QDeclarativeContextData::destroy()
 
     if (engine) invalidate();
 
-    clearExpressions();
+    clearContext();
 
     while (contextObjects) {
         QDeclarativeData *co = contextObjects;

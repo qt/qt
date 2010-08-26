@@ -883,7 +883,9 @@ void QHttpNetworkConnectionChannel::_q_readyRead()
 {
     // We got a readyRead but no bytes are available..
     // This happens for the Unbuffered QTcpSocket
-    if (socket->bytesAvailable() == 0) {
+    // Also check if socket is in ConnectedState since
+    // this function may also be invoked via the event loop.
+    if (socket->state() == QAbstractSocket::ConnectedState && socket->bytesAvailable() == 0) {
         char c;
         qint64  ret = socket->peek(&c, 1);
         if (ret < 0) {

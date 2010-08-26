@@ -253,6 +253,20 @@ This example builds on:
 */
 
 /*!
+\example declarative/cppextensions/referenceexamples/methods
+\title Extending QML - Methods Example
+
+This example builds on:
+\list
+\o \l {Extending QML - Default Property Example}
+\o \l {Extending QML - Inheritance and Coercion Example}
+\o \l {Extending QML - Object and List Property Types Example}
+\o \l {Extending QML - Adding Types Example}
+\endlist
+
+*/
+
+/*!
 \example declarative/cppextensions/referenceexamples/valuesource
 \title Extending QML - Property Value Source Example
 

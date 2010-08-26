@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 static const int FlickThreshold = 20;
 
 // Really slow flicks can be annoying.
-static const int minimumFlickVelocity = 200;
+static const int MinimumFlickVelocity = 75;
 
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
@@ -779,23 +779,15 @@ void QDeclarativeFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEv
     }
 
     vTime = timeline.time();
-    if (qAbs(vData.velocity) > 10 && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold) {
-        qreal velocity = vData.velocity;
-        if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
-            velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
-        flickY(velocity);
-    } else {
+    if (qAbs(vData.velocity) > MinimumFlickVelocity && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold)
+        flickY(vData.velocity);
+    else
         fixupY();
-    }
 
-    if (qAbs(hData.velocity) > 10 && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold) {
-        qreal velocity = hData.velocity;
-        if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
-            velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
-        flickX(velocity);
-    } else {
+    if (qAbs(hData.velocity) > MinimumFlickVelocity && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold)
+        flickX(hData.velocity);
+    else
         fixupX();
-    }
 
     lastPosTime.invalidate();
 

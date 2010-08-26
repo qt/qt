@@ -187,12 +187,17 @@ void QDeclarativeListModelWorkerAgent::sync()
     s->data = data;
     s->list = m_copy;
     data.changes.clear();
+
+    mutex.lock();
     QCoreApplication::postEvent(this, s);
+    syncDone.wait(&mutex);
+    mutex.unlock();
 }
 
 bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 {
     if (e->type() == QEvent::User) {
+        QMutexLocker locker(&mutex);
         Sync *s = static_cast<Sync *>(e);
 
         const QList<Change> &changes = s->data.changes;
@@ -202,12 +207,17 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 
             FlatListModel *orig = m_orig->m_flat;
             FlatListModel *copy = s->list->m_flat;
-            if (!orig || !copy) 
+            if (!orig || !copy) {
+                syncDone.wakeAll();
                 return QObject::event(e);
-            
+            }
+
             orig->m_roles = copy->m_roles;
             orig->m_strings = copy->m_strings;
             orig->m_values = copy->m_values;
+
+            syncDone.wakeAll();
+            locker.unlock();
 
             for (int ii = 0; ii < changes.count(); ++ii) {
                 const Change &change = changes.at(ii);
@@ -229,6 +239,8 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 
             if (cc)
                 emit m_orig->countChanged();
+        } else {
+            syncDone.wakeAll();
         }
     }
 

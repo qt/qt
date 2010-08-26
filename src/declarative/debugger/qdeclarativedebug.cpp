@@ -340,6 +340,8 @@ void QDeclarativeEngineDebugPrivate::message(const QByteArray &data)
         if (!watch)
             return;
         emit watch->valueChanged(name, value);
+    } else if (type == "OBJECT_CREATED") {
+        emit q_func()->newObjects();
     }
 }
 
