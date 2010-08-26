@@ -543,7 +543,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             QString typemodifier;
             if(node->typeModifier)
                 typemodifier = node->typeModifier->asString();
-            if (typemodifier == QString()) {
+            if (typemodifier.isEmpty()) {
                 type = Object::DynamicProperty::Custom;
             } else if(typemodifier == QLatin1String("list")) {
                 type = Object::DynamicProperty::CustomList;

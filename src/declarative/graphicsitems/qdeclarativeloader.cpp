@@ -108,59 +108,83 @@ void QDeclarativeLoaderPrivate::initResize()
 
 /*!
     \qmlclass Loader QDeclarativeLoader
+    \ingroup qml-utility-elements
     \since 4.7
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based
     subtree from a URL or Component.
 
-    The Loader element instantiates an item from a component. The component to
-    be instantiated may be specified directly by the \l sourceComponent
-    property, or loaded from a URL via the \l source property.
+    Loader is used to dynamically load visual QML components. It can load a
+    QML file (using the \l source property) or a \l Component object (using 
+    the \l sourceComponent property). It is useful for delaying the creation 
+    of a component until it is required: for example, when a component should 
+    be created on demand, or when a component should not be created 
+    unnecessarily for performance reasons.
 
-    Loader can be used to delay the creation of a component until it
-    is required.  For example, this loads "Page1.qml" as a component
-    into the Loader element, when the \l MouseArea is clicked:
+    Here is a Loader that loads "Page1.qml" as a component when the 
+    \l MouseArea is clicked:
 
-    \code
-    import Qt 4.7
+    \snippet doc/src/snippets/declarative/loader/simple.qml 0
 
-    Item {
-        width: 200; height: 200
+    The loaded item can be accessed using the \l item property.
 
-        MouseArea { 
-            anchors.fill: parent
-            onClicked: pageLoader.source = "Page1.qml"
-        }
+    Loader is like any other visual item and must be positioned and sized 
+    accordingly to become visible. Once the component is loaded, the Loader 
+    is automatically resized to the size of the component.
 
-        Loader { id: pageLoader }
-    }
-    \endcode
+    If the \l source or \l sourceComponent changes, any previously instantiated
+    items are destroyed. Setting \l source to an empty string or setting
+    \l sourceComponent to \c undefined destroys the currently loaded item,
+    freeing resources and leaving the Loader empty.
 
-    Note that Loader is like any other graphical Item and needs to be positioned 
-    and sized accordingly to become visible. When a component is loaded, the 
-    Loader is automatically resized to the size of the component.
 
-    If the Loader source is changed, any previous items instantiated
-    will be destroyed.  Setting \l source to an empty string, or setting
-    sourceComponent to \e undefined
-    will destroy the currently instantiated items, freeing resources
-    and leaving the Loader empty.  For example:
+    \section2 Receiving signals from loaded items
 
-    \code
-    pageLoader.source = ""
-    \endcode
+    Any signals emitted from the loaded item can be received using the 
+    \l Connections element. For example, the following \c application.qml
+    loads \c MyItem.qml, and is able to receive the \c message signal from
+    the loaded item through a \l Connections object:
 
-      or
+    \table
+    \row 
+    \o application.qml
+    \o MyItem.qml
+    \row
+    \o \snippet doc/src/snippets/declarative/loader/connections.qml 0
+    \o \snippet doc/src/snippets/declarative/loader/MyItem.qml 0
+    \endtable
 
-    \code
-    pageLoader.sourceComponent = undefined
-    \endcode
+    Alternatively, since \c MyItem.qml is loaded within the scope of the
+    Loader, it could also directly call any function defined in the Loader or
+    its parent \l Item.
 
-    unloads "Page1.qml" and frees resources consumed by it.
 
-    Note that Loader is a focus scope. Its \c focus property must be set to \c true for any of its children
-    to get the \e {active focus} (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
+    \section2 Focus and key events
+
+    Loader is a focus scope. Its \l {Item::}{focus} property must be set to 
+    \c true for any of its children to get the \e {active focus}. (See 
+    \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} 
+    for more details.) Any key events received in the loaded item should likely
+    also be \l {KeyEvent::}{accepted} so they are not propagated to the Loader.
+
+    For example, the following \c application.qml loads \c KeyReader.qml when
+    the \l MouseArea is clicked.  Notice the \l {Item::}{focus} property is 
+    set to \c true for the Loader as well as the \l Item in the dynamically 
+    loaded object:
+
+    \table
+    \row 
+    \o application.qml
+    \o KeyReader.qml
+    \row
+    \o \snippet doc/src/snippets/declarative/loader/focus.qml 0
+    \o \snippet doc/src/snippets/declarative/loader/KeyReader.qml 0
+    \endtable
+
+    Once \c KeyReader.qml is loaded, it accepts key events and sets 
+    \c event.accepted to \c true so that the event is not propagated to the
+    parent \l Rectangle.
 
     \sa {dynamic-object-creation}{Dynamic Object Creation}
 */
@@ -197,8 +221,13 @@ QDeclarativeLoader::~QDeclarativeLoader()
 
 /*!
     \qmlproperty url Loader::source
-    This property holds the URL of the QML component to
-    instantiate.
+    This property holds the URL of the QML component to instantiate.
+
+    Note the QML component must be an \l Item-based component. Loader cannot
+    load non-visual components.
+
+    To unload the currently loaded item, set this property to an empty string,
+    or set \l sourceComponent to \c undefined.
 
     \sa sourceComponent, status, progress
 */
@@ -257,7 +286,8 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     }
     \endqml
 
-    Note this value must hold a \l Component object; it cannot be a \l Item.
+    To unload the currently loaded item, set this property to an empty string,
+    or set \l sourceComponent to \c undefined.
 
     \sa source, progress
 */
@@ -476,7 +506,7 @@ void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
 
 /*!
     \qmlproperty Item Loader::item
-    This property holds the top-level item created from source.
+    This property holds the top-level item that is currently loaded.
 */
 QGraphicsObject *QDeclarativeLoader::item() const
 {

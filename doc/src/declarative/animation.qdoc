@@ -156,11 +156,13 @@ The \l {PropertyAnimation::}{to} property is also required to specify the new
 \section2 Standalone Animations
 
 Animations can also be created as ordinary QML objects that are not bound to
-any particular objects and properties. An example:
+any particular objects and properties. Here is an example, using a 
+PropertyAnimation object. The animation is explicitly started when the 
+\l Rectangle is clicked:
 
 \snippet doc/src/snippets/declarative/animation-standalone.qml 0
 
-A standalone animation is not running by default and must be started explicitly
+A standalone animation object is not running by default and must be started explicitly
 using the \l {Animation::}{running} property or \l {Animation::}{start()} and
 \l {Animation::}{stop()} methods. Since the animation is not bound to a
 particular object or property, it must define the \l
@@ -183,10 +185,13 @@ object and add it to an item's \l {Item::}{transitions} property. An example:
 
 \snippet doc/src/snippets/declarative/animation-transitions.qml 0
 
-When the \l Rectangle changes to the \e moved state, its \c x and \c y property
-values are changed by the PropertyChanges object, and the PropertyAnimation
-defined within the \l Transition is triggered on these properties. The
-animation will not be applied at any time other than during the state change.
+The PropertyChanges object in the \e moved state defines that when the
+\l Rectangle is in this state, its position should be changed
+to (50, 50). When the \l Rectangle changes to the \e moved state, the 
+\l Transition will be triggered, and the transition's \l PropertyAnimation will
+animate the changes in the \c x and \c y properties to their new values.
+The animation will not be applied at any time other than during the state 
+change.
 
 Notice the example does not set any \l {PropertyAnimation::}{from} and \l
 {PropertyAnimation::}{to} values for the PropertyAnimation. As a convenience,
@@ -234,7 +239,7 @@ and rotation changes.
 
 A ColorAnimation allows color values for the \l {ColorAnimation::}{from} 
 and \l {ColorAnimation::}{to} properties. The
-following animates the rectangle's \l {Rectangle::color} property:
+following animates the rectangle's \l {Rectangle::}{color} property:
 
 \snippet doc/src/snippets/declarative/animation-elements.qml color
 

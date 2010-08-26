@@ -1,3 +1,6 @@
-To compile the C++ part, do 'qmake && make'. Minehunt will not run properly if the C++ plugin is not compiled.
+Minehunt has to be compiled to run.
 
-To run, simply load the minehunt.qml file with the qml runtime.
+To compile the C++ part, do 'qmake && make'.
+To run, simply run the executable.
+To deploy on a device, do 'make sis'.
+

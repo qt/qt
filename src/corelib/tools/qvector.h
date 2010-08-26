@@ -377,10 +377,11 @@ inline void QVector<T>::replace(int i, const T &t)
 template <typename T>
 QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 {
-    v.d->ref.ref();
+    QVectorData *o = v.d;
+    o->ref.ref();
     if (!d->ref.deref())
         free(p);
-    d = v.d;
+    d = o;
     if (!d->sharable)
         detach_helper();
     return *this;

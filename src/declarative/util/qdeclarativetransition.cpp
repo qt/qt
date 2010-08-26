@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transition QDeclarativeTransition
+    \ingroup qml-animation-transition
     \since 4.7
     \brief The Transition element defines animated transitions that occur on state changes.
 

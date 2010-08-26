@@ -78,6 +78,7 @@ public:
 
 /*!
     \qmlclass FontLoader QDeclarativeFontLoader
+  \ingroup qml-utility-elements
     \since 4.7
     \brief The FontLoader element allows fonts to be loaded by name or URL.
 
@@ -129,6 +130,7 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
 
     d->status = Loading;
     emit statusChanged();
+    emit sourceChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
     if (!lf.isEmpty()) {

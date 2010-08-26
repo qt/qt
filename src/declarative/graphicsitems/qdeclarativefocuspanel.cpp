@@ -51,6 +51,8 @@ QT_BEGIN_NAMESPACE
 /*!
    \qmlclass FocusPanel QDeclarativeFocusPanel
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
    \brief The FocusPanel item explicitly creates a focus panel.
    \inherits Item
 

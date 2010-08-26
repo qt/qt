@@ -129,7 +129,12 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
 void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QList<QGestureRecognizer *> list = m_recognizers.values(type);
-    m_recognizers.remove(type);
+    while (QGestureRecognizer *recognizer = m_recognizers.take(type)) {
+        if (!m_obsoleteGestures.contains(recognizer)) {
+            // inserting even an empty QSet will cause the recognizer to be deleted on destruction of the manager
+            m_obsoleteGestures.insert(recognizer, QSet<QGesture *>());
+        }
+    }
     foreach (QGesture *g, m_gestureToRecognizer.keys()) {
         QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
         if (list.contains(recognizer)) {

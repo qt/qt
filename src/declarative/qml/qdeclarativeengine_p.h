@@ -232,7 +232,7 @@ public:
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QDeclarativeNetworkAccessManagerFactory *networkAccessManagerFactory;
 
-    QHash<QString,QDeclarativeImageProvider*> imageProviders;
+    QHash<QString,QSharedPointer<QDeclarativeImageProvider> > imageProviders;
     QDeclarativeImageProvider::ImageType getImageProviderType(const QUrl &url);
     QImage getImageFromProvider(const QUrl &url, QSize *size, const QSize& req_size);
     QPixmap getPixmapFromProvider(const QUrl &url, QSize *size, const QSize& req_size);

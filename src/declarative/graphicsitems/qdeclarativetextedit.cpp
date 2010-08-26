@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
+    \ingroup qml-basic-visual-elements
     \since 4.7
     \brief The TextEdit item displays multiple lines of editable formatted text.
     \inherits Item

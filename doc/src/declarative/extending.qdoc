@@ -434,6 +434,23 @@ NOTIFY signal in C++.
 
 See also \l {Extending types from QML}.
 
+\section1 Methods
+
+Slots and methods marked Q_INVOKABLE may be called as functions in QML.
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/example.qml 0
+
+In this example an invitation is added via an \c {invite()} invokable method of
+the BirthdayParty element.  This function is available in QML by marking the \c {invite()}
+method with Q_INVOKABLE in the BirthdayParty class:
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/birthdayparty.h 0
+
+\l {Extending QML - Methods Example} shows the complete code used to
+implement the invite() method.
+
+The \c {invite()} method is similarly available if it is declared as a slot.
+
 \section1 Property Value Sources
 
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
