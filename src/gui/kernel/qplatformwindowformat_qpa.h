@@ -47,6 +47,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Gui)
+
 class QPlatformWindowFormatPrivate;
 
 class Q_GUI_EXPORT QPlatformWindowFormat
