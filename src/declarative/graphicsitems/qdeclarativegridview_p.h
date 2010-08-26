@@ -221,7 +221,7 @@ public:
         : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeGridViewAttached() {}
 
-    Q_PROPERTY(QDeclarativeGridView *view READ view WRITE setView NOTIFY viewChanged)
+    Q_PROPERTY(QDeclarativeGridView *view READ view NOTIFY viewChanged)
     QDeclarativeGridView *view() { return m_view; }
     void setView(QDeclarativeGridView *view) {
         if (view != m_view) {
