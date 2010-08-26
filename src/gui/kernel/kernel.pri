@@ -222,7 +222,7 @@ qpa {
                 kernel/qplatformglcontext_qpa.h \
                 kernel/qdesktopwidget_qpa_p.h \
                 kernel/qplatformeventloopintegration_qpa.h \
-                painting/qplatformcursor_qpa.h
+                kernel/qplatformcursor_qpa.h
 
 	SOURCES += \
 		kernel/qapplication_qpa.cpp \
@@ -244,7 +244,7 @@ qpa {
                 kernel/qplatformwindowformat_qpa.cpp \
                 kernel/qplatformeventloopintegration_qpa.cpp \
                 kernel/qplatformglcontext_qpa.cpp \
-                painting/qplatformcursor_qpa.cpp
+                kernel/qplatformcursor_qpa.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \
