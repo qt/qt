@@ -1585,14 +1585,11 @@ bool QDir::makeAbsolute() // ### What do the return values signify?
     if (QDir::isRelativePath(absolutePath))
         return false;
 
-    Q_D(QDir);
-
-    d->path = absolutePath;
-    d->initFileEngine();
-    d->clearFileLists();
-
-    if (!(d->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
+    QDir dir(absolutePath);
+    if (!(dir.d_ptr.constData()->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
         return false;
+
+    *this = dir;
     return true;
 }
 
