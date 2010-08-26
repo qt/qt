@@ -614,6 +614,7 @@ private:
         ushort asciiCache : 1;
         ushort capacity : 1;
         ushort reserved : 11;
+        // ### Qt5: try to ensure that "array" is aligned to 16 bytes on both 32- and 64-bit
         ushort array[1];
     };
     static Data shared_null;

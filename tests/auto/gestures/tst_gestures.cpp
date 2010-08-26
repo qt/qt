@@ -395,7 +395,12 @@ void tst_Gestures::customGesture()
 {
     GestureWidget widget;
     widget.grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+
     CustomEvent event;
+    event.hotSpot = widget.mapToGlobal(QPoint(5,5));
+    event.hasHotSpot = true;
     sendCustomGesture(&event, &widget);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
