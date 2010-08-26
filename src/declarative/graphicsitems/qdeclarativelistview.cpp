@@ -96,7 +96,7 @@ public:
     FxListItem(QDeclarativeItem *i, QDeclarativeListView *v) : item(i), section(0), view(v) {
         attached = static_cast<QDeclarativeListViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeListView>(item));
         if (attached)
-            attached->m_view = view;
+            attached->setView(view);
     }
     ~FxListItem() {}
     qreal position() const {

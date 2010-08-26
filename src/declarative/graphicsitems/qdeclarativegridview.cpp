@@ -64,7 +64,7 @@ public:
     FxGridItem(QDeclarativeItem *i, QDeclarativeGridView *v) : item(i), view(v) {
         attached = static_cast<QDeclarativeGridViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeGridView>(item));
         if (attached)
-            attached->m_view = view;
+            attached->setView(view);
     }
     ~FxGridItem() {}
 

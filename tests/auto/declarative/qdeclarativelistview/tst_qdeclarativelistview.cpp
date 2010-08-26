@@ -1066,6 +1066,7 @@ void tst_QDeclarativeListView::itemList()
     QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "item1");
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->x(), 0.0);
+    QCOMPARE(item->height(), listview->height());
 
     QDeclarativeText *text = findItem<QDeclarativeText>(contentItem, "text1");
     QTRY_VERIFY(text);
