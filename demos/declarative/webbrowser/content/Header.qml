@@ -51,7 +51,6 @@ Image {
 
     x: webView.contentX < 0 ? -webView.contentX : webView.contentX > webView.contentWidth-webView.width
        ? -webView.contentX+webView.contentWidth-webView.width : 0
-
     y: {
         if (webView.progress < 1.0)
             return 0;
@@ -59,7 +58,6 @@ Image {
             webView.contentY < 0 ? -webView.contentY : webView.contentY > height ? -height : -webView.contentY
         }
     }
-
     Column {
         width: parent.width
 
@@ -101,14 +99,38 @@ Image {
 
             Button {
                 id: reloadButton
-                anchors { right: parent.right; rightMargin: 4 }
+                anchors { right: quitButton.left; rightMargin: 10 }
                 action: webView.reload; image: "pics/view-refresh.png"
                 visible: webView.progress == 1.0 && !header.urlChanged
+            }
+            Text {
+                id: quitButton
+                color: "white"
+                style: Text.Sunken
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 18
+                width: 60
+                text: "Quit"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: Qt.quit()
+                }
+                Rectangle {
+                    width: 1
+                    y: 5
+                    height: parent.height-10
+                    anchors.right: parent.left
+                    color: "darkgray"
+                }
             }
 
             Button {
                 id: stopButton
-                anchors { right: parent.right; rightMargin: 4 }
+                anchors { right: quitButton.left; rightMargin: 10 }
                 action: webView.stop; image: "pics/edit-delete.png"
                 visible: webView.progress < 1.0 && !header.urlChanged
             }
