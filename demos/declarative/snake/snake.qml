@@ -194,6 +194,12 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Content.Button {
+            text: "Quit"
+            anchors { left: btnA.right; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            onClicked: Qt.quit();
+        }
+
         Text {
             color: activePalette.text
             text: "Score: " + score; font.bold: true
