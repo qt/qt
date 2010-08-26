@@ -67,6 +67,7 @@ private slots:
 
     void constructor();
     void constructor_data();
+    void noPenNoBrush();
 };
 
 // Testing get/set functions
@@ -213,6 +214,12 @@ void tst_QPen::stream()
     QCOMPARE(pen, cmp);
 }
 
+void tst_QPen::noPenNoBrush()
+{
+    QPen pen;
+    pen.setStyle(Qt::NoPen);
+    QVERIFY(pen.brush().style() == Qt::NoBrush);
+}
 
 QTEST_APPLESS_MAIN(tst_QPen)
 #include "tst_qpen.moc"
