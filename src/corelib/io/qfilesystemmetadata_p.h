@@ -53,10 +53,16 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 QT_BEGIN_NAMESPACE
 
 class QFileSystemMetaData
 {
+public:
+    enum FileFlag {
+    };
+    Q_DECLARE_FLAGS(FileFlags, FileFlag);
 };
 
 QT_END_NAMESPACE

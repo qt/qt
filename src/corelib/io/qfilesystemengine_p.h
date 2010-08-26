@@ -53,10 +53,37 @@
 // We mean it.
 //
 
+#include "qfile.h"
+#include "qfilesystementry_p.h"
+#include "qfilesystemmetadata_p.h"
+
 QT_BEGIN_NAMESPACE
 
 class QFileSystemEngine
 {
+public:
+    static bool isCaseSensitive();
+
+    static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link);
+    static QFileSystemEntry canonicalName(const QFileSystemEntry &entry);
+    static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
+
+    static QString bundleName(const QFileSystemEntry &entry);
+
+    static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
+            QFileSystemMetaData::FileFlags what);
+
+    static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
+    static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
+
+    static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target);
+
+    static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target);
+    static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target);
+    static bool removeFile(const QFileSystemEntry &entry);
+
+    static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
+            QFileSystemMetaData *data = 0);
 };
 
 QT_END_NAMESPACE
