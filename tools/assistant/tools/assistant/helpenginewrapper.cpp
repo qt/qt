@@ -72,6 +72,7 @@ namespace {
     const QString UseBrowserFontKey(QLatin1String("useBrowserFont"));
     const QString VersionKey(QString(QLatin1String("qtVersion%1$$$%2")).
                              arg(QLatin1String(QT_VERSION_STR)));
+    const QString ShowTabsKey(QLatin1String("showTabs"));
 } // anonymous namespace
 
 class TimeoutForwarder : public QObject
@@ -697,6 +698,17 @@ void HelpEngineWrapper::handleCurrentFilterChanged(const QString &filter)
     emit currentFilterChanged(filterToReport);
 }
 
+bool HelpEngineWrapper::showTabs() const
+{
+    return d->m_helpEngine->customValue(ShowTabsKey, false).toBool();
+}
+
+void HelpEngineWrapper::setShowTabs(bool show)
+{
+    d->m_helpEngine->setCustomValue(ShowTabsKey, show);
+}
+
+// -- TimeoutForwarder
 
 TimeoutForwarder::TimeoutForwarder(const QString &fileName)
     : m_fileName(fileName)
@@ -710,6 +722,7 @@ void TimeoutForwarder::forward()
     HelpEngineWrapper::instance().d->qchFileChanged(m_fileName, true);
 }
 
+// -- HelpEngineWrapperPrivate
 
 HelpEngineWrapperPrivate::HelpEngineWrapperPrivate(const QString &collectionFile)
     : m_helpEngine(new QHelpEngine(collectionFile, this)),
@@ -816,7 +829,6 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,
     }
     m_recentQchUpdates.erase(it);
 }
-
 
 QT_END_NAMESPACE
 

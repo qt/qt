@@ -184,6 +184,9 @@ public:
     QFontDatabase::WritingSystem browserWritingSystem() const;
     void setBrowserWritingSystem(QFontDatabase::WritingSystem system);
 
+    bool showTabs() const;
+    void setShowTabs(bool show);
+
     static const QString TrUnfiltered;
 
 signals:
