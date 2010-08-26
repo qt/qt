@@ -82,6 +82,7 @@ Rectangle {
         id: nameInputDialog
 
         property int initialWidth: 0
+        property alias name: nameInputText.text
 
         anchors.centerIn: parent
         z: 22;
