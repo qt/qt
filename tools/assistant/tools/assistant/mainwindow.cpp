@@ -155,6 +155,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     openPagesDock->setWidget(openPagesManager->openPagesWidget());
     addDockWidget(Qt::LeftDockWidgetArea, openPagesDock);
 
+    connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
+        bookMarkManager, SLOT(addBookmark(QString, QString)));
 #if 0
     connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
@@ -162,8 +164,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             SLOT(setSource(QUrl)));
     connect(bookMarkManager, SIGNAL(setSourceInNewTab(QUrl)),
         openPagesManager, SLOT(createPage(QUrl)));
-    connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
-        bookMarkManager, SLOT(addBookmark(QString, QString)));
 
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
@@ -175,6 +175,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
     setupActions();
     statusBar()->show();
+    m_centralWidget->connectTabBar();
 
     if (!initHelpDB()) {
         qDebug("Fatal error: Help engine initialization failed. "
@@ -736,6 +737,8 @@ void MainWindow::showPreferences()
         SLOT(updateApplicationFont()));
     connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
         SLOT(updateBrowserFont()));
+    connect(&dia, SIGNAL(updateUserInterface()), m_centralWidget,
+        SLOT(updateUserInterface()));
     dia.showDialog();
 }
 
