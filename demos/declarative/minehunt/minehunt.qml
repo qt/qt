@@ -49,7 +49,7 @@ Item {
 
     width: 450; height: 450
 
-    Image { source: "MinehuntCore/pics/No-Ones-Laughing-3.jpg"; anchors.fill: parent; fillMode: Image.Tile }
+    Image { source: "MinehuntCore/pics/background.png"; anchors.fill: parent; fillMode: Image.Tile }
 
     Grid {
         anchors.horizontalCenter: parent.horizontalCenter
