@@ -1634,9 +1634,6 @@ bool QDir::operator==(const QDir &dir) const
 */
 QDir &QDir::operator=(const QDir &dir)
 {
-    if (this == &dir)
-        return *this;
-
     d_ptr = dir.d_ptr;
     return *this;
 }
