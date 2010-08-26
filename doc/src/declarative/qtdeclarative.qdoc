@@ -59,6 +59,16 @@
   Equivalent to  Q_DECLARE_METATYPE(TYPE) and Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
 */
 
+/*!
+  \macro QML_DECLARE_TYPEINFO(Type,Flags)
+  \relates QDeclarativeEngine
+
+  Declares additional properties of a type.
+  
+  Current the only supported type info is \c QML_HAS_ATTACHED_PROPERTIES which
+  declares that the \c Type supports \l {Attached Properties}.
+*/
+
 
 /*!
   \fn int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)

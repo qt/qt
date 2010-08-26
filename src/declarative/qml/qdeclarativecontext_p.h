@@ -113,7 +113,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeContextData
 public:
     QDeclarativeContextData();
     QDeclarativeContextData(QDeclarativeContext *);
-    void clearExpressions();
+    void clearContext();
     void destroy();
     void invalidate();
 

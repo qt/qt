@@ -1810,18 +1810,19 @@ void HtmlGenerator::generateHeader(const QString& title,
     // Adding jquery and functions - providing online tools and search features
     out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
     out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
+
+	
+    // Adding syntax highlighter 	// future release
+	
+    // Setting some additional style sheet related details depending on configuration (e.g. Online/Creator)
+
+    switch (application) {
+    case Online:
     // Adding style and js for small windows
     out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
     out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
     out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
-    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";
-	
-    // Adding syntax highlighter 	// future release
-	
-    // Setting some additional style sheet related details depending on configuration (e.g. online/offline)
-
-    switch (application) {
-    case Online:
+    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";	
         // Browser spec styles
 	out() << "  <!--[if IE]>\n";
 	out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
@@ -4423,7 +4424,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     if (node->access() == Node::Private)
         return false;
 
-    QString t;
+    QString guid = QUuid::createUuid().toString();
     QString url = PageGenerator::fileName(node);
     QString title;
     QString rawTitle;
@@ -4432,10 +4433,12 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     QXmlStreamAttributes attributes;
 
     writer.writeStartElement("page");
-    t.setNum(id++);
 
     if (node->isInnerNode()) {
         const InnerNode* inner = static_cast<const InnerNode*>(node);
+        if (!inner->pageKeywords().isEmpty())
+            pageWords << inner->pageKeywords();
+
         switch (node->type()) {
         case Node::Fake:
             {
@@ -4463,9 +4466,6 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
-
-        if (!inner->pageKeywords().isEmpty())
-            pageWords << inner->pageKeywords();
     }
     else {
         switch (node->type()) {
@@ -4502,9 +4502,15 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
             pageWords << title;
             break;
         }
+
+        Node* parent = node->parent();
+        if (parent && ((parent->type() == Node::Class) ||
+                       (parent->type() == Node::Namespace))) {
+            pageWords << parent->name();
+        }
     }
 
-    writer.writeAttribute("id",t);
+    writer.writeAttribute("id",guid);
     writer.writeStartElement("pageWords");
     writer.writeCharacters(pageWords.join(" "));
 
@@ -4531,6 +4537,35 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     }
     writer.writeEndElement();
     writer.writeEndElement();
+
+    if (node->type() == Node::Fake && node->doc().hasTableOfContents()) {
+        QList<Atom*> toc = node->doc().tableOfContents();
+        if (!toc.isEmpty()) {
+            for (int i = 0; i < toc.size(); ++i) {
+                Text headingText = Text::sectionHeading(toc.at(i));
+                QString s = headingText.toString();
+                writer.writeStartElement("page");
+                guid = QUuid::createUuid().toString();
+                QString internalUrl = url + "#" + Doc::canonicalTitle(s);
+                writer.writeAttribute("id",guid);
+                writer.writeStartElement("pageWords");
+                writer.writeCharacters(pageWords.join(" "));
+                writer.writeCharacters(" ");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageTitle");
+                writer.writeCharacters(s);
+                writer.writeEndElement();
+                writer.writeStartElement("pageUrl");
+                writer.writeCharacters(internalUrl);
+                writer.writeEndElement();
+                writer.writeStartElement("pageType");
+                writer.writeCharacters("Article");
+                writer.writeEndElement();
+                writer.writeEndElement();
+            }
+        }
+    }
     return true;
 }
 

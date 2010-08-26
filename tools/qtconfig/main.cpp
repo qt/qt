@@ -42,6 +42,9 @@
 #include "ui_previewwidgetbase.h"
 #include "mainwindow.h"
 #include <QApplication>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
 
 QT_USE_NAMESPACE
 
@@ -50,6 +53,17 @@ int main(int argc, char **argv)
     Q_INIT_RESOURCE(qtconfig);
 
     QApplication app(argc, argv);
+
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("qtconfig_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
+
     MainWindow mw;
     mw.show();
     return app.exec();

@@ -238,20 +238,6 @@ QString QDeclarativeVisualItemModel::stringValue(int index, const QString &name)
     return QDeclarativeEngine::contextForObject(d->children.at(index).item)->contextProperty(name).toString();
 }
 
-QVariant QDeclarativeVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
-{
-    Q_D(QDeclarativeVisualItemModel);
-    if (index < 0 || index >= d->children.count())
-        return QVariant();
-    QDeclarativeContext *ccontext = qmlContext(this);
-    QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
-    ctxt->setContextObject(d->children.at(index).item);
-    QDeclarativeExpression e(ctxt, objectContext, expression);
-    QVariant value = e.evaluate();
-    delete ctxt;
-    return value;
-}
-
 int QDeclarativeVisualItemModel::indexOf(QDeclarativeItem *item, QObject *) const
 {
     Q_D(const QDeclarativeVisualItemModel);
@@ -728,6 +714,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
+        d->m_abstractItemModel = 0;
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
@@ -979,7 +966,7 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
         Q_ASSERT(p->declarativeData);
         QDeclarativeData *d = static_cast<QDeclarativeData*>(p->declarativeData);
         if (d->ownContext && d->context)
-            d->context->clearExpressions();
+            d->context->clearContext();
 
         if (inPackage) {
             emit destroyingPackage(qobject_cast<QDeclarativePackage*>(obj));
@@ -1165,38 +1152,6 @@ QString QDeclarativeVisualDataModel::stringValue(int index, const QString &name)
         delete data;
 
     return val;
-}
-
-QVariant QDeclarativeVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
-{
-    Q_D(QDeclarativeVisualDataModel);
-    if (d->m_visualItemModel)
-        return d->m_visualItemModel->evaluate(index, expression, objectContext);
-
-    if ((!d->m_listModelInterface && !d->m_abstractItemModel) || !d->m_delegate)
-        return QVariant();
-
-    QVariant value;
-    QObject *nobj = d->m_cache.item(index);
-    if (nobj) {
-        QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(nobj);
-        if (item) {
-            QDeclarativeExpression e(qmlContext(item), objectContext, expression);
-            value = e.evaluate();
-        }
-    } else {
-        QDeclarativeContext *ccontext = d->m_context;
-        if (!ccontext) ccontext = qmlContext(this);
-        QDeclarativeContext *ctxt = new QDeclarativeContext(ccontext);
-        QDeclarativeVisualDataModelData *data = new QDeclarativeVisualDataModelData(index, this);
-        ctxt->setContextObject(data);
-        QDeclarativeExpression e(ctxt, objectContext, expression);
-        value = e.evaluate();
-        delete data;
-        delete ctxt;
-    }
-
-    return value;
 }
 
 int QDeclarativeVisualDataModel::indexOf(QDeclarativeItem *item, QObject *) const

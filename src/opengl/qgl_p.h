@@ -171,6 +171,9 @@ public:
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
                        , eglSurfaceWindowId(0)
 #endif
+#if defined(Q_OS_SYMBIAN)
+                       , eglSurfaceWindowId(0)
+#endif
     {
         isGLWidget = 1;
     }
@@ -211,6 +214,10 @@ public:
     void updatePaintDevice();
 #elif defined(Q_WS_QWS)
     QWSGLWindowSurface *wsurf;
+#endif
+#ifdef Q_OS_SYMBIAN
+    void recreateEglSurface();
+    WId eglSurfaceWindowId;
 #endif
 };
 
@@ -428,7 +435,7 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
     static QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif

@@ -367,7 +367,7 @@ void QGLPixmapData::ensureCreated() const
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
-                              Qt::ImageConversionFlags /*flags*/)
+                              Qt::ImageConversionFlags flags)
 {
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);
@@ -381,7 +381,9 @@ void QGLPixmapData::fromImage(const QImage &image,
         if (qApp->desktop()->depth() == 16)
             format = QImage::Format_RGB16;
 
-        if (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
+        if (image.hasAlphaChannel()
+            && ((flags & Qt::NoOpaqueDetection)
+                || const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()))
             format = QImage::Format_ARGB32_Premultiplied;;
 
         m_source = image.convertToFormat(format);

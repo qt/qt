@@ -1096,7 +1096,7 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
-    QCOMPARE(view.inputContext(), &ic);
+    QCOMPARE(view.inputContext(), (QInputContext*)&ic);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
     // input method should be disabled if focus

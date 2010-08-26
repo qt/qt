@@ -113,6 +113,7 @@ public slots:
     void sceneResized(QSize size);
     bool open(const QString&);
     void openFile();
+    void openUrl();
     void reload();
     void takeSnapShot();
     void toggleRecording();

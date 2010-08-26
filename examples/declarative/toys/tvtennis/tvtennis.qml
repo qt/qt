@@ -87,14 +87,14 @@ Rectangle {
         color: "Lime"
         x: 2; width: 20; height: 90
         y: ball.direction == 'left' ? ball.y - 45 : page.height/2 -45;
-        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
+        Behavior on y { SpringAnimation{ velocity: 300 } }
     }
     Rectangle {
         id: rightBat
         color: "Lime"
         x: page.width - 22; width: 20; height: 90
         y: ball.direction == 'right' ? ball.y - 45 : page.height/2 -45;
-        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
+        Behavior on y { SpringAnimation{ velocity: 300 } }
     }
 
     // The rest, to make it look realistic, if neither ever scores...

@@ -58,7 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QList<QDeclarativeEngine *> QDeclarativeEngineDebugServer::m_engines;
+Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
+
+QDeclarativeEngineDebugServer *QDeclarativeEngineDebugServer::instance()
+{
+    return qmlEngineDebugServer();
+}
+
 QDeclarativeEngineDebugServer::QDeclarativeEngineDebugServer(QObject *parent)
 : QDeclarativeDebugService(QLatin1String("QDeclarativeEngine"), parent),
     m_watch(new QDeclarativeWatcher(this))
@@ -264,8 +270,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     QDeclarativeContextData *child = p->childContexts;
     while (child) {
-        if (!child->isInternal)
-            ++count;
+        ++count;
         child = child->nextChild;
     }
 
@@ -273,8 +278,7 @@ void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDecla
 
     child = p->childContexts;
     while (child) {
-        if (!child->isInternal) 
-            buildObjectList(message, child->asQDeclarativeContext());
+        buildObjectList(message, child->asQDeclarativeContext());
         child = child->nextChild;
     }
 
@@ -598,6 +602,21 @@ void QDeclarativeEngineDebugServer::remEngine(QDeclarativeEngine *engine)
     Q_ASSERT(m_engines.contains(engine));
 
     m_engines.removeAll(engine);
+}
+
+void QDeclarativeEngineDebugServer::objectCreated(QDeclarativeEngine *engine, QObject *object)
+{
+    Q_ASSERT(engine);
+    Q_ASSERT(m_engines.contains(engine));
+
+    int engineId = QDeclarativeDebugService::idForObject(engine);
+    int objectId = QDeclarativeDebugService::idForObject(object);
+
+    QByteArray reply;
+    QDataStream rs(&reply, QIODevice::WriteOnly);
+
+    rs << QByteArray("OBJECT_CREATED") << engineId << objectId;
+    sendMessage(reply);
 }
 
 QT_END_NAMESPACE
