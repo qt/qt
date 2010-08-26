@@ -896,8 +896,7 @@ bool QDir::cd(const QString &dirName)
         }
     }
 
-    QDir dir(*this);
-    dir.setPath(newPath);
+    QDir dir(newPath);
     if (!dir.exists())
         return false;
 
