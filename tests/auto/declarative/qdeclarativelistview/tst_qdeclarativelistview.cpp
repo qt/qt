@@ -1002,7 +1002,7 @@ void tst_QDeclarativeListView::currentIndex()
     listview->decrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(listview->contentY(), 279.0);
+    QTRY_COMPARE(listview->contentY(), 280.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 0);
