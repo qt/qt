@@ -551,7 +551,7 @@ MakefileGenerator::init()
                 if(out.exists() && out.open(QFile::ReadOnly)) {
                     QString old = QString::fromUtf8(out.readAll());
                     if(contents == old) {
-                        v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
+                        v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
                         continue;
                     }
                     out.close();
@@ -563,7 +563,7 @@ MakefileGenerator::init()
                 }
                 mkdir(QFileInfo(out).absolutePath());
                 if(out.open(QFile::WriteOnly)) {
-                    v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
+                    v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
                     out.write(contents.toUtf8());
                 } else {
                     warn_msg(WarnLogic, "Cannot open substitute for output '%s'",
