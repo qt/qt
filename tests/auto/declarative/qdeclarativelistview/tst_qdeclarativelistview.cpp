@@ -979,7 +979,7 @@ void tst_QDeclarativeListView::currentIndex()
     // current item should be 20th item at startup
     // and current item should be in view
     QCOMPARE(listview->currentIndex(), 20);
-    QCOMPARE(listview->contentY(), 99.0);
+    QCOMPARE(listview->contentY(), 100.0);
     QCOMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 20));
     QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
