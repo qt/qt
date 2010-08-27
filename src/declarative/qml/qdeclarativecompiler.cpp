@@ -703,7 +703,7 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
         output->importCache->add(importedScriptIndexes.at(ii), ii);
 
-    unit->imports.cache(output->importCache, engine);
+    unit->imports.populateCache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -1403,8 +1403,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
 
         QDeclarativeType *type = 0;
         QDeclarativeImportedNamespace *typeNamespace = 0;
-        enginePrivate->importDatabase.resolveType(unit->imports, prop->name, 
-                                                  &type, 0, 0, 0, &typeNamespace);
+        unit->imports.resolveType(prop->name, &type, 0, 0, 0, &typeNamespace);
 
         if (typeNamespace) {
             // ### We might need to indicate that this property is a namespace 
@@ -1512,7 +1511,7 @@ bool QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeImportedNamespac
         // Setup attached property data
 
         QDeclarativeType *type = 0;
-        enginePrivate->importDatabase.resolveTypeInNamespace(ns, prop->name, &type, 0, 0, 0);
+        unit->imports.resolveType(ns, prop->name, &type, 0, 0, 0);
 
         if (!type || !type->attachedPropertiesType()) 
             COMPILE_EXCEPTION(prop, tr("Non-existent attached object"));
@@ -2139,8 +2138,7 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
 
     QString typeName = parts.at(0);
     QDeclarativeType *type = 0;
-    enginePrivate->importDatabase.resolveType(unit->imports, typeName.toUtf8(),
-                                              &type, 0, 0, 0, 0);
+    unit->imports.resolveType(typeName.toUtf8(), &type, 0, 0, 0, 0);
 
     if (!type || obj->typeName != type->qmlTypeName())
         return true;
@@ -2167,7 +2165,7 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
     int dot = script.indexOf('.');
     if (dot > 0) {
         QDeclarativeType *type = 0;
-        enginePrivate->importDatabase.resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        unit->imports.resolveType(script.left(dot), &type, 0, 0, 0, 0);
         if (!type)
             return -1;
         const QMetaObject *mo = type->metaObject();
@@ -2185,8 +2183,7 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
 const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) const
 {
     QDeclarativeType *qmltype = 0;
-    if (!enginePrivate->importDatabase.resolveType(unit->imports, name, &qmltype, 
-                                                   0, 0, 0, 0)) 
+    if (!unit->imports.resolveType(name, &qmltype, 0, 0, 0, 0)) 
         return 0;
     if (!qmltype)
         return 0;
@@ -2344,8 +2341,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
                 QByteArray customTypeName;
                 QDeclarativeType *qmltype = 0;
                 QUrl url;
-                if (!enginePrivate->importDatabase.resolveType(unit->imports, p.customType, &qmltype, 
-                                                               &url, 0, 0, 0)) 
+                if (!unit->imports.resolveType(p.customType, &qmltype, &url, 0, 0, 0)) 
                     COMPILE_EXCEPTION(&p, tr("Invalid property type"));
 
                 if (!qmltype) {
