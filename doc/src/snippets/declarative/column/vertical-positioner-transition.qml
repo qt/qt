@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,29 +38,24 @@
 **
 ****************************************************************************/
 
-//![0]
 import Qt 4.7
 
-Item {
-    id: container
-    width: 200; height: 200
+//! [document]
+Column {
+    spacing: 2
+    Rectangle { color: "red"; width: 50; height: 50 }
+    Rectangle { id: rect1; color: "green"; width: 20; height: 50 }
+    Rectangle { color: "blue"; width: 50; height: 20 }
 
-    Rectangle {
-        id: myRect
-        width: 100; height: 100
-        color: "red"
+    //![transitions]
+    add: Transition {
+        NumberAnimation { properties: "opacity"; duration: 1000 }
+        }
+    //![transitions]
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: rect1.opacity = 0
     }
-
-    states: State {
-        name: "reanchored"
-        AnchorChanges { target: myRect; anchors.right: container.right }
-    }
-
-    transitions: Transition {
-        // smoothly reanchor myRect and move into new position
-        AnchorAnimation { duration: 1000 }
-    }
-
-    Component.onCompleted: container.state = "reanchored"
 }
-//![0]
+//! [document]

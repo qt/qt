@@ -107,7 +107,8 @@ Module.
 \section1 Handling Data
 
 \list
-\o \l{Data Models}
+\o \l{Using QML Positioner and Repeater Items}
+\o \l{QML Data Models}
 \o \l{Network Transparency}
 \endlist
 

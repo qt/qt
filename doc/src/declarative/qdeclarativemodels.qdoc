@@ -28,7 +28,7 @@
 /*!
 \page qdeclarativemodels.html
 \target qmlmodels
-\title Data Models
+\title QML Data Models
 
 QML items such as ListView, GridView and \l Repeater require Data Models 
 that provide the data to be displayed.

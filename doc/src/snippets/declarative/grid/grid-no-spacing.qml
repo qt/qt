@@ -38,29 +38,20 @@
 **
 ****************************************************************************/
 
-//![0]
 import Qt 4.7
 
-Item {
-    id: container
-    width: 200; height: 200
+Rectangle {
+    width: 112; height: 112
+    color: "#303030"
 
-    Rectangle {
-        id: myRect
-        width: 100; height: 100
-        color: "red"
+    Grid {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        columns: 2
+
+        Rectangle { color: "#aa6666"; width: 50; height: 50 }
+        Rectangle { color: "#aaaa66"; width: 50; height: 50 }
+        Rectangle { color: "#9999aa"; width: 50; height: 50 }
+        Rectangle { color: "#6666aa"; width: 50; height: 50 }
     }
-
-    states: State {
-        name: "reanchored"
-        AnchorChanges { target: myRect; anchors.right: container.right }
-    }
-
-    transitions: Transition {
-        // smoothly reanchor myRect and move into new position
-        AnchorAnimation { duration: 1000 }
-    }
-
-    Component.onCompleted: container.state = "reanchored"
 }
-//![0]

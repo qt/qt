@@ -38,29 +38,25 @@
 **
 ****************************************************************************/
 
-//![0]
 import Qt 4.7
 
-Item {
-    id: container
-    width: 200; height: 200
+Rectangle {
+    color: "lightblue"
+    width: 300; height: 200
 
-    Rectangle {
-        id: myRect
-        width: 100; height: 100
-        color: "red"
+//! [flow item]
+    Flow {
+        anchors.fill: parent
+        anchors.margins: 4
+        spacing: 10
+
+        Text { text: "Text"; font.pixelSize: 40 }
+        Text { text: "items"; font.pixelSize: 40 }
+        Text { text: "flowing"; font.pixelSize: 40 }
+        Text { text: "in"; font.pixelSize: 40 }
+        Text { text: "a"; font.pixelSize: 40 }
+        Text { text: "Flow"; font.pixelSize: 40 }
+        Text { text: "item"; font.pixelSize: 40 }
     }
-
-    states: State {
-        name: "reanchored"
-        AnchorChanges { target: myRect; anchors.right: container.right }
-    }
-
-    transitions: Transition {
-        // smoothly reanchor myRect and move into new position
-        AnchorAnimation { duration: 1000 }
-    }
-
-    Component.onCompleted: container.state = "reanchored"
+//! [flow item]
 }
-//![0]

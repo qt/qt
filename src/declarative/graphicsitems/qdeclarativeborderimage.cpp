@@ -169,7 +169,8 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 /*!
     \qmlproperty enumeration BorderImage::status
 
-    This property holds the status of image loading.  It can be one of:
+    This property describes the status of image loading.  It can be one of:
+
     \list
     \o BorderImage.Null - no image has been set
     \o BorderImage.Ready - the image has been loaded
@@ -201,18 +202,24 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     \note Generally scaling artifacts are only visible if the image is stationary on
     the screen.  A common pattern when animating an image is to disable smooth
-    filtering at the beginning of the animation and reenable it at the conclusion.
+    filtering at the beginning of the animation and enable it at the conclusion.
 */
 
 /*!
     \qmlproperty url BorderImage::source
 
-    BorderImage can handle any image format supported by Qt, loaded from any URL scheme supported by Qt.
+    This property holds the URL that refers to the source image.
 
-    It can also handle .sci files, which are a QML-specific format. A .sci file uses a simple text-based format that specifies
-    the borders, the image file and the tile rules.
+    BorderImage can handle any image format supported by Qt, loaded from any
+    URL scheme supported by Qt.
 
-    The following .sci file sets the borders to 10 on each side for the image \c picture.png:
+    It can also handle .sci files, which are a QML-specific format. A .sci
+    file uses a simple text-based format that specifies the borders, the
+    image file and the tile rules.
+
+    The following .sci file sets the borders to 10 on each side for the
+    image \c picture.png:
+
     \qml
     border.left: 10
     border.top: 10
@@ -356,7 +363,7 @@ QDeclarativeScaleGrid *QDeclarativeBorderImage::border()
     This property describes how to repeat or stretch the middle parts of the border image.
 
     \list
-    \o BorderImage.Stretch - Scale the image to fit to the available area.
+    \o BorderImage.Stretch - Scales the image to fit to the available area.
     \o BorderImage.Repeat - Tile the image until there is no more space. May crop the last image.
     \o BorderImage.Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
     \endlist

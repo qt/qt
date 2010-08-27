@@ -229,7 +229,7 @@
 */
 
 /*!
-    \title Internationlization Example
+    \title Internationalization Example
     \example declarative/i18n
 
     This example shows how to enable text translation in QML.

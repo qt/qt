@@ -38,29 +38,24 @@
 **
 ****************************************************************************/
 
-//![0]
+//! [document]
 import Qt 4.7
 
-Item {
-    id: container
-    width: 200; height: 200
+Rectangle {
+    width: 400; height: 400; color: "black"
 
-    Rectangle {
-        id: myRect
-        width: 100; height: 100
-        color: "red"
+    Grid {
+        x: 5; y: 5
+        rows: 5; columns: 5; spacing: 10
+
+        Repeater { model: 24
+                   Rectangle { width: 70; height: 70
+                               color: "lightgreen"
+
+                               Text { text: index
+                                      font.pointSize: 30
+                                      anchors.centerIn: parent } }
+        }
     }
-
-    states: State {
-        name: "reanchored"
-        AnchorChanges { target: myRect; anchors.right: container.right }
-    }
-
-    transitions: Transition {
-        // smoothly reanchor myRect and move into new position
-        AnchorAnimation { duration: 1000 }
-    }
-
-    Component.onCompleted: container.state = "reanchored"
 }
-//![0]
+//! [document]
