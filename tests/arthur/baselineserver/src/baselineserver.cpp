@@ -157,7 +157,7 @@ void BaselineHandler::storeImage(const QByteArray &imageBlock, bool isBaseline)
     }
     file.write(imageBlock.constData()+buf.pos(), imageBlock.size()-buf.pos());
 
-    QByteArray msg(isBaseline ? "Mismatching" : "Baseline");
+    QByteArray msg(isBaseline ? "Baseline" : "Mismatching" );
     msg += " image stored in "
            + QHostInfo::localHostName().toLatin1() + '.'
            + QHostInfo::localDomainName().toLatin1() + ':'
