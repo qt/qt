@@ -4931,6 +4931,8 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= FragmentProgram;
     if (extensions.match("GL_ARB_fragment_shader"))
         glExtensions |= FragmentShader;
+    if (extensions.match("GL_ARB_shader_objects"))
+        glExtensions |= FragmentShader;
     if (extensions.match("GL_ARB_ES2_compatibility"))
         glExtensions |= ES2Compatibility;
     if (extensions.match("GL_ARB_texture_mirrored_repeat"))
