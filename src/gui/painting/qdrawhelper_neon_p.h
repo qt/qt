@@ -120,6 +120,7 @@ void qt_transform_image_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
                                             const QTransform &targetRectTransform,
                                             int const_alpha);
 
+void qt_memfill32_neon(quint32 *dest, quint32 value, int count);
 void qt_memrotate90_16_neon(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
 void qt_memrotate270_16_neon(const uchar *srcPixels, int w, int h, int sbpl, uchar *destPixels, int dbpl);
 
@@ -131,6 +132,7 @@ void QT_FASTCALL qt_destStoreRGB16_neon(QRasterBuffer *rasterBuffer,
                                         int x, int y, const uint *buffer, int length);
 
 void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, uint color, uint const_alpha);
+void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uint const_alpha);
 
 #endif // QT_HAVE_NEON
 

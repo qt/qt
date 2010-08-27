@@ -747,6 +747,8 @@ void QPen::setColor(const QColor &c)
 */
 QBrush QPen::brush() const
 {
+    if (d->style == Qt::NoPen)
+        return Qt::NoBrush;
     return d->brush;
 }
 
