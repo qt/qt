@@ -43,6 +43,8 @@
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
 #include "private/qcore_unix_p.h"
+#include "qfilesystementry_p.h"
+#include "qfilesystemengine_p.h"
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -1046,20 +1048,9 @@ QString QFSFileEngine::fileName(FileName file) const
             return QLatin1String("/");
         return d->filePath.left(slash);
     } else if (file == AbsoluteName || file == AbsolutePathName) {
-        QString ret;
-        if (d->filePath.isEmpty() || !d->filePath.startsWith(QLatin1Char('/')))
-            ret = QDir::currentPath();
-        if (!d->filePath.isEmpty() && d->filePath != QLatin1String(".")) {
-            if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
-                ret += QLatin1Char('/');
-            ret += d->filePath;
-        }
-        if (ret == QLatin1String("/"))
-            return ret;
-        bool isDir = ret.endsWith(QLatin1Char('/'));
-        ret = QDir::cleanPath(ret);
-        if (isDir)
-            ret += QLatin1Char('/');
+        QFileSystemEntry entry(d->filePath);
+        entry = QFileSystemEngine::absoluteName(entry);
+        QString ret = entry.filePath();
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)

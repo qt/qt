@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qfilesystemengine_p.h"
+#include "qfsfileengine.h"
 
 bool QFileSystemEngine::isCaseSensitive()
 {
@@ -61,7 +62,34 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
-    return entry; // TODO implement;
+    if (entry.isAbsolute())
+        return entry;
+
+    QByteArray orig = entry.nativeFilePath();
+    QByteArray result;
+    if (orig.isEmpty() || !orig.startsWith('/')) {
+        QFileSystemEntry cur(QFSFileEngine::currentPath());
+        result = cur.nativeFilePath();
+    }
+    if (!orig.isEmpty() && !(orig.length() == 1 && orig[0] == '.')) {
+        if (!result.isEmpty() && !result.endsWith('/'))
+            result.append('/');
+        result.append(orig);
+    }
+
+    if (result.length() == 1 && result[0] == '/')
+        return QFileSystemEntry(result);
+    const bool isDir = result.endsWith('/');
+
+    /* as long as QDir::cleanPath() operates on a QString we have to convert to a string here.
+     * ideally we never convert to a string since that loses information. Please fix after
+     * we get a QByteArray version of QDir::cleanPath()
+     */
+    QFileSystemEntry resultingEntry(result);
+    QString stringVersion = QDir::cleanPath(resultingEntry.filePath());
+    if (isDir)
+        stringVersion.append(QLatin1Char('/'));
+    return QFileSystemEntry(stringVersion);
 }
 
 //static
