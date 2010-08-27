@@ -79,7 +79,6 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
-      m_cursorPos(0),
       m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
@@ -596,8 +595,6 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
 
     commitTemporaryPreeditString();
 
-    m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-    
     QList<QInputMethodEvent::Attribute> attributes;
 
     m_cursorVisibility = aCursorVisibility ? 1 : 0;
@@ -820,23 +817,13 @@ void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
     int longPress = 0;
 
-    if (m_preeditString.size() == 0) {
-        QWidget *w = focusWidget();
-        if (!cancelFepTransaction && w) {
-            // We must replace the last character only if the input box has already accepted one 
-            if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
-                longPress = 1;
-        }
-    }
-
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0-longPress, longPress);
+    event.setCommitString(m_preeditString, 0, 0);
     m_preeditString.clear();
     sendEvent(event);
 
     m_hasTempPreeditString = false;
-    longPress = 0;
 
     if (cancelFepTransaction) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
