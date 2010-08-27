@@ -66,13 +66,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \internal
-    \class QDeclarativeLayoutItem
-    \brief The QDeclarativeLayoutItem class allows you to place your QML UI elements inside Qt's Graphics View layouts.
-*/
-
-
-/*!
     \qmlproperty QSizeF LayoutItem::maximumSize
 
     The maximumSize property can be set to specify the maximum desired size of this LayoutItem

@@ -289,6 +289,8 @@ private Q_SLOTS:
 
     void symbianOpenCDataUrlCrash();
 
+    void qtbug12908compressedHttpReply();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4274,6 +4276,30 @@ void tst_QNetworkReply::symbianOpenCDataUrlCrash()
     QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(598));
 }
 
+// TODO:
+// Prepare a gzip that has one chunk that expands to the size mentioned in the bugreport.
+// Then have a custom HTTP server that waits after this chunk so the returning gets
+// triggered.
+void tst_QNetworkReply::qtbug12908compressedHttpReply()
+{
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: 63\r\n\r\n");
+
+    // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
+    QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+
+    MiniHttpServer server(header.toAscii() + decodedFile);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+}
 
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

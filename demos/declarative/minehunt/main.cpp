@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 #endif
     canvas.engine()->rootContext()->setContextObject(game);        
     canvas.setSource(QString("minehunt.qml"));
+    QObject::connect(canvas.engine(), SIGNAL(quit()), &app, SLOT(quit()));
     
 #ifdef Q_OS_SYMBIAN
     canvas.showFullScreen();

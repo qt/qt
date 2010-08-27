@@ -7758,19 +7758,22 @@ void QGraphicsItemPrivate::resetHeight()
 }
 
 /*!
-  \property QGraphicsObject::children
-  \internal
-*/
+    \property QGraphicsObject::children
+    \since 4.7
+    \internal
+ */
 
 /*!
-  \property QGraphicsObject::width
-  \internal
-*/
+    \property QGraphicsObject::width
+    \since 4.7
+    \internal
+ */
 
 /*!
-  \property QGraphicsObject::height
-  \internal
-*/
+    \property QGraphicsObject::height
+    \since 4.7
+    \internal
+ */
 
 /*!
   \property QGraphicsObject::parent
@@ -7982,24 +7985,6 @@ void QGraphicsItemPrivate::resetHeight()
   \brief the effect attached to this item
 
   \sa QGraphicsItem::setGraphicsEffect(), QGraphicsItem::graphicsEffect()
-*/
-
-/*!
-    \property QGraphicsObject::children
-    \since 4.7
-    \internal
-*/
-
-/*!
-    \property QGraphicsObject::width
-    \since 4.7
-    \internal
-*/
-
-/*!
-    \property QGraphicsObject::height
-    \since 4.7
-    \internal
 */
 
 /*!
