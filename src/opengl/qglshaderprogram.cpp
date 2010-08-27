@@ -97,6 +97,10 @@ QT_BEGIN_NAMESPACE
     to just features that are present in GLSL/ES, and avoid
     standard variable names that only work on the desktop.
 
+    If the \c{GL_ARB_ES2_compatibility} extension is present,
+    then the above prefix is not added because the desktop OpenGL
+    implementation supports precision qualifiers.
+
     \section1 Simple shader example
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 1
@@ -394,8 +398,10 @@ bool QGLShader::compileSourceCode(const char *source)
             srclen.append(GLint(headerLen));
         }
 #ifdef QGL_DEFINE_QUALIFIERS
-        src.append(qualifierDefines);
-        srclen.append(GLint(sizeof(qualifierDefines) - 1));
+        if (!(QGLExtensions::glExtensions() & QGLExtensions::ES2Compatibility)) {
+            src.append(qualifierDefines);
+            srclen.append(GLint(sizeof(qualifierDefines) - 1));
+        }
 #endif
 #ifdef QGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment) {

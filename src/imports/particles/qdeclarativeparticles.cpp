@@ -165,14 +165,6 @@ void QDeclarativeParticleMotion::destroy(QDeclarativeParticle &particle)
 
     It has no further properties.
 */
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionLinear
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionLinear class moves the particles linearly.
-*/
-
 void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int interval)
 {
     p.x += interval * p.x_velocity;
@@ -193,14 +185,6 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
 
 
     \sa Particles
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionGravity
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionGravity class moves the particles towards a point.
-
 */
 
 /*!
@@ -308,16 +292,6 @@ Rectangle {
     \endqml
 
     \sa Particles
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionWander
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionWander class moves particles in a somewhat random fashion.
-
-    The particles will continue roughly in the original direction, however will randomly
-    drift to each side.
 */
 
 /*!
@@ -707,13 +681,6 @@ Rectangle {
 }
     \endqml
     \image particles.gif
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticles
-    \ingroup group_effects
-    \brief The QDeclarativeParticles class generates and moves particles.
 */
 
 QDeclarativeParticles::QDeclarativeParticles(QDeclarativeItem *parent)

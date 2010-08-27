@@ -180,11 +180,6 @@ void QDeclarativeGradient::doUpdate()
 
 int QDeclarativeRectanglePrivate::doUpdateSlotIdx = -1;
 
-/*!
-    \internal
-    \class QDeclarativeRectangle
-    \brief The QDeclarativeRectangle class provides a rectangle item that you can add to a QDeclarativeView.
-*/
 QDeclarativeRectangle::QDeclarativeRectangle(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRectanglePrivate), parent)
 {

@@ -58,7 +58,7 @@ Rectangle {
     property string plusminus : "\u00b1"
 
     function doOp(operation) { CalcEngine.doOperation(operation) }
-    
+
     Item {
         id: main
         state: "orientation " + runtime.orientation
@@ -70,8 +70,10 @@ Rectangle {
 
             anchors { fill: parent; topMargin: 6; bottomMargin: 6; leftMargin: 6; rightMargin: 6 }
 
-            Row {
-                Display { id: display; width: box.width; height: 64 }
+            Display {
+                id: display
+                width: box.width-3
+                height: 64
             }
 
             Column {
@@ -82,11 +84,7 @@ Rectangle {
 
                 Row {
                     spacing: 6
-
-                    Button {
-                        id: rotateButton
-                        width: column.w; height: column.h; color: 'purple'; operation: rotateRight
-                    }
+                    Button { width: column.w; height: column.h; color: 'purple'; operation: "Off" }
                     Button { width: column.w; height: column.h; color: 'purple'; operation: leftArrow }
                     Button { width: column.w; height: column.h; color: 'purple'; operation: "C" }
                     Button { width: column.w; height: column.h; color: 'purple'; operation: "AC" }
@@ -103,7 +101,7 @@ Rectangle {
                 }
 
                 Grid {
-                    id: grid; rows: 4; columns: 5; spacing: 6
+                    id: grid; rows: 5; columns: 5; spacing: 6
 
                     property real w: (box.width / columns) - ((spacing * (columns - 1)) / columns)
 

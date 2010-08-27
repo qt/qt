@@ -523,7 +523,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     int waiting = 0;
 
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-    QDeclarativeImportDatabase &importDatabase = ep->importDatabase;
+    QDeclarativeImportDatabase *importDatabase = &ep->importDatabase;
 
     // For local urls, add an implicit import "." as first (most overridden) lookup. 
     // This will also trigger the loading of the qmldir and the import of any native 
@@ -538,9 +538,10 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
             qmldircomponentsnetwork = parser.components();
         }
 
-        importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, QLatin1String("."),
-                                   QString(), -1, -1, QDeclarativeScriptParser::Import::File,
-                                   0); // error ignored (just means no fallback)
+        unit->imports.addImport(importDatabase, 
+                                QLatin1String("."), QString(), -1, -1, QDeclarativeScriptParser::Import::File, 
+                                qmldircomponentsnetwork,
+                                0); // error ignored (just means no fallback)
     }
 
 
@@ -577,8 +578,9 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         }
 
         QString errorString;
-        if (!importDatabase.addToImport(&unit->imports, qmldircomponentsnetwork, imp.uri, imp.qualifier, 
-                                        vmaj, vmin, imp.type, &errorString)) {
+        if (!unit->imports.addImport(importDatabase, 
+                                     imp.uri, imp.qualifier, vmaj, vmin, imp.type, 
+                                     qmldircomponentsnetwork, &errorString)) {
             QDeclarativeError error;
             error.setUrl(unit->imports.baseUrl());
             error.setDescription(errorString);
@@ -606,8 +608,8 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
         int minorVersion;
         QDeclarativeImportedNamespace *typeNamespace = 0;
         QString errorString;
-        if (!importDatabase.resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 
-                                        &typeNamespace, &errorString) || typeNamespace) {
+        if (!unit->imports.resolveType(typeName, &ref.type, &url, &majorVersion, &minorVersion, 
+                                       &typeNamespace, &errorString) || typeNamespace) {
             // Known to not be a type:
             //  - known to be a namespace (Namespace {})
             //  - type with unknown namespace (UnknownNamespace.SomeType {})

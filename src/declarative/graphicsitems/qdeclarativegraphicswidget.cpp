@@ -68,7 +68,6 @@ QDeclarativeGraphicsWidget::~QDeclarativeGraphicsWidget()
     delete d->_anchors; d->_anchors = 0;
 }
 
-/*! \internal */
 QDeclarativeAnchors *QDeclarativeGraphicsWidget::anchors()
 {
     Q_D(QDeclarativeGraphicsWidget);
@@ -85,54 +84,36 @@ QDeclarativeItemPrivate::AnchorLines *QDeclarativeGraphicsWidgetPrivate::anchorL
     return _anchorLines;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::left() const
 {
     Q_D(const QDeclarativeGraphicsWidget);
     return d->anchorLines()->left;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::right() const
 {
     Q_D(const QDeclarativeGraphicsWidget);
     return d->anchorLines()->right;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::horizontalCenter() const
 {
     Q_D(const QDeclarativeGraphicsWidget);
     return d->anchorLines()->hCenter;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::top() const
 {
     Q_D(const QDeclarativeGraphicsWidget);
     return d->anchorLines()->top;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::bottom() const
 {
     Q_D(const QDeclarativeGraphicsWidget);
     return d->anchorLines()->bottom;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeAnchorLine QDeclarativeGraphicsWidget::verticalCenter() const
 {
     Q_D(const QDeclarativeGraphicsWidget);

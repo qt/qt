@@ -60,11 +60,6 @@ Item {
 */
 
 /*!
-    \internal
-    \class QDeclarativeKeyEvent
-*/
-
-/*!
     \qmlproperty int KeyEvent::key
 
     This property holds the code of the key that was pressed or released.
