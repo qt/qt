@@ -103,7 +103,6 @@ public:
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
 
     QList<TypeReference*> referencedTypes() const;
-    QList<QUrl> referencedResources() const;
 
     QDeclarativeParser::Object *tree() const;
     QList<Import> imports() const;
@@ -138,7 +137,6 @@ public:
     QDeclarativeParser::Object *root;
     QList<Import> _imports;
     QList<TypeReference*> _refTypes;
-    QList<QUrl> _refUrls;
     QString _scriptFile;
     QDeclarativeScriptParserJsASTData *data;
 };

@@ -259,7 +259,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
   inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
-  typeManager(e), importDatabase(e), uniqueId(1)
+  typeLoader(e), importDatabase(e), uniqueId(1)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -565,7 +565,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 void QDeclarativeEngine::clearComponentCache()
 {
     Q_D(QDeclarativeEngine);
-    d->typeManager.clearCache();
+    d->typeLoader.clearCache();
 }
 
 /*!

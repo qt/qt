@@ -387,7 +387,6 @@ bool ProcessAST::visit(AST::UiImport *node)
 
         if (uri.endsWith(QLatin1String(".js"))) {
             import.type = QDeclarativeScriptParser::Import::Script;
-            _parser->_refUrls << QUrl(uri);
         } else {
             import.type = QDeclarativeScriptParser::Import::File;
         }
@@ -876,11 +875,6 @@ bool QDeclarativeScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 QList<QDeclarativeScriptParser::TypeReference*> QDeclarativeScriptParser::referencedTypes() const
 {
     return _refTypes;
-}
-
-QList<QUrl> QDeclarativeScriptParser::referencedResources() const
-{
-    return _refUrls;
 }
 
 Object *QDeclarativeScriptParser::tree() const
