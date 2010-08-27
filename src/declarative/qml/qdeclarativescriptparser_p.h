@@ -112,7 +112,18 @@ public:
 
     QList<QDeclarativeError> errors() const;
 
+    class JavaScriptMetaData {
+    public:
+        JavaScriptMetaData() 
+        : pragmas(QDeclarativeParser::Object::ScriptBlock::None) {}
+
+        QDeclarativeParser::Object::ScriptBlock::Pragmas pragmas;
+        QList<Import> imports;
+    };
+
     static QDeclarativeParser::Object::ScriptBlock::Pragmas extractPragmas(QString &);
+    static JavaScriptMetaData extractMetaData(QString &);
+
 
 // ### private:
     TypeReference *findOrCreateType(const QString &name);
