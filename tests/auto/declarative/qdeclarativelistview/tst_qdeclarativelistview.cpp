@@ -979,7 +979,7 @@ void tst_QDeclarativeListView::currentIndex()
     // current item should be 20th item at startup
     // and current item should be in view
     QCOMPARE(listview->currentIndex(), 20);
-    QCOMPARE(listview->contentY(), 99.0);
+    QCOMPARE(listview->contentY(), 100.0);
     QCOMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 20));
     QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
@@ -1002,7 +1002,7 @@ void tst_QDeclarativeListView::currentIndex()
     listview->decrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(listview->contentY(), 279.0);
+    QTRY_COMPARE(listview->contentY(), 280.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 0);
@@ -1066,6 +1066,7 @@ void tst_QDeclarativeListView::itemList()
     QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "item1");
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->x(), 0.0);
+    QCOMPARE(item->height(), listview->height());
 
     QDeclarativeText *text = findItem<QDeclarativeText>(contentItem, "text1");
     QTRY_VERIFY(text);

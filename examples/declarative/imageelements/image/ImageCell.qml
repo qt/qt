@@ -48,7 +48,7 @@ Item {
     Image {
         id: image
         width: parent.width; height: parent.height - captionItem.height
-        source: "face-smile.png"
+        source: "qt-logo.png"
         clip: true      // only makes a difference if mode is PreserveAspectCrop
         smooth: true
     }
