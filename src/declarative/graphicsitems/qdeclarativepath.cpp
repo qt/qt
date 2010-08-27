@@ -893,6 +893,7 @@ void QDeclarativePathPercent::setValue(qreal value)
 {
     if (_value != value) {
         _value = value;
+        emit valueChanged();
         emit changed();
     }
 }

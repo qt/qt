@@ -58,9 +58,6 @@ Q_DECLARE_METATYPE(QListModelInterface *)
 
 QT_BEGIN_NAMESPACE
 
-#define DATA_ROLE_ID 1
-#define DATA_ROLE_NAME "data"
-
 QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListModelData::instructions() const
 {
     return (QDeclarativeListModelParser::ListInstruction *)((char *)this + sizeof(ListModelData));
@@ -570,7 +567,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             QList<QDeclarativeCustomParserProperty> props = node.properties();
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QDeclarativeCustomParserProperty &nodeProp = props.at(jj);
-                if (nodeProp.name() == "") {
+                if (nodeProp.name().isEmpty()) {
                     error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
                     return false;
                 }
@@ -658,7 +655,7 @@ QByteArray QDeclarativeListModelParser::compile(const QList<QDeclarativeCustomPa
 
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QDeclarativeCustomParserProperty &prop = customProps.at(ii);
-        if(prop.name() != "") { // isn't default property
+        if(!prop.name().isEmpty()) { // isn't default property
             error(prop, QDeclarativeListModel::tr("ListModel: undefined property '%1'").arg(QString::fromUtf8(prop.name())));
             return QByteArray();
         }

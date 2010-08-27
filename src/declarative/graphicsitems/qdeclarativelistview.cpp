@@ -96,7 +96,7 @@ public:
     FxListItem(QDeclarativeItem *i, QDeclarativeListView *v) : item(i), section(0), view(v) {
         attached = static_cast<QDeclarativeListViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeListView>(item));
         if (attached)
-            attached->m_view = view;
+            attached->setView(view);
     }
     ~FxListItem() {}
     qreal position() const {
@@ -983,7 +983,7 @@ void QDeclarativeListViewPrivate::updateSections()
 void QDeclarativeListViewPrivate::updateCurrentSection()
 {
     if (!sectionCriteria || visibleItems.isEmpty()) {
-        currentSection = QString();
+        currentSection.clear();
         return;
     }
     int index = 0;
@@ -2652,7 +2652,7 @@ void QDeclarativeListView::trackedPositionChanged()
                 if (trackedPos < d->startPosition() + d->highlightRangeStart) {
                     pos = d->startPosition();
                 } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
-                    pos = d->endPosition() - d->size();
+                    pos = d->endPosition() - d->size() + 1;
                     if (pos < d->startPosition())
                         pos = d->startPosition();
                 } else {
@@ -2666,14 +2666,14 @@ void QDeclarativeListView::trackedPositionChanged()
         } else {
             if (trackedPos < viewPos && d->currentItem->position() < viewPos) {
                 pos = d->currentItem->position() < trackedPos ? trackedPos : d->currentItem->position();
-            } else if (d->trackedItem->endPosition() > viewPos + d->size()
-                        && d->currentItem->endPosition() > viewPos + d->size()) {
-                if (d->trackedItem->endPosition() < d->currentItem->endPosition()) {
-                    pos = d->trackedItem->endPosition() - d->size();
-                    if (d->trackedItem->size() > d->size())
+            } else if (d->trackedItem->endPosition() >= viewPos + d->size()
+                        && d->currentItem->endPosition() >= viewPos + d->size()) {
+                if (d->trackedItem->endPosition() <= d->currentItem->endPosition()) {
+                    pos = d->trackedItem->endPosition() - d->size() + 1;
+                     if (d->trackedItem->size() > d->size())
                         pos = trackedPos;
                 } else {
-                    pos = d->currentItem->endPosition() - d->size();
+                    pos = d->currentItem->endPosition() - d->size() + 1;
                     if (d->currentItem->size() > d->size())
                         pos = d->currentItem->position();
                 }

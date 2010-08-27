@@ -544,7 +544,7 @@ int QDeclarativeCompositeTypeManager::resolveTypes(QDeclarativeCompositeTypeData
     }
 
 
-    foreach (QDeclarativeScriptParser::Import imp, unit->data.imports()) {
+    foreach (const QDeclarativeScriptParser::Import &imp, unit->data.imports()) {
         QDeclarativeDirComponents qmldircomponentsnetwork;
         if (imp.type == QDeclarativeScriptParser::Import::Script)
             continue;

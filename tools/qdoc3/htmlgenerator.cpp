@@ -3177,7 +3177,14 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
                 const Node* n = marker->resolveTarget(arg.toString(), myTree, relative, self);
-                addLink(linkForNode(n,relative), arg, &html);
+                if (n && n->subType() == Node::QmlBasicType) {
+                    if (relative && relative->subType() == Node::QmlClass)
+                        addLink(linkForNode(n,relative), arg, &html);
+                    else 
+                        html += arg.toString();
+                }
+                else
+                    addLink(linkForNode(n,relative), arg, &html);
                 handled = true;
             }
             else if (parseArg(src, headerTag, &i, srcSize, &arg, &par1)) {
@@ -3539,7 +3546,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
         return QString();
     if (node->access() == Node::Private)
         return QString();
-
+ 
     fn = fileName(node);
 /*    if (!node->url().isEmpty())
         return fn;*/

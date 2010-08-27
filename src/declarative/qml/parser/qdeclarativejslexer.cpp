@@ -120,7 +120,7 @@ Lexer::~Lexer()
 
 void Lexer::setCode(const QString &c, int lineno)
 {
-    errmsg = QString();
+    errmsg.clear();
     yylineno = lineno;
     yycolumn = 1;
     restrKeyword = false;

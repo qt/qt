@@ -54,6 +54,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
+#include "private/qdeclarativeenginedebug_p.h"
 
 #include <QStack>
 #include <QStringList>
@@ -765,8 +766,11 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
 
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
-    if (rv && !context->isInternal && ep->isDebugging)
-        context->asQDeclarativeContextPrivate()->instances.append(rv);
+    if (ep->isDebugging && rv) {
+        if  (!context->isInternal)
+            context->asQDeclarativeContextPrivate()->instances.append(rv);
+        QDeclarativeEngineDebugServer::instance()->objectCreated(engine, rv);
+    }
 
     return rv;
 }

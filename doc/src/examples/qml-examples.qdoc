@@ -137,6 +137,7 @@
     \o \l {declarative/cppextensions/referenceexamples/grouped}{Grouped Properties}
     \o \l {declarative/cppextensions/referenceexamples/attached}{Attached Properties}
     \o \l {declarative/cppextensions/referenceexamples/signal}{Signal Support}
+    \o \l {declarative/cppextensions/referenceexamples/methods}{Methods Support}
     \o \l {declarative/cppextensions/referenceexamples/valuesource}{Property Value Source}
     \o \l {declarative/cppextensions/referenceexamples/binding}{Binding}
     \endlist

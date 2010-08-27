@@ -82,7 +82,7 @@ CONFIG(QTDIR_build) {
     symbian: TARGET =$$TARGET$${QT_LIBINFIX}
 }
 moduleFile=$$PWD/../WebKit/qt/qt_webkit_version.pri
-include($$moduleFile)
+isEmpty(QT_BUILD_TREE):include($$moduleFile)
 VERSION = $${QT_WEBKIT_MAJOR_VERSION}.$${QT_WEBKIT_MINOR_VERSION}.$${QT_WEBKIT_PATCH_VERSION}
 
 unix {
