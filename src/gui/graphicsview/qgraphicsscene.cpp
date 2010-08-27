@@ -1074,7 +1074,7 @@ void QGraphicsScenePrivate::enableMouseTrackingOnViews()
 /*!
     Returns all items for the screen position in \a event.
 */
-QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &screenPos,
+QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &/*screenPos*/,
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
@@ -1083,16 +1083,12 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     if (!view)
         return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
-    const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
+    const QRectF pointRect(scenePos, QSizeF(1, 1));
     if (!view->isTransformed())
         return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
-    if (viewTransform.type() <= QTransform::TxScale) {
-        return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
-                        Qt::DescendingOrder, viewTransform);
-    }
-    return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
+    return q->items(pointRect, Qt::IntersectsItemShape,
                     Qt::DescendingOrder, viewTransform);
 }
 
@@ -5742,16 +5738,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             }
 
             if (sceneTouchEvent->deviceType() == QTouchEvent::TouchScreen) {
-                // on touch-screens, combine this touch point with the closest one we find if it
-                // is a a direct descendent or ancestor (
+                // on touch-screens, combine this touch point with the closest one we find
                 int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
-                if (!item
-                    || (closestItem
-                        && (item->isAncestorOf(closestItem)
-                            || closestItem->isAncestorOf(item)))) {
+                if (!item || (closestItem && cachedItemsUnderMouse.contains(closestItem)))
                     item = closestItem;
-                }
             }
             if (!item)
                 continue;

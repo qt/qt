@@ -10,4 +10,5 @@ SUBDIRS += \
     grouped \
     properties \
     signal \
-    valuesource
+    valuesource \
+    methods

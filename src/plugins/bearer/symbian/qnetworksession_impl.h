@@ -143,6 +143,7 @@ private:
     void handleSymbianConnectionStatusChange(TInt aConnectionStatus, TInt aError, TUint accessPointId = 0);
     QNetworkConfiguration bestConfigFromSNAP(const QNetworkConfiguration& snapConfig) const;
     QNetworkConfiguration activeConfiguration(TUint32 iapId = 0) const;
+    void restoreDefaultIf();
 #ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interface(TUint iapId) const;
 #endif

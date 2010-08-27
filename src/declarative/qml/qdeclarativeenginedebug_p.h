@@ -92,8 +92,11 @@ public:
         bool hasNotifySignal;
     };
 
-    static void addEngine(QDeclarativeEngine *);
-    static void remEngine(QDeclarativeEngine *);
+    void addEngine(QDeclarativeEngine *);
+    void remEngine(QDeclarativeEngine *);
+    void objectCreated(QDeclarativeEngine *, QObject *);
+
+    static QDeclarativeEngineDebugServer *instance();
 
 protected:
     virtual void messageReceived(const QByteArray &);
@@ -111,7 +114,7 @@ private:
     void resetBinding(int objectId, const QString &propertyName);
     void setMethodBody(int objectId, const QString &method, const QString &body);
 
-    static QList<QDeclarativeEngine *> m_engines;
+    QList<QDeclarativeEngine *> m_engines;
     QDeclarativeWatcher *m_watch;
 };
 Q_DECLARATIVE_EXPORT QDataStream &operator<<(QDataStream &, const QDeclarativeEngineDebugServer::QDeclarativeObjectData &);

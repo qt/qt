@@ -4581,13 +4581,13 @@ void tst_QGraphicsScene::zeroScale()
     rect1->setScale(0.00000001);
 
     QApplication::processEvents();
-    QCOMPARE(cl.changes.count(), 1);
+    QTRY_COMPARE(cl.changes.count(), 1);
     QGraphicsRectItem *rect2 = new QGraphicsRectItem(-0.0000001, -0.0000001, 0.0000001, 0.0000001);
     rect2->setScale(0.00000001);
     scene.addItem(rect2);
     rect1->setPos(20,20);
     QApplication::processEvents();
-    QCOMPARE(cl.changes.count(), 2);
+    QTRY_COMPARE(cl.changes.count(), 2);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

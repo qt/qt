@@ -43,6 +43,8 @@
 #define OSSIGNALCONVERTER_H
 #include <QObject>
 
+class OsSignalConverterPrivate;
+
 class OsSignalConverter : public QObject
 {
     friend class OsSignalConverterPrivate;

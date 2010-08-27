@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QEglContext;
 class QVGImagePool;
+class QImageReader;
 
 #if !defined(QT_NO_EGL)
 class QVGPixmapData;
@@ -87,6 +88,12 @@ public:
 
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    void fromImageReader(QImageReader *imageReader,
+                          Qt::ImageConversionFlags flags);
+    bool fromFile(const QString &filename, const char *format,
+                          Qt::ImageConversionFlags flags);
+    bool fromData(const uchar *buffer, uint len, const char *format,
+                          Qt::ImageConversionFlags flags);
 
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
@@ -126,6 +133,7 @@ public:
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
+    void createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace);
 
 #if defined(Q_OS_SYMBIAN)
     void cleanup();
