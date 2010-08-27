@@ -5742,16 +5742,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             }
 
             if (sceneTouchEvent->deviceType() == QTouchEvent::TouchScreen) {
-                // on touch-screens, combine this touch point with the closest one we find if it
-                // is a a direct descendent or ancestor (
+                // on touch-screens, combine this touch point with the closest one we find
                 int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
-                if (!item
-                    || (closestItem
-                        && (item->isAncestorOf(closestItem)
-                            || closestItem->isAncestorOf(item)))) {
+                if (!item || (closestItem && cachedItemsUnderMouse.contains(closestItem)))
                     item = closestItem;
-                }
             }
             if (!item)
                 continue;
