@@ -2257,6 +2257,7 @@ void QDir::setNameFilter(const QString &nameFilter)
 {
     QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
+    d->clearFileLists();
 
     d->filterSepChar = QDirPrivate::getFilterSepChar(nameFilter);
     d->nameFilters = QDirPrivate::splitFilters(nameFilter, d->filterSepChar);
