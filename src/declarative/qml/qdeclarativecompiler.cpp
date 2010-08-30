@@ -668,13 +668,14 @@ void QDeclarativeCompiler::compileTree(Object *tree)
         QString scriptCode = QString::fromUtf8(unit->scripts.at(ii).resource->data);
         Object::ScriptBlock::Pragmas pragmas = QDeclarativeScriptParser::extractPragmas(scriptCode);
 
+        Q_ASSERT(!importedScripts.contains(unit->scripts.at(ii).qualifier));
+
         if (!scriptCode.isEmpty()) {
             Object::ScriptBlock &scriptBlock = importedScripts[unit->scripts.at(ii).qualifier];
 
-            scriptBlock.codes.append(scriptCode);
-            scriptBlock.lineNumbers.append(1);
-            scriptBlock.files.append(unit->scripts.at(ii).resource->url);
-            scriptBlock.pragmas.append(pragmas);
+            scriptBlock.code = scriptCode;
+            scriptBlock.file = unit->scripts.at(ii).resource->url;
+            scriptBlock.pragmas = pragmas;
         }
     }
 
