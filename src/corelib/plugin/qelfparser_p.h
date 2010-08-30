@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <qendian.h>
+#include <qglobal.h>
 
 typedef quint16  qelfhalf_t;
 typedef quint32  qelfword_t;
