@@ -45,6 +45,13 @@
 
 QT_BEGIN_NAMESPACE
 
+QFileSystemEntry::QFileSystemEntry()
+    : m_lastSeparator(0),
+    m_firstDotInFileName(0),
+    m_lastDotInFileName(0)
+{
+}
+
 QFileSystemEntry::QFileSystemEntry(const QString &filePath)
     : m_filePath(filePath),
     m_lastSeparator(-2),

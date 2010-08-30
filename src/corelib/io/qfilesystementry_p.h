@@ -61,8 +61,9 @@ QT_BEGIN_NAMESPACE
 class QFileSystemEntry
 {
 public:
-    QFileSystemEntry(const QString &filePath);
-    QFileSystemEntry(const QByteArray &nativeFilePath);
+    QFileSystemEntry();
+    explicit QFileSystemEntry(const QString &filePath);
+    explicit QFileSystemEntry(const QByteArray &nativeFilePath);
     QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath);
 
     QString filePath() const;
@@ -88,9 +89,9 @@ private:
     mutable QString m_filePath; // always has slashes as separator
     mutable QByteArray m_nativeFilePath; // native encoding and separators
 
-    mutable int m_lastSeparator : 16; // index in m_filePath of last separator
-    mutable int m_firstDotInFileName : 11; // index after m_filePath for first dot (.)
-    mutable int m_lastDotInFileName : 5; // index after m_firstDotInFileName for last dot (.)
+    mutable qint16 m_lastSeparator; // index in m_filePath of last separator
+    mutable qint16 m_firstDotInFileName; // index after m_filePath for first dot (.)
+    mutable qint16 m_lastDotInFileName; // index after m_firstDotInFileName for last dot (.)
 };
 
 QT_END_NAMESPACE
