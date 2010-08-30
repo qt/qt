@@ -50,8 +50,6 @@
 
 #include <ctype.h>
 
-#define MAGIC_OBSOLETE_REFERENCE "Obsolete_PO_entries"
-
 // Uncomment if you wish to hard wrap long lines in .po files. Note that this
 // affects only msg strings, not comments.
 //#define HARD_WRAP_LONG_WORDS
@@ -562,8 +560,6 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                     if (pos != -1)
                         msg.addReference(ref.left(pos), ref.mid(pos + 1).toInt());
                 }
-            } else if (isObsolete) {
-                msg.setFileName(QLatin1String(MAGIC_OBSOLETE_REFERENCE));
             }
             msg.setId(codec->toUnicode(item.id));
             msg.setSourceText(codec->toUnicode(item.msgId));
@@ -773,7 +769,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
         if (!msg.id().isEmpty())
             out << QLatin1String("#. ts-id ") << msg.id() << '\n';
 
-        if (!msg.fileName().isEmpty() && msg.fileName() != QLatin1String(MAGIC_OBSOLETE_REFERENCE)) {
+        if (!msg.fileName().isEmpty()) {
             QStringList refs;
             foreach (const TranslatorMessage::Reference &ref, msg.allReferences())
                 refs.append(QString(QLatin1String("%2:%1"))
