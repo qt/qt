@@ -656,6 +656,8 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
                         item.isPlural = true;
                     } else if (line.startsWith("#~ msgctxt ")) {
                         item.tscomment = slurpEscapedString(lines, l, 11, "#~ ", cd);
+                        if (qtContexts)
+                            splitContext(&item.tscomment, &item.context);
                     } else {
                         cd.appendError(QString(QLatin1String("PO-format parse error in line %1: '%2'"))
                             .arg(l + 1).arg(codec->toUnicode(lines[l])));
