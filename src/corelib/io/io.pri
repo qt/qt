@@ -56,7 +56,8 @@ SOURCES += \
         io/qfsfileengine.cpp \
         io/qfsfileengine_iterator.cpp \
         io/qfilesystemwatcher.cpp \
-        io/qfilesystementry.cpp
+        io/qfilesystementry.cpp \
+        io/qfilesystemengine.cpp
 
 win32 {
         SOURCES += io/qsettings_win.cpp

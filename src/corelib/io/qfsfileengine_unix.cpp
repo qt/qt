@@ -1027,25 +1027,16 @@ QString QFSFileEngine::fileName(FileName file) const
     } else if (file == PathName) {
         return d->fileEntry.path();
     } else if (file == AbsoluteName || file == AbsolutePathName) {
-        QFileSystemEntry entry = QFileSystemEngine::absoluteName(d->fileEntry);
+        QFileSystemEntry entry(QFileSystemEngine::absoluteName(d->fileEntry));
         if (file == AbsolutePathName) {
             return entry.path();
         }
         return entry.filePath();
     } else if (file == CanonicalName || file == CanonicalPathName) {
-        if (!(fileFlags(ExistsFlag) & ExistsFlag))
-            return QString();
-
-        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (file == CanonicalPathName && !ret.isEmpty()) {
-            int slash = ret.lastIndexOf(QLatin1Char('/'));
-            if (slash == -1)
-                ret = QDir::currentPath();
-            else if (slash == 0)
-                ret = QLatin1String("/");
-            ret = ret.left(slash);
-        }
-        return ret;
+        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry));
+        if (file == CanonicalPathName)
+            return entry.path();
+        return entry.filePath();
     } else if (file == LinkName) {
         if (d->isSymlink()) {
 #if defined(__GLIBC__) && !defined(PATH_MAX)

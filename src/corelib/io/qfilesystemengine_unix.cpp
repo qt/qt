@@ -42,6 +42,9 @@
 #include "qfilesystemengine_p.h"
 #include "qfsfileengine.h"
 
+#include <stdlib.h> // for realpath()
+#include <errno.h>
+
 QT_BEGIN_NAMESPACE
 
 bool QFileSystemEngine::isCaseSensitive()
@@ -62,7 +65,23 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link)
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
 {
-    return entry; // TODO implement;
+    if (entry.isEmpty() || entry.isRoot())
+        return entry;
+
+#ifdef __UCLIBC__
+    return QFileSystemEntry::slowCanonicalName(entry);
+#else
+
+    char *ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+    if (ret) {
+        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
+        free(ret);
+        return QFileSystemEntry(canonicalPath);
+    } else if (errno == ENOENT) { // file doesn't exist
+        return QFileSystemEntry();
+    }
+    return entry;
+#endif
 }
 
 //static

@@ -58,6 +58,7 @@ SOURCES += \
            ../../corelib/io/qfile.cpp \
            ../../corelib/io/qfileinfo.cpp \
            ../../corelib/io/qfilesystementry.cpp \
+           ../../corelib/io/qfilesystemengine.cpp \
            ../../corelib/io/qfsfileengine.cpp \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \

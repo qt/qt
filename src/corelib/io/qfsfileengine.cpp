@@ -41,6 +41,7 @@
 
 #include "qfsfileengine_p.h"
 #include "qfsfileengine_iterator_p.h"
+#include "qfilesystemengine_p.h"
 #include "qdatetime.h"
 #include "qdiriterator.h"
 #include "qset.h"
@@ -179,61 +180,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 #endif
 #endif
 
-    QFileInfo fi;
-    const QChar slash(QLatin1Char('/'));
-    QString tmpPath = path;
-    int separatorPos = 0;
-    QSet<QString> nonSymlinks;
-    QSet<QString> known;
-
-    known.insert(path);
-    do {
-#ifdef Q_OS_WIN
-        if (separatorPos == 0) {
-            if (tmpPath.size() >= 2 && tmpPath.at(0) == slash && tmpPath.at(1) == slash) {
-                // UNC, skip past the first two elements
-                separatorPos = tmpPath.indexOf(slash, 2);
-            } else if (tmpPath.size() >= 3 && tmpPath.at(1) == QLatin1Char(':') && tmpPath.at(2) == slash) {
-                // volume root, skip since it can not be a symlink
-                separatorPos = 2;
-            }
-        }
-        if (separatorPos != -1)
-#endif
-        separatorPos = tmpPath.indexOf(slash, separatorPos + 1);
-        QString prefix = separatorPos == -1 ? tmpPath : tmpPath.left(separatorPos);
-        if (
-#ifdef Q_OS_SYMBIAN
-            // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance,
-            // but also saves us from lot of unnecessary platform security check failures
-            // when dealing with files under *:/private directories.
-            separatorPos == -1 &&
-#endif
-            !nonSymlinks.contains(prefix)) {
-            fi.setFile(prefix);
-            if (fi.isSymLink()) {
-                QString target = fi.symLinkTarget();
-                if(QFileInfo(target).isRelative())
-                    target = fi.absolutePath() + slash + target;
-                if (separatorPos != -1) {
-                    if (fi.isDir() && !target.endsWith(slash))
-                        target.append(slash);
-                    target.append(tmpPath.mid(separatorPos));
-                }
-                tmpPath = QDir::cleanPath(target);
-                separatorPos = 0;
-
-                if (known.contains(tmpPath))
-                    return QString();
-                known.insert(tmpPath);
-            } else {
-                nonSymlinks.insert(prefix);
-            }
-        }
-    } while (separatorPos != -1);
-
-    return QDir::cleanPath(tmpPath);
+    return QFileSystemEngine::slowCanonicalized(path);
 }
 
 /*!

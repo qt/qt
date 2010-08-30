@@ -58,6 +58,7 @@ bootstrap { #Qt code
         qabstractfileengine.cpp \
         qfileinfo.cpp \
         qfilesystementry.cpp \
+        qfilesystemengine.cpp \
         qfsfileengine.cpp \
         qfsfileengine_iterator.cpp \
         qglobal.cpp \

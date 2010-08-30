@@ -89,6 +89,7 @@ QTOBJS= \
 	qbuffer.obj \
 	qcryptographichash.obj \
 	qfilesystementry.obj \
+	qfilesystemengine.obj \
 	qfilesystemengine_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
@@ -144,6 +145,7 @@ clean::
 	-del qcryptographichash.obj
 	-del qlinkedlist.obj
 	-del qfilesystementry.obj
+	-del qfilesystemengine.obj
 	-del qfilesystemengine_win.obj
 	-del qfsfileengine.obj
 	-del qfsfileengine_iterator.obj
@@ -316,6 +318,9 @@ qtemporaryfile.obj: $(SOURCE_PATH)\src\corelib\io\qtemporaryfile.cpp
 
 qfilesystementry.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystementry.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfilesystementry.cpp
+
+qfilesystemengine.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystemengine.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfilesystemengine.cpp
 
 qfilesystemengine_win.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystemengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfilesystemengine_win.cpp

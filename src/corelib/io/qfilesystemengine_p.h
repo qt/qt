@@ -84,6 +84,8 @@ public:
 
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
             QFileSystemMetaData *data = 0);
+
+    static QString slowCanonicalized(const QString &path);
 };
 
 QT_END_NAMESPACE
