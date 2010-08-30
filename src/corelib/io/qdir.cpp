@@ -561,11 +561,6 @@ QDir::~QDir()
 {
 }
 
-void QDir::detach()
-{
-    d_ptr.detach();
-}
-
 /*!
     Sets the path of the directory to \a path. The path is cleaned of
     redundant ".", ".." and of multiple separators. No check is made
@@ -599,7 +594,7 @@ void QDir::setPath(const QString &path)
 */
 QString QDir::path() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return d->path;
 }
 
@@ -613,7 +608,7 @@ QString QDir::path() const
 */
 QString QDir::absolutePath() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     QString ret = d->path;
     if (QDir::isRelativePath(ret))
         ret = absoluteFilePath(QString::fromLatin1(""));
@@ -638,7 +633,7 @@ QString QDir::absolutePath() const
 */
 QString QDir::canonicalPath() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (!d->fileEngine)
         return QLatin1String("");
@@ -658,7 +653,7 @@ QString QDir::canonicalPath() const
 */
 QString QDir::dirName() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     int pos = d->path.lastIndexOf(QLatin1Char('/'));
     if (pos == -1)
         return d->path;
@@ -676,7 +671,7 @@ QString QDir::dirName() const
 */
 QString QDir::filePath(const QString &fileName) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     if (isAbsolutePath(fileName))
         return QString(fileName);
 
@@ -699,7 +694,7 @@ QString QDir::filePath(const QString &fileName) const
 */
 QString QDir::absoluteFilePath(const QString &fileName) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     if (isAbsolutePath(fileName))
         return fileName;
     if (!d->fileEngine)
@@ -924,7 +919,7 @@ bool QDir::cdUp()
 */
 QStringList QDir::nameFilters() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return d->nameFilters;
 }
 
@@ -945,7 +940,7 @@ QStringList QDir::nameFilters() const
 */
 void QDir::setNameFilters(const QStringList &nameFilters)
 {
-    Q_D(QDir);
+    QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
     d->clearFileLists();
 
@@ -1052,7 +1047,7 @@ QStringList QDir::searchPaths(const QString &prefix)
 */
 QDir::Filters QDir::filter() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return d->filters;
 }
 
@@ -1134,7 +1129,7 @@ QDir::Filters QDir::filter() const
 */
 void QDir::setFilter(Filters filters)
 {
-    Q_D(QDir);
+    QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
     d->clearFileLists();
 
@@ -1148,7 +1143,7 @@ void QDir::setFilter(Filters filters)
 */
 QDir::SortFlags QDir::sorting() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return d->sort;
 }
 
@@ -1192,7 +1187,7 @@ QDir::SortFlags QDir::sorting() const
 */
 void QDir::setSorting(SortFlags sort)
 {
-    Q_D(QDir);
+    QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
     d->clearFileLists();
 
@@ -1208,7 +1203,7 @@ void QDir::setSorting(SortFlags sort)
 */
 uint QDir::count() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     d->initFileLists();
     return d->files.count();
 }
@@ -1222,7 +1217,7 @@ uint QDir::count() const
 */
 QString QDir::operator[](int pos) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     d->initFileLists();
     return d->files[pos];
 }
@@ -1248,7 +1243,7 @@ QString QDir::operator[](int pos) const
 */
 QStringList QDir::entryList(Filters filters, SortFlags sort) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return entryList(d->nameFilters, filters, sort);
 }
 
@@ -1271,7 +1266,7 @@ QStringList QDir::entryList(Filters filters, SortFlags sort) const
 */
 QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return entryInfoList(d->nameFilters, filters, sort);
 }
 
@@ -1294,7 +1289,7 @@ QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
                             SortFlags sort) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (filters == NoFilter)
         filters = d->filters;
@@ -1340,7 +1335,7 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filters,
                                   SortFlags sort) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (filters == NoFilter)
         filters = d->filters;
@@ -1376,7 +1371,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 */
 bool QDir::mkdir(const QString &dirName) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (dirName.isEmpty()) {
         qWarning("QDir::mkdir: Empty or null file name(s)");
@@ -1400,7 +1395,7 @@ bool QDir::mkdir(const QString &dirName) const
 */
 bool QDir::rmdir(const QString &dirName) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (dirName.isEmpty()) {
         qWarning("QDir::rmdir: Empty or null file name(s)");
@@ -1425,7 +1420,7 @@ bool QDir::rmdir(const QString &dirName) const
 */
 bool QDir::mkpath(const QString &dirPath) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (dirPath.isEmpty()) {
         qWarning("QDir::mkpath: Empty or null file name(s)");
@@ -1451,7 +1446,7 @@ bool QDir::mkpath(const QString &dirPath) const
 */
 bool QDir::rmpath(const QString &dirPath) const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (dirPath.isEmpty()) {
         qWarning("QDir::rmpath: Empty or null file name(s)");
@@ -1475,7 +1470,7 @@ bool QDir::rmpath(const QString &dirPath) const
 */
 bool QDir::isReadable() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (!d->fileEngine)
         return false;
@@ -1500,7 +1495,7 @@ bool QDir::isReadable() const
 */
 bool QDir::exists() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (!d->fileEngine)
         return false;
@@ -1527,7 +1522,7 @@ bool QDir::exists() const
 */
 bool QDir::isRoot() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (!d->fileEngine)
         return true;
@@ -1561,7 +1556,7 @@ bool QDir::isRoot() const
 */
 bool QDir::isRelative() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
 
     if (!d->fileEngine)
         return false;
@@ -1603,8 +1598,8 @@ bool QDir::makeAbsolute() // ### What do the return values signify?
 */
 bool QDir::operator==(const QDir &dir) const
 {
-    const QDirPrivate *d = d_func();
-    const QDirPrivate *other = dir.d_func();
+    const QDirPrivate *d = d_ptr.constData();
+    const QDirPrivate *other = dir.d_ptr.constData();
 
     if (d == other)
         return true;
@@ -2133,7 +2128,7 @@ bool QDir::isRelativePath(const QString &path)
 */
 void QDir::refresh() const
 {
-    QDirPrivate *d = const_cast<QDir*>(this)->d_func();
+    QDirPrivate *d = const_cast<QDir*>(this)->d_ptr.data();
     d->initFileEngine();
     d->clearFileLists();
 }
@@ -2211,7 +2206,7 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
 */
 bool QDir::matchAllDirs() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return d->matchAllDirs;
 }
 
@@ -2223,7 +2218,7 @@ bool QDir::matchAllDirs() const
 */
 void QDir::setMatchAllDirs(bool on)
 {
-    Q_D(QDir);
+    QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
     d->clearFileLists();
 
@@ -2235,7 +2230,7 @@ void QDir::setMatchAllDirs(bool on)
 */
 QString QDir::nameFilter() const
 {
-    Q_D(const QDir);
+    const QDirPrivate* d = d_ptr.constData();
     return nameFilters().join(QString(d->filterSepChar));
 }
 
@@ -2261,7 +2256,7 @@ QString QDir::nameFilter() const
 */
 void QDir::setNameFilter(const QString &nameFilter)
 {
-    Q_D(QDir);
+    QDirPrivate* d = d_ptr.data();
     d->initFileEngine();
 
     d->filterSepChar = QDirPrivate::getFilterSepChar(nameFilter);
