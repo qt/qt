@@ -2484,7 +2484,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \qmlproperty bool Item::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
   If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
@@ -2494,9 +2494,9 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \property QDeclarativeItem::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle. If you set
   clipping during an item's paint operation, remember to re-set it to 
   prevent clipping the rest of your scene.

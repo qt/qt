@@ -258,7 +258,7 @@ bool QEglProperties::reduceConfiguration()
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which
     // trumps the others. Of course, there may not be a 16-bit
-    // config avaliable, so it's the first restraint we remove.
+    // config available, so it's the first restraint we remove.
     if (value(EGL_BUFFER_SIZE) == 16) {
         removeValue(EGL_BUFFER_SIZE);
         return true;

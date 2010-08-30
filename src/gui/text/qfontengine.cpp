@@ -721,7 +721,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
         return;
 
     // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
-    // memory use when there is continous or random rotation
+    // memory use when there is continuous or random rotation
     if (m_glyphCaches.size() == 4)
         delete m_glyphCaches.takeLast().cache;
 
