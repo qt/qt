@@ -38,8 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "qlibrary_p.h"
 #include "qelfparser_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // #define QELFPARSER_DEBUG 1
 
@@ -227,4 +230,6 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     }
     return NoQtSection;
 }
+
+QT_END_NAMESPACE
 

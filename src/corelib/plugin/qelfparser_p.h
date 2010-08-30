@@ -38,8 +38,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef QELFPARSER_P_H
+#define QELFPARSER_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <qendian.h>
 #include <qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 typedef quint16  qelfhalf_t;
 typedef quint32  qelfword_t;
@@ -76,4 +93,8 @@ public:
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
     int parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, long *pos, ulong *sectionlen);
 };
+
+QT_END_NAMESPACE
+
+#endif // QELFPARSER_P_H
 
