@@ -128,7 +128,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 QT_BEGIN_NAMESPACE
 
-static QString readLink(const QString &link);
+static QString readLink(const QFileSystemEntry &link);
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
@@ -279,20 +279,6 @@ bool QFSFileEnginePrivate::uncListSharesOnServer(const QString &server, QStringL
     return false;
 }
 
-static bool isUncRoot(const QString &server)
-{
-    QString localPath = QDir::toNativeSeparators(server);
-    if (!localPath.startsWith(QLatin1String("\\\\")))
-        return false;
-
-    int idx = localPath.indexOf(QLatin1Char('\\'), 2);
-    if (idx == -1 || idx + 1 == localPath.length())
-        return true;
-
-    localPath = localPath.right(localPath.length() - idx - 1).trimmed();
-    return localPath.isEmpty();
-}
-
 #if !defined(Q_OS_WINCE)
 static inline bool isUncPath(const QString &path)
 {
@@ -301,25 +287,6 @@ static inline bool isUncPath(const QString &path)
             && path.size() > 2 && path.at(2) != QLatin1Char('.'));
 }
 #endif
-
-static inline bool isRelativePath(const QString &path)
-{
-    // drive, e.g. "a:", or UNC root, e.q. "//"
-    return !(path.startsWith(QLatin1Char('/'))
-           || (path.length() >= 2
-           && ((path.at(0).isLetter() && path.at(1) == QLatin1Char(':'))
-           || (path.at(0) == QLatin1Char('/') && path.at(1) == QLatin1Char('/')))));
-}
-
-static QString fixIfRelativeUncPath(const QString &path)
-{
-    if (isRelativePath(path)) {
-        QString currentPath = QDir::currentPath() + QLatin1Char('/');
-        if (currentPath.startsWith(QLatin1String("//")))
-            return QString(path).prepend(currentPath);
-    }
-    return path;
-}
 
 // can be //server or //server/share
 static bool uncShareExists(const QString &server)
@@ -331,13 +298,6 @@ static bool uncShareExists(const QString &server)
             return parts.count() >= 2 ? shares.contains(parts.at(1), Qt::CaseInsensitive) : true;
     }
     return false;
-}
-
-static inline bool isDriveRoot(const QString &path)
-{
-    return (path.length() == 3
-           && path.at(0).isLetter() && path.at(1) == QLatin1Char(':')
-           && path.at(2) == QLatin1Char('/'));
 }
 
 static QString nativeAbsoluteFilePath(const QString &path)
@@ -390,13 +350,22 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 #endif
 }
 
-/*
-    \internal
-*/
-void QFSFileEnginePrivate::nativeInitFileName()
+static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
 {
-    QString path = longFileName(QDir::toNativeSeparators(fixIfRelativeUncPath(filePath)));
-    nativeFilePath = QByteArray((const char *)path.utf16(), path.size() * 2 + 1);
+    // path should not end with a trailing slash
+    while (path.endsWith(QLatin1Char('\\')))
+        path.chop(1);
+
+    // can't handle drives
+    if (!path.endsWith(QLatin1Char(':'))) {
+        HANDLE hFind = ::FindFirstFile((wchar_t*)path.utf16(), &findData);
+        if (hFind != INVALID_HANDLE_VALUE) {
+            ::FindClose(hFind);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /*
@@ -421,7 +390,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     DWORD creationDisp = (openMode & QIODevice::WriteOnly) ? OPEN_ALWAYS : OPEN_EXISTING;
 
     // Create the file handle.
-    fileHandle = CreateFile((const wchar_t*)nativeFilePath.constData(),
+    fileHandle = CreateFile((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                             accessRights,
                             shareMode,
                             &securityAtts,
@@ -538,31 +507,18 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 
     // Not-open mode, where the file name is known: We'll check the
     // file system directly.
-    if (openMode == QIODevice::NotOpen && !nativeFilePath.isEmpty()) {
+    if (openMode == QIODevice::NotOpen && !fileEntry.isEmpty()) {
         WIN32_FILE_ATTRIBUTE_DATA attribData;
-        bool ok = ::GetFileAttributesEx((const wchar_t*)nativeFilePath.constData(),
+        bool ok = ::GetFileAttributesEx((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                                         GetFileExInfoStandard, &attribData);
         if (!ok) {
             int errorCode = GetLastError();
             if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-                QByteArray path = nativeFilePath;
-                // path for the FindFirstFile should not end with a trailing slash
-                while (!path.isEmpty() && reinterpret_cast<const wchar_t *>(
-                                path.constData() + path.length())[-1] == '\\')
-                    path.chop(2);
-
-                // FindFirstFile can not handle drives
-                if (!path.isEmpty() && reinterpret_cast<const wchar_t *>(
-                                path.constData() + path.length())[-1] != ':') {
-                    WIN32_FIND_DATA findData;
-                    HANDLE hFind = ::FindFirstFile((const wchar_t*)path.constData(),
-                                                   &findData);
-                    if (hFind != INVALID_HANDLE_VALUE) {
-                        ::FindClose(hFind);
-                        ok = true;
-                        attribData.nFileSizeHigh = findData.nFileSizeHigh;
-                        attribData.nFileSizeLow = findData.nFileSizeLow;
-                    }
+                WIN32_FIND_DATA findData;
+                if (getFindData(fileEntry.nativeFilePath(), findData)) {
+                    ok = true;
+                    attribData.nFileSizeHigh = findData.nFileSizeHigh;
+                    attribData.nFileSizeLow = findData.nFileSizeLow;
                 }
             }
         }
@@ -831,7 +787,7 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    bool ret = ::DeleteFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16()) != 0;
+    bool ret = ::DeleteFile((wchar_t*)d->fileEntry.nativeFilePath().utf16()) != 0;
     if (!ret)
         setError(QFile::RemoveError, qt_error_string());
     return ret;
@@ -840,8 +796,10 @@ bool QFSFileEngine::remove()
 bool QFSFileEngine::copy(const QString &copyName)
 {
     Q_D(QFSFileEngine);
-    bool ret = ::CopyFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                          (wchar_t*)QFSFileEnginePrivate::longFileName(copyName).utf16(), true) != 0;
+
+    QFileSystemEntry target(copyName);
+    bool ret = ::CopyFile((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
+                          (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
     if (!ret)
         setError(QFile::CopyError, qt_error_string());
     return ret;
@@ -850,8 +808,9 @@ bool QFSFileEngine::copy(const QString &copyName)
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = ::MoveFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                          (wchar_t*)QFSFileEnginePrivate::longFileName(newName).utf16()) != 0;
+    QFileSystemEntry target(newName);
+    bool ret = ::MoveFile((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
+                          (wchar_t*)target.nativeFilePath().utf16()) != 0;
     if (!ret)
         setError(QFile::RenameError, qt_error_string());
     return ret;
@@ -896,20 +855,9 @@ static bool isDirPath(const QString &dirPath, bool *existed)
     if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
         int errorCode = GetLastError();
         if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-            // path for the FindFirstFile should not end with a trailing slash
-            while (path.endsWith(QLatin1Char('\\')))
-                path.chop(1);
-
-            // FindFirstFile can not handle drives
-            if (!path.endsWith(QLatin1Char(':'))) {
-                WIN32_FIND_DATA findData;
-                HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
-                                               &findData);
-                if (hFind != INVALID_HANDLE_VALUE) {
-                    ::FindClose(hFind);
-                    fileAttrib = findData.dwFileAttributes;
-                }
-            }
+            WIN32_FIND_DATA findData;
+            if (getFindData(QFSFileEnginePrivate::longFileName(path), findData))
+                fileAttrib = findData.dwFileAttributes;
         }
     }
 
@@ -1164,19 +1112,17 @@ bool QFSFileEnginePrivate::doStat() const
         tried_stat = true;
         could_stat = false;
 
-        if (filePath.isEmpty())
+        if (fileEntry.isEmpty())
             return could_stat;
 
-        QString fname;
-        if(filePath.endsWith(QLatin1String(".lnk"))) {
-            fname = readLink(filePath);
+        QFileSystemEntry fname;
+        if(fileEntry.filePath().endsWith(QLatin1String(".lnk"))) {
+            fname = QFileSystemEntry(readLink(fileEntry));
             if(fname.isEmpty())
                 return could_stat;
         }
         else
-            fname = filePath;
-
-        fname = fixIfRelativeUncPath(fname);
+            fname = fileEntry;
 
         UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
@@ -1191,48 +1137,37 @@ bool QFSFileEnginePrivate::doStat() const
                 }
             }
 #else
-            DWORD tmpAttributes = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
+            DWORD tmpAttributes = GetFileAttributes((wchar_t*)fname.nativeFilePath().utf16());
             if (tmpAttributes != -1) {
                 fileAttrib = tmpAttributes;
                 could_stat = true;
             }
 #endif
         } else {
-            fileAttrib = GetFileAttributes((wchar_t*)QFSFileEnginePrivate::longFileName(fname).utf16());
+            fileAttrib = GetFileAttributes((wchar_t*)fname.nativeFilePath().utf16());
             if (fileAttrib == INVALID_FILE_ATTRIBUTES) {
                 int errorCode = GetLastError();
                 if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-                    QString path = QDir::toNativeSeparators(fname);
-                    // path for the FindFirstFile should not end with a trailing slash
-                    while (path.endsWith(QLatin1Char('\\')))
-                        path.chop(1);
-
-                    // FindFirstFile can not handle drives
-                    if (!path.endsWith(QLatin1Char(':'))) {
-                        WIN32_FIND_DATA findData;
-                        HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
-                                                       &findData);
-                        if (hFind != INVALID_HANDLE_VALUE) {
-                            ::FindClose(hFind);
-                            fileAttrib = findData.dwFileAttributes;
-                        }
+                    WIN32_FIND_DATA findData;
+                    if (getFindData(fname.nativeFilePath(), findData)) {
+                        fileAttrib = findData.dwFileAttributes;
                     }
                 }
             }
             could_stat = fileAttrib != INVALID_FILE_ATTRIBUTES;
             if (!could_stat) {
 #if !defined(Q_OS_WINCE)
-                if (isDriveRoot(fname)) {
+                if (fname.isDriveRoot()) {
                     // a valid drive ??
                     DWORD drivesBitmask = ::GetLogicalDrives();
-                    int drivebit = 1 << (fname.at(0).toUpper().unicode() - QLatin1Char('A').unicode());
+                    int drivebit = 1 << (fname.filePath().at(0).toUpper().unicode() - QLatin1Char('A').unicode());
                     if (drivesBitmask & drivebit) {
                         fileAttrib = FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_SYSTEM;
                         could_stat = true;
                     }
                 } else {
 #endif
-                    QString path = QDir::toNativeSeparators(fname);
+                    const QString &path = fname.nativeFilePath();
                     bool is_dir = false;
                     if (path.startsWith(QLatin1String("\\\\"))) {
                         // UNC - stat doesn't work for all cases (Windows bug)
@@ -1274,11 +1209,11 @@ bool QFSFileEnginePrivate::doStat() const
 }
 
 
-static QString readSymLink(const QString &link)
+static QString readSymLink(const QFileSystemEntry &link)
 {
     QString result;
 #if !defined(Q_OS_WINCE)
-    HANDLE handle = CreateFile((wchar_t*)QFSFileEnginePrivate::longFileName(link).utf16(),
+    HANDLE handle = CreateFile((wchar_t*)link.nativeFilePath().utf16(),
                                FILE_READ_EA,
                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                                0,
@@ -1328,7 +1263,7 @@ static QString readSymLink(const QString &link)
     return result;
 }
 
-static QString readLink(const QString &link)
+static QString readLink(const QFileSystemEntry &link)
 {
 #if !defined(Q_OS_WINCE)
 #if !defined(QT_NO_LIBRARY) && !defined(Q_CC_MWERKS)
@@ -1352,7 +1287,7 @@ static QString readLink(const QString &link)
         IPersistFile *ppf;
         hres = psl->QueryInterface(IID_IPersistFile, (LPVOID *)&ppf);
         if (SUCCEEDED(hres))  {
-            hres = ppf->Load((LPOLESTR)link.utf16(), STGM_READ);
+            hres = ppf->Load((LPOLESTR)link.nativeFilePath().utf16(), STGM_READ);
             //The original path of the link is retrieved. If the file/folder
             //was moved, the return value still have the old path.
             if (SUCCEEDED(hres)) {
@@ -1374,7 +1309,7 @@ static QString readLink(const QString &link)
 #else
     wchar_t target[MAX_PATH];
     QString result;
-    if (SHGetShortcutTarget((wchar_t*)QFileInfo(link).absoluteFilePath().replace(QLatin1Char('/'),QLatin1Char('\\')).utf16(), target, MAX_PATH)) {
+    if (SHGetShortcutTarget((wchar_t*)QFileInfo(link.filePath()).absoluteFilePath().replace(QLatin1Char('/'),QLatin1Char('\\')).utf16(), target, MAX_PATH)) {
         result = QString::fromWCharArray(target);
         if (result.startsWith(QLatin1Char('"')))
             result.remove(0,1);
@@ -1458,7 +1393,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
             enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
-            QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+            QString fname = fileEntry.filePath().endsWith(QLatin1String(".lnk")) ? readLink(fileEntry) : fileEntry.filePath();
             PSID pOwner = 0;
             PSID pGroup = 0;
             PACL pDacl;
@@ -1528,7 +1463,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFil
                  | QAbstractFileEngine::WriteOtherPerm;
         }
 
-        QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
+        QString fname = fileEntry.filePath().endsWith(QLatin1String(".lnk")) ? readLink(fileEntry) : fileEntry.filePath();
         QString ext = fname.right(4).toLower();
         if ((fileAttrib & FILE_ATTRIBUTE_DIRECTORY) ||
             ext == QLatin1String(".exe") || ext == QLatin1String(".com") || ext == QLatin1String(".bat") ||
@@ -1561,16 +1496,8 @@ bool QFSFileEnginePrivate::isSymlink() const
         is_link = false;
 
         if (fileAttrib & FILE_ATTRIBUTE_REPARSE_POINT) {
-            QString path = QDir::toNativeSeparators(filePath);
-            // path for the FindFirstFile should not end with a trailing slash
-            while (path.endsWith(QLatin1Char('\\')))
-                path.chop(1);
-
             WIN32_FIND_DATA findData;
-            HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
-                                           &findData);
-            if (hFind != INVALID_HANDLE_VALUE) {
-                ::FindClose(hFind);
+            if (getFindData(fileEntry.nativeFilePath(), findData)) {
                 if ((findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
                     && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK || findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
                     is_link = true;
@@ -1606,9 +1533,9 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         }
     }
     if (type & TypesMask) {
-        if (d->filePath.endsWith(QLatin1String(".lnk"))) {
+        if (d->fileEntry.filePath().endsWith(QLatin1String(".lnk"))) {
             ret |= LinkType;
-            QString l = readLink(d->filePath);
+            QString l = readLink(d->fileEntry);
             if (!l.isEmpty()) {
                 bool existed = false;
                 if (isDirPath(l, &existed) && existed)
@@ -1630,7 +1557,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
         ret |= LocalDiskFlag;
         if (d->doStat()) {
             ret |= ExistsFlag;
-            if (d->filePath == QLatin1String("/") || isDriveRoot(d->filePath) || isUncRoot(d->filePath))
+            if (d->fileEntry.isRoot())
                 ret |= RootFlag;
             else if (d->fileAttrib & FILE_ATTRIBUTE_HIDDEN)
                 ret |= HiddenFlag;
@@ -1643,50 +1570,26 @@ QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
     if (file == BaseName) {
-        int slash = d->filePath.lastIndexOf(QLatin1Char('/'));
-        if (slash == -1) {
-            int colon = d->filePath.lastIndexOf(QLatin1Char(':'));
-            if (colon != -1)
-                return d->filePath.mid(colon + 1);
-            return d->filePath;
-        }
-        return d->filePath.mid(slash + 1);
+        return d->fileEntry.fileName();
     } else if (file == PathName) {
-        if (!d->filePath.size())
-            return d->filePath;
-
-        int slash = d->filePath.lastIndexOf(QLatin1Char('/'));
-        if (slash == -1) {
-            if (d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
-                return d->filePath.left(2);
-            return QString(QLatin1Char('.'));
-        } else {
-            if (!slash)
-                return QString(QLatin1Char('/'));
-            if (slash == 2 && d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
-                slash++;
-            return d->filePath.left(slash);
-        }
+        return d->fileEntry.path();
     } else if (file == AbsoluteName || file == AbsolutePathName) {
         QString ret;
 
         if (!isRelativePath()) {
 #if !defined(Q_OS_WINCE)
-            if (d->filePath.startsWith(QLatin1Char('/')) || // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-                d->filePath.size() == 2 ||                  // It's a drive letter that needs to get a working dir appended
-                (d->filePath.size() > 2 && d->filePath.at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-                d->filePath.contains(QLatin1String("/../")) || d->filePath.contains(QLatin1String("/./")) ||
-                d->filePath.endsWith(QLatin1String("/..")) || d->filePath.endsWith(QLatin1String("/.")))
+            if (d->fileEntry.filePath().startsWith(QLatin1Char('/')) || // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
+                d->fileEntry.filePath().size() == 2 ||                  // It's a drive letter that needs to get a working dir appended
+                (d->fileEntry.filePath().size() > 2 && d->fileEntry.filePath().at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
+                d->fileEntry.filePath().contains(QLatin1String("/../")) || d->fileEntry.filePath().contains(QLatin1String("/./")) ||
+                d->fileEntry.filePath().endsWith(QLatin1String("/..")) || d->fileEntry.filePath().endsWith(QLatin1String("/.")))
             {
-                ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->filePath));
-            } else {
-                ret = d->filePath;
+                ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->fileEntry.filePath()));
             }
-#else
-            ret = d->filePath;
 #endif
+            ret = d->fileEntry.filePath();
         } else {
-            ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + d->filePath);
+            ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + d->fileEntry.filePath());
         }
 
         // The path should be absolute at this point.
@@ -1728,25 +1631,22 @@ QString QFSFileEngine::fileName(FileName file) const
         return ret;
     } else if (file == LinkName) {
         QString ret;
-        if (d->filePath.endsWith(QLatin1String(".lnk")))
-            ret = readLink(d->filePath);
+        if (d->fileEntry.filePath().endsWith(QLatin1String(".lnk")))
+            ret = readLink(d->fileEntry);
         else if (d->doStat() && d->isSymlink())
-            ret = readSymLink(d->filePath);
+            ret = readSymLink(d->fileEntry);
         return QDir::fromNativeSeparators(ret);
     } else if (file == BundleName) {
         return QString();
     }
-    return d->filePath;
+    return d->fileEntry.filePath();
 }
 
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
     // drive, e.g. "a:", or UNC root, e.q. "//"
-    return !(d->filePath.startsWith(QLatin1Char('/'))
-        || (d->filePath.length() >= 2
-        && ((d->filePath.at(0).isLetter() && d->filePath.at(1) == QLatin1Char(':'))
-        || (d->filePath.at(0) == QLatin1Char('/') && d->filePath.at(1) == QLatin1Char('/')))));
+    return d->fileEntry.isRelative();
 }
 
 uint QFSFileEngine::ownerId(FileOwner /*own*/) const
@@ -1765,7 +1665,7 @@ QString QFSFileEngine::owner(FileOwner own) const
         if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
             PSID pOwner = 0;
             PSECURITY_DESCRIPTOR pSD;
-            if (ptrGetNamedSecurityInfoW((wchar_t*)d->filePath.utf16(), SE_FILE_OBJECT,
+            if (ptrGetNamedSecurityInfoW((wchar_t*)d->fileEntry.nativeFilePath().utf16(), SE_FILE_OBJECT,
                                          own == OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
                                          own == OwnerUser ? &pOwner : 0, own == OwnerGroup ? &pOwner : 0,
                                          0, 0, &pSD) == ERROR_SUCCESS) {
@@ -1817,7 +1717,7 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (mode == 0) // not supported
         return false;
 
-    ret = ::_wchmod((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), mode) == 0;
+    ret = ::_wchmod((wchar_t*)d->fileEntry.nativeFilePath().utf16(), mode) == 0;
     if (!ret)
         setError(QFile::PermissionsError, qt_error_string(errno));
     return ret;
@@ -1847,9 +1747,9 @@ bool QFSFileEngine::setSize(qint64 size)
         return false;
     }
 
-    if (!d->nativeFilePath.isEmpty()) {
+    if (!d->fileEntry.isEmpty()) {
         // resize file on disk
-        QFile file(d->filePath);
+        QFile file(d->fileEntry.filePath());
         if (file.open(QFile::ReadWrite)) {
             bool ret = file.resize(size);
             if (!ret)
@@ -1915,27 +1815,16 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
 #endif
     } else {
         WIN32_FILE_ATTRIBUTE_DATA attribData;
-        bool ok = ::GetFileAttributesEx((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), GetFileExInfoStandard, &attribData);
+        bool ok = ::GetFileAttributesEx((wchar_t*)QFSFileEnginePrivate::longFileName(d->fileEntry.filePath()).utf16(), GetFileExInfoStandard, &attribData);
         if (!ok) {
             int errorCode = GetLastError();
             if (errorCode == ERROR_ACCESS_DENIED || errorCode == ERROR_SHARING_VIOLATION) {
-                QString path = QDir::toNativeSeparators(d->filePath);
-                // path for the FindFirstFile should not end with a trailing slash
-                while (path.endsWith(QLatin1Char('\\')))
-                    path.chop(1);
-
-                // FindFirstFile can not handle drives
-                if (!path.endsWith(QLatin1Char(':'))) {
-                    WIN32_FIND_DATA findData;
-                    HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
-                                                   &findData);
-                    if (hFind != INVALID_HANDLE_VALUE) {
-                        ::FindClose(hFind);
-                        ok = true;
-                        attribData.ftCreationTime = findData.ftCreationTime;
-                        attribData.ftLastWriteTime = findData.ftLastWriteTime;
-                        attribData.ftLastAccessTime = findData.ftLastAccessTime;
-                    }
+                WIN32_FIND_DATA findData;
+                if (getFindData(d->fileEntry.nativeFilePath(), findData)) {
+                    ok = true;
+                    attribData.ftCreationTime = findData.ftCreationTime;
+                    attribData.ftLastWriteTime = findData.ftLastWriteTime;
+                    attribData.ftLastAccessTime = findData.ftLastAccessTime;
                 }
             }
         }
@@ -1977,7 +1866,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 #ifdef Q_USE_DEPRECATED_MAP_API
         nativeClose();
         // handle automatically closed by kernel with mapHandle (below).
-        handle = ::CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
+        handle = ::CreateFileForMapping((const wchar_t*)fileEntry.nativeFilePath().utf16(),
                 GENERIC_READ | (openMode & QIODevice::WriteOnly ? GENERIC_WRITE : 0),
                 0,
                 NULL,

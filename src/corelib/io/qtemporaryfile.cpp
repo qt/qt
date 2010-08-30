@@ -295,7 +295,7 @@ public:
         : QFSFileEngine(), filePathIsTemplate(fileIsTemplate)
     {
         Q_D(QFSFileEngine);
-        d->filePath = file;
+        d->fileEntry = QFileSystemEntry(file);
 
         if (!filePathIsTemplate)
             QFSFileEngine::setFileName(file);
@@ -346,7 +346,7 @@ void QTemporaryFileEngine::setFileTemplate(const QString &fileTemplate)
 {
     Q_D(QFSFileEngine);
     if (filePathIsTemplate)
-        d->filePath = fileTemplate;
+        d->fileEntry = QFileSystemEntry(fileTemplate);
 }
 
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
@@ -359,7 +359,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    QString qfilename = d->filePath;
+    QString qfilename = d->fileEntry.filePath();
     if(!qfilename.contains(QLatin1String("XXXXXX")))
         qfilename += QLatin1String(".XXXXXX");
 
@@ -377,9 +377,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->filePath = QString::fromLocal8Bit(filename); //changed now!
+            d->fileEntry = QFileSystemEntry(QByteArray(filename)); //changed now!
             filePathIsTemplate = false;
-            d->nativeInitFileName();
             delete [] filename;
             return true;
         }
@@ -395,9 +394,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return false;
     }
 
-    QString template_ = d->filePath;
-    d->filePath = QString::fromLocal8Bit(filename);
-    d->nativeInitFileName();
+    QString template_ = d->fileEntry.filePath();
+    d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename));
     delete [] filename;
 
     if (QFSFileEngine::open(openMode)) {
@@ -405,8 +403,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return true;
     }
 
-    d->filePath = template_;
-    d->nativeFilePath.clear();
+    d->fileEntry = QFileSystemEntry(template_);
     return false;
 #endif
 }
@@ -418,7 +415,7 @@ bool QTemporaryFileEngine::remove()
     // we must explicitly call QFSFileEngine::close() before we remove it.
     QFSFileEngine::close();
     if (QFSFileEngine::remove()) {
-        d->filePath.clear();
+        d->fileEntry.clear();
         return true;
     }
     return false;

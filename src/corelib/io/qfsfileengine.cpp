@@ -239,11 +239,11 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 /*!
     Constructs a QFSFileEngine for the file name \a file.
 */
-QFSFileEngine::QFSFileEngine(const QString &file) : QAbstractFileEngine(*new QFSFileEnginePrivate)
+QFSFileEngine::QFSFileEngine(const QString &file)
+    : QAbstractFileEngine(*new QFSFileEnginePrivate)
 {
     Q_D(QFSFileEngine);
-    d->filePath = QDir::fromNativeSeparators(file);
-    d->nativeInitFileName();
+    d->fileEntry = QFileSystemEntry(QDir::fromNativeSeparators(file));
 }
 
 /*!
@@ -292,8 +292,7 @@ void QFSFileEngine::setFileName(const QString &file)
 {
     Q_D(QFSFileEngine);
     d->init();
-    d->filePath = QDir::fromNativeSeparators(file);
-    d->nativeInitFileName();
+    d->fileEntry = QFileSystemEntry(QDir::fromNativeSeparators(file));
 }
 
 /*!
@@ -302,7 +301,7 @@ void QFSFileEngine::setFileName(const QString &file)
 bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
-    if (d->filePath.isEmpty()) {
+    if (d->fileEntry.isEmpty()) {
         qWarning("QFSFileEngine::open: No file name specified");
         setError(QFile::OpenError, QLatin1String("No file name specified"));
         return false;
@@ -344,8 +343,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
     d->openMode = openMode;
     d->lastFlushFailed = false;
     d->closeFileHandle = false;
-    d->nativeFilePath.clear();
-    d->filePath.clear();
+    d->fileEntry.clear();
     d->tried_stat = 0;
     d->fd = -1;
 
@@ -401,8 +399,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
     d->openMode = openMode;
     d->lastFlushFailed = false;
     d->closeFileHandle = false;
-    d->nativeFilePath.clear();
-    d->filePath.clear();
+    d->fileEntry.clear();
     d->fh = 0;
     d->fd = -1;
     d->tried_stat = 0;
@@ -549,6 +546,7 @@ qint64 QFSFileEngine::size() const
 /*!
     \internal
 */
+#ifndef Q_OS_WIN
 qint64 QFSFileEnginePrivate::sizeFdFh() const
 {
     Q_Q(const QFSFileEngine);
@@ -556,13 +554,13 @@ qint64 QFSFileEnginePrivate::sizeFdFh() const
     QT_STATBUF st;
     int ret = 0;
     const_cast<QFSFileEngine *>(q)->flush();
-    if (fh && nativeFilePath.isEmpty()) {
+    if (fh && fileEntry.isEmpty()) {
         // Buffered stdlib mode.
         // ### This should really be an ftell
         ret = QT_FSTAT(QT_FILENO(fh), &st);
     } else if (fd == -1) {
         // Stateless stat.
-        ret = QT_STAT(nativeFilePath.constData(), &st);
+        ret = QT_STAT(fileEntry.nativeFilePath().constData(), &st);
     } else {
         // Unbuffered stdio mode.
         ret = QT_FSTAT(fd, &st);
@@ -571,6 +569,7 @@ qint64 QFSFileEnginePrivate::sizeFdFh() const
         return 0;
     return st.st_size;
 }
+#endif
 
 /*!
     \reimp

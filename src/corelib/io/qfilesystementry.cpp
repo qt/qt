@@ -42,8 +42,37 @@
 #include "qfilesystementry_p.h"
 
 #include <QtCore/qdir.h>
+#include <QtCore/qfile.h>
+#include <QtCore/private/qfsfileengine_p.h>
+#ifdef Q_OS_WIN
+#include <QtCore/qstringbuilder.h>
+#endif
 
 QT_BEGIN_NAMESPACE
+
+#ifdef Q_OS_WIN
+static bool isUncRoot(const QString &server)
+{
+    QString localPath = QDir::toNativeSeparators(server);
+    if (!localPath.startsWith(QLatin1String("\\\\")))
+        return false;
+
+    int idx = localPath.indexOf(QLatin1Char('\\'), 2);
+    if (idx == -1 || idx + 1 == localPath.length())
+        return true;
+
+    localPath = localPath.right(localPath.length() - idx - 1).trimmed();
+    return localPath.isEmpty();
+}
+
+static inline QString fixIfRelativeUncPath(const QString &path)
+{
+    QString currentPath = QDir::currentPath();
+    if (currentPath.startsWith(QLatin1String("//")))
+        return currentPath % QChar(QLatin1Char('/')) % path;
+    return path;
+}
+#endif
 
 QFileSystemEntry::QFileSystemEntry()
     : m_lastSeparator(0),
@@ -60,6 +89,7 @@ QFileSystemEntry::QFileSystemEntry(const QString &filePath)
 {
 }
 
+#ifndef Q_OS_WIN
 QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath)
     : m_nativeFilePath(nativeFilePath),
     m_lastSeparator(-2),
@@ -76,6 +106,7 @@ QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath, const QStri
     m_lastDotInFileName(0)
 {
 }
+#endif
 
 QString QFileSystemEntry::filePath() const
 {
@@ -83,7 +114,11 @@ QString QFileSystemEntry::filePath() const
     return m_filePath;
 }
 
+#ifndef Q_OS_WIN
 QByteArray QFileSystemEntry::nativeFilePath() const
+#else
+QString QFileSystemEntry::nativeFilePath() const
+#endif
 {
     resolveNativeFilePath();
     return m_nativeFilePath;
@@ -92,21 +127,57 @@ QByteArray QFileSystemEntry::nativeFilePath() const
 void QFileSystemEntry::resolveFilePath() const
 {
     if (m_filePath.isEmpty() && !m_nativeFilePath.isEmpty()) {
-        m_filePath = QDir::fromNativeSeparators(QString::fromLocal8Bit(m_nativeFilePath));
+#ifdef Q_OS_WIN
+        m_filePath = QDir::fromNativeSeparators(m_nativeFilePath);
+#else
+        m_filePath = QDir::fromNativeSeparators(QFile::decodeName(m_nativeFilePath));
+#endif
     }
 }
 
 void QFileSystemEntry::resolveNativeFilePath() const
 {
     if (!m_filePath.isEmpty() && m_nativeFilePath.isEmpty()) {
-        m_nativeFilePath = QDir::toNativeSeparators(m_filePath).toLocal8Bit();
+#ifdef Q_OS_WIN
+        QString filePath = m_filePath;
+        if (isRelative())
+            filePath = fixIfRelativeUncPath(m_filePath);
+        m_nativeFilePath = QFSFileEnginePrivate::longFileName(QDir::toNativeSeparators(filePath));
+#else
+        m_nativeFilePath = QFile::encodeName(QDir::toNativeSeparators(m_filePath));
+#endif
     }
 }
 
 QString QFileSystemEntry::fileName() const
 {
     findLastSeparator();
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    if (m_lastSeparator == -1) {
+        if (m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+            return m_filePath.mid(2);
+    }
+#endif
     return m_filePath.mid(m_lastSeparator + 1);
+}
+
+QString QFileSystemEntry::path() const
+{
+    findLastSeparator();
+    if (m_lastSeparator == -1) {
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        if (m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
+            return m_filePath.left(2);
+#endif
+        return QString(QLatin1Char('.'));
+    }
+    if (m_lastSeparator == 0)
+        return QString(QLatin1Char('/'));
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    if (m_lastSeparator == 2 && m_filePath.at(1) == QLatin1Char(':'))
+        return m_filePath.left(m_lastSeparator + 1);
+#endif
+    return m_filePath.left(m_lastSeparator);
 }
 
 QString QFileSystemEntry::suffix() const
@@ -139,6 +210,38 @@ bool QFileSystemEntry::isAbsolute() const
 #endif
     );
 
+}
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+bool QFileSystemEntry::isDriveRoot() const
+{
+    resolveFilePath();
+    return (m_filePath.length() == 3
+           && m_filePath.at(0).isLetter() && m_filePath.at(1) == QLatin1Char(':')
+           && m_filePath.at(2) == QLatin1Char('/'));
+}
+#endif
+
+bool QFileSystemEntry::isRoot() const
+{
+    resolveFilePath();
+    if (m_filePath == QLatin1String("/")
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+            || isDriveRoot()
+#if defined(Q_OS_WIN)
+            || isUncRoot(m_filePath)
+#endif
+#endif
+            )
+        return true;
+
+    return false;
+}
+
+bool QFileSystemEntry::isEmpty() const
+{
+    resolveNativeFilePath();
+    return m_nativeFilePath.isEmpty();
 }
 
 // private methods

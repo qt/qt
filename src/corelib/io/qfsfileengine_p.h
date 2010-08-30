@@ -56,6 +56,7 @@
 #include "qplatformdefs.h"
 #include "QtCore/qfsfileengine.h"
 #include "private/qabstractfileengine_p.h"
+#include "private/qfilesystementry_p.h"
 #include <qhash.h>
 
 #ifndef QT_NO_FSFILEENGINE
@@ -76,11 +77,9 @@ public:
 #endif
     static QString canonicalized(const QString &path);
 
-    QString filePath;
-    QByteArray nativeFilePath;
+    QFileSystemEntry fileEntry;
     QIODevice::OpenMode openMode;
 
-    void nativeInitFileName();
     bool nativeOpen(QIODevice::OpenMode openMode);
     bool openFh(QIODevice::OpenMode flags, FILE *fh);
     bool openFd(QIODevice::OpenMode flags, int fd);
@@ -89,7 +88,9 @@ public:
     bool nativeFlush();
     bool flushFh();
     qint64 nativeSize() const;
+#ifndef Q_OS_WIN
     qint64 sizeFdFh() const;
+#endif
     qint64 nativePos() const;
     qint64 posFdFh() const;
     bool nativeSeek(qint64);

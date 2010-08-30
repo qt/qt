@@ -63,17 +63,35 @@ class QFileSystemEntry
 public:
     QFileSystemEntry();
     explicit QFileSystemEntry(const QString &filePath);
+#ifndef Q_OS_WIN
     explicit QFileSystemEntry(const QByteArray &nativeFilePath);
     QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath);
+#endif
 
     QString filePath() const;
     QString fileName() const;
+    QString path() const;
+#ifndef Q_OS_WIN
     QByteArray nativeFilePath() const;
+#else
+    QString nativeFilePath() const;
+#endif
     QString suffix() const;
     QString completeSuffix() const;
     bool isAbsolute() const;
     bool isRelative() const {
         return !isAbsolute();
+    }
+
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    bool isDriveRoot() const;
+#endif
+    bool isRoot() const;
+
+    bool isEmpty() const;
+    void clear()
+    {
+        *this = QFileSystemEntry();
     }
 
 private:
@@ -87,7 +105,12 @@ private:
     void findFileNameSeparators() const;
 
     mutable QString m_filePath; // always has slashes as separator
+
+#ifdef Q_OS_WIN
+    mutable QString m_nativeFilePath; // native encoding and separators
+#else
     mutable QByteArray m_nativeFilePath; // native encoding and separators
+#endif
 
     mutable qint16 m_lastSeparator; // index in m_filePath of last separator
     mutable qint16 m_firstDotInFileName; // index after m_filePath for first dot (.)
