@@ -54,7 +54,6 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qprocess.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qdatetime.h>
 
 #include "QtTest/private/qtestlog_p.h"
 #include "QtTest/private/qtesttable_p.h"
@@ -957,7 +956,9 @@ void seedRandom()
     static bool randomSeeded = false;
     if (!randomSeeded) {
         if (!QTest::seedSet) {
-            QTest::seed = QDateTime::currentDateTime().toTime_t();
+            QElapsedTimer timer;
+            timer.start();
+            QTest::seed = timer.msecsSinceReference();
         }
         qsrand(QTest::seed);
         randomSeeded = true;
