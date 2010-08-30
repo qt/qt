@@ -47,15 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-void QFileInfoPrivate::initFileEngine(const QString &file)
-{
-    delete fileEngine;
-    fileEngine = 0;
-    clear();
-    fileEngine = QAbstractFileEngine::create(file);
-    fileName = file;
-}
-
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
     if (cache_enabled && !fileNames[(int)name].isNull())
@@ -586,7 +577,8 @@ bool QFileInfo::makeAbsolute()
         return false;
     QString absFileName = d_ptr.constData()->getFileName(QAbstractFileEngine::AbsoluteName);
     // QSharedDataPointer::operator->() will detach.
-    d_ptr->initFileEngine(absFileName);
+
+    *this = QFileInfo(absFileName);
     return true;
 }
 

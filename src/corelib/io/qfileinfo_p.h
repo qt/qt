@@ -79,16 +79,15 @@ public:
         cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
     {}
     inline QFileInfoPrivate(const QString &file)
-        : QSharedData(), fileEngine(0),
+        : QSharedData(), fileEngine(QAbstractFileEngine::create(file)),
+        fileName(file),
         cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
     {
-        initFileEngine(file);
     }
     inline ~QFileInfoPrivate()
     {
         delete fileEngine;
     }
-    void initFileEngine(const QString &);
 
     inline void clearFlags() const {
         fileFlags = 0;
