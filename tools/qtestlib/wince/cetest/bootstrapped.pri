@@ -7,6 +7,7 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \

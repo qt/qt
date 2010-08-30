@@ -91,6 +91,7 @@ QTOBJS= \
 	qfilesystementry.obj \
 	qfilesystemengine.obj \
 	qfilesystemengine_win.obj \
+	qfilesystemiterator_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
 	qbytearray.obj \
@@ -147,6 +148,7 @@ clean::
 	-del qfilesystementry.obj
 	-del qfilesystemengine.obj
 	-del qfilesystemengine_win.obj
+	-del qfilesystemiterator_win.obj
 	-del qfsfileengine.obj
 	-del qfsfileengine_iterator.obj
 	-del qbytearray.obj
@@ -324,6 +326,9 @@ qfilesystemengine.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystemengine.cpp
 
 qfilesystemengine_win.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystemengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfilesystemengine_win.cpp
+
+qfilesystemiterator_win.obj: $(SOURCE_PATH)\src\corelib\io\qfilesystemiterator_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfilesystemiterator_win.cpp
 
 qfsfileengine_win.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfsfileengine_win.cpp

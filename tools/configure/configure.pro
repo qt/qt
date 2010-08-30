@@ -51,6 +51,7 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemmetadata_p.h \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.h \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator_p.h \
            $$QT_SOURCE_TREE/src/corelib/io/qiodevice.h \
@@ -92,6 +93,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator.cpp \

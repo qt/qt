@@ -64,6 +64,7 @@ QTOBJS= \
 	qfilesystementry.o \
 	qfilesystemengine.o \
 	qfilesystemengine_win.o \
+	qfilesystemiterator_win.o \
 	qfsfileengine.o \
 	qfsfileengine_iterator.o \
 	qfsfileengine_win.o \
@@ -203,6 +204,9 @@ qfilesystemengine.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
 
 qfilesystemengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+
+qfilesystemiterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
 
 qfsfileengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp

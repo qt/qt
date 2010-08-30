@@ -32,7 +32,8 @@ HEADERS +=  \
         io/qfilesystemwatcher_p.h \
         io/qfilesystementry_p.h \
         io/qfilesystemengine_p.h \
-        io/qfilesystemmetadata_p.h
+        io/qfilesystemmetadata_p.h \
+        io/qfilesystemiterator_p.h
 
 SOURCES += \
         io/qabstractfileengine.cpp \
@@ -70,8 +71,10 @@ win32 {
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
+        SOURCES += io/qfilesystemiterator_win.cpp
 } else:unix {
         SOURCES += io/qfilesystemengine_unix.cpp
+        SOURCES += io/qfilesystemiterator_unix.cpp
         SOURCES += io/qfsfileengine_unix.cpp
         SOURCES += io/qfsfileengine_iterator_unix.cpp
         symbian:SOURCES += io/qprocess_symbian.cpp

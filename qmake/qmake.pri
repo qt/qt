@@ -127,14 +127,14 @@ bootstrap { #Qt code
         qxmlutils.h
 
     unix {
-        SOURCES += qfilesystemengine_unix.cpp qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
+        SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
         mac {
           SOURCES += qcore_mac.cpp qsettings_mac.cpp
           QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
           LIBS += -framework ApplicationServices
         }
     } else:win32 {
-	SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfsfileengine_iterator_win.cpp qsettings_win.cpp
+	SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfilesystemiterator_win.cpp qfsfileengine_iterator_win.cpp qsettings_win.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
         win32-g++*:LIBS += -lole32 -luuid
     }
