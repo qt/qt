@@ -3610,12 +3610,16 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
     \section1 Threading
 
-    It is possible to render into a QGLWidget from another thread, but it
-    requires that all access to the GL context is safe guarded. The Qt GUI
-    thread will try to use the context in resizeEvent and paintEvent, so in
-    order for threaded rendering using a GL widget to work, these functions
-    need to be intercepted in the GUI thread and handled accordingly in the
-    application.
+    It is possible to render into a QGLWidget from another thread, but
+    it requires that all access to the GL context is safe guarded. The
+    Qt GUI thread will try to use the context in resizeEvent and
+    paintEvent, so in order for threaded rendering using a GL widget
+    to work, these functions need to be intercepted in the GUI thread
+    and handled accordingly in the application. Under X11, set the
+    Qt::AA_X11InitThreads application attribute, before you create the
+    QApplication object, to make the X11 library and GLX calls thread
+    safe.
+
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
