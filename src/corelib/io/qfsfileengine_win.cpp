@@ -1585,9 +1585,11 @@ QString QFSFileEngine::fileName(FileName file) const
                 d->fileEntry.filePath().endsWith(QLatin1String("/..")) || d->fileEntry.filePath().endsWith(QLatin1String("/.")))
             {
                 ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(d->fileEntry.filePath()));
-            }
+            } else
 #endif
-            ret = d->fileEntry.filePath();
+            {
+                ret = d->fileEntry.filePath();
+            }
         } else {
             ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + d->fileEntry.filePath());
         }
