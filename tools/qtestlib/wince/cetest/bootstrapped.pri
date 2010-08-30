@@ -4,6 +4,8 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \

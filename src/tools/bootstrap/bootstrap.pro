@@ -57,6 +57,7 @@ SOURCES += \
            ../../corelib/io/qdiriterator.cpp \
            ../../corelib/io/qfile.cpp \
            ../../corelib/io/qfileinfo.cpp \
+           ../../corelib/io/qfilesystementry.cpp \
            ../../corelib/io/qfsfileengine.cpp \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
@@ -83,10 +84,12 @@ SOURCES += \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 
-unix:SOURCES += ../../corelib/io/qfsfileengine_unix.cpp \
+unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
+                ../../corelib/io/qfsfileengine_unix.cpp \
                 ../../corelib/io/qfsfileengine_iterator_unix.cpp
 
-win32:SOURCES += ../../corelib/io/qfsfileengine_win.cpp \
+win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
+                 ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/io/qfsfileengine_iterator_win.cpp
 
 macx: {

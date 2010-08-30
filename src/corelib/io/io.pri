@@ -70,6 +70,7 @@ win32 {
         SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
 } else:unix {
+        SOURCES += io/qfilesystemengine_unix.cpp
         SOURCES += io/qfsfileengine_unix.cpp
         SOURCES += io/qfsfileengine_iterator_unix.cpp
         symbian:SOURCES += io/qprocess_symbian.cpp
@@ -77,9 +78,6 @@ win32 {
         macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
-            SOURCES += io/qfilesystemengine_mac.cpp
-        } else {
-            SOURCES += io/qfilesystemengine_unix.cpp
         }
 
         linux-*:!symbian {
