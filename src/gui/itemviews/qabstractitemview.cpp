@@ -1037,8 +1037,10 @@ void QAbstractItemView::reset()
 {
     Q_D(QAbstractItemView);
     d->delayedReset.stop(); //make sure we stop the timer
-    for (QEditorIndexHash::iterator it = d->editorIndexHash.begin(); it != d->editorIndexHash.end(); ++it)
-        d->releaseEditor(it.key());
+    foreach (const QEditorInfo &info, d->indexEditorHash) {
+        if (info.widget)
+            d->releaseEditor(info.widget.data());
+    }
     d->editorIndexHash.clear();
     d->indexEditorHash.clear();
     d->persistent.clear();
@@ -3239,9 +3241,10 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
         const QModelIndex index = i.value();
         if (index.row() >= start && index.row() <= end && d->model->parent(index) == parent) {
             QWidget *editor = i.key();
-            d->indexEditorHash.remove(index);
+            QEditorInfo info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
-            d->releaseEditor(editor);
+            if (info.widget)
+                d->releaseEditor(editor);
         } else {
             ++i;
         }
@@ -3305,9 +3308,10 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
         QModelIndex index = it.value();
         if (index.column() <= start && index.column() >= end && model->parent(index) == parent) {
             QWidget *editor = it.key();
-            indexEditorHash.remove(it.value());
+            QEditorInfo info = indexEditorHash.take(it.value());
             it = editorIndexHash.erase(it);
-            releaseEditor(editor);
+            if (info.widget)
+                releaseEditor(editor);
         } else {
             ++it;
         }
