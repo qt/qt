@@ -71,22 +71,32 @@ public:
 
     inline QFileInfoPrivate()
         : QSharedData(), fileEngine(0),
-        cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+        cachedFlags(0),
+        isDefaultConstructed(true),
+        cache_enabled(true), fileFlags(0), fileSize(0)
     {}
     inline QFileInfoPrivate(const QFileInfoPrivate &copy)
         : QSharedData(copy), fileEngine(QAbstractFileEngine::create(copy.fileName)),
         fileName(copy.fileName),
-        cachedFlags(0), cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
+        cachedFlags(0),
+#ifndef QT_NO_FSFILEENGINE
+        isDefaultConstructed(false),
+#else
+        isDefaultConstructed(!fileEngine),
+#endif
+        cache_enabled(copy.cache_enabled), fileFlags(0), fileSize(0)
     {}
     inline QFileInfoPrivate(const QString &file)
         : QSharedData(), fileEngine(QAbstractFileEngine::create(file)),
         fileName(file),
-        cachedFlags(0), cache_enabled(1), fileFlags(0), fileSize(0)
+        cachedFlags(0),
+#ifndef QT_NO_FSFILEENGINE
+        isDefaultConstructed(false),
+#else
+        isDefaultConstructed(!fileEngine),
+#endif
+        cache_enabled(true), fileFlags(0), fileSize(0)
     {
-    }
-    inline ~QFileInfoPrivate()
-    {
-        delete fileEngine;
     }
 
     inline void clearFlags() const {
@@ -108,13 +118,15 @@ public:
     QString getFileName(QAbstractFileEngine::FileName) const;
     QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
 
-    QAbstractFileEngine *fileEngine;
+    QScopedPointer<QAbstractFileEngine> const fileEngine;
+
     mutable QString fileName;
     mutable QString fileNames[QAbstractFileEngine::NFileNames];
     mutable QString fileOwners[2];
 
-    mutable uint cachedFlags : 31;
-    mutable uint cache_enabled : 1;
+    mutable uint cachedFlags : 30;
+    bool const isDefaultConstructed : 1; // QFileInfo is a default constructed instance
+    bool cache_enabled : 1;
     mutable uint fileFlags;
     mutable qint64 fileSize;
     mutable QDateTime fileTimes[3];
