@@ -164,6 +164,7 @@ public:
     static inline CEikButtonGroupContainer* buttonGroupContainer();
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
 #endif
+    static void controlVisibilityChanged(CCoeControl *control, bool visible);
 
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
@@ -209,6 +210,8 @@ public:
     void CancelLongTapTimer();
 
     void setFocusSafely(bool focus);
+
+    bool isControlActive();
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }

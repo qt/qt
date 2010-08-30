@@ -84,6 +84,7 @@ void QDeclarativePen::setWidth(int w)
 
 /*!
     \qmlclass GradientStop QDeclarativeGradientStop
+    \ingroup qml-basic-visual-elements
   \since 4.7
     \brief The GradientStop item defines the color at a position in a Gradient
 
@@ -105,6 +106,7 @@ void QDeclarativeGradientStop::updateGradient()
 
 /*!
     \qmlclass Gradient QDeclarativeGradient
+    \ingroup qml-basic-visual-elements
   \since 4.7
     \brief The Gradient item defines a gradient fill.
 
@@ -152,6 +154,7 @@ void QDeclarativeGradient::doUpdate()
 
 /*!
     \qmlclass Rectangle QDeclarativeRectangle
+    \ingroup qml-basic-visual-elements
   \since 4.7
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
@@ -177,11 +180,6 @@ void QDeclarativeGradient::doUpdate()
 
 int QDeclarativeRectanglePrivate::doUpdateSlotIdx = -1;
 
-/*!
-    \internal
-    \class QDeclarativeRectangle
-    \brief The QDeclarativeRectangle class provides a rectangle item that you can add to a QDeclarativeView.
-*/
 QDeclarativeRectangle::QDeclarativeRectangle(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRectanglePrivate), parent)
 {

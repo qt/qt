@@ -466,14 +466,37 @@ MakefileGenerator::init()
     if(!project->isEmpty("QMAKE_SUBSTITUTES")) {
         const QStringList &subs = v["QMAKE_SUBSTITUTES"];
         for(int i = 0; i < subs.size(); ++i) {
-            if(!subs.at(i).endsWith(".in")) {
-                warn_msg(WarnLogic, "Substitute '%s' does not end with '.in'",
-                         subs.at(i).toLatin1().constData());
-                continue;
+            QString inn = subs.at(i) + ".input", outn = subs.at(i) + ".output";
+            if (v.contains(inn) || v.contains(outn)) {
+                if (!v.contains(inn) || !v.contains(outn)) {
+                    warn_msg(WarnLogic, "Substitute '%s' has only one of .input and .output",
+                             subs.at(i).toLatin1().constData());
+                    continue;
+                }
+                const QStringList &tinn = v[inn], &toutn = v[outn];
+                if (tinn.length() != 1) {
+                    warn_msg(WarnLogic, "Substitute '%s.input' does not have exactly one value",
+                             subs.at(i).toLatin1().constData());
+                    continue;
+                }
+                if (toutn.length() != 1) {
+                    warn_msg(WarnLogic, "Substitute '%s.output' does not have exactly one value",
+                             subs.at(i).toLatin1().constData());
+                    continue;
+                }
+                inn = tinn.first();
+                outn = toutn.first();
+            } else {
+                inn = subs.at(i);
+                if(!inn.endsWith(".in")) {
+                    warn_msg(WarnLogic, "Substitute '%s' does not end with '.in'",
+                             inn.toLatin1().constData());
+                    continue;
+                }
+                outn = inn.left(inn.length()-3);
             }
-            QFile in(fileFixify(subs.at(i))), out(fileInfo(subs.at(i)).fileName());
-            if(out.fileName().endsWith(".in"))
-                out.setFileName(out.fileName().left(out.fileName().length()-3));
+            QFile in(fileFixify(inn));
+            QFile out(fileFixify(outn, qmake_getpwd(), Option::output_dir));
             if(in.open(QFile::ReadOnly)) {
                 QString contents;
                 QStack<int> state;
@@ -528,7 +551,7 @@ MakefileGenerator::init()
                 if(out.exists() && out.open(QFile::ReadOnly)) {
                     QString old = QString::fromUtf8(out.readAll());
                     if(contents == old) {
-                        v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
+                        v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
                         continue;
                     }
                     out.close();
@@ -538,8 +561,9 @@ MakefileGenerator::init()
                         continue;
                     }
                 }
+                mkdir(QFileInfo(out).absolutePath());
                 if(out.open(QFile::WriteOnly)) {
-                    v["QMAKE_INTERNAL_INCLUDED_FILES"].append(subs.at(i));
+                    v["QMAKE_INTERNAL_INCLUDED_FILES"].append(in.fileName());
                     out.write(contents.toUtf8());
                 } else {
                     warn_msg(WarnLogic, "Cannot open substitute for output '%s'",

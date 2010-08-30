@@ -39,15 +39,17 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			"			   <li><a href=\"modules.html\">Modules</a></li> \n" \
 			"			   <li><a href=\"namespaces.html\">Namespaces</a></li> \n" \
 			"			   <li><a href=\"qtglobal.html\">Global Declarations</a></li> \n" \
-			"			   <li><a href=\"qdeclarativeelements.html\">QML elements</a></li> \n" \
+			"			   <li><a href=\"licensing.html\">Licenses and Credits</a></li> \n" \
 			"			   </ul> \n" \
 			"		 </li> \n" \
 			"		 <li><a href=\"#\">Qt Topics</a> \n" \
 			"			 <ul id=\"topmenuTopic\"> \n" \
-			"			   <li><a href=\"qt-basic-concepts.html\">Basic Qt architecture</a></li> \n" \
+			"			   <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
 			"			   <li><a href=\"qtquick.html\">Device UI's &amp; Qt Quick</a></li> \n" \
-			"			   <li><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li> \n" \
+			"			   <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
+			"			   <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
 			"			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+			"			   <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
 			"			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
 			"			 </ul> \n" \
 			"		</li> \n" \
@@ -86,7 +88,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"functions.html\">Function index</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global stuff</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global Declarations</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
@@ -96,10 +98,13 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "            Qt Topics</h2>\n" \
 			  "          <div id=\"list002\" class=\"list\">\n" \
 			  "            <ul id=\"ul002\" >\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qt-basic-concepts.html\">Basic Qt architecture</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qtquick.html\">Device UI's &amp; Qt Quick</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qt-gui-concepts.html\">Desktop UI components</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"platform-specific.html\">Platform-specific info</a></li>\n" \
+			  "			   <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
+			  "			   <li><a href=\"qtquick.html\">Device UI's &amp; Qt Quick</a></li> \n" \
+			  "			   <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
+			  "			   <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
+			  "			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
+			  "			   <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
+			  "			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
 			  "            </ul>  \n" \
 			  "          </div>\n" \
 			  "        </div>\n" \

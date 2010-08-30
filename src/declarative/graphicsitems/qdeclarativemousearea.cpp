@@ -180,6 +180,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
 /*!
     \qmlclass MouseArea QDeclarativeMouseArea
+    \ingroup qml-basic-interaction-elements
     \since 4.7
     \brief The MouseArea item enables simple mouse handling.
     \inherits Item
@@ -316,16 +317,6 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     \l Flickable, \c onCanceled should be used in addition to onReleased.
 */
 
-/*!
-    \internal
-    \class QDeclarativeMouseArea
-    \brief The QDeclarativeMouseArea class provides a simple mouse handling abstraction for use within QML.
-
-    All QDeclarativeItem derived classes can do mouse handling but the QDeclarativeMouseArea class exposes mouse
-    handling data as properties and tracks flicking and dragging of the mouse.
-
-    A QDeclarativeMouseArea object can be instantiated in QML using the tag \l MouseArea.
- */
 QDeclarativeMouseArea::QDeclarativeMouseArea(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeMouseAreaPrivate), parent)
 {
@@ -689,7 +680,6 @@ void QDeclarativeMouseArea::geometryChanged(const QRectF &newGeometry,
         d->lastPos = mapFromScene(d->lastScenePos);
 }
 
-/*! \internal */
 QVariant QDeclarativeMouseArea::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {

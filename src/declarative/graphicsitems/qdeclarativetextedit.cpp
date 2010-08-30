@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
+    \ingroup qml-basic-visual-elements
     \since 4.7
     \brief The TextEdit item displays multiple lines of editable formatted text.
     \inherits Item
@@ -102,23 +103,6 @@ TextEdit {
     \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
-/*!
-    \internal
-    \class QDeclarativeTextEdit
-    \qmlclass TextEdit
-
-    \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
-
-    It can display both plain and rich text.
-
-    \image declarative-textedit.png
-
-    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
-*/
-
-/*!
-    Constructs a new QDeclarativeTextEdit.
-*/
 QDeclarativeTextEdit::QDeclarativeTextEdit(QDeclarativeItem *parent)
 : QDeclarativePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
 {

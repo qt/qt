@@ -68,8 +68,6 @@ Item {
                     loader.item.width = 640;
                 if(loader.item.height > 480)
                     loader.item.height = 480;
-                if(loader.item.inAnotherDemo != undefined)
-                    loader.item.inAnotherDemo = true;
             }}
 
         }
@@ -100,6 +98,30 @@ Item {
             }
 
         }
+        Rectangle{ id: closeButton
+            width: 24
+            height: 24
+            z: 11
+            border.color: "#aaaaaaaa"
+            gradient: Gradient{
+                GradientStop{ position: 0.0; color: "#34FFFFFF" }
+                GradientStop{ position: 1.0; color: "#7AFFFFFF" }
+            }
+            anchors.left: frame.right
+            anchors.bottom: frame.top
+            anchors.margins: -(2*width/3)
+            Text{
+                text: 'X'
+                font.bold: true
+                color: "white"
+                font.pixelSize: 12
+                anchors.centerIn: parent
+            }
+            MouseArea{
+                anchors.fill: parent
+                onClicked: main.show = false;
+            }
+        }
 
         Text{
             id: errorTxt
@@ -116,32 +138,6 @@ Item {
             onLinkActivated: Qt.openUrlExternally(link);
         }
     }
-    Rectangle{
-        id: helpLabel
-        property bool timedOut: false
-        z: 9
-        //Positioned in the top left corner
-        x: 8 
-        y: 8
-        color: "white"
-        border.color: "black"
-        border.width: 1
-        width: helpText.width + 16
-        height: helpText.height + 8
-        Text{
-            id: helpText
-            color: "black"
-            anchors.centerIn: parent
-            text: "Click outside the example to exit it."
-        }
-        opacity: 0
-        Behavior on opacity{ NumberAnimation{duration:500} }
-        Timer{
-            id: helpTimer
-            interval: 5000
-            onTriggered: {helpLabel.timedOut=true}
-        }
-    }
     Rectangle{ id: blackout //Maybe use a colorize effect instead?
         z: 8
         anchors.fill: parent
@@ -154,7 +150,6 @@ Item {
         hoverEnabled: main.show //To steal focus from the buttons
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         anchors.fill: parent
-        onClicked: main.show=false;
     }
 
     states: [
@@ -166,10 +161,6 @@ Item {
                 opacity: 1
             }
             PropertyChanges {
-                target: helpLabel
-                opacity: helpLabel.timedOut?0:1
-            }
-            PropertyChanges {
                 target: blackout
                 opacity: 0.5
             }
@@ -178,8 +169,7 @@ Item {
     transitions: [//Should not be too long, because the component has already started running
         Transition { from: ''; to: "show"; reversible: true
             ParallelAnimation{
-                ScriptAction{ script: {helpLabel.timedOut = false; helpTimer.restart();} }
-                NumberAnimation{ exclude: helpLabel; properties: "opacity"; easing.type: Easing.InQuad; duration: 500}
+                NumberAnimation{ properties: "opacity"; easing.type: Easing.InQuad; duration: 500}
                 PropertyAction { target: loader; property: "focus"; value: true}//Might be needed to ensure the focus stays with us
             }
         }

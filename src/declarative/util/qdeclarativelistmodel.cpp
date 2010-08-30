@@ -58,9 +58,6 @@ Q_DECLARE_METATYPE(QListModelInterface *)
 
 QT_BEGIN_NAMESPACE
 
-#define DATA_ROLE_ID 1
-#define DATA_ROLE_NAME "data"
-
 QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListModelData::instructions() const
 {
     return (QDeclarativeListModelParser::ListInstruction *)((char *)this + sizeof(ListModelData));
@@ -68,6 +65,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
 /*!
     \qmlclass ListModel QDeclarativeListModel
+    \ingroup qml-working-with-data
     \since 4.7
     \brief The ListModel element defines a free-form list data source.
 
@@ -129,7 +127,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
-    The application's \tt Timer object periodically sends a message to the
+working-with-data
     worker script by calling \l WorkerScript::sendMessage(). When this message
     is received, \l {WorkerScript::onMessage}{WorkerScript.onMessage()} is invoked in
     \tt dataloader.js, which appends the current time to the list model.
@@ -569,7 +567,7 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             QList<QDeclarativeCustomParserProperty> props = node.properties();
             for(int jj = 0; jj < props.count(); ++jj) {
                 const QDeclarativeCustomParserProperty &nodeProp = props.at(jj);
-                if (nodeProp.name() == "") {
+                if (nodeProp.name().isEmpty()) {
                     error(nodeProp, QDeclarativeListModel::tr("ListElement: cannot contain nested elements"));
                     return false;
                 }
@@ -657,7 +655,7 @@ QByteArray QDeclarativeListModelParser::compile(const QList<QDeclarativeCustomPa
 
     for(int ii = 0; ii < customProps.count(); ++ii) {
         const QDeclarativeCustomParserProperty &prop = customProps.at(ii);
-        if(prop.name() != "") { // isn't default property
+        if(!prop.name().isEmpty()) { // isn't default property
             error(prop, QDeclarativeListModel::tr("ListModel: undefined property '%1'").arg(QString::fromUtf8(prop.name())));
             return QByteArray();
         }
@@ -769,6 +767,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 
 /*!
     \qmlclass ListElement
+    \ingroup qml-working-with-data
     \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
 

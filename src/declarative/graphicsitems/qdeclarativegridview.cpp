@@ -64,7 +64,7 @@ public:
     FxGridItem(QDeclarativeItem *i, QDeclarativeGridView *v) : item(i), view(v) {
         attached = static_cast<QDeclarativeGridViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeGridView>(item));
         if (attached)
-            attached->m_view = view;
+            attached->setView(view);
     }
     ~FxGridItem() {}
 
@@ -1056,6 +1056,8 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 /*!
     \qmlclass GridView QDeclarativeGridView
     \since 4.7
+    \ingroup qml-view-elements
+
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 
@@ -2210,7 +2212,7 @@ void QDeclarativeGridView::trackedPositionChanged()
                 if (trackedPos < d->startPosition() + d->highlightRangeStart) {
                     pos = d->startPosition();
                 } else if (d->trackedItem->endRowPos() > d->endPosition() - d->size() + d->highlightRangeEnd) {
-                    pos = d->endPosition() - d->size();
+                    pos = d->endPosition() - d->size() + 1;
                     if (pos < d->startPosition())
                         pos = d->startPosition();
                 } else {
@@ -2224,14 +2226,14 @@ void QDeclarativeGridView::trackedPositionChanged()
         } else {
             if (trackedPos < viewPos && d->currentItem->rowPos() < viewPos) {
                 pos = d->currentItem->rowPos() < trackedPos ? trackedPos : d->currentItem->rowPos();
-            } else if (d->trackedItem->endRowPos() > viewPos + d->size()
-                && d->currentItem->endRowPos() > viewPos + d->size()) {
-                if (d->trackedItem->endRowPos() < d->currentItem->endRowPos()) {
-                    pos = d->trackedItem->endRowPos() - d->size();
+            } else if (d->trackedItem->endRowPos() >= viewPos + d->size()
+                && d->currentItem->endRowPos() >= viewPos + d->size()) {
+                if (d->trackedItem->endRowPos() <= d->currentItem->endRowPos()) {
+                    pos = d->trackedItem->endRowPos() - d->size() + 1;
                     if (d->rowSize() > d->size())
                         pos = trackedPos;
                 } else {
-                    pos = d->currentItem->endRowPos() - d->size();
+                    pos = d->currentItem->endRowPos() - d->size() + 1;
                     if (d->rowSize() > d->size())
                         pos = d->currentItem->rowPos();
                 }

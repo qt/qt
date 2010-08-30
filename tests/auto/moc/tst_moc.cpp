@@ -492,6 +492,7 @@ private slots:
     void warnOnVirtualSignal();
     void QTBUG5590_dummyProperty();
     void QTBUG12260_defaultTemplate();
+    void notifyError();
 signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
@@ -1360,6 +1361,27 @@ void tst_Moc::QTBUG12260_defaultTemplate()
 {
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomething(QHash<QString,QVariant>)") != -1);
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
+}
+
+void tst_Moc::notifyError()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled", SkipAll);
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+    proc.start("moc", QStringList(srcify("error-on-wrong-notify.h")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 1);
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.isEmpty());
+    QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
+    QCOMPARE(mocError, QString(SRCDIR) +
+        QString("/error-on-wrong-notify.h:52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+#else
+    QSKIP("Only tested on linux/gcc", SkipAll);
+#endif
 }
 
 

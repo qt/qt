@@ -62,6 +62,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlclass Repeater QDeclarativeRepeater
+    \ingroup qml-utility-elements
     \since 4.7
     \inherits Item
 
@@ -145,23 +146,11 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     \endcode
  */
 
-/*!
-    \internal
-    \class QDeclarativeRepeater
- */
-
-/*!
-    Create a new QDeclarativeRepeater instance.
- */
 QDeclarativeRepeater::QDeclarativeRepeater(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRepeaterPrivate), parent)
 {
 }
 
-/*!
-    Destroy the repeater instance.  All items it instantiated are also
-    destroyed.
- */
 QDeclarativeRepeater::~QDeclarativeRepeater()
 {
 }
@@ -245,8 +234,8 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         */
         regenerate();
-        emit countChanged();
     }
+    emit countChanged();
 }
 
 /*!
@@ -300,18 +289,12 @@ int QDeclarativeRepeater::count() const
 }
 
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::componentComplete()
 {
     QDeclarativeItem::componentComplete();
     regenerate();
 }
 
-/*!
-    \internal
- */
 QVariant QDeclarativeRepeater::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -334,9 +317,6 @@ void QDeclarativeRepeater::clear()
     d->deletables.clear();
 }
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::regenerate()
 {
     Q_D(QDeclarativeRepeater);
@@ -377,6 +357,7 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
             d->deletables.insert(modelIndex, item);
         }
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsRemoved(int index, int count)
@@ -391,6 +372,7 @@ void QDeclarativeRepeater::itemsRemoved(int index, int count)
         else
             break;
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
@@ -420,6 +402,7 @@ void QDeclarativeRepeater::modelReset()
     if (!isComponentComplete())
         return;
     regenerate();
+    emit countChanged();
 }
 
 QT_END_NAMESPACE

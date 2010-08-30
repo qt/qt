@@ -481,9 +481,7 @@ QVariant QConnmanProfileInterface::getProperty(const QString &property)
     QVariantMap map = getProperties();
     if (map.contains(property)) {
         var = map.value(property);
-    } else {
-        qDebug() <<__FUNCTION__<< "Could not find" << property;
-    }
+    } 
     return var;
 }
 
@@ -522,8 +520,6 @@ QConnmanServiceInterface::~QConnmanServiceInterface()
 
 void QConnmanServiceInterface::connectNotify(const char *signal)
 {
-//    qWarning() << __FUNCTION__ << signal << this->path();
-
     if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
         dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
@@ -569,9 +565,7 @@ QVariant QConnmanServiceInterface::getProperty(const QString &property)
     QVariantMap map = getProperties();
     if (map.contains(property)) {
         var = map.value(property);
-    } else {
-//        qDebug() <<__FUNCTION__<< "Could not find" << property;
-    }
+    } 
     return var;
 }
 
@@ -1051,15 +1045,7 @@ QVariantMap QConnmanDeviceInterface::getProperties()
 
 bool QConnmanDeviceInterface::setProperty(const QString &name, const QDBusVariant &value)
 {
-
-//    QList<QVariant> args;
-    qWarning() << __FUNCTION__ << name << value.variant();
-//    args << qVariantFromValue(name);
-//    args << qVariantFromValue(value);
-
     QDBusMessage reply = this->call(QLatin1String("SetProperty"),name, qVariantFromValue(value));
-qWarning() << reply.errorMessage();
-
     return true;
 }
 
@@ -1148,7 +1134,6 @@ bool QConnmanDeviceInterface::setEnabled(bool powered)
     << qVariantFromValue(QDBusVariant(powered));
 
     QDBusMessage reply = this->callWithArgumentList(QDBus::AutoDetect,QLatin1String("SetProperty"),args);
-    qWarning() << reply.errorMessage() << reply.errorName();
     return true;
 }
 
@@ -1164,8 +1149,6 @@ QConnmanDBusHelper::~QConnmanDBusHelper()
 void QConnmanDBusHelper::propertyChanged(const QString &item, const QDBusVariant &var)
 {
     QDBusMessage msg = this->message();
-//    qWarning() << sender();
- //   qWarning()  << msg.interface() << msg.path() << item << var.variant() <<"\n";
     Q_EMIT propertyChangedContext(msg.path() ,item, var);
 }
 

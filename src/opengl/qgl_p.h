@@ -167,6 +167,9 @@ public:
 #if defined(Q_WS_X11) && !defined(QT_NO_EGL)
                        , eglSurfaceWindowId(0)
 #endif
+#if defined(Q_OS_SYMBIAN)
+                       , eglSurfaceWindowId(0)
+#endif
     {
         isGLWidget = 1;
     }
@@ -207,6 +210,10 @@ public:
     void updatePaintDevice();
 #elif defined(Q_WS_QWS)
     QWSGLWindowSurface *wsurf;
+#endif
+#ifdef Q_OS_SYMBIAN
+    void recreateEglSurface();
+    WId eglSurfaceWindowId;
 #endif
 };
 
@@ -277,7 +284,8 @@ public:
         DDSTextureCompression   = 0x00008000,
         ETC1TextureCompression  = 0x00010000,
         PVRTCTextureCompression = 0x00020000,
-        FragmentShader          = 0x00040000
+        FragmentShader          = 0x00040000,
+        ES2Compatibility        = 0x00080000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -393,6 +401,9 @@ public:
     uint workaround_brokenFBOReadBack : 1;
     uint workaroundsCached : 1;
 
+    uint workaround_brokenTextureFromPixmap : 1;
+    uint workaround_brokenTextureFromPixmap_init : 1;
+
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
@@ -414,7 +425,7 @@ public:
     static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
 #endif
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     static QGLExtensionFuncs qt_extensionFuncs;
     static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
 #endif

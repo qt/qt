@@ -569,7 +569,8 @@ bool VCXCLCompilerTool::parseOption(const char* option)
                 UseFullPaths = _True;
                 break;
             case 'd':
-                ProgramDataBaseFileName += option+3;
+                ProgramDataBaseFileName = option+3;
+                break;
             case 'I':
                 ForcedIncludeFiles += option+3;
                 break;
@@ -1572,7 +1573,8 @@ bool VCXLinkerTool::parseOption(const char* option)
         break;
     case 0x0034160: // /MAP[:filename]
         GenerateMapFile = _True;
-        MapFileName = option+5;
+        if (option[4] == ':')
+            MapFileName = option+5;
         break;
     case 0x164e1ef: // /MAPINFO:{EXPORTS}
         if(*(option+9) == 'E')

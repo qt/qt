@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
     \since 4.7
+    \ingroup qm-basic-visual-elements
 
     A BorderImage breaks an image into 9 sections, as shown below:
 
@@ -77,12 +78,6 @@ QT_BEGIN_NAMESPACE
     The \l{declarative/imageelements/borderimage}{BorderImage example} shows how a BorderImage can be used to simulate a shadow effect on a
     rectangular item.
  */
-
-/*!
-    \class QDeclarativeBorderImage BorderImage
-    \internal
-    \brief The QDeclarativeBorderImage class provides an image item that you can add to a QDeclarativeView.
-*/
 
 QDeclarativeBorderImage::QDeclarativeBorderImage(QDeclarativeItem *parent)
   : QDeclarativeImageBase(*(new QDeclarativeBorderImagePrivate), parent)

@@ -51,6 +51,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Image QDeclarativeImage
     \since 4.7
+    \ingroup qml-vasic-visual-elements
+
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
@@ -87,19 +89,6 @@ QT_BEGIN_NAMESPACE
     that is loaded from external sources or provided by the user.
 
     \sa {declarative/imageelements/image}{Image example}, QDeclarativeImageProvider
-*/
-
-/*!
-    \internal
-    \class QDeclarativeImage Image
-    \brief The QDeclarativeImage class provides an image item that you can add to a QDeclarativeView.
-
-    Example:
-    \qml
-    Image { source: "pics/star.png" }
-    \endqml
-
-    A QDeclarativeImage object can be instantiated in QML using the tag \l Image.
 */
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
@@ -329,7 +318,7 @@ qreal QDeclarativeImage::paintedHeight() const
     Unlike the \l {Item::}{width} and \l {Item::}{height} properties, which scale
     the painting of the image, this property sets the actual number of pixels
     stored for the loaded image so that large images do not use more
-    memory than necessary. For example, this ensures the image is memory is no
+    memory than necessary. For example, this ensures the image in memory is no
     larger than 1024x1024 pixels, regardless of the Image's \l {Item::}{width} and 
     \l {Item::}{height} values:
 

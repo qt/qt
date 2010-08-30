@@ -1204,9 +1204,9 @@ applications using Qt for Symbian can start right away.
 
     Qt for the Symbian platform requires the following software installed on your development PC:
     \list
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
+        \o \l{http://www.forum.nokia.com/Library/Tools_and_downloads/Other/Carbide.c++/}{Carbide.c++ v2.3.0 or higher recommended}.
            \list
-           \o \bold{Note:} It may be necessary to update the Carbide compiler.
+           \o \bold{Note:} It may be necessary to update the Carbide compiler depending on Carbide version.
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
               compiler version and how to patch it, if needed.
            \endlist
@@ -1216,18 +1216,18 @@ applications using Qt for Symbian can start right away.
               but that version is no longer available from ActiveState. However, Qt for Symbian has been successfully
               compiled using both 5.8.x and 5.10.x versions.
            \endlist
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
+        \o \l{http://www.forum.nokia.com/info/sw.nokia.com/id/ec866fab-4b76-49f6-b5a5-af0631419e9c/S60_All_in_One_SDKs.html}{S60 Platform SDK 3rd Edition FP1 or higher}
            \list
            \o \bold{Note:} Users of \bold{S60 Platform SDK 3rd Edition FP1} also need special update. The update can be found
            \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
            \endlist
-        \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}.
+        \o \l{http://www.forum.nokia.com/info/sw.nokia.com/id/91d89929-fb8c-4d66-bea0-227e42df9053/Open_C_SDK_Plug-In.html}{Open C/C++ v1.7.5 or higher}.
            Install this to all Symbian SDKs you plan to use Qt with.
         \o Building Qt tools from scratch requires \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler.
            \list
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
-        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} version 2.2 (build 686 or later),
+        \o Building Qt libraries requires \l{http://www.arm.com/products/tools/software-development-tools.php}{RVCT} version 2.2 (build 686 or later),
            which is not available free of charge.  Usage of later versions of RVCT, including the 3.x and 4.x series, is not supported
            in this release.
     \endlist

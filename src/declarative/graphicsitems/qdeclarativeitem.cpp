@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transform QGraphicsTransform
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
@@ -90,6 +91,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Translate QDeclarativeTranslate
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
@@ -131,6 +133,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Scale QGraphicsScale
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Scale element provides a way to scale an Item.
 
@@ -172,6 +175,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Rotation QGraphicsRotation
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Rotation object provides a way to rotate an Item.
 
@@ -225,12 +229,6 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-/*!
-    \internal
-    \class QDeclarativeContents
-    \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
-
-*/
 QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
     //### optimize
@@ -419,6 +417,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
 
 /*!
     \qmlclass KeyNavigation QDeclarativeKeyNavigationAttached
+    \ingroup qml-basic-interaction-elements
     \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
@@ -725,6 +724,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 
 /*!
     \qmlclass Keys QDeclarativeKeysAttached
+    \ingroup qml-basic-interaction-elements
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
@@ -1310,6 +1310,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
 /*!
     \qmlclass Item QDeclarativeItem
+    \ingroup qml-basic-visual-elements
     \since 4.7
     \brief The Item is the most basic of all visual items in QML.
 
@@ -1721,7 +1722,6 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
@@ -2409,7 +2409,6 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     emit q->focusChanged(flag);
 }
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
@@ -2434,7 +2433,6 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
   \sa {qmlstate}{States}
 */
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
     return _states()->statesProperty();
@@ -2458,7 +2456,6 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 */
 
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
     return _states()->transitionsProperty();
@@ -2531,7 +2528,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
     if (!_stateGroup)
@@ -2540,7 +2536,6 @@ QString QDeclarativeItemPrivate::state() const
         return _stateGroup->state();
 }
 
-/*! \internal */
 void QDeclarativeItemPrivate::setState(const QString &state)
 {
     _states()->setState(state);

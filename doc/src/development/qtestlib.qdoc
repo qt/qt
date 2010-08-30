@@ -31,6 +31,8 @@
     \brief An overview of Qt's unit testing framework.
 
     \ingroup frameworks-technologies
+    \ingroup qt-basic-concepts
+	
     \keyword qtestlib
 
     The QTestLib framework, provided by Nokia, is a tool for unit

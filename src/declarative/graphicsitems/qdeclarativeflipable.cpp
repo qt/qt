@@ -70,6 +70,8 @@ public:
 /*!
     \qmlclass Flipable QDeclarativeFlipable
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
     \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 
@@ -95,15 +97,6 @@ public:
     details on state changes and how animations work within transitions.
     
     \sa {declarative/ui-components/flipable}{Flipable example}
-*/
-
-/*!
-    \internal
-    \class QDeclarativeFlipable
-    \brief The Flipable item provides a surface that can be flipped.
-
-    Flipable is an item that can be visibly "flipped" between its front and
-    back sides.
 */
 
 QDeclarativeFlipable::QDeclarativeFlipable(QDeclarativeItem *parent)

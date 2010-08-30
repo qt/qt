@@ -31,7 +31,7 @@
 namespace Maemo {
 
 /*!
-    \class Maemo::DBusDispatcher
+    \class DBusDispatcher
 
     \brief DBusDispatcher is a class, which is able to send DBUS method call
     messages and receive unicast signals from DBUS object.

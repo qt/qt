@@ -1,9 +1,17 @@
-libconninet (0.41+0m6) unstable; urgency=low
+libconninet (0.42+0m6) unstable; urgency=low
 
   * This entry has been added by BIFH queue processor
-    version has been changed to 0.41+0m6
+    version has been changed to 0.42+0m6
 
- -- Qing Jin <ext-qing.1.jin@nokia.com>  Thu, 15 Jul 2010 15:56:38 +0300
+ -- Qing Jin <ext-qing.1.jin@nokia.com>  Thu, 22 Jul 2010 14:04:58 +0300
+
+libconninet (0.42) unstable; urgency=low
+
+  * Fixes: NB#180536 - Uploads to online services are not working.
+    This is a regression caused by fix to bug 175098, the timeout was never
+    expiring when waiting reply from icd.
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Mon, 19 Jul 2010 12:23:30 +0300
 
 libconninet (0.41) unstable; urgency=low
 

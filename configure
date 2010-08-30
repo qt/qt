@@ -2328,7 +2328,7 @@ fi
 
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "$PLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_DEBUG_RELEASE=yes
         CFG_DEBUG=yes
     elif [ "$CFG_DEV" = "yes" ]; then
@@ -2414,10 +2414,15 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     # Special case for mkspecs/features directory.
     # To be able to place .prf files into a shadow build directory,
     # we're creating links for files only. The directory structure is reproduced.
-    # A simple "cp -rs" doesn't work on Mac. :(
     rm -rf "$outpath/mkspecs/features"
-    find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-    find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+    if [ "$UNAME_SYSTEM" = "Linux" ]; then
+        # This works with GNU coreutils, and is needed for ScratchBox
+        cp -rs "$relpath/mkspecs/features" "$outpath/mkspecs/features"
+    else
+        # A simple "cp -rs" doesn't work on Mac. :(
+        find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+        find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+    fi
 
     # symlink the doc directory
     rm -rf "$outpath/doc"
@@ -3677,8 +3682,8 @@ fi
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
 
- +  -no-declarative .....Do not build the declarative module.
-    -declarative ....... Build the declarative module.
+    -no-declarative .....Do not build the declarative module.
+ +  -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -6677,7 +6682,11 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG embedded"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
-QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
+if [ "$XPLATFORM_MINGW" != "yes" ]; then
+    # Do not set this here for Windows. Let qmake do it so
+    # debug and release precompiled headers are kept separate.
+    QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
+fi
 QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
 QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
 QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
@@ -7158,7 +7167,8 @@ if [ "$CFG_WEBKIT" = "auto" ]; then
 fi
 
 if [ "$CFG_WEBKIT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG webkit"
+    # This include takes care of adding "webkit" to QT_CONFIG.
+    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     CFG_WEBKIT="yes"
 else
@@ -7272,6 +7282,7 @@ fi
 
 # some compilers generate binary incompatible code between different versions,
 # so we need to generate a build key that is different between these compilers
+COMPAT_COMPILER=
 case "$COMPILER" in
 g++*)
     # GNU C++
@@ -7304,6 +7315,22 @@ g++*)
         ;;
     esac
     [ '!' -z "$COMPILER_VERSION" ] && COMPILER="g++-${COMPILER_VERSION}"
+    ;;
+icc*)
+    # The Intel CC compiler on Unix systems matches the ABI of the g++
+    # that is found on PATH
+    COMPILER="icc"
+    COMPAT_COMPILER="g++-4"
+    case "`g++ -dumpversion` 2>/dev/null" in
+    2.95.*)
+        COMPAT_COMPILER="g++-2.95.*"
+        ;;
+    3.*)
+        COMPAT_COMPILER="g++-3.*"
+        ;;
+    *)
+        ;;
+    esac
     ;;
 *)
     #
@@ -7447,9 +7474,20 @@ if [ "$QT_CROSS_COMPILE" = "no" ]; then
         QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
     fi
 fi
+
+# is this compiler compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_COMPILER=
+if [ ! -z "$COMPAT_COMPILER" ]; then
+    QT_BUILD_KEY_COMPAT_COMPILER="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPAT_COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_COMPILER $QT_NAMESPACE"
+    fi
+fi
+
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7496,6 +7534,10 @@ fi
 
 if [ -n "$QT_BUILD_KEY_COMPAT" ]; then
     echo "#define QT_BUILD_KEY_COMPAT \"$QT_BUILD_KEY_COMPAT\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"

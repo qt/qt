@@ -162,7 +162,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
-  \since 4.7
+    \ingroup qml-basic-visual-elements
+    \since 4.7
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
@@ -188,32 +189,6 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     Text provides read-only text. For editable text, see \l TextEdit.
 
     \sa {declarative/text/fonts}{Fonts example}
-*/
-
-/*!
-    \internal
-    \class QDeclarativeText
-    \qmlclass Text
-
-    \brief The QDeclarativeText class provides a formatted text item that you can add to a QDeclarativeView.
-
-    Text was designed for read-only text; it does not allow for any text editing.
-    It can display both plain and rich text. For example:
-
-    \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
-    Text { text: "<b>Hello</b> <i>World!</i>" }
-    \endqml
-
-    \image text.png
-
-    If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
-    prefer width to height (all text will be placed on a single line).
-
-    The \c elide property can alternatively be used to fit a line of plain text to a set width.
-
-    A QDeclarativeText object can be instantiated in QML using the tag \c Text.
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
@@ -1046,10 +1021,10 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
 
     QAbstractTextDocumentLayout::PaintContext context;
 
+    QTextOption oldOption(doc->defaultTextOption());
     if (drawStyle) {
         context.palette.setColor(QPalette::Text, styleColor);
-        // ### Do we really want this?
-        QTextOption colorOption;
+        QTextOption colorOption(doc->defaultTextOption());
         colorOption.setFlags(QTextOption::SuppressColors);
         doc->setDefaultTextOption(colorOption);
     } else {
@@ -1057,7 +1032,7 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
     }
     doc->documentLayout()->draw(&p, context);
     if (drawStyle)
-        doc->setDefaultTextOption(QTextOption());
+        doc->setDefaultTextOption(oldOption);
     return img;
 }
 
@@ -1217,7 +1192,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->richText || !d->doc || d->doc->documentLayout()->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
-        d->activeLink = QString();
+        d->activeLink.clear();
     } else {
         d->activeLink = d->doc->documentLayout()->anchorAt(event->pos());
     }
