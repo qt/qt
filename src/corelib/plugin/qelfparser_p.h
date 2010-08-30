@@ -58,6 +58,9 @@
 
 QT_BEGIN_NAMESPACE
 
+class QString;
+class QLibraryPrivate;
+
 typedef quint16  qelfhalf_t;
 typedef quint32  qelfword_t;
 typedef quintptr qelfoff_t;

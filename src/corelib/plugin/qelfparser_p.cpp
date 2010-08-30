@@ -41,12 +41,11 @@
 
 #include "qlibrary_p.h"
 #include "qelfparser_p.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
 // #define QELFPARSER_DEBUG 1
-
-#include <qdebug.h>
 
 const char *QElfParser::parseSectionHeader(const char *data, ElfSectionHeader *sh)
 {
