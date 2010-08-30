@@ -118,6 +118,13 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     HelpEngineWrapper &helpEngineWrapper =
         HelpEngineWrapper::instance(collectionFile);
 
+    if (!initHelpDB()) {
+        qDebug("Fatal error: Help engine initialization failed. "
+            "Error message was: %s\nAssistant will now exit.",
+            qPrintable(HelpEngineWrapper::instance().error()));
+        std::exit(1);
+    }
+
     m_centralWidget = new CentralWidget(this);
     setCentralWidget(m_centralWidget);
 
@@ -157,7 +164,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
     connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
         bookMarkManager, SLOT(addBookmark(QString, QString)));
-#if 0
     connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
     connect(bookMarkManager, SIGNAL(setSource(QUrl)), m_centralWidget,
@@ -168,7 +174,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
-#endif
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -176,13 +181,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     setupActions();
     statusBar()->show();
     m_centralWidget->connectTabBar();
-
-    if (!initHelpDB()) {
-        qDebug("Fatal error: Help engine initialization failed. "
-            "Error message was: %s\nAssistant will now exit.",
-            qPrintable(HelpEngineWrapper::instance().error()));
-        std::exit(1);
-    }
 
     setupFilterToolbar();
     setupAddressToolbar();
