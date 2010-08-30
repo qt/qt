@@ -71,7 +71,7 @@ public:
     static QString bundleName(const QFileSystemEntry &entry);
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
-            QFileSystemMetaData::FileFlags what);
+            QFileSystemMetaData::MetaDataFlags what);
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);

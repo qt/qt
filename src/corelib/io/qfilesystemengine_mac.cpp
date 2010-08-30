@@ -73,7 +73,7 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 }
 
 //static
-bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data, QFileSystemMetaData::FileFlags what)
+bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data, QFileSystemMetaData::MetaDataFlags what)
 {
     return false; // TODO implement;
 }
