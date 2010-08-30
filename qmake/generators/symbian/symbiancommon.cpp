@@ -302,6 +302,20 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     if (success)
         applicationVersion = QString("%1,%2,%3").arg(major).arg(minor).arg(patch);
 
+    // Append package build version number if it is set
+    QString pkgBuildVersion = project->first("DEPLOYMENT.pkg_build_version");
+    if (!pkgBuildVersion.isEmpty()) {
+        success = false;
+        uint build = pkgBuildVersion.toUInt(&success);
+        if (success && build < 100) {
+            if (pkgBuildVersion.size() == 1)
+                pkgBuildVersion.prepend(QLatin1Char('0'));
+            applicationVersion.append(pkgBuildVersion);
+        } else {
+            fprintf(stderr, "Warning: Invalid DEPLOYMENT.pkg_build_version (%s), must be a number between 0 - 99\n", qPrintable(pkgBuildVersion));
+        }
+    }
+
     // Package header
     QString sisHeader = "; SIS header: name, uid, version\n#{\"%1\"},(%2),%3\n\n";
     QString visualTarget = generator->escapeFilePath(project->first("TARGET"));

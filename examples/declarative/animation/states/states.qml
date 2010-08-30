@@ -48,14 +48,14 @@ Rectangle {
     Image { 
         id: userIcon
         x: topLeftRect.x; y: topLeftRect.y
-        source: "user.png"
+        source: "qt-logo.png"
     }
 
     Rectangle {
         id: topLeftRect
 
         anchors { left: parent.left; top: parent.top; leftMargin: 10; topMargin: 20 }
-        width: 64; height: 64
+        width: 46; height: 54
         color: "Transparent"; border.color: "Gray"; radius: 6
 
         // Clicking in here sets the state to the default state, returning the image to
@@ -67,7 +67,7 @@ Rectangle {
         id: middleRightRect
 
         anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 20 }
-        width: 64; height: 64
+        width: 46; height: 54
         color: "Transparent"; border.color: "Gray"; radius: 6
 
         // Clicking in here sets the state to 'middleRight'
@@ -78,7 +78,7 @@ Rectangle {
         id: bottomLeftRect
 
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
-        width: 64; height: 64
+        width: 46; height: 54
         color: "Transparent"; border.color: "Gray"; radius: 6
 
         // Clicking in here sets the state to 'bottomLeft'

@@ -258,6 +258,7 @@ public:
 protected:
     QFont createExplicitFontWithName(const QString &familyName) const;
     static const QVector<QRgb> &grayPalette();
+    QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
 private:
     struct GlyphCacheEntry {

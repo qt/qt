@@ -660,14 +660,12 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
     if (!engine) 
         return;
 
-    Q_ASSERT(script.codes.count() == 1);
-
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
-    const QString &code = script.codes.at(0);
-    const QString &url = script.files.at(0);
-    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas.at(0);
+    const QString &code = script.code;
+    const QString &url = script.file;
+    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas;
 
     Q_ASSERT(!url.isEmpty());
 

@@ -96,6 +96,7 @@ public:
         QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> move;
         qreal viewSize;
         qreal pressPos;
+        qreal dragStartOffset;
         qreal velocity;
         qreal flickTarget;
         QDeclarativeFlickablePrivate::Velocity smoothVelocity;

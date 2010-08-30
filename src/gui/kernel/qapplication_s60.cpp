@@ -1344,6 +1344,11 @@ void QSymbianControl::setFocusSafely(bool focus)
     }
 }
 
+bool QSymbianControl::isControlActive()
+{
+    return IsActivated() ? true : false;
+}
+
 /*!
     \typedef QApplication::QS60MainApplicationFactory
     \since 4.6

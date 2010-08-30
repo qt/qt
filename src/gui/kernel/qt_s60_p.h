@@ -211,6 +211,8 @@ public:
 
     void setFocusSafely(bool focus);
 
+    bool isControlActive();
+
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
     void HandleStatusPaneSizeChange();

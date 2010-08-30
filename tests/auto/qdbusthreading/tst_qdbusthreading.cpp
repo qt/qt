@@ -70,7 +70,12 @@ public:
     QSemaphore sem1, sem2;
     volatile bool success;
     QEventLoop *loop;
-    const char *functionSpy;
+    enum FunctionSpy {
+        NoMethod = 0,
+        Adaptor_method,
+        Object_method
+    } functionSpy;
+
     QThread *threadSpy;
     int signalSpy;
 
@@ -127,7 +132,7 @@ public:
 public Q_SLOTS:
     void method()
     {
-        tst_QDBusThreading::self()->functionSpy = Q_FUNC_INFO;
+        tst_QDBusThreading::self()->functionSpy = tst_QDBusThreading::Adaptor_method;
         tst_QDBusThreading::self()->threadSpy = QThread::currentThread();
         emit signal();
     }
@@ -155,7 +160,7 @@ public:
 public Q_SLOTS:
     void method()
     {
-        tst_QDBusThreading::self()->functionSpy = Q_FUNC_INFO;
+        tst_QDBusThreading::self()->functionSpy = tst_QDBusThreading::Object_method;
         tst_QDBusThreading::self()->threadSpy = QThread::currentThread();
         emit signal();
         deleteLater();
@@ -198,7 +203,7 @@ void Thread::run()
 static const char myConnectionName[] = "connection";
 
 tst_QDBusThreading::tst_QDBusThreading()
-    : loop(0), functionSpy(0), threadSpy(0)
+    : loop(0), functionSpy(NoMethod), threadSpy(0)
 {
     _self = this;
     QCoreApplication::instance()->thread()->setObjectName("Main thread");
@@ -420,22 +425,22 @@ void tst_QDBusThreading::registerObjectInOtherThread()
     QTest::qWait(100);
     QCOMPARE(signalSpy, 0);
 
-    functionSpy = 0;
+    functionSpy = NoMethod;
     threadSpy = 0;
     QDBusReply<void> reply = iface.call("method");
     QVERIFY(reply.isValid());
-    QCOMPARE(functionSpy, "void Object::method()");
+    QCOMPARE(functionSpy, Object_method);
     QCOMPARE(threadSpy, th);
 
     QTest::qWait(100);
     QCOMPARE(signalSpy, 1);
 
     sem2.acquire();             // the object is gone
-    functionSpy = 0;
+    functionSpy = NoMethod;
     threadSpy = 0;
     reply = iface.call("method");
     QVERIFY(!reply.isValid());
-    QCOMPARE(functionSpy, (const char*)0);
+    QCOMPARE(functionSpy, NoMethod);
     QCOMPARE(threadSpy, (QThread*)0);
 }
 
@@ -468,36 +473,36 @@ void tst_QDBusThreading::registerAdaptorInOtherThread()
     connect(&adaptor, SIGNAL(signal()), SLOT(signalSpySlot()));
     QCOMPARE(signalSpy, 0);
 
-    functionSpy = 0;
+    functionSpy = NoMethod;
     threadSpy = 0;
     QDBusReply<void> reply = adaptor.call("method");
     QVERIFY(reply.isValid());
-    QCOMPARE(functionSpy, "void Adaptor::method()");
+    QCOMPARE(functionSpy, Adaptor_method);
     QCOMPARE(threadSpy, th);
 
     QTest::qWait(100);
     QCOMPARE(signalSpy, 1);
 
-    functionSpy = 0;
+    functionSpy = NoMethod;
     threadSpy = 0;
     reply = object.call("method");
     QVERIFY(reply.isValid());
-    QCOMPARE(functionSpy, "void Object::method()");
+    QCOMPARE(functionSpy, Object_method);
     QCOMPARE(threadSpy, th);
 
     QTest::qWait(100);
     QCOMPARE(signalSpy, 1);
 
     sem2.acquire();             // the object is gone
-    functionSpy = 0;
+    functionSpy = NoMethod;
     threadSpy = 0;
     reply = adaptor.call("method");
     QVERIFY(!reply.isValid());
-    QCOMPARE(functionSpy, (const char*)0);
+    QCOMPARE(functionSpy, NoMethod);
     QCOMPARE(threadSpy, (QThread*)0);
     reply = object.call("method");
     QVERIFY(!reply.isValid());
-    QCOMPARE(functionSpy, (const char*)0);
+    QCOMPARE(functionSpy, NoMethod);
     QCOMPARE(threadSpy, (QThread*)0);
 }
 
