@@ -122,7 +122,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 
 #  if defined (Q_OF_ELF) && defined (Q_CC_GNU)
 #  define Q_PLUGIN_VERIFICATION_SECTION \
-    __attribute__ ((section (".qplugin."QT_VERSION_STR QPLUGIN_SECTION_DEBUG_STR))) __attribute__((used)) static const char qt_plugin_build_key[] = QT_BUILD_KEY;
+    __attribute__ ((section (".qtplugin"))) __attribute__((used))
 #  else
 #  define Q_PLUGIN_VERIFICATION_SECTION
 #  endif
@@ -134,8 +134,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 #  endif
 
 #  define Q_EXPORT_PLUGIN2(PLUGIN, PLUGINCLASS)      \
-            Q_PLUGIN_VERIFICATION_SECTION \
-            Q_PLUGIN_VERIFICATION_DATA \
+            Q_PLUGIN_VERIFICATION_SECTION Q_PLUGIN_VERIFICATION_DATA \
             Q_EXTERN_C Q_DECL_EXPORT \
             const char * Q_STANDARD_CALL qt_plugin_query_verification_data() \
             { return qt_plugin_verification_data; } \

@@ -295,7 +295,6 @@ static bool qt_parse_pattern(const char *s, uint *version, bool *debug, QByteArr
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
-#if !defined (Q_OF_ELF) || !defined(Q_CC_GNU)
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
 {
@@ -331,7 +330,6 @@ static long qt_find_pattern(const char *s, ulong s_len,
 
     return -1;
 }
-#endif // !defined (Q_OF_ELF) || !defined(Q_CC_GNU)
 
 /*
   This opens the specified library, mmaps it into memory, and searches
@@ -371,15 +369,27 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
        ELF binaries on GNU, have .qplugin sections.
     */
     long pos = 0;
-#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
-    int r = QElfParser().parse(filedata, &fdlen, library, version, debug, key, lib, &pos);
-    return (r == QElfParser::Ok);
-#else
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
     const ulong plen = qstrlen(pattern);
-    if (pos == 0)
-        pos = qt_find_pattern(filedata, fdlen, pattern, plen);
-
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+    int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
+    if (r == QElfParser::NoQtSection) {
+        if (pos > 0) {
+            // find inside .rodata
+            long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+            if (rel < 0) {
+                pos = -1;
+            } else {
+                pos += rel;
+            }
+        } else {
+            pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+        }
+    } else if (r != QElfParser::Ok)
+        return false;
+#else
+    pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
     bool ret = false;
     if (pos >= 0)
         ret = qt_parse_pattern(filedata + pos, version, debug, key);
@@ -388,7 +398,6 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
     file.close();
     return ret;
-#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 }
 
 #endif // Q_OS_UNIX && !Q_OS_MAC && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)

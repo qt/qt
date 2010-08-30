@@ -74,6 +74,6 @@ public:
     }
 
     const char *parseSectionHeader(const char* s, ElfSectionHeader *sh);
-    int parse(const char *m_s, ulong *fdlen, const QString &library, uint *version, bool *debug, QByteArray *key, QLibraryPrivate *lib, long *pos);
+    int parse(const char *m_s, ulong fdlen, const QString &library, QLibraryPrivate *lib, long *pos, ulong *sectionlen);
 };
 
