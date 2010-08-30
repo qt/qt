@@ -158,6 +158,8 @@ BookmarkManager::BookmarkManager()
     : typeAndSearch(false)
     , bookmarkMenu(0)
     , bookmarkModel(new BookmarkModel)
+    , bookmarkFilterModel(0)
+    , typeAndSearchModel(0)
     , bookmarkWidget(new BookmarkWidget)
     , bookmarkTreeView(new BookmarkTreeView)
     , bookmarkManagerWidget(0)
@@ -316,11 +318,13 @@ void BookmarkManager::setupFinished()
     bookmarkTreeView->header()->setVisible(false);
     bookmarkTreeView->header()->setStretchLastSection(true);
 
-    bookmarkFilterModel = new BookmarkFilterModel(this);
+    if (!bookmarkFilterModel)
+        bookmarkFilterModel = new BookmarkFilterModel(this);
     bookmarkFilterModel->setSourceModel(bookmarkModel);
     bookmarkFilterModel->filterBookmarkFolders();
 
-    typeAndSearchModel = new QSortFilterProxyModel(this);
+    if (!typeAndSearchModel)
+        typeAndSearchModel = new QSortFilterProxyModel(this);
     typeAndSearchModel->setDynamicSortFilter(true);
     typeAndSearchModel->setSourceModel(bookmarkFilterModel);
 }
