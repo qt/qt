@@ -67,6 +67,7 @@ private:
     QImage getBaseline(const QString &fileName, bool *created);
     QImage render(const QString &fileName);
     QStringList loadScriptFile(const QString &filePath);
+    QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
 
     QString errorMsg;
     BaselineProtocol proto;
@@ -158,24 +159,65 @@ void tst_Lancelot::testRendering()
 
     // The actual check:
     if (rendered != baseline) {
-        QByteArray failMsg;
-        proto.submitMismatch(fileName, rendered, &failMsg);
+        QString scoreMsg = computeMismatchScore(baseline, rendered);
+        QByteArray serverMsg;
+        proto.submitMismatch(fileName, rendered, &serverMsg);
 
-#if 1
-        // Also generate & submit the diff image
-        QImage diff(rendered.size(), QImage::Format_RGB32);
-        diff.fill(0);
-        QPainter p(&diff);
-        p.drawImage(0, 0, rendered);
-        p.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
-        p.drawImage(0, 0, baseline);
-        p.end();
-        proto.submitMismatch(fileName + QLatin1String("_diff"), diff, 0);
-#endif
-
-        failMsg.prepend("Rendered image differs from baseline. ");
+        QByteArray failMsg = QByteArray("Rendered image differs from baseline. ")
+                             + scoreMsg.toLatin1() + '\n' + serverMsg;
         QFAIL(failMsg.constData());
     }
+}
+
+
+QString tst_Lancelot::computeMismatchScore(const QImage &baseline, const QImage &rendered)
+{
+    if (baseline.size() != rendered.size() || baseline.format() != rendered.format())
+        return QLatin1String("[No score, incomparable images.]");
+    if (baseline.depth() != 32)
+        return QLatin1String("[Score computation not implemented for format.]");
+
+    int w = baseline.width();
+    int h = baseline.height();
+
+    uint ncd = 0; // number of differing color pixels
+    uint nad = 0; // number of differing alpha pixels
+    uint scd = 0; // sum of color pixel difference
+    uint sad = 0; // sum of alpha pixel difference
+
+    for (int y=0; y<h; ++y) {
+        const QRgb *bl = (const QRgb *) baseline.constScanLine(y);
+        const QRgb *rl = (const QRgb *) rendered.constScanLine(y);
+        for (int x=0; x<w; ++x) {
+            QRgb b = bl[x];
+            QRgb r = rl[x];
+            if (r != b) {
+                int dr = qAbs(qRed(b) - qRed(r));
+                int dg = qAbs(qGreen(b) - qGreen(r));
+                int db = qAbs(qBlue(b) - qBlue(r));
+                int ds = dr + dg + db;
+                int da = qAbs(qAlpha(b) - qAlpha(r));
+                if (ds) {
+                    ncd++;
+                    scd += ds;
+                }
+                if (da) {
+                    nad++;
+                    sad += da;
+                }
+            }
+        }
+    }
+
+    double pcd = 100.0 * ncd / (w*h);  // percent of pixels that differ
+    double acd = ncd ? double(scd) / (3*ncd) : 0;         // avg. difference
+    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3.)")).arg(pcd, 0, 'g', 3).arg(ncd).arg(acd, 0, 'g', 3);
+    if (baseline.hasAlphaChannel()) {
+        double pad = 100.0 * nad / (w*h);  // percent of pixels that differ
+        double aad = nad ? double(sad) / (3*nad) : 0;         // avg. difference
+        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3.)")).arg(pad, 0, 'g', 3).arg(nad).arg(aad, 0, 'g', 3);
+    }
+    return res;
 }
 
 
