@@ -42,6 +42,8 @@
 #include "qfilesystemengine_p.h"
 #include "qfsfileengine.h"
 
+QT_BEGIN_NAMESPACE
+
 bool QFileSystemEngine::isCaseSensitive()
 {
     return true;
@@ -145,3 +147,5 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 {
     return false; // TODO implement;
 }
+
+QT_END_NAMESPACE

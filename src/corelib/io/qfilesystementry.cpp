@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "qfilesystementry_p.h"
-#include "qdir.h"
+
+#include <QtCore/qdir.h>
+
+QT_BEGIN_NAMESPACE
 
 QFileSystemEntry::QFileSystemEntry(const QString &filePath)
     : m_filePath(filePath),
@@ -195,3 +198,5 @@ void QFileSystemEntry::findFileNameSeparators() const
             m_lastDotInFileName = firstDotInFileName - lastSeparator;
     }
 }
+
+QT_END_NAMESPACE
