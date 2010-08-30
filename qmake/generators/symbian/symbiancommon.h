@@ -86,6 +86,17 @@ protected:
     QStringList symbianLangCodesFromTsFiles();
     void fillQt2S60LangMapTable();
 
+    void parsePreRules(const QString &deploymentVariable,
+                       const QString &variableSuffix,
+                       QStringList *rawRuleList,
+                       QStringList *languageRuleList,
+                       QStringList *headerRuleList,
+                       QStringList *vendorRuleList);
+    void parsePostRules(const QString &deploymentVariable,
+                        const QString &variableSuffix,
+                        QStringList *rawRuleList);
+
+
 protected:
     MakefileGenerator *generator;
 
