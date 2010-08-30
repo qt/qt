@@ -5246,6 +5246,8 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= FragmentProgram;
     if (extensions.match("GL_ARB_fragment_shader"))
         glExtensions |= FragmentShader;
+    if (extensions.match("GL_ARB_ES2_compatibility"))
+        glExtensions |= ES2Compatibility;
     if (extensions.match("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
     if (extensions.match("GL_EXT_framebuffer_object"))
@@ -5266,6 +5268,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
     glExtensions |= FragmentShader;
+    glExtensions |= ES2Compatibility;
 #endif
 #if defined(QT_OPENGL_ES_1)
     if (extensions.match("GL_OES_framebuffer_object"))

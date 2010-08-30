@@ -836,7 +836,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
     case PE_PanelItemViewItem:
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
-            if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+            uint resolve_mask = vopt->palette.resolve();
+            if (vopt->backgroundBrush.style() != Qt::NoBrush
+                    || (resolve_mask & (1 << QPalette::Base)))
+            {
                 QPointF oldBO = painter->brushOrigin();
                 painter->setBrushOrigin(vopt->rect.topLeft());
                 painter->fillRect(vopt->rect, vopt->backgroundBrush);

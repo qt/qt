@@ -352,10 +352,13 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         memset(&sockAddrIPv6, 0, sizeof(sockAddrIPv6));
         sockAddrIPv6.sin6_family = AF_INET6;
         sockAddrIPv6.sin6_port = htons(port);
+
+        QString scopeid = addr.scopeId();
+        bool ok;
+        sockAddrIPv6.sin6_scope_id = scopeid.toInt(&ok);
 #ifndef QT_NO_IPV6IFNAME
-        sockAddrIPv6.sin6_scope_id = ::if_nametoindex(addr.scopeId().toLatin1().data());
-#else
-        sockAddrIPv6.sin6_scope_id = addr.scopeId().toInt();
+        if (!ok)
+            sockAddrIPv6.sin6_scope_id = ::if_nametoindex(scopeid.toLatin1());
 #endif
         Q_IPV6ADDR ip6 = addr.toIPv6Address();
         memcpy(&sockAddrIPv6.sin6_addr.s6_addr, &ip6, sizeof(ip6));

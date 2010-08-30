@@ -346,7 +346,7 @@ glyph_metrics_t QFontEngineS60::boundingBox(const QGlyphLayout &glyphs)
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
 
-    return glyph_metrics_t(0, -ascent(), w, ascent()+descent()+1, w, 0);
+    return glyph_metrics_t(0, -ascent(), w - lastRightBearing(glyphs), ascent()+descent()+1, w, 0);
 }
 
 glyph_metrics_t QFontEngineS60::boundingBox_const(glyph_t glyph) const
