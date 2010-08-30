@@ -45,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 bool QFileSystemEngine::isCaseSensitive()
 {
-    return true;
+    return false;
 }
 
 //static

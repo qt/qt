@@ -46,7 +46,11 @@ QT_BEGIN_NAMESPACE
 
 bool QFileSystemEngine::isCaseSensitive()
 {
+#if defined(Q_OS_SYMBIAN)
+    return false;
+#else
     return true;
+#endif
 }
 
 //static
