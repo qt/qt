@@ -65,7 +65,11 @@ extern uint qGlobalPostedEventsCount();
 #endif
 
 #ifndef QS_RAWINPUT
+# ifdef Q_OS_WINCE
+#  define QS_RAWINPUT 0x0000
+# else
 #  define QS_RAWINPUT 0x0400
+# endif
 #endif
 
 #ifndef WM_TOUCH
@@ -78,8 +82,7 @@ extern uint qGlobalPostedEventsCount();
 
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
-    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1,
-    SendPostedEventsTimerId = ~1u
+    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1
 };
 
 #if defined(Q_OS_WINCE)
@@ -503,7 +506,9 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         if (q) {
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
-            if (HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER)) == 0) {
+            MSG unused;
+            if ((HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT)) == 0
+                 && PeekMessage(&unused, 0, WM_TIMER, WM_TIMER, PM_NOREMOVE) == 0)) {
                 // no more input or timer events in the message queue, we can allow posted events to be
                 // sent now
                 (void) d->wakeUps.fetchAndStoreRelease(0);
@@ -799,7 +804,7 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 pHandles[i] = d->winEventNotifierList.at(i)->handle();
 
             emit aboutToBlock();
-            waitRet = MsgWaitForMultipleObjectsEx(nCount, pHandles, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
+            waitRet = MsgWaitForMultipleObjectsEx(nCount, pHandles, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
             emit awake();
             if (waitRet >= WAIT_OBJECT_0 && waitRet < WAIT_OBJECT_0 + nCount) {
                 d->activateEventNotifier(d->winEventNotifierList.at(waitRet - WAIT_OBJECT_0));
