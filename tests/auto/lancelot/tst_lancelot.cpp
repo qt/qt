@@ -160,6 +160,19 @@ void tst_Lancelot::testRendering()
     if (rendered != baseline) {
         QByteArray failMsg;
         proto.submitMismatch(fileName, rendered, &failMsg);
+
+#if 1
+        // Also generate & submit the diff image
+        QImage diff(rendered.size(), QImage::Format_RGB32);
+        diff.fill(0);
+        QPainter p(&diff);
+        p.drawImage(0, 0, rendered);
+        p.setCompositionMode(QPainter::RasterOp_SourceXorDestination);
+        p.drawImage(0, 0, baseline);
+        p.end();
+        proto.submitMismatch(fileName + QLatin1String("_diff"), diff, 0);
+#endif
+
         failMsg.prepend("Rendered image differs from baseline. ");
         QFAIL(failMsg.constData());
     }
