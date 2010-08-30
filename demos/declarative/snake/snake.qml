@@ -106,7 +106,6 @@ Rectangle {
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            onOpacityChanged: console.log("opacity: "+opacity);
 
             Text {
                 color: "white"
