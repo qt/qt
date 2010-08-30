@@ -2336,7 +2336,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Return:
         // Propagate the enter if you couldn't edit the item and there are no
         // current editors (if there are editors, the event was most likely propagated from it).
-        if (!edit(currentIndex(), EditKeyPressed, event) && d->editors.isEmpty())
+        if (!edit(currentIndex(), EditKeyPressed, event) && d->editorIndexHash.isEmpty())
             event->ignore();
         break;
 #else
@@ -2609,7 +2609,7 @@ void QAbstractItemView::updateEditorGeometries()
     }
 
     //we hide and release the editor outside of the loop because it might change the focus and try
-    //to change the d->editors list.
+    //to change the editors hashes.
     for (int i = 0; i < editorsToHide.count(); ++i) {
         editorsToHide.at(i)->hide();
     }
