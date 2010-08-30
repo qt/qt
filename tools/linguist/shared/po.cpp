@@ -553,13 +553,26 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
             TranslatorMessage msg;
             msg.setContext(codec->toUnicode(item.context));
             if (!item.references.isEmpty()) {
+                QString xrefs;
                 foreach (const QString &ref,
                          codec->toUnicode(item.references).split(
                                  QRegExp(QLatin1String("\\s")), QString::SkipEmptyParts)) {
-                    int pos = ref.lastIndexOf(QLatin1Char(':'));
-                    if (pos != -1)
-                        msg.addReference(ref.left(pos), ref.mid(pos + 1).toInt());
+                    int pos = ref.indexOf(QLatin1Char(':'));
+                    int lpos = ref.lastIndexOf(QLatin1Char(':'));
+                    if (pos != -1 && pos == lpos) {
+                        bool ok;
+                        int lno = ref.mid(pos + 1).toInt(&ok);
+                        if (ok) {
+                            msg.addReference(ref.left(pos), lno);
+                            continue;
+                        }
+                    }
+                    if (!xrefs.isEmpty())
+                        xrefs += QLatin1Char(' ');
+                    xrefs += ref;
                 }
+                if (!xrefs.isEmpty())
+                    item.extra[QLatin1String("po-references")] = xrefs;
             }
             msg.setId(codec->toUnicode(item.id));
             msg.setSourceText(codec->toUnicode(item.msgId));
@@ -771,11 +784,14 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
         if (!msg.id().isEmpty())
             out << QLatin1String("#. ts-id ") << msg.id() << '\n';
 
-        if (!msg.fileName().isEmpty()) {
+        QString xrefs = msg.extra(QLatin1String("po-references"));
+        if (!msg.fileName().isEmpty() || !xrefs.isEmpty()) {
             QStringList refs;
             foreach (const TranslatorMessage::Reference &ref, msg.allReferences())
                 refs.append(QString(QLatin1String("%2:%1"))
                                     .arg(ref.lineNumber()).arg(ref.fileName()));
+            if (!xrefs.isEmpty())
+                refs << xrefs;
             out << poWrappedEscapedLines(QLatin1String("#:"), true, refs.join(QLatin1String(" ")));
         }
 
