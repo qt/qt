@@ -158,5 +158,14 @@
         <comment>comment with | and ~ and so~</comment>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>just something obsolete</source>
+        <translation type="obsolete">translated obsoletion</translation>
+    </message>
+    <message>
+        <source>something else obsolete</source>
+        <comment>comment with | and ~ and so~</comment>
+        <translation type="obsolete">another translated obsoletion</translation>
+    </message>
 </context>
 </TS>

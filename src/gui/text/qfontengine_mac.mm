@@ -455,12 +455,13 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *, int, QGlyphLayout *, int *
 glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
+    bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
+
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
-        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).round()
-             : glyphs.effectiveAdvance(i);
+        w += round ? glyphs.effectiveAdvance(i).round()
+                   : glyphs.effectiveAdvance(i);
     }
-    return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
+    return glyph_metrics_t(0, -(ascent()), w - lastRightBearing(glyphs, round), ascent()+descent(), w, 0);
 }
 glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 {
@@ -1480,12 +1481,12 @@ void QFontEngineMac::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 glyph_metrics_t QFontEngineMac::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
+    bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
-        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).round()
-             : glyphs.effectiveAdvance(i);
+        w += round ? glyphs.effectiveAdvance(i).round()
+                   : glyphs.effectiveAdvance(i);
     }
-    return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
+    return glyph_metrics_t(0, -(ascent()), w - lastRightBearing(glyphs, round), ascent()+descent(), w, 0);
 }
 
 glyph_metrics_t QFontEngineMac::boundingBox(glyph_t glyph)
