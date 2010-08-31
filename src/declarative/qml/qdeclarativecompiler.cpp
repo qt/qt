@@ -1362,7 +1362,7 @@ bool QDeclarativeCompiler::doesPropertyExist(QDeclarativeParser::Property *prop,
             return p.name() != 0;
         } else {
             int idx = mo->indexOfProperty(prop->name.constData());
-            return idx != -1;
+            return idx != -1 && mo->property(idx).isScriptable();
         }
     }
 
@@ -1427,6 +1427,11 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             if (prop->index != -1) {
                 p = metaObject->property(prop->index);
                 Q_ASSERT(p.name());
+
+                if (!p.isScriptable()) {
+                    prop->index = -1;
+                    p = QMetaProperty();
+                }
             }
         }
 
@@ -1813,6 +1818,8 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         if (idx == -1)
             COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         QMetaProperty p = type->metaObject()->property(idx);
+        if (!p.isScriptable())
+            COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         prop->index = idx;
         prop->type = p.userType();
         prop->isValueTypeSubProperty = true;
@@ -2406,7 +2413,6 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         builder.addSignal(p.name + "Changed()");
         QMetaPropertyBuilder propBuilder = 
             builder.addProperty(p.name, type, builder.methodCount() - 1);
-        propBuilder.setScriptable(true);
         propBuilder.setWritable(!readonly);
     }
 
@@ -2572,6 +2578,9 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
         QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+        if (!aliasProperty.isScriptable())
+            COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+
         writable = aliasProperty.isWritable();
 
         if (aliasProperty.isEnumType()) 
@@ -2608,7 +2617,6 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 
         builder.addProperty(prop.name, typeName.constData(), builder.methodCount() - 1);
-    propBuilder.setScriptable(true);
     propBuilder.setWritable(writable);
     return true;
 }
