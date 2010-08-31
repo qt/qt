@@ -426,6 +426,20 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    if (! context())
+        return;
+
+    int clearFlags = 0;
+
+    if (context()->d_func()->workaround_needsFullClearOnEveryFrame)
+        clearFlags = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+    else if (context()->format().alpha())
+        clearFlags = GL_COLOR_BUFFER_BIT;
+
+    if (clearFlags) {
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glClear(clearFlags);
+    }
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
