@@ -43,43 +43,34 @@ import Qt 4.7
 
 Item { id: wrapper
     property variant model: xmlModel
-    property string tags : ""
-    property string authName : ""
-    property string authPass : ""
+    property string from : ""
+    property string to : ""
+    property string phrase : ""
+
     property string mode : "everyone"
     property int status: xmlModel.status
     function reload() { xmlModel.reload(); }
-XmlListModel {
-    id: xmlModel
+    XmlListModel {
+        id: xmlModel
 
-    source:{ 
-            if (wrapper.authName == ""){
-                ""; //Avoid worthless calls to twitter servers
-            }else if(wrapper.mode == 'user'){
-                "https://"+ ((wrapper.authName!="" && wrapper.authPass!="")? (wrapper.authName+":"+wrapper.authPass+"@") : "" )+"twitter.com/statuses/user_timeline.xml?screen_name="+wrapper.tags;
-            }else if(wrapper.mode == 'self'){
-                "https://"+ ((wrapper.authName!="" && wrapper.authPass!="")? (wrapper.authName+":"+wrapper.authPass+"@") : "" )+"twitter.com/statuses/friends_timeline.xml";
-            }else{//everyone/public
-                "http://twitter.com/statuses/public_timeline.xml";
-            }
+        source: (from=="" && to=="" && phrase=="") ? "" :
+            'http://search.twitter.com/search.atom?from='+from+"&to="+to+"&phrase="+phrase
+
+        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom'; " +
+                               "declare namespace twitter=\"http://api.twitter.com/\";";
+
+        query: "/feed/entry"
+
+        XmlRole { name: "statusText"; query: "content/string()" }
+        XmlRole { name: "timestamp"; query: "published/string()" }
+        XmlRole { name: "source"; query: "twitter:source/string()" }
+        XmlRole { name: "name"; query: "author/name/string()" }
+        XmlRole { name: "userImage"; query: "link[@rel = 'image']/@href/string()" }
+
     }
-    query: "/statuses/status"
-
-    XmlRole { name: "statusText"; query: "text/string()" }
-    XmlRole { name: "timestamp"; query: "created_at/string()" }
-    XmlRole { name: "source"; query: "source/string()" }
-    XmlRole { name: "userName"; query: "user/name/string()" }
-    XmlRole { name: "userScreenName"; query: "user/screen_name/string()" }
-    XmlRole { name: "userImage"; query: "user/profile_image_url/string()" }
-    XmlRole { name: "userLocation"; query: "user/location/string()" }
-    XmlRole { name: "userDescription"; query: "user/description/string()" }
-    XmlRole { name: "userFollowers"; query: "user/followers_count/string()" }
-    XmlRole { name: "userStatuses"; query: "user/statuses_count/string()" }
-    //TODO: Could also get the user's color scheme, timezone and a few other things
-}
-Binding {
-    property: "mode"
-    target: wrapper
-    value: {if(wrapper.tags==''){"everyone";}else if(wrapper.tags=='my timeline'){"self";}else{"user";}}
-}
+    Binding {
+        property: "mode"
+        target: wrapper
+        value: {if(wrapper.tags==''){"everyone";}else if(wrapper.tags=='my timeline'){"self";}else{"user";}}
+    }
 }

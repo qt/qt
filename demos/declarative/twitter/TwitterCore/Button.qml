@@ -67,7 +67,7 @@ Item {
     }
     Text {
         id: btnText
-        color: if(container.keyUsing){"#DDDDDD";} else {"#FFFFFF";}
+        color: if(container.keyUsing){"#D0D0D0";} else {"#FFFFFF";}
         anchors.centerIn: buttonImage; font.bold: true
         text: container.text; style: Text.Raised; styleColor: "black"
         font.pixelSize: 12

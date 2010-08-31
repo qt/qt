@@ -41,20 +41,25 @@
 
 import Qt 4.7
 
-Item {
-    TitleBar { id: titleBar; width: parent.width; height: 60;
-        y: -80
-        untaggedString: "Latest tweets from everyone"
-        taggedString: "Latest tweets from "
+FocusScope {
+    id:container
+    width: 220
+    height: 28
+    BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
+    signal accepted
+    property alias text: input.text
+    property alias item:input
+    TextInput{
+        id: input
+        width: parent.width - 12
+        anchors.centerIn: parent
+        maximumLength:21
+        font.pixelSize: 16;
+        font.bold: true
+        color: "#151515"; selectionColor: "mediumseagreen"
+        focus: true
+        onAccepted:{container.accepted()}
+        text: ""
+        selectByMouse: true
     }
-    states: [
-        State {
-            name: "search"; when: screen.state!="search"
-            PropertyChanges { target: titleBar; y: 0 }
-        }
-    ]
-    transitions: [
-        Transition { NumberAnimation { properties: "x,y"; duration: 500; easing.type: Easing.InOutQuad } }
-    ]
 }
-
