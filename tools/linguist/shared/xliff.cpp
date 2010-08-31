@@ -53,6 +53,11 @@
 #include <QtXml/QXmlParseException>
 
 
+// The string value is historical and reflects the main purpose: Keeping
+// obsolete entries separate from the magic file message (which both have
+// no location information, but typically reside at opposite ends of the file).
+#define MAGIC_OBSOLETE_REFERENCE "Obsolete_PO_entries"
+
 QT_BEGIN_NAMESPACE
 
 /**
@@ -692,6 +697,9 @@ bool XLIFFHandler::finalizeMessage(bool isPlural)
         m_cd.appendError(QLatin1String("XLIFF syntax error: Message without source string."));
         return false;
     }
+    if (m_type == TranslatorMessage::Obsolete && m_refs.size() == 1
+        && m_refs.at(0).fileName() == QLatin1String(MAGIC_OBSOLETE_REFERENCE))
+        m_refs.clear();
     TranslatorMessage msg(m_context, m_sources[0],
                           m_comment, QString(), QString(), -1,
                           m_translations, m_type, isPlural);
@@ -761,12 +769,15 @@ bool saveXLIFF(const Translator &translator, QIODevice &dev, ConversionData &cd)
     QHash<QString, QList<QString> > contextOrder;
     QList<QString> fileOrder;
     foreach (const TranslatorMessage &msg, translator.messages()) {
-        QHash<QString, QList<TranslatorMessage> > &file = messageOrder[msg.fileName()];
+        QString fn = msg.fileName();
+        if (fn.isEmpty() && msg.type() == TranslatorMessage::Obsolete)
+            fn = QLatin1String(MAGIC_OBSOLETE_REFERENCE);
+        QHash<QString, QList<TranslatorMessage> > &file = messageOrder[fn];
         if (file.isEmpty())
-            fileOrder.append(msg.fileName());
+            fileOrder.append(fn);
         QList<TranslatorMessage> &context = file[msg.context()];
         if (context.isEmpty())
-            contextOrder[msg.fileName()].append(msg.context());
+            contextOrder[fn].append(msg.context());
         context.append(msg);
     }
 

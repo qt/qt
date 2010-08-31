@@ -43,7 +43,6 @@
 
 #ifdef QT_HAVE_SSE2
 
-#include <private/qsimd_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
 

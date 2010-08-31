@@ -42,7 +42,6 @@
 #include "qdeclarativeproperty.h"
 #include "private/qdeclarativeproperty_p.h"
 
-#include "private/qdeclarativecompositetypedata_p.h"
 #include "qdeclarative.h"
 #include "private/qdeclarativebinding_p.h"
 #include "qdeclarativecontext.h"
