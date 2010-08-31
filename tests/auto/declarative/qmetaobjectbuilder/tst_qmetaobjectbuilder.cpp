@@ -558,7 +558,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop1.isWritable());
     QVERIFY(!prop1.isResettable());
     QVERIFY(!prop1.isDesignable());
-    QVERIFY(!prop1.isScriptable());
+    QVERIFY(prop1.isScriptable());
     QVERIFY(!prop1.isStored());
     QVERIFY(!prop1.isEditable());
     QVERIFY(!prop1.isUser());
@@ -577,7 +577,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop2.isWritable());
     QVERIFY(!prop2.isResettable());
     QVERIFY(!prop2.isDesignable());
-    QVERIFY(!prop2.isScriptable());
+    QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
     QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());
@@ -599,7 +599,7 @@ void tst_QMetaObjectBuilder::property()
     prop1.setWritable(false);
     prop1.setResettable(true);
     prop1.setDesignable(true);
-    prop1.setScriptable(true);
+    prop1.setScriptable(false);
     prop1.setStored(true);
     prop1.setEditable(true);
     prop1.setUser(true);
@@ -614,7 +614,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop1.isWritable());
     QVERIFY(prop1.isResettable());
     QVERIFY(prop1.isDesignable());
-    QVERIFY(prop1.isScriptable());
+    QVERIFY(!prop1.isScriptable());
     QVERIFY(prop1.isStored());
     QVERIFY(prop1.isEditable());
     QVERIFY(prop1.isUser());
@@ -627,7 +627,7 @@ void tst_QMetaObjectBuilder::property()
     QCOMPARE(prop2.type(), QByteArray("int"));
     QVERIFY(!prop2.isResettable());
     QVERIFY(!prop2.isDesignable());
-    QVERIFY(!prop2.isScriptable());
+    QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
     QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());
@@ -643,7 +643,7 @@ void tst_QMetaObjectBuilder::property()
     QCOMPARE(prop2.type(), QByteArray("int"));
     QVERIFY(!prop2.isResettable());
     QVERIFY(!prop2.isDesignable());
-    QVERIFY(!prop2.isScriptable());
+    QVERIFY(prop2.isScriptable());
     QVERIFY(!prop2.isStored());
     QVERIFY(!prop2.isEditable());
     QVERIFY(!prop2.isUser());

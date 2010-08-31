@@ -157,6 +157,7 @@ private slots:
     void qtbug_10696();
     void qtbug_11606();
     void qtbug_11600();
+    void nonscriptable();
 
     void include();
 
@@ -2527,6 +2528,17 @@ void tst_qdeclarativeecmascript::qtbug_11600()
     QObject *o = component.create();
     QVERIFY(o != 0);
     QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
+// Reading and writing non-scriptable properties should fail
+void tst_qdeclarativeecmascript::nonscriptable()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nonscriptable.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("readOk").toBool(), true);
+    QCOMPARE(o->property("writeOk").toBool(), true);
     delete o;
 }
 
