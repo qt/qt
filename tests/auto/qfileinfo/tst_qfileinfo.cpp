@@ -181,6 +181,8 @@ private slots:
     void equalOperator() const;
     void equalOperatorWithDifferentSlashes() const;
     void notEqualOperator() const;
+
+    void detachingOperations();
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -1543,6 +1545,52 @@ void tst_QFileInfo::notEqualOperator() const
     /* Compare two default constructed values. Yes, to me it seems it should be the opposite too, but
      * this is how the code was written. */
     QVERIFY(QFileInfo() != QFileInfo());
+}
+
+void tst_QFileInfo::detachingOperations()
+{
+    QFileInfo info1;
+    QVERIFY(info1.caching());
+    info1.setCaching(false);
+
+    {
+        QFileInfo info2 = info1;
+
+        QVERIFY(!info1.caching());
+        QVERIFY(!info2.caching());
+
+        info2.setCaching(true);
+        QVERIFY(info2.caching());
+
+        info1.setFile("foo");
+        QVERIFY(!info1.caching());
+    }
+
+    {
+        QFile file("foo");
+        info1.setFile(file);
+        QVERIFY(!info1.caching());
+    }
+
+    info1.setFile(QDir(), "foo");
+    QVERIFY(!info1.caching());
+
+    {
+        QFileInfo info3;
+        QVERIFY(info3.caching());
+
+        info3 = info1;
+        QVERIFY(!info3.caching());
+    }
+
+    info1.refresh();
+    QVERIFY(!info1.caching());
+
+    QVERIFY(info1.makeAbsolute());
+    QVERIFY(!info1.caching());
+
+    info1.detach();
+    QVERIFY(!info1.caching());
 }
 
 QTEST_MAIN(tst_QFileInfo)

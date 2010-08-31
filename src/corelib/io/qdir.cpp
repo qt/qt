@@ -136,6 +136,19 @@ public:
         delete fileEngine;
     }
 
+    bool exists() const
+    {
+        if (!fileEngine)
+            return false;
+        const QAbstractFileEngine::FileFlags info =
+            fileEngine->fileFlags(QAbstractFileEngine::DirectoryType
+                                           | QAbstractFileEngine::ExistsFlag
+                                           | QAbstractFileEngine::Refresh);
+        if (!(info & QAbstractFileEngine::DirectoryType))
+            return false;
+        return info & QAbstractFileEngine::ExistsFlag;
+    }
+
     void initFileEngine();
     void initFileLists() const;
 
@@ -891,11 +904,13 @@ bool QDir::cd(const QString &dirName)
         }
     }
 
-    QDir dir(newPath);
-    if (!dir.exists())
+    QScopedPointer<QDirPrivate> dir(new QDirPrivate(*d_ptr.constData()));
+    dir->setPath(newPath);
+
+    if (!dir->exists())
         return false;
 
-    *this = dir;
+    d_ptr = dir.take();
     return true;
 }
 
@@ -1495,17 +1510,7 @@ bool QDir::isReadable() const
 */
 bool QDir::exists() const
 {
-    const QDirPrivate* d = d_ptr.constData();
-
-    if (!d->fileEngine)
-        return false;
-    const QAbstractFileEngine::FileFlags info =
-        d->fileEngine->fileFlags(QAbstractFileEngine::DirectoryType
-                                       | QAbstractFileEngine::ExistsFlag
-                                       | QAbstractFileEngine::Refresh);
-    if (!(info & QAbstractFileEngine::DirectoryType))
-        return false;
-    return info & QAbstractFileEngine::ExistsFlag;
+    return d_ptr->exists();
 }
 
 /*!
@@ -1579,11 +1584,13 @@ bool QDir::makeAbsolute() // ### What do the return values signify?
     if (QDir::isRelativePath(absolutePath))
         return false;
 
-    QDir dir(absolutePath);
-    if (!(dir.d_ptr.constData()->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
+    QScopedPointer<QDirPrivate> dir(new QDirPrivate(*d_ptr.constData()));
+    dir->setPath(absolutePath);
+
+    if (!(dir->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
         return false;
 
-    *this = dir;
+    d_ptr = dir.take();
     return true;
 }
 
