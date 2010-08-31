@@ -43,7 +43,7 @@
 
 #include "qcoreapplication.h"
 #include "qhash.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include "qpair.h"
 #include "qset.h"
 #include "qsocketnotifier.h"
@@ -324,11 +324,11 @@ static void resolveTimerAPI()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        qtimeSetEvent = (ptimeSetEvent)QLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
+        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
+        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
 #else
-        qtimeSetEvent = (ptimeSetEvent)QLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
+        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
+        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
 #endif
     }
 }
