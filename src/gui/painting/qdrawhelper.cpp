@@ -46,7 +46,6 @@
 #include <private/qdrawhelper_armv6_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
-#include <private/qsimd_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
