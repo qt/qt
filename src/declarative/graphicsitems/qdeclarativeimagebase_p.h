@@ -58,7 +58,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeItem
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
-
+    Q_PROPERTY(bool cached READ cached WRITE setCached NOTIFY cachedChanged)
     Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
 
 public:
@@ -73,6 +73,9 @@ public:
     bool asynchronous() const;
     void setAsynchronous(bool);
 
+    bool cached() const;
+    void setCached(bool);
+
     virtual void setSourceSize(const QSize&);
     QSize sourceSize() const;
 
@@ -82,6 +85,7 @@ Q_SIGNALS:
     void statusChanged(Status);
     void progressChanged(qreal progress);
     void asynchronousChanged();
+    void cachedChanged();
 
 protected:
     virtual void load();

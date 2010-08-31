@@ -88,11 +88,11 @@ Package {
             }
             BusyIndicator { anchors.centerIn: parent; on: originalImage.status != Image.Ready }
             Image {
-                id: originalImage; smooth: true; source: "http://" + Script.getImagePath(content)
+                id: originalImage; smooth: true; source: "http://" + Script.getImagePath(content); cached: false
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height
             }
             Image {
-                id: hqImage; smooth: true; source: ""; visible: false
+                id: hqImage; smooth: true; source: ""; visible: false; cached: false
                 fillMode: Image.PreserveAspectFit; width: photoWrapper.width; height: photoWrapper.height
             }
             Binding {
