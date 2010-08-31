@@ -126,24 +126,6 @@ QSize QDeclarativeImageBase::sourceSize() const
     return d->sourcesize.isValid() ? d->sourcesize : QSize(implicitWidth(),implicitHeight());
 }
 
-bool QDeclarativeImageBase::cached() const
-{
-    Q_D(const QDeclarativeImageBase);
-    return d->cached;
-}
-
-void QDeclarativeImageBase::setCached(bool cached)
-{
-    Q_D(QDeclarativeImageBase);
-    if (d->cached == cached)
-        return;
-
-    d->cached = cached;
-    emit cachedChanged();
-    if (isComponentComplete())
-        load();
-}
-
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);
@@ -168,12 +150,7 @@ void QDeclarativeImageBase::load()
         d->status = Loading;
         emit statusChanged(d->status);
 
-        QDeclarativePixmap::Options options;
-        if (d->async)
-            options |= QDeclarativePixmap::Asynchronous;
-        if (d->cached)
-            options |= QDeclarativePixmap::Cached;
-        d->pix.load(qmlEngine(this), d->url, d->sourcesize, options);
+        d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
 
         if (d->pix.isLoading()) {
 

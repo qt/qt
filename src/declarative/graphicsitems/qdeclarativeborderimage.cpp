@@ -211,12 +211,7 @@ void QDeclarativeBorderImage::load()
             }
         } else {
 
-            QDeclarativePixmap::Options options;
-            if (d->async)
-                options |= QDeclarativePixmap::Asynchronous;
-            if (d->cached)
-                options |= QDeclarativePixmap::Cached;
-            d->pix.load(qmlEngine(this), d->url, options);
+            d->pix.load(qmlEngine(this), d->url, d->async);
 
             if (d->pix.isLoading()) {
                 d->pix.connectFinished(this, SLOT(requestFinished()));
@@ -333,12 +328,7 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
 
-        QDeclarativePixmap::Options options;
-        if (d->async)
-            options |= QDeclarativePixmap::Asynchronous;
-        if (d->cached)
-            options |= QDeclarativePixmap::Cached;
-        d->pix.load(qmlEngine(this), d->sciurl, options);
+        d->pix.load(qmlEngine(this), d->sciurl, d->async);
 
         if (d->pix.isLoading()) {
             static int thisRequestProgress = -1;

@@ -69,8 +69,7 @@ public:
     QDeclarativeImageBasePrivate()
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
-        async(false),
-        cached(true)
+        async(false)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
@@ -81,7 +80,6 @@ public:
     qreal progress;
     QSize sourcesize;
     bool async : 1;
-    bool cached : 1;
 };
 
 QT_END_NAMESPACE
