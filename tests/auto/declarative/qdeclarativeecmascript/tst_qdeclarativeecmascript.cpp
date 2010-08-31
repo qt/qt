@@ -158,6 +158,7 @@ private slots:
     void qtbug_11606();
     void qtbug_11600();
     void nonscriptable();
+    void deleteLater();
 
     void include();
 
@@ -2542,6 +2543,15 @@ void tst_qdeclarativeecmascript::nonscriptable()
     delete o;
 }
 
+// deleteLater() should not be callable from QML
+void tst_qdeclarativeecmascript::deleteLater()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("deleteLater.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 
