@@ -974,7 +974,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
     }
 
     // Begin the class
-    if (obj->parserStatusCast != -1) {
+    if (tr.type && obj->parserStatusCast != -1) {
         QDeclarativeInstruction begin;
         begin.type = QDeclarativeInstruction::BeginObject;
         begin.begin.castValue = obj->parserStatusCast;
