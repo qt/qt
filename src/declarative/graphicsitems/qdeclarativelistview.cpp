@@ -2454,6 +2454,16 @@ void QDeclarativeListView::keyPressEvent(QKeyEvent *event)
     QDeclarativeFlickable::keyPressEvent(event);
 }
 
+void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
+                             const QRectF &oldGeometry)
+{
+    Q_D(QDeclarativeListView);
+    d->maxExtentDirty = true;
+    d->minExtentDirty = true;
+    QDeclarativeFlickable::geometryChanged(newGeometry, oldGeometry);
+}
+
+
 /*!
     \qmlmethod ListView::incrementCurrentIndex()
 
