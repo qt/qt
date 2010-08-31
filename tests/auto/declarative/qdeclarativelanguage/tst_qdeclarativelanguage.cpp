@@ -126,6 +126,7 @@ private slots:
     void scriptString();
     void defaultPropertyListOrder();
     void declaredPropertyValues();
+    void dontDoubleCallClassBegin();
 
     void basicRemote_data();
     void basicRemote();
@@ -1190,6 +1191,20 @@ void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
     VERIFY_ERRORS(0);
+}
+
+void tst_qdeclarativelanguage::dontDoubleCallClassBegin()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("dontDoubleCallClassBegin.qml"));
+    QObject *o = component.create();
+    QVERIFY(o);
+
+    MyParserStatus *o2 = qobject_cast<MyParserStatus *>(qvariant_cast<QObject *>(o->property("object")));
+    QVERIFY(o2);
+    QCOMPARE(o2->classBeginCount(), 1);
+    QCOMPARE(o2->componentCompleteCount(), 1);
+
+    delete o;
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.

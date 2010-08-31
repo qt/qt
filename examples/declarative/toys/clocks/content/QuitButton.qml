@@ -39,21 +39,14 @@
 ****************************************************************************/
 
 import Qt 4.7
-import "content"
-
-Rectangle {
-    width: 640; height: 240
-    color: "#646464"
-
-    Row {
-        anchors.centerIn: parent
-        Clock { city: "New York"; shift: -4 }
-        Clock { city: "Mumbai"; shift: 5.5 }
-        Clock { city: "Tokyo"; shift: 9 }
-    }
-    QuitButton {
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 10
+Image {
+    source: "quit.png"
+    scale: quitMouse.pressed ? 0.8 : 1.0
+    smooth: quitMouse.pressed
+    MouseArea {
+        id: quitMouse
+        anchors.fill: parent
+        anchors.margins: -10
+        onClicked: Qt.quit()
     }
 }
