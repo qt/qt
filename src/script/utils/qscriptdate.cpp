@@ -320,8 +320,9 @@ qsreal FromDateTime(const QDateTime &dt)
         return qSNaN();
     if (!LocalTZA) // ### move
         LocalTZA = getLocalTZA();
-    QDate date = dt.date();
-    QTime taim = dt.time();
+    QDateTime utc = dt.toUTC();
+    QDate date = utc.date();
+    QTime taim = utc.time();
     int year = date.year();
     int month = date.month() - 1;
     int day = date.day();
@@ -331,8 +332,6 @@ qsreal FromDateTime(const QDateTime &dt)
     int ms = taim.msec();
     double t = MakeDate(MakeDay(year, month, day),
                         MakeTime(hours, mins, secs, ms));
-    if (dt.timeSpec() == Qt::LocalTime)
-        t = UTC(t);
     return TimeClip(t);
 }
 
@@ -348,8 +347,6 @@ QDateTime ToDateTime(qsreal t, Qt::TimeSpec spec)
         return QDateTime();
     if (!LocalTZA) // ### move
         LocalTZA = getLocalTZA();
-    if (spec == Qt::LocalTime)
-        t = LocalTime(t);
     int year = int(YearFromTime(t));
     int month = int(MonthFromTime(t) + 1);
     int day = int(DateFromTime(t));
@@ -357,7 +354,7 @@ QDateTime ToDateTime(qsreal t, Qt::TimeSpec spec)
     int mins = MinFromTime(t);
     int secs = SecFromTime(t);
     int ms = msFromTime(t);
-    return QDateTime(QDate(year, month, day), QTime(hours, mins, secs, ms), spec);
+    return QDateTime(QDate(year, month, day), QTime(hours, mins, secs, ms), Qt::UTC).toTimeSpec(spec);
 }
 
 } // namespace QScript
