@@ -1426,6 +1426,7 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
+// Not used directly for shaping, only used to calculate m_averageCharWidth
 bool QFontEngineMac::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
     if (!cmap) {
