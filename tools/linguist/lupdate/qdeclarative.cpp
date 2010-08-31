@@ -402,9 +402,7 @@ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd
         // build up a list of comments that contain translation information.
         for (int i = 0; i < driver.comments().size(); ++i) {
             AST::SourceLocation loc = driver.comments().at(i);
-            QString commentStr = code.mid(loc.offset+2, loc.length-2);
-            if (commentStr.endsWith(QLatin1String("*/")))
-                commentStr.chop(2);
+            QString commentStr = code.mid(loc.offset, loc.length);
 
             if (trCalls.comments.isEmpty() || trCalls.comments.last().lastLine != int(loc.startLine)) {
                 Comment comment;
