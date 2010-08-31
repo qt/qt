@@ -240,7 +240,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
             && !keyEvent->text().isEmpty()) {
             // Send some temporary preedit text in order to make text visible for a moment.
-            m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
             m_preeditString = keyEvent->text();
             QList<QInputMethodEvent::Attribute> attributes;
             QInputMethodEvent imEvent(m_preeditString, attributes);
@@ -296,10 +295,6 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
         return;
 
     commitCurrentString(false);
-
-    //update cursor position, now this pre-edit text has been committed.
-    //this prevents next keypress overwriting it (QTBUG-11673)
-    m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
@@ -594,9 +589,10 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     // Let's remove the selected text if aInitialInlineText is empty and there is selected text
     if (m_preeditString.isEmpty()) {
         int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-        int replacementLength = qAbs(m_cursorPos-anchor);
+        int cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        int replacementLength = qAbs(cursorPos-anchor);
         if (replacementLength > 0) {
-            int replacementStart = m_cursorPos < anchor ? 0 : -replacementLength;
+            int replacementStart = cursorPos < anchor ? 0 : -replacementLength;
             QList<QInputMethodEvent::Attribute> clearSelectionAttributes;
             QInputMethodEvent clearSelectionEvent(QLatin1String(""), clearSelectionAttributes);
             clearSelectionEvent.setCommitString(QLatin1String(""), replacementStart, replacementLength);
@@ -629,8 +625,13 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
                                                    m_inlinePosition,
                                                    m_cursorVisibility,
                                                    QVariant()));
-    m_preeditString = qt_TDesC2QString(aNewInlineText);
-    QInputMethodEvent event(m_preeditString, attributes);
+    QString newPreeditString = qt_TDesC2QString(aNewInlineText);
+    QInputMethodEvent event(newPreeditString, attributes);
+    if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
+        // In Symbian world this means "erase last character".
+        event.setCommitString("", -1, 1);
+    }
+    m_preeditString = newPreeditString;
     sendEvent(event);
 }
 

@@ -66,10 +66,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCoeFepInputContext : public QInputContext,
-                            public MCoeFepAwareTextEditor,
-                            public MCoeFepAwareTextEditor_Extension1,
-                            public MObjectProvider
+class Q_AUTOTEST_EXPORT QCoeFepInputContext : public QInputContext,
+                                              public MCoeFepAwareTextEditor,
+                                              public MCoeFepAwareTextEditor_Extension1,
+                                              public MObjectProvider
 {
     Q_OBJECT
 
@@ -153,6 +153,8 @@ private:
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;
+
+    friend class tst_QInputContext;
 };
 
 QT_END_NAMESPACE
