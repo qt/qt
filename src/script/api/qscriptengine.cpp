@@ -2607,8 +2607,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 }
 
 /*!
-  \internal
-  \since 4.6
+  \since 4.7
 
   Evaluates the given \a program and returns the result of the
   evaluation.
