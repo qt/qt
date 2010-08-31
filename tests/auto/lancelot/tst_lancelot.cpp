@@ -211,11 +211,11 @@ QString tst_Lancelot::computeMismatchScore(const QImage &baseline, const QImage 
 
     double pcd = 100.0 * ncd / (w*h);  // percent of pixels that differ
     double acd = ncd ? double(scd) / (3*ncd) : 0;         // avg. difference
-    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3.)")).arg(pcd, 0, 'g', 3).arg(ncd).arg(acd, 0, 'g', 3);
+    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3.)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
     if (baseline.hasAlphaChannel()) {
         double pad = 100.0 * nad / (w*h);  // percent of pixels that differ
         double aad = nad ? double(sad) / (3*nad) : 0;         // avg. difference
-        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3.)")).arg(pad, 0, 'g', 3).arg(nad).arg(aad, 0, 'g', 3);
+        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3.)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
     }
     return res;
 }
@@ -265,7 +265,7 @@ QImage tst_Lancelot::render(const QString &fileName)
     if (script.isEmpty())
         return QImage();
 
-    QImage img(800, 800, QImage::Format_ARGB32_Premultiplied);
+    QImage img(800, 800, QImage::Format_ARGB32);
     QPainter p(&img);
     PaintCommands pcmd(script, 800, 800);
     pcmd.setPainter(&p);
