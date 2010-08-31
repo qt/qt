@@ -170,7 +170,6 @@ private:
 QML_DECLARE_TYPE(MyQmlObject)
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
 
-
 class MyGroupedObject : public QObject
 {
     Q_OBJECT
@@ -574,6 +573,22 @@ class MyCustomParserTypeParser : public QDeclarativeCustomParser
 public:
     QByteArray compile(const QList<QDeclarativeCustomParserProperty> &) { return QByteArray(); }
     void setCustomData(QObject *, const QByteArray &) {}
+};
+
+class MyParserStatus : public QObject, public QDeclarativeParserStatus
+{
+    Q_OBJECT
+public:
+    MyParserStatus() : m_cbc(0), m_ccc(0) {}
+
+    int classBeginCount() const { return m_cbc; }
+    int componentCompleteCount() const { return m_ccc; }
+
+    virtual void classBegin() { m_cbc++; }
+    virtual void componentComplete() { m_ccc++; }
+private:
+    int m_cbc;
+    int m_ccc;
 };
 
 void registerTypes();

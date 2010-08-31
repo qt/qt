@@ -35,7 +35,7 @@ function startNewGame()
     if (heartbeat.running) {
         endGame();
         startNewGameTimer.running = true;
-        state = "starting";
+        state = "";
         return;
     }
 

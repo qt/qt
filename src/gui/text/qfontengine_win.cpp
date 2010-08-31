@@ -487,7 +487,7 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
 
-    return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
+    return glyph_metrics_t(0, -tm.tmAscent, w - lastRightBearing(glyphs), tm.tmHeight, w, 0);
 }
 
 #ifndef Q_WS_WINCE
