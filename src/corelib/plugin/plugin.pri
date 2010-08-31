@@ -7,7 +7,7 @@ HEADERS += \
 	plugin/qlibrary_p.h \
 	plugin/qplugin.h \
 	plugin/quuid.h \
-	plugin/qfactoryloader_p.h 
+	plugin/qfactoryloader_p.h
 
 SOURCES += \
 	plugin/qpluginloader.cpp \
