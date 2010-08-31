@@ -968,11 +968,17 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
             }
         } else {
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
-            // On Symbian^3 (only, not earlier or Symbian^4) if the SNAP was not reachable, it triggers
-            // user choice type of activity (EasyWLAN). As a result, a new IAP may be created, and
-            // hence if was not found yet. Therefore update configurations and see if there is something new.
+            // On Symbian^3 (only, not earlier or Symbian^4) if the SNAP was not reachable, it
+            // triggers user choice type of activity (EasyWLAN). As a result, a new IAP may be
+            // created, and hence if was not found yet. Therefore update configurations and see if
+            // there is something new.
+
             // 1. Update knowledge from the databases.
-            engine->requestUpdate();
+            if (thread() != engine->thread())
+                QMetaObject::invokeMethod(engine, "requestUpdate", Qt::BlockingQueuedConnection);
+            else
+                engine->requestUpdate();
+
             // 2. Check if new configuration was created during connection creation
             QList<QString> knownConfigs = engine->accessPointConfigurationIdentifiers();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
@@ -1025,7 +1031,12 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
             } else {
                 // Check if new (WLAN) IAP was created in IAP/SNAP dialog
                 // 1. Sync internal configurations array to commsdb first
-                engine->updateConfigurations();
+                if (thread() != engine->thread()) {
+                    QMetaObject::invokeMethod(engine, "requestUpdate",
+                                              Qt::BlockingQueuedConnection);
+                } else {
+                    engine->requestUpdate();
+                }
                 // 2. Check if new configuration was created during connection creation
                 QStringList knownConfigs = engine->accessPointConfigurationIdentifiers();
                 if (knownConfigs.count() > iKnownConfigsBeforeConnectionStart.count()) {
