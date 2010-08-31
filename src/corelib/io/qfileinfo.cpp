@@ -395,7 +395,9 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 */
 void QFileInfo::setFile(const QString &file)
 {
+    bool caching = d_ptr.constData()->cache_enabled;
     *this = QFileInfo(file);
+    d_ptr->cache_enabled = caching;
 }
 
 /*!
@@ -411,7 +413,7 @@ void QFileInfo::setFile(const QString &file)
 */
 void QFileInfo::setFile(const QFile &file)
 {
-    *this = QFileInfo(file.fileName());
+    setFile(file.fileName());
 }
 
 /*!
@@ -427,7 +429,7 @@ void QFileInfo::setFile(const QFile &file)
 */
 void QFileInfo::setFile(const QDir &dir, const QString &file)
 {
-    *this = QFileInfo(dir.filePath(file));
+    setFile(dir.filePath(file));
 }
 
 /*!
@@ -579,7 +581,7 @@ bool QFileInfo::makeAbsolute()
     QString absFileName = d_ptr.constData()->getFileName(QAbstractFileEngine::AbsoluteName);
     // QSharedDataPointer::operator->() will detach.
 
-    *this = QFileInfo(absFileName);
+    setFile(absFileName);
     return true;
 }
 
