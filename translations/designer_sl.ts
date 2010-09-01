@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="sl_SI">
-    <extra-po-header-po_revision_date>2010-08-05 02:42+0200</extra-po-header-po_revision_date>
+    <extra-po-header-po_revision_date>2010-08-28 14:05+0200</extra-po-header-po_revision_date>
     <extra-po-headers>MIME-Version,Content-Type,Content-Transfer-Encoding,Plural-Forms,X-Language,X-Qt-Contexts,Last-Translator,PO-Revision-Date,Project-Id-Version,Language-Team,X-Generator</extra-po-headers>
     <extra-po-header-x_generator>Lokalize 1.1</extra-po-header-x_generator>
     <extra-po-header-language_team>Slovenian &lt;lugos-slo@lugos.si&gt;</extra-po-header-language_team>
@@ -720,7 +720,7 @@
     </message>
     <message>
         <source>&amp;Point Size</source>
-        <translation>&amp;Velikost točke</translation>
+        <translation>&amp;Velikost v točkah</translation>
     </message>
     <message>
         <source>Style</source>
@@ -826,7 +826,7 @@
     </message>
     <message>
         <source>&amp;Point size</source>
-        <translation>&amp;Velikost točke</translation>
+        <translation>&amp;Velikost v točkah</translation>
     </message>
 </context>
 <context>
@@ -2190,7 +2190,7 @@ Empty class name passed to widget factory method
     </message>
     <message>
         <source>Point Size</source>
-        <translation>Velikost točke</translation>
+        <translation>Velikost v točkah</translation>
     </message>
     <message>
         <source>Bold</source>

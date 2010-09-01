@@ -3,13 +3,14 @@ import Qt 4.7
 QtObject {
     property bool dataOK: false
 
+    property string fileName
     property string responseText
     property string responseXmlRootNodeValue
 
-    Component.onCompleted: {
+    function startRequest() {
         var x = new XMLHttpRequest;
 
-        x.open("GET", "utf16.xml");
+        x.open("GET", fileName);
 
         // Test to the end
         x.onreadystatechange = function() {

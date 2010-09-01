@@ -146,7 +146,7 @@ void tst_QDeclarativeLoader::component()
 
 void tst_QDeclarativeLoader::invalidUrl()
 {
-    QTest::ignoreMessage(QtWarningMsg, QString("<Unknown File>: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString()).toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString(QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ": File not found").toUtf8().constData());
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.7\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
@@ -508,7 +508,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
-    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: Network error for URL http://127.0.0.1:14450/IDontExist.qml");
+    QTest::ignoreMessage(QtWarningMsg, "http://127.0.0.1:14450/IDontExist.qml: File not found");
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));

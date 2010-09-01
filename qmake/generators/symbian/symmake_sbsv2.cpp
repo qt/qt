@@ -202,10 +202,18 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     QString genericClause = " -c %1_%2" + testClause;
     QString winscwClause = " -c winscw_%1.mwccinc" + testClause;
     QString gcceClause;
-    if (QString::compare(gcceVersion(), UNDETECTED_GCCE_VERSION) == 0)
-        allPlatforms.removeAll(PLATFORM_GCCE);
-    else
-        gcceClause = " -c arm.v5.%1." + gcceVersion() + ".release_gcce" + testClause;
+    bool stripArmv5 = false;
+
+    if (allPlatforms.contains(PLATFORM_GCCE)) {
+        if (QString::compare(gcceVersion(), UNDETECTED_GCCE_VERSION) == 0) {
+            allPlatforms.removeAll(PLATFORM_GCCE);
+        } else {
+            gcceClause = " -c arm.v5.%1." + gcceVersion() + testClause;
+            // Since gcce building is enabled, do not add armv5 for any sbs command
+            // that also contains gcce, because those will build same targets.
+            stripArmv5 = true;
+        }
+    }
 
     QStringList allClauses;
     QStringList debugClauses;
@@ -216,13 +224,14 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     releasePlatforms.removeAll(PLATFORM_WINSCW); // No release for emulator
 
     foreach(QString item, debugPlatforms) {
-        debugClauses << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
+        if (item != PLATFORM_ARMV5 || !stripArmv5)
+            debugClauses << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
     }
     foreach(QString item, releasePlatforms) {
-        releaseClauses << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
+        if (item != PLATFORM_ARMV5 || !stripArmv5)
+            releaseClauses << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
     }
     allClauses << debugClauses << releaseClauses;
-
 
     QTextStream t(&wrapperFile);
 

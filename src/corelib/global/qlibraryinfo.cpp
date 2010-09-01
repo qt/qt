@@ -66,6 +66,8 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+extern void qDumpCPUFeatures(); // in qsimd.cpp
+
 #ifndef QT_NO_SETTINGS
 
 struct QLibrarySettings
@@ -525,8 +527,7 @@ void qt_core_boilerplate()
            qt_configure_libraries_path_str + 12,
            qt_configure_headers_path_str + 12);
 
-    extern void qDumpCPUFeatures();
-    qDumpCPUFeatures();
+    QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 
 #ifdef QT_EVAL
     extern void qt_core_eval_init(uint);

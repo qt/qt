@@ -99,7 +99,8 @@ private:
 
 tst_qmake::tst_qmake()
 {
-    QString cmd = QString("qmake \"QT_VERSION=%1\"").arg(QT_VERSION);
+    QString binpath = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+    QString cmd = QString("%2/qmake \"QT_VERSION=%1\"").arg(QT_VERSION).arg(binpath);
 #ifdef Q_CC_MSVC
     test_compiler.setBaseCommands( "nmake", cmd );
 #elif defined(Q_CC_MINGW)

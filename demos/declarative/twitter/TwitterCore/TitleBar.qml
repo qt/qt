@@ -58,56 +58,58 @@ Item {
             rssModel.tags = editor.text
         }
 
+        Item {
+            id:imageBox
+            x: 6; width: 0; height: 50; smooth: true
+            anchors.verticalCenter: parent.verticalCenter
+
+            UserModel { user: rssModel.from; id: userModel }
+            Component {
+                id: imgDelegate;
+                Item {
+                    id:imageitem
+                    visible:true
+                    Loading { width:48; height:48; visible: realImage.status != Image.Ready }
+                    Image { id: realImage; source: image; width:48; height:48; opacity:0; }
+                    states:
+                        State {
+                        name: "loaded"
+                        when:  (realImage.status == Image.Ready)
+                        PropertyChanges { target: realImage; opacity:1 }
+                    }
+                    transitions: Transition {
+                        NumberAnimation { target: realImage; property: "opacity"; duration: 200 }
+                    }
+                }
+            }
+            ListView { id:view; model: userModel.model; x:1; y:1; delegate: imgDelegate }
+            states:
+            State {
+                when: !userModel.user==""
+                PropertyChanges { target: imageBox; width: 50; }
+            }
+            transitions:
+            Transition {
+                NumberAnimation { target: imageBox; property: "width"; duration: 200 }
+            }
+        }
+
         Text {
             id: categoryText
             anchors {
-                left: parent.left; right: tagButton.left; leftMargin: 10; rightMargin: 10
+                left: imageBox.right; right: parent.right; leftMargin: 10; rightMargin: 10
                 verticalCenter: parent.verticalCenter
             }
             elide: Text.ElideLeft
-            text: (rssModel.tags=="" ? untaggedString : taggedString + rssModel.tags)
+            text: (rssModel.from=="" ? untaggedString : taggedString + rssModel.from)
             font.bold: true; color: "White"; style: Text.Raised; styleColor: "Black"
             font.pixelSize: 12
-        }
-
-        Button {
-            id: tagButton; x: titleBar.width - 50; width: 45; height: 32; text: "..."
-            onClicked: if (titleBar.state == "Tags") container.accept(); else titleBar.state = "Tags"
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Item {
-            id: lineEdit
-            y: 4; height: parent.height - 9
-            anchors { left: tagButton.right; leftMargin: 5; right: parent.right; rightMargin: 5 }
-
-            BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
-
-            TextInput {
-                id: editor
-                anchors {
-                    left: parent.left; right: parent.right; leftMargin: 10; rightMargin: 10
-                    verticalCenter: parent.verticalCenter
-                }
-                cursorVisible: true; font.bold: true
-                color: "#151515"; selectionColor: "Green"
-            }
-
-            Keys.forwardTo: [ (returnKey), (editor)]
-
-            Item {
-                id: returnKey
-                Keys.onReturnPressed: container.accept()
-                Keys.onEnterPressed: container.accept()
-                Keys.onEscapePressed: titleBar.state = ""
-            }
         }
     }
 
     states: State {
         name: "Tags"
         PropertyChanges { target: container; x: -tagButton.x + 5 }
-        PropertyChanges { target: tagButton; text: "OK" }
         PropertyChanges { target: editor; focus: true }
     }
 

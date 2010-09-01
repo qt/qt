@@ -106,7 +106,6 @@ Rectangle {
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            Behavior on opacity { NumberAnimation { duration: 500 } }
 
             Text {
                 color: "white"
@@ -194,6 +193,12 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Content.Button {
+            text: "Quit"
+            anchors { left: btnA.right; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            onClicked: Qt.quit();
+        }
+
         Text {
             color: activePalette.text
             text: "Score: " + score; font.bold: true
@@ -230,7 +235,10 @@ Rectangle {
             from: "*"
             to: "starting"
             NumberAnimation { target: progressIndicator; property: "width"; duration: 1000 }
-
+            NumberAnimation { target: title; property: "opacity"; duration: 500 }
+        },
+        Transition {
+            NumberAnimation { target: title; property: "opacity"; duration: 500 }
         }
     ]
 

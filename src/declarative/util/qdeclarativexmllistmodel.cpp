@@ -466,8 +466,6 @@ public:
     QList<QDeclarativeXmlListModelRole *> roleObjects;
     static void append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role);
     static void clear_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list);
-    static void removeAt_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i);
-    static void insert_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i, QDeclarativeXmlListModelRole *role);
     QList<QList<QVariant> > data;
     int redirectCount;
 };
@@ -498,11 +496,6 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     _this->d_func()->roleNames.clear();
     _this->d_func()->roleObjects.clear();
 }
-
-/*!
-    \class QDeclarativeXmlListModel
-    \internal
-*/
 
 /*!
     \qmlclass XmlListModel QDeclarativeXmlListModel

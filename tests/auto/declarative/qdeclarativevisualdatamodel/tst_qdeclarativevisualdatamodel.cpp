@@ -83,6 +83,8 @@ public:
 
 private slots:
     void rootIndex();
+    void updateLayout();
+    void childChanged();
     void objectListModel();
 
 private:
@@ -153,6 +155,100 @@ void tst_qdeclarativevisualdatamodel::rootIndex()
     QVERIFY(qvariant_cast<QModelIndex>(obj->rootIndex()) == QModelIndex());
 
     delete obj;
+}
+
+void tst_qdeclarativevisualdatamodel::updateLayout()
+{
+    QDeclarativeView view;
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+
+    view.rootContext()->setContextProperty("myModel", &model);
+
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/datalist.qml"));
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    QDeclarativeText *name = findItem<QDeclarativeText>(contentItem, "display", 0);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 1 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 1);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 2 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 2);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 3 Item"));
+
+    model.invisibleRootItem()->sortChildren(0, Qt::DescendingOrder);
+
+    name = findItem<QDeclarativeText>(contentItem, "display", 0);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 3 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 1);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 2 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 2);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 1 Item"));
+}
+
+void tst_qdeclarativevisualdatamodel::childChanged()
+{
+    QDeclarativeView view;
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+
+    view.rootContext()->setContextProperty("myModel", &model);
+
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/datalist.qml"));
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    QDeclarativeVisualDataModel *vdm = listview->findChild<QDeclarativeVisualDataModel*>("visualModel");
+    vdm->setRootIndex(QVariant::fromValue(model.indexFromItem(model.item(1,0))));
+
+    QDeclarativeText *name = findItem<QDeclarativeText>(contentItem, "display", 0);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 2 Child Item"));
+
+    model.item(1,0)->child(0,0)->setText("Row 2 updated child");
+
+    name = findItem<QDeclarativeText>(contentItem, "display", 0);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 2 updated child"));
+
+    model.item(1,0)->appendRow(new QStandardItem(QLatin1String("Row 2 Child Item 2")));
+    QTest::qWait(300);
+
+    name = findItem<QDeclarativeText>(contentItem, "display", 1);
+    QVERIFY(name != 0);
+    QCOMPARE(name->text(), QString("Row 2 Child Item 2"));
+
+    model.item(1,0)->takeRow(1);
+    name = findItem<QDeclarativeText>(contentItem, "display", 1);
+    QVERIFY(name == 0);
+
+    vdm->setRootIndex(QVariant::fromValue(QModelIndex()));
+    QTest::qWait(300);
+    name = findItem<QDeclarativeText>(contentItem, "display", 0);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 1 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 1);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 2 Item"));
+    name = findItem<QDeclarativeText>(contentItem, "display", 2);
+    QVERIFY(name);
+    QCOMPARE(name->text(), QString("Row 3 Item"));
 }
 
 void tst_qdeclarativevisualdatamodel::objectListModel()

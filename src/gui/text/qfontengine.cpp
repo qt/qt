@@ -1093,6 +1093,18 @@ const QVector<QRgb> &QFontEngine::grayPalette()
     return *qt_grayPalette();
 }
 
+QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
+{
+    if (glyphs.numGlyphs >= 1) {
+        glyph_t glyph = glyphs.glyphs[glyphs.numGlyphs - 1];
+        glyph_metrics_t gi = boundingBox(glyph);
+        if (gi.isValid())
+            return round ? QFixed(qRound(gi.xoff - gi.x - gi.width))
+                         : QFixed(gi.xoff - gi.x - gi.width);
+    }
+    return 0;
+}
+
 // ------------------------------------------------------------------
 // The box font engine
 // ------------------------------------------------------------------

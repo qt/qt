@@ -50,13 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-/*!
-    \class QDeclarativeImageBase
-    \internal
-    \brief The base class for declarative images.
- */
-
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
@@ -147,10 +140,15 @@ void QDeclarativeImageBase::load()
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
+        d->sourcesize.setWidth(0);
+        d->sourcesize.setHeight(0);
+        emit sourceSizeChanged();
         pixmapChange();
         update();
     } else {
+
         d->status = Loading;
+        emit statusChanged(d->status);
 
         d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
 
@@ -169,53 +167,34 @@ void QDeclarativeImageBase::load()
             d->pix.connectDownloadProgress(this, thisRequestProgress);
 
         } else {
-            QSize impsize = d->pix.implicitSize();
-            setImplicitWidth(impsize.width());
-            setImplicitHeight(impsize.height());
-
-            if (d->pix.isReady()) {
-                d->status = Ready;
-
-                if (!d->sourcesize.isValid())
-                    emit sourceSizeChanged();
-
-            } else {
-                d->status = Error;
-                qmlInfo(this) << d->pix.error();
-            }
-            d->progress = 1.0;
-            emit statusChanged(d->status);
-            emit progressChanged(d->progress);
-            pixmapChange();
-            update();
+            requestFinished();
         }
-
     }
-
-    emit statusChanged(d->status);
 }
 
 void QDeclarativeImageBase::requestFinished()
 {
     Q_D(QDeclarativeImageBase);
 
-    QSize impsize = d->pix.implicitSize();
-
     if (d->pix.isError()) {
         d->status = Error;
         qmlInfo(this) << d->pix.error();
-    }
-
-    setImplicitWidth(impsize.width());
-    setImplicitHeight(impsize.height());
-
-    if (d->status == Loading)
+    } else {
         d->status = Ready;
-    d->progress = 1.0;
+    }
     emit statusChanged(d->status);
-    emit progressChanged(1.0);
-    if (!d->sourcesize.isValid())
+
+    setImplicitWidth(d->pix.width());
+    setImplicitHeight(d->pix.height());
+
+    d->progress = 1.0;
+    emit progressChanged(d->progress);
+
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height()) {
+        d->sourcesize.setWidth(d->pix.width());
+        d->sourcesize.setHeight(d->pix.height());
         emit sourceSizeChanged();
+    }
     pixmapChange();
     update();
 }

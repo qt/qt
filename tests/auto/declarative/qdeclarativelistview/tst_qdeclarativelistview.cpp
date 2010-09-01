@@ -98,6 +98,7 @@ private slots:
     void manualHighlight();
     void QTBUG_11105();
     void footer();
+    void resizeView();
 
 private:
     template <class T> void items();
@@ -979,7 +980,7 @@ void tst_QDeclarativeListView::currentIndex()
     // current item should be 20th item at startup
     // and current item should be in view
     QCOMPARE(listview->currentIndex(), 20);
-    QCOMPARE(listview->contentY(), 99.0);
+    QCOMPARE(listview->contentY(), 100.0);
     QCOMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 20));
     QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
@@ -1002,7 +1003,7 @@ void tst_QDeclarativeListView::currentIndex()
     listview->decrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(listview->contentY(), 279.0);
+    QTRY_COMPARE(listview->contentY(), 280.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 0);
@@ -1066,6 +1067,7 @@ void tst_QDeclarativeListView::itemList()
     QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "item1");
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->x(), 0.0);
+    QCOMPARE(item->height(), listview->height());
 
     QDeclarativeText *text = findItem<QDeclarativeText>(contentItem, "text1");
     QTRY_VERIFY(text);
@@ -1588,6 +1590,48 @@ void tst_QDeclarativeListView::footer()
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+}
+
+void tst_QDeclarativeListView::resizeView()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 40; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->y(), i*20.);
+    }
+
+    QVariant heightRatio;
+    QMetaObject::invokeMethod(canvas->rootObject(), "heightRatio", Q_RETURN_ARG(QVariant, heightRatio));
+    QCOMPARE(heightRatio.toReal(), 0.4);
+
+    listview->setHeight(200);
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "heightRatio", Q_RETURN_ARG(QVariant, heightRatio));
+    QCOMPARE(heightRatio.toReal(), 0.25);
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()
