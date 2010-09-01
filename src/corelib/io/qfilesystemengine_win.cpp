@@ -57,7 +57,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link)
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
 {
-    return entry; // TODO implement;
+    return QFileSystemEntry(slowCanonicalized(entry.filePath()));
 }
 
 //static

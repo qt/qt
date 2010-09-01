@@ -45,6 +45,10 @@
 #include <stdlib.h> // for realpath()
 #include <errno.h>
 
+#if defined(Q_OS_MAC)
+# include <private/qcore_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 bool QFileSystemEngine::isCaseSensitive()
@@ -71,8 +75,27 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
 #ifdef __UCLIBC__
     return QFileSystemEntry::slowCanonicalName(entry);
 #else
-
-    char *ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+    char *ret = 0;
+# if defined(Q_OS_MAC)
+    // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
+        ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+    } else {
+        // on 10.5 we can use FSRef to resolve the file path.
+        QString path = QDir::cleanPath(entry.filePath());
+        FSRef fsref;
+        if (FSPathMakeRef((const UInt8 *)path.toUtf8().data(), &fsref, 0) == noErr) {
+            CFURLRef urlref = CFURLCreateFromFSRef(NULL, &fsref);
+            CFStringRef canonicalPath = CFURLCopyFileSystemPath(urlref, kCFURLPOSIXPathStyle);
+            QString ret = QCFString::toQString(canonicalPath);
+            CFRelease(canonicalPath);
+            CFRelease(urlref);
+            return QFileSystemEntry(ret);
+        }
+    }
+# else
+    ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+# endif
     if (ret) {
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
         free(ret);

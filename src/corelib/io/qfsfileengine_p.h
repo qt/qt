@@ -75,7 +75,6 @@ public:
 #ifdef Q_WS_WIN
     static QString longFileName(const QString &path);
 #endif
-    static QString canonicalized(const QString &path);
 
     QFileSystemEntry fileEntry;
     QIODevice::OpenMode openMode;

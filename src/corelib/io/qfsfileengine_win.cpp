@@ -43,6 +43,7 @@
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
+#include "qfilesystemengine_p.h"
 #include <qdebug.h>
 
 #include "qfile.h"
@@ -1620,17 +1621,11 @@ QString QFSFileEngine::fileName(FileName file) const
     } else if (file == CanonicalName || file == CanonicalPathName) {
         if (!(fileFlags(ExistsFlag) & ExistsFlag))
             return QString();
+        QFileSystemEngine entry(QFileSystemEngine::slowCanonicalized(fileName(AbsoluteName)));
 
-        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (!ret.isEmpty() && file == CanonicalPathName) {
-            int slash = ret.lastIndexOf(QLatin1Char('/'));
-            if (slash == -1)
-                ret = QDir::currentPath();
-            else if (slash == 0)
-                ret = QString(QLatin1Char('/'));
-            ret = ret.left(slash);
-        }
-        return ret;
+        if (file == CanonicalPathName)
+            return entry.path();
+        return entry.filePath();
     } else if (file == LinkName) {
         QString ret;
         if (d->fileEntry.filePath().endsWith(QLatin1String(".lnk")))

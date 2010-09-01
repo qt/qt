@@ -963,19 +963,10 @@ QString QFSFileEngine::fileName(FileName file) const
         }
         return ret;
     } else if(file == CanonicalName || file == CanonicalPathName) {
-        if (!(fileFlags(ExistsFlag) & ExistsFlag))
-            return QString();
-
-        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (file == CanonicalPathName && !ret.isEmpty()) {
-            int slash = ret.lastIndexOf(slashChar);
-            if (slash == -1)
-                ret = QDir::fromNativeSeparators(QDir::currentPath());
-            else if (slash == 0)
-                ret = QLatin1String("/");
-            ret = ret.left(slash);
-        }
-        return ret;
+        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry));
+        if (file == CanonicalPathName)
+            return entry.path();
+        return entry.filePath();
     } else if(file == LinkName) {
         if (d->isSymlink()) {
             char s[PATH_MAX+1];

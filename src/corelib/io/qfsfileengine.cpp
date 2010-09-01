@@ -134,56 +134,6 @@ void QFSFileEnginePrivate::init()
 }
 
 /*!
-    \internal
-
-    Returns the canonicalized form of \a path (i.e., with all symlinks
-    resolved, and all redundant path elements removed.
-*/
-QString QFSFileEnginePrivate::canonicalized(const QString &path)
-{
-    if (path.isEmpty())
-        return path;
-
-    // FIXME let's see if this stuff works, then we might be able to remove some of the other code.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    if (path.size() == 1 && path.at(0) == QLatin1Char('/'))
-        return path;
-#endif
-#if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN) || defined(Q_OS_MAC)
-    // ... but Linux with uClibc does not have it
-#if !defined(__UCLIBC__)
-    char *ret = 0;
-#if defined(Q_OS_MAC)
-    // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
-        ret = realpath(path.toLocal8Bit().constData(), (char*)0);
-    } else {
-        // on 10.5 we can use FSRef to resolve the file path.
-        FSRef fsref;
-        if (FSPathMakeRef((const UInt8 *)QDir::cleanPath(path).toUtf8().data(), &fsref, 0) == noErr) {
-            CFURLRef urlref = CFURLCreateFromFSRef(NULL, &fsref);
-            CFStringRef canonicalPath = CFURLCopyFileSystemPath(urlref, kCFURLPOSIXPathStyle);
-            QString ret = QCFString::toQString(canonicalPath);
-            CFRelease(canonicalPath);
-            CFRelease(urlref);
-            return ret;
-        }
-    }
-#else
-    ret = realpath(path.toLocal8Bit().constData(), (char*)0);
-#endif
-    if (ret) {
-        QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
-        free(ret);
-        return canonicalPath;
-    }
-#endif
-#endif
-
-    return QFileSystemEngine::slowCanonicalized(path);
-}
-
-/*!
     Constructs a QFSFileEngine for the file name \a file.
 */
 QFSFileEngine::QFSFileEngine(const QString &file)
