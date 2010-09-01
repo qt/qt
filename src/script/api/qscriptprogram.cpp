@@ -32,9 +32,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-  \internal
-
-  \since 4.6
+  \since 4.7
   \class QScriptProgram
 
   \brief The QScriptProgram class encapsulates a Qt Script program.

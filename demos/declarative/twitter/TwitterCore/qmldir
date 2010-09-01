@@ -1,7 +1,7 @@
-AuthView 1.0 AuthView.qml
+SearchView 1.0 SearchView.qml
 Button 1.0 Button.qml
+Input 1.0 Input.qml
 FatDelegate 1.0 FatDelegate.qml
-HomeTitleBar 1.0 HomeTitleBar.qml
 Loading 1.0 Loading.qml
 MultiTitleBar 1.0 MultiTitleBar.qml
 TitleBar 1.0 TitleBar.qml
