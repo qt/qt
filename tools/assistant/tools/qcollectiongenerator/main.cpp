@@ -49,9 +49,11 @@
 #include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QFileInfo>
-#include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QBuffer>
+#include <QtCore/QTranslator>
+#include <QtCore/QLocale>
+#include <QtCore/QLibraryInfo>
 #include <QtHelp/QHelpEngineCore>
 #include <QtXml/QXmlStreamReader>
 
@@ -350,6 +352,20 @@ int main(int argc, char *argv[])
     bool showHelp = false;
     bool showVersion = false;
 
+    QCoreApplication app(argc, argv);
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QTranslator qt_helpTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("assistant_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)
+        && qt_helpTranslator.load(QLatin1String("qt_help_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+        app.installTranslator(&qt_helpTranslator);
+    }
+
     for (int i=1; i<argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
         if (arg == QLatin1String("-o")) {
@@ -409,8 +425,6 @@ int main(int argc, char *argv[])
         collectionFile = basePath + QDir::separator()
             + fi.baseName() + QLatin1String(".qhc");
     }
-
-    QCoreApplication app(argc, argv);
 
     fprintf(stdout, "Reading collection config file...\n");
     CollectionConfigReader config;

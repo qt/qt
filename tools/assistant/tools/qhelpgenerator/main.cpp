@@ -44,6 +44,9 @@
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QTranslator>
+#include <QtCore/QLocale>
+#include <QtCore/QLibraryInfo>
 
 #include <private/qhelpprojectdata_p.h>
 
@@ -59,6 +62,20 @@ int main(int argc, char *argv[])
     bool showHelp = false;
     bool showVersion = false;
     bool checkLinks = false;
+
+    QCoreApplication app(argc, argv);
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QTranslator qt_helpTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("assistant_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)
+        && qt_helpTranslator.load(QLatin1String("qt_help_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+        app.installTranslator(&qt_helpTranslator);
+    }
 
     for (int i = 1; i < argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
@@ -142,7 +159,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    QCoreApplication app(argc, argv);
     HelpGenerator generator;
     bool success = true;
     if (checkLinks)

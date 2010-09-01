@@ -45,6 +45,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
+#include <QtCore/QTranslator>
+#include <QtCore/QLibraryInfo>
 
 #include <iostream>
 
@@ -134,8 +136,17 @@ struct File
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QStringList args = app.arguments();
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
 
+    QStringList args = app.arguments();
     QList<File> inFiles;
     QString inFormat(QLatin1String("auto"));
     QString outFileName;

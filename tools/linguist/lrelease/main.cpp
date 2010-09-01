@@ -181,8 +181,14 @@ int main(int argc, char **argv)
 #else
     QCoreApplication app(argc, argv);
     QTranslator translator;
-    if (translator.load(QLatin1String("lrelease_") + QLocale::system().name()))
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
         app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
 #endif
 
     ConversionData cd;

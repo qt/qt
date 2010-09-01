@@ -52,6 +52,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QTextCodec>
+#include <QtCore/QTranslator>
+#include <QtCore/QLibraryInfo>
 
 #include <iostream>
 
@@ -410,6 +412,16 @@ static void processProjects(
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
+
     m_defaultExtensions = QLatin1String("java,jui,ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx,js,qs,qml");
 
     QStringList args = app.arguments();
