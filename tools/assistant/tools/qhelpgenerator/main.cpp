@@ -52,6 +52,10 @@
 
 QT_USE_NAMESPACE
 
+class QHG {
+    Q_DECLARE_TR_FUNCTIONS(QHelpGenerator)
+};
+
 int main(int argc, char *argv[])
 {
     QString error;
@@ -84,8 +88,7 @@ int main(int argc, char *argv[])
                 QFileInfo fi(QString::fromLocal8Bit(argv[i]));
                 compressedFile = fi.absoluteFilePath();
             } else {
-                error = QCoreApplication::translate("QHelpGenerator",
-                            "Missing output file name!");
+                error = QHG::tr("Missing output file name.");
             }
         } else if (arg == QLatin1String("-v")) {
             showVersion = true;
@@ -101,16 +104,15 @@ int main(int argc, char *argv[])
     }
 
     if (showVersion) {
-        fprintf(stdout, "Qt Help Generator version 1.0 (Qt %s)\n",
-                QT_VERSION_STR);
+        fputs(qPrintable(QHG::tr("Qt Help Generator version 1.0 (Qt %1)\n")
+                         .arg(QT_VERSION_STR)), stdout);
         return 0;
     }
 
     if (projectFile.isEmpty() && !showHelp)
-        error = QCoreApplication::translate("QHelpGenerator",
-                                            "Missing Qt help project file!");
+        error = QHG::tr("Missing Qt help project file.");
 
-    QString help = QCoreApplication::translate("QHelpGenerator", "\nUsage:\n\n"
+    QString help = QHG::tr("\nUsage:\n\n"
         "qhelpgenerator <help-project-file> [options]\n\n"
         "  -o <compressed-file>   Generates a Qt compressed help\n"
         "                         file called <compressed-file>.\n"
@@ -122,7 +124,7 @@ int main(int argc, char *argv[])
         "                         qhelpgenerator.\n\n");
 
     if (showHelp) {
-        fprintf(stdout, "%s", qPrintable(help));
+        fputs(qPrintable(help), stdout);
         return 0;
     }else if (!error.isEmpty()) {
         fprintf(stderr, "%s\n\n%s", qPrintable(error), qPrintable(help));
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
 
     QFile file(projectFile);
     if (!file.open(QIODevice::ReadOnly)) {
-        fprintf(stderr, "Could not open %s!\n", qPrintable(projectFile));
+        fputs(qPrintable(QHG::tr("Could not open %1.\n").arg(projectFile)), stderr);
         return -1;
     }
 
@@ -147,8 +149,8 @@ int main(int argc, char *argv[])
         QDir parentDir = fi.dir();
         if (!parentDir.exists()) {
             if (!parentDir.mkpath(QLatin1String("."))) {
-                fprintf(stderr, "Could not create output directory: %s\n",
-                        qPrintable(parentDir.path()));
+                fputs(qPrintable(QHG::tr("Could not create output directory: %1\n")
+                                 .arg(parentDir.path())), stderr);
             }
         }
     }

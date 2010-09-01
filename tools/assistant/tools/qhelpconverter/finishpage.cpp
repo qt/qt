@@ -52,8 +52,7 @@ FinishPage::FinishPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setTitle(tr("Converting File"));
-    setSubTitle(QLatin1String("Creating the new Qt help files from the "
-        "old .adp file."));
+    setSubTitle(tr("Creating the new Qt help files from the old ADP file."));
     setFinalPage(true);
 
     QVBoxLayout *layout = new QVBoxLayout(this);

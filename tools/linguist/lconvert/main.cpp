@@ -52,6 +52,10 @@
 
 QT_USE_NAMESPACE
 
+class LC {
+    Q_DECLARE_TR_FUNCTIONS(LConvert)
+};
+
 static int usage(const QStringList &args)
 {
     Q_UNUSED(args);
@@ -61,7 +65,7 @@ static int usage(const QStringList &args)
     foreach (Translator::FileFormat format, Translator::registeredFileFormats())
         loaders += line.arg(format.extension, -5).arg(format.description);
 
-    std::cerr << qPrintable(QString(QLatin1String("\nUsage:\n"
+    std::cerr << qPrintable(LC::tr("\nUsage:\n"
         "    lconvert [options] <infile> [<infile>...]\n\n"
         "lconvert is part of Qt's Linguist tool chain. It can be used as a\n"
         "stand-alone tool to convert and filter translation data files.\n"
@@ -123,7 +127,7 @@ static int usage(const QStringList &args)
         "    0 on success\n"
         "    1 on command line parse failures\n"
         "    2 on read failures\n"
-        "    3 on write failures\n")).arg(loaders));
+        "    3 on write failures\n").arg(loaders));
     return 1;
 }
 

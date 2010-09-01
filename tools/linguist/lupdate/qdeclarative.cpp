@@ -65,6 +65,10 @@
 
 QT_BEGIN_NAMESPACE
 
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
+
 using namespace QDeclarativeJS;
 
 class FindTrCalls: protected AST::Visitor
@@ -241,8 +245,7 @@ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd
     cd.m_sourceFileName = filename;
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        cd.appendError(QString::fromLatin1("Cannot open %1: %2")
-            .arg(filename, file.errorString()));
+        cd.appendError(LU::tr("Cannot open %1: %2").arg(filename, file.errorString()));
         return false;
     }
 
