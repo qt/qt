@@ -65,6 +65,9 @@ The QDeclarativeDataLoader invokes callbacks on the QDeclarativeDataBlob as data
 /*!
 \enum QDeclarativeDataBlob::Status
 
+This enum describes the status of the data blob.
+
+\list
 \o Null The blob has not yet been loaded by a QDeclarativeDataLoader
 \o Loading The blob is loading network data.  The QDeclarativeDataBlob::setData() callback has not yet been
 invoked or has not yet returned.
@@ -73,13 +76,19 @@ only occurs after the QDeclarativeDataBlob::setData() callback has been made, an
 dependencies.
 \o Complete The blob's data has been loaded and all dependencies are done.
 \o Error An error has been set on this blob.
+\endlist
 */
 
 /*!
 \enum QDeclarativeDataBlob::Type
+
+This enum describes the type of the data blob.
+
+\list
 \o QmlFile This is a QDeclarativeTypeData
 \o JavaScriptFile This is a QDeclarativeScriptData
 \o QmldirFile This is a QDeclarativeQmldirData
+\endlist
 */
 
 /*!
