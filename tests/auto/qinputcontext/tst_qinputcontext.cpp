@@ -448,7 +448,6 @@ void tst_QInputContext::focusProxy()
 
     QInputContext *gic = qApp->inputContext();
     QVERIFY(gic);
-    qDebug() << gic->focusWidget() << &proxy;
     QCOMPARE(gic->focusWidget(), &proxy);
 
     // then change the focus proxy and check that input context is valid
