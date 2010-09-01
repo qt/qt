@@ -210,7 +210,7 @@ void QAudioOutputPrivate::suspend()
 void QAudioOutputPrivate::resume()
 {
     if (SymbianAudio::SuspendedState == m_internalState) {
-        if (!m_pullMode && m_devSoundBuffer && m_devSoundBuffer->Data().Length())
+        if (!m_pullMode && m_devSoundBuffer)
             bufferFilled();
         startPlayback();
     }
