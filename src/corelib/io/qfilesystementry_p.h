@@ -61,21 +61,24 @@ QT_BEGIN_NAMESPACE
 class QFileSystemEntry
 {
 public:
+
+#ifndef Q_OS_WIN
+    typedef QByteArray NativePath;
+#else
+    typedef QString NativePath;
+#endif
+    struct FromNativePath{};
+
     QFileSystemEntry();
     explicit QFileSystemEntry(const QString &filePath);
-#ifndef Q_OS_WIN
-    explicit QFileSystemEntry(const QByteArray &nativeFilePath);
-    QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath);
-#endif
+
+    QFileSystemEntry(const NativePath &nativeFilePath, FromNativePath dummy);
+    QFileSystemEntry(const QString &filePath, const NativePath &nativeFilePath);
 
     QString filePath() const;
     QString fileName() const;
     QString path() const;
-#ifndef Q_OS_WIN
-    QByteArray nativeFilePath() const;
-#else
-    QString nativeFilePath() const;
-#endif
+    NativePath nativeFilePath() const;
     QString suffix() const;
     QString completeSuffix() const;
     bool isAbsolute() const;
@@ -101,16 +104,11 @@ private:
     void resolveNativeFilePath() const;
     // resolves the separator
     void findLastSeparator() const;
-    /// resolves the dots and the separator
+    // resolves the dots and the separator
     void findFileNameSeparators() const;
 
     mutable QString m_filePath; // always has slashes as separator
-
-#ifdef Q_OS_WIN
-    mutable QString m_nativeFilePath; // native encoding and separators
-#else
-    mutable QByteArray m_nativeFilePath; // native encoding and separators
-#endif
+    mutable NativePath m_nativeFilePath; // native encoding and separators
 
     mutable qint16 m_lastSeparator; // index in m_filePath of last separator
     mutable qint16 m_firstDotInFileName; // index after m_filePath for first dot (.)

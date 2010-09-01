@@ -377,7 +377,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->fileEntry = QFileSystemEntry(QByteArray(filename)); //changed now!
+            d->fileEntry = QFileSystemEntry(QByteArray(filename), QFileSystemEntry::FromNativePath()); //changed now!
             filePathIsTemplate = false;
             delete [] filename;
             return true;

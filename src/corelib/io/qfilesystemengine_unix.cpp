@@ -126,14 +126,14 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     }
 
     if (result.length() == 1 && result[0] == '/')
-        return QFileSystemEntry(result);
+        return QFileSystemEntry(result, QFileSystemEntry::FromNativePath());
     const bool isDir = result.endsWith('/');
 
     /* as long as QDir::cleanPath() operates on a QString we have to convert to a string here.
      * ideally we never convert to a string since that loses information. Please fix after
      * we get a QByteArray version of QDir::cleanPath()
      */
-    QFileSystemEntry resultingEntry(result);
+    QFileSystemEntry resultingEntry(result, QFileSystemEntry::FromNativePath());
     QString stringVersion = QDir::cleanPath(resultingEntry.filePath());
     if (isDir)
         stringVersion.append(QLatin1Char('/'));

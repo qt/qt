@@ -89,8 +89,7 @@ QFileSystemEntry::QFileSystemEntry(const QString &filePath)
 {
 }
 
-#ifndef Q_OS_WIN
-QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath)
+QFileSystemEntry::QFileSystemEntry(const NativePath &nativeFilePath, FromNativePath /* dummy */)
     : m_nativeFilePath(nativeFilePath),
     m_lastSeparator(-2),
     m_firstDotInFileName(-2),
@@ -98,7 +97,7 @@ QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath)
 {
 }
 
-QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath, const QString &filePath)
+QFileSystemEntry::QFileSystemEntry(const QString &filePath, const NativePath &nativeFilePath)
     : m_filePath(filePath),
     m_nativeFilePath(nativeFilePath),
     m_lastSeparator(-2),
@@ -106,7 +105,6 @@ QFileSystemEntry::QFileSystemEntry(const QByteArray &nativeFilePath, const QStri
     m_lastDotInFileName(0)
 {
 }
-#endif
 
 QString QFileSystemEntry::filePath() const
 {
@@ -114,11 +112,7 @@ QString QFileSystemEntry::filePath() const
     return m_filePath;
 }
 
-#ifndef Q_OS_WIN
-QByteArray QFileSystemEntry::nativeFilePath() const
-#else
-QString QFileSystemEntry::nativeFilePath() const
-#endif
+QFileSystemEntry::NativePath QFileSystemEntry::nativeFilePath() const
 {
     resolveNativeFilePath();
     return m_nativeFilePath;

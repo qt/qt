@@ -140,7 +140,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry1.isAbsolute(), absolute);
     QCOMPARE(entry1.isRelative(), !absolute);
 
-    QFileSystemEntry entry2(nativeFilePath);
+    QFileSystemEntry entry2(nativeFilePath, QFileSystemEntry::FromNativePath());
     QCOMPARE(entry2.suffix(), suffix);
     QCOMPARE(entry2.completeSuffix(), completeSuffix);
     QCOMPARE(entry2.isAbsolute(), absolute);
