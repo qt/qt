@@ -373,7 +373,8 @@ qint64 QAudioInputPrivate::read(char *data, qint64 len)
 
         TDesC8 &inputBuffer = buffer->Data();
 
-        const qint64 inputBytes = bytesReady();
+        Q_ASSERT(inputBuffer.Length() >= m_devSoundBufferPos);
+        const qint64 inputBytes = inputBuffer.Length() - m_devSoundBufferPos;
         const qint64 outputBytes = len - bytesRead;
         const qint64 copyBytes = outputBytes < inputBytes ?
                                      outputBytes : inputBytes;
@@ -384,7 +385,7 @@ qint64 QAudioInputPrivate::read(char *data, qint64 len)
         data += copyBytes;
         bytesRead += copyBytes;
 
-        if (!bytesReady())
+        if (inputBytes == copyBytes)
             bufferEmptied();
     }
 
@@ -403,13 +404,14 @@ void QAudioInputPrivate::pullData()
 
         TDesC8 &inputBuffer = buffer->Data();
 
-        const qint64 inputBytes = bytesReady();
+        Q_ASSERT(inputBuffer.Length() >= m_devSoundBufferPos);
+        const qint64 inputBytes = inputBuffer.Length() - m_devSoundBufferPos;
         const qint64 bytesPushed = m_sink->write(
             (char*)inputBuffer.Ptr() + m_devSoundBufferPos, inputBytes);
 
         m_devSoundBufferPos += bytesPushed;
 
-        if (!bytesReady())
+        if (inputBytes == bytesPushed)
             bufferEmptied();
 
         if (!bytesPushed)
