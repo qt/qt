@@ -432,15 +432,16 @@ bool DevSoundWrapper::isFormatSupported(const QAudioFormat &format) const
 
 int DevSoundWrapper::samplesProcessed() const
 {
-    Q_ASSERT(StateInitialized == m_state);
     int result = 0;
-    switch (m_mode) {
-    case QAudio::AudioInput:
-        result = m_devsound->SamplesRecorded();
-        break;
-    case QAudio::AudioOutput:
-        result = m_devsound->SamplesPlayed();
-        break;
+    if (StateInitialized == m_state) {
+        switch (m_mode) {
+        case QAudio::AudioInput:
+            result = m_devsound->SamplesRecorded();
+            break;
+        case QAudio::AudioOutput:
+            result = m_devsound->SamplesPlayed();
+            break;
+        }
     }
     return result;
 }
