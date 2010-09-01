@@ -40,9 +40,11 @@
 
 // Note: this file is not intended to be run.
 
+import Qt 4.7
+
 //! [basic syntax]
-SomeElement {
+Item {
     id: myObject
-    ... some other things here ...
+    // ... some other things here ...
 }
 //! [basic syntax]
