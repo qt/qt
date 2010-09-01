@@ -638,11 +638,11 @@ inline void QTextListFormat::setStyle(Style astyle)
 inline void QTextListFormat::setIndent(int aindent)
 { setProperty(ListIndent, aindent); }
 
-inline void QTextListFormat::setNumberPrefix(const QString &numberPrefix)
-{ setProperty(ListNumberPrefix, numberPrefix); }
+inline void QTextListFormat::setNumberPrefix(const QString &np)
+{ setProperty(ListNumberPrefix, np); }
 
-inline void QTextListFormat::setNumberSuffix(const QString &numberSuffix)
-{ setProperty(ListNumberSuffix, numberSuffix); }
+inline void QTextListFormat::setNumberSuffix(const QString &ns)
+{ setProperty(ListNumberSuffix, ns); }
 
 class Q_GUI_EXPORT QTextImageFormat : public QTextCharFormat
 {
