@@ -118,7 +118,9 @@ public:
     };
     enum SocketOption {
         LowDelayOption, // TCP_NODELAY
-        KeepAliveOption // SO_KEEPALIVE
+        KeepAliveOption, // SO_KEEPALIVE
+        MulticastTtlOption, // IP_MULTICAST_TTL
+        MulticastLoopbackOption // IP_MULTICAST_LOOPBACK
     };
 
     QAbstractSocket(SocketType socketType, QObject *parent);

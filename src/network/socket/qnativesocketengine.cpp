@@ -98,6 +98,7 @@
 
 #include <qabstracteventdispatcher.h>
 #include <qsocketnotifier.h>
+#include <qnetworkinterface.h>
 
 #include "qnativesocketengine_p.h"
 #include <private/qthread_p.h>
@@ -644,6 +645,51 @@ int QNativeSocketEngine::accept()
     Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, false);
 
     return d->nativeAccept();
+}
+
+/*!
+    \since 4.8
+*/
+bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress,
+                                             const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::joinMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
+    return d->nativeJoinMulticastGroup(groupAddress, iface);
+}
+
+/*!
+    \since 4.8
+*/
+bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress,
+                                              const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::leaveMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::UdpSocket, false);
+    return d->nativeLeaveMulticastGroup(groupAddress, iface);
+}
+
+/*! \since 4.8 */
+QNetworkInterface QNativeSocketEngine::multicastInterface() const
+{
+    Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::multicastInterface(), QNetworkInterface());
+    Q_CHECK_TYPE(QNativeSocketEngine::multicastInterface(), QAbstractSocket::UdpSocket, QNetworkInterface());
+    return d->nativeMulticastInterface();
+}
+
+
+/*! \since 4.8 */
+bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
+{
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::setMulticastInterface(), false);
+    Q_CHECK_TYPE(QNativeSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
+    return d->nativeSetMulticastInterface(iface);
 }
 
 /*!
