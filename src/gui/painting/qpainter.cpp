@@ -9028,7 +9028,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pixmap.isNull())
         return;
 
 #ifndef QT_NO_DEBUG
