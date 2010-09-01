@@ -128,6 +128,8 @@ void QDeclarativeDebugServer::newConnection()
 
     if (d->connection) {
         qWarning("QDeclarativeDebugServer error: another client is already connected");
+        QTcpSocket *faultyConnection = d->tcpServer->nextPendingConnection();
+        delete faultyConnection;
         return;
     }
 

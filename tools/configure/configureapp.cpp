@@ -3612,7 +3612,10 @@ void Configure::buildHostTools()
         // generate Makefile
         QStringList args;
         args << QDir::toNativeSeparators(buildPath + "/bin/qmake");
-        args << "-spec" << dictionary["QMAKESPEC"] << "-r";
+        // override .qmake.cache because we are not cross-building these.
+        // we need a full path so that a build with -prefix will still find it.
+        args << "-spec" << QDir::toNativeSeparators(buildPath + "/mkspecs/" + dictionary["QMAKESPEC"]);
+        args << "-r";
         args << "-o" << QDir::toNativeSeparators(toolBuildPath + "/Makefile");
 
         QDir().mkpath(toolBuildPath);
@@ -3750,8 +3753,7 @@ void Configure::generateMakefiles()
                     printf("Generating Makefiles...\n");
                     generate = false; // Now Makefiles will be done
                 }
-                args << "-spec";
-                args << spec;
+                // don't pass -spec - .qmake.cache has it already
                 args << "-r";
                 args << (sourcePath + "/projects.pro");
                 args << "-o";

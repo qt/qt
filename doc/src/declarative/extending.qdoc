@@ -965,6 +965,20 @@ Item {
 }
 \endcode
 
+This may be connected to via QObject::connect() or called directly from C++ using
+QMetaObject::invokeMethod():
+
+\code
+    QDeclarativeEngine engine;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile("main.qml"));
+    QObject *object = component.create(context);
+    QVariant str("Hello");
+    QMetaObject::invokeMethod(object, "say", Q_ARG(QVariant, str));
+\endcode
+
+Return values of type QVariant are also supported via Q_RETURN_ARG.
+
 \section1 Defining new Components
 \target components
 

@@ -20,29 +20,29 @@ codeindent              = 1
 # See also qhp.Qt.extraFiles
 extraimages.HTML        = qt-logo \
                           trolltech-logo \
-						 bg_l.png \
-						 bg_l_blank.png \
-						 bg_ll_blank.png \
-						 bg_ul_blank.png \
-						 header_bg.png \
-						 bg_r.png \
-						 box_bg.png \
-						 breadcrumb.png \
-						 bullet_gt.png \
-						 bullet_dn.png \
-						 bullet_sq.png \
-						 bullet_up.png \
-						 arrow_down.png \
-						 feedbackground.png \
-						 horBar.png \
-						 page.png \
-						 page_bg.png \
-						 sprites-combined.png \
-						 spinner.gif \
-						 stylesheet-coffee-plastique.png \
-						 taskmenuextension-example.png \
-						 coloreditorfactoryimage.png \
-						 dynamiclayouts-example.png \
+                          bg_l.png \
+                          bg_l_blank.png \
+                          bg_ll_blank.png \
+                          bg_ul_blank.png \
+                          header_bg.png \
+                          bg_r.png \
+                          box_bg.png \
+                          breadcrumb.png \
+                          bullet_gt.png \
+                          bullet_dn.png \
+                          bullet_sq.png \
+                          bullet_up.png \
+                          arrow_down.png \
+                          feedbackground.png \
+                          horBar.png \
+                          page.png \
+                          page_bg.png \
+                          sprites-combined.png \
+                          spinner.gif \
+                          stylesheet-coffee-plastique.png \
+                          taskmenuextension-example.png \
+                          coloreditorfactoryimage.png \
+                          dynamiclayouts-example.png
 
 # This stuff is used by the new doc format.
 scriptdirs              = $QT_SOURCE_TREE/doc/src/template/scripts

@@ -2857,6 +2857,25 @@ contains(DEFINES, ENABLE_SYMBIAN_DIALOG_PROVIDERS) {
     }
 }
 
+!symbian {
+    modfile.files = $$moduleFile
+    modfile.path = $$[QMAKE_MKSPECS]/modules
+
+    INSTALLS += modfile
+} else {
+    # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
+
+    inst_modfile.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
+    inst_modfile.input = moduleFile
+    inst_modfile.output = $$[QMAKE_MKSPECS]/modules
+    inst_modfile.CONFIG = no_clean
+
+    QMAKE_EXTRA_COMPILERS += inst_modfile
+
+    install.depends += compiler_inst_modfile_make_all
+    QMAKE_EXTRA_TARGETS += install
+}
+
 include($$PWD/../WebKit/qt/Api/headers.pri)
 HEADERS += $$WEBKIT_API_HEADERS
 
@@ -2873,10 +2892,7 @@ HEADERS += $$WEBKIT_API_HEADERS
         !isEmpty(INSTALL_LIBS): target.path = $$INSTALL_LIBS
         else: target.path = $$[QT_INSTALL_LIBS]
 
-        modfile.files = $$moduleFile
-        modfile.path = $$[QMAKE_MKSPECS]/modules
-
-        INSTALLS += target headers modfile
+        INSTALLS += target headers
     } else {
         # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
@@ -2888,15 +2904,7 @@ HEADERS += $$WEBKIT_API_HEADERS
 
         QMAKE_EXTRA_COMPILERS += inst_headers
 
-        inst_modfile.commands = $$inst_headers.commands
-        inst_modfile.input = moduleFile
-        inst_modfile.output = $$[QMAKE_MKSPECS]/modules
-        inst_modfile.CONFIG = no_clean
-
-        QMAKE_EXTRA_COMPILERS += inst_modfile
-
-        install.depends += compiler_inst_headers_make_all compiler_inst_modfile_make_all
-        QMAKE_EXTRA_TARGETS += install
+        install.depends += compiler_inst_headers_make_all
     }
 
     win32-*|wince* {

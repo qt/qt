@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 import Qt 4.7
+import "content"
 
 Rectangle {
     id: window
@@ -134,11 +135,23 @@ Rectangle {
     }
 
     Flickable {
-        anchors.fill: parent; contentHeight: layout.height
-
+        anchors.fill: parent
+        contentHeight: layout.height
+        Rectangle {
+            id: titlePane
+            color: "#444444"
+            height: 35
+            anchors { top: parent.top; left: parent.left; right: parent.right }
+            QuitButton {
+                id: quitButton
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+            }
+        }
         Column {
             id: layout
-            anchors.left: parent.left; anchors.right: parent.right
+            anchors { top: titlePane.bottom; topMargin: 10; left: parent.left; right: parent.right }
             Repeater { model: easingTypes; delegate: delegate }
         }
     }

@@ -1883,6 +1883,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         }
     }
 
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QDeclarativeItemPrivate::Geometry)
+            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
+    }
+
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
@@ -1891,12 +1897,6 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
-
-    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
-        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
-        if (change.types & QDeclarativeItemPrivate::Geometry)
-            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
-    }
 }
 
 void QDeclarativeItemPrivate::removeItemChangeListener(QDeclarativeItemChangeListener *listener, ChangeTypes types)

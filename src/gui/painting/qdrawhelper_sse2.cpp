@@ -43,7 +43,6 @@
 
 #ifdef QT_HAVE_SSE2
 
-#include <private/qsimd_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
 
@@ -159,22 +158,6 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
         const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
         BLEND_SOURCE_OVER_ARGB32_WITH_CONST_ALPHA_SSE2(dst, src, length, nullVector, half, one, colorMask, constAlphaVector);
     }
-}
-
-inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
-}
-
-inline int comp_func_Plus_one_pixel(uint d, const uint s)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return result;
 }
 
 void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
