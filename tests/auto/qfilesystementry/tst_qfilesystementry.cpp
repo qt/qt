@@ -132,8 +132,8 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry2.isAbsolute(), absolute);
     QCOMPARE(entry2.isRelative(), !absolute);
     QCOMPARE(entry2.filePath(), filepath);
-    // This is entry was created using the native file path,
-    // so it should use that without any changes.
+    // Since this entry was created using the native path,
+    // the object shouldnot change nativeFilePath.
     QCOMPARE(entry2.nativeFilePath(), nativeFilePath);
     QCOMPARE(entry2.fileName(), filename);
 }
