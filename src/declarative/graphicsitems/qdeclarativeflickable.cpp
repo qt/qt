@@ -1258,6 +1258,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease) {
         d->clearDelayedPress();
         d->stealMouse = false;
+        d->pressed = false;
     }
     return false;
 }
