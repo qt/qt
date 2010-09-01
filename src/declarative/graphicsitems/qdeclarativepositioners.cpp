@@ -649,13 +649,14 @@ void QDeclarativeRow::reportConflictingAnchors()
   The Grid item positions its child items so that they are
   aligned in a grid and are not overlapping. 
 
+  The grid positioner calculates a grid of rectangular cells of sufficient
+  size to hold all items, placing the items in the cells, from left to right
+  and top to bottom. Each item is positioned in the top-left corner of its
+  cell with position (0, 0).
+
   A Grid defaults to four columns, and as many rows as are necessary to
   fit all child items. The number of rows and columns can be constrained
-  by setting the \l rows and \l columns properties. The grid positioner
-  calculates a grid of rectangular cells of sufficient size to hold all
-  items, placing the items in the cells, from left to right and top to
-  bottom. Each item is positioned in the top-left corner of its cell
-  with position (0, 0).
+  by setting the \l rows and \l columns properties.
 
   Spacing can be added between child items by setting the \l spacing
   property. The amount of spacing applied will be the same in the

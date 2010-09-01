@@ -38,7 +38,6 @@
 **
 ****************************************************************************/
 
-//! [document]
 import Qt 4.7
 
 Rectangle {
@@ -51,14 +50,26 @@ Rectangle {
         anchors.margins: 4
         spacing: 10
 
-        Text { text: "Text"; font.pixelSize: 40 }
-        Text { text: "items"; font.pixelSize: 40 }
-        Text { text: "flowing"; font.pixelSize: 40 }
-        Text { text: "inside"; font.pixelSize: 40 }
-        Text { text: "a"; font.pixelSize: 40 }
-        Text { text: "Flow"; font.pixelSize: 40 }
-        Text { text: "item"; font.pixelSize: 40 }
+        Repeater {
+            id: repeater
+            model: {
+                var strings = ["Text", "items", "flowing", "inside", "a",
+                               "Flow", "item"];
+                strings;
+            }
+
+            Rectangle {
+                color: "white"
+                width: textItem.width + 4
+                height: textItem.height + 4
+                Text {
+                    id: textItem
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: repeater.model[index]
+                    font.pixelSize: 40
+                }
+            }
+        }
     }
 //! [flow item]
 }
-//! [document]

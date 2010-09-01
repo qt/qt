@@ -38,6 +38,7 @@
 **
 ****************************************************************************/
 
+//! [document]
 import Qt 4.7
 
 Rectangle {
@@ -56,3 +57,4 @@ Rectangle {
         Rectangle { color: "#6666aa"; width: 50; height: 50 }
     }
 }
+//! [document]
