@@ -51,6 +51,10 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     Q_UNUSED(nameFilters)
 }
 
+QFileSystemIterator::~QFileSystemIterator()
+{
+}
+
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
     Q_UNUSED(fileEntry)

@@ -66,10 +66,17 @@ class QFileSystemIterator
 {
 public:
     QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters, const QStringList &nameFilters);
+    ~QFileSystemIterator();
 
     bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);
 
 private:
+
+    // Platform-specific data
+#if defined(Q_OS_WIN)
+#else
+#endif
+
     Q_DISABLE_COPY(QFileSystemIterator)
 };
 
