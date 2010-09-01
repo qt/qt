@@ -54,7 +54,9 @@ sub Usage() {
     print("If no capabilities are given, the binaries will be given the\n");
     print("capabilities supported by self-signed certificates.\n\n");
     print(" *** NOTE: If *_template.pkg file is given and one is using symbian-abld or\n");
-    print(" symbian-sbsv2 platform, 'target-platform' is REQUIRED. ***\n");
+    print(" symbian-sbsv2 platform, 'target-platform' is REQUIRED. ***\n\n");
+    print(" *** NOTE2: When patching gcce binaries built with symbian-sbsv2 toolchain,\n");
+    print(" armv5 must be specified as platform.\n");
     print("\nUsage: patch_capabilities.pl pkg_filename [target-platform [capability list]]\n");
     print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
     exit();
@@ -104,6 +106,11 @@ if (@ARGV)
         # Convert visual target to real target (debug->udeb and release->urel)
         $target =~ s/debug/udeb/i;
         $target =~ s/release/urel/i;
+
+        if (($platform =~ m/^gcce$/i) && ($ENV{SBS_HOME})) {
+            # Print a informative note in case suspected misuse is detected.
+            print "\nNote: You must use armv5 as platform when packaging gcce binaries built using symbian-sbsv2 mkspec.\n";
+        }
     }
 
     # If the specified ".pkg" file exists (and can be read),

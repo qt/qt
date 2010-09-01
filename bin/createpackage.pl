@@ -81,11 +81,14 @@ Where supported options are as follows:
      [-o|only-unsigned]      = Creates only unsigned package.
      [-s|stub]               = Generates stub sis for ROM.
      [-n|sisname <name>]     = Specifies the final sis name.
+     [-g|gcce-is-armv5]      = Convert gcce platform to armv5.
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
      platform                = One of the supported platform
                                winscw | gcce | armv5 | armv6 | armv7
+                               Note that when packaging binaries built using gcce and symbian-sbsv2
+                               mkspec, armv5 must be used for platform instead of gcce.
      certificate             = The certificate file used for signing
      key                     = The certificate's private key file
      passphrase              = The passphrase of the certificate's private key file
@@ -123,6 +126,7 @@ my $preserveUnsigned = "";
 my $stub = "";
 my $signed_sis_name = "";
 my $onlyUnsigned = "";
+my $convertGcce = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
@@ -130,7 +134,8 @@ unless (GetOptions('i|install' => \$install,
                    'u|unsigned' => \$preserveUnsigned,
                    'o|only-unsigned' => \$onlyUnsigned,
                    's|stub' => \$stub,
-                   'n|sisname=s' => \$signed_sis_name,)) {
+                   'n|sisname=s' => \$signed_sis_name,
+                   'g|gcce-is-armv5' => \$convertGcce,)) {
     Usage();
 }
 
@@ -145,6 +150,16 @@ my $target;
 $target = $tmpvalues[0] or $target = "";
 my $platform;
 $platform = $tmpvalues[1] or $platform = "";
+
+if ($platform =~ m/^gcce$/i) {
+    if (($convertGcce ne "")) {
+        $platform = "armv5";
+    } elsif ($ENV{SBS_HOME}) {
+        # Print a informative note in case suspected misuse is detected.
+        print "\nNote: You should use armv5 as platform or specify -g parameter to convert platform\n";
+        print "      when packaging gcce binaries built using symbian-sbsv2 mkspec.\n\n";
+    }
+}
 
 # Convert visual target to real target (debug->udeb and release->urel)
 $target =~ s/debug/udeb/i;

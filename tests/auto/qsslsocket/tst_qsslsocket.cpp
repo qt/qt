@@ -183,6 +183,7 @@ private slots:
     void ignoreSslErrorsListWithSlot();
     void readFromClosedSocket();
     void writeBigChunk();
+    void setEmptyDefaultConfiguration();
 
     static void exitLoop()
     {
@@ -1833,6 +1834,21 @@ void tst_QSslSocket::writeBigChunk()
     QVERIFY(socket->bytesToWrite() == 0);
 
     socket->close();
+}
+
+void tst_QSslSocket::setEmptyDefaultConfiguration()
+{
+    // used to produce a crash in QSslConfigurationPrivate::deepCopyDefaultConfiguration, QTBUG-13265
+
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslConfiguration emptyConf;
+    QSslConfiguration::setDefaultConfiguration(emptyConf);
+
+    QSslSocketPtr socket = newSocket();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
 }
 
 #endif // QT_NO_OPENSSL

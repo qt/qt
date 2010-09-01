@@ -246,6 +246,7 @@ protected:
     virtual qreal minXExtent() const;
     virtual qreal maxXExtent() const;
     virtual void keyPressEvent(QKeyEvent *);
+    virtual void geometryChanged(const QRectF &newGeometry,const QRectF &oldGeometry);
     virtual void componentComplete();
 
 private Q_SLOTS:

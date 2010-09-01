@@ -437,8 +437,6 @@ void QDeclarativeTextInput::setCursorPosition(int cp)
 }
 
 /*!
-  \internal
-
   Returns a Rect which encompasses the cursor, but which may be larger than is
   required. Ignores custom cursor delegates.
 */

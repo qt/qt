@@ -98,6 +98,7 @@ private slots:
     void manualHighlight();
     void QTBUG_11105();
     void footer();
+    void resizeView();
 
 private:
     template <class T> void items();
@@ -1589,6 +1590,48 @@ void tst_QDeclarativeListView::footer()
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+}
+
+void tst_QDeclarativeListView::resizeView()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 40; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->y(), i*20.);
+    }
+
+    QVariant heightRatio;
+    QMetaObject::invokeMethod(canvas->rootObject(), "heightRatio", Q_RETURN_ARG(QVariant, heightRatio));
+    QCOMPARE(heightRatio.toReal(), 0.4);
+
+    listview->setHeight(200);
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "heightRatio", Q_RETURN_ARG(QVariant, heightRatio));
+    QCOMPARE(heightRatio.toReal(), 0.25);
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

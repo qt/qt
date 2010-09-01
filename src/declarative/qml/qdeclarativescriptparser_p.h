@@ -103,7 +103,6 @@ public:
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
 
     QList<TypeReference*> referencedTypes() const;
-    QList<QUrl> referencedResources() const;
 
     QDeclarativeParser::Object *tree() const;
     QList<Import> imports() const;
@@ -112,7 +111,18 @@ public:
 
     QList<QDeclarativeError> errors() const;
 
+    class JavaScriptMetaData {
+    public:
+        JavaScriptMetaData() 
+        : pragmas(QDeclarativeParser::Object::ScriptBlock::None) {}
+
+        QDeclarativeParser::Object::ScriptBlock::Pragmas pragmas;
+        QList<Import> imports;
+    };
+
     static QDeclarativeParser::Object::ScriptBlock::Pragmas extractPragmas(QString &);
+    static JavaScriptMetaData extractMetaData(QString &);
+
 
 // ### private:
     TypeReference *findOrCreateType(const QString &name);
@@ -127,7 +137,6 @@ public:
     QDeclarativeParser::Object *root;
     QList<Import> _imports;
     QList<TypeReference*> _refTypes;
-    QList<QUrl> _refUrls;
     QString _scriptFile;
     QDeclarativeScriptParserJsASTData *data;
 };

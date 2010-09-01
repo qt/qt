@@ -52,10 +52,13 @@
 #include <qstring.h>
 #include <qdatetime.h>
 
+//#define NTLMV1_CLIENT
 
 QT_BEGIN_NAMESPACE
 
+#ifdef NTLMV1_CLIENT
 #include "../../3rdparty/des/des.cpp"
+#endif
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
@@ -203,17 +206,29 @@ QString QAuthenticator::user() const
 void QAuthenticator::setUser(const QString &user)
 {
     detach();
-
     int separatorPosn = 0;
-    separatorPosn = user.indexOf(QLatin1String("\\"));
 
-    if (separatorPosn == -1) {
-        //No domain name present
+    switch(d->method) {
+    case QAuthenticatorPrivate::DigestMd5:
+    case QAuthenticatorPrivate::Ntlm:
+        if((separatorPosn = user.indexOf(QLatin1String("\\"))) != -1)
+        {
+            //domain name is present
+            d->realm = user.left(separatorPosn);
+            d->user = user.mid(separatorPosn + 1);
+        } else if((separatorPosn = user.indexOf(QLatin1String("@"))) != -1) {
+            //domain name is present
+            d->realm = user.mid(separatorPosn + 1);
+            d->user = user.left(separatorPosn);
+        } else {
+            d->user = user;
+            d->realm.clear();
+        }
+        break;
+    // For other auth mechanisms, domain name will be part of username
+    default:
         d->user = user;
-    } else {
-        //domain name is present
-        d->realm = user.left(separatorPosn);
-        d->user = user.mid(separatorPosn+1);
+        break;
     }
 }
 
@@ -1178,11 +1193,9 @@ static QByteArray clientChallenge(const QAuthenticatorPrivate *ctx)
 }
 
 // caller has to ensure a valid targetInfoBuff
-static bool qExtractServerTime(const QByteArray& targetInfoBuff,
-                               quint64 *serverTime)
+static QByteArray qExtractServerTime(const QByteArray& targetInfoBuff)
 {
-    Q_ASSERT(serverTime != 0);
-    bool retValue = false;
+    QByteArray timeArray;
     QDataStream ds(targetInfoBuff);
     ds.setByteOrder(QDataStream::LittleEndian);
 
@@ -1193,19 +1206,16 @@ static bool qExtractServerTime(const QByteArray& targetInfoBuff,
     ds >> avLen;
     while(avId != 0) {
         if(avId == AVTIMESTAMP) {
-            QByteArray timeArray(avLen, 0);
+            timeArray.resize(avLen);
             //avLen size of QByteArray is allocated
             ds.readRawData(timeArray.data(), avLen);
-            bool ok;
-            *serverTime = timeArray.toHex().toLongLong(&ok, 16);
-            retValue = true;
             break;
         }
         ds.skipRawData(avLen);
         ds >> avId;
         ds >> avLen;
     }
-    return retValue;
+    return timeArray;
 }
 
 static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
@@ -1228,9 +1238,17 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
     ds.writeRawData(reserved1.constData(), reserved1.size());
 
     quint64 time = 0;
+    QByteArray timeArray;
+
+    if(ch.targetInfo.len)
+    {
+        timeArray = qExtractServerTime(ch.targetInfoBuff);
+    }
 
     //if server sends time, use it instead of current time
-    if(!(ch.targetInfo.len && qExtractServerTime(ch.targetInfoBuff, &time))) {
+    if(timeArray.size()) {
+        ds.writeRawData(timeArray.constData(), timeArray.size());
+    } else {
         QDateTime currentTime(QDate::currentDate(),
                               QTime::currentTime(), Qt::UTC);
 
@@ -1242,8 +1260,8 @@ static QByteArray qEncodeNtlmv2Response(const QAuthenticatorPrivate *ctx,
 
         // represented as 100 nano seconds
         time = Q_UINT64_C(time * 10000000);
+        ds << time;
     }
-    ds << time;
 
     //8 byte client challenge
     QByteArray clientCh = clientChallenge(ctx);
