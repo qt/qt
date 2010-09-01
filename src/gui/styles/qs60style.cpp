@@ -2340,16 +2340,20 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                     tableView = true;
 
                 QS60StylePrivate::SkinElements element;
+                bool themeGraphicDefined = false;
                 QRect elementRect = option->rect;
 
                 //draw item is drawn as pressed, if it already has focus.
                 if (isPressed && (hasFocus || isSelected)) {
+                    themeGraphicDefined = true;
                     element = tableView ? QS60StylePrivate::SE_TableItemPressed : QS60StylePrivate::SE_ListItemPressed;
                 } else if (hasFocus || (isSelected && selectionBehavior != QAbstractItemView::SelectItems)) {
                     element = QS60StylePrivate::SE_ListHighlight;
                     elementRect = highlightRect;
+                    themeGraphicDefined = true;
                 }
-                QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
+                if (themeGraphicDefined)
+                    QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
             } else {
                 QCommonStyle::drawPrimitive(element, option, painter, widget);
             }
