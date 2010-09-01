@@ -636,7 +636,15 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, QTextListFormat f
             || style == QTextListFormat::ListUpperRoman) {
         writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-number"));
         writer.writeAttribute(styleNS, QString::fromLatin1("num-format"), bulletChar(style));
-        writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));
+
+        if (format.hasProperty(QTextFormat::ListNumberSuffix))
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), format.numberSuffix());
+        else
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));
+
+        if (format.hasProperty(QTextFormat::ListNumberPrefix))
+            writer.writeAttribute(styleNS, QString::fromLatin1("num-prefix"), format.numberPrefix());
+
     } else {
         writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-bullet"));
         writer.writeAttribute(textNS, QString::fromLatin1("bullet-char"), bulletChar(style));

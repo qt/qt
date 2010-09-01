@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qplatformdefs.h"
 #include "qlibrary.h"
 
@@ -61,6 +60,7 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qdir.h>
+#include "qelfparser_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -365,11 +365,31 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         fdlen = data.size();
     }
 
-    // verify that the pattern is present in the plugin
+    /*
+       ELF binaries on GNU, have .qplugin sections.
+    */
+    long pos = 0;
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
     const ulong plen = qstrlen(pattern);
-    long pos = qt_find_pattern(filedata, fdlen, pattern, plen);
-
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+    int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
+    if (r == QElfParser::NoQtSection) {
+        if (pos > 0) {
+            // find inside .rodata
+            long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+            if (rel < 0) {
+                pos = -1;
+            } else {
+                pos += rel;
+            }
+        } else {
+            pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+        }
+    } else if (r != QElfParser::Ok)
+        return false;
+#else
+    pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
     bool ret = false;
     if (pos >= 0)
         ret = qt_parse_pattern(filedata + pos, version, debug, key);

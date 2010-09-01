@@ -334,89 +334,16 @@ FamilyFound:
 	fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
     else
 	fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
-#if 0
-    ItemCount name_count;
-    if(ATSUCountFontNames(fontID, &name_count) == noErr && name_count) {
-        ItemCount actualName_size;
-        if(ATSUGetIndFontName(fontID, 0, 0, 0, &actualName_size, 0, 0, 0, 0) == noErr && actualName_size) {
-            QByteArray actualName(actualName_size);
-            if(ATSUGetIndFontName(fontID, 0, actualName_size, actualName.data(), &actualName_size, 0, 0, 0, 0) == noErr && actualName_size)
-                fontDef.family = QString::fromUtf8(actualName);
-        }
-    }
-#else
     {
         QCFString actualName;
         if(ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
             fontDef.family = actualName;
     }
-#endif
 
 #ifdef QT_MAC_USE_COCOA
     QFontEngine *engine = new QCoreTextFontEngineMulti(familyRef, fontRef, fontDef, d->kerning);
-#elif 1
-    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #else
-    ATSFontFamilyRef atsFamily = familyRef;
-    ATSFontFamilyRef atsFontRef = fontRef;
-
-    FMFont fontID;
-    FMFontFamily fmFamily;
-    FMFontStyle fntStyle = 0;
-    fmFamily = FMGetFontFamilyFromATSFontFamilyRef(atsFamily);
-    if (fmFamily == kInvalidFontFamily) {
-        // Use the ATSFont then...
-        fontID = FMGetFontFromATSFontRef(atsFontRef);
-    } else {
-        if (fontDef.weight >= QFont::Bold)
-            fntStyle |= ::bold;
-        if (fontDef.style != QFont::StyleNormal)
-            fntStyle |= ::italic;
-
-        FMFontStyle intrinsicStyle;
-        FMFont fnt = 0;
-        if (FMGetFontFromFontFamilyInstance(fmFamily, fntStyle, &fnt, &intrinsicStyle) == noErr)
-           fontID = FMGetATSFontRefFromFont(fnt);
-    }
-
-    OSStatus status;
-
-    const int maxAttributeCount = 5;
-    ATSUAttributeTag tags[maxAttributeCount + 1];
-    ByteCount sizes[maxAttributeCount + 1];
-    ATSUAttributeValuePtr values[maxAttributeCount + 1];
-    int attributeCount = 0;
-
-    Fixed size = FixRatio(fontDef.pixelSize, 1);
-    tags[attributeCount] = kATSUSizeTag;
-    sizes[attributeCount] = sizeof(size);
-    values[attributeCount] = &size;
-    ++attributeCount;
-
-    tags[attributeCount] = kATSUFontTag;
-    sizes[attributeCount] = sizeof(fontID);
-    values[attributeCount] = &fontID;
-    ++attributeCount;
-
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100) {
-        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
-        tags[attributeCount] = kATSUFontMatrixTag;
-        sizes[attributeCount] = sizeof(transform);
-        values[attributeCount] = &transform;
-        ++attributeCount;
-    }
-
-    ATSUStyle style;
-    status = ATSUCreateStyle(&style);
-    Q_ASSERT(status == noErr);
-
-    Q_ASSERT(attributeCount < maxAttributeCount + 1);
-    status = ATSUSetAttributes(style, attributeCount, tags, sizes, values);
-    Q_ASSERT(status == noErr);
-
-    QFontEngine *engine = new QFontEngineMac(style, fontID, fontDef, /*multiEngine*/ 0);
-    ATSUDisposeStyle(style);
+    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #endif
     d->engineData->engine = engine;
     engine->ref.ref(); //a ref for the engineData->engine

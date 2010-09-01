@@ -68,6 +68,8 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
     { "-qt-list-indent", QtListIndent },
+    { "-qt-list-number-prefix", QtListNumberPrefix },
+    { "-qt-list-number-suffix", QtListNumberSuffix },
     { "-qt-paragraph-type", QtParagraphType },
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
