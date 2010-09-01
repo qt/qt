@@ -44,7 +44,11 @@
 //! [Quoting ModelView Tutorial]
 // mymodel.h
 #include <QAbstractTableModel>
-#include <QStringList>
+#include <QString>
+
+const int COLS= 3;
+const int ROWS= 2;
+
 
 class MyModel : public QAbstractTableModel
 {
@@ -57,8 +61,7 @@ public:
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
     Qt::ItemFlags flags(const QModelIndex & index) const ;
 private:
-    QStringList m_gridData;  //holds text entered into QTableView
-    int modelIndexToOffset(const QModelIndex & index) const;
+    QString m_gridData[ROWS][COLS];  //holds text entered into QTableView
 signals:
     void editCompleted(const QString &);
 };

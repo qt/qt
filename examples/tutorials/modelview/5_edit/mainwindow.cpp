@@ -38,45 +38,23 @@
 **
 ****************************************************************************/
 
-//! [Quoting ModelView Tutorial]
-// modelview.cpp
-#include <QTreeView>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include "modelview.h"
+#include <QTableView>
+#include "mainwindow.h"
+#include "mymodel.h"
 
-
-const int ROWS = 2;
-const int COLUMNS = 3;
-
-ModelView::ModelView(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    treeView = new QTreeView(this);
-    setCentralWidget(treeView);
-    standardModel = new QStandardItemModel ;
+    tableView = new QTableView(this);
+    setCentralWidget(tableView);
+    QAbstractTableModel *myModel = new MyModel(this);
+    tableView->setModel(myModel);
 
-    QList<QStandardItem *> preparedColumn =prepareColumn("first", "second", "third");
-    QStandardItem *item = standardModel->invisibleRootItem();
-    // adding a row to the invisible root item produces a root element
-    item->appendRow(preparedColumn);
-
-    QList<QStandardItem *> secondRow =prepareColumn("111", "222", "333");
-    // adding a row to an item starts a subtree
-    preparedColumn.first()->appendRow(secondRow);
-
-    treeView->setModel(standardModel);
-    treeView->expandAll();
+    //transfer changes to the model to the window title
+    connect(myModel, SIGNAL(editCompleted(const QString &)), this, SLOT(setWindowTitle(const QString &)));
 }
 
-QList<QStandardItem *> ModelView::prepareColumn(const QString &first,
-                                                const QString &second,
-                                                const QString &third)
+void MainWindow::showWindowTitle(const QString & title)
 {
-    QList<QStandardItem *> colItems;
-    colItems << new QStandardItem(first);
-    colItems << new QStandardItem(second);
-    colItems << new QStandardItem(third);
-    return colItems;
+setWindowTitle(title);
 }
-//! [Quoting ModelView Tutorial]

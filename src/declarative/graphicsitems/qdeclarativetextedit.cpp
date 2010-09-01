@@ -103,22 +103,6 @@ TextEdit {
     \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
-/*!
-    \internal
-    \class QDeclarativeTextEdit
-
-    \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
-
-    It can display both plain and rich text.
-
-    \image declarative-textedit.png
-
-    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
-*/
-
-/*!
-    Constructs a new QDeclarativeTextEdit.
-*/
 QDeclarativeTextEdit::QDeclarativeTextEdit(QDeclarativeItem *parent)
 : QDeclarativePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
 {

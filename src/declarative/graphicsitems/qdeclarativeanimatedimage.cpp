@@ -54,11 +54,6 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QDeclarativeAnimatedImage
-    \internal
-*/
-
-/*!
     \qmlclass AnimatedImage QDeclarativeAnimatedImage
     \inherits Image
     \since 4.7

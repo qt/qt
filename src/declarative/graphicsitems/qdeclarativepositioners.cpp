@@ -108,8 +108,7 @@ void QDeclarativeBasePositioner::graphicsWidgetGeometryChanged()
     You also need to set a PositionerType, to declare whether you are positioning the x, y or both
     for the child items. Depending on the chosen type, only x or y changes will be applied.
 
-    Note that the subclass is responsible for adding the
-    spacing in between items.
+    Note that the subclass is responsible for adding the spacing in between items.
 */
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(PositionerType at, QDeclarativeItem *parent)
     : QDeclarativeItem(*(new QDeclarativeBasePositionerPrivate), parent)
@@ -438,11 +437,6 @@ static inline bool isInvisible(QGraphicsObject *child)
 
   \sa Grid::spacing
 */
-/*!
-    \internal
-    \class QDeclarativeColumn
-    \brief The QDeclarativeColumn class lines up items vertically.
-*/
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
 {
@@ -584,11 +578,6 @@ void QDeclarativeColumn::reportConflictingAnchors()
   items. The default spacing is 0.
 
   \sa Grid::spacing
-*/
-/*!
-    \internal
-    \class QDeclarativeRow
-    \brief The QDeclarativeRow class lines up items horizontally.
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Horizontal, parent)
@@ -747,11 +736,6 @@ void QDeclarativeRow::reportConflictingAnchors()
   \inlineimage qml-grid-spacing.png
 
   \sa rows, columns
-*/
-/*!
-    \internal
-    \class QDeclarativeGrid
-    \brief The QDeclarativeGrid class lays out items in a grid.
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
     QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)

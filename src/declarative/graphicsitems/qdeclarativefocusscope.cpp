@@ -60,11 +60,6 @@ QT_BEGIN_NAMESPACE
     \sa {declarative/keyinteraction/focus}{Keyboard focus example}
 */
 
-/*!
-    \internal
-    \class QDeclarativeFocusScope
-*/
-
 QDeclarativeFocusScope::QDeclarativeFocusScope(QDeclarativeItem *parent) :
     QDeclarativeItem(parent)
 {

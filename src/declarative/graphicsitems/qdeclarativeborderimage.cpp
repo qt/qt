@@ -149,12 +149,6 @@ QT_BEGIN_NAMESPACE
     \sa Image, AnimatedImage
  */
 
-/*!
-    \class QDeclarativeBorderImage BorderImage
-    \internal
-    \brief The QDeclarativeBorderImage class provides an image item that you can add to a QDeclarativeView.
-*/
-
 QDeclarativeBorderImage::QDeclarativeBorderImage(QDeclarativeItem *parent)
   : QDeclarativeImageBase(*(new QDeclarativeBorderImagePrivate), parent)
 {

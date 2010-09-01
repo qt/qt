@@ -103,19 +103,6 @@ QT_BEGIN_NAMESPACE
     \sa {declarative/imageelements/image}{Image example}, QDeclarativeImageProvider
 */
 
-/*!
-    \internal
-    \class QDeclarativeImage Image
-    \brief The QDeclarativeImage class provides an image item that you can add to a QDeclarativeView.
-
-    Example:
-    \qml
-    Image { source: "pics/star.png" }
-    \endqml
-
-    A QDeclarativeImage object can be instantiated in QML using the tag \l Image.
-*/
-
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
     : QDeclarativeImageBase(*(new QDeclarativeImagePrivate), parent)
 {

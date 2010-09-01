@@ -229,12 +229,6 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-/*!
-    \internal
-    \class QDeclarativeContents
-    \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
-
-*/
 QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
     //### optimize
@@ -1728,7 +1722,6 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
@@ -1890,6 +1883,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         }
     }
 
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QDeclarativeItemPrivate::Geometry)
+            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
+    }
+
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
@@ -1898,12 +1897,6 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
-
-    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
-        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
-        if (change.types & QDeclarativeItemPrivate::Geometry)
-            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
-    }
 }
 
 void QDeclarativeItemPrivate::removeItemChangeListener(QDeclarativeItemChangeListener *listener, ChangeTypes types)
@@ -2416,7 +2409,6 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     emit q->focusChanged(flag);
 }
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
@@ -2441,7 +2433,6 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
   \sa {qmlstate}{States}
 */
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
     return _states()->statesProperty();
@@ -2465,7 +2456,6 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 */
 
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
     return _states()->transitionsProperty();
@@ -2538,7 +2528,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
     if (!_stateGroup)
@@ -2547,7 +2536,6 @@ QString QDeclarativeItemPrivate::state() const
         return _stateGroup->state();
 }
 
-/*! \internal */
 void QDeclarativeItemPrivate::setState(const QString &state)
 {
     _states()->setState(state);

@@ -1874,7 +1874,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
                 return false;
 
             QDeclarativeImportedNamespace *ns = 0;
-            if (!engine->importDatabase.resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
+            if (!imports.resolveType(name.toUtf8(), &attachType, 0, 0, 0, &ns))
                 return false;
             if (ns || !attachType || !attachType->attachedPropertiesType())
                 return false;

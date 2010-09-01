@@ -38,17 +38,26 @@
 **
 ****************************************************************************/
 
-//! [Quoting ModelView Tutorial]
-// modelview.cpp
-#include <QTableView>
-#include "modelview.h"
-#include "mymodel.h"
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-ModelView::ModelView(QWidget *parent)
-    : QMainWindow(parent)
+#include <QtGui/QMainWindow>
+
+class QTreeView; //forward declaration
+class QStandardItemModel;
+class QItemSelection;
+
+
+class MainWindow : public QMainWindow
 {
-    tableView = new QTableView(this);
-    setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this));
-}
-//! [Quoting ModelView Tutorial]
+    Q_OBJECT
+private:
+    QTreeView *treeView;
+    QStandardItemModel *standardModel;
+private slots:
+    void selectionChangedSlot(const QItemSelection & newSelection, const QItemSelection & oldSelection);
+public:
+    MainWindow(QWidget *parent = 0);
+};
+
+#endif // MAINWINDOW_H

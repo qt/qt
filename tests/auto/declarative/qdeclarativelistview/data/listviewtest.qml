@@ -4,6 +4,12 @@ Rectangle {
     width: 240
     height: 320
     color: "#ffffff"
+
+    property real hr: list.visibleArea.heightRatio
+    function heightRatio() {
+        return list.visibleArea.heightRatio
+    }
+
     function checkProperties() {
         testObject.error = false;
         if (list.model != testModel) {

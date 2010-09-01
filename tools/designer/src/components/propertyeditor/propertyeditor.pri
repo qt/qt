@@ -45,10 +45,8 @@ SOURCES += $$PWD/propertyeditor.cpp \
 
 HEADERS += \
     $$PWD/propertyeditor_global.h \
-    $$PWD/defs.h \
     $$PWD/qlonglongvalidator.h
 
-SOURCES += $$PWD/defs.cpp \
-    $$PWD/qlonglongvalidator.cpp
+SOURCES += $$PWD/qlonglongvalidator.cpp
 
 RESOURCES += $$PWD/propertyeditor.qrc

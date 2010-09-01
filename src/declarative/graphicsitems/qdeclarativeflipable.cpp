@@ -99,15 +99,6 @@ public:
     \sa {declarative/ui-components/flipable}{Flipable example}
 */
 
-/*!
-    \internal
-    \class QDeclarativeFlipable
-    \brief The Flipable item provides a surface that can be flipped.
-
-    Flipable is an item that can be visibly "flipped" between its front and
-    back sides.
-*/
-
 QDeclarativeFlipable::QDeclarativeFlipable(QDeclarativeItem *parent)
 : QDeclarativeItem(*(new QDeclarativeFlipablePrivate), parent)
 {

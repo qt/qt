@@ -146,23 +146,11 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     \endcode
  */
 
-/*!
-    \internal
-    \class QDeclarativeRepeater
- */
-
-/*!
-    Create a new QDeclarativeRepeater instance.
- */
 QDeclarativeRepeater::QDeclarativeRepeater(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRepeaterPrivate), parent)
 {
 }
 
-/*!
-    Destroy the repeater instance.  All items it instantiated are also
-    destroyed.
- */
 QDeclarativeRepeater::~QDeclarativeRepeater()
 {
 }
@@ -301,18 +289,12 @@ int QDeclarativeRepeater::count() const
 }
 
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::componentComplete()
 {
     QDeclarativeItem::componentComplete();
     regenerate();
 }
 
-/*!
-    \internal
- */
 QVariant QDeclarativeRepeater::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -335,9 +317,6 @@ void QDeclarativeRepeater::clear()
     d->deletables.clear();
 }
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::regenerate()
 {
     Q_D(QDeclarativeRepeater);
