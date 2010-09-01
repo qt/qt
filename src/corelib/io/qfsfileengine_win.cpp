@@ -1621,7 +1621,7 @@ QString QFSFileEngine::fileName(FileName file) const
     } else if (file == CanonicalName || file == CanonicalPathName) {
         if (!(fileFlags(ExistsFlag) & ExistsFlag))
             return QString();
-        QFileSystemEngine entry(QFileSystemEngine::slowCanonicalized(fileName(AbsoluteName)));
+        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry));
 
         if (file == CanonicalPathName)
             return entry.path();
