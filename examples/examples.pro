@@ -13,7 +13,6 @@ SUBDIRS       = \
                 mainwindows \
                 network \
                 painting \
-                qtconcurrent \
                 richtext \
                 sql \
                 statemachine \
@@ -61,6 +60,7 @@ contains(QT_CONFIG, dbus): SUBDIRS += dbus
 win32: SUBDIRS += activeqt
 contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
+contains(QT_CONFIG, concurrent): SUBDIRS += qtconcurrent
 
 # install
 sources.files = README *.pro
