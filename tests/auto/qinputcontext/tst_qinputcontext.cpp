@@ -933,9 +933,6 @@ void tst_QInputContext::symbianTestCoeFepInputContext()
     QApplication::processEvents();
 
     QCOMPARE(lineedit->text(), finalString);
-    QEXPECT_FAIL("Numbers with movement, maxlength, password and unfinished text"
-            , "Fails due to QTBUG-12949"
-            , Continue);
     QCOMPARE(ic->m_preeditString, preeditString);
 #endif
 }
