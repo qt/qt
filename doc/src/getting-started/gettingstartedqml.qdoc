@@ -296,8 +296,8 @@
 
     \section2  Using Data Models and Views
 
-    QML has different \l {Data Models}{data views} that display
-    \l {Data Models}{data models}. Our menu bar will display the menus in a list,
+    QML has different \l{QML Data Models}{data views} that display
+    \l{QML Data Models}{data models}. Our menu bar will display the menus in a list,
     with a header that displays a row of menu names. The list of menus are declared
     inside a \c VisualItemModel. The \l{VisualItemModel}{\c VisualItemModel}
     element contains items that already have views such as \c Rectangle elements
