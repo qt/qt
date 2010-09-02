@@ -26,6 +26,42 @@ QDataStream & operator>> (QDataStream& stream, PlatformInfo& pinfo)
     return stream;
 }
 
+ImageItem &ImageItem::operator=(const ImageItem &other)
+{
+    scriptName = other.scriptName;
+    scriptChecksum = other.scriptChecksum;
+    status = other.status;
+    renderFormat = other.renderFormat;
+    engine = other.engine;
+    image = other.image;
+    imageChecksum = other.imageChecksum;
+    return *this;
+}
+
+quint64 ImageItem::computeChecksum(const QImage &image)
+{
+    //### Just fake it for now
+    return qChecksum((const char *)image.constScanLine(50), image.bytesPerLine());
+}
+
+QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
+{
+    stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
+            << quint8(ii.engine) << ii.image << ii.imageChecksum;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
+{
+    quint8 encFormat, encStatus, encEngine;
+    stream >> ii.scriptName >> ii.scriptChecksum >> encStatus >> encFormat
+            >> encEngine >> ii.image >> ii.imageChecksum;
+    ii.renderFormat = QImage::Format(encFormat);
+    ii.status = ImageItem::ItemStatus(encStatus);
+    ii.engine = ImageItem::GraphicsEngine(encEngine);
+    return stream;
+}
+
 BaselineProtocol::~BaselineProtocol()
 {
     socket.close();
@@ -86,8 +122,28 @@ bool BaselineProtocol::acceptConnection(PlatformInfo *pi)
 }
 
 
+bool BaselineProtocol::requestBaselineChecksums(ImageItemList *itemList)
+{
+    errMsg.clear();
+    if (!itemList)
+        return false;
+    QByteArray block;
+    QDataStream ds(&block, QIODevice::ReadWrite);
+    ds << *itemList;
+    if (!sendBlock(RequestBaselineChecksums, block))
+        return false;
+    Command cmd;
+    if (!receiveBlock(&cmd, &block))
+        return false;
+    ds.device()->seek(0);
+    ds >> *itemList;
+    return true;
+}
+
+
 bool BaselineProtocol::requestBaseline(const QString &caseId, Command *response, QImage *baseline)
 {
+    //### TBD: rewrite to use ImageItem
     errMsg.clear();
     if (!sendBlock(RequestBaseline, caseId.toLatin1()))
         return false;
@@ -115,29 +171,31 @@ bool BaselineProtocol::requestBaseline(const QString &caseId, Command *response,
 }
 
 
-bool BaselineProtocol::submitNewBaseline(const QString &caseId, const QImage &baseline)
+bool BaselineProtocol::submitNewBaseline(const ImageItem &item)
+{
+    return sendItem(AcceptNewBaseline, item);
+}
+
+
+bool BaselineProtocol::sendItem(Command cmd, const ImageItem &item)
 {
     errMsg.clear();
     QBuffer buf;
     buf.open(QIODevice::WriteOnly);
     QDataStream ds(&buf);
-    ds << caseId.toLatin1();
-    if (!baseline.save(&buf, FileFormat)) {
-        errMsg = QLatin1String("Failed to convert new baseline image to ") + QLatin1String(FileFormat);
+    ds << item;
+    if (!sendBlock(cmd, buf.data())) {
+        errMsg.prepend(QLatin1String("Failed to submit image to server. "));
         return false;
     }
-    if (!sendBlock(AcceptNewBaseline, buf.data())) {
-        errMsg.prepend(QLatin1String("Failed to submit new baseline to server. "));
-        return false;
-    }
-    Command cmd;
-    receiveBlock(&cmd, 0);  // Just wait for the pong; ignore reply contents
+    receiveBlock(&cmd, 0);  // For now, Just wait for the pong; ignore reply contents
     return true;
 }
 
 
 bool BaselineProtocol::submitMismatch(const QString &caseId, const QImage &mismatch, QByteArray *failMsg)
 {
+    //### TBD: rewrite to use ImageItem
     errMsg.clear();
     QBuffer buf;
     buf.open(QIODevice::WriteOnly);

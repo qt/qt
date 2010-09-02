@@ -11,7 +11,7 @@
 #include <QDateTime>
 
 // #seconds between update checks
-#define HEARTBEAT 10
+#define HEARTBEAT 5
 
 class BaselineServer : public QTcpServer
 {
@@ -61,9 +61,10 @@ private slots:
     void receiveDisconnect();
 
 private:
+    void provideBaselineChecksums(const QByteArray &itemListBlock);
     void provideBaseline(const QByteArray &caseId);
     void storeImage(const QByteArray &imageBlock, bool isBaseline);
-    QString pathForCaseId(const QByteArray &caseId, bool isBaseline = true);
+    QString pathForItem(const ImageItem &item, bool isBaseline = true);
     QString logtime();
 
     BaselineProtocol proto;

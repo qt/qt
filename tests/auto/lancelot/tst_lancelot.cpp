@@ -65,19 +65,21 @@ public:
 
 private:
     QImage getBaseline(const QString &fileName, bool *created);
-    QImage render(const QString &fileName);
+    QImage render(const QString &fileName, QImage::Format format);
     QStringList loadScriptFile(const QString &filePath);
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
+    void runTestSuite();
 
     QString errorMsg;
     BaselineProtocol proto;
+    ImageItemList baseList;
 
 private slots:
     void initTestCase();
     void cleanupTestCase() {}
 
-    void testRendering_data();
-    void testRendering();
+    void testRasterARGB32PM_data();
+    void testRasterARGB32PM();
 };
 
 tst_Lancelot::tst_Lancelot()
@@ -86,85 +88,111 @@ tst_Lancelot::tst_Lancelot()
 
 void tst_Lancelot::initTestCase()
 {
+    // Check and setup the environment. We treat failures because of test environment
+    // (e.g. script files not found) as just warnings, and not QFAILs, to avoid false negatives
+    // caused by environment or server instability
+
 #if !defined(Q_OS_LINUX)
     QSKIP("For the moment, this test is only supported on Linux.", SkipAll);
 #endif
-
-    // Check the environment here, so that we can just skip on trouble!
     if (!proto.connect()) {
         QWARN(qPrintable(proto.errorMessage()));
         QSKIP("Communication with baseline image server failed.", SkipAll);
     }
 
-    // TBD: preload scripts, to confirm reading and generate checksums
-}
-
-void tst_Lancelot::testRendering_data()
-{
-    // search the data directory for qps files and make a row for each.
-    // filter out those marked as blacklisted (in the file itself?)
-    // Rather do the above in initTestCase. Can load & split them all also.
-    // And baselines too?
-
-    QTest::addColumn<QString>("fileName");
-
-    // ### no, don't do it like this, we want opt-in, not opt-out, for stability
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
-    files.removeOne(QLatin1String("porter_duff.qps"));
-    files.removeOne(QLatin1String("porter_duff2.qps"));
-    files.removeOne(QLatin1String("images.qps"));
-    files.removeOne(QLatin1String("sizes.qps"));
-
     if (files.isEmpty()) {
-        QWARN("No qps files found in " + qpsDir.path().toLatin1());
+        QWARN("No qps script files found in " + qpsDir.path().toLatin1());
         QSKIP("Aborted due to errors.", SkipAll);
     }
 
-    foreach(QString fileName, files) {
-        QString baseName = fileName.section('.', 0, -2);
-        QTest::newRow(baseName.toLatin1()) << fileName;
+    baseList.resize(files.count());
+    int i = 0;
+    foreach(const QString& file, files) {
+        baseList[i].scriptName = file;
+        // tbd: also load, split and generate checksums for scripts
+        i++;
     }
 }
 
 
-// We treat failures because of test environment
-// (e.g. script files not found) as just warnings, and not
-// QFAILs, to avoid false negatives caused by environment
-// or server instability
+void tst_Lancelot::testRasterARGB32PM_data()
+{
+    QTest::addColumn<ImageItem>("item");
 
-void tst_Lancelot::testRendering()
+    ImageItemList itemList(baseList);
+
+    for(int i = 0; i < itemList.size(); i++) {
+        itemList[i].engine = ImageItem::Raster;
+        itemList[i].renderFormat = QImage::Format_ARGB32_Premultiplied;
+    }
+
+    if (!proto.requestBaselineChecksums(&itemList)) {
+        QWARN(qPrintable(proto.errorMessage()));
+        QSKIP("Communication with baseline image server failed.", SkipAll);
+    }
+
+    qDebug() << "items:" << itemList.count();
+    foreach(const ImageItem& item, itemList) {
+        if (item.scriptName != QLatin1String("sizes.qps")) // Hardcoded blacklisting for this enigine/format
+            QTest::newRow(item.scriptName.toLatin1()) << item;
+    }
+}
+
+
+void tst_Lancelot::testRasterARGB32PM()
+{
+    runTestSuite();
+}
+
+
+void tst_Lancelot::runTestSuite()
 {
     errorMsg.clear();
-    QFETCH(QString, fileName);
+    QFETCH(ImageItem, item);
 
-    bool newBaselineCreated = false;
-    QImage baseline = getBaseline(fileName, &newBaselineCreated);
-    if (newBaselineCreated)
+    if (item.status == ImageItem::IgnoreItem)
+        QSKIP("Blacklisted by baseline server.", SkipSingle);
+
+    QImage rendered = render(item.scriptName, item.renderFormat);
+    if (!errorMsg.isNull() || rendered.isNull()) {  // Assume an error in the test environment, not Qt
+        QWARN("Error: Failed to render image. " + errorMsg.toLatin1());
+        QSKIP("Aborted due to errors.", SkipSingle);
+    }
+
+    quint64 checksum = ImageItem::computeChecksum(rendered);
+
+    if (item.status == ImageItem::BaselineNotFound) {
+        item.image = rendered;
+        item.imageChecksum = checksum;
+        proto.submitNewBaseline(item);
         QSKIP("Baseline not found; new baseline created.", SkipSingle);
+    }
+
+    qDebug() << "rendered" << QString::number(checksum, 16).prepend("0x") << "baseline" << QString::number(item.imageChecksum, 16).prepend("0x");
+    if (checksum != item.imageChecksum) {
+        /* TBD
+           - Get baseline image
+           - compute diffscore
+           - submit mismatching
+
+    getBaseline(...)
     if (!errorMsg.isNull() || baseline.isNull()) {
         QWARN("Error: Failed to get baseline image. " + errorMsg.toLatin1());
         QSKIP("Aborted due to errors.", SkipSingle);
     }
 
-    QImage rendered = render(fileName);
-    if (!errorMsg.isNull() || rendered.isNull()) {
-        // Indicates that it's an error in the test environment, not Qt
-        QWARN("Error: Failed to render image. " + errorMsg.toLatin1());
-        QSKIP("Aborted due to errors.", SkipSingle);
-    }
 
     if (rendered.format() != baseline.format())
-        baseline = baseline.convertToFormat(rendered.format());
+        rendered = rendered.convertToFormat(baseline.format());  //### depending on format
 
-    // The actual check:
-    if (rendered != baseline) {
         QString scoreMsg = computeMismatchScore(baseline, rendered);
         QByteArray serverMsg;
         proto.submitMismatch(fileName, rendered, &serverMsg);
-
-        QByteArray failMsg = QByteArray("Rendered image differs from baseline. ")
-                             + scoreMsg.toLatin1() + '\n' + serverMsg;
+    */
+        QByteArray failMsg = QByteArray("Rendered image differs from baseline. ");
+                             //+ scoreMsg.toLatin1() + '\n' + serverMsg;
         QFAIL(failMsg.constData());
     }
 }
@@ -211,11 +239,11 @@ QString tst_Lancelot::computeMismatchScore(const QImage &baseline, const QImage 
 
     double pcd = 100.0 * ncd / (w*h);  // percent of pixels that differ
     double acd = ncd ? double(scd) / (3*ncd) : 0;         // avg. difference
-    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3.)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
+    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
     if (baseline.hasAlphaChannel()) {
         double pad = 100.0 * nad / (w*h);  // percent of pixels that differ
         double aad = nad ? double(sad) / (3*nad) : 0;         // avg. difference
-        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3.)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
+        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
     }
     return res;
 }
@@ -224,6 +252,8 @@ QString tst_Lancelot::computeMismatchScore(const QImage &baseline, const QImage 
 QImage tst_Lancelot::getBaseline(const QString &fileName, bool *created)
 {
     QImage baseline;
+    //### TBD: rewrite to use ImageItem
+    /*
     BaselineProtocol::Command response;
     if (!proto.requestBaseline(fileName, &response, &baseline)) {
         errorMsg = QLatin1String("Error downloading baseline from server. ") + proto.errorMessage();
@@ -254,18 +284,19 @@ QImage tst_Lancelot::getBaseline(const QString &fileName, bool *created)
         errorMsg = QLatin1String("Unknown response from baseline server. ");
         return QImage();
     }
+    */
     return baseline;
 }
 
 
-QImage tst_Lancelot::render(const QString &fileName)
+QImage tst_Lancelot::render(const QString &fileName, QImage::Format format)
 {
     QString filePath = scriptsDir + fileName;
     QStringList script = loadScriptFile(filePath);
     if (script.isEmpty())
         return QImage();
 
-    QImage img(800, 800, QImage::Format_ARGB32);
+    QImage img(800, 800, format);
     QPainter p(&img);
     PaintCommands pcmd(script, 800, 800);
     pcmd.setPainter(&p);

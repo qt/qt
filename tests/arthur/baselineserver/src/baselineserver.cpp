@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QHostInfo>
+#include <QTextStream>
 
 QString BaselineServer::storage;
 
@@ -106,6 +107,9 @@ void BaselineHandler::receiveRequest()
     }
 
     switch(cmd) {
+    case BaselineProtocol::RequestBaselineChecksums:
+        provideBaselineChecksums(block);
+        break;
     case BaselineProtocol::RequestBaseline:
         provideBaseline(block);
         break;
@@ -122,40 +126,73 @@ void BaselineHandler::receiveRequest()
 }
 
 
+void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
+{
+    ImageItemList itemList;
+    QDataStream ds(itemListBlock);
+    ds >> itemList;
+    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items";
+
+    for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
+        i->imageChecksum = 0;
+        QString prefix = pathForItem(*i, true);
+        QFile file(prefix + QLatin1String("metadata"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream ts(&file);
+            ts >> i->imageChecksum;
+            file.close();
+            i->status = ImageItem::Ok;
+        }
+        if (!i->imageChecksum)
+            i->status = ImageItem::BaselineNotFound;
+    }
+
+    QByteArray block;
+    QDataStream ods(&block, QIODevice::WriteOnly);
+    ods << itemList;
+    proto.sendBlock(BaselineProtocol::Ack, block);
+}
+
+
 void BaselineHandler::provideBaseline(const QByteArray &caseId)
 {
     qDebug() << runId << logtime() << "Received request for baseline" << caseId;
 
+    //### rewrite to use ImageItem
+    /*
     QFile file(pathForCaseId(caseId));
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << runId << logtime() << "baseline not found.";
         proto.sendBlock(BaselineProtocol::BaselineNotPresent, caseId);
         return;
     }
+
     proto.sendBlock(BaselineProtocol::AcceptBaseline, file.readAll());
+    */
 }
 
 
-void BaselineHandler::storeImage(const QByteArray &imageBlock, bool isBaseline)
+void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
 {
-    QBuffer buf;
-    buf.setData(imageBlock);
-    buf.open(QIODevice::ReadOnly);
-    QDataStream ds(&buf);
-    QByteArray caseId;
-    ds >> caseId;
-    //# For futuresafeness, should make caseId FS-safe - but revertable...
-    QFile file(pathForCaseId(caseId, isBaseline));
-    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << caseId << "Storing in" << file.fileName();
-    QString path = file.fileName().section(QDir::separator(), 0, -2);
+    QDataStream ds(itemBlock);
+    ImageItem item;
+    ds >> item;
+
+    QString prefix = pathForItem(item, isBaseline);
+    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.scriptName << "Storing in" << prefix;
+
+    QString dir = prefix.section(QDir::separator(), 0, -2);
     QDir cwd;
-    if (!cwd.exists(path))
-        cwd.mkpath(path);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        qWarning() << runId << logtime() << "Failed to store" << file.fileName();
-        return;
-    }
-    file.write(imageBlock.constData()+buf.pos(), imageBlock.size()-buf.pos());
+    if (!cwd.exists(dir))
+        cwd.mkpath(dir);
+    item.image.save(prefix + QLatin1String(FileFormat), FileFormat);
+
+    //# Could use QSettings or XML or even DB, could use common file for whole dir or even whole storage - but for now, keep it simple
+    QFile file(prefix + QLatin1String("metadata"));
+    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    QTextStream ts(&file);
+    ts << hex << showbase << item.imageChecksum << reset << endl;
+    file.close();
 
     QByteArray msg(isBaseline ? "Baseline" : "Mismatching" );
     msg += " image stored in "
@@ -174,7 +211,7 @@ void BaselineHandler::receiveDisconnect()
 }
 
 
-QString BaselineHandler::pathForCaseId(const QByteArray &caseId, bool isBaseline)
+QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 {
     QString storePath = BaselineServer::storagePath();
     storePath += plat.buildKey.section(QLatin1Char(' '), 1, 1) + QLatin1String("_Qt-")
@@ -183,7 +220,8 @@ QString BaselineHandler::pathForCaseId(const QByteArray &caseId, bool isBaseline
         storePath += QLatin1String("baselines") + QDir::separator();
     else
         storePath += runId + QDir::separator();
-    return storePath + caseId + QLatin1Char('.') + QLatin1String(FileFormat);
+    //#? QString itemName = item.scriptName.replace(item.scriptName.lastIndexOf('.'), '_');
+    return storePath + item.scriptName + QLatin1Char('.');
 }
 
 

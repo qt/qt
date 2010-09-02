@@ -3,19 +3,61 @@
 
 #include <QDataStream>
 #include <QTcpSocket>
+#include <QImage>
+#include <QVector>
 
 #define FileFormat "png"
 
 struct PlatformInfo
 {
-public:
     PlatformInfo(bool useLocal = false);
 
     QString buildKey;
     QString qtVersion;
     QString hostname;
 };
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pinfo);
+QDataStream & operator>> (QDataStream& stream, PlatformInfo& pinfo);
 
+struct ImageItem
+{
+public:
+    ImageItem()
+        : status(Ok), renderFormat(QImage::Format_Invalid), engine(Raster), imageChecksum(0), scriptChecksum(0)
+    {}
+    ImageItem(const ImageItem &other)
+    { *this = other; }
+    ~ImageItem()
+    {}
+    ImageItem &operator=(const ImageItem &other);
+    static quint64 computeChecksum(const QImage& image);
+
+    enum ItemStatus {
+        Ok = 0,
+        BaselineNotFound = 1,
+        IgnoreItem = 2
+    };
+
+    enum GraphicsEngine {
+        Raster = 0,
+        OpenGL = 1
+    };
+
+    QString scriptName;
+    ItemStatus status;
+    QImage::Format renderFormat;
+    GraphicsEngine engine;
+    QImage image;
+    quint64 imageChecksum;
+    // tbd: add diffscore
+    quint16 scriptChecksum;
+};
+QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
+QDataStream & operator>> (QDataStream& stream, ImageItem& ii);
+
+Q_DECLARE_METATYPE(ImageItem);
+
+typedef QVector<ImageItem> ImageItemList;
 
 
 class BaselineProtocol
@@ -30,18 +72,21 @@ public:
     enum Constant {
         ProtocolVersion = 1,
         ServerPort = 54129,
-        Timeout = 100000
+        Timeout = 10000
     };
 
     enum Command {
         UnknownError = 0,
         // Queries
         AcceptPlatformInfo = 1,
-        RequestBaseline = 2,
-        AcceptNewBaseline = 3,
-        AcceptMismatch = 4,
+        RequestBaselineChecksums = 2,
+        RequestBaseline = 3,
+        AcceptNewBaseline = 4,
+        AcceptMismatch = 5,
         // Responses
         Ack = 128,
+
+        //#### remove these:
         AcceptBaseline = 129,
         BaselineNotPresent = 130,
         IgnoreCase = 131
@@ -49,8 +94,9 @@ public:
 
     // For client:
     bool connect();
+    bool requestBaselineChecksums(ImageItemList *itemList);
     bool requestBaseline(const QString &caseId, Command *response, QImage *baseline);
-    bool submitNewBaseline(const QString &caseId, const QImage &baseline);
+    bool submitNewBaseline(const ImageItem &item);
     bool submitMismatch(const QString &caseId, const QImage &mismatch, QByteArray *failMsg);
 
     // For server:
@@ -59,6 +105,8 @@ public:
     QString errorMessage();
 
 private:
+    bool sendItem(Command cmd, const ImageItem &item);
+
     bool sendBlock(Command cmd, const QByteArray &block);
     bool receiveBlock(Command *cmd, QByteArray *block);
     QString errMsg;
@@ -69,8 +117,7 @@ private:
 };
 
 
-QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pinfo);
 
-QDataStream & operator>> (QDataStream& stream, PlatformInfo& pinfo);
+
 
 #endif // BASELINEPROTOCOL_H
