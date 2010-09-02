@@ -2939,4 +2939,8 @@ void QDeclarativeAnchorAnimation::transition(QDeclarativeStateActions &actions,
     }
 }
 
+QDeclarativeScriptActionPrivate::QDeclarativeScriptActionPrivate()
+    : QDeclarativeAbstractAnimationPrivate(), hasRunScriptScript(false), reversing(false), proxy(this), rsa(0) {}
+
+
 QT_END_NAMESPACE
