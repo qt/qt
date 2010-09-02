@@ -112,6 +112,7 @@ class MyQmlObject : public QObject, public MyInterface
     Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType)
     Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
+    Q_PROPERTY(int nonScriptable READ nonScriptable WRITE setNonScriptable SCRIPTABLE false);
 
     Q_INTERFACES(MyInterface)
 public:
@@ -150,6 +151,9 @@ public:
 
     int propertyWithNotify() const { return m_propertyWithNotify; }
     void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
+
+    int nonScriptable() const { return 0; }
+    void setNonScriptable(int) {}
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
     void basicSlotWithArgs(int v) { qWarning("MyQmlObject::basicSlotWithArgs(%d)", v); }

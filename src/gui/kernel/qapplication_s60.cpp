@@ -1242,17 +1242,28 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
-        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
-            QWidget *fw = QApplication::focusWidget();
-            if (fw) {
-                QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
-                QCoreApplication::sendEvent(fw, &event);
-            }
-            m_symbianPopupIsOpen = true;
-            return;
+        bool focusedControlFound = false;
+        WId winId = 0;
+        for (QWidget *w = qwidget->parentWidget(); w && (winId = w->internalWinId()); w = w->parentWidget()) {
+            if (winId->IsFocused() && winId->IsVisible()) {
+                focusedControlFound = true;
+                break;
+            } else if (w->isWindow())
+                break;
         }
+        if (!focusedControlFound) {
+            if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+                QWidget *fw = QApplication::focusWidget();
+                if (fw) {
+                    QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                    QCoreApplication::sendEvent(fw, &event);
+                }
+                m_symbianPopupIsOpen = true;
+                return;
+            }
 
-        QApplication::setActiveWindow(0);
+            QApplication::setActiveWindow(0);
+        }
     }
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }

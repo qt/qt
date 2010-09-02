@@ -92,6 +92,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
+    Q_PROPERTY(int nonscriptable READ nonscriptable WRITE setNonscriptable SCRIPTABLE false);
 
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
@@ -144,6 +145,10 @@ public:
     void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
 
     int console() const { return 11; }
+
+    int nonscriptable() const { return 0; }
+    void setNonscriptable(int) {}
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
