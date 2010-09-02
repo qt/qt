@@ -43,7 +43,7 @@
 
 #include <QAbstractTableModel>
 
-QT_FORWARD_DECLARE_CLASS(QTimer)
+class QTimer;  // forward declaration
 
 class MyModel : public QAbstractTableModel
 {
