@@ -111,13 +111,15 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     Cancel();
     iSocketServ.Close();
 
-    // Restore default interface to system default
-    restoreDefaultIf();
+    // Close global 'Open C' RConnection
+    // Clears also possible unsetdefaultif() flags.
+    setdefaultif(0);
 
     iConnectionMonitor.Close();
     iOpenCLibrary.Close();
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-    qDebug() << "QNS this : " << QString::number((uint)this) << " - destroyed (and restoreDefaultIf())";
+    qDebug() << "QNS this : " << QString::number((uint)this)
+             << " - destroyed (and setdefaultif(0))";
 #endif
 }
 
@@ -533,8 +535,15 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     Cancel(); // closes iConnection
     iSocketServ.Close();
 
-    // Restore default interface to system default
-    restoreDefaultIf();
+    // Close global 'Open C' RConnection. If OpenC supports,
+    // close the defaultif for good to avoid difficult timing
+    // and bouncing issues of network going immediately back up
+    //  because of e.g. select() thread etc.
+    if (iDynamicUnSetdefaultif) {
+        iDynamicUnSetdefaultif();
+    } else {
+        setdefaultif(0);
+    }
 
     // If UserChoice, go down immediately. If some other configuration,
     // go down immediately if there is no reports expected from the platform;
@@ -1457,29 +1466,6 @@ void QNetworkSessionPrivateImpl::handleSymbianConnectionStatusChange(TInt aConne
         default:
             break;
         }
-}
-
-void QNetworkSessionPrivateImpl::restoreDefaultIf()
-{
-    QNetworkConfigurationPrivatePointer config = engine->defaultConfiguration();
-
-    QMutexLocker locker(&config->mutex);
-
-    ifreq ifr;
-    memset(&ifr, 0, sizeof(ifreq));
-
-    switch (config->type) {
-    case QNetworkConfiguration::InternetAccessPoint:
-        strcpy(ifr.ifr_name, config->name.toUtf8().constData());
-        break;
-    case QNetworkConfiguration::ServiceNetwork:
-        ifr.ifr_ifru.snap_id = toSymbianConfig(config)->numericId;
-        break;
-    default:
-        ;
-    };
-
-    setdefaultif(&ifr);
 }
 
 #if defined(SNAP_FUNCTIONALITY_AVAILABLE)
