@@ -1565,8 +1565,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         FT_Face face = freetype->face;
         for ( int i = 0; i < len; ++i ) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if ( !glyphs->glyphs[glyph_pos] ) {
                 glyph_t glyph;
