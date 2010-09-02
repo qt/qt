@@ -129,7 +129,7 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         statusPaneVisibilityChanged = (s->IsVisible() != statusPaneVisible);
         s->MakeVisible(statusPaneVisible);
     }
-    if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged)
+    if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged && QApplication::activeWindow())
         // Ensure that control rectangle is updated
         static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
 }
