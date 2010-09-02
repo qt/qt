@@ -760,7 +760,7 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
     prop->listValueRange.offset = node->lbracketToken.offset;
     prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
 
-    // Store the positions of the comma token too, again for the DOM to be able to retreive it.
+    // Store the positions of the comma token too, again for the DOM to be able to retrieve it.
     prop->listCommaPositions = collectCommas(node->members);
 
     while (propertyCount--)

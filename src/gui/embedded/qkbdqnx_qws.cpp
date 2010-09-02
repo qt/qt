@@ -150,7 +150,7 @@ void QWSQnxKeyboardHandler::socketActivated()
 
     // figure out whether it's a press
     bool isPress = packet.data.key_cap & KEY_DOWN;
-    // figure out wheter the key is still pressed and the key event is repeated
+    // figure out whether the key is still pressed and the key event is repeated
     bool isRepeat = packet.data.key_cap & KEY_REPEAT;
 
     Qt::Key key = Qt::Key_unknown;
