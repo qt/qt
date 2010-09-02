@@ -1697,25 +1697,6 @@ to
     </message>
 </context>
 <context>
-    <name>QDeclarativeCompositeTypeManager</name>
-    <message>
-        <source>Resource %1 unavailable</source>
-        <translation>Ресурс %1 недоступний</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation>Простір імен %1 не може бути використаний як тип</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation>%1 %2</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation>Тип %1 недоступний</translation>
-    </message>
-</context>
-<context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
@@ -2093,6 +2074,25 @@ to
     <message>
         <source>Could not instantiate cursor delegate</source>
         <translation>Не вдалося інстанціювати делегат курсору</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeData</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="unfinished">Тип %1 недоступний</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="unfinished">Простір імен %1 не може бути використаний як тип</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="unfinished">%1 %2</translation>
     </message>
 </context>
 <context>
@@ -3313,16 +3313,8 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QLibrary</name>
     <message>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Не вдалося виконати mmap &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation>Дані верифікації додатку не збігаються для ’%1’</translation>
-    </message>
-    <message>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Не вдалося виконати unmap &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>The shared library was not found.</source>
@@ -7917,7 +7909,7 @@ Do you want to overwrite it?</source>
     <name>QtXmlPatterns</name>
     <message>
         <source>%1 is an unsupported encoding.</source>
-        <translation type="unfinished"></translation>
+        <translation>Кодування %1 не підтримується.</translation>
     </message>
     <message>
         <source>%1 contains octets which are disallowed in the requested encoding %2.</source>
@@ -7941,23 +7933,23 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Year %1 is invalid because it begins with %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Рік %1 неправильний, бо він починається з %2.</translation>
     </message>
     <message>
         <source>Day %1 is outside the range %2..%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>День %1 поза межами діапазону %2..%3.</translation>
     </message>
     <message>
         <source>Month %1 is outside the range %2..%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>Місяць %1 поза межами діапазону %2..%3.</translation>
     </message>
     <message>
         <source>Overflow: Can&apos;t represent date %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Переповнення: Не можу представити дату %1.</translation>
     </message>
     <message>
         <source>Day %1 is invalid for month %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неправильний день %1 для місяця %2.</translation>
     </message>
     <message>
         <source>Time 24:%1:%2.%3 is invalid. Hour is 24, but minutes, seconds, and milliseconds are not all 0; </source>
@@ -7965,15 +7957,15 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Time %1:%2:%3.%4 is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неправильний час %1:%2:%3.%4.</translation>
     </message>
     <message>
         <source>Overflow: Date can&apos;t be represented.</source>
-        <translation type="unfinished"></translation>
+        <translation>Переповнення: Не можу представити дату.</translation>
     </message>
     <message>
         <source>At least one component must be present.</source>
-        <translation type="unfinished"></translation>
+        <translation>Щонайменше один компонент має бути присутнім.</translation>
     </message>
     <message>
         <source>At least one time component must appear after the %1-delimiter.</source>
@@ -7981,7 +7973,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 is not a valid value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 не є правильним значенням для типу %2.</translation>
     </message>
     <message>
         <source>When casting to %1 from %2, the source value cannot be %3.</source>
@@ -7989,11 +7981,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Integer division (%1) by zero (%2) is undefined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Цілочисельне ділення (%1) на нуль (%2) не визначене.</translation>
     </message>
     <message>
         <source>Division (%1) by zero (%2) is undefined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ділення (%1) на нуль (%2) не визначене.</translation>
     </message>
     <message>
         <source>Modulus division (%1) by zero (%2) is undefined.</source>
@@ -8021,11 +8013,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Value %1 of type %2 exceeds maximum (%3).</source>
-        <translation type="unfinished"></translation>
+        <translation>Значення %1 типу %2 перевищує максимум (%3).</translation>
     </message>
     <message>
         <source>Value %1 of type %2 is below minimum (%3).</source>
-        <translation type="unfinished"></translation>
+        <translation>Значення %1 типу %2 менше за мінімум (%3).</translation>
     </message>
     <message>
         <source>A value of type %1 must contain an even number of digits. The value %2 does not.</source>
@@ -8033,7 +8025,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 is not valid as a value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 не є правильним значенням для типу %2.</translation>
     </message>
     <message>
         <source>Ambiguous rule match.</source>
@@ -8041,11 +8033,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Operator %1 cannot be used on type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Оператор %1 не може використовуватись для типу %2.</translation>
     </message>
     <message>
         <source>Operator %1 cannot be used on atomic values of type %2 and %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>Оператор %1 не може використовуватись для атомарних значень типу %2 та %3.</translation>
     </message>
     <message>
         <source>The namespace URI in the name for a computed attribute cannot be %1.</source>
@@ -8065,11 +8057,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>A comment cannot contain %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Коментар не може містити %1</translation>
     </message>
     <message>
         <source>A comment cannot end with a %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Коментар не може закінчувати на %1.</translation>
     </message>
     <message>
         <source>In a namespace constructor, the value for a namespace cannot be an empty string.</source>
@@ -8081,7 +8073,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The prefix %1 cannot be bound.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неможливо прив&apos;язати префікс %1.</translation>
     </message>
     <message>
         <source>Only the prefix %1 can be bound to %2 and vice versa.</source>
@@ -8147,11 +8139,15 @@ Do you want to overwrite it?</source>
         <source>%1 takes at most %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <source>%1 requires at least %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -8169,7 +8165,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 is not a valid XML 1.0 character.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 не є правильним символом XML 1.0.</translation>
     </message>
     <message>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
@@ -8257,11 +8253,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The item %1 did not match the required type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Елемент %1 не відповідає необхідному типу %2.</translation>
     </message>
     <message>
         <source>The variable %1 is unused</source>
-        <translation type="unfinished"></translation>
+        <translation>Змінна %1 не використовується</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint selector</source>
@@ -8301,7 +8297,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Version %1 is not supported. The supported XQuery version is 1.0.</source>
-        <translation type="unfinished"></translation>
+        <translation>Версія %1 не підтримується. Підтримується XQuery версії 1.0.</translation>
     </message>
     <message>
         <source>The encoding %1 is invalid. It must contain Latin characters only, must not contain whitespace, and must match the regular expression %2.</source>
@@ -8357,7 +8353,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The module import feature is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Можливість імпорту модулів не підтримується</translation>
     </message>
     <message>
         <source>A variable with name %1 has already been declared.</source>
@@ -8517,7 +8513,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Parse error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Помилка розбору: %1</translation>
     </message>
     <message>
         <source>The value of the XSL-T version attribute must be a value of type %1, which %2 isn&apos;t.</source>
@@ -8529,7 +8525,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Unknown XSL-T attribute %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невідомий атрибут XSL-T %1.</translation>
     </message>
     <message>
         <source>Attribute %1 and %2 are mutually exclusive.</source>
@@ -9041,11 +9037,11 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>Атрибут %1 елемента %2 містить неправильний вміст: {%3} не є значенням типу %4.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Атрибут %1 елемента %2 містить неправильний вміст: {%3}.</translation>
     </message>
     <message>
         <source>Target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema.</source>
@@ -9077,7 +9073,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 attribute of %2 element must be %3 or %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>Атрибут %1 елемента %2 має бути %3 або %4.</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have a value of %3.</source>
@@ -9157,7 +9153,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Type %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип %1 вже визначено.</translation>
     </message>
     <message>
         <source>Attribute group %1 already defined.</source>
@@ -9297,7 +9293,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>%1 is not valid according to %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 не є правильним відповідно до %2.</translation>
     </message>
     <message>
         <source>String content does not match the length facet.</source>
@@ -9697,7 +9693,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>zero or one</source>
-        <translation type="unfinished"></translation>
+        <translation>нуль чи один</translation>
     </message>
     <message>
         <source>exactly one</source>
@@ -9705,15 +9701,15 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>one or more</source>
-        <translation type="unfinished"></translation>
+        <translation>один чи більше</translation>
     </message>
     <message>
         <source>zero or more</source>
-        <translation type="unfinished"></translation>
+        <translation>нуль чи більше</translation>
     </message>
     <message>
         <source>Required type is %1, but %2 was found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вимагається тип %1, але знайдено %2.</translation>
     </message>
     <message>
         <source>Promoting %1 to %2 may cause loss of precision.</source>
@@ -9721,7 +9717,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>The focus is undefined.</source>
-        <translation type="unfinished"></translation>
+        <translation>Фокус не визначено.</translation>
     </message>
     <message>
         <source>It&apos;s not possible to add attributes after any other kind of node.</source>
