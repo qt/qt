@@ -46,7 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if 1
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
 #endif // QT_NO_FREETYPE
@@ -70,7 +69,7 @@ QString QFont::lastResortFamily() const
         lock.relock();
     }
     return family;
-#else
+#else // QT_NO_FREETYPE
     // For the FreeType case we just hard code the face name, since otherwise on
     // East Asian systems we may get a name for a stroke based (non-ttf) font.
 
@@ -82,12 +81,6 @@ QString QFont::lastResortFamily() const
     return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":"Series 60 Sans");
 #endif // QT_NO_FREETYPE
 }
-#else // 0
-QString QFont::lastResortFamily() const
-{
-    return QLatin1String("Series 60 Sans");
-}
-#endif // 0
 
 QString QFont::defaultFamily() const
 {
