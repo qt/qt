@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Designer of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,22 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef DEFS_H
-#define DEFS_H
+import Qt 4.7
 
-#include <QtGui/QSizePolicy>
-#include <QtCore/QString>
-
-QT_BEGIN_NAMESPACE
-
-namespace qdesigner_internal {
-
-int size_type_to_int(QSizePolicy::Policy t);
-QString size_type_to_string(QSizePolicy::Policy t);
-QSizePolicy::Policy int_to_size_type(int i);
-
-}  // namespace qdesigner_internal
-
-QT_END_NAMESPACE
-
-#endif // DEFS_H
+FocusScope {
+    id:container
+    width: 220
+    height: 28
+    BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
+    signal accepted
+    property alias text: input.text
+    property alias item:input
+    TextInput{
+        id: input
+        width: parent.width - 12
+        anchors.centerIn: parent
+        maximumLength:21
+        font.pixelSize: 16;
+        font.bold: true
+        color: "#151515"; selectionColor: "mediumseagreen"
+        focus: true
+        onAccepted:{container.accepted()}
+        text: ""
+        selectByMouse: true
+    }
+}

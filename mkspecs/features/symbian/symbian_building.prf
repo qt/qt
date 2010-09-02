@@ -114,14 +114,9 @@ isEmpty(capability): capability = "None"
 capability = "--capability=$$capability"
 
 contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
-    !isEmpty(QMAKE_POST_LINK) {
-        # No way to honor the '@' :-(
-        QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
-        QMAKE_POST_LINK = && $$QMAKE_POST_LINK
-    }
-
     contains(CONFIG, plugin):QMAKE_ELF2E32_FLAGS += --definput=plugin_commonu.def
 
+    !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget}.dll $$symbianDestdir/$${baseTarget}.sym \
                       && $$QMAKE_ELF2E32_WRAPPER --version=$$decVersion \
                       --sid=$$TARGET.SID \
@@ -166,11 +161,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
-    !isEmpty(QMAKE_POST_LINK) {
-        # No way to honor the '@' :-(
-        QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
-        QMAKE_POST_LINK = && $$QMAKE_POST_LINK
-    }
+    !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
     QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget} $$symbianDestdir/$${baseTarget}.sym \
                       && $$QMAKE_ELF2E32_WRAPPER --version $$decVersion \
                       --sid=$$TARGET.SID \

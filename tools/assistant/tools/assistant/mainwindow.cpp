@@ -831,7 +831,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
         QByteArray resources;
-        aboutDia.setText(QString::fromLatin1("<center>"
+        aboutDia.setText(tr("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
             "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")

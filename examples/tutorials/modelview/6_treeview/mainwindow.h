@@ -38,28 +38,27 @@
 **
 ****************************************************************************/
 
-#ifndef MODELVIEW_H
-#define MODELVIEW_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
 
-QT_BEGIN_NAMESPACE
 class QTreeView; //forward declaration
 class QStandardItemModel;
 class QStandardItem;
-QT_END_NAMESPACE
 
-class ModelView : public QMainWindow
+
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
     QTreeView *treeView;
     QStandardItemModel *standardModel;
-    QList<QStandardItem *> prepareColumn(const QString &first,
-                                         const QString &second,
-                                         const QString &third);
+    QList<QStandardItem *> prepareRow( const QString &first,
+                                       const QString &second,
+                                       const QString &third );
 public:
-    ModelView(QWidget *parent = 0);
+    MainWindow(QWidget *parent = 0);
 };
 
-#endif // MODELVIEW_H
+#endif // MAINWINDOW_H
