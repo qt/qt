@@ -88,10 +88,6 @@
          \o Custom types can easily be added to the test data and test output.
     \endtable
 
-    Note: For higher-level GUI and application testing needs, please
-    see the \l{Third-Party Tools}{Qt testing products provided by
-    Nokia partners}.
-
 
     \section1 QTestLib API
 
