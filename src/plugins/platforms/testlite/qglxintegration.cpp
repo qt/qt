@@ -241,18 +241,18 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     , m_drawable((Drawable)window)
     , m_context(0)
 {
-    if (!QPlatformGLContext::defaultSharedContext()) {
-        if (m_defaultSharedContextMutex.tryLock()){
-            createDefaultSharedContex(xd);
-            m_defaultSharedContextMutex.unlock();
-        } else {
-            m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
-            m_defaultSharedContextMutex.unlock();
-        }
-    }
 
     QPlatformGLContext *sharePlatformContext;
     if (format.useDefaultSharedContext()) {
+        if (!QPlatformGLContext::defaultSharedContext()) {
+            if (m_defaultSharedContextMutex.tryLock()){
+                createDefaultSharedContex(xd);
+                m_defaultSharedContextMutex.unlock();
+            } else {
+                m_defaultSharedContextMutex.lock(); //wait to the the shared context is created
+                m_defaultSharedContextMutex.unlock();
+            }
+        }
         sharePlatformContext = QPlatformGLContext::defaultSharedContext();
     } else {
         sharePlatformContext = format.sharedGLContext();
@@ -309,9 +309,6 @@ void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
     } else {
         qWarning("Warning no shared context created");
     }
-
-
-
 }
 
 void QGLXGLContext::makeCurrent()
