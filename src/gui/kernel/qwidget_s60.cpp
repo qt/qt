@@ -503,8 +503,10 @@ void QWidgetPrivate::show_sys()
                     // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
                     QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
                     S60->statusPane()->SetObserver(desktopControl);
-                    if (isFullscreen)
-                        S60->statusPane()->MakeVisible(false);
+                    if (isFullscreen) {
+                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                    }
                 }
             }
         }

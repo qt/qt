@@ -129,6 +129,12 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         statusPaneVisibilityChanged = (s->IsVisible() != statusPaneVisible);
         s->MakeVisible(statusPaneVisible);
     }
+    if (buttonGroupVisibilityChanged  || statusPaneVisibilityChanged) {
+        const QSize size = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect()).size();
+        const QSize oldSize; // note that QDesktopWidget::resizeEvent ignores the QResizeEvent contents
+        QResizeEvent event(size, oldSize);
+        QApplication::instance()->sendEvent(QApplication::desktop(), &event);
+    }
     if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged && QApplication::activeWindow())
         // Ensure that control rectangle is updated
         static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
