@@ -684,8 +684,8 @@ Q_STATIC_TEMPLATE_FUNCTION inline void fetchTransformedBilinear_pixelBounds(int 
     } else {
         if (v1 < l1) {
             v2 = v1 = l1;
-        } else if (v1 >= l2 - 1) {
-            v2 = v1 = l2 - 1;
+        } else if (v1 >= l2) {
+            v2 = v1 = l2;
         } else {
             v2 = v1 + 1;
         }
@@ -715,8 +715,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
     int image_x1 = data->texture.x1;
     int image_y1 = data->texture.y1;
-    int image_x2 = data->texture.x2;
-    int image_y2 = data->texture.y2;
+    int image_x2 = data->texture.x2 - 1;
+    int image_y2 = data->texture.y2 - 1;
 
     const qreal cx = x + 0.5;
     const qreal cy = y + 0.5;
@@ -763,9 +763,9 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     x %= image_width;
                     if (x < 0) x += image_width;
                 } else {
-                    lim = qMin(count, image_x2-x);
+                    lim = qMin(count, image_x2-x+1);
                     if (x < image_x1) {
-                        Q_ASSERT(x < image_x2);
+                        Q_ASSERT(x <= image_x2);
                         uint t = fetch(s1, image_x1, data->texture.colorTable);
                         uint b = fetch(s2, image_x1, data->texture.colorTable);
                         quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
@@ -818,7 +818,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     if (blendType == BlendTransformedBilinearTiled) {
                         if (x >= image_width) x -= image_width;
                     } else {
-                        x = qMin(x, image_x2 - 1);
+                        x = qMin(x, image_x2);
                     }
 
                     uint t = fetch(s1, x, data->texture.colorTable);
