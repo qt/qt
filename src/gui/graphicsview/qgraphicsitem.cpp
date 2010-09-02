@@ -5445,9 +5445,6 @@ void QGraphicsItem::update(const QRectF &rect)
             return;
     }
 
-    if (d_ptr->discardUpdateRequest())
-        return;
-
     if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, rect);
 }
