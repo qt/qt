@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qfont.h"
+#include "qfont_p.h"
 #include <private/qt_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include "qmutex.h"
@@ -48,6 +49,17 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
+Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    const int numTypeFaces = S60->screenDevice()->NumTypefaces();
+    for (int i = 0; i < numTypeFaces; i++) {
+        TTypefaceSupport typefaceSupport;
+        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
+        const QString familyName((const QChar *)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
+        x->append(familyName);
+    }
+    lock.relock();
+});
 #endif // QT_NO_FREETYPE
 
 QString QFont::lastResortFamily() const
@@ -84,6 +96,21 @@ QString QFont::lastResortFamily() const
 
 QString QFont::defaultFamily() const
 {
+#ifdef QT_NO_FREETYPE
+    switch(d->request.styleHint) {
+        case QFont::SansSerif: {
+            static const char* const preferredSansSerif[] = {"Nokia Sans S60", "Series 60 Sans"};
+            for (int i = 0; i < sizeof preferredSansSerif / sizeof preferredSansSerif[0]; ++i) {
+                const QString sansSerif = QLatin1String(preferredSansSerif[i]);
+                if (fontFamiliesOnFontServer()->contains(sansSerif))
+                    return sansSerif;
+            }
+        }
+        // No break. Intentional fall through.
+        default:
+            return lastResortFamily();
+    }
+#endif // QT_NO_FREETYPE
     return lastResortFamily();
 }
 
