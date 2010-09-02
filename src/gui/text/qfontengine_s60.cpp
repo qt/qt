@@ -166,6 +166,11 @@ const uchar *QSymbianTypeFaceExtras::cmap() const
     return reinterpret_cast<const uchar *>(m_cmapTable.constData());
 }
 
+bool QSymbianTypeFaceExtras::isSymbolCMap() const
+{
+    return m_symbolCMap;
+}
+
 CFont *QSymbianTypeFaceExtras::fontOwner() const
 {
     return m_cFont;
@@ -256,7 +261,7 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
         *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap,
-                        (isRtl && !m_symbolCMap) ? QChar::mirroredChar(uc) : uc);
+                        (isRtl && !m_extras->isSymbolCMap()) ? QChar::mirroredChar(uc) : uc);
     }
 
     glyphs->numGlyphs = g - glyphs->glyphs;
