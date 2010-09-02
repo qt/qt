@@ -384,9 +384,7 @@ void MenuManager::launchQmlExample(const QString &name)
     qmlRoot->setProperty("show", QVariant(true));
     qmlRoot->setProperty("qmlFile", QUrl::fromLocalFile(file.fileName()));
 #else
-    QMessageBox::critical(0, tr("Failed to launch the example"),
-            tr("This application was built without the QtDeclarative module, and therefore declarative examples have been disabled."),
-            QMessageBox::Cancel);
+    exampleError(QProcess::UnknownError);
 #endif
 }
 
