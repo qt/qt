@@ -142,8 +142,8 @@ private slots:
     void importsOrder();
 
     void qmlAttachedPropertiesObjectMethod();
-
     void customOnProperty();
+    void variantNotify();
 
     // regression tests for crashes
     void crash1();
@@ -1681,6 +1681,20 @@ void tst_qdeclarativelanguage::customOnProperty()
     QVERIFY(object != 0);
 
     QCOMPARE(object->property("on").toInt(), 10);
+
+    delete object;
+}
+
+// QTBUG-12601
+void tst_qdeclarativelanguage::variantNotify()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("variantNotify.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("notifyCount").toInt(), 1);
 
     delete object;
 }
