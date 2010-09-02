@@ -498,11 +498,6 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 }
 
 /*!
-    \class QDeclarativeXmlListModel
-    \internal
-*/
-
-/*!
     \qmlclass XmlListModel QDeclarativeXmlListModel
     \ingroup qml-working-with-data
   \since 4.7

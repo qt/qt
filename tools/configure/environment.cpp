@@ -281,8 +281,7 @@ static QByteArray qt_create_environment(const QStringList &environment)
             pos += tmpSize;
     }
     // add the user environment
-    for (QStringList::ConstIterator it = environment.begin(); it != environment.end(); it++ ) {
-            QString tmp = *it;
+    foreach (const QString &tmp, environment) {
             uint tmpSize = sizeof(wchar_t) * (tmp.length() + 1);
             envlist.resize(envlist.size() + tmpSize);
             memcpy(envlist.data() + pos, tmp.utf16(), tmpSize);
@@ -386,7 +385,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
         switch(GetLastError()) {
         case E2BIG:
             cerr << "execute: Argument list exceeds 1024 bytes" << endl;
-            foreach(QString arg, arguments)
+            foreach (const QString &arg, arguments)
                 cerr << "   (" << arg.toLocal8Bit().constData() << ")" << endl;
             break;
         case ENOENT:
@@ -400,7 +399,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
             break;
         default:
             cerr << "execute: Unknown error" << endl;
-            foreach(QString arg, arguments)
+            foreach (const QString &arg, arguments)
                 cerr << "   (" << arg.toLocal8Bit().constData() << ")" << endl;
             break;
         }

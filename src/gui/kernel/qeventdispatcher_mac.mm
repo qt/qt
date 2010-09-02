@@ -830,6 +830,7 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
                 [window setLevel:levelBeforeEnterModal];
         }
         currentModalSessionCached = info.session;
+        cleanupModalSessionsNeeded = false;
     }
     return currentModalSessionCached;
 }
@@ -881,6 +882,10 @@ void QEventDispatcherMacPrivate::cleanupModalSessions()
     for (int i=stackSize-1; i>=0; --i) {
         QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
         if (info.widget) {
+            // This session has a widget, and is therefore not marked
+            // as stopped. So just make it current. There might still be other
+            // stopped sessions on the stack, but those will be stopped on
+            // a later "cleanup" call.
             currentModalSessionCached = info.session;
             break;
         }
@@ -926,6 +931,7 @@ void QEventDispatcherMacPrivate::endModalSession(QWidget *widget)
             if (i == stackSize-1) {
                 // The top sessions ended. Interrupt the event dispatcher
                 // to start spinning the correct session immidiatly: 
+                currentModalSessionCached = 0;
                 cleanupModalSessionsNeeded = true;
                 QEventDispatcherMac::instance()->interrupt();
             }

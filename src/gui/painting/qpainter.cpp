@@ -696,9 +696,9 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 
         skip = false;
 
-        QBrush penBrush = s->pen.brush();
-        Qt::BrushStyle brushStyle = s->brush.style();
-        Qt::BrushStyle penBrushStyle = penBrush.style();
+        QBrush penBrush = (qpen_style(s->pen) == Qt::NoPen) ? QBrush(Qt::NoBrush) : qpen_brush(s->pen);
+        Qt::BrushStyle brushStyle = qbrush_style(s->brush);
+        Qt::BrushStyle penBrushStyle = qbrush_style(penBrush);
         alpha = (penBrushStyle != Qt::NoBrush
                  && (penBrushStyle < Qt::LinearGradientPattern && penBrush.color().alpha() != 255)
                  && !penBrush.isOpaque())
@@ -5863,7 +5863,8 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     }
 
     bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
-                                           || d->extended->type() == QPaintEngine::OpenVG;
+                                           || d->extended->type() == QPaintEngine::OpenVG
+                                           || d->extended->type() == QPaintEngine::OpenGL;
 
     if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
@@ -5907,7 +5908,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     // Recreate the layout of the static text because the matrix or font has changed
     if (staticTextNeedsReinit)
-        staticText_d->init();    
+        staticText_d->init();
 
     if (transformedPosition != staticText_d->position) { // Translate to actual position
         QFixed fx = QFixed::fromReal(transformedPosition.x());

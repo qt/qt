@@ -1966,6 +1966,11 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     QMutexLocker locker(&globalData()->mutex);
     const QSslConfigurationPrivate *global = globalData()->config.constData();
 
+    if (!global) {
+        ptr = 0;
+        return;
+    }
+
     ptr->ref = 1;
     ptr->peerCertificate = global->peerCertificate;
     ptr->peerCertificateChain = global->peerCertificateChain;

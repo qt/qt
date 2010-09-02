@@ -192,7 +192,7 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     if (!(hints & ImplicitObject)) {
         local.coreIndex = -1;
         lastData = &local;
-        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
+        return QScriptClass::HandlesWriteAccess;
     }
 
     return 0;

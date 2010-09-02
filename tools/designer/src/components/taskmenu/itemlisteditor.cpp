@@ -114,20 +114,20 @@ void AbstractItemEditor::keyPressEvent(QKeyEvent *e)
 }
 
 static const char * const itemFlagNames[] = {
-    "Selectable",
-    "Editable",
-    "DragEnabled",
-    "DropEnabled",
-    "UserCheckable",
-    "Enabled",
-    "Tristate",
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Selectable"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Editable"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "DragEnabled"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "DropEnabled"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "UserCheckable"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Enabled"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Tristate"),
     0
 };
 
 static const char * const checkStateNames[] = {
-    "Unchecked",
-    "PartiallyChecked",
-    "Checked",
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Unchecked"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "PartiallyChecked"),
+    QT_TRANSLATE_NOOP("AbstractItemEditor", "Checked"),
     0
 };
 
@@ -135,7 +135,7 @@ static QStringList c2qStringList(const char * const in[])
 {
     QStringList out;
     for (int i = 0; in[i]; i++)
-        out << QLatin1String(in[i]);
+        out << AbstractItemEditor::tr(in[i]);
     return out;
 }
 

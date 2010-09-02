@@ -111,10 +111,10 @@ void ChangeProperties::on_buttonSet_clicked()
 		value = qVariantFromValue(col);
 	    } else {
 		QMessageBox::warning(this, tr("Can't parse input"), 
-		                            QString(tr("Failed to create a color from %1\n"
+		                           tr("Failed to create a color from %1\n"
 					                "The string has to be a valid color name (e.g. 'red')\n"
 							"or a RGB triple of format '#rrggbb'."
-							).arg(editValue->text())));
+							).arg(editValue->text()));
 	    }
 	}
 	break;
@@ -125,10 +125,10 @@ void ChangeProperties::on_buttonSet_clicked()
 		value = qVariantFromValue(fnt);
 	    } else {
 		QMessageBox::warning(this, tr("Can't parse input"), 
-		                            (tr("Failed to create a font from %1\n"
+		                           tr("Failed to create a font from %1\n"
 					        "The string has to have a format family,<point size> or\n"
 						"family,pointsize,stylehint,weight,italic,underline,strikeout,fixedpitch,rawmode."
-							).arg(editValue->text())));
+							).arg(editValue->text()));
 	    }
 	}
 	break;

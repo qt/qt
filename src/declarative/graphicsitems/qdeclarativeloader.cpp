@@ -189,14 +189,6 @@ void QDeclarativeLoaderPrivate::initResize()
     \sa {dynamic-object-creation}{Dynamic Object Creation}
 */
 
-/*!
-    \internal
-    \class QDeclarativeLoader
- */
-
-/*!
-    Create a new QDeclarativeLoader instance.
- */
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
@@ -204,9 +196,6 @@ QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
     d->flags |= QGraphicsItem::ItemIsFocusScope;
 }
 
-/*!
-    Destroy the loader instance.
- */
 QDeclarativeLoader::~QDeclarativeLoader()
 {
     Q_D(QDeclarativeLoader);

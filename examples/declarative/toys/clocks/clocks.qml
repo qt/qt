@@ -51,4 +51,9 @@ Rectangle {
         Clock { city: "Mumbai"; shift: 5.5 }
         Clock { city: "Tokyo"; shift: 9 }
     }
+    QuitButton {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 10
+    }
 }

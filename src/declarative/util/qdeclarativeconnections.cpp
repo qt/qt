@@ -124,13 +124,6 @@ public:
 
     \sa QtDeclarative
 */
-
-/*!
-    \internal
-    \class QDeclarativeConnections
-    \brief The QDeclarativeConnections class describes generalized connections to signals.
-
-*/
 QDeclarativeConnections::QDeclarativeConnections(QObject *parent) :
     QObject(*(new QDeclarativeConnectionsPrivate), parent)
 {
