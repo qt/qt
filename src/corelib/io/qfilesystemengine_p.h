@@ -64,7 +64,7 @@ class QFileSystemEngine
 public:
     static bool isCaseSensitive();
 
-    static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link);
+    static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
 

@@ -163,9 +163,79 @@ bool QFileSystemEngine::isCaseSensitive()
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link)
+QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
-    return link; // TODO implement
+#if defined(__GLIBC__) && !defined(PATH_MAX)
+#define PATH_CHUNK_SIZE 256
+    char *s = 0;
+    int len = -1;
+    int size = PATH_CHUNK_SIZE;
+
+    while (1) {
+        s = (char *) ::realloc(s, size);
+        Q_CHECK_PTR(s);
+        len = ::readlink(link.nativeFilePath().constData(), s, size);
+        if (len < 0) {
+            ::free(s);
+            break;
+        }
+        if (len < size) {
+            break;
+        }
+        size *= 2;
+    }
+#else
+    char s[PATH_MAX+1];
+    int len = readlink(link.nativeFilePath().constData(), s, PATH_MAX);
+#endif
+    if (len > 0) {
+        QString ret;
+        if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
+            fillMetaData(link, data, QFileSystemMetaData::DirectoryType);
+        if (data.isDirectory() && s[0] != '/') {
+            QDir parent(link.filePath());
+            parent.cdUp();
+            ret = parent.path();
+            if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
+                ret += QLatin1Char('/');
+        }
+        s[len] = '\0';
+        ret += QFile::decodeName(QByteArray(s));
+#if defined(__GLIBC__) && !defined(PATH_MAX)
+        ::free(s);
+#endif
+
+        if (!ret.startsWith(QLatin1Char('/'))) {
+            if (link.filePath().startsWith(QLatin1Char('/'))) {
+                ret.prepend(link.filePath().left(link.filePath().lastIndexOf(QLatin1Char('/')))
+                            + QLatin1Char('/'));
+            } else {
+                ret.prepend(QDir::currentPath() + QLatin1Char('/'));
+            }
+        }
+        ret = QDir::cleanPath(ret);
+        if (ret.size() > 1 && ret.endsWith(QLatin1Char('/')))
+            ret.chop(1);
+        return QFileSystemEntry(ret);
+    }
+#if !defined(QWS) && defined(Q_OS_MAC)
+    {
+        FSRef fref;
+        if (FSPathMakeRef((const UInt8 *)QFile::encodeName(QDir::cleanPath(link.filePath())).data(), &fref, 0) == noErr) {
+            // TODO get the meta data info from the QFileSystemMetaData object
+            Boolean isAlias, isFolder;
+            if (FSResolveAliasFile(&fref, true, &isFolder, &isAlias) == noErr && isAlias) {
+                AliasHandle alias;
+                if (FSNewAlias(0, &fref, &alias) == noErr && alias) {
+                    QCFString cfstr;
+                    if (FSCopyAliasInfo(alias, 0, 0, &cfstr, 0, 0) == noErr)
+                        return QFileSystemEntry(QCFString::toQString(cfstr));
+                }
+            }
+        }
+    }
+#endif
+    return QFileSystemEntry();
 }
 
 //static
