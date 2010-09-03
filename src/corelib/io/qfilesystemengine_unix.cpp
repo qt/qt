@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
 #include "qfsfileengine.h"
@@ -47,10 +48,58 @@
 #include <errno.h>
 
 #if defined(Q_OS_MAC)
-# include <private/qcore_mac_p.h>
+# include <QtCore/private/qcore_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
+{
+    // Permissions
+    if (statBuffer.st_mode & S_IRUSR)
+        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
+    if (statBuffer.st_mode & S_IWUSR)
+        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
+    if (statBuffer.st_mode & S_IXUSR)
+        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
+
+    if (statBuffer.st_mode & S_IRGRP)
+        entryFlags |= QFileSystemMetaData::GroupReadPermission;
+    if (statBuffer.st_mode & S_IWGRP)
+        entryFlags |= QFileSystemMetaData::GroupWritePermission;
+    if (statBuffer.st_mode & S_IXGRP)
+        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
+
+    if (statBuffer.st_mode & S_IROTH)
+        entryFlags |= QFileSystemMetaData::OtherReadPermission;
+    if (statBuffer.st_mode & S_IWOTH)
+        entryFlags |= QFileSystemMetaData::OtherWritePermission;
+    if (statBuffer.st_mode & S_IXOTH)
+        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
+
+    // Type
+    if ((statBuffer.st_mode & S_IFMT) == S_IFREG)
+        entryFlags |= QFileSystemMetaData::FileType;
+    else if ((statBuffer.st_mode & S_IFMT) == S_IFDIR)
+        entryFlags |= QFileSystemMetaData::DirectoryType;
+    else
+        entryFlags |= QFileSystemMetaData::SequentialType;
+
+    // Attributes
+    entryFlags |= QFileSystemMetaData::ExistsAttribute;
+    size_ = statBuffer.st_size;
+#if !defined(QWS) && defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+    if (statBuffer.st_flags & UF_HIDDEN) {
+        entryFlags |= QFileSystemMetaData::HiddenAttribute;
+        knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
+    }
+#endif
+
+    // Times
+    creationTime_ = statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime;
+    modificationTime_ = statBuffer.st_mtime;
+    accessTime_ = statBuffer.st_atime;
+}
 
 bool QFileSystemEngine::isCaseSensitive()
 {

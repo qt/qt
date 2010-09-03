@@ -53,7 +53,10 @@
 // We mean it.
 //
 
+#include "qplatformdefs.h"
 #include <QtCore/qglobal.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qabstractfileengine.h>
 
 // Platform-specific includes
 #if defined(Q_OS_WIN)
@@ -67,7 +70,7 @@ class QFileSystemEngine;
 struct QFileSystemMetaData
 {
     QFileSystemMetaData()
-        : cachedFlags(0)
+        : knownFlagsMask(0)
     {
     }
 
@@ -78,59 +81,164 @@ struct QFileSystemMetaData
         UserReadPermission  = 0x00000400,   UserWritePermission  = 0x00000200,  UserExecutePermission  = 0x00000100,
         OwnerReadPermission = 0x00004000,   OwnerWritePermission = 0x00002000,  OwnerExecutePermission = 0x00001000,
 
-        OtherPermissions    = 0x0000000F,
-        GroupPermissions    = 0x000000F0,
-        UserPermissions     = 0x00000F00,
-        OwnerPermissions    = 0x0000F000,
+        OtherPermissions    = OtherReadPermission | OtherWritePermission | OtherExecutePermission,
+        GroupPermissions    = GroupReadPermission | GroupWritePermission | GroupExecutePermission,
+        UserPermissions     = UserReadPermission  | UserWritePermission  | UserExecutePermission,
+        OwnerPermissions    = OwnerReadPermission | OwnerWritePermission | OwnerExecutePermission,
 
-        Permissions         = 0x0000FFFF,
+        Permissions         = OtherPermissions | GroupPermissions | UserPermissions | OwnerPermissions,
 
         // Type
         LinkType            = 0x00010000,
         FileType            = 0x00020000,
         DirectoryType       = 0x00040000,
+#if !defined(QWS) && defined(Q_OS_MAC)
         BundleType          = 0x00080000,
+        AliasType           = 0x08000000,
+#else
+        BundleType          =        0x0,
+        AliasType           =        0x0,
+#endif
+        SequentialType      = 0x00800000,   // Note: overlaps with QAbstractFileEngine::RootFlag
 
-        Type                = 0x000F0000,
+        Type                = LinkType | FileType | DirectoryType | BundleType | SequentialType | AliasType,
 
         // Attributes
         HiddenAttribute     = 0x00100000,
-        LocalDiskAttribute  = 0x00200000,
+        SizeAttribute       = 0x00200000,   // Note: overlaps with QAbstractFileEngine::LocalDiskFlag
         ExistsAttribute     = 0x00400000,
-        SizeAttribute       = 0x00800000,   // Note: overlaps with QAbstractFileEngine::RootFlag
 
-        Attributes          = 0x00F00000,
+        Attributes          = HiddenAttribute | SizeAttribute | ExistsAttribute,
 
         // Times
         CreationTime        = 0x01000000,   // Note: overlaps with QAbstractFileEngine::Refresh
         ModificationTime    = 0x02000000,
         AccessTime          = 0x04000000,
 
-        Times               = 0x07000000
+        Times               = CreationTime | ModificationTime | AccessTime,
+
+        // Owner IDs
+        UserId              = 0x10000000,
+        GroupId             = 0x20000000,
+
+        OwnerIds            = UserId | GroupId,
+
+        PosixStatFlags      = QFileSystemMetaData::OtherPermissions
+                            | QFileSystemMetaData::GroupPermissions
+                            | QFileSystemMetaData::OwnerPermissions
+                            | QFileSystemMetaData::FileType
+                            | QFileSystemMetaData::DirectoryType
+                            | QFileSystemMetaData::SequentialType
+#if !defined(QWS) && defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+                            // Mac OS >= 10.5: st_flags & UF_HIDDEN
+                            | QFileSystemMetaData::HiddenAttribute
+#endif
+                            | QFileSystemMetaData::SizeAttribute
+                            | QFileSystemMetaData::Times
+                            | QFileSystemMetaData::OwnerIds,
+
+        AllMetaDataFlags    = 0xFFFFFFFF
+
     };
     Q_DECLARE_FLAGS(MetaDataFlags, MetaDataFlag)
 
     bool hasFlags(MetaDataFlags flags) const
     {
-        return ((cachedFlags & flags) == flags);
+        return ((knownFlagsMask & flags) == flags);
+    }
+
+    MetaDataFlags missingFlags(MetaDataFlags flags)
+    {
+        return flags & ~knownFlagsMask;
     }
 
     void clear()
     {
-        cachedFlags = 0;
+        knownFlagsMask = 0;
     }
+
+    void clearFlags(MetaDataFlags flags = AllMetaDataFlags)
+    {
+        knownFlagsMask &= ~flags;
+    }
+
+    bool exists() const                     { return (entryFlags & ExistsAttribute); }
+
+    bool isLink() const                     { return (entryFlags & LinkType); }
+    bool isFile() const                     { return (entryFlags & FileType); }
+    bool isDirectory() const                { return (entryFlags & DirectoryType); }
+#if !defined(QWS) && defined(Q_OS_MAC)
+    bool isBundle() const                   { return (entryFlags & BundleType); }
+    bool isAlias() const                    { return (entryFlags & AliasType); }
+#else
+    bool isBundle() const                   { return false; }
+    bool isAlias() const                    { return false; }
+#endif
+    bool isSequential() const               { return (entryFlags & SequentialType); }
+    bool isHidden() const                   { return (entryFlags & HiddenAttribute); }
+
+    qint64 size() const                     { return size_; }
+
+    QFile::Permissions permissions() const  { return QFile::Permissions(Permissions & entryFlags); }
+
+#if defined(Q_OS_UNIX)
+    QDateTime creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
+    QDateTime modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
+    QDateTime accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
+
+    QDateTime fileTime(QAbstractFileEngine::FileTime time) const
+    {
+        switch (time)
+        {
+        case QAbstractFileEngine::ModificationTime:
+            return modificationTime();
+
+        case QAbstractFileEngine::AccessTime:
+            return accessTime();
+
+        case QAbstractFileEngine::CreationTime:
+            return creationTime();
+        }
+
+        return QDateTime();
+    }
+
+    uint userId() const                     { return userId_; }
+    uint groupId() const                    { return groupId_; }
+
+    uint ownerId(QAbstractFileEngine::FileOwner owner) const
+    {
+        if (owner == QAbstractFileEngine::OwnerUser)
+            return userId();
+        else
+            return groupId();
+    }
+
+    void fillFromStatBuf(const QT_STATBUF &statBuffer);
+#endif
 
 private:
     friend class QFileSystemEngine;
 
-    MetaDataFlags cachedFlags;
+    MetaDataFlags knownFlagsMask;
+    MetaDataFlags entryFlags;
+
+    qint64 size_;
 
     // Platform-specific data goes here:
 #if defined(Q_OS_WIN)
 #else
+    time_t creationTime_;
+    time_t modificationTime_;
+    time_t accessTime_;
+
+    uint userId_;
+    uint groupId_;
 #endif
 
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemMetaData::MetaDataFlags)
 
 QT_END_NAMESPACE
 
