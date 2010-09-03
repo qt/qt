@@ -41,7 +41,11 @@ public:
             load();
         if (!m_handle)
             return 0;
-        return (void*)GetProcAddress(m_handle, symbol);
+#ifdef Q_OS_WINCE
+    return (void*)GetProcAddress(m_handle, (const wchar_t*)QString::fromLatin1(symbol).utf16());
+#else
+    return (void*)GetProcAddress(m_handle, symbol);
+#endif
     }
 
     static void *resolve(const QString &libraryName, const char *symbol)

@@ -36,6 +36,13 @@
     in the documentation for LoadLibrary for Windows CE at MSDN.
     (http://msdn.microsoft.com/en-us/library/ms886736.aspx)
 */
+#if defined(Q_OS_WINCE)
+HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory/*= true*/)
+{
+    return ::LoadLibrary(libraryName);
+}
+#else
+
 #if !defined(QT_BOOTSTRAPPED)
 extern QString qAppFileName();
 #endif
@@ -55,9 +62,6 @@ static QString qSystemDirectory()
 
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory/*= true*/)
 {
-#if defined(Q_OS_WINCE)
-    return ::LoadLibrary(lpFileName);
-#else
     QStringList searchOrder;
 
 #if !defined(QT_BOOTSTRAPPED)
@@ -85,6 +89,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
             return inst;
     }
     return 0;
-#endif
+
 }
 
+#endif  //Q_OS_WINCE
