@@ -55,17 +55,25 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qdiriterator.h>
 #include <QtCore/qstringlist.h>
 
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
+
+// Platform-specific headers
+#if defined(Q_OS_WIN)
+#elif defined (Q_OS_SYMBIAN)
+#include <f32file.h>
+#else
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QFileSystemIterator
 {
 public:
-    QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters, const QStringList &nameFilters);
+    QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters, const QStringList &nameFilters, QDirIterator::IteratorFlags flags);
     ~QFileSystemIterator();
 
     bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);
@@ -74,6 +82,11 @@ private:
 
     // Platform-specific data
 #if defined(Q_OS_WIN)
+#elif defined (Q_OS_SYMBIAN)
+    RDir dirHandle;
+    TEntryArray entries;
+    TInt lastError;
+    TInt entryIndex;
 #else
 #endif
 

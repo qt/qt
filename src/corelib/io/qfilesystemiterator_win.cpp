@@ -44,11 +44,12 @@
 QT_BEGIN_NAMESPACE
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
-        const QStringList &nameFilters)
+                                         const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
 {
     Q_UNUSED(entry)
     Q_UNUSED(filters)
     Q_UNUSED(nameFilters)
+    Q_UNUSED(flags)
 }
 
 QFileSystemIterator::~QFileSystemIterator()
