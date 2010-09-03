@@ -38,10 +38,38 @@ ImageItem &ImageItem::operator=(const ImageItem &other)
     return *this;
 }
 
+// Defined in lookup3.c:
+void hashword2 (
+const quint32 *k,                   /* the key, an array of quint32 values */
+size_t          length,               /* the length of the key, in quint32s */
+quint32       *pc,                      /* IN: seed OUT: primary hash value */
+quint32       *pb);               /* IN: more seed OUT: secondary hash value */
+
 quint64 ImageItem::computeChecksum(const QImage &image)
 {
-    //### Just fake it for now
-    return qChecksum((const char *)image.constScanLine(50), image.bytesPerLine());
+    quint32 h1 = 0xfeedbacc;
+    quint32 h2 = 0x21604894;
+
+    QImage img(image);
+    const int bpl = img.bytesPerLine();
+    const int padBytes = bpl - (img.width() * img.depth() / 8);
+    if (padBytes) {
+        uchar *p = img.bits() + bpl - padBytes;
+        const int h = img.height();
+        for (int y = 0; y < h; ++y) {
+            qMemSet(p, 0, padBytes);
+            p += bpl;
+        }
+    }
+    if (img.format() == QImage::Format_RGB32) {    // Thank you, Haavard
+        quint32 *p = (quint32 *)img.bits();
+        const quint32 *end = p + (img.byteCount()/4);
+        while (p<end)
+            *p++ &= RGB_MASK;
+    }
+
+    hashword2((const quint32 *)img.constBits(), img.byteCount()/4, &h1, &h2);
+    return (quint64(h1) << 32) | h2;
 }
 
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
