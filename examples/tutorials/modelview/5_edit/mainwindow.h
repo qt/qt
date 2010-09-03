@@ -42,8 +42,7 @@
 #define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
-
-class QTableView; //forward declaration
+#include <QtGui/QTableView>
 
 class MainWindow : public QMainWindow
 {
