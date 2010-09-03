@@ -196,27 +196,12 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
                  + plat.qtVersion + QDir::separator();
     if (isBaseline) {
         storePath += QLatin1String("baselines") + QDir::separator()
-                + engineForItem(item) + QDir::separator();
+                + item.engineAsString() + QDir::separator();
     } else {
         storePath += runId + QDir::separator();
     }
     //#? QString itemName = item.scriptName.replace(item.scriptName.lastIndexOf('.'), '_');
     return storePath + item.scriptName + QLatin1Char('.');
-}
-
-QString BaselineHandler::engineForItem(const ImageItem &item)
-{
-    switch (item.engine) {
-    case ImageItem::Raster:
-        return QLatin1String("Raster");
-        break;
-    case ImageItem::OpenGL:
-        return QLatin1String("OpenGL");
-        break;
-    default:
-        break;
-    }
-    return QLatin1String("Unknown");
 }
 
 QString BaselineHandler::computeMismatchScore(const QImage &baseline, const QImage &rendered)
