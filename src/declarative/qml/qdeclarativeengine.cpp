@@ -2113,7 +2113,7 @@ bool QDeclarativeEnginePrivate::isQObject(int t)
 QObject *QDeclarativeEnginePrivate::toQObject(const QVariant &v, bool *ok) const
 {
     int t = v.userType();
-    if (m_compositeTypes.contains(t)) {
+    if (t == QMetaType::QObjectStar || m_compositeTypes.contains(t)) {
         if (ok) *ok = true;
         return *(QObject **)(v.constData());
     } else {
