@@ -93,6 +93,9 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
+#ifdef QT_OPENGL_ES
+#include <EGL/egl.h>
+#endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
 
