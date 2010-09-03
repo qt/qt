@@ -40,13 +40,14 @@
 ****************************************************************************/
 #include "qdirectfbwindow.h"
 #include "qdirectfbinput.h"
+#include "qdirectfbglcontext.h"
 
 #include <QWidget>
 
 #include <directfb.h>
 
 QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
-    : QPlatformWindow(tlw), m_inputHandler(inputhandler)
+    : QPlatformWindow(tlw), m_inputHandler(inputhandler), m_context(0)
 {
     IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     DFBDisplayLayerConfig layerConfig;
@@ -154,4 +155,24 @@ WId QDirectFbWindow::winId() const
     DFBWindowID id;
     m_dfbWindow->GetID(m_dfbWindow, &id);
     return WId(id);
+}
+
+QPlatformGLContext *QDirectFbWindow::glContext() const
+{
+    if (!m_context) {
+        IDirectFBSurface *surface;
+        DFBResult result = m_dfbWindow->GetSurface(m_dfbWindow,&surface);
+        if (result != DFB_OK) {
+            qWarning("could not retrieve surface in QDirectFbWindow::glContext()");
+            return 0;
+        }
+        IDirectFBGL *gl;
+        result = surface->GetGL(surface,&gl);
+        if (result != DFB_OK) {
+            qWarning("could not retrieve IDirectFBGL in QDirectFbWindow::glContext()");
+            return 0;
+        }
+        const_cast<QDirectFbWindow *>(this)->m_context = new QDirectFbGLContext(gl);
+    }
+    return m_context;
 }
