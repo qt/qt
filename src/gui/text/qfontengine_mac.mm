@@ -143,7 +143,7 @@ void qmacfontengine_gamma_correct(QImage *image)
 
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
@@ -158,9 +158,6 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
         symbolicTraits |= kCTFontItalicTrait;
         break;
     }
-
-    QCFString name;
-    ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
 
     transform = CGAffineTransformIdentity;
     if (fontDef.stretch != 100) {

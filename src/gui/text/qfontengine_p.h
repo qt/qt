@@ -477,8 +477,7 @@ private:
 class QCoreTextFontEngineMulti : public QFontEngineMulti
 {
 public:
-    QCoreTextFontEngineMulti(const ATSFontFamilyRef &atsFamily, const ATSFontRef &atsFontRef,
-                             const QFontDef &fontDef, bool kerning);
+    QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning);
     ~QCoreTextFontEngineMulti();
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,

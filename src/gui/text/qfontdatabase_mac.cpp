@@ -293,8 +293,12 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // previous versions
     family_list << QApplication::font().defaultFamily();
 
+#if defined(QT_MAC_USE_COCOA)
+    QCFString fontName = NULL, familyName = NULL;
+#else
     ATSFontFamilyRef familyRef = 0;
     ATSFontRef fontRef = 0;
+#endif
 
     QMutexLocker locker(fontDatabaseMutex());
     QFontDatabasePrivate *db = privateDb();
@@ -304,26 +308,21 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         for (int k = 0; k < db->count; ++k) {
             if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
                 QByteArray family_name = db->families[k]->name.toUtf8();
+#if defined(QT_MAC_USE_COCOA)
+                CTFontRef ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
+                if (ctFont) {
+                    fontName = CTFontCopyFullName(ctFont);
+                    familyName = CTFontCopyFamilyName(ctFont);
+                    CFRelease(ctFont);
+                    goto FamilyFound;
+                }
+#else
                 familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
                 if (familyRef) {
                     fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
                     goto FamilyFound;
-                } else {
-#if defined(QT_MAC_USE_COCOA)
-                    // ATS and CT disagrees on what the family name should be,
-                    // use CT to look up the font if ATS fails.
-                    QCFString familyName = QString::fromAscii(family_name);
-                    QCFType<CTFontRef> CTfontRef = CTFontCreateWithName(familyName, 12, NULL);
-                    QCFType<CTFontDescriptorRef> fontDescriptor = CTFontCopyFontDescriptor(CTfontRef);
-                    QCFString displayName = (CFStringRef)CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontDisplayNameAttribute);
-
-                    familyRef = ATSFontFamilyFindFromName(displayName, kATSOptionFlagsDefault);
-                    if (familyRef) {
-                        fontRef = ATSFontFindFromName(displayName, kATSOptionFlagsDefault);
-                        goto FamilyFound;
-                    }
-#endif
                 }
+#endif
             }
         }
     }
@@ -331,18 +330,18 @@ FamilyFound:
     //fill in the engine's font definition
     QFontDef fontDef = d->request; //copy..
     if(fontDef.pointSize < 0)
-	fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
+        fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
     else
-	fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
-    {
-        QCFString actualName;
-        if(ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
-            fontDef.family = actualName;
-    }
+        fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
 
 #ifdef QT_MAC_USE_COCOA
-    QFontEngine *engine = new QCoreTextFontEngineMulti(familyRef, fontRef, fontDef, d->kerning);
+    fontDef.family = familyName;
+    QFontEngine *engine = new QCoreTextFontEngineMulti(fontName, fontDef, d->kerning);
+    CFRelease(fontName);
 #else
+    QCFString actualName;
+    if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
+        fontDef.family = actualName;
     QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #endif
     d->engineData->engine = engine;
