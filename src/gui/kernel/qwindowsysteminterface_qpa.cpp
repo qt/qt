@@ -61,6 +61,10 @@ extern QPointer<QWidget> qt_last_mouse_receiver;
 
 void QWindowSystemInterface::handleEnterEvent(QWidget *tlw)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        return;
+
     if (tlw) {
         QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(tlw);
         QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
@@ -69,12 +73,20 @@ void QWindowSystemInterface::handleEnterEvent(QWidget *tlw)
 
 void QWindowSystemInterface::handleLeaveEvent(QWidget *tlw)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        return;
+
     QWindowSystemInterfacePrivate::LeaveEvent *e = new QWindowSystemInterfacePrivate::LeaveEvent(tlw);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
 
 void QWindowSystemInterface::handleGeometryChange(QWidget *tlw, const QRect &newRect)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        return;
+
     QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
 }
@@ -102,6 +114,9 @@ void QWindowSystemInterface::handleMouseEvent(QWidget *w, const QPoint & local, 
 
 void QWindowSystemInterface::handleMouseEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        tlw = 0;
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(tlw, timestamp, local, global, b);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
@@ -114,6 +129,10 @@ void QWindowSystemInterface::handleKeyEvent(QWidget *w, QEvent::Type t, int k, Q
 
 void QWindowSystemInterface::handleKeyEvent(QWidget *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        tlw = 0;
+
     QWindowSystemInterfacePrivate::KeyEvent * e =
             new QWindowSystemInterfacePrivate::KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
@@ -126,6 +145,10 @@ void QWindowSystemInterface::handleWheelEvent(QWidget *w, const QPoint & local, 
 
 void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
 {
+    QWidgetData *data = qt_qwidget_data(tlw);
+    if (data->in_destructor)
+        tlw = 0;
+
     QWindowSystemInterfacePrivate::WheelEvent *e =
             new QWindowSystemInterfacePrivate::WheelEvent(tlw, timestamp, local, global, d, o);
     QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
