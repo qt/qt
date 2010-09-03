@@ -88,6 +88,8 @@ public:
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
             QFileSystemMetaData *data = 0);
 
+    static QAbstractFileEngine *resolveEntryAndCreateLegacyEngine(QFileSystemEntry &entry,
+            QFileSystemMetaData &data);
 private:
     static QString slowCanonicalized(const QString &path);
 };

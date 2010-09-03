@@ -42,6 +42,12 @@
 #include "qfilesystemengine_p.h"
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
+#include <QtCore/private/qabstractfileengine_p.h>
+#ifdef QT_BUILD_CORE_LIB
+#include <QtCore/private/qresource_p.h>
+#endif
+
+QT_BEGIN_NAMESPACE
 
 /*!
     \internal
@@ -111,3 +117,84 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
     return QDir::cleanPath(tmpPath);
 }
 
+static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &entry, QFileSystemMetaData &data,
+        QAbstractFileEngine *&engine)
+{
+    QString const &filePath = entry.filePath();
+    if ((engine = qt_custom_file_engine_handler_create(filePath)))
+        return true;
+
+#if defined(QT_BUILD_CORE_LIB)
+    for (int prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
+        QChar const ch = filePath[prefixSeparator];
+        if (ch == QLatin1Char('/'))
+            break;
+
+        if (ch == QLatin1Char(':')) {
+            if (prefixSeparator == 0) {
+                engine = new QResourceFileEngine(filePath);
+                return true;
+            }
+
+            if (prefixSeparator == 1)
+                break;
+
+            const QStringList &paths = QDir::searchPaths(filePath.left(prefixSeparator));
+            for (int i = 0; i < paths.count(); i++) {
+                entry = QFileSystemEntry(paths.at(i) % QLatin1Char('/') % filePath.mid(prefixSeparator + 1));
+                // Recurse!
+                if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine)) {
+                    // FIXME: This will over-stat if we recurse
+                    if (engine) {
+                        if (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)
+                            return true;
+                        delete engine;
+                        engine = 0;
+                    } else if (QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute)
+                            && data.exists()) {
+                        return true;
+                    }
+                }
+            }
+
+            // entry may have been clobbered at this point.
+            return false;
+        }
+
+        //  There's no need to fully validate the prefix here. Consulting the
+        //  unicode tables could be expensive and validation is already
+        //  performed in QDir::setSearchPaths.
+        //
+        //  if (!ch.isLetterOrNumber())
+        //      break;
+    }
+#endif // defined(QT_BUILD_CORE_LIB)
+
+    return true;
+}
+
+/*!
+    \internal
+
+    Resolves the \a entry (see QDir::searchPaths) and returns an engine for
+    it, but never a QFSFileEngine.
+
+    \returns a file engine that can be used to access the entry. Returns 0 if
+    QFileSystemEngine API should be used to query and interact with the file
+    system object.
+*/
+QAbstractFileEngine *QFileSystemEngine::resolveEntryAndCreateLegacyEngine(
+        QFileSystemEntry &entry, QFileSystemMetaData &data) {
+    QFileSystemEntry copy = entry;
+    QAbstractFileEngine *engine = 0;
+
+    if (_q_resolveEntryAndCreateLegacyEngine_recursive(copy, data, engine))
+        // Reset entry to resolved copy.
+        entry = copy;
+    else
+        data.clear();
+
+    return engine;
+}
+
+QT_END_NAMESPACE
