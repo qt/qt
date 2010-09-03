@@ -151,7 +151,7 @@ void tst_Lancelot::testRasterARGB32PM()
 
 void tst_Lancelot::testOpenGL_data()
 {
-    QTest::addColumn<ImageItem>("item");
+    QTest::addColumn<ImageItem>("baseline");
 
     ImageItemList itemList(baseList);
 
