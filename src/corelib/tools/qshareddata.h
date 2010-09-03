@@ -113,6 +113,10 @@ public:
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 
@@ -192,6 +196,10 @@ public:
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 

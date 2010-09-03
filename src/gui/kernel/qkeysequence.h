@@ -179,6 +179,10 @@ public:
     operator int() const;
     int operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QKeySequence &operator=(QKeySequence &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     bool operator==(const QKeySequence &other) const;
     inline bool operator!= (const QKeySequence &other) const
     { return !(*this == other); }

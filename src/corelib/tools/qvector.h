@@ -53,6 +53,9 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_HEADER
 
@@ -118,6 +121,13 @@ public:
     inline QVector(const QVector<T> &v) : d(v.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     inline ~QVector() { if (!d) return; if (!d->ref.deref()) free(p); }
     QVector<T> &operator=(const QVector<T> &v);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVector<T> operator=(QVector<T> &&other)
+    { qSwap(p, other.p); return *this; }
+#endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QVector(std::initializer_list<T> args);
+#endif
     bool operator==(const QVector<T> &v) const;
     inline bool operator!=(const QVector<T> &v) const { return !(*this == v); }
 
@@ -297,7 +307,6 @@ public:
     inline std::vector<T> toStdVector() const
     { std::vector<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
-
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
@@ -425,6 +434,22 @@ QVector<T>::QVector(int asize, const T &t)
     while (i != p->array)
         new (--i) T(t);
 }
+
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+template <typename T>
+QVector<T>::QVector(std::initializer_list<T> args)
+{
+    p = malloc(args.size());
+    d->ref = 1;
+    d->alloc = d->size = args.size();
+    d->sharable = true;
+    d->capacity = false;
+    T* i = p->array + d->size;
+    auto it = args.end();
+    while (i != p->array)
+        new (--i) T(*(--it));
+}
+#endif
 
 template <typename T>
 void QVector<T>::free(Data *x)

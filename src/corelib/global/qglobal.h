@@ -474,6 +474,26 @@ namespace QT_NAMESPACE {}
 #      define QT_NO_ARM_EABI
 #    endif
 #  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__)
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+       /* C++0x features supported in GCC 4.3: */
+#      define Q_COMPILER_RVALUE_REFS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
+       /* C++0x features supported in GCC 4.4: */
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+       /* C++0x features supported in GCC 4.5: */
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_UNICODE_STRINGS
+#    endif
+#  endif
 
 /* IBM compiler versions are a bit messy. There are actually two products:
    the C product, and the C++ product. The C++ compiler is always packaged
