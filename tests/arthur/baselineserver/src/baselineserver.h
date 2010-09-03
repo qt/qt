@@ -66,6 +66,7 @@ private:
     QString pathForItem(const ImageItem &item, bool isBaseline = true);
     QString logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
+    QString engineForItem(const ImageItem &item);
 
     BaselineProtocol proto;
     PlatformInfo plat;

@@ -50,6 +50,8 @@
 #include <QLibraryInfo>
 #include <baselineprotocol.h>
 
+#include <QtOpenGL>
+
 #ifndef SRCDIR
 #define SRCDIR "."
 #endif
@@ -65,6 +67,7 @@ public:
 
 private:
     ImageItem render(const ImageItem &item);
+    void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
     QStringList loadScriptFile(const QString &filePath);
     void runTestSuite();
 
@@ -77,6 +80,9 @@ private slots:
 
     void testRasterARGB32PM_data();
     void testRasterARGB32PM();
+
+    void testOpenGL_data();
+    void testOpenGL();
 };
 
 tst_Lancelot::tst_Lancelot()
@@ -143,6 +149,36 @@ void tst_Lancelot::testRasterARGB32PM()
 }
 
 
+void tst_Lancelot::testOpenGL_data()
+{
+    QTest::addColumn<ImageItem>("item");
+
+    ImageItemList itemList(baseList);
+
+    for(int i = 0; i < itemList.size(); i++) {
+        itemList[i].engine = ImageItem::OpenGL;
+        itemList[i].renderFormat = QImage::Format_RGB32;
+    }
+
+    if (!proto.requestBaselineChecksums(&itemList)) {
+        QWARN(qPrintable(proto.errorMessage()));
+        QSKIP("Communication with baseline image server failed.", SkipAll);
+    }
+
+    qDebug() << "items:" << itemList.count();
+    foreach(const ImageItem& item, itemList) {
+        if (item.scriptName != QLatin1String("sizes.qps")) // Hardcoded blacklisting for this enigine/format
+            QTest::newRow(item.scriptName.toLatin1()) << item;
+    }
+}
+
+
+void tst_Lancelot::testOpenGL()
+{
+    runTestSuite();
+}
+
+
 void tst_Lancelot::runTestSuite()
 {
     QFETCH(ImageItem, baseline);
@@ -178,20 +214,40 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
     if (script.isEmpty()) {
         res.image = QImage();
         res.imageChecksum = 0;
-    } else {
+    } else if (item.engine == ImageItem::Raster) {
         QImage img(800, 800, item.renderFormat);
-        QPainter p(&img);
-        PaintCommands pcmd(script, 800, 800);
-        pcmd.setPainter(&p);
-        pcmd.setFilePath(QFileInfo(filePath).absoluteFilePath()); // eh yuck
-        pcmd.runCommands();
-        p.end();
+        paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = img;
         res.imageChecksum = ImageItem::computeChecksum(img);
+    } else if (item.engine == ImageItem::OpenGL) {
+        QGLWidget glWidget;
+        if (!glWidget.isValid()) {
+            res.image = QImage();
+            res.imageChecksum = 0;
+            return res;
+        }
+        glWidget.resize(800, 800);
+        glWidget.show();
+#ifdef Q_WS_X11
+        qt_x11_wait_for_window_manager(&glWidget);
+#endif
+        paint(&glWidget, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
+        res.image = glWidget.grabFrameBuffer().convertToFormat(item.renderFormat);
+        res.imageChecksum = ImageItem::computeChecksum(res.image);
     }
+
     return res;
 }
 
+void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const QString &filePath)
+{
+    QPainter p(device);
+    PaintCommands pcmd(script, 800, 800);
+    pcmd.setPainter(&p);
+    pcmd.setFilePath(filePath);
+    pcmd.runCommands();
+    p.end();
+}
 
 QStringList tst_Lancelot::loadScriptFile(const QString &filePath)
 {
