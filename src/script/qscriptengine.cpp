@@ -1,0 +1,1579 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtScript module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL-ONLY$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qscriptcontext.h"
+#include "qscriptengine.h"
+#include "qscriptengine_p.h"
+#include "qscriptstring.h"
+#include "qscriptstring_p.h"
+#include "qscriptvalue.h"
+#include "qscriptvalue_p.h"
+#include "qscriptsyntaxcheckresult_p.h"
+#include "qscriptqobject_p.h"
+
+#include <QtCore/qdatetime.h>
+#include <QtCore/qmetaobject.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qvariant.h>
+
+Q_DECLARE_METATYPE(QScriptValue)
+
+QT_BEGIN_NAMESPACE
+
+// Data associated with a QVariant JS wrapper object.
+//
+// When converting a QVariant to JS, QtScript will attempt
+// to convert the QVariant to a "real" JS value, but in case
+// it can't (for example, the type is a custom type with no
+// conversion functions registered), the QVariant is wrapped
+// in a custom JS object.
+//
+// It's also possible to explicitly create a QVariant wrapper
+// object by calling QScriptEngine::newVariant().
+//
+class QtVariantData
+{
+public:
+    QtVariantData(const QVariant &value)
+        : m_value(value)
+    { }
+
+    static QtVariantData *get(v8::Handle<v8::Object> object)
+    {
+        void *ptr = object->GetPointerFromInternalField(0);
+        Q_ASSERT(ptr != 0);
+        return static_cast<QtVariantData*>(ptr);
+    }
+
+    QVariant &value()
+    { return m_value; }
+    void setValue(const QVariant &value)
+    { m_value = value; }
+
+private:
+    QVariant m_value;
+};
+
+static void QtVariantWeakCallback(v8::Persistent<v8::Value> val, void *arg)
+{
+    Q_UNUSED(val);
+    QtVariantData *data = static_cast<QtVariantData*>(arg);
+    delete data;
+}
+
+// This callback implements QVariant.prototype.toString.
+static v8::Handle<v8::Value> QtVariantToStringCallback(const v8::Arguments& args)
+{
+    Q_UNUSED(args);
+    Q_UNIMPLEMENTED();
+    return v8::Handle<v8::Value>();
+}
+
+// This callback implements QVariant.prototype.valueOf.
+static v8::Handle<v8::Value> QtVariantValueOfCallback(const v8::Arguments& args)
+{
+    Q_UNUSED(args);
+    Q_UNIMPLEMENTED();
+    return v8::Handle<v8::Value>();
+}
+
+// Converts a JS Date to a QDateTime.
+QDateTime QScriptEnginePrivate::qtDateTimeFromJS(v8::Handle<v8::Date> jsDate)
+{
+    Q_UNUSED(jsDate);
+    Q_UNIMPLEMENTED();
+    return QDateTime();
+}
+
+// Converts a QDateTime to a JS Date.
+v8::Handle<v8::Date> QScriptEnginePrivate::qtDateTimeToJS(const QDateTime &dt)
+{
+    Q_UNUSED(dt);
+    Q_UNIMPLEMENTED();
+    return v8::Handle<v8::Date>();
+}
+
+#ifndef QT_NO_REGEXP
+// Converts a JS RegExp to a QRegExp.
+// The conversion is not 100% exact since ECMA regexp and QRegExp
+// have different semantics/flags, but we try to do our best.
+QRegExp QScriptEnginePrivate::qtRegExpFromJS(v8::Handle<v8::Object> jsRegExp)
+{
+    QString pattern = QScriptConverter::toString(jsRegExp->Get(v8::String::New("source"))->ToString());
+    Qt::CaseSensitivity kase = Qt::CaseSensitive;
+    if (jsRegExp->Get(v8::String::New("ignoreCase"))->ToBoolean()->IsTrue())
+        kase = Qt::CaseInsensitive;
+    return QRegExp(pattern, kase, QRegExp::RegExp2);
+}
+
+Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+
+// Converts a QRegExp to a JS RegExp.
+// The conversion is not 100% exact since ECMA regexp and QRegExp
+// have different semantics/flags, but we try to do our best.
+v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QRegExp &re)
+{
+    // Convert the pattern to a ECMAScript pattern.
+    QString pattern = qt_regexp_toCanonical(re.pattern(), re.patternSyntax());
+    if (re.isMinimal()) {
+        QString ecmaPattern;
+        int len = pattern.length();
+        ecmaPattern.reserve(len);
+        int i = 0;
+        const QChar *wc = pattern.unicode();
+        bool inBracket = false;
+        while (i < len) {
+            QChar c = wc[i++];
+            ecmaPattern += c;
+            switch (c.unicode()) {
+            case '?':
+            case '+':
+            case '*':
+            case '}':
+                if (!inBracket)
+                    ecmaPattern += QLatin1Char('?');
+                break;
+            case '\\':
+                if (i < len)
+                    ecmaPattern += wc[i++];
+                break;
+            case '[':
+                inBracket = true;
+                break;
+            case ']':
+                inBracket = false;
+               break;
+            default:
+                break;
+            }
+        }
+        pattern = ecmaPattern;
+    }
+
+    QString flags;
+    if (re.caseSensitivity() == Qt::CaseInsensitive)
+        flags.append(QLatin1Char('i'));
+
+    // TODO: Use v8::RegExp API when/if it becomes available.
+    v8::Handle<v8::Value> regExpCtor = v8::Context::GetCurrent()->Global()->Get(v8::String::New("RegExp"));
+    v8::Handle<v8::Function> fun = v8::Handle<v8::Function>::Cast(regExpCtor);
+
+    v8::Handle<v8::Value> argv[2];
+    argv[0] = QScriptConverter::toString(pattern);
+    argv[1] = QScriptConverter::toString(flags);
+    v8::Handle<v8::Object> result = fun->NewInstance(2, argv);
+//    Q_ASSERT(result->IsRegExp());
+
+    return result;
+}
+#endif
+
+// Converts a QStringList to JS.
+// The result is a new Array object with length equal to the length
+// of the QStringList, and the elements being the QStringList's
+// elements converted to JS Strings.
+v8::Handle<v8::Array> QScriptEnginePrivate::stringListToJS(const QStringList &lst)
+{
+    v8::Handle<v8::Array> result = v8::Array::New(lst.size());
+    for (int i = 0; i < lst.size(); ++i)
+        result->Set(i, QScriptConverter::toString(lst.at(i)));
+    return result;
+}
+
+// Converts a JS Array object to a QStringList.
+// The result is a QStringList with length equal to the length
+// of the JS Array, and elements being the JS Array's elements
+// converted to QStrings.
+QStringList QScriptEnginePrivate::stringListFromJS(v8::Handle<v8::Array> jsArray)
+{
+    QStringList result;
+    uint32_t length = jsArray->Length();
+    for (uint32_t i = 0; i < length; ++i)
+        result.append(QScriptConverter::toString(jsArray->Get(i)->ToString()));
+    return result;
+}
+
+// Converts a QVariantList to JS.
+// The result is a new Array object with length equal to the length
+// of the QVariantList, and the elements being the QVariantList's
+// elements converted to JS, recursively.
+v8::Handle<v8::Array> QScriptEnginePrivate::variantListToJS(const QVariantList &lst)
+{
+    v8::Handle<v8::Array> result = v8::Array::New(lst.size());
+    for (int i = 0; i < lst.size(); ++i)
+        result->Set(i, variantToJS(lst.at(i)));
+    return result;
+}
+
+// Converts a JS Array object to a QVariantList.
+// The result is a QVariantList with length equal to the length
+// of the JS Array, and elements being the JS Array's elements
+// converted to QVariants, recursively.
+QVariantList QScriptEnginePrivate::variantListFromJS(v8::Handle<v8::Array> jsArray)
+{
+    QVariantList result;
+    uint32_t length = jsArray->Length();
+    for (uint32_t i = 0; i < length; ++i)
+        result.append(variantFromJS(jsArray->Get(i)));
+    return result;
+}
+
+// Converts a QVariantMap to JS.
+// The result is a new Object object with property names being
+// the keys of the QVariantMap, and values being the values of
+// the QVariantMap converted to JS, recursively.
+v8::Handle<v8::Object> QScriptEnginePrivate::variantMapToJS(const QVariantMap &vmap)
+{
+    v8::Handle<v8::Object> result = v8::Object::New();
+    QVariantMap::const_iterator it;
+    for (it = vmap.constBegin(); it != vmap.constEnd(); ++it)
+        result->Set(QScriptConverter::toString(it.key()), variantToJS(it.value()));
+    return result;
+}
+
+// Converts a JS Object to a QVariantMap.
+// The result is a QVariantMap with keys being the property names
+// of the object, and values being the values of the JS object's
+// properties converted to QVariants, recursively.
+QVariantMap QScriptEnginePrivate::variantMapFromJS(v8::Handle<v8::Object> jsObject)
+{
+    QVariantMap result;
+    // TODO: Only object's own property names. Include non-enumerable properties.
+    v8::Handle<v8::Array> propertyNames = jsObject->GetPropertyNames();
+    uint32_t length = propertyNames->Length();
+    for (uint32_t i = 0; i < length; ++i) {
+        v8::Handle<v8::Value> name = propertyNames->Get(i);
+        result.insert(QScriptConverter::toString(name->ToString()), variantFromJS(jsObject->Get(name)));
+    }
+    return result;
+}
+
+// Converts the meta-type defined by the given type and data to JS.
+// Returns the value if conversion succeeded, an empty handle otherwise.
+v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *data)
+{
+    Q_ASSERT(data != 0);
+    v8::Handle<v8::Value> result;
+#if 0
+    QScriptEnginePrivate *eng = exec ? QScript::scriptEngineFromExec(exec) : 0;
+    QScriptTypeInfo *info = eng ? eng->m_typeInfos.value(type) : 0;
+    if (info && info->marshal) {
+        result = eng->scriptValueToJSCValue(info->marshal(eng->q_func(), data));
+    } else {
+#endif
+        // check if it's one of the types we know
+        switch (QMetaType::Type(type)) {
+        case QMetaType::Void:
+            return v8::Undefined();
+        case QMetaType::Bool:
+            return v8::Boolean::New(*reinterpret_cast<const bool*>(data));
+        case QMetaType::Int:
+            return v8::Int32::New(*reinterpret_cast<const int*>(data));
+        case QMetaType::UInt:
+            return v8::Uint32::New(*reinterpret_cast<const uint*>(data));
+        case QMetaType::LongLong:
+            return v8::Number::New(qsreal(*reinterpret_cast<const qlonglong*>(data)));
+        case QMetaType::ULongLong:
+#if defined(Q_OS_WIN) && defined(_MSC_FULL_VER) && _MSC_FULL_VER <= 12008804
+#pragma message("** NOTE: You need the Visual Studio Processor Pack to compile support for 64bit unsigned integers.")
+            return v8::Number::New(qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(data)));
+#elif defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
+            return v8::Number::New(qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(data)));
+#else
+            return v8::Number::New(qsreal(*reinterpret_cast<const qulonglong*>(data)));
+#endif
+        case QMetaType::Double:
+            return v8::Number::New(qsreal(*reinterpret_cast<const double*>(data)));
+        case QMetaType::QString:
+            return QScriptConverter::toString(*reinterpret_cast<const QString*>(data));
+        case QMetaType::Float:
+            return v8::Number::New(*reinterpret_cast<const float*>(data));
+        case QMetaType::Short:
+            return v8::Int32::New(*reinterpret_cast<const short*>(data));
+        case QMetaType::UShort:
+            return v8::Uint32::New(*reinterpret_cast<const unsigned short*>(data));
+        case QMetaType::Char:
+            return v8::Int32::New(*reinterpret_cast<const char*>(data));
+        case QMetaType::UChar:
+            return v8::Uint32::New(*reinterpret_cast<const unsigned char*>(data));
+        case QMetaType::QChar:
+            return v8::Uint32::New((*reinterpret_cast<const QChar*>(data)).unicode());
+        case QMetaType::QStringList:
+            result = stringListToJS(*reinterpret_cast<const QStringList *>(data));
+            break;
+        case QMetaType::QVariantList:
+            result = variantListToJS(*reinterpret_cast<const QVariantList *>(data));
+            break;
+        case QMetaType::QVariantMap:
+            result = variantMapToJS(*reinterpret_cast<const QVariantMap *>(data));
+            break;
+        case QMetaType::QDateTime:
+            result = qtDateTimeToJS(*reinterpret_cast<const QDateTime *>(data));
+            break;
+        case QMetaType::QDate:
+            result = qtDateTimeToJS(QDateTime(*reinterpret_cast<const QDate *>(data)));
+            break;
+#ifndef QT_NO_REGEXP
+        case QMetaType::QRegExp:
+            result = qtRegExpToJS(*reinterpret_cast<const QRegExp *>(data));
+            break;
+#endif
+#ifndef QT_NO_QOBJECT
+        case QMetaType::QObjectStar:
+        case QMetaType::QWidgetStar:
+            result = newQObject(*reinterpret_cast<QObject* const *>(data));
+            break;
+#endif
+        case QMetaType::QVariant:
+            result = variantToJS(*reinterpret_cast<const QVariant*>(data));
+            break;
+        default:
+            ;
+#if 0
+            if (type == qMetaTypeId<QScriptValue>()) {
+                result = eng->scriptValueToJSCValue(*reinterpret_cast<const QScriptValue*>(data));
+                if (!result)
+                    return JSC::jsUndefined();
+            }
+#endif
+#if 0
+#ifndef QT_NO_QOBJECT
+            // lazy registration of some common list types
+            else if (type == qMetaTypeId<QObjectList>()) {
+                qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
+                return create(exec, type, data);
+            }
+#endif
+            else if (type == qMetaTypeId<QList<int> >()) {
+                qScriptRegisterSequenceMetaType<QList<int> >(eng->q_func());
+                return create(exec, type, data);
+            }
+
+            else {
+                QByteArray typeName = QMetaType::typeName(type);
+                if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(data))
+                    return JSC::jsNull();
+                else
+#endif
+                    // Fall back to wrapping in a QVariant.
+                    result = newVariant(QVariant(type, data));
+#if 0
+            }
+        }
+#endif
+    }
+#if 0
+    if (result && result.isObject() && info && info->prototype
+        && JSC::JSValue::strictEqual(exec, JSC::asObject(result)->prototype(), eng->originalGlobalObject()->objectPrototype())) {
+        JSC::asObject(result)->setPrototype(info->prototype);
+    }
+#endif
+    return result;
+}
+
+// Converts a JS value to a meta-type.
+// data must point to a place that can store a value of the given type.
+// Returns true if conversion succeeded, false otherwise.
+bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type, void *data)
+{
+#if 0
+    QScriptEnginePrivate *eng = exec ? QScript::scriptEngineFromExec(exec) : 0;
+    if (eng) {
+        QScriptTypeInfo *info = eng->m_typeInfos.value(type);
+        if (info && info->demarshal) {
+            info->demarshal(eng->scriptValueFromJSCValue(value), ptr);
+            return true;
+        }
+    }
+#endif
+    // check if it's one of the types we know
+    switch (QMetaType::Type(type)) {
+    case QMetaType::Bool:
+        *reinterpret_cast<bool*>(data) = value->ToBoolean()->Value();
+        return true;
+    case QMetaType::Int:
+        *reinterpret_cast<int*>(data) = value->ToInt32()->Value();
+        return true;
+    case QMetaType::UInt:
+        *reinterpret_cast<uint*>(data) = value->ToUint32()->Value();
+        return true;
+    case QMetaType::LongLong:
+        *reinterpret_cast<qlonglong*>(data) = qlonglong(value->ToInteger()->Value());
+        return true;
+    case QMetaType::ULongLong:
+        *reinterpret_cast<qulonglong*>(data) = qulonglong(value->ToInteger()->Value());
+        return true;
+    case QMetaType::Double:
+        *reinterpret_cast<double*>(data) = value->ToNumber()->Value();
+        return true;
+    case QMetaType::QString:
+        if (value->IsUndefined() || value->IsNull())
+            *reinterpret_cast<QString*>(data) = QString();
+        else
+            *reinterpret_cast<QString*>(data) = QScriptConverter::toString(value->ToString());
+        return true;
+    case QMetaType::Float:
+        *reinterpret_cast<float*>(data) = value->ToNumber()->Value();
+        return true;
+    case QMetaType::Short:
+        *reinterpret_cast<short*>(data) = short(value->ToInt32()->Value());
+        return true;
+    case QMetaType::UShort:
+        *reinterpret_cast<unsigned short*>(data) = ushort(value->ToInt32()->Value()); // ### QScript::ToUInt16()
+        return true;
+    case QMetaType::Char:
+        *reinterpret_cast<char*>(data) = char(value->ToInt32()->Value());
+        return true;
+    case QMetaType::UChar:
+        *reinterpret_cast<unsigned char*>(data) = (unsigned char)(value->ToInt32()->Value());
+        return true;
+    case QMetaType::QChar:
+        if (value->IsString()) {
+            QString str = QScriptConverter::toString(v8::Handle<v8::String>::Cast(value));
+            *reinterpret_cast<QChar*>(data) = str.isEmpty() ? QChar() : str.at(0);
+        } else {
+            *reinterpret_cast<QChar*>(data) = QChar(ushort(value->ToInt32()->Value())); // ### QScript::ToUInt16()
+        }
+        return true;
+    case QMetaType::QDateTime:
+        if (value->IsDate()) {
+            *reinterpret_cast<QDateTime *>(data) = qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(value));
+            return true;
+        } break;
+    case QMetaType::QDate:
+        if (value->IsDate()) {
+            *reinterpret_cast<QDate *>(data) = qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(value)).date();
+            return true;
+        } break;
+#if !defined(QT_NO_REGEXP)
+    case QMetaType::QRegExp:
+        if (1 /*value->IsRegExp()*/) { // FIXME when IsRegExp() is in trunk
+            *reinterpret_cast<QRegExp *>(data) = qtRegExpFromJS(v8::Handle<v8::Object>::Cast(value));
+            return true;
+        } break;
+#endif
+#ifndef QT_NO_QOBJECT
+    case QMetaType::QObjectStar:
+        if (isQtObject(value) || value->IsNull()) {
+            *reinterpret_cast<QObject* *>(data) = qtObjectFromJS(value);
+            return true;
+        } break;
+    case QMetaType::QWidgetStar:
+        if (isQtObject(value) || value->IsNull()) {
+            QObject *qo = qtObjectFromJS(value);
+            if (!qo || qo->isWidgetType()) {
+                *reinterpret_cast<QWidget* *>(data) = reinterpret_cast<QWidget*>(qo);
+                return true;
+            }
+        } break;
+#endif
+    case QMetaType::QStringList:
+        if (value->IsArray()) {
+            *reinterpret_cast<QStringList *>(data) = stringListFromJS(v8::Handle<v8::Array>::Cast(value));
+            return true;
+        } break;
+    case QMetaType::QVariantList:
+        if (value->IsArray()) {
+            *reinterpret_cast<QVariantList *>(data) = variantListFromJS(v8::Handle<v8::Array>::Cast(value));
+            return true;
+        } break;
+    case QMetaType::QVariantMap:
+        if (value->IsObject()) {
+            *reinterpret_cast<QVariantMap *>(data) = variantMapFromJS(v8::Handle<v8::Object>::Cast(value));
+            return true;
+        } break;
+    case QMetaType::QVariant:
+        *reinterpret_cast<QVariant*>(data) = variantFromJS(value);
+        return true;
+    default:
+    ;
+    }
+
+#if 0
+    if (isQtVariant(value)) {
+        const QVariant &var = variantValue(value);
+        // ### Enable once constructInPlace() is in qt master.
+        if (var.userType() == type) {
+            QMetaType::constructInPlace(type, data, var.constData());
+            return true;
+        }
+        if (var.canConvert(QVariant::Type(type))) {
+            QVariant vv = var;
+            vv.convert(QVariant::Type(type));
+            Q_ASSERT(vv.userType() == type);
+            QMetaType::constructInPlace(type, data, vv.constData());
+            return true;
+        }
+
+    }
+#endif
+
+    // Try to use magic.
+
+    QByteArray name = QMetaType::typeName(type);
+#ifndef QT_NO_QOBJECT
+    if (convertToNativeQObject(value, name, reinterpret_cast<void* *>(data)))
+        return true;
+#endif
+    if (isQtVariant(value) && name.endsWith('*')) {
+        int valueType = QMetaType::type(name.left(name.size()-1));
+        QVariant &var = variantValue(value);
+        if (valueType == var.userType()) {
+            // We have T t, T* is requested, so return &t.
+            *reinterpret_cast<void* *>(data) = var.data();
+            return true;
+        } else {
+            // Look in the prototype chain.
+            v8::Handle<v8::Value> proto = value->ToObject()->GetPrototype();
+            while (proto->IsObject()) {
+                bool canCast = false;
+                if (isQtVariant(proto)) {
+                    canCast = (type == variantValue(proto).userType())
+                              || (valueType && (valueType == variantValue(proto).userType()));
+                }
+#ifndef QT_NO_QOBJECT
+                else if (isQtObject(proto)) {
+                    QByteArray className = name.left(name.size()-1);
+                    if (QObject *qobject = qtObjectFromJS(proto))
+                        canCast = qobject->qt_metacast(className) != 0;
+                }
+#endif
+                if (canCast) {
+                    QByteArray varTypeName = QMetaType::typeName(var.userType());
+                    if (varTypeName.endsWith('*'))
+                        *reinterpret_cast<void* *>(data) = *reinterpret_cast<void* *>(var.data());
+                    else
+                        *reinterpret_cast<void* *>(data) = var.data();
+                    return true;
+                }
+                proto = proto->ToObject()->GetPrototype();
+            }
+        }
+    } else if (value->IsNull() && name.endsWith('*')) {
+        *reinterpret_cast<void* *>(data) = 0;
+        return true;
+    } else if (type == qMetaTypeId<QScriptValue>()) {
+        Q_UNIMPLEMENTED();
+#if 0
+        if (!eng)
+            return false;
+        *reinterpret_cast<QScriptValue*>(data) = eng->scriptValueFromJSCValue(value);
+        return true;
+#endif
+    }
+
+#if 0
+    // lazy registration of some common list types
+#ifndef QT_NO_QOBJECT
+    else if (type == qMetaTypeId<QObjectList>()) {
+        if (!eng)
+            return false;
+        qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
+        return convertValue(exec, value, type, ptr);
+    }
+#endif
+    else if (type == qMetaTypeId<QList<int> >()) {
+        if (!eng)
+            return false;
+        qScriptRegisterSequenceMetaType<QList<int> >(eng->q_func());
+        return convertValue(exec, value, type, ptr);
+    }
+#endif
+
+#if 0
+    if (!name.isEmpty()) {
+        qWarning("QScriptEngine::convert: unable to convert value to type `%s'",
+                 name.constData());
+    }
+#endif
+    return false;
+}
+
+// Converts a QVariant to JS.
+v8::Handle<v8::Value> QScriptEnginePrivate::variantToJS(const QVariant &value)
+{
+    return metaTypeToJS(value.userType(), value.constData());
+}
+
+// Converts a JS value to a QVariant.
+// Null, Undefined -> QVariant() (invalid)
+// Boolean -> QVariant(bool)
+// Number -> QVariant(double)
+// String -> QVariant(QString)
+// Array -> QVariantList(...)
+// Date -> QVariant(QDateTime)
+// RegExp -> QVariant(QRegExp)
+// [Any other object] -> QVariantMap(...)
+QVariant QScriptEnginePrivate::variantFromJS(v8::Handle<v8::Value> value)
+{
+    Q_ASSERT(!value.IsEmpty());
+    if (value->IsNull() || value->IsUndefined())
+        return QVariant();
+    if (value->IsBoolean())
+        return value->ToBoolean()->Value();
+    if (value->IsNumber())
+        return value->ToNumber()->Value();
+    if (value->IsString())
+        return QScriptConverter::toString(value->ToString());
+    Q_ASSERT(value->IsObject());
+    if (value->IsArray())
+        return variantListFromJS(v8::Handle<v8::Array>::Cast(value));
+    if (value->IsDate())
+        return qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(value));
+#ifndef QT_NO_REGEXP
+// v8 doesn't have RegExp API.
+//    if (value->IsRegExp())
+    //        return qtRegExpFromJS(v8::Handle<v8::RegExp>::Cast(value));
+#endif
+    if (isQtVariant(value))
+        return variantValue(value);
+#ifndef QT_NO_QOBJECT
+    if (isQtObject(value))
+        return qVariantFromValue(qtObjectFromJS(value));
+#endif
+    return variantMapFromJS(value->ToObject());
+}
+
+bool QScriptEnginePrivate::isQtObject(v8::Handle<v8::Value> value)
+{
+    return qobjectTemplate()->HasInstance(value);
+}
+
+QObject *QScriptEnginePrivate::qtObjectFromJS(v8::Handle<v8::Value> value)
+{
+    if (!isQtObject(value))
+        return 0;
+    QtInstanceData *data = QtInstanceData::get(v8::Handle<v8::Object>::Cast(value));
+    return data->cppObject();
+}
+
+bool QScriptEnginePrivate::convertToNativeQObject(v8::Handle<v8::Value> value,
+                                                  const QByteArray &targetType,
+                                                  void **result)
+{
+    if (!targetType.endsWith('*'))
+        return false;
+    if (QObject *qobject = qtObjectFromJS(value)) {
+        int start = targetType.startsWith("const ") ? 6 : 0;
+        QByteArray className = targetType.mid(start, targetType.size()-start-1);
+        if (void *instance = qobject->qt_metacast(className)) {
+            *result = instance;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value)
+{
+    return m_variantTemplate->HasInstance(value);
+}
+
+bool QScriptEnginePrivate::isQtSignal(v8::Handle<v8::Value> value)
+{
+    return m_signalTemplate->HasInstance(value);
+}
+
+QVariant &QScriptEnginePrivate::variantValue(v8::Handle<v8::Value> value)
+{
+    Q_ASSERT(isQtVariant(value));
+    return QtVariantData::get(v8::Handle<v8::Object>::Cast(value))->value();
+}
+
+/*!
+  \internal
+  Returns the template for the given meta-object, \a mo; creates a template if one
+  doesn't already exist.
+*/
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qtClassTemplate(const QMetaObject *mo)
+{
+    Q_ASSERT(mo != 0);
+    QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::const_iterator it;
+    it = m_qtClassTemplates.constFind(mo);
+    if (it != m_qtClassTemplates.constEnd())
+        return *it;
+
+    v8::Persistent<v8::FunctionTemplate> persistent = v8::Persistent<v8::FunctionTemplate>::New(createQtClassTemplate(this, mo));
+    m_qtClassTemplates.insert(mo, persistent);
+    return persistent;
+}
+
+// Returns the template for the almighty QObject class.
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
+{
+    return qtClassTemplate(&QObject::staticMetaObject);
+}
+
+// Creates a QVariant wrapper object.
+v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
+{
+    v8::Handle<v8::ObjectTemplate> instanceTempl = m_variantTemplate->InstanceTemplate();
+    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+    Q_ASSERT(instance->InternalFieldCount() == 1);
+    QtVariantData *data = new QtVariantData(value);
+    instance->SetPointerInInternalField(0, data);
+
+    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
+    persistent.MakeWeak(data, QtVariantWeakCallback);
+    return persistent;
+}
+
+
+
+QScriptEnginePrivate::QScriptEnginePrivate()
+    : m_context(v8::Persistent<v8::Context>::New(v8::Context::New()))
+    , m_globalObject(m_context)
+{
+
+    v8::HandleScope handle_scope;
+    m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
+    m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
+    m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
+}
+
+// Creates a template for Qt signal wrapper objects.
+// Qt signal wrapper objects have a single internal field that
+// contains a pointer to a QtSignalData object.
+// The Qt signal prototype object has functions connect() and disconnect().
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createSignalTemplate()
+{
+    return createQtSignalTemplate();
+}
+
+// Creates a template for QMetaObject wrapper objects.
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createMetaObjectTemplate()
+{
+    return createQtMetaObjectTemplate();
+}
+
+// Creates a template for QVariant wrapper objects.
+// QVariant wrapper objects have a signle internal field that
+// contains a pointer to a QtVariantData object.
+// The QVariant prototype object has functions toString() and valueOf().
+v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createVariantTemplate()
+{
+    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+    funcTempl->SetClassName(v8::String::New("QVariant"));
+
+    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+    instTempl->SetInternalFieldCount(1); // QtVariantData*
+
+    v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
+    v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
+    protoTempl->Set(v8::String::New("toString"), v8::FunctionTemplate::New(QtVariantToStringCallback, v8::Handle<v8::Value>(), sig));
+    protoTempl->Set(v8::String::New("valueOf"), v8::FunctionTemplate::New(QtVariantValueOfCallback, v8::Handle<v8::Value>(), sig));
+
+    return funcTempl;
+}
+
+QScriptEnginePrivate::~QScriptEnginePrivate()
+{
+    m_context.Dispose();
+    m_context.Clear();
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
+{
+    if (script.IsEmpty()) {
+        v8::Handle<v8::Value> exception = tryCatch.Exception();
+        return new QScriptValuePrivate(this, exception);
+    } else {
+        v8::Handle<v8::Value> result = script->Run();
+        if (result.IsEmpty()) {
+            v8::Handle<v8::Value> exception = tryCatch.Exception();
+            return new QScriptValuePrivate(this, exception);
+        }
+        return new QScriptValuePrivate(this, result);
+    }
+    Q_UNIMPLEMENTED();
+    return new QScriptValuePrivate();
+}
+
+QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::newQObject(
+        QObject *object, QScriptEngine::ValueOwnership own,
+        const QScriptEngine::QObjectWrapOptions &opt)
+{
+    v8::Context::Scope contextScope(m_context);
+    v8::HandleScope handleScope;
+    return newQtObject(this, object, own, opt);
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::newSignal(v8::Handle<v8::Object> object, int index, QtSignalData::ResolveMode resolveMode)
+{
+    v8::Handle<v8::ObjectTemplate> instanceTempl = m_signalTemplate->InstanceTemplate();
+    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+    Q_ASSERT(instance->InternalFieldCount() == 1);
+    QtSignalData *data = new QtSignalData(object, index, resolveMode);
+    instance->SetPointerInInternalField(0, data);
+    return instance;
+}
+
+QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value)
+{
+    return QScriptValuePrivate::get(new QScriptValuePrivate(this, value));
+}
+
+#ifdef QT_NO_QOBJECT
+
+QScriptEngine::QScriptEngine()
+    : d_ptr(new QScriptEnginePrivate)
+{
+    d_ptr->q_ptr = this;
+}
+
+/*! \internal
+*/
+QScriptEngine::QScriptEngine(QScriptEnginePrivate &dd)
+    : d_ptr(&dd)
+{
+    d_ptr->q_ptr = this;
+}
+#else
+
+/*!
+    Constructs a QScriptEngine object.
+
+    The globalObject() is initialized to have properties as described in
+    \l{ECMA-262}, Section 15.1.
+*/
+QScriptEngine::QScriptEngine()
+    : QObject(*new QScriptEnginePrivate, 0)
+{
+}
+
+/*!
+    Constructs a QScriptEngine object with the given \a parent.
+
+    The globalObject() is initialized to have properties as described in
+    \l{ECMA-262}, Section 15.1.
+*/
+
+QScriptEngine::QScriptEngine(QObject *parent)
+    : QObject(*new QScriptEnginePrivate, parent)
+{
+}
+
+/*! \internal
+*/
+QScriptEngine::QScriptEngine(QScriptEnginePrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+}
+
+#endif
+
+/*!
+    Destroys this QScriptEngine.
+*/
+QScriptEngine::~QScriptEngine()
+{
+}
+
+/*!
+  Checks the syntax of the given \a program. Returns a
+  QScriptSyntaxCheckResult object that contains the result of the check.
+*/
+QScriptSyntaxCheckResult QScriptEngine::checkSyntax(const QString &program)
+{
+    return QScriptSyntaxCheckResultPrivate::get(new QScriptSyntaxCheckResultPrivate(program));
+}
+
+bool QScriptEngine::canEvaluate(const QString &program) const
+{
+    Q_UNUSED(program);
+    return false;
+}
+
+/*!
+    Returns true if the last script evaluation resulted in an uncaught
+    exception; otherwise returns false.
+
+    The exception state is cleared when evaluate() is called.
+
+    \sa uncaughtException(), uncaughtExceptionLineNumber(),
+      uncaughtExceptionBacktrace()
+*/
+bool QScriptEngine::hasUncaughtException() const
+{
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
+/*!
+    Returns the current uncaught exception, or an invalid QScriptValue
+    if there is no uncaught exception.
+
+    The exception value is typically an \c{Error} object; in that case,
+    you can call toString() on the return value to obtain an error
+    message.
+
+    \sa hasUncaughtException(), uncaughtExceptionLineNumber(),
+      uncaughtExceptionBacktrace()
+*/
+QScriptValue QScriptEngine::uncaughtException() const
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+    Clears any uncaught exceptions in this engine.
+
+    \sa hasUncaughtException()
+*/
+void QScriptEngine::clearExceptions()
+{
+    Q_UNIMPLEMENTED();
+}
+
+/*!
+    Returns the line number where the last uncaught exception occurred.
+
+    Line numbers are 1-based, unless a different base was specified as
+    the second argument to evaluate().
+
+    \sa hasUncaughtException(), uncaughtExceptionBacktrace()
+*/
+int QScriptEngine::uncaughtExceptionLineNumber() const
+{
+    Q_UNIMPLEMENTED();
+    return -1;
+}
+
+/*!
+    Returns a human-readable backtrace of the last uncaught exception.
+
+    Each line is of the form \c{<function-name>(<arguments>)@<file-name>:<line-number>}.
+
+    \sa uncaughtException()
+*/
+QStringList QScriptEngine::uncaughtExceptionBacktrace() const
+{
+    Q_UNIMPLEMENTED();
+    return QStringList();
+}
+
+
+/*!
+    Runs the garbage collector.
+
+    The garbage collector will attempt to reclaim memory by locating and disposing of objects that are
+    no longer reachable in the script environment.
+
+    Normally you don't need to call this function; the garbage collector will automatically be invoked
+    when the QScriptEngine decides that it's wise to do so (i.e. when a certain number of new objects
+    have been created). However, you can call this function to explicitly request that garbage
+    collection should be performed as soon as possible.
+
+    \sa reportAdditionalMemoryCost()
+*/
+void QScriptEngine::collectGarbage()
+{
+    Q_D(QScriptEngine);
+    d->collectGarbage();
+}
+
+/*!
+  Reports an additional memory cost of the given \a size, measured in
+  bytes, to the garbage collector.
+
+  This function can be called to indicate that a JavaScript object has
+  memory associated with it that isn't managed by Qt Script itself.
+  Reporting the additional cost makes it more likely that the garbage
+  collector will be triggered.
+
+  Note that if the additional memory is shared with objects outside
+  the scripting environment, the cost should not be reported, since
+  collecting the JavaScript object would not cause the memory to be
+  freed anyway.
+
+  Negative \a size values are ignored, i.e. this function can't be
+  used to report that the additional memory has been deallocated.
+
+  \sa collectGarbage()
+*/
+void QScriptEngine::reportAdditionalMemoryCost(int cost)
+{
+    Q_D(QScriptEngine);
+    d->reportAdditionalMemoryCost(cost);
+}
+
+
+/*!
+    Evaluates \a program, using \a lineNumber as the base line number,
+    and returns the result of the evaluation.
+
+    The script code will be evaluated in the current context.
+
+    The evaluation of \a program can cause an exception in the
+    engine; in this case the return value will be the exception
+    that was thrown (typically an \c{Error} object). You can call
+    hasUncaughtException() to determine if an exception occurred in
+    the last call to evaluate().
+
+    \a lineNumber is used to specify a starting line number for \a
+    program; line number information reported by the engine that pertain
+    to this evaluation (e.g. uncaughtExceptionLineNumber()) will be
+    based on this argument. For example, if \a program consists of two
+    lines of code, and the statement on the second line causes a script
+    exception, uncaughtExceptionLineNumber() would return the given \a
+    lineNumber plus one. When no starting line number is specified, line
+    numbers will be 1-based.
+
+    \a fileName is used for error reporting. For example in error objects
+    the file name is accessible through the "fileName" property if it's
+    provided with this function.
+*/
+QScriptValue QScriptEngine::evaluate(const QString& program, const QString& fileName, int lineNumber)
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->evaluate(program, fileName, lineNumber));
+}
+
+/*!
+  \since 4.4
+
+  Returns true if this engine is currently evaluating a script,
+  otherwise returns false.
+
+  \sa evaluate(), abortEvaluation()
+*/
+bool QScriptEngine::isEvaluating() const
+{
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
+/*!
+  \since 4.4
+
+  Aborts any script evaluation currently taking place in this engine.
+  The given \a result is passed back as the result of the evaluation
+  (i.e. it is returned from the call to evaluate() being aborted).
+
+  If the engine isn't evaluating a script (i.e. isEvaluating() returns
+  false), this function does nothing.
+
+  Call this function if you need to abort a running script for some
+  reason, e.g.  when you have detected that the script has been
+  running for several seconds without completing.
+
+  \sa evaluate(), isEvaluating(), setProcessEventsInterval()
+*/
+void QScriptEngine::abortEvaluation(const QScriptValue &result)
+{
+    Q_UNUSED(result);
+    Q_UNIMPLEMENTED();
+}
+
+
+QScriptValue QScriptEngine::nullValue()
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Null()));
+}
+
+QScriptValue QScriptEngine::undefinedValue()
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Undefined()));
+}
+
+QScriptValue QScriptEngine::newObject()
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->newObject());
+}
+
+QScriptValue QScriptEngine::newArray(uint length)
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->newArray(length));
+}
+
+QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
+                                       const QObjectWrapOptions &options)
+{
+    Q_D(QScriptEngine);
+    return d->scriptValueFromInternal(d->newQObject(object, ownership, options));
+}
+
+QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject *qtObject,
+                                       ValueOwnership ownership, const QObjectWrapOptions &options)
+{
+    Q_UNUSED(scriptObject);
+    Q_UNUSED(qtObject);
+    Q_UNUSED(ownership);
+    Q_UNUSED(options);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+    Creates a QScriptValue that wraps a native (C++) function. \a fun
+    must be a C++ function with signature QScriptEngine::FunctionSignature.
+    \a length is the number of arguments that \a fun expects; this becomes
+    the \c{length} property of the created QScriptValue.
+
+    Note that \a length only gives an indication of the number of
+    arguments that the function expects; an actual invocation of a
+    function can include any number of arguments. You can check the
+    \l{QScriptContext::argumentCount()}{argumentCount()} of the
+    QScriptContext associated with the invocation to determine the
+    actual number of arguments passed.
+
+    A \c{prototype} property is automatically created for the resulting
+    function object, to provide for the possibility that the function
+    will be used as a constructor.
+
+    By combining newFunction() and the property flags
+    QScriptValue::PropertyGetter and QScriptValue::PropertySetter, you
+    can create script object properties that behave like normal
+    properties in script code, but are in fact accessed through
+    functions (analogous to how properties work in \l{Qt's Property
+    System}). Example:
+
+    \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 11
+
+    When the property \c{foo} of the script object is subsequently
+    accessed in script code, \c{getSetFoo()} will be invoked to handle
+    the access.  In this particular case, we chose to store the "real"
+    value of \c{foo} as a property of the accessor function itself; you
+    are of course free to do whatever you like in this function.
+
+    In the above example, a single native function was used to handle
+    both reads and writes to the property; the argument count is used to
+    determine if we are handling a read or write. You can also use two
+    separate functions; just specify the relevant flag
+    (QScriptValue::PropertyGetter or QScriptValue::PropertySetter) when
+    setting the property, e.g.:
+
+    \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 12
+
+    \sa QScriptValue::call()
+*/
+QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
+{
+    Q_UNUSED(fun);
+    Q_UNUSED(length);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+    Creates a constructor function from \a fun, with the given \a length.
+    The \c{prototype} property of the resulting function is set to be the
+    given \a prototype. The \c{constructor} property of \a prototype is
+    set to be the resulting function.
+
+    When a function is called as a constructor (e.g. \c{new Foo()}), the
+    `this' object associated with the function call is the new object
+    that the function is expected to initialize; the prototype of this
+    default constructed object will be the function's public
+    \c{prototype} property. If you always want the function to behave as
+    a constructor (e.g. \c{Foo()} should also create a new object), or
+    if you need to create your own object rather than using the default
+    `this' object, you should make sure that the prototype of your
+    object is set correctly; either by setting it manually, or, when
+    wrapping a custom type, by having registered the defaultPrototype()
+    of that type. Example:
+
+    \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 9
+
+    To wrap a custom type and provide a constructor for it, you'd typically
+    do something like this:
+
+    \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 10
+*/
+QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue& prototype, int length)
+{
+    Q_UNUSED(fun);
+    Q_UNUSED(prototype);
+    Q_UNUSED(length);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+    \internal
+    \since 4.4
+*/
+QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg)
+{
+    Q_UNUSED(fun);
+    Q_UNUSED(arg);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+  Creates a QtScript object holding the given variant \a value.
+
+  If a default prototype has been registered with the meta type id of
+  \a value, then the prototype of the created object will be that
+  prototype; otherwise, the prototype will be the Object prototype
+  object.
+
+  \sa setDefaultPrototype(), QScriptValue::toVariant(), reportAdditionalMemoryCost()
+*/
+QScriptValue QScriptEngine::newVariant(const QVariant &value)
+{
+    Q_UNUSED(value);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+  \since 4.4
+  \overload
+
+  Initializes the given Qt Script \a object to hold the given variant
+  \a value, and returns the \a object.
+
+  This function enables you to "promote" a plain Qt Script object
+  (created by the newObject() function) to a variant, or to replace
+  the variant contained inside an object previously created by the
+  newVariant() function.
+
+  The prototype() of the \a object will remain unchanged.
+
+  If \a object is not an object, this function behaves like the normal
+  newVariant(), i.e. it creates a new script object and returns it.
+
+  This function is useful when you want to provide a script
+  constructor for a C++ type. If your constructor is invoked in a
+  \c{new} expression (QScriptContext::isCalledAsConstructor() returns
+  true), you can pass QScriptContext::thisObject() (the default
+  constructed script object) to this function to initialize the new
+  object.
+
+  \sa reportAdditionalMemoryCost()
+*/
+QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
+                                       const QVariant &value)
+{
+    Q_UNUSED(object);
+    Q_UNUSED(value);
+    return QScriptValue();
+}
+
+
+QScriptValue QScriptEngine::globalObject() const
+{
+    Q_D(const QScriptEngine);
+    return QScriptValuePrivate::get(d->globalObject());
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
+{
+    v8::Context::Scope contextScope(m_context);
+    v8::HandleScope handleScope;
+    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_context->Global());
+}
+
+/*!
+  \since 4.5
+
+  Sets this engine's Global Object to be the given \a object.
+  If \a object is not a valid script object, this function does
+  nothing.
+
+  When setting a custom global object, you may want to use
+  QScriptValueIterator to copy the properties of the standard Global
+  Object; alternatively, you can set the internal prototype of your
+  custom object to be the original Global Object.
+*/
+void QScriptEngine::setGlobalObject(const QScriptValue &object)
+{
+    Q_UNUSED(object);
+    Q_UNIMPLEMENTED();
+}
+
+
+/*!
+  Returns the default prototype associated with the given \a metaTypeId,
+  or an invalid QScriptValue if no default prototype has been set.
+
+  \sa setDefaultPrototype()
+*/
+QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
+{
+    Q_UNUSED(metaTypeId);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+/*!
+  Sets the default prototype of the C++ type identified by the given
+  \a metaTypeId to \a prototype.
+
+  The default prototype provides a script interface for values of
+  type \a metaTypeId when a value of that type is accessed from script
+  code.  Whenever the script engine (implicitly or explicitly) creates
+  a QScriptValue from a value of type \a metaTypeId, the default
+  prototype will be set as the QScriptValue's prototype.
+
+  The \a prototype object itself may be constructed using one of two
+  principal techniques; the simplest is to subclass QScriptable, which
+  enables you to define the scripting API of the type through QObject
+  properties and slots.  Another possibility is to create a script
+  object by calling newObject(), and populate the object with the
+  desired properties (e.g. native functions wrapped with
+  newFunction()).
+
+  \sa defaultPrototype(), qScriptRegisterMetaType(), QScriptable, {Default Prototypes Example}
+*/
+void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prototype)
+{
+    Q_UNUSED(metaTypeId);
+    Q_UNUSED(prototype);
+    Q_UNIMPLEMENTED();
+}
+
+QScriptString QScriptEngine::toStringHandle(const QString& str)
+{
+    Q_D(QScriptEngine);
+    v8::Context::Scope scope(d->m_context);
+    v8::HandleScope handleScope;
+    Q_UNIMPLEMENTED();
+    return QScriptString();
+    // Do like we do in 4.7...
+//    return QScriptStringPrivate::get(new QScriptStringPrivate(d, QScriptConverter::toString(str), QScriptStringPrivate::HeapAllocated));
+}
+
+QScriptValue QScriptEngine::toObject(const QScriptValue& value)
+{
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(QScriptValuePrivate::get(value)->toObject(d));
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::newObject()
+{
+    v8::Context::Scope scope(m_context);
+    v8::HandleScope handleScope;
+    v8::Persistent<v8::Object> object(v8::Persistent<v8::Object>::New(v8::Object::New()));
+    return new QScriptValuePrivate(this, object);
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
+{
+    v8::Context::Scope scope(m_context);
+    v8::HandleScope handleScope;
+    v8::Persistent<v8::Array> array(v8::Persistent<v8::Array>::New(v8::Array::New(length)));
+    // FIXME hmm it seems that V8 Array constructor doesn't set the length attribute as it is done
+    // in JS. I'm not sure if it is bug or feature. It need to be investigated.
+    array->Set(v8::String::New("length"), v8::Number::New(length));
+    return new QScriptValuePrivate(this, array);
+}
+
+QScriptValue QScriptEngine::newObject(QScriptClass *, const QScriptValue &)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newDate(const QDateTime &)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newDate(double)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newRegExp(const QRegExp &)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newRegExp(const QString &, const QString &)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *, const QScriptValue &)
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::newActivationObject()
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::objectById(qint64) const
+{
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QScriptValue QScriptEngine::create(int type, const void *ptr)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(ptr);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
+{
+    Q_UNUSED(value);
+    Q_UNUSED(type);
+    Q_UNUSED(ptr);
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
+bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
+{
+    Q_UNUSED(value);
+    Q_UNUSED(type);
+    Q_UNUSED(ptr);
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
+void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFunction df,
+                                       const QScriptValue &prototype)
+{
+    Q_UNUSED(type);
+    Q_UNUSED(mf);
+    Q_UNUSED(df);
+    Q_UNUSED(prototype);
+    Q_UNIMPLEMENTED();
+}
+
+QScriptContext *QScriptEngine::currentContext() const
+{
+    Q_UNIMPLEMENTED();
+    return 0;
+}
+
+QScriptContext *QScriptEngine::pushContext()
+{
+    Q_UNIMPLEMENTED();
+    return 0;
+}
+
+void QScriptEngine::popContext()
+{
+    Q_UNIMPLEMENTED();
+}
+
+void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
+{
+    Q_UNUSED(object);
+    Q_UNIMPLEMENTED();
+}
+
+QScriptValue QScriptEngine::importExtension(const QString &extension)
+{
+    Q_UNUSED(extension);
+    Q_UNIMPLEMENTED();
+    return QScriptValue();
+}
+
+QStringList QScriptEngine::availableExtensions() const
+{
+    Q_UNIMPLEMENTED();
+    return QStringList();
+}
+
+QStringList QScriptEngine::importedExtensions() const
+{
+    Q_UNIMPLEMENTED();
+    return QStringList();
+}
+
+void QScriptEngine::setProcessEventsInterval(int interval)
+{
+    Q_UNUSED(interval);
+    Q_UNIMPLEMENTED();
+}
+
+int QScriptEngine::processEventsInterval() const
+{
+    Q_UNIMPLEMENTED();
+    return 0;
+}
+
+void QScriptEngine::setAgent(QScriptEngineAgent *agent)
+{
+    Q_UNUSED(agent);
+    Q_UNIMPLEMENTED();
+}
+
+QScriptEngineAgent *QScriptEngine::agent() const
+{
+    Q_UNIMPLEMENTED();
+    return 0;
+}
+
+#ifndef QT_NO_QOBJECT
+bool qScriptConnect(QObject *sender, const char *signal,
+                    const QScriptValue &receiver,
+                    const QScriptValue &function)
+{
+    Q_UNUSED(sender);
+    Q_UNUSED(signal);
+    Q_UNUSED(receiver);
+    Q_UNUSED(function);
+    Q_UNIMPLEMENTED();
+    return false;
+}
+
+bool qScriptDisconnect(QObject *sender, const char *signal,
+                       const QScriptValue &receiver,
+                       const QScriptValue &function)
+{
+    Q_UNUSED(sender);
+    Q_UNUSED(signal);
+    Q_UNUSED(receiver);
+    Q_UNUSED(function);
+    Q_UNIMPLEMENTED();
+    return false;
+}
+#endif // QT_NO_QOBJECT
+
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
+{
+    // In V8 there is only JIT.
+    return true;
+}
+#endif
+
+QT_END_NAMESPACE
