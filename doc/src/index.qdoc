@@ -99,7 +99,7 @@
                   <li><a href="linguist-manual.html">Qt Linguist</a></li>
                   <li><a href="assistant-manual.html">Qt Assistant</a></li>
                   <li><a href="qmake-manual.html">Qt qmake</a></li>
-                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/simulator-description.html">Qt Simulator</a></li>
+                  <li><a href="http://doc.qt.nokia.com/qtsimulator-1.0/index.html">Qt Simulator</a></li>
                   <li><a href="http://qt.nokia.com/developer/eclipse-integration">Eclipse Integration</a></li>
                   <li><a href="http://qt.nokia.com/products/appdev">Add-On Products and Services</a></li>
                   <li><a href="qvfb.html">Virtual Framebuffer</a></li>
