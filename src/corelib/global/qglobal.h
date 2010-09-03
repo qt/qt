@@ -486,6 +486,7 @@ namespace QT_NAMESPACE {}
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
 #      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_INITIALIZER_LISTS
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++0x features supported in GCC 4.5: */
