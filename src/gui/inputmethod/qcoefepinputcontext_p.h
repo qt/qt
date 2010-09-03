@@ -84,6 +84,7 @@ public:
     void update();
 
     bool filterEvent(const QEvent *event);
+    bool symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event);
     void mouseHandler( int x, QMouseEvent *event);
     bool isComposing() const { return !m_preeditString.isEmpty(); }
 

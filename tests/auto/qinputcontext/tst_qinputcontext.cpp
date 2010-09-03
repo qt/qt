@@ -49,6 +49,7 @@
 #include <qradiobutton.h>
 #include <qwindowsstyle.h>
 #include <qdesktopwidget.h>
+#include <qpushbutton.h>
 
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
@@ -80,6 +81,8 @@ private slots:
     void focusProxy();
     void symbianTestCoeFepInputContext_data();
     void symbianTestCoeFepInputContext();
+    void symbianTestCoeFepAutoCommit_data();
+    void symbianTestCoeFepAutoCommit();
 
 private:
     bool m_phoneIsQwerty;
@@ -934,6 +937,127 @@ void tst_QInputContext::symbianTestCoeFepInputContext()
     QCOMPARE(lineedit->text(), finalString);
     QCOMPARE(ic->m_preeditString, preeditString);
 #endif
+}
+
+void tst_QInputContext::symbianTestCoeFepAutoCommit_data()
+{
+#ifdef Q_OS_SYMBIAN
+    QTest::addColumn<Qt::InputMethodHints>   ("inputMethodHints");
+    QTest::addColumn<QLineEdit::EchoMode>    ("echoMode");
+    QTest::addColumn<QList<FepReplayEvent> > ("keyEvents");
+    QTest::addColumn<QString>                ("finalString");
+
+    QList<FepReplayEvent> events;
+
+    events << FepReplayEvent('4', '4', 0, 0);
+    events << FepReplayEvent('4', '4', 0, 0);
+    events << FepReplayEvent('0', '0', 0, 0);
+    events << FepReplayEvent('9', '9', 0, 0);
+    events << FepReplayEvent('6', '6', 0, 0);
+    events << FepReplayEvent('8', '8', 0, 0);
+    QTest::newRow("Numbers")
+            << Qt::InputMethodHints(Qt::ImhDigitsOnly)
+            << QLineEdit::Normal
+            << events
+            << QString("440968");
+    QTest::newRow("Numbers and password")
+            << Qt::InputMethodHints(Qt::ImhDigitsOnly)
+            << QLineEdit::Password
+            << events
+            << QString("440968");
+    QTest::newRow("Multitap")
+            << Qt::InputMethodHints(Qt::ImhPreferLowercase | Qt::ImhNoPredictiveText)
+            << QLineEdit::Normal
+            << events
+            << QString("h wmt");
+    QTest::newRow("T9")
+            << Qt::InputMethodHints(Qt::ImhPreferLowercase)
+            << QLineEdit::Normal
+            << events
+            << QString("hi you");
+    QTest::newRow("Multitap with password")
+            << Qt::InputMethodHints(Qt::ImhPreferLowercase | Qt::ImhNoPredictiveText)
+            << QLineEdit::Password
+            << events
+            << QString("h wmt");
+    QTest::newRow("T9 with password")
+            << Qt::InputMethodHints(Qt::ImhPreferLowercase)
+            << QLineEdit::Password
+            << events
+            << QString("h wmt");
+#endif
+}
+
+void tst_QInputContext::symbianTestCoeFepAutoCommit()
+{
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian-only test", SkipAll);
+#else
+    QCoeFepInputContext *ic = qobject_cast<QCoeFepInputContext *>(qApp->inputContext());
+    if (!ic) {
+        QSKIP("coefep is not the active input context; skipping test", SkipAll);
+    }
+
+    QFETCH(Qt::InputMethodHints,  inputMethodHints);
+    QFETCH(QLineEdit::EchoMode,   echoMode);
+    QFETCH(QList<FepReplayEvent>, keyEvents);
+    QFETCH(QString,               finalString);
+
+    if (m_phoneIsQwerty) {
+        QSKIP("Skipping advanced input method tests on QWERTY phones", SkipSingle);
+    }
+
+    QWidget w;
+    QLayout *layout = new QVBoxLayout;
+    w.setLayout(layout);
+    QLineEdit *lineedit = new QLineEdit;
+    layout->addWidget(lineedit);
+    lineedit->setFocus();
+#ifdef QT_KEYPAD_NAVIGATION
+    lineedit->setEditFocus(true);
+#endif
+    QPushButton *pushButton = new QPushButton("Done");
+    layout->addWidget(pushButton);
+    QAction softkey("Done", &w);
+    softkey.setSoftKeyRole(QAction::PositiveSoftKey);
+    w.addAction(&softkey);
+    w.show();
+
+    lineedit->setInputMethodHints(inputMethodHints);
+    lineedit->setEchoMode(echoMode);
+
+    QTest::qWait(200);
+    foreach(FepReplayEvent event, keyEvents) {
+        event.replay(lineedit);
+    }
+    QApplication::processEvents();
+
+    QTest::mouseClick(pushButton, Qt::LeftButton);
+
+    QCOMPARE(lineedit->text(), finalString);
+    QVERIFY(ic->m_preeditString.isEmpty());
+
+#ifdef Q_WS_S60
+    lineedit->inputContext()->reset();
+    lineedit->clear();
+    lineedit->setFocus();
+#ifdef QT_KEYPAD_NAVIGATION
+    lineedit->setEditFocus(true);
+#endif
+
+    QTest::qWait(200);
+    foreach(FepReplayEvent event, keyEvents) {
+        event.replay(lineedit);
+    }
+    QApplication::processEvents();
+
+    FepReplayEvent(EStdKeyDevice0, EKeyDevice0, 0, 0).replay(lineedit); // Left softkey
+
+    QCOMPARE(lineedit->text(), finalString);
+    QVERIFY(ic->m_preeditString.isEmpty());
+
+#endif // Q_WS_S60
+#endif // Q_OS_SYMBIAN
 }
 
 QTEST_MAIN(tst_QInputContext)
