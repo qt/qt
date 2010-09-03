@@ -381,6 +381,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
     dictionary[ "LTCG" ]            = "no";
     dictionary[ "NATIVE_GESTURES" ] = "yes";
+    dictionary[ "MSVC_MP" ] = "no";
 }
 
 Configure::~Configure()
@@ -534,6 +535,13 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-ltcg") {
             dictionary[ "LTCG" ] = "no";
         }
+        else if (configCmdLine.at(i) == "-mp") {
+            dictionary[ "MSVC_MP" ] = "yes";
+        }
+        else if (configCmdLine.at(i) == "-no-mp") {
+            dictionary[ "MSVC_MP" ] = "no";
+        }
+
 #endif
 
         else if (configCmdLine.at(i) == "-platform") {
@@ -1848,6 +1856,8 @@ bool Configure::displayHelp()
         desc("STYLE_S60" , "yes", "",                   "  s60\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
         desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.");
+        desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
+        desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP)");
 
 /*      We do not support -qconfig on Windows yet
 
@@ -2822,7 +2832,7 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental create_prl link_prl depend_includepath QTDIR_build" << endl;
+        cacheStream << "CONFIG         += " << qmakeConfig.join(" ") << " incremental msvc_mp create_prl link_prl depend_includepath QTDIR_build" << endl;
 
         QStringList buildParts;
         buildParts << "libs" << "tools" << "examples" << "demos" << "docs" << "translations";
@@ -2885,6 +2895,8 @@ void Configure::generateCachefile()
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";
+        if (dictionary[ "MSVC_MP" ] == "yes")
+            configStream << " msvc_mp";
         if (dictionary[ "STL" ] == "yes")
             configStream << " stl";
         if (dictionary[ "EXCEPTIONS" ] == "yes")
@@ -3612,7 +3624,10 @@ void Configure::buildHostTools()
         // generate Makefile
         QStringList args;
         args << QDir::toNativeSeparators(buildPath + "/bin/qmake");
-        args << "-spec" << dictionary["QMAKESPEC"] << "-r";
+        // override .qmake.cache because we are not cross-building these.
+        // we need a full path so that a build with -prefix will still find it.
+        args << "-spec" << QDir::toNativeSeparators(buildPath + "/mkspecs/" + dictionary["QMAKESPEC"]);
+        args << "-r";
         args << "-o" << QDir::toNativeSeparators(toolBuildPath + "/Makefile");
 
         QDir().mkpath(toolBuildPath);
@@ -3750,8 +3765,7 @@ void Configure::generateMakefiles()
                     printf("Generating Makefiles...\n");
                     generate = false; // Now Makefiles will be done
                 }
-                args << "-spec";
-                args << spec;
+                // don't pass -spec - .qmake.cache has it already
                 args << "-r";
                 args << (sourcePath + "/projects.pro");
                 args << "-o";

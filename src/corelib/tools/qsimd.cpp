@@ -140,56 +140,41 @@ static inline uint detectProcessorFeatures()
     uint result = 0;
     /* see p. 118 of amd64 instruction set manual Vol3 */
 #if defined(Q_CC_GNU)
-    asm ("push %%ebx\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "mov %%eax, %%ebx\n"
-         "xor $0x00200000, %%eax\n"
-         "push %%eax\n"
+    long cpuid_supported, tmp1;
+    asm ("pushf\n"
+         "pop %0\n"
+         "mov %0, %1\n"
+         "xor $0x00200000, %0\n"
+         "push %0\n"
          "popf\n"
          "pushf\n"
-         "pop %%eax\n"
-         "xor %%edx, %%edx\n"
-         "xor %%ebx, %%eax\n"
-         "jz 1f\n"
+         "pop %0\n"
+         "xor %1, %0\n" // %eax is now 0 if CPUID is not supported
+         : "=a" (cpuid_supported), "=r" (tmp1)
+         );
+    if (cpuid_supported) {
+        asm ("xchg %%ebx, %2\n"
+             "cpuid\n"
+             "xchg %%ebx, %2\n"
+            : "=c" (feature_result), "=d" (result), "=&r" (tmp1)
+            : "a" (1));
 
-         "mov $0x00000001, %%eax\n"
-         "cpuid\n"
-         "1:\n"
-         "pop %%ebx\n"
-         "mov %%edx, %0\n"
-         "mov %%ecx, %1\n"
-        : "=r" (result), "=r" (feature_result)
-        :
-        : "%eax", "%ecx", "%edx"
-        );
-
-    asm ("push %%ebx\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "mov %%eax, %%ebx\n"
-         "xor $0x00200000, %%eax\n"
-         "push %%eax\n"
-         "popf\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "xor %%edx, %%edx\n"
-         "xor %%ebx, %%eax\n"
-         "jz 2f\n"
-
-         "mov $0x80000000, %%eax\n"
-         "cpuid\n"
-         "cmp $0x80000000, %%eax\n"
-         "jbe 2f\n"
-         "mov $0x80000001, %%eax\n"
-         "cpuid\n"
-         "2:\n"
-         "pop %%ebx\n"
-         "mov %%edx, %0\n"
-        : "=r" (extended_result)
-        :
-        : "%eax", "%ecx", "%edx"
-        );
+        asm ("xchg %%ebx, %1\n"
+             "cpuid\n"
+             "cmp $0x80000000, %%eax\n"
+             "jnbe 1f\n"
+             "xor %0, %0\n"
+             "jmp 2f\n"
+             "1:\n"
+             "mov $0x80000001, %%eax\n"
+             "cpuid\n"
+             "2:\n"
+             "xchg %%ebx, %1\n"
+            : "=d" (extended_result), "=&r" (tmp1)
+            : "a" (0x80000000)
+            : "%ecx"
+            );
+    }
 
 #elif defined (Q_OS_WIN)
     _asm {
@@ -289,27 +274,10 @@ static inline uint detectProcessorFeatures()
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
-    asm ("push %%rbx\n"
-         "pushf\n"
-         "pop %%rax\n"
-         "mov %%eax, %%ebx\n"
-         "xor $0x00200000, %%eax\n"
-         "push %%rax\n"
-         "popf\n"
-         "pushf\n"
-         "pop %%rax\n"
-         "xor %%edx, %%edx\n"
-         "xor %%ebx, %%eax\n"
-         "jz 1f\n"
-
-         "mov $0x00000001, %%eax\n"
-         "cpuid\n"
-         "1:\n"
-         "pop %%rbx\n"
-         "mov %%ecx, %0\n"
-        : "=r" (feature_result)
-        :
-        : "%eax", "%ecx", "%edx"
+    asm ("cpuid"
+        : "=c" (feature_result)
+        : "a" (1)
+        : "%ebx", "%edx"
         );
 #elif defined (Q_OS_WIN64)
     {

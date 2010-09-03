@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,17 +38,15 @@
 **
 ****************************************************************************/
 
-#include <QTableView>
-#include <QHeaderView>
-#include "modelview.h"
-#include "mymodel.h"
-
-ModelView::ModelView(QWidget *parent)
-    : QMainWindow(parent)
-{
-    tableView = new QTableView(this);
-    setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this));
-    tableView->verticalHeader()->hide();
+import Qt 4.7
+Image {
+    source: "quit.png"
+    scale: quitMouse.pressed ? 0.8 : 1.0
+    smooth: quitMouse.pressed
+    MouseArea {
+        id: quitMouse
+        anchors.fill: parent
+        anchors.margins: -10
+        onClicked: Qt.quit()
+    }
 }
-

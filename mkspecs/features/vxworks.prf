@@ -22,20 +22,20 @@ isEmpty(VXWORKS_MUNCH_TOOL):VXWORKS_MUNCH_TOOL = $(WIND_BASE)/host/resource/huti
 
 shared|!staticlib:!lib {
     *-dcc {
-    VXWORKS_MUNCH_CMD = (targ=`basename $(TARGET)`; \
+    VXWORKS_MUNCH_CMD =  targ=`basename $(TARGET)`; \
                          ddump -Ng \"$(TARGET)\" | tclsh $$VXWORKS_MUNCH_TOOL -c $$VXWORKS_ARCH_MUNCH >\"$(OBJECTS_DIR)/\$\${targ}_ctdt.c\" && \
                          $$QMAKE_CC -c $$QMAKE_CFLAGS \"$(OBJECTS_DIR)/\$\${targ}_ctdt.c\" -o \"$(OBJECTS_DIR)/\$\${targ}_ctdt.o\" && \
                          $$QMAKE_LINK $$QMAKE_LFLAGS -X -r5 -r4 \"$(OBJECTS_DIR)/\$\${targ}_ctdt.o\" \"$(TARGET)\" -o \"$(TARGET).munched\" && \
                          mv \"$(TARGET).munched\" \"$(TARGET)\" && \
-                         chmod +x \"$(TARGET)\")
+                         chmod +x \"$(TARGET)\"
     }
     *-g++ {
-    VXWORKS_MUNCH_CMD = (targ=`basename $(TARGET)`; \
+    VXWORKS_MUNCH_CMD =  targ=`basename $(TARGET)`; \
                          nm \"$(DESTDIR)$(TARGET)\" | tclsh $$VXWORKS_MUNCH_TOOL -c $$VXWORKS_ARCH_MUNCH >\"$(OBJECTS_DIR)/\$\${targ}_ctdt.c\" && \
                          $$QMAKE_CC -c $$QMAKE_CFLAGS -fdollars-in-identifiers \"$(OBJECTS_DIR)/\$\${targ}_ctdt.c\" -o \"$(OBJECTS_DIR)/\$\${targ}_ctdt.o\" && \
                          $$QMAKE_LINK $$QMAKE_LFLAGS -nostdlib -Wl,-X -T $(WIND_BASE)/target/h/tool/gnu/ldscripts/link.OUT \"$(OBJECTS_DIR)/\$\${targ}_ctdt.o\" \"$(DESTDIR)$(TARGET)\" -o \"$(DESTDIR)$(TARGET).munched\" && \
                          mv \"$(DESTDIR)$(TARGET).munched\" \"$(DESTDIR)$(TARGET)\" && \
-                         chmod +x \"$(DESTDIR)$(TARGET)\")
+                         chmod +x \"$(DESTDIR)$(TARGET)\"
     }
 
     # We need to create a dummy lib.a in case someone links against this lib.
@@ -48,7 +48,8 @@ shared|!staticlib:!lib {
         VXWORKS_MUNCH_CMD += (atarg=`basename $(TARGET) .so.$${VERSION}`.a ; touch \"$(DESTDIR)\$\${atarg}\")
     }
 
-    QMAKE_POST_LINK = $$VXWORKS_MUNCH_CMD $$QMAKE_POST_LINK
+    !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
+    QMAKE_POST_LINK = $$VXWORKS_MUNCH_CMD$$QMAKE_POST_LINK
     silent:QMAKE_POST_LINK = @echo creating $@.$$VXWORKS_MUNCH_EXT && $$QMAKE_POST_LINK
 
     isEmpty(DESTDIR) {

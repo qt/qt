@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,11 +38,23 @@
 **
 ****************************************************************************/
 
-// Note: this file is not intended to be run.
+#include <QTableView>
+#include "mainwindow.h"
+#include "mymodel.h"
 
-//! [basic syntax]
-SomeElement {
-    id: myObject
-    ... some other things here ...
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+{
+    tableView = new QTableView(this);
+    setCentralWidget(tableView);
+    QAbstractTableModel *myModel = new MyModel(this);
+    tableView->setModel(myModel);
+
+    //transfer changes to the model to the window title
+    connect(myModel, SIGNAL(editCompleted(const QString &)), this, SLOT(setWindowTitle(const QString &)));
 }
-//! [basic syntax]
+
+void MainWindow::showWindowTitle(const QString & title)
+{
+setWindowTitle(title);
+}

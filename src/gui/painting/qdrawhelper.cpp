@@ -46,7 +46,6 @@
 #include <private/qdrawhelper_armv6_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
-#include <private/qsimd_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -656,6 +655,46 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
     return buffer;
 }
 
+/** \internal
+  interpolate 4 argb pixels with the distx and disty factor.
+  distx and disty bust be between 0 and 16
+ */
+static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, int distx, int disty, int idistx, int idisty)
+{
+    uint tlrb = ((tl & 0x00ff00ff) * idistx * idisty);
+    uint tlag = (((tl & 0xff00ff00) >> 8) * idistx * idisty);
+    uint trrb = ((tr & 0x00ff00ff) * distx * idisty);
+    uint trag = (((tr & 0xff00ff00) >> 8) * distx * idisty);
+    uint blrb = ((bl & 0x00ff00ff) * idistx * disty);
+    uint blag = (((bl & 0xff00ff00) >> 8) * idistx * disty);
+    uint brrb = ((br & 0x00ff00ff) * distx * disty);
+    uint brag = (((br & 0xff00ff00) >> 8) * distx * disty);
+    return (((tlrb + trrb + blrb + brrb) >> 8) & 0x00ff00ff) | ((tlag + trag + blag + brag) & 0xff00ff00);
+}
+
+
+template<TextureBlendType blendType>
+Q_STATIC_TEMPLATE_FUNCTION inline void fetchTransformedBilinear_pixelBounds(int max, int l1, int l2, int &v1, int &v2)
+{
+    if (blendType == BlendTransformedBilinearTiled) {
+        v1 %= max;
+        if (v1 < 0) v1 += max;
+        v2 = v1 + 1;
+        v2 %= max;
+    } else {
+        if (v1 < l1) {
+            v2 = v1 = l1;
+        } else if (v1 >= l2 - 1) {
+            v2 = v1 = l2 - 1;
+        } else {
+            v2 = v1 + 1;
+        }
+    }
+
+    Q_ASSERT(v1 >= 0 && v1 < max);
+    Q_ASSERT(v2 >= 0 && v2 < max);
+}
+
 template<TextureBlendType blendType, QImage::Format format> /* blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled */
 Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
@@ -696,64 +735,230 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
         fx -= half_point;
         fy -= half_point;
-        while (b < end) {
-            int x1 = (fx >> 16);
-            int x2;
+
+        if (fdy == 0) { //simple scale, no rotation
             int y1 = (fy >> 16);
             int y2;
-
-            if (blendType == BlendTransformedBilinearTiled) {
-                x1 %= image_width;
-                if (x1 < 0) x1 += image_width;
-                x2 = x1 + 1;
-                x2 %= image_width;
-
-                y1 %= image_height;
-                if (y1 < 0) y1 += image_height;
-                y2 = y1 + 1;
-                y2 %= image_height;
-            } else {
-                if (x1 < image_x1) {
-                    x2 = x1 = image_x1;
-                } else if (x1 >= image_x2 - 1) {
-                    x2 = x1 = image_x2 - 1;
-                } else {
-                    x2 = x1 + 1;
-                }
-                if (y1 < image_y1) {
-                    y2 = y1 = image_y1;
-                } else if (y1 >= image_y2 - 1) {
-                    y2 = y1 = image_y2 - 1;
-                } else {
-                    y2 = y1 + 1;
-                }
-            }
-
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
-
+            fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
 
-            uint tl = fetch(s1, x1, data->texture.colorTable);
-            uint tr = fetch(s1, x2, data->texture.colorTable);
-            uint bl = fetch(s2, x1, data->texture.colorTable);
-            uint br = fetch(s2, x2, data->texture.colorTable);
+            if (fdx <= fixed_scale && fdx > 0) { // scale up on X
+                int disty = (fy & 0x0000ffff) >> 8;
+                int idisty = 256 - disty;
+                int x = fx >> 16;
 
-            int distx = (fx & 0x0000ffff) >> 8;
-            int disty = (fy & 0x0000ffff) >> 8;
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
+                // The idea is first to do the interpolation between the row s1 and the row s2
+                // into an intermediate buffer, then we interpolate between two pixel of this buffer.
 
-            uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-            uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-            *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
+                // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
+                // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
+                quint32 intermediate_buffer[2][buffer_size + 2];
+                // count is the size used in the intermediate_buffer.
+                int count = qCeil(length * data->m11) + 2; //+1 for the last pixel to interpolate with, and +1 for rounding errors.
+                Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
+                int f = 0;
+                int lim = count;
+                if (blendType == BlendTransformedBilinearTiled) {
+                    x %= image_width;
+                    if (x < 0) x += image_width;
+                } else {
+                    lim = qMin(count, image_x2-x);
+                    if (x < image_x1) {
+                        Q_ASSERT(x < image_x2);
+                        uint t = fetch(s1, image_x1, data->texture.colorTable);
+                        uint b = fetch(s2, image_x1, data->texture.colorTable);
+                        quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                        quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                        do {
+                            intermediate_buffer[0][f] = rb;
+                            intermediate_buffer[1][f] = ag;
+                            f++;
+                            x++;
+                        } while (x < image_x1 && f < lim);
+                    }
+                }
 
-            fx += fdx;
-            fy += fdy;
-            ++b;
+#if defined(QT_ALWAYS_HAVE_SSE2)
+                if (blendType != BlendTransformedBilinearTiled &&
+                        (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)) {
+
+                    const __m128i disty_ = _mm_set1_epi16(disty);
+                    const __m128i idisty_ = _mm_set1_epi16(idisty);
+                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+
+                    lim -= 3;
+                    for (; f < lim; x += 4, f += 4) {
+                        // Load 4 pixels from s1, and split the alpha-green and red-blue component
+                        __m128i top = _mm_loadu_si128((__m128i*)((const uint *)(s1)+x));
+                        __m128i topAG = _mm_srli_epi16(top, 8);
+                        __m128i topRB = _mm_and_si128(top, colorMask);
+                        // Multiplies each colour component by idisty
+                        topAG = _mm_mullo_epi16 (topAG, idisty_);
+                        topRB = _mm_mullo_epi16 (topRB, idisty_);
+
+                        // Same for the s2 vector
+                        __m128i bottom = _mm_loadu_si128((__m128i*)((const uint *)(s2)+x));
+                        __m128i bottomAG = _mm_srli_epi16(bottom, 8);
+                        __m128i bottomRB = _mm_and_si128(bottom, colorMask);
+                        bottomAG = _mm_mullo_epi16 (bottomAG, disty_);
+                        bottomRB = _mm_mullo_epi16 (bottomRB, disty_);
+
+                        // Add the values, and shift to only keep 8 significant bits per colors
+                        __m128i rAG =_mm_add_epi16(topAG, bottomAG);
+                        rAG = _mm_srli_epi16(rAG, 8);
+                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[1][f]), rAG);
+                        __m128i rRB =_mm_add_epi16(topRB, bottomRB);
+                        rRB = _mm_srli_epi16(rRB, 8);
+                        _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
+                    }
+                }
+#endif
+                for (; f < count; f++) { // Same as above but without sse2
+                    if (blendType == BlendTransformedBilinearTiled) {
+                        if (x >= image_width) x -= image_width;
+                    } else {
+                        x = qMin(x, image_x2 - 1);
+                    }
+
+                    uint t = fetch(s1, x, data->texture.colorTable);
+                    uint b = fetch(s2, x, data->texture.colorTable);
+
+                    intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                    intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+                    x++;
+                }
+                // Now interpolate the values from the intermediate_buffer to get the final result.
+                fx &= fixed_scale - 1;
+                Q_ASSERT((fx >> 16) == 0);
+                while (b < end) {
+                    register int x1 = (fx >> 16);
+                    register int x2 = x1 + 1;
+                    Q_ASSERT(x1 >= 0);
+                    Q_ASSERT(x2 < count);
+
+                    register int distx = (fx & 0x0000ffff) >> 8;
+                    register int idistx = 256 - distx;
+                    int rb = ((intermediate_buffer[0][x1] * idistx + intermediate_buffer[0][x2] * distx) >> 8) & 0xff00ff;
+                    int ag = (intermediate_buffer[1][x1] * idistx + intermediate_buffer[1][x2] * distx) & 0xff00ff00;
+                    *b = rb | ag;
+                    b++;
+                    fx += fdx;
+                }
+            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || fabs(data->m22) < (1./8.)) { // scale up more than 8x
+                int y1 = (fy >> 16);
+                int y2;
+                fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
+                const uchar *s1 = data->texture.scanLine(y1);
+                const uchar *s2 = data->texture.scanLine(y2);
+                int disty = (fy & 0x0000ffff) >> 8;
+                int idisty = 256 - disty;
+                while (b < end) {
+                    int x1 = (fx >> 16);
+                    int x2;
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    uint tl = fetch(s1, x1, data->texture.colorTable);
+                    uint tr = fetch(s1, x2, data->texture.colorTable);
+                    uint bl = fetch(s2, x1, data->texture.colorTable);
+                    uint br = fetch(s2, x2, data->texture.colorTable);
+
+                    int distx = (fx & 0x0000ffff) >> 8;
+                    int idistx = 256 - distx;
+
+                    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
+                    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
+                    *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
+
+                    fx += fdx;
+                    ++b;
+                }
+            } else { //scale down
+                int y1 = (fy >> 16);
+                int y2;
+                fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
+                const uchar *s1 = data->texture.scanLine(y1);
+                const uchar *s2 = data->texture.scanLine(y2);
+                int disty = (fy & 0x0000ffff) >> 12;
+                int idisty = 16 - disty;
+                while (b < end) {
+                    int x1 = (fx >> 16);
+                    int x2;
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    uint tl = fetch(s1, x1, data->texture.colorTable);
+                    uint tr = fetch(s1, x2, data->texture.colorTable);
+                    uint bl = fetch(s2, x1, data->texture.colorTable);
+                    uint br = fetch(s2, x2, data->texture.colorTable);
+                    int distx = (fx & 0x0000ffff) >> 12;
+                    int idistx = 16 - distx;
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+                    fx += fdx;
+                    ++b;
+                }
+            }
+        } else { //rotation
+            if (fabs(data->m11) > 8 || fabs(data->m22) > 8) {
+                //if we are zooming more than 8 times, we use 8bit precision for the position.
+                while (b < end) {
+                    int x1 = (fx >> 16);
+                    int x2;
+                    int y1 = (fy >> 16);
+                    int y2;
+
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
+
+                    const uchar *s1 = data->texture.scanLine(y1);
+                    const uchar *s2 = data->texture.scanLine(y2);
+
+                    uint tl = fetch(s1, x1, data->texture.colorTable);
+                    uint tr = fetch(s1, x2, data->texture.colorTable);
+                    uint bl = fetch(s2, x1, data->texture.colorTable);
+                    uint br = fetch(s2, x2, data->texture.colorTable);
+
+                    int distx = (fx & 0x0000ffff) >> 8;
+                    int disty = (fy & 0x0000ffff) >> 8;
+                    int idistx = 256 - distx;
+                    int idisty = 256 - disty;
+
+                    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
+                    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
+                    *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
+
+                    fx += fdx;
+                    fy += fdy;
+                    ++b;
+                }
+            } else {
+                //we are zooming less than 8x, use 4bit precision
+                while (b < end) {
+                    int x1 = (fx >> 16);
+                    int x2;
+                    int y1 = (fy >> 16);
+                    int y2;
+
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
+
+                    const uchar *s1 = data->texture.scanLine(y1);
+                    const uchar *s2 = data->texture.scanLine(y2);
+
+                    uint tl = fetch(s1, x1, data->texture.colorTable);
+                    uint tr = fetch(s1, x2, data->texture.colorTable);
+                    uint bl = fetch(s2, x1, data->texture.colorTable);
+                    uint br = fetch(s2, x2, data->texture.colorTable);
+
+                    int distx = (fx & 0x0000ffff) >> 12;
+                    int disty = (fy & 0x0000ffff) >> 12;
+                    int idistx = 16 - distx;
+                    int idisty = 16 - disty;
+
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+
+                    fx += fdx;
+                    fy += fdy;
+                    ++b;
+                }
+            }
         }
     } else {
         const qreal fdx = data->m11;
@@ -779,37 +984,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
             int idistx = 256 - distx;
             int idisty = 256 - disty;
 
-            if (blendType == BlendTransformedBilinearTiled) {
-                x1 %= image_width;
-                if (x1 < 0) x1 += image_width;
-                x2 = x1 + 1;
-                x2 %= image_width;
-
-                y1 %= image_height;
-                if (y1 < 0) y1 += image_height;
-                y2 = y1 + 1;
-                y2 %= image_height;
-            } else {
-                if (x1 < 0) {
-                    x2 = x1 = 0;
-                } else if (x1 >= image_width - 1) {
-                    x2 = x1 = image_width - 1;
-                } else {
-                    x2 = x1 + 1;
-                }
-                if (y1 < 0) {
-                    y2 = y1 = 0;
-                } else if (y1 >= image_height - 1) {
-                    y2 = y1 = image_height - 1;
-                } else {
-                    y2 = y1 + 1;
-                }
-            }
-
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
+            fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+            fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -1757,9 +1933,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl(uint *dest, int
     for (int i = 0; i < length; ++i) {
         PRELOAD_COND(dest)
         uint d = dest[i];
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
         coverage.store(&dest[i], d);
     }
 }
@@ -1781,9 +1955,7 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Plus_impl(uint *dest, const uin
         uint d = dest[i];
         uint s = src[i];
 
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-        d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
+        d = comp_func_Plus_one_pixel(d, s);
 
         coverage.store(&dest[i], d);
     }
@@ -5216,37 +5388,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                     int y1 = (y >> 16);
                     int y2;
 
-                    if (blendType == BlendTransformedBilinearTiled) {
-                        x1 %= image_width;
-                        if (x1 < 0) x1 += image_width;
-                        x2 = x1 + 1;
-                        x2 %= image_width;
-
-                        y1 %= image_height;
-                        if (y1 < 0) y1 += image_height;
-                        y2 = y1 + 1;
-                        y2 %= image_height;
-
-                        Q_ASSERT(x1 >= 0 && x1 < image_width);
-                        Q_ASSERT(x2 >= 0 && x2 < image_width);
-                        Q_ASSERT(y1 >= 0 && y1 < image_height);
-                        Q_ASSERT(y2 >= 0 && y2 < image_height);
-                    } else {
-                        if (x1 < image_x1) {
-                            x2 = x1 = image_x1;
-                        } else if (x1 >= image_x2 - 1) {
-                            x2 = x1 = image_x2 - 1;
-                        } else {
-                            x2 = x1 + 1;
-                        }
-                        if (y1 < image_y1) {
-                            y2 = y1 = image_y1;
-                        } else if (y1 >= image_y2 - 1) {
-                            y2 = y1 = image_y2 - 1;
-                        } else {
-                            y2 = y1 + 1;
-                        }
-                    }
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
 
                     int y1_offset = y1 * scanline_offset;
                     int y2_offset = y2 * scanline_offset;
@@ -5326,37 +5469,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const
                     int idistx = 256 - distx;
                     int idisty = 256 - disty;
 
-                    if (blendType == BlendTransformedBilinearTiled) {
-                        x1 %= image_width;
-                        if (x1 < 0) x1 += image_width;
-                        x2 = x1 + 1;
-                        x2 %= image_width;
-
-                        y1 %= image_height;
-                        if (y1 < 0) y1 += image_height;
-                        y2 = y1 + 1;
-                        y2 %= image_height;
-
-                        Q_ASSERT(x1 >= 0 && x1 < image_width);
-                        Q_ASSERT(x2 >= 0 && x2 < image_width);
-                        Q_ASSERT(y1 >= 0 && y1 < image_height);
-                        Q_ASSERT(y2 >= 0 && y2 < image_height);
-                    } else {
-                        if (x1 < image_x1) {
-                            x2 = x1 = image_x1;
-                        } else if (x1 >= image_x2 - 1) {
-                            x2 = x1 = image_x2 - 1;
-                        } else {
-                            x2 = x1 + 1;
-                        }
-                        if (y1 < image_y1) {
-                            y2 = y1 = image_y1;
-                        } else if (y1 >= image_y2 - 1) {
-                            y2 = y1 = image_y2 - 1;
-                        } else {
-                            y2 = y1 + 1;
-                        }
-                    }
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
 
                     int y1_offset = y1 * scanline_offset;
                     int y2_offset = y2 * scanline_offset;
@@ -7900,6 +8014,7 @@ void qInitDrawhelperAsm()
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
             qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
             qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
+            qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 
             qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
             qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
@@ -7911,11 +8026,13 @@ void qInitDrawhelperAsm()
 
             functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
             functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+            functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
             destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
             destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
             qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
             qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+            qt_memfill32 = qt_memfill32_neon;
         }
 #endif
 

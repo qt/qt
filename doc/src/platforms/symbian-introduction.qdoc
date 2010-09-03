@@ -219,6 +219,7 @@
     \row \o -o                  \o Creates only unsigned package.
     \row \o -s                  \o Generates stub sis for ROM.
     \row \o -n <name>           \o Specifies the final sis name.
+    \row \o -g                  \o Treat gcce platform as armv5.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

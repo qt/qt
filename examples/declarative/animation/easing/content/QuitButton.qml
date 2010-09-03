@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,21 +38,15 @@
 **
 ****************************************************************************/
 
-#ifndef MODELVIEW_H
-#define MODELVIEW_H
-
-#include <QtGui/QMainWindow>
-
-QT_FORWARD_DECLARE_CLASS(QTableView)
-
-class ModelView : public QMainWindow
-{
-    Q_OBJECT
-private:
-    QTableView *tableView;
-public:
-    ModelView(QWidget *parent = 0);
-
-};
-
-#endif // MODELVIEW_H
+import Qt 4.7
+Image {
+    source: "quit.png"
+    scale: quitMouse.pressed ? 0.8 : 1.0
+    smooth: quitMouse.pressed
+    MouseArea {
+        id: quitMouse
+        anchors.fill: parent
+        anchors.margins: -10
+        onClicked: Qt.quit()
+    }
+}

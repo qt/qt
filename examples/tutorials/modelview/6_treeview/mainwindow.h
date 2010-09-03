@@ -38,15 +38,27 @@
 **
 ****************************************************************************/
 
-#include <QTableView>
-#include "modelview.h"
-#include "mymodel.h"
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-ModelView::ModelView(QWidget *parent)
-    : QMainWindow(parent)
+#include <QtGui/QMainWindow>
+
+class QTreeView; //forward declaration
+class QStandardItemModel;
+class QStandardItem;
+
+
+class MainWindow : public QMainWindow
 {
-    tableView = new QTableView(this);
-    setCentralWidget(tableView);
-    tableView->setModel(new MyModel(this));
-}
+    Q_OBJECT
+private:
+    QTreeView *treeView;
+    QStandardItemModel *standardModel;
+    QList<QStandardItem *> prepareRow( const QString &first,
+                                       const QString &second,
+                                       const QString &third );
+public:
+    MainWindow(QWidget *parent = 0);
+};
 
+#endif // MAINWINDOW_H

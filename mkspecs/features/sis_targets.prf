@@ -11,6 +11,12 @@ else:!equals(DEPLOYMENT, default_deployment) {
 
 equals(GENERATE_SIS_TARGETS, true) {
     symbian-abld|symbian-sbsv2 {
+        symbian-sbsv2 {
+            CONVERT_GCCE_PARAM = -g
+        } else {
+            CONVERT_GCCE_PARAM =
+        }
+        
         make_cache_name = .make.cache
         sis_target.target = sis
         sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
@@ -28,7 +34,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_sis_target.target = ok_sis
-        ok_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
+        ok_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         unsigned_sis_target.target = unsigned_sis
@@ -47,7 +53,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_unsigned_sis_target.target = ok_unsigned_sis
-        ok_unsigned_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg $(QT_SIS_TARGET)
+        ok_unsigned_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg $(QT_SIS_TARGET)
 
         target_sis_target.target = $$basename(TARGET).sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
