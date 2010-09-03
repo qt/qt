@@ -44,7 +44,7 @@ quint64 ImageItem::computeChecksum(const QImage &image)
     return qChecksum((const char *)image.constScanLine(50), image.bytesPerLine());
 }
 
-QString ImageItem::engineAsString()
+QString ImageItem::engineAsString() const
 {
     switch (engine) {
     case Raster:
