@@ -5610,7 +5610,7 @@ QString QUrl::toString(FormattingOptions options) const
     if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority) {
         bool doFileScheme = d->scheme == QLatin1String("file") && ourPath.startsWith(QLatin1Char('/'));
         QString tmp = d->authority(options);
-        if (!tmp.isEmpty() || doFileScheme) {
+        if (!tmp.isNull() || doFileScheme) {
             if (doFileScheme && !ourPath.startsWith(QLatin1Char('/')))
                 url += QLatin1Char('/');
             url += QLatin1String("//");
