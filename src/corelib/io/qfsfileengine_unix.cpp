@@ -492,37 +492,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 
 bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
 {
-    QString dirName = name;
-    if (createParentDirectories) {
-        dirName = QDir::cleanPath(dirName);
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
-        for(int oldslash = -1, slash=0; slash != -1; oldslash = slash) {
-            slash = dirName.indexOf(QDir::separator(), oldslash+1);
-            if (slash == -1) {
-                if (oldslash == dirName.length())
-                    break;
-                slash = dirName.length();
-            }
-            if (slash) {
-                QByteArray chunk = QFile::encodeName(dirName.left(slash));
-                QT_STATBUF st;
-                if (QT_STAT(chunk, &st) != -1) {
-                    if ((st.st_mode & S_IFMT) != S_IFDIR)
-                        return false;
-                } else if (QT_MKDIR(chunk, 0777) != 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-#if defined(Q_OS_DARWIN)  // Mac X doesn't support trailing /'s
-    if (dirName.endsWith(QLatin1Char('/')))
-        dirName.chop(1);
-#endif
-    return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
+    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories);
 }
 
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
