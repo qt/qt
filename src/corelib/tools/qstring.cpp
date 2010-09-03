@@ -173,19 +173,6 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     return 1;
 }
 
-// Unicode case-sensitive comparison
-static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
-{
-    if (a == b && alen == blen)
-        return 0;
-    int l = qMin(alen, blen);
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l == -1)
-        return (alen-blen);
-    return a->unicode() - b->unicode();
-}
-
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
@@ -194,6 +181,16 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     if (l==-1)
         return 0;
     return a->unicode() - b->unicode();
+}
+
+// Unicode case-sensitive comparison
+static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
+{
+    if (a == b && alen == blen)
+        return 0;
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
 }
 
 // Unicode case-insensitive compare two same-sized strings

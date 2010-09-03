@@ -5863,7 +5863,8 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     }
 
     bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
-                                           || d->extended->type() == QPaintEngine::OpenVG;
+                                           || d->extended->type() == QPaintEngine::OpenVG
+                                           || d->extended->type() == QPaintEngine::OpenGL;
 
     if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
@@ -9027,7 +9028,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pixmap.isNull())
         return;
 
 #ifndef QT_NO_DEBUG

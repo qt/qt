@@ -38,21 +38,22 @@
 **
 ****************************************************************************/
 
-#ifndef MODELVIEW_H
-#define MODELVIEW_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
 
-QT_FORWARD_DECLARE_CLASS(QTableView)
+class QTableView; //forward declaration
 
-class ModelView : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
     QTableView *tableView;
 public:
-    ModelView(QWidget *parent = 0);
-
+    MainWindow(QWidget *parent = 0);
+public slots:
+    void showWindowTitle(const QString & title);
 };
 
-#endif // MODELVIEW_H
+#endif // MAINWINDOW_H

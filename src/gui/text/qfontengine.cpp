@@ -874,8 +874,8 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
 
     enum {
         Invalid,
-        Symbol,
         AppleRoman,
+        Symbol,
         Unicode11,
         Unicode,
         MicrosoftUnicode,
@@ -939,7 +939,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
         return 0;
 
 resolveTable:
-    *isSymbolFont = (score == Symbol);
+    *isSymbolFont = (symbolTable > -1);
 
     unsigned int unicode_table = qFromBigEndian<quint32>(maps + 8*tableToUse + 4);
 

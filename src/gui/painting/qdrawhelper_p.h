@@ -62,19 +62,13 @@
 #define QT_FT_END_HEADER
 #endif
 #include "private/qrasterdefs_p.h"
+#include <private/qsimd_p.h>
 
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#if defined(Q_OS_MAC) && (defined(__ppc__) || defined(__ppc64__))
-#undef QT_HAVE_MMX
-#undef QT_HAVE_SSE
-#undef QT_HAVE_SSE2
-#undef QT_HAVE_3DNOW
-#endif
 
 #if defined(Q_CC_MSVC) && _MSCVER <= 1300 && !defined(Q_CC_INTEL)
 #define Q_STATIC_TEMPLATE_SPECIALIZATION static

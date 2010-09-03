@@ -49,14 +49,20 @@
 #include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QFileInfo>
-#include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QBuffer>
+#include <QtCore/QTranslator>
+#include <QtCore/QLocale>
+#include <QtCore/QLibraryInfo>
 #include <QtHelp/QHelpEngineCore>
 #include <QtXml/QXmlStreamReader>
 
 
 QT_USE_NAMESPACE
+
+class QCG {
+    Q_DECLARE_TR_FUNCTIONS(QCollectionGenerator)
+};
 
 class CollectionConfigReader : public QXmlStreamReader
 {
@@ -123,9 +129,7 @@ private:
 
 void CollectionConfigReader::raiseErrorWithLine()
 {
-    raiseError(QCoreApplication::translate("QCollectionGenerator",
-                                           "Unknown token at line %1.")
-                    .arg(lineNumber()));
+    raiseError(QCG::tr("Unknown token at line %1.").arg(lineNumber()));
 }
 
 void CollectionConfigReader::readData(const QByteArray &contents)
@@ -144,9 +148,8 @@ void CollectionConfigReader::readData(const QByteArray &contents)
                 && attributes().value(QLatin1String("version")) == QLatin1String("1.0"))
                 readConfig();
             else
-                raiseError(QCoreApplication::translate("QCollectionGenerator",
-                               "Unknown token at line %1. "
-                               "Expected \"QtHelpCollectionProject\"!")
+                raiseError(QCG::tr("Unknown token at line %1. "
+                                   "Expected \"QtHelpCollectionProject\".")
                            .arg(lineNumber()));
         }
     }
@@ -169,7 +172,7 @@ void CollectionConfigReader::readConfig()
         }
     }
     if (!ok && !hasError())
-        raiseError(QLatin1String("Missing end tags."));
+        raiseError(QCG::tr("Missing end tags."));
 }
 
 void CollectionConfigReader::readAssistantSettings()
@@ -311,7 +314,7 @@ void CollectionConfigReader::readFiles()
         }
     }
     if (input.isEmpty() || output.isEmpty()) {
-        raiseError(QLatin1String("Missing input or output file for help file generation!"));
+        raiseError(QCG::tr("Missing input or output file for help file generation."));
         return;
     }
     m_filesToGenerate.insert(input, output);
@@ -350,6 +353,20 @@ int main(int argc, char *argv[])
     bool showHelp = false;
     bool showVersion = false;
 
+    QCoreApplication app(argc, argv);
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QTranslator qt_helpTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("assistant_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)
+        && qt_helpTranslator.load(QLatin1String("qt_help_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+        app.installTranslator(&qt_helpTranslator);
+    }
+
     for (int i=1; i<argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
         if (arg == QLatin1String("-o")) {
@@ -357,8 +374,7 @@ int main(int argc, char *argv[])
                 QFileInfo fi(QString::fromLocal8Bit(argv[i]));
                 collectionFile = fi.absoluteFilePath();
             } else {
-                error = QCoreApplication::translate("QCollectionGenerator",
-                            "Missing output file name!");
+                error = QCG::tr("Missing output file name.");
             }
         } else if (arg == QLatin1String("-h")) {
             showHelp = true;
@@ -372,16 +388,15 @@ int main(int argc, char *argv[])
     }
 
     if (showVersion) {
-        fprintf(stdout, "Qt Collection Generator version 1.0 (Qt %s)\n",
-                QT_VERSION_STR);
+        fputs(qPrintable(QCG::tr("Qt Collection Generator version 1.0 (Qt %1)\n")
+                .arg(QT_VERSION_STR)), stdout);
         return 0;
     }
 
     if (configFile.isEmpty() && !showHelp)
-        error = QCoreApplication::translate("QCollectionGenerator",
-                                            "Missing collection config file!");
+        error = QCG::tr("Missing collection config file.");
 
-    QString help = QCoreApplication::translate("QCollectionGenerator", "\nUsage:\n\n"
+    QString help = QCG::tr("\nUsage:\n\n"
         "qcollectiongenerator <collection-config-file> [options]\n\n"
         "  -o <collection-file>   Generates a collection file\n"
         "                         called <collection-file>. If\n"
@@ -391,7 +406,7 @@ int main(int argc, char *argv[])
         "                         qcollectiongenerator.\n\n");
 
     if (showHelp) {
-        fprintf(stdout, "%s", qPrintable(help));
+        fputs(qPrintable(help), stdout);
         return 0;
     }else if (!error.isEmpty()) {
         fprintf(stderr, "%s\n\n%s", qPrintable(error), qPrintable(help));
@@ -400,7 +415,7 @@ int main(int argc, char *argv[])
 
     QFile file(configFile);
     if (!file.open(QIODevice::ReadOnly)) {
-        fprintf(stderr, "Could not open %s!\n", qPrintable(configFile));
+        fputs(qPrintable(QCG::tr("Could not open %1.\n").arg(configFile)), stderr);
         return -1;
     }
 
@@ -410,19 +425,18 @@ int main(int argc, char *argv[])
             + fi.baseName() + QLatin1String(".qhc");
     }
 
-    QCoreApplication app(argc, argv);
-
-    fprintf(stdout, "Reading collection config file...\n");
+    fputs(qPrintable(QCG::tr("Reading collection config file...\n")), stdout);
     CollectionConfigReader config;
     config.readData(file.readAll());
     if (config.hasError()) {
-        fprintf(stderr, "Collection config file error: %s\n", qPrintable(config.errorString()));
+        fputs(qPrintable(QCG::tr("Collection config file error: %1\n")
+                         .arg(config.errorString())), stderr);
         return -1;
     }
 
     QMap<QString, QString>::const_iterator it = config.filesToGenerate().constBegin();
     while (it != config.filesToGenerate().constEnd()) {
-        fprintf(stdout, "Generating help for %s...\n", qPrintable(it.key()));
+        fputs(qPrintable(QCG::tr("Generating help for %1...\n").arg(it.key())), stdout);
         QHelpProjectData helpData;
         if (!helpData.readData(absoluteFileName(basePath, it.key()))) {
             fprintf(stderr, "%s\n", qPrintable(helpData.errorMessage()));
@@ -437,12 +451,13 @@ int main(int argc, char *argv[])
         ++it;
     }
 
-    fprintf(stdout, "Creating collection file...\n");
+    fputs(qPrintable(QCG::tr("Creating collection file...\n")), stdout);
 
     QFileInfo colFi(collectionFile);
     if (colFi.exists()) {
         if (!colFi.dir().remove(colFi.fileName())) {
-            fprintf(stderr, "The file %s cannot be overwritten!\n", qPrintable(collectionFile));
+            fputs(qPrintable(QCG::tr("The file %1 cannot be overwritten.\n")
+                             .arg(collectionFile)), stderr);
             return -1;
         }
     }
@@ -500,7 +515,7 @@ int main(int argc, char *argv[])
     if (!config.applicationIcon().isEmpty()) {
         QFile icon(absoluteFileName(basePath, config.applicationIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
-            fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
+            fputs(qPrintable(QCG::tr("Cannot open %1.\n").arg(icon.fileName())), stderr);
             return -1;
         }
         CollectionConfiguration::setApplicationIcon(helpEngine, icon.readAll());
@@ -521,7 +536,7 @@ int main(int argc, char *argv[])
     if (!config.aboutIcon().isEmpty()) {
         QFile icon(absoluteFileName(basePath, config.aboutIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
-            fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
+            fputs(qPrintable(QCG::tr("Cannot open %1.\n").arg(icon.fileName())), stderr);
             return -1;
         }
         CollectionConfiguration::setAboutIcon(helpEngine, icon.readAll());
@@ -543,7 +558,7 @@ int main(int argc, char *argv[])
             QFileInfo fi(absoluteFileName(basePath, it.value()));
             QFile f(fi.absoluteFilePath());
             if (!f.open(QIODevice::ReadOnly)) {
-                fprintf(stderr, "Cannot open %s!\n", qPrintable(f.fileName()));
+                fputs(qPrintable(QCG::tr("Cannot open %1.\n").arg(f.fileName())), stderr);
                 return -1;
             }
             QByteArray data = f.readAll();
@@ -565,8 +580,8 @@ int main(int argc, char *argv[])
                         if (!imgData.contains(src))
                             imgData.insert(src, img.readAll());
                     } else {
-                        fprintf(stderr, "Cannot open referenced image file %s!\n",
-                            qPrintable(img.fileName()));
+                        fputs(qPrintable(QCG::tr("Cannot open referenced image file %1.\n")
+                                         .arg(img.fileName())), stderr);
                     }
                 }
             }

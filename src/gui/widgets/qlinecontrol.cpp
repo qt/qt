@@ -419,7 +419,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 
 
     int c = m_cursor; // cursor position after insertion of commit string
-    if (event->replacementStart() == 0)
+    if (event->replacementStart() <= 0)
         c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
@@ -464,8 +464,6 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         if (a.type == QInputMethodEvent::Cursor) {
             m_preeditCursor = a.start;
             m_hideCursor = !a.length;
-            if (m_hideCursor)
-                setCursorBlinkPeriod(0);
         } else if (a.type == QInputMethodEvent::TextFormat) {
             QTextCharFormat f = qvariant_cast<QTextFormat>(a.value).toCharFormat();
             if (f.isValid()) {
@@ -529,7 +527,7 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
         int cursor = m_cursor;
         if (m_preeditCursor != -1)
             cursor += m_preeditCursor;
-        if (!m_hideCursor && (!m_blinkPeriod || m_blinkStatus))
+        if(!m_blinkPeriod || m_blinkStatus)
             m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }

@@ -692,7 +692,7 @@ void SymbianEngine::updateActiveAccessPoints()
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
             if (!ptr) {
                 // If IAP was not found, check if the update was about EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1054,7 +1054,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
             if (!ptr) {
                 // Check if status was regarding EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1079,7 +1079,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
             User::WaitForRequest(status);
             QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
             if (!ptr) {
                 // Check for EasyWLAN
                 ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1189,7 +1189,7 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
         User::WaitForRequest(status);
         QString ident = QT_BEARERMGMT_CONFIGURATION_IAP_PREFIX+QString::number(qHash(apId));
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(ident);
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
         if (!ptr) {
             // If IAP was not found, check if the update was about EasyWLAN
             ptr = configurationFromEasyWlan(apId, connectionId);
@@ -1210,11 +1210,39 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
     }
 }
 
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
+/*
+    Returns the network configuration that matches the given SSID.
+*/
+QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromSsid(const QString &ssid)
+{
+    QMutexLocker locker(&mutex);
+
+    // Browser through all items and check their name for match
+    QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator i =
+        accessPointConfigurations.constBegin();
+    while (i != accessPointConfigurations.constEnd()) {
+        QNetworkConfigurationPrivatePointer ptr = i.value();
+
+        QMutexLocker configLocker(&ptr->mutex);
+
+        if (ptr->name == ssid) {
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+            qDebug() << "QNCM EasyWlan uses real SSID: " << ssid;
+#endif
+            return ptr;
+        }
+        ++i;
+    }
+
+    return QNetworkConfigurationPrivatePointer();
+}
+
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
 // Tries to derive configuration from EasyWLAN.
 // First checks if the interface brought up was EasyWLAN, then derives the real SSID,
 // and looks up configuration based on that one.
-QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUint32 apId, TUint connectionId)
+QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUint32 apId,
+                                                                             TUint connectionId)
 {
     if (apId == iCmManager.EasyWlanIdL()) {
         TRequestStatus status;
@@ -1223,11 +1251,12 @@ QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUi
                                                easyWlanNetworkName, status );
         User::WaitForRequest(status);
         if (status.Int() == KErrNone) {
-            QString realSSID = QString::fromUtf16(easyWlanNetworkName.Ptr(), easyWlanNetworkName.Length());
+            const QString realSSID = QString::fromUtf16(easyWlanNetworkName.Ptr(),
+                                                        easyWlanNetworkName.Length());
 
             // Browser through all items and check their name for match
-            QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
-                    accessPointConfigurations.constBegin();
+            QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator i =
+                accessPointConfigurations.constBegin();
             while (i != accessPointConfigurations.constEnd()) {
                 QNetworkConfigurationPrivatePointer ptr = i.value();
 
@@ -1245,45 +1274,6 @@ QNetworkConfigurationPrivatePointer SymbianEngine::configurationFromEasyWlan(TUi
     }
     return QNetworkConfigurationPrivatePointer();
 }
-
-bool SymbianEngine::easyWlanTrueIapId(TUint32& trueIapId)
-{
-    // Check if this is easy wlan id in the first place
-    if (trueIapId != iCmManager.EasyWlanIdL())
-        return false;
-
-    // Loop through all connections that connection monitor is aware
-    // and check for IAPs based on easy WLAN
-    TRequestStatus status;
-    TUint connectionCount;
-    iConnectionMonitor.GetConnectionCount(connectionCount, status);
-    User::WaitForRequest(status);
-    TUint connectionId;
-    TUint subConnectionCount;
-    TUint apId;
-    if (status.Int() == KErrNone) {
-        for (TUint i = 1; i <= connectionCount; i++) {
-            iConnectionMonitor.GetConnectionInfo(i, connectionId, subConnectionCount);
-            iConnectionMonitor.GetUintAttribute(connectionId, subConnectionCount,
-                                                KIAPId, apId, status);
-            User::WaitForRequest(status);
-            if (apId == trueIapId) {
-                QNetworkConfigurationPrivatePointer ptr =
-                    configurationFromEasyWlan(apId, connectionId);
-                if (ptr) {
-#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
-                    qDebug() << "QNCM easyWlanTrueIapId(), found true IAP ID: "
-                             << toSymbianConfig(ptr)->numericIdentifier();
-#endif
-                    trueIapId = toSymbianConfig(ptr)->numericIdentifier();
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 #endif
 
 // Sessions may use this function to report configuration state changes,
