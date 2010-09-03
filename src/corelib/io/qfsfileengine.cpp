@@ -447,24 +447,13 @@ qint64 QFSFileEngine::size() const
 qint64 QFSFileEnginePrivate::sizeFdFh() const
 {
     Q_Q(const QFSFileEngine);
-    // ### Fix this function, it should not stat unless the file is closed.
-    QT_STATBUF st;
-    int ret = 0;
     const_cast<QFSFileEngine *>(q)->flush();
-    if (fh && fileEntry.isEmpty()) {
-        // Buffered stdlib mode.
-        // ### This should really be an ftell
-        ret = QT_FSTAT(QT_FILENO(fh), &st);
-    } else if (fd == -1) {
-        // Stateless stat.
-        ret = QT_STAT(fileEntry.nativeFilePath().constData(), &st);
-    } else {
-        // Unbuffered stdio mode.
-        ret = QT_FSTAT(fd, &st);
-    }
-    if (ret == -1)
+
+    tried_stat = 0;
+    metaData.clearFlags(QFileSystemMetaData::SizeAttribute);
+    if (!doStat(QFileSystemMetaData::SizeAttribute))
         return 0;
-    return st.st_size;
+    return metaData.size();
 }
 #endif
 
@@ -773,18 +762,14 @@ bool QFSFileEngine::isSequential() const
 /*!
     \internal
 */
+#ifdef Q_OS_UNIX
 bool QFSFileEnginePrivate::isSequentialFdFh() const
 {
-    if (!tried_stat)
-        doStat();
-    if (could_stat) {
-#ifdef Q_OS_UNIX
-        return (st.st_mode & S_IFMT) != S_IFREG;
-        // ### WINDOWS!
-#endif
-    }
+    if (doStat(QFileSystemMetaData::SequentialType))
+        return metaData.isSequential();
     return true;
 }
+#endif
 
 /*!
     \reimp

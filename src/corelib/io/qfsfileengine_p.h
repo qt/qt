@@ -56,7 +56,8 @@
 #include "qplatformdefs.h"
 #include "QtCore/qfsfileengine.h"
 #include "private/qabstractfileengine_p.h"
-#include "private/qfilesystementry_p.h"
+#include <QtCore/private/qfilesystementry_p.h>
+#include <QtCore/private/qfilesystemmetadata_p.h>
 #include <qhash.h>
 
 #ifndef QT_NO_FSFILEENGINE
@@ -102,10 +103,16 @@ public:
     qint64 writeFdFh(const char *data, qint64 len);
     int nativeHandle() const;
     bool nativeIsSequential() const;
+#ifndef Q_OS_WIN
     bool isSequentialFdFh() const;
+#endif
 
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
+
+#if defined(Q_OS_UNIX)
+    mutable QFileSystemMetaData metaData;
+#endif
 
     FILE *fh;
 #ifdef Q_WS_WIN
@@ -120,7 +127,6 @@ public:
     mutable DWORD fileAttrib;
 #else
     QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
-    mutable QT_STATBUF st;
 #endif
     int fd;
 
@@ -142,7 +148,11 @@ public:
     mutable uint is_link : 1;
 #endif
 
+#if defined(Q_OS_WIN)
     bool doStat() const;
+#else
+    bool doStat(QFileSystemMetaData::MetaDataFlags flags = QFileSystemMetaData::PosixStatFlags) const;
+#endif
     bool isSymlink() const;
 
 #if defined(Q_OS_WIN32)

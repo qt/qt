@@ -47,11 +47,63 @@
 #include <stdlib.h> // for realpath()
 #include <errno.h>
 
+#if defined(Q_OS_SYMBIAN)
+# include <sys/syslimits.h>
+# include <f32file.h>
+# include <pathinfo.h>
+# include <QtCore/private/qcore_symbian_p.h>
+#endif
+
 #if defined(Q_OS_MAC)
 # include <QtCore/private/qcore_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#if defined(Q_OS_SYMBIAN)
+static bool _q_isSymbianHidden(const QFileSystemEntry &entry, bool isDir)
+{
+    RFs rfs = qt_s60GetRFs();
+
+    QFileSystemEntry absoluteEntry = QFileSystemEngine::absoluteName(entry);
+    QString absolutePath = absoluteEntry.filePath();
+
+    if (isDir && !absolutePath.endsWith(QLatin1Char('/')))
+        absolutePath.append(QLatin1Char('/'));
+
+    TPtrC ptr(qt_QString2TPtrC(absolutePath));
+    TUint attributes;
+    TInt err = rfs.Att(ptr, attributes);
+    return (err == KErrNone && (attributes & KEntryAttHidden));
+}
+#endif
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+static inline bool _q_isMacHidden(const char *nativePath)
+{
+    OSErr err;
+
+    FSRef fsRef;
+    err = FSPathMakeRefWithOptions(reinterpret_cast<const UInt8 *>(nativePath),
+            kFSPathMakeRefDoNotFollowLeafSymlink, &fsRef, 0);
+    if (err != noErr)
+        return false;
+
+    FSCatalogInfo catInfo;
+    err = FSGetCatalogInfo(&fsRef, kFSCatInfoFinderInfo, &catInfo, NULL, NULL, NULL);
+    if (err != noErr)
+        return false;
+
+    FileInfo * const fileInfo = reinterpret_cast<FileInfo*>(&catInfo.finderInfo);
+    return (fileInfo->finderFlags & kIsInvisible);
+}
+#else
+static inline bool _q_isMacHidden(const char *nativePath)
+{
+    // no-op
+    return false;
+}
+#endif
 
 void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 {
@@ -207,9 +259,162 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 }
 
 //static
-bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data, QFileSystemMetaData::MetaDataFlags what)
+bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
 {
-    return false; // TODO implement;
+    data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
+    data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags;
+
+    QT_STATBUF statBuffer;
+    if (QT_FSTAT(fd, &statBuffer) == 0) {
+        data.fillFromStatBuf(statBuffer);
+        return true;
+    }
+
+    return false;
+}
+
+//static
+bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
+        QFileSystemMetaData::MetaDataFlags what)
+{
+#if !defined(QWS) && defined(Q_OS_MAC)
+    if (what & QFileSystemMetaData::BundleType) {
+        if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
+            what |= QFileSystemMetaData::DirectoryType;
+    }
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+    if (what & QFileSystemMetaData::HiddenAttribute) {
+        if (!data.hasFlags(QFileSystemMetaData::LinkType | QFileSystemMetaData::DirectoryType))
+            what |= QFileSystemMetaData::LinkType | QFileSystemMetaData::DirectoryType;
+    }
+#endif
+
+    if (what & QFileSystemMetaData::PosixStatFlags)
+        what |= QFileSystemMetaData::PosixStatFlags;
+
+    if (what & QFileSystemMetaData::ExistsAttribute) {
+        //  FIXME:  Would other queries being performed provide this bit?
+        what |= QFileSystemMetaData::PosixStatFlags;
+    }
+
+    data.entryFlags &= ~what;
+
+    const char * nativeFilePath;
+    int nativeFilePathLength;
+    {
+        const QByteArray &path = entry.nativeFilePath();
+        nativeFilePath = path.constData();
+        nativeFilePathLength = path.size();
+    }
+
+    bool entryExists = true; // innocent until proven otherwise
+
+    QT_STATBUF statBuffer;
+    bool statBufferValid = false;
+    if (what & QFileSystemMetaData::LinkType) {
+        if (QT_LSTAT(nativeFilePath, &statBuffer) == 0) {
+            if (S_ISLNK(statBuffer.st_mode)) {
+                data.entryFlags |= QFileSystemMetaData::LinkType;
+            } else {
+                statBufferValid = true;
+                data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
+            }
+        } else {
+            entryExists = false;
+        }
+
+        data.knownFlagsMask |= QFileSystemMetaData::LinkType;
+    }
+
+    if (statBufferValid || (what & QFileSystemMetaData::PosixStatFlags)) {
+        if (entryExists && !statBufferValid)
+            statBufferValid = (QT_STAT(nativeFilePath, &statBuffer) == 0);
+
+        if (statBufferValid)
+            data.fillFromStatBuf(statBuffer);
+        else
+            entryExists = false;
+
+        // reset the mask
+        data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags
+            | QFileSystemMetaData::ExistsAttribute;
+    }
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+    if (what & QFileSystemMetaData::AliasType)
+    {
+        if (entryExists) {
+            FSRef fref;
+            if (FSPathMakeRef((const UInt8 *)nativeFilePath, &fref, NULL) == noErr) {
+                Boolean isAlias, isFolder;
+                if (FSIsAliasFile(&fref, &isAlias, &isFolder) == noErr) {
+                    if (isAlias)
+                        data.entryFlags |= QFileSystemMetaData::AliasType;
+                }
+            }
+        }
+        data.knownFlagsMask |= QFileSystemMetaData::AliasType;
+    }
+#endif
+
+    if (what & QFileSystemMetaData::UserPermissions) {
+        // calculate user permissions
+
+        if (entryExists) {
+            if (what & QFileSystemMetaData::UserReadPermission) {
+                if (QT_ACCESS(nativeFilePath, R_OK) == 0)
+                    data.entryFlags |= QFileSystemMetaData::UserReadPermission;
+            }
+            if (what & QFileSystemMetaData::UserWritePermission) {
+                if (QT_ACCESS(nativeFilePath, W_OK) == 0)
+                    data.entryFlags |= QFileSystemMetaData::UserWritePermission;
+            }
+            if (what & QFileSystemMetaData::UserExecutePermission) {
+                if (QT_ACCESS(nativeFilePath, X_OK) == 0)
+                    data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
+            }
+        }
+        data.knownFlagsMask |= (what & QFileSystemMetaData::UserPermissions);
+    }
+
+    if (what & QFileSystemMetaData::HiddenAttribute
+            && !data.isHidden()) {
+#if defined(Q_OS_SYMBIAN)
+        // In Symbian, all symlinks have hidden attribute for some reason;
+        // lets make them visible for better compatibility with other platforms.
+        // If somebody actually wants a hidden link, then they are out of luck.
+        if (entryExists && !data.isLink() && _q_isSymbianHidden(entry, data.isDirectory()))
+            data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
+#else
+        QString fileName = entry.fileName();
+        if ((fileName.size() > 0 && fileName.at(0) == QLatin1Char('.'))
+                || (entryExists && _q_isMacHidden(nativeFilePath)))
+            data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
+#endif
+        data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
+    }
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+    if (what & QFileSystemMetaData::BundleType) {
+        if (entryExists && data.isDirectory()) {
+            QCFType<CFStringRef> path = CFStringCreateWithBytes(0,
+                    (const UInt8*)nativeFilePath, nativeFilePathLength,
+                    kCFStringEncodingUTF8, false);
+            QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, path,
+                    kCFURLPOSIXPathStyle, true);
+
+            UInt32 type, creator;
+            if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+                data.entryFlags |= QFileSystemMetaData::BundleType;
+        }
+
+        data.knownFlagsMask |= QFileSystemMetaData::BundleType;
+    }
+#endif
+
+    return data.hasFlags(what);
 }
 
 //static

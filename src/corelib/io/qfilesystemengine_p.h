@@ -72,6 +72,9 @@ public:
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
             QFileSystemMetaData::MetaDataFlags what);
+#if defined(Q_OS_UNIX)
+    static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
+#endif
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
