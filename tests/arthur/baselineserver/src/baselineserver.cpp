@@ -110,9 +110,6 @@ void BaselineHandler::receiveRequest()
     case BaselineProtocol::RequestBaselineChecksums:
         provideBaselineChecksums(block);
         break;
-    case BaselineProtocol::RequestBaseline:
-        provideBaseline(block);
-        break;
     case BaselineProtocol::AcceptNewBaseline:
         storeImage(block, true);
         break;
@@ -154,24 +151,6 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
 }
 
 
-void BaselineHandler::provideBaseline(const QByteArray &caseId)
-{
-    qDebug() << runId << logtime() << "Received request for baseline" << caseId;
-
-    //### rewrite to use ImageItem
-    /*
-    QFile file(pathForCaseId(caseId));
-    if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << runId << logtime() << "baseline not found.";
-        proto.sendBlock(BaselineProtocol::BaselineNotPresent, caseId);
-        return;
-    }
-
-    proto.sendBlock(BaselineProtocol::AcceptBaseline, file.readAll());
-    */
-}
-
-
 void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
 {
     QDataStream ds(itemBlock);
@@ -200,7 +179,6 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
            + QHostInfo::localDomainName().toLatin1() + ':'
            + QFileInfo(file).absoluteFilePath().toLatin1();
     proto.sendBlock(BaselineProtocol::Ack, msg);
-    qDebug() << runId << logtime() << "Storing done.";
 }
 
 
@@ -225,6 +203,52 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 }
 
 
-// - transferring and comparing checksums instead of images
-// - then we could now if multiple error/imgs are really the same (and just store it once)
-// - e.g. using db
+QString BaselineHandler::computeMismatchScore(const QImage &baseline, const QImage &rendered)
+{
+    if (baseline.size() != rendered.size() || baseline.format() != rendered.format())
+        return QLatin1String("[No score, incomparable images.]");
+    if (baseline.depth() != 32)
+        return QLatin1String("[Score computation not implemented for format.]");
+
+    int w = baseline.width();
+    int h = baseline.height();
+
+    uint ncd = 0; // number of differing color pixels
+    uint nad = 0; // number of differing alpha pixels
+    uint scd = 0; // sum of color pixel difference
+    uint sad = 0; // sum of alpha pixel difference
+
+    for (int y=0; y<h; ++y) {
+        const QRgb *bl = (const QRgb *) baseline.constScanLine(y);
+        const QRgb *rl = (const QRgb *) rendered.constScanLine(y);
+        for (int x=0; x<w; ++x) {
+            QRgb b = bl[x];
+            QRgb r = rl[x];
+            if (r != b) {
+                int dr = qAbs(qRed(b) - qRed(r));
+                int dg = qAbs(qGreen(b) - qGreen(r));
+                int db = qAbs(qBlue(b) - qBlue(r));
+                int ds = dr + dg + db;
+                int da = qAbs(qAlpha(b) - qAlpha(r));
+                if (ds) {
+                    ncd++;
+                    scd += ds;
+                }
+                if (da) {
+                    nad++;
+                    sad += da;
+                }
+            }
+        }
+    }
+
+    double pcd = 100.0 * ncd / (w*h);  // percent of pixels that differ
+    double acd = ncd ? double(scd) / (3*ncd) : 0;         // avg. difference
+    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
+    if (baseline.hasAlphaChannel()) {
+        double pad = 100.0 * nad / (w*h);  // percent of pixels that differ
+        double aad = nad ? double(sad) / (3*nad) : 0;         // avg. difference
+        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
+    }
+    return res;
+}

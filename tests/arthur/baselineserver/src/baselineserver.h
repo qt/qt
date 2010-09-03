@@ -62,10 +62,10 @@ private slots:
 
 private:
     void provideBaselineChecksums(const QByteArray &itemListBlock);
-    void provideBaseline(const QByteArray &caseId);
-    void storeImage(const QByteArray &imageBlock, bool isBaseline);
+    void storeImage(const QByteArray &itemBlock, bool isBaseline);
     QString pathForItem(const ImageItem &item, bool isBaseline = true);
     QString logtime();
+    QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
 
     BaselineProtocol proto;
     PlatformInfo plat;

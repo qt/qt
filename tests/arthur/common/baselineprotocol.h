@@ -80,24 +80,17 @@ public:
         // Queries
         AcceptPlatformInfo = 1,
         RequestBaselineChecksums = 2,
-        RequestBaseline = 3,
         AcceptNewBaseline = 4,
         AcceptMismatch = 5,
         // Responses
         Ack = 128,
-
-        //#### remove these:
-        AcceptBaseline = 129,
-        BaselineNotPresent = 130,
-        IgnoreCase = 131
     };
 
     // For client:
     bool connect();
     bool requestBaselineChecksums(ImageItemList *itemList);
-    bool requestBaseline(const QString &caseId, Command *response, QImage *baseline);
-    bool submitNewBaseline(const ImageItem &item);
-    bool submitMismatch(const QString &caseId, const QImage &mismatch, QByteArray *failMsg);
+    bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
+    bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);
 
     // For server:
     bool acceptConnection(PlatformInfo *pi);

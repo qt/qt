@@ -141,39 +141,17 @@ bool BaselineProtocol::requestBaselineChecksums(ImageItemList *itemList)
 }
 
 
-bool BaselineProtocol::requestBaseline(const QString &caseId, Command *response, QImage *baseline)
+bool BaselineProtocol::submitNewBaseline(const ImageItem &item, QByteArray *serverMsg)
 {
-    //### TBD: rewrite to use ImageItem
-    errMsg.clear();
-    if (!sendBlock(RequestBaseline, caseId.toLatin1()))
-        return false;
-    QByteArray imgData;
     Command cmd;
-    if (!receiveBlock(&cmd, &imgData))
-        return false;
-    if (response)
-        *response = cmd;
-    if (cmd == BaselineNotPresent || cmd == IgnoreCase)
-        return true;
-    else if (cmd == AcceptBaseline) {
-        if (baseline) {
-            // hm, get the name also, for checking?
-            *baseline = QImage::fromData(imgData);
-            if (baseline->isNull()) {
-                errMsg.prepend(QLatin1String("Invalid baseline image data received. "));
-                return false;
-            }
-        }
-        return true;
-    }
-    errMsg.prepend(QLatin1String("Unexpected reply from server on baseline request. "));
-    return false;
+    return (sendItem(AcceptNewBaseline, item) && receiveBlock(&cmd, serverMsg) && cmd == Ack);
 }
 
 
-bool BaselineProtocol::submitNewBaseline(const ImageItem &item)
+bool BaselineProtocol::submitMismatch(const ImageItem &item, QByteArray *serverMsg)
 {
-    return sendItem(AcceptNewBaseline, item);
+    Command cmd;
+    return (sendItem(AcceptMismatch, item) && receiveBlock(&cmd, serverMsg) && cmd == Ack);
 }
 
 
@@ -186,32 +164,6 @@ bool BaselineProtocol::sendItem(Command cmd, const ImageItem &item)
     ds << item;
     if (!sendBlock(cmd, buf.data())) {
         errMsg.prepend(QLatin1String("Failed to submit image to server. "));
-        return false;
-    }
-    receiveBlock(&cmd, 0);  // For now, Just wait for the pong; ignore reply contents
-    return true;
-}
-
-
-bool BaselineProtocol::submitMismatch(const QString &caseId, const QImage &mismatch, QByteArray *failMsg)
-{
-    //### TBD: rewrite to use ImageItem
-    errMsg.clear();
-    QBuffer buf;
-    buf.open(QIODevice::WriteOnly);
-    QDataStream ds(&buf);
-    ds << caseId.toLatin1();
-    if (!mismatch.save(&buf, FileFormat)) {
-        errMsg = QLatin1String("Failed to convert mismatched image to ") + QLatin1String(FileFormat);
-        return false;
-    }
-    if (!sendBlock(AcceptMismatch, buf.data())) {
-        errMsg.prepend(QLatin1String("Failed to submit mismatched image to server. "));
-        return false;
-    }
-    Command cmd;
-    if (!receiveBlock(&cmd, failMsg)) {
-        errMsg.prepend(QLatin1String("Failed to receive response on mismatched image from server. "));
         return false;
     }
     return true;
