@@ -254,10 +254,10 @@ void qt_scale_image_argb32_on_rgb16(uchar *destPixels, int dbpl,
     }
 }
 
-static void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
-                                    const uchar *src, int sbpl,
-                                    int w, int h,
-                                    int const_alpha)
+void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
+                             const uchar *src, int sbpl,
+                             int w, int h,
+                             int const_alpha)
 {
 #ifdef QT_DEBUG_DRAW
     printf("qt_blend_rgb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",

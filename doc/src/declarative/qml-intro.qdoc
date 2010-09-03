@@ -58,7 +58,12 @@ would be a property.
 
 The basic syntax of an \l{QML Elements}{element} is
 
-\snippet doc/src/snippets/declarative/qml-intro/basic-syntax.qml basic syntax
+\code
+SomeElement {
+    id: myObject
+    ... some other things here ...
+}
+\endcode
 
 Here we are defining a new object. We specify its 'type' first as SomeElement.
 Then within matching braces { ... } we specify the various parts of our 

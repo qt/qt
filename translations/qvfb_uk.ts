@@ -215,7 +215,7 @@
     <name>DeviceSkin</name>
     <message>
         <source>The image file &apos;%1&apos; could not be loaded.</source>
-        <translation>Неможливо завантажити файл зображення &apos;%1&apos;.</translation>
+        <translation>Не вдалось завантажити файл зображення &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin directory &apos;%1&apos; does not contain a configuration file.</source>
@@ -223,11 +223,11 @@
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be opened.</source>
-        <translation>Неможливо відкрити файл налаштувань &apos;%1&apos;.</translation>
+        <translation>Не вдалось відкрити файл налаштувань обкладинки &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be read: %2</source>
-        <translation>Неможливо прочитати файл налаштувань &apos;%1&apos;: %2</translation>
+        <translation>Не вдалось прочитати файл налаштувань обкладинки &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Syntax error: %1</source>
@@ -261,6 +261,126 @@
 <context>
     <name>QVFb</name>
     <message>
+        <source>&amp;File</source>
+        <translation>&amp;Файл</translation>
+    </message>
+    <message>
+        <source>&amp;Configure...</source>
+        <translation>&amp;Налаштувати...</translation>
+    </message>
+    <message>
+        <source>&amp;Save image...</source>
+        <translation>&amp;Зберегти зображення...</translation>
+    </message>
+    <message>
+        <source>&amp;Animation...</source>
+        <translation>&amp;Анімація...</translation>
+    </message>
+    <message>
+        <source>&amp;Quit</source>
+        <translation>Ви&amp;йти</translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation>&amp;Вид</translation>
+    </message>
+    <message>
+        <source>Show &amp;Cursor</source>
+        <translation>Показувати &amp;курсор</translation>
+    </message>
+    <message>
+        <source>&amp;Refresh Rate...</source>
+        <translation>Швидкість &amp;оновлення...</translation>
+    </message>
+    <message>
+        <source>&amp;No rotation</source>
+        <translation>&amp;Без обертання</translation>
+    </message>
+    <message>
+        <source>&amp;90° rotation</source>
+        <translation>Обернути на &amp;90°</translation>
+    </message>
+    <message>
+        <source>1&amp;80° rotation</source>
+        <translation>Обернути на 1&amp;80°</translation>
+    </message>
+    <message>
+        <source>2&amp;70° rotation</source>
+        <translation>Обернути на 2&amp;70°</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;0.5</source>
+        <translation>Коефіцієнт масштабування &amp;0.5</translation>
+    </message>
+    <message>
+        <source>Zoom scale 0.7&amp;5</source>
+        <translation>Коефіцієнт масштабування 0.7&amp;5</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;1</source>
+        <translation>Коефіцієнт масштабування &amp;1</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;2</source>
+        <translation>Коефіцієнт масштабування &amp;2</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;3</source>
+        <translation>Коефіцієнт масштабування &amp;3</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;4</source>
+        <translation>Коефіцієнт масштабування &amp;4</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;scale...</source>
+        <translation>Коефіцієнт &amp;масштабування...</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Довідка</translation>
+    </message>
+    <message>
+        <source>&amp;About...</source>
+        <translation>&amp;Про...</translation>
+    </message>
+    <message>
+        <source>Save Main Screen image</source>
+        <translation>Зберегти зображення головного екрану</translation>
+    </message>
+    <message>
+        <source>snapshot.png</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Portable Network Graphics (*.png)</source>
+        <translation>Переносима мережева графіка (*.png)</translation>
+    </message>
+    <message>
+        <source>Save Main Screen Image</source>
+        <translation>Зберегти зображення головного екрану</translation>
+    </message>
+    <message>
+        <source>Save failed. Check that you have permission to write to the target directory.</source>
+        <translation>Збій збереження. Перевірте чи маєте ви право на запис в теку збереження.</translation>
+    </message>
+    <message>
+        <source>Save Second Screen image</source>
+        <translation>Зберегти зображення другого екрану</translation>
+    </message>
+    <message>
+        <source>Save Second Screen Image</source>
+        <translation>Зберегти зображення другого екрану</translation>
+    </message>
+    <message>
+        <source>About QVFB</source>
+        <translation>Про QVFB</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;The Qt for Embedded Linux Virtual X11 Framebuffer&lt;/h2&gt;&lt;p&gt;This application runs under Qt for X11, emulating a simple framebuffer, which the Qt for Embedded Linux server and clients can attach to just as if it was a hardware Linux framebuffer. &lt;p&gt;With the aid of this development tool, you can develop Qt for Embedded  Linux applications under X11 without having to switch to a virtual console. This means you can comfortably use your other development tools such as GUI profilers and debuggers.</source>
+        <translation>&lt;h2&gt;Віртуальний фреймбуфер X11 Qt для Embedded Linux&lt;/h2&gt;&lt;p&gt;Ця програма виконується під Qt для X11, емулюючи простий фреймбуфер, до якого сервер та клієнти Qt для Embedded Linux можуть приєднуватись так само, як би це був апаратний фреймбуфер Linux. &lt;p&gt;За допомогою цього інструменту ви можете розробляти програми Qt для Embedded Linux під X11, без потреби перемикатись на віртуальну консоль. Це означає, що ви можете зручно використовувати інші ваші інструменти розробки, такі як профайлери та зневаджувачі з графічним інтерфейсом користувача.</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Оглянути...</translation>
     </message>
@@ -271,6 +391,25 @@
     <message>
         <source>All QVFB Skins (*.skin)</source>
         <translation>Усі обкладинки QVFB (*.skin)</translation>
+    </message>
+</context>
+<context>
+    <name>QVFbRateDialog</name>
+    <message>
+        <source>Target frame rate:</source>
+        <translation>Швидкість оновлення:</translation>
+    </message>
+    <message>
+        <source>%1fps</source>
+        <translation>%1 кадрів в секунду</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Скасувати</translation>
     </message>
 </context>
 </TS>

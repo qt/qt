@@ -707,11 +707,19 @@ void QDeclarativeVMEMetaObject::writeVarProperty(int id, const QScriptValue &val
 
 void QDeclarativeVMEMetaObject::writeVarProperty(int id, const QVariant &value)
 {
-    if (value.userType() == QMetaType::QObjectStar) 
+    bool needActivate = false;
+    if (value.userType() == QMetaType::QObjectStar) {
+        QObject *o = qvariant_cast<QObject *>(value);
+        needActivate = (data[id].dataType() != QMetaType::QObjectStar || data[id].asQObject() != o);
         data[id].setValue(qvariant_cast<QObject *>(value));
-    else
+    } else {
+        needActivate = (data[id].dataType() != qMetaTypeId<QVariant>() || 
+                        data[id].asQVariant().userType() != value.userType() || 
+                        data[id].asQVariant() != value);
         data[id].setValue(value);
-    activate(object, methodOffset + id, 0);
+    }
+    if (needActivate)
+        activate(object, methodOffset + id, 0);
 }
 
 void QDeclarativeVMEMetaObject::listChanged(int id)
