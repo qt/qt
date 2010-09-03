@@ -149,6 +149,29 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
     }
 }
 
+/*
+   \ìnternal
+
+   Handles calls to custom file engine handlers.
+*/
+QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
+{
+    QAbstractFileEngine *engine = 0;
+
+    if (qt_file_engine_handlers_in_use) {
+        QReadLocker locker(fileEngineHandlerMutex());
+
+        // check for registered handlers that can load the file
+        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
+        for (int i = 0; i < handlers->size(); i++) {
+            if ((engine = handlers->at(i)->create(path)))
+                break;
+        }
+    }
+
+    return engine;
+}
+
 /*!
     \fn QAbstractFileEngine *QAbstractFileEngineHandler::create(const QString &fileName) const
 
@@ -177,16 +200,8 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 */
 QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 {
-    if (qt_file_engine_handlers_in_use) {
-        QReadLocker locker(fileEngineHandlerMutex());
-
-        // check for registered handlers that can load the file
-        QAbstractFileEngineHandlerList *handlers = fileEngineHandlers();
-        for (int i = 0; i < handlers->size(); i++) {
-            if (QAbstractFileEngine *ret = handlers->at(i)->create(fileName))
-                return ret;
-        }
-    }
+    if (QAbstractFileEngine *engine = qt_custom_file_engine_handler_create(filePath))
+        return engine;
 
 #ifdef QT_BUILD_CORE_LIB
     for (int prefixSeparator = 0; prefixSeparator < fileName.size(); ++prefixSeparator) {
