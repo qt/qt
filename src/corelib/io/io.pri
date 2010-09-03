@@ -81,6 +81,7 @@ win32 {
         else:SOURCES += io/qprocess_unix.cpp
         macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
+            SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
         }
 
