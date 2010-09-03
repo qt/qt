@@ -27,8 +27,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef Q_WS_QWS
-
 class QString;
 
 namespace Phonon
@@ -60,8 +58,6 @@ private:
 
 }
 } //namespace Phonon::Gstreamer
-
-#endif // Q_WS_QWS
 
 QT_END_NAMESPACE
 

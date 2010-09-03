@@ -180,7 +180,7 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
     }
 #else
     // Use MIT_SHM
-    if (image_info->image) {
+    if (image_info && image_info->image) {
         //qDebug() << "Here we go" << image_info->image->width << image_info->image->height;
         int x = 0;
         int y = 0;
