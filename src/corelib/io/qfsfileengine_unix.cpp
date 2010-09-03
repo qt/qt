@@ -1002,17 +1002,7 @@ QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
     if (file == BundleName) {
-#if !defined(QWS) && defined(Q_OS_MAC)
-        QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->fileEntry.filePath()),
-                                                              kCFURLPOSIXPathStyle, true);
-        if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
-            if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
-                if (CFGetTypeID(name) == CFStringGetTypeID())
-                    return QCFString::toQString((CFStringRef)name);
-            }
-        }
-#endif
-        return QString();
+        return QFileSystemEngine::bundleName(d->fileEntry);
     } else if (file == BaseName) {
         return d->fileEntry.fileName();
     } else if (file == PathName) {

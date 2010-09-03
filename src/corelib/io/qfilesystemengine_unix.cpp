@@ -143,7 +143,17 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
-    return QString(); // TODO implement;
+#if !defined(QWS) && defined(Q_OS_MAC)
+    QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(entry.filePath()),
+            kCFURLPOSIXPathStyle, true);
+    if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
+        if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
+            if (CFGetTypeID(name) == CFStringGetTypeID())
+                return QCFString::toQString((CFStringRef)name);
+        }
+    }
+#endif
+    return QString();
 }
 
 //static

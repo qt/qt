@@ -69,7 +69,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
-    return QString(); // TODO implement;
+    return QString();
 }
 
 //static
