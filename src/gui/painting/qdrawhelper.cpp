@@ -659,16 +659,19 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
   interpolate 4 argb pixels with the distx and disty factor.
   distx and disty bust be between 0 and 16
  */
-static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, int distx, int disty, int idistx, int idisty)
+static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, int distx, int disty)
 {
-    uint tlrb = ((tl & 0x00ff00ff) * idistx * idisty);
-    uint tlag = (((tl & 0xff00ff00) >> 8) * idistx * idisty);
-    uint trrb = ((tr & 0x00ff00ff) * distx * idisty);
-    uint trag = (((tr & 0xff00ff00) >> 8) * distx * idisty);
-    uint blrb = ((bl & 0x00ff00ff) * idistx * disty);
-    uint blag = (((bl & 0xff00ff00) >> 8) * idistx * disty);
-    uint brrb = ((br & 0x00ff00ff) * distx * disty);
-    uint brag = (((br & 0xff00ff00) >> 8) * distx * disty);
+    uint distxy = distx * disty;
+    //idistx * disty = (16-distx) * disty = 16*disty - distxy
+    //idistx * idisty = (16-distx) * (16-disty) = 16*16 - 16*distx -16*dity + distxy
+    uint tlrb = (tl & 0x00ff00ff)         * (16*16 - 16*distx - 16*disty + distxy);
+    uint tlag = ((tl & 0xff00ff00) >> 8)  * (16*16 - 16*distx - 16*disty + distxy);
+    uint trrb = ((tr & 0x00ff00ff)        * (distx*16 - distxy));
+    uint trag = (((tr & 0xff00ff00) >> 8) * (distx*16 - distxy));
+    uint blrb = ((bl & 0x00ff00ff)        * (disty*16 - distxy));
+    uint blag = (((bl & 0xff00ff00) >> 8) * (disty*16 - distxy));
+    uint brrb = ((br & 0x00ff00ff)        * (distxy));
+    uint brag = (((br & 0xff00ff00) >> 8) * (distxy));
     return (((tlrb + trrb + blrb + brrb) >> 8) & 0x00ff00ff) | ((tlag + trag + blag + brag) & 0xff00ff00);
 }
 
@@ -879,7 +882,6 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 const uchar *s1 = data->texture.scanLine(y1);
                 const uchar *s2 = data->texture.scanLine(y2);
                 int disty = (fy & 0x0000ffff) >> 12;
-                int idisty = 16 - disty;
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
@@ -889,8 +891,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     uint bl = fetch(s2, x1, data->texture.colorTable);
                     uint br = fetch(s2, x2, data->texture.colorTable);
                     int distx = (fx & 0x0000ffff) >> 12;
-                    int idistx = 16 - distx;
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
                     fx += fdx;
                     ++b;
                 }
@@ -949,10 +950,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
                     int distx = (fx & 0x0000ffff) >> 12;
                     int disty = (fy & 0x0000ffff) >> 12;
-                    int idistx = 16 - distx;
-                    int idisty = 16 - disty;
 
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
 
                     fx += fdx;
                     fy += fdy;
