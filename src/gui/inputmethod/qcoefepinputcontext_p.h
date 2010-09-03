@@ -66,10 +66,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCoeFepInputContext : public QInputContext,
-                            public MCoeFepAwareTextEditor,
-                            public MCoeFepAwareTextEditor_Extension1,
-                            public MObjectProvider
+class Q_AUTOTEST_EXPORT QCoeFepInputContext : public QInputContext,
+                                              public MCoeFepAwareTextEditor,
+                                              public MCoeFepAwareTextEditor_Extension1,
+                                              public MObjectProvider
 {
     Q_OBJECT
 
@@ -84,6 +84,7 @@ public:
     void update();
 
     bool filterEvent(const QEvent *event);
+    bool symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event);
     void mouseHandler( int x, QMouseEvent *event);
     bool isComposing() const { return !m_preeditString.isEmpty(); }
 
@@ -151,9 +152,10 @@ private:
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
-    int m_cursorPos;
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;
+
+    friend class tst_QInputContext;
 };
 
 QT_END_NAMESPACE

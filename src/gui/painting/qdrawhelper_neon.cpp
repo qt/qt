@@ -167,6 +167,14 @@ pixman_composite_scanline_over_asm_neon (int32_t         w,
                                          const uint32_t *dst,
                                          const uint32_t *src);
 
+extern "C" void
+pixman_composite_src_0565_0565_asm_neon (int32_t   w,
+                                         int32_t   h,
+                                         uint16_t *dst,
+                                         int32_t   dst_stride,
+                                         uint16_t *src,
+                                         int32_t   src_stride);
+
 // qblendfunctions.cpp
 void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
                                           const uchar *srcPixels, int sbpl,
@@ -198,6 +206,96 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
     }
 
     pixman_composite_src_0565_8888_asm_neon(w, h, dst, dbpl, src, sbpl);
+}
+
+// qblendfunctions.cpp
+void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
+                             const uchar *src, int sbpl,
+                             int w, int h,
+                             int const_alpha);
+
+template <int N>
+static inline void scanLineBlit16(quint16 *dst, quint16 *src, int dstride)
+{
+    if (N >= 2) {
+        ((quint32 *)dst)[0] = ((quint32 *)src)[0];
+        __builtin_prefetch(dst + dstride, 1, 0);
+    }
+    for (int i = 1; i < N/2; ++i)
+        ((quint32 *)dst)[i] = ((quint32 *)src)[i];
+    if (N & 1)
+        dst[N-1] = src[N-1];
+}
+
+template <int Width>
+static inline void blockBlit16(quint16 *dst, quint16 *src, int dstride, int sstride, int h)
+{
+    union {
+        quintptr address;
+        quint16 *pointer;
+    } u;
+
+    u.pointer = dst;
+
+    if (u.address & 2) {
+        while (h--) {
+            // align dst
+            dst[0] = src[0];
+            if (Width > 1)
+                scanLineBlit16<Width-1>(dst + 1, src + 1, dstride);
+            dst += dstride;
+            src += sstride;
+        }
+    } else {
+        while (h--) {
+            scanLineBlit16<Width>(dst, src, dstride);
+
+            dst += dstride;
+            src += sstride;
+        }
+    }
+}
+
+void qt_blend_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                  const uchar *srcPixels, int sbpl,
+                                  int w, int h,
+                                  int const_alpha)
+{
+    // testing show that the default memcpy is faster for widths 150 and up
+    if (const_alpha != 256 || w >= 150) {
+        qt_blend_rgb16_on_rgb16(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
+        return;
+    }
+
+    int dstride = dbpl / 2;
+    int sstride = sbpl / 2;
+
+    quint16 *dst = (quint16 *) destPixels;
+    quint16 *src = (quint16 *) srcPixels;
+
+    switch (w) {
+#define BLOCKBLIT(n) case n: blockBlit16<n>(dst, src, dstride, sstride, h); return;
+    BLOCKBLIT(1);
+    BLOCKBLIT(2);
+    BLOCKBLIT(3);
+    BLOCKBLIT(4);
+    BLOCKBLIT(5);
+    BLOCKBLIT(6);
+    BLOCKBLIT(7);
+    BLOCKBLIT(8);
+    BLOCKBLIT(9);
+    BLOCKBLIT(10);
+    BLOCKBLIT(11);
+    BLOCKBLIT(12);
+    BLOCKBLIT(13);
+    BLOCKBLIT(14);
+    BLOCKBLIT(15);
+#undef BLOCKBLIT
+    default:
+        break;
+    }
+
+    pixman_composite_src_0565_0565_asm_neon (w, h, dst, dstride, src, sstride);
 }
 
 extern "C" void blend_8_pixels_argb32_on_rgb16_neon(quint16 *dst, const quint32 *src, int const_alpha);
