@@ -72,6 +72,21 @@ quint64 ImageItem::computeChecksum(const QImage &image)
     return (quint64(h1) << 32) | h2;
 }
 
+QString ImageItem::engineAsString() const
+{
+    switch (engine) {
+    case Raster:
+        return QLatin1String("Raster");
+        break;
+    case OpenGL:
+        return QLatin1String("OpenGL");
+        break;
+    default:
+        break;
+    }
+    return QLatin1String("Unknown");
+}
+
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
     stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
