@@ -2157,7 +2157,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             }
 
             if (button->features & QStyleOptionButton::HasMenu)
-                ir = ir.adjusted(0, 0, -pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
+                ir = ir.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
             proxy()->drawItemText(painter, ir, tf, button->palette, (button->state & State_Enabled),
                          button->text, QPalette::ButtonText);
         }
@@ -4014,8 +4014,8 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
             switch (subControl) {
             case SC_SliderHandle: {
                 if (slider->orientation == Qt::Horizontal) {
-                    rect.setHeight(pixelMetric(PM_SliderThickness));
-                    rect.setWidth(pixelMetric(PM_SliderLength));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderThickness));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderLength));
                     int centerY = slider->rect.center().y() - rect.height() / 2;
                     if (slider->tickPosition & QSlider::TicksAbove)
                         centerY += tickSize;
@@ -4023,8 +4023,8 @@ QRect QCleanlooksStyle::subControlRect(ComplexControl control, const QStyleOptio
                         centerY -= tickSize;
                     rect.moveTop(centerY);
                 } else {
-                    rect.setWidth(pixelMetric(PM_SliderThickness));
-                    rect.setHeight(pixelMetric(PM_SliderLength));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderThickness));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderLength));
                     int centerX = slider->rect.center().x() - rect.width() / 2;
                     if (slider->tickPosition & QSlider::TicksAbove)
                         centerX += tickSize;

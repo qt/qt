@@ -64,7 +64,7 @@ HelpWindow::HelpWindow(QWidget *parent)
 
     layout = new QVBoxLayout(frame);
     layout->setMargin(2);
-    QLabel *l = new QLabel(QLatin1String("<center><b>Wizard Assistant</b></center>"));
+    QLabel *l = new QLabel(tr("<center><b>Wizard Assistant</b></center>"));
     layout->addWidget(l);
     m_textEdit = new QTextEdit();
     m_textEdit->setFrameStyle(QFrame::NoFrame);

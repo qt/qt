@@ -47,6 +47,7 @@
 
 #include <translator.h>
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include <QtCore/qstring.h>
@@ -61,6 +62,10 @@
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
+
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
 
 class QScriptGrammar
 {
@@ -1486,7 +1491,7 @@ int QScript::Lexer::lex()
                 else {
                     setDone(Bad);
                     err = IllegalCharacter;
-                    errmsg = QLatin1String("Illegal character");
+                    errmsg = LU::tr("Illegal character");
                 }
             }
             break;
@@ -1497,7 +1502,7 @@ int QScript::Lexer::lex()
             } else if (current == 0 || isLineTerminator()) {
                 setDone(Bad);
                 err = UnclosedStringLiteral;
-                errmsg = QLatin1String("Unclosed string at end of line");
+                errmsg = LU::tr("Unclosed string at end of line");
             } else if (current == '\\') {
                 state = InEscapeSequence;
             } else {
@@ -1523,7 +1528,7 @@ int QScript::Lexer::lex()
                 } else {
                     setDone(Bad);
                     err = IllegalEscapeSequence;
-                    errmsg = QLatin1String("Illegal escape squence");
+                    errmsg = LU::tr("Illegal escape squence");
                 }
             } else if (current == 'x')
                 state = InHexEscape;
@@ -1562,7 +1567,7 @@ int QScript::Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalUnicodeEscapeSequence;
-                errmsg = QLatin1String("Illegal unicode escape sequence");
+                errmsg = LU::tr("Illegal unicode escape sequence");
             }
             break;
         case InSingleLineComment:
@@ -1590,7 +1595,7 @@ int QScript::Lexer::lex()
             if (current == 0) {
                 setDone(Bad);
                 err = UnclosedComment;
-                errmsg = QLatin1String("Unclosed comment at end of file");
+                errmsg = LU::tr("Unclosed comment at end of file");
             } else if (isLineTerminator()) {
                 shiftWindowsLineBreak();
                 yylineno++;
@@ -1678,7 +1683,7 @@ int QScript::Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalExponentIndicator;
-                errmsg = QLatin1String("Illegal syntax for exponential number");
+                errmsg = LU::tr("Illegal syntax for exponential number");
             }
             break;
         case InExponent:
@@ -1704,7 +1709,7 @@ int QScript::Lexer::lex()
          && isIdentLetter(current)) {
         state = Bad;
         err = IllegalIdentifier;
-        errmsg = QLatin1String("Identifier cannot start with numeric literal");
+        errmsg = LU::tr("Identifier cannot start with numeric literal");
     }
 
     // terminate string
@@ -2023,7 +2028,7 @@ bool QScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
 
     while (1) {
         if (isLineTerminator() || current == 0) {
-            errmsg = QLatin1String("Unterminated regular expression literal");
+            errmsg = LU::tr("Unterminated regular expression literal");
             return false;
         }
         else if (current != '/' || lastWasEscape == true)
@@ -2267,14 +2272,14 @@ case 66: {
     QString name = sym(1).toString();
     if ((name == QLatin1String("qsTranslate")) || (name == QLatin1String("QT_TRANSLATE_NOOP"))) {
         if (!sourcetext.isEmpty())
-            yyMsg(identLineNo) << "//% cannot be used with " << qPrintable(name) << "(). Ignoring\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("//% cannot be used with %1(). Ignoring\n").arg(name));
         QVariantList args = sym(2).toList();
         if (args.size() < 2) {
-            yyMsg(identLineNo) << qPrintable(name) << "() requires at least two arguments.\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least two arguments.\n").arg(name));
         } else {
             if ((args.at(0).type() != QVariant::String)
                 || (args.at(1).type() != QVariant::String)) {
-                yyMsg(identLineNo) << qPrintable(name) << "(): both arguments must be literal strings.\n";
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): both arguments must be literal strings.\n").arg(name));
             } else {
                 QString context = args.at(0).toString();
                 QString text = args.at(1).toString();
@@ -2290,13 +2295,13 @@ case 66: {
         extra.clear();
     } else if ((name == QLatin1String("qsTr")) || (name == QLatin1String("QT_TR_NOOP"))) {
         if (!sourcetext.isEmpty())
-            yyMsg(identLineNo) << "//% cannot be used with " << qPrintable(name) << "(). Ignoring\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("//% cannot be used with %1(). Ignoring\n").arg(name));
         QVariantList args = sym(2).toList();
         if (args.size() < 1) {
-            yyMsg(identLineNo) << qPrintable(name) << "() requires at least one argument.\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least one argument.\n").arg(name));
         } else {
             if (args.at(0).type() != QVariant::String) {
-                yyMsg(identLineNo) << qPrintable(name) << "(): text to translate must be a literal string.\n";
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): text to translate must be a literal string.\n").arg(name));
             } else {
                 QString context = QFileInfo(fileName()).baseName();
                 QString text = args.at(0).toString();
@@ -2312,13 +2317,13 @@ case 66: {
         extra.clear();
     } else if ((name == QLatin1String("qsTrId")) || (name == QLatin1String("QT_TRID_NOOP"))) {
         if (!msgid.isEmpty())
-            yyMsg(identLineNo) << "//= cannot be used with " << qPrintable(name) << "(). Ignoring\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("//= cannot be used with %1(). Ignoring\n").arg(name));
         QVariantList args = sym(2).toList();
         if (args.size() < 1) {
-            yyMsg(identLineNo) << qPrintable(name) << "() requires at least one argument.\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least one argument.\n").arg(name));
         } else {
             if (args.at(0).type() != QVariant::String) {
-                yyMsg(identLineNo) << qPrintable(name) << "(): identifier must be a literal string.\n";
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): identifier must be a literal string.\n").arg(name));
             } else {
                 msgid = args.at(0).toString();
                 bool plural = (args.size() > 1);
@@ -2386,7 +2391,7 @@ case 94: {
 
     case 185:
     if (!sourcetext.isEmpty() || !extracomment.isEmpty() || !msgid.isEmpty() || !extra.isEmpty()) {
-        yyMsg() << "Discarding unconsumed meta data\n";
+        yyMsg() << qPrintable(LU::tr("Discarding unconsumed meta data\n"));
         sourcetext.clear();
         extracomment.clear();
         msgid.clear();
@@ -2448,7 +2453,9 @@ case 94: {
               for (int s = 0; s < shifts; ++s)
                 {
                   if (first)
-                    error_message += QLatin1String ("Expected ");
+                    //: Beginning of the string that contains
+                    //: comma-separated list of expected tokens
+                    error_message += LU::tr("Expected ");
                   else
                     error_message += QLatin1String (", ");
 
@@ -2502,13 +2509,13 @@ void QScriptParser::processComment(const QChar *chars, int length)
             if (isspace(c))
                 continue;
             if (c != '"') {
-                yyMsg() << "Unexpected character in meta string\n";
+                yyMsg() << qPrintable(LU::tr("Unexpected character in meta string\n"));
                 break;
             }
             forever {
                 if (p >= length) {
                   whoops:
-                    yyMsg() << "Unterminated meta string\n";
+                    yyMsg() << qPrintable(LU::tr("Unterminated meta string\n"));
                     break;
                 }
                 c = chars[p++].unicode();
@@ -2534,8 +2541,7 @@ bool loadQScript(Translator &translator, const QString &filename, ConversionData
 {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        cd.appendError(QString::fromLatin1("Cannot open %1: %2")
-            .arg(filename, file.errorString()));
+        cd.appendError(LU::tr("Cannot open %1: %2").arg(filename, file.errorString()));
         return false;
     }
     QTextStream ts(&file);

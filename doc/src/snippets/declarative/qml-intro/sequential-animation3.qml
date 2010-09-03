@@ -41,6 +41,8 @@
 import Qt 4.7
 
 //! [document]
+import Qt 4.7
+
 Rectangle {
     id: mainRec
     width:  600
