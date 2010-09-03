@@ -2643,8 +2643,8 @@ QString QtPointPropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QPoint v = it.value();
-    return QString(tr("(%1, %2)").arg(QString::number(v.x()))
-                                 .arg(QString::number(v.y())));
+    return tr("(%1, %2)").arg(QString::number(v.x()))
+                         .arg(QString::number(v.y()));
 }
 
 /*!
@@ -2884,8 +2884,8 @@ QString QtPointFPropertyManager::valueText(const QtProperty *property) const
         return QString();
     const QPointF v = it.value().val;
     const int dec =  it.value().decimals;
-    return QString(tr("(%1, %2)").arg(QString::number(v.x(), 'f', dec))
-                                 .arg(QString::number(v.y(), 'f', dec)));
+    return tr("(%1, %2)").arg(QString::number(v.x(), 'f', dec))
+                         .arg(QString::number(v.y(), 'f', dec));
 }
 
 /*!
@@ -3204,8 +3204,8 @@ QString QtSizePropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QSize v = it.value().val;
-    return QString(tr("%1 x %2").arg(QString::number(v.width()))
-                                .arg(QString::number(v.height())));
+    return tr("%1 x %2").arg(QString::number(v.width()))
+                        .arg(QString::number(v.height()));
 }
 
 /*!
@@ -3569,8 +3569,8 @@ QString QtSizeFPropertyManager::valueText(const QtProperty *property) const
         return QString();
     const QSizeF v = it.value().val;
     const int dec = it.value().decimals;
-    return QString(tr("%1 x %2").arg(QString::number(v.width(), 'f', dec))
-                                .arg(QString::number(v.height(), 'f', dec)));
+    return tr("%1 x %2").arg(QString::number(v.width(), 'f', dec))
+                        .arg(QString::number(v.height(), 'f', dec));
 }
 
 /*!
@@ -3962,10 +3962,10 @@ QString QtRectPropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QRect v = it.value().val;
-    return QString(tr("[(%1, %2), %3 x %4]").arg(QString::number(v.x()))
-                                .arg(QString::number(v.y()))
-                                .arg(QString::number(v.width()))
-                                .arg(QString::number(v.height())));
+    return tr("[(%1, %2), %3 x %4]").arg(QString::number(v.x()))
+                                    .arg(QString::number(v.y()))
+                                    .arg(QString::number(v.width()))
+                                    .arg(QString::number(v.height()));
 }
 
 /*!

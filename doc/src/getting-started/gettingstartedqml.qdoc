@@ -404,13 +404,9 @@
 
     \image qml-texteditor2_menubar.png 
 
-    */
+    \section1 Building a Text Editor
 
-    /*!
-    \page qml-textEditor3.html
-    \title Building a Text Editor
-
-    \section1 Declaring a TextArea
+    \section2 Declaring a TextArea
 
     Our text editor is not a text editor if it didn't contain an editable text area.
     QML's \l {TextEdit}{TextEdit} element allows the declaration of a multi-line
@@ -451,7 +447,7 @@
         }
     \endcode
         
-    \section1 Combining Components for the Text Editor
+    \section2 Combining Components for the Text Editor
 
     We are now ready to create the layout of our text editor using QML. The text
     editor has two components, the menu bar we created and the text area. QML allows
@@ -494,12 +490,8 @@
 
     \image qml-texteditor3_texteditor.png 
 
-    */
-
-    /*!
-    \page qml-textEditor4
-    \title Decorating the Text Editor
-    \section1 Implementing a Drawer Interface
+    \section1 Decorating the Text Editor
+    \section2 Implementing a Drawer Interface
 
     Our text editor looks simple and we need to decorate it. Using QML, we can declare
     transitions and animate our text editor. Our menu bar is occupying one-third of the
@@ -652,7 +644,7 @@
     The first color starts at \c 0.0 and the last color is at \c 1.0.
 
 
-    \section2 Where to Go from Here
+    \section3 Where to Go from Here
 
         We are finished building the user interface of a very simple text editor.
         Going forward, the user interface is complete, and we can implement the
@@ -661,7 +653,7 @@
 
     \image qml-texteditor4_texteditor.png  
 
-    \section1 Extending QML using Qt C++
+    \section2 Extending QML using Qt C++
 
     Now that we have our text editor layout, we may now implement the text editor
     functionalities in C++. Using QML with C++ enables us to create our application
@@ -672,7 +664,7 @@
     we shall implement the load and save functions in C++ and export it as a plugin.
     This way, we only need to load the QML file directly instead of running an executable.
 
-    \section2 Exposing C++ Classes to QML 
+    \section3 Exposing C++ Classes to QML 
 
     We will be implementing file loading and saving using Qt and C++. C++ classes
     and functions can be used in QML by registering them. The class also needs to be
@@ -687,7 +679,7 @@
     \o A \c qmldir file telling the qmlviewer tool where to find the plugin
     \endlist
 
-    \section2 Building a Qt Plugin
+    \section3 Building a Qt Plugin
 
         To build a plugin, we need to set the following in a Qt project file. First,
         the necessary sources, headers, and Qt modules need to be added into our
@@ -721,7 +713,7 @@
     parent's \c plugins directory.
 
 
-    \section2 Registering a Class into QML
+    \section3 Registering a Class into QML
 
     \code
     In dialogPlugin.h:
@@ -771,7 +763,7 @@
     file to generate the necessary meta-object code.
 
 
-    \section2 Creating QML Properties in a C++ class
+    \section3 Creating QML Properties in a C++ class
 
         We can create QML elements and properties using C++ and
         \l {The Meta-Object System}{Qt's Meta-Object System}. We can implement
@@ -925,7 +917,7 @@
     \c make to build and transfer the plugin to the \c plugins directory.
 
 
-    \section2 Importing a Plugin in QML
+    \section3 Importing a Plugin in QML
 
         The qmlviewer tool imports files that are in the same directory as the
         application. We can also create a \c qmldir file containing the locations of
@@ -948,7 +940,7 @@
     \c TARGET field in the project file. The compiled plugin is in the \c plugins directory. 
 
 
-    \section2 Integrating a File Dialog into the File Menu
+    \section3 Integrating a File Dialog into the File Menu
 
         Our \c FileMenu needs to display the \c FileDialog element, containing a list of
         the text files in a directory thus allowing the user to select the file by
@@ -1038,7 +1030,7 @@
 
     \image qml-texteditor5_filemenu.png
 
-    \section1 Text Editor Completion
+    \section2 Text Editor Completion
 
     \image qml-texteditor5_newfile.png
 

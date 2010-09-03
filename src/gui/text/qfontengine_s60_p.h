@@ -81,6 +81,7 @@ public:
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const;
     const uchar *cmap() const;
     CFont *fontOwner() const;
+    bool isSymbolCMap() const;
 
 private:
     CFont* m_cFont;

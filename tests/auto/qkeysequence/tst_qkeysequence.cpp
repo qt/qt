@@ -532,20 +532,20 @@ void tst_QKeySequence::translated_data()
     QTest::addColumn<QString>("transKey");
     QTest::addColumn<QString>("compKey");
 
-    QTest::newRow("Shift++") << QString(tr("Shift++")) << QString("Umschalt++");
-    QTest::newRow("Ctrl++")  << QString(tr("Ctrl++")) << QString("Strg++");
-    QTest::newRow("Alt++")   << QString(tr("Alt++")) << QString("Alt++");
-    QTest::newRow("Meta++")  << QString(tr("Meta++")) << QString("Meta++");
+    QTest::newRow("Shift++") << tr("Shift++") << QString("Umschalt++");
+    QTest::newRow("Ctrl++")  << tr("Ctrl++") << QString("Strg++");
+    QTest::newRow("Alt++")   << tr("Alt++") << QString("Alt++");
+    QTest::newRow("Meta++")  << tr("Meta++") << QString("Meta++");
 
-     QTest::newRow("Shift+,, Shift++") << QString(tr("Shift+,, Shift++")) << QString("Umschalt+,, Umschalt++");
-     QTest::newRow("Shift+,, Ctrl++")  << QString(tr("Shift+,, Ctrl++")) << QString("Umschalt+,, Strg++");
-     QTest::newRow("Shift+,, Alt++")   << QString(tr("Shift+,, Alt++")) << QString("Umschalt+,, Alt++");
-     QTest::newRow("Shift+,, Meta++")  << QString(tr("Shift+,, Meta++")) << QString("Umschalt+,, Meta++");
+    QTest::newRow("Shift+,, Shift++") << tr("Shift+,, Shift++") << QString("Umschalt+,, Umschalt++");
+    QTest::newRow("Shift+,, Ctrl++")  << tr("Shift+,, Ctrl++") << QString("Umschalt+,, Strg++");
+    QTest::newRow("Shift+,, Alt++")   << tr("Shift+,, Alt++") << QString("Umschalt+,, Alt++");
+    QTest::newRow("Shift+,, Meta++")  << tr("Shift+,, Meta++") << QString("Umschalt+,, Meta++");
 
-     QTest::newRow("Ctrl+,, Shift++") << QString(tr("Ctrl+,, Shift++")) << QString("Strg+,, Umschalt++");
-     QTest::newRow("Ctrl+,, Ctrl++") << QString(tr("Ctrl+,, Ctrl++")) << QString("Strg+,, Strg++");
-     QTest::newRow("Ctrl+,, Alt++") << QString(tr("Ctrl+,, Alt++")) << QString("Strg+,, Alt++");
-     QTest::newRow("Ctrl+,, Meta++") << QString(tr("Ctrl+,, Meta++")) << QString("Strg+,, Meta++");
+    QTest::newRow("Ctrl+,, Shift++") << tr("Ctrl+,, Shift++") << QString("Strg+,, Umschalt++");
+    QTest::newRow("Ctrl+,, Ctrl++")  << tr("Ctrl+,, Ctrl++") << QString("Strg+,, Strg++");
+    QTest::newRow("Ctrl+,, Alt++")   << tr("Ctrl+,, Alt++") << QString("Strg+,, Alt++");
+    QTest::newRow("Ctrl+,, Meta++")  << tr("Ctrl+,, Meta++") << QString("Strg+,, Meta++");
 
     qApp->removeTranslator(ourTranslator);
     qApp->removeTranslator(qtTranslator);
