@@ -497,28 +497,7 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
 
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
 {
-    QString dirName = name;
-    if (recurseParentDirectories) {
-        dirName = QDir::cleanPath(dirName);
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
-        for(int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            QByteArray chunk = QFile::encodeName(dirName.left(slash));
-            QT_STATBUF st;
-            if (QT_STAT(chunk, &st) != -1) {
-                if ((st.st_mode & S_IFMT) != S_IFDIR)
-                    return false;
-                if (::rmdir(chunk) != 0)
-                    return oldslash != 0;
-            } else {
-                return false;
-            }
-            slash = dirName.lastIndexOf(QDir::separator(), oldslash-1);
-        }
-        return true;
-    }
-    return ::rmdir(QFile::encodeName(dirName)) == 0;
+    return QFileSystemEngine::removeDirectory(QFileSystemEntry(name), recurseParentDirectories);
 }
 
 bool QFSFileEngine::caseSensitive() const

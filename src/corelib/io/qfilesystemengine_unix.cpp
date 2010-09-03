@@ -202,7 +202,27 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 //static
 bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
 {
-    return false; // TODO implement;
+    if (removeEmptyParents) {
+        QString dirName = QDir::cleanPath(entry.filePath());
+#if defined(Q_OS_SYMBIAN)
+        dirName = QDir::toNativeSeparators(dirName);
+#endif
+        for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
+            QByteArray chunk = QFile::encodeName(dirName.left(slash));
+            QT_STATBUF st;
+            if (QT_STAT(chunk, &st) != -1) {
+                if ((st.st_mode & S_IFMT) != S_IFDIR)
+                    return false;
+                if (::rmdir(chunk) != 0)
+                    return oldslash != 0;
+            } else {
+                return false;
+            }
+            slash = dirName.lastIndexOf(QDir::separator(), oldslash-1);
+        }
+        return true;
+    }
+    return rmdir(QFile::encodeName(entry.filePath())) == 0;
 }
 
 //static
