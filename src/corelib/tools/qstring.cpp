@@ -3950,8 +3950,8 @@ QString QString::fromUtf8(const char *str, int size)
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
 
-    This function is comparatively slow.
-    Use QString(const ushort *, int) or QString(const ushort *) if possible.
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
