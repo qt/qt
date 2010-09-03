@@ -1027,6 +1027,10 @@ class String : public Primitive {
                          int* nchars_ref = NULL,
                          WriteHints hints = NO_HINTS) const;  // UTF-8
 
+  V8EXPORT uint32_t Hash() const;
+
+  V8EXPORT bool Equals(Handle<String> other) const;
+
   /**
    * A zero length string.
    */
