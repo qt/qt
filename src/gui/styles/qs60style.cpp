@@ -154,6 +154,9 @@ QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
     deleteThemePalette();
+#ifdef Q_WS_S60
+    removeAnimations();
+#endif
 }
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
