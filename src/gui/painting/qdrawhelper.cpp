@@ -684,8 +684,8 @@ Q_STATIC_TEMPLATE_FUNCTION inline void fetchTransformedBilinear_pixelBounds(int 
     } else {
         if (v1 < l1) {
             v2 = v1 = l1;
-        } else if (v1 >= l2 - 1) {
-            v2 = v1 = l2 - 1;
+        } else if (v1 >= l2) {
+            v2 = v1 = l2;
         } else {
             v2 = v1 + 1;
         }
@@ -715,8 +715,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
     int image_x1 = data->texture.x1;
     int image_y1 = data->texture.y1;
-    int image_x2 = data->texture.x2;
-    int image_y2 = data->texture.y2;
+    int image_x2 = data->texture.x2 - 1;
+    int image_y2 = data->texture.y2 - 1;
 
     const qreal cx = x + 0.5;
     const qreal cy = y + 0.5;
@@ -763,9 +763,9 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     x %= image_width;
                     if (x < 0) x += image_width;
                 } else {
-                    lim = qMin(count, image_x2-x);
+                    lim = qMin(count, image_x2-x+1);
                     if (x < image_x1) {
-                        Q_ASSERT(x < image_x2);
+                        Q_ASSERT(x <= image_x2);
                         uint t = fetch(s1, image_x1, data->texture.colorTable);
                         uint b = fetch(s2, image_x1, data->texture.colorTable);
                         quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
@@ -818,7 +818,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     if (blendType == BlendTransformedBilinearTiled) {
                         if (x >= image_width) x -= image_width;
                     } else {
-                        x = qMin(x, image_x2 - 1);
+                        x = qMin(x, image_x2);
                     }
 
                     uint t = fetch(s1, x, data->texture.colorTable);
@@ -5335,181 +5335,6 @@ static void blend_tiled_rgb444(int count, const QSpan *spans, void *userData)
         blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
-
-template <SpanMethod spanMethod, TextureBlendType blendType>  /* blendType must be either BlendTransformedBilinear or BlendTransformedBilinearTiled */
-Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-    if (data->texture.format != QImage::Format_ARGB32_Premultiplied
-        && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic<spanMethod>(count, spans, userData);
-        return;
-    }
-
-    CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
-    uint buffer[buffer_size];
-
-    const int image_x1 = data->texture.x1;
-    const int image_y1 = data->texture.y1;
-    const int image_x2 = data->texture.x2;
-    const int image_y2 = data->texture.y2;
-    const int image_width = data->texture.width;
-    const int image_height = data->texture.height;
-    const int scanline_offset = data->texture.bytesPerLine / 4;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-            uint *image_bits = (uint *)data->texture.imageData;
-
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
-
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale) - half_point;
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale) - half_point;
-
-            int length = spans->len;
-            const int coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            while (length) {
-                int l = qMin(length, buffer_size);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                while (b < end) {
-                    int x1 = (x >> 16);
-                    int x2;
-                    int y1 = (y >> 16);
-                    int y2;
-
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-
-                    int y1_offset = y1 * scanline_offset;
-                    int y2_offset = y2 * scanline_offset;
-
-#if defined(Q_IRIX_GCC3_3_WORKAROUND)
-                    uint tl = gccBug(image_bits[y1_offset + x1]);
-                    uint tr = gccBug(image_bits[y1_offset + x2]);
-                    uint bl = gccBug(image_bits[y2_offset + x1]);
-                    uint br = gccBug(image_bits[y2_offset + x2]);
-#else
-                    uint tl = image_bits[y1_offset + x1];
-                    uint tr = image_bits[y1_offset + x2];
-                    uint bl = image_bits[y2_offset + x1];
-                    uint br = image_bits[y2_offset + x2];
-#endif
-
-                    int distx = (x & 0x0000ffff) >> 8;
-                    int disty = (y & 0x0000ffff) >> 8;
-                    int idistx = 256 - distx;
-                    int idisty = 256 - disty;
-
-                    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-                    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-                    *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                }
-                if (spanMethod == RegularSpans)
-                    func(target, buffer, l, coverage);
-                else
-                    drawBufferSpan(data, buffer, buffer_size,
-                                   spans->x + spans->len - length,
-                                   spans->y, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        while (count--) {
-            void *t = data->rasterBuffer->scanLine(spans->y);
-
-            uint *target = ((uint *)t) + spans->x;
-            uint *image_bits = (uint *)data->texture.imageData;
-
-            const qreal cx = spans->x + 0.5;
-            const qreal cy = spans->y + 0.5;
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            int length = spans->len;
-            const int coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            while (length) {
-                int l = qMin(length, buffer_size);
-                const uint *end = buffer + l;
-                uint *b = buffer;
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal px = x * iw - 0.5;
-                    const qreal py = y * iw - 0.5;
-
-                    int x1 = int(px) - (px < 0);
-                    int x2;
-                    int y1 = int(py) - (py < 0);
-                    int y2;
-
-                    int distx = int((px - x1) * 256);
-                    int disty = int((py - y1) * 256);
-                    int idistx = 256 - distx;
-                    int idisty = 256 - disty;
-
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<blendType>(image_height, image_y1, image_y2, y1, y2);
-
-                    int y1_offset = y1 * scanline_offset;
-                    int y2_offset = y2 * scanline_offset;
-
-#if defined(Q_IRIX_GCC3_3_WORKAROUND)
-                    uint tl = gccBug(image_bits[y1_offset + x1]);
-                    uint tr = gccBug(image_bits[y1_offset + x2]);
-                    uint bl = gccBug(image_bits[y2_offset + x1]);
-                    uint br = gccBug(image_bits[y2_offset + x2]);
-#else
-                    uint tl = image_bits[y1_offset + x1];
-                    uint tr = image_bits[y1_offset + x2];
-                    uint bl = image_bits[y2_offset + x1];
-                    uint br = image_bits[y2_offset + x2];
-#endif
-
-                    uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-                    uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-                    *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-                    ++b;
-
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-                }
-                if (spanMethod == RegularSpans)
-                    func(target, buffer, l, coverage);
-                else
-                    drawBufferSpan(data, buffer, buffer_size,
-                                   spans->x + spans->len - length,
-                                   spans->y, l, coverage);
-                target += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
 template <class DST, class SRC>
 Q_STATIC_TEMPLATE_FUNCTION void blendTransformedBilinear(int count, const QSpan *spans,
                                      void *userData)
@@ -6760,7 +6585,7 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // Indexed8
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // RGB32
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // ARGB32
-        blend_transformed_bilinear_argb<RegularSpans, BlendTransformedBilinear>, // ARGB32_Premultiplied
+        SPANFUNC_POINTER(blend_src_generic, RegularSpans), // ARGB32_Premultiplied
         blend_transformed_bilinear_rgb565,
         blend_transformed_bilinear_argb8565,
         blend_transformed_bilinear_rgb666,
@@ -6779,7 +6604,7 @@ static const ProcessSpans processTextureSpans[NBlendTypes][QImage::NImageFormats
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // Indexed8
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // RGB32
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // ARGB32
-        blend_transformed_bilinear_argb<RegularSpans, BlendTransformedBilinearTiled>, // ARGB32_Premultiplied
+        SPANFUNC_POINTER(blend_src_generic, RegularSpans), // ARGB32_Premultiplied
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // RGB16
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // ARGB8565_Premultiplied
         SPANFUNC_POINTER(blend_src_generic, RegularSpans), // RGB666
@@ -6878,7 +6703,7 @@ static const ProcessSpans processTextureSpansCallback[NBlendTypes][QImage::NImag
         blend_src_generic<CallbackSpans>,   // Indexed8
         blend_src_generic<CallbackSpans>,   // RGB32
         blend_src_generic<CallbackSpans>,   // ARGB32
-        blend_transformed_bilinear_argb<CallbackSpans, BlendTransformedBilinear>, // ARGB32_Premultiplied
+        blend_src_generic<CallbackSpans>, // ARGB32_Premultiplied
         blend_src_generic<CallbackSpans>,   // RGB16
         blend_src_generic<CallbackSpans>,   // ARGB8565_Premultiplied
         blend_src_generic<CallbackSpans>,   // RGB666
@@ -6897,7 +6722,7 @@ static const ProcessSpans processTextureSpansCallback[NBlendTypes][QImage::NImag
         blend_src_generic<CallbackSpans>,   // Indexed8
         blend_src_generic<CallbackSpans>,   // RGB32
         blend_src_generic<CallbackSpans>,   // ARGB32
-        blend_transformed_bilinear_argb<CallbackSpans, BlendTransformedBilinearTiled>, // ARGB32_Premultiplied
+        blend_src_generic<CallbackSpans>, // ARGB32_Premultiplied
         blend_src_generic<CallbackSpans>,   // RGB16
         blend_src_generic<CallbackSpans>,   // ARGB8565_Premultiplied
         blend_src_generic<CallbackSpans>,   // RGB666
