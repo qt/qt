@@ -1152,6 +1152,12 @@ QS60StylePrivate::QS60StylePrivate()
     setActiveLayout();
 }
 
+void QS60StylePrivate::removeAnimations()
+{
+    //currently only one animation in the list.
+    m_animations()->removeFirst();
+}
+
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     int index, const QStyleOption *option)
 {
