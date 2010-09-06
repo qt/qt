@@ -23,13 +23,14 @@ LINK	    = link
 # specific stuff for VS2005
 #
 !if "$(QMAKESPEC)" == "win32-msvc2005"
-CFLAGS      = /Zc:wchar_t-
+CFLAGS_EXTRA      = /Zc:wchar_t-
 !elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010"
-CFLAGS      = /MP
+CFLAGS_EXTRA      = /MP
 !endif
 
 CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O2 \
+              $(CFLAGS_EXTRA) \
               -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
               -I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
