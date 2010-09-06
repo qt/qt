@@ -165,4 +165,5 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"blurpage\">\n" \
-			  "  </div>\n"
+			  "  </div>\n" \
+                          "  </div>\n"
