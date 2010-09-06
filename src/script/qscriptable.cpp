@@ -23,6 +23,7 @@
 
 #include "qscriptable.h"
 #include "qscriptable_p.h"
+#include "qscriptcontext_p.h"
 #include "qscriptengine.h"
 
 QT_BEGIN_NAMESPACE
@@ -102,7 +103,10 @@ QScriptable::~QScriptable()
 QScriptEngine *QScriptable::engine() const
 {
     Q_D(const QScriptable);
-    return d->engine;
+    QScriptEnginePrivate* engine = d->engine();
+    if (engine)
+        return QScriptEnginePrivate::get(engine);
+    return 0;
 }
 
 /*!
@@ -113,8 +117,7 @@ QScriptEngine *QScriptable::engine() const
 QScriptContext *QScriptable::context() const
 {
     Q_D(const QScriptable);
-
-    return d->context();
+    return QScriptContextPrivate::get(d->context());
 }
 
 /*!
@@ -126,12 +129,8 @@ QScriptContext *QScriptable::context() const
 QScriptValue QScriptable::thisObject() const
 {
     Q_D(const QScriptable);
-
-    QScriptContext *c = d->context();
-    if (!c)
-        return QScriptValue();
-
-    return c->thisObject();
+    QScriptContextPrivate *c = d->context();
+    return QScriptValuePrivate::get(c->thisObject());
 }
 
 /*!
@@ -144,11 +143,7 @@ QScriptValue QScriptable::thisObject() const
 int QScriptable::argumentCount() const
 {
     Q_D(const QScriptable);
-
-    QScriptContext *c = d->context();
-    if (!c)
-        return -1;
-
+    QScriptContextPrivate *c = d->context();
     return c->argumentCount();
 }
 
@@ -161,12 +156,8 @@ int QScriptable::argumentCount() const
 QScriptValue QScriptable::argument(int index) const
 {
     Q_D(const QScriptable);
-
-    QScriptContext *c = d->context();
-    if (!c)
-        return QScriptValue();
-
-    return c->argument(index);
+    QScriptContextPrivate *c = d->context();
+    return QScriptValuePrivate::get(c->argument(index));
 }
 
 QT_END_NAMESPACE

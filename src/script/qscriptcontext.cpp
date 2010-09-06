@@ -22,6 +22,7 @@
 ****************************************************************************/
 
 #include "qscriptcontext.h"
+#include "qscriptcontext_p.h"
 #include "qscriptengine.h"
 
 #include <QtCore/qstringlist.h>
@@ -134,6 +135,12 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QScriptContext::QScriptContext()
+    : d_ptr(new QScriptContextPrivate())
+{
+}
+
+QScriptContext::QScriptContext(QScriptContextPrivate* d)
+    : d_ptr(d)
 {
 }
 

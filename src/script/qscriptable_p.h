@@ -36,7 +36,8 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-#include <QtScript/qscriptengine.h>
+#include <qscriptengine_p.h>
+#include <qscriptcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -45,25 +46,43 @@ class QScriptablePrivate
 {
     Q_DECLARE_PUBLIC(QScriptable)
 public:
-    inline QScriptablePrivate()
-        : engine(0)
-        { }
-
-    static inline QScriptablePrivate *get(QScriptable *q)
-        { return q->d_func(); }
-
-    inline QScriptContext *context() const
-    {
-        if (!engine)
-            return 0;
-
-        return engine->currentContext();
-    }
-
-    QScriptEngine *engine;
+    static inline QScriptablePrivate *get(QScriptable *q) { return q->d_func(); }
 
     QScriptable *q_ptr;
+
+    inline QScriptEnginePrivate* engine() const;
+    inline QScriptContextPrivate* context() const;
+    inline QScriptValuePrivate* thisObject() const;
+    inline int argumentCount() const;
+    inline QScriptValuePrivate* argument(int index) const;
+private:
+    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
 };
+
+inline QScriptEnginePrivate* QScriptablePrivate::engine() const
+{
+    return m_engine.data();
+}
+
+inline QScriptContextPrivate* QScriptablePrivate::context() const
+{
+    if (!m_engine)
+        return new QScriptContextPrivate();
+
+    return m_engine->currentContext();
+}
+
+inline QScriptValuePrivate* QScriptablePrivate::thisObject() const
+{
+    QExplicitlySharedDataPointer<QScriptContextPrivate> context(this->context());
+    return context->thisObject();
+}
+
+inline int QScriptablePrivate::argumentCount() const
+{
+    QExplicitlySharedDataPointer<QScriptContextPrivate> context(this->context());
+    return context->argumentCount();
+}
 
 QT_END_NAMESPACE
 

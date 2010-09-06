@@ -22,6 +22,7 @@
 ****************************************************************************/
 
 #include "qscriptcontext.h"
+#include "qscriptcontext_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptstring.h"
@@ -1317,6 +1318,12 @@ QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_context->Global());
 }
 
+QScriptContextPrivate* QScriptEnginePrivate::currentContext()
+{
+    Q_UNIMPLEMENTED();
+    return new QScriptContextPrivate();
+}
+
 /*!
   \since 4.5
 
@@ -1492,8 +1499,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
 
 QScriptContext *QScriptEngine::currentContext() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return QScriptContextPrivate::get(d_ptr->currentContext());
 }
 
 QScriptContext *QScriptEngine::pushContext()

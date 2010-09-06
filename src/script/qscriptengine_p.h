@@ -60,6 +60,8 @@ public:
     inline void reportAdditionalMemoryCost(int cost);
     QScriptValuePrivate* globalObject() const;
 
+    QScriptContextPrivate* currentContext();
+
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
     v8::Handle<v8::Object> newQObject(

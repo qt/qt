@@ -36,23 +36,52 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
-namespace JSC
-{
-    class JSObject;
-    class ArgList;
-    class ExecState;
-}
+#include "qscriptvalue_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QScriptEnginePrivate;
-
 class QScriptContext;
 
-QT_END_NAMESPACE
+class QScriptContextPrivate : public QSharedData
+{
+    Q_DECLARE_PUBLIC(QScriptContext);
+public:
+    static QScriptContext* get(QScriptContextPrivate* d) { return d->q_func(); }
 
-#include "wtf/Platform.h"
-#include "JSValue.h"
+    QScriptContextPrivate()
+        : q_ptr(0)
+    {}
+    QScriptContextPrivate(QScriptContext *q)
+        : q_ptr(q)
+    {}
+
+    inline QScriptValuePrivate* argument(int index) const;
+    inline int argumentCount() const;
+    inline QScriptValuePrivate* thisObject() const;
+private:
+    QScriptContext* q_ptr;
+};
+
+inline QScriptValuePrivate* QScriptContextPrivate::argument(int index) const
+{
+    Q_UNIMPLEMENTED();
+    return new QScriptValuePrivate();
+}
+
+inline int QScriptContextPrivate::argumentCount() const
+{
+    Q_UNIMPLEMENTED();
+    return -1;
+}
+
+inline QScriptValuePrivate* QScriptContextPrivate::thisObject() const
+{
+    Q_UNIMPLEMENTED();
+    return new QScriptValuePrivate();
+}
+
+
+QT_END_NAMESPACE
 
 #endif
