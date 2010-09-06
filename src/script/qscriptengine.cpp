@@ -338,12 +338,10 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
             result = qtRegExpToJS(*reinterpret_cast<const QRegExp *>(data));
             break;
 #endif
-#ifndef QT_NO_QOBJECT
         case QMetaType::QObjectStar:
         case QMetaType::QWidgetStar:
             result = newQObject(*reinterpret_cast<QObject* const *>(data));
             break;
-#endif
         case QMetaType::QVariant:
             result = variantToJS(*reinterpret_cast<const QVariant*>(data));
             break;
@@ -357,13 +355,11 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
             }
 #endif
 #if 0
-#ifndef QT_NO_QOBJECT
             // lazy registration of some common list types
             else if (type == qMetaTypeId<QObjectList>()) {
                 qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
                 return create(exec, type, data);
             }
-#endif
             else if (type == qMetaTypeId<QList<int> >()) {
                 qScriptRegisterSequenceMetaType<QList<int> >(eng->q_func());
                 return create(exec, type, data);
@@ -472,7 +468,6 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
             return true;
         } break;
 #endif
-#ifndef QT_NO_QOBJECT
     case QMetaType::QObjectStar:
         if (isQtObject(value) || value->IsNull()) {
             *reinterpret_cast<QObject* *>(data) = qtObjectFromJS(value);
@@ -486,7 +481,6 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
                 return true;
             }
         } break;
-#endif
     case QMetaType::QStringList:
         if (value->IsArray()) {
             *reinterpret_cast<QStringList *>(data) = stringListFromJS(v8::Handle<v8::Array>::Cast(value));
@@ -531,10 +525,8 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
     // Try to use magic.
 
     QByteArray name = QMetaType::typeName(type);
-#ifndef QT_NO_QOBJECT
     if (convertToNativeQObject(value, name, reinterpret_cast<void* *>(data)))
         return true;
-#endif
     if (isQtVariant(value) && name.endsWith('*')) {
         int valueType = QMetaType::type(name.left(name.size()-1));
         QVariant &var = variantValue(value);
@@ -551,13 +543,11 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
                     canCast = (type == variantValue(proto).userType())
                               || (valueType && (valueType == variantValue(proto).userType()));
                 }
-#ifndef QT_NO_QOBJECT
                 else if (isQtObject(proto)) {
                     QByteArray className = name.left(name.size()-1);
                     if (QObject *qobject = qtObjectFromJS(proto))
                         canCast = qobject->qt_metacast(className) != 0;
                 }
-#endif
                 if (canCast) {
                     QByteArray varTypeName = QMetaType::typeName(var.userType());
                     if (varTypeName.endsWith('*'))
@@ -584,14 +574,12 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
 
 #if 0
     // lazy registration of some common list types
-#ifndef QT_NO_QOBJECT
     else if (type == qMetaTypeId<QObjectList>()) {
         if (!eng)
             return false;
         qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
         return convertValue(exec, value, type, ptr);
     }
-#endif
     else if (type == qMetaTypeId<QList<int> >()) {
         if (!eng)
             return false;
@@ -647,10 +635,8 @@ QVariant QScriptEnginePrivate::variantFromJS(v8::Handle<v8::Value> value)
 #endif
     if (isQtVariant(value))
         return variantValue(value);
-#ifndef QT_NO_QOBJECT
     if (isQtObject(value))
         return qVariantFromValue(qtObjectFromJS(value));
-#endif
     return variantMapFromJS(value->ToObject());
 }
 
@@ -839,23 +825,6 @@ QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value>
     return QScriptValuePrivate::get(new QScriptValuePrivate(this, value));
 }
 
-#ifdef QT_NO_QOBJECT
-
-QScriptEngine::QScriptEngine()
-    : d_ptr(new QScriptEnginePrivate)
-{
-    d_ptr->q_ptr = this;
-}
-
-/*! \internal
-*/
-QScriptEngine::QScriptEngine(QScriptEnginePrivate &dd)
-    : d_ptr(&dd)
-{
-    d_ptr->q_ptr = this;
-}
-#else
-
 /*!
     Constructs a QScriptEngine object.
 
@@ -885,8 +854,6 @@ QScriptEngine::QScriptEngine(QScriptEnginePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
 }
-
-#endif
 
 /*!
     Destroys this QScriptEngine.
@@ -1542,7 +1509,6 @@ QScriptEngineAgent *QScriptEngine::agent() const
     return 0;
 }
 
-#ifndef QT_NO_QOBJECT
 bool qScriptConnect(QObject *sender, const char *signal,
                     const QScriptValue &receiver,
                     const QScriptValue &function)
@@ -1566,7 +1532,6 @@ bool qScriptDisconnect(QObject *sender, const char *signal,
     Q_UNIMPLEMENTED();
     return false;
 }
-#endif // QT_NO_QOBJECT
 
 #ifdef QT_BUILD_INTERNAL
 Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()

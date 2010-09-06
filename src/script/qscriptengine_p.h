@@ -43,9 +43,7 @@ class QDateTime;
 class QScriptEngine;
 
 class QScriptEnginePrivate
-#ifndef QT_NO_QOBJECT
     : public QObjectPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QScriptEngine)
 public:

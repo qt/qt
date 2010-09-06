@@ -34,8 +34,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Script)
 
-#ifndef QT_NO_QOBJECT
-
 class QScriptEngine;
 class QScriptContext;
 class QScriptValue;
@@ -60,8 +58,6 @@ private:
     Q_DISABLE_COPY(QScriptable)
     Q_DECLARE_PRIVATE(QScriptable)
 };
-
-#endif // QT_NO_QOBJECT
 
 QT_END_NAMESPACE
 
