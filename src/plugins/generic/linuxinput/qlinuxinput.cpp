@@ -155,6 +155,9 @@ void QLinuxInputMouseHandler::readMouseData()
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;
+
+            QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
+                                                  QPoint(m_x, m_y), m_buttons);
         } else if (data->type == EV_KEY) {
             Qt::MouseButton button = Qt::NoButton;
             switch (data->code) {
