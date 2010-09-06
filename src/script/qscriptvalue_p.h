@@ -36,13 +36,15 @@ QT_BEGIN_NAMESPACE
 /*
   \internal
   \class QScriptValuePrivate
+  TODO we need to preallocate some values
+    // TODO: bring back these!
+    //
+    //    inline void* operator new(size_t, QScriptEnginePrivate*);
+    //    inline void operator delete(void*);
 */
-class QScriptValuePrivate
+class QScriptValuePrivate : public QSharedData
 {
 public:
-//    TODO: bring back these!
-//    inline void* operator new(size_t, QScriptEnginePrivate*);
-//    inline void operator delete(void*);
 
     inline static QScriptValuePrivate* get(const QScriptValue& q);
     inline static QScriptValue get(const QScriptValuePrivate* d);
@@ -143,12 +145,6 @@ public:
     inline bool isNumberBased() const;
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
-
-    // linked list of engine's script values
-    QScriptValuePrivate *prev;
-    QScriptValuePrivate *next;
-
-    QBasicAtomicInt ref;
 };
 
 QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { return q.d_ptr.data(); }
