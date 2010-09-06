@@ -224,6 +224,13 @@ public:
         emit itemsRemoved(index, 1);
     }
 
+    void removeItems(int index, int count) {
+        int c = count;
+        while (c--)
+            list.removeAt(index);
+        emit itemsRemoved(index, count);
+    }
+
     void moveItem(int from, int to) {
         list.move(from, to);
         emit itemsMoved(from, to, 1);
@@ -287,6 +294,13 @@ public:
     void removeItem(int index) {
         emit beginRemoveRows(QModelIndex(), index, index);
         list.removeAt(index);
+        emit endRemoveRows();
+    }
+
+    void removeItems(int index, int count) {
+        emit beginRemoveRows(QModelIndex(), index, index+count-1);
+        while (count--)
+            list.removeAt(index);
         emit endRemoveRows();
     }
 
@@ -520,7 +534,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     QDeclarativeView *canvas = createView();
 
     T model;
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 50; i++)
         model.addItem("Item" + QString::number(i), "");
 
     QDeclarativeContext *ctxt = canvas->rootContext();
@@ -642,6 +656,21 @@ void tst_QDeclarativeListView::removed(bool animated)
 
     QTRY_COMPARE(listview->currentIndex(), 7);
     QTRY_VERIFY(listview->currentItem() == oldCurrent);
+
+    listview->setContentY(80);
+    QTest::qWait(300);
+
+    model.removeItems(1, 17);
+    QTest::qWait(300);
+
+    // Confirm items positioned correctly
+    itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i+2);
+        if (!item) qWarning() << "Item" << i+2 << "not found";
+        QTRY_VERIFY(item);
+        QTRY_COMPARE(item->y(),80+i*20.0);
+    }
 
     delete canvas;
 }
