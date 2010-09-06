@@ -874,8 +874,8 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
 
     enum {
         Invalid,
-        Symbol,
         AppleRoman,
+        Symbol,
         Unicode11,
         Unicode,
         MicrosoftUnicode,
@@ -939,7 +939,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
         return 0;
 
 resolveTable:
-    *isSymbolFont = (score == Symbol);
+    *isSymbolFont = (symbolTable > -1);
 
     unsigned int unicode_table = qFromBigEndian<quint32>(maps + 8*tableToUse + 4);
 
@@ -1091,6 +1091,18 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
 const QVector<QRgb> &QFontEngine::grayPalette()
 {
     return *qt_grayPalette();
+}
+
+QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
+{
+    if (glyphs.numGlyphs >= 1) {
+        glyph_t glyph = glyphs.glyphs[glyphs.numGlyphs - 1];
+        glyph_metrics_t gi = boundingBox(glyph);
+        if (gi.isValid())
+            return round ? QFixed(qRound(gi.xoff - gi.x - gi.width))
+                         : QFixed(gi.xoff - gi.x - gi.width);
+    }
+    return 0;
 }
 
 // ------------------------------------------------------------------

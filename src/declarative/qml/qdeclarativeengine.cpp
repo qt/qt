@@ -259,7 +259,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
   objectClass(0), valueTypeClass(0), globalClass(0), cleanup(0), erroredBindings(0),
   inProgressCreations(0), scriptEngine(this), workerScriptEngine(0), componentAttached(0),
   inBeginCreate(false), networkAccessManager(0), networkAccessManagerFactory(0),
-  typeManager(e), importDatabase(e), uniqueId(1)
+  typeLoader(e), importDatabase(e), uniqueId(1)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
@@ -565,7 +565,7 @@ QDeclarativeEngine::~QDeclarativeEngine()
 void QDeclarativeEngine::clearComponentCache()
 {
     Q_D(QDeclarativeEngine);
-    d->typeManager.clearCache();
+    d->typeLoader.clearCache();
 }
 
 /*!
@@ -1716,6 +1716,9 @@ void QDeclarativeEnginePrivate::sendQuit()
 {
     Q_Q(QDeclarativeEngine);
     emit q->quit();
+    if (q->receivers(SIGNAL(quit())) == 0) {
+        qWarning("Signal QDeclarativeEngine::quit() emitted, but no receivers connected to handle it.");
+    }
 }
 
 static void dumpwarning(const QDeclarativeError &error)
@@ -2110,7 +2113,7 @@ bool QDeclarativeEnginePrivate::isQObject(int t)
 QObject *QDeclarativeEnginePrivate::toQObject(const QVariant &v, bool *ok) const
 {
     int t = v.userType();
-    if (m_compositeTypes.contains(t)) {
+    if (t == QMetaType::QObjectStar || m_compositeTypes.contains(t)) {
         if (ok) *ok = true;
         return *(QObject **)(v.constData());
     } else {

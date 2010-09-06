@@ -254,7 +254,10 @@ void QGraphicsWidgetPrivate::setFont_helper(const QFont &font)
 
 void QGraphicsWidgetPrivate::resolveFont(uint inheritedMask)
 {
+    Q_Q(QGraphicsWidget);
     inheritedFontResolveMask = inheritedMask;
+    if (QGraphicsWidget *p = q->parentWidget())
+        inheritedFontResolveMask |= p->d_func()->inheritedFontResolveMask;
     QFont naturalFont = naturalWidgetFont();
     QFont resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);

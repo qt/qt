@@ -557,7 +557,7 @@ glyph_metrics_t QFontEngineQPF1::boundingBox(const QGlyphLayout &glyphs)
     QFixed w = 0;
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
-    return glyph_metrics_t(0, -ascent(), w, ascent()+descent()+1, w, 0);
+    return glyph_metrics_t(0, -ascent(), w - lastRightBearing(glyphs), ascent()+descent()+1, w, 0);
 }
 
 glyph_metrics_t QFontEngineQPF1::boundingBox(glyph_t glyph)

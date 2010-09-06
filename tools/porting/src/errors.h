@@ -61,9 +61,9 @@ public:
 class Errors
 {
 public:
-    QT_STATIC_CONST Error& InternalError;
-    QT_STATIC_CONST Error& SyntaxError;
-    QT_STATIC_CONST Error& ParseError;
+    QT_STATIC_CONST Error InternalError;
+    QT_STATIC_CONST Error SyntaxError;
+    QT_STATIC_CONST Error ParseError;
 };
 
 QT_END_NAMESPACE

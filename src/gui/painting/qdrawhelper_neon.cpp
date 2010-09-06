@@ -51,6 +51,44 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_memfill32_neon(quint32 *dest, quint32 value, int count)
+{
+    const int epilogueSize = count % 16;
+    if (count >= 16) {
+        quint32 *const neonEnd = dest + count - epilogueSize;
+        register uint32x4_t valueVector1 asm ("q0") = vdupq_n_u32(value);
+        register uint32x4_t valueVector2 asm ("q1") = valueVector1;
+        while (dest != neonEnd) {
+            asm volatile (
+                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
+                "vst2.32     { d0, d1, d2, d3 }, [%[DST]] !\n\t"
+                : [DST]"+r" (dest)
+                : [VALUE1]"w"(valueVector1), [VALUE2]"w"(valueVector2)
+                : "memory"
+            );
+        }
+    }
+
+    switch (epilogueSize)
+    {
+    case 15:     *dest++ = value;
+    case 14:     *dest++ = value;
+    case 13:     *dest++ = value;
+    case 12:     *dest++ = value;
+    case 11:     *dest++ = value;
+    case 10:     *dest++ = value;
+    case 9:      *dest++ = value;
+    case 8:      *dest++ = value;
+    case 7:      *dest++ = value;
+    case 6:      *dest++ = value;
+    case 5:      *dest++ = value;
+    case 4:      *dest++ = value;
+    case 3:      *dest++ = value;
+    case 2:      *dest++ = value;
+    case 1:      *dest++ = value;
+    }
+}
+
 static inline uint16x8_t qvdiv_255_u16(uint16x8_t x, uint16x8_t half)
 {
     // result = (x + (x >> 8) + 0x80) >> 8
@@ -129,6 +167,14 @@ pixman_composite_scanline_over_asm_neon (int32_t         w,
                                          const uint32_t *dst,
                                          const uint32_t *src);
 
+extern "C" void
+pixman_composite_src_0565_0565_asm_neon (int32_t   w,
+                                         int32_t   h,
+                                         uint16_t *dst,
+                                         int32_t   dst_stride,
+                                         uint16_t *src,
+                                         int32_t   src_stride);
+
 // qblendfunctions.cpp
 void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
                                           const uchar *srcPixels, int sbpl,
@@ -160,6 +206,96 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
     }
 
     pixman_composite_src_0565_8888_asm_neon(w, h, dst, dbpl, src, sbpl);
+}
+
+// qblendfunctions.cpp
+void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
+                             const uchar *src, int sbpl,
+                             int w, int h,
+                             int const_alpha);
+
+template <int N>
+static inline void scanLineBlit16(quint16 *dst, quint16 *src, int dstride)
+{
+    if (N >= 2) {
+        ((quint32 *)dst)[0] = ((quint32 *)src)[0];
+        __builtin_prefetch(dst + dstride, 1, 0);
+    }
+    for (int i = 1; i < N/2; ++i)
+        ((quint32 *)dst)[i] = ((quint32 *)src)[i];
+    if (N & 1)
+        dst[N-1] = src[N-1];
+}
+
+template <int Width>
+static inline void blockBlit16(quint16 *dst, quint16 *src, int dstride, int sstride, int h)
+{
+    union {
+        quintptr address;
+        quint16 *pointer;
+    } u;
+
+    u.pointer = dst;
+
+    if (u.address & 2) {
+        while (h--) {
+            // align dst
+            dst[0] = src[0];
+            if (Width > 1)
+                scanLineBlit16<Width-1>(dst + 1, src + 1, dstride);
+            dst += dstride;
+            src += sstride;
+        }
+    } else {
+        while (h--) {
+            scanLineBlit16<Width>(dst, src, dstride);
+
+            dst += dstride;
+            src += sstride;
+        }
+    }
+}
+
+void qt_blend_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                  const uchar *srcPixels, int sbpl,
+                                  int w, int h,
+                                  int const_alpha)
+{
+    // testing show that the default memcpy is faster for widths 150 and up
+    if (const_alpha != 256 || w >= 150) {
+        qt_blend_rgb16_on_rgb16(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
+        return;
+    }
+
+    int dstride = dbpl / 2;
+    int sstride = sbpl / 2;
+
+    quint16 *dst = (quint16 *) destPixels;
+    quint16 *src = (quint16 *) srcPixels;
+
+    switch (w) {
+#define BLOCKBLIT(n) case n: blockBlit16<n>(dst, src, dstride, sstride, h); return;
+    BLOCKBLIT(1);
+    BLOCKBLIT(2);
+    BLOCKBLIT(3);
+    BLOCKBLIT(4);
+    BLOCKBLIT(5);
+    BLOCKBLIT(6);
+    BLOCKBLIT(7);
+    BLOCKBLIT(8);
+    BLOCKBLIT(9);
+    BLOCKBLIT(10);
+    BLOCKBLIT(11);
+    BLOCKBLIT(12);
+    BLOCKBLIT(13);
+    BLOCKBLIT(14);
+    BLOCKBLIT(15);
+#undef BLOCKBLIT
+    default:
+        break;
+    }
+
+    pixman_composite_src_0565_0565_asm_neon (w, h, dst, dstride, src, sstride);
 }
 
 extern "C" void blend_8_pixels_argb32_on_rgb16_neon(quint16 *dst, const quint32 *src, int const_alpha);
@@ -619,6 +755,61 @@ void QT_FASTCALL comp_func_solid_SourceOver_neon(uint *destPixels, int length, u
 
         for (;x < length; ++x)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+    }
+}
+
+void QT_FASTCALL comp_func_Plus_neon(uint *dst, const uint *src, int length, uint const_alpha)
+{
+    if (const_alpha == 255) {
+        uint *const end = dst + length;
+        uint *const neonEnd = end - 3;
+
+        while (dst < neonEnd) {
+            asm volatile (
+                "vld2.8     { d0, d1 }, [%[SRC]] !\n\t"
+                "vld2.8     { d2, d3 }, [%[DST]]\n\t"
+                "vqadd.u8 q0, q0, q1\n\t"
+                "vst2.8     { d0, d1 }, [%[DST]] !\n\t"
+                : [DST]"+r" (dst), [SRC]"+r" (src)
+                :
+                : "memory", "d0", "d1", "d2", "d3", "q0", "q1"
+            );
+        }
+
+        while (dst != end) {
+            *dst = comp_func_Plus_one_pixel(*dst, *src);
+            ++dst;
+            ++src;
+        }
+    } else {
+        int x = 0;
+        const int one_minus_const_alpha = 255 - const_alpha;
+        const uint16x8_t constAlphaVector = vdupq_n_u16(const_alpha);
+        const uint16x8_t oneMinusconstAlphaVector = vdupq_n_u16(one_minus_const_alpha);
+
+        const uint16x8_t half = vdupq_n_u16(0x80);
+        for (; x < length - 3; x += 4) {
+            const uint32x4_t src32 = vld1q_u32((uint32_t *)&src[x]);
+            const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
+            uint8x16_t dst8 = vld1q_u8((uint8_t *)&dst[x]);
+            uint8x16_t result = vqaddq_u8(dst8, src8);
+
+            uint16x8_t result_low = vmovl_u8(vget_low_u8(result));
+            uint16x8_t result_high = vmovl_u8(vget_high_u8(result));
+
+            uint16x8_t dst_low = vmovl_u8(vget_low_u8(dst8));
+            uint16x8_t dst_high = vmovl_u8(vget_high_u8(dst8));
+
+            result_low = qvinterpolate_pixel_255(result_low, constAlphaVector, dst_low, oneMinusconstAlphaVector, half);
+            result_high = qvinterpolate_pixel_255(result_high, constAlphaVector, dst_high, oneMinusconstAlphaVector, half);
+
+            const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result_low));
+            const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result_high));
+            vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
+        }
+
+        for (; x < length; ++x)
+            dst[x] = comp_func_Plus_one_pixel_const_alpha(dst[x], src[x], const_alpha, one_minus_const_alpha);
     }
 }
 

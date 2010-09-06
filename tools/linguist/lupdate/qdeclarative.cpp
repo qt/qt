@@ -65,7 +65,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
+
 using namespace QDeclarativeJS;
+
+class Comment
+{
+public:
+    Comment() : lastLine(-1) {}
+    QString extracomment;
+    QString msgid;
+    TranslatorMessage::ExtraData extra;
+    QString sourcetext;
+    int lastLine;
+
+    bool isValid() const
+    { return !extracomment.isEmpty() || !msgid.isEmpty() || !sourcetext.isEmpty() || !extra.isEmpty(); }
+};
 
 class FindTrCalls: protected AST::Visitor
 {
@@ -77,6 +95,8 @@ public:
         m_component = QFileInfo(fileName).baseName();   //matches qsTr usage in QScriptEngine
         accept(node);
     }
+
+    QList<Comment> comments;
 
 protected:
     using AST::Visitor::visit;
@@ -114,10 +134,23 @@ protected:
                             plural = true;
                     }
 
+                    QString id;
+                    QString extracomment;
+                    TranslatorMessage::ExtraData extra;
+                    Comment scomment = findComment(node->firstSourceLocation().startLine);
+                    if (scomment.isValid()) {
+                        extracomment = scomment.extracomment;
+                        extra = scomment.extra;
+                        id = scomment.msgid;
+                    }
+
                     TranslatorMessage msg(m_component, source,
                         comment, QString(), m_fileName,
                         node->firstSourceLocation().startLine, QStringList(),
                         TranslatorMessage::Unfinished, plural);
+                    msg.setExtraComment(extracomment.simplified());
+                    msg.setId(id);
+                    msg.setExtras(extra);
                     m_translator->extend(msg);
                 }
             } else if (idExpr->name->asString() == QLatin1String("qsTranslate") ||
@@ -140,6 +173,17 @@ protected:
                     }
                     if (!literal && m_bSource.isEmpty())
                         return;
+
+                    QString id;
+                    QString extracomment;
+                    TranslatorMessage::ExtraData extra;
+                    Comment scomment = findComment(node->firstSourceLocation().startLine);
+                    if (scomment.isValid()) {
+                        extracomment = scomment.extracomment;
+                        extra = scomment.extra;
+                        id = scomment.msgid;
+                    }
+
                     source = literal ? literal->value->asString() : m_bSource;
                     AST::ArgumentList *commentNode = sourceNode->next;
                     if (commentNode && AST::cast<AST::StringLiteral *>(commentNode->expression)) {
@@ -155,15 +199,48 @@ protected:
                         comment, QString(), m_fileName,
                         node->firstSourceLocation().startLine, QStringList(),
                         TranslatorMessage::Unfinished, plural);
+                    msg.setExtraComment(extracomment.simplified());
+                    msg.setId(id);
+                    msg.setExtras(extra);
                     m_translator->extend(msg);
                 }
+            } else if (idExpr->name->asString() == QLatin1String("qsTrId") ||
+                       idExpr->name->asString() == QLatin1String("QT_TRID_NOOP")) {
+                if (!node->arguments)
+                    return;
 
+                AST::StringLiteral *literal = AST::cast<AST::StringLiteral *>(node->arguments->expression);
+                if (literal) {
+
+                    QString extracomment;
+                    QString sourcetext;
+                    TranslatorMessage::ExtraData extra;
+                    Comment comment = findComment(node->firstSourceLocation().startLine);
+                    if (comment.isValid()) {
+                        extracomment = comment.extracomment;
+                        sourcetext = comment.sourcetext;
+                        extra = comment.extra;
+                    }
+
+                    const QString id = literal->value->asString();
+                    bool plural = node->arguments->next;
+
+                    TranslatorMessage msg(QString(), QString(),
+                        QString(), QString(), m_fileName,
+                        node->firstSourceLocation().startLine, QStringList(),
+                        TranslatorMessage::Unfinished, plural);
+                    msg.setExtraComment(extracomment.simplified());
+                    msg.setId(id);
+                    msg.setExtras(extra);
+                    m_translator->extend(msg);
+                }
             }
         }
     }
 
 private:
-    bool createString(AST::BinaryExpression *b) {
+    bool createString(AST::BinaryExpression *b)
+    {
         if (!b || b->op != 0)
             return false;
         AST::BinaryExpression *l = AST::cast<AST::BinaryExpression *>(b->left);
@@ -185,6 +262,23 @@ private:
             m_bSource.append(rs->value->asString());
 
         return true;
+    }
+
+    Comment findComment(int loc)
+    {
+        if (comments.isEmpty())
+            return Comment();
+
+        int i = 0;
+        int commentLoc = comments.at(i).lastLine;
+        while (commentLoc <= loc) {
+            if (commentLoc == loc)
+                return comments.at(i);
+            if (i == comments.count()-1)
+                break;
+            commentLoc = comments.at(++i).lastLine;
+        }
+        return Comment();
     }
 
     Translator *m_translator;
@@ -236,13 +330,60 @@ QString createErrorString(const QString &filename, const QString &code, Parser &
     return errorString;
 }
 
+bool processComment(const QChar *chars, int length, Comment &comment)
+{
+    // Try to match the logic of the QtScript parser.
+    if (!length)
+        return comment.isValid();
+    if (*chars == QLatin1Char(':') && chars[1].isSpace()) {
+        comment.extracomment += QString(chars+1, length-1);
+    } else if (*chars == QLatin1Char('=') && chars[1].isSpace()) {
+        comment.msgid = QString(chars+2, length-2).simplified();
+    } else if (*chars == QLatin1Char('~') && chars[1].isSpace()) {
+        QString text = QString(chars+2, length-2).trimmed();
+        int k = text.indexOf(QLatin1Char(' '));
+        if (k > -1)
+            comment.extra.insert(text.left(k), text.mid(k + 1).trimmed());
+    } else if (*chars == QLatin1Char('%') && chars[1].isSpace()) {
+        comment.sourcetext.reserve(comment.sourcetext.length() + length-2);
+        ushort *ptr = (ushort *)comment.sourcetext.data() + comment.sourcetext.length();
+        int p = 2, c;
+        forever {
+            if (p >= length)
+                break;
+            c = chars[p++].unicode();
+            if (isspace(c))
+                continue;
+            if (c != '"')
+                break;
+            forever {
+                if (p >= length)
+                    break;
+                c = chars[p++].unicode();
+                if (c == '"')
+                    break;
+                if (c == '\\') {
+                    if (p >= length)
+                        break;
+                    c = chars[p++].unicode();
+                    if (c == '\n')
+                        break;
+                    *ptr++ = '\\';
+                }
+                *ptr++ = c;
+            }
+        }
+        comment.sourcetext.resize(ptr - (ushort *)comment.sourcetext.data());
+    }
+    return comment.isValid();
+}
+
 bool loadQml(Translator &translator, const QString &filename, ConversionData &cd)
 {
     cd.m_sourceFileName = filename;
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        cd.appendError(QString::fromLatin1("Cannot open %1: %2")
-            .arg(filename, file.errorString()));
+        cd.appendError(LU::tr("Cannot open %1: %2").arg(filename, file.errorString()));
         return false;
     }
 
@@ -260,6 +401,25 @@ bool loadQml(Translator &translator, const QString &filename, ConversionData &cd
 
     if (parser.parse()) {
         FindTrCalls trCalls;
+
+        // build up a list of comments that contain translation information.
+        for (int i = 0; i < driver.comments().size(); ++i) {
+            AST::SourceLocation loc = driver.comments().at(i);
+            QString commentStr = code.mid(loc.offset, loc.length);
+
+            if (trCalls.comments.isEmpty() || trCalls.comments.last().lastLine != int(loc.startLine)) {
+                Comment comment;
+                comment.lastLine = loc.startLine+1;
+                if (processComment(commentStr.constData(), commentStr.length(), comment))
+                    trCalls.comments.append(comment);
+            } else {
+                Comment &lastComment = trCalls.comments.last();
+                lastComment.lastLine += 1;
+                processComment(commentStr.constData(), commentStr.length(), lastComment);
+            }
+        }
+
+        //find all tr calls in the code
         trCalls(&translator, filename, parser.ast());
     } else {
         QString error = createErrorString(filename, code, parser);

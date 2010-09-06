@@ -44,7 +44,6 @@
 
 #include "private/qdeclarativecompiler_p.h"
 #include "private/qdeclarativecontext_p.h"
-#include "private/qdeclarativecompositetypedata_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "private/qdeclarativevme_p.h"
 #include "qdeclarative.h"
@@ -197,7 +196,7 @@ class QByteArray;
     \value Error An error has occurred.  Call errors() to retrieve a list of \{QDeclarativeError}{errors}.
 */
 
-void QDeclarativeComponentPrivate::typeDataReady()
+void QDeclarativeComponentPrivate::typeDataReady(QDeclarativeTypeData *)
 {
     Q_Q(QDeclarativeComponent);
 
@@ -209,28 +208,25 @@ void QDeclarativeComponentPrivate::typeDataReady()
     emit q->statusChanged(q->status());
 }
 
-void QDeclarativeComponentPrivate::updateProgress(qreal p)
+void QDeclarativeComponentPrivate::typeDataProgress(QDeclarativeTypeData *, qreal p)
 {
     Q_Q(QDeclarativeComponent);
 
     progress = p;
+
     emit q->progressChanged(p);
 }
 
-void QDeclarativeComponentPrivate::fromTypeData(QDeclarativeCompositeTypeData *data)
+void QDeclarativeComponentPrivate::fromTypeData(QDeclarativeTypeData *data)
 {
-    url = data->imports.baseUrl();
-    QDeclarativeCompiledData *c = data->toCompiledComponent(engine);
+    url = data->finalUrl();
+    QDeclarativeCompiledData *c = data->compiledData();
 
     if (!c) {
-        Q_ASSERT(data->status == QDeclarativeCompositeTypeData::Error);
-
-        state.errors = data->errors;
-
+        Q_ASSERT(data->isError());
+        state.errors = data->errors();
     } else {
-
         cc = c;
-
     }
 
     data->release();
@@ -239,7 +235,7 @@ void QDeclarativeComponentPrivate::fromTypeData(QDeclarativeCompositeTypeData *d
 void QDeclarativeComponentPrivate::clear()
 {
     if (typeData) {
-        typeData->remWaiter(this);
+        typeData->unregisterCallback(this);
         typeData->release();
         typeData = 0;
     }
@@ -271,7 +267,7 @@ QDeclarativeComponent::~QDeclarativeComponent()
     }
 
     if (d->typeData) {
-        d->typeData->remWaiter(d);
+        d->typeData->unregisterCallback(d);
         d->typeData->release();
     }
     if (d->cc)
@@ -443,19 +439,13 @@ void QDeclarativeComponent::setData(const QByteArray &data, const QUrl &url)
 
     d->url = url;
 
-    QDeclarativeCompositeTypeData *typeData = 
-        QDeclarativeEnginePrivate::get(d->engine)->typeManager.getImmediate(data, url);
+    QDeclarativeTypeData *typeData = QDeclarativeEnginePrivate::get(d->engine)->typeLoader.get(data, url);
     
-    if (typeData->status == QDeclarativeCompositeTypeData::Waiting
-     || typeData->status == QDeclarativeCompositeTypeData::WaitingResources)
-    {
-        d->typeData = typeData;
-        d->typeData->addWaiter(d);
-
-    } else {
-
+    if (typeData->isCompleteOrError()) {
         d->fromTypeData(typeData);
-
+    } else {
+        d->typeData = typeData;
+        d->typeData->registerCallback(d);
     }
 
     d->progress = 1.0;
@@ -501,18 +491,15 @@ void QDeclarativeComponent::loadUrl(const QUrl &url)
         return;
     }
 
-    QDeclarativeCompositeTypeData *data = 
-        QDeclarativeEnginePrivate::get(d->engine)->typeManager.get(d->url);
+    QDeclarativeTypeData *data = QDeclarativeEnginePrivate::get(d->engine)->typeLoader.get(d->url);
 
-    if (data->status == QDeclarativeCompositeTypeData::Waiting
-     || data->status == QDeclarativeCompositeTypeData::WaitingResources)
-    {
-        d->typeData = data;
-        d->typeData->addWaiter(d);
-        d->progress = data->progress;
-    } else {
+    if (data->isCompleteOrError()) {
         d->fromTypeData(data);
         d->progress = 1.0;
+    } else {
+        d->typeData = data;
+        d->typeData->registerCallback(d);
+        d->progress = data->progress();
     }
 
     emit statusChanged(status());
@@ -620,10 +607,11 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
         ctxt = d->engine->rootContext();
     if (!ctxt)
         return QScriptValue(QScriptValue::NullValue);
-    QObject* ret = create(ctxt);
-    if (!ret)
+    QObject* ret = beginCreate(ctxt);
+    if (!ret) {
+        completeCreate();
         return QScriptValue(QScriptValue::NullValue);
-
+    }
 
     if (parent) {
         ret->setParent(parent);
@@ -644,6 +632,7 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
         if (needParent) 
             qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
     }
+    completeCreate();
 
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();

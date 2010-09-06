@@ -1001,12 +1001,16 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
 
     bool changed = false;
     if (newGeometry.width() != oldGeometry.width()) {
+        if (xflick())
+            changed = true;
         if (d->hData.viewSize < 0) {
             d->contentItem->setWidth(width());
             emit contentWidthChanged();
         }
     }
     if (newGeometry.height() != oldGeometry.height()) {
+        if (yflick())
+            changed = true;
         if (d->vData.viewSize < 0) {
             d->contentItem->setHeight(height());
             emit contentHeightChanged();
@@ -1254,6 +1258,7 @@ bool QDeclarativeFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease) {
         d->clearDelayedPress();
         d->stealMouse = false;
+        d->pressed = false;
     }
     return false;
 }

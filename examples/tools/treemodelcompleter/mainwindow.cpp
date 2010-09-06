@@ -241,6 +241,6 @@ void MainWindow::changeCase(int cs)
 
 void MainWindow::updateContentsLabel(const QString& sep)
 {
-    contentsLabel->setText(QString(tr("Type path from model above with items at each level separated by a '%1'")).arg(sep));
+    contentsLabel->setText(tr("Type path from model above with items at each level separated by a '%1'").arg(sep));
 }
 

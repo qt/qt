@@ -92,9 +92,10 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
+    Q_PROPERTY(int nonscriptable READ nonscriptable WRITE setNonscriptable SCRIPTABLE false);
 
 public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
+    MyQmlObject(): myinvokableObject(0), m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
 
     enum MyEnum { EnumValue1 = 0, EnumValue2 = 1 };
     enum MyEnum2 { EnumValue3 = 2, EnumValue4 = 3 };
@@ -144,6 +145,13 @@ public:
     void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
 
     int console() const { return 11; }
+
+    int nonscriptable() const { return 0; }
+    void setNonscriptable(int) {}
+
+    MyQmlObject *myinvokableObject;
+    Q_INVOKABLE MyQmlObject *returnme() { return this; }
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -157,6 +165,7 @@ public slots:
     void methodNoArgs() { m_methodCalled = true; }
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
+    void myinvokable(MyQmlObject *o) { myinvokableObject = o; }
 
 private:
     friend class tst_qdeclarativeecmascript;

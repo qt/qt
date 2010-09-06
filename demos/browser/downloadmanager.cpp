@@ -282,7 +282,7 @@ void DownloadItem::updateInfoLabel()
             remaining = tr("- %4 %5 remaining")
             .arg(timeRemaining)
             .arg(timeRemainingString);
-        info = QString(tr("%1 of %2 (%3/sec) %4"))
+        info = tr("%1 of %2 (%3/sec) %4")
             .arg(dataString(m_bytesReceived))
             .arg(bytesTotal == 0 ? tr("?") : dataString(bytesTotal))
             .arg(dataString((int)speed))
