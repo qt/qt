@@ -57,8 +57,6 @@ class QScriptClassPropertyIteratorPrivate
 {
     Q_DECLARE_PUBLIC(QScriptClassPropertyIterator)
 public:
-    QScriptClassPropertyIteratorPrivate() {}
-    virtual ~QScriptClassPropertyIteratorPrivate() {}
 
     QScriptValue object;
 
@@ -72,7 +70,10 @@ public:
   sequence of properties (before the first property).
 */
 QScriptClassPropertyIterator::QScriptClassPropertyIterator(const QScriptValue &object)
+    : d_ptr(new QScriptClassPropertyIteratorPrivate)
 {
+    d_ptr->q_ptr = this;
+    d_ptr->object = object;
 }
 
 /*!
@@ -80,10 +81,10 @@ QScriptClassPropertyIterator::QScriptClassPropertyIterator(const QScriptValue &o
 */
 QScriptClassPropertyIterator::QScriptClassPropertyIterator(const QScriptValue &object,
                                                            QScriptClassPropertyIteratorPrivate &dd)
+    : d_ptr(&dd)
 {
-    Q_UNUSED(object);
-    Q_UNUSED(dd);
-    Q_UNIMPLEMENTED();
+    d_ptr->q_ptr = this;
+    d_ptr->object = object;
 }
 
 /*!
@@ -98,8 +99,8 @@ QScriptClassPropertyIterator::~QScriptClassPropertyIterator()
 */
 QScriptValue QScriptClassPropertyIterator::object() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptClassPropertyIterator);
+    return d->object;
 }
 
 /*!
