@@ -549,8 +549,11 @@ static int qCocoaViewCount = 0;
             qwidgetprivate->syncBackingStore(qwidget->rect());
         }
 
-        // Since we don't want to use the native engine, we must exit.
-        return;
+        // Since we don't want to use the native engine, we must exit, however
+        // widgets that are set to paint on screen, spesifically QGLWidget,
+        // requires the following code to execute in order to be drawn.
+        if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
+            return;
     }
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
