@@ -419,7 +419,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 
 
     int c = m_cursor; // cursor position after insertion of commit string
-    if (event->replacementStart() == 0)
+    if (event->replacementStart() <= 0)
         c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
