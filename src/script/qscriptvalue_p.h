@@ -24,12 +24,13 @@
 #ifndef QSCRIPTVALUE_P_H
 #define QSCRIPTVALUE_P_H
 
+#include <v8.h>
+
 #include "qscriptconverter_p.h"
 #include "qscriptengine_p.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmath.h>
 
-#include <v8.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -202,6 +203,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptValue::SpecialValue value)
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, bool value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -209,6 +212,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, bool valu
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, int value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -216,6 +221,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, int value
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, uint value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -223,6 +230,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, uint valu
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, qsreal value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -230,6 +239,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, qsreal va
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -237,6 +248,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, const QSt
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value)
     : m_engine(engine), m_state(JSValue)
 {
+    Q_ASSERT(engine);
+    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = m_engine->makeJSValue(value);
 }
@@ -244,6 +257,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptVa
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Value> value)
     : m_engine(engine), m_state(JSValue), m_value(v8::Persistent<v8::Value>::New(value))
 {
+    Q_ASSERT(engine);
+    Q_ASSERT(!m_value.IsEmpty());
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
