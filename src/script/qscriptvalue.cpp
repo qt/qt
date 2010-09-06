@@ -638,9 +638,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 */
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
-    Q_UNUSED(arguments);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return QScriptValuePrivate::get(d_ptr->construct(arguments));
 }
 
 
