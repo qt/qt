@@ -2916,14 +2916,18 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
     }
 
     if (removedVisible && d->visibleItems.isEmpty()) {
-        d->visibleIndex = 0;
-        d->visiblePos = d->header ? d->header->size() : 0;
         d->timeline.clear();
-        d->setPosition(0);
         if (d->itemCount == 0) {
+            d->visibleIndex = 0;
+            d->visiblePos = d->header ? d->header->size() : 0;
+            d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
             update();
+        } else {
+            if (modelIndex < d->visibleIndex)
+                d->visibleIndex = modelIndex+1;
+            d->visibleIndex = qMax(qMin(d->visibleIndex, d->itemCount-1), 0);
         }
     }
 
