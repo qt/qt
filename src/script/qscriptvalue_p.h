@@ -874,8 +874,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
             argv[i] = array->Get(i);
         result = v8::Function::Cast(*m_value)->Call(recv, argc, argv.data());
     } else {
-        // FIXME
-        qWarning("QScriptValue::call() failed: should throw type error");
+        v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
         return new QScriptValuePrivate();
     }
 
