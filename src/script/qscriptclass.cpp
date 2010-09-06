@@ -131,18 +131,20 @@ public:
   The engine does not take ownership of the QScriptClass object.
 */
 QScriptClass::QScriptClass(QScriptEngine *engine)
+    : d_ptr(new QScriptClassPrivate)
 {
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
+    d_ptr->q_ptr = this;
+    d_ptr->engine = engine;
 }
 
 /*!
   \internal
 */
 QScriptClass::QScriptClass(QScriptEngine *engine, QScriptClassPrivate &dd)
+    : d_ptr(&dd)
 {
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
+    d_ptr->q_ptr = this;
+    d_ptr->engine = engine;
 }
 
 /*!
@@ -161,8 +163,7 @@ QScriptClass::~QScriptClass()
 */
 QScriptEngine *QScriptClass::engine() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return d_ptr->engine;
 }
 
 /*!
@@ -182,7 +183,6 @@ QScriptEngine *QScriptClass::engine() const
 */
 QScriptValue QScriptClass::prototype() const
 {
-    Q_UNIMPLEMENTED();
     return QScriptValue();
 }
 
@@ -196,7 +196,6 @@ QScriptValue QScriptClass::prototype() const
 */
 QString QScriptClass::name() const
 {
-    Q_UNIMPLEMENTED();
     return QString();
 }
 
