@@ -149,7 +149,7 @@ SOURCES += \
     $$V8DIR/src/mips/virtual-frame-mips.cc
 }
 
-arch_ia32 {
+arch_i386 {
 DEFINES += V8_TARGET_ARCH_IA32
 SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
