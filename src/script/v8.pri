@@ -105,8 +105,9 @@ SOURCES += \
 SOURCES += \
     $$V8DIR/src/generated/libraries.cc
 
-#arch:arm
-CONFIG(arch_arm) {
+arch_arm {
+DEFINES += V8_TARGET_ARCH_ARM
+SOURCES += \
     $$V8DIR/src/jump-target-light.cc \
     $$V8DIR/src/virtual-frame-light.cc \
     $$V8DIR/src/arm/builtins-arm.cc \
@@ -128,8 +129,9 @@ CONFIG(arch_arm) {
     $$V8DIR/src/arm/assembler-arm.cc
 }
 
-#arch:mips
-CONFIG(arch_mips) {
+arch_mips {
+DEFINES += V8_TARGET_ARCH_MIPS
+SOURCES += \
     $$V8DIR/src/mips/assembler-mips.cc \
     $$V8DIR/src/mips/builtins-mips.cc \
     $$V8DIR/src/mips/codegen-mips.cc \
@@ -147,8 +149,7 @@ CONFIG(arch_mips) {
     $$V8DIR/src/mips/virtual-frame-mips.cc
 }
 
-#arch:ia32
-#CONFIG(arch_ia32) {
+arch_ia32 {
 DEFINES += V8_TARGET_ARCH_IA32
 SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
@@ -169,10 +170,11 @@ SOURCES += \
     $$V8DIR/src/ia32/register-allocator-ia32.cc \
     $$V8DIR/src/ia32/stub-cache-ia32.cc \
     $$V8DIR/src/ia32/virtual-frame-ia32.cc
-#}
+}
 
-#arch:x64
-CONFIG(arch_x64) {
+arch_x86_64 {
+DEFINES += V8_TARGET_ARCH_X64
+SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
     $$V8DIR/src/virtual-frame-heavy.cc \
     $$V8DIR/src/x64/assembler-x64.cc \
