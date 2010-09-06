@@ -387,9 +387,15 @@ void BookmarkManager::refreshBookmarkMenu()
         SLOT(manageBookmarks()));
     bookmarkMenu->addAction(QIcon::fromTheme("bookmark-new"),
         tr("Add Bookmark..."), this, SLOT(addBookmark()), QKeySequence(tr("Ctrl+D")));
+
     bookmarkMenu->addSeparator();
 
-    const QModelIndex &root = bookmarkModel->index(1, 0, QModelIndex());
+    QModelIndex root = bookmarkModel->index(0, 0, QModelIndex()).parent();
+    buildBookmarksMenu(bookmarkModel->index(0, 0, root), bookmarkMenu);
+
+    bookmarkMenu->addSeparator();
+
+    root = bookmarkModel->index(1, 0, QModelIndex());
     for (int i = 0; i < bookmarkModel->rowCount(root); ++i)
         buildBookmarksMenu(bookmarkModel->index(i, 0, root), bookmarkMenu);
 
