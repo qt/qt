@@ -30,7 +30,7 @@
 #include "qscriptengine_p.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmath.h>
-
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -842,9 +842,8 @@ inline bool QScriptValuePrivate::prepareArgumentsForCall(v8::Handle<v8::Value> a
     QScriptValueList::const_iterator i = args.constBegin();
     for (int j = 0; i != args.constEnd(); j++, i++) {
         QScriptValuePrivate* value = QScriptValuePrivate::get(*i);
-        if (!value->assignEngine(engine())) {
+        if (!value->isJSBased() && !value->assignEngine(engine()))
             return false;
-        }
         argv[j] = *value;
     }
     return true;
