@@ -117,6 +117,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     }
     HelpEngineWrapper &helpEngineWrapper =
         HelpEngineWrapper::instance(collectionFile);
+    BookmarkManager *bookMarkManager = BookmarkManager::instance();
 
     if (!initHelpDB()) {
         qDebug("Fatal error: Help engine initialization failed. "
@@ -148,7 +149,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     searchDock->setWidget(m_searchWindow);
     addDockWidget(Qt::LeftDockWidgetArea, searchDock);
 
-    BookmarkManager *bookMarkManager = BookmarkManager::instance();
     QDockWidget *bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
     bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
     bookmarkDock->setWidget(m_bookmarkWidget
@@ -198,9 +198,16 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         qApp->setWindowIcon(appIcon);
     }
 
+    QToolBar *toolBar = addToolBar(tr("Bookmark Toolbar"));
+    bookMarkManager->setBookmarksToolbar(toolBar);
+
     // Show the widget here, otherwise the restore geometry and state won't work
     // on x11.
     show();
+
+    toolBar->hide();
+    toolBarMenu()->addAction(toolBar->toggleViewAction());
+
     QByteArray ba(helpEngineWrapper.mainWindow());
     if (!ba.isEmpty())
         restoreState(ba);
@@ -528,7 +535,7 @@ void MainWindow::setupActions()
     connect(sct, SIGNAL(activated()), openPages, SLOT(previousPageWithSwitcher()));
 #endif
 
-    BookmarkManager::instance()->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
+    BookmarkManager::instance()->setBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
