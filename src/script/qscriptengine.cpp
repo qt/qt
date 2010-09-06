@@ -732,7 +732,8 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine)
     , m_context(v8::Persistent<v8::Context>::New(v8::Context::New()))
     , m_globalObject(m_context)
 {
-
+    Q_ASSERT(!m_context.IsEmpty());
+    v8::Context::Scope contextScope(m_context);
     v8::HandleScope handle_scope;
     m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
     m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
