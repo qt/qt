@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+//#define QEGL_EXTRA_DEBUG
+
 #ifdef QEGL_EXTRA_DEBUG
 struct AttrInfo { EGLint attr; const char *name; };
 static struct AttrInfo attrs[] = {
@@ -84,7 +86,7 @@ static struct AttrInfo attrs[] = {
 #endif //QEGL_EXTRA_DEBUG
 
 QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
-    : m_depth(16), m_format(QImage::Format_RGB16), m_platformContext(0)
+    : m_depth(32), m_format(QImage::Format_ARGB32_Premultiplied), m_platformContext(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
@@ -114,11 +116,11 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     qWarning("Initialized display %d %d\n", major, minor);
 
     QPlatformWindowFormat platformFormat;
-    platformFormat.setDepth(16);
+    platformFormat.setDepth(32);
     platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
-    platformFormat.setRedBufferSize(5);
-    platformFormat.setGreenBufferSize(6);
-    platformFormat.setBlueBufferSize(5);
+    platformFormat.setRedBufferSize(8);
+    platformFormat.setGreenBufferSize(8);
+    platformFormat.setBlueBufferSize(8);
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
 
     EGLNativeWindowType eglWindow = 0;
