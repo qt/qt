@@ -111,7 +111,7 @@ public:
 
     inline operator v8::Persistent<v8::Value>() const;
 
-    QSharedDataPointer<QScriptEnginePrivate> m_engine;
+    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
 
     // Please, update class documentation when you change the enum.
     enum State {
@@ -370,7 +370,7 @@ QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
 QScriptValuePrivate* QScriptValuePrivate::toObject()
 {
     if (isJSBased())
-        return toObject(m_engine);
+        return toObject(engine());
 
     // Without an engine there is not much we can do.
     return new QScriptValuePrivate;
