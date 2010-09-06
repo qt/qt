@@ -36,6 +36,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
+#include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +51,14 @@ public:
 
     static inline QScriptablePrivate *get(QScriptable *q)
         { return q->d_func(); }
+
+    inline QScriptContext *context() const
+    {
+        if (!engine)
+            return 0;
+
+        return engine->currentContext();
+    }
 
     QScriptEngine *engine;
 

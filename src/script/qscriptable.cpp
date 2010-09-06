@@ -24,7 +24,6 @@
 #include "qscriptable.h"
 #include "qscriptable_p.h"
 #include "qscriptengine.h"
-#include "qscriptvalue.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -83,7 +82,9 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QScriptable::QScriptable()
+    : d_ptr(new QScriptablePrivate())
 {
+    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -100,8 +101,8 @@ QScriptable::~QScriptable()
 */
 QScriptEngine *QScriptable::engine() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptable);
+    return d->engine;
 }
 
 /*!
@@ -111,8 +112,9 @@ QScriptEngine *QScriptable::engine() const
 */
 QScriptContext *QScriptable::context() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptable);
+
+    return d->context();
 }
 
 /*!
@@ -123,8 +125,13 @@ QScriptContext *QScriptable::context() const
 
 QScriptValue QScriptable::thisObject() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptable);
+
+    QScriptContext *c = d->context();
+    if (!c)
+        return QScriptValue();
+
+    return c->thisObject();
 }
 
 /*!
@@ -136,8 +143,13 @@ QScriptValue QScriptable::thisObject() const
 */
 int QScriptable::argumentCount() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    Q_D(const QScriptable);
+
+    QScriptContext *c = d->context();
+    if (!c)
+        return -1;
+
+    return c->argumentCount();
 }
 
 /*!
@@ -148,9 +160,13 @@ int QScriptable::argumentCount() const
 */
 QScriptValue QScriptable::argument(int index) const
 {
-    Q_UNUSED(index);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptable);
+
+    QScriptContext *c = d->context();
+    if (!c)
+        return QScriptValue();
+
+    return c->argument(index);
 }
 
 QT_END_NAMESPACE
