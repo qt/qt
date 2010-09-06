@@ -19,9 +19,9 @@
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include "../private/qgl_p.h"
-#include "../private/qeglcontext_p.h"
-#include "../private/qpixmapdata_gl_p.h"
+#include <private/qgl_p.h>
+#include <private/qeglcontext_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 /* Extensions decls */
 
@@ -41,7 +41,7 @@ typedef void* EGLNativeSharedImageTypeNOK;
 
 /* Class */
 
-class MExtensions 
+class QMeeGoExtensions
 {
 public:
     static void ensureInitialized();

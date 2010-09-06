@@ -12,13 +12,13 @@
 **
 ****************************************************************************/
 
-#include "mextensions.h"
-#include "../private/qeglcontext_p.h"
-#include "../private/qpixmapdata_gl_p.h"
+#include "qmeegoextensions.h"
+#include <private/qeglcontext_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
-bool MExtensions::initialized = false;
-bool MExtensions::hasImageShared = false;
-bool MExtensions::hasSurfaceScaling = false;
+bool QMeeGoExtensions::initialized = false;
+bool QMeeGoExtensions::hasImageShared = false;
+bool QMeeGoExtensions::hasSurfaceScaling = false;
 
 /* Extension funcs */
 
@@ -34,7 +34,7 @@ static eglSetSurfaceScalingNOKFunc _eglSetSurfaceScalingNOK = 0;
 
 /* Public */
 
-void MExtensions::ensureInitialized()
+void QMeeGoExtensions::ensureInitialized()
 {
     if (!initialized)
         initialize();
@@ -42,7 +42,7 @@ void MExtensions::ensureInitialized()
     initialized = true;
 }
 
-EGLNativeSharedImageTypeNOK MExtensions::eglCreateSharedImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint *props)
+EGLNativeSharedImageTypeNOK QMeeGoExtensions::eglCreateSharedImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint *props)
 {
     if (! hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
@@ -50,7 +50,7 @@ EGLNativeSharedImageTypeNOK MExtensions::eglCreateSharedImageNOK(EGLDisplay dpy,
     return _eglCreateSharedImageNOK(dpy, image, props);
 }
 
-bool MExtensions::eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint prop, EGLint *v)
+bool QMeeGoExtensions::eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint prop, EGLint *v)
 {
     if (! hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
@@ -58,7 +58,7 @@ bool MExtensions::eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint pro
     return _eglQueryImageNOK(dpy, image, prop, v);
 }
 
-bool MExtensions::eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageTypeNOK img)
+bool QMeeGoExtensions::eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageTypeNOK img)
 {
     if (! hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
@@ -66,7 +66,7 @@ bool MExtensions::eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageT
     return _eglDestroySharedImageNOK(dpy, img);
 }
 
-bool MExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height)
+bool QMeeGoExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height)
 {
     if (! hasSurfaceScaling)
         qFatal("EGL_NOK_surface_scaling not found but trying to use capability!");
@@ -76,7 +76,7 @@ bool MExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, in
 
 /* Private */
 
-void MExtensions::initialize()
+void QMeeGoExtensions::initialize()
 {
     QGLContext *ctx = (QGLContext *) QGLContext::currentContext();
     qt_resolve_eglimage_gl_extensions(ctx);

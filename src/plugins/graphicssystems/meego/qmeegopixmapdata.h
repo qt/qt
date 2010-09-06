@@ -15,18 +15,18 @@
 #ifndef MPIXMAPDATA_H
 #define MPIXMAPDATA_H
 
-#include "../private/qpixmapdata_gl_p.h"
+#include <private/qpixmapdata_gl_p.h>
 
-struct MImageInfo
+struct QMeeGoImageInfo
 {
     Qt::HANDLE handle;
     QImage::Format rawFormat;
 };
 
-class MPixmapData : public QGLPixmapData
+class QMeeGoPixmapData : public QGLPixmapData
 {
 public:
-    MPixmapData();
+    QMeeGoPixmapData();
     void fromTexture(GLuint textureId, int w, int h, bool alpha);
 
     virtual void fromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
@@ -35,9 +35,9 @@ public:
     virtual void updateFromSoftImage();
 
     QImage softImage;
-    
-    static QHash <void*, MImageInfo*> sharedImagesMap;
-    
+
+    static QHash <void*, QMeeGoImageInfo*> sharedImagesMap;
+
     static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
     static bool destroyEGLSharedImage(Qt::HANDLE h);
     static void registerSharedImage(Qt::HANDLE handle, const QImage &si);

@@ -13,19 +13,19 @@
 ****************************************************************************/
 
 #include <QDebug>
-#include "mgraphicssystemplugin.h"
-#include "mgraphicssystem.h"
+#include "qmeegographicssystemplugin.h"
+#include "qmeegographicssystem.h"
 
-QStringList MGraphicsSystemPlugin::keys() const
+QStringList QMeeGoGraphicsSystemPlugin::keys() const
 {
     QStringList list;
     list << "meego";
     return list;
 }
 
-QGraphicsSystem *MGraphicsSystemPlugin::create(const QString&)
+QGraphicsSystem *QMeeGoGraphicsSystemPlugin::create(const QString&)
 {
-    return new MGraphicsSystem;
+    return new QMeeGoGraphicsSystem;
 }
 
-Q_EXPORT_PLUGIN2(meego, MGraphicsSystemPlugin)
+Q_EXPORT_PLUGIN2(meego, QMeeGoGraphicsSystemPlugin)

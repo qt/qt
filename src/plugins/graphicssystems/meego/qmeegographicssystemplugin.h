@@ -15,9 +15,9 @@
 #ifndef MGRAPHICSSYSTEMPLUGIN_H
 #define MGRAPHICSSYSTEMPLUGIN_H
 
-#include "../private/qgraphicssystemplugin_p.h"
+#include <private/qgraphicssystemplugin_p.h>
 
-class MGraphicsSystemPlugin : public QGraphicsSystemPlugin
+class QMeeGoGraphicsSystemPlugin : public QGraphicsSystemPlugin
 {
 public:
     virtual QStringList keys() const;

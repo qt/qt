@@ -15,14 +15,14 @@
 #ifndef MGRAPHICSSYSTEM_H
 #define MGRAPHICSSYSTEM_H
 
-#include "../private/qgraphicssystem_p.h"
+#include <private/qgraphicssystem_p.h>
 
-class MGraphicsSystem : public QGraphicsSystem
+class QMeeGoGraphicsSystem : public QGraphicsSystem
 {
 public:
-    MGraphicsSystem();
-    ~MGraphicsSystem();
-    
+    QMeeGoGraphicsSystem();
+    ~QMeeGoGraphicsSystem();
+
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const;
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType) const;
     virtual QPixmapData *createPixmapData(QPixmapData *origin);
@@ -37,22 +37,22 @@ public:
     static void updateEGLSharedImagePixmap(QPixmap *pixmap);
 
 private:
-    static bool meegoRunning();
-    
+    static bool meeGoRunning();
+
     static bool surfaceWasCreated;
 };
 
 /* C api */
 
 extern "C" {
-    int m_image_to_egl_shared_image(const QImage &image);
-    QPixmapData* m_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage);
-    QPixmapData* m_pixmapdata_with_gl_texture(int w, int h);
-    void m_update_egl_shared_image_pixmap(QPixmap *pixmap);
-    bool m_destroy_egl_shared_image(Qt::HANDLE handle);
-    void m_set_surface_fixed_size(int width, int height);
-    void m_set_surface_scaling(int x, int y, int width, int height);
-    void m_set_translucent(bool translucent);
+    int qt_meego_image_to_egl_shared_image(const QImage &image);
+    QPixmapData* qt_meego_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage);
+    QPixmapData* qt_meego_pixmapdata_with_gl_texture(int w, int h);
+    void qt_meego_update_egl_shared_image_pixmap(QPixmap *pixmap);
+    bool qt_meego_destroy_egl_shared_image(Qt::HANDLE handle);
+    void qt_meego_set_surface_fixed_size(int width, int height);
+    void qt_meego_set_surface_scaling(int x, int y, int width, int height);
+    void qt_meego_set_translucent(bool translucent);
 }
 
 #endif 
