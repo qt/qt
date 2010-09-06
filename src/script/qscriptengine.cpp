@@ -866,10 +866,65 @@ QScriptSyntaxCheckResult QScriptEngine::checkSyntax(const QString &program)
     return QScriptSyntaxCheckResultPrivate::get(new QScriptSyntaxCheckResultPrivate(program));
 }
 
+/*!
+  \obsolete
+
+  Returns true if \a program can be evaluated; i.e. the code is
+  sufficient to determine whether it appears to be a syntactically
+  correct program, or contains a syntax error.
+
+  This function returns false if \a program is incomplete; i.e. the
+  input is syntactically correct up to the point where the input is
+  terminated.
+
+  Note that this function only does a static check of \a program;
+  e.g. it does not check whether references to variables are
+  valid, and so on.
+
+  A typical usage of canEvaluate() is to implement an interactive
+  interpreter for QtScript. The user is repeatedly queried for
+  individual lines of code; the lines are concatened internally, and
+  only when canEvaluate() returns true for the resulting program is it
+  passed to evaluate().
+
+  The following are some examples to illustrate the behavior of
+  canEvaluate(). (Note that all example inputs are assumed to have an
+  explicit newline as their last character, since otherwise the
+  QtScript parser would automatically insert a semi-colon character at
+  the end of the input, and this could cause canEvaluate() to produce
+  different results.)
+
+  Given the input
+  \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 14
+  canEvaluate() will return true, since the program appears to be complete.
+
+  Given the input
+  \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 15
+  canEvaluate() will return false, since the if-statement is not complete,
+  but is syntactically correct so far.
+
+  Given the input
+  \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 16
+  canEvaluate() will return true, but evaluate() will throw a
+  SyntaxError given the same input.
+
+  Given the input
+  \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 17
+  canEvaluate() will return true, even though the code is clearly not
+  syntactically valid QtScript code. evaluate() will throw a
+  SyntaxError when this code is evaluated.
+
+  Given the input
+  \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 18
+  canEvaluate() will return true, but evaluate() will throw a
+  ReferenceError if \c{foo} is not defined in the script
+  environment.
+
+  \sa evaluate(), checkSyntax()
+*/
 bool QScriptEngine::canEvaluate(const QString &program) const
 {
-    Q_UNUSED(program);
-    return false;
+    return QScriptSyntaxCheckResultPrivate(program).state() != QScriptSyntaxCheckResult::Intermediate;
 }
 
 /*!

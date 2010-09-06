@@ -77,8 +77,12 @@ QScriptSyntaxCheckResultPrivate::QScriptSyntaxCheckResultPrivate(const QString& 
 
 QScriptSyntaxCheckResult::State QScriptSyntaxCheckResultPrivate::state() const
 {
-    // FIXME there is no QScriptSyntaxCheckResult::Intermediate
-    return m_errorMessage.isEmpty() ? QScriptSyntaxCheckResult::Valid : QScriptSyntaxCheckResult::Error;
+    if (m_errorMessage.isEmpty())
+        return QScriptSyntaxCheckResult::Valid;
+    else if (m_errorMessage == QLatin1String("Uncaught SyntaxError: Unexpected end of input"))
+        return QScriptSyntaxCheckResult::Intermediate;
+    else
+        return QScriptSyntaxCheckResult::Error;
 }
 
 int QScriptSyntaxCheckResultPrivate::errorColumnNumber() const
