@@ -719,7 +719,7 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
     return QScriptValue::PropertyFlags(0);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*, const QScriptValueList& args)
+inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
@@ -734,9 +734,11 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
 
     v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
+
     // Make the call
-    // FIXME recv?
-    v8::Handle<v8::Object> recv(v8::Object::New());
+    if (!thisObject || !thisObject->isObject())
+        thisObject = m_engine->globalObject();
+    v8::Handle<v8::Object> recv(v8::Handle<v8::Object>::Cast(thisObject->m_value));
     v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->Call(recv, argc, argv.data());
     return new QScriptValuePrivate(engine(), result);
 }
