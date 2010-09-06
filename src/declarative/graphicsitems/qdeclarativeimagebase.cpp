@@ -139,10 +139,7 @@ void QDeclarativeImageBase::load()
         d->status = Null;
         setImplicitWidth(0);
         setImplicitHeight(0);
-        d->sourcesize.setWidth(0);
-        d->sourcesize.setHeight(0);
         emit statusChanged(d->status);
-        emit sourceSizeChanged();
         pixmapChange();
         update();
     } else {
