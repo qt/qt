@@ -729,7 +729,7 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 
 QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine)
     : q_ptr(engine)
-    , m_context(v8::Persistent<v8::Context>::New(v8::Context::New()))
+    , m_context(v8::Context::New())
     , m_globalObject(m_context)
 {
     Q_ASSERT(!m_context.IsEmpty());
