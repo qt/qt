@@ -122,10 +122,15 @@ public:
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
 
     inline operator v8::Persistent<v8::Context>();
+    inline void clearExceptions();
+    inline void setException(v8::Handle<v8::Value> exception);
+    inline bool hasUncaughtException() const;
+    QScriptValuePrivate* uncaughtException() const;
 private:
     // FIXME check if we can reuse QObjectProvate::q_ptr
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_context;
+    v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_globalObject;
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
@@ -211,6 +216,25 @@ void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
     // The check is needed only for compatibility.
     if (cost > 0)
         v8::V8::AdjustAmountOfExternalAllocatedMemory(cost);
+}
+
+inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> exception)
+{
+    if (!m_exception.IsEmpty())
+        m_exception.Dispose();
+
+    m_exception = v8::Persistent<v8::Value>::New(exception);
+}
+
+inline void QScriptEnginePrivate::clearExceptions()
+{
+    m_exception.Dispose();
+    m_exception.Clear();
+}
+
+inline bool QScriptEnginePrivate::hasUncaughtException() const
+{
+    return !m_exception.IsEmpty();
 }
 
 QT_END_NAMESPACE

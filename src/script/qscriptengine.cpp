@@ -779,17 +779,21 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_context.Dispose();
     m_context.Clear();
+    m_exception.Dispose();
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
+    clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
+        setException(exception);
         return new QScriptValuePrivate(this, exception);
     } else {
         v8::Handle<v8::Value> result = script->Run();
         if (result.IsEmpty()) {
             v8::Handle<v8::Value> exception = tryCatch.Exception();
+            setException(exception);
             return new QScriptValuePrivate(this, exception);
         }
         return new QScriptValuePrivate(this, result);
@@ -938,8 +942,8 @@ bool QScriptEngine::canEvaluate(const QString &program) const
 */
 bool QScriptEngine::hasUncaughtException() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    Q_D(const QScriptEngine);
+    return d->hasUncaughtException();
 }
 
 /*!
@@ -955,9 +959,17 @@ bool QScriptEngine::hasUncaughtException() const
 */
 QScriptValue QScriptEngine::uncaughtException() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptEngine);
+    return QScriptValuePrivate::get(d->uncaughtException());
 }
+
+QScriptValuePrivate* QScriptEnginePrivate::uncaughtException() const
+{
+    if (!hasUncaughtException())
+        return new QScriptValuePrivate();
+    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_exception);
+}
+
 
 /*!
     Clears any uncaught exceptions in this engine.
@@ -966,7 +978,8 @@ QScriptValue QScriptEngine::uncaughtException() const
 */
 void QScriptEngine::clearExceptions()
 {
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    d->clearExceptions();
 }
 
 /*!
