@@ -12,13 +12,13 @@
 **
 ****************************************************************************/
 
-#ifndef MLIVEPIXMAP_H
-#define MLIVEPIXMAP_H
+#ifndef QMEEGOLIVEPIXMAP_H
+#define QMEEGOLIVEPIXMAP_H
 
 #include <QPixmap>
-#include "mliveimage.h"
+#include "qmeegoliveimage.h"
 
-class MLivePixmapPrivate;
+class QMeeGoLivePixmapPrivate;
 class QSharedMemory;
 class QImage;
 
@@ -26,46 +26,46 @@ class QImage;
 /*!
 */
 
-class MLivePixmap : public QPixmap
+class QMeeGoLivePixmap : public QPixmap
 {
 public:
-    //! Creates new pixmap from the given MLiveImage.
+    //! Creates new pixmap from the given QMeeGoLiveImage.
     /*! 
-     The created MLivePixmap will be attached to the given MLiveImage. 
-     Updates to the MLiveImage will be represented on this newly created
-     MLivePixmap.
+     The created QMeeGoLivePixmap will be attached to the given QMeeGoLiveImage. 
+     Updates to the QMeeGoLiveImage will be represented on this newly created
+     QMeeGoLivePixmap.
     */
-    static MLivePixmap* fromLiveImage(MLiveImage *liveImage);
+    static QMeeGoLivePixmap* fromLiveImage(QMeeGoLiveImage *liveImage);
     
-    //! Creates a new MLivePixmap from the specified handle.
+    //! Creates a new QMeeGoLivePixmap from the specified handle.
     /*! 
-     The handle can be used to share MLivePixmap cross-process.
+     The handle can be used to share QMeeGoLivePixmap cross-process.
     */
-    static MLivePixmap* fromHandle(Qt::HANDLE handle);
+    static QMeeGoLivePixmap* fromHandle(Qt::HANDLE handle);
     
-    //! Returns the handle for this MLivePixmap.
+    //! Returns the handle for this QMeeGoLivePixmap.
     /*! 
-     The handle can be used to share MLivePixmap cross-process.
+     The handle can be used to share QMeeGoLivePixmap cross-process.
     */
     Qt::HANDLE handle();
     
-    //! Destroys the MLivePixmap.
+    //! Destroys the QMeeGoLivePixmap.
     /*! 
-     All MLivePixmaps attached to a given MLiveImage have to be destroyed 
-     before the MLiveImage itself is destroyed.
+     All QMeeGoLivePixmaps attached to a given QMeeGoLiveImage have to be destroyed 
+     before the QMeeGoLiveImage itself is destroyed.
     */
-    virtual ~MLivePixmap();
+    virtual ~QMeeGoLivePixmap();
 
 private:
-    MLivePixmap(QPixmapData *p);
-    Q_DISABLE_COPY(MLivePixmap)
-    Q_DECLARE_PRIVATE(MLivePixmap)
+    QMeeGoLivePixmap(QPixmapData *p);
+    Q_DISABLE_COPY(QMeeGoLivePixmap)
+    Q_DECLARE_PRIVATE(QMeeGoLivePixmap)
 
 protected:
-    QScopedPointer<MLivePixmapPrivate> d_ptr; //! Private bits.
+    QScopedPointer<QMeeGoLivePixmapPrivate> d_ptr; //! Private bits.
 
-    friend class MLiveImage;
-    friend class MLiveImagePrivate;
+    friend class QMeeGoLiveImage;
+    friend class QMeeGoLiveImagePrivate;
 };
 
 #endif

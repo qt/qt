@@ -12,28 +12,28 @@
 **
 ****************************************************************************/
 
-#include "mlivepixmap.h"
+#include "qmeegolivepixmap.h"
 
-#ifndef MLIVEPIXMAP_P_H
-#define MLIVEPIXMAP_P_H
+#ifndef QMEEGOLIVEPIXMAP_P_H
+#define QMEEGOLIVEPIXMAP_P_H
 
-class MLivePixmapPrivate
+class QMeeGoLivePixmapPrivate
 {
 public:
-    Q_DECLARE_PUBLIC(MLivePixmap);
-    MLivePixmapPrivate();
+    Q_DECLARE_PUBLIC(QMeeGoLivePixmap);
+    QMeeGoLivePixmapPrivate();
     void copyBackFrom(const void *raw);
-    virtual ~MLivePixmapPrivate();
+    virtual ~QMeeGoLivePixmapPrivate();
     
     QSharedMemory *shm;
     int shmSerial;
     bool owns;
-    MLiveImage *parentImage;
+    QMeeGoLiveImage *parentImage;
     
-    MLivePixmap *q_ptr;
+    QMeeGoLivePixmap *q_ptr;
     
-    friend class MLiveImage;
-    friend class MLiveImagePrivate;
+    friend class QMeeGoLiveImage;
+    friend class QMeeGoLiveImagePrivate;
 };
 
 #endif

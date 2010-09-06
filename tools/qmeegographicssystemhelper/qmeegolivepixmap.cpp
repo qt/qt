@@ -12,22 +12,22 @@
 **
 ****************************************************************************/
 
-#include "mlivepixmap.h"
-#include "../private/qimage_p.h"
-#include "../private/qpixmap_raster_p.h"
-#include "mlivepixmap_p.h"
-#include "mliveimage_p.h"
+#include "qmeegolivepixmap.h"
+#include <private/qimage_p.h>
+#include <private/qpixmap_raster_p.h>
+#include "qmeegolivepixmap_p.h"
+#include "qmeegoliveimage_p.h"
 #include <QSharedMemory>
 
-/* MLivePixmapPrivate */
+/* QMeeGoLivePixmapPrivate */
 
-MLivePixmapPrivate::MLivePixmapPrivate() : shm(0), shmSerial(0), owns(true), parentImage(0)
+QMeeGoLivePixmapPrivate::QMeeGoLivePixmapPrivate() : shm(0), shmSerial(0), owns(true), parentImage(0)
 {
 }
 
-void MLivePixmapPrivate::copyBackFrom(const void *raw)
+void QMeeGoLivePixmapPrivate::copyBackFrom(const void *raw)
 {
-    Q_Q(MLivePixmap);
+    Q_Q(QMeeGoLivePixmap);
     
     q->detach();
     shm->lock();
@@ -36,9 +36,9 @@ void MLivePixmapPrivate::copyBackFrom(const void *raw)
     shm->unlock();
 }
 
-MLivePixmapPrivate::~MLivePixmapPrivate()
+QMeeGoLivePixmapPrivate::~QMeeGoLivePixmapPrivate()
 {
-    Q_Q(MLivePixmap);
+    Q_Q(QMeeGoLivePixmap);
     
     if (parentImage)
         parentImage->d_ptr->detachPixmap(q);
@@ -50,15 +50,15 @@ MLivePixmapPrivate::~MLivePixmapPrivate()
         delete shm;        
 }
 
-/* MLivePixmap */
+/* QMeeGoLivePixmap */
 
-MLivePixmap::MLivePixmap(QPixmapData *p) : QPixmap(p), d_ptr(new MLivePixmapPrivate())
+QMeeGoLivePixmap::QMeeGoLivePixmap(QPixmapData *p) : QPixmap(p), d_ptr(new QMeeGoLivePixmapPrivate())
 {
-    Q_D(MLivePixmap);
+    Q_D(QMeeGoLivePixmap);
     d->q_ptr = this;
 }
 
-MLivePixmap* MLivePixmap::fromLiveImage(MLiveImage *liveImage)
+QMeeGoLivePixmap* QMeeGoLivePixmap::fromLiveImage(QMeeGoLiveImage *liveImage)
 {
     static int counter = 100;
     QSharedMemory *shm = NULL;
@@ -68,7 +68,7 @@ MLivePixmap* MLivePixmap::fromLiveImage(MLiveImage *liveImage)
     int h = liveImage->height();
     
     counter++;
-    shm = new QSharedMemory(QString("MLivePixmap%1").arg(counter));
+    shm = new QSharedMemory(QString("QMeeGoLivePixmap%1").arg(counter));
     shm->create((w * h * 4) + 2 * sizeof(int)); // +2 to store width & height
     shm->attach();
     
@@ -83,7 +83,7 @@ MLivePixmap* MLivePixmap::fromLiveImage(MLiveImage *liveImage)
     QPixmapData *pmd = new QRasterPixmapData(QPixmapData::PixmapType);
     pmd->fromImage(img, Qt::NoOpaqueDetection);
     
-    MLivePixmap *livePixmap = new MLivePixmap(pmd);
+    QMeeGoLivePixmap *livePixmap = new QMeeGoLivePixmap(pmd);
     livePixmap->d_ptr->shm = shm;
     livePixmap->d_ptr->owns = true;
     livePixmap->d_ptr->shmSerial = counter;
@@ -94,7 +94,7 @@ MLivePixmap* MLivePixmap::fromLiveImage(MLiveImage *liveImage)
     return livePixmap;    
 }
 
-MLivePixmap* MLivePixmap::fromHandle(Qt::HANDLE handle)
+QMeeGoLivePixmap* QMeeGoLivePixmap::fromHandle(Qt::HANDLE handle)
 {
     QSharedMemory *shm = NULL;
     int *header;
@@ -102,7 +102,7 @@ MLivePixmap* MLivePixmap::fromHandle(Qt::HANDLE handle)
     int height;
     uchar* imgData;
     
-    shm = new QSharedMemory(QString("MLivePixmap%1").arg(handle));
+    shm = new QSharedMemory(QString("QMeeGoLivePixmap%1").arg(handle));
     shm->attach();
     
     shm->lock();
@@ -117,7 +117,7 @@ MLivePixmap* MLivePixmap::fromHandle(Qt::HANDLE handle)
     QPixmapData *pmd = new QRasterPixmapData(QPixmapData::PixmapType);
     pmd->fromImage(img, Qt::NoOpaqueDetection);
 
-    MLivePixmap *livePixmap = new MLivePixmap(pmd);
+    QMeeGoLivePixmap *livePixmap = new QMeeGoLivePixmap(pmd);
     livePixmap->d_ptr->shm = shm;
     livePixmap->d_ptr->owns = false;
     livePixmap->d_ptr->shmSerial = handle;
@@ -125,12 +125,12 @@ MLivePixmap* MLivePixmap::fromHandle(Qt::HANDLE handle)
     return livePixmap;
 }
 
-MLivePixmap::~MLivePixmap()
+QMeeGoLivePixmap::~QMeeGoLivePixmap()
 {
 }
 
-Qt::HANDLE MLivePixmap::handle()
+Qt::HANDLE QMeeGoLivePixmap::handle()
 {
-    Q_D(MLivePixmap);
+    Q_D(QMeeGoLivePixmap);
     return d->shmSerial;
 }

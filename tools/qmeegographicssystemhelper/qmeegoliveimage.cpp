@@ -12,36 +12,36 @@
 **
 ****************************************************************************/
 
-#include "mliveimage.h"
-#include "mliveimage_p.h"
-#include "mlivepixmap.h"
-#include "mlivepixmap_p.h"
+#include "qmeegoliveimage.h"
+#include "qmeegoliveimage_p.h"
+#include "qmeegolivepixmap.h"
+#include "qmeegolivepixmap_p.h"
 
-/* MLiveImagePrivate */
+/* QMeeGoLiveImagePrivate */
 
-MLiveImagePrivate::MLiveImagePrivate()
+QMeeGoLiveImagePrivate::QMeeGoLiveImagePrivate()
 {
 }
 
-MLiveImagePrivate::~MLiveImagePrivate()
+QMeeGoLiveImagePrivate::~QMeeGoLiveImagePrivate()
 {
     if (attachedPixmaps.length() > 0)
-        qWarning("Destroying MLiveImage but it still has MLivePixmaps attached!");
+        qWarning("Destroying QMeeGoLiveImage but it still has QMeeGoLivePixmaps attached!");
 }
 
-void MLiveImagePrivate::attachPixmap(MLivePixmap* pixmap)
+void QMeeGoLiveImagePrivate::attachPixmap(QMeeGoLivePixmap* pixmap)
 {
     attachedPixmaps << pixmap;
 }
 
-void MLiveImagePrivate::detachPixmap(MLivePixmap* pixmap)
+void QMeeGoLiveImagePrivate::detachPixmap(QMeeGoLivePixmap* pixmap)
 {
     attachedPixmaps.removeAll(pixmap);
 }
 
-/* MLiveImage */
+/* QMeeGoLiveImage */
 
-MLiveImage* MLiveImage::liveImageWithSize(int w, int h, Format format, int buffers)
+QMeeGoLiveImage* QMeeGoLiveImage::liveImageWithSize(int w, int h, Format format, int buffers)
 {
     if (format != Format_ARGB32_Premultiplied) {
         qWarning("Only _ARGB32_Premultiplied format is supported for live images now!");
@@ -53,36 +53,36 @@ MLiveImage* MLiveImage::liveImageWithSize(int w, int h, Format format, int buffe
         return 0;
     }
     
-    MLiveImage *liveImage = new MLiveImage(w, h);
+    QMeeGoLiveImage *liveImage = new QMeeGoLiveImage(w, h);
     return liveImage;
 }
 
-MLiveImage::MLiveImage(int w, int h) : QImage(w, h, QImage::Format_ARGB32_Premultiplied), d_ptr(new MLiveImagePrivate())
+QMeeGoLiveImage::QMeeGoLiveImage(int w, int h) : QImage(w, h, QImage::Format_ARGB32_Premultiplied), d_ptr(new QMeeGoLiveImagePrivate())
 {
-    Q_D(MLiveImage);
+    Q_D(QMeeGoLiveImage);
     d->q_ptr = this;
 }
 
-MLiveImage::~MLiveImage()
+QMeeGoLiveImage::~QMeeGoLiveImage()
 {
 }
 
-void MLiveImage::lock(int buffer)
+void QMeeGoLiveImage::lock(int buffer)
 {
     if (buffer != 0)
         qWarning("Only locking 0 buffer is supported at the moment!");
 }
 
-void MLiveImage::release(int buffer)
+void QMeeGoLiveImage::release(int buffer)
 {
-    Q_D(MLiveImage);
+    Q_D(QMeeGoLiveImage);
     
     if (buffer != 0) {
         qWarning("Only locking 0 buffer is supported at the moment!");
         return;
     }
 
-    // We need to copy the update image to all the client MLivePixmap's
-    foreach (MLivePixmap* livePixmap, d->attachedPixmaps) 
+    // We need to copy the update image to all the client QMeeGoLivePixmap's
+    foreach (QMeeGoLivePixmap* livePixmap, d->attachedPixmaps) 
         livePixmap->d_ptr->copyBackFrom((const void *) bits());
 }

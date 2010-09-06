@@ -12,24 +12,24 @@
 **
 ****************************************************************************/
 
-#ifndef MLIVEIMAGE_H
-#define MLIVEIMAGE_H
+#ifndef QMEEGOLIVEIMAGE_H
+#define QMEEGOLIVEIMAGE_H
 
 #include <QImage>
 
-class MLivePixmap;
-class MLiveImagePrivate;
+class QMeeGoLivePixmap;
+class QMeeGoLiveImagePrivate;
 
 //! A streamable QImage subclass.
 /*!
 */
 
-class MLiveImage : public QImage
+class QMeeGoLiveImage : public QImage
 {
 public:
     //! Format specifier.
     /*! 
-     Used to specify the format of the underlying image data for MLiveImage. 
+     Used to specify the format of the underlying image data for QMeeGoLiveImage. 
     */
     enum Format {
         Format_ARGB32_Premultiplied //! 32bit, AARRGGBB format. The typical Qt format.
@@ -51,10 +51,10 @@ public:
     
     //! Destroys the image.
     /*!
-      It's a mistake to destroy an image before destroying all the MLivePixmaps
-      built on top of it. You should first destroy all the MLivePixmaps.
+      It's a mistake to destroy an image before destroying all the QMeeGoLivePixmaps
+      built on top of it. You should first destroy all the QMeeGoLivePixmaps.
      */
-    virtual ~MLiveImage();
+    virtual ~QMeeGoLiveImage();
     
     //! Creates and returns a new live image with the given parameters.
     /*!
@@ -62,18 +62,18 @@ public:
      The format specifies the color format used by the image. Optionally, a 
      number of buffers can be specfied for a stream-like behavior.
      */
-    static MLiveImage* liveImageWithSize(int w, int h, Format format, int buffers = 1);
+    static QMeeGoLiveImage* liveImageWithSize(int w, int h, Format format, int buffers = 1);
 
 private:
-    MLiveImage(int w, int h); //! Private bits.
-    Q_DISABLE_COPY(MLiveImage)
-    Q_DECLARE_PRIVATE(MLiveImage)
+    QMeeGoLiveImage(int w, int h); //! Private bits.
+    Q_DISABLE_COPY(QMeeGoLiveImage)
+    Q_DECLARE_PRIVATE(QMeeGoLiveImage)
 
 protected:
-    QScopedPointer<MLiveImagePrivate> d_ptr;
+    QScopedPointer<QMeeGoLiveImagePrivate> d_ptr;
 
-    friend class MLivePixmap;
-    friend class MLivePixmapPrivate;
+    friend class QMeeGoLivePixmap;
+    friend class QMeeGoLivePixmapPrivate;
 };
 
 #endif

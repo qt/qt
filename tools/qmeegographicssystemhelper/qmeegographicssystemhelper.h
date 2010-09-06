@@ -12,12 +12,12 @@
 **
 ****************************************************************************/
 
-#ifndef MGRAPHICSSYSTEMHELPER_H
-#define MGRAPHICSSYSTEMHELPER_H
+#ifndef QMEEGOGRAPHICSSYSTEMHELPER_H
+#define QMEEGOGRAPHICSSYSTEMHELPER_H
 
 #include <QPixmap>
 #include <QImage>
-#include "mlivepixmap.h"
+#include "qmeegolivepixmap.h"
 
 class QLibrary;
 
@@ -33,8 +33,8 @@ class QLibrary;
 
  \code
  QPixmap p;
- if (MGraphicsSystemHelper::isRunningMeeGo()) {
-    p = MGraphicsSystemHelper::pixmapWithGLTexture(64, 64);
+ if (QMeeGoGraphicsSystemHelper::isRunningMeeGo()) {
+    p = QMeeGoGraphicsSystemHelper::pixmapWithGLTexture(64, 64);
  } else {
     p = QPixmap(64, 64);
  }
@@ -44,14 +44,14 @@ class QLibrary;
  give unpredictable results. The only functions safe to call at all times are:
 
  \code
- MGraphicsSystemHelper::isRunningMeeGo();
- MGraphicsSystemHelper::runningGraphicsSystemName(); 
- MGraphicsSystemHelper::switchToMeeGo();
- MGraphicsSystemHelper::switchToRaster();
+ QMeeGoGraphicsSystemHelper::isRunningMeeGo();
+ QMeeGoGraphicsSystemHelper::runningGraphicsSystemName(); 
+ QMeeGoGraphicsSystemHelper::switchToMeeGo();
+ QMeeGoGraphicsSystemHelper::switchToRaster();
  \endcode
 */
 
-class MGraphicsSystemHelper 
+class QMeeGoGraphicsSystemHelper 
 {
 public:
     //! Returns true if running meego.

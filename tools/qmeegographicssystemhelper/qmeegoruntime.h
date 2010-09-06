@@ -16,7 +16,7 @@
 #include <QPixmap>
 #include <QImage>
 
-class MRuntime
+class QMeeGoRuntime
 {
 public:
     static void initialize();

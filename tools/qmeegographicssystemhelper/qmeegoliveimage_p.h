@@ -12,25 +12,25 @@
 **
 ****************************************************************************/
 
-#include "mliveimage.h"
+#include "qmeegoliveimage.h"
 
-#ifndef MLIVEIMAGE_P_H
-#define MLIVEIMAGE_P_H
+#ifndef QMEEGOLIVEIMAGE_P_H
+#define QMEEGOLIVEIMAGE_P_H
 
-class MLiveImagePrivate
+class QMeeGoLiveImagePrivate
 {
 public:
-    Q_DECLARE_PUBLIC(MLiveImage);
-    MLiveImagePrivate();
-    virtual ~MLiveImagePrivate();
-    void attachPixmap(MLivePixmap* pixmap);
-    void detachPixmap(MLivePixmap* pixmap);
+    Q_DECLARE_PUBLIC(QMeeGoLiveImage);
+    QMeeGoLiveImagePrivate();
+    virtual ~QMeeGoLiveImagePrivate();
+    void attachPixmap(QMeeGoLivePixmap* pixmap);
+    void detachPixmap(QMeeGoLivePixmap* pixmap);
         
-    QList <MLivePixmap*> attachedPixmaps;
-    MLiveImage *q_ptr;
+    QList <QMeeGoLivePixmap*> attachedPixmaps;
+    QMeeGoLiveImage *q_ptr;
     
-    friend class MLivePixmap;
-    friend class MLivePixmapPrivate;
+    friend class QMeeGoLivePixmap;
+    friend class QMeeGoLivePixmapPrivate;
 };
 
 #endif

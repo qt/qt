@@ -12,15 +12,15 @@
 **
 ****************************************************************************/
 
-#define ENSURE_RUNNING_MEEGO {if (! MGraphicsSystemHelper::isRunningMeeGo()) { qFatal("Using meego functionality but not running meego graphics system!"); }}
+#define ENSURE_RUNNING_MEEGO {if (! QMeeGoGraphicsSystemHelper::isRunningMeeGo()) { qFatal("Using meego functionality but not running meego graphics system!"); }}
 
-#include "mgraphicssystemhelper.h"
-#include "../private/qapplication_p.h"
-#include "../private/qgraphicssystem_runtime_p.h"
-#include "../private/qpixmap_raster_p.h"
-#include "mruntime.h"
+#include "qmeegographicssystemhelper.h"
+#include <private/qapplication_p.h>
+#include <private/qgraphicssystem_runtime_p.h>
+#include <private/qpixmap_raster_p.h>
+#include "qmeegoruntime.h"
 
-QString MGraphicsSystemHelper::runningGraphicsSystemName()
+QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 {
     if (! QApplicationPrivate::instance()) {
         qWarning("Querying graphics system but application not running yet!");
@@ -36,12 +36,12 @@ QString MGraphicsSystemHelper::runningGraphicsSystemName()
     return name;
 }
 
-bool MGraphicsSystemHelper::isRunningMeeGo()
+bool QMeeGoGraphicsSystemHelper::isRunningMeeGo()
 {
     return (runningGraphicsSystemName() == "meego");
 }
 
-void MGraphicsSystemHelper::switchToMeeGo()
+void QMeeGoGraphicsSystemHelper::switchToMeeGo()
 {
     if (runningGraphicsSystemName() == "meego")
         return;
@@ -54,7 +54,7 @@ void MGraphicsSystemHelper::switchToMeeGo()
     }
 }
 
-void MGraphicsSystemHelper::switchToRaster()
+void QMeeGoGraphicsSystemHelper::switchToRaster()
 {
     if (runningGraphicsSystemName() == "raster")
         return;
@@ -67,40 +67,40 @@ void MGraphicsSystemHelper::switchToRaster()
     }
 }
 
-Qt::HANDLE MGraphicsSystemHelper::imageToEGLSharedImage(const QImage &image)
+Qt::HANDLE QMeeGoGraphicsSystemHelper::imageToEGLSharedImage(const QImage &image)
 {
     ENSURE_RUNNING_MEEGO;
-    return MRuntime::imageToEGLSharedImage(image);
+    return QMeeGoRuntime::imageToEGLSharedImage(image);
 }
 
-QPixmap MGraphicsSystemHelper::pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage)
+QPixmap QMeeGoGraphicsSystemHelper::pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage)
 {
     // This function is supported when not running meego too. A raster-backed
     // pixmap will be created... but when you switch back to 'meego', it'll 
     // be replaced with a EGL shared image backing.
-    return MRuntime::pixmapFromEGLSharedImage(handle, softImage);
+    return QMeeGoRuntime::pixmapFromEGLSharedImage(handle, softImage);
 }
 
-QPixmap MGraphicsSystemHelper::pixmapWithGLTexture(int w, int h)
+QPixmap QMeeGoGraphicsSystemHelper::pixmapWithGLTexture(int w, int h)
 {
     ENSURE_RUNNING_MEEGO;
-    return MRuntime::pixmapWithGLTexture(w, h);
+    return QMeeGoRuntime::pixmapWithGLTexture(w, h);
 }
 
-bool MGraphicsSystemHelper::destroyEGLSharedImage(Qt::HANDLE handle)
+bool QMeeGoGraphicsSystemHelper::destroyEGLSharedImage(Qt::HANDLE handle)
 {
     ENSURE_RUNNING_MEEGO;
-    return MRuntime::destroyEGLSharedImage(handle);
+    return QMeeGoRuntime::destroyEGLSharedImage(handle);
 }
 
-void MGraphicsSystemHelper::updateEGLSharedImagePixmap(QPixmap *p)
+void QMeeGoGraphicsSystemHelper::updateEGLSharedImagePixmap(QPixmap *p)
 {
     ENSURE_RUNNING_MEEGO;
-    return MRuntime::updateEGLSharedImagePixmap(p);
+    return QMeeGoRuntime::updateEGLSharedImagePixmap(p);
 }
 
-void MGraphicsSystemHelper::setTranslucent(bool translucent)
+void QMeeGoGraphicsSystemHelper::setTranslucent(bool translucent)
 {
     ENSURE_RUNNING_MEEGO;
-    MRuntime::setTranslucent(translucent);
+    QMeeGoRuntime::setTranslucent(translucent);
 }

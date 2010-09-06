@@ -16,37 +16,37 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QCoreApplication>
-#include "moverlaywidget.h"
-#include "mgraphicssystemhelper.h"
-#include "mruntime.h"
+#include "qmeegooverlaywidget.h"
+#include "qmeegographicssystemhelper.h"
+#include "qmeegoruntime.h"
 
-MOverlayWidget::MOverlayWidget(int surfaceWidth, int surfaceHeight, QWidget *parent) : QWidget(parent, 0), 
+QMeeGoOverlayWidget::QMeeGoOverlayWidget(int surfaceWidth, int surfaceHeight, QWidget *parent) : QWidget(parent, 0), 
     sw(surfaceWidth), 
     sh(surfaceHeight)
 {
-    if (! MGraphicsSystemHelper::isRunningMeeGo())
-        qFatal("MOverlayWidget can only be used when running with 'meego' graphics system!");
+    if (! QMeeGoGraphicsSystemHelper::isRunningMeeGo())
+        qFatal("QMeeGoOverlayWidget can only be used when running with 'meego' graphics system!");
 
-    MRuntime::setSurfaceFixedSize(surfaceWidth, surfaceHeight);
+    QMeeGoRuntime::setSurfaceFixedSize(surfaceWidth, surfaceHeight);
 
     scaleW = sw / 864.0;
     scaleH = sh / 480.0;
     installEventFilter(this);
 }
 
-QPoint MOverlayWidget::convertPoint(const QPoint &p)
+QPoint QMeeGoOverlayWidget::convertPoint(const QPoint &p)
 {
     int x = p.x() * scaleW;
     int y = p.y() * scaleH;
     return QPoint(x, y);
 }
 
-void MOverlayWidget::showEvent(QShowEvent *event)
+void QMeeGoOverlayWidget::showEvent(QShowEvent *event)
 {
-    MRuntime::setSurfaceScaling(0, 0, width(), height());
+    QMeeGoRuntime::setSurfaceScaling(0, 0, width(), height());
 }
 
-bool MOverlayWidget::eventFilter(QObject *obj, QEvent *event)
+bool QMeeGoOverlayWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->spontaneous() == false)
         return false;

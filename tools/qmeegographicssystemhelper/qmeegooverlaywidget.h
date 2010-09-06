@@ -12,8 +12,8 @@
 **
 ****************************************************************************/
 
-#ifndef MOVERLAYWIDGET_H
-#define MOVERLAYWIDGET_H
+#ifndef QMEEGOOVERLAYWIDGET_H
+#define QMEEGOOVERLAYWIDGET_H
 
 #include <QWidget>
 
@@ -21,7 +21,7 @@
 /*!
 */
 
-class MOverlayWidget : public QWidget
+class QMeeGoOverlayWidget : public QWidget
 {
 public:
     //! Constructs a new scaling widget.
@@ -29,7 +29,7 @@ public:
      The real surface used for this widget will have the specified
      width and height.
     */
-    MOverlayWidget(int surfaceWidth, int surfaceHeight, QWidget *parent = 0);
+    QMeeGoOverlayWidget(int surfaceWidth, int surfaceHeight, QWidget *parent = 0);
 
 
     //! Event filtering function. 

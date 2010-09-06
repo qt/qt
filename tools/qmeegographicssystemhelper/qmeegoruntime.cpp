@@ -12,101 +12,101 @@
 **
 ****************************************************************************/
 
-#include "mruntime.h"
+#include "qmeegoruntime.h"
 
 #define ENSURE_INITIALIZED {if (!initialized) initialize();}
 
-QLibrary* MRuntime::library = NULL;
-bool MRuntime::initialized = false;
+QLibrary* QMeeGoRuntime::library = NULL;
+bool QMeeGoRuntime::initialized = false;
 
-typedef int (*MImageToEglSharedImageFunc) (const QImage&);
-typedef QPixmapData* (*MPixmapDataFromEglSharedImageFunc) (Qt::HANDLE handle, const QImage&);
-typedef QPixmapData* (*MPixmapDataWithGLTextureFunc) (int w, int h);
-typedef bool (*MDestroyEGLSharedImageFunc) (Qt::HANDLE handle);
-typedef void (*MUpdateEglSharedImagePixmapFunc) (QPixmap*);
-typedef void (*MSetSurfaceFixedSizeFunc) (int w, int h);
-typedef void (*MSetSurfaceScalingFunc) (int x, int y, int w, int h);
-typedef void (*MSetTranslucentFunc) (bool translucent);
+typedef int (*QMeeGoImageToEglSharedImageFunc) (const QImage&);
+typedef QPixmapData* (*QMeeGoPixmapDataFromEglSharedImageFunc) (Qt::HANDLE handle, const QImage&);
+typedef QPixmapData* (*QMeeGoPixmapDataWithGLTextureFunc) (int w, int h);
+typedef bool (*QMeeGoDestroyEGLSharedImageFunc) (Qt::HANDLE handle);
+typedef void (*QMeeGoUpdateEglSharedImagePixmapFunc) (QPixmap*);
+typedef void (*QMeeGoSetSurfaceFixedSizeFunc) (int w, int h);
+typedef void (*QMeeGoSetSurfaceScalingFunc) (int x, int y, int w, int h);
+typedef void (*QMeeGoSetTranslucentFunc) (bool translucent);
 
-static MImageToEglSharedImageFunc m_image_to_egl_shared_image = NULL;
-static MPixmapDataFromEglSharedImageFunc m_pixmapdata_from_egl_shared_image = NULL;
-static MPixmapDataWithGLTextureFunc m_pixmapdata_with_gl_texture = NULL;
-static MDestroyEGLSharedImageFunc m_destroy_egl_shared_image = NULL;
-static MUpdateEglSharedImagePixmapFunc m_update_egl_shared_image_pixmap = NULL;
-static MSetSurfaceFixedSizeFunc m_set_surface_fixed_size = NULL;
-static MSetSurfaceScalingFunc m_set_surface_scaling = NULL;
-static MSetTranslucentFunc m_set_translucent = NULL;
+static QMeeGoImageToEglSharedImageFunc qt_meego_image_to_egl_shared_image = NULL;
+static QMeeGoPixmapDataFromEglSharedImageFunc qt_meego_pixmapdata_from_egl_shared_image = NULL;
+static QMeeGoPixmapDataWithGLTextureFunc qt_meego_pixmapdata_with_gl_texture = NULL;
+static QMeeGoDestroyEGLSharedImageFunc qt_meego_destroy_egl_shared_image = NULL;
+static QMeeGoUpdateEglSharedImagePixmapFunc qt_meego_update_egl_shared_image_pixmap = NULL;
+static QMeeGoSetSurfaceFixedSizeFunc qt_meego_set_surface_fixed_size = NULL;
+static QMeeGoSetSurfaceScalingFunc qt_meego_set_surface_scaling = NULL;
+static QMeeGoSetTranslucentFunc qt_meego_set_translucent = NULL;
 
-void MRuntime::initialize()
+void QMeeGoRuntime::initialize()
 {
     library = new QLibrary("/usr/lib/qt4/plugins/graphicssystems/libmeegographicssystem.so");
     Q_ASSERT(library);
     
-    m_image_to_egl_shared_image = (MImageToEglSharedImageFunc) library->resolve("m_image_to_egl_shared_image");
-    m_pixmapdata_from_egl_shared_image = (MPixmapDataFromEglSharedImageFunc)  library->resolve("m_pixmapdata_from_egl_shared_image");
-    m_pixmapdata_with_gl_texture = (MPixmapDataWithGLTextureFunc) library->resolve("m_pixmapdata_with_gl_texture");
-    m_destroy_egl_shared_image = (MDestroyEGLSharedImageFunc) library->resolve("m_destroy_egl_shared_image");
-    m_update_egl_shared_image_pixmap = (MUpdateEglSharedImagePixmapFunc) library->resolve("m_update_egl_shared_image_pixmap");
-    m_set_surface_fixed_size = (MSetSurfaceFixedSizeFunc) library->resolve("m_set_surface_fixed_size");
-    m_set_surface_scaling = (MSetSurfaceScalingFunc) library->resolve("m_set_surface_scaling");
-    m_set_translucent = (MSetTranslucentFunc) library->resolve("m_set_translucent");
+    qt_meego_image_to_egl_shared_image = (QMeeGoImageToEglSharedImageFunc) library->resolve("qt_meego_image_to_egl_shared_image");
+    qt_meego_pixmapdata_from_egl_shared_image = (QMeeGoPixmapDataFromEglSharedImageFunc)  library->resolve("qt_meego_pixmapdata_from_egl_shared_image");
+    qt_meego_pixmapdata_with_gl_texture = (QMeeGoPixmapDataWithGLTextureFunc) library->resolve("qt_meego_pixmapdata_with_gl_texture");
+    qt_meego_destroy_egl_shared_image = (QMeeGoDestroyEGLSharedImageFunc) library->resolve("qt_meego_destroy_egl_shared_image");
+    qt_meego_update_egl_shared_image_pixmap = (QMeeGoUpdateEglSharedImagePixmapFunc) library->resolve("qt_meego_update_egl_shared_image_pixmap");
+    qt_meego_set_surface_fixed_size = (QMeeGoSetSurfaceFixedSizeFunc) library->resolve("qt_meego_set_surface_fixed_size");
+    qt_meego_set_surface_scaling = (QMeeGoSetSurfaceScalingFunc) library->resolve("qt_meego_set_surface_scaling");
+    qt_meego_set_translucent = (QMeeGoSetTranslucentFunc) library->resolve("qt_meego_set_translucent");
     
     
     initialized = true;
 }
 
-Qt::HANDLE MRuntime::imageToEGLSharedImage(const QImage &image)
+Qt::HANDLE QMeeGoRuntime::imageToEGLSharedImage(const QImage &image)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_image_to_egl_shared_image);
-    return m_image_to_egl_shared_image(image);
+    Q_ASSERT(qt_meego_image_to_egl_shared_image);
+    return qt_meego_image_to_egl_shared_image(image);
 }
 
-QPixmap MRuntime::pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage)
+QPixmap QMeeGoRuntime::pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_pixmapdata_from_egl_shared_image);
-    return QPixmap(m_pixmapdata_from_egl_shared_image(handle, softImage));
+    Q_ASSERT(qt_meego_pixmapdata_from_egl_shared_image);
+    return QPixmap(qt_meego_pixmapdata_from_egl_shared_image(handle, softImage));
 }
 
-QPixmap MRuntime::pixmapWithGLTexture(int w, int h)
+QPixmap QMeeGoRuntime::pixmapWithGLTexture(int w, int h)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_pixmapdata_with_gl_texture);
-    return QPixmap(m_pixmapdata_with_gl_texture(w, h));
+    Q_ASSERT(qt_meego_pixmapdata_with_gl_texture);
+    return QPixmap(qt_meego_pixmapdata_with_gl_texture(w, h));
 }
 
-bool MRuntime::destroyEGLSharedImage(Qt::HANDLE handle)
+bool QMeeGoRuntime::destroyEGLSharedImage(Qt::HANDLE handle)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_destroy_egl_shared_image);
-    return m_destroy_egl_shared_image(handle);
+    Q_ASSERT(qt_meego_destroy_egl_shared_image);
+    return qt_meego_destroy_egl_shared_image(handle);
 }
 
-void MRuntime::updateEGLSharedImagePixmap(QPixmap *p)
+void QMeeGoRuntime::updateEGLSharedImagePixmap(QPixmap *p)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_update_egl_shared_image_pixmap);
-    return m_update_egl_shared_image_pixmap(p);
+    Q_ASSERT(qt_meego_update_egl_shared_image_pixmap);
+    return qt_meego_update_egl_shared_image_pixmap(p);
 }
 
-void MRuntime::setSurfaceFixedSize(int w, int h)
+void QMeeGoRuntime::setSurfaceFixedSize(int w, int h)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_set_surface_fixed_size);
-    m_set_surface_fixed_size(w, h);
+    Q_ASSERT(qt_meego_set_surface_fixed_size);
+    qt_meego_set_surface_fixed_size(w, h);
 }
 
-void MRuntime::setSurfaceScaling(int x, int y, int w, int h)
+void QMeeGoRuntime::setSurfaceScaling(int x, int y, int w, int h)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_set_surface_scaling);
-    m_set_surface_scaling(x, y, w, h);
+    Q_ASSERT(qt_meego_set_surface_scaling);
+    qt_meego_set_surface_scaling(x, y, w, h);
 }
 
-void MRuntime::setTranslucent(bool translucent)
+void QMeeGoRuntime::setTranslucent(bool translucent)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(m_set_translucent);
-    m_set_translucent(translucent);
+    Q_ASSERT(qt_meego_set_translucent);
+    qt_meego_set_translucent(translucent);
 }
