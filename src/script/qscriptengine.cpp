@@ -1375,13 +1375,7 @@ void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prot
 
 QScriptString QScriptEngine::toStringHandle(const QString& str)
 {
-    Q_D(QScriptEngine);
-    v8::Context::Scope scope(d->m_context);
-    v8::HandleScope handleScope;
-    Q_UNIMPLEMENTED();
-    return QScriptString();
-    // Do like we do in 4.7...
-//    return QScriptStringPrivate::get(new QScriptStringPrivate(d, QScriptConverter::toString(str), QScriptStringPrivate::HeapAllocated));
+    return QScriptStringPrivate::get(new QScriptStringPrivate(str));
 }
 
 QScriptValue QScriptEngine::toObject(const QScriptValue& value)

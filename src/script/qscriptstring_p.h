@@ -35,76 +35,90 @@
 // We mean it.
 //
 
-#include <QtCore/qobjectdefs.h>
-
+#include "qscriptconverter_p.h"
 #include "qscriptstring.h"
-
-#include <v8.h>
+#include <QtCore/qnumeric.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
-class QScriptEnginePrivate;
-class QScriptStringPrivate
-{
+class QScriptStringPrivate : public QSharedData {
 public:
-    enum AllocationType {
-        StackAllocated,
-        HeapAllocated
-    };
+    static inline QScriptString get(QScriptStringPrivate* d);
+    static inline QScriptStringPrivate* get(const QScriptString& p);
 
-    inline QScriptStringPrivate() { Q_UNIMPLEMENTED(); }
-    inline QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::String> id,
-                                AllocationType type);
+    inline QScriptStringPrivate();
+    inline QScriptStringPrivate(const QString& qtstring);
     inline ~QScriptStringPrivate();
-    static inline void init(QScriptString &q, QScriptStringPrivate *d);
 
-    static inline QScriptStringPrivate *get(const QScriptString &q);
+    inline bool operator==(const QScriptStringPrivate& other) const;
+    inline bool operator!=(const QScriptStringPrivate& other) const;
 
-    inline void detachFromEngine();
+    inline bool isValid() const;
+    inline quint32 toArrayIndex(bool* ok = 0) const;
+    inline QString toString() const;
+    inline quint64 id() const;
 
-    static inline bool isValid(const QScriptString &q);
-
-    QBasicAtomicInt ref;
-    QScriptEnginePrivate *engine;
-    v8::Persistent<v8::String> identifier;
-    AllocationType type;
-
-    // linked list of engine's script values
-    QScriptStringPrivate *prev;
-    QScriptStringPrivate *next;
+private:
+    // FIXME this should not be QString!
+    QString m_string;
 };
 
-inline QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *e, v8::Handle<v8::String> id,
-                                                  AllocationType tp)
-    : engine(e), identifier(v8::Persistent<v8::String>::New(id)), type(tp), prev(0), next(0)
+
+QScriptStringPrivate::QScriptStringPrivate()
+{}
+
+QScriptStringPrivate::QScriptStringPrivate(const QString& qtstring)
+    : m_string(qtstring)
+{}
+
+QScriptStringPrivate::~QScriptStringPrivate()
 {
-    ref = 0;
 }
 
-inline QScriptStringPrivate::~QScriptStringPrivate()
+QScriptString QScriptStringPrivate::get(QScriptStringPrivate* d)
 {
+    Q_ASSERT(d);
+    return QScriptString(d);
 }
 
-inline void QScriptStringPrivate::init(QScriptString &q, QScriptStringPrivate *d)
+QScriptStringPrivate* QScriptStringPrivate::get(const QScriptString& p)
 {
-    q.d_ptr = d;
+    return p.d_ptr.data();
 }
 
-inline QScriptStringPrivate *QScriptStringPrivate::get(const QScriptString &q)
+bool QScriptStringPrivate::isValid() const
 {
-    return const_cast<QScriptStringPrivate*>(q.d_func());
+    return !m_string.isNull();
 }
 
-inline void QScriptStringPrivate::detachFromEngine()
+bool QScriptStringPrivate::operator==(const QScriptStringPrivate& other) const
 {
-    engine = 0;
-    identifier.Dispose();
-    identifier.Clear();
+    return isValid() && other.isValid() && m_string == other.m_string;
 }
 
-inline bool QScriptStringPrivate::isValid(const QScriptString &q)
+bool QScriptStringPrivate::operator!=(const QScriptStringPrivate& other) const
 {
-    return (q.d_ptr && q.d_ptr->engine);
+    return isValid() && other.isValid() && m_string != other.m_string;
+}
+
+quint32 QScriptStringPrivate::toArrayIndex(bool* ok) const
+{
+    quint32 idx = QScriptConverter::toArrayIndex(m_string);
+    if (ok)
+        *ok = (idx != 0xffffffff);
+    return idx;
+}
+
+QString QScriptStringPrivate::toString() const
+{
+    return m_string;
+}
+
+quint64 QScriptStringPrivate::id() const
+{
+    return qHash(m_string);
 }
 
 QT_END_NAMESPACE
