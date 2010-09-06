@@ -2403,6 +2403,10 @@ void tst_QScriptValue::call()
             QCOMPARE(result.toNumber(), 123.0);
         }
         {
+            QScriptValue result = fun.call(eng.undefinedValue(), eng.undefinedValue());
+            QCOMPARE(result.isUndefined(), true);
+        }
+        {
             QScriptValue args = eng.newArray();
             args.setProperty(0, 123);
             QScriptValue result = fun.call(eng.undefinedValue(), args);

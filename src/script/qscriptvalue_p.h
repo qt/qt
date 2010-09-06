@@ -104,11 +104,14 @@ public:
     inline void setPrototype(QScriptValuePrivate* prototype);
 
     inline void setProperty(const QString& name, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags);
+    inline void setProperty(quint32 index, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags);
     inline QScriptValuePrivate* property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptValuePrivate* property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode);
 
-    inline QScriptValuePrivate* call(const QScriptValuePrivate*, const QScriptValueList& args);
+    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValueList& args);
+    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments);
     inline QScriptValuePrivate* construct(const QScriptValueList& args);
 
     inline bool assignEngine(QScriptEnginePrivate* engine);
@@ -260,10 +263,14 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptVa
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Value> value)
-    : m_engine(engine), m_state(JSValue), m_value(v8::Persistent<v8::Value>::New(value))
+    : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    Q_ASSERT(!m_value.IsEmpty());
+    // this can happen if a method in V8 returns an undefined value
+    if (value.IsEmpty())
+        m_state = Invalid;
+    else
+        m_value = v8::Persistent<v8::Value>::New(value);
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
@@ -720,7 +727,7 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
         // Remove the property.
         v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
-        v8::Handle<v8::Object>::Cast(m_value)->Delete(QScriptConverter::toString(name));
+        v8::Object::Cast(*m_value)->Delete(QScriptConverter::toString(name));
         return;
     }
 
@@ -731,10 +738,34 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
 
     v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
-    v8::Handle<v8::Object>::Cast(m_value)->Set(QScriptConverter::toString(name), value->m_value);
+    v8::Object::Cast(*m_value)->Set(QScriptConverter::toString(name), value->m_value);
 }
 
-QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
+inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags)
+{
+    Q_UNUSED(flags); // FIXME it should be used.
+    if (!isObject())
+        return;
+
+    if (!isArray()) {
+        setProperty(QString::number(index), value, flags);
+        return;
+    }
+
+    if (!value->isJSBased())
+        value->assignEngine(engine());
+
+    if (engine() != value->engine()) {
+        qWarning("QScriptValue::setProperty() failed: cannot set value created in a different engine");
+        return;
+    }
+
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
+    v8::Array::Cast(*m_value)->Set(index, value->m_value);
+}
+
+inline QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
     Q_UNUSED(mode);
     if (!isObject())
@@ -742,7 +773,7 @@ QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QS
 
     v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
-    v8::Handle<v8::Object> self(v8::Handle<v8::Object>::Cast(m_value));
+    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
     v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
 
     if ( (mode != QScriptValue::ResolveLocal && !self->Has(jsname))
@@ -750,6 +781,22 @@ QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QS
         return new QScriptValuePrivate();
 
     v8::Handle<v8::Value> result = self->Get(jsname);
+    return new QScriptValuePrivate(engine(), result);
+}
+
+inline QScriptValuePrivate* QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
+{
+    Q_UNUSED(mode);
+    if (!isObject())
+        return new QScriptValuePrivate();
+
+    if (!isArray())
+        return property(QString::number(index), mode);
+
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
+    v8::Handle<v8::Value> result = self->Get(index);
     return new QScriptValuePrivate(engine(), result);
 }
 
@@ -779,6 +826,9 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
     if (!isFunction())
         return new QScriptValuePrivate();
 
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
+
     // Convert all arguments and bind to the engine.
     int argc = args.size();
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
@@ -787,16 +837,51 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
         return new QScriptValuePrivate();
     }
 
-    v8::Context::Scope contextScope(*engine());
-    v8::HandleScope handleScope;
-
     // Make the call
     if (!thisObject || !thisObject->isObject())
         thisObject = m_engine->globalObject();
-    v8::Handle<v8::Object> recv(v8::Handle<v8::Object>::Cast(thisObject->m_value));
-    v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->Call(recv, argc, argv.data());
+    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
+    v8::Handle<v8::Value> result = v8::Function::Cast(*m_value)->Call(recv, argc, argv.data());
     return new QScriptValuePrivate(engine(), result);
 }
+
+inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments)
+{
+    if (!isFunction())
+        return new QScriptValuePrivate();
+
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
+
+    if (!thisObject || !thisObject->isObject())
+        thisObject = m_engine->globalObject();
+    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
+
+    // Convert all arguments and bind to the engine.
+    QScriptValuePrivate *args = QScriptValuePrivate::get(arguments);
+
+    if (!args->isJSBased() && !args->assignEngine(engine()))
+        return new QScriptValuePrivate();
+
+    v8::Handle<v8::Value> result;
+    if (args->isNull() || args->isUndefined()) {
+        result = v8::Function::Cast(*m_value)->Call(recv, 0, 0);
+    } else if (args->isArray()) {
+        v8::Handle<v8::Array> array(v8::Array::Cast(*args->m_value));
+        int argc = array->Length();
+        QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
+        for (int i = 0; i < argc; ++i)
+            argv[i] = array->Get(i);
+        result = v8::Function::Cast(*m_value)->Call(recv, argc, argv.data());
+    } else {
+        // FIXME
+        qWarning("QScriptValue::call() failed: should throw type error");
+        return new QScriptValuePrivate();
+    }
+
+    return new QScriptValuePrivate(engine(), result);
+}
+
 
 inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueList& args)
 {

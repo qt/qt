@@ -570,10 +570,32 @@ QScriptValue QScriptValue::call(const QScriptValue& thisObject, const QScriptVal
     return d_ptr->call(QScriptValuePrivate::get(thisObject), args);
 }
 
-QScriptValue QScriptValue::call(const QScriptValue &, const QScriptValue &)
+/*!
+  Calls this QScriptValue as a function, using \a thisObject as
+  the `this' object in the function call, and passing \a arguments
+  as arguments to the function. Returns the value returned from
+  the function.
+
+  If this QScriptValue is not a function, call() does nothing
+  and returns an invalid QScriptValue.
+
+  \a arguments can be an arguments object, an array, null or
+  undefined; any other type will cause a TypeError to be thrown.
+
+  Note that if \a thisObject is not an object, the global object
+  (see \l{QScriptEngine::globalObject()}) will be used as the
+  `this' object.
+
+  One common usage of this function is to forward native function
+  calls to another function:
+
+  \snippet doc/src/snippets/code/src_script_qscriptvalue.cpp 3
+
+  \sa construct(), QScriptContext::argumentsObject()
+*/
+QScriptValue QScriptValue::call(const QScriptValue &thisObject, const QScriptValue &arguments)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return d_ptr->call(QScriptValuePrivate::get(thisObject), arguments);
 }
 
 /*!
@@ -805,8 +827,7 @@ QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlag
 */
 QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode) const
 {
-    // FIXME it should be faster, not slower!
-    return property(QString::number(arrayIndex), mode);
+    return property(arrayIndex, mode);
 }
 
 /*!
@@ -852,8 +873,7 @@ void QScriptValue::setProperty(const QString& name, const QScriptValue& value, c
 */
 void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue& value, const PropertyFlags& flags)
 {
-    // FIXME this should be faster, not slower!
-    setProperty(QString::number(arrayIndex), value, flags);
+    d_ptr->setProperty(arrayIndex, QScriptValuePrivate::get(value), flags);
 }
 
 /*!
