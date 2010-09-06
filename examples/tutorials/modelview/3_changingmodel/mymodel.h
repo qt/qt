@@ -42,8 +42,8 @@
 #define MYMODEL_H
 
 #include <QAbstractTableModel>
+#include <QTimer>
 
-class QTimer;  // forward declaration
 
 class MyModel : public QAbstractTableModel
 {

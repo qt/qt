@@ -38,8 +38,6 @@
 **
 ****************************************************************************/
 
-#include <QTimer>
-#include <QTime>
 #include <QBrush>
 #include "mymodel.h"
 
