@@ -50,7 +50,7 @@
 #include "qt_windows.h"
 #include <private/qapplication_p.h>
 
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <limits.h>
@@ -140,7 +140,7 @@ static void resolveGetCharWidthI()
     if (resolvedGetCharWidthI)
         return;
     resolvedGetCharWidthI = true;
-    ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
+    ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
 #endif // !defined(Q_WS_WINCE)
 

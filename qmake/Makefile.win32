@@ -102,6 +102,7 @@ QTOBJS= \
 	qtemporaryfile.obj \
 	qabstractfileengine.obj \
 	qfsfileengine_win.obj \
+	qsystemlibrary.obj \
 	qfsfileengine_iterator_win.obj \
 	qfileinfo.obj \
 	qglobal.obj \
@@ -155,6 +156,7 @@ clean::
 	-del qtemporaryfile.obj
 	-del qabstractfileengine.obj
 	-del qfsfileengine_win.obj
+	-del qsystemlibrary.obj
 	-del qfsfileengine_iterator_win.obj
 	-del qfileinfo.obj
 	-del qglobal.obj
@@ -312,6 +314,9 @@ qtemporaryfile.obj: $(SOURCE_PATH)\src\corelib\io\qtemporaryfile.cpp
 
 qfsfileengine_win.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfsfileengine_win.cpp
+
+qsystemlibrary.obj: $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
 
 qfsfileengine_iterator_win.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_iterator_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qfsfileengine_iterator_win.cpp

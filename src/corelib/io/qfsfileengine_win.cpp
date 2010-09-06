@@ -43,6 +43,7 @@
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
+#include <private/qsystemlibrary_p.h>
 #include <qdebug.h>
 
 #include "qfile.h"
@@ -181,7 +182,7 @@ void QFSFileEnginePrivate::resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = LoadLibraryW(L"advapi32");
+        HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
@@ -213,7 +214,7 @@ void QFSFileEnginePrivate::resolveLibs()
                 ptrFreeSid(pWorld);
             }
         }
-        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+        HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
 #endif
@@ -245,7 +246,7 @@ bool QFSFileEnginePrivate::resolveUNCLibs()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = LoadLibraryW(L"Netapi32");
+        HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
         if (hLib) {
             ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
             if (ptrNetShareEnum)
