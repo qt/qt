@@ -806,8 +806,6 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newQObject(
         QObject *object, QScriptEngine::ValueOwnership own,
         const QScriptEngine::QObjectWrapOptions &opt)
 {
-    v8::Context::Scope contextScope(m_context);
-    v8::HandleScope handleScope;
     return newQtObject(this, object, own, opt);
 }
 
@@ -1137,7 +1135,12 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
+    // FIXME move this code to private.
     Q_D(QScriptEngine);
+    if (!object) {
+        Q_UNIMPLEMENTED();
+        return QScriptValue();
+    }
     return d->scriptValueFromInternal(d->newQObject(object, ownership, options));
 }
 

@@ -111,7 +111,7 @@ public:
 
     inline operator v8::Persistent<v8::Value>() const;
 
-    QScriptEnginePrivate *m_engine;
+    QSharedDataPointer<QScriptEnginePrivate> m_engine;
 
     // Please, update class documentation when you change the enum.
     enum State {
@@ -393,7 +393,7 @@ QString QScriptValuePrivate::toString() const
         return QString::fromLatin1("undefined");
     case JSValue:
         Q_ASSERT(!m_value.IsEmpty());
-        v8::Context::Scope contextScope(*m_engine);
+        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         return QScriptConverter::toString(m_value->ToString());
     }
@@ -590,6 +590,7 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
             return m_value->StrictEquals(other->m_value);
         }
     }
+
     if (!isValid() && !other->isValid())
         return true;
 
@@ -600,7 +601,7 @@ inline bool QScriptValuePrivate::instanceOf(QScriptValuePrivate* other) const
 {
     if (!isObject() || !other->isFunction())
         return false;
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     return instanceOf(v8::Handle<v8::Object>::Cast(other->m_value));
 }
@@ -627,7 +628,7 @@ inline bool QScriptValuePrivate::instanceOf(v8::Handle<v8::Object> other) const
 inline QScriptValuePrivate* QScriptValuePrivate::prototype() const
 {
     if (isJSBased() && m_value->IsObject()) {
-        v8::Context::Scope contextScope(*m_engine);
+        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         return new QScriptValuePrivate(engine(), v8::Handle<v8::Object>::Cast(m_value)->GetPrototype());
     }
@@ -644,7 +645,7 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
             }
             prototype->assignEngine(engine());
         }
-        v8::Context::Scope contextScope(*m_engine);
+        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         if (!v8::Handle<v8::Object>::Cast(m_value)->SetPrototype(prototype->m_value))
             qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
@@ -662,7 +663,7 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
 
     if (!value->isValid()) {
         // Remove the property.
-        v8::Context::Scope contextScope(*m_engine);
+        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         v8::Handle<v8::Object>::Cast(m_value)->Delete(QScriptConverter::toString(name));
         return;
@@ -673,7 +674,7 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
         return;
     }
 
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object>::Cast(m_value)->Set(QScriptConverter::toString(name), value->m_value);
 }
@@ -684,7 +685,7 @@ QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QS
     if (!isObject())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Handle<v8::Object>::Cast(m_value));
     v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
@@ -702,7 +703,7 @@ inline bool QScriptValuePrivate::deleteProperty(const QString& name)
     if (!isObject())
         return false;
 
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Handle<v8::Object>::Cast(m_value));
     return self->Delete(QScriptConverter::toString(name));
@@ -731,7 +732,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
         return new QScriptValuePrivate();
     }
 
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     // Make the call
     // FIXME recv?
@@ -753,7 +754,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueLis
         return new QScriptValuePrivate();
     }
 
-    v8::Context::Scope contextScope(*m_engine);
+    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> result;
     result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv.data());
@@ -767,6 +768,8 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     switch (m_state) {
+    case Invalid:
+        return false;
     case CBool:
         m_value = engine->makeJSValue(u.m_bool);
         break;
@@ -789,7 +792,7 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
         else if (!isJSBased())
             Q_ASSERT_X(!isJSBased(), "assignEngine()", "Not all states are included in the previous switch statement.");
         else
-        qWarning("JSValue can't be rassigned to an another engine.");
+            qWarning("JSValue can't be rassigned to an another engine.");
         return false;
     }
     m_engine = engine;
@@ -801,7 +804,7 @@ QScriptEnginePrivate* QScriptValuePrivate::engine() const
 {
     // As long as m_engine is an autoinitializated pointer we can safely return it without
     // checking current state.
-    return m_engine;
+    return const_cast<QScriptEnginePrivate*>(m_engine.constData());
 }
 
 inline QScriptValuePrivate::operator v8::Persistent<v8::Value>() const

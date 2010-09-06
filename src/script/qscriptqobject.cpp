@@ -1054,9 +1054,12 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
                                    QScriptEngine::ValueOwnership own,
                                    const QScriptEngine::QObjectWrapOptions &opt)
 {
+    v8::Context::Scope contextScope(*engine);
+    v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> templ = engine->qtClassTemplate(object->metaObject());
-
+    Q_ASSERT(!templ.IsEmpty());
     v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
+    Q_ASSERT(!instanceTempl.IsEmpty());
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
     QtInstanceData *data = new QtInstanceData(engine, object, own, opt);
