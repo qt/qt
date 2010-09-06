@@ -247,13 +247,13 @@ void QDeclarativeBasePositioner::prePositioning()
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
             item->isNew = true;
-            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden)
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height())
                 item->isVisible = false;
         } else {
             item = &oldItems[wIdx];
             // Items are only omitted from positioning if they are explicitly hidden
             // i.e. their positioning is not affected if an ancestor is hidden.
-            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden) {
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height()) {
                 item->isVisible = false;
             } else if (!item->isVisible) {
                 item->isVisible = true;
@@ -319,12 +319,6 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
     d->moveTransitionManager.transition(d->moveActions, d->moveTransition);
     d->addActions.clear();
     d->moveActions.clear();
-}
-
-static inline bool isInvisible(QGraphicsObject *child)
-{
-    QGraphicsItemPrivate *childPrivate = static_cast<QGraphicsItemPrivate*>(QGraphicsItemPrivate::get(child));
-    return child->opacity() == 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height();
 }
 
 /*!
@@ -448,7 +442,7 @@ void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
         if(child.item->y() != voffset)
@@ -590,7 +584,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
         if(child.item->x() != hoffset)
@@ -807,9 +801,17 @@ void QDeclarativeGrid::setFlow(Flow flow)
 
 void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
+
     int c = m_columns;
     int r = m_rows;
-    int numVisible = positionedItems.count();
+    //Is allocating the extra QPODVector too much overhead?
+    QPODVector<PositionedItem, 8> visibleItems;//we aren't concerned with invisible items
+    visibleItems.reserve(positionedItems.count());
+    for(int i=0; i<positionedItems.count(); i++)
+        if(positionedItems[i].item && positionedItems[i].isVisible)
+            visibleItems.append(positionedItems[i]);
+
+    int numVisible = visibleItems.count();
     if (m_columns <= 0 && m_rows <= 0){
         c = 4;
         r = (numVisible+3)/4;
@@ -830,11 +832,10 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                 if (i==0)
                     maxColWidth << 0;
 
-                if (childIndex == positionedItems.count())
-                    continue;
-                const PositionedItem &child = positionedItems.at(childIndex++);
-                if (!child.item || isInvisible(child.item))
-                    continue;
+                if (childIndex == visibleItems.count())
+                    break;
+
+                const PositionedItem &child = visibleItems.at(childIndex++);
                 QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
                 if (childPrivate->width() > maxColWidth[j])
                     maxColWidth[j] = childPrivate->width();
@@ -851,10 +852,9 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                     maxColWidth << 0;
 
                 if (childIndex == positionedItems.count())
-                    continue;
-                const PositionedItem &child = positionedItems.at(childIndex++);
-                if (!child.item || isInvisible(child.item))
-                    continue;
+                    break;
+
+                const PositionedItem &child = visibleItems.at(childIndex++);
                 QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
                 if (childPrivate->width() > maxColWidth[j])
                     maxColWidth[j] = childPrivate->width();
@@ -868,10 +868,8 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     int yoffset=0;
     int curRow =0;
     int curCol =0;
-    for (int i = 0; i < positionedItems.count(); ++i) {
-        const PositionedItem &child = positionedItems.at(i);
-        if (!child.item || isInvisible(child.item))
-            continue;
+    for (int i = 0; i < visibleItems.count(); ++i) {
+        const PositionedItem &child = visibleItems.at(i);
         if((child.item->x()!=xoffset)||(child.item->y()!=yoffset)){
             positionX(xoffset, child);
             positionY(yoffset, child);
@@ -1086,7 +1084,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 
     for (int i = 0; i < positionedItems.count(); ++i) {
         const PositionedItem &child = positionedItems.at(i);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
         QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
