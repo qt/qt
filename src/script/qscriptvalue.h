@@ -209,8 +209,6 @@ private:
     QExplicitlySharedDataPointer<QScriptValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
-
-    friend class QScriptEnginePrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QScriptValue::ResolveFlags)
