@@ -117,12 +117,38 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
     return QDir::cleanPath(tmpPath);
 }
 
+static inline bool _q_checkEntry(QFileSystemEntry &entry, QFileSystemMetaData &data, bool resolvingEntry)
+{
+    if (resolvingEntry) {
+        if (!QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute)
+                || !data.exists()) {
+            data.clear();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static inline bool _q_checkEntry(QAbstractFileEngine *&engine, bool resolvingEntry)
+{
+    if (resolvingEntry) {
+        if (!engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag) {
+            delete engine;
+            engine = 0;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &entry, QFileSystemMetaData &data,
-        QAbstractFileEngine *&engine)
+        QAbstractFileEngine *&engine, bool resolvingEntry = false)
 {
     QString const &filePath = entry.filePath();
     if ((engine = qt_custom_file_engine_handler_create(filePath)))
-        return true;
+        return _q_checkEntry(engine, resolvingEntry);
 
 #if defined(QT_BUILD_CORE_LIB)
     for (int prefixSeparator = 0; prefixSeparator < filePath.size(); ++prefixSeparator) {
@@ -133,7 +159,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
         if (ch == QLatin1Char(':')) {
             if (prefixSeparator == 0) {
                 engine = new QResourceFileEngine(filePath);
-                return true;
+                return _q_checkEntry(engine, resolvingEntry);
             }
 
             if (prefixSeparator == 1)
@@ -143,18 +169,8 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
             for (int i = 0; i < paths.count(); i++) {
                 entry = QFileSystemEntry(paths.at(i) % QLatin1Char('/') % filePath.mid(prefixSeparator + 1));
                 // Recurse!
-                if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine)) {
-                    // FIXME: This will over-stat if we recurse
-                    if (engine) {
-                        if (engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)
-                            return true;
-                        delete engine;
-                        engine = 0;
-                    } else if (QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute)
-                            && data.exists()) {
-                        return true;
-                    }
-                }
+                if (_q_resolveEntryAndCreateLegacyEngine_recursive(entry, data, engine, true))
+                    return true;
             }
 
             // entry may have been clobbered at this point.
@@ -170,7 +186,7 @@ static bool _q_resolveEntryAndCreateLegacyEngine_recursive(QFileSystemEntry &ent
     }
 #endif // defined(QT_BUILD_CORE_LIB)
 
-    return true;
+    return _q_checkEntry(entry, data, resolvingEntry);
 }
 
 /*!
