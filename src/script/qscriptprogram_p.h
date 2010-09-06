@@ -91,6 +91,8 @@ QScriptProgramPrivate::QScriptProgramPrivate(const QString& sourceCode,
 
 QScriptProgramPrivate::~QScriptProgramPrivate()
 {
+    if (!m_compiled.IsEmpty())
+        m_compiled.Dispose();
 }
 
 bool QScriptProgramPrivate::isNull() const
