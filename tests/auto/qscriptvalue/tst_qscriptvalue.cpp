@@ -2355,7 +2355,7 @@ void tst_QScriptValue::call()
 
     // test that call() doesn't construct new objects
     QScriptValue Number = eng.evaluate("Number");
-    QCOMPARE(Object.isFunction(), true);
+    QCOMPARE(Number.isFunction(), true);
     {
         QScriptValueList args;
         args << QScriptValue(&eng, 123);
