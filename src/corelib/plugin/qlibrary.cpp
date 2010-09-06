@@ -64,8 +64,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define QT_DEBUG_COMPONENT
-
 #ifdef QT_NO_DEBUG
 #  define QLIBRARY_AS_DEBUG false
 #else
@@ -385,8 +383,12 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
         } else {
             pos = qt_find_pattern(filedata, fdlen, pattern, plen);
         }
-    } else if (r != QElfParser::Ok)
+    } else if (r != QElfParser::Ok) {
+        if (lib && qt_debug_component()) {
+            qWarning(qPrintable(lib->errorString));
+        }
         return false;
+    }
 #else
     pos = qt_find_pattern(filedata, fdlen, pattern, plen);
 #endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
@@ -1275,15 +1277,11 @@ QLibrary::LoadHints QLibrary::loadHints() const
 /* Internal, for debugging */
 bool qt_debug_component()
 {
-#if defined(QT_DEBUG_COMPONENT)
-    return true;    //compatibility?
-#else
     static int debug_env = -1;
     if (debug_env == -1)
        debug_env = QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_PLUGINS").toInt();
 
     return debug_env != 0;
-#endif
 }
 
 QT_END_NAMESPACE
