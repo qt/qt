@@ -79,7 +79,7 @@ BookmarkFilterModel::setSourceModel(QAbstractItemModel *_sourceModel)
     connect(sourceModel, SIGNAL(modelReset()), this, SLOT(modelReset()));
 
     if (sourceModel)
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
 
     endResetModel();
 }
@@ -172,7 +172,7 @@ BookmarkFilterModel::filterBookmarks()
     if (sourceModel) {
         beginResetModel();
         hideBookmarks = true;
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
         endResetModel();
     }
 }
@@ -183,7 +183,7 @@ BookmarkFilterModel::filterBookmarkFolders()
     if (sourceModel) {
         beginResetModel();
         hideBookmarks = false;
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
         endResetModel();
     }
 }
@@ -271,7 +271,7 @@ void
 BookmarkFilterModel::modelReset()
 {
     if (sourceModel)
-        setupCache(sourceModel->index(0, 0, QModelIndex()));
+        setupCache(sourceModel->index(0, 0, QModelIndex()).parent());
     endResetModel();
 }
 
@@ -279,7 +279,8 @@ void
 BookmarkFilterModel::setupCache(const QModelIndex &parent)
 {
     cache.clear();
-    collectItems(parent);
+    for (int i = 0; i < sourceModel->rowCount(parent); ++i)
+        collectItems(sourceModel->index(i, 0, parent));
 }
 
 void
