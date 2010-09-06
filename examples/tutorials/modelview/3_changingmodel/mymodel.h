@@ -42,7 +42,11 @@
 #define MYMODEL_H
 
 #include <QAbstractTableModel>
-#include <QTimer>
+
+QT_BEGIN_NAMESPACE // QT_BEGIN_NAMESPACE / QT_END_NAMESPACE are not needed in Qt user code
+class QTimer;  // forward declaration
+QT_END_NAMESPACE
+
 
 class MyModel : public QAbstractTableModel
 {
