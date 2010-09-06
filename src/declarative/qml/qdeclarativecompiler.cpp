@@ -2416,13 +2416,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         propBuilder.setWritable(!readonly);
     }
 
-    if (mode == ResolveAliases) {
-        for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
-            const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+    for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
+        const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
 
-            if (p.type == Object::DynamicProperty::Alias) {
+        if (p.type == Object::DynamicProperty::Alias) {
+            if (mode == ResolveAliases) {
                 ((QDeclarativeVMEMetaData *)dynamicData.data())->aliasCount++;
                 compileAlias(builder, dynamicData, obj, p);
+            } else {
+                // Need a fake signal so that the metaobject remains consistent across
+                // the resolve and non-resolve alias runs
+                builder.addSignal(p.name + "Changed()");
             }
         }
     }

@@ -11,19 +11,21 @@ else:!equals(DEPLOYMENT, default_deployment) {
 }
 
 equals(GENERATE_RUN_TARGETS, true) {
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+    sis_file = $${baseTarget}.sis
     symbian-abld|symbian-sbsv2 {
         sis_destdir =
-        sis_file = $$basename(TARGET).sis
     } else {
         sis_destdir = $$DESTDIR
-        sis_file = $${TARGET}.sis
+        isEmpty(sis_destdir):sis_destdir = .
+        !equals(TARGET, "$$baseTarget"):sis_destdir = $$sis_destdir/$$dirname(TARGET)
         !isEmpty(sis_destdir):!contains(sis_destdir, "[/\\\\]$"):sis_destdir = $${sis_destdir}/
         contains(QMAKE_HOST.os, "Windows"):sis_destdir = $$replace(sis_destdir, "/", "\\")
     }
 
     contains(SYMBIAN_PLATFORMS, "WINSCW"):contains(TEMPLATE, "app") {
         run_target.target = run
-        run_target.commands = call "$${EPOCROOT}epoc32/release/winscw/udeb/$$basename(TARGET).exe" $(QT_RUN_OPTIONS)
+        run_target.commands = call "$${EPOCROOT}epoc32/release/winscw/udeb/$${baseTarget}.exe" $(QT_RUN_OPTIONS)
 
         QMAKE_EXTRA_TARGETS += run_target
     }
@@ -31,7 +33,7 @@ equals(GENERATE_RUN_TARGETS, true) {
     runonphone_target.target = runonphone
     runonphone_target.depends = sis
     runonphone_target.commands = runonphone $(QT_RUN_ON_PHONE_OPTIONS) --sis "$${sis_destdir}$${sis_file}"
-    contains(TEMPLATE, "app"):runonphone_target.commands += "$$basename(TARGET).exe" $(QT_RUN_OPTIONS)
+    contains(TEMPLATE, "app"):runonphone_target.commands += "$${baseTarget}.exe" $(QT_RUN_OPTIONS)
 
     QMAKE_EXTRA_TARGETS += runonphone_target
 }

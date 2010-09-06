@@ -47,6 +47,7 @@
 #include <qgraphicsview.h>
 #include <qgraphicsscene.h>
 #include <qgraphicswidget.h>
+#include <qsymbianevent.h>
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
@@ -283,6 +284,18 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
         return true;
     }
+
+    return false;
+}
+
+bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event)
+{
+    Q_UNUSED(keyWidget);
+    if (event->type() == QSymbianEvent::CommandEvent)
+        // A command basically means the same as a button being pushed. With Qt buttons
+        // that would normally result in a reset of the input method due to the focus change.
+        // This should also happen for commands.
+        reset();
 
     return false;
 }
@@ -651,7 +664,7 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
     QInputMethodEvent event(newPreeditString, attributes);
     if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
         // In Symbian world this means "erase last character".
-        event.setCommitString("", -1, 1);
+        event.setCommitString(QLatin1String(""), -1, 1);
     }
     m_preeditString = newPreeditString;
     sendEvent(event);
@@ -823,8 +836,6 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 
 void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
-    int longPress = 0;
-
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(m_preeditString, 0, 0);
