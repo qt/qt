@@ -2192,7 +2192,7 @@ void tst_QScriptValue::getSetPrototype()
         QCOMPARE(eng.hasUncaughtException(), true);
         QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
+        QCOMPARE(ret.toString().toLower(), QString::fromAscii("Error: cyclic __proto__ value").toLower());
     }
     {
         QScriptValue ret = eng.evaluate("p.__proto__ = { }");
