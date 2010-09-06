@@ -54,8 +54,20 @@
 #if defined(Q_OS_LINUX) && defined(__arm__)
 #include "private/qcore_unix_p.h"
 
-#include <asm/hwcap.h>
-#include <linux/auxvec.h>
+// the kernel header definitions for HWCAP_*
+// (the ones we need/may need anyway)
+
+// copied from <asm/hwcap.h> (ARM)
+#define HWCAP_IWMMXT    512
+#define HWCAP_CRUNCH    1024
+#define HWCAP_THUMBEE   2048
+#define HWCAP_NEON      4096
+#define HWCAP_VFPv3     8192
+#define HWCAP_VFPv3D16  16384
+
+// copied from <linux/auxvec.h>
+#define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
+
 #endif
 
 QT_BEGIN_NAMESPACE
