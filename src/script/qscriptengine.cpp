@@ -726,8 +726,9 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 
 
 
-QScriptEnginePrivate::QScriptEnginePrivate()
-    : m_context(v8::Persistent<v8::Context>::New(v8::Context::New()))
+QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine)
+    : q_ptr(engine)
+    , m_context(v8::Persistent<v8::Context>::New(v8::Context::New()))
     , m_globalObject(m_context)
 {
 
@@ -832,7 +833,7 @@ QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value>
     \l{ECMA-262}, Section 15.1.
 */
 QScriptEngine::QScriptEngine()
-    : QObject(*new QScriptEnginePrivate, 0)
+    : d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this)))
 {
 }
 
@@ -844,14 +845,8 @@ QScriptEngine::QScriptEngine()
 */
 
 QScriptEngine::QScriptEngine(QObject *parent)
-    : QObject(*new QScriptEnginePrivate, parent)
-{
-}
-
-/*! \internal
-*/
-QScriptEngine::QScriptEngine(QScriptEnginePrivate &dd, QObject *parent)
-    : QObject(dd, parent)
+    : QObject(parent)
+    , d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this)))
 {
 }
 

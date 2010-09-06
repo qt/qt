@@ -43,14 +43,14 @@ class QDateTime;
 class QScriptEngine;
 
 class QScriptEnginePrivate
-    : public QObjectPrivate
+    : public QSharedData
 {
     Q_DECLARE_PUBLIC(QScriptEngine)
 public:
     static QScriptEnginePrivate* get(QScriptEngine* q) { Q_ASSERT(q); return q->d_func(); }
     static QScriptEngine* get(QScriptEnginePrivate* d) { Q_ASSERT(d); return d->q_func(); }
 
-    QScriptEnginePrivate();
+    QScriptEnginePrivate(QScriptEngine*);
     ~QScriptEnginePrivate();
 
     inline QScriptValuePrivate* evaluate(const QString& program, const QString& fileName, int lineNumber);
@@ -121,6 +121,8 @@ public:
 
     inline operator v8::Persistent<v8::Context>();
 private:
+    // FIXME check if we can reuse QObjectProvate::q_ptr
+    QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_context;
     QScriptOriginalGlobalObject m_globalObject;
 
