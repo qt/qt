@@ -371,8 +371,7 @@ bool QScriptValue::isFunction() const
 */
 bool QScriptValue::isVariant() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->isVariant();
 }
 
 /*!
@@ -923,26 +922,22 @@ QRegExp QScriptValue::toRegExp() const
 
 bool QScriptValue::isDate() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->isDate();
 }
 
 bool QScriptValue::isRegExp() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->isRegExp();
 }
 
 bool QScriptValue::isQObject() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->isQObject();
 }
 
 bool QScriptValue::isQMetaObject() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->isQMetaObject();
 }
 
 QScriptValue QScriptValue::scope() const
