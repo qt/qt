@@ -134,7 +134,7 @@ public:
 
     v8::Handle<v8::String> qtDataId();
 
-public:
+private:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_context;
     v8::Persistent<v8::Value> m_exception;

@@ -651,9 +651,8 @@ QVariant QScriptEnginePrivate::variantFromJS(v8::Handle<v8::Value> value)
     if (value->IsDate())
         return qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(value));
 #ifndef QT_NO_REGEXP
-// v8 doesn't have RegExp API.
-//    if (value->IsRegExp())
-    //        return qtRegExpFromJS(v8::Handle<v8::RegExp>::Cast(value));
+    if (value->IsRegExp())
+        return qtRegExpFromJS(v8::Handle<v8::Object>::Cast(value));
 #endif
     if (isQtVariant(value))
         return variantValue(value);
@@ -1315,9 +1314,10 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 */
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(*d);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(d->newVariant(value));
 }
 
 /*!

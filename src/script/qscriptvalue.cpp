@@ -371,7 +371,10 @@ bool QScriptValue::isFunction() const
 */
 bool QScriptValue::isVariant() const
 {
-    return d_ptr->isVariant();
+    if (!d_ptr->isJSBased())
+        return false;
+    Q_ASSERT(d_ptr->m_engine);
+    return d_ptr->m_engine->isQtVariant(d_ptr->m_value);
 }
 
 /*!
@@ -537,8 +540,7 @@ QScriptValue QScriptValue::toObject() const
 */
 QVariant QScriptValue::toVariant() const
 {
-    Q_UNIMPLEMENTED();
-    return QVariant();
+    return d_ptr->toVariant();
 }
 
 

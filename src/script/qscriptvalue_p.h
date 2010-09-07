@@ -79,6 +79,7 @@ public:
     inline quint32 toUInt32() const;
     inline quint16 toUInt16() const;
     inline QObject *toQObject() const;
+    inline QVariant toVariant() const;
 
     inline bool isArray() const;
     inline bool isBool() const;
@@ -89,7 +90,6 @@ public:
     inline bool isObject() const;
     inline bool isString() const;
     inline bool isUndefined() const;
-    inline bool isVariant() const;
     inline bool isValid() const;
     inline bool isDate() const;
     inline bool isRegExp() const;
@@ -416,6 +416,34 @@ QString QScriptValuePrivate::toString() const
     return QString(); // Avoid compiler warning.
 }
 
+QVariant QScriptValuePrivate::toVariant() const
+{
+    switch (m_state) {
+        case Invalid:
+            return QVariant();
+        case CBool:
+            return QVariant(u.m_bool);
+        case CString:
+            return QVariant(*u.m_string);
+        case CNumber:
+            return QVariant(u.m_number);
+        case CNull:
+            return QVariant();
+        case CUndefined:
+            return QVariant();
+        case JSValue:
+            break;
+    }
+
+    Q_ASSERT(m_state == JSValue);
+    Q_ASSERT(!m_value.IsEmpty());
+    Q_ASSERT(m_engine);
+
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
+    return m_engine->variantFromJS(m_value);
+}
+
 QObject* QScriptValuePrivate::toQObject() const
 {
     if (!isObject())
@@ -508,16 +536,6 @@ inline bool QScriptValuePrivate::isUndefined() const
 inline bool QScriptValuePrivate::isValid() const
 {
     return m_state != Invalid;
-}
-
-inline bool QScriptValuePrivate::isVariant() const
-{
-    bool result = isJSBased();
-    if (result) {
-        Q_UNIMPLEMENTED();
-        return false;
-    }
-    return false;
 }
 
 bool QScriptValuePrivate::isDate() const
