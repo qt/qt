@@ -1,4 +1,3 @@
-
 #include "baselineprotocol.h"
 #include <QLibraryInfo>
 #include <QImage>
@@ -40,16 +39,13 @@ ImageItem &ImageItem::operator=(const ImageItem &other)
 
 // Defined in lookup3.c:
 void hashword2 (
-const quint32 *k,                   /* the key, an array of quint32 values */
-size_t          length,               /* the length of the key, in quint32s */
-quint32       *pc,                      /* IN: seed OUT: primary hash value */
-quint32       *pb);               /* IN: more seed OUT: secondary hash value */
+const quint32 *k,         /* the key, an array of quint32 values */
+size_t         length,    /* the length of the key, in quint32s */
+quint32       *pc,        /* IN: seed OUT: primary hash value */
+quint32       *pb);       /* IN: more seed OUT: secondary hash value */
 
 quint64 ImageItem::computeChecksum(const QImage &image)
 {
-    quint32 h1 = 0xfeedbacc;
-    quint32 h2 = 0x21604894;
-
     QImage img(image);
     const int bpl = img.bytesPerLine();
     const int padBytes = bpl - (img.width() * img.depth() / 8);
@@ -68,6 +64,8 @@ quint64 ImageItem::computeChecksum(const QImage &image)
             *p++ &= RGB_MASK;
     }
 
+    quint32 h1 = 0xfeedbacc;
+    quint32 h2 = 0x21604894;
     hashword2((const quint32 *)img.constBits(), img.byteCount()/4, &h1, &h2);
     return (quint64(h1) << 32) | h2;
 }
