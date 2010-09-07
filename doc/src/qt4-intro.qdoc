@@ -475,7 +475,8 @@
     \i Qt Creator has been improved to support interactive editing of
     QML UIs through drag-and-drop. The text editor supports the QML
     syntax and provides authoring assistance such as auto-completion,
-    error lookup, help lookup and easy preview of QML UI's.
+    error lookup, help lookup and easy preview of QML UI's. The Qt
+	Quick features in Qt Creator will be released with Qt Creator 2.1
     \endlist
 
     \section1 Network Bearer Management
