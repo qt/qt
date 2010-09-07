@@ -1764,9 +1764,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     Q_ASSERT(prop->index != -1);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
-        QDeclarativeEnginePrivate *ep =
-            static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
-        if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
+        if (prop->type >= 0 /* QVariant == -1 */ && enginePrivate->valueTypes[prop->type]) {
 
             if (prop->values.count()) {
                 if (prop->values.at(0)->location < prop->value->location) {
@@ -1780,7 +1778,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
                 COMPILE_EXCEPTION(prop, tr( "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
             }
 
-            COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
+            COMPILE_CHECK(buildValueTypeProperty(enginePrivate->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
@@ -2211,7 +2209,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         if (propName.at(0).isUpper())
             COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
 
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(propName))
+        if (enginePrivate->globalClass->illegalNames().contains(propName))
             COMPILE_EXCEPTION(&prop, tr("Illegal property name"));
 
         propNames.insert(prop.name);
@@ -2224,7 +2222,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal signal name"));
         methodNames.insert(name);
     }
@@ -2235,7 +2233,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal method name"));
         methodNames.insert(name);
     }

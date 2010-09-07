@@ -106,13 +106,13 @@ private:
 
     struct ObjectGesture
     {
-        QWeakPointer<QObject> object;
+        QObject* object;
         Qt::GestureType gesture;
 
         ObjectGesture(QObject *o, const Qt::GestureType &g) : object(o), gesture(g) { }
         inline bool operator<(const ObjectGesture &rhs) const
         {
-            if (object.data() < rhs.object.data())
+            if (object < rhs.object)
                 return true;
             if (object == rhs.object)
                 return gesture < rhs.gesture;
