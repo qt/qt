@@ -44,6 +44,8 @@
 
 #include <QWidget>
 
+#include "qdirectfbwindowsurface.h"
+
 #include <directfb.h>
 
 QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
@@ -95,10 +97,16 @@ QDirectFbWindow::~QDirectFbWindow()
 
 void QDirectFbWindow::setGeometry(const QRect &rect)
 {
+    bool isMoveOnly = (rect.topLeft() != geometry().topLeft()) && (rect.size() == geometry().size());
     QPlatformWindow::setGeometry(rect);
     m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
                            rect.width(), rect.height());
 
+    //Hack. When moving since the WindowSurface of a window becomes invalid when moved
+    if (isMoveOnly) { //if resize then windowsurface is updated.
+        widget()->windowSurface()->resize(rect.size());
+        widget()->update();
+    }
 }
 
 void QDirectFbWindow::setOpacity(qreal level)
