@@ -831,7 +831,6 @@ void* QS60PixmapData::toNativeType(NativeType type)
         bool convertToArgb32 = false;
         bool needsCopy = false;
 
-        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
         if (!(S60->supportsPremultipliedAlpha)) {
             // Convert argb32_premultiplied to argb32 since Symbian 9.2 does
             // not support premultipied format.
