@@ -42,10 +42,8 @@
 #define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
-
-class QTreeView; //forward declaration
-class QStandardItemModel;
-class QStandardItem;
+#include <QtGui/QTreeView>
+#include <QtGui/QStandardItemModel>
 
 
 class MainWindow : public QMainWindow

@@ -104,6 +104,24 @@ Flipable {
             id: flickable; anchors.fill: parent; clip: true
             contentWidth: imageContainer.width; contentHeight: imageContainer.height
 
+            function updateMinimumScale() {
+                if (bigImage.status == Image.Ready && bigImage.width != 0) {
+                    slider.minimum = Math.min(flickable.width / bigImage.width, flickable.height / bigImage.height);
+                    if (bigImage.width * slider.value > flickable.width) {
+                        var xoff = (flickable.width/2 + flickable.contentX) * slider.value / prevScale;
+                        flickable.contentX = xoff - flickable.width/2;
+                    }
+                    if (bigImage.height * slider.value > flickable.height) {
+                        var yoff = (flickable.height/2 + flickable.contentY) * slider.value / prevScale;
+                        flickable.contentY = yoff - flickable.height/2;
+                    }
+                    prevScale = slider.value;
+                }
+            }
+
+            onWidthChanged: updateMinimumScale()
+            onHeightChanged: updateMinimumScale()
+
             Item {
                 id: imageContainer
                 width: Math.max(bigImage.width * bigImage.scale, flickable.width);
@@ -114,8 +132,8 @@ Flipable {
                     anchors.centerIn: parent; smooth: !flickable.movingVertically
                     onStatusChanged : {
                         // Default scale shows the entire image.
-                        if (status == Image.Ready && width != 0) {
-                            slider.minimum = Math.min(flickable.width / width, flickable.height / height);
+                        if (bigImage.status == Image.Ready && bigImage.width != 0) {
+                            slider.minimum = Math.min(flickable.width / bigImage.width, flickable.height / bigImage.height);
                             prevScale = Math.min(slider.minimum, 1);
                             slider.value = prevScale;
                         }

@@ -697,9 +697,17 @@ void QGLContext::updatePaintDevice()
         QWidget *w = (QWidget *)d->paintDevice;
         NSView *view = qt_mac_nativeview_for(w);
 
-        // ideally we would use QWidget::isVisible(), but we get "invalid drawable" errors
-        if (![(NSWindow *)qt_mac_window_for(w) isVisible])
-            return;
+        // Trying to attach the GL context to the NSView will fail with
+        // "invalid drawable" if done too soon, but we have to make sure
+        // the connection is made before the first paint event. Using
+        // the NSView do to this check fails as the NSView is visible
+        // before it's safe to connect, and using the NSWindow fails as
+        // the NSWindow will become visible after the first paint event.
+        // This leaves us with the QWidget, who's visible state seems
+        // to match the point in time when it's safe to connect.
+        if (!w || !w->isVisible())
+            return; // Not safe to attach GL context to view yet
+
         if ([static_cast<NSOpenGLContext *>(d->cx) view] != view && ![view isHidden])
             [static_cast<NSOpenGLContext *>(d->cx) setView:view];
     } else if (d->paintDevice->devType() == QInternal::Pixmap) {
