@@ -1208,8 +1208,10 @@ bool QDeclarativeViewer::event(QEvent *event)
 {
     if (event->type() == QEvent::WindowActivate) {
         Runtime::instance()->setActiveWindow(true);
+        DeviceOrientation::instance()->resumeListening();
     } else if (event->type() == QEvent::WindowDeactivate) {
         Runtime::instance()->setActiveWindow(false);
+        DeviceOrientation::instance()->pauseListening();
     }
     return QWidget::event(event);
 }
