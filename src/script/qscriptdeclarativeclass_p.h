@@ -72,7 +72,11 @@ public:
 
         QScriptValue toScriptValue(QScriptEngine *) const;
     private:
-        char dummy[8];
+        QScriptValue value;
+#if QT_POINTER_SIZE != 8
+        //binary compatibility with Qt 4.6/4.7
+        char dummy[8 - sizeof(QScriptValue)];
+#endif
     };
 
     typedef void* Identifier;
@@ -108,10 +112,10 @@ public:
         PersistentIdentifier &operator=(const PersistentIdentifier &other);
 
     private:
-        friend class QScriptDeclarativeClass;
-        PersistentIdentifier(QScriptEnginePrivate *e) : identifier(0), engine(e), d(0) {}
+        PersistentIdentifier(const QString &s) : identifier(&str), str(s) {}
         QScriptEnginePrivate *engine;
-        void *d;
+        QString str;
+        friend class QScriptDeclarativeClass;
     };
 
     QScriptDeclarativeClass(QScriptEngine *engine);

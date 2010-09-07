@@ -45,156 +45,88 @@ collection.  If you need to store a Value, convert it to a QScriptValue and stor
 
 QScriptDeclarativeClass::Value::Value()
 {
-    Q_UNIMPLEMENTED();
 }
 
 QScriptDeclarativeClass::Value::Value(const Value &other)
-{
-    Q_UNUSED(other);
-    Q_UNIMPLEMENTED();
-}
+    : value(other.value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, int value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, int value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, uint value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, uint value)
+    :value(value) { }
 
 QScriptDeclarativeClass::Value::Value(QScriptContext *, bool value)
-{
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, double value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, double value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, float value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, float value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QString &value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, const QString &value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QScriptValue &value)
-{
-    Q_UNUSED(ctxt);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptContext *, const QScriptValue &value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, int value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, int value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, uint value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, uint value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, bool value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, bool value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, double value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, double value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, float value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, float value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QString &value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, const QString &value)
+    :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QScriptValue &value)
-{
-    Q_UNUSED(eng);
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-}
+QScriptDeclarativeClass::Value::Value(QScriptEngine *, const QScriptValue &value)
+    :value(value) { }
 
 QScriptDeclarativeClass::Value::~Value()
 {
-    Q_UNIMPLEMENTED();
 }
 
 QScriptValue QScriptDeclarativeClass::Value::toScriptValue(QScriptEngine *engine) const
 {
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return value;
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
-    : identifier(0), engine(0)
+    : identifier(0)
 {
-    Q_UNIMPLEMENTED();
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier()
 {
-    if (engine) {
-        Q_UNIMPLEMENTED();
-    }
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(const PersistentIdentifier &other)
+    : identifier(&str), str(other.str)
 {
-    Q_UNUSED(other);
-    Q_UNIMPLEMENTED();
 }
 
 QScriptDeclarativeClass::PersistentIdentifier &
 QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentifier &other)
 {
-    Q_UNUSED(other);
-    Q_UNIMPLEMENTED();
+    str = other.str;
     return *this;
 }
 
 QScriptDeclarativeClass::QScriptDeclarativeClass(QScriptEngine *engine)
 : d_ptr(new QScriptDeclarativeClassPrivate)
 {
-    Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
+    d_ptr->q_ptr = this;
+    d_ptr->engine = engine;
 }
 
 QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine, 
@@ -202,13 +134,7 @@ QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine,
                                                 Object *object)
 {
     Q_ASSERT(engine);
-    Q_ASSERT(scriptClass);
-
-    Q_UNUSED(engine);
-    Q_UNUSED(scriptClass);
-    Q_UNUSED(object);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return engine->newQObject(new QScriptDeclarativeClassObject(scriptClass, object), QScriptEngine::ScriptOwnership);
 }
 
 QScriptDeclarativeClass::Value 
@@ -217,61 +143,48 @@ QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine,
                                         Object *object)
 {
     Q_ASSERT(engine);
-    Q_ASSERT(scriptClass);
-
-    Q_UNUSED(engine);
-    Q_UNUSED(scriptClass);
-    Q_UNUSED(object);
-    Q_UNIMPLEMENTED();
-    return Value();
+    Q_UNUSED(scriptClass)
+    return Value(engine, engine->newQObject(
+        new QScriptDeclarativeClassObject(scriptClass, object), QScriptEngine::ScriptOwnership));
 }
 
 QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
 {
-    Q_UNUSED(v);
-    Q_UNIMPLEMENTED();
+    QScriptDeclarativeClassObject *o = qobject_cast<QScriptDeclarativeClassObject *>(v.toQObject());
+    if (o)
+        return o->scriptClass;
     return 0;
 }
 
 QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
     Q_UNUSED(v);
-    Q_UNIMPLEMENTED();
+    QScriptDeclarativeClassObject *o = qobject_cast<QScriptDeclarativeClassObject *>(v.toQObject());
+    if (o)
+        return o->obj.data();
     return 0;
 }
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
 {
-    Q_UNUSED(v);
-    Q_UNUSED(name);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return v.property(*reinterpret_cast<QString *>(name));
 }
 
 QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Identifier &name)
 {
-    Q_UNUSED(v);
-    Q_UNUSED(name);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    return v.property(*reinterpret_cast<QString *>(name));
 }
 
 QScriptDeclarativeClass::Value
 QScriptDeclarativeClass::functionValue(const QScriptValue &v, const Identifier &name)
 {
-    Q_UNUSED(v);
-    Q_UNUSED(name);
-    Q_UNIMPLEMENTED();
-    return Value();
+    return Value(static_cast<QScriptEngine *>(0) , v.property(*reinterpret_cast<QString *>(name)));
 }
 
 QScriptDeclarativeClass::Value
 QScriptDeclarativeClass::propertyValue(const QScriptValue &v, const Identifier &name)
 {
-    Q_UNUSED(v);
-    Q_UNUSED(name);
-    Q_UNIMPLEMENTED();
-    return Value();
+    return Value(static_cast<QScriptEngine *>(0), v.property(*reinterpret_cast<QString *>(name)));
 }
 
 /*
@@ -331,32 +244,26 @@ void QScriptDeclarativeClass::setSupportsCall(bool c)
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
-    Q_UNUSED(str);
-    Q_UNIMPLEMENTED();
-    return PersistentIdentifier();
+    return PersistentIdentifier(str);
 }
 
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const Identifier &id)
 {
-    Q_UNUSED(id);
-    Q_UNIMPLEMENTED();
-    return PersistentIdentifier();
+    return PersistentIdentifier(toString(id));
 }
 
 QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 {
     Q_UNUSED(identifier);
-    Q_UNIMPLEMENTED();
-    return QString();
+    return *reinterpret_cast<QString *>(identifier);
 }
 
 quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)
 {
-    Q_UNUSED(identifier);
-    Q_UNUSED(ok);
-    Q_UNIMPLEMENTED();
-    return 0;
+    quint32 idx = QScriptConverter::toArrayIndex(toString(identifier));
+    if (ok)
+        *ok = idx != 0xffffffff;
 }
 
 QScriptClass::QueryFlags 
@@ -442,12 +349,11 @@ QScriptValue QScriptDeclarativeClass::newStaticScopeObject(
     const QScriptValue *values, const QScriptValue::PropertyFlags *flags)
 {
     Q_UNUSED(engine);
-    Q_UNUSED(propertyCount);
-    Q_UNUSED(names);
-    Q_UNUSED(values);
-    Q_UNUSED(flags);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    QScriptValue result;
+    for (int i = 0; i < propertyCount; ++i) {
+        result.setProperty(names[i], values[i], flags[i]);
+    }
+    return result;
 }
 
 /*!
@@ -457,7 +363,6 @@ QScriptValue QScriptDeclarativeClass::newStaticScopeObject(
 QScriptValue QScriptDeclarativeClass::newStaticScopeObject(QScriptEngine *engine)
 {
     Q_UNUSED(engine);
-    Q_UNIMPLEMENTED();
     return QScriptValue();
 }
 
