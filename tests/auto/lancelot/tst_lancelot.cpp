@@ -70,6 +70,7 @@ private:
     void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
     QStringList loadScriptFile(const QString &filePath);
     void runTestSuite();
+    bool setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist);
 
     BaselineProtocol proto;
     ImageItemList baseList;
@@ -80,6 +81,8 @@ private slots:
 
     void testRasterARGB32PM_data();
     void testRasterARGB32PM();
+    void testRasterRGB32_data();
+    void testRasterRGB32();
 
     void testOpenGL_data();
     void testOpenGL();
@@ -122,24 +125,9 @@ void tst_Lancelot::initTestCase()
 
 void tst_Lancelot::testRasterARGB32PM_data()
 {
-    QTest::addColumn<ImageItem>("baseline");
-
-    ImageItemList itemList(baseList);
-
-    for(ImageItemList::iterator it = itemList.begin(); it != itemList.end(); it++) {
-        it->engine = ImageItem::Raster;
-        it->renderFormat = QImage::Format_ARGB32_Premultiplied;
-    }
-
-    if (!proto.requestBaselineChecksums(&itemList)) {
-        QWARN(qPrintable(proto.errorMessage()));
+    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    if (!setupTestSuite(ImageItem::Raster, QImage::Format_ARGB32_Premultiplied, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
-    }
-
-    foreach(const ImageItem& item, itemList) {
-        if (item.scriptName != QLatin1String("sizes.qps")) // Example of hardcoded blacklisting for this enigine/format
-            QTest::newRow(item.scriptName.toLatin1()) << item;
-    }
 }
 
 
@@ -149,40 +137,66 @@ void tst_Lancelot::testRasterARGB32PM()
 }
 
 
+void tst_Lancelot::testRasterRGB32_data()
+{
+    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB32, localBlacklist))
+        QSKIP("Communication with baseline image server failed.", SkipAll);
+}
+
+
+void tst_Lancelot::testRasterRGB32()
+{
+    runTestSuite();
+}
+
+
 void tst_Lancelot::testOpenGL_data()
 {
-    QTest::addColumn<ImageItem>("baseline");
-
-    ImageItemList itemList(baseList);
-
-    for(int i = 0; i < itemList.size(); i++) {
-        itemList[i].engine = ImageItem::OpenGL;
-        itemList[i].renderFormat = QImage::Format_RGB32;
-    }
-
-    if (!proto.requestBaselineChecksums(&itemList)) {
-        QWARN(qPrintable(proto.errorMessage()));
+    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    if (!setupTestSuite(ImageItem::OpenGL, QImage::Format_RGB32, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
-    }
-
-    qDebug() << "items:" << itemList.count();
-    foreach(const ImageItem& item, itemList) {
-        if (item.scriptName != QLatin1String("sizes.qps")) // Hardcoded blacklisting for this enigine/format
-            QTest::newRow(item.scriptName.toLatin1()) << item;
-    }
 }
 
 
 void tst_Lancelot::testOpenGL()
 {
-    QGLWidget glWidget;
+    bool ok = false;
+    QGLWidget glWidget;    
     if (glWidget.isValid() && glWidget.format().directRendering()
-            && (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0))
-    {
-        runTestSuite();
-    } else {
-        QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
+        && (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)) {
+        glWidget.makeCurrent();
+        if (!QByteArray((const char *)glGetString(GL_RENDERER)).contains("Mesa"))
+            ok = true;
     }
+    if (ok)
+        runTestSuite();
+    else
+        QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
+}
+
+
+bool tst_Lancelot::setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist)
+{
+    QTest::addColumn<ImageItem>("baseline");
+
+    ImageItemList itemList(baseList);
+
+    for(ImageItemList::iterator it = itemList.begin(); it != itemList.end(); it++) {
+        it->engine = engine;
+        it->renderFormat = format;
+    }
+
+    if (!proto.requestBaselineChecksums(&itemList)) {
+        QWARN(qPrintable(proto.errorMessage()));
+        return false;
+    }
+
+    foreach(const ImageItem& item, itemList) {
+        if (!blacklist.contains(item.scriptName))
+            QTest::newRow(item.scriptName.toLatin1()) << item;
+    }
+    return true;
 }
 
 
