@@ -51,11 +51,11 @@ QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 {
     if (! QApplicationPrivate::instance()) {
         qWarning("Querying graphics system but application not running yet!");
-        return "";
+        return QString();
     }
 
     QString name = QApplicationPrivate::instance()->graphics_system_name;
-    if (name == "runtime") {
+    if (name == QLatin1String("runtime")) {
         QRuntimeGraphicsSystem *rsystem = (QRuntimeGraphicsSystem *) QApplicationPrivate::instance()->graphics_system;
         name = rsystem->graphicsSystemName();
     }
@@ -65,32 +65,32 @@ QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 
 bool QMeeGoGraphicsSystemHelper::isRunningMeeGo()
 {
-    return (runningGraphicsSystemName() == "meego");
+    return (runningGraphicsSystemName() == QLatin1String("meego"));
 }
 
 void QMeeGoGraphicsSystemHelper::switchToMeeGo()
 {
-    if (runningGraphicsSystemName() == "meego")
+    if (isRunningMeeGo())
         return;
 
-    if (QApplicationPrivate::instance()->graphics_system_name != "runtime")
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
     else {
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
-        app->setGraphicsSystem("meego");
+        app->setGraphicsSystem(QLatin1String("meego"));
     }
 }
 
 void QMeeGoGraphicsSystemHelper::switchToRaster()
 {
-    if (runningGraphicsSystemName() == "raster")
+    if (runningGraphicsSystemName() == QLatin1String("raster"))
         return;
 
-    if (QApplicationPrivate::instance()->graphics_system_name != "runtime")
+    if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
     else {
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
-        app->setGraphicsSystem("raster");
+        app->setGraphicsSystem(QLatin1String("raster"));
     }
 }
 

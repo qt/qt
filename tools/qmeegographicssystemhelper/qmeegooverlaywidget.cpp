@@ -68,12 +68,12 @@ QPoint QMeeGoOverlayWidget::convertPoint(const QPoint &p)
     return QPoint(x, y);
 }
 
-void QMeeGoOverlayWidget::showEvent(QShowEvent *event)
+void QMeeGoOverlayWidget::showEvent(QShowEvent *)
 {
     QMeeGoRuntime::setSurfaceScaling(0, 0, width(), height());
 }
 
-bool QMeeGoOverlayWidget::eventFilter(QObject *obj, QEvent *event)
+bool QMeeGoOverlayWidget::eventFilter(QObject *, QEvent *event)
 {
     if (event->spontaneous() == false)
         return false;

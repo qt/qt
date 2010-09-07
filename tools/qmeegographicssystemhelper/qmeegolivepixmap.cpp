@@ -95,7 +95,7 @@ QMeeGoLivePixmap* QMeeGoLivePixmap::fromLiveImage(QMeeGoLiveImage *liveImage)
     int h = liveImage->height();
     
     counter++;
-    shm = new QSharedMemory(QString("QMeeGoLivePixmap%1").arg(counter));
+    shm = new QSharedMemory(QString(QLatin1String("QMeeGoLivePixmap%1")).arg(counter));
     shm->create((w * h * 4) + 2 * sizeof(int)); // +2 to store width & height
     shm->attach();
     
@@ -129,7 +129,7 @@ QMeeGoLivePixmap* QMeeGoLivePixmap::fromHandle(Qt::HANDLE handle)
     int height;
     uchar* imgData;
     
-    shm = new QSharedMemory(QString("QMeeGoLivePixmap%1").arg(handle));
+    shm = new QSharedMemory(QString(QLatin1String("QMeeGoLivePixmap%1")).arg(handle));
     shm->attach();
     
     shm->lock();
