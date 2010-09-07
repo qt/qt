@@ -616,7 +616,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
     return i;
 }
 
-QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int /* margin */, const QTransform &t)
+QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, int /* margin */, const QTransform &t)
 {
     QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);

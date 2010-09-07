@@ -1254,7 +1254,7 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
 #define SPI_GETFONTSMOOTHINGCONTRAST           0x200C
 #define SPI_SETFONTSMOOTHINGCONTRAST           0x200D
 
-QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &t)
+QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, const QTransform &t)
 {
     HFONT font = hfont;
 
