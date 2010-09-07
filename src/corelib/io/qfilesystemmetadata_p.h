@@ -60,6 +60,9 @@
 
 // Platform-specific includes
 #if defined(Q_OS_WIN)
+#elif defined(Q_OS_SYMBIAN)
+#include <f32file.h>
+#include "qdatetime_p.h"
 #else
 #endif
 
@@ -86,10 +89,18 @@ struct QFileSystemMetaData
         UserPermissions     = UserReadPermission  | UserWritePermission  | UserExecutePermission,
         OwnerPermissions    = OwnerReadPermission | OwnerWritePermission | OwnerExecutePermission,
 
+        ReadPermissions     = OtherReadPermission | GroupReadPermission | UserReadPermission | OwnerReadPermission,
+        WritePermissions    = OtherWritePermission | GroupWritePermission | UserWritePermission | OwnerWritePermission,
+        ExecutePermissions  =  OtherExecutePermission | GroupExecutePermission | UserExecutePermission | OwnerExecutePermission,
+
         Permissions         = OtherPermissions | GroupPermissions | UserPermissions | OwnerPermissions,
 
         // Type
+#ifdef Q_OS_SYMBIAN
+        LinkType            = 0,
+#else
         LinkType            = 0x00010000,
+#endif
         FileType            = 0x00020000,
         DirectoryType       = 0x00040000,
 #if !defined(QWS) && defined(Q_OS_MAC)
@@ -137,6 +148,13 @@ struct QFileSystemMetaData
                             | QFileSystemMetaData::Times
                             | QFileSystemMetaData::OwnerIds,
 
+        SymbianTEntryFlags  = QFileSystemMetaData::Permissions
+                            | QFileSystemMetaData::FileType
+                            | QFileSystemMetaData::DirectoryType
+                            | QFileSystemMetaData::SequentialType
+                            | QFileSystemMetaData::Attributes
+                            | QFileSystemMetaData::Times,
+
         AllMetaDataFlags    = 0xFFFFFFFF
 
     };
@@ -181,7 +199,7 @@ struct QFileSystemMetaData
 
     QFile::Permissions permissions() const  { return QFile::Permissions(Permissions & entryFlags); }
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
     QDateTime creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
     QDateTime modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
     QDateTime accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
@@ -213,8 +231,30 @@ struct QFileSystemMetaData
         else
             return groupId();
     }
-
+#endif
+#ifdef Q_OS_UNIX
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
+#endif
+#ifdef Q_OS_SYMBIAN
+    QDateTime creationTime() const          { return modificationTime(); }
+    QDateTime modificationTime() const      { return qt_symbian_TTime_To_QDateTime(modificationTime_); }
+    QDateTime accessTime() const            { return modificationTime(); }
+
+    QDateTime fileTime(QAbstractFileEngine::FileTime time) const
+    {
+        Q_UNUSED(time);
+        return modificationTime();
+    }
+    uint userId() const                     { return (uint) -2; }
+    uint groupId() const                    { return (uint) -2; }
+    uint ownerId(QAbstractFileEngine::FileOwner owner) const
+    {
+        Q_UNUSED(owner);
+        return (uint) -2;
+    }
+
+    void fillFromTEntry(const TEntry& entry);
+    void fillFromVolumeInfo(const TVolumeInfo& info);
 #endif
 
 private:
@@ -227,6 +267,8 @@ private:
 
     // Platform-specific data goes here:
 #if defined(Q_OS_WIN)
+#elif defined(Q_OS_SYMBIAN)
+    TTime modificationTime_;
 #else
     time_t creationTime_;
     time_t modificationTime_;

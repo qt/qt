@@ -108,13 +108,76 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
-    return QString(); // TODO implement;
+    Q_UNUSED(entry);
+    return QString();
+}
+
+void QFileSystemMetaData::fillFromTEntry(const TEntry& entry)
+{
+    //Symbian doesn't have unix type file permissions
+    entryFlags |= QFileSystemMetaData::Permissions;
+    if(entry.IsReadOnly()) {
+        entryFlags &= ~(QFileSystemMetaData::WritePermissions);
+    }
+    //set the type
+    if(entry.IsDir())
+        entryFlags |= QFileSystemMetaData::DirectoryType;
+    else
+        entryFlags |= QFileSystemMetaData::FileType;
+
+    //set the attributes
+    entryFlags |= QFileSystemMetaData::ExistsAttribute;
+    if(entry.IsHidden())
+        entryFlags |= QFileSystemMetaData::HiddenAttribute;
+
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+    size_ = entry.FileSize();
+#else
+    size_ = (TUint)(entry.iSize);
+#endif
+
+    modificationTime_ = entry.iModified;
+}
+
+void QFileSystemMetaData::fillFromVolumeInfo(const TVolumeInfo& info)
+{
+    entryFlags |= QFileSystemMetaData::ExistsAttribute;
+    entryFlags |= QFileSystemMetaData::Permissions;
+    if(info.iDrive.iDriveAtt & KDriveAttRom) {
+        entryFlags &= ~(QFileSystemMetaData::WritePermissions);
+    }
+    entryFlags |= QFileSystemMetaData::DirectoryType;
+    size_ = info.iSize;
+    modificationTime_ = qt_symbian_time_t_To_TTime(0);
 }
 
 //static
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data, QFileSystemMetaData::MetaDataFlags what)
 {
-    return false; // TODO implement;
+    if (what & QFileSystemMetaData::SymbianTEntryFlags) {
+        RFs& fs(qt_s60GetRFs());
+        TInt err;
+        data.entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
+        if (entry.isRoot()) {
+            //Root directories don't have an entry, and Entry() returns KErrBadName.
+            //Therefore get information about the volume instead.
+            TInt drive;
+            err = RFs::CharToDrive(TChar(entry.nativeFilePath().at(0).unicode()), drive);
+            if (!err) {
+                TVolumeInfo info;
+                err = fs.Volume(info, drive);
+                if (!err)
+                    data.fillFromVolumeInfo(info);
+            }
+        } else {
+            TEntry ent;
+            err = fs.Entry(qt_QString2TPtrC(absoluteName(entry).nativeFilePath()), ent);
+            if (!err)
+                data.fillFromTEntry(ent);
+        }
+        data.knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
+    }
+    return data.hasFlags(what);
 }
 
 //static
@@ -207,7 +270,12 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     else
         setmask = KEntryAttReadOnly;
     TInt err = fs.SetAtt(qt_QString2TPtrC(targetpath), setmask, clearmask);
-    return err != KErrNone; // TODO error reporting, metadata update;
+    if (data && !err) {
+        data->entryFlags &= ~QFileSystemMetaData::Permissions;
+        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
+        data->knownFlagsMask |= QFileSystemMetaData::Permissions;
+    }
+    return err != KErrNone; // TODO error reporting
 }
 
 QT_END_NAMESPACE

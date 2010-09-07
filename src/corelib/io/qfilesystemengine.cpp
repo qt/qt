@@ -213,4 +213,76 @@ QAbstractFileEngine *QFileSystemEngine::resolveEntryAndCreateLegacyEngine(
     return engine;
 }
 
+//these unix functions are in this file, because they are shared by symbian port
+//for open C file handles.
+#ifdef Q_OS_UNIX
+//static
+bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
+{
+    data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
+    data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags;
+
+    QT_STATBUF statBuffer;
+    if (QT_FSTAT(fd, &statBuffer) == 0) {
+        data.fillFromStatBuf(statBuffer);
+        return true;
+    }
+
+    return false;
+}
+
+void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
+{
+    // Permissions
+    if (statBuffer.st_mode & S_IRUSR)
+        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
+    if (statBuffer.st_mode & S_IWUSR)
+        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
+    if (statBuffer.st_mode & S_IXUSR)
+        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
+
+    if (statBuffer.st_mode & S_IRGRP)
+        entryFlags |= QFileSystemMetaData::GroupReadPermission;
+    if (statBuffer.st_mode & S_IWGRP)
+        entryFlags |= QFileSystemMetaData::GroupWritePermission;
+    if (statBuffer.st_mode & S_IXGRP)
+        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
+
+    if (statBuffer.st_mode & S_IROTH)
+        entryFlags |= QFileSystemMetaData::OtherReadPermission;
+    if (statBuffer.st_mode & S_IWOTH)
+        entryFlags |= QFileSystemMetaData::OtherWritePermission;
+    if (statBuffer.st_mode & S_IXOTH)
+        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
+
+    // Type
+    if ((statBuffer.st_mode & S_IFMT) == S_IFREG)
+        entryFlags |= QFileSystemMetaData::FileType;
+    else if ((statBuffer.st_mode & S_IFMT) == S_IFDIR)
+        entryFlags |= QFileSystemMetaData::DirectoryType;
+    else
+        entryFlags |= QFileSystemMetaData::SequentialType;
+
+    // Attributes
+    entryFlags |= QFileSystemMetaData::ExistsAttribute;
+    size_ = statBuffer.st_size;
+#if !defined(QWS) && defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+    if (statBuffer.st_flags & UF_HIDDEN) {
+        entryFlags |= QFileSystemMetaData::HiddenAttribute;
+        knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
+    }
+#endif
+
+    // Times
+#ifdef Q_OS_SYMBIAN
+    modificationTime_ = qt_symbian_time_t_To_TTime(statBuffer.st_mtime);
+#else
+    creationTime_ = statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime;
+    modificationTime_ = statBuffer.st_mtime;
+    accessTime_ = statBuffer.st_atime;
+#endif
+}
+
+#endif
+
 QT_END_NAMESPACE
