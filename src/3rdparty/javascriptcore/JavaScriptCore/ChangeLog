@@ -1,3 +1,39 @@
+2010-06-18  Tucker Jay  <jay.tucker@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Symbian] Lazy commit of memory required in JSC register file
+        https://bugs.webkit.org/show_bug.cgi?id=34349
+
+        * JavaScriptCore.pro: Added 1 new Symbian source file
+        * interpreter/RegisterFile.cpp:
+        (JSC::RegisterFile::~RegisterFile):
+        * interpreter/RegisterFile.h:
+        (JSC::RegisterFile::):
+        (JSC::RegisterFile::start):
+        (JSC::RegisterFile::end):
+        (JSC::RegisterFile::size):
+        (JSC::RegisterFile::setNumGlobals):
+        (JSC::RegisterFile::numGlobals):
+        (JSC::RegisterFile::maxGlobals):
+        (JSC::RegisterFile::lastGlobal):
+        (JSC::RegisterFile::markGlobals):
+        (JSC::RegisterFile::markCallFrames):
+        (JSC::isPageAligned):
+        (JSC::RegisterFile::RegisterFile):
+        (JSC::RegisterFile::shrink):
+        (JSC::RegisterFile::grow):
+        * wtf/symbian/RegisterFileAllocatorSymbian.cpp: Added.
+        (WTF::RegisterFileAllocator::RegisterFileAllocator):
+        Helper class to allocate memory required by RegisterFile
+        more efficiently.
+        (WTF::RegisterFileAllocator::~RegisterFileAllocator):
+        (WTF::RegisterFileAllocator::buffer):
+        (WTF::RegisterFileAllocator::grow):
+        (WTF::RegisterFileAllocator::shrink):
+        * wtf/symbian/RegisterFileAllocatorSymbian.h: Added.
+        * wtf/symbian/SymbianDefines.h: Added.
+
 2010-06-19  Thiago Macieira <thiago.macieira@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

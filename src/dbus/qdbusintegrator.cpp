@@ -714,6 +714,9 @@ QDBusCallDeliveryEvent* QDBusConnectionPrivate::prepareReply(QDBusConnectionPriv
     if (metaTypes[n] == QDBusMetaTypeId::message)
         --n;
 
+    if (msg.arguments().count() < n)
+        return 0;               // too few arguments
+
     // check that types match
     for (int i = 0; i < n; ++i)
         if (metaTypes.at(i + 1) != msg.arguments().at(i).userType() &&

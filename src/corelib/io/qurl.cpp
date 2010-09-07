@@ -4958,6 +4958,10 @@ void QUrl::setEncodedQuery(const QByteArray &query)
     pairDelimiter(), and the key and value are delimited by
     valueDelimiter().
 
+    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
+    like HTML forms do. If you need that kind of encoding, you must encode
+    the value yourself and use QUrl::setEncodedQueryItems.
+
     \sa setQueryDelimiters(), queryItems(), setEncodedQueryItems()
 */
 void QUrl::setQueryItems(const QList<QPair<QString, QString> > &query)
@@ -5028,6 +5032,10 @@ void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &que
     character returned by valueDelimiter(). Each key/value pair is 
     delimited by the character returned by pairDelimiter().
 
+    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
+    like HTML forms do. If you need that kind of encoding, you must encode
+    the value yourself and use QUrl::addEncodedQueryItem.
+
     \sa addEncodedQueryItem()
 */
 void QUrl::addQueryItem(const QString &key, const QString &value)
@@ -5083,6 +5091,10 @@ void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
 
 /*!
     Returns the query string of the URL, as a map of keys and values.
+
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::encodedQueryItems and decode the data yourself.
 
     \sa setQueryItems(), setEncodedQuery()
 */
@@ -5188,6 +5200,10 @@ bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
     Returns the first query string value whose key is equal to \a key
     from the URL.
 
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::encodedQueryItemValue and decode the data yourself.
+
     \sa allQueryItemValues()
 */
 QString QUrl::queryItemValue(const QString &key) const
@@ -5231,6 +5247,10 @@ QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
 /*!
     Returns the a list of query string values whose key is equal to
     \a key from the URL.
+
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::allEncodedQueryItemValues and decode the data yourself.
 
     \sa queryItemValue()
 */
@@ -5610,7 +5630,7 @@ QString QUrl::toString(FormattingOptions options) const
     if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority) {
         bool doFileScheme = d->scheme == QLatin1String("file") && ourPath.startsWith(QLatin1Char('/'));
         QString tmp = d->authority(options);
-        if (!tmp.isEmpty() || doFileScheme) {
+        if (!tmp.isNull() || doFileScheme) {
             if (doFileScheme && !ourPath.startsWith(QLatin1Char('/')))
                 url += QLatin1Char('/');
             url += QLatin1String("//");
