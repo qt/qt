@@ -94,7 +94,7 @@ void BaselineHandler::receiveRequest()
             return;
         }
         connectionEstablished = true;
-        qDebug() << runId << logtime() << "Connection established with" << plat.hostname << "Qt version:" << plat.qtVersion << plat.buildKey;
+        qDebug() << runId << logtime() << "Connection established with" << plat.hostname << proto.socket.peerAddress().toString() << "Qt version:" << plat.qtVersion << plat.buildKey;
         return;
     }
 
@@ -191,18 +191,26 @@ void BaselineHandler::receiveDisconnect()
 
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 {
-    QString host = plat.hostname;
-    //# tbd: if "localhost", replace with smth meaningful
-    host.replace(QRegExp(QLatin1String("^(bq|oslo)-(.*)-\\d\\d$")), QLatin1String("vm-\\2"));
-    QString pathForRun = BaselineServer::storagePath() + host + QLatin1Char('/');
+    if (pathForRun.isNull()) {
+        QString host = plat.hostname;
+        if (host == QLatin1String("localhost"))
+            host = proto.socket.peerAddress().toString();
+        else
+            host.replace(QRegExp(QLatin1String("^(bq|oslo)-(.*)-\\d\\d$")), QLatin1String("vm-\\2"));
+        pathForRun = BaselineServer::storagePath() + host + QLatin1Char('/');
+    }
 
     QString storePath = pathForRun;
     if (isBaseline)
         storePath += QString(QLatin1String("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
     else
         storePath += runId + QLatin1Char('/');
-    //#? QString itemName = item.scriptName.replace(item.scriptName.lastIndexOf('.'), '_');
-    return storePath + item.scriptName + QLatin1Char('.');
+
+    QString itemName = item.scriptName;
+    if (itemName.contains(QLatin1Char('.')))
+        itemName.replace(itemName.lastIndexOf(QLatin1Char('.')), 1, QLatin1Char('_'));
+
+    return storePath + itemName + QLatin1Char('.');
 }
 
 QString BaselineHandler::computeMismatchScore(const QImage &baseline, const QImage &rendered)

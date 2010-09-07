@@ -72,6 +72,7 @@ private:
     PlatformInfo plat;
     bool connectionEstablished;
     QString runId;
+    QString pathForRun;
 };
 
 #endif // BASELINESERVER_H
