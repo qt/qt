@@ -42,7 +42,11 @@
 
 #include "qsslsocket_openssl_symbols_p.h"
 
-#include <QtCore/qlibrary.h>
+#ifdef Q_OS_WIN
+# include <private/qsystemlibrary_p.h>
+#else
+# include <QtCore/qlibrary.h>
+#endif
 #include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
 #include <QtCore/qdatetime.h>
@@ -345,22 +349,22 @@ static QStringList findAllLibSsl()
 }
 # endif
 
-static QPair<QLibrary*, QLibrary*> loadOpenSsl()
+#ifdef Q_OS_WIN
+static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 {
-    QPair<QLibrary*,QLibrary*> pair;
+    QPair<QSystemLibrary*,QSystemLibrary*> pair;
     pair.first = 0;
     pair.second = 0;
 
-# ifdef Q_OS_WIN
-    QLibrary *ssleay32 = new QLibrary(QLatin1String("ssleay32"));
-    if (!ssleay32->load()) {
+    QSystemLibrary *ssleay32 = new QSystemLibrary(QLatin1String("ssleay32"));
+    if (!ssleay32->load(false)) {
         // Cannot find ssleay32.dll
         delete ssleay32;
         return pair;
     }
 
-    QLibrary *libeay32 = new QLibrary(QLatin1String("libeay32"));
-    if (!libeay32->load()) {
+    QSystemLibrary *libeay32 = new QSystemLibrary(QLatin1String("libeay32"));
+    if (!libeay32->load(false)) {
         delete ssleay32;
         delete libeay32;
         return pair;
@@ -369,7 +373,16 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     pair.first = ssleay32;
     pair.second = libeay32;
     return pair;
-# elif defined(Q_OS_SYMBIAN)
+}
+#else
+
+static QPair<QLibrary*, QLibrary*> loadOpenSsl()
+{
+    QPair<QLibrary*,QLibrary*> pair;
+    pair.first = 0;
+    pair.second = 0;
+
+# if defined(Q_OS_SYMBIAN)
      QLibrary *libssl = new QLibrary(QLatin1String("libssl"));
     if (!libssl->load()) {
         // Cannot find ssleay32.dll
@@ -469,6 +482,7 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
     return pair;
 # endif
 }
+#endif
 
 bool q_resolveOpenSslSymbols()
 {
@@ -483,7 +497,11 @@ bool q_resolveOpenSslSymbols()
         return false;
     triedToResolveSymbols = true;
 
+#ifdef Q_OS_WIN
+    QPair<QSystemLibrary *, QSystemLibrary *> libs = loadOpenSslWin32();
+#else
     QPair<QLibrary *, QLibrary *> libs = loadOpenSsl();
+#endif
     if (!libs.first || !libs.second)
         // failed to load them
         return false;
