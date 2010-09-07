@@ -264,6 +264,7 @@ quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool
     quint32 idx = QScriptConverter::toArrayIndex(toString(identifier));
     if (ok)
         *ok = idx != 0xffffffff;
+    return idx;
 }
 
 QScriptClass::QueryFlags 
