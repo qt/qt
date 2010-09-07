@@ -182,7 +182,7 @@ void tst_Lancelot::testOpenGL()
     if (glWidget.isValid() && glWidget.format().directRendering()
         && (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)) {
         glWidget.makeCurrent();
-        if (!QByteArray((const char *)glGetString(GL_RENDERER)).contains("Mesa"))
+        if (!QByteArray((const char *)glGetString(GL_VERSION)).contains("Mesa"))
             ok = true;
     }
     if (ok)
