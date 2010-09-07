@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QLibrary>
 #include <QPixmap>
 #include <QImage>
 
@@ -47,7 +46,7 @@ class QMeeGoRuntime
 {
 public:
     static void initialize();
-    
+
     static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
     static QPixmap pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
     static QPixmap pixmapWithGLTexture(int w, int h);
@@ -59,5 +58,4 @@ public:
 
 private:
     static bool initialized;
-    static QLibrary *library;  
 };

@@ -72,14 +72,14 @@ private:
 /* C api */
 
 extern "C" {
-    int qt_meego_image_to_egl_shared_image(const QImage &image);
-    QPixmapData* qt_meego_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage);
-    QPixmapData* qt_meego_pixmapdata_with_gl_texture(int w, int h);
-    void qt_meego_update_egl_shared_image_pixmap(QPixmap *pixmap);
-    bool qt_meego_destroy_egl_shared_image(Qt::HANDLE handle);
-    void qt_meego_set_surface_fixed_size(int width, int height);
-    void qt_meego_set_surface_scaling(int x, int y, int width, int height);
-    void qt_meego_set_translucent(bool translucent);
+    Q_DECL_EXPORT int qt_meego_image_to_egl_shared_image(const QImage &image);
+    Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage);
+    Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_with_gl_texture(int w, int h);
+    Q_DECL_EXPORT void qt_meego_update_egl_shared_image_pixmap(QPixmap *pixmap);
+    Q_DECL_EXPORT bool qt_meego_destroy_egl_shared_image(Qt::HANDLE handle);
+    Q_DECL_EXPORT void qt_meego_set_surface_fixed_size(int width, int height);
+    Q_DECL_EXPORT void qt_meego_set_surface_scaling(int x, int y, int width, int height);
+    Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);
 }
 
 #endif 

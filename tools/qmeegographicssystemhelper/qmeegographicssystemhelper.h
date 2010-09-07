@@ -78,7 +78,7 @@ class QLibrary;
  \endcode
 */
 
-class QMeeGoGraphicsSystemHelper 
+class Q_DECL_EXPORT QMeeGoGraphicsSystemHelper 
 {
 public:
     //! Returns true if running meego.

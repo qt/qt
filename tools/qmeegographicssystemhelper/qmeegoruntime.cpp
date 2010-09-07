@@ -41,9 +41,12 @@
 
 #include "qmeegoruntime.h"
 
+#include <private/qlibrary_p.h>
+#include <private/qfactoryloader_p.h>
+#include <private/qgraphicssystemplugin_p.h>
+
 #define ENSURE_INITIALIZED {if (!initialized) initialize();}
 
-QLibrary* QMeeGoRuntime::library = NULL;
 bool QMeeGoRuntime::initialized = false;
 
 typedef int (*QMeeGoImageToEglSharedImageFunc) (const QImage&);
@@ -66,19 +69,35 @@ static QMeeGoSetTranslucentFunc qt_meego_set_translucent = NULL;
 
 void QMeeGoRuntime::initialize()
 {
-    library = new QLibrary("/usr/lib/qt4/plugins/graphicssystems/libmeegographicssystem.so");
-    Q_ASSERT(library);
-    
-    qt_meego_image_to_egl_shared_image = (QMeeGoImageToEglSharedImageFunc) library->resolve("qt_meego_image_to_egl_shared_image");
-    qt_meego_pixmapdata_from_egl_shared_image = (QMeeGoPixmapDataFromEglSharedImageFunc)  library->resolve("qt_meego_pixmapdata_from_egl_shared_image");
-    qt_meego_pixmapdata_with_gl_texture = (QMeeGoPixmapDataWithGLTextureFunc) library->resolve("qt_meego_pixmapdata_with_gl_texture");
-    qt_meego_destroy_egl_shared_image = (QMeeGoDestroyEGLSharedImageFunc) library->resolve("qt_meego_destroy_egl_shared_image");
-    qt_meego_update_egl_shared_image_pixmap = (QMeeGoUpdateEglSharedImagePixmapFunc) library->resolve("qt_meego_update_egl_shared_image_pixmap");
-    qt_meego_set_surface_fixed_size = (QMeeGoSetSurfaceFixedSizeFunc) library->resolve("qt_meego_set_surface_fixed_size");
-    qt_meego_set_surface_scaling = (QMeeGoSetSurfaceScalingFunc) library->resolve("qt_meego_set_surface_scaling");
-    qt_meego_set_translucent = (QMeeGoSetTranslucentFunc) library->resolve("qt_meego_set_translucent");
-    
-    
+    QFactoryLoader loader(QGraphicsSystemFactoryInterface_iid, QLatin1String("/graphicssystems"), Qt::CaseInsensitive);
+
+    QLibraryPrivate *libraryPrivate = loader.library(QLatin1String("meego"));
+    Q_ASSERT(libraryPrivate);
+
+    QLibrary library(libraryPrivate->fileName, libraryPrivate->fullVersion);
+
+    bool success = library.load();
+
+    if (success) {
+        qt_meego_image_to_egl_shared_image = (QMeeGoImageToEglSharedImageFunc) library.resolve("qt_meego_image_to_egl_shared_image");
+        qt_meego_pixmapdata_from_egl_shared_image = (QMeeGoPixmapDataFromEglSharedImageFunc)  library.resolve("qt_meego_pixmapdata_from_egl_shared_image");
+        qt_meego_pixmapdata_with_gl_texture = (QMeeGoPixmapDataWithGLTextureFunc) library.resolve("qt_meego_pixmapdata_with_gl_texture");
+        qt_meego_destroy_egl_shared_image = (QMeeGoDestroyEGLSharedImageFunc) library.resolve("qt_meego_destroy_egl_shared_image");
+        qt_meego_update_egl_shared_image_pixmap = (QMeeGoUpdateEglSharedImagePixmapFunc) library.resolve("qt_meego_update_egl_shared_image_pixmap");
+        qt_meego_set_surface_fixed_size = (QMeeGoSetSurfaceFixedSizeFunc) library.resolve("qt_meego_set_surface_fixed_size");
+        qt_meego_set_surface_scaling = (QMeeGoSetSurfaceScalingFunc) library.resolve("qt_meego_set_surface_scaling");
+        qt_meego_set_translucent = (QMeeGoSetTranslucentFunc) library.resolve("qt_meego_set_translucent");
+
+        if (qt_meego_image_to_egl_shared_image && qt_meego_pixmapdata_from_egl_shared_image && qt_meego_pixmapdata_with_gl_texture
+            && qt_meego_destroy_egl_shared_image && qt_meego_update_egl_shared_image_pixmap && qt_meego_set_surface_fixed_size
+            && qt_meego_set_surface_scaling && qt_meego_set_translucent)
+        {
+            qDebug("Successfully resolved MeeGo graphics system: %s %s\n", qPrintable(libraryPrivate->fileName), qPrintable(libraryPrivate->fullVersion));
+        }
+    } else {
+        Q_ASSERT(false);
+    }
+
     initialized = true;
 }
 
