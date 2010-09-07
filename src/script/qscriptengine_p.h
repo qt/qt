@@ -120,12 +120,16 @@ public:
     QVariant &variantValue(v8::Handle<v8::Value> value);
 
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
+    v8::Handle<v8::Value> scriptValueToInternal(const QScriptValue &);
 
     inline operator v8::Persistent<v8::Context>();
     inline void clearExceptions();
     inline void setException(v8::Handle<v8::Value> exception);
     inline bool hasUncaughtException() const;
     QScriptValuePrivate* uncaughtException() const;
+
+    v8::Handle<v8::String> qtDataId();
+
 private:
     // FIXME check if we can reuse QObjectProvate::q_ptr
     QScriptEngine* q_ptr;
@@ -137,6 +141,8 @@ private:
     v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
+
+    v8::Persistent<v8::String> m_qtDataId;
 };
 
 v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)

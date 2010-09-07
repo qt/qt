@@ -971,13 +971,28 @@ void QScriptValue::setScope(const QScriptValue &)
 
 QScriptValue QScriptValue::data() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    if (!d_ptr->isObject())
+        return QScriptValue();
+    v8::Context::Scope contextScope(*d_ptr->engine());
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
+    v8::Handle<v8::Value> value = self->GetHiddenValue(d_ptr->engine()->qtDataId());
+    return d_ptr->engine()->scriptValueFromInternal(value);
 }
 
-void QScriptValue::setData(const QScriptValue &)
+void QScriptValue::setData(const QScriptValue &value)
 {
-    Q_UNIMPLEMENTED();
+    if (!d_ptr->isObject())
+        return;
+    v8::Context::Scope contextScope(*d_ptr->engine());
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
+    v8::Handle<v8::Value> jsValue = d_ptr->engine()->scriptValueToInternal(value);
+    v8::Handle<v8::String> dataId = d_ptr->engine()->qtDataId();
+    if (jsValue.IsEmpty())
+        self->DeleteHiddenValue(dataId);
+    else
+        self->SetHiddenValue(dataId, jsValue);
 }
 
 QScriptClass *QScriptValue::scriptClass() const

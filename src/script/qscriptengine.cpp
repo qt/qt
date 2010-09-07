@@ -775,6 +775,16 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createVariantTemplate()
     return funcTempl;
 }
 
+/*!
+  Returns the hidden field name used to implement QScriptValue::data().
+ */
+v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
+{
+    if (m_qtDataId.IsEmpty())
+        m_qtDataId = v8::Persistent<v8::String>::New(v8::String::NewSymbol("qt_data"));
+    return m_qtDataId;
+}
+
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_context.Dispose();
@@ -828,6 +838,18 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newSignal(v8::Handle<v8::Object> ob
 QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value)
 {
     return QScriptValuePrivate::get(new QScriptValuePrivate(this, value));
+}
+
+/*!
+  Converts the given \a value to an internal (back-end-specific) value.
+  Returns an empty handle if the value is invalid.
+*/
+v8::Handle<v8::Value> QScriptEnginePrivate::scriptValueToInternal(const QScriptValue &value)
+{
+    QScriptValuePrivate *priv = QScriptValuePrivate::get(value);
+    if (!priv->isJSBased())
+        priv->assignEngine(this);
+    return priv->m_value;
 }
 
 /*!
