@@ -131,6 +131,11 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items";
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
+        if (i->scriptName.startsWith(QLatin1String("porter_duff"))) {
+            // Example of blacklisting on server.
+            i->status = ImageItem::IgnoreItem;
+            continue;
+        }
         i->imageChecksum = 0;
         QString prefix = pathForItem(*i, true);
         QFile file(prefix + QLatin1String("metadata"));

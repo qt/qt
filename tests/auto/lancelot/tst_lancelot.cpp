@@ -83,6 +83,8 @@ private slots:
     void testRasterARGB32PM();
     void testRasterRGB32_data();
     void testRasterRGB32();
+    void testRasterRGB16_data();
+    void testRasterRGB16();
 
     void testOpenGL_data();
     void testOpenGL();
@@ -151,9 +153,23 @@ void tst_Lancelot::testRasterRGB32()
 }
 
 
-void tst_Lancelot::testOpenGL_data()
+void tst_Lancelot::testRasterRGB16_data()
 {
     QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB16, localBlacklist))
+        QSKIP("Communication with baseline image server failed.", SkipAll);
+}
+
+
+void tst_Lancelot::testRasterRGB16()
+{
+    runTestSuite();
+}
+
+
+void tst_Lancelot::testOpenGL_data()
+{
+    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps") << QLatin1String("rasterops.qps");
     if (!setupTestSuite(ImageItem::OpenGL, QImage::Format_RGB32, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
