@@ -105,11 +105,22 @@ public:
         else
             return (view->orientation() == QDeclarativeListView::Vertical ? item->y() : item->x());
     }
+    qreal itemPosition() const {
+        return (view->orientation() == QDeclarativeListView::Vertical ? item->y() : item->x());
+    }
     qreal size() const {
         if (section)
-            return (view->orientation() == QDeclarativeListView::Vertical ? item->height()+section->height() : item->width()+section->height());
+            return (view->orientation() == QDeclarativeListView::Vertical ? item->height()+section->height() : item->width()+section->width());
         else
             return (view->orientation() == QDeclarativeListView::Vertical ? item->height() : item->width());
+    }
+    qreal itemSize() const {
+        return (view->orientation() == QDeclarativeListView::Vertical ? item->height() : item->width());
+    }
+    qreal sectionSize() const {
+        if (section)
+            return (view->orientation() == QDeclarativeListView::Vertical ? section->height() : section->width());
+        return 0.0;
     }
     qreal endPosition() const {
         return (view->orientation() == QDeclarativeListView::Vertical
@@ -130,6 +141,12 @@ public:
             }
             item->setX(pos);
         }
+    }
+    void setSize(qreal size) {
+        if (view->orientation() == QDeclarativeListView::Vertical)
+            item->setHeight(size);
+        else
+            item->setWidth(size);
     }
     bool contains(int x, int y) const {
         return (x >= item->x() && x < item->x() + item->width() &&
@@ -256,7 +273,12 @@ public:
         if (!visibleItems.isEmpty()) {
             if (modelIndex < visibleIndex) {
                 int count = visibleIndex - modelIndex;
-                return (*visibleItems.constBegin())->position() - count * (averageSize + spacing);
+                qreal cs = 0;
+                if (modelIndex == currentIndex && currentItem) {
+                    cs = currentItem->size() + spacing;
+                    --count;
+                }
+                return (*visibleItems.constBegin())->position() - count * (averageSize + spacing) - cs;
             } else {
                 int idx = visibleItems.count() - 1;
                 while (idx >= 0 && visibleItems.at(idx)->index == -1)
@@ -716,6 +738,11 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (visibleItems.count())
             visiblePos = (*visibleItems.constBegin())->position();
         updateAverage();
+        if (currentIndex >= 0 && currentItem && !visibleItem(currentIndex)) {
+            currentItem->setPosition(positionAt(currentIndex));
+            updateHighlight();
+        }
+
         if (sectionCriteria)
             updateCurrentSection();
         if (header)
@@ -885,8 +912,8 @@ void QDeclarativeListViewPrivate::updateHighlight()
         createHighlight();
     if (currentItem && autoHighlight && highlight && !movingHorizontally && !movingVertically) {
         // auto-update highlight
-        highlightPosAnimator->to = currentItem->position();
-        highlightSizeAnimator->to = currentItem->size();
+        highlightPosAnimator->to = currentItem->itemPosition();
+        highlightSizeAnimator->to = currentItem->itemSize();
         if (orient == QDeclarativeListView::Vertical) {
             if (highlight->item->width() == 0)
                 highlight->item->setWidth(currentItem->item->width());
@@ -987,7 +1014,7 @@ void QDeclarativeListViewPrivate::updateCurrentSection()
         return;
     }
     int index = 0;
-    while (visibleItems.at(index)->endPosition() < position() && index < visibleItems.count())
+    while (index < visibleItems.count() && visibleItems.at(index)->endPosition() < position())
         ++index;
 
     if (index < visibleItems.count())
@@ -1172,9 +1199,9 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         }
         if (currentItem && haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange) {
             updateHighlight();
-            qreal currPos = currentItem->position();
-            if (pos < currPos + currentItem->size() - highlightRangeEnd)
-                pos = currPos + currentItem->size() - highlightRangeEnd;
+            qreal currPos = currentItem->itemPosition();
+            if (pos < currPos + currentItem->itemSize() - highlightRangeEnd)
+                pos = currPos + currentItem->itemSize() - highlightRangeEnd;
             if (pos > currPos - highlightRangeStart)
                 pos = currPos - highlightRangeStart;
         }
@@ -1191,10 +1218,10 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
     } else if (haveHighlightRange && highlightRange == QDeclarativeListView::StrictlyEnforceRange) {
         if (currentItem) {
             updateHighlight();
-            qreal pos = currentItem->position();
+            qreal pos = currentItem->itemPosition();
             qreal viewPos = position();
-            if (viewPos < pos + currentItem->size() - highlightRangeEnd)
-                viewPos = pos + currentItem->size() - highlightRangeEnd;
+            if (viewPos < pos + currentItem->itemSize() - highlightRangeEnd)
+                viewPos = pos + currentItem->itemSize() - highlightRangeEnd;
             if (viewPos > pos - highlightRangeStart)
                 viewPos = pos - highlightRangeStart;
 
@@ -2342,6 +2369,10 @@ qreal QDeclarativeListView::minYExtent() const
             d->minExtent += d->header->size();
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange) {
             d->minExtent += d->highlightRangeStart;
+            if (d->sectionCriteria) {
+                if (d->visibleItem(0))
+                    d->minExtent -= d->visibleItem(0)->sectionSize();
+            }
             d->minExtent = qMax(d->minExtent, -(d->endPositionAt(0) - d->highlightRangeEnd + 1));
         }
         d->minExtentDirty = false;
@@ -2589,6 +2620,11 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         d->moveReason = QDeclarativeListViewPrivate::Other;
         cancelFlick();
         d->setPosition(pos);
+        if (d->highlight) {
+            d->highlight->setPosition(d->currentItem->itemPosition());
+            d->highlight->setSize(d->currentItem->itemSize());
+            d->updateHighlight();
+        }
     }
     d->fixupPosition();
 }
@@ -2649,7 +2685,12 @@ void QDeclarativeListView::trackedPositionChanged()
     if (!d->trackedItem || !d->currentItem)
         return;
     if (d->moveReason == QDeclarativeListViewPrivate::SetIndex) {
-        const qreal trackedPos = qCeil(d->trackedItem->position());
+        qreal trackedPos = qCeil(d->trackedItem->position());
+        qreal trackedSize = d->trackedItem->size();
+        if (d->trackedItem != d->currentItem) {
+            trackedPos -= d->currentItem->sectionSize();
+            trackedSize += d->currentItem->sectionSize();
+        }
         const qreal viewPos = d->position();
         qreal pos = viewPos;
         if (d->haveHighlightRange) {
@@ -2668,8 +2709,8 @@ void QDeclarativeListView::trackedPositionChanged()
                 } else {
                     if (trackedPos < viewPos + d->highlightRangeStart) {
                         pos = trackedPos - d->highlightRangeStart;
-                    } else if (trackedPos > viewPos + d->highlightRangeEnd - d->trackedItem->size()) {
-                        pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
+                    } else if (trackedPos > viewPos + d->highlightRangeEnd - trackedSize) {
+                        pos = trackedPos - d->highlightRangeEnd + trackedSize;
                     }
                 }
             }
@@ -2680,7 +2721,7 @@ void QDeclarativeListView::trackedPositionChanged()
                         && d->currentItem->endPosition() >= viewPos + d->size()) {
                 if (d->trackedItem->endPosition() <= d->currentItem->endPosition()) {
                     pos = d->trackedItem->endPosition() - d->size() + 1;
-                     if (d->trackedItem->size() > d->size())
+                     if (trackedSize > d->size())
                         pos = trackedPos;
                 } else {
                     pos = d->currentItem->endPosition() - d->size() + 1;

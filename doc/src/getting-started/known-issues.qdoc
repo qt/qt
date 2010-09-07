@@ -63,10 +63,6 @@
 
     \list
 
-    \o Performing a new install of the Qt 4.6 beta on Snow Leopard
-       triggers a bug in the installer that causes the install to fail.
-       Updating an existing Qt installation works fine.
-
     \o There are two workarounds, either disable spotlight for the target
        drive during the install, or do a custom install where you deselect
        documentation and examples. Run the installer again as a full

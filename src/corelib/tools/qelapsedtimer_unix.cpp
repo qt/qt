@@ -40,22 +40,58 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
-#include "qpair.h"
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
-#if !defined(QT_NO_CLOCK_MONOTONIC)
-# if defined(QT_BOOTSTRAPPED)
-#  define QT_NO_CLOCK_MONOTONIC
+#if defined(QT_NO_CLOCK_MONOTONIC) || defined(QT_BOOTSTRAPPED)
+// turn off the monotonic clock
+# ifdef _POSIX_MONOTONIC_CLOCK
+#  undef _POSIX_MONOTONIC_CLOCK
 # endif
+# define _POSIX_MONOTONIC_CLOCK -1
 #endif
 
 QT_BEGIN_NAMESPACE
 
-static qint64 fractionAdjustment()
+#if (_POSIX_MONOTONIC_CLOCK-0 != 0)
+static const bool monotonicClockChecked = true;
+static const bool monotonicClockAvailable = _POSIX_MONOTONIC_CLOCK > 0;
+#else
+static int monotonicClockChecked = false;
+static int monotonicClockAvailable = false;
+#endif
+
+#ifdef Q_CC_GNU
+# define is_likely(x) __builtin_expect((x), 1)
+#else
+# define is_likely(x) (x)
+#endif
+#define load_acquire(x) ((volatile const int&)(x))
+#define store_release(x,v) ((volatile int&)(x) = (v))
+
+static void unixCheckClockType()
 {
-    if (QElapsedTimer::isMonotonic()) {
+#if (_POSIX_MONOTONIC_CLOCK-0 == 0)
+    if (is_likely(load_acquire(monotonicClockChecked)))
+        return;
+
+# if defined(_SC_MONOTONIC_CLOCK)
+    // detect if the system support monotonic timers
+    long x = sysconf(_SC_MONOTONIC_CLOCK);
+    store_release(monotonicClockAvailable, x >= 200112L);
+# endif
+
+    store_release(monotonicClockChecked, true);
+#endif
+}
+
+static inline qint64 fractionAdjustment()
+{
+    // disabled, but otherwise indicates bad usage of QElapsedTimer
+    //Q_ASSERT(monotonicClockChecked);
+
+    if (monotonicClockAvailable) {
         // the monotonic timer is measured in nanoseconds
         // 1 ms = 1000000 ns
         return 1000*1000ull;
@@ -68,90 +104,73 @@ static qint64 fractionAdjustment()
 
 bool QElapsedTimer::isMonotonic()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 > 0)
-    return true;
-#else
-    static int returnValue = 0;
-
-    if (returnValue == 0) {
-#  if (_POSIX_MONOTONIC_CLOCK-0 < 0) || !defined(_SC_MONOTONIC_CLOCK)
-        returnValue = -1;
-#  elif (_POSIX_MONOTONIC_CLOCK == 0)
-        // detect if the system support monotonic timers
-        long x = sysconf(_SC_MONOTONIC_CLOCK);
-        returnValue = (x >= 200112L) ? 1 : -1;
-#  endif
-    }
-
-    return returnValue != -1;
-#endif
+    unixCheckClockType();
+    return monotonicClockAvailable;
 }
 
 QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
-    return isMonotonic() ? MonotonicClock : SystemTime;
+    unixCheckClockType();
+    return monotonicClockAvailable ? MonotonicClock : SystemTime;
 }
 
-static inline QPair<long, long> do_gettime()
+static inline void do_gettime(qint64 *sec, qint64 *frac)
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 > 0)
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return qMakePair<long,long>(ts.tv_sec, ts.tv_nsec);
-#else
-#  if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (QElapsedTimer::isMonotonic()) {
+#if (_POSIX_MONOTONIC_CLOCK-0 >= 0)
+    unixCheckClockType();
+    if (is_likely(monotonicClockAvailable)) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        return qMakePair<long,long>(ts.tv_sec, ts.tv_nsec);
+        *sec = ts.tv_sec;
+        *frac = ts.tv_nsec;
+        return;
     }
-#  endif
+#endif
     // use gettimeofday
     timeval tv;
     ::gettimeofday(&tv, 0);
-    return qMakePair<long,long>(tv.tv_sec, tv.tv_usec);
-#endif
+    *sec = tv.tv_sec;
+    *frac = tv.tv_usec;
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
 timeval qt_gettime()
 {
-    QPair<long, long> r = do_gettime();
+    qint64 sec, frac;
+    do_gettime(&sec, &frac);
 
     timeval tv;
-    tv.tv_sec = r.first;
-    tv.tv_usec = r.second;
-    if (QElapsedTimer::isMonotonic())
+    tv.tv_sec = sec;
+    tv.tv_usec = frac;
+    if (monotonicClockAvailable)
         tv.tv_usec /= 1000;
 
     return tv;
 }
 
+static qint64 elapsedAndRestart(qint64 sec, qint64 frac,
+                                qint64 *nowsec, qint64 *nowfrac)
+{
+    do_gettime(nowsec, nowfrac);
+    sec = *nowsec - sec;
+    frac = *nowfrac - frac;
+    return sec * Q_INT64_C(1000) + frac / fractionAdjustment();
+}
+
 void QElapsedTimer::start()
 {
-    QPair<long, long> r = do_gettime();
-    t1 = r.first;
-    t2 = r.second;
+    do_gettime(&t1, &t2);
 }
 
 qint64 QElapsedTimer::restart()
 {
-    QPair<long, long> r = do_gettime();
-    qint64 oldt1 = t1;
-    qint64 oldt2 = t2;
-    t1 = r.first;
-    t2 = r.second;
-
-    r.first -= oldt1;
-    r.second -= oldt2;
-    return r.first * Q_INT64_C(1000) + r.second / fractionAdjustment();
+    return elapsedAndRestart(t1, t2, &t1, &t2);
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    QElapsedTimer now;
-    now.start();
-    return msecsTo(now);
+    qint64 sec, frac;
+    return elapsedAndRestart(t1, t2, &sec, &frac);
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const

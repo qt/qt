@@ -140,9 +140,6 @@ void QDeclarativeImageBase::load()
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
-        d->sourcesize.setWidth(0);
-        d->sourcesize.setHeight(0);
-        emit sourceSizeChanged();
         pixmapChange();
         update();
     } else {
@@ -182,19 +179,20 @@ void QDeclarativeImageBase::requestFinished()
     } else {
         d->status = Ready;
     }
-    emit statusChanged(d->status);
+
+    d->progress = 1.0;
 
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
-
-    d->progress = 1.0;
-    emit progressChanged(d->progress);
 
     if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height()) {
         d->sourcesize.setWidth(d->pix.width());
         d->sourcesize.setHeight(d->pix.height());
         emit sourceSizeChanged();
     }
+
+    emit statusChanged(d->status);
+    emit progressChanged(d->progress);
     pixmapChange();
     update();
 }
