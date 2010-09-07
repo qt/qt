@@ -56,6 +56,14 @@ class tst_QFileSystemEntry : public QObject
 private slots:
     void getSetCheck_data();
     void getSetCheck();
+    void suffix_data();
+    void suffix();
+    void completeSuffix_data();
+    void completeSuffix();
+    void baseName_data();
+    void baseName();
+    void completeBaseName_data();
+    void completeBaseName();
 };
 
 #if defined(WIN_STUFF)
@@ -219,6 +227,130 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry2.completeBaseName(), completeBasename);
 }
 #endif
+
+void tst_QFileSystemEntry::suffix_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("noextension0") << "file" << "";
+    QTest::newRow("noextension1") << "/path/to/file" << "";
+    QTest::newRow("data0") << "file.tar" << "tar";
+    QTest::newRow("data1") << "file.tar.gz" << "gz";
+    QTest::newRow("data2") << "/path/file/file.tar.gz" << "gz";
+    QTest::newRow("data3") << "/path/file.tar" << "tar";
+    QTest::newRow("hidden1") << ".ext1" << "ext1";
+    QTest::newRow("hidden1") << ".ext" << "ext";
+    QTest::newRow("hidden1") << ".ex" << "ex";
+    QTest::newRow("hidden1") << ".e" << "e";
+    QTest::newRow("hidden2") << ".ext1.ext2" << "ext2";
+    QTest::newRow("hidden2") << ".ext.ext2" << "ext2";
+    QTest::newRow("hidden2") << ".ex.ext2" << "ext2";
+    QTest::newRow("hidden2") << ".e.ext2" << "ext2";
+    QTest::newRow("hidden2") << "..ext2" << "ext2";
+    QTest::newRow("dots") << "/path/file.with.dots/file..ext2" << "ext2";
+    QTest::newRow("dots2") << "/path/file.with.dots/.file..ext2" << "ext2";
+}
+
+void tst_QFileSystemEntry::suffix()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, expected);
+
+    QFileSystemEntry fe(file);
+    QCOMPARE(fe.suffix(), expected);
+
+    QFileSystemEntry fi2(file);
+    // first resolve the last slash
+    (void) fi2.path();
+    QCOMPARE(fi2.suffix(), expected);
+}
+
+void tst_QFileSystemEntry::completeSuffix_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("noextension0") << "file" << "";
+    QTest::newRow("noextension1") << "/path/to/file" << "";
+    QTest::newRow("data0") << "file.tar" << "tar";
+    QTest::newRow("data1") << "file.tar.gz" << "tar.gz";
+    QTest::newRow("data2") << "/path/file/file.tar.gz" << "tar.gz";
+    QTest::newRow("data3") << "/path/file.tar" << "tar";
+    QTest::newRow("dots") << "/path/file.with.dots/file..ext2" << ".ext2";
+    QTest::newRow("dots2") << "/path/file.with.dots/.file..ext2" << "file..ext2";
+}
+
+void tst_QFileSystemEntry::completeSuffix()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, expected);
+
+    QFileSystemEntry fi(file);
+    QCOMPARE(fi.completeSuffix(), expected);
+
+    QFileSystemEntry fi2(file);
+    // first resolve the last slash
+    (void) fi2.path();
+    QCOMPARE(fi2.completeSuffix(), expected);
+}
+
+void tst_QFileSystemEntry::baseName_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("data0") << "file.tar" << "file";
+    QTest::newRow("data1") << "file.tar.gz" << "file";
+    QTest::newRow("data2") << "/path/file/file.tar.gz" << "file";
+    QTest::newRow("data3") << "/path/file.tar" << "file";
+    QTest::newRow("data4") << "/path/file" << "file";
+    QTest::newRow("dots") << "/path/file.with.dots/file..ext2" << "file";
+    QTest::newRow("dots2") << "/path/file.with.dots/.file..ext2" << "";
+}
+
+void tst_QFileSystemEntry::baseName()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, expected);
+
+    QFileSystemEntry fi(file);
+    QCOMPARE(fi.baseName(), expected);
+
+    QFileSystemEntry fi2(file);
+    // first resolve the last slash
+    (void) fi2.path();
+    QCOMPARE(fi2.baseName(), expected);
+}
+
+void tst_QFileSystemEntry::completeBaseName_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("data0") << "file.tar" << "file";
+    QTest::newRow("data1") << "file.tar.gz" << "file.tar";
+    QTest::newRow("data2") << "/path/file/file.tar.gz" << "file.tar";
+    QTest::newRow("data3") << "/path/file.tar" << "file";
+    QTest::newRow("data4") << "/path/file" << "file";
+    QTest::newRow("dots") << "/path/file.with.dots/file..ext2" << "file.";
+    QTest::newRow("dots2") << "/path/file.with.dots/.file..ext2" << ".file.";
+}
+
+void tst_QFileSystemEntry::completeBaseName()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, expected);
+
+    QFileSystemEntry fi(file);
+    QCOMPARE(fi.completeBaseName(), expected);
+
+    QFileSystemEntry fi2(file);
+    // first resolve the last slash
+    (void) fi2.path();
+    QCOMPARE(fi2.completeBaseName(), expected);
+}
+
 
 QTEST_MAIN(tst_QFileSystemEntry)
 #include <tst_qfilesystementry.moc>

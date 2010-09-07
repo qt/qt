@@ -181,7 +181,13 @@ QString QFileSystemEntry::baseName() const
     if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
         return m_filePath.mid(2);
 #endif
-    return m_filePath.mid(m_lastSeparator + 1, m_firstDotInFileName == -1 ?-1 : m_firstDotInFileName - 1);
+    int length = -1;
+    if (m_firstDotInFileName >= 0) {
+        length = m_firstDotInFileName;
+        if (m_lastSeparator != -1) // avoid off by one
+            length--;
+    }
+    return m_filePath.mid(m_lastSeparator + 1, length);
 }
 
 QString QFileSystemEntry::completeBaseName() const
@@ -191,7 +197,13 @@ QString QFileSystemEntry::completeBaseName() const
     if (m_lastSeparator == -1 && m_filePath.length() >= 2 && m_filePath.at(1) == QLatin1Char(':'))
         return m_filePath.mid(2);
 #endif
-    return m_filePath.mid(m_lastSeparator + 1, m_firstDotInFileName == -1 ?-1 : m_firstDotInFileName + m_lastDotInFileName - 1);
+    int length = -1;
+    if (m_firstDotInFileName >= 0) {
+        length = m_firstDotInFileName + m_lastDotInFileName;
+        if (m_lastSeparator != -1) // avoid off by one
+            length--;
+    }
+    return m_filePath.mid(m_lastSeparator + 1, length);
 }
 
 QString QFileSystemEntry::suffix() const
@@ -201,7 +213,7 @@ QString QFileSystemEntry::suffix() const
     if (m_lastDotInFileName == -1)
         return QString();
 
-    return m_filePath.mid(m_lastSeparator + m_firstDotInFileName + m_lastDotInFileName + 1);
+    return m_filePath.mid(qMax((qint16)0, m_lastSeparator) + m_firstDotInFileName + m_lastDotInFileName + 1);
 }
 
 QString QFileSystemEntry::completeSuffix() const
@@ -210,7 +222,7 @@ QString QFileSystemEntry::completeSuffix() const
     if (m_firstDotInFileName == -1)
         return QString();
 
-    return m_filePath.mid(m_lastSeparator + m_firstDotInFileName + 1);
+    return m_filePath.mid(qMax((qint16)0, m_lastSeparator) + m_firstDotInFileName + 1);
 }
 
 bool QFileSystemEntry::isAbsolute() const
@@ -310,15 +322,14 @@ void QFileSystemEntry::findFileNameSeparators() const
                 }
             }
         }
-
         m_lastSeparator = lastSeparator;
-        m_firstDotInFileName = firstDotInFileName == -1 ? -1 : firstDotInFileName - lastSeparator;
+        m_firstDotInFileName = firstDotInFileName == -1 ? -1 : firstDotInFileName - qMax(0, lastSeparator);
         if (lastDotInFileName == -1)
             m_lastDotInFileName = -1;
         else if (firstDotInFileName == lastDotInFileName)
             m_lastDotInFileName = 0;
         else
-            m_lastDotInFileName = firstDotInFileName - lastSeparator;
+            m_lastDotInFileName = lastDotInFileName - firstDotInFileName;
     }
 }
 
