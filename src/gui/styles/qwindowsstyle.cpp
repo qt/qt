@@ -44,7 +44,7 @@
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
 
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qdrawutil.h" // for now
@@ -126,7 +126,7 @@ QWindowsStylePrivate::QWindowsStylePrivate()
 #if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
         && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)) {
-        QLibrary shellLib(QLatin1String("shell32"));
+        QSystemLibrary shellLib(QLatin1String("shell32"));
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
@@ -921,9 +921,9 @@ static const char *const question_xpm[] = {
 static QPixmap loadIconFromShell32( int resourceId, int size )
 {
 #ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary(L"ceshell.dll");
+    HMODULE hmod = LoadLibrary(L"ceshell");
 #else
-    HMODULE hmod = LoadLibrary(L"shell32.dll");
+    HMODULE hmod = QSystemLibrary::load(L"shell32");
 #endif
     if( hmod ) {
         HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
