@@ -133,7 +133,7 @@ class DitaXmlGenerator : public PageGenerator
     void writeMacros(const Section& s, 
                      const ClassNode* cn, 
                      CodeMarker* marker);
-    void writePropParams(const QString& tag, const NodeList& nlist);
+    void writePropertyParameter(const QString& tag, const NodeList& nlist);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -205,20 +205,18 @@ class DitaXmlGenerator : public PageGenerator
                          const Node *relative,
                          CodeMarker *marker,
                          CodeMarker::SynopsisStyle style);
-    void generateSynopsis(const Node *node, 
-                          const Node *relative, 
-                          CodeMarker *marker,
-			  CodeMarker::SynopsisStyle style,
-                          bool nameAlignment = false);
+    QString getMarkedUpSynopsis(const Node *node, 
+                                const Node *relative, 
+                                CodeMarker *marker,
+                                CodeMarker::SynopsisStyle style);
     void generateSectionInheritedList(const Section& section, 
                                       const Node *relative,
                                       CodeMarker *marker,
                                       bool nameAlignment = false);
-    QString highlightedCode(const QString& markedCode, 
-                            CodeMarker *marker, 
-                            const Node *relative,
-                            CodeMarker::SynopsisStyle style = CodeMarker::Accessors,
-                            bool nameAlignment = false);
+    void writeText(const QString& markedCode, 
+                   CodeMarker *marker, 
+                   const Node *relative,
+                   bool nameAlignment = false);
 
     void generateFullName(const Node *apparentNode, 
                           const Node *relative, 
@@ -280,6 +278,7 @@ class DitaXmlGenerator : public PageGenerator
     bool inContents;
     bool inSectionHeading;
     bool inTableHeader;
+    bool inTableBody;
     int numTableRows;
     bool threeColumnEnumValueTable;
     bool offlineDocs;
@@ -302,6 +301,7 @@ class DitaXmlGenerator : public PageGenerator
     bool slow;
     bool obsoleteLinks;
     int noLinks;
+    int tableColumnCount;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;
     NodeMap nonCompatClasses;

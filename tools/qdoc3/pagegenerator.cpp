@@ -273,6 +273,11 @@ QString PageGenerator::outFileName()
     return QFileInfo(static_cast<QFile *>(out().device())->fileName()).fileName();
 }
 
+/*!
+  Creates the file named \a fileName in the output directory.
+  Attaches a QTextStream to the created file, which is written
+  to all over the place using out().
+ */
 void PageGenerator::beginSubPage(const Location& location,
                                  const QString& fileName)
 {
@@ -285,6 +290,11 @@ void PageGenerator::beginSubPage(const Location& location,
     outStreamStack.push(out);
 }
 
+/*!
+  Flush the text stream associated with the subpage, and
+  then pop it off the text stream stack and delete it.
+  This terminates output of the subpage.
+ */
 void PageGenerator::endSubPage()
 {
     outStreamStack.top()->flush();

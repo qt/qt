@@ -1152,8 +1152,8 @@ QString Parameter::reconstruct(bool value) const
     if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
         p += " ";
     p += nam;
-    if (value)
-        p += def;
+    if (value && !def.isEmpty())
+        p += " = " + def;
     return p;
 }
 
