@@ -175,7 +175,14 @@ void tst_Lancelot::testOpenGL_data()
 
 void tst_Lancelot::testOpenGL()
 {
-    runTestSuite();
+    QGLWidget glWidget;
+    if (glWidget.isValid() && glWidget.format().directRendering()
+            && (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0))
+    {
+        runTestSuite();
+    } else {
+        QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
+    }
 }
 
 
