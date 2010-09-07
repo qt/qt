@@ -66,9 +66,10 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
 static bool cleanup_function_registered = false;
 static QS60PixmapData *firstPixmap = 0;
 
-static void qt_symbian_register_pixmap(QS60PixmapData *pd)
+// static
+void QS60PixmapData::qt_symbian_register_pixmap(QS60PixmapData *pd)
 {
-    if(!cleanup_function_registered) {
+    if (!cleanup_function_registered) {
         qAddPostRoutine(qt_symbian_release_pixmaps);
         cleanup_function_registered = true;
     }
@@ -80,7 +81,8 @@ static void qt_symbian_register_pixmap(QS60PixmapData *pd)
     firstPixmap = pd;
 }
 
-static void qt_symbian_unregister_pixmap(QS60PixmapData *pd)
+// static
+void QS60PixmapData::qt_symbian_unregister_pixmap(QS60PixmapData *pd)
 {
     if (pd->next)
         pd->next->prev = pd->prev;
@@ -90,7 +92,8 @@ static void qt_symbian_unregister_pixmap(QS60PixmapData *pd)
         firstPixmap = pd->next;
 }
 
-static void qt_symbian_release_pixmaps()
+// static
+void QS60PixmapData::qt_symbian_release_pixmaps()
 {
     // Scan all QS60PixmapData objects in the system and destroy them.
     QS60PixmapData *pd = firstPixmap;
@@ -828,7 +831,6 @@ void* QS60PixmapData::toNativeType(NativeType type)
         bool convertToArgb32 = false;
         bool needsCopy = false;
 
-        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
         if (!(S60->supportsPremultipliedAlpha)) {
             // Convert argb32_premultiplied to argb32 since Symbian 9.2 does
             // not support premultipied format.

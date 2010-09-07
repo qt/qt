@@ -155,7 +155,7 @@ namespace {
             if (const DomResourceIcon *dri = p->elementIconSet()) {
                 if (!isIconFormat44(dri)) {
                     if (dri->text().isEmpty())  {
-                        const QString msg = QString::fromUtf8("%1: An invalid icon property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                        const QString msg = QString::fromUtf8("%1: Warning: An invalid icon property '%2' was encountered.").arg(fileName).arg(p->attributeName());
                         qWarning("%s", qPrintable(msg));
                         return false;
                     }
@@ -165,7 +165,7 @@ namespace {
         case DomProperty::Pixmap:
             if (const DomResourcePixmap *drp = p->elementPixmap())
                 if (drp->text().isEmpty()) {
-                    const QString msg = QString::fromUtf8("%1: An invalid pixmap property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                    const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.").arg(fileName).arg(p->attributeName());
                     qWarning("%s", qPrintable(msg));
                     return false;
                 }
@@ -539,12 +539,12 @@ void WriteInitialization::acceptUI(DomUI *node)
         const Buddy &b = m_buddies.at(i);
 
         if (!m_registeredWidgets.contains(b.objName)) {
-            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget\n",
+            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
                     b.objName.toLatin1().data());
             continue;
         } else if (!m_registeredWidgets.contains(b.buddy)) {
-            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget\n",
+            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
                     b.buddy.toLatin1().data());
             continue;
@@ -871,7 +871,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         const QString name = zOrder.at(i);
 
         if (!m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "'%s' Z-order assignment: is not a valid widget\n", name.toLatin1().data());
+            fprintf(stderr, "%s: Warning: Z-order assignment: '%s' is not a valid widget.\n",
+                    qPrintable(m_option.messagePrefix()),
+                    name.toLatin1().data());
             continue;
         }
 
@@ -1861,7 +1863,7 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
         const QString name = l.at(i);
 
         if (!m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "%s: Warning: Tab-stop assignment: '%s' is not a valid widget\n",
+            fprintf(stderr, "%s: Warning: Tab-stop assignment: '%s' is not a valid widget.\n",
                     qPrintable(m_option.messagePrefix()),
                     name.toLatin1().data());
             continue;

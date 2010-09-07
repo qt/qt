@@ -128,9 +128,9 @@ private:
     QS60PixmapData *next;
     QS60PixmapData *prev;
 
-    friend void qt_symbian_register_pixmap(QS60PixmapData *pd);
-    friend void qt_symbian_unregister_pixmap(QS60PixmapData *pd);
-    friend void qt_symbian_release_pixmaps();
+    static void qt_symbian_register_pixmap(QS60PixmapData *pd);
+    static void qt_symbian_unregister_pixmap(QS60PixmapData *pd);
+    static void qt_symbian_release_pixmaps();
 
     friend class QPixmap;
     friend class QS60WindowSurface;
