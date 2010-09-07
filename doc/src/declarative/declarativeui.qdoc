@@ -109,6 +109,7 @@ Module.
 \list
 \o \l{Using QML Positioner and Repeater Items}
 \o \l{QML Data Models}
+\o \l{Presenting Data with QML}
 \o \l{Network Transparency}
 \endlist
 

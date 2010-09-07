@@ -41,7 +41,37 @@
 //! [document]
 import Qt 4.7
 
-Image {
-    source: "pics/qtlogo.png"
+Item {
+    width: 200; height: 250
+
+    //! [model]
+    ListModel {
+        id: fruitModel
+
+        ListElement {
+            name: "Apple"
+            cost: 2.45
+        }
+        ListElement {
+            name: "Orange"
+            cost: 3.25
+        }
+        ListElement {
+            name: "Banana"
+            cost: 1.95
+        }
+    }
+    //! [model]
+
+    //! [view]
+    ListView {
+        anchors.fill: parent
+        model: fruitModel
+        delegate: Row {
+            Text { text: "Fruit: " + name }
+            Text { text: "Cost: $" + cost }
+        }
+    }
+    //! [view]
 }
 //! [document]

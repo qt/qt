@@ -224,7 +224,7 @@ void QDeclarativeDataBlob::setError(const QDeclarativeError &errors)
 }
 
 /*!
-\override
+\overload
 */
 void QDeclarativeDataBlob::setError(const QList<QDeclarativeError> &errors)
 {

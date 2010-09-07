@@ -79,7 +79,7 @@ Each instance is created with a different value for its \c text property:
 \o application.qml
 
 \row
-\o \snippet doc/src/snippets/declarative/qmldocuments.qml document
+\o \snippet doc/src/snippets/declarative/qml-documents/qmldocuments.qml document
 \o 
 \qml
 import Qt 4.7

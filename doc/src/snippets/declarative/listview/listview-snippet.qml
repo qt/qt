@@ -41,7 +41,12 @@
 //! [document]
 import Qt 4.7
 
-Image {
-    source: "pics/qtlogo.png"
+ListView {
+    width: 50; height: 200
+    model: 4
+    delegate: Text {
+        text: index;
+        font.pixelSize: 40
+    }
 }
 //! [document]
