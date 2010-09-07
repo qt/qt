@@ -32,6 +32,7 @@ public:
     ImageItem &operator=(const ImageItem &other);
     static quint64 computeChecksum(const QImage& image);
     QString engineAsString() const;
+    QString formatAsString() const;
 
     enum ItemStatus {
         Ok = 0,

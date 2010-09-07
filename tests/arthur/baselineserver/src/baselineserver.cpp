@@ -118,7 +118,7 @@ void BaselineHandler::receiveRequest()
         break;
     default:
         qWarning() << runId << logtime() << "Unknown command received. " << proto.errorMessage();
-        QThread::currentThread()->exit(1);
+        proto.sendBlock(BaselineProtocol::UnknownError, QByteArray());
     }
 }
 
@@ -191,15 +191,16 @@ void BaselineHandler::receiveDisconnect()
 
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 {
-    QString storePath = BaselineServer::storagePath();
-    storePath += plat.buildKey.section(QLatin1Char(' '), 1, 1) + QLatin1String("_Qt-")
-                 + plat.qtVersion + QDir::separator();
-    if (isBaseline) {
-        storePath += QLatin1String("baselines") + QDir::separator()
-                + item.engineAsString() + QDir::separator();
-    } else {
-        storePath += runId + QDir::separator();
-    }
+    QString host = plat.hostname;
+    //# tbd: if "localhost", replace with smth meaningful
+    host.replace(QRegExp(QLatin1String("^(bq|oslo)-(.*)-\\d\\d$")), QLatin1String("vm-\\2"));
+    QString pathForRun = BaselineServer::storagePath() + host + QLatin1Char('/');
+
+    QString storePath = pathForRun;
+    if (isBaseline)
+        storePath += QString(QLatin1String("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
+    else
+        storePath += runId + QLatin1Char('/');
     //#? QString itemName = item.scriptName.replace(item.scriptName.lastIndexOf('.'), '_');
     return storePath + item.scriptName + QLatin1Char('.');
 }

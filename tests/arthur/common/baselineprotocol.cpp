@@ -85,6 +85,32 @@ QString ImageItem::engineAsString() const
     return QLatin1String("Unknown");
 }
 
+QString ImageItem::formatAsString() const
+{
+    static const int numFormats = 16;
+    static const char *formatNames[numFormats] = {
+        "Invalid",
+        "Mono",
+        "MonoLSB",
+        "Indexed8",
+        "RGB32",
+        "ARGB32",
+        "ARGB32-Premult",
+        "RGB16",
+        "ARGB8565-Premult",
+        "RGB666",
+        "ARGB6666-Premult",
+        "RGB555",
+        "ARGB8555-Premult",
+        "RGB888",
+        "RGB444",
+        "ARGB4444-Premult"
+    };
+    if (renderFormat < 0 || renderFormat >= numFormats)
+        return QLatin1String("UnknownFormat");
+    return QLatin1String(formatNames[renderFormat]);
+}
+
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
     stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
