@@ -2239,43 +2239,56 @@ void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
     }
 }
 
-void DitaXmlGenerator::generateAnnotatedList(const Node *relative,
-                                          CodeMarker *marker,
-                                          const NodeMap &nodeMap)
+void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
+                                             CodeMarker* marker,
+                                             const NodeMap& nodeMap)
 {
-    out() << "<table class=\"annotated\">\n";
+    writer.writeStartElement("table");
+    writer.writeAttribute("outputclass","annotated");
+    writer.writeStartElement("tgroup");
+    writer.writeAttribute("cols","2");
+    writer.writeStartElement("tbody");
 
     int row = 0;
-    foreach (const QString &name, nodeMap.keys()) {
-        const Node *node = nodeMap[name];
+    foreach (const QString& name, nodeMap.keys()) {
+        const Node* node = nodeMap[name];
 
         if (node->status() == Node::Obsolete)
             continue;
 
+        writer.writeStartElement("row");
         if (++row % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+            writer.writeAttribute("outputclass","odd topAlign");
         else
-            out() << "<tr class=\"even topAlign\">";
-        out() << "<td><p>";
+            writer.writeAttribute("outputclass","even topAlign");
+        writer.writeStartElement("entry");
+        writer.writeStartElement("p");
         generateFullName(node, relative, marker);
-        out() << "</p></td>";
+        writer.writeEndElement(); // </p>
+        writer.writeEndElement(); // <entry>
 
         if (!(node->type() == Node::Fake)) {
             Text brief = node->doc().trimmedBriefText(name);
             if (!brief.isEmpty()) {
-                out() << "<td><p>";
+                writer.writeStartElement("entry");
+                writer.writeStartElement("p");
                 generateText(brief, node, marker);
-                out() << "</p></td>";
+                writer.writeEndElement(); // </p>
+                writer.writeEndElement(); // <entry>
             }
         }
         else {
-            out() << "<td><p>";
-            out() << protectEnc(node->doc().briefText().toString());
-            out() << "</p></td>";
+            writer.writeStartElement("entry");
+            writer.writeStartElement("p");
+            writer.writeCharacters(protectEnc(node->doc().briefText().toString()));
+            writer.writeEndElement(); // </p>
+            writer.writeEndElement(); // <entry>
         }
-        out() << "</tr>\n";
+        writer.writeEndElement(); // </row>
     }
-    out() << "</table>\n";
+    writer.writeEndElement(); // </tbody>
+    writer.writeEndElement(); // </tgroup>
+    writer.writeEndElement(); // </table>
 }
 
 /*!
