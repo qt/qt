@@ -87,11 +87,12 @@ public:
     inline bool isError(const QScriptValuePrivate* value) const;
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
-    v8::Handle<v8::Date> qtDateTimeToJS(const QDateTime &dt);
+    v8::Handle<v8::Value> qtDateTimeToJS(const QDateTime &dt);
 
 #ifndef QT_NO_REGEXP
     QRegExp qtRegExpFromJS(v8::Handle<v8::Object> jsRegExp);
     v8::Handle<v8::Object> qtRegExpToJS(const QRegExp &re);
+    v8::Handle<v8::Object> qtRegExpToJS(const QString &pattern, const QString &flags);
 #endif
 
     v8::Handle<v8::Array> stringListToJS(const QStringList &lst);

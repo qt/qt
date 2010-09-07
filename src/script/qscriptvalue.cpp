@@ -937,14 +937,29 @@ const QMetaObject *QScriptValue::toQMetaObject() const
 
 QDateTime QScriptValue::toDateTime() const
 {
-    Q_UNIMPLEMENTED();
-    return QDateTime();
+    if (!d_ptr->isDate())
+        return QDateTime();
+
+    v8::Context::Scope contextScope(*d_ptr->engine());
+    v8::HandleScope handleScope;
+    return d_ptr->engine()->qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(d_ptr->m_value));
 }
 
+/*!
+  Returns the QRegExp representation of this value.
+  If this QScriptValue is not a regular expression, an empty
+  QRegExp is returned.
+
+  \sa isRegExp()
+*/
 QRegExp QScriptValue::toRegExp() const
 {
-    Q_UNIMPLEMENTED();
-    return QRegExp();
+    if (!d_ptr->isRegExp())
+        return QRegExp();
+
+    v8::Context::Scope contextScope(*d_ptr->engine());
+    v8::HandleScope handleScope;
+    return d_ptr->engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(d_ptr->m_value));
 }
 
 bool QScriptValue::isDate() const

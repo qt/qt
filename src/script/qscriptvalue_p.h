@@ -522,22 +522,12 @@ inline bool QScriptValuePrivate::isVariant() const
 
 bool QScriptValuePrivate::isDate() const
 {
-    bool result = isJSBased();
-    if (result) {
-        Q_UNIMPLEMENTED();
-        return false;
-    }
-    return false;
+    return (isJSBased() && m_value->IsDate());
 }
 
 bool QScriptValuePrivate::isRegExp() const
 {
-    bool result = isJSBased();
-    if (result) {
-        Q_UNIMPLEMENTED();
-        return false;
-    }
-    return false;
+    return (isJSBased() && m_value->IsRegExp());
 }
 
 bool QScriptValuePrivate::isQObject() const

@@ -36,6 +36,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qdatetime.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
 
@@ -101,17 +102,13 @@ static v8::Handle<v8::Value> QtVariantValueOfCallback(const v8::Arguments& args)
 // Converts a JS Date to a QDateTime.
 QDateTime QScriptEnginePrivate::qtDateTimeFromJS(v8::Handle<v8::Date> jsDate)
 {
-    Q_UNUSED(jsDate);
-    Q_UNIMPLEMENTED();
-    return QDateTime();
+    return QDateTime::fromMSecsSinceEpoch(jsDate->NumberValue());
 }
 
 // Converts a QDateTime to a JS Date.
-v8::Handle<v8::Date> QScriptEnginePrivate::qtDateTimeToJS(const QDateTime &dt)
+v8::Handle<v8::Value> QScriptEnginePrivate::qtDateTimeToJS(const QDateTime &dt)
 {
-    Q_UNUSED(dt);
-    Q_UNIMPLEMENTED();
-    return v8::Handle<v8::Date>();
+    return v8::Date::New(dt.toMSecsSinceEpoch());
 }
 
 #ifndef QT_NO_REGEXP
@@ -187,6 +184,29 @@ v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QRegExp &re)
 
     return result;
 }
+
+v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QString &pattern, const QString &flags)
+{
+    QString strippedFlags;
+    if (flags.contains(QLatin1Char('i')))
+        strippedFlags += QLatin1Char('i');
+    if (flags.contains(QLatin1Char('m')))
+        strippedFlags += QLatin1Char('m');
+    if (flags.contains(QLatin1Char('g')))
+        strippedFlags += QLatin1Char('g');
+
+    // TODO: Use v8::RegExp API when/if it becomes available.
+    v8::Handle<v8::Value> regExpCtor = v8::Context::GetCurrent()->Global()->Get(v8::String::New("RegExp"));
+    v8::Handle<v8::Function> fun = v8::Handle<v8::Function>::Cast(regExpCtor);
+
+    v8::Handle<v8::Value> argv[2];
+    argv[0] = QScriptConverter::toString(pattern);
+    argv[1] = QScriptConverter::toString(strippedFlags);
+    v8::Handle<v8::Object> result = fun->NewInstance(2, argv);
+
+    return result;
+}
+
 #endif
 
 // Converts a QStringList to JS.
@@ -1455,28 +1475,59 @@ QScriptValue QScriptEngine::newObject(QScriptClass *, const QScriptValue &)
     return QScriptValue();
 }
 
-QScriptValue QScriptEngine::newDate(const QDateTime &)
+/*!
+  Creates a QtScript object of class Date from the given \a value.
+
+  \sa QScriptValue::toDateTime()
+*/
+QScriptValue QScriptEngine::newDate(const QDateTime &dt)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtDateTimeToJS(dt)));
 }
 
-QScriptValue QScriptEngine::newDate(double)
+/*!
+  Creates a QtScript object of class Date with the given
+  \a value (the number of milliseconds since 01 January 1970,
+  UTC).
+*/
+QScriptValue QScriptEngine::newDate(double date)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(v8::Date::New(date)));
 }
 
-QScriptValue QScriptEngine::newRegExp(const QRegExp &)
+/*!
+  Creates a QtScript object of class RegExp with the given
+  \a regexp.
+
+  \sa QScriptValue::toRegExp()
+*/
+QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(regexp)));
 }
 
-QScriptValue QScriptEngine::newRegExp(const QString &, const QString &)
+/*!
+  Creates a QtScript object of class RegExp with the given
+  \a pattern and \a flags.
+
+  The legal flags are 'g' (global), 'i' (ignore case), and 'm'
+  (multiline).
+*/
+QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, flags)));
 }
 
 QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *, const QScriptValue &)
