@@ -23,13 +23,14 @@ LINK	    = link
 # specific stuff for VS2005
 #
 !if "$(QMAKESPEC)" == "win32-msvc2005"
-CFLAGS      = /Zc:wchar_t-
+CFLAGS_EXTRA      = /Zc:wchar_t-
 !elseif "$(QMAKESPEC)" == "win32-msvc2008" || "$(QMAKESPEC)" == "win32-msvc2010"
-CFLAGS      = /MP
+CFLAGS_EXTRA      = /MP
 !endif
 
 CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O2 \
+              $(CFLAGS_EXTRA) \
               -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
               -I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
@@ -55,7 +56,7 @@ ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
 !ENDIF
 
 #qmake code
-OBJS        = qmake_pch.obj project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
+OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
@@ -116,12 +117,13 @@ QTOBJS= \
 first all: qmake.exe
 
 qmake.exe: $(OBJS) $(QTOBJS)
-	$(LINKQMAKE)
+	$(LINKQMAKE) qmake_pch.obj
 	-copy qmake.exe $(BUILD_PATH)\bin\qmake.exe
 
 clean::
 	-del $(QTOBJS)
 	-del $(OBJS)
+	-del qmake_pch.obj
 	-del qmake_pch.pch
 	-del vc60.pdb
 	-del vc70.pdb
@@ -143,6 +145,10 @@ distclean:: clean
 
 .cxx.obj:
 	$(CXX) $(CXXFLAGS) $<
+
+$(OBJS): qmake_pch.obj
+
+$(QTOBJS): qmake_pch.obj
 
 qmake_pch.obj:
 	$(CXX) $(CXXFLAGS_BARE) -c -Yc -Fpqmake_pch.pch -TP qmake_pch.h

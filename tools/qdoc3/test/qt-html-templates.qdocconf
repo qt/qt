@@ -89,7 +89,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global Declarations</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qmlelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "        </div>\n" \
@@ -173,12 +173,22 @@ HTML.footer             = "        <!-- /div -->\n" \
 			  "  <div id=\"feedbackBox\">\n" \
 			  "      <div id=\"feedcloseX\" class=\"feedclose t_button\">X</div>\n" \
 			  "    <form id=\"feedform\" action=\"http://doc.qt.nokia.com/docFeedbck/feedback.php\" method=\"get\">\n" \
-			  "      <p id=\"noteHead\">Thank you for giving your feedback.</p> <div class=\"note\"><p>Make sure it is related to this specific page. For more general bugs and \n" \
-			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</p></div>\n" \
+			  "      <p id=\"noteHead\">Thank you for giving your feedback. <div class=\"note\">Make sure it is related to this specific page. For more general bugs and \n" \
+			  "      requests, please use the <a href=\"http://bugreports.qt.nokia.com/secure/Dashboard.jspa\">Qt Bug Tracker</a>.</div></p>\n" \
 			  "      <p><textarea id=\"feedbox\" name=\"feedText\" rows=\"5\" cols=\"40\"></textarea></p>\n" \
 			  "      <p><input id=\"feedsubmit\" class=\"feedclose\" type=\"submit\" name=\"feedback\" /></p>\n" \
 			  "    </form>\n" \
 			  "  </div>\n" \
 			  "  <div id=\"blurpage\">\n" \
 			  "  </div>\n" \
-                          "  </div>\n"
+			  "  <!--/div -->\n" \
+			  "<script type=\"text/javascript\">\n" \
+			  "  var _gaq = _gaq || [];\n" \
+			  "  _gaq.push([\'_setAccount\', \'UA-4457116-5\']);\n" \
+			  "  _gaq.push([\'_trackPageview\']);\n" \
+			  "  (function() {\n" \
+			  "    var ga = document.createElement(\'script\'); ga.type = \'text/javascript\'; ga.async = true;\n" \
+			  "    ga.src = (\'https:\' == document.location.protocol ? \'https://ssl\' : \'http://www\') + \'.google-analytics.com/ga.js\';\n" \
+			  "    var s = document.getElementsByTagName(\'script\')[0]; s.parentNode.insertBefore(ga, s);\n" \
+			  "  })();\n" \
+			  "</script>\n"

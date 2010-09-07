@@ -441,6 +441,7 @@ static QDeclarativeViewer *createViewer()
 
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     viewer->setAttribute(Qt::WA_DeleteOnClose, true);
+    viewer->setUseGL(opts.useGL);
 
     if (!opts.scriptopts.isEmpty()) {
         viewer->setScriptOptions(opts.scriptOptions);
@@ -492,8 +493,6 @@ void showViewer(QDeclarativeViewer *viewer)
         viewer->showMaximized();
     else
         viewer->show();
-
-    viewer->setUseGL(opts.useGL);
     viewer->raise();
 }
 

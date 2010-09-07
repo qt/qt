@@ -164,6 +164,8 @@ private slots:
     void include();
 
     void callQtInvokables();
+    void invokableObjectArg();
+    void invokableObjectRet();
 private:
     QDeclarativeEngine engine;
 };
@@ -1731,6 +1733,31 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.invoked(), 18);
     QCOMPARE(o.actuals().count(), 1);
     QCOMPARE(o.actuals().at(0), QVariant(9));
+}
+
+// QTBUG-13047 (check that you can pass registered object types as args)
+void tst_qdeclarativeecmascript::invokableObjectArg()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectArg.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    MyQmlObject *qmlobject = qobject_cast<MyQmlObject *>(o);
+    QVERIFY(qmlobject);
+    QCOMPARE(qmlobject->myinvokableObject, qmlobject);
+
+    delete o;
+}
+
+// QTBUG-13047 (check that you can return registered object types from methods)
+void tst_qdeclarativeecmascript::invokableObjectRet()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectRet.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
 }
 
 // QTBUG-5675

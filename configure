@@ -2411,18 +2411,26 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
     rm -f "$outpath/mkspecs/default"
 
+    ShadowMkspecs()
+    {
+        rm -rf "$outpath/mkspecs/$1"
+        if [ "$UNAME_SYSTEM" = "Linux" ]; then
+            # This works with GNU coreutils, and is needed for ScratchBox
+            cp -rs "$relpath/mkspecs/$1" "$outpath/mkspecs/$1"
+        else
+            # A simple "cp -rs" doesn't work on Mac. :(
+            find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+            find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+        fi
+    }
+
     # Special case for mkspecs/features directory.
     # To be able to place .prf files into a shadow build directory,
     # we're creating links for files only. The directory structure is reproduced.
-    rm -rf "$outpath/mkspecs/features"
-    if [ "$UNAME_SYSTEM" = "Linux" ]; then
-        # This works with GNU coreutils, and is needed for ScratchBox
-        cp -rs "$relpath/mkspecs/features" "$outpath/mkspecs/features"
-    else
-        # A simple "cp -rs" doesn't work on Mac. :(
-        find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-        find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
-    fi
+    ShadowMkspecs features
+
+    # The modules dir is special, too.
+    ShadowMkspecs modules
 
     # symlink the doc directory
     rm -rf "$outpath/doc"
@@ -6203,9 +6211,13 @@ fi
 
 # find if the platform supports IPv6
 if [ "$CFG_IPV6" != "no" ]; then
-    if [ "$XPLATFORM" = "symbian-sbsv2" ]; then
-        #IPV6 should always be enabled for Symbian release
-        CFG_IPV6=yes
+    #
+    # We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
+    # Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
+    # symbian socket engine.
+    #
+    if echo "$XPLATFORM" | grep symbian > /dev/null; then
+        CFG_IPV6=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
     else
@@ -7172,6 +7184,7 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     CFG_WEBKIT="yes"
 else
+    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
     CFG_WEBKIT="no"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
