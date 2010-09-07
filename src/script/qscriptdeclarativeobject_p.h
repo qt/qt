@@ -36,6 +36,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
+#include "qscriptdeclarativeclass_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,16 @@ public:
     static QScriptDeclarativeClassPrivate *get(QScriptDeclarativeClass *c) {
         return c->d_ptr.data();
     }
+};
+
+class QScriptDeclarativeClassObject : public QObject
+{ Q_OBJECT
+public:
+    QScriptDeclarativeClassObject(QScriptDeclarativeClass *scriptClass, QScriptDeclarativeClass::Object *object)
+           : obj(object) , scriptClass(scriptClass) {}
+
+    QScopedPointer<QScriptDeclarativeClass::Object> obj;
+    QScriptDeclarativeClass* scriptClass;
 };
 
 QT_END_NAMESPACE
