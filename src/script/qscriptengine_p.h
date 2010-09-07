@@ -130,8 +130,7 @@ public:
 
     v8::Handle<v8::String> qtDataId();
 
-private:
-    // FIXME check if we can reuse QObjectProvate::q_ptr
+public:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_context;
     v8::Persistent<v8::Value> m_exception;

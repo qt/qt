@@ -207,6 +207,9 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
                                    QScriptEngine::ValueOwnership own,
                                    const QScriptEngine::QObjectWrapOptions &opt);
 
+QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object);
+
+
 QT_END_NAMESPACE
 
 #endif

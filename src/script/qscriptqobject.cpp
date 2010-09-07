@@ -1093,4 +1093,17 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
     return persistent;
 }
 
+QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object)
+{
+    v8::Context::Scope contextScope(*engine); //### REMOVE
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> templ = engine->qtClassTemplate(&QObject::staticMetaObject);
+    if (!templ->HasInstance(object))
+        return false;
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    QtInstanceData *data = static_cast<QtInstanceData *>(object->GetPointerFromInternalField(0));
+    Q_ASSERT(data);
+    return data->cppObject();
+}
+
 QT_END_NAMESPACE

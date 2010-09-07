@@ -78,6 +78,7 @@ public:
     inline qint32 toInt32() const;
     inline quint32 toUInt32() const;
     inline quint16 toUInt16() const;
+    inline QObject *toQObject() const;
 
     inline bool isArray() const;
     inline bool isBool() const;
@@ -415,6 +416,13 @@ QString QScriptValuePrivate::toString() const
     return QString(); // Avoid compiler warning.
 }
 
+QObject* QScriptValuePrivate::toQObject() const
+{
+    if (!isObject())
+        return 0;
+    return toQtObject(m_engine.data(), m_value->ToObject());
+}
+
 qsreal QScriptValuePrivate::toInteger() const
 {
     qsreal result = toNumber();
@@ -534,12 +542,9 @@ bool QScriptValuePrivate::isRegExp() const
 
 bool QScriptValuePrivate::isQObject() const
 {
-    bool result = isJSBased();
-    if (result) {
-        Q_UNIMPLEMENTED();
+    if (!isJSBased() || !m_value->IsObject())
         return false;
-    }
-    return false;
+    return toQtObject(m_engine.data(), m_value->ToObject());
 }
 
 bool QScriptValuePrivate::isQMetaObject() const

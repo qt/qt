@@ -914,10 +914,19 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& nam
     return propertyFlags(name.toString(), mode);
 }
 
+/*!
+ * If this QScriptValue is a QObject, returns the QObject pointer
+ * that the QScriptValue represents; otherwise, returns 0.
+ *
+ * If the QObject that this QScriptValue wraps has been deleted,
+ * this function returns 0 (i.e. it is possible for toQObject()
+ * to return 0 even when isQObject() returns true).
+ *
+ * \sa isQObject()
+ */
 QObject *QScriptValue::toQObject() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return d_ptr->toQObject();
 }
 
 const QMetaObject *QScriptValue::toQMetaObject() const
