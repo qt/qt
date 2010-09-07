@@ -53,7 +53,7 @@ bool QFileSystemEngine::isCaseSensitive()
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link)
+QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
     return link; // TODO implement
 }
