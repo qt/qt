@@ -83,6 +83,8 @@ public:
     QString fileName() const;
     QString path() const;
     NativePath nativeFilePath() const;
+    QString baseName() const;
+    QString completeBaseName() const;
     QString suffix() const;
     QString completeSuffix() const;
     bool isAbsolute() const;
