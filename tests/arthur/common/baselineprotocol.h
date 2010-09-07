@@ -23,7 +23,7 @@ struct ImageItem
 {
 public:
     ImageItem()
-        : status(Ok), renderFormat(QImage::Format_Invalid), engine(Raster), imageChecksum(0), scriptChecksum(0)
+        : status(Ok), renderFormat(QImage::Format_Invalid), engine(Raster), scriptChecksum(0)
     {}
     ImageItem(const ImageItem &other)
     { *this = other; }
@@ -50,14 +50,18 @@ public:
     QImage::Format renderFormat;
     GraphicsEngine engine;
     QImage image;
-    quint64 imageChecksum;
+    QList<quint64> imageChecksums;
     // tbd: add diffscore
     quint16 scriptChecksum;
 };
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
 QDataStream & operator>> (QDataStream& stream, ImageItem& ii);
 
+
 Q_DECLARE_METATYPE(ImageItem);
+
+QDataStream & operator<< (QDataStream &stream, const QList<quint64> &checkSumList);
+QDataStream & operator>> (QDataStream &stream, QList<quint64> &checkSumList);
 
 typedef QVector<ImageItem> ImageItemList;
 

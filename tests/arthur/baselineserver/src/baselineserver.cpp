@@ -136,16 +136,16 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
             i->status = ImageItem::IgnoreItem;
             continue;
         }
-        i->imageChecksum = 0;
+        i->imageChecksums.clear();
         QString prefix = pathForItem(*i, true);
         QFile file(prefix + QLatin1String("metadata"));
         if (file.open(QIODevice::ReadOnly)) {
-            QTextStream ts(&file);
-            ts >> i->imageChecksum;
+            QDataStream checkSums(&file);
+            checkSums >> i->imageChecksums;
             file.close();
             i->status = ImageItem::Ok;
         }
-        if (!i->imageChecksum)
+        if (!i->imageChecksums.count())
             i->status = ImageItem::BaselineNotFound;
     }
 
@@ -174,8 +174,8 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     //# Could use QSettings or XML or even DB, could use common file for whole dir or even whole storage - but for now, keep it simple
     QFile file(prefix + QLatin1String("metadata"));
     file.open(QIODevice::WriteOnly | QIODevice::Truncate);
-    QTextStream ts(&file);
-    ts << hex << showbase << item.imageChecksum << reset << endl;
+    QDataStream checkSums(&file);
+    checkSums << item.imageChecksums;
     file.close();
 
     QByteArray msg(isBaseline ? "Baseline" : "Mismatching" );

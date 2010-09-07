@@ -234,11 +234,11 @@ void tst_Lancelot::runTestSuite()
         QSKIP("Baseline not found; new baseline created.", SkipSingle);
     }
 
-    if (rendered.imageChecksum != baseline.imageChecksum) {
-        QByteArray serverMsg;
-        if (!proto.submitMismatch(rendered, &serverMsg))
-            serverMsg = "Failed to submit mismatching image to server.";
-        QFAIL("Rendered image differs from baseline.\n" + serverMsg);
+    if (!baseline.imageChecksums.contains(rendered.imageChecksums.at(0))) {
+            QByteArray serverMsg;
+            if (!proto.submitMismatch(rendered, &serverMsg))
+                serverMsg = "Failed to submit mismatching image to server.";
+            QFAIL("Rendered image differs from baseline.\n" + serverMsg);
     }
 }
 
@@ -250,17 +250,17 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
     QStringList script = loadScriptFile(filePath);
     if (script.isEmpty()) {
         res.image = QImage();
-        res.imageChecksum = 0;
+        res.imageChecksums.append(0);
     } else if (item.engine == ImageItem::Raster) {
         QImage img(800, 800, item.renderFormat);
         paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = img;
-        res.imageChecksum = ImageItem::computeChecksum(img);
+        res.imageChecksums.append(ImageItem::computeChecksum(img));
     } else if (item.engine == ImageItem::OpenGL) {
         QGLWidget glWidget;
         if (!glWidget.isValid()) {
             res.image = QImage();
-            res.imageChecksum = 0;
+            res.imageChecksums.append(0);
             return res;
         }
         glWidget.resize(800, 800);
@@ -270,7 +270,7 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
 #endif
         paint(&glWidget, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = glWidget.grabFrameBuffer().convertToFormat(item.renderFormat);
-        res.imageChecksum = ImageItem::computeChecksum(res.image);
+        res.imageChecksums.append(ImageItem::computeChecksum(res.image));
     }
 
     return res;

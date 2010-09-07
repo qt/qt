@@ -33,7 +33,7 @@ ImageItem &ImageItem::operator=(const ImageItem &other)
     renderFormat = other.renderFormat;
     engine = other.engine;
     image = other.image;
-    imageChecksum = other.imageChecksum;
+    imageChecksums = other.imageChecksums;
     return *this;
 }
 
@@ -114,7 +114,7 @@ QString ImageItem::formatAsString() const
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
     stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
-            << quint8(ii.engine) << ii.image << ii.imageChecksum;
+           << quint8(ii.engine) << ii.image << ii.imageChecksums;
     return stream;
 }
 
@@ -122,10 +122,30 @@ QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
 {
     quint8 encFormat, encStatus, encEngine;
     stream >> ii.scriptName >> ii.scriptChecksum >> encStatus >> encFormat
-            >> encEngine >> ii.image >> ii.imageChecksum;
+           >> encEngine >> ii.image >> ii.imageChecksums;
     ii.renderFormat = QImage::Format(encFormat);
     ii.status = ImageItem::ItemStatus(encStatus);
     ii.engine = ImageItem::GraphicsEngine(encEngine);
+    return stream;
+}
+
+QDataStream & operator<< (QDataStream &stream, const QList<quint64> &checkSumList)
+{
+    stream << quint32(checkSumList.count());
+    foreach(quint64 checksum, checkSumList)
+        stream << checksum;
+    return stream;
+}
+
+QDataStream & operator>> (QDataStream &stream, QList<quint64> &checkSumList)
+{
+    quint32 numChecksums;
+    stream >> numChecksums;
+    quint64 checkSum;
+    for (int i=0; i<(int)numChecksums; ++i) {
+        stream >> checkSum;
+        checkSumList.append(checkSum);
+    }
     return stream;
 }
 
