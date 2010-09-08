@@ -250,7 +250,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 */
 
 /*!
-    \qmlsignal MouseArea::onClicked(mouse)
+    \qmlsignal MouseArea::onClicked(MouseEvent mouse)
 
     This handler is called when there is a click. A click is defined as a press followed by a release,
     both inside the MouseArea (pressing, moving outside the MouseArea, and then moving back inside and
@@ -263,7 +263,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 */
 
 /*!
-    \qmlsignal MouseArea::onPressed(mouse)
+    \qmlsignal MouseArea::onPressed(MouseEvent mouse)
 
     This handler is called when there is a press.
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
@@ -277,7 +277,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 */
 
 /*!
-    \qmlsignal MouseArea::onReleased(mouse)
+    \qmlsignal MouseArea::onReleased(MouseEvent mouse)
 
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
@@ -287,7 +287,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 */
 
 /*!
-    \qmlsignal MouseArea::onPressAndHold(mouse)
+    \qmlsignal MouseArea::onPressAndHold(MouseEvent mouse)
 
     This handler is called when there is a long press (currently 800ms).
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
@@ -297,7 +297,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 */
 
 /*!
-    \qmlsignal MouseArea::onDoubleClicked(mouse)
+    \qmlsignal MouseArea::onDoubleClicked(MouseEvent mouse)
 
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y

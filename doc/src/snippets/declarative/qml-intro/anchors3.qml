@@ -47,7 +47,7 @@ Rectangle {
 
     Image {
         id: image1
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
         width: 150; height: 150
         anchors.bottom: myWin.bottom
         anchors.horizontalCenter: myWin.horizontalCenter
