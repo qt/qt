@@ -608,6 +608,17 @@ void tst_qdeclarativetext::style()
         QCOMPARE((int)textObject->style(), (int)styles.at(i));
         QCOMPARE(textObject->styleColor(), QColor("white"));
     }
+    QString componentStr = "import Qt 4.7\nText { text: \"Hello World\" }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+    QRectF brPre = textObject->boundingRect();
+    textObject->setStyle(QDeclarativeText::Outline);
+    QRectF brPost = textObject->boundingRect();
+
+    QVERIFY(brPre.width() < brPost.width());
+    QVERIFY(brPre.height() < brPost.height());
 }
 
 void tst_qdeclarativetext::color()
