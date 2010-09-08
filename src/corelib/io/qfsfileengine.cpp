@@ -352,7 +352,11 @@ bool QFSFileEngine::close()
 bool QFSFileEnginePrivate::closeFdFh()
 {
     Q_Q(QFSFileEngine);
-    if (fd == -1 && !fh)
+    if (fd == -1 && !fh
+#ifdef Q_OS_SYMBIAN
+        && !symbianFile.SubSessionHandle()
+#endif
+        )
         return false;
 
     // Flush the file if it's buffered, and if the last flush didn't fail.

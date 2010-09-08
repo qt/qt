@@ -393,6 +393,10 @@ bool QFSFileEnginePrivate::nativeClose()
 */
 bool QFSFileEnginePrivate::nativeFlush()
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle())
+        return (KErrNone == symbianFile.Flush());
+#endif
     return fh ? flushFh() : fd != -1;
 }
 
@@ -403,6 +407,23 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 {
     Q_Q(QFSFileEngine);
 
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle()) {
+        if(len > KMaxTInt) {
+            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
+            q->setError(QFile::ReadError, QLatin1String("Maximum 2GB in single read on this platform"));
+            return -1;
+        }
+        TPtr8 ptr(reinterpret_cast<TUint8*>(data), static_cast<TInt>(len));
+        TInt r = symbianFile.Read(ptr);
+        if (r != KErrNone)
+        {
+            setSymbianError(r, QFile::ReadError, QLatin1String("read error"));
+            return -1;
+        }
+        return qint64(ptr.Length());
+    }
+#endif
     if (fh && nativeIsSequential()) {
         size_t readBytes = 0;
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
@@ -470,6 +491,24 @@ qint64 QFSFileEnginePrivate::nativeReadLine(char *data, qint64 maxlen)
 */
 qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 {
+    Q_Q(QFSFileEngine);
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle()) {
+        if(len > KMaxTInt) {
+            //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
+            q->setError(QFile::WriteError, QLatin1String("Maximum 2GB in single write on this platform"));
+            return -1;
+        }
+        const TPtrC8 ptr(reinterpret_cast<const TUint8*>(data), static_cast<TInt>(len));
+        TInt r = symbianFile.Write(ptr);
+        if (r != KErrNone)
+        {
+            setSymbianError(r, QFile::WriteError, QLatin1String("write error"));
+            return -1;
+        }
+        return len;
+    }
+#endif
     return writeFdFh(data, len);
 }
 
@@ -478,6 +517,22 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 */
 qint64 QFSFileEnginePrivate::nativePos() const
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle()) {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        qint64 pos;
+#else
+        TInt pos;
+#endif
+        TInt err = symbianFile.Seek(ESeekCurrent, pos);
+        if(err != KErrNone) {
+            //TODO: error reporting
+            //setSymbianError(err, QFile::PositionError, QLatin1String("seek failed"));
+            return -1;
+        }
+        return pos;
+    }
+#endif
     return posFdFh();
 }
 
@@ -486,6 +541,27 @@ qint64 QFSFileEnginePrivate::nativePos() const
 */
 bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 {
+#ifdef Q_OS_SYMBIAN
+    Q_Q(QFSFileEngine);
+    if (symbianFile.SubSessionHandle()) {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        TInt r = symbianFile.Seek(ESeekStart, pos);
+#else
+        if(pos > KMaxTInt) {
+            q->setError(QFile::PositionError, QLatin1String("Maximum 2GB file position on this platform"));
+            return false;
+        }
+        TInt pos32(pos);
+        TInt r = symbianFile.Seek(ESeekStart, pos32);
+#endif
+        if (r != KErrNone)
+        {
+            setSymbianError(r, QFile::PositionError, QLatin1String("seek failed"));
+            return false;
+        }
+        return true;
+    }
+#endif
     return seekFdFh(pos);
 }
 
@@ -502,6 +578,10 @@ int QFSFileEnginePrivate::nativeHandle() const
 */
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle())
+        return false;
+#endif
     return isSequentialFdFh();
 }
 
@@ -571,6 +651,21 @@ bool QFSFileEngine::link(const QString &newName)
 
 qint64 QFSFileEnginePrivate::nativeSize() const
 {
+#ifdef Q_OS_SYMBIAN
+    if (symbianFile.SubSessionHandle()) {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        qint64 size;
+#else
+        TInt size;
+#endif
+        TInt err = symbianFile.Size(size);
+        if(err != KErrNone) {
+            //TODO: error reporting
+            return 0;
+        }
+        return size;
+    }
+#endif
     return sizeFdFh();
 }
 
