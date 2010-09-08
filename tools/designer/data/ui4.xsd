@@ -434,6 +434,7 @@
                         <xs:element name="selectedoff" type="ResourcePixmap" minOccurs="0" />
                         <xs:element name="selectedon" type="ResourcePixmap" minOccurs="0" />
                 </xs:all>
+		<xs:attribute name="theme" type="xs:string" />
                 <xs:attribute name="resource" type="xs:string" /> <!-- pre 4.4 legacy support -->
         </xs:complexType>
 
