@@ -47,7 +47,6 @@
 #include "qevent.h"
 #include "qimage.h"
 #include "qlayout.h"
-#include "qlibrary.h"
 #include "qpainter.h"
 #include "qstack.h"
 #include "qt_windows.h"
@@ -65,6 +64,7 @@
 #include <private/qapplication_p.h>
 #include <private/qwininputcontext_p.h>
 #include <private/qpaintengine_raster_p.h>
+#include <private/qsystemlibrary_p.h>
 
 #if defined(Q_WS_WINCE)
 #include "qguifunctions_wince.h"
@@ -148,7 +148,7 @@ static void init_wintab_functions()
 #else
     if (!qt_is_gui_used)
         return;
-    QLibrary library(QLatin1String("wintab32"));
+    QSystemLibrary library(QLatin1String("wintab32"));
     ptrWTOpen = (PtrWTOpen)library.resolve("WTOpenW");
     ptrWTInfo = (PtrWTInfo)library.resolve("WTInfoW");
     ptrWTClose = (PtrWTClose)library.resolve("WTClose");
@@ -1890,7 +1890,7 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal level)
     static bool function_resolved = false;
     if (!function_resolved) {
         ptrSetLayeredWindowAttributes =
-            (PtrSetLayeredWindowAttributes) QLibrary::resolve(QLatin1String("user32"),
+            (PtrSetLayeredWindowAttributes) QSystemLibrary::resolve(QLatin1String("user32"),
                                                               "SetLayeredWindowAttributes");
         function_resolved = true;
     }
