@@ -1590,12 +1590,16 @@ QScriptValue QScriptEngine::objectById(qint64) const
     return QScriptValue();
 }
 
+/*!
+ *  \internal
+ * used by QScriptEngine::toScriptValue
+ */
 QScriptValue QScriptEngine::create(int type, const void *ptr)
 {
-    Q_UNUSED(type);
-    Q_UNUSED(ptr);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(*d);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(d->metaTypeToJS(type, ptr));
 }
 
 bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)

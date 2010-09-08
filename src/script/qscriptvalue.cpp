@@ -827,7 +827,7 @@ QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlag
 */
 QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode) const
 {
-    return property(arrayIndex, mode);
+    return QScriptValuePrivate::get(d_ptr->property(arrayIndex, mode));
 }
 
 /*!
