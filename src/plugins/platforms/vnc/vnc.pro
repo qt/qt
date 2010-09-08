@@ -1,6 +1,8 @@
 TARGET = qvncgraphicssystem
 include(../../qpluginbase.pri)
 
+QT += network
+
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 SOURCES = main.cpp qvncintegration.cpp
