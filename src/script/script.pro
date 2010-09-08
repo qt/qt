@@ -62,6 +62,7 @@ HEADERS += \
     $$PWD/qscriptdeclarativeclass_p.h \
     $$PWD/qscriptdeclarativeobject_p.h \
     $$PWD/qscriptoriginalglobalobject_p.h \
-    $$PWD/qscriptqobject_p.h
+    $$PWD/qscriptqobject_p.h \
+    $$PWD/qscriptfunction_p.h
 
 symbian:TARGET.UID3=0x2001B2E1

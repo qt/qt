@@ -258,6 +258,22 @@ static QScriptValue myThrowingFunction(QScriptContext *ctx, QScriptEngine *)
     return ctx->throwError("foo");
 }
 
+static QScriptValue myFunctionThatReturns(QScriptContext*, QScriptEngine* eng)
+{
+    return QScriptValue(eng, 42);
+}
+
+static QScriptValue myFunctionThatReturnsWithoutEngine(QScriptContext*, QScriptEngine*)
+{
+    return QScriptValue(1024);
+}
+
+static QScriptValue myFunctionThatReturnsWrongEngine(QScriptContext*, QScriptEngine*, void* arg)
+{
+    QScriptEngine* wrongEngine = reinterpret_cast<QScriptEngine*>(arg);
+    return QScriptValue(wrongEngine, 42);
+}
+
 void tst_QScriptEngine::newFunction()
 {
     QScriptEngine eng;
@@ -272,7 +288,9 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
+            QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
             QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
+            QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
             QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
@@ -283,7 +301,6 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
-
     // the overload that takes a void*
     {
         QScriptValue fun = eng.newFunction(myFunctionWithVoidArg, (void*)this);
@@ -294,7 +311,9 @@ void tst_QScriptEngine::newFunction()
             QScriptValue prot = fun.property("prototype", QScriptValue::ResolveLocal);
             QVERIFY(prot.isObject());
             QVERIFY(prot.property("constructor").strictlyEquals(fun));
+            QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
             QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
+            QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
             QCOMPARE(prot.propertyFlags("constructor"), QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
         }
         // prototype should be Function.prototype
@@ -305,7 +324,6 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
-
     // the overload that takes a prototype
     {
         QScriptValue proto = eng.newObject();
@@ -319,13 +337,52 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
         // public prototype should be the one we passed
         QCOMPARE(fun.property("prototype").strictlyEquals(proto), true);
+        QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
         QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
+        QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
         QCOMPARE(proto.propertyFlags("constructor"),
                  QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
 
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
+    }
+    // whether the return value is correct
+    {
+        QScriptValue fun = eng.newFunction(myFunctionThatReturns);
+        QCOMPARE(fun.isValid(), true);
+        QCOMPARE(fun.isFunction(), true);
+        QCOMPARE(fun.isObject(), true);
+
+        QScriptValue result = fun.call();
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 42);
+    }
+    // whether the return value is assigned to the correct engine
+    {
+        QScriptValue fun = eng.newFunction(myFunctionThatReturnsWithoutEngine);
+        QCOMPARE(fun.isValid(), true);
+        QCOMPARE(fun.isFunction(), true);
+        QCOMPARE(fun.isObject(), true);
+
+        QScriptValue result = fun.call();
+        QCOMPARE(result.engine(), &eng);
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 1024);
+    }
+    // whether the return value is undefined when returning a value with wrong engine
+    {
+        QScriptEngine wrongEngine;
+
+        QScriptValue fun = eng.newFunction(myFunctionThatReturnsWrongEngine, reinterpret_cast<void*>(&wrongEngine));
+        QCOMPARE(fun.isValid(), true);
+        QCOMPARE(fun.isFunction(), true);
+        QCOMPARE(fun.isObject(), true);
+
+        QTest::ignoreMessage(QtWarningMsg, "Value from different engine returned from native function, returning undefined value instead.");
+        QScriptValue result = fun.call();
+        QCOMPARE(result.isValid(), true);
+        QCOMPARE(result.isUndefined(), true);
     }
 }
 

@@ -64,6 +64,9 @@ public:
 
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
+    QScriptValuePrivate* newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate* prototype, int length);
+    QScriptValuePrivate* newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg);
+
     v8::Handle<v8::Object> newQObject(
         QObject *object, QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
         const QScriptEngine::QObjectWrapOptions &opt = 0);

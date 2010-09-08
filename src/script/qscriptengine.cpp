@@ -25,6 +25,7 @@
 #include "qscriptcontext_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
+#include "qscriptfunction_p.h"
 #include "qscriptstring.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue.h"
@@ -1257,10 +1258,8 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject
 */
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
-    Q_UNUSED(fun);
-    Q_UNUSED(length);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->newFunction(fun, 0, length));
 }
 
 /*!
@@ -1290,11 +1289,8 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 */
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue& prototype, int length)
 {
-    Q_UNUSED(fun);
-    Q_UNUSED(prototype);
-    Q_UNUSED(length);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->newFunction(fun, QScriptValuePrivate::get(prototype), length));
 }
 
 /*!
@@ -1303,10 +1299,8 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, co
 */
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg)
 {
-    Q_UNUSED(fun);
-    Q_UNUSED(arg);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    return QScriptValuePrivate::get(d->newFunction(fun, arg));
 }
 
 /*!
@@ -1467,6 +1461,54 @@ QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
     // in JS. I'm not sure if it is bug or feature. It need to be investigated.
     array->Set(v8::String::New("length"), v8::Number::New(length));
     return new QScriptValuePrivate(this, array);
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate* prototype, int length)
+{
+    Q_UNUSED(length);
+
+    v8::Context::Scope scope(m_context);
+    v8::HandleScope handleScope;
+
+    QScriptNativeFunctionData* data = new QScriptNativeFunctionData(this, fun);
+    v8::Local<v8::Value> dataJS = v8::External::New(reinterpret_cast<void*>(data));
+
+    // ### We need to create a FunctionTemplate and use the GetFunction() until we come up
+    // with a way of creating instances of a Template that are Functions (for IsFunction()),
+    // then we could share the templates and hold the 'dataJS' in an internal field.
+
+    v8::Local<v8::FunctionTemplate> funTempl = v8::FunctionTemplate::New(QtNativeFunctionCallback<QScriptNativeFunctionData>, dataJS);
+    v8::Persistent<v8::Function> function = v8::Persistent<v8::Function>::New(funTempl->GetFunction());
+
+    // ### Note that I couldn't make this callback to be called, so for some reason we
+    // are leaking this.
+    function.MakeWeak(reinterpret_cast<void*>(data), QtNativeFunctionCleanup<QScriptNativeFunctionData>);
+
+    QScriptValuePrivate* result = new QScriptValuePrivate(this, function);
+
+    if (prototype) {
+        result->setProperty(QString::fromAscii("prototype"), prototype, QScriptValue::Undeletable);
+        prototype->setProperty(QString::fromAscii("constructor"), result, QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+    }
+
+    return result;
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg)
+{
+    // See other newFunction() for commentary. They should have similar implementations.
+    v8::Context::Scope scope(m_context);
+    v8::HandleScope handleScope;
+
+    QScriptNativeFunctionWithArgData* data = new QScriptNativeFunctionWithArgData(this, fun, arg);
+    v8::Local<v8::Value> dataJS(v8::External::New(reinterpret_cast<void*>(data)));
+
+    v8::Local<v8::FunctionTemplate> funTempl = v8::FunctionTemplate::New(QtNativeFunctionCallback<QScriptNativeFunctionWithArgData>, dataJS);
+    v8::Persistent<v8::Function> function = v8::Persistent<v8::Function>::New(funTempl->GetFunction());
+
+    function.MakeWeak(reinterpret_cast<void*>(data), QtNativeFunctionCleanup<QScriptNativeFunctionWithArgData>);
+
+    return new QScriptValuePrivate(this, function);
 }
 
 QScriptValue QScriptEngine::newObject(QScriptClass *, const QScriptValue &)
