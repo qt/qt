@@ -2658,7 +2658,8 @@ void Configure::generateOutputVars()
             qtConfig += "audio-backend";
     }
 
-    // Don't add "webkit" to QT_CONFIG here - it injects itself via the module.
+    if (dictionary["WEBKIT"] == "yes")
+        qtConfig += "webkit";
 
     if (dictionary["DECLARATIVE"] == "yes") {
         if (dictionary[ "SCRIPT" ] == "no") {
