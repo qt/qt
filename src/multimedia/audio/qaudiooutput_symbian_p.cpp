@@ -195,6 +195,7 @@ void QAudioOutputPrivate::suspend()
         // lost data with silence following a call to resume(), in order to
         // ensure that processedUSecs() returns the correct value.
         m_devSound->stop();
+        m_devSoundBuffer = 0;
         m_totalSamplesPlayed += samplesPlayed;
 
         // Calculate the amount of data dropped
