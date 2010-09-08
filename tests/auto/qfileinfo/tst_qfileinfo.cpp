@@ -72,6 +72,7 @@
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR ""
+# define NO_SYMLINKS
 #endif
 
 //TESTED_CLASS=
@@ -1081,6 +1082,7 @@ void tst_QFileInfo::fileTimes_oldFile()
 
 void tst_QFileInfo::isSymLink_data()
 {
+#ifndef NO_SYMLINKS
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
@@ -1100,10 +1102,12 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << SRCDIR "tst_qfileinfo.cpp" << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(SRCDIR "tst_qfileinfo.cpp").absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+#endif
 }
 
 void tst_QFileInfo::isSymLink()
 {
+#ifndef NO_SYMLINKS
     QFETCH(QString, path);
     QFETCH(bool, isSymLink);
     QFETCH(QString, linkTarget);
@@ -1111,6 +1115,9 @@ void tst_QFileInfo::isSymLink()
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
     QCOMPARE(fi.symLinkTarget(), linkTarget);
+#else
+    QSKIP("no symbolic link support on this platform", SkipAll);
+#endif
 }
 
 void tst_QFileInfo::isHidden_data()
