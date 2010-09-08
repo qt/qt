@@ -64,9 +64,74 @@
 
 QT_BEGIN_NAMESPACE
 
+
+#define QT_QPA_EXPERIMENTAL_MULTITOUCH
+
+#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+class QLinuxInputMouseHandlerData
+{
+public:
+    QLinuxInputMouseHandlerData() :seenMT(false), state(QEvent::TouchBegin), currentIdx(0) {}
+
+    void ensureCurrentPoint() {
+        if (currentIdx >= touchPoints.size()) {
+            Q_ASSERT(currentIdx == touchPoints.size());
+            QWindowSystemInterface::TouchPoint tp;
+            tp.id = currentIdx;
+            tp.isPrimary = (currentIdx == 0);
+            tp.pressure = 1;
+            tp.area = QRectF(0,0,1,1);
+            tp.state = Qt::TouchPointReleased; // init in neutral state
+            touchPoints.append(tp);
+        }
+    }
+    void setCurrentPoint(int i) {
+        currentIdx = i;
+        if (currentIdx < touchPoints.size()) {
+            currentX = int(touchPoints[currentIdx].area.left());
+            currentY = int(touchPoints[currentIdx].area.top());
+        } else {
+            currentY = currentX = -999;
+        }
+    }
+    void advanceCurrentPoint() {
+        setCurrentPoint(currentIdx + 1);
+    }
+    int currentPoint() { return currentIdx; }
+    void   setCurrentX(int value) {
+        ensureCurrentPoint();
+        touchPoints[currentIdx].area.moveLeft(value);
+    }
+    bool currentMoved() {
+        return currentX != touchPoints[currentIdx].area.left() || currentY != touchPoints[currentIdx].area.top();
+    }
+    void updateCurrentPos() {
+        ensureCurrentPoint();
+        touchPoints[currentIdx].area.moveTopLeft(QPointF(currentX, currentY));
+    }
+    void setCurrentState(Qt::TouchPointState state) {
+        ensureCurrentPoint();
+        touchPoints[currentIdx].state = state;
+    }
+    Qt::TouchPointState currentState() const {
+        if (currentIdx < touchPoints.size())
+            return touchPoints[currentIdx].state;
+        return Qt::TouchPointReleased;
+    }
+    QList<QWindowSystemInterface::TouchPoint> touchPoints;
+    int currentX;
+    int currentY;
+    bool seenMT;
+    QEvent::Type state;
+private:
+        int currentIdx;
+};
+#endif
+
+
 QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
                                                  const QString &specification)
-    : m_notify(0), m_x(0), m_y(0), m_buttons(0)
+    : m_notify(0), m_x(0), m_y(0), m_buttons(0), d(0)
 {
     qDebug() << "QLinuxInputMouseHandler" << key << specification;
 
@@ -85,7 +150,9 @@ QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(dev), strerror(errno));
         return;
     }
-
+#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+    d = new QLinuxInputMouseHandlerData;
+#endif    
 }
 
 
@@ -93,6 +160,7 @@ QLinuxInputMouseHandler::~QLinuxInputMouseHandler()
 {
     if (m_fd >= 0)
         QT_CLOSE(m_fd);
+    delete d;
 }
 
 void QLinuxInputMouseHandler::readMouseData()
@@ -119,7 +187,7 @@ void QLinuxInputMouseHandler::readMouseData()
 
     for (int i = 0; i < n; ++i) {
         struct ::input_event *data = &buffer[i];
-
+        //qDebug() << ">>" << hex << data->type << data->code << dec << data->value;
         bool unknown = false;
         if (data->type == EV_ABS) {
             if (data->code == ABS_X && m_x != data->value) {
@@ -128,6 +196,28 @@ void QLinuxInputMouseHandler::readMouseData()
             } else if (data->code == ABS_Y && m_y != data->value) {
                 m_y = data->value;
                 posChanged = true;
+            } else if (data->code == ABS_PRESSURE) {
+                //ignore for now...
+            } else if (data->code == ABS_TOOL_WIDTH) {
+                //ignore for now...
+            } else if (data->code == ABS_HAT0X) {
+                //ignore for now...
+            } else if (data->code == ABS_HAT0Y) {
+                //ignore for now...
+#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+            } else if (data->code == ABS_MT_POSITION_X) {
+                d->currentX = data->value;
+                d->seenMT = true;
+            } else if (data->code == ABS_MT_POSITION_Y) {
+                d->currentY = data->value;
+                d->seenMT = true;
+            } else if (data->code == ABS_MT_TOUCH_MAJOR) {
+                if (data->value == 0)
+                    d->setCurrentState(Qt::TouchPointReleased);
+                //otherwise, ignore for now...
+            } else if (data->code == ABS_MT_TOUCH_MINOR) {
+                //ignore for now...
+#endif
             } else {
                 unknown = true;
             }
@@ -158,7 +248,7 @@ void QLinuxInputMouseHandler::readMouseData()
 
             QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
                                                   QPoint(m_x, m_y), m_buttons);
-        } else if (data->type == EV_KEY) {
+        } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_MIDDLE) {
             Qt::MouseButton button = Qt::NoButton;
             switch (data->code) {
             case BTN_LEFT: button = Qt::LeftButton; break;
@@ -173,17 +263,53 @@ void QLinuxInputMouseHandler::readMouseData()
             QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
                                                   QPoint(m_x, m_y), m_buttons);
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
-            if (!posChanged)
-                continue;
-            posChanged = false;
-            QPoint pos(m_x, m_y);
+            if (posChanged) {
+                posChanged = false;
+                QPoint pos(m_x, m_y);
 
-            QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+                QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+            }
+#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+            if (d->state == QEvent::TouchBegin && !d->seenMT) {
+                //no multi-touch events to send
+            } else {
+                if (!d->seenMT)
+                    d->state = QEvent::TouchEnd;
 
-            // pos = m_handler->transform(pos);
-            //m_handler->limitToScreen(pos);
-            //m_handler->mouseChanged(pos, m_buttons);
+                for (int i = d->currentPoint(); i < d->touchPoints.size(); ++i) {
+                    d->touchPoints[i].pressure = 0;
+                    d->touchPoints[i].state = Qt::TouchPointReleased;
+                }
+                //qDebug() << "handleTouchEvent" << d->state << d->touchPoints.size() << d->touchPoints[0].state;
+                QWindowSystemInterface::handleTouchEvent(0, d->state, QTouchEvent::TouchScreen, d->touchPoints);
+                if (d->seenMT) {
+                    d->state = QEvent::TouchUpdate;
+                } else {
+                    d->state = QEvent::TouchBegin;
+                    d->touchPoints.clear();
+                }
+                d->setCurrentPoint(0);
+                d->seenMT = false;
+            }
+        } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT) {
+            //store data for this touch point
 
+            if (!d->seenMT) {
+                d->setCurrentState(Qt::TouchPointReleased);
+            } else if (d->currentState() == Qt::TouchPointReleased) {
+                d->updateCurrentPos();
+                d->setCurrentState(Qt::TouchPointPressed);
+            } else if (d->currentMoved()) {
+                d->updateCurrentPos();
+                d->setCurrentState(Qt::TouchPointMoved);
+            } else  {
+                d->setCurrentState(Qt::TouchPointStationary);
+            }
+            //qDebug() << "end of point" << d->currentPoint() << d->currentX << d->currentY << d->currentState();
+
+            //advance to next tp:
+            d->advanceCurrentPoint();
+#endif
         } else if (data->type == EV_MSC && data->code == MSC_SCAN) {
             // kernel encountered an unmapped key - just ignore it
             continue;

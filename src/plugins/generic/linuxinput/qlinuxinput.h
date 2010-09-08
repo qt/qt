@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
 
+class QLinuxInputMouseHandlerData;
+
 class QLinuxInputMouseHandler : public QObject
 {
     Q_OBJECT
@@ -67,6 +69,7 @@ private:
     int                        m_fd;
     int                        m_x, m_y;
     Qt::MouseButtons           m_buttons;
+    QLinuxInputMouseHandlerData *d;
 };
 
 

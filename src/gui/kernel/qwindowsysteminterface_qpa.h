@@ -73,7 +73,7 @@ public:
         QPointF normalPosition; // touch device coordinates, (0 to 1, 0 to 1)
         QRectF area;            // the touched area, centered at position in screen coordinates
         qreal pressure;         // 0 to 1
-        Qt::TouchPointStates state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
+        Qt::TouchPointState state; //Qt::TouchPoint{Pressed|Moved|Stationary|Released}
     };
 
     static void handleTouchEvent(QWidget *w, QEvent::Type type, QTouchEvent::DeviceType devType, const QList<struct TouchPoint> &points);
