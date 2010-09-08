@@ -706,25 +706,13 @@ void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
         if (lib.startsWith("-l")) {
             lib.remove(0, 2);
             QString mmpStatement;
-            if (lib.endsWith(".dll")) {
-                lib.chop(4);
-                mmpStatement = "LIBRARY\t\t";
-            } else if (lib.endsWith(".lib")) {
+            if (lib.endsWith(".lib")) {
                 lib.chop(4);
                 mmpStatement = "STATICLIBRARY\t";
             } else {
-                // Hacky way to find out what kind of library it is. Check the
-                // ARMV5 build directory for library type. We default to shared
-                // library, since that is more common.
-                QString udebStaticLibLocation(epocRoot());
-                QString urelStaticLibLocation(udebStaticLibLocation);
-                udebStaticLibLocation += QString("epoc32/release/armv5/udeb/%1.lib").arg(lib);
-                urelStaticLibLocation += QString("epoc32/release/armv5/urel/%1.lib").arg(lib);
-                if (QFile::exists(udebStaticLibLocation) || QFile::exists(urelStaticLibLocation)) {
-                    mmpStatement = "STATICLIBRARY\t";
-                } else {
-                    mmpStatement = "LIBRARY\t\t";
-                }
+                if (lib.endsWith(".dll"))
+                    lib.chop(4);
+                mmpStatement = "LIBRARY\t\t";
             }
             t << mmpStatement <<  lib << ".lib" << endl;
         }
