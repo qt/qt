@@ -48,6 +48,7 @@
 #include <qstringlist.h>
 #include <qpixmap.h>
 #include <qbrush.h>
+#include <qhash.h>
 
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QRegExp)
@@ -329,6 +330,7 @@ public:
 
     static QList<PaintCommandInfos> s_commandInfoTable;
     static QList<QPair<QString,QStringList> > s_enumsTable;
+    static QMultiHash<QString, int> s_commandHash;
 };
 
 #endif // PAINTCOMMANDS_H
