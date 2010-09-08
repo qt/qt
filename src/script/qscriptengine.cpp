@@ -1286,7 +1286,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 
     \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 10
 */
-QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue& prototype, int length)
+QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue &prototype, int length)
 {
     Q_D(QScriptEngine);
     return QScriptValuePrivate::get(d->newFunction(fun, QScriptValuePrivate::get(prototype), length));
@@ -1296,7 +1296,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, co
     \internal
     \since 4.4
 */
-QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg)
+QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
     return QScriptValuePrivate::get(d->newFunction(fun, arg));
@@ -1463,15 +1463,15 @@ QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
     return new QScriptValuePrivate(this, array);
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate* prototype, int length)
+QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length)
 {
     Q_UNUSED(length);
 
     v8::Context::Scope scope(m_context);
     v8::HandleScope handleScope;
 
-    QScriptNativeFunctionData* data = new QScriptNativeFunctionData(this, fun);
-    v8::Local<v8::Value> dataJS = v8::External::New(reinterpret_cast<void*>(data));
+    QScriptNativeFunctionData *data = new QScriptNativeFunctionData(this, fun);
+    v8::Local<v8::Value> dataJS = v8::External::New(reinterpret_cast<void *>(data));
 
     // ### We need to create a FunctionTemplate and use the GetFunction() until we come up
     // with a way of creating instances of a Template that are Functions (for IsFunction()),
@@ -1482,9 +1482,9 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
 
     // ### Note that I couldn't make this callback to be called, so for some reason we
     // are leaking this.
-    function.MakeWeak(reinterpret_cast<void*>(data), QtNativeFunctionCleanup<QScriptNativeFunctionData>);
+    function.MakeWeak(reinterpret_cast<void *>(data), QtNativeFunctionCleanup<QScriptNativeFunctionData>);
 
-    QScriptValuePrivate* result = new QScriptValuePrivate(this, function);
+    QScriptValuePrivate *result = new QScriptValuePrivate(this, function);
 
     if (prototype) {
         result->setProperty(QString::fromAscii("prototype"), prototype, QScriptValue::Undeletable);
@@ -1494,19 +1494,19 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
     return result;
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void* arg)
+QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     // See other newFunction() for commentary. They should have similar implementations.
     v8::Context::Scope scope(m_context);
     v8::HandleScope handleScope;
 
-    QScriptNativeFunctionWithArgData* data = new QScriptNativeFunctionWithArgData(this, fun, arg);
-    v8::Local<v8::Value> dataJS(v8::External::New(reinterpret_cast<void*>(data)));
+    QScriptNativeFunctionWithArgData *data = new QScriptNativeFunctionWithArgData(this, fun, arg);
+    v8::Local<v8::Value> dataJS(v8::External::New(reinterpret_cast<void *>(data)));
 
     v8::Local<v8::FunctionTemplate> funTempl = v8::FunctionTemplate::New(QtNativeFunctionCallback<QScriptNativeFunctionWithArgData>, dataJS);
     v8::Persistent<v8::Function> function = v8::Persistent<v8::Function>::New(funTempl->GetFunction());
 
-    function.MakeWeak(reinterpret_cast<void*>(data), QtNativeFunctionCleanup<QScriptNativeFunctionWithArgData>);
+    function.MakeWeak(reinterpret_cast<void *>(data), QtNativeFunctionCleanup<QScriptNativeFunctionWithArgData>);
 
     return new QScriptValuePrivate(this, function);
 }

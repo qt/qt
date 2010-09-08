@@ -258,17 +258,17 @@ static QScriptValue myThrowingFunction(QScriptContext *ctx, QScriptEngine *)
     return ctx->throwError("foo");
 }
 
-static QScriptValue myFunctionThatReturns(QScriptContext*, QScriptEngine* eng)
+static QScriptValue myFunctionThatReturns(QScriptContext *, QScriptEngine *eng)
 {
     return QScriptValue(eng, 42);
 }
 
-static QScriptValue myFunctionThatReturnsWithoutEngine(QScriptContext*, QScriptEngine*)
+static QScriptValue myFunctionThatReturnsWithoutEngine(QScriptContext *, QScriptEngine *)
 {
     return QScriptValue(1024);
 }
 
-static QScriptValue myFunctionThatReturnsWrongEngine(QScriptContext*, QScriptEngine*, void* arg)
+static QScriptValue myFunctionThatReturnsWrongEngine(QScriptContext *, QScriptEngine *, void *arg)
 {
     QScriptEngine* wrongEngine = reinterpret_cast<QScriptEngine*>(arg);
     return QScriptValue(wrongEngine, 42);
@@ -374,12 +374,12 @@ void tst_QScriptEngine::newFunction()
     {
         QScriptEngine wrongEngine;
 
-        QScriptValue fun = eng.newFunction(myFunctionThatReturnsWrongEngine, reinterpret_cast<void*>(&wrongEngine));
+        QScriptValue fun = eng.newFunction(myFunctionThatReturnsWrongEngine, reinterpret_cast<void *>(&wrongEngine));
         QCOMPARE(fun.isValid(), true);
         QCOMPARE(fun.isFunction(), true);
         QCOMPARE(fun.isObject(), true);
 
-        QTest::ignoreMessage(QtWarningMsg, "Value from different engine returned from native function, returning undefined value instead.");
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call(): Value from different engine returned from native function, returning undefined value instead.");
         QScriptValue result = fun.call();
         QCOMPARE(result.isValid(), true);
         QCOMPARE(result.isUndefined(), true);

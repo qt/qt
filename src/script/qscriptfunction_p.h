@@ -31,7 +31,7 @@
 
 struct QScriptNativeFunctionData
 {
-    QScriptNativeFunctionData(QScriptEnginePrivate* engine, QScriptEngine::FunctionSignature fun)
+    QScriptNativeFunctionData(QScriptEnginePrivate *engine, QScriptEngine::FunctionSignature fun)
         : engine(engine)
         , fun(fun)
     {
@@ -41,13 +41,13 @@ struct QScriptNativeFunctionData
         return fun(scriptContext, QScriptEnginePrivate::get(engine));
     }
 
-    QScriptEnginePrivate* engine;
+    QScriptEnginePrivate *engine;
     QScriptEngine::FunctionSignature fun;
 };
 
 struct QScriptNativeFunctionWithArgData
 {
-    QScriptNativeFunctionWithArgData(QScriptEnginePrivate* engine, QScriptEngine::FunctionWithArgSignature fun, void* arg)
+    QScriptNativeFunctionWithArgData(QScriptEnginePrivate *engine, QScriptEngine::FunctionWithArgSignature fun, void *arg)
         : engine(engine)
         , fun(fun)
         , arg(arg)
@@ -58,17 +58,15 @@ struct QScriptNativeFunctionWithArgData
         return fun(scriptContext, QScriptEnginePrivate::get(engine), arg);
     }
 
-    QScriptEnginePrivate* engine;
+    QScriptEnginePrivate *engine;
     QScriptEngine::FunctionWithArgSignature fun;
-    void* arg;
+    void *arg;
 };
 
 template <typename T>
-void QtNativeFunctionCleanup(v8::Persistent<v8::Value> object, void* parameter)
+void QtNativeFunctionCleanup(v8::Persistent<v8::Value> object, void *parameter)
 {
-    qWarning("Cleanup called");
-
-    T* data = reinterpret_cast<T*>(parameter);
+    T *data = reinterpret_cast<T *>(parameter);
     delete data;
 
     object.Dispose();
@@ -81,18 +79,17 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     v8::HandleScope handleScope;
 
     v8::Handle<v8::External> wrap = v8::Handle<v8::External>::Cast(arguments.Data());
-    T* data = reinterpret_cast<T*>(wrap->Value());
+    T *data = reinterpret_cast<T *>(wrap->Value());
 
     // TODO: build a QScriptContext and use it in the native call.
-    QScriptContext* scriptContext = 0;
+    QScriptContext *scriptContext = 0;
 
-    // When v gets out of scope, it'll delete result.
+    // When 'v' gets out of scope, it'll delete 'result'.
     QScriptValue v = data->call(scriptContext);
-    QScriptValuePrivate* result = QScriptValuePrivate::get(v);
+    QScriptValuePrivate *result = QScriptValuePrivate::get(v);
 
-    QScriptEnginePrivate* engine = data->engine;
+    QScriptEnginePrivate *engine = data->engine;
     if (!result->isValid()) {
-        qWarning("Invalid value returned from native function, returning undefined value instead.");
         return engine->makeJSValue(QScriptValue::UndefinedValue);
     }
 
@@ -100,14 +97,13 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     if (!result->engine()) {
         result->assignEngine(engine);
     } else if (result->engine() != engine) {
-        qWarning("Value from different engine returned from native function, returning undefined value instead.");
+        qWarning("QScriptValue::call(): Value from different engine returned from native function, returning undefined value instead.");
         return engine->makeJSValue(QScriptValue::UndefinedValue);
     }
 
-    // Create a new Persistent handle to return since 'result' will be deleted and
-    // Dispose() its internal v8::Value.
-    // ### Could this be improved by extracting the m_value from 'result' without disposing it?
-    return v8::Persistent<v8::Value>::New(*result);
+    // The persistent handle within the 'result' will be deleted, but
+    // we let its value escape to the outer scope.
+    return handleScope.Close(v8::Handle<v8::Value>(*result));
 }
 
 #endif // QSCRIPTFUNCTION_P_H
