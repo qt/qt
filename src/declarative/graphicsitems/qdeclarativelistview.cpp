@@ -1432,7 +1432,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     to set \e {clip: true} in order to have the out of view items clipped
     nicely.
 
-    \sa {Data Models}, GridView, {declarative/modelviews/listview}{ListView examples}
+    \sa {QML Data Models}, GridView, {declarative/modelviews/listview}{ListView examples}
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
