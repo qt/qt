@@ -3176,7 +3176,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
         if (iconButton == nil) {
             QCFString string(q->windowTitle());
             const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:const_cast<NSString *>(tmpString)]];
             iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
         }
         if (icon.isNull()) {
