@@ -73,6 +73,7 @@ public:
     v8::Handle<v8::Object> newSignal(v8::Handle<v8::Object>, int index, QtSignalData::ResolveMode);
 
     v8::Handle<v8::Object> newVariant(const QVariant &value);
+    v8::Handle<v8::Object> newQMetaObject(const QMetaObject* mo, const QScriptValue &ctor);
 
     v8::Handle<v8::FunctionTemplate> createSignalTemplate();
     v8::Handle<v8::FunctionTemplate> createMetaObjectTemplate();
@@ -139,13 +140,13 @@ private:
     v8::Persistent<v8::Context> m_context;
     v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_globalObject;
+    v8::Persistent<v8::String> m_qtDataId;
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
     v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
-    v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
-
-    v8::Persistent<v8::String> m_qtDataId;
+public:
+    v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
 };
 
 v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)

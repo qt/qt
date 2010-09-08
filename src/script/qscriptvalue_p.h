@@ -80,6 +80,7 @@ public:
     inline quint16 toUInt16() const;
     inline QObject *toQObject() const;
     inline QVariant toVariant() const;
+    inline const QMetaObject *toQMetaObject() const;
 
     inline bool isArray() const;
     inline bool isBool() const;
@@ -455,6 +456,19 @@ QObject* QScriptValuePrivate::toQObject() const
     return toQtObject(m_engine.data(), m_value->ToObject());
 }
 
+const QMetaObject *QScriptValuePrivate::toQMetaObject() const
+{
+    if (!isQMetaObject())
+        return 0;
+    v8::Context::Scope contextScope(*m_engine);
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> object = m_value->ToObject();
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    QtMetaObjectData *data = static_cast<QtMetaObjectData *>(object->GetPointerFromInternalField(0));
+    Q_ASSERT(data);
+    return data->metaObject();
+}
+
 qsreal QScriptValuePrivate::toInteger() const
 {
     qsreal result = toNumber();
@@ -561,12 +575,9 @@ bool QScriptValuePrivate::isQObject() const
 
 bool QScriptValuePrivate::isQMetaObject() const
 {
-    bool result = isJSBased();
-    if (result) {
-        Q_UNIMPLEMENTED();
+    if (!isJSBased() || !m_value->IsObject())
         return false;
-    }
-    return false;
+    return m_engine->m_metaObjectTemplate->HasInstance(m_value);
 }
 
 inline bool QScriptValuePrivate::equals(QScriptValuePrivate* other)
@@ -937,6 +948,11 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(int argc, v8::Handle<
 
 inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueList& args)
 {
+    if (isQMetaObject()) {
+        QtMetaObjectData *data = static_cast<QtMetaObjectData *>(m_value->ToObject()->GetPointerFromInternalField(0));
+        Q_ASSERT(data);
+        return QScriptValuePrivate::get(data->constructor())->construct(args);
+    }
     if (!isFunction())
         return new QScriptValuePrivate();
 

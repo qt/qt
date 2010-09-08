@@ -360,7 +360,7 @@ bool QScriptValue::isObject() const
 */
 bool QScriptValue::isFunction() const
 {
-    return d_ptr->isFunction();
+    return d_ptr->isFunction() || d_ptr->isQMetaObject();
 }
 
 /*!
@@ -953,8 +953,7 @@ QObject *QScriptValue::toQObject() const
 */
 const QMetaObject *QScriptValue::toQMetaObject() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return d_ptr->toQMetaObject();
 }
 
 /*!

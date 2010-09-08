@@ -181,8 +181,8 @@ private:
 class QtMetaObjectData
 {
 public:
-    QtMetaObjectData(const QMetaObject *mo)
-        : m_metaObject(mo)
+    QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, const QScriptValue &ctor)
+        : m_engine(engine), m_metaObject(mo), m_ctor(ctor)
     { }
 
     const QMetaObject *metaObject() const
@@ -195,8 +195,16 @@ public:
         return static_cast<QtMetaObjectData*>(ptr);
     }
 
+    QScriptEnginePrivate *engine() const
+    { return m_engine; }
+
+    QScriptValue constructor() const { return m_ctor; }
+
+
 private:
+    QScriptEnginePrivate *m_engine;
     const QMetaObject *m_metaObject;
+    QScriptValue m_ctor;
 };
 
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *);

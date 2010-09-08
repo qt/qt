@@ -1562,10 +1562,27 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, strippedFlags)));
 }
 
-QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *, const QScriptValue &)
+/*!
+ * Creates a QtScript object that represents a QObject class, using the
+ * the given \a metaObject and constructor \a ctor.
+ *
+ * Enums of \a metaObject (declared with Q_ENUMS) are available as
+ * properties of the created QScriptValue. When the class is called as
+ * a function, \a ctor will be called to create a new instance of the
+ * class.
+ *
+ * Example:
+ *
+ * \snippet doc/src/snippets/code/src_script_qscriptengine.cpp 27
+ *
+ * \sa newQObject(), scriptValueFromQMetaObject()
+ */
+QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *metaObject, const QScriptValue &ctor)
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::HandleScope handleScope;
+    return d->scriptValueFromInternal(d->newQMetaObject(metaObject, ctor));
 }
 
 QScriptValue QScriptEngine::newActivationObject()

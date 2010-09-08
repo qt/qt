@@ -30,6 +30,7 @@
 #include <QtCore/qvarlengtharray.h>
 
 #include <QtCore/qdebug.h>
+#include "qscriptvalue_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -783,25 +784,19 @@ static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> pr
 {
     Q_UNUSED(property);
     Q_UNUSED(info);
-    Q_UNIMPLEMENTED();
-#if 0
     v8::Local<v8::Object> self = info.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
-    QScriptEnginePrivate *engine = data->engine();
 
     const QMetaObject *meta = data->metaObject();
+    QString propertyName = QScriptConverter::toString(property);
 
-#if 0
-    if (propertyName == exec->propertyNames().prototype) {
-        if (data->ctor)
-            slot.setValue(data->ctor.get(exec, propertyName));
-        else
-            slot.setValue(data->prototype);
-        return true;
+    if (propertyName == QLatin1String("prototype")) {
+        QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
+        if (ctor && ctor->isObject())
+            return ctor->m_value->ToObject()->Get(property);
     }
-#endif
 
-    QByteArray name = engine->qtStringFromJS(property).toLatin1();
+    QByteArray name = propertyName.toLatin1();
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
@@ -811,7 +806,27 @@ static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> pr
                 return v8::Int32::New(e.value(j));
         }
     }
-#endif
+
+    return v8::Handle<v8::Value>();
+}
+
+// This callback is called when the QMetaObject is invoked
+static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
+{
+    v8::Local<v8::Object> self = args.Holder();
+    QtMetaObjectData *data = QtMetaObjectData::get(self);
+
+    const QMetaObject *meta = data->metaObject();
+    qDebug() << Q_FUNC_INFO << meta->className();
+
+//     if (!args.IsConstructCall())
+//         return v8::Handle<v8::Value>();
+//
+
+    QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
+    if (ctor && ctor->isFunction() && ctor->m_value->IsFunction()) {
+        return v8::Function::Cast(*ctor->m_value)->NewInstance(args.Length(), &args.Data());
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -897,15 +912,12 @@ static void QtInstanceWeakCallback(v8::Persistent<v8::Value> val, void *arg)
     val.Clear();
 }
 
-// ### Unused
-#if 0
 static void QtMetaObjectWeakCallback(v8::Persistent<v8::Value> val, void *arg)
 {
     Q_UNUSED(val);
     QtMetaObjectData *data = static_cast<QtMetaObjectData*>(arg);
     delete data;
 }
-#endif
 
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
 {
@@ -1045,6 +1057,7 @@ v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate()
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
     instTempl->SetInternalFieldCount(1); // QtMetaObjectData*
 
+    instTempl->SetCallAsFunctionHandler(QtMetaObjectCallback);
     instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter);
 
     return funcTempl;
@@ -1104,6 +1117,23 @@ QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &
     QtInstanceData *data = static_cast<QtInstanceData *>(object->GetPointerFromInternalField(0));
     Q_ASSERT(data);
     return data->cppObject();
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::newQMetaObject(const QMetaObject *mo, const QScriptValue &ctor)
+{
+    v8::Handle<v8::FunctionTemplate> templ = m_metaObjectTemplate;
+    Q_ASSERT(!templ.IsEmpty());
+    v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
+    Q_ASSERT(!instanceTempl.IsEmpty());
+    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+
+    Q_ASSERT(instance->InternalFieldCount() == 1);
+    QtMetaObjectData *data = new QtMetaObjectData(this, mo, ctor);
+    instance->SetPointerInInternalField(0, data);
+
+    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
+    persistent.MakeWeak(data, QtMetaObjectWeakCallback);
+    return persistent;
 }
 
 QT_END_NAMESPACE
