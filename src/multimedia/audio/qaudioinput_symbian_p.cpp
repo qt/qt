@@ -178,10 +178,9 @@ void QAudioInputPrivate::suspend()
         const qint64 samplesRecorded = getSamplesRecorded();
         m_totalSamplesRecorded += samplesRecorded;
 
-        if (m_devSoundBuffer) {
-            m_devSoundBufferQ.append(m_devSoundBuffer);
-            m_devSoundBuffer = 0;
-        }
+        m_devSoundBuffer = 0;
+        m_devSoundBufferQ.clear();
+        m_devSoundBufferPos = 0;
 
         setState(SymbianAudio::SuspendedState);
     }
