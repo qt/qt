@@ -7001,7 +7001,7 @@ if [ "$CFG_WEBKIT" = "auto" ]; then
 fi
 
 if [ "$CFG_WEBKIT" = "yes" ]; then
-    # Don't add "webkit" to QT_CONFIG here - it injects itself via the module.
+    QT_CONFIG="$QT_CONFIG webkit"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     CFG_WEBKIT="yes"
 else
