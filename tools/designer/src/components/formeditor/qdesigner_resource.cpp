@@ -171,7 +171,7 @@ QDesignerResourceBuilder::QDesignerResourceBuilder(QDesignerFormEditorInterface 
 {
 }
 
-static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, 
+static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory,
                                  QString path, PropertySheetIconValue &icon,
                                  const QDesignerLanguageExtension *lang = 0)
 {
@@ -203,6 +203,7 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
         case DomProperty::IconSet: {
             PropertySheetIconValue icon;
             DomResourceIcon *di = property->elementIconSet();
+            icon.setTheme(di->attributeTheme());
             if (const int flags = iconStateFlags(di)) { // new, post 4.4 format
                 if (flags & NormalOff)
                     setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon, m_lang);
@@ -278,8 +279,11 @@ DomProperty *QDesignerResourceBuilder::saveResource(const QDir &workingDirectory
     } else if (value.canConvert<PropertySheetIconValue>()) {
         const PropertySheetIconValue icon = qvariant_cast<PropertySheetIconValue>(value);
         const QMap<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> pixmaps = icon.paths();
-        if (!pixmaps.isEmpty()) {
+        const QString theme = icon.theme();
+        if (!pixmaps.isEmpty() || !theme.isEmpty()) {
             DomResourceIcon *ri = new DomResourceIcon;
+            if (!theme.isEmpty())
+                ri->setAttributeTheme(theme);
             QMapIterator<QPair<QIcon::Mode, QIcon::State>, PropertySheetPixmapValue> itPix(pixmaps);
             while (itPix.hasNext()) {
                 const QIcon::Mode mode = itPix.next().key().first;
