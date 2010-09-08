@@ -331,6 +331,57 @@ void QFontEngineMultiS60::loadEngine(int at)
     Q_ASSERT(engines[at]);
 }
 
+static bool addFontToScreenDevice(int screenDeviceFontIndex,
+                                  const QSymbianFontDatabaseExtrasImplementation *dbExtras)
+{    
+    TTypefaceSupport typefaceSupport;
+        S60->screenDevice()->TypefaceSupport(typefaceSupport, screenDeviceFontIndex);
+    CFont *font; // We have to get a font instance in order to know all the details
+    TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
+    if (S60->screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
+        return false;
+    QScopedPointer<CFont, QSymbianFontDatabaseExtrasImplementation::CFontFromScreenDeviceReleaser> sFont(font);
+    if (font->TypeUid() != KCFbsFontUid)
+        return false;
+    TOpenFontFaceAttrib faceAttrib;
+    const CFbsFont *cfbsFont = static_cast<const CFbsFont *>(font);
+    cfbsFont->GetFaceAttrib(faceAttrib);
+
+    QtFontStyle::Key styleKey;
+    styleKey.style = faceAttrib.IsItalic()?QFont::StyleItalic:QFont::StyleNormal;
+    styleKey.weight = faceAttrib.IsBold()?QFont::Bold:QFont::Normal;
+
+    QString familyName((const QChar *)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
+    QtFontFamily *family = privateDb()->family(familyName, true);
+    family->fixedPitch = faceAttrib.IsMonoWidth();
+    QtFontFoundry *foundry = family->foundry(QString(), true);
+    QtFontStyle *style = foundry->style(styleKey, true);
+    style->smoothScalable = typefaceSupport.iIsScalable;
+    style->pixelSize(0, true);
+
+    const QSymbianTypeFaceExtras *typeFaceExtras =
+            dbExtras->extras(familyName, faceAttrib.IsBold(), faceAttrib.IsItalic());
+    const QByteArray os2Table = typeFaceExtras->getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
+    const unsigned char* data = reinterpret_cast<const unsigned char*>(os2Table.constData());
+    const unsigned char* ulUnicodeRange = data + 42;
+    quint32 unicodeRange[4] = {
+        qFromBigEndian<quint32>(ulUnicodeRange),
+        qFromBigEndian<quint32>(ulUnicodeRange + 4),
+        qFromBigEndian<quint32>(ulUnicodeRange + 8),
+        qFromBigEndian<quint32>(ulUnicodeRange + 12)
+    };
+    const unsigned char* ulCodePageRange = data + 78;
+    quint32 codePageRange[2] = {
+        qFromBigEndian<quint32>(ulCodePageRange),
+        qFromBigEndian<quint32>(ulCodePageRange + 4)
+    };
+    const QList<QFontDatabase::WritingSystem> writingSystems =
+        determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+    foreach (const QFontDatabase::WritingSystem system, writingSystems)
+        family->writingSystems[system] = QtFontFamily::Supported;
+    return true;
+}
+
 static void initializeDb()
 {
     QFontDatabasePrivate *db = privateDb();
@@ -346,59 +397,9 @@ static void initializeDb()
     const int numTypeFaces = S60->screenDevice()->NumTypefaces();
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
-    bool fontAdded = false;
-    for (int i = 0; i < numTypeFaces; i++) {
-        TTypefaceSupport typefaceSupport;
-        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
-        CFont *font; // We have to get a font instance in order to know all the details
-        TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        if (S60->screenDevice()->GetNearestFontInPixels(font, fontSpec) != KErrNone)
-            continue;
-        QScopedPointer<CFont, QSymbianFontDatabaseExtrasImplementation::CFontFromScreenDeviceReleaser> sFont(font);
-        if (font->TypeUid() == KCFbsFontUid) {
-            TOpenFontFaceAttrib faceAttrib;
-            const CFbsFont *cfbsFont = static_cast<const CFbsFont *>(font);
-            cfbsFont->GetFaceAttrib(faceAttrib);
+    for (int i = 0; i < numTypeFaces; i++)
+        addFontToScreenDevice(i, dbExtras);
 
-            QtFontStyle::Key styleKey;
-            styleKey.style = faceAttrib.IsItalic()?QFont::StyleItalic:QFont::StyleNormal;
-            styleKey.weight = faceAttrib.IsBold()?QFont::Bold:QFont::Normal;
-
-            QString familyName((const QChar *)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
-            QtFontFamily *family = db->family(familyName, true);
-            family->fixedPitch = faceAttrib.IsMonoWidth();
-            QtFontFoundry *foundry = family->foundry(QString(), true);
-            QtFontStyle *style = foundry->style(styleKey, true);
-            style->smoothScalable = typefaceSupport.iIsScalable;
-            style->pixelSize(0, true);
-
-            const QSymbianTypeFaceExtras *typeFaceExtras =
-                    dbExtras->extras(familyName, faceAttrib.IsBold(), faceAttrib.IsItalic());
-            const QByteArray os2Table = typeFaceExtras->getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
-            const unsigned char* data = reinterpret_cast<const unsigned char*>(os2Table.constData());
-            const unsigned char* ulUnicodeRange = data + 42;
-            quint32 unicodeRange[4] = {
-                qFromBigEndian<quint32>(ulUnicodeRange),
-                qFromBigEndian<quint32>(ulUnicodeRange + 4),
-                qFromBigEndian<quint32>(ulUnicodeRange + 8),
-                qFromBigEndian<quint32>(ulUnicodeRange + 12)
-            };
-            const unsigned char* ulCodePageRange = data + 78;
-            quint32 codePageRange[2] = {
-                qFromBigEndian<quint32>(ulCodePageRange),
-                qFromBigEndian<quint32>(ulCodePageRange + 4)
-            };
-            const QList<QFontDatabase::WritingSystem> writingSystems =
-                determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
-            foreach (const QFontDatabase::WritingSystem system, writingSystems)
-                family->writingSystems[system] = QtFontFamily::Supported;
-
-            fontAdded = true;
-        }
-    }
-
-    Q_ASSERT(fontAdded);
-    
     lock.relock();
 
 #else // QT_NO_FREETYPE
