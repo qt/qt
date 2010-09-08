@@ -659,18 +659,58 @@ const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const 
   interpolate 4 argb pixels with the distx and disty factor.
   distx and disty bust be between 0 and 16
  */
-static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, int distx, int disty, int idistx, int idisty)
+static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, int distx, int disty)
 {
-    uint tlrb = ((tl & 0x00ff00ff) * idistx * idisty);
-    uint tlag = (((tl & 0xff00ff00) >> 8) * idistx * idisty);
-    uint trrb = ((tr & 0x00ff00ff) * distx * idisty);
-    uint trag = (((tr & 0xff00ff00) >> 8) * distx * idisty);
-    uint blrb = ((bl & 0x00ff00ff) * idistx * disty);
-    uint blag = (((bl & 0xff00ff00) >> 8) * idistx * disty);
-    uint brrb = ((br & 0x00ff00ff) * distx * disty);
-    uint brag = (((br & 0xff00ff00) >> 8) * distx * disty);
+    uint distxy = distx * disty;
+    //idistx * disty = (16-distx) * disty = 16*disty - distxy
+    //idistx * idisty = (16-distx) * (16-disty) = 16*16 - 16*distx -16*dity + distxy
+    uint tlrb = (tl & 0x00ff00ff)         * (16*16 - 16*distx - 16*disty + distxy);
+    uint tlag = ((tl & 0xff00ff00) >> 8)  * (16*16 - 16*distx - 16*disty + distxy);
+    uint trrb = ((tr & 0x00ff00ff)        * (distx*16 - distxy));
+    uint trag = (((tr & 0xff00ff00) >> 8) * (distx*16 - distxy));
+    uint blrb = ((bl & 0x00ff00ff)        * (disty*16 - distxy));
+    uint blag = (((bl & 0xff00ff00) >> 8) * (disty*16 - distxy));
+    uint brrb = ((br & 0x00ff00ff)        * (distxy));
+    uint brag = (((br & 0xff00ff00) >> 8) * (distxy));
     return (((tlrb + trrb + blrb + brrb) >> 8) & 0x00ff00ff) | ((tlag + trag + blag + brag) & 0xff00ff00);
 }
+
+#if defined(QT_ALWAYS_HAVE_SSE2)
+#define interpolate_4_pixels_16_sse2(tl, tr, bl, br, distx, disty, colorMask, v_256, b)  \
+{ \
+    const __m128i dxdy = _mm_mullo_epi16 (distx, disty); \
+    const __m128i distx_ = _mm_slli_epi16(distx, 4); \
+    const __m128i disty_ = _mm_slli_epi16(disty, 4); \
+    const __m128i idxidy =  _mm_add_epi16(dxdy, _mm_sub_epi16(v_256, _mm_add_epi16(distx_, disty_))); \
+    const __m128i dxidy =  _mm_sub_epi16(distx_, dxdy); \
+    const __m128i idxdy =  _mm_sub_epi16(disty_, dxdy); \
+ \
+    __m128i tlAG = _mm_srli_epi16(tl, 8); \
+    __m128i tlRB = _mm_and_si128(tl, colorMask); \
+    __m128i trAG = _mm_srli_epi16(tr, 8); \
+    __m128i trRB = _mm_and_si128(tr, colorMask); \
+    __m128i blAG = _mm_srli_epi16(bl, 8); \
+    __m128i blRB = _mm_and_si128(bl, colorMask); \
+    __m128i brAG = _mm_srli_epi16(br, 8); \
+    __m128i brRB = _mm_and_si128(br, colorMask); \
+ \
+    tlAG = _mm_mullo_epi16(tlAG, idxidy); \
+    tlRB = _mm_mullo_epi16(tlRB, idxidy); \
+    trAG = _mm_mullo_epi16(trAG, dxidy); \
+    trRB = _mm_mullo_epi16(trRB, dxidy); \
+    blAG = _mm_mullo_epi16(blAG, idxdy); \
+    blRB = _mm_mullo_epi16(blRB, idxdy); \
+    brAG = _mm_mullo_epi16(brAG, dxdy); \
+    brRB = _mm_mullo_epi16(brRB, dxdy); \
+ \
+    /* Add the values, and shift to only keep 8 significant bits per colors */ \
+    __m128i rAG =_mm_add_epi16(_mm_add_epi16(tlAG, trAG), _mm_add_epi16(blAG, brAG)); \
+    __m128i rRB =_mm_add_epi16(_mm_add_epi16(tlRB, trRB), _mm_add_epi16(blRB, brRB)); \
+    rAG = _mm_andnot_si128(colorMask, rAG); \
+    rRB = _mm_srli_epi16(rRB, 8); \
+    _mm_storeu_si128((__m128i*)(b), _mm_or_si128(rAG, rRB)); \
+}
+#endif
 
 
 template<TextureBlendType blendType>
@@ -721,7 +761,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
     const qreal cx = x + 0.5;
     const qreal cy = y + 0.5;
 
-    const uint *end = buffer + length;
+    uint *end = buffer + length;
     uint *b = buffer;
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -879,7 +919,75 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 const uchar *s1 = data->texture.scanLine(y1);
                 const uchar *s2 = data->texture.scanLine(y2);
                 int disty = (fy & 0x0000ffff) >> 12;
-                int idisty = 16 - disty;
+
+#if defined(QT_ALWAYS_HAVE_SSE2)
+                if (blendType != BlendTransformedBilinearTiled &&
+                    (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)) {
+
+                    //prolog to get into the bounds
+                    while (b < end) {
+                        int x1 = (fx >> 16);
+                        int x2;
+                        fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
+                        if (x1 != x2) //break if we are insided the bounds.
+                            break;
+                        uint tl = fetch(s1, x1, data->texture.colorTable);
+                        uint tr = fetch(s1, x2, data->texture.colorTable);
+                        uint bl = fetch(s2, x1, data->texture.colorTable);
+                        uint br = fetch(s2, x2, data->texture.colorTable);
+                        int distx = (fx & 0x0000ffff) >> 12;
+                        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+                        fx += fdx;
+                        ++b;
+                    }
+                    uint *boundedEnd;
+                    if (fdx > 0)
+                        boundedEnd = qMin(end, buffer + uint((image_x2 - (fx >> 16)) / data->m11));
+                    else
+                        boundedEnd = qMin(end, buffer + uint((image_x1 - (fx >> 16)) / data->m11));
+                    boundedEnd -= 3;
+
+                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+                    //const __m128i distShuffleMask = _mm_set_epi8(13, 12, 13, 12, 9, 8, 9, 8, 5, 4, 5, 4, 1, 0, 1, 0);
+                    const __m128i v_256 = _mm_set1_epi16(256);
+                    const __m128i v_disty = _mm_set1_epi16(disty);
+                    __m128i v_fdx = _mm_set1_epi32(fdx*4);
+
+                    ptrdiff_t secondLine = reinterpret_cast<const uint *>(s2) - reinterpret_cast<const uint *>(s1);
+
+                    union Vect_buffer { __m128i vect; quint32 i[4]; };
+                    Vect_buffer v_fx;
+
+                    for (int i = 0; i < 4; i++) {
+                        v_fx.i[i] = fx;
+                        fx += fdx;
+                    }
+
+                    while (b < boundedEnd) {
+
+                        Vect_buffer tl, tr, bl, br;
+
+                        for (int i = 0; i < 4; i++) {
+                            int x1 = v_fx.i[i] >> 16;
+                            const uint *addr_tl = reinterpret_cast<const uint *>(s1) + x1;
+                            const uint *addr_tr = addr_tl + 1;
+                            tl.i[i] = *addr_tl;
+                            tr.i[i] = *addr_tr;
+                            bl.i[i] = *(addr_tl+secondLine);
+                            br.i[i] = *(addr_tr+secondLine);
+                        }
+                        __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);      //distx = (fx & 0x0000ffff) >> 12;
+                        //v_distx = _mm_shuffle_epi8(v_disty, distShuffleMask); //distx |= distx << 16;
+                        v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+                        v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+
+                        interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
+                        b+=4;
+                        v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
+                    }
+                    fx = v_fx.i[0];
+                }
+#endif
                 while (b < end) {
                     int x1 = (fx >> 16);
                     int x2;
@@ -889,8 +997,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     uint bl = fetch(s2, x1, data->texture.colorTable);
                     uint br = fetch(s2, x2, data->texture.colorTable);
                     int distx = (fx & 0x0000ffff) >> 12;
-                    int idistx = 16 - distx;
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
                     fx += fdx;
                     ++b;
                 }
@@ -949,10 +1056,8 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
 
                     int distx = (fx & 0x0000ffff) >> 12;
                     int disty = (fy & 0x0000ffff) >> 12;
-                    int idistx = 16 - distx;
-                    int idisty = 16 - disty;
 
-                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty, idistx, idisty);
+                    *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
 
                     fx += fdx;
                     fy += fdy;
