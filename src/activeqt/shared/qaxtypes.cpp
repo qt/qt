@@ -52,7 +52,7 @@
 #include <qobject.h>
 #ifdef QAX_SERVER
 #   include <qaxfactory.h>
-#   include <qlibrary.h>
+#   include <private/qsystemlibrary_p.h>
 #else
 #   include <quuid.h>
 #   include <qaxobject.h>
@@ -666,7 +666,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
             static bool resolved = false;
             if (!resolved) {
                 resolved = true;
-                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QLibrary::resolve(QLatin1String("oleaut32"),
+                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QSystemLibrary::resolve(QLatin1String("oleaut32"),
                                               "GetRecordInfoFromTypeInfo");
             }
             if (!pGetRecordInfoFromTypeInfo)
