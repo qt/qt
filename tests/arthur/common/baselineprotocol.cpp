@@ -141,7 +141,9 @@ bool BaselineProtocol::connect()
 {
     errMsg.clear();
     //###TBD: determine server address; for now local devhost
-    QLatin1String serverName("chimera.europe.nokia.com");
+    QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
+    if (serverName.isNull())
+        serverName = "chimera.europe.nokia.com";
 
     socket.connectToHost(serverName, ServerPort);
 
