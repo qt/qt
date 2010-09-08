@@ -55,7 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
-    mFontDb(new QGenericUnixFontDatabase())
+    : mFontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
 
