@@ -7181,6 +7181,7 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
     CFG_WEBKIT="yes"
 else
+    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
     CFG_WEBKIT="no"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi

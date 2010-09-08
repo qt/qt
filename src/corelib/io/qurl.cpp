@@ -3399,16 +3399,20 @@ QString QUrlPrivate::canonicalHost() const
     if (host.contains(QLatin1Char(':'))) {
         // This is an IP Literal, use _IPLiteral to validate
         QByteArray ba = host.toLatin1();
+        bool needsBraces = false;
         if (!ba.startsWith('[')) {
             // surround the IP Literal with [ ] if it's not already done so
             ba.reserve(ba.length() + 2);
             ba.prepend('[');
             ba.append(']');
+            needsBraces = true;
         }
 
         const char *ptr = ba.constData();
         if (!_IPLiteral(&ptr))
             that->host.clear();
+        else if (needsBraces)
+            that->host = QString::fromLatin1(ba.toLower());
         else
             that->host = host.toLower();
     } else {
