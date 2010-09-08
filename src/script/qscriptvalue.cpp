@@ -754,6 +754,20 @@ bool QScriptValue::strictlyEquals(const QScriptValue& other) const
     return d_ptr->strictlyEquals(QScriptValuePrivate::get(other));
 }
 
+/*!
+  Returns true if this QScriptValue is less than \a other, otherwise
+  returns false.  The comparison follows the behavior described in
+  \l{ECMA-262} section 11.8.5, "The Abstract Relational Comparison
+  Algorithm".
+
+  Note that if this QScriptValue or the \a other value are objects,
+  calling this function has side effects on the script engine, since
+  the engine will call the object's valueOf() function (and possibly
+  toString()) in an attempt to convert the object to a primitive value
+  (possibly resulting in an uncaught script exception).
+
+  \sa equals()
+*/
 bool QScriptValue::lessThan(const QScriptValue &) const
 {
     Q_UNIMPLEMENTED();
@@ -931,12 +945,25 @@ QObject *QScriptValue::toQObject() const
     return d_ptr->toQObject();
 }
 
+/*!
+  If this QScriptValue is a QMetaObject, returns the QMetaObject pointer
+  that the QScriptValue represents; otherwise, returns 0.
+
+  \sa isQMetaObject()
+*/
 const QMetaObject *QScriptValue::toQMetaObject() const
 {
     Q_UNIMPLEMENTED();
     return 0;
 }
 
+/*!
+  Returns a QDateTime representation of this value, in local time.
+  If this QScriptValue is not a date, or the value of the date is NaN
+  (Not-a-Number), an invalid QDateTime is returned.
+
+  \sa isDate()
+*/
 QDateTime QScriptValue::toDateTime() const
 {
     if (!d_ptr->isDate())
@@ -964,37 +991,78 @@ QRegExp QScriptValue::toRegExp() const
     return d_ptr->engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(d_ptr->m_value));
 }
 
+/*!
+  Returns true if this QScriptValue is an object of the Date class;
+  otherwise returns false.
+
+  \sa QScriptEngine::newDate()
+*/
 bool QScriptValue::isDate() const
 {
     return d_ptr->isDate();
 }
 
+/*!
+  Returns true if this QScriptValue is an object of the RegExp class;
+  otherwise returns false.
+
+  \sa QScriptEngine::newRegExp()
+*/
 bool QScriptValue::isRegExp() const
 {
     return d_ptr->isRegExp();
 }
 
+/*!
+  Returns true if this QScriptValue is a QObject; otherwise returns
+  false.
+
+  Note: This function returns true even if the QObject that this
+  QScriptValue wraps has been deleted.
+
+  \sa toQObject(), QScriptEngine::newQObject()
+*/
 bool QScriptValue::isQObject() const
 {
     return d_ptr->isQObject();
 }
 
+/*!
+  Returns true if this QScriptValue is a QMetaObject; otherwise returns
+  false.
+
+  \sa toQMetaObject(), QScriptEngine::newQMetaObject()
+*/
 bool QScriptValue::isQMetaObject() const
 {
     return d_ptr->isQMetaObject();
 }
 
+/*!
+  \internal
+*/
 QScriptValue QScriptValue::scope() const
 {
     Q_UNIMPLEMENTED();
     return QScriptValue();
 }
 
+/*!
+  \internal
+*/
 void QScriptValue::setScope(const QScriptValue &)
 {
     Q_UNIMPLEMENTED();
 }
 
+/*!
+  \since 4.4
+
+  Returns the internal data of this QScriptValue object. QtScript uses
+  this property to store the primitive value of Date, String, Number
+  and Boolean objects. For other types of object, custom data may be
+  stored using setData().
+*/
 QScriptValue QScriptValue::data() const
 {
     if (!d_ptr->isObject())
@@ -1006,6 +1074,16 @@ QScriptValue QScriptValue::data() const
     return d_ptr->engine()->scriptValueFromInternal(value);
 }
 
+/*!
+  \since 4.4
+
+  Sets the internal \a data of this QScriptValue object. You can use
+  this function to set object-specific data that won't be directly
+  accessible to scripts, but may be retrieved in C++ using the data()
+  function.
+
+  \sa QScriptEngine::reportAdditionalMemoryCost()
+*/
 void QScriptValue::setData(const QScriptValue &value)
 {
     if (!d_ptr->isObject())
@@ -1021,17 +1099,46 @@ void QScriptValue::setData(const QScriptValue &value)
         self->SetHiddenValue(dataId, jsValue);
 }
 
+/*!
+  \since 4.4
+
+  Returns the custom script class that this script object is an
+  instance of, or 0 if the object is not of a custom class.
+
+  \sa setScriptClass()
+*/
 QScriptClass *QScriptValue::scriptClass() const
 {
     Q_UNIMPLEMENTED();
     return 0;
 }
 
+/*!
+  \since 4.4
+
+  Sets the custom script class of this script object to \a scriptClass.
+  This can be used to "promote" a plain script object (e.g. created
+  by the "new" operator in a script, or by QScriptEngine::newObject() in C++)
+  to an object of a custom type.
+
+  If \a scriptClass is 0, the object will be demoted to a plain
+  script object.
+
+  \sa scriptClass(), setData()
+*/
 void QScriptValue::setScriptClass(QScriptClass *)
 {
     Q_UNIMPLEMENTED();
 }
 
+/*!
+  \internal
+
+  Returns the ID of this object, or -1 if this QScriptValue is not an
+  object.
+
+  \sa QScriptEngine::objectById()
+*/
 qint64 QScriptValue::objectId() const
 {
     Q_UNIMPLEMENTED();
