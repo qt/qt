@@ -53,7 +53,7 @@ Rectangle {
 
 //! [added an image]
     Image {
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
     }
 //! [added an image]
 

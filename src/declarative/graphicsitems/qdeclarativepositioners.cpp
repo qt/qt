@@ -323,58 +323,65 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
 
 /*!
   \qmlclass Column QDeclarativeColumn
-    \ingroup qml-positioning-elements
-    \since 4.7
+  \ingroup qml-positioning-elements
+  \since 4.7
   \brief The Column item arranges its children vertically.
   \inherits Item
 
   The Column item positions its child items so that they are vertically
-    aligned and not overlapping. Spacing between items can be added.
+  aligned and not overlapping.
 
-  The below example positions differently shaped rectangles using a Column.
-  \table
-  \row
-  \o \image verticalpositioner_example.png
-  \o
+  Spacing between items can be added using the \l spacing property.
+  Transitions can be used for cases where items managed by a Column are
+  added or moved. These are stored in the \l add and \l move properties
+  respectively.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example positions differently shaped rectangles using a Column
+  item.
+
+  \image verticalpositioner_example.png
+
+  \snippet doc/src/snippets/declarative/column/vertical-positioner.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Column item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Column item.
+
+  The use of transitions with positioners is described in more detail in the
+  \l{Using QML Positioner and Repeater Items#Using Transitions}{Using QML
+  Positioner and Repeater Items} document.
+
+  \image verticalpositioner_transition.gif
+
   \qml
-Column {
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-}
+  Column {
+      spacing: 2
+      add: ...
+      move: ...
+      ...
+  }
   \endqml
-  \endtable
 
-  Column also provides for transitions to be set when items are added, moved,
-  or removed in the positioner. Adding and removing apply both to items which are deleted
-  or have their position in the document changed so as to no longer be children of the positioner,
-  as well as to items which have their opacity set to or from zero so as to appear or disappear.
-
-  \table
-  \row
-  \o \image verticalpositioner_transition.gif
-  \o
-  \qml
-Column {
-    spacing: 2
-    add: ...
-    move: ...
-    ...
-}
-  \endqml
-  \endtable
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
   the x or y properties, use anchors on a child of a positioner, or have the
   height of a child depend on the position of a child, then the
-  positioner may exhibit strange behaviour. If you need to perform any of these
+  positioner may exhibit strange behavior. If you need to perform any of these
   actions, consider positioning the items without the use of a Column.
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Row, {declarative/positioners}{Positioners example}
+  \sa Row, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -382,55 +389,47 @@ Column {
     This property holds the transition to be applied when adding an
     item to the positioner. The transition will only be applied to the
     added item(s).  Positioner transitions will only affect the
-    position (x,y) of items.
+    position (x, y) of items.
 
-    Added can mean that either the object has been created or
-    reparented, and thus is now a child or the positioner, or that the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
 
-
+    \sa move
 */
 /*!
     \qmlproperty Transition Column::move
 
     This property holds the transition to apply when moving an item
     within the positioner.  Positioner transitions will only affect
-    the position (x,y) of items.
+    the position (x, y) of items.
 
-    This can happen when other items are added or removed from the
-    positioner, or when items resize themselves.
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
-    \table
-    \row
-    \o \image positioner-move.gif
-    \o
+    \image positioner-move.gif
+
     \qml
-Column {
-    move: Transition {
-        NumberAnimation {
-            properties: "y"
-            easing.type: Easing.OutBounce
+    Column {
+        move: Transition {
+            NumberAnimation {
+                properties: "y"
+                easing.type: Easing.OutBounce
+            }
         }
     }
-}
     \endqml
-    \endtable
+
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Column::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
-  The below example places a \l Grid containing a red, a blue and a
-  green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
-
-  \image spacing_a.png
-  \image spacing_b.png
-
+  \sa Grid::spacing
 */
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
@@ -484,28 +483,37 @@ void QDeclarativeColumn::reportConflictingAnchors()
 
 /*!
   \qmlclass Row QDeclarativeRow
-    \ingroup qml-positioning-elements
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Row item arranges its children horizontally.
   \inherits Item
 
-  The Row item positions its child items so that they are
-  horizontally aligned and not overlapping. 
+  The Row item positions its child items so that they are horizontally
+  aligned and not overlapping. 
 
   Use \l spacing to set the spacing between items in a Row, and use the
   \l add and \l move properties to set the transitions that should be applied
   when items are added to, removed from, or re-positioned within the Row.
 
-  The below example lays out differently shaped rectangles using a Row.
-  \qml
-Row {
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-}
-  \endqml
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example lays out differently shaped rectangles using a Row.
+
   \image horizontalpositioner_example.png
+
+  \snippet doc/src/snippets/declarative/row/row.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Grid item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Row item.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -516,56 +524,54 @@ Row {
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, {declarative/positioners}{Positioners example}
+  \sa Column, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition will only be applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Row::move
 
-    This property holds the transition to apply when moving an item
-    within the positioner.  Positioner transitions will only affect
-    the position (x,y) of items.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
 
-    This can happen when other items are added or removed from the
-    positioner, or when items resize themselves.
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Row {
-    id: positioner
-    move: Transition {
-        NumberAnimation {
-            properties: "x"
-            ease: "easeOutBounce"
+    Row {
+        id: positioner
+        move: Transition {
+            NumberAnimation {
+                properties: "x"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Row::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
-  The below example places a \l Grid containing a red, a blue and a
-  green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
-
-  \image spacing_a.png
-  \image spacing_b.png
-
+  \sa Grid::spacing
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Horizontal, parent)
@@ -618,47 +624,46 @@ void QDeclarativeRow::reportConflictingAnchors()
 
 /*!
   \qmlclass Grid QDeclarativeGrid
-    \ingroup qml-positioning-elements
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Grid item positions its children in a grid.
   \inherits Item
 
   The Grid item positions its child items so that they are
   aligned in a grid and are not overlapping. 
-  
-  Spacing can be added
-  between child items. It also provides for transitions to be set when items are
-  added, moved, or removed in the positioner. Adding and removing apply
-  both to items which are deleted or have their position in the
-  document changed so as to no longer be children of the positioner, as
-  well as to items which have their opacity set to or from zero so
-  as to appear or disappear.
 
-  A Grid defaults to four columns, and as many rows as
-  are necessary to fit all child items. The number of rows
-  and/or the number of columns can be constrained by setting the \l rows
-  or \l columns properties. The grid positioner calculates a grid with
-  rectangular cells of sufficient size to hold all items, and then
-  places the items in the cells, going across then down, and
-  positioning each item at the (0,0) corner of the cell. The below
-  example demonstrates this.
+  The grid positioner calculates a grid of rectangular cells of sufficient
+  size to hold all items, placing the items in the cells, from left to right
+  and top to bottom. Each item is positioned in the top-left corner of its
+  cell with position (0, 0).
 
-  \table
-  \row
-  \o \image gridLayout_example.png
-  \o
-  \qml
-Grid {
-    columns: 3
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-    Rectangle { color: "cyan"; width: 50; height: 50 }
-    Rectangle { color: "magenta"; width: 10; height: 10 }
-}
-  \endqml
-  \endtable
+  A Grid defaults to four columns, and as many rows as are necessary to
+  fit all child items. The number of rows and columns can be constrained
+  by setting the \l rows and \l columns properties.
+
+  Spacing can be added between child items by setting the \l spacing
+  property. The amount of spacing applied will be the same in the
+  horizontal and vertical directions.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example demonstrates this.
+
+  \image gridLayout_example.png
+
+  \snippet doc/src/snippets/declarative/grid/grid.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Grid item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Grid item.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -669,55 +674,62 @@ Grid {
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Flow, {declarative/positioners}{Positioners example}
+  \sa Flow, Row, Column, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items,
-    as that is all the positioners affect. To animate other property change
-    you will have to do so based on how you have changed those properties.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Grid::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or
-    when items resize themselves.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
+
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Grid {
-    move: Transition {
-        NumberAnimation {
-            properties: "x,y"
-            ease: "easeOutBounce"
+    Grid {
+        move: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Grid::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
   The below example places a Grid containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
+  occupies is colored white. The positioner on the left has the
+  no spacing (the default), and the positioner on the right has
+  a spacing of 6.
 
-  \image spacing_a.png
-  \image spacing_b.png
+  \inlineimage qml-grid-no-spacing.png
+  \inlineimage qml-grid-spacing.png
 
+  \sa rows, columns
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
     QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
@@ -726,7 +738,9 @@ QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
 
 /*!
     \qmlproperty int Grid::columns
-    This property holds the number of columns in the grid.
+
+    This property holds the number of columns in the grid. The default
+    number of columns is 4.
 
     If the grid does not have enough items to fill the specified
     number of columns, some columns will be of zero width.
@@ -912,13 +926,43 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
 /*!
   \qmlclass Flow QDeclarativeFlow
-    \ingroup qml-positioning-elements
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Flow item arranges its children side by side, wrapping as necessary.
   \inherits Item
 
-  The Flow item positions its child items so that they are side by side and are
-  not overlapping.
+  The Flow item positions its child items like words on a page, wrapping them
+  to create rows or columns of items that do not overlap.
+
+  Spacing between items can be added using the \l spacing property.
+  Transitions can be used for cases where items managed by a Column are
+  added or moved. These are stored in the \l add and \l move properties
+  respectively.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example positions \l Text items within a parent item using
+  a Flow item.
+
+  \image qml-flow-snippet.png
+
+  \snippet doc/src/snippets/declarative/flow.qml flow item
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Flow item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Flow item.
+
+  The use of transitions with positioners is described in more detail in the
+  \l{Using QML Positioner and Repeater Items#Using Transitions}{Using QML
+  Positioner and Repeater Items} document.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -929,38 +973,46 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-    \sa Grid, {declarative/positioners}{Positioners example}
+  \sa Column, Row, Grid, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition will only be applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Flow::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
+
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Flow {
-    id: positioner
-    move: Transition {
-        NumberAnimation {
-            properties: "x,y"
-            ease: "easeOutBounce"
+    Flow {
+        id: positioner
+        move: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Flow::spacing
@@ -968,6 +1020,7 @@ Flow {
   spacing is the amount in pixels left empty between each adjacent
   item, and defaults to 0.
 
+  \sa Grid::spacing
 */
 
 class QDeclarativeFlowPrivate : public QDeclarativeBasePositionerPrivate

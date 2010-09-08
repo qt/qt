@@ -766,7 +766,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 }
 
 /*!
-    \qmlclass ListElement
+    \qmlclass ListElement QDeclarativeListElement
     \ingroup qml-working-with-data
     \since 4.7
     \brief The ListElement element defines a data item in a ListModel.

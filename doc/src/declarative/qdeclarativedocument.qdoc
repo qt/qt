@@ -28,34 +28,17 @@
 /*!
 \page qdeclarativedocuments.html
 \title QML Documents
+\brief A description of QML documents and the kind of content they contain.
 
-A QML document is a block of QML source code.  QML documents generally correspond to files 
-stored on a disk or network resource, but can also be constructed directly from text data.
+\section1 Introduction
+
+A QML document is a block of QML source code.  QML documents generally correspond to files
+stored on a disk or at a location on a network, but they can also be constructed directly
+from text data.
 
 Here is a simple QML document:
 
-\code
-import Qt 4.7
-
-Rectangle {
-    width: 240; height: 320; 
-
-    resources: [
-        Component {
-            id: contactDelegate
-            Text {
-                text: modelData.firstName + " " + modelData.lastName
-            }
-        }
-    ]
-
-    ListView {
-        anchors.fill: parent
-        model: contactModel
-        delegate: contactDelegate
-    } 
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-documents/non-trivial.qml document
 
 QML documents are always encoded in UTF-8 format.
 
@@ -96,7 +79,7 @@ Each instance is created with a different value for its \c text property:
 \o application.qml
 
 \row
-\o \snippet doc/src/snippets/declarative/qmldocuments.qml 0
+\o \snippet doc/src/snippets/declarative/qml-documents/qmldocuments.qml document
 \o 
 \qml
 import Qt 4.7
@@ -153,39 +136,9 @@ These final two examples are behaviorally identical to the original document.
 \table
 \row
 \o
-\code
-import Qt 4.7
-
-Rectangle {
-    width: 240; height: 320; 
-
-    ListView {
-        anchors.fill: parent
-        model: contactModel
-        delegate: Component {
-            Text {
-                text: modelData.firstName + " " + modelData.lastName
-            }
-        }
-    } 
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-documents/inline-component.qml document
 \o
-\code
-import Qt 4.7
-
-Rectangle {
-    width: 240; height: 320; 
-
-    ListView {
-        anchors.fill: parent
-        model: contactModel
-        delegate: Text {
-            text: modelData.firstName + " " + modelData.lastName
-        }
-    } 
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-documents/inline-text-component.qml document
 \endtable
 
 \sa QDeclarativeComponent

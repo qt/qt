@@ -58,12 +58,12 @@ would be a property.
 
 The basic syntax of an \l{QML Elements}{element} is
 
-\code
+\qml
 SomeElement {
     id: myObject
     ... some other things here ...
 }
-\endcode
+\endqml
 
 Here we are defining a new object. We specify its 'type' first as SomeElement.
 Then within matching braces { ... } we specify the various parts of our 
@@ -583,7 +583,7 @@ rectangle. The \c value attribute of 'dial' is set to a value based on the
 the rotation of the needle image. Notice this piece of code in Dial where
 the change in \c value modifies the position of the needle.
 
-\snippet examples/declarative/ui-components/dialcontrol/Dial.qml  needle angle
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle angle
 
 This is part of the \c needleRotation that rotates the needle and causes the
 rotation of its shadow. \l SpringAnimation is an element that modifies the value

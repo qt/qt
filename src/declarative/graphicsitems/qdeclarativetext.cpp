@@ -1205,7 +1205,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \qmlsignal Text::onLinkActivated(link)
+    \qmlsignal Text::onLinkActivated(string link)
 
     This handler is called when the user clicks on a link embedded in the text.
 */
