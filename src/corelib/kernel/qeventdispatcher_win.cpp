@@ -522,7 +522,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
             MSG unused;
             if ((HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT)) == 0
                  && PeekMessage(&unused, 0, WM_TIMER, WM_TIMER, PM_NOREMOVE) == 0)
-#ifdef Q_OS_WINCE
+#ifndef Q_OS_WINCE
                 || GetMessageTime() - d->lastMessageTime >= 10
 #endif
                 ) {
