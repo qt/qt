@@ -45,6 +45,8 @@
 #include "qfsfileengine.h"
 
 #include <stdlib.h> // for realpath()
+#include <unistd.h>
+#include <stdio.h>
 #include <errno.h>
 
 #if defined(Q_OS_SYMBIAN)
@@ -489,7 +491,7 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 //static
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target)
 {
-    return false; // TODO implement;
+    return (::symlink(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0);
 }
 
 //static
@@ -501,13 +503,13 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 //static
 bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
 {
-    return false; // TODO implement;
+    return (::rename(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0);
 }
 
 //static
 bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry)
 {
-    return false; // TODO implement;
+    return (unlink(entry.nativeFilePath().constData()) == 0);
 }
 
 //static

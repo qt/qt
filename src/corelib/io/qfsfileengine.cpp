@@ -364,6 +364,12 @@ bool QFSFileEnginePrivate::closeFdFh()
     if (closeFileHandle) {
         int ret;
         do {
+#ifdef Q_OS_SYMBIAN
+            if (symbianFile.SubSessionHandle()) {
+                symbianFile.Close();
+                ret = 0;
+            } else
+#endif
             if (fh) {
                 // Close buffered file.
                 ret = fclose(fh) != 0 ? -1 : 0;

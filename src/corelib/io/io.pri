@@ -73,12 +73,17 @@ win32 {
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
 } else:unix {
-        SOURCES += io/qfilesystemengine_unix.cpp
-        SOURCES += io/qfilesystemiterator_unix.cpp
-        SOURCES += io/qfsfileengine_unix.cpp
         SOURCES += io/qfsfileengine_iterator_unix.cpp
-        symbian:SOURCES += io/qprocess_symbian.cpp
-        else:SOURCES += io/qprocess_unix.cpp
+        SOURCES += io/qfsfileengine_unix.cpp
+        symbian {
+            SOURCES += io/qfilesystemengine_symbian.cpp
+            SOURCES += io/qprocess_symbian.cpp
+            SOURCES += io/qfilesystemiterator_symbian.cpp
+        } else {
+            SOURCES += io/qfilesystemengine_unix.cpp
+            SOURCES += io/qprocess_unix.cpp
+            SOURCES += io/qfilesystemiterator_unix.cpp
+        }
         macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qfilesystemengine_mac.cpp
