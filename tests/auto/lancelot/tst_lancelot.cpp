@@ -100,8 +100,8 @@ void tst_Lancelot::initTestCase()
     // (e.g. script files not found) as just warnings, and not QFAILs, to avoid false negatives
     // caused by environment or server instability
 
-#if !defined(Q_OS_LINUX)
-    QSKIP("For the moment, this test is only supported on Linux.", SkipAll);
+#if !defined(Q_OS_LINUX) && !defined(Q_OS_MAC)
+    QSKIP("For the moment, this test is only supported on Linux & Mac.", SkipAll);
 #endif
     if (!proto.connect()) {
         QWARN(qPrintable(proto.errorMessage()));
@@ -169,6 +169,9 @@ void tst_Lancelot::testRasterRGB16()
 
 void tst_Lancelot::testOpenGL_data()
 {
+#if defined(Q_OS_MAC)
+    QSKIP("OpenGL testing not supported on this platform.", SkipAll);
+#endif
     QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps") << QLatin1String("rasterops.qps");
     if (!setupTestSuite(ImageItem::OpenGL, QImage::Format_RGB32, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
