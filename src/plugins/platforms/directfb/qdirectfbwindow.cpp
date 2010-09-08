@@ -84,6 +84,8 @@ QDirectFbWindow::QDirectFbWindow(QWidget *tlw, QDirectFbInput *inputhandler)
 
     m_dfbWindow->SetOpacity(m_dfbWindow,0xff);
 
+    setVisible(widget()->isVisible());
+
     DFBWindowID id;
     m_dfbWindow->GetID(m_dfbWindow, &id);
     m_inputHandler->addWindow(id,tlw);
@@ -99,13 +101,15 @@ void QDirectFbWindow::setGeometry(const QRect &rect)
 {
     bool isMoveOnly = (rect.topLeft() != geometry().topLeft()) && (rect.size() == geometry().size());
     QPlatformWindow::setGeometry(rect);
-    m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
-                           rect.width(), rect.height());
+    if (widget()->isVisible() && !(widget()->testAttribute(Qt::WA_DontShowOnScreen))) {
+        m_dfbWindow->SetBounds(m_dfbWindow, rect.x(),rect.y(),
+                               rect.width(), rect.height());
 
-    //Hack. When moving since the WindowSurface of a window becomes invalid when moved
-    if (isMoveOnly) { //if resize then windowsurface is updated.
-        widget()->windowSurface()->resize(rect.size());
-        widget()->update();
+        //Hack. When moving since the WindowSurface of a window becomes invalid when moved
+        if (isMoveOnly) { //if resize then windowsurface is updated.
+            widget()->windowSurface()->resize(rect.size());
+            widget()->update();
+        }
     }
 }
 
