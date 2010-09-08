@@ -761,7 +761,7 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
     const qreal cx = x + 0.5;
     const qreal cy = y + 0.5;
 
-    const uint *end = buffer + length;
+    uint *end = buffer + length;
     uint *b = buffer;
     if (data->fast_matrix) {
         // The increment pr x in the scanline
@@ -921,43 +921,72 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                 int disty = (fy & 0x0000ffff) >> 12;
 
 #if defined(QT_ALWAYS_HAVE_SSE2)
-                const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
-                //const __m128i distShuffleMask = _mm_set_epi8(13, 12, 13, 12, 9, 8, 9, 8, 5, 4, 5, 4, 1, 0, 1, 0);
-                const __m128i v_256 = _mm_set1_epi16(256);
-                const __m128i v_disty = _mm_set1_epi16(disty);
-                __m128i v_fdx = _mm_set1_epi32(fdx*4);
+                if (blendType != BlendTransformedBilinearTiled &&
+                    (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)) {
 
-                union Vect_buffer { __m128i vect; quint32 i[4]; };
-                Vect_buffer v_fx;
-
-                for (int i = 0; i < 4; i++) {
-                    v_fx.i[i] = fx;
-                    fx += fdx;
-                }
-
-                while (b < end-3) {
-
-                    Vect_buffer tl, tr, bl, br;
-
-                    for (int i = 0; i < 4; i++) {
-                        int x1 = v_fx.i[i] >> 16;
+                    //prolog to get into the bounds
+                    while (b < end) {
+                        int x1 = (fx >> 16);
                         int x2;
                         fetchTransformedBilinear_pixelBounds<blendType>(image_width, image_x1, image_x2, x1, x2);
-                        tl.i[i] = fetch(s1, x1, data->texture.colorTable);
-                        tr.i[i] = fetch(s1, x2, data->texture.colorTable);
-                        bl.i[i] = fetch(s2, x1, data->texture.colorTable);
-                        br.i[i] = fetch(s2, x2, data->texture.colorTable);
+                        if (x1 != x2) //break if we are insided the bounds.
+                            break;
+                        uint tl = fetch(s1, x1, data->texture.colorTable);
+                        uint tr = fetch(s1, x2, data->texture.colorTable);
+                        uint bl = fetch(s2, x1, data->texture.colorTable);
+                        uint br = fetch(s2, x2, data->texture.colorTable);
+                        int distx = (fx & 0x0000ffff) >> 12;
+                        *b = interpolate_4_pixels_16(tl, tr, bl, br, distx, disty);
+                        fx += fdx;
+                        ++b;
                     }
-                    __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);      //distx = (fx & 0x0000ffff) >> 12;
-                    //v_distx = _mm_shuffle_epi8(v_disty, distShuffleMask); //distx |= distx << 16;
-                    v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
-                    v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+                    uint *boundedEnd;
+                    if (fdx > 0)
+                        boundedEnd = qMin(end, buffer + uint((image_x2 - (fx >> 16)) / data->m11));
+                    else
+                        boundedEnd = qMin(end, buffer + uint((image_x1 - (fx >> 16)) / data->m11));
+                    boundedEnd -= 3;
 
-                    interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
-                    b+=4;
-                    v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
+                    const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+                    //const __m128i distShuffleMask = _mm_set_epi8(13, 12, 13, 12, 9, 8, 9, 8, 5, 4, 5, 4, 1, 0, 1, 0);
+                    const __m128i v_256 = _mm_set1_epi16(256);
+                    const __m128i v_disty = _mm_set1_epi16(disty);
+                    __m128i v_fdx = _mm_set1_epi32(fdx*4);
+
+                    ptrdiff_t secondLine = reinterpret_cast<const uint *>(s2) - reinterpret_cast<const uint *>(s1);
+
+                    union Vect_buffer { __m128i vect; quint32 i[4]; };
+                    Vect_buffer v_fx;
+
+                    for (int i = 0; i < 4; i++) {
+                        v_fx.i[i] = fx;
+                        fx += fdx;
+                    }
+
+                    while (b < boundedEnd) {
+
+                        Vect_buffer tl, tr, bl, br;
+
+                        for (int i = 0; i < 4; i++) {
+                            int x1 = v_fx.i[i] >> 16;
+                            const uint *addr_tl = reinterpret_cast<const uint *>(s1) + x1;
+                            const uint *addr_tr = addr_tl + 1;
+                            tl.i[i] = *addr_tl;
+                            tr.i[i] = *addr_tr;
+                            bl.i[i] = *(addr_tl+secondLine);
+                            br.i[i] = *(addr_tr+secondLine);
+                        }
+                        __m128i v_distx = _mm_srli_epi16(v_fx.vect, 12);      //distx = (fx & 0x0000ffff) >> 12;
+                        //v_distx = _mm_shuffle_epi8(v_disty, distShuffleMask); //distx |= distx << 16;
+                        v_distx = _mm_shufflehi_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+                        v_distx = _mm_shufflelo_epi16(v_distx, _MM_SHUFFLE(2,2,0,0));
+
+                        interpolate_4_pixels_16_sse2(tl.vect, tr.vect, bl.vect, br.vect, v_distx, v_disty, colorMask, v_256, b);
+                        b+=4;
+                        v_fx.vect = _mm_add_epi32(v_fx.vect, v_fdx);
+                    }
+                    fx = v_fx.i[0];
                 }
-                fx = v_fx.i[0];
 #endif
                 while (b < end) {
                     int x1 = (fx >> 16);
