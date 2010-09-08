@@ -579,7 +579,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     QString hx;
     static bool in_para = false;
     QString guid, hc;
-    
+
     switch (atom->type()) {
     case Atom::AbstractLeft:
         break;
@@ -1530,8 +1530,8 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     /*
       NOTE: For now we only handle \page elements.
      */
-    if (fake->subType() != Node::Page)
-        return; 
+    //if (fake->subType() != Node::Page)
+    //return; 
 
     if (fake->subType() == Node::File && !fake->subTitle().isEmpty()) {
         subTitleSize = SmallSubTitle;
@@ -1542,28 +1542,56 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         htmlTitle = fullTitle;
     }
 
-    generateHeader(fake);
-
-    if (fake->subType() == Node::Page) {
-        writer.writeStartElement("topic");
-        writer.writeAttribute("id",fake->guid());
-        writer.writeStartElement("title");
-        writer.writeCharacters(fullTitle);
-        writer.writeEndElement(); // </title>
-
-        generateBrief(fake, marker); // <shortdesc>
-
-        if (!fake->doc().isEmpty()) {
-            writer.writeStartElement("body");
-            writer.writeStartElement("p");
-            writer.writeAttribute("outputclass","h2");
-            writer.writeCharacters("Detailed Description");
-            writer.writeEndElement(); // </p>
-            generateBody(fake, marker);
-            writer.writeEndElement(); // </body>
-        }
-        writer.writeEndElement(); // </topic>
+    QString outputclass;
+    switch (fake->subType()) {
+        case Node::Page:
+            outputclass = "page";
+            break;
+        case Node::Group:
+            outputclass = "group";
+            break;
+        case Node::Example:
+            outputclass = "example";
+            break;
+        case Node::HeaderFile:
+            outputclass = "header";
+            break;
+        case Node::File:
+            outputclass = "file";
+            break;
+        case Node::Image:
+            outputclass = "image";
+            break;
+        case Node::Module:
+            outputclass = "module";
+            break;
+        case Node::ExternalPage:
+            outputclass = "externalpage";
+            break;
+        case Node::QmlClass:
+            outputclass = "QML";
+            break;
+        default:
+            return;
     }
+
+    generateHeader(fake);
+    
+    writer.writeStartElement("topic");
+    writer.writeAttribute("id",fake->guid());
+    writer.writeAttribute("outputclass",outputclass);
+    writer.writeStartElement("title");
+    writer.writeCharacters(fullTitle);
+    writer.writeEndElement(); // </title>
+    
+    generateBrief(fake, marker); // <shortdesc>
+
+    if (!fake->doc().isEmpty()) {
+        writer.writeStartElement("body");
+        generateBody(fake, marker);
+        writer.writeEndElement(); // </body>
+    }
+    writer.writeEndElement(); // </topic>
 }
 
 #if 0    
@@ -1837,11 +1865,23 @@ void DitaXmlGenerator::generateHeader(const Node* node)
             version + "//EN\" \"" + dtd + "\">";
     }
     else if (node->type() == Node::Fake) {
-        if (node->subType() == Node::Page) {
+        switch (node->subType()) {
+        case Node::Page:
+        case Node::Group:
+        case Node::Example:
+        case Node::HeaderFile:
+        case Node::File:
+        case Node::Image:
+        case Node::Module:
+        case Node::ExternalPage:
+        case Node::QmlClass:
             element = "topic";
             dtd = "dtd/topic.dtd";
             doctype = "<!DOCTYPE " + element +
                 " PUBLIC \"-//OASIS//DTD DITA Topic//EN\" \"" + dtd + "\">";
+            break;
+        default:
+            break;
         }
     }
 
@@ -2300,11 +2340,11 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
   normally you let it figure it out itself by looking at
   the name of the first and last classes in \a classMap.
  */
-void DitaXmlGenerator::generateCompactList(const Node *relative,
-                                        CodeMarker *marker,
-                                        const NodeMap &classMap,
-                                        bool includeAlphabet,
-                                        QString commonPrefix)
+void DitaXmlGenerator::generateCompactList(const Node* relative,
+                                           CodeMarker* marker,
+                                           const NodeMap& classMap,
+                                           bool includeAlphabet,
+                                           QString commonPrefix)
 {
     const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
 
@@ -2519,42 +2559,50 @@ void DitaXmlGenerator::generateCompactList(const Node *relative,
     writer.writeEndElement(); // </p>
 }
 
-void DitaXmlGenerator::generateFunctionIndex(const Node *relative,
-                                          CodeMarker *marker)
+void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
+                                             CodeMarker* marker)
 {
-    out() << "<p  class=\"centerAlign functionIndex\"><b>";
+    writer.writeStartElement("p");
+    writer.writeAttribute("outputclass","centerAlign functionIndex");
+    writer.writeStartElement("b");
     for (int i = 0; i < 26; i++) {
         QChar ch('a' + i);
-        out() << QString("<xref href=\"#%1\">%2</xref>&nbsp;").arg(ch).arg(ch.toUpper());
+        writer.writeStartElement("xref");
+        writer.writeAttribute("href",QString("#%1").arg(ch));
+        writer.writeCharacters(QString(ch.toUpper()));
+        writer.writeEndElement(); // </xref>
     }
-    out() << "</b></p>\n";
+    writer.writeEndElement(); // </b>
+    writer.writeEndElement(); // </p>
 
     char nextLetter = 'a';
     char currentLetter;
 
-    out() << "<ul>\n";
+    writer.writeStartElement("ul");
     QMap<QString, NodeMap >::ConstIterator f = funcIndex.begin();
     while (f != funcIndex.end()) {
-        out() << "<li>";
-        out() << protectEnc(f.key()) << ":";
-
+        writer.writeStartElement("li");
         currentLetter = f.key()[0].unicode();
         while (islower(currentLetter) && currentLetter >= nextLetter) {
-            out() << QString("<a name=\"%1\"></a>").arg(nextLetter);
+            writer.writeStartElement("p");
+            writeGuidAttribute(QString(nextLetter));
+            writer.writeAttribute("outputclass","target");
+            writer.writeCharacters(QString(nextLetter));
+            writer.writeEndElement(); // </p>
             nextLetter++;
         }
+        writer.writeCharacters(protectEnc(f.key()));
+        writer.writeCharacters(":");
 
         NodeMap::ConstIterator s = (*f).begin();
         while (s != (*f).end()) {
-            out() << " ";
             generateFullName((*s)->parent(), relative, marker, *s);
             ++s;
         }
-        out() << "</li>";
-        out() << "\n";
+        writer.writeEndElement(); // </li>
         ++f;
     }
-    out() << "</ul>\n";
+    writer.writeEndElement(); // </ul>
 }
 
 void DitaXmlGenerator::generateLegaleseList(const Node *relative,
@@ -3596,7 +3644,7 @@ void DitaXmlGenerator::findAllSince(const InnerNode *node)
     }
 }
 
-void DitaXmlGenerator::findAllFunctions(const InnerNode *node)
+void DitaXmlGenerator::findAllFunctions(const InnerNode* node)
 {
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
@@ -3605,7 +3653,7 @@ void DitaXmlGenerator::findAllFunctions(const InnerNode *node)
                 findAllFunctions(static_cast<const InnerNode *>(*c));
             }
             else if ((*c)->type() == Node::Function) {
-                const FunctionNode *func = static_cast<const FunctionNode *>(*c);
+                const FunctionNode* func = static_cast<const FunctionNode*>(*c);
                 if ((func->status() > Node::Obsolete) &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {

@@ -54,6 +54,7 @@
 #include "quoter.h"
 #include "separator.h"
 #include "tokenizer.h"
+#include "ditaxmlgenerator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -385,16 +386,19 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
     }
     else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
-        if (fake->subType() == Node::Example)
+        if (fake->subType() == Node::Example) {
             generateExampleFiles(fake, marker);
-        else if ((fake->subType() == Node::File) || (fake->subType() == Node::Image))
+        }
+        else if ((fake->subType() == Node::File) || (fake->subType() == Node::Image)) {
             quiet = true;
+        }
     }
 
     if (node->doc().isEmpty()) {
-        if (!quiet && !node->isReimp()) // ### might be unnecessary
+        if (!quiet && !node->isReimp()) { // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'")
                             .arg(marker->plainFullName(node)));
+        }
     }
     else {
         if (node->type() == Node::Function) {
@@ -403,9 +407,10 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 generateReimplementedFrom(func, marker);
         }
 
-        if (!generateText(node->doc().body(), node, marker))
+        if (!generateText(node->doc().body(), node, marker)) {
             if (node->isReimp())
                 return;
+        }
 
         if (node->type() == Node::Enum) {
             const EnumNode *enume = (const EnumNode *) node;
