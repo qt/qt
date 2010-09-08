@@ -702,6 +702,23 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
 
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
+
+#if QT_SHOW_DECLARATIVEVIEW_FPS
+    static QTime timer;
+    static int frames;
+
+    if (frames == 0) {
+        timer.start();
+    } else if (timer.elapsed() > 5000) {
+        qreal avgtime = timer.elapsed() / (qreal) frames;
+        qDebug("Average time per frame: %f ms (%i fps)", avgtime, int(1000 / avgtime));
+        timer.start();
+        frames = 0;
+    }
+    ++frames;
+    scene()->update();
+#endif
+
 }
 
 QT_END_NAMESPACE
