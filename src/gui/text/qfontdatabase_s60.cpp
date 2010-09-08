@@ -99,6 +99,7 @@ public:
     ~QSymbianFontDatabaseExtrasImplementation();
 
     const QSymbianTypeFaceExtras *extras(const QString &typeface, bool bold, bool italic) const;
+    void addFontFileToFontStore(const QFileInfo &fontFileInfo);
 
 #ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     struct CFontFromFontStoreReleaser {
@@ -150,11 +151,8 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
         m_store->InstallRasterizerL(m_rasterizer);
         CleanupStack::Pop(m_rasterizer););
 
-    foreach (const QFileInfo &fontFileInfo, fontFiles) {
-        const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
-        TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
-        QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
-    }
+    foreach (const QFileInfo &fontFileInfo, fontFiles)
+        addFontFileToFontStore(fontFileInfo);
 #endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 }
 
@@ -250,6 +248,14 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
     }
     return m_extrasHash.value(searchKey);
 }
+
+void QSymbianFontDatabaseExtrasImplementation::addFontFileToFontStore(const QFileInfo &fontFileInfo)
+{
+    const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
+    TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
+    QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
+}
+
 #else // QT_NO_FREETYPE
 class QFontEngineFTS60 : public QFontEngineFT
 {
