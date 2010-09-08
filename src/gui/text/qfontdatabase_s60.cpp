@@ -58,6 +58,21 @@
 
 QT_BEGIN_NAMESPACE
 
+QStringList qt_symbian_fontFamiliesOnFontServer() // Also used in qfont_s60.cpp
+{
+    QStringList result;
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    const int numTypeFaces = S60->screenDevice()->NumTypefaces();
+    for (int i = 0; i < numTypeFaces; i++) {
+        TTypefaceSupport typefaceSupport;
+        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
+        const QString familyName((const QChar *)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
+        result.append(familyName);
+    }
+    lock.relock();
+    return result;
+}
+
 QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameFilters,
     QDir::Filters filters = QDir::NoFilter, QDir::SortFlags sort = QDir::NoSort,
     bool uniqueFileNames = true)
