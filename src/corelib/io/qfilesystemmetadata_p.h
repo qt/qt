@@ -134,6 +134,9 @@ struct QFileSystemMetaData
 
         OwnerIds            = UserId | GroupId,
 
+        UserName            = 0x40000000,
+        GroupName           = 0x80000000,
+
         PosixStatFlags      = QFileSystemMetaData::OtherPermissions
                             | QFileSystemMetaData::GroupPermissions
                             | QFileSystemMetaData::OwnerPermissions
@@ -223,6 +226,9 @@ struct QFileSystemMetaData
 
     uint userId() const                     { return userId_; }
     uint groupId() const                    { return groupId_; }
+
+    QString user() const { return QString(); /* TODO */ }
+    QString group() const { return QString(); /* TODO */ }
 
     uint ownerId(QAbstractFileEngine::FileOwner owner) const
     {
