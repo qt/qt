@@ -115,9 +115,10 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     }
 
     const bool isDir = result.endsWith('/');
+    const bool isRoot = entry.isRoot();
 
     result = QDir::cleanPath(result);
-    if (isDir)
+    if (isDir && !isRoot)
         result.append(QLatin1Char('/'));
     return QFileSystemEntry(result);
 }
@@ -175,11 +176,12 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         RFs& fs(qt_s60GetRFs());
         TInt err;
         data.entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
-        if (entry.isRoot()) {
+        QFileSystemEntry absentry(absoluteName(entry));
+        if (absentry.isRoot()) {
             //Root directories don't have an entry, and Entry() returns KErrBadName.
             //Therefore get information about the volume instead.
             TInt drive;
-            err = RFs::CharToDrive(TChar(entry.nativeFilePath().at(0).unicode()), drive);
+            err = RFs::CharToDrive(TChar(absentry.nativeFilePath().at(0).unicode()), drive);
             if (!err) {
                 TVolumeInfo info;
                 err = fs.Volume(info, drive);
@@ -188,7 +190,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             }
         } else {
             TEntry ent;
-            err = fs.Entry(qt_QString2TPtrC(absoluteName(entry).nativeFilePath()), ent);
+            err = fs.Entry(qt_QString2TPtrC(absentry.nativeFilePath()), ent);
             if (!err)
                 data.fillFromTEntry(ent);
         }
