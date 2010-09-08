@@ -80,23 +80,40 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
-    if (entry.isAbsolute())
+    QString orig = entry.filePath();
+    const bool needsDrive = (!orig.isEmpty() && orig.at(0).unicode() == '/');
+    const bool isDriveLetter = (orig.size() == 2 && orig.at(1).unicode() == ':');
+    const bool isDriveRelative = (orig.size() > 2 && orig.at(1).unicode() == ':' && orig.at(2).unicode() != '/');
+    const bool isDirty = (orig.contains(QLatin1String("/../")) || orig.contains(QLatin1String("/./")) ||
+            orig.endsWith(QLatin1String("/..")) || orig.endsWith(QLatin1String("/.")));
+    const bool isAbsolute = entry.isAbsolute();
+    if (isAbsolute &&
+        !(needsDrive || isDriveLetter || isDriveRelative || isDirty))
         return entry;
 
-    QString orig = entry.filePath();
     QString result;
-    if (orig.isEmpty() || !orig.startsWith('/')) {
+    if (needsDrive || isDriveLetter || isDriveRelative || !isAbsolute || orig.isEmpty()) {
         QFileSystemEntry cur(QFSFileEngine::currentPath());
-        result = cur.filePath();
+        if(needsDrive)
+            result = cur.filePath().left(2);
+        else if(isDriveRelative && cur.filePath().at(0) != orig.at(0))
+            result = orig.left(2); // for BC, see tst_QFileInfo::absolutePath(<not current drive>:my.dll)
+        else
+            result = cur.filePath();
+        if(isDriveLetter) {
+            result[0] = orig.at(0); //copy drive letter
+            orig.clear();
+        }
+        if(isDriveRelative) {
+            orig = orig.mid(2); //discard the drive specifier from orig
+        }
     }
-    if (!orig.isEmpty() && !(orig.length() == 1 && orig[0] == '.')) {
+    if (!orig.isEmpty() && !(orig.length() == 1 && orig.at(0).unicode() == '.')) {
         if (!result.isEmpty() && !result.endsWith('/'))
             result.append('/');
         result.append(orig);
     }
 
-    if (result.length() == 1 && result[0] == '/')
-        return QFileSystemEntry(result);
     const bool isDir = result.endsWith('/');
 
     result = QDir::cleanPath(result);
