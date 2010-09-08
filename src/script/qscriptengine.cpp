@@ -173,6 +173,11 @@ v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QRegExp &re)
     if (re.caseSensitivity() == Qt::CaseInsensitive)
         flags.append(QLatin1Char('i'));
 
+    return qtRegExpToJS(pattern, flags);
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QString &pattern, const QString &flags)
+{
     // TODO: Use v8::RegExp API when/if it becomes available.
     v8::Handle<v8::Value> regExpCtor = v8::Context::GetCurrent()->Global()->Get(v8::String::New("RegExp"));
     v8::Handle<v8::Function> fun = v8::Handle<v8::Function>::Cast(regExpCtor);
@@ -180,29 +185,6 @@ v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QRegExp &re)
     v8::Handle<v8::Value> argv[2];
     argv[0] = QScriptConverter::toString(pattern);
     argv[1] = QScriptConverter::toString(flags);
-    v8::Handle<v8::Object> result = fun->NewInstance(2, argv);
-//    Q_ASSERT(result->IsRegExp());
-
-    return result;
-}
-
-v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QString &pattern, const QString &flags)
-{
-    QString strippedFlags;
-    if (flags.contains(QLatin1Char('i')))
-        strippedFlags += QLatin1Char('i');
-    if (flags.contains(QLatin1Char('m')))
-        strippedFlags += QLatin1Char('m');
-    if (flags.contains(QLatin1Char('g')))
-        strippedFlags += QLatin1Char('g');
-
-    // TODO: Use v8::RegExp API when/if it becomes available.
-    v8::Handle<v8::Value> regExpCtor = v8::Context::GetCurrent()->Global()->Get(v8::String::New("RegExp"));
-    v8::Handle<v8::Function> fun = v8::Handle<v8::Function>::Cast(regExpCtor);
-
-    v8::Handle<v8::Value> argv[2];
-    argv[0] = QScriptConverter::toString(pattern);
-    argv[1] = QScriptConverter::toString(strippedFlags);
     v8::Handle<v8::Object> result = fun->NewInstance(2, argv);
 
     return result;
@@ -1566,10 +1548,18 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 */
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
+    QString strippedFlags;
+    if (flags.contains(QLatin1Char('i')))
+        strippedFlags += QLatin1Char('i');
+    if (flags.contains(QLatin1Char('m')))
+        strippedFlags += QLatin1Char('m');
+    if (flags.contains(QLatin1Char('g')))
+        strippedFlags += QLatin1Char('g');
+
     Q_D(QScriptEngine);
     v8::Context::Scope contextScope(d_ptr->m_context);
     v8::HandleScope handleScope;
-    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, flags)));
+    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, strippedFlags)));
 }
 
 QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *, const QScriptValue &)

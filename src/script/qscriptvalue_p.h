@@ -111,8 +111,12 @@ public:
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode);
 
+    inline int convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments);
+
     inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValueList& args);
     inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments);
+    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv);
+    inline QScriptValuePrivate* construct(int argc, v8::Handle<v8::Value> *argv);
     inline QScriptValuePrivate* construct(const QScriptValueList& args);
     inline QScriptValuePrivate* construct(const QScriptValue& arguments);
 
@@ -835,6 +839,28 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
     return QScriptValue::PropertyFlags(0);
 }
 
+inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments)
+{
+    // Convert all arguments and bind to the engine.
+    QScriptValuePrivate *args = QScriptValuePrivate::get(arguments);
+
+    if (!args->isJSBased() && !args->assignEngine(engine()))
+        return -1;
+
+    int argc = 0;
+    if (args->isArray()) {
+        v8::Handle<v8::Array> array(v8::Array::Cast(*args->m_value));
+        argc = array->Length();
+        argv->resize(argc);
+        for (int i = 0; i < argc; ++i)
+            (*argv)[i] = array->Get(i);
+    } else if (!args->isNull() && !args->isUndefined()) {
+        // this will cause a type error to be thrown
+        argc = -1;
+    }
+    return argc;
+}
+
 inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
     if (!isFunction())
@@ -851,12 +877,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
         return new QScriptValuePrivate();
     }
 
-    // Make the call
-    if (!thisObject || !thisObject->isObject())
-        thisObject = m_engine->globalObject();
-    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
-    v8::Handle<v8::Value> result = v8::Function::Cast(*m_value)->Call(recv, argc, argv.data());
-    return new QScriptValuePrivate(engine(), result);
+    return call(thisObject, argc, argv.data());
 }
 
 inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments)
@@ -867,39 +888,60 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
     v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
+    QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
+    int argc = convertArguments(&argv, arguments);
+    return call(thisObject, argc, argv.data());
+}
+
+
+QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv)
+{
     if (!thisObject || !thisObject->isObject())
         thisObject = m_engine->globalObject();
     v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
 
-    // Convert all arguments and bind to the engine.
-    QScriptValuePrivate *args = QScriptValuePrivate::get(arguments);
-
-    if (!args->isJSBased() && !args->assignEngine(engine()))
-        return new QScriptValuePrivate();
+    QScriptEnginePrivate *e = engine();
+    e->clearExceptions();
+    v8::TryCatch tryCatch;
 
     v8::Handle<v8::Value> result;
-    if (args->isNull() || args->isUndefined()) {
-        result = v8::Function::Cast(*m_value)->Call(recv, 0, 0);
-    } else if (args->isArray()) {
-        v8::Handle<v8::Array> array(v8::Array::Cast(*args->m_value));
-        int argc = array->Length();
-        QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
-        for (int i = 0; i < argc; ++i)
-            argv[i] = array->Get(i);
-        result = v8::Function::Cast(*m_value)->Call(recv, argc, argv.data());
-    } else {
+
+    if (argc < 0)
         v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
-        return new QScriptValuePrivate();
+    else
+        result = v8::Function::Cast(*m_value)->Call(recv, argc, argv);
+
+    if (result.IsEmpty()) {
+        result = tryCatch.Exception();
+        e->setException(result);
     }
 
-    return new QScriptValuePrivate(engine(), result);
+    return new QScriptValuePrivate(e, result);
 }
 
+inline QScriptValuePrivate* QScriptValuePrivate::construct(int argc, v8::Handle<v8::Value> *argv)
+{
+    QScriptEnginePrivate *e = engine();
+    e->clearExceptions();
+    v8::TryCatch tryCatch;
+
+    v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv);
+
+    if (result.IsEmpty()) {
+        result = tryCatch.Exception();
+        e->setException(result);
+    }
+
+    return new QScriptValuePrivate(e, result);
+}
 
 inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueList& args)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
+
+    v8::Context::Scope contextScope(*engine());
+    v8::HandleScope handleScope;
 
     // Convert all arguments and bind to the engine.
     int argc = args.size();
@@ -909,13 +951,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueLis
         return new QScriptValuePrivate();
     }
 
-    v8::Context::Scope contextScope(*engine());
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Object> result;
-    result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv.data());
-    Q_ASSERT(!result.IsEmpty());
-    Q_ASSERT(result->IsObject());
-    return new QScriptValuePrivate(engine(), result);
+    return construct(argc, argv.data());
 }
 
 inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& arguments)
@@ -926,28 +962,9 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& a
     v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
-    // Convert all arguments and bind to the engine.
-    QScriptValuePrivate *args = QScriptValuePrivate::get(arguments);
-
-    if (!args->isJSBased() && !args->assignEngine(engine()))
-        return new QScriptValuePrivate();
-
-    v8::Handle<v8::Value> result;
-    if (args->isNull() || args->isUndefined()) {
-        result = v8::Function::Cast(*m_value)->NewInstance(0, 0);
-    } else if (args->isArray()) {
-        v8::Handle<v8::Array> array(v8::Array::Cast(*args->m_value));
-        int argc = array->Length();
-        QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
-        for (int i = 0; i < argc; ++i)
-            argv[i] = array->Get(i);
-        result = v8::Function::Cast(*m_value)->NewInstance(argc, argv.data());
-    } else {
-        v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
-        return new QScriptValuePrivate();
-    }
-
-    return new QScriptValuePrivate(engine(), result);
+    QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
+    int argc = convertArguments(&argv, arguments);
+    return construct(argc, argv.data());
 }
 
 

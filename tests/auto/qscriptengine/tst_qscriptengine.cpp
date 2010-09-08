@@ -582,7 +582,7 @@ void tst_QScriptEngine::newRegExp()
 
         QScriptValue r3 = rxCtor.call(QScriptValue(), QScriptValueList() << r << "gim");
         QVERIFY(r3.isError());
-        QCOMPARE(r3.toString(), QString::fromLatin1("TypeError: Cannot supply flags when constructing one RegExp from another."));
+        QCOMPARE(r3.toString(), QString::fromLatin1("TypeError: Cannot supply flags when constructing one RegExp from another"));
 
         QScriptValue r4 = rxCtor.call(QScriptValue(), QScriptValueList() << "foo" << "gim");
         QVERIFY(r4.isRegExp());
