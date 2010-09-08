@@ -57,14 +57,9 @@ public:
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
 QDataStream & operator>> (QDataStream& stream, ImageItem& ii);
 
-
 Q_DECLARE_METATYPE(ImageItem);
 
-QDataStream & operator<< (QDataStream &stream, const QList<quint64> &checkSumList);
-QDataStream & operator>> (QDataStream &stream, QList<quint64> &checkSumList);
-
 typedef QVector<ImageItem> ImageItemList;
-
 
 class BaselineProtocol
 {

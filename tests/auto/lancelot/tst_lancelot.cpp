@@ -246,11 +246,11 @@ void tst_Lancelot::runTestSuite()
 ImageItem tst_Lancelot::render(const ImageItem &item)
 {
     ImageItem res = item;
+    res.imageChecksums.clear();
     QString filePath = scriptsDir + item.scriptName;
     QStringList script = loadScriptFile(filePath);
     if (script.isEmpty()) {
         res.image = QImage();
-        res.imageChecksums.append(0);
     } else if (item.engine == ImageItem::Raster) {
         QImage img(800, 800, item.renderFormat);
         paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)

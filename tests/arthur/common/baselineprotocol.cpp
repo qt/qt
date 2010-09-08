@@ -129,26 +129,6 @@ QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
     return stream;
 }
 
-QDataStream & operator<< (QDataStream &stream, const QList<quint64> &checkSumList)
-{
-    stream << quint32(checkSumList.count());
-    foreach(quint64 checksum, checkSumList)
-        stream << checksum;
-    return stream;
-}
-
-QDataStream & operator>> (QDataStream &stream, QList<quint64> &checkSumList)
-{
-    quint32 numChecksums;
-    stream >> numChecksums;
-    quint64 checkSum;
-    for (int i=0; i<(int)numChecksums; ++i) {
-        stream >> checkSum;
-        checkSumList.append(checkSum);
-    }
-    return stream;
-}
-
 BaselineProtocol::~BaselineProtocol()
 {
     socket.close();
