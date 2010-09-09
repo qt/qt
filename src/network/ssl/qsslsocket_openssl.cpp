@@ -71,6 +71,9 @@ QT_BEGIN_NAMESPACE
     PtrCertFindCertificateInStore QSslSocketPrivate::ptrCertFindCertificateInStore = 0;
     PtrCertCloseStore QSslSocketPrivate::ptrCertCloseStore = 0;
 #elif defined(Q_OS_SYMBIAN)
+#include <e32base.h>
+#include <e32std.h>
+#include <e32debug.h>
 #include <QtCore/private/qcore_symbian_p.h>
 #endif
 
@@ -570,120 +573,138 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 #if defined(Q_OS_SYMBIAN)
 
-QCertificateRetriever::QCertificateRetriever(QCertificateConsumer* parent)
-    : CActive(EPriorityStandard)
-    , certStore(0)
-    , certFilter(0)
-    , consumer(parent)
-    , currentCertificateIndex(0)
-    , certDescriptor(0, 0)
+CSymbianCertificateRetriever::CSymbianCertificateRetriever() : CActive(CActive::EPriorityStandard),
+        iSequenceError(KErrNone)
 {
+}
+
+CSymbianCertificateRetriever::~CSymbianCertificateRetriever()
+{
+    iThread.Close();
+}
+
+CSymbianCertificateRetriever* CSymbianCertificateRetriever::NewL()
+{
+    CSymbianCertificateRetriever* self = new (ELeave) CSymbianCertificateRetriever();
+    CleanupStack::PushL(self);
+    self->ConstructL();
+    CleanupStack::Pop();
+    return self;
+}
+
+int CSymbianCertificateRetriever::GetCertificates(QList<QByteArray> &certificates)
+{
+    iCertificates = &certificates;
+
+    TRequestStatus status;
+    iThread.Logon(status);
+    iThread.Resume();
+    User::WaitForRequest(status);
+    if (iThread.ExitType() == EExitKill)
+        return KErrDied;
+    else
+        return status.Int();    // Logon() completes with the thread's exit value
+}
+
+void CSymbianCertificateRetriever::doThreadEntryL()
+{
+    CActiveScheduler* activeScheduler = new (ELeave) CActiveScheduler;
+    CleanupStack::PushL(activeScheduler);
+    CActiveScheduler::Install(activeScheduler);
+
     CActiveScheduler::Add(this);
-    QT_TRAP_THROWING(certStore = CUnifiedCertStore::NewL(qt_s60GetRFs(), EFalse));
-    QT_TRAP_THROWING(certFilter = CCertAttributeFilter::NewL());
-    certFilter->SetFormat(EX509Certificate);
+
+    // These aren't deleted in the destructor so leaving the to CS is ok
+    iCertStore = CUnifiedCertStore::NewLC(qt_s60GetRFs(), EFalse);
+    iCertFilter = CCertAttributeFilter::NewLC();
+
+    // Kick off the sequence by initializing the cert store
+    iState = Initializing;
+    iCertStore->Initialize(iStatus);
+    SetActive();
+
+    CActiveScheduler::Start();
+
+    // Sequence complete, clean up
+
+    // These MUST be cleaned up before the installed CActiveScheduler is destroyed and can't be left to the
+    // destructor of CSymbianCertificateRetriever. Otherwise the destructor of CActiveScheduler will get
+    // stuck.
+    iCertInfos.Close();
+    CleanupStack::PopAndDestroy(3);     // activeScheduler, iCertStore, iCertFilter
 }
 
-QCertificateRetriever::~QCertificateRetriever()
+
+TInt CSymbianCertificateRetriever::ThreadEntryPoint(TAny* aParams)
 {
-    delete certFilter;
-    delete certStore;
-    Cancel();
+    CTrapCleanup* cleanupStack = CTrapCleanup::New();
+
+    CSymbianCertificateRetriever* self = (CSymbianCertificateRetriever*) aParams;
+    TRAPD(err, self->doThreadEntryL());
+    delete cleanupStack;
+
+    // doThreadEntryL() can leave only before the retrieval sequence is started
+    if (err)
+        return err;
+    else
+        return self->iSequenceError;    // return any error that occured during the retrieval
 }
 
-void QCertificateRetriever::fetch()
+void CSymbianCertificateRetriever::ConstructL()
 {
-    certStore->Initialize(iStatus);
-    state = Initializing;
+    User::LeaveIfError(iThread.Create(_L("CertWorkerThread"),
+        CSymbianCertificateRetriever::ThreadEntryPoint, 16384, NULL, this));
+}
+
+void CSymbianCertificateRetriever::DoCancel()
+{
+    // We never cancel the sequence
+}
+
+TInt CSymbianCertificateRetriever::RunError(TInt aError)
+{
+    // If something goes wrong in the sequence, abort the sequence
+    iSequenceError = aError;    // this gets reported to the client in the TRequestStatus
+    CActiveScheduler::Stop();
+    return KErrNone;
+}
+
+void CSymbianCertificateRetriever::GetCertificateL()
+{
+    CCTCertInfo* certInfo = iCertInfos[iCurrentCertIndex];
+    iCertificateData.resize(certInfo->Size());
+    TPtr8 des((TUint8*)iCertificateData.data(), 0, iCertificateData.size());
+    iCertStore->Retrieve(*certInfo, des, iStatus);
+    iState = RetrievingCertificates;
     SetActive();
 }
 
-void QCertificateRetriever::list()
+void CSymbianCertificateRetriever::RunL()
 {
-    certStore->List(certs, *certFilter, iStatus);
-    state = Listing;
-    SetActive();
-}
-
-void QCertificateRetriever::retrieveNextCertificate()
-{
-    CCTCertInfo* cert = certs[currentCertificateIndex];
-    currentCertificate.resize(cert->Size());
-    certDescriptor.Set((TUint8*)currentCertificate.data(), 0, currentCertificate.size());
-    certStore->Retrieve(*cert, certDescriptor, iStatus);
-    state = RetrievingCertificates;
-    SetActive();
-}
-
-void QCertificateRetriever::RunL()
-{
-    QT_TRYCATCH_LEAVING(run());
-}
-
-void QCertificateRetriever::run()
-{
-    switch (state) {
+    switch (iState) {
     case Initializing:
-        list();
+        iState = Listing;
+        iCertStore->List(iCertInfos, *iCertFilter, iStatus);
+        SetActive();
         break;
+
     case Listing:
-        currentCertificateIndex = 0;
-        retrieveNextCertificate();
+        iCurrentCertIndex = 0;
+        GetCertificateL();
         break;
+
     case RetrievingCertificates:
-        consumer->addEncodedCertificate(currentCertificate);
-        currentCertificate = QByteArray();
-
-        currentCertificateIndex++;
-
-        if (currentCertificateIndex < certs.Count())
-            retrieveNextCertificate();
+        iCertificates->append(iCertificateData);
+        iCertificateData = QByteArray();
+        iCurrentCertIndex++;
+        if (iCurrentCertIndex < iCertInfos.Count())
+            GetCertificateL();
         else
-            consumer->finish();
+            // Stop the scheduler to return to the thread entry function
+            CActiveScheduler::Stop();
         break;
     }
 }
-
-void QCertificateRetriever::DoCancel()
-{
-    switch (state) {
-    case Initializing:
-        certStore->CancelInitialize();
-        break;
-    case Listing:
-        certStore->CancelList();
-        break;
-    case RetrievingCertificates:
-        certStore->CancelRetrieve();
-        break;
-    }
-}
-
-QCertificateConsumer::QCertificateConsumer(QObject* parent)
-    : QObject(parent)
-    , retriever(0)
-{
-}
-
-QCertificateConsumer::~QCertificateConsumer()
-{
-    delete retriever;
-}
-
-void QCertificateConsumer::finish()
-{
-    delete retriever;
-    retriever = 0;
-    emit finished();
-}
-
-void QCertificateConsumer::start()
-{
-    retriever = new QCertificateRetriever(this);
-    Q_CHECK_PTR(retriever);
-    retriever->fetch();
-}
-
 #endif // defined(Q_OS_SYMBIAN)
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
@@ -760,23 +781,15 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/share/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
 #elif defined(Q_OS_SYMBIAN)
-    QThread* certThread = new QThread;
+    QList<QByteArray> certs;
+    QScopedPointer<CSymbianCertificateRetriever> retriever(CSymbianCertificateRetriever::NewL());
 
-    QCertificateConsumer *consumer = new QCertificateConsumer();
-    consumer->moveToThread(certThread);
-    QObject::connect(certThread, SIGNAL(started()), consumer, SLOT(start()));
-    QObject::connect(consumer, SIGNAL(finished()), certThread, SLOT(quit()), Qt::DirectConnection);
-
-    certThread->start();
-    certThread->wait();
-    foreach (const QByteArray &encodedCert, consumer->encodedCertificates()) {
+    retriever->GetCertificates(certs);
+    foreach (const QByteArray &encodedCert, certs) {
         QSslCertificate cert(encodedCert, QSsl::Der);
         if (!cert.isNull())
             systemCerts.append(cert);
     }
-
-    delete consumer;
-    delete certThread;
 #endif
 
     return systemCerts;
