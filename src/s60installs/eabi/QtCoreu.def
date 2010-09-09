@@ -620,8 +620,8 @@ EXPORTS
 	_ZN14QObjectPrivate11clearGuardsEP7QObject @ 619 NONAME
 	_ZN14QObjectPrivate13addConnectionEiPNS_10ConnectionE @ 620 NONAME
 	_ZN14QObjectPrivate14deleteChildrenEv @ 621 NONAME
-	_ZN14QObjectPrivate14setDeleteWatchEPS_Pi @ 622 NONAME
-	_ZN14QObjectPrivate16resetDeleteWatchEPS_Pii @ 623 NONAME
+	_ZN14QObjectPrivate14setDeleteWatchEPS_Pi @ 622 NONAME ABSENT
+	_ZN14QObjectPrivate16resetDeleteWatchEPS_Pii @ 623 NONAME ABSENT
 	_ZN14QObjectPrivate16setCurrentSenderEP7QObjectPNS_6SenderE @ 624 NONAME ABSENT
 	_ZN14QObjectPrivate16setParent_helperEP7QObject @ 625 NONAME
 	_ZN14QObjectPrivate18resetCurrentSenderEP7QObjectPNS_6SenderES3_ @ 626 NONAME ABSENT
@@ -1274,8 +1274,8 @@ EXPORTS
 	_ZN23QCoreApplicationPrivate34sendThroughApplicationEventFiltersEP7QObjectP6QEvent @ 1273 NONAME
 	_ZN23QCoreApplicationPrivate35appendApplicationPathToLibraryPathsEv @ 1274 NONAME
 	_ZN23QCoreApplicationPrivate7attribsE @ 1275 NONAME DATA 4
-	_ZN23QCoreApplicationPrivateC1ERiPPc @ 1276 NONAME
-	_ZN23QCoreApplicationPrivateC2ERiPPc @ 1277 NONAME
+	_ZN23QCoreApplicationPrivateC1ERiPPc @ 1276 NONAME ABSENT
+	_ZN23QCoreApplicationPrivateC2ERiPPc @ 1277 NONAME ABSENT
 	_ZN23QCoreApplicationPrivateD0Ev @ 1278 NONAME
 	_ZN23QCoreApplicationPrivateD1Ev @ 1279 NONAME
 	_ZN23QCoreApplicationPrivateD2Ev @ 1280 NONAME
@@ -3711,4 +3711,42 @@ EXPORTS
 	_ZN16QIODevicePrivate4peekEx @ 3710 NONAME
 	_ZN8QProcess18setNativeArgumentsERK7QString @ 3711 NONAME
 	_ZNK8QProcess15nativeArgumentsEv @ 3712 NONAME
+	_ZN11QThreadPool11waitForDoneEi @ 3713 NONAME
+	_ZN13QSharedMemory12setNativeKeyERK7QString @ 3714 NONAME
+	_ZN16QCoreApplicationC1ERiPPci @ 3715 NONAME
+	_ZN16QCoreApplicationC2ERiPPci @ 3716 NONAME
+	_ZN23QCoreApplicationPrivate19app_compile_versionE @ 3717 NONAME DATA 4
+	_ZN23QCoreApplicationPrivateC1ERiPPcj @ 3718 NONAME
+	_ZN23QCoreApplicationPrivateC2ERiPPcj @ 3719 NONAME
+	_ZN6QMutex12lockInternalEv @ 3720 NONAME
+	_ZN6QMutex14unlockInternalEv @ 3721 NONAME
+	_ZN7QObject10disconnectEPKS_RK11QMetaMethodS1_S4_ @ 3722 NONAME
+	_ZN7QObject7connectEPKS_RK11QMetaMethodS1_S4_N2Qt14ConnectionTypeE @ 3723 NONAME
+	_ZNK10QStringRef10startsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3724 NONAME
+	_ZNK10QStringRef10startsWithE5QCharN2Qt15CaseSensitivityE @ 3725 NONAME
+	_ZNK10QStringRef10startsWithERK7QStringN2Qt15CaseSensitivityE @ 3726 NONAME
+	_ZNK10QStringRef10startsWithERKS_N2Qt15CaseSensitivityE @ 3727 NONAME
+	_ZNK10QStringRef11lastIndexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3728 NONAME
+	_ZNK10QStringRef11lastIndexOfE5QChariN2Qt15CaseSensitivityE @ 3729 NONAME
+	_ZNK10QStringRef11lastIndexOfERK7QStringiN2Qt15CaseSensitivityE @ 3730 NONAME
+	_ZNK10QStringRef11lastIndexOfERKS_iN2Qt15CaseSensitivityE @ 3731 NONAME
+	_ZNK10QStringRef5countE5QCharN2Qt15CaseSensitivityE @ 3732 NONAME
+	_ZNK10QStringRef5countERK7QStringN2Qt15CaseSensitivityE @ 3733 NONAME
+	_ZNK10QStringRef5countERKS_N2Qt15CaseSensitivityE @ 3734 NONAME
+	_ZNK10QStringRef7indexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3735 NONAME
+	_ZNK10QStringRef7indexOfE5QChariN2Qt15CaseSensitivityE @ 3736 NONAME
+	_ZNK10QStringRef7indexOfERK7QStringiN2Qt15CaseSensitivityE @ 3737 NONAME
+	_ZNK10QStringRef7indexOfERKS_iN2Qt15CaseSensitivityE @ 3738 NONAME
+	_ZNK10QStringRef8endsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3739 NONAME
+	_ZNK10QStringRef8endsWithE5QCharN2Qt15CaseSensitivityE @ 3740 NONAME
+	_ZNK10QStringRef8endsWithERK7QStringN2Qt15CaseSensitivityE @ 3741 NONAME
+	_ZNK10QStringRef8endsWithERKS_N2Qt15CaseSensitivityE @ 3742 NONAME
+	_ZNK13QSharedMemory9nativeKeyEv @ 3743 NONAME
+	_ZNK4QUrl11isLocalFileEv @ 3744 NONAME
+	_ZNK7QObject17senderSignalIndexEv @ 3745 NONAME
+	_ZNK7QString10startsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3746 NONAME
+	_ZNK7QString11lastIndexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3747 NONAME
+	_ZNK7QString5countERK10QStringRefN2Qt15CaseSensitivityE @ 3748 NONAME
+	_ZNK7QString7indexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3749 NONAME
+	_ZNK7QString8endsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3750 NONAME
 

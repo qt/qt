@@ -4324,7 +4324,7 @@ EXPORTS
 	_ZN19QApplicationPrivate18dispatchEnterLeaveEP7QWidgetS1_ @ 4323 NONAME
 	_ZN19QApplicationPrivate18resolveS60ScanCodeEij @ 4324 NONAME
 	_ZN19QApplicationPrivate18wheel_scroll_linesE @ 4325 NONAME DATA 4
-	_ZN19QApplicationPrivate19app_compile_versionE @ 4326 NONAME DATA 4
+	_ZN19QApplicationPrivate19app_compile_versionE @ 4326 NONAME DATA 4 ABSENT
 	_ZN19QApplicationPrivate19hidden_focus_widgetE @ 4327 NONAME DATA 4
 	_ZN19QApplicationPrivate19keyboard_input_timeE @ 4328 NONAME DATA 4
 	_ZN19QApplicationPrivate20emitLastWindowClosedEv @ 4329 NONAME
@@ -4356,8 +4356,8 @@ EXPORTS
 	_ZN19QApplicationPrivate9constructEv @ 4355 NONAME
 	_ZN19QApplicationPrivate9fade_menuE @ 4356 NONAME DATA 1
 	_ZN19QApplicationPrivate9openPopupEP7QWidget @ 4357 NONAME
-	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeE @ 4358 NONAME
-	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeE @ 4359 NONAME
+	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeE @ 4358 NONAME ABSENT
+	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeE @ 4359 NONAME ABSENT
 	_ZN19QApplicationPrivateD0Ev @ 4360 NONAME
 	_ZN19QApplicationPrivateD1Ev @ 4361 NONAME
 	_ZN19QApplicationPrivateD2Ev @ 4362 NONAME
@@ -12091,4 +12091,54 @@ EXPORTS
 	_ZN14QGraphicsScale13xScaleChangedEv @ 12090 NONAME
 	_ZN14QGraphicsScale13yScaleChangedEv @ 12091 NONAME
 	_ZN14QGraphicsScale13zScaleChangedEv @ 12092 NONAME
+	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12093 NONAME
+	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12094 NONAME
+	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12095 NONAME
+	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12096 NONAME
+	_ZN19QApplicationPrivate14_q_aboutToQuitEv @ 12097 NONAME
+	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12098 NONAME
+	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12099 NONAME
+	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12100 NONAME
+	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12101 NONAME
+	_ZN6QImage4fillERK6QColor @ 12102 NONAME
+	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12103 NONAME
+	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12104 NONAME
+	_ZN7QGlyphs5clearEv @ 12105 NONAME
+	_ZN7QGlyphs6detachEv @ 12106 NONAME
+	_ZN7QGlyphs7setFontERK5QFont @ 12107 NONAME
+	_ZN7QGlyphsC1ERKS_ @ 12108 NONAME
+	_ZN7QGlyphsC1Ev @ 12109 NONAME
+	_ZN7QGlyphsC2ERKS_ @ 12110 NONAME
+	_ZN7QGlyphsC2Ev @ 12111 NONAME
+	_ZN7QGlyphsD1Ev @ 12112 NONAME
+	_ZN7QGlyphsD2Ev @ 12113 NONAME
+	_ZN7QGlyphsaSERKS_ @ 12114 NONAME
+	_ZN7QGlyphspLERKS_ @ 12115 NONAME
+	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12116 NONAME
+	_ZNK10QTabWidget14heightForWidthEi @ 12117 NONAME
+	_ZNK11QFontEngine18createExplicitFontEv @ 12118 NONAME
+	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12119 NONAME
+	_ZNK11QTextLayout6glyphsEv @ 12120 NONAME
+	_ZNK12QFontMetrics10inFontUcs4Ej @ 12121 NONAME
+	_ZNK12QRadioButton15minimumSizeHintEv @ 12122 NONAME
+	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12123 NONAME
+	_ZNK13QTextFragment6glyphsEv @ 12124 NONAME
+	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12125 NONAME
+	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12126 NONAME
+	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12127 NONAME
+	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12128 NONAME
+	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12129 NONAME
+	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12130 NONAME
+	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12131 NONAME
+	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12132 NONAME
+	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12133 NONAME
+	_ZNK7QGlyphs12glyphIndexesEv @ 12134 NONAME
+	_ZNK7QGlyphs4fontEv @ 12135 NONAME
+	_ZNK7QGlyphs9positionsEv @ 12136 NONAME
+	_ZNK7QGlyphseqERKS_ @ 12137 NONAME
+	_ZNK7QGlyphsneERKS_ @ 12138 NONAME
+	_ZNK7QGlyphsplERKS_ @ 12139 NONAME
+	_ZNK8QPainter16clipBoundingRectEv @ 12140 NONAME
+	_ZNK9QCheckBox15minimumSizeHintEv @ 12141 NONAME
+	_ZNK9QTextLine6glyphsEii @ 12142 NONAME
 
