@@ -77,7 +77,12 @@ Item { id:link
                 id: actualImageRotation
                 origin.x: width/2; origin.y: height/2;
                 angle: rotation * 90
-                Behavior on angle { NumberAnimation { duration: spawned ? 200 : 0} }
+                Behavior on angle {
+                    RotationAnimation{
+                        direction: RotationAnimation.Shortest
+                        duration: spawned ? 200 : 0
+                    }
+                }
             }
         }
 
