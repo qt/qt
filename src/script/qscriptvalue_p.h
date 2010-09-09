@@ -586,7 +586,7 @@ bool QScriptValuePrivate::isQMetaObject() const
 {
     if (!isJSBased() || !m_value->IsObject())
         return false;
-    return m_engine->m_metaObjectTemplate->HasInstance(m_value);
+    return m_engine->isQtMetaObject(m_value);
 }
 
 inline bool QScriptValuePrivate::equals(QScriptValuePrivate* other)

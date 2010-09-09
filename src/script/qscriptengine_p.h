@@ -120,8 +120,9 @@ public:
                                 const QByteArray &targetType,
                                 void **result);
 
-    bool isQtVariant(v8::Handle<v8::Value> value);
-    bool isQtSignal(v8::Handle<v8::Value> value);
+    inline bool isQtVariant(v8::Handle<v8::Value> value) const;
+    inline bool isQtSignal(v8::Handle<v8::Value> value) const;
+    inline bool isQtMetaObject(v8::Handle<v8::Value> value) const;
     QVariant &variantValue(v8::Handle<v8::Value> value);
 
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
@@ -147,7 +148,6 @@ private:
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
     v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
-public:
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
 };
 
@@ -251,6 +251,21 @@ inline void QScriptEnginePrivate::enterContext() const
 inline void QScriptEnginePrivate::exitContext() const
 {
     m_context->Exit();
+}
+
+inline bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value) const
+{
+    return m_variantTemplate->HasInstance(value);
+}
+
+inline bool QScriptEnginePrivate::isQtSignal(v8::Handle<v8::Value> value) const
+{
+    return m_signalTemplate->HasInstance(value);
+}
+
+inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) const
+{
+    return m_metaObjectTemplate->HasInstance(value);
 }
 
 QT_END_NAMESPACE

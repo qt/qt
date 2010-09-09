@@ -674,16 +674,6 @@ bool QScriptEnginePrivate::convertToNativeQObject(v8::Handle<v8::Value> value,
     return false;
 }
 
-bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value)
-{
-    return m_variantTemplate->HasInstance(value);
-}
-
-bool QScriptEnginePrivate::isQtSignal(v8::Handle<v8::Value> value)
-{
-    return m_signalTemplate->HasInstance(value);
-}
-
 QVariant &QScriptEnginePrivate::variantValue(v8::Handle<v8::Value> value)
 {
     Q_ASSERT(isQtVariant(value));
