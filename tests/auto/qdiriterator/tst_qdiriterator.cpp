@@ -53,7 +53,7 @@
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-// Open C in Symbian doesn't support symbolic links to directories
+#define Q_NO_SYMLINKS
 #define Q_NO_SYMLINKS_TO_DIRS
 #endif
 
