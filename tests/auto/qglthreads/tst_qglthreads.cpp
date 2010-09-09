@@ -456,11 +456,71 @@ void tst_QGLThreads::renderInThread()
     QVERIFY(!thread.failure);
 }
 
+class Device
+{
+public:
+    virtual ~Device() {}
+    virtual QPaintDevice *realPaintDevice() = 0;
+    virtual void prepareDevice() {}
+};
+
+class GLWidgetWrapper : public Device
+{
+public:
+    GLWidgetWrapper() {
+        widget.resize(150, 150);
+        widget.show();
+        QTest::qWaitForWindowShown(&widget);
+        widget.doneCurrent();
+    }
+    QPaintDevice *realPaintDevice() { return &widget; }
+
+    ThreadSafeGLWidget widget;
+};
+
+class PixmapWrapper : public Device
+{
+public:
+    PixmapWrapper() { pixmap = new QPixmap(512, 512); }
+    ~PixmapWrapper() { delete pixmap; }
+    QPaintDevice *realPaintDevice() { return pixmap; }
+
+    QPixmap *pixmap;
+};
+
+class PixelBufferWrapper : public Device
+{
+public:
+    PixelBufferWrapper() { pbuffer = new QGLPixelBuffer(512, 512); }
+    ~PixelBufferWrapper() { delete pbuffer; }
+    QPaintDevice *realPaintDevice() { return pbuffer; }
+
+    QGLPixelBuffer *pbuffer;
+};
+
+
+class FrameBufferObjectWrapper : public Device
+{
+public:
+    FrameBufferObjectWrapper() {
+        widget.makeCurrent();
+        fbo = new QGLFramebufferObject(512, 512);
+        widget.doneCurrent();
+    }
+    ~FrameBufferObjectWrapper() { delete fbo; }
+    QPaintDevice *realPaintDevice() { return fbo; }
+    void prepareDevice() { widget.makeCurrent(); }
+
+    ThreadSafeGLWidget widget;
+    QGLFramebufferObject *fbo;
+};
+
+
 class ThreadPainter : public QObject
 {
     Q_OBJECT
 public:
-    ThreadPainter(QPaintDevice *pd) : paintDevice(pd), fail(true) {
+    ThreadPainter(Device *pd) : device(pd), fail(true) {
         pixmap = QPixmap(40, 40);
         pixmap.fill(Qt::green);
         QPainter p(&pixmap);
@@ -474,6 +534,8 @@ public slots:
         QTime time;
         time.start();
         int rotAngle = 10;
+        device->prepareDevice();
+        QPaintDevice *paintDevice = device->realPaintDevice();
         QSize s(paintDevice->width(), paintDevice->height());
         while (time.elapsed() < RUNNING_TIME) {
             QPainter p;
@@ -506,7 +568,7 @@ public slots:
 
 private:
     QPixmap pixmap;
-    QPaintDevice *paintDevice;
+    Device *device;
     bool fail;
 };
 
@@ -520,16 +582,6 @@ public:
             devices.append(new T);
             threads.append(new QThread);
             painters.append(new ThreadPainter(devices.at(i)));
-            if (devices.at(i)->devType() == QInternal::Widget) {
-                QWidget *widget = static_cast<QWidget *>(devices.at(i));
-                widget->resize(150, 150);
-                widget->show();
-                QTest::qWaitForWindowShown(widget);
-                if (widget->inherits("QGLWidget")) {
-                    QGLWidget *glWidget = static_cast<QGLWidget *>(widget);
-                    glWidget->doneCurrent();
-                }
-            }
             painters.at(i)->moveToThread(threads.at(i));
             painters.at(i)->connect(threads.at(i), SIGNAL(started()), painters.at(i), SLOT(draw()));
         }
@@ -568,7 +620,7 @@ public:
 
 private:
     QList<QThread *> threads;
-    QList<QPaintDevice *> devices;
+    QList<Device *> devices;
     QList<ThreadPainter *> painters;
     int numThreads;
 };
@@ -587,7 +639,12 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
 #ifdef Q_OS_MAC
     QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
 #endif
-    PaintThreadManager<ThreadSafeGLWidget> painterThreads(5);
+    if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
+          (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
+        QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.", SkipAll);
+    }
+
+    PaintThreadManager<GLWidgetWrapper> painterThreads(5);
     painterThreads.start();
 
     while (painterThreads.areRunning()) {
@@ -601,12 +658,6 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
     QVERIFY(!painterThreads.failed());
 }
 
-class Pixmap : public QPixmap
-{
-public:
-    Pixmap() : QPixmap(200, 200) {}
-};
-
 /*
    This test uses QPainter to draw onto different QPixmaps in
    different threads at the same time.
@@ -616,7 +667,74 @@ void tst_QGLThreads::painterOnPixmapInThread()
 #ifdef Q_WS_X11
     QSKIP("Drawing text in threads onto X11 drawables currently crashes on some X11 servers.", SkipAll);
 #endif
-    PaintThreadManager<Pixmap> painterThreads(5);
+    PaintThreadManager<PixmapWrapper> painterThreads(5);
+    painterThreads.start();
+
+    while (painterThreads.areRunning()) {
+        qApp->processEvents();
+#ifdef Q_WS_WIN
+        Sleep(100);
+#else
+        usleep(100 * 1000);
+#endif
+    }
+    QVERIFY(!painterThreads.failed());
+}
+
+/* This test uses QPainter to draw onto different QGLPixelBuffer
+   objects in different threads at the same time.
+*/
+void tst_QGLThreads::painterOnPboInThread()
+{
+#ifdef Q_OS_MAC
+    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
+#endif
+    if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
+          (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
+        QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.", SkipAll);
+        return;
+    }
+
+    if (!QGLPixelBuffer::hasOpenGLPbuffers()) {
+        QSKIP("This system doesn't support pbuffers.", SkipAll);
+        return;
+    }
+
+    PaintThreadManager<PixelBufferWrapper> painterThreads(5);
+    painterThreads.start();
+
+    while (painterThreads.areRunning()) {
+        qApp->processEvents();
+#ifdef Q_WS_WIN
+        Sleep(100);
+#else
+        usleep(100 * 1000);
+#endif
+    }
+    QVERIFY(!painterThreads.failed());
+}
+
+/* This test uses QPainter to draw onto different
+   QGLFramebufferObjects (bound in a QGLWidget's context) in different
+   threads at the same time.
+*/
+void tst_QGLThreads::painterOnFboInThread()
+{
+#ifdef Q_OS_MAC
+    QSKIP("OpenGL threading tests are currently disabled on Mac as they were causing reboots", SkipAll);
+#endif
+    if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
+          (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
+        QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.", SkipAll);
+        return;
+    }
+
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()) {
+        QSKIP("This system doesn't support framebuffer objects.", SkipAll);
+        return;
+    }
+
+    PaintThreadManager<FrameBufferObjectWrapper> painterThreads(5);
     painterThreads.start();
 
     while (painterThreads.areRunning()) {

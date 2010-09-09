@@ -221,6 +221,8 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
+    void drawText_subPixelPositionsInRaster_qtbug5053();
+
     void drawImage_data();
     void drawImage();
 
@@ -4560,6 +4562,40 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRectF(-100, -100, 200, 200)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(-250, -250, 500, 500)));
 
+}
+
+void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
+{
+#if !defined(Q_WS_MAC)
+    QSKIP("Only mac supports sub pixel positions currently", SkipAll);
+#endif
+
+    QFontMetricsF fm(qApp->font());
+
+    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    baseLine.fill(Qt::white);
+    {
+        QPainter p(&baseLine);
+        p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
+    }
+
+    bool foundDifferentRasterization = false;
+    for (int i=1; i<12; ++i) {
+        QImage comparison(baseLine.size(), QImage::Format_RGB32);
+        comparison.fill(Qt::white);
+
+        {
+            QPainter p(&comparison);
+            p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
+        }
+
+        if (comparison != baseLine) {
+            foundDifferentRasterization = true;
+            break;
+        }
+    }
+
+    QVERIFY(foundDifferentRasterization);
 }
 
 QTEST_MAIN(tst_QPainter)
