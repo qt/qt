@@ -830,7 +830,7 @@ bool QScriptValue::strictlyEquals(const QScriptValue& other) const
 
   \sa equals()
 */
-bool QScriptValue::lessThan(const QScriptValue &) const
+bool QScriptValue::lessThan(const QScriptValue &other) const
 {
     Q_UNIMPLEMENTED();
     return false;
@@ -845,7 +845,7 @@ bool QScriptValue::lessThan(const QScriptValue &) const
     property of \a other is in the prototype chain of this
     QScriptValue.
 */
-bool QScriptValue::instanceOf(const QScriptValue& other) const
+bool QScriptValue::instanceOf(const QScriptValue &) const
 {
     Q_D(const QScriptValue);
     QV8Context api(d->engine());

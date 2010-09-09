@@ -1413,8 +1413,10 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
 QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
 {
-    Q_UNUSED(object);
-    Q_UNUSED(value);
+    if (!object.isObject())
+        return newVariant(value);
+
+    Q_UNIMPLEMENTED();
     return QScriptValue();
 }
 
