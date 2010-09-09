@@ -383,7 +383,7 @@ bool QScriptValue::isFunction() const
 {
     Q_D(const QScriptValue);
     QV8Context api(d->engine());
-    return d->isFunction() || d->isQMetaObject();
+    return d->isCallable();
 }
 
 /*!

@@ -84,6 +84,7 @@ public:
 
     inline bool isArray() const;
     inline bool isBool() const;
+    inline bool isCallable() const;
     inline bool isError() const;
     inline bool isFunction() const;
     inline bool isNull() const;
@@ -508,6 +509,11 @@ inline bool QScriptValuePrivate::isArray() const
 inline bool QScriptValuePrivate::isBool() const
 {
     return m_state == CBool || (isJSBased() && m_value->IsBoolean());
+}
+
+inline bool QScriptValuePrivate::isCallable() const
+{
+    return isFunction() || isQMetaObject();
 }
 
 inline bool QScriptValuePrivate::isError() const
