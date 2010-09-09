@@ -343,8 +343,15 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
         if (statBufferValid)
             data.fillFromStatBuf(statBuffer);
-        else
+        else {
             entryExists = false;
+            data.creationTime_ = 0;
+            data.modificationTime_ = 0;
+            data.accessTime_ = 0;
+            data.size_ = 0;
+            data.userId_ = (uint) -2;
+            data.groupId_ = (uint) -2;
+        }
 
         // reset the mask
         data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags

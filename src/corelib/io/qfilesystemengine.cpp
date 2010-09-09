@@ -280,6 +280,8 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
     creationTime_ = statBuffer.st_ctime ? statBuffer.st_ctime : statBuffer.st_mtime;
     modificationTime_ = statBuffer.st_mtime;
     accessTime_ = statBuffer.st_atime;
+    userId_ = statBuffer.st_uid;
+    groupId_ = statBuffer.st_gid;
 #endif
 }
 
