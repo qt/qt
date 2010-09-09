@@ -1623,6 +1623,16 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         }
         generateBody(fake, marker);
         generateAlsoList(fake, marker);
+
+        if (!fake->groupMembers().isEmpty()) {
+            NodeMap groupMembersMap;
+            foreach (const Node *node, fake->groupMembers()) {
+                if (node->type() == Node::Class || node->type() == Node::Namespace)
+                    groupMembersMap[node->name()] = node;
+            }
+            generateAnnotatedList(fake, marker, groupMembersMap);
+    }
+
         writer.writeEndElement(); // </body>
     }
     writer.writeEndElement(); // </topic>
@@ -1729,15 +1739,6 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     }
     else
         out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
-
-    if (!fake->groupMembers().isEmpty()) {
-        NodeMap groupMembersMap;
-        foreach (const Node *node, fake->groupMembers()) {
-            if (node->type() == Node::Class || node->type() == Node::Namespace)
-                groupMembersMap[node->name()] = node;
-        }
-        generateAnnotatedList(fake, marker, groupMembersMap);
-    }
 
     sections = marker->sections(fake, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.begin();
