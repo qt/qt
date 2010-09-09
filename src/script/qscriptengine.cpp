@@ -88,15 +88,20 @@ static void QtVariantWeakCallback(v8::Persistent<v8::Value> val, void *arg)
 // This callback implements QVariant.prototype.toString.
 static v8::Handle<v8::Value> QtVariantToStringCallback(const v8::Arguments& args)
 {
-    Q_UNUSED(args);
-    Q_UNIMPLEMENTED();
-    return v8::Handle<v8::Value>();
+    // FIXME: Is the type check required here?
+//    if (!thisValue.inherits(&QScriptObject::info))
+//        return throwError(exec, JSC::TypeError, "This object is not a QVariant");
+    const QVariant &v = QtVariantData::get(args.This())->value();
+    QString result = v.toString();
+    if (result.isEmpty() && !v.canConvert(QVariant::String))
+        result = QString::fromLatin1("QVariant(%0)").arg(QString::fromLatin1(v.typeName()));
+    return QScriptConverter::toString(result);
 }
 
 // This callback implements QVariant.prototype.valueOf.
 static v8::Handle<v8::Value> QtVariantValueOfCallback(const v8::Arguments& args)
 {
-    // FIXME: type check!
+    // FIXME: Is the type check required here?
     //    if (!thisValue.inherits(&QScriptObject::info))
     //        return throwError(exec, JSC::TypeError);
     const QVariant &v = QtVariantData::get(args.This())->value();
