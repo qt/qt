@@ -302,3 +302,19 @@ static inline QString message2()
 }
 
 }
+
+
+
+// QTBUG-11426: operator overloads
+class LotsaFun : public QObject
+{
+    Q_OBJECT
+public:
+    int operator<<(int left, int right);
+};
+
+int LotsaFun::operator<<(int left, int right)
+{
+    tr("this is inside operator<<");
+    return left << right;
+}

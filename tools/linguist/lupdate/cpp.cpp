@@ -489,6 +489,7 @@ STRING(class);
 STRING(findMessage);
 STRING(friend);
 STRING(namespace);
+STRING(operator);
 STRING(qtTrId);
 STRING(return);
 STRING(struct);
@@ -752,6 +753,20 @@ uint CppParser::getToken()
             case 'n':
                 if (yyWord == strnamespace)
                     return Tok_namespace;
+                break;
+            case 'o':
+                if (yyWord == stroperator) {
+                    // Operator overload declaration/definition.
+                    // We need to prevent those characters from confusing the followup
+                    // parsing. Actually using them does not add value, so just eat them.
+                    while (isspace(yyCh))
+                       yyCh = getChar();
+                    while (yyCh == '+' || yyCh == '-' || yyCh == '*' || yyCh == '/' || yyCh == '%'
+                           || yyCh == '=' || yyCh == '<' || yyCh == '>' || yyCh == '!'
+                           || yyCh == '&' || yyCh == '|' || yyCh == '~' || yyCh == '^'
+                           || yyCh == '[' || yyCh == ']')
+                        yyCh = getChar();
+                }
                 break;
             case 'q':
                 if (yyWord == strqtTrId)
