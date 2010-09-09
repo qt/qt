@@ -41,7 +41,7 @@
 
 #include "qfilesystemengine_p.h"
 #include "qfsfileengine.h"
-#include "qcore_symbian_p.h"
+#include <QtCore/private/qcore_symbian_p.h>
 
 #include <f32file.h>
 

@@ -114,7 +114,7 @@ void tst_QFileSystemEntry::getSetCheck_data()
     QTest::newRow("absolutePath")
             << QString("A:dir\\without\\leading\\backslash.bat")
             << absPrefix + QString("A:\\dir\\without\\leading\\backslash.bat")
-            << "A:dir/without/leading/backslash.bat" << "backslash.bat" << << "backslash" << "backslash" << "bat" << "bat" << true;
+            << "A:dir/without/leading/backslash.bat" << "backslash.bat" << "backslash" << "backslash" << "bat" << "bat" << true;
 }
 
 void tst_QFileSystemEntry::getSetCheck()

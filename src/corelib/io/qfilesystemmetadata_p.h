@@ -62,7 +62,7 @@
 #if defined(Q_OS_WIN)
 #elif defined(Q_OS_SYMBIAN)
 #include <f32file.h>
-#include "qdatetime_p.h"
+#include <QtCore/private/qdatetime_p.h>
 #else
 #endif
 
@@ -253,6 +253,8 @@ struct QFileSystemMetaData
     }
     uint userId() const                     { return (uint) -2; }
     uint groupId() const                    { return (uint) -2; }
+    QString user() const { return QString(); }
+    QString group() const { return QString(); }
     uint ownerId(QAbstractFileEngine::FileOwner owner) const
     {
         Q_UNUSED(owner);

@@ -41,7 +41,7 @@
 
 #include "qfilesystemiterator_p.h"
 #include "qfilesystemengine_p.h"
-#include "qcore_symbian_p.h"
+#include <QtCore/private/qcore_symbian_p.h>
 
 QT_BEGIN_NAMESPACE
 
