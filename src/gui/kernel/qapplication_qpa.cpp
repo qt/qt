@@ -68,6 +68,7 @@
 QT_BEGIN_NAMESPACE
 
 static QString appName;
+static QString appFont;
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 
@@ -522,7 +523,7 @@ void qt_init(QApplicationPrivate *priv, int type)
         QByteArray arg = argv[i];
         if (arg == "-fn" || arg == "-font") {
             if (++i < argc)
-                appFont = argv[i];
+                appFont = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = QLatin1String(argv[i]);
