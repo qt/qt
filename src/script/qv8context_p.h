@@ -38,20 +38,20 @@ QT_BEGIN_NAMESPACE
   \attention We decided to put context switching "up" which means that it should be as high
   as possible on call stack. And it should be switched at most once per public API function call.
 */
-class APIPreamble {
+class QV8Context {
 public:
-    inline APIPreamble(QScriptEnginePrivate* engine)
+    inline QV8Context(QScriptEnginePrivate* engine)
         : m_engine(engine)
     {
         init();
     }
-    inline APIPreamble(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine)
+    inline QV8Context(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine)
         : m_engine(engine)
     {
         init();
     }
 
-    ~APIPreamble()
+    ~QV8Context()
     {
         if (m_engine) {
             m_engine->exitContext();
@@ -66,7 +66,7 @@ private:
         }
     }
 
-    Q_DISABLE_COPY(APIPreamble);
+    Q_DISABLE_COPY(QV8Context);
     QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
 };
 

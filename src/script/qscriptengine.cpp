@@ -32,6 +32,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptsyntaxcheckresult_p.h"
 #include "qscriptqobject_p.h"
+#include "qv8context_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmetaobject.h>
@@ -1354,7 +1355,7 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
-    APIPreamble api(d_ptr);
+    QV8Context api(d_ptr);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->globalObject());
 }
