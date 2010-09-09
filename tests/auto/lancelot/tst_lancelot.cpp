@@ -250,30 +250,29 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
 {
     ImageItem res = item;
     res.imageChecksums.clear();
+    res.image = QImage();
     QString filePath = scriptsDir + item.scriptName;
     QStringList script = loadScriptFile(filePath);
-    if (script.isEmpty()) {
-        res.image = QImage();
-    } else if (item.engine == ImageItem::Raster) {
+    if (script.isEmpty())
+        return res;
+
+    if (item.engine == ImageItem::Raster) {
         QImage img(800, 800, item.renderFormat);
         paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = img;
         res.imageChecksums.append(ImageItem::computeChecksum(img));
     } else if (item.engine == ImageItem::OpenGL) {
         QGLWidget glWidget;
-        if (!glWidget.isValid()) {
-            res.image = QImage();
-            res.imageChecksums.append(0);
-            return res;
-        }
-        glWidget.resize(800, 800);
-        glWidget.show();
+        if (glWidget.isValid()) {
+            glWidget.resize(800, 800);
+            glWidget.show();
 #ifdef Q_WS_X11
-        qt_x11_wait_for_window_manager(&glWidget);
+            qt_x11_wait_for_window_manager(&glWidget);
 #endif
-        paint(&glWidget, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
-        res.image = glWidget.grabFrameBuffer().convertToFormat(item.renderFormat);
-        res.imageChecksums.append(ImageItem::computeChecksum(res.image));
+            paint(&glWidget, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
+            res.image = glWidget.grabFrameBuffer().convertToFormat(item.renderFormat);
+            res.imageChecksums.append(ImageItem::computeChecksum(res.image));
+        }
     }
 
     return res;

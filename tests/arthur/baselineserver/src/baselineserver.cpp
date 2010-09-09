@@ -128,7 +128,8 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     ImageItemList itemList;
     QDataStream ds(itemListBlock);
     ds >> itemList;
-    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items";
+    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items, engine"
+            << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
         if (i->scriptName.startsWith(QLatin1String("porter_duff"))) {
@@ -182,7 +183,7 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     msg += " image stored in "
            + QHostInfo::localHostName().toLatin1() + '.'
            + QHostInfo::localDomainName().toLatin1() + ':'
-           + QFileInfo(file).absoluteFilePath().toLatin1();
+           + prefix.toLatin1() + FileFormat;
     proto.sendBlock(BaselineProtocol::Ack, msg);
 }
 
@@ -209,7 +210,7 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
     if (isBaseline)
         storePath += QString(QLatin1String("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
     else
-        storePath += runId + QLatin1Char('/');
+        storePath += QString(QLatin1String("mismatches_%1_%2/")).arg(item.engineAsString(), item.formatAsString()) + runId + QLatin1Char('/');
 
     QString itemName = item.scriptName;
     if (itemName.contains(QLatin1Char('.')))

@@ -111,7 +111,4 @@ private:
 };
 
 
-
-
-
 #endif // BASELINEPROTOCOL_H
