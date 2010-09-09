@@ -165,10 +165,11 @@ public:
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
 };
 
-QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { return q.d_ptr.data(); }
+QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { Q_ASSERT(q.d_ptr.data()); return q.d_ptr.data(); }
 
 QScriptValue QScriptValuePrivate::get(const QScriptValuePrivate* d)
 {
+    Q_ASSERT(d);
     return QScriptValue(const_cast<QScriptValuePrivate*>(d));
 }
 

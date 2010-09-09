@@ -792,7 +792,7 @@ static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> pr
 
     if (propertyName == QLatin1String("prototype")) {
         QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
-        if (ctor && ctor->isObject())
+        if (ctor->isObject())
             return ctor->m_value->ToObject()->Get(property);
     }
 
@@ -824,7 +824,7 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 //
 
     QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
-    if (ctor && ctor->isFunction() && ctor->m_value->IsFunction()) {
+    if (ctor->isFunction() && ctor->m_value->IsFunction()) {
         return v8::Function::Cast(*ctor->m_value)->NewInstance(args.Length(), &args.Data());
     }
     return v8::Handle<v8::Value>();
