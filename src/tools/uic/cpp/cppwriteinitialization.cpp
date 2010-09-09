@@ -155,7 +155,7 @@ namespace {
             if (const DomResourceIcon *dri = p->elementIconSet()) {
                 if (!isIconFormat44(dri)) {
                     if (dri->text().isEmpty())  {
-                        const QString msg = QString::fromUtf8("%1: An invalid icon property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                        const QString msg = QString::fromUtf8("%1: Warning: An invalid icon property '%2' was encountered.").arg(fileName).arg(p->attributeName());
                         qWarning("%s", qPrintable(msg));
                         return false;
                     }
@@ -165,7 +165,7 @@ namespace {
         case DomProperty::Pixmap:
             if (const DomResourcePixmap *drp = p->elementPixmap())
                 if (drp->text().isEmpty()) {
-                    const QString msg = QString::fromUtf8("%1: An invalid pixmap property '%2' was encountered.").arg(fileName).arg(p->attributeName());
+                    const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.").arg(fileName).arg(p->attributeName());
                     qWarning("%s", qPrintable(msg));
                     return false;
                 }
@@ -539,10 +539,14 @@ void WriteInitialization::acceptUI(DomUI *node)
         const Buddy &b = m_buddies.at(i);
 
         if (!m_registeredWidgets.contains(b.objName)) {
-            fprintf(stderr, "'%s' isn't a valid widget\n", b.objName.toLatin1().data());
+            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
+                    qPrintable(m_option.messagePrefix()),
+                    b.objName.toLatin1().data());
             continue;
         } else if (!m_registeredWidgets.contains(b.buddy)) {
-            fprintf(stderr, "'%s' isn't a valid widget\n", b.buddy.toLatin1().data());
+            fprintf(stderr, "%s: Warning: Buddy assignment: '%s' is not a valid widget.\n",
+                    qPrintable(m_option.messagePrefix()),
+                    b.buddy.toLatin1().data());
             continue;
         }
 
@@ -867,7 +871,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         const QString name = zOrder.at(i);
 
         if (!m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
+            fprintf(stderr, "%s: Warning: Z-order assignment: '%s' is not a valid widget.\n",
+                    qPrintable(m_option.messagePrefix()),
+                    name.toLatin1().data());
             continue;
         }
 
@@ -895,7 +901,9 @@ void WriteInitialization::addButtonGroup(const DomWidget *buttonNode, const QStr
         DomButtonGroup *newGroup = new DomButtonGroup;
         newGroup->setAttributeName(attributeName);
         group = newGroup;
-        fprintf(stderr, "Warning: Creating button group `%s'\n", attributeName.toLatin1().data());
+        fprintf(stderr, "%s: Warning: Creating button group `%s'\n",
+                qPrintable(m_option.messagePrefix()),
+                attributeName.toLatin1().data());
     }
     const QString groupName = m_driver->findOrInsertButtonGroup(group);
     // Create on demand
@@ -1163,7 +1171,9 @@ void WriteInitialization::acceptActionRef(DomActionRef *node)
             return;
         }
     } else if (!(m_driver->actionByName(actionName) || isSeparator)) {
-        fprintf(stderr, "Warning: action `%s' not declared\n", actionName.toLatin1().data());
+        fprintf(stderr, "%s: Warning: action `%s' not declared\n",
+                qPrintable(m_option.messagePrefix()),
+                actionName.toLatin1().data());
         return;
     }
 
@@ -1853,7 +1863,9 @@ void WriteInitialization::acceptTabStops(DomTabStops *tabStops)
         const QString name = l.at(i);
 
         if (!m_registeredWidgets.contains(name)) {
-            fprintf(stderr, "'%s' isn't a valid widget\n", name.toLatin1().data());
+            fprintf(stderr, "%s: Warning: Tab-stop assignment: '%s' is not a valid widget.\n",
+                    qPrintable(m_option.messagePrefix()),
+                    name.toLatin1().data());
             continue;
         }
 
@@ -2083,7 +2095,8 @@ QString WriteInitialization::pixCall(const DomProperty *p) const
         s = p->elementPixmap()->text();
         break;
     default:
-        qWarning() << "Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Designer.";
+        qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Designer.",
+                 qPrintable(m_option.messagePrefix()));
         return QLatin1String("QIcon()");
         break;
     }
@@ -2573,7 +2586,7 @@ void WriteInitialization::initializeQ3SqlDataTable(DomWidget *w)
     }
 
     if (table.isEmpty() || connection.isEmpty()) {
-        fprintf(stderr, "invalid database connection\n");
+        fprintf(stderr, "%s: Warning: Invalid database connection\n", qPrintable(m_option.messagePrefix()));
         return;
     }
 
@@ -2613,7 +2626,7 @@ void WriteInitialization::initializeQ3SqlDataBrowser(DomWidget *w)
     }
 
     if (table.isEmpty() || connection.isEmpty()) {
-        fprintf(stderr, "invalid database connection\n");
+        fprintf(stderr, "%s: Warning: Invalid database connection\n", qPrintable(m_option.messagePrefix()));
         return;
     }
 
