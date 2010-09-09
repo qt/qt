@@ -403,6 +403,9 @@ void QDeclarativeSmoothedAnimation::setReversingMode(ReversingMode m)
     This property holds the animation duration, in msecs, used when tracking the source.
 
     Setting this to -1 (the default) disables the duration value.
+
+    If the velocity value and the duration value are both enabled, then the animation will
+    use whichever gives the shorter duration.
 */
 int QDeclarativeSmoothedAnimation::duration() const
 {
@@ -432,6 +435,9 @@ qreal QDeclarativeSmoothedAnimation::velocity() const
     The default velocity of SmoothedAnimation is 200 units/second.
 
     Setting this to -1 disables the velocity value.
+
+    If the velocity value and the duration value are both enabled, then the animation will
+    use whichever gives the shorter duration.
 */
 void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 {
@@ -446,7 +452,7 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 /*!
     \qmlproperty int SmoothedAnimation::maximumEasingTime
 
-    This property specifies the maximum time, in msecs, an "eases" during the follow should take.
+    This property specifies the maximum time, in msecs, any "eases" during the follow should take.
     Setting this property causes the velocity to "level out" after at a time.  Setting
     a negative value reverts to the normal mode of easing over the entire animation
     duration.
