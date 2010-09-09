@@ -135,6 +135,8 @@ public:
 
     v8::Handle<v8::String> qtDataId();
 
+    inline void enterContext() const;
+    inline void exitContext() const;
 private:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_context;
@@ -192,16 +194,12 @@ inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
 */
 inline bool QScriptEnginePrivate::isError(const QScriptValuePrivate* value) const
 {
-    v8::Context::Scope contextScope(m_context);
-    v8::HandleScope handleScope;
     return m_globalObject.isError(value);
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
 {
     Q_UNUSED(lineNumber);
-    v8::Context::Scope contextScope(m_context);
-    v8::HandleScope handleScope;
     v8::TryCatch tryCatch;
     v8::Handle<v8::Script> script = v8::Script::Compile(QScriptConverter::toString(program), QScriptConverter::toString(fileName));
     return evaluate(script, tryCatch);
@@ -209,8 +207,6 @@ QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, cons
 
 inline QScriptValuePrivate* QScriptEnginePrivate::evaluate(QScriptProgramPrivate* program)
 {
-    v8::Context::Scope contextScope(m_context);
-    v8::HandleScope handleScope;
     v8::TryCatch tryCatch;
     v8::Handle<v8::Script> script = program->compiled(this);
     return evaluate(script, tryCatch);
@@ -245,6 +241,16 @@ inline void QScriptEnginePrivate::clearExceptions()
 inline bool QScriptEnginePrivate::hasUncaughtException() const
 {
     return !m_exception.IsEmpty();
+}
+
+inline void QScriptEnginePrivate::enterContext() const
+{
+    m_context->Enter();
+}
+
+inline void QScriptEnginePrivate::exitContext() const
+{
+    m_context->Exit();
 }
 
 QT_END_NAMESPACE

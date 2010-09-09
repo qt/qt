@@ -51,7 +51,8 @@ HEADERS += \
     $$PWD/qscriptvalue_p.h \
     $$PWD/qscriptvalueiterator.h \
     $$PWD/qscriptable.h \
-    $$PWD/qscriptable_p.h
+    $$PWD/qscriptable_p.h \
+    $$PWD/apipreamble_p.h \
 
 SOURCES += \
     $$PWD/qscriptdeclarativeclass.cpp \

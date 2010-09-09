@@ -319,7 +319,6 @@ qsreal QScriptValuePrivate::toNumber() const
     switch (m_state) {
     case JSValue:
     {
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope scope;
         return m_value->ToNumber()->Value();
     }
@@ -357,7 +356,6 @@ QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
         return new QScriptValuePrivate();
     }
 
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope scope;
     switch (m_state) {
     case Invalid:
@@ -412,7 +410,6 @@ QString QScriptValuePrivate::toString() const
         return QString::fromLatin1("undefined");
     case JSValue:
         Q_ASSERT(!m_value.IsEmpty());
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         return QScriptConverter::toString(m_value->ToString());
     }
@@ -444,7 +441,6 @@ QVariant QScriptValuePrivate::toVariant() const
     Q_ASSERT(!m_value.IsEmpty());
     Q_ASSERT(m_engine);
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     return m_engine->variantFromJS(m_value);
 }
@@ -518,6 +514,7 @@ inline bool QScriptValuePrivate::isError() const
 {
     if (!isJSBased())
         return false;
+    v8::HandleScope handleScope;
     return m_value->IsObject() && engine()->isError(this);
 }
 
@@ -644,8 +641,6 @@ inline bool QScriptValuePrivate::equals(QScriptValuePrivate* other)
     }
 
     Q_ASSERT(this->engine() && other->engine());
-    v8::Context::Scope contextScope(*engine());
-    v8::HandleScope scope;
     return m_value->Equals(other->m_value);
     return false;
 }
@@ -692,7 +687,6 @@ inline bool QScriptValuePrivate::instanceOf(QScriptValuePrivate* other) const
 {
     if (!isObject() || !other->isFunction())
         return false;
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     return instanceOf(v8::Handle<v8::Object>::Cast(other->m_value));
 }
@@ -719,7 +713,6 @@ inline bool QScriptValuePrivate::instanceOf(v8::Handle<v8::Object> other) const
 inline QScriptValuePrivate* QScriptValuePrivate::prototype() const
 {
     if (isJSBased() && m_value->IsObject()) {
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         return new QScriptValuePrivate(engine(), v8::Handle<v8::Object>::Cast(m_value)->GetPrototype());
     }
@@ -736,7 +729,6 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
             }
             prototype->assignEngine(engine());
         }
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         if (!v8::Handle<v8::Object>::Cast(m_value)->SetPrototype(prototype->m_value))
             qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
@@ -754,7 +746,6 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
 
     if (!value->isValid()) {
         // Remove the property.
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope handleScope;
         v8::Object::Cast(*m_value)->Delete(QScriptConverter::toString(name));
         return;
@@ -765,7 +756,6 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
         return;
     }
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Object::Cast(*m_value)->Set(QScriptConverter::toString(name), value->m_value);
 }
@@ -790,7 +780,6 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
         return;
     }
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Array::Cast(*m_value)->Set(index, value->m_value);
 }
@@ -801,7 +790,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, c
     if (!isObject())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
     v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
@@ -824,7 +812,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::property(quint32 index, const Q
         // FIXME we dont need to convert Index to string.
         return property(QString::number(index), mode);
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
     v8::Handle<v8::Value> result = self->Get(index);
@@ -836,7 +823,6 @@ inline bool QScriptValuePrivate::deleteProperty(const QString& name)
     if (!isObject())
         return false;
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Handle<v8::Object>::Cast(m_value));
     return self->Delete(QScriptConverter::toString(name));
@@ -879,7 +865,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
     if (!isFunction())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
     // Convert all arguments and bind to the engine.
@@ -898,7 +883,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
     if (!isFunction())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
@@ -958,7 +942,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueLis
     if (!isFunction())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
     // Convert all arguments and bind to the engine.
@@ -977,7 +960,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& a
     if (!isFunction())
         return new QScriptValuePrivate();
 
-    v8::Context::Scope contextScope(*engine());
     v8::HandleScope handleScope;
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;

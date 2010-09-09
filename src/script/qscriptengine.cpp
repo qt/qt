@@ -817,6 +817,8 @@ QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> scrip
 QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
 }
 
@@ -1107,6 +1109,8 @@ void QScriptEngine::reportAdditionalMemoryCost(int cost)
 QScriptValue QScriptEngine::evaluate(const QString& program, const QString& fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->evaluate(program, fileName, lineNumber));
 }
 
@@ -1150,24 +1154,32 @@ void QScriptEngine::abortEvaluation(const QScriptValue &result)
 QScriptValue QScriptEngine::nullValue()
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Null()));
 }
 
 QScriptValue QScriptEngine::undefinedValue()
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Undefined()));
 }
 
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newObject());
 }
 
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newArray(length));
 }
 
@@ -1176,6 +1188,8 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
 {
     // FIXME move this code to private.
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     if (!object) {
         Q_UNIMPLEMENTED();
         return QScriptValue();
@@ -1340,13 +1354,13 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
+    APIPreamble api(d_ptr);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->globalObject());
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
 {
-    v8::Context::Scope contextScope(m_context);
-    v8::HandleScope handleScope;
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_context->Global());
 }
 
@@ -1423,21 +1437,19 @@ QScriptString QScriptEngine::toStringHandle(const QString& str)
 QScriptValue QScriptEngine::toObject(const QScriptValue& value)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(QScriptValuePrivate::get(value)->toObject(d));
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::newObject()
 {
-    v8::Context::Scope scope(m_context);
-    v8::HandleScope handleScope;
     v8::Persistent<v8::Object> object(v8::Persistent<v8::Object>::New(v8::Object::New()));
     return new QScriptValuePrivate(this, object);
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
 {
-    v8::Context::Scope scope(m_context);
-    v8::HandleScope handleScope;
     v8::Persistent<v8::Array> array(v8::Persistent<v8::Array>::New(v8::Array::New(length)));
     // FIXME hmm it seems that V8 Array constructor doesn't set the length attribute as it is done
     // in JS. I'm not sure if it is bug or feature. It need to be investigated.

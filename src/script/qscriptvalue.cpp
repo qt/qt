@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include "apipreamble_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptstring.h"
@@ -246,7 +247,9 @@ QScriptValue::~QScriptValue()
 */
 bool QScriptValue::isValid() const
 {
-    return d_ptr->isValid();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isValid();
 }
 
 /*!
@@ -257,7 +260,9 @@ bool QScriptValue::isValid() const
 */
 bool QScriptValue::isBool() const
 {
-    return d_ptr->isBool();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isBool();
 }
 
 /*!
@@ -269,7 +274,9 @@ bool QScriptValue::isBool() const
 */
 bool QScriptValue::isBoolean() const
 {
-    return d_ptr->isBool();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isBool();
 }
 
 /*!
@@ -280,7 +287,9 @@ bool QScriptValue::isBoolean() const
 */
 bool QScriptValue::isNumber() const
 {
-    return d_ptr->isNumber();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isNumber();
 }
 
 /*!
@@ -291,7 +300,9 @@ bool QScriptValue::isNumber() const
 */
 bool QScriptValue::isNull() const
 {
-    return d_ptr->isNull();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isNull();
 }
 
 /*!
@@ -302,7 +313,9 @@ bool QScriptValue::isNull() const
 */
 bool QScriptValue::isString() const
 {
-    return d_ptr->isString();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isString();
 }
 
 /*!
@@ -313,7 +326,9 @@ bool QScriptValue::isString() const
 */
 bool QScriptValue::isUndefined() const
 {
-    return d_ptr->isUndefined();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isUndefined();
 }
 
 /*!
@@ -324,7 +339,9 @@ bool QScriptValue::isUndefined() const
 */
 bool QScriptValue::isError() const
 {
-    return d_ptr->isError();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isError();
 }
 
 /*!
@@ -335,7 +352,9 @@ bool QScriptValue::isError() const
 */
 bool QScriptValue::isArray() const
 {
-    return d_ptr->isArray();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isArray();
  }
 
 /*!
@@ -349,7 +368,9 @@ bool QScriptValue::isArray() const
 */
 bool QScriptValue::isObject() const
 {
-    return d_ptr->isObject();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isObject();
 }
 
 /*!
@@ -360,7 +381,9 @@ bool QScriptValue::isObject() const
 */
 bool QScriptValue::isFunction() const
 {
-    return d_ptr->isFunction() || d_ptr->isQMetaObject();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isFunction() || d->isQMetaObject();
 }
 
 /*!
@@ -371,6 +394,8 @@ bool QScriptValue::isFunction() const
 */
 bool QScriptValue::isVariant() const
 {
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
     if (!d_ptr->isJSBased())
         return false;
     Q_ASSERT(d_ptr->m_engine);
@@ -391,7 +416,9 @@ bool QScriptValue::isVariant() const
 */
 QString QScriptValue::toString() const
 {
-    return d_ptr->toString();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toString();
 }
 
 /*!
@@ -408,7 +435,9 @@ QString QScriptValue::toString() const
 */
 qsreal QScriptValue::toNumber() const
 {
-    return d_ptr->toNumber();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toNumber();
 }
 
 /*!
@@ -425,7 +454,9 @@ qsreal QScriptValue::toNumber() const
 */
 bool QScriptValue::toBool() const
 {
-    return d_ptr->toBool();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toBool();
 }
 
 /*!
@@ -435,7 +466,9 @@ bool QScriptValue::toBool() const
 */
 bool QScriptValue::toBoolean() const
 {
-    return d_ptr->toBool();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toBool();
 }
 
 /*!
@@ -452,7 +485,9 @@ bool QScriptValue::toBoolean() const
 */
 qsreal QScriptValue::toInteger() const
 {
-    return d_ptr->toInteger();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toInteger();
 }
 
 /*!
@@ -469,7 +504,9 @@ qsreal QScriptValue::toInteger() const
 */
 qint32 QScriptValue::toInt32() const
 {
-    return d_ptr->toInt32();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toInt32();
 }
 
 /*!
@@ -486,7 +523,9 @@ qint32 QScriptValue::toInt32() const
 */
 quint32 QScriptValue::toUInt32() const
 {
-    return d_ptr->toUInt32();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toUInt32();
 }
 
 /*!
@@ -503,7 +542,9 @@ quint32 QScriptValue::toUInt32() const
 */
 quint16 QScriptValue::toUInt16() const
 {
-    return d_ptr->toUInt16();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toUInt16();
 }
 
 /*!
@@ -513,7 +554,9 @@ quint16 QScriptValue::toUInt16() const
 */
 QScriptValue QScriptValue::toObject() const
 {
-    return QScriptValuePrivate::get(d_ptr->toObject());
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->toObject());
 }
 
 /*!
@@ -540,7 +583,9 @@ QScriptValue QScriptValue::toObject() const
 */
 QVariant QScriptValue::toVariant() const
 {
-    return d_ptr->toVariant();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toVariant();
 }
 
 
@@ -569,7 +614,9 @@ QVariant QScriptValue::toVariant() const
 */
 QScriptValue QScriptValue::call(const QScriptValue& thisObject, const QScriptValueList& args)
 {
-    return d_ptr->call(QScriptValuePrivate::get(thisObject), args);
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    return d->call(QScriptValuePrivate::get(thisObject), args);
 }
 
 /*!
@@ -597,7 +644,9 @@ QScriptValue QScriptValue::call(const QScriptValue& thisObject, const QScriptVal
 */
 QScriptValue QScriptValue::call(const QScriptValue &thisObject, const QScriptValue &arguments)
 {
-    return d_ptr->call(QScriptValuePrivate::get(thisObject), arguments);
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    return d->call(QScriptValuePrivate::get(thisObject), arguments);
 }
 
 /*!
@@ -620,7 +669,9 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject, const QScriptVal
 */
 QScriptValue QScriptValue::construct(const QScriptValueList &args)
 {
-    return QScriptValuePrivate::get(d_ptr->construct(args));
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->construct(args));
 }
 
 /*!
@@ -640,7 +691,9 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 */
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
-    return QScriptValuePrivate::get(d_ptr->construct(arguments));
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->construct(arguments));
 }
 
 
@@ -651,7 +704,9 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 */
 QScriptEngine* QScriptValue::engine() const
 {
-    QScriptEnginePrivate* engine = d_ptr->engine();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    QScriptEnginePrivate* engine = d->engine();
     if (engine)
         return QScriptEnginePrivate::get(engine);
     return 0;
@@ -666,7 +721,9 @@ QScriptEngine* QScriptValue::engine() const
 */
 QScriptValue QScriptValue::prototype() const
 {
-    return QScriptValuePrivate::get(d_ptr->prototype());
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->prototype());
 }
 
 /*!
@@ -682,7 +739,9 @@ QScriptValue QScriptValue::prototype() const
 */
 void QScriptValue::setPrototype(const QScriptValue& prototype)
 {
-    d_ptr->setPrototype(QScriptValuePrivate::get(prototype));
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    d->setPrototype(QScriptValuePrivate::get(prototype));
 }
 
 /*!
@@ -724,7 +783,10 @@ QScriptValue& QScriptValue::operator=(const QScriptValue& other)
 */
 bool QScriptValue::equals(const QScriptValue& other) const
 {
-    return d_ptr->equals(QScriptValuePrivate::get(other));
+    Q_D(const QScriptValue);
+    QScriptValuePrivate* otherValue = QScriptValuePrivate::get(other);
+    APIPreamble api(d->engine() ? d->engine() : otherValue->engine());
+    return d_ptr->equals(otherValue);
 }
 
 /*!
@@ -751,7 +813,10 @@ bool QScriptValue::equals(const QScriptValue& other) const
 */
 bool QScriptValue::strictlyEquals(const QScriptValue& other) const
 {
-    return d_ptr->strictlyEquals(QScriptValuePrivate::get(other));
+    Q_D(const QScriptValue);
+    QScriptValuePrivate* o = QScriptValuePrivate::get(other);
+    APIPreamble api(d->engine() ? d->engine() : o->engine());
+    return d_ptr->strictlyEquals(o);
 }
 
 /*!
@@ -785,7 +850,9 @@ bool QScriptValue::lessThan(const QScriptValue &) const
 */
 bool QScriptValue::instanceOf(const QScriptValue& other) const
 {
-    return d_ptr->instanceOf(QScriptValuePrivate::get(other));
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->instanceOf(QScriptValuePrivate::get(other));
 }
 
 /*!
@@ -805,7 +872,9 @@ bool QScriptValue::instanceOf(const QScriptValue& other) const
 */
 QScriptValue QScriptValue::property(const QString& name, const ResolveFlags& mode) const
 {
-    return QScriptValuePrivate::get(d_ptr->property(name, mode));
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->property(name, mode));
 }
 
 /*!
@@ -841,7 +910,9 @@ QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlag
 */
 QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode) const
 {
-    return QScriptValuePrivate::get(d_ptr->property(arrayIndex, mode));
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return QScriptValuePrivate::get(d->property(arrayIndex, mode));
 }
 
 /*!
@@ -870,7 +941,9 @@ QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode
 */
 void QScriptValue::setProperty(const QString& name, const QScriptValue& value, const PropertyFlags& flags)
 {
-    d_ptr->setProperty(name, QScriptValuePrivate::get(value), flags);
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    d->setProperty(name, QScriptValuePrivate::get(value), flags);
 }
 
 /*!
@@ -887,7 +960,9 @@ void QScriptValue::setProperty(const QString& name, const QScriptValue& value, c
 */
 void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue& value, const PropertyFlags& flags)
 {
-    d_ptr->setProperty(arrayIndex, QScriptValuePrivate::get(value), flags);
+    Q_D(QScriptValue);
+    APIPreamble api(d->engine());
+    d->setProperty(arrayIndex, QScriptValuePrivate::get(value), flags);
 }
 
 /*!
@@ -915,7 +990,9 @@ void QScriptValue::setProperty(const QScriptString& name, const QScriptValue& va
 */
 QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString& name, const ResolveFlags& mode) const
 {
-    return d_ptr->propertyFlags(name, mode);
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->propertyFlags(name, mode);
 }
 
 /*!
@@ -942,7 +1019,9 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& nam
  */
 QObject *QScriptValue::toQObject() const
 {
-    return d_ptr->toQObject();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->toQObject();
 }
 
 /*!
@@ -965,10 +1044,11 @@ const QMetaObject *QScriptValue::toQMetaObject() const
 */
 QDateTime QScriptValue::toDateTime() const
 {
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
     if (!d_ptr->isDate())
         return QDateTime();
 
-    v8::Context::Scope contextScope(*d_ptr->engine());
     v8::HandleScope handleScope;
     return d_ptr->engine()->qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(d_ptr->m_value));
 }
@@ -982,10 +1062,11 @@ QDateTime QScriptValue::toDateTime() const
 */
 QRegExp QScriptValue::toRegExp() const
 {
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
     if (!d_ptr->isRegExp())
         return QRegExp();
 
-    v8::Context::Scope contextScope(*d_ptr->engine());
     v8::HandleScope handleScope;
     return d_ptr->engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(d_ptr->m_value));
 }
@@ -998,7 +1079,9 @@ QRegExp QScriptValue::toRegExp() const
 */
 bool QScriptValue::isDate() const
 {
-    return d_ptr->isDate();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isDate();
 }
 
 /*!
@@ -1009,7 +1092,9 @@ bool QScriptValue::isDate() const
 */
 bool QScriptValue::isRegExp() const
 {
-    return d_ptr->isRegExp();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isRegExp();
 }
 
 /*!
@@ -1023,7 +1108,9 @@ bool QScriptValue::isRegExp() const
 */
 bool QScriptValue::isQObject() const
 {
-    return d_ptr->isQObject();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isQObject();
 }
 
 /*!
@@ -1034,7 +1121,9 @@ bool QScriptValue::isQObject() const
 */
 bool QScriptValue::isQMetaObject() const
 {
-    return d_ptr->isQMetaObject();
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
+    return d->isQMetaObject();
 }
 
 /*!
@@ -1042,6 +1131,7 @@ bool QScriptValue::isQMetaObject() const
 */
 QScriptValue QScriptValue::scope() const
 {
+    // FIXME can it be removed?
     Q_UNIMPLEMENTED();
     return QScriptValue();
 }
@@ -1051,6 +1141,7 @@ QScriptValue QScriptValue::scope() const
 */
 void QScriptValue::setScope(const QScriptValue &)
 {
+    // FIXME can it be removed?
     Q_UNIMPLEMENTED();
 }
 
@@ -1064,9 +1155,10 @@ void QScriptValue::setScope(const QScriptValue &)
 */
 QScriptValue QScriptValue::data() const
 {
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
     if (!d_ptr->isObject())
         return QScriptValue();
-    v8::Context::Scope contextScope(*d_ptr->engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
     v8::Handle<v8::Value> value = self->GetHiddenValue(d_ptr->engine()->qtDataId());
@@ -1085,9 +1177,10 @@ QScriptValue QScriptValue::data() const
 */
 void QScriptValue::setData(const QScriptValue &value)
 {
+    Q_D(const QScriptValue);
+    APIPreamble api(d->engine());
     if (!d_ptr->isObject())
         return;
-    v8::Context::Scope contextScope(*d_ptr->engine());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
     v8::Handle<v8::Value> jsValue = d_ptr->engine()->scriptValueToInternal(value);
