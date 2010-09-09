@@ -71,8 +71,8 @@ public:
 
     inline bool toBool() const;
     inline qsreal toNumber() const;
-    inline QScriptValuePrivate* toObject();
-    inline QScriptValuePrivate* toObject(QScriptEnginePrivate* engine);
+    inline QScriptValuePrivate* toObject() const;
+    inline QScriptValuePrivate* toObject(QScriptEnginePrivate* engine) const;
     inline QString toString() const;
     inline qsreal toInteger() const;
     inline qint32 toInt32() const;
@@ -110,7 +110,7 @@ public:
     inline QScriptValuePrivate* property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptValuePrivate* property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
-    inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode);
+    inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
 
     inline int convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments);
 
@@ -349,7 +349,7 @@ qsreal QScriptValuePrivate::toNumber() const
     return 0; // Avoid compiler warning.
 }
 
-QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
+QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine) const
 {
     Q_ASSERT(engine);
     if (this->engine() && engine != this->engine()) {
@@ -372,7 +372,7 @@ QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
         return new QScriptValuePrivate(engine, engine->makeJSValue(u.m_bool)->ToObject());
     case JSValue:
         if (m_value->IsObject())
-            return this;
+            return const_cast<QScriptValuePrivate*>(this);
         if (m_value->IsNull() || m_value->IsUndefined()) // avoid "Uncaught TypeError: Cannot convert null to object"
             return new QScriptValuePrivate();
         return new QScriptValuePrivate(engine, m_value->ToObject());
@@ -386,7 +386,7 @@ QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
   This method is created only for QScriptValue::toObject() purpose which is obsolete.
   \internal
  */
-QScriptValuePrivate* QScriptValuePrivate::toObject()
+QScriptValuePrivate* QScriptValuePrivate::toObject() const
 {
     if (isJSBased())
         return toObject(engine());
@@ -777,6 +777,7 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
         return;
 
     if (!isArray()) {
+        // FIXME we dont need to convert index to a string.
         setProperty(QString::number(index), value, flags);
         return;
     }
@@ -820,6 +821,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::property(quint32 index, const Q
         return new QScriptValuePrivate();
 
     if (!isArray())
+        // FIXME we dont need to convert Index to string.
         return property(QString::number(index), mode);
 
     v8::Context::Scope contextScope(*engine());
@@ -840,7 +842,7 @@ inline bool QScriptValuePrivate::deleteProperty(const QString& name)
     return self->Delete(QScriptConverter::toString(name));
 }
 
-inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode)
+inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
     Q_UNUSED(name); // FIXME it should be used.
     Q_UNUSED(mode); // FIXME it should be used.
