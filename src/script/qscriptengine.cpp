@@ -1174,6 +1174,28 @@ QScriptValue QScriptEngine::newArray(uint length)
     return QScriptValuePrivate::get(d->newArray(length));
 }
 
+/*!
+  Creates a QtScript object that wraps the given QObject \a
+  object, using the given \a ownership. The given \a options control
+  various aspects of the interaction with the resulting script object.
+
+  Signals and slots, properties and children of \a object are
+  available as properties of the created QScriptValue. For more
+  information, see the \l{QtScript} documentation.
+
+  If \a object is a null pointer, this function returns nullValue().
+
+  If a default prototype has been registered for the \a object's class
+  (or its superclass, recursively), the prototype of the new script
+  object will be set to be that default prototype.
+
+  If the given \a object is deleted outside of QtScript's control, any
+  attempt to access the deleted QObject's members through the QtScript
+  wrapper object (either by script code or C++) will result in a
+  script exception.
+
+  \sa QScriptValue::toQObject(), reportAdditionalMemoryCost()
+*/
 QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
@@ -1181,20 +1203,45 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
     Q_D(QScriptEngine);
     v8::Context::Scope scope(*d);
     v8::HandleScope handleScope;
-    if (!object) {
-        Q_UNIMPLEMENTED();
-        return QScriptValue();
-    }
+    if (!object)
+        return QScriptValue::NullValue;
     return d->scriptValueFromInternal(d->newQObject(object, ownership, options));
 }
 
+/*!
+  \since 4.4
+  \overload
+
+  Initializes the given \a scriptObject to hold the given \a qtObject,
+  and returns the \a scriptObject.
+
+  This function enables you to "promote" a plain Qt Script object
+  (created by the newObject() function) to a QObject proxy, or to
+  replace the QObject contained inside an object previously created by
+  the newQObject() function.
+
+  The prototype() of the \a scriptObject will remain unchanged.
+
+  If \a scriptObject is not an object, this function behaves like the
+  normal newQObject(), i.e. it creates a new script object and returns
+  it.
+
+  This function is useful when you want to provide a script
+  constructor for a QObject-based class. If your constructor is
+  invoked in a \c{new} expression
+  (QScriptContext::isCalledAsConstructor() returns true), you can pass
+  QScriptContext::thisObject() (the default constructed script object)
+  to this function to initialize the new object.
+
+  \sa reportAdditionalMemoryCost()
+*/
 QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject *qtObject,
                                        ValueOwnership ownership, const QObjectWrapOptions &options)
 {
-    Q_UNUSED(scriptObject);
-    Q_UNUSED(qtObject);
-    Q_UNUSED(ownership);
-    Q_UNUSED(options);
+    Q_D(QScriptEngine);
+    if (!scriptObject.isObject())
+        return newQObject(qtObject, ownership, options);
+
     Q_UNIMPLEMENTED();
     return QScriptValue();
 }
