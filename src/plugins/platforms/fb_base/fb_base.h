@@ -40,7 +40,7 @@ protected:
 private:
     void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
     void setCursor(Qt::CursorShape shape);
-    void setCursor(const QImage * image, int hotx, int hoty);
+    void setCursor(const QImage &image, int hotx, int hoty);
     QRect currentRect;      // next place to draw the cursor
     QRect prevRect;         // last place the cursor was drawn
     QRect getCurrentRect();

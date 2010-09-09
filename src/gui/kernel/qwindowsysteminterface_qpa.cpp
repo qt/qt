@@ -207,7 +207,6 @@ void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEv
     Qt::TouchPointStates states;
     QTouchEvent::TouchPoint p;
 
-    int primaryPoint = -1;
     QList<struct TouchPoint>::const_iterator point = points.constBegin();
     QList<struct TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
@@ -217,7 +216,6 @@ void QWindowSystemInterface::handleTouchEvent(QWidget *tlw, ulong timestamp, QEv
         Qt::TouchPointStates state = point->state;
         if (point->isPrimary) {
             state |= Qt::TouchPointPrimary;
-            primaryPoint = point->id;
         }
         p.setState(state);
         p.setRect(point->area);

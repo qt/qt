@@ -68,7 +68,6 @@
 QT_BEGIN_NAMESPACE
 
 static QString appName;
-static const char *appFont = 0;                  // application font
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 

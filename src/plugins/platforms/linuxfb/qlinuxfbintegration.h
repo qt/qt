@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QLinuxFbScreen : public QFbScreen
 {
+    Q_OBJECT
 public:
     QLinuxFbScreen(uchar * d, int w, int h, int lstep, QImage::Format screenFormat);
     void setGeometry(QRect rect);
