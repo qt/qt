@@ -133,7 +133,7 @@ static inline bool _q_checkEntry(QFileSystemEntry &entry, QFileSystemMetaData &d
 static inline bool _q_checkEntry(QAbstractFileEngine *&engine, bool resolvingEntry)
 {
     if (resolvingEntry) {
-        if (!engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag) {
+        if (!(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::ExistsFlag)) {
             delete engine;
             engine = 0;
             return false;
