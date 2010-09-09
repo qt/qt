@@ -145,7 +145,7 @@ private:
     void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
     QSize size() const { return QSize(w, h); }
 
-    static bool useFramebufferObjects();
+    bool useFramebufferObjects() const;
 
     QImage fillImage(const QColor &color) const;
 
