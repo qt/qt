@@ -194,6 +194,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             if (!err)
                 data.fillFromTEntry(ent);
         }
+        if (err) {
+            data.size_ = 0;
+            data.modificationTime_ = TTime(0);
+        }
         data.knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
     }
     return data.hasFlags(what);
