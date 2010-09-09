@@ -396,10 +396,7 @@ bool QScriptValue::isVariant() const
 {
     Q_D(const QScriptValue);
     QV8Context api(d->engine());
-    if (!d_ptr->isJSBased())
-        return false;
-    Q_ASSERT(d_ptr->m_engine);
-    return d_ptr->m_engine->isQtVariant(d_ptr->m_value);
+    return d->isVariant();
 }
 
 /*!

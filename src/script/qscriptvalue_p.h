@@ -93,6 +93,7 @@ public:
     inline bool isString() const;
     inline bool isUndefined() const;
     inline bool isValid() const;
+    inline bool isVariant() const;
     inline bool isDate() const;
     inline bool isRegExp() const;
     inline bool isQObject() const;
@@ -557,6 +558,11 @@ inline bool QScriptValuePrivate::isUndefined() const
 inline bool QScriptValuePrivate::isValid() const
 {
     return m_state != Invalid;
+}
+
+inline bool QScriptValuePrivate::isVariant() const
+{
+    return isJSBased() && m_engine->isQtVariant(m_value);
 }
 
 bool QScriptValuePrivate::isDate() const
