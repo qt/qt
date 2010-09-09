@@ -135,7 +135,12 @@ QDateTime QScriptEnginePrivate::qtDateTimeFromJS(v8::Handle<v8::Date> jsDate)
 // Converts a QDateTime to a JS Date.
 v8::Handle<v8::Value> QScriptEnginePrivate::qtDateTimeToJS(const QDateTime &dt)
 {
-    return v8::Date::New(dt.toMSecsSinceEpoch());
+    qsreal date;
+    if (!dt.isValid())
+        date = qSNaN();
+    else
+        date = dt.toMSecsSinceEpoch();
+    return v8::Date::New(date);
 }
 
 #ifndef QT_NO_REGEXP
