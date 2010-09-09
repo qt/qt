@@ -214,22 +214,23 @@ void QSmoothedAnimation::init()
     }
 
     bool hasReversed = trackVelocity != 0. &&
-                      ((trackVelocity > 0) == ((initialValue - to) > 0));
+                      ((!invert) == ((initialValue - to) > 0));
 
     if (hasReversed) {
         switch (reversingMode) {
             default:
             case QDeclarativeSmoothedAnimation::Eased:
+                initialVelocity = -trackVelocity;
                 break;
             case QDeclarativeSmoothedAnimation::Sync:
                 QDeclarativePropertyPrivate::write(target, to,
                                                    QDeclarativePropertyPrivate::BypassInterceptor
                                                    | QDeclarativePropertyPrivate::DontRemoveBinding);
+                trackVelocity = 0;
                 stop();
                 return;
             case QDeclarativeSmoothedAnimation::Immediate:
                 initialVelocity = 0;
-                delayedStop();
                 break;
         }
     }
