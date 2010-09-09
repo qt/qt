@@ -657,14 +657,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Code:
         writer.writeStartElement("pre");
         writer.writeAttribute("outputclass","highlightedcode");
-        writeText(atom->string(), marker, relative);
+        writeText(trimmedTrailing(atom->string()), marker, relative);
         writer.writeEndElement(); // </pre>
 	break;
     case Atom::Qml:
         writer.writeStartElement("pre");
         writer.writeAttribute("outputclass","highlightedcode");
-        writeText(atom->string(), marker, relative);
-        writer.writeEndElement(); // pre
+        writeText(trimmedTrailing(atom->string()), marker, relative);
+        writer.writeEndElement(); // </pre>
 	break;
     case Atom::CodeNew:
         writer.writeStartElement("p");
@@ -672,7 +672,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writer.writeEndElement(); // </p>
         writer.writeStartElement("pre");
         writer.writeAttribute("outputclass","highlightedcode");
-        writeText(atom->string(), marker, relative);
+        writeText(trimmedTrailing(atom->string()), marker, relative);
         writer.writeEndElement(); // </pre>
         break;
     case Atom::CodeOld:
@@ -683,7 +683,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::CodeBad:
         writer.writeStartElement("pre");
         writer.writeAttribute("outputclass","highlightedcode");
-        writer.writeCharacters(trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string())))));
+        writer.writeCharacters(trimmedTrailing(protectEnc(plainCode(atom->string()))));
         writer.writeEndElement(); // </pre>
 	break;
     case Atom::FootnoteLeft:
@@ -1516,6 +1516,25 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 }
 
 /*!
+  Write a paragraph for the \a target and a poaragraph for
+  the \a header. Use the \a attribute for the \a header.
+ */
+void DitaXmlGenerator::writeTargetAndHeader(const QString& target,
+                                            const QString& header,
+                                            const QString& attribute)
+{
+    writer.writeStartElement("p");
+    writeGuidAttribute(registerRef(target));
+    writer.writeAttribute("outputclass","target");
+    writer.writeCharacters(header);
+    writer.writeEndElement(); // </p>
+    writer.writeStartElement("p");
+    writer.writeAttribute("outputclass",attribute);
+    writer.writeCharacters(header);
+    writer.writeEndElement(); // </p>
+}
+
+/*!
   Generate the html page for a qdoc file that doesn't map
   to an underlying c++ file.
  */
@@ -1585,10 +1604,25 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     writer.writeEndElement(); // </title>
     
     generateBrief(fake, marker); // <shortdesc>
+    if (fake->subType() == Node::Module) {
+        generateStatus(fake, marker);
+        if (moduleNamespaceMap.contains(fake->name())) {
+            writeTargetAndHeader("namespaces","Namespaces","h2");
+            generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
+        }
+        if (moduleClassMap.contains(fake->name())) {
+            writeTargetAndHeader("classes","Classes","h2");
+            generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
+        }
+    }
 
     if (!fake->doc().isEmpty()) {
         writer.writeStartElement("body");
+        if (fake->subType() == Node::Module) {
+            writeTargetAndHeader("details","Detailed Description","h2");
+        }
         generateBody(fake, marker);
+        generateAlsoList(fake, marker);
         writer.writeEndElement(); // </body>
     }
     writer.writeEndElement(); // </topic>
@@ -1608,22 +1642,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
                   fake,
                   marker);
     
-    if (fake->subType() == Node::Module) {
-        // Generate brief text and status for modules.
-        generateBrief(fake, marker);
-        generateStatus(fake, marker);
 
-        if (moduleNamespaceMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("namespaces") << "\"></a>\n";
-            out() << "<h2>Namespaces</h2>\n";
-            generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
-        }
-        if (moduleClassMap.contains(fake->name())) {
-            out() << "<a name=\"" << registerRef("classes") << "\"></a>\n";
-            out() << "<h2>Classes</h2>\n";
-            generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
-        }
-    }
     else if (fake->subType() == Node::HeaderFile) {
         // Generate brief text and status for modules.
         generateBrief(fake, marker);
@@ -1710,10 +1729,6 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     }
     else
         out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
-
-    generateBody(fake, marker);
-    out() << "</div>\n"; // QTBUG-9504
-    generateAlsoList(fake, marker);
 
     if (!fake->groupMembers().isEmpty()) {
         NodeMap groupMembersMap;
@@ -3248,7 +3263,8 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         if (prevRef.isEmpty()) {
             prevRef = ref;
             break;
-        } else if (prevRef == ref) {
+        }
+        else if (prevRef == ref) {
             break;
         }
         clean += "x";
