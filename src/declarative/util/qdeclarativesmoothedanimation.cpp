@@ -312,6 +312,17 @@ QDeclarativeSmoothedAnimationPrivate::QDeclarativeSmoothedAnimationPrivate()
     QDeclarative_setParent_noEvent(anim, q);
 }
 
+void QDeclarativeSmoothedAnimationPrivate::updateRunningAnimations()
+{
+    foreach(QSmoothedAnimation* ease, activeAnimations.values()){
+        ease->maximumEasingTime = anim->maximumEasingTime;
+        ease->reversingMode = anim->reversingMode;
+        ease->velocity = anim->velocity;
+        ease->userDuration = anim->userDuration;
+        ease->init();
+    }
+}
+
 QAbstractAnimation* QDeclarativeSmoothedAnimation::qtAnimation()
 {
     Q_D(QDeclarativeSmoothedAnimation);
@@ -341,7 +352,6 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
             ease = d->activeAnimations.value((*d->actions)[i].property);
             needsRestart = true;
         }
-
         ease->target = (*d->actions)[i].property;
         ease->to = (*d->actions)[i].toValue.toReal();
 
@@ -395,6 +405,7 @@ void QDeclarativeSmoothedAnimation::setReversingMode(ReversingMode m)
 
     d->anim->reversingMode = m;
     emit reversingModeChanged();
+    d->updateRunningAnimations();
 }
 
 /*!
@@ -418,7 +429,10 @@ void QDeclarativeSmoothedAnimation::setDuration(int duration)
     Q_D(QDeclarativeSmoothedAnimation);
     if (duration != -1)
         QDeclarativeNumberAnimation::setDuration(duration);
+    if(duration == d->anim->userDuration)
+        return;
     d->anim->userDuration = duration;
+    d->updateRunningAnimations();
 }
 
 qreal QDeclarativeSmoothedAnimation::velocity() const
@@ -447,6 +461,7 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 
     d->anim->velocity = v;
     emit velocityChanged();
+    d->updateRunningAnimations();
 }
 
 /*!
@@ -468,8 +483,11 @@ int QDeclarativeSmoothedAnimation::maximumEasingTime() const
 void QDeclarativeSmoothedAnimation::setMaximumEasingTime(int v)
 {
     Q_D(QDeclarativeSmoothedAnimation);
+    if(v == d->anim->maximumEasingTime)
+        return;
     d->anim->maximumEasingTime = v;
     emit maximumEasingTimeChanged();
+    d->updateRunningAnimations();
 }
 
 QT_END_NAMESPACE
