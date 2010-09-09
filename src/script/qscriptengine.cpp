@@ -96,8 +96,28 @@ static v8::Handle<v8::Value> QtVariantToStringCallback(const v8::Arguments& args
 // This callback implements QVariant.prototype.valueOf.
 static v8::Handle<v8::Value> QtVariantValueOfCallback(const v8::Arguments& args)
 {
-    Q_UNUSED(args);
-    Q_UNIMPLEMENTED();
+    // FIXME: type check!
+    //    if (!thisValue.inherits(&QScriptObject::info))
+    //        return throwError(exec, JSC::TypeError);
+    const QVariant &v = QtVariantData::get(args.This())->value();
+    switch (v.type()) {
+    case QVariant::Invalid:
+        return v8::Undefined();
+    case QVariant::String:
+        return QScriptConverter::toString(v.toString());
+    case QVariant::Int:
+    case QVariant::Double:
+    case QVariant::UInt:
+        return v8::Number::New(v.toDouble());
+    case QVariant::Bool:
+        return v8::Boolean::New(v.toBool());
+
+//    case QVariant::Char:
+//        return JSC::jsNumber(exec, v.toChar().unicode());
+
+    default:
+        ;
+    }
     return v8::Handle<v8::Value>();
 }
 
