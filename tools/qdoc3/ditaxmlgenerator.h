@@ -91,28 +91,29 @@ class DitaXmlGenerator : public PageGenerator
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree* tree, CodeMarker* marker);
 
-    QString protectEnc(const QString &string);
-    static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
+    QString protectEnc(const QString& string);
+    static QString protect(const QString& string, const QString& encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
 
  protected:
-    virtual void startText(const Node *relative, CodeMarker *marker);
-    virtual int generateAtom(const Atom *atom, 
-                             const Node *relative,
-                             CodeMarker *marker);
-    virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
-    virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-    virtual QString fileExtension(const Node *node) const;
-    virtual QString refForNode(const Node *node);
-    virtual QString linkForNode(const Node *node, const Node *relative);
-    virtual QString refForAtom(Atom *atom, const Node *node);
+    virtual void startText(const Node* relative, CodeMarker* marker);
+    virtual int generateAtom(const Atom* atom, 
+                             const Node* relative,
+                             CodeMarker* marker);
+    virtual void generateClassLikeNode(const InnerNode* inner, CodeMarker* marker);
+    virtual void generateFakeNode(const FakeNode* fake, CodeMarker* marker);
+    virtual QString fileExtension(const Node* node) const;
+    virtual QString refForNode(const Node* node);
+    virtual QString linkForNode(const Node* node, const Node* relative);
+    virtual QString refForAtom(Atom* atom, const Node* node);
     
     void writeTargetAndHeader(const QString& target,
                               const QString& header,
                               const QString& attribute);
+    void writeXrefListItem(const QString& link, const QString& text);
     QString fullQualification(const Node* n);
 
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
@@ -141,63 +142,63 @@ class DitaXmlGenerator : public PageGenerator
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
 
-    const QPair<QString,QString> anchorForNode(const Node *node);
-    const Node *findNodeForTarget(const QString &target, 
-                                  const Node *relative,
-                                  CodeMarker *marker, 
-                                  const Atom *atom = 0);
+    const QPair<QString,QString> anchorForNode(const Node* node);
+    const Node* findNodeForTarget(const QString& target, 
+                                  const Node* relative,
+                                  CodeMarker* marker, 
+                                  const Atom* atom = 0);
     void generateBreadCrumbs(const QString& title,
-                             const Node *node,
-                             CodeMarker *marker);
+                             const Node* node,
+                             CodeMarker* marker);
     void generateHeader(const Node* node);
     void generateTitle(const QString& title, 
-                       const Text &subTitle, 
+                       const Text& subTitle, 
                        SubTitleSize subTitleSize,
-                       const Node *relative, 
-                       CodeMarker *marker);
+                       const Node* relative, 
+                       CodeMarker* marker);
     void generateBrief(const Node* node, CodeMarker* marker);
-    void generateIncludes(const InnerNode *inner, CodeMarker *marker);
-    void generateTableOfContents(const Node *node, 
-                                 CodeMarker *marker,
+    void generateIncludes(const InnerNode* inner, CodeMarker* marker);
+    void generateTableOfContents(const Node* node, 
+                                 CodeMarker* marker,
                                  Doc::SectioningUnit sectioningUnit,
                                  int numColumns, 
-                                 const Node *relative = 0);
-    void generateTableOfContents(const Node *node, 
-                                 CodeMarker *marker, 
+                                 const Node* relative = 0);
+    void generateTableOfContents(const Node* node, 
+                                 CodeMarker* marker, 
                                  QList<Section>* sections = 0);
-    QString generateListOfAllMemberFile(const InnerNode *inner, CodeMarker *marker);
-    QString generateLowStatusMemberFile(const InnerNode *inner, 
-                                        CodeMarker *marker,
+    QString generateListOfAllMemberFile(const InnerNode* inner, CodeMarker* marker);
+    QString generateLowStatusMemberFile(const InnerNode* inner, 
+                                        CodeMarker* marker,
                                         CodeMarker::Status status);
-    void generateClassHierarchy(const Node *relative, 
-                                CodeMarker *marker,
-				const NodeMap &classMap);
-    void generateAnnotatedList(const Node *relative, 
-                               CodeMarker *marker,
-			       const NodeMap &nodeMap);
-    void generateCompactList(const Node *relative, 
-                             CodeMarker *marker,
-			     const NodeMap &classMap,
+    void generateClassHierarchy(const Node* relative, 
+                                CodeMarker* marker,
+				const NodeMap& classMap);
+    void generateAnnotatedList(const Node* relative, 
+                               CodeMarker* marker,
+			       const NodeMap& nodeMap);
+    void generateCompactList(const Node* relative, 
+                             CodeMarker* marker,
+			     const NodeMap& classMap,
                              bool includeAlphabet,
                              QString commonPrefix = QString());
-    void generateFunctionIndex(const Node *relative, CodeMarker *marker);
-    void generateLegaleseList(const Node *relative, CodeMarker *marker);
-    void generateOverviewList(const Node *relative, CodeMarker *marker);
+    void generateFunctionIndex(const Node* relative, CodeMarker* marker);
+    void generateLegaleseList(const Node* relative, CodeMarker* marker);
+    void generateOverviewList(const Node* relative, CodeMarker* marker);
     void generateSectionList(const Section& section, 
-                             const Node *relative,
-			     CodeMarker *marker, 
+                             const Node* relative,
+			     CodeMarker* marker, 
                              CodeMarker::SynopsisStyle style);
 #ifdef QDOC_QML
     void generateQmlSummary(const Section& section,
-                            const Node *relative,
-                            CodeMarker *marker);
-    void generateQmlItem(const Node *node,
-                         const Node *relative,
-                         CodeMarker *marker,
+                            const Node* relative,
+                            CodeMarker* marker);
+    void generateQmlItem(const Node* node,
+                         const Node* relative,
+                         CodeMarker* marker,
                          bool summary);
-    void generateDetailedQmlMember(const Node *node,
-                                   const InnerNode *relative,
-                                   CodeMarker *marker);
+    void generateDetailedQmlMember(const Node* node,
+                                   const InnerNode* relative,
+                                   CodeMarker* marker);
     void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
     void generateQmlInheritedBy(const QmlClassNode* cn, CodeMarker* marker);
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
@@ -205,61 +206,61 @@ class DitaXmlGenerator : public PageGenerator
 #endif
 
     void generateSection(const NodeList& nl,
-                         const Node *relative,
-                         CodeMarker *marker,
+                         const Node* relative,
+                         CodeMarker* marker,
                          CodeMarker::SynopsisStyle style);
-    QString getMarkedUpSynopsis(const Node *node, 
-                                const Node *relative, 
-                                CodeMarker *marker,
+    QString getMarkedUpSynopsis(const Node* node, 
+                                const Node* relative, 
+                                CodeMarker* marker,
                                 CodeMarker::SynopsisStyle style);
     void generateSectionInheritedList(const Section& section, 
-                                      const Node *relative,
-                                      CodeMarker *marker,
+                                      const Node* relative,
+                                      CodeMarker* marker,
                                       bool nameAlignment = false);
     void writeText(const QString& markedCode, 
-                   CodeMarker *marker, 
-                   const Node *relative,
+                   CodeMarker* marker, 
+                   const Node* relative,
                    bool nameAlignment = false);
 
-    void generateFullName(const Node *apparentNode, 
-                          const Node *relative, 
-                          CodeMarker *marker,
-			  const Node *actualNode = 0);
-    void generateDetailedMember(const Node *node, 
-                                const InnerNode *relative, 
-                                CodeMarker *marker);
-    void generateLink(const Atom *atom, 
-                      const Node *relative, 
-                      CodeMarker *marker);
-    void generateStatus(const Node *node, CodeMarker *marker);
+    void generateFullName(const Node* apparentNode, 
+                          const Node* relative, 
+                          CodeMarker* marker,
+			  const Node* actualNode = 0);
+    void generateDetailedMember(const Node* node, 
+                                const InnerNode* relative, 
+                                CodeMarker* marker);
+    void generateLink(const Atom* atom, 
+                      const Node* relative, 
+                      CodeMarker* marker);
+    void generateStatus(const Node* node, CodeMarker* marker);
     
     QString registerRef(const QString& ref);
-    QString fileBase(const Node *node);
+    QString fileBase(const Node* node);
 #if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
+    QString fileBase(const Node* node, const SectionIterator& section);
 #endif
-    QString fileName(const Node *node);
-    void findAllClasses(const InnerNode *node);
-    void findAllFunctions(const InnerNode *node);
-    void findAllLegaleseTexts(const InnerNode *node);
-    void findAllNamespaces(const InnerNode *node);
-    void findAllSince(const InnerNode *node);
-    static int hOffset(const Node *node);
-    static bool isThreeColumnEnumValueTable(const Atom *atom);
-    virtual QString getLink(const Atom *atom, 
-                            const Node *relative, 
-                            CodeMarker *marker, 
+    QString fileName(const Node* node);
+    void findAllClasses(const InnerNode* node);
+    void findAllFunctions(const InnerNode* node);
+    void findAllLegaleseTexts(const InnerNode* node);
+    void findAllNamespaces(const InnerNode* node);
+    void findAllSince(const InnerNode* node);
+    static int hOffset(const Node* node);
+    static bool isThreeColumnEnumValueTable(const Atom* atom);
+    virtual QString getLink(const Atom* atom, 
+                            const Node* relative, 
+                            CodeMarker* marker, 
                             const Node** node);
-    virtual void generateIndex(const QString &fileBase, 
-                               const QString &url,
-                               const QString &title);
+    virtual void generateIndex(const QString& fileBase, 
+                               const QString& url,
+                               const QString& title);
 #ifdef GENERATE_MAC_REFS    
-    void generateMacRef(const Node *node, CodeMarker *marker);
+    void generateMacRef(const Node* node, CodeMarker* marker);
 #endif
-    void beginLink(const QString &link, 
-                   const Node *node, 
-                   const Node *relative, 
-                   CodeMarker *marker);
+    void beginLink(const QString& link, 
+                   const Node* node, 
+                   const Node* relative, 
+                   CodeMarker* marker);
     void endLink();
     bool generatePageElement(QXmlStreamWriter& writer, 
                              const Node* node, 
@@ -300,7 +301,7 @@ class DitaXmlGenerator : public PageGenerator
     QString navigationLinks;
     QStringList stylesheets;
     QStringList customHeadElements;
-    const Tree *myTree;
+    const Tree* myTree;
     bool slow;
     bool obsoleteLinks;
     int noLinks;
@@ -317,7 +318,7 @@ class DitaXmlGenerator : public PageGenerator
     NodeMap qmlClasses;
 #endif
     QMap<QString, NodeMap > funcIndex;
-    QMap<Text, const Node *> legaleseTexts;
+    QMap<Text, const Node*> legaleseTexts;
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;

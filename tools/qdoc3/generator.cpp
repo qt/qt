@@ -860,7 +860,11 @@ QMap<QString, QString>& Generator::formattingRightMap()
     return fmtRightMaps[format()];
 }
 
-QString Generator::trimmedTrailing(const QString &string)
+/*
+  Trims trailimng whitespace off the \a string and returns
+  the trimmed string.
+ */
+QString Generator::trimmedTrailing(const QString& string)
 {
     QString trimmed = string;
     while (trimmed.length() > 0 && trimmed[trimmed.length() - 1].isSpace())
