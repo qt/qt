@@ -527,7 +527,7 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
         int cursor = m_cursor;
         if (m_preeditCursor != -1)
             cursor += m_preeditCursor;
-        if(!m_blinkPeriod || m_blinkStatus)
+        if (!m_hideCursor && (!m_blinkPeriod || m_blinkStatus))
             m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
