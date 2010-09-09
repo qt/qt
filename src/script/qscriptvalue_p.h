@@ -515,7 +515,7 @@ inline bool QScriptValuePrivate::isBool() const
 
 inline bool QScriptValuePrivate::isCallable() const
 {
-    return isFunction() || isQMetaObject();
+    return isFunction() || isRegExp() || isQMetaObject();
 }
 
 inline bool QScriptValuePrivate::isError() const
