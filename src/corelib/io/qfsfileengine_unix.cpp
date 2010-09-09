@@ -491,8 +491,8 @@ qint64 QFSFileEnginePrivate::nativeReadLine(char *data, qint64 maxlen)
 */
 qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 {
-    Q_Q(QFSFileEngine);
 #ifdef Q_OS_SYMBIAN
+    Q_Q(QFSFileEngine);
     if (symbianFile.SubSessionHandle()) {
         if(len > KMaxTInt) {
             //this check is more likely to catch a corrupt length, since it isn't possible to allocate 2GB buffers (yet..)
