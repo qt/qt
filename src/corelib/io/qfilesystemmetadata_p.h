@@ -70,8 +70,9 @@ QT_BEGIN_NAMESPACE
 
 class QFileSystemEngine;
 
-struct QFileSystemMetaData
+class QFileSystemMetaData
 {
+public:
     QFileSystemMetaData()
         : knownFlagsMask(0)
     {
@@ -186,13 +187,8 @@ struct QFileSystemMetaData
     bool isLink() const                     { return (entryFlags & LinkType); }
     bool isFile() const                     { return (entryFlags & FileType); }
     bool isDirectory() const                { return (entryFlags & DirectoryType); }
-#if !defined(QWS) && defined(Q_OS_MAC)
-    bool isBundle() const                   { return (entryFlags & BundleType); }
-    bool isAlias() const                    { return (entryFlags & AliasType); }
-#else
-    bool isBundle() const                   { return false; }
-    bool isAlias() const                    { return false; }
-#endif
+    bool isBundle() const;
+    bool isAlias() const;
     bool isLegacyLink() const               { return (entryFlags & LegacyLinkType); }
     bool isSequential() const               { return (entryFlags & SequentialType); }
     bool isHidden() const                   { return (entryFlags & HiddenAttribute); }
@@ -201,65 +197,21 @@ struct QFileSystemMetaData
 
     QFile::Permissions permissions() const  { return QFile::Permissions(Permissions & entryFlags); }
 
-#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
-    QDateTime creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
-    QDateTime modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
-    QDateTime accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
+    QDateTime creationTime() const;
+    QDateTime modificationTime() const;
+    QDateTime accessTime() const;
 
-    QDateTime fileTime(QAbstractFileEngine::FileTime time) const
-    {
-        switch (time)
-        {
-        case QAbstractFileEngine::ModificationTime:
-            return modificationTime();
+    QDateTime fileTime(QAbstractFileEngine::FileTime time) const;
+    uint userId() const;
+    uint groupId() const;
+    QString user() const;
+    QString group() const;
+    uint ownerId(QAbstractFileEngine::FileOwner owner) const;
 
-        case QAbstractFileEngine::AccessTime:
-            return accessTime();
-
-        case QAbstractFileEngine::CreationTime:
-            return creationTime();
-        }
-
-        return QDateTime();
-    }
-
-    uint userId() const                     { return userId_; }
-    uint groupId() const                    { return groupId_; }
-
-    QString user() const { return QString(); /* TODO */ }
-    QString group() const { return QString(); /* TODO */ }
-
-    uint ownerId(QAbstractFileEngine::FileOwner owner) const
-    {
-        if (owner == QAbstractFileEngine::OwnerUser)
-            return userId();
-        else
-            return groupId();
-    }
-#endif
 #ifdef Q_OS_UNIX
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
 #endif
 #ifdef Q_OS_SYMBIAN
-    QDateTime creationTime() const          { return modificationTime(); }
-    QDateTime modificationTime() const      { return qt_symbian_TTime_To_QDateTime(modificationTime_); }
-    QDateTime accessTime() const            { return modificationTime(); }
-
-    QDateTime fileTime(QAbstractFileEngine::FileTime time) const
-    {
-        Q_UNUSED(time);
-        return modificationTime();
-    }
-    uint userId() const                     { return (uint) -2; }
-    uint groupId() const                    { return (uint) -2; }
-    QString user() const { return QString(); }
-    QString group() const { return QString(); }
-    uint ownerId(QAbstractFileEngine::FileOwner owner) const
-    {
-        Q_UNUSED(owner);
-        return (uint) -2;
-    }
-
     void fillFromTEntry(const TEntry& entry);
     void fillFromVolumeInfo(const TVolumeInfo& info);
 #endif
@@ -288,6 +240,72 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemMetaData::MetaDataFlags)
+
+#if !defined(QWS) && defined(Q_OS_MAC)
+inline bool QFileSystemMetaData::isBundle() const                   { return (entryFlags & BundleType); }
+inline bool QFileSystemMetaData::isAlias() const                    { return (entryFlags & AliasType); }
+#else
+inline bool QFileSystemMetaData::isBundle() const                   { return false; }
+inline bool QFileSystemMetaData::isAlias() const                    { return false; }
+#endif
+
+#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
+inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
+inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
+
+inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
+{
+    switch (time)
+    {
+    case QAbstractFileEngine::ModificationTime:
+        return modificationTime();
+
+    case QAbstractFileEngine::AccessTime:
+        return accessTime();
+
+    case QAbstractFileEngine::CreationTime:
+        return creationTime();
+    }
+
+    return QDateTime();
+}
+
+inline uint QFileSystemMetaData::userId() const                     { return userId_; }
+inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }
+
+inline QString QFileSystemMetaData::user() const { return QString(); /* TODO */ }
+inline QString QFileSystemMetaData::group() const { return QString(); /* TODO */ }
+
+inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
+{
+    if (owner == QAbstractFileEngine::OwnerUser)
+        return userId();
+    else
+        return groupId();
+}
+#endif
+
+#ifdef Q_OS_SYMBIAN
+inline QDateTime QFileSystemMetaData::creationTime() const          { return modificationTime(); }
+inline QDateTime QFileSystemMetaData::modificationTime() const      { return qt_symbian_TTime_To_QDateTime(modificationTime_); }
+inline QDateTime QFileSystemMetaData::accessTime() const            { return modificationTime(); }
+
+inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
+{
+    Q_UNUSED(time);
+    return modificationTime();
+}
+inline uint QFileSystemMetaData::userId() const                     { return (uint) -2; }
+inline uint QFileSystemMetaData::groupId() const                    { return (uint) -2; }
+inline QString QFileSystemMetaData::user() const { return QString(); }
+inline QString QFileSystemMetaData::group() const { return QString(); }
+inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
+{
+    Q_UNUSED(owner);
+    return (uint) -2;
+}
+#endif
 
 QT_END_NAMESPACE
 
