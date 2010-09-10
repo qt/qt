@@ -52,7 +52,9 @@
 #include <private/qdeclarativeloader_p.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtTest/QSignalSpy>
 
+#include "../../../shared/util.h"
 #include "../shared/testhttpserver.h"
 
 #ifdef Q_OS_SYMBIAN
@@ -63,18 +65,7 @@
 #define SERVER_PORT 14451
 #define SERVER_ADDR "http://127.0.0.1:14451"
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 60; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false)
-
-
 class tst_qdeclarativeimage : public QObject
-
 {
     Q_OBJECT
 public:
@@ -91,6 +82,7 @@ private slots:
     void svg();
     void big();
     void tiling_QTBUG_6716();
+    void noLoading();
 
 private:
     template<typename T>
@@ -173,18 +165,18 @@ void tst_qdeclarativeimage::imageSource()
         QVERIFY(obj->asynchronous() == true);
 
     if (remote || async)
-        TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
+        QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
 
     QCOMPARE(obj->source(), remote ? source : QUrl(source));
 
     if (error.isEmpty()) {
-        TRY_WAIT(obj->status() == QDeclarativeImage::Ready);
+        QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
         QCOMPARE(obj->width(), qreal(width));
         QCOMPARE(obj->height(), qreal(height));
         QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
         QCOMPARE(obj->progress(), 1.0);
     } else {
-        TRY_WAIT(obj->status() == QDeclarativeImage::Error);
+        QTRY_VERIFY(obj->status() == QDeclarativeImage::Error);
     }
 
     delete obj;
@@ -353,6 +345,54 @@ void tst_qdeclarativeimage::tiling_QTBUG_6716()
             }
         }
     }
+}
+
+void tst_qdeclarativeimage::noLoading()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory(SRCDIR "/data");
+    server.addRedirect("oldcolors.png", SERVER_ADDR "/colors.png");
+
+    QString componentStr = "import Qt 4.7\nImage { source: srcImage }";
+    QDeclarativeContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/heart.png"));
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+    QVERIFY(obj->status() == QDeclarativeImage::Ready);
+
+    QSignalSpy sourceSpy(obj, SIGNAL(sourceChanged(const QUrl &)));
+    QSignalSpy progressSpy(obj, SIGNAL(progressChanged(qreal)));
+    QSignalSpy statusSpy(obj, SIGNAL(statusChanged(QDeclarativeImageBase::Status)));
+
+    // Loading local file
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 1);
+    QTRY_COMPARE(progressSpy.count(), 0);
+    QTRY_COMPARE(statusSpy.count(), 0);
+
+    // Loading remote file
+    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/oldcolors.png");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
+    QTRY_VERIFY(obj->progress() == 0.0);
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 2);
+    QTRY_COMPARE(progressSpy.count(), 2);
+    QTRY_COMPARE(statusSpy.count(), 2);
+
+    // Loading remote file again - should not go through 'Loading' state.
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
+    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/oldcolors.png");
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+    QTRY_VERIFY(obj->progress() == 1.0);
+    QTRY_COMPARE(sourceSpy.count(), 4);
+    QTRY_COMPARE(progressSpy.count(), 2);
+    QTRY_COMPARE(statusSpy.count(), 2);
 }
 
 /*
