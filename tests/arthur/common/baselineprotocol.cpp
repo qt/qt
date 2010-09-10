@@ -3,7 +3,6 @@
 #include <QImage>
 #include <QBuffer>
 #include <QHostInfo>
-#include <QTest>
 
 PlatformInfo::PlatformInfo(bool useLocal)
 {
@@ -146,17 +145,10 @@ bool BaselineProtocol::connect()
     if (serverName.isNull())
         serverName = "chimera.europe.nokia.com";
 
-    for (int i = 0; i < 2; i++) {
-        socket.connectToHost(serverName, ServerPort);
-        if (!socket.waitForConnected(Timeout)) {
-            if (!i && socket.error() == QAbstractSocket::ConnectionRefusedError) {
-                QTest::qSleep(3000); // In case the server is just restarting, we try again
-                continue;
-            }
-            errMsg += QLatin1String("TCP connectToHost failed. Host:") + serverName + QLatin1String(" port:") + QString::number(ServerPort);
-            return false;
-        }
-        break;
+    socket.connectToHost(serverName, ServerPort);
+    if (!socket.waitForConnected(Timeout)) {
+        errMsg += QLatin1String("TCP connectToHost failed. Host:") + serverName + QLatin1String(" port:") + QString::number(ServerPort);
+        return false;
     }
 
     PlatformInfo pi(true);

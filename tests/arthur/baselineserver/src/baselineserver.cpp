@@ -7,6 +7,9 @@
 #include <QHostInfo>
 #include <QTextStream>
 
+#define QLS QLatin1String
+#define QLC QLatin1Char
+
 QString BaselineServer::storage;
 
 BaselineServer::BaselineServer(QObject *parent)
@@ -24,7 +27,7 @@ QString BaselineServer::storagePath()
     if (storage.isEmpty()) {
         QDir dir(QCoreApplication::applicationDirPath());
         dir.cdUp();
-        storage =  dir.path() + QLatin1String("/storage/");
+        storage =  dir.path() + QLS("/storage/");
     }
     return storage;
 }
@@ -73,7 +76,10 @@ void BaselineThread::run()
 BaselineHandler::BaselineHandler(int socketDescriptor)
     : QObject(), connectionEstablished(false)
 {
-    runId = QDateTime::currentDateTime().toString(QLatin1String("MMMdd-hhmmss"));
+    runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
+
+    if (socketDescriptor == -1)
+        return;
 
     connect(&proto.socket, SIGNAL(readyRead()), this, SLOT(receiveRequest()));
     connect(&proto.socket, SIGNAL(disconnected()), this, SLOT(receiveDisconnect()));
@@ -82,7 +88,7 @@ BaselineHandler::BaselineHandler(int socketDescriptor)
 
 QString BaselineHandler::logtime()
 {
-    return QTime::currentTime().toString(QLatin1String("mm:ss.zzz"));
+    return QTime::currentTime().toString(QLS("mm:ss.zzz"));
 }
 
 void BaselineHandler::receiveRequest()
@@ -132,14 +138,14 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
             << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
-        if (i->scriptName.startsWith(QLatin1String("porter_duff"))) {
+        if (i->scriptName.startsWith(QLS("porter_duff"))) {
             // Example of blacklisting on server.
             i->status = ImageItem::IgnoreItem;
             continue;
         }
         i->imageChecksums.clear();
         QString prefix = pathForItem(*i, true);
-        QFile file(prefix + QLatin1String("metadata"));
+        QFile file(prefix + QLS("metadata"));
         if (file.open(QIODevice::ReadOnly)) {
             QDataStream checkSums(&file);
             checkSums >> i->imageChecksums;
@@ -170,10 +176,10 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     QDir cwd;
     if (!cwd.exists(dir))
         cwd.mkpath(dir);
-    item.image.save(prefix + QLatin1String(FileFormat), FileFormat);
+    item.image.save(prefix + QLS(FileFormat), FileFormat);
 
     //# Could use QSettings or XML or even DB, could use common file for whole dir or even whole storage - but for now, keep it simple
-    QFile file(prefix + QLatin1String("metadata"));
+    QFile file(prefix + QLS("metadata"));
     file.open(QIODevice::WriteOnly | QIODevice::Truncate);
     QDataStream checkSums(&file);
     checkSums << item.imageChecksums;
@@ -198,33 +204,70 @@ void BaselineHandler::receiveDisconnect()
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 {
     if (pathForRun.isNull()) {
-        QString host = plat.hostname;
-        if (host == QLatin1String("localhost"))
+        QString host = plat.hostname.section(QLC('.'), 0, 0);  // Filter away domain, if any
+        if (host.isEmpty() || host == QLS("localhost")) {
             host = proto.socket.peerAddress().toString();
-        else
-            host.replace(QRegExp(QLatin1String("^(bq|oslo)-(.*)-\\d\\d$")), QLatin1String("vm-\\2"));
-        pathForRun = BaselineServer::storagePath() + host + QLatin1Char('/');
+            if (host.isEmpty())
+                host = QLS("Unknown");
+        } else {
+            host.replace(QRegExp(QLS("^(bq|oslo?)-(.*)$")), QLS("\\2"));
+            host.replace(QRegExp(QLS("^(.*)-\\d+$")), QLS("vm-\\1"));
+        }
+        pathForRun = BaselineServer::storagePath() + host + QLC('/');
     }
 
     QString storePath = pathForRun;
     if (isBaseline)
-        storePath += QString(QLatin1String("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
+        storePath += QString(QLS("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
     else
-        storePath += QString(QLatin1String("mismatches_%1_%2/")).arg(item.engineAsString(), item.formatAsString()) + runId + QLatin1Char('/');
+        storePath += QString(QLS("mismatches_%1_%2/")).arg(item.engineAsString(), item.formatAsString()) + runId + QLC('/');
 
     QString itemName = item.scriptName;
-    if (itemName.contains(QLatin1Char('.')))
-        itemName.replace(itemName.lastIndexOf(QLatin1Char('.')), 1, QLatin1Char('_'));
+    if (itemName.contains(QLC('.')))
+        itemName.replace(itemName.lastIndexOf(QLC('.')), 1, QLC('_'));
 
-    return storePath + itemName + QLatin1Char('.');
+    return storePath + itemName + QLC('.');
 }
+
+
+void BaselineHandler::testPathMapping()
+{
+    qDebug() << "Storeage prefix:" << BaselineServer::storagePath();
+
+    QStringList hosts;
+    hosts << QLS("bq-ubuntu910-x86-01")
+            << QLS("bq-ubuntu910-x86-15")
+            << QLS("osl-mac-master-5.test.qt.nokia.com")
+            << QLS("osl-mac-master-6.test.qt.nokia.com")
+            << QLS("sv-xp-vs-010")
+            << QLS("sv-xp-vs-011")
+            << QLS("chimera")
+            << QLS("localhost");
+
+    ImageItem item;
+    item.scriptName = QLS("arcs.qps");
+    item.engine = ImageItem::Raster;
+    item.renderFormat = QImage::Format_ARGB32_Premultiplied;
+    item.imageChecksums << 0x0123456789abcdefULL;
+    item.scriptChecksum = 0x0123;
+
+    plat.qtVersion = QLS("4.8.0");
+    plat.buildKey = QLS("(nobuildkey)");
+    foreach(const QString& host, hosts) {
+        pathForRun = QString();
+        plat.hostname = host;
+        qDebug() << "Baseline from" << host << "->" << pathForItem(item, true).remove(BaselineServer::storagePath());
+        qDebug() << "Mismatch from" << host << "->" << pathForItem(item, false).remove(BaselineServer::storagePath());
+    }
+}
+
 
 QString BaselineHandler::computeMismatchScore(const QImage &baseline, const QImage &rendered)
 {
     if (baseline.size() != rendered.size() || baseline.format() != rendered.format())
-        return QLatin1String("[No score, incomparable images.]");
+        return QLS("[No score, incomparable images.]");
     if (baseline.depth() != 32)
-        return QLatin1String("[Score computation not implemented for format.]");
+        return QLS("[Score computation not implemented for format.]");
 
     int w = baseline.width();
     int h = baseline.height();
@@ -260,11 +303,11 @@ QString BaselineHandler::computeMismatchScore(const QImage &baseline, const QIma
 
     double pcd = 100.0 * ncd / (w*h);  // percent of pixels that differ
     double acd = ncd ? double(scd) / (3*ncd) : 0;         // avg. difference
-    QString res = QString(QLatin1String("Diffscore: %1% (Num:%2 Avg:%3)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
+    QString res = QString(QLS("Diffscore: %1% (Num:%2 Avg:%3)")).arg(pcd, 0, 'g', 2).arg(ncd).arg(acd, 0, 'g', 2);
     if (baseline.hasAlphaChannel()) {
         double pad = 100.0 * nad / (w*h);  // percent of pixels that differ
         double aad = nad ? double(sad) / (3*nad) : 0;         // avg. difference
-        res += QString(QLatin1String(" Alpha-diffscore: %1% (Num:%2 Avg:%3)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
+        res += QString(QLS(" Alpha-diffscore: %1% (Num:%2 Avg:%3)")).arg(pad, 0, 'g', 2).arg(nad).arg(aad, 0, 'g', 2);
     }
     return res;
 }

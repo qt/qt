@@ -54,7 +54,8 @@ class BaselineHandler : public QObject
     Q_OBJECT
 
 public:
-    BaselineHandler(int socketDescriptor);
+    BaselineHandler(int socketDescriptor = -1);
+    void testPathMapping();
 
 private slots:
     void receiveRequest();

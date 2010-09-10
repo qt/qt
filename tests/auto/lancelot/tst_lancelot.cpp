@@ -104,8 +104,11 @@ void tst_Lancelot::initTestCase()
     QSKIP("This test is not supported on this platform.", SkipAll);
 #endif
     if (!proto.connect()) {
-        QWARN(qPrintable(proto.errorMessage()));
-        QSKIP("Communication with baseline image server failed.", SkipAll);
+        QTest::qSleep(3000);  // Wait a bit and try again, the server might just be restarting
+        if (!proto.connect()) {
+            QWARN(qPrintable(proto.errorMessage()));
+            QSKIP("Communication with baseline image server failed.", SkipAll);
+        }
     }
 
     QDir qpsDir(scriptsDir);
