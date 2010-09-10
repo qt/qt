@@ -23,6 +23,7 @@
 
 #include "qscriptvalueiterator.h"
 
+#include "qv8context_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
 
@@ -77,7 +78,7 @@ using v8::Value;
 
 // FIXME (Qt5) This class should be refactored. It should use the common Iterator interface.
 // FIXME it could be faster!
-class QScriptValueIteratorPrivate: public QSharedData {
+class QScriptValueIteratorPrivate {
 public:
     inline QScriptValueIteratorPrivate(const QScriptValuePrivate* value);
     inline ~QScriptValueIteratorPrivate();
@@ -102,8 +103,8 @@ public:
     QScriptValue::PropertyFlags flags() const;
 
     inline bool isValid() const;
-private:
     inline QScriptEnginePrivate* engine() const;
+private:
     //void dump(QString) const;
 
     QExplicitlySharedDataPointer<QScriptValuePrivate> m_object;
@@ -143,6 +144,12 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
 
 inline QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
 {
+    if (isValid()) {
+        QList<Persistent<String> >::iterator i = m_names.begin();
+        for (; i != m_names.end(); ++i) {
+            (*i).Dispose();
+        }
+    }
 }
 
 inline bool QScriptValueIteratorPrivate::hasNext()
@@ -186,9 +193,7 @@ inline QScriptStringPrivate* QScriptValueIteratorPrivate::scriptName() const
     if (!isValid())
         return new QScriptStringPrivate();
     // FIXME it should be faster then QString version!
-    Q_UNIMPLEMENTED();
-//    return new QScriptStringPrivate(engine(), QScriptConverter::toString(m_iterator.value()), QScriptStringPrivate::HeapAllocated);
-    return 0;
+    return new QScriptStringPrivate(QScriptConverter::toString(m_iterator.value()));
 }
 
 inline QScriptValuePrivate* QScriptValueIteratorPrivate::value() const
@@ -358,9 +363,7 @@ QString QScriptValueIterator::name() const
 */
 QScriptString QScriptValueIterator::scriptName() const
 {
-    Q_UNIMPLEMENTED();
-//    return QScriptStringPrivate::get(d_ptr->scriptName());
-    return QScriptString();
+    return QScriptStringPrivate::get(d_ptr->scriptName());
 }
 
 /*!
@@ -371,7 +374,9 @@ QScriptString QScriptValueIterator::scriptName() const
 */
 QScriptValue QScriptValueIterator::value() const
 {
-    return QScriptValuePrivate::get(d_ptr->value());
+    Q_D(const QScriptValueIterator);
+    QV8Context api(d->engine());
+    return QScriptValuePrivate::get(d->value());
 }
 
 /*!
@@ -382,7 +387,9 @@ QScriptValue QScriptValueIterator::value() const
 */
 void QScriptValueIterator::setValue(const QScriptValue& value)
 {
-    d_ptr->setValue(QScriptValuePrivate::get(value));
+    Q_D(QScriptValueIterator);
+    QV8Context api(d->engine());
+    d->setValue(QScriptValuePrivate::get(value));
 }
 
 /*!
@@ -393,7 +400,9 @@ void QScriptValueIterator::setValue(const QScriptValue& value)
 */
 void QScriptValueIterator::remove()
 {
-    d_ptr->remove();
+    Q_D(QScriptValueIterator);
+    QV8Context api(d->engine());
+    d->remove();
 }
 
 /*!
@@ -404,7 +413,9 @@ void QScriptValueIterator::remove()
 */
 QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 {
-    return d_ptr->flags();
+    Q_D(const QScriptValueIterator);
+    QV8Context api(d->engine());
+    return d->flags();
 }
 
 /*!
@@ -414,8 +425,7 @@ QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 */
 QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue& object)
 {
-    Q_UNIMPLEMENTED();
-//    d_ptr = new QScriptValueIteratorPrivate(QScriptValuePrivate::get(object));
+    d_ptr.reset(new QScriptValueIteratorPrivate(QScriptValuePrivate::get(object)));
     return *this;
 }
 
