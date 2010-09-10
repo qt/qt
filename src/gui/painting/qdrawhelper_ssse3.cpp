@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
+#include <private/qdrawhelper_x86_p.h>
 
 #ifdef QT_HAVE_SSSE3
 
-#include <private/qsimd_p.h>
-#include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 
 QT_BEGIN_NAMESPACE

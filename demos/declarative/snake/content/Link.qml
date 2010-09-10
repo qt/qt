@@ -91,7 +91,6 @@ Item { id:link
         }
 
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 
 
@@ -119,4 +118,11 @@ Item { id:link
             PropertyChanges { target: img; opacity: 0 }
         }
     ]
+
+    transitions: [
+        Transition {
+            NumberAnimation { target: img; property: "opacity"; duration: 200 }
+        }
+    ]
+
 }

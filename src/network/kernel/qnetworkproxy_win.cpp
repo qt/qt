@@ -51,6 +51,7 @@
 #include <string.h>
 #include <qt_windows.h>
 #include <wininet.h>
+#include <private/qsystemlibrary_p.h>
 
 /*
  * Information on the WinHTTP DLL:
@@ -277,15 +278,15 @@ void QWindowsSystemProxy::init()
     return;
 #else
     // load the winhttp.dll library
-    HINSTANCE winhttpHnd = LoadLibrary(L"winhttp");
-    if (!winhttpHnd)
+    QSystemLibrary lib(L"winhttp");
+    if (!lib.load())
         return;                 // failed to load
 
-    ptrWinHttpOpen = (PtrWinHttpOpen)GetProcAddress(winhttpHnd, "WinHttpOpen");
-    ptrWinHttpCloseHandle = (PtrWinHttpCloseHandle)GetProcAddress(winhttpHnd, "WinHttpCloseHandle");
-    ptrWinHttpGetProxyForUrl = (PtrWinHttpGetProxyForUrl)GetProcAddress(winhttpHnd, "WinHttpGetProxyForUrl");
-    ptrWinHttpGetDefaultProxyConfiguration = (PtrWinHttpGetDefaultProxyConfiguration)GetProcAddress(winhttpHnd, "WinHttpGetDefaultProxyConfiguration");
-    ptrWinHttpGetIEProxyConfigForCurrentUser = (PtrWinHttpGetIEProxyConfigForCurrentUser)GetProcAddress(winhttpHnd, "WinHttpGetIEProxyConfigForCurrentUser");
+    ptrWinHttpOpen = (PtrWinHttpOpen)lib.resolve("WinHttpOpen");
+    ptrWinHttpCloseHandle = (PtrWinHttpCloseHandle)lib.resolve("WinHttpCloseHandle");
+    ptrWinHttpGetProxyForUrl = (PtrWinHttpGetProxyForUrl)lib.resolve("WinHttpGetProxyForUrl");
+    ptrWinHttpGetDefaultProxyConfiguration = (PtrWinHttpGetDefaultProxyConfiguration)lib.resolve("WinHttpGetDefaultProxyConfiguration");
+    ptrWinHttpGetIEProxyConfigForCurrentUser = (PtrWinHttpGetIEProxyConfigForCurrentUser)lib.resolve("WinHttpGetIEProxyConfigForCurrentUser");
 
     // Try to obtain the Internet Explorer configuration.
     WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ieProxyConfig;

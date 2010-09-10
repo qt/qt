@@ -118,6 +118,7 @@ private slots:
     void valueTypes();
     void cppnamespace();
     void aliasProperties();
+    void aliasPropertiesAndSignals();
     void componentCompositeType();
     void i18n();
     void i18n_data();
@@ -126,6 +127,7 @@ private slots:
     void scriptString();
     void defaultPropertyListOrder();
     void declaredPropertyValues();
+    void dontDoubleCallClassBegin();
 
     void basicRemote_data();
     void basicRemote();
@@ -141,8 +143,8 @@ private slots:
     void importsOrder();
 
     void qmlAttachedPropertiesObjectMethod();
-
     void customOnProperty();
+    void variantNotify();
 
     // regression tests for crashes
     void crash1();
@@ -342,6 +344,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidAlias.4") << "invalidAlias.4.qml" << "invalidAlias.4.errors.txt" << false;
     QTest::newRow("invalidAlias.5") << "invalidAlias.5.qml" << "invalidAlias.5.errors.txt" << false;
     QTest::newRow("invalidAlias.6") << "invalidAlias.6.qml" << "invalidAlias.6.errors.txt" << false;
+    QTest::newRow("invalidAlias.7") << "invalidAlias.7.qml" << "invalidAlias.7.errors.txt" << false;
 
     QTest::newRow("invalidAttachedProperty.1") << "invalidAttachedProperty.1.qml" << "invalidAttachedProperty.1.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.2") << "invalidAttachedProperty.2.qml" << "invalidAttachedProperty.2.errors.txt" << false;
@@ -372,6 +375,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("assignToNamespace") << "assignToNamespace.qml" << "assignToNamespace.errors.txt" << false;
     QTest::newRow("invalidOn") << "invalidOn.qml" << "invalidOn.errors.txt" << false;
     QTest::newRow("invalidProperty") << "invalidProperty.qml" << "invalidProperty.errors.txt" << false;
+    QTest::newRow("nonScriptableProperty") << "nonScriptableProperty.qml" << "nonScriptableProperty.errors.txt" << false;
 }
 
 
@@ -1048,6 +1052,17 @@ void tst_qdeclarativelanguage::aliasProperties()
     }
 }
 
+// QTBUG-13374 Test that alias properties and signals can coexist
+void tst_qdeclarativelanguage::aliasPropertiesAndSignals()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertiesAndSignals.qml"));
+    VERIFY_ERRORS(0);
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
 // Test that the root element in a composite type can be a Component
 void tst_qdeclarativelanguage::componentCompositeType()
 {
@@ -1190,6 +1205,20 @@ void tst_qdeclarativelanguage::declaredPropertyValues()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
     VERIFY_ERRORS(0);
+}
+
+void tst_qdeclarativelanguage::dontDoubleCallClassBegin()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("dontDoubleCallClassBegin.qml"));
+    QObject *o = component.create();
+    QVERIFY(o);
+
+    MyParserStatus *o2 = qobject_cast<MyParserStatus *>(qvariant_cast<QObject *>(o->property("object")));
+    QVERIFY(o2);
+    QCOMPARE(o2->classBeginCount(), 1);
+    QCOMPARE(o2->componentCompleteCount(), 1);
+
+    delete o;
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.
@@ -1664,6 +1693,20 @@ void tst_qdeclarativelanguage::customOnProperty()
     QVERIFY(object != 0);
 
     QCOMPARE(object->property("on").toInt(), 10);
+
+    delete object;
+}
+
+// QTBUG-12601
+void tst_qdeclarativelanguage::variantNotify()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("variantNotify.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("notifyCount").toInt(), 1);
 
     delete object;
 }

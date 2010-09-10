@@ -284,9 +284,6 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     The upload is finished when \a bytesSent is equal to \a
     bytesTotal. At that time, \a bytesTotal will not be -1.
 
-    This signal is suitable to connecting to QProgressBar::setValue()
-    to update the QProgressBar that provides user feedback.
-
     \sa downloadProgress()
 */
 
@@ -306,9 +303,6 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 
     The download is finished when \a bytesReceived is equal to \a
     bytesTotal. At that time, \a bytesTotal will not be -1.
-
-    This signal is suitable to connecting to QProgressBar::setValue()
-    to update the QProgressBar that provides user feedback.
 
     Note that the values of both \a bytesReceived and \a bytesTotal
     may be different from size(), the total number of bytes

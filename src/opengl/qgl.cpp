@@ -2118,11 +2118,8 @@ void QGLContextPrivate::syncGlState()
 #ifdef QT_NO_EGL
 void QGLContextPrivate::swapRegion(const QRegion *)
 {
-    static bool firstWarning = true;
-    if (firstWarning) {
-        qWarning() << "::swapRegion called but not supported!";
-        firstWarning = false;
-    }
+    Q_Q(QGLContext);
+    q->swapBuffers();
 }
 #endif
 
@@ -5323,6 +5320,8 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     if (extensions.match("GL_ARB_fragment_program"))
         glExtensions |= FragmentProgram;
     if (extensions.match("GL_ARB_fragment_shader"))
+        glExtensions |= FragmentShader;
+    if (extensions.match("GL_ARB_shader_objects"))
         glExtensions |= FragmentShader;
     if (extensions.match("GL_ARB_ES2_compatibility"))
         glExtensions |= ES2Compatibility;

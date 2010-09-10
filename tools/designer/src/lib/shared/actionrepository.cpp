@@ -397,9 +397,10 @@ void ActionTreeView::contextMenuEvent(QContextMenuEvent *event)
     emit contextMenuRequested(event, m_model->actionAt(indexAt(event->pos())));
 }
 
-void ActionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &/*previous*/)
+void ActionTreeView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     emit currentChanged(m_model->actionAt(current));
+    QTreeView::currentChanged(current, previous);
 }
 
 void ActionTreeView::slotActivated(const QModelIndex &index)
@@ -478,9 +479,10 @@ void ActionListView::contextMenuEvent(QContextMenuEvent *event)
     emit contextMenuRequested(event, m_model->actionAt(indexAt(event->pos())));
 }
 
-void ActionListView::currentChanged(const QModelIndex &current, const QModelIndex & /*previous*/)
+void ActionListView::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     emit currentChanged(m_model->actionAt(current));
+    QListView::currentChanged(current, previous);
 }
 
 void ActionListView::slotActivated(const QModelIndex &index)

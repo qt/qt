@@ -161,8 +161,9 @@ void tst_QTimer::singleShotTimeout()
     QCOMPARE(helper.count, 1);
 }
 
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-// Increase wait as emulator startup can cause unexpected delays
+#if defined(Q_OS_SYMBIAN)
+// Increase wait as emulator startup can cause unexpected delays, and
+// on hardware there are sometimes spikes right after process startup.
 #define TIMEOUT_TIMEOUT 2000
 #else
 #define TIMEOUT_TIMEOUT 200

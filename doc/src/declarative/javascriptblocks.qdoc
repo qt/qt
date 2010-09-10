@@ -173,6 +173,40 @@ handler to execute at startup, they are run sequentially in an undefined order.
 Likewise, the \l {Component::onDestruction} attached property is triggered on
 component destruction.
 
+
+\section1 Property Assignment vs Property Binding
+
+When working with both QML and JavaScript, it is important to differentiate between
+QML \l {Property Binding} and JavaScript value assignment. In QML, a property 
+binding is created using the \e {property: value} syntax:
+
+\code
+Rectangle {
+    width: otherItem.width
+}
+\endcode
+
+The \c width of the above \l Rectangle is updated whenever \c otherItem.width changes. On the other
+hand, take the following JavaScript code snippet, that runs when the \l Rectangle is created:
+
+\code
+Rectangle {
+
+    Component.onCompleted: {
+        width = otherItem.width;
+    }
+}
+\endcode
+
+The \c width of this \l Rectangle is \e assigned the value of \c otherItem.width using the
+\e {property = value} syntax in JavaScript. Unlike the QML \e {property: value} syntax, this
+does not invoke QML property binding; the \c rectangle.width property is set to the value
+of \c otherItem.width at the time of the assignment and will not be updated if that value
+changes.
+
+See \l {Property Binding} for more information.
+
+
 \section1 QML JavaScript Restrictions
 
 QML executes standard JavaScript code, with the following restrictions:

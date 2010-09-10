@@ -3641,6 +3641,11 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
     case MapNotify:                                // window shown
         if (widget->isWindow()) {
+            // if we got a MapNotify when we were not waiting for it, it most
+            // likely means the user has already asked to hide the window before
+            // it ever being shown, so we try to withdraw a window after sending
+            // the QShowEvent.
+            bool pendingHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide) && widget->testAttribute(Qt::WA_WState_Hidden);
             widget->d_func()->topData()->waitingForMapNotify = 0;
 
             if (widget->windowType() != Qt::Popup) {
@@ -3660,6 +3665,8 @@ int QApplication::x11ProcessEvent(XEvent* event)
                     widget->setAttribute(Qt::WA_WState_Visible, true);
                 }
             }
+            if (pendingHide) // hide the window
+                XWithdrawWindow(X11->display, widget->internalWinId(), widget->x11Info().screen());
         }
         break;
 

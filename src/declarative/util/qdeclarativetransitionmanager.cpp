@@ -176,7 +176,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
                 if (action.event->isReversable()) {
                     action.event->clearBindings();
                     action.event->rewind();
-                    action.event->clearBindings();
+                    action.event->clearBindings();  //### shouldn't be needed
                 }
                 continue;
             }

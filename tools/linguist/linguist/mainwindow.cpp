@@ -1030,6 +1030,8 @@ void MainWindow::findAgain()
                             break;
                         if (searchItem(m->extraComment()))
                             break;
+                        if (searchItem(m->translatorComment()))
+                            break;
                         m_foundWhere = DataModel::NoLocation;
                         // did not find the search string in this message
                     }
