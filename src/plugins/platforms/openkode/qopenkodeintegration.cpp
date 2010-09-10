@@ -52,6 +52,8 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qfile.h>
 
+#include "qgenericunixfontdatabase.h"
+
 #include <KD/kd.h>
 #include <KD/NV_display.h>
 #include <KD/NV_initialize.h>
@@ -120,7 +122,7 @@ QOpenKODEScreen::QOpenKODEScreen(KDDisplayNV *kdDisplay,  KDDesktopNV *kdDesktop
 }
 
 QOpenKODEIntegration::QOpenKODEIntegration()
-    : mEventLoopIntegration(0)
+    : mEventLoopIntegration(0), mFontDb(new QGenericUnixFontDatabase())
 {
     if (kdInitializeNV() == KD_ENOTINITIALIZED) {
         qFatal("Did not manage to initialize openkode");
@@ -180,6 +182,7 @@ QOpenKODEIntegration::QOpenKODEIntegration()
 QOpenKODEIntegration::~QOpenKODEIntegration()
 {
     delete mEventLoopIntegration;
+    delete mFontDb;
 }
 
 QPixmapData *QOpenKODEIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -226,6 +229,11 @@ QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration(
         that->mEventLoopIntegration = new QOpenKODEEventLoopIntegration;
     }
     return mEventLoopIntegration;
+}
+
+QPlatformFontDatabase *QOpenKODEIntegration::fontDatabase() const
+{
+    return mFontDb;
 }
 
 

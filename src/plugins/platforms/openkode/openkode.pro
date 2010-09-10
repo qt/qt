@@ -19,6 +19,8 @@ HEADERS =   qopenkodeintegration.h \
             qopenkodeeventloopintegration.h \
             openkodekeytranslator.h
 
+include (../fontdatabases/genericunix/genericunix.pri)
+
 RESOURCES = resources.qrc
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
