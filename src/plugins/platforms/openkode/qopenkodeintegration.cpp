@@ -60,32 +60,12 @@
 
 #include "GLES2/gl2ext.h"
 
-#include <nvgl2demo_common.h>
-
-
 QT_BEGIN_NAMESPACE
 
-QOpenKODEScreen::QOpenKODEScreen()
+QOpenKODEScreen::QOpenKODEScreen(KDDisplayNV *kdDisplay,  KDDesktopNV *kdDesktop)
     : mIsFullScreen(false)
 {
-    KDDesktopNV *kdDesktop = KD_NULL;
-    KDDisplayNV *kdDisplay = KD_NULL;
-
     qDebug() << "QOpenKODEScreen::QOpenKODEIntegrationScreen()";
-
-    // Get the default desktop and display
-    kdDesktop = kdGetDesktopNV(KD_DEFAULT_DESKTOP_NV, KD_NULL);
-    if (!kdDesktop || kdDesktop == (void*)-1) {
-        qErrnoWarning(kdGetError(), "Could not obtain KDDesktopNV pointer");
-        return;
-    }
-
-    kdDisplay = kdGetDisplayNV(KD_DEFAULT_DISPLAY_NV, KD_NULL);
-    if (!kdDisplay || kdDisplay == (void*)-1) {
-        qErrnoWarning(kdGetError(), "Could not obtain KDDisplayNV pointer");
-        kdReleaseDesktopNV(kdDesktop);
-        return;
-    }
 
     KDboolean enabled = KD_TRUE;
     kdSetDisplayPropertybvNV(kdDisplay,
@@ -139,64 +119,64 @@ QOpenKODEScreen::QOpenKODEScreen()
 
 }
 
-static GLuint loadShaders(const QString &vertexShader, const QString &fragmentShader)
-{
-    GLuint prog = 0;
-    GLuint vertShader;
-    GLuint fragShader;
-
-   // Create the program
-    prog = glCreateProgram();
-
-    // Create the GL shader objects
-    vertShader = glCreateShader(GL_VERTEX_SHADER);
-    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Load shader sources into GL and compile
-    QFile vertexFile(vertexShader);
-    vertexFile.open(QFile::ReadOnly);
-    QByteArray vertSource = vertexFile.readAll();
-    const char *vertChar = vertSource.constData();
-    int vertSize = vertSource.size();
-
-    QFile fragFile(fragmentShader);
-    fragFile.open(QFile::ReadOnly);
-    QByteArray fragSource = fragFile.readAll();
-    const char *fragChar = fragSource.constData();
-    int fragSize = fragSource.size();
-
-    glShaderSource(vertShader, 1, (const char**)&vertChar, &vertSize);
-    glCompileShader(vertShader);
-
-    glShaderSource(fragShader, 1, (const char**)&fragChar, &fragSize);
-    glCompileShader(fragShader);
-
-    // Attach the shaders to the program
-    glAttachShader(prog, vertShader);
-    glAttachShader(prog, fragShader);
-
-    // Delete the shaders
-    glDeleteShader(vertShader);
-    glDeleteShader(fragShader);
-
-    // Link and validate the shader program
-    glLinkProgram(prog);
-    glValidateProgram(prog);
-
-    return prog;
-}
-
 QOpenKODEIntegration::QOpenKODEIntegration()
     : mEventLoopIntegration(0)
 {
     if (kdInitializeNV() == KD_ENOTINITIALIZED) {
         qFatal("Did not manage to initialize openkode");
     }
-    QOpenKODEScreen *mPrimaryScreen = new QOpenKODEScreen();
 
-    mScreens.append(mPrimaryScreen);
+    KDDisplaySystemNV *kdDisplaySystem = kdCreateDisplaySystemSnapshotNV(this);
+    KDint32 displayCount = 0;
+    kdGetDisplaySystemPropertyivNV(kdDisplaySystem, KD_DISPLAYPROPERTY_COUNT_NV, 0, &displayCount);
 
+    for (int i = 0; i < displayCount; i++) {
+        KDchar *displayName = 0;
+        KDsize displayNameLength = 0;
+        kdGetDisplaySystemPropertycvNV(kdDisplaySystem,KD_DISPLAYPROPERTY_NAME_NV,i,0,&displayNameLength);
+        if (!displayNameLength)
+            continue;
+        displayName = new KDchar[displayNameLength];
+        kdGetDisplaySystemPropertycvNV(kdDisplaySystem,KD_DISPLAYPROPERTY_NAME_NV,i,displayName,&displayNameLength);
+
+        KDDisplayNV *display = kdGetDisplayNV(displayName,this);
+        if (!display || display == (void*)-1) {
+            qErrnoWarning(kdGetError(), "Could not obtain KDDisplayNV pointer");
+            return;
+        }
+        if (displayNameLength)
+            delete displayName;
+
+        KDchar *desktopName = 0;
+        KDsize desktopNameLength = 0;
+        bool openkodeImpDoesNotFail = false;
+        if (openkodeImpDoesNotFail) {
+            qDebug() << "printing desktopname";
+            kdGetDisplayPropertycvNV(display,KD_DISPLAYPROPERTY_DESKTOP_NAME_NV,desktopName,&desktopNameLength);
+            if (desktopNameLength) {
+                desktopName = new KDchar[desktopNameLength];
+                kdGetDisplayPropertycvNV(display,KD_DISPLAYPROPERTY_DESKTOP_NAME_NV,desktopName,&desktopNameLength);
+            } else {
+                desktopName =  KD_DEFAULT_DESKTOP_NV;
+            }
+        } else {
+            desktopName = KD_DEFAULT_DESKTOP_NV;
+        }
+
+        KDDesktopNV *desktop = kdGetDesktopNV(desktopName,this);
+        if (!desktop || desktop == (void*)-1) {
+            qErrnoWarning(kdGetError(), "Could not obtain KDDesktopNV pointer");
+            kdReleaseDisplayNV(display);
+            return;
+        }
+        if (desktopNameLength)
+            delete desktopName;
+
+        QOpenKODEScreen *screen = new QOpenKODEScreen(display,desktop);
+        mScreens.append(screen);
+    }
 }
+
 QOpenKODEIntegration::~QOpenKODEIntegration()
 {
     delete mEventLoopIntegration;
@@ -212,7 +192,7 @@ QPlatformWindow *QOpenKODEIntegration::createPlatformWindow(QWidget *tlw, WId ) 
     return new QOpenKODEWindow(tlw);
 }
 
-QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId wid) const
+QWindowSurface *QOpenKODEIntegration::createWindowSurface(QWidget *widget, WId) const
 {
     QWindowSurface *returnSurface = 0;
     switch (widget->platformWindowFormat().windowApi()) {
@@ -246,18 +226,6 @@ QPlatformEventLoopIntegration *QOpenKODEIntegration::createEventLoopIntegration(
         that->mEventLoopIntegration = new QOpenKODEEventLoopIntegration;
     }
     return mEventLoopIntegration;
-}
-
-GLuint QOpenKODEIntegration::blitterProgram()
-{
-    static GLuint shaderProgram = 0;
-    if (!shaderProgram) {
-
-        shaderProgram = loadShaders(":/shaders/vert.glslv",":/shaders/frag.glslf");
-        if (!shaderProgram)
-            qFatal("QOpenKodeGraphicsSystem(): Cannot load shaders!");
-    }
-    return shaderProgram;
 }
 
 

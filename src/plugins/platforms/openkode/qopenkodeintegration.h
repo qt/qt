@@ -57,13 +57,14 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 struct KDDesktopNV;
+struct KDDisplayNV;
 class QOpenKODECursor;
 
 class QOpenKODEScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QOpenKODEScreen();
+    QOpenKODEScreen(KDDisplayNV *kdDisplay,  KDDesktopNV *kdDesktop);
     ~QOpenKODEScreen() {}
 
     QRect geometry() const { return mGeometry; }
