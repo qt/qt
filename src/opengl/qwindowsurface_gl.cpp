@@ -190,7 +190,10 @@ public:
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
-            widget = new QGLWidget;
+
+            widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
+            widget->resize(1, 1);
+
             // We dont need this internal widget to appear in QApplication::topLevelWidgets()
             if (QWidgetPrivate::allWidgets)
                 QWidgetPrivate::allWidgets->remove(widget);
