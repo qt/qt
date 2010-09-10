@@ -90,7 +90,7 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
 
     QScriptEnginePrivate *engine = data->engine;
     if (!result->isValid()) {
-        return engine->makeJSValue(QScriptValue::UndefinedValue);
+        return handleScope.Close(engine->makeJSValue(QScriptValue::UndefinedValue));
     }
 
     // Make sure that the result will be assigned to the correct engine.
@@ -98,7 +98,7 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
         result->assignEngine(engine);
     } else if (result->engine() != engine) {
         qWarning("QScriptValue::call(): Value from different engine returned from native function, returning undefined value instead.");
-        return engine->makeJSValue(QScriptValue::UndefinedValue);
+        return handleScope.Close(engine->makeJSValue(QScriptValue::UndefinedValue));
     }
 
     // The persistent handle within the 'result' will be deleted, but

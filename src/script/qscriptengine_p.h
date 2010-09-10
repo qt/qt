@@ -82,12 +82,12 @@ public:
     v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *);
     v8::Handle<v8::FunctionTemplate> qobjectTemplate();
 
-    inline v8::Persistent<v8::Value> makeJSValue(bool value);
-    inline v8::Persistent<v8::Value> makeJSValue(int value);
-    inline v8::Persistent<v8::Value> makeJSValue(uint value);
-    inline v8::Persistent<v8::Value> makeJSValue(qsreal value);
-    inline v8::Persistent<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
-    inline v8::Persistent<v8::Value> makeJSValue(const QString& value);
+    inline v8::Handle<v8::Value> makeJSValue(bool value);
+    inline v8::Handle<v8::Value> makeJSValue(int value);
+    inline v8::Handle<v8::Value> makeJSValue(uint value);
+    inline v8::Handle<v8::Value> makeJSValue(qsreal value);
+    inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
+    inline v8::Handle<v8::Value> makeJSValue(const QString& value);
     inline bool isError(const QScriptValuePrivate* value) const;
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
@@ -151,35 +151,35 @@ private:
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
 };
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)
 {
-    return v8::Persistent<v8::Value>::New(value ? v8::True() : v8::False());
+    return value ? v8::True() : v8::False();
 }
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(int value)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(int value)
 {
-    return v8::Persistent<v8::Value>::New(v8::Integer::New(value));
+    return v8::Integer::New(value);
 }
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(uint value)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(uint value)
 {
-    return v8::Persistent<v8::Value>::New(v8::Integer::NewFromUnsigned(value));
+    return v8::Integer::NewFromUnsigned(value);
 }
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(qsreal value)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(qsreal value)
 {
-    return v8::Persistent<v8::Value>::New(v8::Number::New(value));
+    return v8::Number::New(value);
 }
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(QScriptValue::SpecialValue value) {
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(QScriptValue::SpecialValue value) {
     if (value == QScriptValue::NullValue)
-        return v8::Persistent<v8::Value>::New(v8::Null());
-    return v8::Persistent<v8::Value>::New(v8::Undefined());
+        return v8::Null();
+    return v8::Undefined();
 }
 
-v8::Persistent<v8::Value> QScriptEnginePrivate::makeJSValue(const QString& value)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(const QString& value)
 {
-    return v8::Persistent<v8::Value>::New(QScriptConverter::toString(value));
+    return QScriptConverter::toString(value);
 }
 
 inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
