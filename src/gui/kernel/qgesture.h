@@ -112,6 +112,8 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset)
     Q_PROPERTY(QPointF delta READ delta STORED false)
     Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration)
+    Q_PRIVATE_PROPERTY(QPanGesture::d_func(), qreal horizontalVelocity READ horizontalVelocity WRITE setHorizontalVelocity)
+    Q_PRIVATE_PROPERTY(QPanGesture::d_func(), qreal verticalVelocity READ verticalVelocity WRITE setVerticalVelocity)
 
 public:
     QPanGesture(QObject *parent = 0);

@@ -88,14 +88,21 @@ class QPanGesturePrivate : public QGesturePrivate
 
 public:
     QPanGesturePrivate()
-        : acceleration(0)
+        : acceleration(0), xVelocity(0), yVelocity(0)
     {
     }
+
+    qreal horizontalVelocity() const { return xVelocity; }
+    void setHorizontalVelocity(qreal value) { xVelocity = value; }
+    qreal verticalVelocity() const { return yVelocity; }
+    void setVerticalVelocity(qreal value) { yVelocity = value; }
 
     QPointF lastOffset;
     QPointF offset;
     QPoint startPosition;
     qreal acceleration;
+    qreal xVelocity;
+    qreal yVelocity;
 };
 
 class QPinchGesturePrivate : public QGesturePrivate
