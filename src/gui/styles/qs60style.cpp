@@ -154,6 +154,9 @@ QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
     deleteThemePalette();
+#ifdef Q_WS_S60
+    removeAnimations();
+#endif
 }
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
@@ -1097,8 +1100,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
             State mflags = bflags;
             if (toolBtn->state & State_Sunken) {
-                if (toolBtn->activeSubControls & SC_ToolButton)
-                    bflags |= State_Sunken;
+                bflags |= State_Sunken;
                 mflags |= State_Sunken;
             }
 
@@ -1114,11 +1116,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (bflags & (State_Sunken | State_On | State_Raised | State_Enabled)) {
                     tool.rect = button.unite(menuRect);
                     tool.state = bflags;
-                    const QToolButton *toolButtonWidget = qobject_cast<const QToolButton *>(widget);
-                    const QS60StylePrivate::SkinElements element =
-                        ((toolButtonWidget && toolButtonWidget->isDown()) || (option->state & State_Sunken)) ?
-                            QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
-                    QS60StylePrivate::drawSkinElement(element, painter, tool.rect, flags);
                     drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                 }
                 if (toolBtn->subControls & SC_ToolButtonMenu) {
@@ -2174,9 +2171,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel:
         if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)) {
-            const bool isPressed = option->state & State_Sunken;
-            const QS60StylePrivate::SkinElements skinElement =
-                isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
+            const bool isPressed = (option->state & State_Sunken) || (option->state & State_On);
+            QS60StylePrivate::SkinElements skinElement;
+            if (element == PE_PanelButtonTool)
+                skinElement = isPressed ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+            else
+                skinElement = isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
             QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
         } else {
             commonStyleDraws = true;
@@ -2340,16 +2340,20 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                     tableView = true;
 
                 QS60StylePrivate::SkinElements element;
+                bool themeGraphicDefined = false;
                 QRect elementRect = option->rect;
 
                 //draw item is drawn as pressed, if it already has focus.
                 if (isPressed && (hasFocus || isSelected)) {
+                    themeGraphicDefined = true;
                     element = tableView ? QS60StylePrivate::SE_TableItemPressed : QS60StylePrivate::SE_ListItemPressed;
                 } else if (hasFocus || (isSelected && selectionBehavior != QAbstractItemView::SelectItems)) {
                     element = QS60StylePrivate::SE_ListHighlight;
                     elementRect = highlightRect;
+                    themeGraphicDefined = true;
                 }
-                QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
+                if (themeGraphicDefined)
+                    QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
             } else {
                 QCommonStyle::drawPrimitive(element, option, painter, widget);
             }

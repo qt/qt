@@ -400,9 +400,9 @@ QStaticTextPrivate::QStaticTextPrivate()
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), textWidth(other.textWidth), matrix(other.matrix),
-      items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0), needsRelayout(true),
-      useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat),
-      untransformedCoordinates(other.untransformedCoordinates)
+      items(0), itemCount(0), glyphPool(0), positionPool(0), charPool(0), textOption(other.textOption),
+      needsRelayout(true), useBackendOptimizations(other.useBackendOptimizations),
+      textFormat(other.textFormat), untransformedCoordinates(other.untransformedCoordinates)
 {
 }
 

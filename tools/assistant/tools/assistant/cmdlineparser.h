@@ -93,7 +93,6 @@ private:
 
     QStringList m_arguments;
     int m_pos;
-    static const QString m_helpMessage;
     QString m_collectionFile;
     QString m_cloneFile;
     QString m_helpFile;

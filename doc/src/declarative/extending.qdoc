@@ -674,6 +674,16 @@ declaring a new property, and the corresponding C++ type.
 \row \o variant \o QVariant
 \endtable
 
+From QML you can also declare object and list properties using any element name
+like this:
+
+\code
+    property QtObject objectProperty
+    property Item itemProperty
+    property MyCustomType customProperty
+    property list<Item> listOfItemsProperty
+\endcode
+
 QML supports two methods for adding a new property to a type: a new property
 definition, and a property alias.
 
@@ -964,6 +974,20 @@ Item {
     }
 }
 \endcode
+
+This may be connected to via QObject::connect() or called directly from C++ using
+QMetaObject::invokeMethod():
+
+\code
+    QDeclarativeEngine engine;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile("main.qml"));
+    QObject *object = component.create(context);
+    QVariant str("Hello");
+    QMetaObject::invokeMethod(object, "say", Q_ARG(QVariant, str));
+\endcode
+
+Return values of type QVariant are also supported via Q_RETURN_ARG.
 
 \section1 Defining new Components
 \target components

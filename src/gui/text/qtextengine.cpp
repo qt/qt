@@ -2166,8 +2166,11 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     void **newMem = memory;
     newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
-    Q_CHECK_PTR(newMem);
-    if (memory_on_stack && newMem)
+    if (!newMem) {
+        layoutState = LayoutFailed;
+        return false;
+    }
+    if (memory_on_stack)
         memcpy(newMem, memory, allocated*sizeof(void *));
     memory = newMem;
     memory_on_stack = false;
@@ -2287,6 +2290,9 @@ bool QTextEngine::atWordSeparator(int position) const
     case ',':
     case '?':
     case '!':
+    case '@':
+    case '#':
+    case '$':
     case ':':
     case ';':
     case '-':
@@ -2307,6 +2313,7 @@ bool QTextEngine::atWordSeparator(int position) const
     case '*':
     case '\'':
     case '"':
+    case '`':
     case '~':
     case '|':
         return true;

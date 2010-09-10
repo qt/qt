@@ -84,6 +84,11 @@ void qt_blend_rgb16_on_argb32_neon(uchar *destPixels, int dbpl,
                                    int w, int h,
                                    int const_alpha);
 
+void qt_blend_rgb16_on_rgb16_neon(uchar *destPixels, int dbpl,
+                                  const uchar *srcPixels, int sbpl,
+                                  int w, int h,
+                                  int const_alpha);
+
 void qt_alphamapblit_quint16_neon(QRasterBuffer *rasterBuffer,
                                   int x, int y, quint32 color,
                                   const uchar *bitmap,

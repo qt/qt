@@ -47,7 +47,7 @@ Javascript is easier to learn than C++ and can be embedded into the QML
 files or imported from a separate file.
 
 \bold{In QML the types of various 'objects' are referred to as \l {QML
-Elements}{ elements}}.
+Elements}{elements}}.
 
 An element usually has various \e properties that help define the element. For
 example, if we created an element called Circle then the radius of the circle
@@ -56,9 +56,14 @@ would be a property.
 
 \section1 A First Look
 
-The basic syntax of an \l {QML Elements}{element} is
+The basic syntax of an \l{QML Elements}{element} is
 
-\snippet doc/src/snippets/declarative/qml-intro/basic-syntax.qml basic syntax
+\qml
+SomeElement {
+    id: myObject
+    ... some other things here ...
+}
+\endqml
 
 Here we are defining a new object. We specify its 'type' first as SomeElement.
 Then within matching braces { ... } we specify the various parts of our 
@@ -82,7 +87,7 @@ want a rectangle that is 500 pixels by 400 pixels in the x and y directions
 
 We can implement this \l Rectangle with these properties this way
 
-\quotefile doc/src/snippets/declarative/qml-intro/rectangle.qml
+\snippet doc/src/snippets/declarative/qml-intro/rectangle.qml document
 
 This is a valid QML script. To run it, copy it and save it to a file, say
 myexample.qml, and on the command line run the following command:
@@ -113,7 +118,7 @@ Text is handled by a different element called \l Text. We need to create a
 property to "Hello World!". So to set the text to "Hello world" and the
 background colour to light gray,
 
-\quotefile doc/src/snippets/declarative/qml-intro/hello-world1.qml
+\snippet doc/src/snippets/declarative/qml-intro/hello-world1.qml document
 
 
 \section1 Hello World Again
@@ -172,7 +177,7 @@ text, also make it 150 by 150 pixels in size,
 Adding the Hello World example, with the text and the image example we can
 write a simple piece of QML that starts to look a bit better.
 
-\quotefile doc/src/snippets/declarative/qml-intro/hello-world5.qml
+\snippet doc/src/snippets/declarative/qml-intro/hello-world5.qml document
 
 The result is still quite simple
 
@@ -203,7 +208,7 @@ If we want to position an image at the bottom of the rectangle it is
 inside. I have to specify that the bottom of the image is also at the
 bottom of the rectangle
 
-\quotefile doc/src/snippets/declarative/qml-intro/anchors1.qml
+\snippet doc/src/snippets/declarative/qml-intro/anchors1.qml document
 
 This places the logo at the bottom left of the window.
 
@@ -222,7 +227,7 @@ the bottomMargin property is used. So the new actions for the script are
 
 Encoded into QML the script becomes
 
-\quotefile doc/src/snippets/declarative/qml-intro/anchors2.qml
+\snippet doc/src/snippets/declarative/qml-intro/anchors2.qml document
 
 Run this and resize the window. You will see that now the position of the
 image adjusts during the resize.
@@ -282,7 +287,7 @@ vertically by a factor of 1.5 and by 1.2 horizontally.
 
 Using the example above as the basis for this we have,
 
-\quotefile doc/src/snippets/declarative/qml-intro/transformations1.qml
+\snippet doc/src/snippets/declarative/qml-intro/transformations1.qml document
 
 The code block in \c image1 starting with \c transform specifies that the
 \l {Item::transform}{transform} property will be a Rotation through -90
@@ -320,7 +325,7 @@ from \l Item. The rotation property is a real number that specifies the
 angle in a clockwise direction for the rotation of the object. Here is the
 code for our animated rotating image.
 
-\quotefile doc/src/snippets/declarative/number-animation1.qml
+\snippet doc/src/snippets/declarative/qml-intro/number-animation1.qml document
 
 The \c {transformOrigin: Item.Center} is redundant since this is the default
 axis of rotation anyway. But if you change \c Center to \c BottomRight you
@@ -333,7 +338,7 @@ combination. For example, if the task had been to animate the rotation
 about the y-axis passing through the center of the image then the following
 code would do it.
 
-\quotefile doc/src/snippets/declarative/number-animation2.qml
+\snippet doc/src/snippets/declarative/qml-intro/number-animation2.qml document
 
 Here there is a rectangle 600 by 400 pixels. Placed within that rectangle
 is an image 100 by 100 pixels. It is rotated about the center of the image
@@ -362,7 +367,7 @@ will be animating the position and the size of the image.
 
 First create two images
 
-\quotefile doc/src/snippets/declarative/sequential-animation1.qml
+\snippet doc/src/snippets/declarative/qml-intro/sequential-animation1.qml document
 
 We will add to 'image1' a SequentialAnimation from x = 20 to the target of
 x = 450. The 'from' values will be used because we will be repeating the
@@ -375,7 +380,7 @@ between the x values and over a given duration. After the NumberAnimation
 there will be a PauseAnimation that will pause the animation for 500
 milliseconds (half a second) simply for the visual effect.
 
-\snippet doc/src/snippets/declarative/sequential-animation2.qml adding a sequential animation
+\snippet doc/src/snippets/declarative/qml-intro/sequential-animation2.qml adding a sequential animation
 
 A similar block of code is written for the animation of the 'y' value of
 the position.
@@ -390,7 +395,7 @@ and image1 to 1 and image2 to 2 then image2 will be in the foreground and
 image1 in the background. When image1 passes image2 it will pass behind it.
 The completed code looks like
 
-\quotefile doc/src/snippets/declarative/sequential-animation3.qml
+\snippet doc/src/snippets/declarative/qml-intro/sequential-animation3.qml document
 
 The \c {easing.type} has many options, expressed as a string. It specifies the
 kind of equation that describes the acceleration of the property value, not
@@ -439,9 +444,6 @@ delivers some of the best examples that illustrate these new elements.
 \endtable
 
 
-
-
-
 \section1 Using States
 
 A state is a defined set of values in the configuration of an object and
@@ -471,7 +473,7 @@ will be the default state. We will just go to 'night' by clicking and
 holding the left mouse button down, releasing the mouse button will reverse
 the process
 
-\quotefile doc/src/snippets/declarative/states1.qml
+\snippet doc/src/snippets/declarative/qml-intro/states1.qml document
 
 Several new things appear in this sample. Firstly, we use a \l MouseArea
 element to detect mouse clicks in the \e mainRectangle. Secondly, we use
@@ -549,15 +551,15 @@ needle_shadow have the same default \e x and \e y values but the rotation origin
 for the needle is slightly different so that a shadow will be evident as the
 needle moves.
 
-\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle_shadow
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle_shadow
 
 And the needle
 
-\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle
 
 The final image is the overlay which simply has a position defined.
 
-\snippet ../../examples/declarative/ui-components/dialcontrol/content/Dial.qml  overlay
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  overlay
 
 \e {dialcontrol.qml} in the \e {examples/declarative/ui-components/dialcontrol} directory is the
 main file of the example. It defines the visual environment that the Dial
@@ -565,17 +567,14 @@ will fit into. Because the \e Dial component and the images live in the \e
 content sub-directory we will have to import this into \e dialcontrol.qml. So the
 start of the file looks like
 
-    \code
-    import Qt 4.7
-    import "content"
-    \endcode
+\snippet examples/declarative/ui-components/dialcontrol/dialcontrol.qml  imports
 
 The visual space is bound by a 300 by 300 pixel \l Rectangle which is given
 a gray color. Inside this rectangle is our component \e Dial and a \l Rectangle.
 Inside the rectangle called 'container' is another rectangle with the
 interesting name 'slider'.
 
-\snippet ../../examples/declarative/ui-components/dialcontrol/dialcontrol.qml  0
+\snippet examples/declarative/ui-components/dialcontrol/dialcontrol.qml  0
 
 The Dial component, named 'dial, is \e anchored to the center of the main
 rectangle. The \c value attribute of 'dial' is set to a value based on the
@@ -584,15 +583,7 @@ rectangle. The \c value attribute of 'dial' is set to a value based on the
 the rotation of the needle image. Notice this piece of code in Dial where
 the change in \c value modifies the position of the needle.
 
-    \code
-    angle: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
-    Behavior on angle {
-        SpringAnimation {
-            spring: 1.4
-            damping: .15
-        }
-    }
-    \endcode
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle angle
 
 This is part of the \c needleRotation that rotates the needle and causes the
 rotation of its shadow. \l SpringAnimation is an element that modifies the value

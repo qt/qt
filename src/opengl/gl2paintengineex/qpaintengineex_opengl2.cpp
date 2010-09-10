@@ -591,6 +591,12 @@ void QGL2PaintEngineEx::endNativePainting()
     d->nativePaintingActive = false;
 }
 
+void QGL2PaintEngineEx::invalidateState()
+{
+    Q_D(QGL2PaintEngineEx);
+    d->needsSync = true;
+}
+
 bool QGL2PaintEngineEx::isNativePaintingActive() const {
     Q_D(const QGL2PaintEngineEx);
     return d->nativePaintingActive;

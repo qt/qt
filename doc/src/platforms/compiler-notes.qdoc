@@ -68,7 +68,7 @@
     \endtable
 
     * WebKit is only supported as a dynamically built library. Static linkage is not supported.
-
+    
     \target GCC
     \section1 GCC
 
@@ -115,6 +115,7 @@
     \section2 Solaris
 
     Please use GCC 3.4.2 or later.
+	Please not that WebKit is not supported for Solaris, regardless of which compiler is used.
 
     \section2 Mac OS X
 

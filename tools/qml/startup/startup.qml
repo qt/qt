@@ -49,14 +49,53 @@ Rectangle {
     Component.onCompleted: treatsApp.state = "part1"
     signal animationFinished
 
-    Logo {
-        id: logo
-        x: 165
-        y: 35
-        rotation: -15
-        scale: 0.6
-        opacity: 0
-        onAnimationFinished: treatsApp.animationFinished();
+    Item {
+        width: 800
+        height: 480
+        anchors.centerIn: parent
+        clip: true
+
+        Logo {
+            id: logo
+            x: 165
+            y: 35
+            rotation: -15
+            scale: 0.6
+            opacity: 0
+            onAnimationFinished: treatsApp.animationFinished();
+        }
+
+        Item {
+            id: quickblur
+            x: 800//325
+            y: 344
+            Image {
+                id: blurText
+                source: "quick-blur.png"
+            }
+            Image {
+                id: quickregular
+                x: -1
+                y: 0
+                opacity: 0
+                source: "quick-regular.png"
+            }
+            Image {
+                id: star
+                x: -1
+                y: 0
+                opacity: 0
+                source: "white-star.png"
+                smooth: true
+                NumberAnimation on rotation {
+                    from: 0
+                    to: 360
+                    loops: NumberAnimation.Infinite
+                    running: true
+                    duration: 2000                
+                }   
+            }
+        }
     }
 
     states: [
@@ -95,39 +134,6 @@ Rectangle {
             }
         }
     ]
-
-
-    Item {
-        id: quickblur
-        x: 800//325
-        y: 344
-        Image {
-            id: blurText
-            source: "quick-blur.png"
-        }
-        Image {
-            id: quickregular
-            x: -1
-            y: 0
-            opacity: 0
-            source: "quick-regular.png"
-        }
-        Image {
-            id: star
-            x: -1
-            y: 0
-            opacity: 0
-            source: "white-star.png"
-            smooth: true
-            NumberAnimation on rotation {
-                from: 0
-                to: 360
-                loops: NumberAnimation.Infinite
-                running: true
-                duration: 2000                
-            }   
-        }
-    }
 
     transitions: [
         Transition {

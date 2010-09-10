@@ -389,6 +389,7 @@ void tst_qdeclarativeimageprovider::threadTest()
     }
     provider->ok = true;
     provider->cond.wakeAll();
+    QTest::qWait(250);
     foreach(QDeclarativeImage *img, images) {
         TRY_WAIT(img->status() == QDeclarativeImage::Ready);
     }

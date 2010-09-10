@@ -223,6 +223,7 @@ static void handleOtherSchemesL(const TDesC& aUrl)
     TApaTask task = taskList.FindApp(KUidBrowser);
     if (task.Exists()){
         // Switch to existing browser instance
+        task.BringToForeground();
         HBufC8* param8 = HBufC8::NewLC(buf16->Length());
         param8->Des().Append(buf16->Des());
         task.SendMessage(TUid::Uid( 0 ), *param8); // Uid is not used

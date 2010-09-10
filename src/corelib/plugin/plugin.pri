@@ -8,6 +8,7 @@ HEADERS += \
 	plugin/qplugin.h \
 	plugin/quuid.h \
 	plugin/qfactoryloader_p.h \
+	plugin/qsystemlibrary_p.h \
 	plugin/qelfparser_p.h
 
 SOURCES += \
@@ -18,7 +19,9 @@ SOURCES += \
 	plugin/qelfparser_p.cpp
 
 win32 {
-	SOURCES += plugin/qlibrary_win.cpp
+	SOURCES += \
+		plugin/qlibrary_win.cpp \
+		plugin/qsystemlibrary.cpp
 }
 
 unix {

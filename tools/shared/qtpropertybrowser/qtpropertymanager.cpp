@@ -2399,15 +2399,23 @@ QString QtLocalePropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
 
-    QLocale loc = it.value();
+    const QLocale loc = it.value();
 
     int langIdx = 0;
     int countryIdx = 0;
-    metaEnumProvider()->localeToIndex(loc.language(), loc.country(), &langIdx, &countryIdx);
-    QString str = tr("%1, %2")
-            .arg(metaEnumProvider()->languageEnumNames().at(langIdx))
-            .arg(metaEnumProvider()->countryEnumNames(loc.language()).at(countryIdx));
-    return str;
+    const QtMetaEnumProvider *me = metaEnumProvider();
+    me->localeToIndex(loc.language(), loc.country(), &langIdx, &countryIdx);
+    if (langIdx < 0) {
+        qWarning("QtLocalePropertyManager::valueText: Unknown language %d", loc.language());
+        return tr("<Invalid>");
+    }
+    const QString languageName = me->languageEnumNames().at(langIdx);
+    if (countryIdx < 0) {
+        qWarning("QtLocalePropertyManager::valueText: Unknown country %d for %s", loc.country(), qPrintable(languageName));
+        return languageName;
+    }
+    const QString countryName = me->countryEnumNames(loc.language()).at(countryIdx);
+    return tr("%1, %2").arg(languageName, countryName);
 }
 
 /*!
@@ -2635,8 +2643,8 @@ QString QtPointPropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QPoint v = it.value();
-    return QString(tr("(%1, %2)").arg(QString::number(v.x()))
-                                 .arg(QString::number(v.y())));
+    return tr("(%1, %2)").arg(QString::number(v.x()))
+                         .arg(QString::number(v.y()));
 }
 
 /*!
@@ -2876,8 +2884,8 @@ QString QtPointFPropertyManager::valueText(const QtProperty *property) const
         return QString();
     const QPointF v = it.value().val;
     const int dec =  it.value().decimals;
-    return QString(tr("(%1, %2)").arg(QString::number(v.x(), 'f', dec))
-                                 .arg(QString::number(v.y(), 'f', dec)));
+    return tr("(%1, %2)").arg(QString::number(v.x(), 'f', dec))
+                         .arg(QString::number(v.y(), 'f', dec));
 }
 
 /*!
@@ -3196,8 +3204,8 @@ QString QtSizePropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QSize v = it.value().val;
-    return QString(tr("%1 x %2").arg(QString::number(v.width()))
-                                .arg(QString::number(v.height())));
+    return tr("%1 x %2").arg(QString::number(v.width()))
+                        .arg(QString::number(v.height()));
 }
 
 /*!
@@ -3561,8 +3569,8 @@ QString QtSizeFPropertyManager::valueText(const QtProperty *property) const
         return QString();
     const QSizeF v = it.value().val;
     const int dec = it.value().decimals;
-    return QString(tr("%1 x %2").arg(QString::number(v.width(), 'f', dec))
-                                .arg(QString::number(v.height(), 'f', dec)));
+    return tr("%1 x %2").arg(QString::number(v.width(), 'f', dec))
+                        .arg(QString::number(v.height(), 'f', dec));
 }
 
 /*!
@@ -3954,10 +3962,10 @@ QString QtRectPropertyManager::valueText(const QtProperty *property) const
     if (it == d_ptr->m_values.constEnd())
         return QString();
     const QRect v = it.value().val;
-    return QString(tr("[(%1, %2), %3 x %4]").arg(QString::number(v.x()))
-                                .arg(QString::number(v.y()))
-                                .arg(QString::number(v.width()))
-                                .arg(QString::number(v.height())));
+    return tr("[(%1, %2), %3 x %4]").arg(QString::number(v.x()))
+                                    .arg(QString::number(v.y()))
+                                    .arg(QString::number(v.width()))
+                                    .arg(QString::number(v.height()));
 }
 
 /*!

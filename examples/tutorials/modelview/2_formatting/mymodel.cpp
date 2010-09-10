@@ -43,8 +43,6 @@
 #include "mymodel.h"
 #include <QDebug>
 
-//! [Quoting ModelView Tutorial]
-// mymodel.cpp
 MyModel::MyModel(QObject *parent)
     :QAbstractTableModel(parent)
 {
@@ -60,6 +58,8 @@ int MyModel::columnCount(const QModelIndex & /*parent */) const
     return 3;
 }
 
+//! [Quoting ModelView Tutorial]
+// mymodel.cpp
 QVariant MyModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
@@ -89,7 +89,7 @@ QVariant MyModel::data(const QModelIndex &index, int role) const
 
         if (row == 1 && col == 2)  //change background only for cell(1,2)
         {
-            QBrush redBackground = QBrush(Qt::red);
+            QBrush redBackground(Qt::red);
             return redBackground;
         }
         break;

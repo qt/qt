@@ -332,7 +332,7 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
-    In the following example, the rectangle will spin indefinately.
+    In the following example, the rectangle will spin indefinitely.
 
     \code
     Rectangle {

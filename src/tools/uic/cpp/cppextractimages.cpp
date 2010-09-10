@@ -76,14 +76,14 @@ void ExtractImages::acceptUI(DomUI *node)
     if (m_option.qrcOutputFile.size()) {
         f.setFileName(m_option.qrcOutputFile);
         if (!f.open(QIODevice::WriteOnly | QFile::Text)) {
-            fprintf(stderr, "Could not create resource file\n");
+            fprintf(stderr, "%s: Error: Could not create resource file\n", qPrintable(m_option.messagePrefix()));
             return;
         }
 
         QFileInfo fi(m_option.qrcOutputFile);
         QDir dir = fi.absoluteDir();
         if (!dir.exists(QLatin1String("images")) && !dir.mkdir(QLatin1String("images"))) {
-            fprintf(stderr, "Could not create image dir\n");
+            fprintf(stderr, "%s: Error: Could not create image dir\n", qPrintable(m_option.messagePrefix()));
             return;
         }
         dir.cd(QLatin1String("images"));
@@ -126,7 +126,9 @@ void ExtractImages::acceptImage(DomImage *image)
     if (isXPM_GZ)
         openMode |= QIODevice::Text;
     if (!f.open(openMode)) {
-        fprintf(stderr, "Could not create image file %s: %s", qPrintable(fname), qPrintable(f.errorString()));
+        fprintf(stderr, "%s: Error: Could not create image file %s: %s",
+                qPrintable(m_option.messagePrefix()),
+                qPrintable(fname), qPrintable(f.errorString()));
         return;
     }
 
