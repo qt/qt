@@ -102,21 +102,17 @@ QT_BEGIN_NAMESPACE
 class QDirIteratorPrivateIteratorStack : public QStack<QAbstractFileEngineIterator *>
 {
 public:
-    ~QDirIteratorPrivateIteratorStack();
+    ~QDirIteratorPrivateIteratorStack()
+    {
+        qDeleteAll(*this);
+    }
 };
-
-QDirIteratorPrivateIteratorStack::~QDirIteratorPrivateIteratorStack()
-{
-    qDeleteAll(*this);
-}
-
 
 class QDirIteratorPrivate
 {
 public:
     QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
                         QDir::Filters filters, QDirIterator::IteratorFlags flags);
-    ~QDirIteratorPrivate();
 
     void advance();
 
@@ -141,8 +137,6 @@ public:
 
     // Loop protection
     QSet<QString> visitedLinks;
-
-    QDirIterator *q;
 };
 
 /*!
@@ -168,13 +162,6 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
     // Populate fields for hasNext() and next()
     pushDirectory(QFileInfo(path));
     advance();
-}
-
-/*!
-    \internal
-*/
-QDirIteratorPrivate::~QDirIteratorPrivate()
-{
 }
 
 /*!
@@ -375,7 +362,6 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     : d(new QDirIteratorPrivate(dir.path(), dir.nameFilters(), dir.filter(), flags))
 {
-    d->q = this;
 }
 
 /*!
@@ -397,7 +383,6 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
     : d(new QDirIteratorPrivate(path, QStringList(), filters, flags))
 {
-    d->q = this;
 }
 
 /*!
@@ -415,7 +400,6 @@ QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorF
 QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
     : d(new QDirIteratorPrivate(path, QStringList(), QDir::NoFilter, flags))
 {
-    d->q = this;
 }
 
 /*!
@@ -438,7 +422,6 @@ QDirIterator::QDirIterator(const QString &path, const QStringList &nameFilters,
                            QDir::Filters filters, IteratorFlags flags)
     : d(new QDirIteratorPrivate(path, nameFilters, filters, flags))
 {
-    d->q = this;
 }
 
 /*!
