@@ -112,6 +112,8 @@ struct QFileSystemMetaData
 #endif
         SequentialType      = 0x00800000,   // Note: overlaps with QAbstractFileEngine::RootFlag
 
+        LegacyLinkType      = LinkType | AliasType,
+
         Type                = LinkType | FileType | DirectoryType | BundleType | SequentialType | AliasType,
 
         // Attributes
@@ -195,6 +197,7 @@ struct QFileSystemMetaData
     bool isBundle() const                   { return false; }
     bool isAlias() const                    { return false; }
 #endif
+    bool isLegacyLink() const               { return (entryFlags & LegacyLinkType); }
     bool isSequential() const               { return (entryFlags & SequentialType); }
     bool isHidden() const                   { return (entryFlags & HiddenAttribute); }
 

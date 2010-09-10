@@ -1001,9 +1001,9 @@ bool QFileInfo::isSymLink() const
     if (d->isDefaultConstructed)
         return false;
     if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::LinkType))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::LinkType);
-        return d->metaData.isLink();
+        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::LegacyLinkType))
+            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::LegacyLinkType);
+        return d->metaData.isLegacyLink();
     }
     return d->getFileFlags(QAbstractFileEngine::LinkType);
 }
