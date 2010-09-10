@@ -300,6 +300,13 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 #endif
 
+#if !defined(QWS) && defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+    if (what & QFileSystemMetaData::HiddenAttribute) {
+        // Mac OS >= 10.5: st_flags & UF_HIDDEN
+        what |= QFileSystemMetaData::PosixStatFlags;
+    }
+#endif
+
     if (what & QFileSystemMetaData::PosixStatFlags)
         what |= QFileSystemMetaData::PosixStatFlags;
 

@@ -145,10 +145,6 @@ struct QFileSystemMetaData
                             | QFileSystemMetaData::FileType
                             | QFileSystemMetaData::DirectoryType
                             | QFileSystemMetaData::SequentialType
-#if !defined(QWS) && defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-                            // Mac OS >= 10.5: st_flags & UF_HIDDEN
-                            | QFileSystemMetaData::HiddenAttribute
-#endif
                             | QFileSystemMetaData::SizeAttribute
                             | QFileSystemMetaData::Times
                             | QFileSystemMetaData::OwnerIds,
