@@ -1671,16 +1671,24 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     q_dbus_connection_set_timeout_functions(connection, qDBusAddTimeout, qDBusRemoveTimeout,
                                             qDBusToggleTimeout, this, 0);
     q_dbus_connection_set_dispatch_status_function(connection, qDBusUpdateDispatchStatus, this, 0);
-
-    // Initialize the match rules
-
-    connectSignal(dbusServiceString(), QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
-                  this, SLOT(registerService(QString)));
-    connectSignal(dbusServiceString(), QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
-                  this, SLOT(unregisterService(QString)));
-
-
     q_dbus_connection_add_filter(connection, qDBusSignalFilter, this, 0);
+
+    // Initialize the hooks for the NameAcquired and NameLost signals
+    // we don't use connectSignal here because we don't need the rules to be sent to the bus
+    // the bus will always send us these two signals
+    SignalHook hook;
+    hook.service = dbusServiceString();
+    hook.path.clear(); // no matching
+    hook.obj = this;
+    hook.params << QMetaType::Void << QVariant::String; // both functions take a QString as parameter and return void
+
+    hook.midx = staticMetaObject.indexOfSlot("registerService(QString)");
+    Q_ASSERT(hook.midx != -1);
+    signalHooks.insert(QLatin1String("NameAcquired:" DBUS_INTERFACE_DBUS), hook);
+
+    hook.midx = staticMetaObject.indexOfSlot("unregisterService(QString)");
+    Q_ASSERT(hook.midx != -1);
+    signalHooks.insert(QLatin1String("NameLost:" DBUS_INTERFACE_DBUS), hook);
 
     qDBusDebug() << this << ": connected successfully";
 
