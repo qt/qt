@@ -111,9 +111,14 @@ public:
         BundleType          =        0x0,
         AliasType           =        0x0,
 #endif
+#if defined(Q_OS_WIN)
+        WinLnkType          = 0x08000000,   // Note: Uses the same position for AliasType on Mac
+#else
+        WinLnkType          =        0x0,
+#endif
         SequentialType      = 0x00800000,   // Note: overlaps with QAbstractFileEngine::RootFlag
 
-        LegacyLinkType      = LinkType | AliasType,
+        LegacyLinkType      = LinkType | AliasType | WinLnkType,
 
         Type                = LinkType | FileType | DirectoryType | BundleType | SequentialType | AliasType,
 
@@ -153,6 +158,14 @@ public:
                             | QFileSystemMetaData::SequentialType
                             | QFileSystemMetaData::Attributes
                             | QFileSystemMetaData::Times,
+#if defined(Q_OS_WIN)
+        WinStatFlags        = QFileSystemMetaData::FileType
+                            | QFileSystemMetaData::DirectoryType
+                            | QFileSystemMetaData::HiddenAttribute
+                            | QFileSystemMetaData::ExistsAttribute
+                            | QFileSystemMetaData::SizeAttribute
+                            | QFileSystemMetaData::Times,
+#endif
 
         AllMetaDataFlags    = 0xFFFFFFFF
 
@@ -181,7 +194,7 @@ public:
 
     bool exists() const                     { return (entryFlags & ExistsAttribute); }
 
-    bool isLink() const                     { return (entryFlags & LinkType); }
+    bool isLink() const                     { return  (entryFlags & LinkType); }
     bool isFile() const                     { return (entryFlags & FileType); }
     bool isDirectory() const                { return (entryFlags & DirectoryType); }
     bool isBundle() const;
@@ -189,6 +202,11 @@ public:
     bool isLegacyLink() const               { return (entryFlags & LegacyLinkType); }
     bool isSequential() const               { return (entryFlags & SequentialType); }
     bool isHidden() const                   { return (entryFlags & HiddenAttribute); }
+#if defined(Q_OS_WIN)
+    bool isLnkFile() const                  { return (entryFlags & WinLnkType); }
+#else
+    bool isLnkFile() const                  { return false; }
+#endif
 
     qint64 size() const                     { return size_; }
 
@@ -212,6 +230,11 @@ public:
     void fillFromVolumeInfo(const TVolumeInfo& info);
 #endif
 
+#if defined(Q_OS_WIN)
+    inline void fillFromFileAttribute(DWORD fileAttribute, bool isDriveRoot = false);
+    inline void fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType = false, bool isDriveRoot = false);
+    inline void fillFromFindInfo(BY_HANDLE_FILE_INFORMATION &fileInfo);
+#endif
 private:
     friend class QFileSystemEngine;
 
@@ -222,6 +245,10 @@ private:
 
     // Platform-specific data goes here:
 #if defined(Q_OS_WIN)
+    DWORD fileAttribute_;
+    FILETIME creationTime_;
+    FILETIME lastAccessTime_;
+    FILETIME lastWriteTime_;
 #elif defined(Q_OS_SYMBIAN)
     TTime modificationTime_;
 #else
@@ -245,11 +272,7 @@ inline bool QFileSystemMetaData::isBundle() const                   { return fal
 inline bool QFileSystemMetaData::isAlias() const                    { return false; }
 #endif
 
-#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
-inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
-inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
-inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
-
+#if (defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)) || defined (Q_OS_WIN)
 inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
 {
     switch (time) {
@@ -265,6 +288,12 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 
     return QDateTime();
 }
+#endif
+
+#if defined(Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+inline QDateTime QFileSystemMetaData::creationTime() const          { return QDateTime::fromTime_t(creationTime_); }
+inline QDateTime QFileSystemMetaData::modificationTime() const      { return QDateTime::fromTime_t(modificationTime_); }
+inline QDateTime QFileSystemMetaData::accessTime() const            { return QDateTime::fromTime_t(accessTime_); }
 
 inline uint QFileSystemMetaData::userId() const                     { return userId_; }
 inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }
@@ -294,6 +323,18 @@ inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) c
 {
     Q_UNUSED(owner);
     return (uint) -2;
+}
+#endif
+
+#if defined(Q_OS_WIN)
+inline uint QFileSystemMetaData::userId() const                     { return (uint) -2; }
+inline uint QFileSystemMetaData::groupId() const                    { return (uint) -2; }
+inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
+{
+    if (owner == QAbstractFileEngine::OwnerUser)
+        return userId();
+    else
+        return groupId();
 }
 #endif
 

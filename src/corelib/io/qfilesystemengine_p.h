@@ -75,9 +75,23 @@ public:
     static QString bundleName(const QFileSystemEntry &entry);
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
-            QFileSystemMetaData::MetaDataFlags what);
+                             QFileSystemMetaData::MetaDataFlags what);
 #if defined(Q_OS_UNIX)
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
+#endif
+#if defined(Q_OS_WIN)
+
+    static bool uncListSharesOnServer(const QString &server, QStringList *list); //Used also by QFSFileEngineIterator::hasNext()
+    static bool fillMetaData(int fd, QFileSystemMetaData &data,
+                             QFileSystemMetaData::MetaDataFlags what);
+    static bool fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
+                             QFileSystemMetaData::MetaDataFlags what);
+    static bool fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
+                                QFileSystemMetaData::MetaDataFlags what);
+    static QString homePath();
+    static QString rootPath();
+    static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
+    static QString nativeAbsoluteFilePath(const QString &path);
 #endif
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
@@ -90,12 +104,15 @@ public:
     static bool removeFile(const QFileSystemEntry &entry);
 
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
-            QFileSystemMetaData *data = 0);
+                               QFileSystemMetaData *data = 0);
 
     static QAbstractFileEngine *resolveEntryAndCreateLegacyEngine(QFileSystemEntry &entry,
-            QFileSystemMetaData &data);
+                                                                  QFileSystemMetaData &data);
 private:
     static QString slowCanonicalized(const QString &path);
+#if defined(Q_OS_WIN)
+    static void clearWinStatData(QFileSystemMetaData &data);
+#endif
 };
 
 QT_END_NAMESPACE

@@ -41,6 +41,7 @@
 
 #include "qfsfileengine_iterator_p.h"
 #include "qfsfileengine_p.h"
+#include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
 
 #include <QtCore/qvariant.h>
@@ -135,7 +136,7 @@ bool QFSFileEngineIterator::hasNext() const
                 // UNC
                 QStringList parts = QDir::toNativeSeparators(path).split(QLatin1Char('\\'), QString::SkipEmptyParts);
 
-                if (parts.count() == 1 && QFSFileEnginePrivate::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(0),
+                if (parts.count() == 1 && QFileSystemEngine::uncListSharesOnServer(QLatin1String("\\\\") + parts.at(0),
                                                                                       &platform->uncShares)) {
                     if (platform->uncShares.isEmpty()) {
                         platform->done = true;

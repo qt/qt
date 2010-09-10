@@ -114,9 +114,7 @@ public:
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
 
-#if defined(Q_OS_UNIX)
     mutable QFileSystemMetaData metaData;
-#endif
 
     FILE *fh;
 #ifdef Q_OS_SYMBIAN
@@ -177,7 +175,7 @@ public:
 #endif
 
 #if defined(Q_OS_WIN)
-    bool doStat() const;
+    bool doStat(QFileSystemMetaData::MetaDataFlags flags) const;
 #else
     bool doStat(QFileSystemMetaData::MetaDataFlags flags = QFileSystemMetaData::PosixStatFlags) const;
 #endif
@@ -185,12 +183,6 @@ public:
 
 #if defined(Q_OS_WIN32)
     int sysOpen(const QString &, int flags);
-#endif
-
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    static void resolveLibs();
-    static bool resolveUNCLibs();
-    static bool uncListSharesOnServer(const QString &server, QStringList *list);
 #endif
 
 #ifdef Q_OS_SYMBIAN
