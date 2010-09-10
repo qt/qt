@@ -977,6 +977,10 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     // prepopulate watchedServices:
     // we know that the owner of org.freedesktop.DBus is itself
     watchedServices.insert(dbusServiceString(), WatchedServiceData(dbusServiceString(), 1));
+
+    // prepopulate matchRefCounts:
+    // we know that org.freedesktop.DBus will never change owners
+    matchRefCounts.insert("type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='org.freedesktop.DBus'", 1);
 }
 
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
