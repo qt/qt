@@ -364,6 +364,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     const bool anytextmodes = hints & (ImhUppercaseOnly | ImhLowercaseOnly | ImhEmailCharactersOnly | ImhUrlCharactersOnly);
     const bool numbersOnly = anynumbermodes && !anytextmodes;
     const bool noOnlys = !(hints & ImhExclusiveInputMask);
+    // if alphanumeric input, or if multiple incompatible number modes are selected;
+    // then make all symbols available in numeric mode too.
+    const bool needsCharMap= !numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly));
     TInt flags;
     Qt::InputMethodHints oldHints = hints;
 
@@ -463,9 +466,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
-    // if alphanumeric input, or if multiple incompatible number modes are selected;
-    // then make all symbols available in numeric mode too.
-    if (!numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly)))
+    if (needsCharMap)
         flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
@@ -490,8 +491,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (hints & ImhEmailCharactersOnly) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else {
+    } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else {
+        m_fepState->SetSpecialCharacterTableResourceId(0);
     }
 
     if (hints & ImhHiddenText) {
