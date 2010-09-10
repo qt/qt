@@ -210,6 +210,7 @@ class Q_GUI_EXPORT QSwipeGesture : public QGesture
     Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection STORED false)
     Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection STORED false)
     Q_PROPERTY(qreal swipeAngle READ swipeAngle WRITE setSwipeAngle)
+    Q_PRIVATE_PROPERTY(QSwipeGesture::d_func(), qreal velocity READ velocity WRITE setVelocity)
 
 public:
     enum SwipeDirection { NoDirection, Left, Right, Up, Down };

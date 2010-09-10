@@ -775,4 +775,6 @@ int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
 
 QT_END_NAMESPACE
 
+#include <moc_qgesture.cpp>
+
 #endif // QT_NO_GESTURES

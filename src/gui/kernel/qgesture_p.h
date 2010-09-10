@@ -139,9 +139,12 @@ public:
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
           swipeAngle(0),
-          started(false), speed(0)
+          started(false), velocityValue(0),
     {
     }
+
+    qreal velocity() const { return velocityValue; }
+    void setVelocity(qreal value) { velocityValue = value; }
 
     QSwipeGesture::SwipeDirection horizontalDirection;
     QSwipeGesture::SwipeDirection verticalDirection;
@@ -149,7 +152,7 @@ public:
 
     QPoint lastPositions[3];
     bool started;
-    qreal speed;
+    qreal velocityValue;
     QElapsedTimer time;
 };
 
