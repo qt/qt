@@ -318,3 +318,28 @@ int LotsaFun::operator<<(int left, int right)
     tr("this is inside operator<<");
     return left << right;
 }
+
+
+
+// QTBUG-12683: define in re-opened namespace
+namespace NameSchpace {
+
+class YetMoreFun : public QObject
+{
+    Q_OBJECT
+public:
+    void funStuff();
+};
+
+}
+
+namespace NameSchpace {
+
+#define somevar 1
+
+void YetMoreFun::funStuff()
+{
+    tr("funStuff!");
+}
+
+}

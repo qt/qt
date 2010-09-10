@@ -1704,7 +1704,6 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 HashString ns = HashString(text);
                 yyTok = getToken();
                 if (yyTok == Tok_LeftBrace) {
-                    yyTok = getToken();
                     namespaceDepths.push(namespaces.count());
                     enterNamespace(&namespaces, ns);
 
@@ -1712,6 +1711,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     functionContextUnresolved.clear();
                     prospectiveContext.clear();
                     pendingContext.clear();
+                    yyTok = getToken();
                 } else if (yyTok == Tok_Equals) {
                     // e.g. namespace Is = OuterSpace::InnerSpace;
                     QList<HashString> fullName;
