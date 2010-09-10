@@ -154,6 +154,7 @@ private slots:
                     QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System,
                     QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 
+            count = 0;
             while (iterator.hasNext()) {
                 iterator.next();
                 ++count;
