@@ -71,6 +71,17 @@ QT_BEGIN_NAMESPACE
 static bool isDebugging;
 #define qDBusDebug              if (!::isDebugging); else qDebug
 
+Q_GLOBAL_STATIC_WITH_ARGS(const QString, orgFreedesktopDBusString, (QLatin1String(DBUS_SERVICE_DBUS)))
+
+static inline QString dbusServiceString()
+{ return *orgFreedesktopDBusString(); }
+static inline QString dbusInterfaceString()
+{
+    // it's the same string, but just be sure
+    Q_ASSERT(*orgFreedesktopDBusString() == QLatin1String(DBUS_INTERFACE_DBUS));
+    return *orgFreedesktopDBusString();
+}
+
 static inline QDebug operator<<(QDebug dbg, const QThread *th)
 {
     dbg.nospace() << "QThread(ptr=" << (void*)th;
@@ -1675,10 +1686,9 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
         qWarning("QDBusConnectionPrivate::setConnection: Unable to get base service");
     }
 
-    QString busService = QLatin1String(DBUS_SERVICE_DBUS);
-    connectSignal(busService, QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
+    connectSignal(dbusServiceString(), QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
                   this, SLOT(registerService(QString)));
-    connectSignal(busService, QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
+    connectSignal(dbusServiceString(), QString(), QString(), QLatin1String("NameLost"), QStringList(), QString(),
                   this, SLOT(unregisterService(QString)));
 
 
@@ -2069,8 +2079,7 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
                 WatchedServicesHash::mapped_type &data = watchedServices[hook.service];
                 if (++data.refcount == 1) {
                     // we need to watch for this service changing
-                    QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
-                    connectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
+                    connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
                                   QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
                                   this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
                     data.owner = getNameOwnerNoCache(hook.service);
@@ -2149,8 +2158,7 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
         if (sit != watchedServices.end()) {
             if (--sit.value().refcount == 0) {
                 watchedServices.erase(sit);
-                QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
-                disconnectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
+                disconnectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
                               QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
                               this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
             }
@@ -2272,8 +2280,8 @@ QString QDBusConnectionPrivate::getNameOwner(const QString& serviceName)
 
 QString QDBusConnectionPrivate::getNameOwnerNoCache(const QString &serviceName)
 {
-    QDBusMessage msg = QDBusMessage::createMethodCall(QLatin1String(DBUS_SERVICE_DBUS),
-            QLatin1String(DBUS_PATH_DBUS), QLatin1String(DBUS_INTERFACE_DBUS),
+    QDBusMessage msg = QDBusMessage::createMethodCall(dbusServiceString(),
+            QLatin1String(DBUS_PATH_DBUS), dbusInterfaceString(),
             QLatin1String("GetNameOwner"));
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << serviceName;
