@@ -1693,6 +1693,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 functionContextUnresolved.clear(); // Pointless
                 prospectiveContext.clear();
                 pendingContext.clear();
+
+                yyTok = getToken();
             }
             break;
         case Tok_namespace:
