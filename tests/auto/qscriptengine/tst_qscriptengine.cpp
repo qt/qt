@@ -2402,12 +2402,12 @@ static QScriptValue recurse2(QScriptContext *ctx, QScriptEngine *eng)
 
 void tst_QScriptEngine::infiniteRecursion()
 {
-    const QString stackOverflowError = QString::fromLatin1("RangeError: Maximum call stack size exceeded.");
+    const QString stackOverflowError = QString::fromLatin1("RangeError: Maximum call stack size exceeded");
     QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("function foo() { foo(); }; foo();");
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), stackOverflowError);
+        QVERIFY(ret.toString().startsWith(stackOverflowError));
     }
 #if 0 //The native C++ stack overflow before the JS stack
     {
