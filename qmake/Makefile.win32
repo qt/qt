@@ -84,6 +84,7 @@ QTOBJS= \
 	qtemporaryfile.obj \
 	qabstractfileengine.obj \
 	qfsfileengine_win.obj \
+	qsystemlibrary.obj \
 	qfsfileengine_iterator_win.obj \
 	qfileinfo.obj \
 	qglobal.obj \
@@ -125,6 +126,7 @@ clean::
 	-del $(OBJS)
 	-del qmake_pch.obj
 	-del qmake_pch.pch
+	-del qsystemlibrary.obj
 	-del vc60.pdb
 	-del vc70.pdb
 	-del qmake.pdb
@@ -147,6 +149,9 @@ distclean:: clean
 	$(CXX) $(CXXFLAGS) $<
 
 $(OBJS): qmake_pch.obj
+
+qsystemlibrary.obj: $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\plugin\qsystemlibrary.cpp
 
 $(QTOBJS): qmake_pch.obj
 

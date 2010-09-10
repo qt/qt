@@ -1693,6 +1693,8 @@
     for building a project.  The value of this variable is typically
     handled by \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \bold{Note:} On the Symbian platform, this variable is ignored.
+
     \target MAKEFILE_GENERATOR
     \section1 MAKEFILE_GENERATOR
 

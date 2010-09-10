@@ -268,10 +268,10 @@ EXPORTS
 	?staticMetaObject@QAbstractAudioOutput@@2UQMetaObject@@B @ 267 NONAME ; struct QMetaObject const QAbstractAudioOutput::staticMetaObject
 	?staticMetaObject@QAudioOutput@@2UQMetaObject@@B @ 268 NONAME ; struct QMetaObject const QAudioOutput::staticMetaObject
 	?staticMetaObject@QAbstractAudioInput@@2UQMetaObject@@B @ 269 NONAME ; struct QMetaObject const QAbstractAudioInput::staticMetaObject
-	?channelCount@QAudioFormat@@QBEHXZ @ 270 NONAME ; int QAudioFormat::channelCount(void) const
-	?sampleRate@QAudioFormat@@QBEHXZ @ 271 NONAME ; int QAudioFormat::sampleRate(void) const
-	?setChannelCount@QAudioFormat@@QAEXH@Z @ 272 NONAME ; void QAudioFormat::setChannelCount(int)
-	?setSampleRate@QAudioFormat@@QAEXH@Z @ 273 NONAME ; void QAudioFormat::setSampleRate(int)
-	?supportedChannelCounts@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 274 NONAME ; class QList<int> QAudioDeviceInfo::supportedChannelCounts(void) const
-	?supportedSampleRates@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 275 NONAME ; class QList<int> QAudioDeviceInfo::supportedSampleRates(void) const
+	?setSampleRate@QAudioFormat@@QAEXH@Z @ 270 NONAME ; void QAudioFormat::setSampleRate(int)
+	?channelCount@QAudioFormat@@QBEHXZ @ 271 NONAME ; int QAudioFormat::channelCount(void) const
+	?supportedChannelCounts@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 272 NONAME ; class QList<int> QAudioDeviceInfo::supportedChannelCounts(void) const
+	?sampleRate@QAudioFormat@@QBEHXZ @ 273 NONAME ; int QAudioFormat::sampleRate(void) const
+	?supportedSampleRates@QAudioDeviceInfo@@QBE?AV?$QList@H@@XZ @ 274 NONAME ; class QList<int> QAudioDeviceInfo::supportedSampleRates(void) const
+	?setChannelCount@QAudioFormat@@QAEXH@Z @ 275 NONAME ; void QAudioFormat::setChannelCount(int)
 

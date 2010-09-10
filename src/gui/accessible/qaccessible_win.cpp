@@ -42,7 +42,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qapplication.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include "qmessagebox.h" // ### dependency
 #include "qt_windows.h"
 #include "qwidget.h"
@@ -243,7 +243,7 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     static bool resolvedNWE = false;
     if (!resolvedNWE) {
         resolvedNWE = true;
-        ptrNotifyWinEvent = (PtrNotifyWinEvent)QLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
+        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
     }
     if (!ptrNotifyWinEvent)
         return;
