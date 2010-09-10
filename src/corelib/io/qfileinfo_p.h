@@ -58,8 +58,10 @@
 #include "qdatetime.h"
 #include "qatomic.h"
 #include "qshareddata.h"
-#include "qfilesystementry_p.h"
 #include "qfilesystemengine_p.h"
+
+#include <QtCore/private/qfilesystementry_p.h>
+#include <QtCore/private/qfilesystemmetadata_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -98,6 +100,16 @@ public:
 #else
         isDefaultConstructed(!fileEngine),
 #endif
+        cache_enabled(true), fileFlags(0), fileSize(0)
+    {
+    }
+
+    inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data)
+        : QSharedData(),
+        fileEntry(file),
+        metaData(data),
+        cachedFlags(0),
+        isDefaultConstructed(false),
         cache_enabled(true), fileFlags(0), fileSize(0)
     {
     }

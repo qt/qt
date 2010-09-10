@@ -291,6 +291,13 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 */
 
 /*!
+    \internal
+*/
+QFileInfo::QFileInfo(QFileInfoPrivate *p) : d_ptr(p)
+{
+}
+
+/*!
     Constructs an empty QFileInfo object.
 
     Note that an empty QFileInfo object contain no file reference.

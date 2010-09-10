@@ -53,11 +53,15 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 class QDir;
+class QDirIteratorPrivate;
 class QDateTime;
 class QFileInfoPrivate;
 
 class Q_CORE_EXPORT QFileInfo
 {
+    friend class QDirIteratorPrivate;
+    explicit QFileInfo(QFileInfoPrivate *d);
+
 public:
     QFileInfo();
     QFileInfo(const QString &file);
