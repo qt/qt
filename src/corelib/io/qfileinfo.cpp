@@ -101,10 +101,21 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 
 QString QFileInfoPrivate::getFileOwner(QAbstractFileEngine::FileOwner own) const
 {
-    Q_ASSERT(fileEngine); // should never be called when using the native FS
     if (cache_enabled && !fileOwners[(int)own].isNull())
         return fileOwners[(int)own];
-    QString ret = fileEngine->owner(own);
+    QString ret;
+    if (fileEngine == 0) {
+        switch (own) {
+        case QAbstractFileEngine::OwnerUser:
+            ret = QFileSystemEngine::resolveUserName(fileEntry, metaData);
+            break;
+        case QAbstractFileEngine::OwnerGroup:
+            ret = QFileSystemEngine::resolveGroupName(fileEntry, metaData);
+            break;
+        }
+     } else {
+        ret = fileEngine->owner(own);
+    }
     if (ret.isNull())
         ret = QLatin1String("");
     if (cache_enabled)
@@ -1078,11 +1089,6 @@ QString QFileInfo::owner() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return QLatin1String("");
-    if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::UserName))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::UserName);
-        return d->metaData.user();
-    }
     return d->getFileOwner(QAbstractFileEngine::OwnerUser);
 }
 
@@ -1122,11 +1128,6 @@ QString QFileInfo::group() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return QLatin1String("");
-    if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::GroupName))
-            QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::GroupName);
-        return d->metaData.group();
-    }
     return d->getFileOwner(QAbstractFileEngine::OwnerGroup);
 }
 

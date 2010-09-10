@@ -67,6 +67,10 @@ public:
     static QFileSystemEntry getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
+    static QString resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
+    static QString resolveUserName(uint userId);
+    static QString resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
+    static QString resolveGroupName(uint groupId);
 
     static QString bundleName(const QFileSystemEntry &entry);
 

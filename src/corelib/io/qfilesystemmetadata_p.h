@@ -137,9 +137,6 @@ public:
 
         OwnerIds            = UserId | GroupId,
 
-        UserName            = 0x40000000,
-        GroupName           = 0x80000000,
-
         PosixStatFlags      = QFileSystemMetaData::OtherPermissions
                             | QFileSystemMetaData::GroupPermissions
                             | QFileSystemMetaData::OwnerPermissions
@@ -204,8 +201,6 @@ public:
     QDateTime fileTime(QAbstractFileEngine::FileTime time) const;
     uint userId() const;
     uint groupId() const;
-    QString user() const;
-    QString group() const;
     uint ownerId(QAbstractFileEngine::FileOwner owner) const;
 
 #ifdef Q_OS_UNIX
@@ -256,8 +251,7 @@ inline QDateTime QFileSystemMetaData::accessTime() const            { return QDa
 
 inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime time) const
 {
-    switch (time)
-    {
+    switch (time) {
     case QAbstractFileEngine::ModificationTime:
         return modificationTime();
 
@@ -273,9 +267,6 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 
 inline uint QFileSystemMetaData::userId() const                     { return userId_; }
 inline uint QFileSystemMetaData::groupId() const                    { return groupId_; }
-
-inline QString QFileSystemMetaData::user() const { return QString(); /* TODO */ }
-inline QString QFileSystemMetaData::group() const { return QString(); /* TODO */ }
 
 inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
 {
@@ -298,8 +289,6 @@ inline QDateTime QFileSystemMetaData::fileTime(QAbstractFileEngine::FileTime tim
 }
 inline uint QFileSystemMetaData::userId() const                     { return (uint) -2; }
 inline uint QFileSystemMetaData::groupId() const                    { return (uint) -2; }
-inline QString QFileSystemMetaData::user() const { return QString(); }
-inline QString QFileSystemMetaData::group() const { return QString(); }
 inline uint QFileSystemMetaData::ownerId(QAbstractFileEngine::FileOwner owner) const
 {
     Q_UNUSED(owner);

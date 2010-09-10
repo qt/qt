@@ -267,6 +267,18 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 }
 
 //static
+QString QFileSystemEngine::resolveUserName(uint userId)
+{
+    return QString(); // TODO
+}
+
+//static
+QString QFileSystemEngine::resolveGroupName(uint groupId)
+{
+    return QString(); // TODO
+}
+
+//static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
 #if !defined(QWS) && defined(Q_OS_MAC)

@@ -287,4 +287,20 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 
 #endif
 
+//static
+QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
+{
+    if (!metaData.hasFlags(QFileSystemMetaData::UserId))
+        QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::UserId);
+    return resolveGroupName(metaData.userId());
+}
+
+//static
+QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
+{
+    if (!metaData.hasFlags(QFileSystemMetaData::GroupId))
+        QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::GroupId);
+    return resolveGroupName(metaData.groupId());
+}
+
 QT_END_NAMESPACE
