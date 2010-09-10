@@ -345,12 +345,14 @@ QGLWindowSurface::~QGLWindowSurface()
 
 void QGLWindowSurface::deleted(QObject *object)
 {
-    // Make sure that the fbo is destroyed before destroying its context.
-    delete d_ptr->fbo;
-    d_ptr->fbo = 0;
-
     QWidget *widget = qobject_cast<QWidget *>(object);
     if (widget) {
+        if (widget == window()) {
+            // Make sure that the fbo is destroyed before destroying its context.
+            delete d_ptr->fbo;
+            d_ptr->fbo = 0;
+        }
+
         QWidgetPrivate *widgetPrivate = widget->d_func();
         if (widgetPrivate->extraData()) {
             union { QGLContext **ctxPtr; void **voidPtr; };
@@ -422,6 +424,8 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
+
+    Q_ASSERT(d_ptr->fbo);
     return d_ptr->fbo;
 }
 
