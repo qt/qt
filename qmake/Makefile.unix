@@ -17,7 +17,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
       qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfile.o \
       qfilesystementry.o qfilesystemengine_unix.o qfilesystemengine.o qfilesystemiterator_unix.o \
-      qfsfileengine_unix.o qfsfileengine_iterator_unix.o qfsfileengine.o \
+      qfsfileengine_unix.o qfsfileengine.o \
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
       qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
@@ -49,7 +49,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvector.cpp $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
@@ -187,9 +187,6 @@ qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.c
 
 qfsfileengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
-
-qfsfileengine_iterator_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp
 
 qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp

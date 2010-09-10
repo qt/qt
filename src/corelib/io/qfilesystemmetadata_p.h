@@ -205,6 +205,7 @@ public:
 
 #ifdef Q_OS_UNIX
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
+    void fillFromDirEnt(const QT_DIRENT &statBuffer);
 #endif
 #ifdef Q_OS_SYMBIAN
     void fillFromTEntry(const TEntry& entry);

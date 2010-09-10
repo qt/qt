@@ -285,6 +285,65 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 #endif
 }
 
+void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
+{
+    // ### This will clear all entry flags and knownFlagsMask
+    switch (entry.d_type)
+    {
+    case DT_DIR:
+        knownFlagsMask = QFileSystemMetaData::LinkType
+            | QFileSystemMetaData::FileType
+            | QFileSystemMetaData::DirectoryType
+            | QFileSystemMetaData::SequentialType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        entryFlags = QFileSystemMetaData::DirectoryType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        break;
+
+    case DT_BLK:
+    case DT_CHR:
+    case DT_FIFO:
+    case DT_SOCK:
+        // ### System attribute
+        knownFlagsMask = QFileSystemMetaData::LinkType
+            | QFileSystemMetaData::FileType
+            | QFileSystemMetaData::DirectoryType
+            | QFileSystemMetaData::BundleType
+            | QFileSystemMetaData::AliasType
+            | QFileSystemMetaData::SequentialType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        entryFlags = QFileSystemMetaData::SequentialType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        break;
+
+    case DT_LNK:
+        knownFlagsMask = QFileSystemMetaData::LinkType;
+        entryFlags = QFileSystemMetaData::LinkType;
+        break;
+
+    case DT_REG:
+        knownFlagsMask = QFileSystemMetaData::LinkType
+            | QFileSystemMetaData::FileType
+            | QFileSystemMetaData::DirectoryType
+            | QFileSystemMetaData::BundleType
+            | QFileSystemMetaData::SequentialType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        entryFlags = QFileSystemMetaData::FileType
+            | QFileSystemMetaData::ExistsAttribute;
+
+        break;
+
+    case DT_UNKNOWN:
+    default:
+        clear();
+    }
+}
+
 #endif
 
 //static

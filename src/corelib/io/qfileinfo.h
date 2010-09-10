@@ -60,9 +60,9 @@ class QFileInfoPrivate;
 class Q_CORE_EXPORT QFileInfo
 {
     friend class QDirIteratorPrivate;
+public:
     explicit QFileInfo(QFileInfoPrivate *d);
 
-public:
     QFileInfo();
     QFileInfo(const QString &file);
     QFileInfo(const QFile &file);

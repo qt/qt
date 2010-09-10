@@ -54,6 +54,7 @@
 //
 
 #include "qabstractfileengine.h"
+#include "qfilesystemiterator_p.h"
 #include "qdir.h"
 
 #ifndef QT_NO_FSFILEENGINE
@@ -76,6 +77,13 @@ public:
     QFileInfo currentFileInfo() const;
 
 private:
+#ifdef Q_OS_UNIX
+    void advance() const;
+    mutable QScopedPointer<QFileSystemIterator> nativeIterator;
+    mutable QFileInfo currentInfo;
+    mutable QFileInfo nextInfo;
+    mutable bool done;
+#else
     QFSFileEngineIteratorPlatformSpecificData *platform;
     friend class QFSFileEngineIteratorPlatformSpecificData;
     void newPlatformSpecifics();
@@ -83,6 +91,7 @@ private:
     void advance();
 
     QString currentEntry;
+#endif
 };
 
 QT_END_NAMESPACE

@@ -39,27 +39,74 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
+
+#include <stdlib.h>
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
                                          const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
+    : nativePath(entry.nativeFilePath())
+    , dir(0)
+    , dirEntry(0)
+    , lastError(0)
 {
-    Q_UNUSED(entry)
     Q_UNUSED(filters)
     Q_UNUSED(nameFilters)
     Q_UNUSED(flags)
+
+    if ((dir = QT_OPENDIR(nativePath.constData())) == 0) {
+        lastError = errno;
+    } else {
+
+        if (!nativePath.endsWith('/'))
+            nativePath.append('/');
+
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+        // ### Race condition; we should use fpathconf and dirfd().
+        size_t maxPathName = ::pathconf(nativePath.constData(), _PC_NAME_MAX);
+        if (maxPathName == size_t(-1))
+            maxPathName = FILENAME_MAX;
+        maxPathName += sizeof(QT_DIRENT) + 1;
+
+        QT_DIRENT *p = reinterpret_cast<QT_DIRENT*>(::malloc(maxPathName));
+        Q_CHECK_PTR(p);
+
+        mt_file.reset(p);
+#endif
+    }
 }
 
 QFileSystemIterator::~QFileSystemIterator()
 {
+    if (dir)
+        QT_CLOSEDIR(dir);
 }
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
-    Q_UNUSED(fileEntry)
-    Q_UNUSED(metaData)
+    if (!dir)
+        return false;
+
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+    lastError = QT_READDIR_R(dir, mt_file.data(), &dirEntry);
+    if (lastError)
+        return false;
+#else
+    // ### add local lock to prevent breaking reentrancy
+    dirEntry = QT_READDIR(dir);
+#endif // _POSIX_THREAD_SAFE_FUNCTIONS
+
+    if (dirEntry) {
+        fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name), QFileSystemEntry::FromNativePath());
+        metaData.fillFromDirEnt(*dirEntry);
+        return true;
+    }
+
+    lastError = errno;
     return false;
 }
 

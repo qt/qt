@@ -127,7 +127,7 @@ bootstrap { #Qt code
         qxmlutils.h
 
     unix {
-        SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
+        SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp
         mac {
           SOURCES += qfilesystemengine_mac.cpp
           SOURCES += qcore_mac.cpp qsettings_mac.cpp

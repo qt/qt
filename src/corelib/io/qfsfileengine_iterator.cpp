@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qfsfileengine_iterator_p.h"
+#include "qfileinfo_p.h"
 #include "qvariant.h"
 
 #ifndef QT_NO_FSFILEENGINE
@@ -48,14 +49,34 @@ QT_BEGIN_NAMESPACE
 
 QFSFileEngineIterator::QFSFileEngineIterator(QDir::Filters filters, const QStringList &filterNames)
     : QAbstractFileEngineIterator(filters, filterNames)
+#ifdef Q_OS_UNIX
+    , done(false)
+#endif
 {
+#ifndef Q_OS_UNIX
     newPlatformSpecifics();
+#endif
 }
 
 QFSFileEngineIterator::~QFSFileEngineIterator()
 {
+#ifndef Q_OS_UNIX
     deletePlatformSpecifics();
+#endif
 }
+
+#ifdef Q_OS_UNIX
+bool QFSFileEngineIterator::hasNext() const
+{
+    if (!done && !nativeIterator) {
+        nativeIterator.reset(new QFileSystemIterator(QFileSystemEntry(path()),
+                    filters(), nameFilters()));
+        advance();
+    }
+
+    return !done;
+}
+#endif
 
 QString QFSFileEngineIterator::next()
 {
@@ -66,14 +87,38 @@ QString QFSFileEngineIterator::next()
     return currentFilePath();
 }
 
+#ifdef Q_OS_UNIX
+void QFSFileEngineIterator::advance() const
+{
+    currentInfo = nextInfo;
+
+    QFileSystemEntry entry;
+    QFileSystemMetaData data;
+    if (nativeIterator->advance(entry, data)) {
+        nextInfo = QFileInfo(new QFileInfoPrivate(entry, data));
+    } else {
+        done = true;
+        nativeIterator.reset();
+    }
+}
+#endif
+
 QString QFSFileEngineIterator::currentFileName() const
 {
+#ifdef Q_OS_UNIX
+    return currentInfo.fileName();
+#else
     return currentEntry;
+#endif
 }
 
 QFileInfo QFSFileEngineIterator::currentFileInfo() const
 {
+#ifdef Q_OS_UNIX
+    return currentInfo;
+#else
     return QAbstractFileEngineIterator::currentFileInfo();
+#endif
 }
 
 QT_END_NAMESPACE

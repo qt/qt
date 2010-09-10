@@ -66,6 +66,7 @@
 #elif defined (Q_OS_SYMBIAN)
 #include <f32file.h>
 #else
+#include <QtCore/qscopedpointer.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -73,12 +74,15 @@ QT_BEGIN_NAMESPACE
 class QFileSystemIterator
 {
 public:
-    QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters, const QStringList &nameFilters, QDirIterator::IteratorFlags flags);
+    QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
+            const QStringList &nameFilters, QDirIterator::IteratorFlags flags
+                = QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
     ~QFileSystemIterator();
 
     bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);
 
 private:
+    QFileSystemEntry::NativePath nativePath;
 
     // Platform-specific data
 #if defined(Q_OS_WIN)
@@ -88,6 +92,13 @@ private:
     TInt lastError;
     TInt entryIndex;
 #else
+    QT_DIR *dir;
+    QT_DIRENT *dirEntry;
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+    // for readdir_r
+    QScopedPointer<QT_DIRENT, QScopedPointerPodDeleter> mt_file;
+#endif
+    int lastError;
 #endif
 
     Q_DISABLE_COPY(QFileSystemIterator)

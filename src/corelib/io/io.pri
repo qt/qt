@@ -73,7 +73,6 @@ win32 {
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
 } else:unix {
-        SOURCES += io/qfsfileengine_iterator_unix.cpp
         SOURCES += io/qfsfileengine_unix.cpp
         symbian {
             SOURCES += io/qfilesystemengine_symbian.cpp

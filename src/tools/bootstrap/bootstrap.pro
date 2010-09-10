@@ -87,8 +87,7 @@ SOURCES += \
 
 unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
-                ../../corelib/io/qfsfileengine_unix.cpp \
-                ../../corelib/io/qfsfileengine_iterator_unix.cpp
+                ../../corelib/io/qfsfileengine_unix.cpp
 
 win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
