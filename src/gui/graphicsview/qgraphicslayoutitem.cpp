@@ -234,7 +234,7 @@ void QGraphicsLayoutItemPrivate::setSize(Qt::SizeHint which, const QSizeF &size)
     if (userSizeHints) {
         if (size == userSizeHints[which])
             return;
-    } else if (!size.isValid()) {
+    } else if (size.width() < 0 && size.height() < 0) {
         return;
     }
 

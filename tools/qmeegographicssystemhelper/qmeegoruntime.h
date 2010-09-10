@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,55 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QFACTORYLOADER_P_H
-#define QFACTORYLOADER_P_H
+#include <QPixmap>
+#include <QImage>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "QtCore/qobject.h"
-#include "QtCore/qstringlist.h"
-#include "private/qlibrary_p.h"
-
-#ifndef QT_NO_LIBRARY
-
-QT_BEGIN_NAMESPACE
-
-class QFactoryLoaderPrivate;
-
-class Q_CORE_EXPORT QFactoryLoader : public QObject
+class QMeeGoRuntime
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QFactoryLoader)
-
 public:
-    QFactoryLoader(const char *iid,
-                   const QString &suffix = QString(),
-                   Qt::CaseSensitivity = Qt::CaseSensitive);
-    ~QFactoryLoader();
+    static void initialize();
 
-    QStringList keys() const;
-    QObject *instance(const QString &key) const;
+    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
+    static QPixmap pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
+    static QPixmap pixmapWithGLTexture(int w, int h);
+    static bool destroyEGLSharedImage(Qt::HANDLE handle);
+    static void updateEGLSharedImagePixmap(QPixmap *p);
+    static void setSurfaceFixedSize(int w, int h);
+    static void setSurfaceScaling(int x, int y, int w, int h);
+    static void setTranslucent(bool translucent);
 
-#ifdef Q_WS_X11
-    QLibraryPrivate *library(const QString &key) const;
-#endif
-
-    void update();
-
-    static void refreshAll();
+private:
+    static bool initialized;
 };
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY
-
-#endif // QFACTORYLOADER_P_H

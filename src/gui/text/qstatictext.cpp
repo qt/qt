@@ -448,7 +448,6 @@ namespace {
             currentItem.font = ti.font();
             currentItem.charOffset = m_chars.size();
             currentItem.numChars = ti.num_chars;
-            currentItem.numGlyphs = ti.glyphs.numGlyphs;
             currentItem.glyphOffset = m_glyphs.size(); // Store offset into glyph pool
             currentItem.positionOffset = m_glyphs.size(); // Offset into position pool
             currentItem.useBackendOptimizations = m_useBackendOptimizations;
@@ -463,8 +462,8 @@ namespace {
             ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
             int size = glyphs.size();
-            Q_ASSERT(size == ti.glyphs.numGlyphs);
             Q_ASSERT(size == positions.size());
+            currentItem.numGlyphs = size;
 
             m_glyphs.resize(m_glyphs.size() + size);
             m_positions.resize(m_glyphs.size());

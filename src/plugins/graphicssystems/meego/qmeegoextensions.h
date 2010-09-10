@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,55 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QFACTORYLOADER_P_H
-#define QFACTORYLOADER_P_H
+#ifndef MEXTENSIONS_H
+#define MEXTENSIONS_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <private/qgl_p.h>
+#include <private/qeglcontext_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
-#include "QtCore/qobject.h"
-#include "QtCore/qstringlist.h"
-#include "private/qlibrary_p.h"
+/* Extensions decls */
 
-#ifndef QT_NO_LIBRARY
-
-QT_BEGIN_NAMESPACE
-
-class QFactoryLoaderPrivate;
-
-class Q_CORE_EXPORT QFactoryLoader : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QFactoryLoader)
-
-public:
-    QFactoryLoader(const char *iid,
-                   const QString &suffix = QString(),
-                   Qt::CaseSensitivity = Qt::CaseSensitive);
-    ~QFactoryLoader();
-
-    QStringList keys() const;
-    QObject *instance(const QString &key) const;
-
-#ifdef Q_WS_X11
-    QLibraryPrivate *library(const QString &key) const;
+#ifndef EGL_SHARED_IMAGE_NOK
+#define EGL_SHARED_IMAGE_NOK 0x30DA
+typedef void* EGLNativeSharedImageTypeNOK;
 #endif
 
-    void update();
+#ifndef EGL_GL_TEXTURE_2D_KHR
+#define EGL_GL_TEXTURE_2D_KHR 0x30B1
+#endif
 
-    static void refreshAll();
+#ifndef EGL_FIXED_WIDTH_NOK
+#define EGL_FIXED_WIDTH_NOK 0x30DB
+#define EGL_FIXED_HEIGHT_NOK 0x30DC
+#endif
+
+/* Class */
+
+class QMeeGoExtensions
+{
+public:
+    static void ensureInitialized();
+
+    static EGLNativeSharedImageTypeNOK eglCreateSharedImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint *props);
+    static bool eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint prop, EGLint *v);
+    static bool eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageTypeNOK img);
+    static bool eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height);
+
+private:
+    static void initialize();
+
+    static bool initialized;
+    static bool hasImageShared;
+    static bool hasSurfaceScaling;
 };
 
-QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY
-
-#endif // QFACTORYLOADER_P_H
+#endif

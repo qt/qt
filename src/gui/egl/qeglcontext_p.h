@@ -107,6 +107,9 @@ private:
 
     static QEglContext *currentContext(QEgl::API api);
     static void setCurrentContext(QEgl::API api, QEglContext *context);
+
+    friend class QMeeGoGraphicsSystem;
+    friend class QMeeGoPixmapData;
 };
 
 QT_END_NAMESPACE

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,55 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QFACTORYLOADER_P_H
-#define QFACTORYLOADER_P_H
+#include <QDebug>
+#include "qmeegographicssystemplugin.h"
+#include "qmeegographicssystem.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "QtCore/qobject.h"
-#include "QtCore/qstringlist.h"
-#include "private/qlibrary_p.h"
-
-#ifndef QT_NO_LIBRARY
-
-QT_BEGIN_NAMESPACE
-
-class QFactoryLoaderPrivate;
-
-class Q_CORE_EXPORT QFactoryLoader : public QObject
+QStringList QMeeGoGraphicsSystemPlugin::keys() const
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QFactoryLoader)
+    QStringList list;
+    list << "meego";
+    return list;
+}
 
-public:
-    QFactoryLoader(const char *iid,
-                   const QString &suffix = QString(),
-                   Qt::CaseSensitivity = Qt::CaseSensitive);
-    ~QFactoryLoader();
+QGraphicsSystem *QMeeGoGraphicsSystemPlugin::create(const QString&)
+{
+    return new QMeeGoGraphicsSystem;
+}
 
-    QStringList keys() const;
-    QObject *instance(const QString &key) const;
-
-#ifdef Q_WS_X11
-    QLibraryPrivate *library(const QString &key) const;
-#endif
-
-    void update();
-
-    static void refreshAll();
-};
-
-QT_END_NAMESPACE
-
-#endif // QT_NO_LIBRARY
-
-#endif // QFACTORYLOADER_P_H
+Q_EXPORT_PLUGIN2(meego, QMeeGoGraphicsSystemPlugin)
