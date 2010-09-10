@@ -1015,6 +1015,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 // No overloads, so by-name and by-signature properties should be the same function object.
                 protoTempl->Set(v8::String::New(method.signature()), methodTempl);
             } else {
+                Q_UNIMPLEMENTED();
                 // TODO: add unique by-signature properties for overloads.
             }
         }
@@ -1030,7 +1031,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         // meta-object-defined properties, and Q_INVOKABLE methods and slots).
         protoTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
                                             QtLazyPropertySetter);
-
+        Q_UNIMPLEMENTED();
         // TODO: Add QObject prototype functions findChild(), findChildren() (compat)
     }
 
