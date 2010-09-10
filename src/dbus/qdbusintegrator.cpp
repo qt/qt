@@ -973,6 +973,10 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     QDBusMetaTypeId::init();
 
     rootNode.flags = 0;
+
+    // prepopulate watchedServices:
+    // we know that the owner of org.freedesktop.DBus is itself
+    watchedServices.insert(dbusServiceString(), WatchedServiceData(dbusServiceString(), 1));
 }
 
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
