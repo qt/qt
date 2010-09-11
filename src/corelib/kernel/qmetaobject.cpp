@@ -266,25 +266,7 @@ QObject *QMetaObject::cast(QObject *obj) const
         const QMetaObject *m = obj->metaObject();
         do {
             if (m == this)
-                return obj;
-        } while ((m = m->d.superdata));
-    }
-    return 0;
-}
-
-/*!
-    \internal
-
-    Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
-*/
-const QObject *QMetaObject::cast(const QObject *obj) const
-{
-    if (obj) {
-        const QMetaObject *m = obj->metaObject();
-        do {
-            if (m == this)
-                return obj;
+                return const_cast<QObject*>(obj);
         } while ((m = m->d.superdata));
     }
     return 0;

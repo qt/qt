@@ -298,7 +298,6 @@ struct Q_CORE_EXPORT QMetaObject
     const QMetaObject *superClass() const;
 
     QObject *cast(QObject *obj) const;
-    const QObject *cast(const QObject *obj) const;
 
 #ifndef QT_NO_TRANSLATION
     // ### Qt 4: Merge overloads
