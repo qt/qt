@@ -77,7 +77,7 @@
                 <ul>
                     <li><a href="qtquick.html">Qt Quick</a></li>
                     <li><a href="qdeclarativeintroduction.html">Introduction to QML</a></li>
-                    <li><a href="qmlelements.html">QML Elements</a></li>
+                    <li><a href="qdeclarativeelements.html">QML Elements</a></li>
                     <li><a href="qdeclarativeexamples.html">QML Examples and Demos</a></li>
                 </ul>
               </div>
