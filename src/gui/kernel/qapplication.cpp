@@ -1140,6 +1140,8 @@ QApplication::~QApplication()
     QApplicationPrivate::app_style = 0;
     delete QApplicationPrivate::app_icon;
     QApplicationPrivate::app_icon = 0;
+    delete QApplicationPrivate::graphics_system;
+    QApplicationPrivate::graphics_system = 0;
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
 #endif
