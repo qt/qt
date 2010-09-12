@@ -113,56 +113,59 @@ COMPILE_ASSERT(offsetof(struct JITStackFrame, savedEBX) == 0x3c, JITStackFrame_s
 COMPILE_ASSERT(offsetof(struct JITStackFrame, callFrame) == 0x58, JITStackFrame_callFrame_offset_matches_ctiTrampoline);
 COMPILE_ASSERT(offsetof(struct JITStackFrame, code) == 0x50, JITStackFrame_code_offset_matches_ctiTrampoline);
 
-asm volatile (
-".text\n"
-".globl " SYMBOL_STRING(ctiTrampoline) "\n"
-HIDE_SYMBOL(ctiTrampoline) "\n"
-SYMBOL_STRING(ctiTrampoline) ":" "\n"
-    "pushl %ebp" "\n"
-    "movl %esp, %ebp" "\n"
-    "pushl %esi" "\n"
-    "pushl %edi" "\n"
-    "pushl %ebx" "\n"
-    "subl $0x3c, %esp" "\n"
-    "movl $512, %esi" "\n"
-    "movl 0x58(%esp), %edi" "\n"
-    "call *0x50(%esp)" "\n"
-    "addl $0x3c, %esp" "\n"
-    "popl %ebx" "\n"
-    "popl %edi" "\n"
-    "popl %esi" "\n"
-    "popl %ebp" "\n"
-    "ret" "\n"
-);
+static void __attribute__((used)) asm_wrapper()
+{
+    asm volatile (
+        ".text\n"
+        ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
+        HIDE_SYMBOL(ctiTrampoline) "\n"
+        SYMBOL_STRING(ctiTrampoline) ":" "\n"
+        "pushl %ebp" "\n"
+        "movl %esp, %ebp" "\n"
+        "pushl %esi" "\n"
+        "pushl %edi" "\n"
+        "pushl %ebx" "\n"
+        "subl $0x3c, %esp" "\n"
+        "movl $512, %esi" "\n"
+        "movl 0x58(%esp), %edi" "\n"
+        "call *0x50(%esp)" "\n"
+        "addl $0x3c, %esp" "\n"
+        "popl %ebx" "\n"
+        "popl %edi" "\n"
+        "popl %esi" "\n"
+        "popl %ebp" "\n"
+        "ret" "\n"
+        );
 
-asm volatile (
-".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
-HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
-SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
+    asm volatile (
+        ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
+        HIDE_SYMBOL(ctiVMThrowTrampoline) "\n"
+        SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 #if !USE(JIT_STUB_ARGUMENT_VA_LIST)
-    "movl %esp, %ecx" "\n"
+        "movl %esp, %ecx" "\n"
 #endif
-    "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
-    "addl $0x3c, %esp" "\n"
-    "popl %ebx" "\n"
-    "popl %edi" "\n"
-    "popl %esi" "\n"
-    "popl %ebp" "\n"
-    "ret" "\n"
-);
+        "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
+        "addl $0x3c, %esp" "\n"
+        "popl %ebx" "\n"
+        "popl %edi" "\n"
+        "popl %esi" "\n"
+        "popl %ebp" "\n"
+        "ret" "\n"
+        );
     
-asm volatile (
-".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
-HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
-SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
-    "addl $0x3c, %esp" "\n"
-    "popl %ebx" "\n"
-    "popl %edi" "\n"
-    "popl %esi" "\n"
-    "popl %ebp" "\n"
-    "ret" "\n"
-);
-    
+    asm volatile (
+        ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
+        HIDE_SYMBOL(ctiOpThrowNotCaught) "\n"
+        SYMBOL_STRING(ctiOpThrowNotCaught) ":" "\n"
+        "addl $0x3c, %esp" "\n"
+        "popl %ebx" "\n"
+        "popl %edi" "\n"
+        "popl %esi" "\n"
+        "popl %ebp" "\n"
+        "ret" "\n"
+        );
+}
+
 #elif COMPILER(GCC) && CPU(X86_64)
 
 #if USE(JIT_STUB_ARGUMENT_VA_LIST)
