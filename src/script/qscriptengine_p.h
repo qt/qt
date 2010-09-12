@@ -50,7 +50,7 @@ public:
     static QScriptEnginePrivate* get(QScriptEngine* q) { Q_ASSERT(q); return q->d_func(); }
     static QScriptEngine* get(QScriptEnginePrivate* d) { Q_ASSERT(d); return d->q_func(); }
 
-    QScriptEnginePrivate(QScriptEngine*);
+    QScriptEnginePrivate(QScriptEngine*, QScriptEngine::ContextOwnership ownership = QScriptEngine::CreateNewContext);
     ~QScriptEnginePrivate();
 
     inline QScriptValuePrivate* evaluate(const QString& program, const QString& fileName, int lineNumber);

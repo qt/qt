@@ -69,6 +69,11 @@ class Q_SCRIPT_EXPORT QScriptEngine
 {
     Q_OBJECT
 public:
+    enum ContextOwnership {
+        AdoptCurrentContext,
+        CreateNewContext
+    };
+
     enum ValueOwnership {
         QtOwnership,
         ScriptOwnership,
@@ -90,6 +95,7 @@ public:
     Q_DECLARE_FLAGS(QObjectWrapOptions, QObjectWrapOption)
 
     QScriptEngine();
+    explicit QScriptEngine(ContextOwnership ownership);
     explicit QScriptEngine(QObject *parent);
     virtual ~QScriptEngine();
 

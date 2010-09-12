@@ -750,9 +750,10 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 
 
 
-QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine)
+QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine::ContextOwnership ownership)
     : q_ptr(engine)
-    , m_context(v8::Context::New())
+    , m_context(ownership == QScriptEngine::AdoptCurrentContext ?
+            v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_globalObject(m_context)
 {
     Q_ASSERT(!m_context.IsEmpty());
@@ -885,6 +886,14 @@ v8::Handle<v8::Value> QScriptEnginePrivate::scriptValueToInternal(const QScriptV
 */
 QScriptEngine::QScriptEngine()
     : d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this)))
+{
+}
+
+/*!
+    \internal
+*/
+QScriptEngine::QScriptEngine(QScriptEngine::ContextOwnership ownership)
+    : d_ptr(new QScriptEnginePrivate(const_cast<QScriptEngine*>(this), ownership))
 {
 }
 
