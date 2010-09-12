@@ -274,6 +274,19 @@ static QScriptValue myFunctionThatReturnsWrongEngine(QScriptContext *, QScriptEn
     return QScriptValue(wrongEngine, 42);
 }
 
+static QScriptValue sumFunction(QScriptContext *context, QScriptEngine *engine)
+{
+    int sum = 0;
+
+    for (int i = 0; i < context->argumentCount(); i++) {
+        QScriptValue n = context->argument(i);
+        if (n.isNumber())
+            sum += n.toInteger();
+    }
+
+    return QScriptValue(engine, sum);
+}
+
 void tst_QScriptEngine::newFunction()
 {
     QScriptEngine eng;
@@ -383,6 +396,31 @@ void tst_QScriptEngine::newFunction()
         QScriptValue result = fun.call();
         QCOMPARE(result.isValid(), true);
         QCOMPARE(result.isUndefined(), true);
+    }
+    // checking if arguments are passed correctly
+    {
+        QScriptEngine wrongEngine;
+
+        QScriptValue fun = eng.newFunction(sumFunction);
+        QCOMPARE(fun.isValid(), true);
+        QCOMPARE(fun.isFunction(), true);
+        QCOMPARE(fun.isObject(), true);
+
+        QScriptValue result = fun.call();
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 0);
+
+        result = fun.call(QScriptValue(), QScriptValueList() << 1);
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 1);
+
+        result = fun.call(QScriptValue(), QScriptValueList() << 1 << 2 << 3);
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 6);
+
+        result = fun.call(QScriptValue(), QScriptValueList() << 1 << 2 << 3 << 4);
+        QCOMPARE(result.isNumber(), true);
+        QCOMPARE(result.toInt32(), 10);
     }
 }
 

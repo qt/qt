@@ -47,36 +47,60 @@ class QScriptContextPrivate : public QSharedData
 {
     Q_DECLARE_PUBLIC(QScriptContext);
 public:
-    static QScriptContext* get(QScriptContextPrivate* d) { return d->q_func(); }
+    static QScriptContextPrivate *get(const QScriptContext *q) { Q_ASSERT(q->d_ptr.data()); return q->d_ptr.data(); }
+    static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
     QScriptContextPrivate()
-        : q_ptr(0)
+        : q_ptr(0), engine(0), arguments(0)
     {}
     QScriptContextPrivate(QScriptContext *q)
-        : q_ptr(q)
+        : q_ptr(q), engine(0), arguments(0)
     {}
 
-    inline QScriptValuePrivate* argument(int index) const;
+    inline QScriptValuePrivate *argument(int index) const;
     inline int argumentCount() const;
-    inline QScriptValuePrivate* thisObject() const;
+    inline QScriptValuePrivate *thisObject() const;
+
+    static QScriptContext *create(QScriptEnginePrivate *engine, const v8::Arguments *args);
+
 private:
     QScriptContext* q_ptr;
+    QScriptEnginePrivate *engine;
+    const v8::Arguments *arguments;
 };
 
-inline QScriptValuePrivate* QScriptContextPrivate::argument(int index) const
+inline QScriptValuePrivate *QScriptContextPrivate::argument(int index) const
 {
+    if (index < 0)
+        return new QScriptValuePrivate();
+
+    if (arguments) {
+        if (index >= arguments->Length())
+            return new QScriptValuePrivate(engine, QScriptValue::UndefinedValue);
+
+        return new QScriptValuePrivate(engine, (*arguments)[index]);
+    }
+
     Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
 }
 
 inline int QScriptContextPrivate::argumentCount() const
 {
+    if (arguments) {
+        return arguments->Length();
+    }
+
     Q_UNIMPLEMENTED();
     return -1;
 }
 
-inline QScriptValuePrivate* QScriptContextPrivate::thisObject() const
+inline QScriptValuePrivate *QScriptContextPrivate::thisObject() const
 {
+    if (arguments) {
+        return new QScriptValuePrivate(engine, arguments->This());
+    }
+
     Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
 }

@@ -24,6 +24,7 @@
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
 #include "qscriptengine.h"
+#include "qv8context_p.h"
 
 #include <QtCore/qstringlist.h>
 
@@ -206,8 +207,8 @@ QScriptContext::~QScriptContext()
 */
 QScriptEngine *QScriptContext::engine() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptContext);
+    return QScriptEnginePrivate::get(d->engine);
 }
 
 /*!
@@ -220,9 +221,9 @@ QScriptEngine *QScriptContext::engine() const
 */
 QScriptValue QScriptContext::argument(int index) const
 {
-    Q_UNUSED(index);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptContext);
+    QV8Context api(d->engine);
+    return QScriptValuePrivate::get(d->argument(index));
 }
 
 /*!
@@ -293,8 +294,8 @@ QScriptContext *QScriptContext::parentContext() const
 */
 int QScriptContext::argumentCount() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(const QScriptContext);
+    return d->argumentCount();
 }
 
 /*!
@@ -353,8 +354,9 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
 */
 QScriptValue QScriptContext::thisObject() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptContext);
+    QV8Context api(d->engine);
+    return QScriptValuePrivate::get(d->thisObject());
 }
 
 /*!
@@ -449,6 +451,15 @@ QScriptValue QScriptContext::popScope()
 {
     Q_UNIMPLEMENTED();
     return QScriptValue();
+}
+
+QScriptContext *QScriptContextPrivate::create(QScriptEnginePrivate *engine, const v8::Arguments *args)
+{
+    QScriptContext *context = new QScriptContext();
+    QScriptContextPrivate *priv = get(context);
+    priv->engine = engine;
+    priv->arguments = args;
+    return context;
 }
 
 QT_END_NAMESPACE
