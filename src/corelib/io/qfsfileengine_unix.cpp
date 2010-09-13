@@ -744,7 +744,7 @@ QString QFSFileEngine::currentPath(const QString &)
 QString QFSFileEngine::homePath()
 {
 #if defined(Q_OS_SYMBIAN)
-    QString home = rootPath();
+    QString home = QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(PathInfo::PhoneMemoryRootPath())));
 #else
     QString home = QFile::decodeName(qgetenv("HOME"));
     if (home.isNull())
@@ -756,8 +756,10 @@ QString QFSFileEngine::homePath()
 QString QFSFileEngine::rootPath()
 {
 #if defined(Q_OS_SYMBIAN)
-    TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
-    return QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath)));
+    TChar drive;
+    TInt err = RFs::DriveToChar(RFs::GetSystemDrive(), drive); //RFs::GetSystemDriveChar not supported on S60 3.1
+    Q_ASSERT(err == KErrNone); //RFs::GetSystemDrive() shall always return a convertible drive number on a valid OS configuration
+    return QString(QChar(drive)).append(QLatin1String(":/"));
 #else
     return QLatin1String("/");
 #endif
