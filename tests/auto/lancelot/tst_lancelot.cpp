@@ -49,6 +49,7 @@
 #include <QPainter>
 #include <QLibraryInfo>
 #include <baselineprotocol.h>
+#include <QHash>
 
 #include <QtOpenGL>
 
@@ -68,12 +69,12 @@ public:
 private:
     ImageItem render(const ImageItem &item);
     void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
-    QStringList loadScriptFile(const QString &filePath);
     void runTestSuite();
     bool setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist);
 
     BaselineProtocol proto;
     ImageItemList baseList;
+    QHash<QString, QStringList> scripts;
 
 private slots:
     void initTestCase();
@@ -120,9 +121,13 @@ void tst_Lancelot::initTestCase()
 
     baseList.resize(files.count());
     ImageItemList::iterator it = baseList.begin();
-    foreach(const QString& file, files) {
-        it->scriptName = file;
-        // tbd: also load, split and generate checksums for scripts
+    foreach(const QString& fileName, files) {
+        QFile file(scriptsDir + fileName);
+        file.open(QFile::ReadOnly);
+        QByteArray cont = file.readAll();
+        scripts.insert(fileName, QString::fromLatin1(cont).split(QLatin1Char('\n'), QString::SkipEmptyParts));
+        it->scriptName = fileName;
+        it->scriptChecksum = qChecksum(cont.constData(), cont.size());
         it++;
     }
 }
@@ -255,9 +260,7 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
     res.imageChecksums.clear();
     res.image = QImage();
     QString filePath = scriptsDir + item.scriptName;
-    QStringList script = loadScriptFile(filePath);
-    if (script.isEmpty())
-        return res;
+    QStringList script = scripts.value(item.scriptName);
 
     if (item.engine == ImageItem::Raster) {
         QImage img(800, 800, item.renderFormat);
@@ -289,17 +292,6 @@ void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const 
     pcmd.setFilePath(filePath);
     pcmd.runCommands();
     p.end();
-}
-
-QStringList tst_Lancelot::loadScriptFile(const QString &filePath)
-{
-    QFile file(filePath);
-    if (!file.open(QFile::ReadOnly)) {
-        return QStringList();
-    }
-    //# use the new readscript function instead?
-    QTextStream stream(&file);
-    return stream.readAll().split(QLatin1Char('\n'), QString::SkipEmptyParts);
 }
 
 QTEST_MAIN(tst_Lancelot)

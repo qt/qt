@@ -225,6 +225,8 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
     QString itemName = item.scriptName;
     if (itemName.contains(QLC('.')))
         itemName.replace(itemName.lastIndexOf(QLC('.')), 1, QLC('_'));
+    itemName.append(QLC('_'));
+    itemName.append(QString::number(item.scriptChecksum, 16).rightJustified(4, QLC('0')));
 
     return storePath + itemName + QLC('.');
 }
@@ -232,7 +234,7 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
 
 void BaselineHandler::testPathMapping()
 {
-    qDebug() << "Storeage prefix:" << BaselineServer::storagePath();
+    qDebug() << "Storage prefix:" << BaselineServer::storagePath();
 
     QStringList hosts;
     hosts << QLS("bq-ubuntu910-x86-01")
