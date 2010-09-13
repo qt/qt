@@ -290,7 +290,7 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry)
     QString targetpath = absoluteName(entry).nativeFilePath();
     RFs& fs(qt_s60GetRFs());
     TInt err = fs.Delete(qt_QString2TPtrC(targetpath));
-    return false; // TODO error reporting;
+    return err == KErrNone; // TODO error reporting;
 }
 
 //static
@@ -300,8 +300,8 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     TUint setmask = 0;
     TUint clearmask = 0;
     RFs& fs(qt_s60GetRFs());
-    if (permissions & (QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther))
-        clearmask = KEntryAttReadOnly;
+    if (permissions & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup | QFile::WriteOther))
+        clearmask = KEntryAttReadOnly; //if anyone can write, it's not read-only
     else
         setmask = KEntryAttReadOnly;
     TInt err = fs.SetAtt(qt_QString2TPtrC(targetpath), setmask, clearmask);
@@ -310,7 +310,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
-    return err != KErrNone; // TODO error reporting
+    return err == KErrNone; // TODO error reporting
 }
 
 QT_END_NAMESPACE
