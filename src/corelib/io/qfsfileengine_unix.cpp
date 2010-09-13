@@ -589,6 +589,7 @@ bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
     bool ret = QFileSystemEngine::removeFile(d->fileEntry);
+    d->metaData.clear();
     if (!ret) {
 #ifdef Q_OS_SYMBIAN
         //TODO: error reporting
