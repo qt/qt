@@ -141,6 +141,7 @@ public:
     bool stealMouse : 1;
     bool pressed : 1;
     bool interactive : 1;
+    bool calcVelocity : 1;
     QElapsedTimer lastPosTime;
     QPointF lastPos;
     QPointF pressPos;
