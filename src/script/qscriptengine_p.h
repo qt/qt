@@ -219,9 +219,14 @@ void QScriptEnginePrivate::collectGarbage()
 
 void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
 {
-    // The check is needed only for compatibility.
+    /*// The check is needed only for compatibility.
     if (cost > 0)
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(cost);
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(cost);*/
+
+    Q_UNIMPLEMENTED();  //in V8, AdjustAmountOfExternalAllocatedMemory need to be balanced
+                        // by a negative number when the memory is released, else
+                        // the garbage collector will think it still has lot of memory and
+                        // will be run too often.
 }
 
 inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> exception)

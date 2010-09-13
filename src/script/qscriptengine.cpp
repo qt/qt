@@ -1086,6 +1086,8 @@ void QScriptEngine::collectGarbage()
 }
 
 /*!
+  \since 4.7
+
   Reports an additional memory cost of the given \a size, measured in
   bytes, to the garbage collector.
 
