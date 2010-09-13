@@ -520,9 +520,9 @@ qint64 QFSFileEnginePrivate::nativePos() const
 #ifdef Q_OS_SYMBIAN
     if (symbianFile.SubSessionHandle()) {
 #ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        qint64 pos;
+        qint64 pos = 0;
 #else
-        TInt pos;
+        TInt pos = 0;
 #endif
         TInt err = symbianFile.Seek(ESeekCurrent, pos);
         if(err != KErrNone) {
@@ -1028,7 +1028,7 @@ bool QFSFileEngine::setSize(qint64 size)
         TInt err = d->symbianFile.SetSize(size);
         ret = (err == KErrNone);
     }
-    if (d->fd != -1)
+    else if (d->fd != -1)
         ret = QT_FTRUNCATE(d->fd, size) == 0;
     else if (d->fh)
         ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
