@@ -165,7 +165,7 @@ protected:
 };
 
 class QDeclarativeScriptActionPrivate;
-class QDeclarativeScriptAction : public QDeclarativeAbstractAnimation
+class Q_DECLARATIVE_EXPORT QDeclarativeScriptAction : public QDeclarativeAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeScriptAction)
