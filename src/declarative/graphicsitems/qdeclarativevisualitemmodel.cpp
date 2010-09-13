@@ -714,6 +714,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_abstractItemModel = 0;
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
@@ -761,6 +762,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
         return;
     }
@@ -1303,24 +1305,27 @@ void QDeclarativeVisualDataModel::_q_itemsMoved(int from, int to, int count)
 
 void QDeclarativeVisualDataModel::_q_rowsInserted(const QModelIndex &parent, int begin, int end)
 {
-    if (!parent.isValid())
+    Q_D(QDeclarativeVisualDataModel);
+    if (parent == d->m_root)
         _q_itemsInserted(begin, end - begin + 1);
 }
 
 void QDeclarativeVisualDataModel::_q_rowsRemoved(const QModelIndex &parent, int begin, int end)
 {
-    if (!parent.isValid())
+    Q_D(QDeclarativeVisualDataModel);
+    if (parent == d->m_root)
         _q_itemsRemoved(begin, end - begin + 1);
 }
 
 void QDeclarativeVisualDataModel::_q_rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
 {
+    Q_D(QDeclarativeVisualDataModel);
     const int count = sourceEnd - sourceStart + 1;
-    if (!destinationParent.isValid() && !sourceParent.isValid()) {
+    if (destinationParent == d->m_root && sourceParent == d->m_root) {
         _q_itemsMoved(sourceStart, destinationRow, count);
-    } else if (!sourceParent.isValid()) {
+    } else if (sourceParent == d->m_root) {
         _q_itemsRemoved(sourceStart, count);
-    } else if (!destinationParent.isValid()) {
+    } else if (destinationParent == d->m_root) {
         _q_itemsInserted(destinationRow, count);
     }
 }
@@ -1328,8 +1333,14 @@ void QDeclarativeVisualDataModel::_q_rowsMoved(const QModelIndex &sourceParent, 
 void QDeclarativeVisualDataModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
 {
     Q_D(QDeclarativeVisualDataModel);
-    if (!begin.parent().isValid())
+    if (begin.parent() == d->m_root)
         _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
+}
+
+void QDeclarativeVisualDataModel::_q_layoutChanged()
+{
+    Q_D(QDeclarativeVisualDataModel);
+    _q_itemsChanged(0, count(), d->m_roles);
 }
 
 void QDeclarativeVisualDataModel::_q_modelReset()

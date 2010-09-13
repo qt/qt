@@ -1646,7 +1646,6 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
 
     for (int i = 0; i < layoutData->items.size(); i++) {
         const QScriptItem *si = layoutData->items.constData() + i;
-        QFontEngine *fe = fontEngine(*si);
 
         int pos = si->position;
         int ilen = length(i);
@@ -1676,6 +1675,7 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                 while (charFrom < ilen && logClusters[charFrom] == glyphStart)
                     charFrom++;
             if (charFrom < ilen) {
+                QFontEngine *fe = fontEngine(*si);
                 glyphStart = logClusters[charFrom];
                 int charEnd = from + len - 1 - pos;
                 if (charEnd >= ilen)
@@ -1694,11 +1694,6 @@ glyph_metrics_t QTextEngine::boundingBox(int from,  int len) const
                     gm.yoff += m.yoff;
                 }
             }
-
-            glyph_t glyph = glyphs.glyphs[logClusters[ilen - 1]];
-            glyph_metrics_t gi = fe->boundingBox(glyph);
-            if (gi.isValid())
-                gm.width -= qRound(gi.xoff - gi.x - gi.width);
         }
     }
     return gm;
@@ -2144,8 +2139,11 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     void **newMem = memory;
     newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
-    Q_CHECK_PTR(newMem);
-    if (memory_on_stack && newMem)
+    if (!newMem) {
+        layoutState = LayoutFailed;
+        return false;
+    }
+    if (memory_on_stack)
         memcpy(newMem, memory, allocated*sizeof(void *));
     memory = newMem;
     memory_on_stack = false;
@@ -2265,6 +2263,9 @@ bool QTextEngine::atWordSeparator(int position) const
     case ',':
     case '?':
     case '!':
+    case '@':
+    case '#':
+    case '$':
     case ':':
     case ';':
     case '-':
@@ -2285,6 +2286,7 @@ bool QTextEngine::atWordSeparator(int position) const
     case '*':
     case '\'':
     case '"':
+    case '`':
     case '~':
     case '|':
         return true;

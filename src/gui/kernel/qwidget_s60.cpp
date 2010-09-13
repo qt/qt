@@ -366,7 +366,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -410,7 +410,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -503,8 +503,10 @@ void QWidgetPrivate::show_sys()
                     // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
                     QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
                     S60->statusPane()->SetObserver(desktopControl);
-                    if (isFullscreen)
-                        S60->statusPane()->MakeVisible(false);
+                    if (isFullscreen) {
+                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                    }
                 }
             }
         }
@@ -954,7 +956,10 @@ void QWidgetPrivate::registerTouchWindow()
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-        rwindow->EnableAdvancedPointers();
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->effectiveWinId());
+        //Enabling advanced pointer events for controls that already have active windows causes a panic.
+        if (!window->isControlActive())
+            rwindow->EnableAdvancedPointers();
     }
 #endif
 }

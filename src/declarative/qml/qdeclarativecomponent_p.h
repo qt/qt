@@ -56,7 +56,7 @@
 #include "qdeclarativecomponent.h"
 
 #include "private/qdeclarativeengine_p.h"
-#include "private/qdeclarativecompositetypemanager_p.h"
+#include "private/qdeclarativetypeloader_p.h"
 #include "private/qbitfield_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarative.h"
@@ -74,7 +74,7 @@ class QDeclarativeEngine;
 class QDeclarativeCompiledData;
 
 class QDeclarativeComponentAttached;
-class QDeclarativeComponentPrivate : public QObjectPrivate
+class QDeclarativeComponentPrivate : public QObjectPrivate, public QDeclarativeTypeData::TypeDataCallback
 {
     Q_DECLARE_PUBLIC(QDeclarativeComponent)
         
@@ -85,11 +85,11 @@ public:
     QObject *beginCreate(QDeclarativeContextData *, const QBitField &);
     void completeCreate();
 
-    QDeclarativeCompositeTypeData *typeData;
-    void typeDataReady();
-    void updateProgress(qreal);
+    QDeclarativeTypeData *typeData;
+    virtual void typeDataReady(QDeclarativeTypeData *);
+    virtual void typeDataProgress(QDeclarativeTypeData *, qreal);
     
-    void fromTypeData(QDeclarativeCompositeTypeData *data);
+    void fromTypeData(QDeclarativeTypeData *data);
 
     QUrl url;
     qreal progress;

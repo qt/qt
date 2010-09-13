@@ -84,11 +84,6 @@ QT_BEGIN_NAMESPACE
     element directly will result in an error.
 */
 
-/*!
-    \class QDeclarativeAbstractAnimation
-    \internal
-*/
-
 QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(QObject *parent)
 : QObject(*(new QDeclarativeAbstractAnimationPrivate), parent)
 {
@@ -337,7 +332,7 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
     stopped - either by setting the \c running property to false, or by calling
     the \c stop() method.
 
-    In the following example, the rectangle will spin indefinately.
+    In the following example, the rectangle will spin indefinitely.
 
     \code
     Rectangle {
@@ -574,12 +569,6 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-/*!
-    \internal
-    \class QDeclarativePauseAnimation
-*/
-
-
 QDeclarativePauseAnimation::QDeclarativePauseAnimation(QObject *parent)
 : QDeclarativeAbstractAnimation(*(new QDeclarativePauseAnimationPrivate), parent)
 {
@@ -659,11 +648,6 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-/*!
-    \internal
-    \class QDeclarativeColorAnimation
-*/
-
 QDeclarativeColorAnimation::QDeclarativeColorAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
 {
@@ -775,10 +759,6 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
     \endqml
 
     \sa StateChangeScript
-*/
-/*!
-    \internal
-    \class QDeclarativeScriptAction
 */
 QDeclarativeScriptAction::QDeclarativeScriptAction(QObject *parent)
     :QDeclarativeAbstractAnimation(*(new QDeclarativeScriptActionPrivate), parent)
@@ -932,10 +912,6 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
     correct transform origin.
 
     \sa {QML Animation}, QtDeclarative
-*/
-/*!
-    \internal
-    \class QDeclarativePropertyAction
 */
 QDeclarativePropertyAction::QDeclarativePropertyAction(QObject *parent)
 : QDeclarativeAbstractAnimation(*(new QDeclarativePropertyActionPrivate), parent)
@@ -1185,12 +1161,6 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-
-/*!
-    \internal
-    \class QDeclarativeNumberAnimation
-*/
-
 QDeclarativeNumberAnimation::QDeclarativeNumberAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
 {
@@ -1276,7 +1246,7 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
 
 /*!
     \qmlclass Vector3dAnimation QDeclarativeVector3dAnimation
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element animates changes in QVector3d values.
@@ -1291,12 +1261,6 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-
-/*!
-    \internal
-    \class QDeclarativeVector3dAnimation
-*/
-
 QDeclarativeVector3dAnimation::QDeclarativeVector3dAnimation(QObject *parent)
 : QDeclarativePropertyAnimation(parent)
 {
@@ -1396,12 +1360,6 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-
-/*!
-    \internal
-    \class QDeclarativeRotationAnimation
-*/
-
 QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
 {
     qreal newt = t;
@@ -1702,11 +1660,6 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
 
     \sa SequentialAnimation, {QML Animation}, {declarative/animation/basics}{Animation basics example}
 */
-/*!
-    \internal
-    \class QDeclarativeParallelAnimation
-*/
-
 QDeclarativeParallelAnimation::QDeclarativeParallelAnimation(QObject *parent) :
     QDeclarativeAnimationGroup(parent)
 {
@@ -2511,11 +2464,6 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     for creating animations.
 
     \sa {QML Animation}, {declarative/animation/basics}{Animation basics example}
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParentAnimation
 */
 QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
     : QDeclarativeAnimationGroup(*(new QDeclarativeParentAnimationPrivate), parent)

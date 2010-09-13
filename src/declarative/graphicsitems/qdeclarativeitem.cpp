@@ -229,12 +229,6 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-/*!
-    \internal
-    \class QDeclarativeContents
-    \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
-
-*/
 QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
     //### optimize
@@ -836,259 +830,259 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 */
 
 /*!
-    \qmlsignal Keys::onPressed(event)
+    \qmlsignal Keys::onPressed(KeyEvent event)
 
     This handler is called when a key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onReleased(event)
+    \qmlsignal Keys::onReleased(KeyEvent event)
 
     This handler is called when a key has been released. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit0Pressed(event)
+    \qmlsignal Keys::onDigit0Pressed(KeyEvent event)
 
     This handler is called when the digit '0' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit1Pressed(event)
+    \qmlsignal Keys::onDigit1Pressed(KeyEvent event)
 
     This handler is called when the digit '1' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit2Pressed(event)
+    \qmlsignal Keys::onDigit2Pressed(KeyEvent event)
 
     This handler is called when the digit '2' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit3Pressed(event)
+    \qmlsignal Keys::onDigit3Pressed(KeyEvent event)
 
     This handler is called when the digit '3' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit4Pressed(event)
+    \qmlsignal Keys::onDigit4Pressed(KeyEvent event)
 
     This handler is called when the digit '4' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit5Pressed(event)
+    \qmlsignal Keys::onDigit5Pressed(KeyEvent event)
 
     This handler is called when the digit '5' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit6Pressed(event)
+    \qmlsignal Keys::onDigit6Pressed(KeyEvent event)
 
     This handler is called when the digit '6' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit7Pressed(event)
+    \qmlsignal Keys::onDigit7Pressed(KeyEvent event)
 
     This handler is called when the digit '7' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit8Pressed(event)
+    \qmlsignal Keys::onDigit8Pressed(KeyEvent event)
 
     This handler is called when the digit '8' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit9Pressed(event)
+    \qmlsignal Keys::onDigit9Pressed(KeyEvent event)
 
     This handler is called when the digit '9' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onLeftPressed(event)
+    \qmlsignal Keys::onLeftPressed(KeyEvent event)
 
     This handler is called when the Left arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onRightPressed(event)
+    \qmlsignal Keys::onRightPressed(KeyEvent event)
 
     This handler is called when the Right arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onUpPressed(event)
+    \qmlsignal Keys::onUpPressed(KeyEvent event)
 
     This handler is called when the Up arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDownPressed(event)
+    \qmlsignal Keys::onDownPressed(KeyEvent event)
 
     This handler is called when the Down arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onAsteriskPressed(event)
+    \qmlsignal Keys::onAsteriskPressed(KeyEvent event)
 
     This handler is called when the Asterisk '*' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onEscapePressed(event)
+    \qmlsignal Keys::onEscapePressed(KeyEvent event)
 
     This handler is called when the Escape key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onReturnPressed(event)
+    \qmlsignal Keys::onReturnPressed(KeyEvent event)
 
     This handler is called when the Return key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onEnterPressed(event)
+    \qmlsignal Keys::onEnterPressed(KeyEvent event)
 
     This handler is called when the Enter key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDeletePressed(event)
+    \qmlsignal Keys::onDeletePressed(KeyEvent event)
 
     This handler is called when the Delete key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onSpacePressed(event)
+    \qmlsignal Keys::onSpacePressed(KeyEvent event)
 
     This handler is called when the Space key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onBackPressed(event)
+    \qmlsignal Keys::onBackPressed(KeyEvent event)
 
     This handler is called when the Back key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onCancelPressed(event)
+    \qmlsignal Keys::onCancelPressed(KeyEvent event)
 
     This handler is called when the Cancel key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onSelectPressed(event)
+    \qmlsignal Keys::onSelectPressed(KeyEvent event)
 
     This handler is called when the Select key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onYesPressed(event)
+    \qmlsignal Keys::onYesPressed(KeyEvent event)
 
     This handler is called when the Yes key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onNoPressed(event)
+    \qmlsignal Keys::onNoPressed(KeyEvent event)
 
     This handler is called when the No key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext1Pressed(event)
+    \qmlsignal Keys::onContext1Pressed(KeyEvent event)
 
     This handler is called when the Context1 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext2Pressed(event)
+    \qmlsignal Keys::onContext2Pressed(KeyEvent event)
 
     This handler is called when the Context2 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext3Pressed(event)
+    \qmlsignal Keys::onContext3Pressed(KeyEvent event)
 
     This handler is called when the Context3 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext4Pressed(event)
+    \qmlsignal Keys::onContext4Pressed(KeyEvent event)
 
     This handler is called when the Context4 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onCallPressed(event)
+    \qmlsignal Keys::onCallPressed(KeyEvent event)
 
     This handler is called when the Call key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onHangupPressed(event)
+    \qmlsignal Keys::onHangupPressed(KeyEvent event)
 
     This handler is called when the Hangup key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onFlipPressed(event)
+    \qmlsignal Keys::onFlipPressed(KeyEvent event)
 
     This handler is called when the Flip key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onMenuPressed(event)
+    \qmlsignal Keys::onMenuPressed(KeyEvent event)
 
     This handler is called when the Menu key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onVolumeUpPressed(event)
+    \qmlsignal Keys::onVolumeUpPressed(KeyEvent event)
 
     This handler is called when the VolumeUp key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onVolumeDownPressed(event)
+    \qmlsignal Keys::onVolumeDownPressed(KeyEvent event)
 
     This handler is called when the VolumeDown key has been pressed. The \a event
     parameter provides information about the event.
@@ -1728,7 +1722,6 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
@@ -1890,6 +1883,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         }
     }
 
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QDeclarativeItemPrivate::Geometry)
+            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
+    }
+
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
@@ -1898,12 +1897,6 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
-
-    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
-        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
-        if (change.types & QDeclarativeItemPrivate::Geometry)
-            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
-    }
 }
 
 void QDeclarativeItemPrivate::removeItemChangeListener(QDeclarativeItemChangeListener *listener, ChangeTypes types)
@@ -2416,7 +2409,6 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     emit q->focusChanged(flag);
 }
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
@@ -2441,7 +2433,6 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
   \sa {qmlstate}{States}
 */
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
     return _states()->statesProperty();
@@ -2465,7 +2456,6 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 */
 
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
     return _states()->transitionsProperty();
@@ -2538,7 +2528,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
     if (!_stateGroup)
@@ -2547,7 +2536,6 @@ QString QDeclarativeItemPrivate::state() const
         return _stateGroup->state();
 }
 
-/*! \internal */
 void QDeclarativeItemPrivate::setState(const QString &state)
 {
     _states()->setState(state);

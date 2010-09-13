@@ -777,7 +777,7 @@ void tst_qdeclarativetextedit::delegateLoading_data()
 
     // import installed
     QTest::newRow("pass") << "cursorHttpTestPass.qml" << "";
-    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << "<Unknown File>: Network error for URL http://localhost:42332/FailItem.qml ";
+    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << "http://localhost:42332/FailItem.qml: Remote host closed the connection ";
     QTest::newRow("fail2") << "cursorHttpTestFail2.qml" << "http://localhost:42332/ErrItem.qml:4:5: Fungus is not a type ";
 }
 

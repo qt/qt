@@ -127,12 +127,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \internal
-    \class QDeclarativePropertyChanges
-    \brief The QDeclarativePropertyChanges class describes new property values for a state.
-*/
-
-/*!
     \qmlproperty Object PropertyChanges::target
     This property holds the object which contains the properties to be changed.
 */

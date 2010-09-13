@@ -41,7 +41,6 @@
 
 #include "private/qdeclarativecompiler_p.h"
 
-#include "private/qdeclarativecompositetypedata_p.h"
 #include "private/qdeclarativeparser_p.h"
 #include "private/qdeclarativescriptparser_p.h"
 #include "qdeclarativepropertyvaluesource.h"
@@ -562,7 +561,7 @@ void QDeclarativeCompiler::reset(QDeclarativeCompiledData *data)
     on a successful compiler.
 */
 bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
-                                   QDeclarativeCompositeTypeData *unit,
+                                   QDeclarativeTypeData *unit,
                                    QDeclarativeCompiledData *out)
 {
     exceptions.clear();
@@ -573,10 +572,15 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
     output = out;
 
     // Compile types
-    for (int ii = 0; ii < unit->types.count(); ++ii) {
-        QDeclarativeCompositeTypeData::TypeReference &tref = unit->types[ii];
+    const QList<QDeclarativeTypeData::TypeReference>  &resolvedTypes = unit->resolvedTypes();
+    QList<QDeclarativeScriptParser::TypeReference *> referencedTypes = unit->parser().referencedTypes();
+
+    for (int ii = 0; ii < resolvedTypes.count(); ++ii) {
         QDeclarativeCompiledData::TypeReference ref;
-        QDeclarativeScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
+
+        const QDeclarativeTypeData::TypeReference &tref = resolvedTypes.at(ii);
+        QDeclarativeScriptParser::TypeReference *parserRef = referencedTypes.at(ii);
+
         if (tref.type) {
             ref.type = tref.type;
             if (!ref.type->isCreatable()) {
@@ -585,33 +589,16 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
                     err = tr( "Element is not creatable.");
                 COMPILE_EXCEPTION(parserRef->refObjects.first(), err);
             }
-        } else if (tref.unit) {
-            ref.component = tref.unit->toComponent(engine);
-
-            if (ref.component->isError()) {
-                QDeclarativeError error;
-                error.setUrl(output->url);
-                error.setDescription(QLatin1String("Unable to create type ") +
-                                     parserRef->name);
-                if (!parserRef->refObjects.isEmpty()) {
-                    QDeclarativeParser::Object *parserObject = parserRef->refObjects.first();
-                    error.setLine(parserObject->location.start.line);
-                    error.setColumn(parserObject->location.start.column);
-                }
-
-                exceptions << error;
-                exceptions << ref.component->errors();
-                reset(out);
-                return false;
-            }
-            ref.ref = tref.unit;
+        } else if (tref.typeData) {
+            ref.component = tref.typeData->component();
+            ref.ref = tref.typeData;
             ref.ref->addref();
         }
         ref.className = parserRef->name.toUtf8();
         out->types << ref;
     }
 
-    Object *root = unit->data.tree();
+    Object *root = unit->parser().tree();
     Q_ASSERT(root);
 
     this->engine = engine;
@@ -664,17 +651,18 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     QHash<QString, Object::ScriptBlock> importedScripts;
     QStringList importedScriptIndexes;
 
-    for (int ii = 0; ii < unit->scripts.count(); ++ii) {
-        QString scriptCode = QString::fromUtf8(unit->scripts.at(ii).resource->data);
-        Object::ScriptBlock::Pragmas pragmas = QDeclarativeScriptParser::extractPragmas(scriptCode);
+    foreach (const QDeclarativeTypeData::ScriptReference &script, unit->resolvedScripts()) {
+        QString scriptCode = script.script->scriptSource();
+        Object::ScriptBlock::Pragmas pragmas = script.script->pragmas();
+
+        Q_ASSERT(!importedScripts.contains(script.qualifier));
 
         if (!scriptCode.isEmpty()) {
-            Object::ScriptBlock &scriptBlock = importedScripts[unit->scripts.at(ii).qualifier];
+            Object::ScriptBlock &scriptBlock = importedScripts[script.qualifier];
 
-            scriptBlock.codes.append(scriptCode);
-            scriptBlock.lineNumbers.append(1);
-            scriptBlock.files.append(unit->scripts.at(ii).resource->url);
-            scriptBlock.pragmas.append(pragmas);
+            scriptBlock.code = scriptCode;
+            scriptBlock.file = script.script->finalUrl().toString();
+            scriptBlock.pragmas = pragmas;
         }
     }
 
@@ -703,7 +691,7 @@ void QDeclarativeCompiler::compileTree(Object *tree)
     for (int ii = 0; ii < importedScriptIndexes.count(); ++ii) 
         output->importCache->add(importedScriptIndexes.at(ii), ii);
 
-    unit->imports.cache(output->importCache, engine);
+    unit->imports().populateCache(output->importCache, engine);
 
     Q_ASSERT(tree->metatype);
 
@@ -986,7 +974,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
     }
 
     // Begin the class
-    if (obj->parserStatusCast != -1) {
+    if (tr.type && obj->parserStatusCast != -1) {
         QDeclarativeInstruction begin;
         begin.type = QDeclarativeInstruction::BeginObject;
         begin.begin.castValue = obj->parserStatusCast;
@@ -1374,7 +1362,7 @@ bool QDeclarativeCompiler::doesPropertyExist(QDeclarativeParser::Property *prop,
             return p.name() != 0;
         } else {
             int idx = mo->indexOfProperty(prop->name.constData());
-            return idx != -1;
+            return idx != -1 && mo->property(idx).isScriptable();
         }
     }
 
@@ -1403,8 +1391,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
 
         QDeclarativeType *type = 0;
         QDeclarativeImportedNamespace *typeNamespace = 0;
-        enginePrivate->importDatabase.resolveType(unit->imports, prop->name, 
-                                                  &type, 0, 0, 0, &typeNamespace);
+        unit->imports().resolveType(prop->name, &type, 0, 0, 0, &typeNamespace);
 
         if (typeNamespace) {
             // ### We might need to indicate that this property is a namespace 
@@ -1440,6 +1427,11 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             if (prop->index != -1) {
                 p = metaObject->property(prop->index);
                 Q_ASSERT(p.name());
+
+                if (!p.isScriptable()) {
+                    prop->index = -1;
+                    p = QMetaProperty();
+                }
             }
         }
 
@@ -1512,7 +1504,7 @@ bool QDeclarativeCompiler::buildPropertyInNamespace(QDeclarativeImportedNamespac
         // Setup attached property data
 
         QDeclarativeType *type = 0;
-        enginePrivate->importDatabase.resolveTypeInNamespace(ns, prop->name, &type, 0, 0, 0);
+        unit->imports().resolveType(ns, prop->name, &type, 0, 0, 0);
 
         if (!type || !type->attachedPropertiesType()) 
             COMPILE_EXCEPTION(prop, tr("Non-existent attached object"));
@@ -1772,9 +1764,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     Q_ASSERT(prop->index != -1);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
-        QDeclarativeEnginePrivate *ep =
-            static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
-        if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
+        if (prop->type >= 0 /* QVariant == -1 */ && enginePrivate->valueTypes[prop->type]) {
 
             if (prop->values.count()) {
                 if (prop->values.at(0)->location < prop->value->location) {
@@ -1788,7 +1778,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
                 COMPILE_EXCEPTION(prop, tr( "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
             }
 
-            COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
+            COMPILE_CHECK(buildValueTypeProperty(enginePrivate->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
@@ -1826,6 +1816,8 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         if (idx == -1)
             COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         QMetaProperty p = type->metaObject()->property(idx);
+        if (!p.isScriptable())
+            COMPILE_EXCEPTION(prop, tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         prop->index = idx;
         prop->type = p.userType();
         prop->isValueTypeSubProperty = true;
@@ -2139,8 +2131,7 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
 
     QString typeName = parts.at(0);
     QDeclarativeType *type = 0;
-    enginePrivate->importDatabase.resolveType(unit->imports, typeName.toUtf8(),
-                                              &type, 0, 0, 0, 0);
+    unit->imports().resolveType(typeName.toUtf8(), &type, 0, 0, 0, 0);
 
     if (!type || obj->typeName != type->qmlTypeName())
         return true;
@@ -2167,7 +2158,7 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
     int dot = script.indexOf('.');
     if (dot > 0) {
         QDeclarativeType *type = 0;
-        enginePrivate->importDatabase.resolveType(unit->imports, script.left(dot), &type, 0, 0, 0, 0);
+        unit->imports().resolveType(script.left(dot), &type, 0, 0, 0, 0);
         if (!type)
             return -1;
         const QMetaObject *mo = type->metaObject();
@@ -2185,8 +2176,7 @@ int QDeclarativeCompiler::evaluateEnum(const QByteArray& script) const
 const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) const
 {
     QDeclarativeType *qmltype = 0;
-    if (!enginePrivate->importDatabase.resolveType(unit->imports, name, &qmltype, 
-                                                   0, 0, 0, 0)) 
+    if (!unit->imports().resolveType(name, &qmltype, 0, 0, 0, 0)) 
         return 0;
     if (!qmltype)
         return 0;
@@ -2219,7 +2209,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         if (propName.at(0).isUpper())
             COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
 
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(propName))
+        if (enginePrivate->globalClass->illegalNames().contains(propName))
             COMPILE_EXCEPTION(&prop, tr("Illegal property name"));
 
         propNames.insert(prop.name);
@@ -2232,7 +2222,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal signal name"));
         methodNames.insert(name);
     }
@@ -2243,7 +2233,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal method name"));
         methodNames.insert(name);
     }
@@ -2344,17 +2334,18 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
                 QByteArray customTypeName;
                 QDeclarativeType *qmltype = 0;
                 QUrl url;
-                if (!enginePrivate->importDatabase.resolveType(unit->imports, p.customType, &qmltype, 
-                                                               &url, 0, 0, 0)) 
+                if (!unit->imports().resolveType(p.customType, &qmltype, &url, 0, 0, 0)) 
                     COMPILE_EXCEPTION(&p, tr("Invalid property type"));
 
                 if (!qmltype) {
-                    QDeclarativeCompositeTypeData *tdata = enginePrivate->typeManager.get(url);
+                    QDeclarativeTypeData *tdata = enginePrivate->typeLoader.get(url);
                     Q_ASSERT(tdata);
-                    Q_ASSERT(tdata->status == QDeclarativeCompositeTypeData::Complete);
+                    Q_ASSERT(tdata->isComplete());
 
-                    QDeclarativeCompiledData *data = tdata->toCompiledComponent(engine);
+                    QDeclarativeCompiledData *data = tdata->compiledData();
                     customTypeName = data->root->className();
+                    data->release();
+                    tdata->release();
                 } else {
                     customTypeName = qmltype->typeName();
                 }
@@ -2420,17 +2411,20 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         builder.addSignal(p.name + "Changed()");
         QMetaPropertyBuilder propBuilder = 
             builder.addProperty(p.name, type, builder.methodCount() - 1);
-        propBuilder.setScriptable(true);
         propBuilder.setWritable(!readonly);
     }
 
-    if (mode == ResolveAliases) {
-        for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
-            const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+    for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
+        const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
 
-            if (p.type == Object::DynamicProperty::Alias) {
+        if (p.type == Object::DynamicProperty::Alias) {
+            if (mode == ResolveAliases) {
                 ((QDeclarativeVMEMetaData *)dynamicData.data())->aliasCount++;
                 compileAlias(builder, dynamicData, obj, p);
+            } else {
+                // Need a fake signal so that the metaobject remains consistent across
+                // the resolve and non-resolve alias runs
+                builder.addSignal(p.name + "Changed()");
             }
         }
     }
@@ -2586,6 +2580,9 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
         QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+        if (!aliasProperty.isScriptable())
+            COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+
         writable = aliasProperty.isWritable();
 
         if (aliasProperty.isEnumType()) 
@@ -2622,7 +2619,6 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 
         builder.addProperty(prop.name, typeName.constData(), builder.methodCount() - 1);
-    propBuilder.setScriptable(true);
     propBuilder.setWritable(writable);
     return true;
 }
@@ -2749,7 +2745,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         expr.context = binding.bindingContext.object;
         expr.property = binding.property;
         expr.expression = binding.expression;
-        expr.imports = unit->imports;
+        expr.imports = unit->imports();
 
         int index = bindingCompiler.compile(expr, enginePrivate);
         if (index != -1) {

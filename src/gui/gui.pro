@@ -99,7 +99,7 @@ neon:*-g++* {
 contains(QMAKE_MAC_XARCH, no) {
     DEFINES += QT_NO_MAC_XARCH
 } else {
-    win32-g++*|!win32:!*-icc* {
+    win32-g++*|!win32:!win32-icc*:!macx-icc* {
         mmx {
             mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 

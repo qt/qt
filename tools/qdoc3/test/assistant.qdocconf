@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qt Assistant
 description             = Qt Assistant Manual
-url                     = http://qt.nokia.com/doc/4.7
+url                     = http://doc.qt.nokia.com/4.7/
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 

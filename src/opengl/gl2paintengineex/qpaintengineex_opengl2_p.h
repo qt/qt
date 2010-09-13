@@ -151,6 +151,8 @@ public:
     void beginNativePainting();
     void endNativePainting();
 
+    void invalidateState();
+
     QPixmapFilter *pixmapFilter(int type, const QPixmapFilter *prototype);
 
     void setRenderTextActive(bool);

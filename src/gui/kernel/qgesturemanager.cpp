@@ -162,7 +162,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
-        if (objectGesture.gesture == type && target == objectGesture.object.data()) {
+        if (objectGesture.gesture == type && target == objectGesture.object) {
             QSet<QGesture *> gestures = iter.value().toSet();
             for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
                  it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
@@ -172,6 +172,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
                 m_deletedRecognizers.remove(g);
                 m_gestureToRecognizer.remove(g);
             }
+
             qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
@@ -595,8 +596,9 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
             if (gesture->hasHotSpot()) {
                 // guess the target widget using the hotspot of the gesture
                 QPoint pt = gesture->hotSpot().toPoint();
-                if (QWidget *w = qApp->topLevelAt(pt)) {
-                    target = w->childAt(w->mapFromGlobal(pt));
+                if (QWidget *topLevel = qApp->topLevelAt(pt)) {
+                    QWidget *child = topLevel->childAt(topLevel->mapFromGlobal(pt));
+                    target = child ? child : topLevel;
                 }
             } else {
                 // or use the context of the gesture

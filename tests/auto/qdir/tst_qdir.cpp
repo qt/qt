@@ -167,6 +167,8 @@ private slots:
     void longFileName();
 
     void updateFileLists();
+
+    void detachingOperations();
 };
 
 // Testing get/set functions
@@ -1539,6 +1541,103 @@ void tst_QDir::updateFileLists()
     QCOMPARE(dir.entryList().size(), 3);
     QCOMPARE(dir.entryInfoList().size(), 3);
     QCOMPARE(dir.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
+}
+
+void tst_QDir::detachingOperations()
+{
+    QString const defaultPath(".");
+    QStringList const defaultNameFilters = QStringList("*");
+    QDir::SortFlags const defaultSorting = QDir::Name | QDir::IgnoreCase;
+    QDir::Filters const defaultFilter = QDir::AllEntries;
+
+    QString const path1("..");
+    QString const path2("./foo");
+    QStringList const nameFilters = QStringList(QString("*.txt"));
+    QDir::SortFlags const sorting = QDir::Name | QDir::DirsLast | QDir::Reversed;
+    QDir::Filters const filter = QDir::Writable;
+
+    QDir dir1;
+
+    QCOMPARE(dir1.path(), defaultPath);
+    QCOMPARE(dir1.filter(), defaultFilter);
+    QCOMPARE(dir1.nameFilters(), defaultNameFilters);
+    QCOMPARE(dir1.sorting(), defaultSorting);
+
+    dir1.setPath(path1);
+    QCOMPARE(dir1.path(), path1);
+    QCOMPARE(dir1.filter(), defaultFilter);
+    QCOMPARE(dir1.nameFilters(), defaultNameFilters);
+    QCOMPARE(dir1.sorting(), defaultSorting);
+
+    dir1.setFilter(filter);
+    QCOMPARE(dir1.path(), path1);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), defaultNameFilters);
+    QCOMPARE(dir1.sorting(), defaultSorting);
+
+    dir1.setNameFilters(nameFilters);
+    QCOMPARE(dir1.path(), path1);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), defaultSorting);
+
+    dir1.setSorting(sorting);
+    QCOMPARE(dir1.path(), path1);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), sorting);
+
+    dir1.setPath(path2);
+    QCOMPARE(dir1.path(), path2);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), sorting);
+
+    {
+        QDir dir2(dir1);
+        QCOMPARE(dir2.path(), path2);
+        QCOMPARE(dir2.filter(), filter);
+        QCOMPARE(dir2.nameFilters(), nameFilters);
+        QCOMPARE(dir2.sorting(), sorting);
+    }
+
+    {
+        QDir dir2;
+        QCOMPARE(dir2.path(), defaultPath);
+        QCOMPARE(dir2.filter(), defaultFilter);
+        QCOMPARE(dir2.nameFilters(), defaultNameFilters);
+        QCOMPARE(dir2.sorting(), defaultSorting);
+
+        dir2 = dir1;
+        QCOMPARE(dir2.path(), path2);
+        QCOMPARE(dir2.filter(), filter);
+        QCOMPARE(dir2.nameFilters(), nameFilters);
+        QCOMPARE(dir2.sorting(), sorting);
+
+        dir2 = path1;
+        QCOMPARE(dir2.path(), path1);
+        QCOMPARE(dir2.filter(), filter);
+        QCOMPARE(dir2.nameFilters(), nameFilters);
+        QCOMPARE(dir2.sorting(), sorting);
+    }
+
+    dir1.refresh();
+    QCOMPARE(dir1.path(), path2);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), sorting);
+
+    QString const currentPath = QDir::currentPath();
+    QVERIFY(dir1.cd(currentPath));
+    QCOMPARE(dir1.path(), currentPath);
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), sorting);
+
+    QVERIFY(dir1.cdUp());
+    QCOMPARE(dir1.filter(), filter);
+    QCOMPARE(dir1.nameFilters(), nameFilters);
+    QCOMPARE(dir1.sorting(), sorting);
 }
 
 QTEST_MAIN(tst_QDir)

@@ -194,6 +194,7 @@ private slots:
     void task_199967();
     void task_240612();
     void taskQTBUG_6962();
+    void taskQTBUG_8701();
 
 #ifdef QT3_SUPPORT
     void dirPath();
@@ -2265,7 +2266,9 @@ void tst_QUrl::ipv6()
 
     QCOMPARE(url.isValid(), isValid);
     if (url.isValid()) {
-	QCOMPARE(url.toString(), ipv6Auth);
+        QCOMPARE(url.toString(), ipv6Auth);
+        url.setHost(url.host());
+        QCOMPARE(url.toString(), ipv6Auth);
     }
 };
 
@@ -2288,6 +2291,8 @@ void tst_QUrl::ipv6_2()
     QFETCH(QString, output);
 
     QUrl url(input);
+    QCOMPARE(url.toString(), output);
+    url.setHost(url.host());
     QCOMPARE(url.toString(), output);
 }
 
@@ -3910,6 +3915,18 @@ void tst_QUrl::taskQTBUG_6962()
     QUrl url("http://example.com/something");
     url.setAuthority(QString());
     QCOMPARE(url.authority(), QString());
+}
+
+void tst_QUrl::taskQTBUG_8701()
+{
+    //bug 8701: foo:///bar mangled to foo:/bar
+    QString foo_triple_bar("foo:///bar"), foo_uni_bar("foo:/bar");
+
+    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar).toString());
+    QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar).toString());
+
+    QCOMPARE(foo_triple_bar, QUrl(foo_triple_bar, QUrl::StrictMode).toString()); // fails
+    QCOMPARE(foo_uni_bar, QUrl(foo_uni_bar, QUrl::StrictMode).toString());
 }
 
 QTEST_MAIN(tst_QUrl)

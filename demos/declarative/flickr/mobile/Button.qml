@@ -66,7 +66,7 @@ Item {
     }
     Text {
         color: "white"
-        anchors.centerIn: buttonImage; font.bold: true
+        anchors.centerIn: buttonImage; font.bold: true; font.pixelSize: 15
         text: container.text; style: Text.Raised; styleColor: "black"
     }
     states: [

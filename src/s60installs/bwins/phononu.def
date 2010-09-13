@@ -514,60 +514,60 @@ EXPORTS
 	?staticMetaObject@AudioOutput@Phonon@@2UQMetaObject@@B @ 513 NONAME ; struct QMetaObject const Phonon::AudioOutput::staticMetaObject
 	?staticMetaObject@VideoWidget@Phonon@@2UQMetaObject@@B @ 514 NONAME ; struct QMetaObject const Phonon::VideoWidget::staticMetaObject
 	?staticMetaObject@SeekSlider@Phonon@@2UQMetaObject@@B @ 515 NONAME ; struct QMetaObject const Phonon::SeekSlider::staticMetaObject
-	??0AudioDataOutput@Phonon@@QAE@PAVQObject@@@Z @ 516 NONAME ; Phonon::AudioDataOutput::AudioDataOutput(class QObject *)
-	??0PulseSupport@Phonon@@AAE@XZ @ 517 NONAME ; Phonon::PulseSupport::PulseSupport(void)
-	??1AudioDataOutput@Phonon@@UAE@XZ @ 518 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(void)
-	??1PulseSupport@Phonon@@EAE@XZ @ 519 NONAME ; Phonon::PulseSupport::~PulseSupport(void)
-	??_EAudioDataOutput@Phonon@@UAE@I@Z @ 520 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(unsigned int)
-	??_EPulseSupport@Phonon@@UAE@I@Z @ 521 NONAME ; Phonon::PulseSupport::~PulseSupport(unsigned int)
-	?clearStreamCache@PulseSupport@Phonon@@QAEXVQString@@@Z @ 522 NONAME ; void Phonon::PulseSupport::clearStreamCache(class QString)
+	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 516 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *, int)
+	?setHideAdvancedDevices@GlobalConfig@Phonon@@QAEX_N@Z @ 517 NONAME ; void Phonon::GlobalConfig::setHideAdvancedDevices(bool)
+	??_EAudioDataOutput@Phonon@@UAE@I@Z @ 518 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(unsigned int)
+	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 519 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *)
+	?setDataSize@AudioDataOutput@Phonon@@QAEXH@Z @ 520 NONAME ; void Phonon::AudioDataOutput::setDataSize(int)
+	?qt_metacall@AudioDataOutput@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 521 NONAME ; int Phonon::AudioDataOutput::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?getStaticMetaObject@AudioDataOutput@Phonon@@SAABUQMetaObject@@XZ @ 522 NONAME ; struct QMetaObject const & Phonon::AudioDataOutput::getStaticMetaObject(void)
 	?createAudioDataOutput@Factory@Phonon@@YAPAVQObject@@PAV3@@Z @ 523 NONAME ; class QObject * Phonon::Factory::createAudioDataOutput(class QObject *)
-	?dataReady@AudioDataOutput@Phonon@@IAEXABV?$QMap@W4Channel@AudioDataOutput@Phonon@@V?$QVector@F@@@@@Z @ 524 NONAME ; void Phonon::AudioDataOutput::dataReady(class QMap<enum Phonon::AudioDataOutput::Channel, class QVector<short> > const &)
-	?dataSize@AudioDataOutput@Phonon@@QBEHXZ @ 525 NONAME ; int Phonon::AudioDataOutput::dataSize(void) const
-	?emitObjectDescriptionChanged@PulseSupport@Phonon@@QAEXW4ObjectDescriptionType@2@@Z @ 526 NONAME ; void Phonon::PulseSupport::emitObjectDescriptionChanged(enum Phonon::ObjectDescriptionType)
-	?emitUsingDevice@PulseSupport@Phonon@@QAEXVQString@@H@Z @ 527 NONAME ; void Phonon::PulseSupport::emitUsingDevice(class QString, int)
-	?enable@PulseSupport@Phonon@@QAEX_N@Z @ 528 NONAME ; void Phonon::PulseSupport::enable(bool)
-	?endOfMedia@AudioDataOutput@Phonon@@IAEXH@Z @ 529 NONAME ; void Phonon::AudioDataOutput::endOfMedia(int)
-	?getInstance@PulseSupport@Phonon@@SAPAV12@XZ @ 530 NONAME ; class Phonon::PulseSupport * Phonon::PulseSupport::getInstance(void)
-	?getStaticMetaObject@AudioDataOutput@Phonon@@SAABUQMetaObject@@XZ @ 531 NONAME ; struct QMetaObject const & Phonon::AudioDataOutput::getStaticMetaObject(void)
-	?getStaticMetaObject@PulseSupport@Phonon@@SAABUQMetaObject@@XZ @ 532 NONAME ; struct QMetaObject const & Phonon::PulseSupport::getStaticMetaObject(void)
-	?hideAdvancedDevices@GlobalConfig@Phonon@@QBE_NXZ @ 533 NONAME ; bool Phonon::GlobalConfig::hideAdvancedDevices(void) const
-	?isActive@PulseSupport@Phonon@@QAE_NXZ @ 534 NONAME ; bool Phonon::PulseSupport::isActive(void)
-	?k_func@AudioDataOutput@Phonon@@AAEPAVAudioDataOutputPrivate@2@XZ @ 535 NONAME ; class Phonon::AudioDataOutputPrivate * Phonon::AudioDataOutput::k_func(void)
-	?k_func@AudioDataOutput@Phonon@@ABEPBVAudioDataOutputPrivate@2@XZ @ 536 NONAME ; class Phonon::AudioDataOutputPrivate const * Phonon::AudioDataOutput::k_func(void) const
-	?k_func@GlobalConfig@Phonon@@AAEPAVGlobalConfigPrivate@2@XZ @ 537 NONAME ; class Phonon::GlobalConfigPrivate * Phonon::GlobalConfig::k_func(void)
-	?k_func@GlobalConfig@Phonon@@ABEPBVGlobalConfigPrivate@2@XZ @ 538 NONAME ; class Phonon::GlobalConfigPrivate const * Phonon::GlobalConfig::k_func(void) const
-	?metaObject@AudioDataOutput@Phonon@@UBEPBUQMetaObject@@XZ @ 539 NONAME ; struct QMetaObject const * Phonon::AudioDataOutput::metaObject(void) const
-	?metaObject@PulseSupport@Phonon@@UBEPBUQMetaObject@@XZ @ 540 NONAME ; struct QMetaObject const * Phonon::PulseSupport::metaObject(void) const
-	?objectDescriptionChanged@PulseSupport@Phonon@@IAEXW4ObjectDescriptionType@2@@Z @ 541 NONAME ; void Phonon::PulseSupport::objectDescriptionChanged(enum Phonon::ObjectDescriptionType)
-	?objectDescriptionIndexes@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@@Z @ 542 NONAME ; class QList<int> Phonon::PulseSupport::objectDescriptionIndexes(enum Phonon::ObjectDescriptionType) const
-	?objectDescriptionProperties@PulseSupport@Phonon@@QBE?AV?$QHash@VQByteArray@@VQVariant@@@@W4ObjectDescriptionType@2@H@Z @ 543 NONAME ; class QHash<class QByteArray, class QVariant> Phonon::PulseSupport::objectDescriptionProperties(enum Phonon::ObjectDescriptionType, int) const
-	?objectIndexesByCategory@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@W4Category@2@@Z @ 544 NONAME ; class QList<int> Phonon::PulseSupport::objectIndexesByCategory(enum Phonon::ObjectDescriptionType, enum Phonon::Category) const
-	?qt_metacall@AudioDataOutput@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 545 NONAME ; int Phonon::AudioDataOutput::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?qt_metacall@PulseSupport@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 546 NONAME ; int Phonon::PulseSupport::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?qt_metacast@AudioDataOutput@Phonon@@UAEPAXPBD@Z @ 547 NONAME ; void * Phonon::AudioDataOutput::qt_metacast(char const *)
-	?qt_metacast@PulseSupport@Phonon@@UAEPAXPBD@Z @ 548 NONAME ; void * Phonon::PulseSupport::qt_metacast(char const *)
-	?sampleRate@AudioDataOutput@Phonon@@QBEHXZ @ 549 NONAME ; int Phonon::AudioDataOutput::sampleRate(void) const
+	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 524 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *)
+	??1AudioDataOutput@Phonon@@UAE@XZ @ 525 NONAME ; Phonon::AudioDataOutput::~AudioDataOutput(void)
+	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 526 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *, int)
+	?staticMetaObject@PulseSupport@Phonon@@2UQMetaObject@@B @ 527 NONAME ; struct QMetaObject const Phonon::PulseSupport::staticMetaObject
+	??1PulseSupport@Phonon@@EAE@XZ @ 528 NONAME ; Phonon::PulseSupport::~PulseSupport(void)
+	?metaObject@PulseSupport@Phonon@@UBEPBUQMetaObject@@XZ @ 529 NONAME ; struct QMetaObject const * Phonon::PulseSupport::metaObject(void) const
+	?emitObjectDescriptionChanged@PulseSupport@Phonon@@QAEXW4ObjectDescriptionType@2@@Z @ 530 NONAME ; void Phonon::PulseSupport::emitObjectDescriptionChanged(enum Phonon::ObjectDescriptionType)
+	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 531 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *, int)
+	?sampleRate@AudioDataOutput@Phonon@@QBEHXZ @ 532 NONAME ; int Phonon::AudioDataOutput::sampleRate(void) const
+	?qt_metacast@PulseSupport@Phonon@@UAEPAXPBD@Z @ 533 NONAME ; void * Phonon::PulseSupport::qt_metacast(char const *)
+	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 534 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *, int)
+	?enable@PulseSupport@Phonon@@QAEX_N@Z @ 535 NONAME ; void Phonon::PulseSupport::enable(bool)
+	?staticMetaObject@AudioDataOutput@Phonon@@2UQMetaObject@@B @ 536 NONAME ; struct QMetaObject const Phonon::AudioDataOutput::staticMetaObject
+	?hideAdvancedDevices@GlobalConfig@Phonon@@QBE_NXZ @ 537 NONAME ; bool Phonon::GlobalConfig::hideAdvancedDevices(void) const
+	?setOutputDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 538 NONAME ; void Phonon::PulseSupport::setOutputDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
+	??0AudioDataOutput@Phonon@@QAE@PAVQObject@@@Z @ 539 NONAME ; Phonon::AudioDataOutput::AudioDataOutput(class QObject *)
+	?dataSize@AudioDataOutput@Phonon@@QBEHXZ @ 540 NONAME ; int Phonon::AudioDataOutput::dataSize(void) const
+	?shutdown@PulseSupport@Phonon@@SAXXZ @ 541 NONAME ; void Phonon::PulseSupport::shutdown(void)
+	?emitUsingDevice@PulseSupport@Phonon@@QAEXVQString@@H@Z @ 542 NONAME ; void Phonon::PulseSupport::emitUsingDevice(class QString, int)
+	?isActive@PulseSupport@Phonon@@QAE_NXZ @ 543 NONAME ; bool Phonon::PulseSupport::isActive(void)
+	?getStaticMetaObject@PulseSupport@Phonon@@SAABUQMetaObject@@XZ @ 544 NONAME ; struct QMetaObject const & Phonon::PulseSupport::getStaticMetaObject(void)
+	??0PulseSupport@Phonon@@AAE@XZ @ 545 NONAME ; Phonon::PulseSupport::PulseSupport(void)
+	??_EPulseSupport@Phonon@@UAE@I@Z @ 546 NONAME ; Phonon::PulseSupport::~PulseSupport(unsigned int)
+	?setCaptureDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 547 NONAME ; bool Phonon::PulseSupport::setCaptureDevice(class QString, int)
+	?setCaptureDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 548 NONAME ; void Phonon::PulseSupport::setCaptureDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
+	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 549 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *)
 	?setAudioCaptureDeviceListFor@GlobalConfig@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 550 NONAME ; void Phonon::GlobalConfig::setAudioCaptureDeviceListFor(enum Phonon::Category, class QList<int>)
-	?setAudioOutputDeviceListFor@GlobalConfig@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 551 NONAME ; void Phonon::GlobalConfig::setAudioOutputDeviceListFor(enum Phonon::Category, class QList<int>)
-	?setCaptureDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 552 NONAME ; bool Phonon::PulseSupport::setCaptureDevice(class QString, int)
-	?setCaptureDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 553 NONAME ; void Phonon::PulseSupport::setCaptureDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
-	?setDataSize@AudioDataOutput@Phonon@@QAEXH@Z @ 554 NONAME ; void Phonon::AudioDataOutput::setDataSize(int)
-	?setHideAdvancedDevices@GlobalConfig@Phonon@@QAEX_N@Z @ 555 NONAME ; void Phonon::GlobalConfig::setHideAdvancedDevices(bool)
-	?setOutputDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 556 NONAME ; bool Phonon::PulseSupport::setOutputDevice(class QString, int)
-	?setOutputDevicePriorityForCategory@PulseSupport@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 557 NONAME ; void Phonon::PulseSupport::setOutputDevicePriorityForCategory(enum Phonon::Category, class QList<int>)
+	?metaObject@AudioDataOutput@Phonon@@UBEPBUQMetaObject@@XZ @ 551 NONAME ; struct QMetaObject const * Phonon::AudioDataOutput::metaObject(void) const
+	?k_func@AudioDataOutput@Phonon@@AAEPAVAudioDataOutputPrivate@2@XZ @ 552 NONAME ; class Phonon::AudioDataOutputPrivate * Phonon::AudioDataOutput::k_func(void)
+	?setAudioOutputDeviceListFor@GlobalConfig@Phonon@@QAEXW4Category@2@V?$QList@H@@@Z @ 553 NONAME ; void Phonon::GlobalConfig::setAudioOutputDeviceListFor(enum Phonon::Category, class QList<int>)
+	?dataReady@AudioDataOutput@Phonon@@IAEXABV?$QMap@W4Channel@AudioDataOutput@Phonon@@V?$QVector@F@@@@@Z @ 554 NONAME ; void Phonon::AudioDataOutput::dataReady(class QMap<enum Phonon::AudioDataOutput::Channel, class QVector<short> > const &)
+	?qt_metacall@PulseSupport@Phonon@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 555 NONAME ; int Phonon::PulseSupport::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?k_func@GlobalConfig@Phonon@@ABEPBVGlobalConfigPrivate@2@XZ @ 556 NONAME ; class Phonon::GlobalConfigPrivate const * Phonon::GlobalConfig::k_func(void) const
+	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 557 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *)
 	?setStreamPropList@PulseSupport@Phonon@@QAEXW4Category@2@VQString@@@Z @ 558 NONAME ; void Phonon::PulseSupport::setStreamPropList(enum Phonon::Category, class QString)
-	?shutdown@PulseSupport@Phonon@@SAXXZ @ 559 NONAME ; void Phonon::PulseSupport::shutdown(void)
-	?snapshot@VideoWidget@Phonon@@QBE?AVQImage@@XZ @ 560 NONAME ; class QImage Phonon::VideoWidget::snapshot(void) const
-	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 561 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *)
-	?tr@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 562 NONAME ; class QString Phonon::AudioDataOutput::tr(char const *, char const *, int)
-	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 563 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *)
-	?tr@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 564 NONAME ; class QString Phonon::PulseSupport::tr(char const *, char const *, int)
-	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0@Z @ 565 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *)
-	?trUtf8@AudioDataOutput@Phonon@@SA?AVQString@@PBD0H@Z @ 566 NONAME ; class QString Phonon::AudioDataOutput::trUtf8(char const *, char const *, int)
-	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0@Z @ 567 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *)
-	?trUtf8@PulseSupport@Phonon@@SA?AVQString@@PBD0H@Z @ 568 NONAME ; class QString Phonon::PulseSupport::trUtf8(char const *, char const *, int)
-	?usingDevice@PulseSupport@Phonon@@IAEXVQString@@H@Z @ 569 NONAME ; void Phonon::PulseSupport::usingDevice(class QString, int)
-	?staticMetaObject@PulseSupport@Phonon@@2UQMetaObject@@B @ 570 NONAME ; struct QMetaObject const Phonon::PulseSupport::staticMetaObject
-	?staticMetaObject@AudioDataOutput@Phonon@@2UQMetaObject@@B @ 571 NONAME ; struct QMetaObject const Phonon::AudioDataOutput::staticMetaObject
+	?k_func@GlobalConfig@Phonon@@AAEPAVGlobalConfigPrivate@2@XZ @ 559 NONAME ; class Phonon::GlobalConfigPrivate * Phonon::GlobalConfig::k_func(void)
+	?objectDescriptionChanged@PulseSupport@Phonon@@IAEXW4ObjectDescriptionType@2@@Z @ 560 NONAME ; void Phonon::PulseSupport::objectDescriptionChanged(enum Phonon::ObjectDescriptionType)
+	?k_func@AudioDataOutput@Phonon@@ABEPBVAudioDataOutputPrivate@2@XZ @ 561 NONAME ; class Phonon::AudioDataOutputPrivate const * Phonon::AudioDataOutput::k_func(void) const
+	?objectDescriptionIndexes@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@@Z @ 562 NONAME ; class QList<int> Phonon::PulseSupport::objectDescriptionIndexes(enum Phonon::ObjectDescriptionType) const
+	?getInstance@PulseSupport@Phonon@@SAPAV12@XZ @ 563 NONAME ; class Phonon::PulseSupport * Phonon::PulseSupport::getInstance(void)
+	?usingDevice@PulseSupport@Phonon@@IAEXVQString@@H@Z @ 564 NONAME ; void Phonon::PulseSupport::usingDevice(class QString, int)
+	?snapshot@VideoWidget@Phonon@@QBE?AVQImage@@XZ @ 565 NONAME ; class QImage Phonon::VideoWidget::snapshot(void) const
+	?objectIndexesByCategory@PulseSupport@Phonon@@QBE?AV?$QList@H@@W4ObjectDescriptionType@2@W4Category@2@@Z @ 566 NONAME ; class QList<int> Phonon::PulseSupport::objectIndexesByCategory(enum Phonon::ObjectDescriptionType, enum Phonon::Category) const
+	?endOfMedia@AudioDataOutput@Phonon@@IAEXH@Z @ 567 NONAME ; void Phonon::AudioDataOutput::endOfMedia(int)
+	?objectDescriptionProperties@PulseSupport@Phonon@@QBE?AV?$QHash@VQByteArray@@VQVariant@@@@W4ObjectDescriptionType@2@H@Z @ 568 NONAME ; class QHash<class QByteArray, class QVariant> Phonon::PulseSupport::objectDescriptionProperties(enum Phonon::ObjectDescriptionType, int) const
+	?setOutputDevice@PulseSupport@Phonon@@QAE_NVQString@@H@Z @ 569 NONAME ; bool Phonon::PulseSupport::setOutputDevice(class QString, int)
+	?qt_metacast@AudioDataOutput@Phonon@@UAEPAXPBD@Z @ 570 NONAME ; void * Phonon::AudioDataOutput::qt_metacast(char const *)
+	?clearStreamCache@PulseSupport@Phonon@@QAEXVQString@@@Z @ 571 NONAME ; void Phonon::PulseSupport::clearStreamCache(class QString)
 

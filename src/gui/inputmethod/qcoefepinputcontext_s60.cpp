@@ -47,6 +47,7 @@
 #include <qgraphicsview.h>
 #include <qgraphicsscene.h>
 #include <qgraphicswidget.h>
+#include <qsymbianevent.h>
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
@@ -79,7 +80,6 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
-      m_cursorPos(0),
       m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
@@ -237,11 +237,17 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             break;
         }
 
+        QString widgetText = focusWidget()->inputMethodQuery(Qt::ImSurroundingText).toString();
+        int maxLength = focusWidget()->inputMethodQuery(Qt::ImMaximumTextLength).toInt();
+        if (!keyEvent->text().isEmpty() && widgetText.size() + m_preeditString.size() >= maxLength) {
+            // Don't send key events with string content if the widget is "full".
+            return true;
+        }
+
         if (keyEvent->type() == QEvent::KeyPress
             && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
             && !keyEvent->text().isEmpty()) {
             // Send some temporary preedit text in order to make text visible for a moment.
-            m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
             m_preeditString = keyEvent->text();
             QList<QInputMethodEvent::Attribute> attributes;
             QInputMethodEvent imEvent(m_preeditString, attributes);
@@ -282,6 +288,18 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     return false;
 }
 
+bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event)
+{
+    Q_UNUSED(keyWidget);
+    if (event->type() == QSymbianEvent::CommandEvent)
+        // A command basically means the same as a button being pushed. With Qt buttons
+        // that would normally result in a reset of the input method due to the focus change.
+        // This should also happen for commands.
+        reset();
+
+    return false;
+}
+
 void QCoeFepInputContext::timerEvent(QTimerEvent *timerEvent)
 {
     if (timerEvent->timerId() == m_tempPreeditStringTimeout.timerId())
@@ -297,10 +315,6 @@ void QCoeFepInputContext::commitTemporaryPreeditString()
         return;
 
     commitCurrentString(false);
-
-    //update cursor position, now this pre-edit text has been committed.
-    //this prevents next keypress overwriting it (QTBUG-11673)
-    m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
@@ -368,6 +382,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     const bool anytextmodes = hints & (ImhUppercaseOnly | ImhLowercaseOnly | ImhEmailCharactersOnly | ImhUrlCharactersOnly);
     const bool numbersOnly = anynumbermodes && !anytextmodes;
     const bool noOnlys = !(hints & ImhExclusiveInputMask);
+    // if alphanumeric input, or if multiple incompatible number modes are selected;
+    // then make all symbols available in numeric mode too.
+    const bool needsCharMap= !numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly));
     TInt flags;
     Qt::InputMethodHints oldHints = hints;
 
@@ -467,9 +484,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
-    // if alphanumeric input, or if multiple incompatible number modes are selected;
-    // then make all symbols available in numeric mode too.
-    if (!numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly)))
+    if (needsCharMap)
         flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
@@ -494,8 +509,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (hints & ImhEmailCharactersOnly) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else {
+    } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else {
+        m_fepState->SetSpecialCharacterTableResourceId(0);
     }
 
     if (hints & ImhHiddenText) {
@@ -596,8 +613,6 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
 
     commitTemporaryPreeditString();
 
-    m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
-    
     QList<QInputMethodEvent::Attribute> attributes;
 
     m_cursorVisibility = aCursorVisibility ? 1 : 0;
@@ -612,9 +627,10 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     // Let's remove the selected text if aInitialInlineText is empty and there is selected text
     if (m_preeditString.isEmpty()) {
         int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt();
-        int replacementLength = qAbs(m_cursorPos-anchor);
+        int cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+        int replacementLength = qAbs(cursorPos-anchor);
         if (replacementLength > 0) {
-            int replacementStart = m_cursorPos < anchor ? 0 : -replacementLength;
+            int replacementStart = cursorPos < anchor ? 0 : -replacementLength;
             QList<QInputMethodEvent::Attribute> clearSelectionAttributes;
             QInputMethodEvent clearSelectionEvent(QLatin1String(""), clearSelectionAttributes);
             clearSelectionEvent.setCommitString(QLatin1String(""), replacementStart, replacementLength);
@@ -647,8 +663,13 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
                                                    m_inlinePosition,
                                                    m_cursorVisibility,
                                                    QVariant()));
-    m_preeditString = qt_TDesC2QString(aNewInlineText);
-    QInputMethodEvent event(m_preeditString, attributes);
+    QString newPreeditString = qt_TDesC2QString(aNewInlineText);
+    QInputMethodEvent event(newPreeditString, attributes);
+    if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
+        // In Symbian world this means "erase last character".
+        event.setCommitString(QLatin1String(""), -1, 1);
+    }
+    m_preeditString = newPreeditString;
     sendEvent(event);
 }
 
@@ -818,25 +839,13 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 
 void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
-    int longPress = 0;
-
-    if (m_preeditString.size() == 0) {
-        QWidget *w = focusWidget();
-        if (!cancelFepTransaction && w) {
-            // We must replace the last character only if the input box has already accepted one 
-            if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
-                longPress = 1;
-        }
-    }
-
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0-longPress, longPress);
+    event.setCommitString(m_preeditString, 0, 0);
     m_preeditString.clear();
     sendEvent(event);
 
     m_hasTempPreeditString = false;
-    longPress = 0;
 
     if (cancelFepTransaction) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();

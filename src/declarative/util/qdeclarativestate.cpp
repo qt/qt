@@ -123,9 +123,6 @@ bool QDeclarativeActionEvent::override(QDeclarativeActionEvent *other)
     return false;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
@@ -164,20 +161,6 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \sa {declarative/animation/states}{states example}, {qmlstates}{States},
     {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
 */
-
-/*!
-    \internal
-    \class QDeclarativeState
-    \brief The QDeclarativeState class allows you to define configurations of objects and properties.
-
-
-    QDeclarativeState allows you to specify a state as a set of batched changes from the default
-    configuration.
-
-    \sa {states-transitions}{States and Transitions}
-*/
-
-
 QDeclarativeState::QDeclarativeState(QObject *parent)
 : QObject(*(new QDeclarativeStatePrivate), parent)
 {

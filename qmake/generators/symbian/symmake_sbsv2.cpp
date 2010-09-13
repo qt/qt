@@ -202,10 +202,18 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     QString genericClause = " -c %1_%2" + testClause;
     QString winscwClause = " -c winscw_%1.mwccinc" + testClause;
     QString gcceClause;
-    if (QString::compare(gcceVersion(), UNDETECTED_GCCE_VERSION) == 0)
-        allPlatforms.removeAll(PLATFORM_GCCE);
-    else
-        gcceClause = " -c arm.v5.%1." + gcceVersion() + ".release_gcce" + testClause;
+    bool stripArmv5 = false;
+
+    if (allPlatforms.contains(PLATFORM_GCCE)) {
+        if (QString::compare(gcceVersion(), UNDETECTED_GCCE_VERSION) == 0) {
+            allPlatforms.removeAll(PLATFORM_GCCE);
+        } else {
+            gcceClause = " -c arm.v5.%1." + gcceVersion() + testClause;
+            // Since gcce building is enabled, do not add armv5 for any sbs command
+            // that also contains gcce, because those will build same targets.
+            stripArmv5 = true;
+        }
+    }
 
     QStringList allClauses;
     QStringList debugClauses;
@@ -216,13 +224,14 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     releasePlatforms.removeAll(PLATFORM_WINSCW); // No release for emulator
 
     foreach(QString item, debugPlatforms) {
-        debugClauses << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
+        if (item != PLATFORM_ARMV5 || !stripArmv5)
+            debugClauses << configClause(item, debugBuild, winscwClause, gcceClause, genericClause);
     }
     foreach(QString item, releasePlatforms) {
-        releaseClauses << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
+        if (item != PLATFORM_ARMV5 || !stripArmv5)
+            releaseClauses << configClause(item, releaseBuild, winscwClause, gcceClause, genericClause);
     }
     allClauses << debugClauses << releaseClauses;
-
 
     QTextStream t(&wrapperFile);
 
@@ -404,6 +413,28 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         }
     }
 
+    QMap<QString, QString> commandsToReplace;
+    commandsToReplace.insert(project->values("QMAKE_COPY").join(" "),
+                             project->values("QMAKE_SBSV2_COPY").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_COPY_DIR").join(" "),
+                             project->values("QMAKE_SBSV2_COPY_DIR").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_MOVE").join(" "),
+                             project->values("QMAKE_SBSV2_MOVE").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_DEL_FILE").join(" "),
+                             project->values("QMAKE_SBSV2_DEL_FILE").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_MKDIR").join(" "),
+                             project->values("QMAKE_SBSV2_MKDIR").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_DEL_DIR").join(" "),
+                             project->values("QMAKE_SBSV2_DEL_DIR").join(" "));
+    commandsToReplace.insert(project->values("QMAKE_DEL_TREE").join(" "),
+                             project->values("QMAKE_SBSV2_DEL_TREE").join(" "));
+
+    // If commandItem starts with any $$QMAKE_* commands, do a replace for SBS equivalent
+    // Command replacement is done only for the start of the command or right after
+    // concatenation operators (&& and ||), as otherwise unwanted replacements might occur.
+    static QString cmdFind("(^|&&\\s*|\\|\\|\\s*)%1");
+    static QString cmdReplace("\\1%1");
+
     // Write extra compilers and targets to initialize QMAKE_ET_* variables
     // Cache results to avoid duplicate calls when creating wrapper makefile
     QTextStream extraCompilerStream(&extraCompilersCache);
@@ -415,13 +446,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     // are not necessary.
     QStringList allPreDeps;
     foreach(QString item, project->values("PRE_TARGETDEPS")) {
-        // Predeps get mangled in windows, so fix them to more sbsv2 friendly format
-#if defined(Q_OS_WIN)
-        if (item.mid(1, 1) == ":")
-            item = item.mid(0, 1).toUpper().append(item.mid(1)); // Fix drive to uppercase
-#endif
-        item.replace("\\", "/");
-        allPreDeps << escapeDependencyPath(item);
+        allPreDeps.append(fileInfo(item).absoluteFilePath());
     }
 
     foreach (QString item, project->values("GENERATED_SOURCES")) {
@@ -451,7 +476,6 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 QStringList deps = project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + item + targetItem);
                 QString commandItem =  project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + item + targetItem).join(" ");
 
-
                 // Make sure all deps paths are absolute
                 QString absoluteDeps;
                 foreach (QString depItem, deps) {
@@ -464,6 +488,18 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 t << "START EXTENSION qt/qmake_extra_pre_targetdep.export" << endl;
                 t << "OPTION PREDEP_TARGET " << absoluteTarget << endl;
                 t << "OPTION DEPS " << absoluteDeps << endl;
+
+                // Iterate command replacements in reverse alphabetical order of keys so
+                // that keys which are starts of other longer keys are iterated after longer keys.
+                QMapIterator<QString, QString> cmdIter(commandsToReplace);
+                cmdIter.toBack();
+                while (cmdIter.hasPrevious()) {
+                    cmdIter.previous();
+                    if (commandItem.contains(cmdIter.key())) {
+                        commandItem.replace(QRegExp(cmdFind.arg(cmdIter.key())),
+                                            cmdReplace.arg(cmdIter.value()));
+                    }
+                }
 
                 if (commandItem.indexOf("$(INCPATH)") != -1)
                     commandItem.replace("$(INCPATH)", incPath.join(" "));

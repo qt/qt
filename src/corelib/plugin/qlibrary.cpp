@@ -295,14 +295,6 @@ static bool qt_parse_pattern(const char *s, uint *version, bool *debug, QByteArr
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX)
-#  define USE_MMAP
-QT_BEGIN_INCLUDE_NAMESPACE
-#  include <sys/types.h>
-#  include <sys/mman.h>
-QT_END_INCLUDE_NAMESPACE
-#endif // Q_OS_FREEBSD || Q_OS_LINUX
-
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
 {
@@ -363,34 +355,15 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
     }
 
     QByteArray data;
-    char *filedata = 0;
-    ulong fdlen = 0;
-
-# ifdef USE_MMAP
-    char *mapaddr = 0;
-    size_t maplen = file.size();
-    mapaddr = (char *) mmap(mapaddr, maplen, PROT_READ, MAP_PRIVATE, file.handle(), 0);
-    if (mapaddr != MAP_FAILED) {
-        // mmap succeeded
-        filedata = mapaddr;
-        fdlen = maplen;
-    } else {
-        // mmap failed
-        if (qt_debug_component()) {
-            qWarning("mmap: %s", qPrintable(qt_error_string(errno)));
-        }
-        if (lib)
-            lib->errorString = QLibrary::tr("Could not mmap '%1': %2")
-                .arg(library)
-                .arg(qt_error_string());
-# endif // USE_MMAP
+    const char *filedata = 0;
+    ulong fdlen = file.size();
+    filedata = (char *) file.map(0, fdlen);
+    if (filedata == 0) {
         // try reading the data into memory instead
         data = file.readAll();
-        filedata = data.data();
+        filedata = data.constData();
         fdlen = data.size();
-# ifdef USE_MMAP
     }
-# endif // USE_MMAP
 
     // verify that the pattern is present in the plugin
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
@@ -403,17 +376,6 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 
     if (!ret && lib)
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
-# ifdef USE_MMAP
-    if (mapaddr != MAP_FAILED && munmap(mapaddr, maplen) != 0) {
-        if (qt_debug_component())
-            qWarning("munmap: %s", qPrintable(qt_error_string(errno)));
-        if (lib)
-            lib->errorString = QLibrary::tr("Could not unmap '%1': %2")
-                .arg(library)
-                .arg( qt_error_string() );
-    }
-# endif // USE_MMAP
-
     file.close();
     return ret;
 }
@@ -790,9 +752,12 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
             .arg(qt_version&0xff)
             .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
     } else if (key != QT_BUILD_KEY
+               // we may have some compatibility keys, try them too:
 #ifdef QT_BUILD_KEY_COMPAT
-               // be sure to load plugins using an older but compatible build key
                && key != QT_BUILD_KEY_COMPAT
+#endif
+#ifdef QT_BUILD_KEY_COMPAT2
+               && key != QT_BUILD_KEY_COMPAT2
 #endif
                ) {
         if (qt_debug_component()) {

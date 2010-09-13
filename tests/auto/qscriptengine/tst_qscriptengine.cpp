@@ -162,6 +162,7 @@ private slots:
     void translateWithInvalidArgs();
     void translationContext_data();
     void translationContext();
+    void translateScriptIdBased();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -173,6 +174,10 @@ private slots:
     void reentrency();
     void newFixedStaticScopeObject();
     void newGrowingStaticScopeObject();
+    void dateRoundtripJSQtJS();
+    void dateRoundtripQtJSQt();
+    void dateConversionJSQt();
+    void dateConversionQtJS();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -4386,6 +4391,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
     QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
     QVERIFY(!global.property("qsTr").isValid());
     QVERIFY(!global.property("QT_TR_NOOP").isValid());
+    QVERIFY(!global.property("qsTrId").isValid());
+    QVERIFY(!global.property("QT_TRID_NOOP").isValid());
     QVERIFY(!globalOrig.property("String").property("prototype").property("arg").isValid());
 
     eng.installTranslatorFunctions();
@@ -4393,6 +4400,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
     QVERIFY(global.property("QT_TRANSLATE_NOOP").isFunction());
     QVERIFY(global.property("qsTr").isFunction());
     QVERIFY(global.property("QT_TR_NOOP").isFunction());
+    QVERIFY(global.property("qsTrId").isFunction());
+    QVERIFY(global.property("QT_TRID_NOOP").isFunction());
     QVERIFY(globalOrig.property("String").property("prototype").property("arg").isFunction());
 
     if (useCustomGlobalObject) {
@@ -4400,6 +4409,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QVERIFY(!globalOrig.property("QT_TRANSLATE_NOOP").isValid());
         QVERIFY(!globalOrig.property("qsTr").isValid());
         QVERIFY(!globalOrig.property("QT_TR_NOOP").isValid());
+        QVERIFY(!globalOrig.property("qsTrId").isValid());
+        QVERIFY(!globalOrig.property("QT_TRID_NOOP").isValid());
     }
 
     {
@@ -4426,6 +4437,17 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
+    }
+
+    {
+        QScriptValue ret = eng.evaluate("qsTrId('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TRID_NOOP('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
     }
 }
 
@@ -4537,6 +4559,10 @@ void tst_QScriptEngine::translateWithInvalidArgs_data()
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 123)")  << "qsTranslate('foo', 'bar', 'baz', 123)" << "Error: qsTranslate(): fourth argument (encoding) must be a string";
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 'rab')" << "Error: qsTranslate(): fifth argument (n) must be a number";
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 'zab', 123)")  << "qsTranslate('foo', 'bar', 'baz', 'zab', 123)" << "Error: qsTranslate(): invalid encoding 'zab'";
+
+    QTest::newRow("qsTrId()")  << "qsTrId()" << "Error: qsTrId() requires at least one argument";
+    QTest::newRow("qsTrId(123)")  << "qsTrId(123)" << "TypeError: qsTrId(): first argument (id) must be a string";
+    QTest::newRow("qsTrId('foo', 'bar')")  << "qsTrId('foo', 'bar')" << "TypeError: qsTrId(): second argument (n) must be a number";
 }
 
 void tst_QScriptEngine::translateWithInvalidArgs()
@@ -4596,6 +4622,53 @@ void tst_QScriptEngine::translationContext()
     QCOMPARE(ret.toString(), expectedTranslation);
 
     QCoreApplication::instance()->removeTranslator(&translator);
+}
+
+void tst_QScriptEngine::translateScriptIdBased()
+{
+    QScriptEngine engine;
+
+    QTranslator translator;
+    translator.load(":/translations/idtranslatable_la");
+    QCoreApplication::instance()->installTranslator(&translator);
+    engine.installTranslatorFunctions();
+
+    QString fileName = QString::fromLatin1("idtranslatable.js");
+
+    QHash<QString, QString> expectedTranslations;
+    expectedTranslations["qtn_foo_bar"] = "First string";
+    expectedTranslations["qtn_needle"] = "Second string";
+    expectedTranslations["qtn_haystack"] = "Third string";
+    expectedTranslations["qtn_bar_baz"] = "Fourth string";
+
+    QHash<QString, QString>::const_iterator it;
+    for (it = expectedTranslations.constBegin(); it != expectedTranslations.constEnd(); ++it) {
+        for (int x = 0; x < 2; ++x) {
+            QString fn;
+            if (x)
+                fn = fileName;
+            // Top-level
+            QCOMPARE(engine.evaluate(QString::fromLatin1("qsTrId('%0')")
+                                     .arg(it.key()), fn).toString(),
+                     it.value());
+            QCOMPARE(engine.evaluate(QString::fromLatin1("QT_TRID_NOOP('%0')")
+                                     .arg(it.key()), fn).toString(),
+                     it.key());
+            // From function
+            QCOMPARE(engine.evaluate(QString::fromLatin1("(function() { return qsTrId('%0'); })()")
+                                     .arg(it.key()), fn).toString(),
+                     it.value());
+            QCOMPARE(engine.evaluate(QString::fromLatin1("(function() { return QT_TRID_NOOP('%0'); })()")
+                                     .arg(it.key()), fn).toString(),
+                     it.key());
+        }
+    }
+
+    // Plural form
+    QCOMPARE(engine.evaluate("qsTrId('qtn_bar_baz', 10)").toString(),
+             QString::fromLatin1("10 fooish bar(s) found"));
+    QCOMPARE(engine.evaluate("qsTrId('qtn_foo_bar', 10)").toString(),
+             QString::fromLatin1("qtn_foo_bar")); // Doesn't have plural
 }
 
 void tst_QScriptEngine::functionScopes()
@@ -4965,6 +5038,68 @@ void tst_QScriptEngine::qRegExpInport()
     rx.indexIn(string);
     for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
+    }
+}
+
+// QScriptValue::toDateTime() returns a local time, whereas JS dates
+// are always stored as UTC. QtScript must respect the current time
+// zone, and correctly adjust for daylight saving time that may be in
+// effect at a given date (QTBUG-9770).
+void tst_QScriptEngine::dateRoundtripJSQtJS()
+{
+    uint secs = QDateTime(QDate(2009, 1, 1)).toUTC().toTime_t();
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.evaluate(QString::fromLatin1("new Date(%0)").arg(secs * 1000.0));
+        QDateTime qtDate = jsDate.toDateTime();
+        QScriptValue jsDate2 = eng.newDate(qtDate);
+        if (jsDate2.toNumber() != jsDate.toNumber())
+            QFAIL(qPrintable(jsDate.toString()));
+        secs += 2*60*60;
+    }
+}
+
+void tst_QScriptEngine::dateRoundtripQtJSQt()
+{
+    QDateTime qtDate = QDateTime(QDate(2009, 1, 1));
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.newDate(qtDate);
+        QDateTime qtDate2 = jsDate.toDateTime();
+        if (qtDate2 != qtDate)
+            QFAIL(qPrintable(qtDate.toString()));
+        qtDate = qtDate.addSecs(2*60*60);
+    }
+}
+
+void tst_QScriptEngine::dateConversionJSQt()
+{
+    uint secs = QDateTime(QDate(2009, 1, 1)).toUTC().toTime_t();
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.evaluate(QString::fromLatin1("new Date(%0)").arg(secs * 1000.0));
+        QDateTime qtDate = jsDate.toDateTime();
+        QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
+        QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
+        jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        if (qtUTCDateStr != jsUTCDateStr)
+            QFAIL(qPrintable(jsDate.toString()));
+        secs += 2*60*60;
+    }
+}
+
+void tst_QScriptEngine::dateConversionQtJS()
+{
+    QDateTime qtDate = QDateTime(QDate(2009, 1, 1));
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.newDate(qtDate);
+        QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
+        jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
+        if (jsUTCDateStr != qtUTCDateStr)
+            QFAIL(qPrintable(qtDate.toString()));
+        qtDate = qtDate.addSecs(2*60*60);
     }
 }
 
