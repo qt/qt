@@ -52,6 +52,36 @@ bool QFileSystemEngine::isCaseSensitive()
     return false;
 }
 
+//TODO: resolve this with QDir::cleanPath, without breaking the behaviour of that
+//function which is documented only by autotest
+//input: a dirty absolute path, e.g. c:/../../foo/./
+//output: a clean absolute path, e.g. c:/foo/
+static QString symbianCleanAbsolutePath(const QString& path)
+{
+    bool isDir = path.endsWith(QLatin1Char('/'));
+    //using SkipEmptyParts flag to eliminate duplicated slashes
+    QStringList components = path.split(QLatin1Char('/'), QString::SkipEmptyParts);
+    int cdups = 0;
+    for(int i=components.count() - 1; i>=0; --i) {
+        if(components.at(i) == QLatin1String("..")) {
+            components.removeAt(i);
+            cdups++;
+        }
+        else if(components.at(i) == QLatin1String(".")) {
+            components.removeAt(i);
+        }
+        else if(cdups && i > 0) {
+            --cdups;
+            components.removeAt(i);
+        }
+    }
+    QString result = components.join(QLatin1String("/"));
+    if ((isDir&& !result.endsWith(QLatin1Char('/')))
+        || (result.length() == 2 && result.at(1).unicode() == ':'))
+        result.append(QLatin1Char('/'));
+    return result;
+}
+
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
@@ -65,15 +95,12 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
         return entry;
 
     QFileSystemEntry result = absoluteName(entry);
-    RFs& fs(qt_s60GetRFs());
-    TUint e;
-    //Att is faster than Entry for determining if a file exists, due to smaller IPC
-    TInt r = fs.Att(qt_QString2TPtrC(result.nativeFilePath()), e);
-
-    if (r == KErrNone) {
-        return result;
-    } else { // file doesn't exist
+    QFileSystemMetaData meta;
+    if (!fillMetaData(result, meta, QFileSystemMetaData::ExistsAttribute) || !meta.exists()) {
+        // file doesn't exist
         return QFileSystemEntry();
+    } else {
+        return result;
     }
 }
 
@@ -109,30 +136,26 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         }
     }
     if (!orig.isEmpty() && !(orig.length() == 1 && orig.at(0).unicode() == '.')) {
-        if (!result.isEmpty() && !result.endsWith('/'))
-            result.append('/');
+        if (!result.isEmpty() && !result.endsWith(QLatin1Char('/')))
+            result.append(QLatin1Char('/'));
         result.append(orig);
     }
 
-    const bool isDir = result.endsWith('/');
-    const bool isRoot = entry.isRoot();
-
-    result = QDir::cleanPath(result);
-    if (isDir && !isRoot)
-        result.append(QLatin1Char('/'));
-    return QFileSystemEntry(result);
+    return symbianCleanAbsolutePath(result);
 }
 
 //static
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
-    return QString(); // TODO
+    Q_UNUSED(userId)
+    return QString(); // no users or groups on symbian
 }
 
 //static
 QString QFileSystemEngine::resolveGroupName(uint groupId)
 {
-    return QString(); // TODO
+    Q_UNUSED(groupId)
+    return QString(); // no users or groups on symbian
 }
 
 //static
