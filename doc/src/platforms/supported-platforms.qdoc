@@ -85,11 +85,10 @@
 
     \section1 Tier 2 Platforms
 
-    Tier 2 platforms are subjected to our unit test suite and other internal testing
-    tools prior to release of new product versions.  Qt users should note, however,
-    that errors may be present in released product versions for Tier 2 platforms and,
-    subject to resource availability, known errors in Tier 2 platforms may or may not
-    be corrected prior to new version releases.
+    Tier 2 platforms are subject to ad hoc and internal testing. However, Qt users
+	should note that errors may be present in released product versions for Tier 2
+	platforms and, subject to resource availability, known errors in Tier 2 platforms
+	may or may not be corrected prior to new version releases.
 
     \table
     \header \o Platform

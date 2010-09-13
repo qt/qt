@@ -38,32 +38,24 @@
 **
 ****************************************************************************/
 
+//! [document]
 import Qt 4.7
 
 Rectangle {
-    id: page
-    color: "white"
-    width: 520; height: 280
+    width: 400; height: 400; color: "black"
 
-    Row {
-        anchors.centerIn: parent
-        spacing: 50
-//! [0]
-BorderImage {
-    width: 180; height: 180
-    border { left: 30; top: 30; right: 30; bottom: 30 }
-    horizontalTileMode: BorderImage.Stretch
-    verticalTileMode: BorderImage.Stretch
-    source: "content/colors.png"
-}
+    Grid {
+        x: 5; y: 5
+        rows: 5; columns: 5; spacing: 10
 
-BorderImage {
-    width: 180; height: 180
-    border { left: 30; top: 30; right: 30; bottom: 30 }
-    horizontalTileMode: BorderImage.Round
-    verticalTileMode: BorderImage.Round
-    source: "content/colors.png"
-}
-//! [0]
+        Repeater { model: 24
+                   Rectangle { width: 70; height: 70
+                               color: "lightgreen"
+
+                               Text { text: index
+                                      font.pointSize: 30
+                                      anchors.centerIn: parent } }
+        }
     }
 }
+//! [document]

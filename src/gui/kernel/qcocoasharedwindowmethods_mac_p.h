@@ -234,8 +234,10 @@ QT_END_NAMESPACE
     // This method is called the first time the window is placed on screen and
     // is the earliest point in time we can connect OpenGL contexts to NSViews.
     QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    qt_event_request_window_change(qwidget);
-    qt_mac_send_posted_gl_updates(qwidget);
+    if (qwidget) {
+        qt_event_request_window_change(qwidget);
+        qt_mac_send_posted_gl_updates(qwidget);
+    }
 
     [super setInitialFirstResponder:view];
 }

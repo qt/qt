@@ -129,30 +129,25 @@ QSize QDeclarativeImageBase::sourceSize() const
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);
-    if (d->progress != 0.0) {
-        d->progress = 0.0;
-        emit progressChanged(d->progress);
-    }
 
     if (d->url.isEmpty()) {
         d->pix.clear();
         d->status = Null;
+        d->progress = 0.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
+        emit progressChanged(d->progress);
         emit statusChanged(d->status);
-        d->sourcesize.setWidth(0);
-        d->sourcesize.setHeight(0);
-        emit sourceSizeChanged();
         pixmapChange();
         update();
     } else {
-
-        d->status = Loading;
-        emit statusChanged(d->status);
-
         d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
 
         if (d->pix.isLoading()) {
+            d->progress = 0.0;
+            d->status = Loading;
+            emit progressChanged(d->progress);
+            emit statusChanged(d->status);
 
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
@@ -176,25 +171,31 @@ void QDeclarativeImageBase::requestFinished()
 {
     Q_D(QDeclarativeImageBase);
 
+    QDeclarativeImageBase::Status oldStatus = d->status;
+    qreal oldProgress = d->progress;
+
     if (d->pix.isError()) {
         d->status = Error;
         qmlInfo(this) << d->pix.error();
     } else {
         d->status = Ready;
     }
-    emit statusChanged(d->status);
+
+    d->progress = 1.0;
 
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
-
-    d->progress = 1.0;
-    emit progressChanged(d->progress);
 
     if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height()) {
         d->sourcesize.setWidth(d->pix.width());
         d->sourcesize.setHeight(d->pix.height());
         emit sourceSizeChanged();
     }
+
+    if (d->status != oldStatus)
+        emit statusChanged(d->status);
+    if (d->progress != oldProgress)
+        emit progressChanged(d->progress);
     pixmapChange();
     update();
 }

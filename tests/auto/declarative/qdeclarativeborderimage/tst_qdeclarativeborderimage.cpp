@@ -53,6 +53,7 @@
 #include <QtDeclarative/qdeclarativecontext.h>
 
 #include "../shared/testhttpserver.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -61,16 +62,6 @@
 
 #define SERVER_PORT 14446
 #define SERVER_ADDR "http://127.0.0.1:14446"
-
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 60; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false)
-
 
 class tst_qdeclarativeborderimage : public QObject
 
@@ -154,18 +145,18 @@ void tst_qdeclarativeborderimage::imageSource()
     QVERIFY(obj != 0);
 
     if (remote)
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Loading);
 
     QCOMPARE(obj->source(), remote ? source : QUrl(source));
 
     if (error.isEmpty()) {
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Ready);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Ready);
         QCOMPARE(obj->width(), 120.);
         QCOMPARE(obj->height(), 120.);
         QCOMPARE(obj->horizontalTileMode(), QDeclarativeBorderImage::Stretch);
         QCOMPARE(obj->verticalTileMode(), QDeclarativeBorderImage::Stretch);
     } else {
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Error);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Error);
     }
 
     delete obj;
@@ -273,14 +264,14 @@ void tst_qdeclarativeborderimage::sciSource()
     QVERIFY(obj != 0);
 
     if (remote)
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Loading);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Loading);
 
     QCOMPARE(obj->source(), remote ? source : QUrl(source));
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
 
     if (valid) {
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Ready);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Ready);
         QCOMPARE(obj->border()->left(), 10);
         QCOMPARE(obj->border()->top(), 20);
         QCOMPARE(obj->border()->right(), 30);
@@ -288,7 +279,7 @@ void tst_qdeclarativeborderimage::sciSource()
         QCOMPARE(obj->horizontalTileMode(), QDeclarativeBorderImage::Round);
         QCOMPARE(obj->verticalTileMode(), QDeclarativeBorderImage::Repeat);
     } else {
-        TRY_WAIT(obj->status() == QDeclarativeBorderImage::Error);
+        QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Error);
     }
 
     delete obj;

@@ -49,16 +49,11 @@ QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
+extern QStringList qt_symbian_fontFamiliesOnFontServer(); // qfontdatabase_s60.cpp
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
-    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-    const int numTypeFaces = S60->screenDevice()->NumTypefaces();
-    for (int i = 0; i < numTypeFaces; i++) {
-        TTypefaceSupport typefaceSupport;
-        S60->screenDevice()->TypefaceSupport(typefaceSupport, i);
-        const QString familyName((const QChar *)typefaceSupport.iTypeface.iName.Ptr(), typefaceSupport.iTypeface.iName.Length());
-        x->append(familyName);
-    }
-    lock.relock();
+    // We are only interested in the initial font families. No Application fonts.
+    // Therefore, we are allowed to cache the list.
+    x->append(qt_symbian_fontFamiliesOnFontServer());
 });
 #endif // QT_NO_FREETYPE
 

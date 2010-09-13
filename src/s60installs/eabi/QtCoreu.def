@@ -3667,48 +3667,48 @@ EXPORTS
 	_ZN13QElapsedTimer5startEv @ 3666 NONAME
 	_ZN13QElapsedTimer7restartEv @ 3667 NONAME
 	_ZN13QElapsedTimer9clockTypeEv @ 3668 NONAME
-	_ZN23QCoreApplicationPrivate11symbianInitEv @ 3669 NONAME
-	_ZN23QEventDispatcherSymbian11qt_metacallEN11QMetaObject4CallEiPPv @ 3670 NONAME
-	_ZN23QEventDispatcherSymbian11qt_metacastEPKc @ 3671 NONAME
-	_ZN23QEventDispatcherSymbian12selectThreadEv @ 3672 NONAME
-	_ZN23QEventDispatcherSymbian16staticMetaObjectE @ 3673 NONAME DATA 16
-	_ZN23QEventDispatcherSymbian19getStaticMetaObjectEv @ 3674 NONAME
-	_ZN24QAbstractDeclarativeData13parentChangedE @ 3675 NONAME DATA 4
-	_ZN24QAbstractDeclarativeData9destroyedE @ 3676 NONAME DATA 4
-	_ZN7QString10setRawDataEPK5QChari @ 3677 NONAME
-	_ZN7QStringC1EPK5QChar @ 3678 NONAME
-	_ZN7QStringC2EPK5QChar @ 3679 NONAME
-	_ZN8QVariantC1ERK12QEasingCurve @ 3680 NONAME
-	_ZN8QVariantC2ERK12QEasingCurve @ 3681 NONAME
-	_ZN9QDateTime18currentDateTimeUtcEv @ 3682 NONAME
-	_ZN9QDateTime18setMSecsSinceEpochEx @ 3683 NONAME
-	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3684 NONAME
-	_ZN9QDateTime22currentMSecsSinceEpochEv @ 3685 NONAME
-	_ZN9QListData11detach_growEPii @ 3686 NONAME
-	_ZN9QListData6appendEi @ 3687 NONAME
-	_ZN9QListData6detachEi @ 3688 NONAME
-	_ZN9QMetaType15registerTypedefEPKci @ 3689 NONAME
-	_ZN9QMetaType23registerStreamOperatorsEiPFvR11QDataStreamPKvEPFvS1_PvE @ 3690 NONAME
-	_ZNK10QTextCodec11makeDecoderE6QFlagsINS_14ConversionFlagEE @ 3691 NONAME
-	_ZNK10QTextCodec11makeEncoderE6QFlagsINS_14ConversionFlagEE @ 3692 NONAME
-	_ZNK13QElapsedTimer10hasExpiredEx @ 3693 NONAME
-	_ZNK13QElapsedTimer19msecsSinceReferenceEv @ 3694 NONAME
-	_ZNK13QElapsedTimer6secsToERKS_ @ 3695 NONAME
-	_ZNK13QElapsedTimer7elapsedEv @ 3696 NONAME
-	_ZNK13QElapsedTimer7isValidEv @ 3697 NONAME
-	_ZNK13QElapsedTimer7msecsToERKS_ @ 3698 NONAME
-	_ZNK23QEventDispatcherSymbian10metaObjectEv @ 3699 NONAME
-	_ZNK6QState11transitionsEv @ 3700 NONAME
-	_ZNK8QVariant13toEasingCurveEv @ 3701 NONAME
-	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3702 NONAME
-	_ZNK9QDateTime7msecsToERKS_ @ 3703 NONAME
-	_ZlsR11QDataStreamRK12QEasingCurve @ 3704 NONAME
-	_ZltRK13QElapsedTimerS1_ @ 3705 NONAME
-	_ZrsR11QDataStreamR12QEasingCurve @ 3706 NONAME
-	_ZNK7QLocale13textDirectionEv @ 3707 NONAME
-	_ZNK7QString13isRightToLeftEv @ 3708 NONAME
-	_ZN16QIODevicePrivate4peekEPcx @ 3709 NONAME
-	_ZN16QIODevicePrivate4peekEx @ 3710 NONAME
-	_ZN8QProcess18setNativeArgumentsERK7QString @ 3711 NONAME
-	_ZNK8QProcess15nativeArgumentsEv @ 3712 NONAME
+	_ZN16QIODevicePrivate4peekEPcx @ 3669 NONAME
+	_ZN16QIODevicePrivate4peekEx @ 3670 NONAME
+	_ZN23QCoreApplicationPrivate11symbianInitEv @ 3671 NONAME
+	_ZN23QEventDispatcherSymbian11qt_metacallEN11QMetaObject4CallEiPPv @ 3672 NONAME
+	_ZN23QEventDispatcherSymbian11qt_metacastEPKc @ 3673 NONAME
+	_ZN23QEventDispatcherSymbian12selectThreadEv @ 3674 NONAME
+	_ZN23QEventDispatcherSymbian16staticMetaObjectE @ 3675 NONAME DATA 16
+	_ZN23QEventDispatcherSymbian19getStaticMetaObjectEv @ 3676 NONAME
+	_ZN24QAbstractDeclarativeData13parentChangedE @ 3677 NONAME DATA 4
+	_ZN24QAbstractDeclarativeData9destroyedE @ 3678 NONAME DATA 4
+	_ZN7QString10setRawDataEPK5QChari @ 3679 NONAME
+	_ZN7QStringC1EPK5QChar @ 3680 NONAME
+	_ZN7QStringC2EPK5QChar @ 3681 NONAME
+	_ZN8QProcess18setNativeArgumentsERK7QString @ 3682 NONAME
+	_ZN8QVariantC1ERK12QEasingCurve @ 3683 NONAME
+	_ZN8QVariantC2ERK12QEasingCurve @ 3684 NONAME
+	_ZN9QDateTime18currentDateTimeUtcEv @ 3685 NONAME
+	_ZN9QDateTime18setMSecsSinceEpochEx @ 3686 NONAME
+	_ZN9QDateTime19fromMSecsSinceEpochEx @ 3687 NONAME
+	_ZN9QDateTime22currentMSecsSinceEpochEv @ 3688 NONAME
+	_ZN9QListData11detach_growEPii @ 3689 NONAME
+	_ZN9QListData6appendEi @ 3690 NONAME
+	_ZN9QListData6detachEi @ 3691 NONAME
+	_ZN9QMetaType15registerTypedefEPKci @ 3692 NONAME
+	_ZN9QMetaType23registerStreamOperatorsEiPFvR11QDataStreamPKvEPFvS1_PvE @ 3693 NONAME
+	_ZNK10QTextCodec11makeDecoderE6QFlagsINS_14ConversionFlagEE @ 3694 NONAME
+	_ZNK10QTextCodec11makeEncoderE6QFlagsINS_14ConversionFlagEE @ 3695 NONAME
+	_ZNK13QElapsedTimer10hasExpiredEx @ 3696 NONAME
+	_ZNK13QElapsedTimer19msecsSinceReferenceEv @ 3697 NONAME
+	_ZNK13QElapsedTimer6secsToERKS_ @ 3698 NONAME
+	_ZNK13QElapsedTimer7elapsedEv @ 3699 NONAME
+	_ZNK13QElapsedTimer7isValidEv @ 3700 NONAME
+	_ZNK13QElapsedTimer7msecsToERKS_ @ 3701 NONAME
+	_ZNK23QEventDispatcherSymbian10metaObjectEv @ 3702 NONAME
+	_ZNK6QState11transitionsEv @ 3703 NONAME
+	_ZNK7QLocale13textDirectionEv @ 3704 NONAME
+	_ZNK7QString13isRightToLeftEv @ 3705 NONAME
+	_ZNK8QProcess15nativeArgumentsEv @ 3706 NONAME
+	_ZNK8QVariant13toEasingCurveEv @ 3707 NONAME
+	_ZNK9QDateTime17toMSecsSinceEpochEv @ 3708 NONAME
+	_ZNK9QDateTime7msecsToERKS_ @ 3709 NONAME
+	_ZlsR11QDataStreamRK12QEasingCurve @ 3710 NONAME
+	_ZltRK13QElapsedTimerS1_ @ 3711 NONAME
+	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 

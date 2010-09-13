@@ -48,7 +48,7 @@ Rectangle {
 
     Image {
         id: image1
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
         x: 200; y: 100
         width: 100; height: 100
 

@@ -43,6 +43,7 @@
 #define OPTION_H
 
 #include <QtCore/QString>
+#include <QtCore/QDir>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,6 +92,13 @@ struct Option
           generator(CppGenerator),
           prefix(QLatin1String("Ui_"))
     { indent.fill(QLatin1Char(' '), 4); }
+
+    QString messagePrefix() const
+    {
+        return inputFile.isEmpty() ?
+               QString(QLatin1String("stdin")) :
+               QDir::toNativeSeparators(inputFile);
+    }
 };
 
 QT_END_NAMESPACE

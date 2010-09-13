@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,29 +38,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![0]
-import Qt 4.7
 
-Rectangle {
-    property alias text: textItem.text
+#include "qmeegoliveimage.h"
 
-    width: 100; height: 30
-    border.width: 1 
-    radius: 5
-    smooth: true
+#ifndef QMEEGOLIVEIMAGE_P_H
+#define QMEEGOLIVEIMAGE_P_H
 
-    gradient: Gradient {
-        GradientStop { position: 0.0; color: "darkGray" }
-        GradientStop { position: 0.5; color: "black" }
-        GradientStop { position: 1.0; color: "darkGray" }
-    }
+class QMeeGoLiveImagePrivate
+{
+public:
+    Q_DECLARE_PUBLIC(QMeeGoLiveImage);
+    QMeeGoLiveImagePrivate();
+    virtual ~QMeeGoLiveImagePrivate();
+    void attachPixmap(QMeeGoLivePixmap* pixmap);
+    void detachPixmap(QMeeGoLivePixmap* pixmap);
+        
+    QList <QMeeGoLivePixmap*> attachedPixmaps;
+    QMeeGoLiveImage *q_ptr;
+    
+    friend class QMeeGoLivePixmap;
+    friend class QMeeGoLivePixmapPrivate;
+};
 
-    Text {
-        id: textItem
-        anchors.centerIn: parent
-        font.pointSize: 20
-        color: "white"
-    }
-
-}
-//![0]
+#endif

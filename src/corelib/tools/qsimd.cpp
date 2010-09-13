@@ -54,8 +54,20 @@
 #if defined(Q_OS_LINUX) && defined(__arm__)
 #include "private/qcore_unix_p.h"
 
-#include <asm/hwcap.h>
-#include <linux/auxvec.h>
+// the kernel header definitions for HWCAP_*
+// (the ones we need/may need anyway)
+
+// copied from <asm/hwcap.h> (ARM)
+#define HWCAP_IWMMXT    512
+#define HWCAP_CRUNCH    1024
+#define HWCAP_THUMBEE   2048
+#define HWCAP_NEON      4096
+#define HWCAP_VFPv3     8192
+#define HWCAP_VFPv3D16  16384
+
+// copied from <linux/auxvec.h>
+#define AT_HWCAP  16    /* arch dependent hints at CPU capabilities */
+
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -274,10 +286,13 @@ static inline uint detectProcessorFeatures()
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
-    asm ("cpuid"
-        : "=c" (feature_result)
+    long tmp;
+    asm ("xchg %%rbx, %1\n"
+         "cpuid\n"
+         "xchg %%rbx, %1\n"
+        : "=c" (feature_result), "=&r" (tmp)
         : "a" (1)
-        : "%ebx", "%edx"
+        : "%edx"
         );
 #elif defined (Q_OS_WIN64)
     {
