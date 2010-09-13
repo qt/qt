@@ -825,7 +825,12 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 
     QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
     if (ctor->isFunction() && ctor->m_value->IsFunction()) {
-        return v8::Function::Cast(*ctor->m_value)->NewInstance(args.Length(), &args.Data());
+        QVarLengthArray<v8::Handle<v8::Value>, 8> newArgs;
+        newArgs.reserve(args.Length());
+        for (int i = 0; i < args.Length(); i++) {
+            newArgs.append(args[i]);
+        }
+        return v8::Function::Cast(*ctor->m_value)->NewInstance(newArgs.count(), newArgs.data());
     }
     return v8::Handle<v8::Value>();
 }
