@@ -60,6 +60,10 @@
 #include <io.h>
 #endif
 
+#if defined(Q_OS_WIN)
+#include <QtCore/qt_windows.h>
+#endif
+
 #ifndef QSETTINGS_P_H_VERSION
 #define QSETTINGS_P_H_VERSION 1
 #endif
@@ -126,6 +130,9 @@ private slots:
     void dontCreateNeedlessPaths();
 #if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     void dontReorderIniKeysNeedlessly();
+#endif
+#if defined(Q_OS_WIN)
+    void qtbug_13249();
 #endif
 
     /*
@@ -3801,6 +3808,62 @@ void tst_QSettings::setPathBug()
 }
 #endif
 
+#if defined(Q_OS_WIN)
+
+static DWORD readKeyType(HKEY handle, const QString &rSubKey)
+{
+    DWORD dataType;
+    DWORD dataSize;
+    LONG res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubKey.utf16()), 0, &dataType, 0, &dataSize);
+
+    if (res == ERROR_SUCCESS)
+        return dataType;
+
+    return 0;
+}
+
+void tst_QSettings::qtbug_13249()
+{
+    QSettings settings1(QSettings::UserScope, "software.org", "KillerAPP");
+
+    qint32 x = 1024;
+    settings1.setValue("qtbug_13249_a", (qint32)x);
+    QCOMPARE(settings1.value("qtbug_13249_a").toInt(), (qint32)1024);
+    settings1.setValue("qtbug_13249_b", (quint32)x);
+    QCOMPARE(settings1.value("qtbug_13249_b").toUInt(), (quint32)1024);
+    settings1.setValue("qtbug_13249_c", (qint64)x);
+    QCOMPARE(settings1.value("qtbug_13249_c").toLongLong(), (qint64)1024);
+    settings1.setValue("qtbug_13249_d", (quint64)x);
+    QCOMPARE(settings1.value("qtbug_13249_d").toULongLong(), (quint64)1024);
+    settings1.sync();
+
+    HKEY handle;
+    LONG res;
+    QString keyName = "Software\\software.org\\KillerAPP";
+    res = RegOpenKeyEx(HKEY_CURRENT_USER, reinterpret_cast<const wchar_t *>(keyName.utf16()), 0, KEY_READ, &handle);
+    if (res == ERROR_SUCCESS)
+    {
+        DWORD dataType;
+        dataType = readKeyType(handle, QString("qtbug_13249_a"));
+        if (dataType != 0) {
+            QCOMPARE((int)REG_DWORD, (int)dataType);
+        }
+        dataType = readKeyType(handle, QString("qtbug_13249_b"));
+        if (dataType != 0) {
+            QCOMPARE((int)REG_DWORD, (int)dataType);
+        }
+        dataType = readKeyType(handle, QString("qtbug_13249_c"));
+        if (dataType != 0) {
+            QCOMPARE((int)REG_QWORD, (int)dataType);
+        }
+        dataType = readKeyType(handle, QString("qtbug_13249_d"));
+        if (dataType != 0) {
+            QCOMPARE((int)REG_QWORD, (int)dataType);
+        }
+        RegCloseKey(handle);
+    }
+}
+#endif
 /*
 // Not tested at the moment.
 void tst_QSettings::oldSubkeyList()
