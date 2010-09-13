@@ -82,6 +82,9 @@ static void qt_mac_updateToolBarButtonHint(QWidget *parentWidget)
 }
 #endif
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 /******************************************************************************
 ** QToolBarPrivate
 */
@@ -197,7 +200,7 @@ void QToolBarPrivate::initDrag(const QPoint &pos)
 
     QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
     if (layout->pluggingWidget != 0) // the main window is animating a docking operation
         return;
@@ -223,7 +226,7 @@ void QToolBarPrivate::startDrag(bool moving)
 
     QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
 
     if (!moving) {
@@ -247,8 +250,7 @@ void QToolBarPrivate::endDrag()
     q->releaseMouse();
 
     if (state->dragging) {
-        QMainWindowLayout *layout =
-            qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+        QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
         Q_ASSERT(layout != 0);
 
         if (!layout->plug(state->widgetItem)) {
@@ -340,7 +342,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
     if (win == 0)
         return true;
 
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
 
     if (layout->pluggingWidget == 0
@@ -588,7 +590,7 @@ QToolBar::~QToolBar()
     QMainWindow *mainwindow = qobject_cast<QMainWindow *>(parentWidget());
     if (mainwindow) {
 #ifdef Q_WS_MAC
-        QMainWindowLayout *mainwin_layout = qobject_cast<QMainWindowLayout *>(mainwindow->layout());
+        QMainWindowLayout *mainwin_layout = qt_mainwindow_layout(mainwindow);
         if (mainwin_layout && mainwin_layout->layoutState.toolBarAreaLayout.isEmpty()
                 && mainwindow->testAttribute(Qt::WA_WState_Created))
             macWindowToolbarShow(mainwindow, false);
@@ -1135,7 +1137,7 @@ bool QToolBar::event(QEvent *event)
         if (toolbarInUnifiedToolBar(this)) {
              // I can static_cast because I did the qobject_cast in the if above, therefore
             // we must have a QMainWindowLayout here.
-            QMainWindowLayout *mwLayout = static_cast<QMainWindowLayout *>(parentWidget()->layout());
+            QMainWindowLayout *mwLayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(parentWidget()));
             mwLayout->fixSizeInUnifiedToolbar(this);
             mwLayout->syncUnifiedToolbarVisibility();
         }
@@ -1289,6 +1291,8 @@ QWidget *QToolBar::widgetForAction(QAction *action) const
     return d->layout->itemAt(index)->widget();
 }
 
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 /*!
     \internal
 */
@@ -1315,7 +1319,7 @@ void QToolBar::initStyleOption(QStyleOptionToolBar *option) const
     if (!mainWindow)
         return;
 
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout *>(mainWindow->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT_X(layout != 0, "QToolBar::initStyleOption()",
                "QMainWindow->layout() != QMainWindowLayout");
 
