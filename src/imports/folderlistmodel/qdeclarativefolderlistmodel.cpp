@@ -167,7 +167,7 @@ QDeclarativeFolderListModel::QDeclarativeFolderListModel(QObject *parent)
     connect(&d->model, SIGNAL(rowsRemoved(const QModelIndex&,int,int))
             , this, SLOT(removed(const QModelIndex&,int,int)));
     connect(&d->model, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&))
-            , this, SLOT(dataChanged(const QModelIndex&,const QModelIndex&)));
+            , this, SLOT(handleDataChanged(const QModelIndex&,const QModelIndex&)));
     connect(&d->model, SIGNAL(modelReset()), this, SLOT(refresh()));
     connect(&d->model, SIGNAL(layoutChanged()), this, SLOT(refresh()));
 }
@@ -363,7 +363,7 @@ void QDeclarativeFolderListModel::removed(const QModelIndex &index, int start, i
     }
 }
 
-void QDeclarativeFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
+void QDeclarativeFolderListModel::handleDataChanged(const QModelIndex &start, const QModelIndex &end)
 {
     if (start.parent() == d->folderIndex)
         emit dataChanged(index(start.row(),0), index(end.row(),0));
