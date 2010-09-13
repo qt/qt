@@ -51,26 +51,28 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &path, QDir::Fil
 {
     RFs& fs = qt_s60GetRFs();
 
-    TFileName symbianPath;
-    QString abspath = QFileSystemEngine::absoluteName(path).nativeFilePath();
+    nativePath = path.nativeFilePath();
+    if (!nativePath.endsWith(QLatin1Char('\\')))
+        nativePath.append(QLatin1Char('\\'));
 
-    if (!abspath.endsWith(QLatin1Char('\\')))
-        abspath.append(QLatin1Char('\\'));
+    QString absPath = QFileSystemEngine::absoluteName(path).nativeFilePath();
 
-    int pathLen = abspath.length();
-    if (pathLen > symbianPath.MaxLength()) {
+    if (!absPath.endsWith(QLatin1Char('\\')))
+        absPath.append(QLatin1Char('\\'));
+
+    int pathLen = absPath.length();
+    if (pathLen > KMaxFileName) {
         lastError = KErrBadName;
         return;
     }
-    symbianPath.Copy(qt_QString2TPtrC(abspath));
 
     //set up server side filtering to reduce IPCs
     //RDir won't accept all valid name filters e.g. "*. bar"
     if (nameFilters.count() == 1 && !(filters & QDir::AllDirs) && iteratorFlags
         == QDirIterator::NoIteratorFlags && pathLen + nameFilters[0].length()
-        <= symbianPath.MaxLength()) {
+        <= KMaxFileName) {
         //server side supports one mask - skip this for recursive mode or if only files should be filtered
-        symbianPath.Append(qt_QString2TPtrC(nameFilters[0]));
+        absPath.append(nameFilters[0]);
     }
 
     TUint symbianMask = 0;
@@ -90,19 +92,12 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &path, QDir::Fil
             symbianMask = KEntryAttMatchExclusive | KEntryAttReadOnly;
     }
 
-    lastError = dirHandle.Open(fs, symbianPath, symbianMask);
+    lastError = dirHandle.Open(fs, qt_QString2TPtrC(absPath), symbianMask);
 }
 
 QFileSystemIterator::~QFileSystemIterator()
 {
     dirHandle.Close();
-}
-
-static void createFileSystemMetaDataHelper(const TEntry &entry, QFileSystemMetaData &metaData)
-{
-    //placeholder
-    //TODO: adapt from QFileInfoPrivate::fromTEntry(entries[entryIndex], path());
-    //or add this functionality to QFileSystemMetaData
 }
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
@@ -121,8 +116,8 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     if ((lastError == KErrNone || lastError == KErrEof) && entryIndex < entries.Count()) {
         Q_ASSERT(entryIndex >= 0);
         const TEntry &entry(entries[entryIndex]);
-        fileEntry = QFileSystemEntry(qt_TDesC2QString(entry.iName), QFileSystemEntry::FromNativePath());
-        createFileSystemMetaDataHelper(entry, metaData);
+        fileEntry = QFileSystemEntry(nativePath + qt_TDesC2QString(entry.iName), QFileSystemEntry::FromNativePath());
+        metaData.fillFromTEntry(entry);
         return true;
     }
 

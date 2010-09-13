@@ -144,6 +144,8 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 
 void QFileSystemMetaData::fillFromTEntry(const TEntry& entry)
 {
+    entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
+    knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
     //Symbian doesn't have unix type file permissions
     entryFlags |= QFileSystemMetaData::Permissions;
     if(entry.IsReadOnly()) {
@@ -171,6 +173,8 @@ void QFileSystemMetaData::fillFromTEntry(const TEntry& entry)
 
 void QFileSystemMetaData::fillFromVolumeInfo(const TVolumeInfo& info)
 {
+    entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
+    knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
     entryFlags |= QFileSystemMetaData::ExistsAttribute;
     entryFlags |= QFileSystemMetaData::Permissions;
     if(info.iDrive.iDriveAtt & KDriveAttRom) {
@@ -187,7 +191,6 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     if (what & QFileSystemMetaData::SymbianTEntryFlags) {
         RFs& fs(qt_s60GetRFs());
         TInt err;
-        data.entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
         QFileSystemEntry absentry(absoluteName(entry));
         if (absentry.isRoot()) {
             //Root directories don't have an entry, and Entry() returns KErrBadName.
@@ -210,7 +213,6 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             data.size_ = 0;
             data.modificationTime_ = TTime(0);
         }
-        data.knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
     }
     return data.hasFlags(what);
 }
