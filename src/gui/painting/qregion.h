@@ -81,7 +81,10 @@ public:
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QRegion &operator=(QRegion &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 #ifdef QT3_SUPPORT
     inline QT3_SUPPORT bool isNull() const { return isEmpty(); }
 #endif

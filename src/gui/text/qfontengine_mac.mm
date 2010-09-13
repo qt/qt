@@ -455,12 +455,13 @@ bool QCoreTextFontEngine::stringToCMap(const QChar *, int, QGlyphLayout *, int *
 glyph_metrics_t QCoreTextFontEngine::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
+    bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
+
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
-        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).round()
-             : glyphs.effectiveAdvance(i);
+        w += round ? glyphs.effectiveAdvance(i).round()
+                   : glyphs.effectiveAdvance(i);
     }
-    return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
+    return glyph_metrics_t(0, -(ascent()), w - lastRightBearing(glyphs, round), ascent()+descent(), w, 0);
 }
 glyph_metrics_t QCoreTextFontEngine::boundingBox(glyph_t glyph)
 {
@@ -1425,6 +1426,7 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
+// Not used directly for shaping, only used to calculate m_averageCharWidth
 bool QFontEngineMac::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
     if (!cmap) {
@@ -1486,12 +1488,12 @@ void QFontEngineMac::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 glyph_metrics_t QFontEngineMac::boundingBox(const QGlyphLayout &glyphs)
 {
     QFixed w;
+    bool round = fontDef.styleStrategy & QFont::ForceIntegerMetrics;
     for (int i = 0; i < glyphs.numGlyphs; ++i) {
-        w += (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-             ? glyphs.effectiveAdvance(i).round()
-             : glyphs.effectiveAdvance(i);
+        w += round ? glyphs.effectiveAdvance(i).round()
+                   : glyphs.effectiveAdvance(i);
     }
-    return glyph_metrics_t(0, -(ascent()), w, ascent()+descent(), w, 0);
+    return glyph_metrics_t(0, -(ascent()), w - lastRightBearing(glyphs, round), ascent()+descent(), w, 0);
 }
 
 glyph_metrics_t QFontEngineMac::boundingBox(glyph_t glyph)

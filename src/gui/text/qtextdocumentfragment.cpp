@@ -683,6 +683,10 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
 
             QTextListFormat listFmt;
             listFmt.setStyle(style);
+            if (!currentNode->textListNumberPrefix.isNull())
+                listFmt.setNumberPrefix(currentNode->textListNumberPrefix);
+            if (!currentNode->textListNumberSuffix.isNull())
+                listFmt.setNumberSuffix(currentNode->textListNumberSuffix);
 
             ++indent;
             if (currentNode->hasCssListIndent)

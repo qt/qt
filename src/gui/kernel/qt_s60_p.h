@@ -87,7 +87,7 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
-class QS60ThreadLocalData
+class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
     QS60ThreadLocalData();
@@ -171,7 +171,7 @@ public:
 #endif
 };
 
-QS60Data* qGlobalS60Data();
+Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
 #define S60 qGlobalS60Data()
 
 class QAbstractLongTapObserver
@@ -210,6 +210,8 @@ public:
     void CancelLongTapTimer();
 
     void setFocusSafely(bool focus);
+
+    bool isControlActive();
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }

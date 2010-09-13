@@ -2128,11 +2128,8 @@ void QGLContextPrivate::syncGlState()
 #ifdef QT_NO_EGL
 void QGLContextPrivate::swapRegion(const QRegion *)
 {
-    static bool firstWarning = true;
-    if (firstWarning) {
-        qWarning() << "::swapRegion called but not supported!";
-        firstWarning = false;
-    }
+    Q_Q(QGLContext);
+    q->swapBuffers();
 }
 #endif
 
@@ -3620,12 +3617,90 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
     \section1 Threading
 
-    It is possible to render into a QGLWidget from another thread, but it
-    requires that all access to the GL context is safe guarded. The Qt GUI
-    thread will try to use the context in resizeEvent and paintEvent, so in
-    order for threaded rendering using a GL widget to work, these functions
-    need to be intercepted in the GUI thread and handled accordingly in the
-    application.
+    As of Qt version 4.8, support for doing threaded GL rendering has
+    been improved. There are three scenarios that we currently support:
+    \list
+    \o 1. Buffer swapping in a thread.
+
+    Swapping buffers in a double buffered context may be a
+    synchronous, locking call that may be a costly operation in some
+    GL implementations. Especially so on embedded devices. It's not
+    optimal to have the CPU idling while the GPU is doing a buffer
+    swap. In those cases it is possible to do the rendering in the
+    main thread and do the actual buffer swap in a separate
+    thread. This can be done with the following steps:
+
+    1. Call doneCurrent() in the main thread when the rendering is
+    finished.
+
+    2. Notify the swapping thread that it can grab the context.
+
+    3. Make the rendering context current in the swapping thread with
+    makeCurrent() and then call swapBuffers().
+
+    4. Call doneCurrent() in the swapping thread and notify the main
+    thread that swapping is done.
+
+    Doing this will free up the main thread so that it can continue
+    with, for example, handling UI events or network requests. Even if
+    there is a context swap involved, it may be preferable compared to
+    having the main thread wait while the GPU finishes the swap
+    operation. Note that this is highly implementation dependent.
+
+    \o 2. Texture uploading in a thread.
+
+    Doing texture uploads in a thread may be very useful for
+    applications handling large amounts of images that needs to be
+    displayed, like for instance a photo gallery application. This is
+    supported in Qt through the existing bindTexture() API. A simple
+    way of doing this is to create two sharing QGLWidgets. One is made
+    current in the main GUI thread, while the other is made current in
+    the texture upload thread. The widget in the uploading thread is
+    never shown, it is only used for sharing textures with the main
+    thread. For each texture that is bound via bindTexture(), notify
+    the main thread so that it can start using the texture.
+
+    \o 3. Using QPainter to draw into a QGLWidget in a thread.
+
+    In Qt 4.8, it is possible to draw into a QGLWidget using a
+    QPainter in a separate thread. Note that this is also possible for
+    QGLPixelBuffers and QGLFramebufferObjects. Since this is only
+    supported in the GL 2 paint engine, OpenGL 2.0 or OpenGL ES 2.0 is
+    required.
+
+    QGLWidgets can only be created in the main GUI thread. This means
+    a call to doneCurrent() is necessary to release the GL context
+    from the main thread, before the widget can be drawn into by
+    another thread. Also, the main GUI thread will dispatch resize and
+    paint events to a QGLWidget when the widget is resized, or parts
+    of it becomes exposed or needs redrawing. It is therefore
+    necessary to handle those events because the default
+    implementations inside QGLWidget will try to make the QGLWidget's
+    context current, which again will interfere with any threads
+    rendering into the widget. Reimplement QGLWidget::paintEvent() and
+    QGLWidget::resizeEvent() to notify the rendering thread that a
+    resize or update is necessary, and be careful not to call the base
+    class implementation. If you are rendering an animation, it might
+    not be necessary to handle the paint event at all since the
+    rendering thread is doing regular updates. Then it would be enough
+    to reimplement QGLWidget::paintEvent() to do nothing.
+
+    \endlist
+
+    As a general rule when doing threaded rendering: be aware that
+    binding and releasing contexts in different threads have to be
+    synchronized by the user. A GL rendering context can only be
+    current in one thread at any time. If you try to open a QPainter
+    on a QGLWidget and the widget's rendering context is current in
+    another thread, it will fail.
+
+    Note that under X11 it is necessary to set the
+    Qt::AA_X11InitThreads application attribute to make the X11
+    library and GLX calls thread safe, otherwise the above scenarios
+    will fail.
+
+    In addition to this, rendering using raw GL calls in a separate
+    thread is supported.
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
@@ -5256,6 +5331,10 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= FragmentProgram;
     if (extensions.match("GL_ARB_fragment_shader"))
         glExtensions |= FragmentShader;
+    if (extensions.match("GL_ARB_shader_objects"))
+        glExtensions |= FragmentShader;
+    if (extensions.match("GL_ARB_ES2_compatibility"))
+        glExtensions |= ES2Compatibility;
     if (extensions.match("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
     if (extensions.match("GL_EXT_framebuffer_object"))
@@ -5276,6 +5355,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
     glExtensions |= FragmentShader;
+    glExtensions |= ES2Compatibility;
 #endif
 #if defined(QT_OPENGL_ES_1)
     if (extensions.match("GL_OES_framebuffer_object"))

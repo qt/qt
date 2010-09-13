@@ -67,6 +67,9 @@ private slots:
     void item();
     void autoNumbering();
     void autoNumberingRTL();
+    void autoNumberingPrefixAndSuffix();
+    void autoNumberingPrefixAndSuffixRTL();
+    void autoNumberingPrefixAndSuffixHtmlExportImport();
     void romanNumbering();
     void romanNumberingLimit();
     void formatChange();
@@ -126,6 +129,76 @@ void tst_QTextList::autoNumbering()
     QVERIFY(cursor.currentList());
     QVERIFY(cursor.currentList()->itemNumber(cursor.block()) == 27);
     QVERIFY(cursor.currentList()->itemText(cursor.block()) == "ab.");
+}
+
+void tst_QTextList::autoNumberingPrefixAndSuffix()
+{
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::ListLowerAlpha);
+    fmt.setNumberPrefix("-");
+    fmt.setNumberSuffix(")");
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    for (int i = 0; i < 27; ++i)
+        cursor.insertBlock();
+
+    QVERIFY(list->count() == 28);
+
+    QVERIFY(cursor.currentList());
+    QVERIFY(cursor.currentList()->itemNumber(cursor.block()) == 27);
+    QVERIFY(cursor.currentList()->itemText(cursor.block()) == "-ab)");
+}
+
+void tst_QTextList::autoNumberingPrefixAndSuffixRTL()
+{
+    QTextBlockFormat bfmt;
+    bfmt.setLayoutDirection(Qt::RightToLeft);
+    cursor.setBlockFormat(bfmt);
+
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::ListUpperAlpha);
+    fmt.setNumberPrefix("-");
+    fmt.setNumberSuffix("*");
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    cursor.insertBlock();
+
+    QVERIFY(list->count() == 2);
+
+    QVERIFY(cursor.currentList()->itemText(cursor.block()) == "*B-");
+}
+
+void tst_QTextList::autoNumberingPrefixAndSuffixHtmlExportImport()
+{
+    QTextListFormat fmt;
+    fmt.setStyle(QTextListFormat::ListLowerAlpha);
+    fmt.setNumberPrefix("\"");
+    fmt.setNumberSuffix("#");
+    fmt.setIndent(10);
+    // FIXME: Would like to test "'" but there's a problem in the css parser (Scanner::preprocess
+    // is called before the values are being parsed), so the quoting does not work.
+    QTextList *list = cursor.createList(fmt);
+    QVERIFY(list);
+
+    for (int i = 0; i < 27; ++i)
+        cursor.insertBlock();
+
+    QVERIFY(list->count() == 28);
+
+    QString htmlExport = doc->toHtml();
+    QTextDocument importDoc;
+    importDoc.setHtml(htmlExport);
+
+    QTextCursor importCursor(&importDoc);
+    for (int i = 0; i < 27; ++i)
+        importCursor.movePosition(QTextCursor::NextBlock);
+
+    QVERIFY(importCursor.currentList());
+    QVERIFY(importCursor.currentList()->itemNumber(importCursor.block()) == 27);
+    QVERIFY(importCursor.currentList()->itemText(importCursor.block()) == "\"ab#");
+    QVERIFY(importCursor.currentList()->format().indent() == 10);
 }
 
 void tst_QTextList::autoNumberingRTL()

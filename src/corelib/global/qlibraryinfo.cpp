@@ -66,6 +66,8 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+extern void qDumpCPUFeatures(); // in qsimd.cpp
+
 #ifndef QT_NO_SETTINGS
 
 struct QLibrarySettings
@@ -508,6 +510,14 @@ void qt_core_boilerplate()
            "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
            "Build key:           " QT_BUILD_KEY "\n"
+           "Compat build key:    "
+#ifdef QT_BUILD_KEY_COMPAT
+           "| " QT_BUILD_KEY_COMPAT " "
+#endif
+#ifdef QT_BUILD_KEY_COMPAT2
+           "| " QT_BUILD_KEY_COMPAT2 " "
+#endif
+           "|\n"
            "Build date:          %s\n"
            "Installation prefix: %s\n"
            "Library path:        %s\n"
@@ -516,6 +526,8 @@ void qt_core_boilerplate()
            qt_configure_prefix_path_str + 12,
            qt_configure_libraries_path_str + 12,
            qt_configure_headers_path_str + 12);
+
+    QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 
 #ifdef QT_EVAL
     extern void qt_core_eval_init(uint);

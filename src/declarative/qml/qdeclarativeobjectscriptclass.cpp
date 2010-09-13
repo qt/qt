@@ -192,7 +192,7 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     if (!(hints & ImplicitObject)) {
         local.coreIndex = -1;
         lastData = &local;
-        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
+        return QScriptClass::HandlesWriteAccess;
     }
 
     return 0;
@@ -625,11 +625,12 @@ private:
 
     char data[4 * sizeof(void *)];
     int type;
+    bool isObjectType;
 };
 }
 
 MetaCallArgument::MetaCallArgument()
-: type(QVariant::Invalid)
+: type(QVariant::Invalid), isObjectType(false)
 {
 }
 
@@ -744,12 +745,23 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
         new (&data) QVariant();
         type = -1;
 
-        QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
+        QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
+        QVariant v = priv->scriptValueToVariant(value);
         if (v.userType() == callType) {
             *((QVariant *)&data) = v;
         } else if (v.canConvert((QVariant::Type)callType)) {
             *((QVariant *)&data) = v;
             ((QVariant *)&data)->convert((QVariant::Type)callType);
+        } else if (const QMetaObject *mo = priv->rawMetaObjectForType(callType)) {
+            QObject *obj = priv->toQObject(v);
+            
+            if (obj) {
+                const QMetaObject *objMo = obj->metaObject();
+                while (objMo && objMo != mo) objMo = objMo->superClass();
+                if (!objMo) obj = 0;
+            }
+
+            *((QVariant *)&data) = QVariant(callType, &obj);
         } else {
             *((QVariant *)&data) = QVariant(callType, (void *)0);
         }

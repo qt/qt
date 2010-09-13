@@ -15,6 +15,7 @@ INSTALLS = sources target
 
 symbian:{
     TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     qmlminehuntfiles.sources = MinehuntCore minehunt.qml
     DEPLOYMENT = qmlminehuntfiles

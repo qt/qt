@@ -41,6 +41,7 @@
 
 #include "bookmarkitem.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -147,7 +148,9 @@ BookmarkItem::insertChildren(bool isFolder, int position, int count)
 
     for (int row = 0; row < count; ++row) {
         m_children.insert(position, new BookmarkItem(DataVector()
-            << QObject::tr(isFolder ? "New Folder" : "Untitled")
+            << (isFolder
+                ? QCoreApplication::translate("BookmarkItem", "New Folder")
+                : QCoreApplication::translate("BookmarkItem", "Untitled"))
             << (isFolder ? "Folder" : "about:blank") << false, this));
     }
 

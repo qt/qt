@@ -6,7 +6,7 @@ contains(TEMPLATE_PREFIX, vc):vcproj = 1
 
 TEMPLATE = app
 TARGET = qm_phony_target
-CONFIG -= qt separate_debug_info sis_targets
+CONFIG -= qt separate_debug_info gdb_dwarf_index sis_targets
 CONFIG += no_icon
 QT =
 LIBS =

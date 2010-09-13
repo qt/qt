@@ -10,10 +10,19 @@ else:!equals(DEPLOYMENT, default_deployment) {
 }
 
 equals(GENERATE_SIS_TARGETS, true) {
+
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+
     symbian-abld|symbian-sbsv2 {
+        symbian-sbsv2 {
+            CONVERT_GCCE_PARAM = -g
+        } else {
+            CONVERT_GCCE_PARAM =
+        }
+        
         make_cache_name = .make.cache
         sis_target.target = sis
-        sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
+        sis_target.commands = $(if $(wildcard $${baseTarget}_template.pkg), \
                                   $(if $(wildcard $$make_cache_name), \
                                       $(MAKE) -f $(MAKEFILE) ok_sis MAKEFILES=$$make_cache_name \
                                   , \
@@ -28,11 +37,11 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_sis_target.target = ok_sis
-        ok_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_template.pkg \
+        ok_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         unsigned_sis_target.target = unsigned_sis
-        unsigned_sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
+        unsigned_sis_target.commands = $(if $(wildcard $${baseTarget}_template.pkg), \
                                   $(if $(wildcard $$make_cache_name), \
                                       $(MAKE) -f $(MAKEFILE) ok_unsigned_sis MAKEFILES=$$make_cache_name \
                                   , \
@@ -47,21 +56,21 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_unsigned_sis_target.target = ok_unsigned_sis
-        ok_unsigned_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) -o $$basename(TARGET)_template.pkg $(QT_SIS_TARGET)
+        ok_unsigned_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
 
-        target_sis_target.target = $$basename(TARGET).sis
+        target_sis_target.target = $${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
 
         installer_sis_target.target = installer_sis
-        installer_sis_target.commands = $(if $(wildcard $$basename(TARGET)_installer.pkg), \
+        installer_sis_target.commands = $(if $(wildcard $${baseTarget}_installer.pkg), \
                                             $(MAKE) -f $(MAKEFILE) ok_installer_sis \
                                         , \
                                             $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                         )
-        installer_sis_target.depends = $$basename(TARGET).sis
+        installer_sis_target.depends = $${baseTarget}.sis
 
         ok_installer_sis_target.target = ok_installer_sis
-        ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $$basename(TARGET)_installer.pkg - \
+        ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                                $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         fail_sis_nopkg_target.target = fail_sis_nopkg
@@ -71,7 +80,7 @@ equals(GENERATE_SIS_TARGETS, true) {
         fail_sis_nocache_target.commands = "$(error Project has to be built or QT_SIS_TARGET environment variable has to be set before calling 'SIS' target)"
 
         stub_sis_target.target = stub_sis
-        stub_sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
+        stub_sis_target.commands = $(if $(wildcard $${baseTarget}_template.pkg), \
                                        $(if $(wildcard $$make_cache_name), \
                                            $(MAKE) -f $(MAKEFILE) ok_stub_sis MAKEFILES=$$make_cache_name \
                                        , \
@@ -86,7 +95,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                    )
 
         ok_stub_sis_target.target = ok_stub_sis
-        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $$basename(TARGET)_stub.pkg \
+        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
                                           $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         QMAKE_EXTRA_TARGETS += sis_target \
@@ -128,7 +137,6 @@ equals(GENERATE_SIS_TARGETS, true) {
 
         sis_destdir = $$DESTDIR
         isEmpty(sis_destdir):sis_destdir = .
-        baseTarget = $$basename(TARGET)
         !equals(TARGET, "$$baseTarget"):sis_destdir = $$sis_destdir/$$dirname(TARGET)
 
         sis_target.target = sis

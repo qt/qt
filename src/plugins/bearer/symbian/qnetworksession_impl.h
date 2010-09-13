@@ -64,9 +64,6 @@
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
     #include <comms-infras/cs_mobility_apiext.h>
 #endif
-#if defined(OCC_FUNCTIONALITY_AVAILABLE) && defined(SNAP_FUNCTIONALITY_AVAILABLE)
-    #include <extendedconnpref.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -132,7 +129,8 @@ protected: // From CActive
     void DoCancel();
     
 private Q_SLOTS:
-    void configurationStateChanged(TUint32 accessPointId, TUint32 connMonId, QNetworkSession::State newState);
+    void configurationStateChanged(quint32 accessPointId, quint32 connMonId,
+                                   QNetworkSession::State newState);
     void configurationRemoved(QNetworkConfigurationPrivatePointer config);
     void configurationAdded(QNetworkConfigurationPrivatePointer config);
 
@@ -146,6 +144,11 @@ private:
 #ifndef QT_NO_NETWORKINTERFACE
     QNetworkInterface interface(TUint iapId) const;
 #endif
+
+#if defined(SNAP_FUNCTIONALITY_AVAILABLE)
+    bool easyWlanTrueIapId(TUint32 &trueIapId) const;
+#endif
+
 
 private: // data
     SymbianEngine *engine;

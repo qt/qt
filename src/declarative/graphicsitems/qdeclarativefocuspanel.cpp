@@ -61,11 +61,6 @@ QT_BEGIN_NAMESPACE
     \l {qmlfocus}{keyboard focus documentation}.
 */
 
-/*!
-    \internal
-    \class QDeclarativeFocusPanel
-*/
-
 QDeclarativeFocusPanel::QDeclarativeFocusPanel(QDeclarativeItem *parent) :
     QDeclarativeItem(parent)
 {

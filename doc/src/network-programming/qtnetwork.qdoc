@@ -257,8 +257,13 @@
     QUdpSocket::readDatagram() to read the datagram.
 
     The \l{network/broadcastsender}{Broadcast Sender} and
-    \l{network/broadcastreceiver}{Broadcast Receiver} examples show
-    how to write a UDP sender and a UDP receiver using Qt.
+    \l{network/broadcastreceiver}{Broadcast Receiver} examples show how to
+    write a UDP sender and a UDP receiver using Qt.
+
+    QUdpSocket also supports multicasting. The
+    \l{network/multicastsender}{Multicast Sender} and
+    \l{network/multicastreceiver}{Multicast Receiver} examples show how to use
+    write UDP multicast clients.
 
     \section1 Resolving Host Names using QHostInfo
 

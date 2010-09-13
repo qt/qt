@@ -283,6 +283,10 @@ public:
     inline ~QHash() { if (!d->ref.deref()) freeData(d); }
 
     QHash<Key, T> &operator=(const QHash<Key, T> &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QHash<Key, T> &operator=(QHash<Key, T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     bool operator==(const QHash<Key, T> &other) const;
     inline bool operator!=(const QHash<Key, T> &other) const { return !(*this == other); }

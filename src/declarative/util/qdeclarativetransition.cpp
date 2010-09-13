@@ -99,12 +99,6 @@ QT_BEGIN_NAMESPACE
     \sa {QML Animation}, {declarative/animation/states}{states example}, {qmlstates}{States}, {QtDeclarative}
 */
 
-/*!
-    \internal
-    \class QDeclarativeTransition
-    \brief The QDeclarativeTransition class allows you to define animated transitions that occur on state changes.
-*/
-
 //ParallelAnimationWrapper allows us to do a "callback" when the animation finishes, rather than connecting
 //and disconnecting signals and slots frequently
 class ParallelAnimationWrapper : public QParallelAnimationGroup

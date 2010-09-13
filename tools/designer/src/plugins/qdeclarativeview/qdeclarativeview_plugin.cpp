@@ -69,12 +69,12 @@ QString QDeclarativeViewPlugin::group() const
 
 QString QDeclarativeViewPlugin::toolTip() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString QDeclarativeViewPlugin::whatsThis() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString QDeclarativeViewPlugin::includeFile() const

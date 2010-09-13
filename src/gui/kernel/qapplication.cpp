@@ -811,6 +811,12 @@ void QApplicationPrivate::construct(
         if (testLib.load()) {
             typedef void (*TasInitialize)(void);
             TasInitialize initFunction = (TasInitialize)testLib.resolve("qt_testability_init");
+#ifdef Q_OS_SYMBIAN
+            // resolving method by name does not work on Symbian OS so need to use ordinal
+            if(!initFunction) {
+                initFunction = (TasInitialize)testLib.resolve("1");            
+            }
+#endif
             if (initFunction) {
                 initFunction();
             } else {

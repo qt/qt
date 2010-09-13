@@ -104,20 +104,22 @@ can be constructed directly instead. In this case, \c application.qml is
 loaded as a QDeclarativeComponent instance rather than placed into a view:
 
 \code
-    #include <QCoreApplication>
+    #include <QApplication>
     #include <QDeclarativeEngine>    
+    #include <QDeclarativeContext>
+    #include <QDeclarativeComponent>
 
     int main(int argc, char *argv[])
     {
-        QCoreApplication app(argc, argv);
+        QApplication app(argc, argv);
     
         QDeclarativeEngine engine;
-        QDeclarativeContext *windowContext = new QDeclarativeContext(engine.rootContext());
+        QDeclarativeContext *objectContext = new QDeclarativeContext(engine.rootContext());
     
         QDeclarativeComponent component(&engine, "application.qml");
-        QObject *window = component.create(windowContext);
+        QObject *object = component.create(objectContext);
          
-        // ... delete window and windowContext when necessary
+        // ... delete object and objectContext when necessary
     
         return app.exec();
     }

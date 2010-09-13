@@ -4878,6 +4878,8 @@ void QWidgetPrivate::resolveLayoutDirection()
     has been called for the parent do not inherit the parent's layout
     direction.
 
+    This method no longer affects text layout direction since Qt 4.7.
+
     \sa QApplication::layoutDirection
 */
 void QWidget::setLayoutDirection(Qt::LayoutDirection direction)

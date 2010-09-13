@@ -888,11 +888,11 @@ void QNetworkSessionPrivateImpl::close()
 	    state = QNetworkSession::Closing;
 	    emit stateChanged(state);
 
+	    // we fake a disconnection, session error is sent
+	    updateState(QNetworkSession::Disconnected);
+
 	    opened = false;
 	    isOpen = false;
-
-	    // we fake a disconnection, session error is not sent
-	    updateState(QNetworkSession::Disconnected);
 
 	    icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
 	    startTime = QDateTime();

@@ -480,7 +480,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
 
         DP_TEST(0, a, QVariant::Int, 25, 14, "int");
         DP_TEST(1, b, QVariant::Bool, 44, 15, "bool");
-        DP_TEST(2, c, QVariant::Double, 64, 17, "double");
+        DP_TEST(2, c, QMetaType::QReal, 64, 17, "double");
         DP_TEST(3, d, QMetaType::QReal, 86, 15, "real");
         DP_TEST(4, e, QVariant::String, 106, 17, "string");
         DP_TEST(5, f, QVariant::Url, 128, 14, "url");

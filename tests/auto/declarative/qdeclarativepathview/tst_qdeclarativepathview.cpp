@@ -367,9 +367,11 @@ void tst_QDeclarativePathView::dataModel()
     QCOMPARE(item->y(), 10.0);
 
     model.insertItem(4, "orange", "10");
+    QTest::qWait(100);
 
-    int itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 10);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 10);
+
+    QVERIFY(pathview->currentIndex() == 0);
 
     QDeclarativeText *text = findItem<QDeclarativeText>(pathview, "myText", 4);
     QVERIFY(text);
@@ -384,26 +386,27 @@ void tst_QDeclarativePathView::dataModel()
     QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
 
     QDeclarativeRectangle *testItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 4);
     QVERIFY(testItem != 0);
     testItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 5);
     QVERIFY(testItem == 0);
 
-    model.insertItem(2, "pink", "2");
+    pathview->setCurrentIndex(1);
 
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    model.insertItem(2, "pink", "2");
+    QTest::qWait(100);
+
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
+    QVERIFY(pathview->currentIndex() == 1);
 
     text = findItem<QDeclarativeText>(pathview, "myText", 2);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(2));
 
     model.removeItem(3);
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
     text = findItem<QDeclarativeText>(pathview, "myText", 3);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(3));

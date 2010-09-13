@@ -189,19 +189,6 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     return 1;
 }
 
-// Unicode case-insensitive comparison
-static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
-{
-    if (a == b && alen == blen)
-        return 0;
-    int l = qMin(alen, blen);
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l == -1)
-        return (alen-blen);
-    return a->unicode() - b->unicode();
-}
-
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
@@ -212,28 +199,71 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     return a->unicode() - b->unicode();
 }
 
+// Unicode case-sensitive comparison
+static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
+{
+    if (a == b && alen == blen)
+        return 0;
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
+}
+
 // Unicode case-insensitive compare two same-sized strings
 static int ucstrnicmp(const ushort *a, const ushort *b, int l)
 {
     return ucstricmp(a, a + l, b, b + l);
 }
 
+// Benchmarking indicates that doing memcmp is much slower than
+// executing the comparison ourselves.
+//
+// The profiling was done on a population of calls to qMemEquals, generated
+// during a run of the demo browser. The profile of the data (32-bit x86
+// Linux) was:
+//
+//  total number of comparisons: 21353
+//  longest string compared: 95
+//  average comparison length: 14.8786
+//  cache-line crosses: 5661 (13.3%)
+//  alignment histogram:
+//   0xXXX0 = 512 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXX2 = 15087 (35.3%) strings, 5145 (34.1%) of which same-aligned
+//   0xXXX4 = 525 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXX6 = 557 (1.3%) strings, 6 (1.1%) of which same-aligned
+//   0xXXX8 = 509 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXXa = 24358 (57.0%) strings, 9901 (40.6%) of which same-aligned
+//   0xXXXc = 557 (1.3%) strings, 0 (0.0%) of which same-aligned
+//   0xXXXe = 601 (1.4%) strings, 15 (2.5%) of which same-aligned
+//   total  = 42706 (100%) strings, 15067 (35.3%) of which same-aligned
+//
+// 92% of the strings have alignment of 2 or 10, which is due to malloc on
+// 32-bit Linux returning values aligned to 8 bytes, and offsetof(array, QString::Data) == 18.
+//
+// The profile on 64-bit will be different since offsetof(array, QString::Data) == 26.
+//
+// The benchmark results were, for a Core-i7 @ 2.67 GHz 32-bit, compiled with -O3 -funroll-loops:
+//   16-bit loads only:           872,301 CPU ticks [Qt 4.5 / memcmp]
+//   32- and 16-bit loads:        773,362 CPU ticks [Qt 4.6]
+//   SSE2 "movdqu" 128-bit loads: 618,736 CPU ticks
+//   SSE3 "lddqu" 128-bit loads:  619,954 CPU ticks
+//   SSSE3 "palignr" corrections: 852,147 CPU ticks
+//   SSE4.2 "pcmpestrm":          738,702 CPU ticks
+//
+// The same benchmark on an Atom N450 @ 1.66 GHz, is:
+//  16-bit loads only:            2,185,882 CPU ticks
+//  32- and 16-bit loads:         1,805,060 CPU ticks
+//  SSE2 "movdqu" 128-bit loads:  2,529,843 CPU ticks
+//  SSE3 "lddqu" 128-bit loads:   2,514,858 CPU ticks
+//  SSSE3 "palignr" corrections:  2,160,325 CPU ticks
+//  SSE4.2 not available
+//
+// The conclusion we reach is that alignment the SSE2 unaligned code can gain
+// 20% improvement in performance in some systems, but suffers a penalty due
+// to the unaligned loads on others.
+
 static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 {
-    // Benchmarking indicates that doing memcmp is much slower than
-    // executing the comparison ourselves.
-    // To make it even faster, we do a 32-bit comparison, comparing
-    // twice the amount of data as a normal word-by-word comparison.
-    //
-    // Benchmarking results on a 2.33 GHz Core2 Duo, with a 64-QChar
-    // block of data, with 4194304 iterations (per iteration):
-    //    operation             usec            cpu ticks
-    //     memcmp                330               710
-    //     16-bit                 79             167-171
-    //  32-bit aligned            49             105-109
-    //
-    // Testing also indicates that unaligned 32-bit loads are as
-    // performant as 32-bit aligned.
     if (a == b || !length)
         return true;
 

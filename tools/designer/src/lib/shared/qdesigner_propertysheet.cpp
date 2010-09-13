@@ -1065,8 +1065,8 @@ QVariant QDesignerPropertySheet::resolvePropertyValue(int index, const QVariant 
     }
 
     if (value.canConvert<qdesigner_internal::PropertySheetIconValue>()) {
-        const int pathCount = qvariant_cast<qdesigner_internal::PropertySheetIconValue>(value).paths().count();
-        if (pathCount == 0)
+        const unsigned mask = qvariant_cast<qdesigner_internal::PropertySheetIconValue>(value).mask();
+        if (mask == 0)
             return defaultResourceProperty(index);
         if (d->m_iconCache)
             return d->m_iconCache->icon(qvariant_cast<qdesigner_internal::PropertySheetIconValue>(value));

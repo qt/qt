@@ -58,9 +58,6 @@ Q_DECLARE_METATYPE(QListModelInterface *)
 
 QT_BEGIN_NAMESPACE
 
-#define DATA_ROLE_ID 1
-#define DATA_ROLE_NAME "data"
-
 QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListModelData::instructions() const
 {
     return (QDeclarativeListModelParser::ListInstruction *)((char *)this + sizeof(ListModelData));
@@ -769,7 +766,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 }
 
 /*!
-    \qmlclass ListElement
+    \qmlclass ListElement QDeclarativeListElement
     \ingroup qml-working-with-data
     \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
@@ -1250,7 +1247,6 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
 }
 
 void ModelNode::setListValue(const QScriptValue& valuelist) {
-    QScriptValueIterator it(valuelist);
     values.clear();
     int size = valuelist.property(QLatin1String("length")).toInt32();
     for (int i=0; i<size; i++) {

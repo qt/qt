@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-\page anchor-layout.html
+\page qml-anchor-layout.html
 \target anchor-layout
 \title Anchor-based Layout in QML
 

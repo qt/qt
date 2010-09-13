@@ -133,6 +133,7 @@ ActionData NewActionDialog::actionData() const
     rc.name = actionName();
     rc.toolTip = m_ui->tooltipEditor->text();
     rc.icon = m_ui->iconSelector->icon();
+    rc.icon.setTheme(m_ui->iconThemeEditor->theme());
     rc.checkable = m_ui->checkableCheckBox->checkState() == Qt::Checked;
     rc.keysequence = PropertySheetKeySequenceValue(m_ui->keySequenceEdit->keySequence());
     return rc;
@@ -142,7 +143,8 @@ void NewActionDialog::setActionData(const ActionData &d)
 {
     m_ui->editActionText->setText(d.text);
     m_ui->editObjectName->setText(d.name);
-    m_ui->iconSelector->setIcon(d.icon);
+    m_ui->iconSelector->setIcon(d.icon.unthemed());
+    m_ui->iconThemeEditor->setTheme(d.icon.theme());
     m_ui->tooltipEditor->setText(d.toolTip);
     m_ui->keySequenceEdit->setKeySequence(d.keysequence.value());
     m_ui->checkableCheckBox->setCheckState(d.checkable ? Qt::Checked : Qt::Unchecked);

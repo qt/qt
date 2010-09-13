@@ -50,7 +50,7 @@
 #include "qt_windows.h"
 #include <private/qapplication_p.h>
 
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <limits.h>
@@ -140,7 +140,7 @@ static void resolveGetCharWidthI()
     if (resolvedGetCharWidthI)
         return;
     resolvedGetCharWidthI = true;
-    ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
+    ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
 #endif // !defined(Q_WS_WINCE)
 
@@ -487,7 +487,7 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
 
-    return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
+    return glyph_metrics_t(0, -tm.tmAscent, w - lastRightBearing(glyphs), tm.tmHeight, w, 0);
 }
 
 #ifndef Q_WS_WINCE

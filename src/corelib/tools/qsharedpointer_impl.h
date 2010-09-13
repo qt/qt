@@ -465,6 +465,13 @@ public:
         BaseClass::internalCopy(other);
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedPointer<T> &operator=(QSharedPointer<T> &&other)
+    {
+        QSharedPointer<T>::internalSwap(other);
+        return *this;
+    }
+#endif
 
     template <class X>
     inline QSharedPointer(const QSharedPointer<X> &other) : BaseClass(other)

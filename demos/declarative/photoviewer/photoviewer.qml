@@ -81,6 +81,11 @@ Rectangle {
             onClicked: mainWindow.editMode = !mainWindow.editMode
             anchors.horizontalCenter: parent.horizontalCenter
         }
+        Button {
+            id: quitButton; label: qsTr("Quit"); rotation: -2;
+            onClicked: Qt.quit()
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
     }
 
     Rectangle {
