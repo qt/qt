@@ -266,10 +266,10 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 
     int n = (count128 + 3) / 4;
     switch (count128 & 0x3) {
-    case 0: do { _mm_store_si128(dst128++, value128);
-    case 3:      _mm_store_si128(dst128++, value128);
-    case 2:      _mm_store_si128(dst128++, value128);
-    case 1:      _mm_store_si128(dst128++, value128);
+    case 0: do { _mm_stream_si128(dst128++, value128);
+    case 3:      _mm_stream_si128(dst128++, value128);
+    case 2:      _mm_stream_si128(dst128++, value128);
+    case 1:      _mm_stream_si128(dst128++, value128);
     } while (--n > 0);
     }
 
