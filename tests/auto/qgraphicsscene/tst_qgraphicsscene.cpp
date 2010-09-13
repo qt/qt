@@ -287,6 +287,7 @@ private slots:
     void taskQTBUG_5904_crashWithDeviceCoordinateCache();
     void taskQT657_paintIntoCacheWithTransparentParts();
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
+    void taskQT_3674_doNotCrash();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4563,6 +4564,25 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         delete view;
     }
+}
+
+void tst_QGraphicsScene::taskQT_3674_doNotCrash()
+{
+    QGraphicsScene scene;
+
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+
+    QPixmap pixmap(view.size());
+    QPainter painter(&pixmap);
+    view.render(&painter);
+    painter.end();
+
+    scene.addItem(new QGraphicsWidget);
+    scene.setBackgroundBrush(Qt::green);
+
+    QApplication::processEvents();
+    QApplication::processEvents();
 }
 
 void tst_QGraphicsScene::zeroScale()

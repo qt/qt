@@ -303,7 +303,9 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click was held.
 
-    The \e accepted property of the MouseEvent parameter is ignored in this handler.
+    If the \e accepted property of the \l {MouseEvent}{mouse} parameter is set to false
+    in the handler, the onPressed/onReleased/onClicked handlers will be called for the second
+    click; otherwise they are supressed.  The accepted property defaults to true.
 */
 
 /*!
@@ -525,12 +527,13 @@ void QDeclarativeMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *even
     if (!d->absorb) {
         QDeclarativeItem::mouseDoubleClickEvent(event);
     } else {
-        QDeclarativeItem::mouseDoubleClickEvent(event);
-        if (event->isAccepted()) {
-            // Only deliver the event if we have accepted the press.
-            d->saveEvent(event);
-            QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
-            emit this->doubleClicked(&me);
+        d->saveEvent(event);
+        QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
+        me.setAccepted(d->isDoubleClickConnected());
+        emit this->doubleClicked(&me);
+        if (!me.isAccepted()) {
+            // Only deliver the press event if we haven't accepted the double click.
+            QDeclarativeItem::mouseDoubleClickEvent(event);
         }
     }
 }

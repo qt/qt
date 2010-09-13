@@ -2241,7 +2241,9 @@ void QDeclarativeGridView::trackedPositionChanged()
         }
         if (viewPos != pos) {
             cancelFlick();
+            d->calcVelocity = true;
             d->setPosition(pos);
+            d->calcVelocity = false;
         }
     }
 }
