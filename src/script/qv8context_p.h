@@ -40,20 +40,26 @@ QT_BEGIN_NAMESPACE
 */
 class QV8Context {
 public:
-    inline QV8Context(QScriptEnginePrivate* engine)
+    // OperationMode was introduced to reduce number of checking for a null engine pointer. If we
+    // know that given pointer is not null than we should pass NotNullEngine as constructor argument
+    // that would nicely remove checking on compilation time.
+    enum OperationMode {Default, NotNullEngine};
+    inline QV8Context(QScriptEnginePrivate* engine, const OperationMode mode = Default)
         : m_engine(engine)
+        , m_mode(mode)
     {
         init();
     }
-    inline QV8Context(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine)
+    inline QV8Context(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
         : m_engine(engine)
+        , m_mode(mode)
     {
         init();
     }
 
-    ~QV8Context()
+    inline ~QV8Context()
     {
-        if (m_engine) {
+        if (m_mode == NotNullEngine || m_engine) {
             m_engine->exitContext();
         }
     }
@@ -61,13 +67,15 @@ public:
 private:
     inline void init() const
     {
-        if (m_engine) {
+        if (m_mode == NotNullEngine || m_engine) {
+            Q_ASSERT(m_engine);
             m_engine->enterContext();
         }
     }
 
     Q_DISABLE_COPY(QV8Context);
     QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    const OperationMode m_mode;
 };
 
 
