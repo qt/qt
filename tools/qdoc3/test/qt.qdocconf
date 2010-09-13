@@ -50,17 +50,10 @@ qhp.Qt.extraFiles          = index.html \
                  images/dynamiclayouts-example.png \
                  scripts/functions.js \
                  scripts/jquery.js \
-                 scripts/shBrushCpp.js \
-                 scripts/shCore.js \
-                 scripts/shLegacy.js \
                  scripts/narrow.js \
                  scripts/superfish.js \
-                 style/shCore.css \
-                 style/shThemeDefault.css \
                  style/narrow.css \
                  style/superfish.css \
-                 style/superfish_skin.css \
-                 style/OfflineStyle.css \
                  style/style_ie6.css \
                  style/style_ie7.css \
                  style/style_ie8.css \

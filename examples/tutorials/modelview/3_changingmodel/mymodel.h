@@ -44,7 +44,6 @@
 #include <QAbstractTableModel>
 #include <QTimer>
 
-
 class MyModel : public QAbstractTableModel
 {
     Q_OBJECT

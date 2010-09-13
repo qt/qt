@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = Qt Linguist
 description             = Qt Linguist Manual
-url                     = http://qt.nokia.com/doc/4.7
+url                     =  http://doc.qt.nokia.com/4.7/
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
@@ -18,6 +18,9 @@ qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
 qhp.Linguist.extraFiles          = images/bg_l.png \
                              	    images/bg_l_blank.png \
+									images/bg_ll_blank.png \
+									images/bg_ul_blank.png \
+									images/header_bg.png \
                              	    images/bg_r.png \
 									images/box_bg.png \
 									images/breadcrumb.png \
@@ -25,20 +28,23 @@ qhp.Linguist.extraFiles          = images/bg_l.png \
                              	    images/bullet_dn.png \
 									images/bullet_sq.png \
                              	    images/bullet_up.png \
+									images/arrow_down.png \
                              	    images/feedbackground.png \
                              	    images/horBar.png \
 									images/page.png \
 									images/page_bg.png \
 									images/sprites-combined.png \
-									images/arrow-down.png \
-s									images/spinner.gif \
+									images/spinner.gif \
                              	    images/stylesheet-coffee-plastique.png \
                              	    images/taskmenuextension-example.png \
                              	   images/coloreditorfactoryimage.png \
                              	   images/dynamiclayouts-example.png \
 									scripts/functions.js \
 									scripts/jquery.js \
-									style/OfflineStyle.css \
+									scripts/narrow.js \
+									scripts/superfish.js \
+									style/narrow.css \
+									style/superfish.css \
 									style/style_ie6.css \
 									style/style_ie7.css \
 									style/style_ie8.css \

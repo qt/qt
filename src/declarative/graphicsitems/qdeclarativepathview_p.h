@@ -226,6 +226,7 @@ public:
             emit pathChanged();
         }
     }
+    qreal m_percent;
 
 Q_SIGNALS:
     void currentItemChanged();

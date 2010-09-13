@@ -43,9 +43,11 @@
 
 #include <QtGui/QMainWindow>
 
-class QTreeView; //forward declaration
+QT_BEGIN_NAMESPACE // QT_BEGIN_NAMESPACE / QT_END_NAMESPACE are not needed in Qt user code
+class QTreeView; //forward declarations
 class QStandardItemModel;
 class QItemSelection;
+QT_END_NAMESPACE
 
 
 class MainWindow : public QMainWindow
