@@ -62,6 +62,8 @@
 #include <QApplication>
 #include <QWindowSystemInterface>
 
+#include "qgenericunixfontdatabase.h"
+
 QT_BEGIN_NAMESPACE
 
 
@@ -409,6 +411,7 @@ QImage *QVFbScreen::screenImage()
 }
 
 QVFbIntegration::QVFbIntegration(const QStringList &paramList)
+    : mFontDb(new QGenericUnixFontDatabase())
 {
     int displayId = 0;
     if (paramList.length() > 0)
@@ -433,6 +436,11 @@ QWindowSurface *QVFbIntegration::createWindowSurface(QWidget *widget, WId) const
 QPlatformWindow *QVFbIntegration::createPlatformWindow(QWidget *widget, WId) const
 {
     return new QVFbWindow(mPrimaryScreen, widget);
+}
+
+QPlatformFontDatabase *QVFbIntegration::fontDatabase() const
+{
+    return mFontDb;
 }
 
 QT_END_NAMESPACE

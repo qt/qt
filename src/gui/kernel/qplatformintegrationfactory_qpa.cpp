@@ -61,7 +61,6 @@ QPlatformIntegration *QPlatformIntegrationFactory::create(const QString& key)
     QString platform = paramList.takeFirst().toLower();
 
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    qDebug() << loader()->keys();
     if (QPlatformIntegrationFactoryInterface *factory = qobject_cast<QPlatformIntegrationFactoryInterface*>(loader()->instance(platform)))
         ret = factory->create(platform, paramList);
 #endif

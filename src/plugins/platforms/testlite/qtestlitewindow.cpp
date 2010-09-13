@@ -622,7 +622,7 @@ void QTestLiteWindow::handleKeyEvent(QEvent::Type type, void *ev)
         int qtcode = chars.toUpper()[0]; //Not exactly right...
 	if (modifiers & Qt::ControlModifier && qtcode < ' ')
 	  qtcode = chars[0] + '@';
-        QWindowSystemInterface::handleKeyEvent(widget(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
+        QWindowSystemInterface::handleKeyEvent(0, e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
     } else {
         qWarning() << "unknown X keycode" << hex << e->keycode << keySym;
     }
@@ -647,9 +647,9 @@ WId QTestLiteWindow::winId() const
 
 void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
-    QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
-    XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
-    XMapWindow(xd->display, x_window);
+        QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
+        XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
+        XMapWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::raise()
@@ -1441,7 +1441,7 @@ bool MyDisplay::handleEvent(XEvent *xe)
         xw->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
         break;
 
-    case XKeyPress:
+        case XKeyPress:
         xw->handleKeyEvent(QEvent::KeyPress, &xe->xkey);
         break;
 

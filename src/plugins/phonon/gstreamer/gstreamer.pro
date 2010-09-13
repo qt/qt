@@ -58,7 +58,7 @@ SOURCES += $$PHONON_GSTREAMER_DIR/abstractrenderer.cpp \
  $$PHONON_GSTREAMER_DIR/volumefadereffect.cpp \
  $$PHONON_GSTREAMER_DIR/widgetrenderer.cpp
 
-!embedded {
+x11 {
     HEADERS += $$PHONON_GSTREAMER_DIR/x11renderer.h
     SOURCES += $$PHONON_GSTREAMER_DIR/x11renderer.cpp
 }

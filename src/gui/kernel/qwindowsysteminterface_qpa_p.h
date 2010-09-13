@@ -49,8 +49,6 @@ QT_BEGIN_NAMESPACE
 
 class QWindowSystemInterfacePrivate {
 public:
-    Q_ENUMS(EventType);
-
     enum EventType {
         Close,
         GeometryChange,

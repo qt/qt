@@ -70,7 +70,7 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window, WId wId)
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
 {
-
+    delete m_pixmap;
 }
 
 QPaintDevice *QDirectFbWindowSurface::paintDevice()

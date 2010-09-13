@@ -46,6 +46,8 @@
 #include "qdirectfbcursor.h"
 #include "qdirectfbwindow.h"
 
+#include "qgenericunixfontdatabase.h"
+
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qpixmap_raster_p.h>
 
@@ -80,6 +82,7 @@ QDirectFbScreen::~QDirectFbScreen()
 }
 
 QDirectFbIntegration::QDirectFbIntegration()
+    : mFontDb(new QGenericUnixFontDatabase())
 {
     const QStringList args = QCoreApplication::arguments();
     int argc = args.size();
@@ -133,9 +136,9 @@ QWindowSurface *QDirectFbIntegration::createWindowSurface(QWidget *widget, WId w
     return new QDirectFbWindowSurface(widget,winId);
 }
 
-QBlittable *QDirectFbIntegration::createBlittable(const QSize &size) const
+QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 {
-    return new QDirectFbBlitter(size);
+    return mFontDb;
 }
 
 QT_END_NAMESPACE

@@ -49,6 +49,7 @@
 #include <QtGui/QPainter>
 
 #include <QtCore/QTimer>
+#include "qgenericunixfontdatabase.h"
 
 QVNCScreen::QVNCScreen(QRect screenSize, int screenId)
         : QFbScreen::QFbScreen()
@@ -100,7 +101,7 @@ static void usage()
 }
 
 QVNCIntegration::QVNCIntegration(const QStringList& paramList)
-    : virtualDesktop(false)
+    : virtualDesktop(false), fontDb(new QGenericUnixFontDatabase())
 {
     int sizeX = defaultWidth();
     int sizeY = defaultHeight();
@@ -233,4 +234,9 @@ void QVNCIntegration::moveToScreen(QWidget *window, int screen)
     }
     window->platformWindow()->setGeometry(window->geometry());  // this should be unified elsewhere
     newScreen->addWindow(static_cast<QFbWindow *>(window->platformWindow()));
+}
+
+QPlatformFontDatabase *QVNCIntegration::fontDatabase() const
+{
+    return fontDb;
 }

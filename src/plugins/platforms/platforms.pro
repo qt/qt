@@ -5,7 +5,15 @@ contains(QT_CONFIG, openvg):contains(QT_CONFIG, egl) {
 
     SUBDIRS += minimal
 
-#this don't work. but leave it for now
-qpa:x11 {
+contains(QT_CONFIG, mitshm) {
     SUBDIRS += testlite
+}
+
+linux {
+    SUBDIRS += linuxfb
+}
+
+unix {
+    SUBDIRS +=  vnc \
+                qvfb
 }

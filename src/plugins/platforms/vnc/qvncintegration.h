@@ -45,6 +45,7 @@
 #include "qvnccursor.h"
 #include "../fb_base/fb_base.h"
 #include <QPlatformIntegration>
+#include "qgenericunixfontdatabase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -91,10 +92,13 @@ public:
     bool isVirtualDesktop() { return virtualDesktop; }
     void moveToScreen(QWidget *window, int screen);
 
+    QPlatformFontDatabase *fontDatabase() const;
+
 private:
     QVNCScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     bool virtualDesktop;
+    QPlatformFontDatabase *fontDb;
 };
 
 

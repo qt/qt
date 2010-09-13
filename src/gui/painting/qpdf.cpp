@@ -916,7 +916,7 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
 }
 
 
-QByteArray QPdf::stripSpecialCharacters(const QByteArray &string)
+Q_GUI_EXPORT QByteArray QPdf::stripSpecialCharacters(const QByteArray &string)
 {
     QByteArray s = string;
     s.replace(' ', "");

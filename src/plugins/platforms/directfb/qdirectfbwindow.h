@@ -65,10 +65,13 @@ public:
     void lower();
     WId winId() const;
 
+    QPlatformGLContext *glContext() const;
+
 private:
     IDirectFBWindow *m_dfbWindow;
     QDirectFbInput *m_inputHandler;
 
+    QPlatformGLContext *m_context;
 };
 
 QT_END_NAMESPACE

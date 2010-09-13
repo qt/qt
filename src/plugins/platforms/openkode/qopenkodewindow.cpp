@@ -104,9 +104,8 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
     format.setRedBufferSize(5);
     format.setGreenBufferSize(6);
     format.setBlueBufferSize(5);
-    tlw->setPlatformWindowFormat(format);
 
-    m_eglConfig = q_configFromQPlatformWindowFormat(screen->eglDisplay(),tlw->platformWindowFormat());
+    m_eglConfig = q_configFromQPlatformWindowFormat(screen->eglDisplay(),format);
 
     m_kdWindow = kdCreateWindow(screen->eglDisplay(),
                               m_eglConfig,
@@ -169,7 +168,6 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
 
 QOpenKODEWindow::~QOpenKODEWindow()
 {
-    qDebug() << "destroying window" << m_kdWindow;
     if (m_platformGlContext != QPlatformGLContext::defaultSharedContext()) {
         delete m_platformGlContext;
     }
@@ -274,7 +272,6 @@ void QOpenKODEWindow::processMouseEvents(const KDEvent *event)
     default:
         buttons = Qt::NoButton;
     }
-    qDebug() << x << y;
     QPoint pos(x,y);
     QWindowSystemInterface::handleMouseEvent(0,event->timestamp,pos,pos,buttons);
 }

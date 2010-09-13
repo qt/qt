@@ -25,5 +25,7 @@ HEADERS =   qeglfsintegration.h \
             qeglfswindowsurface.h \
             qeglfsscreen.h
 
+include(../fontdatabases/genericunix/genericunix.pri)
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

@@ -41,6 +41,8 @@
 
 #include "qplatformintegration_qpa.h"
 
+#include <QtGui/QPlatformFontDatabase>
+
 QT_BEGIN_NAMESPACE
 
 QPixmap QPlatformIntegration::grabWindow(WId window, int x, int y, int width, int height) const
@@ -61,6 +63,15 @@ QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration(
 bool QPlatformIntegration::hasOpenGL() const
 {
     return false;
+}
+
+QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
+{
+    static QPlatformFontDatabase *db = 0;
+    if (!db) {
+        db = new QPlatformFontDatabase;
+    }
+    return db;
 }
 
 QT_END_NAMESPACE

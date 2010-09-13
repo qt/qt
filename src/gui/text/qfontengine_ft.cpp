@@ -724,7 +724,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
 
     metrics = face->size->metrics;
 
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     /*
        TrueType fonts with embedded bitmaps may have a bitmap font specific
        ascent/descent in the EBLC table. There is no direct public API
@@ -754,6 +754,11 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format)
     fsType = freetype->fsType();
     defaultGlyphSet.id = allocateServerGlyphSet();
     return true;
+}
+
+void QFontEngineFT::setDefaultHintStyle(HintStyle style)
+{
+    default_hint_style = style;
 }
 
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyphMetrics(QGlyphSet *set, uint glyph) const

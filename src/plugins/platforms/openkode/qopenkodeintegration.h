@@ -49,6 +49,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 #include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformFontDatabase>
 
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
@@ -57,13 +58,14 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 struct KDDesktopNV;
+struct KDDisplayNV;
 class QOpenKODECursor;
 
 class QOpenKODEScreen : public QPlatformScreen
 {
     Q_OBJECT
 public:
-    QOpenKODEScreen();
+    QOpenKODEScreen(KDDisplayNV *kdDisplay,  KDDesktopNV *kdDesktop);
     ~QOpenKODEScreen() {}
 
     QRect geometry() const { return mGeometry; }
@@ -96,6 +98,8 @@ public:
 
     QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
+    QPlatformFontDatabase *fontDatabase() const;
+
     virtual QList<QPlatformScreen *> screens() const { return mScreens; }
 
     static GLuint blitterProgram();
@@ -103,6 +107,7 @@ public:
 private:
     QList<QPlatformScreen *> mScreens;
     QOpenKODEEventLoopIntegration *mEventLoopIntegration;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

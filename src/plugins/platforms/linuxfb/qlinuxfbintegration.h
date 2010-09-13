@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QLinuxFbScreen : public QFbScreen
 {
+    Q_OBJECT
 public:
     QLinuxFbScreen(uchar * d, int w, int h, int lstep, QImage::Format screenFormat);
     void setGeometry(QRect rect);
@@ -81,6 +82,8 @@ public:
     QWindowSurface *createWindowSurface(QWidget *widget, WId WinId) const;
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
+
+    QPlatformFontDatabase *fontDatabase() const;
 
 private:
     QLinuxFbScreen *mPrimaryScreen;
@@ -122,6 +125,7 @@ private:
     void setPixelFormat(struct fb_var_screeninfo);
     void createPalette(fb_cmap &cmap, fb_var_screeninfo &vinfo, fb_fix_screeninfo &finfo);
     void blank(bool on);
+    QPlatformFontDatabase *fontDb;
 };
 
 QT_END_NAMESPACE

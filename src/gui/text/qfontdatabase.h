@@ -167,6 +167,7 @@ private:
     friend class QFontEngineMultiXLFD;
     friend class QFontEngineMultiQWS;
     friend class QFontEngineMultiS60;
+    friend class QFontEngineMultiQPA;
 
     QFontDatabasePrivate *d;
 };

@@ -49,6 +49,7 @@
 #include <QPlatformCursor>
 
 #include "qtestlitewindow.h"
+#include "qgenericunixfontdatabase.h"
 
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
@@ -84,8 +85,8 @@ public:
 
 QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
     : mUseOpenGL(useOpenGL)
+    , mFontDb(new QGenericUnixFontDatabase())
 {
-
     xd = new MyDisplay;
 
     mPrimaryScreen = new QTestLiteScreen();
@@ -134,6 +135,11 @@ QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, in
 {
     QImage img = xd->grabWindow(window, x, y, width, height);
     return QPixmap::fromImage(img);
+}
+
+QPlatformFontDatabase *QTestLiteIntegration::fontDatabase() const
+{
+    return mFontDb;
 }
 
 bool QTestLiteIntegration::hasOpenGL() const

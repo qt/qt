@@ -84,6 +84,8 @@ public:
 
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
+    QPlatformFontDatabase *fontDatabase() const;
+
     bool hasOpenGL() const;
 
     MyDisplay *xd;
@@ -92,6 +94,7 @@ private:
     bool mUseOpenGL;
     QTestLiteScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

@@ -495,7 +495,7 @@ static void collectSingleContour(qreal x0, qreal y0, uint *grid, int x, int y, i
     path->closeSubpath();
 }
 
-void qt_addBitmapToPath(qreal x0, qreal y0, const uchar *image_data, int bpl, int w, int h, QPainterPath *path)
+Q_GUI_EXPORT void qt_addBitmapToPath(qreal x0, qreal y0, const uchar *image_data, int bpl, int w, int h, QPainterPath *path)
 {
     uint *grid = new uint[(w+1)*(h+1)];
     // set up edges
