@@ -26,7 +26,6 @@
 ****************************************************************************/
 
 /*!
-
 \page qml-extending-tutorial-index.html
 \title Tutorial: Writing QML extensions with C++
 

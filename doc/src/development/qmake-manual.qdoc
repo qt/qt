@@ -1079,27 +1079,27 @@
 
     \target BLD_INF_RULES
     \section1 BLD_INF_RULES
-    
+
     \e {This is only used on the Symbian platform.}
-    
+
     Generic \c bld.inf file content can be specified with \c BLD_INF_RULES variables. 
     The section of \c bld.inf file where each rule goes is appended to 
     \c BLD_INF_RULES with a dot.
-    
+
     For example:
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 146
-    
+
     This will add the specified statements to the \c prj_exports section of the 
     generated \c bld.inf file.
-    
+
     It is also possible to add multiple rows in a single block. Each double
     quoted string will be placed on a new row in the generated \c bld.inf file.
-    
+
     For example: 
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 143
-       
+
     Any rules you define will be added after automatically generated
     rules in each section.
 
@@ -1274,7 +1274,7 @@
     the contents of the \l{#QMAKE_BUNDLE_DATA}{QMAKE_BUNDLE_DATA} variable.
 
     These options only have an effect on the Symbian platform:
-    
+
     \table 95%
     \header \o Option \o Description
     \row \o stdbinary \o Builds an Open C binary (i.e. STDDLL, STDEXE, or STDLIB,
@@ -1286,7 +1286,7 @@
          Note that this only affects automatically generated bld.inf content;
          the content added via \c BLD_INF_RULES variable is not affected.
     \endtable
-    
+
     These options have an effect on Linux/Unix platforms:
 
     \table 95%
@@ -1353,7 +1353,7 @@
     The default deployment target path for Windows CE is
     \c{%CSIDL_PROGRAM_FILES%\target}, which usually gets expanded to
     \c{\Program Files\target}. For the Symbian platform, the default target
-is the application private directory on the drive it is installed to.
+    is the application private directory on the drive it is installed to.
 
     It is also possible to specify multiple \c sources to be deployed on
     target \c paths. In addition, different variables can be used for
@@ -1366,7 +1366,7 @@ is the application private directory on the drive it is installed to.
     \note In Windows CE all linked Qt libraries will be deployed to the path
     specified by \c{myFiles.path}. On Symbian platform all libraries and executables
     will always be deployed to the \\sys\\bin of the installation drive.
-    
+
     Since the Symbian platform build system automatically moves binaries to certain
     directories under the epoc32 directory, custom plugins, executables or
     dynamically loadable libraries need special handling. When deploying
@@ -1389,7 +1389,7 @@ is the application private directory on the drive it is installed to.
     \c pkg_postrules or \c pkg_prerules are not parsed by qmake, so they 
     should be in a format understood by Symbian package generation tools. 
     Please consult the Symbian platform documentation for correct syntax.
-    
+
     For example, to deploy DLL and add a new dependency: 
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 140
@@ -1397,7 +1397,7 @@ is the application private directory on the drive it is installed to.
     Please note that \c pkg_prerules can also replace default statements in
     pkg file. If no pkg_prerules is defined, qmake makes sure that PKG file
     syntax is correct and it contains all mandatory statements such as:
-    
+
     \list
     \o languages, for example \BR
         &EN,FR
@@ -1407,7 +1407,7 @@ is the application private directory on the drive it is installed to.
         %{"Vendor-EN", ..., "Vendor-FR"}
         :"Unique vendor name"
     \endlist    
-    
+
     If you decide to override any of these statements, you need to pay 
     attention that also other statements stay valid. For example if you
     override languages statement, you must override also package-header
@@ -1419,7 +1419,7 @@ is the application private directory on the drive it is installed to.
     - e.g. if a specific device is required to run the application or
     more languages need to be supported by the package file. The supported
     \c default_deployment rules that can be disabled are:
-    
+
     \list
     \o pkg_depends_qt
     \o pkg_depends_webkit
@@ -1427,9 +1427,9 @@ is the application private directory on the drive it is installed to.
     \endlist
 
     For example:
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 141
-    
+
     On the Symbian platform, you can use \c{DEPLOYMENT.installer_header}
     variable to generate smart installer wrapper for your application.
     If you specify just UID of the installer package as the value, then
@@ -1454,10 +1454,10 @@ is the application private directory on the drive it is installed to.
     \note In Windows CE, No plugins will be deployed automatically. 
     If the application depends on plugins, these plugins have to be specified 
     manually.
-    
+
     \note On the Symbian platform, all plugins supported by this variable
-will be deployed by default with Qt libraries, so generally using this
-variable is not needed.
+    will be deployed by default with Qt libraries, so generally using this
+    variable is not needed.
 
     For example:
 
@@ -1561,14 +1561,14 @@ variable is not needed.
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 34
 
     See also \l{#SOURCES}{SOURCES}.
-    
+
     \target ICON
     \section1 ICON
-    
+
     This variable is used only in MAC and the Symbian platform to set the application icon.
     Please see \l{Setting the Application Icon}{the application icon documentation}
     for more information.
-    
+
     \target INCLUDEPATH
     \section1 INCLUDEPATH
 
@@ -1657,7 +1657,7 @@ variable is not needed.
     file name suffix.
 
     \bold{Note:} On the Symbian platform, the build system makes a
-distinction between shared and
+    distinction between shared and
     static libraries. In most cases, qmake will figure out which library you
     are refering to, but in some cases you may have to specify it explicitly to
     get the expected behavior. This typically happens if you are building a
@@ -1693,6 +1693,8 @@ distinction between shared and
     for building a project.  The value of this variable is typically
     handled by \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \bold{Note:} On the Symbian platform, this variable is ignored.
+
     \target MAKEFILE_GENERATOR
     \section1 MAKEFILE_GENERATOR
 
@@ -1702,28 +1704,28 @@ distinction between shared and
 
     \target MMP_RULES
     \section1 MMP_RULES
-    
+
     \e {This is only used on the Symbian platform.}
-    
+
     Generic MMP file content can be specified with this variable. 
-    
+
     For example:
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 137
-    
+
     This will add the specified statement to the end of the generated MMP file.
-    
+
     It is also possible to add multiple rows in a single block. Each double
     quoted string will be placed on a new row in the generated MMP file.
-    
+
     For example: 
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 138
-       
+
     If you need to include a hash (\c{#}) character inside the
     \c MMP_RULES statement, it can be done with the variable 
     \c LITERAL_HASH as follows:
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 139
 
     There is also a convenience function for adding conditional rules
@@ -2031,8 +2033,8 @@ distinction between shared and
     respectively.
 
     \bold{Note:} On the Symbian platform, this variable can be used to pass
-architecture specific options to each compiler in the Symbian build system.
-For example:
+    architecture specific options to each compiler in the Symbian build system.
+    For example:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 131
 
@@ -2374,10 +2376,10 @@ For example:
     \section1 QMAKE_LFLAGS_RPATH
 
     \e {This is used on Unix platforms only.}
-    
+
     Library paths in this definition are added to the executable at link
     time so that the added paths will be preferentially searched at runtime.
-    
+
     \section1 QMAKE_LFLAGS_QT_DLL
 
     This variable contains link flags when building programs that
@@ -2716,7 +2718,7 @@ For example:
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 45
 
     \section1 QMAKE_RPATH
-    
+
     \e {This is used on Unix platforms only.}
 
     Is equivalent to \l QMAKE_LFLAGS_RPATH.
@@ -2870,30 +2872,30 @@ For example:
     This variable contains the name of the resource file for the application.
     The value of this variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
-     
+
     \target RSS_RULES
     \section1 RSS_RULES
-    
+
     \e {This is only used on the Symbian platform.}    
-    
+
     Generic RSS file content can be specified with this variable. The syntax is 
     similar to \c MMP_RULES and \c BLD_INF_RULES.
-    
+
     For example:
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 144
-    
+
     This will add the specified statement to the end of the \c APP_REGISTRATION_INFO
     resource struct in the generated registration resource file.
     As an impact of this statement, the application will not be visible in application shell.
-    
+
     It is also possible to add multiple rows in a single block. Each double
     quoted string will be placed on a new row in the registration resource file.
-    
+
     For example: 
-    
+
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 145
-    
+
     This example will install the application to MyFolder in the Symbian
     platform application shell. In addition it will make the application to
     be launched in background.
@@ -2933,7 +2935,7 @@ For example:
     \section1 S60_VERSION
 
     \e {This is only used on the Symbian platform.}
-    
+
     Contains the version number of the underlying S60 SDK; e.g. "5.0".
 
     \target SIGNATURE_FILE
@@ -2969,8 +2971,9 @@ For example:
     \section1 SUBDIRS
 
     This variable, when used with the \l{#TEMPLATE}{\c subdirs template}
-    contains the names of all subdirectories that contain parts of the project
-    that need be built. Each subdirectory must contain its own project file.
+    contains the names of all subdirectories or project files that contain
+    parts of the project that need be built. Each subdirectory specified
+    using this variable must contain its own project file.
 
     For example:
 

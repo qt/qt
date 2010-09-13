@@ -127,7 +127,7 @@ function shuffleDown() {
             } else {
                 if (fallDist > 0) {
                     var obj = board[index(column, row)];
-                    obj.y += fallDist * gameCanvas.blockSize;
+                    obj.y = (row + fallDist) * gameCanvas.blockSize;
                     board[index(column, row + fallDist)] = obj;
                     board[index(column, row)] = null;
                 }
@@ -145,7 +145,7 @@ function shuffleDown() {
                     obj = board[index(column, row)];
                     if (obj == null)
                         continue;
-                    obj.x -= fallDist * gameCanvas.blockSize;
+                    obj.x = (fallDist - column) * gameCanvas.blockSize;
                     board[index(column - fallDist, row)] = obj;
                     board[index(column, row)] = null;
                 }

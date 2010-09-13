@@ -118,6 +118,7 @@ private slots:
     void valueTypes();
     void cppnamespace();
     void aliasProperties();
+    void aliasPropertiesAndSignals();
     void componentCompositeType();
     void i18n();
     void i18n_data();
@@ -1049,6 +1050,17 @@ void tst_qdeclarativelanguage::aliasProperties()
 
         delete object;
     }
+}
+
+// QTBUG-13374 Test that alias properties and signals can coexist
+void tst_qdeclarativelanguage::aliasPropertiesAndSignals()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertiesAndSignals.qml"));
+    VERIFY_ERRORS(0);
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
 }
 
 // Test that the root element in a composite type can be a Component

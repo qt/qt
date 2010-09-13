@@ -571,6 +571,7 @@ public:
     void startAnimation(QS60StyleEnums::SkinParts animation);
     void stopAnimation(QS60StyleEnums::SkinParts animation);
     static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
+    static void removeAnimations();
 
 #endif
 
