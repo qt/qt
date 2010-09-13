@@ -193,7 +193,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
+QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, , QFileSystemMetaData &data)
 {
     if (entry.isEmpty() || entry.isRoot())
         return entry;
@@ -223,10 +223,14 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
 # endif
     if (ret) {
+        data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
+        data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
         free(ret);
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT) { // file doesn't exist
+        data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
+        data.entryFlags &= ~(QFileSystemMetaData::ExistsAttribute);
         return QFileSystemEntry();
     }
     return entry;

@@ -57,7 +57,7 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
         switch (name) {
             case QAbstractFileEngine::CanonicalName:
             case QAbstractFileEngine::CanonicalPathName: {
-                QFileSystemEntry entry = QFileSystemEngine::canonicalName(fileEntry);
+                QFileSystemEntry entry = QFileSystemEngine::canonicalName(fileEntry, metaData);
                 if (cache_enabled) { // be smart and store both
                     fileNames[QAbstractFileEngine::CanonicalName] = entry.filePath();
                     fileNames[QAbstractFileEngine::CanonicalPathName] = entry.path();

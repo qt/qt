@@ -89,14 +89,15 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry)
+QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     if (entry.isEmpty() || entry.isRoot())
         return entry;
 
     QFileSystemEntry result = absoluteName(entry);
-    QFileSystemMetaData meta;
-    if (!fillMetaData(result, meta, QFileSystemMetaData::ExistsAttribute) || !meta.exists()) {
+    if (!data.hasFlags(QFileSystemMetaData::ExistsAttribute))
+        fillMetaData(result, data, QFileSystemMetaData::ExistsAttribute);
+    if (!data.exists()) {
         // file doesn't exist
         return QFileSystemEntry();
     } else {

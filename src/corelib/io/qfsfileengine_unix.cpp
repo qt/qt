@@ -923,7 +923,7 @@ QString QFSFileEngine::fileName(FileName file) const
         }
         return entry.filePath();
     } else if (file == CanonicalName || file == CanonicalPathName) {
-        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry));
+        QFileSystemEntry entry(QFileSystemEngine::canonicalName(d->fileEntry, d->metaData));
         if (file == CanonicalPathName)
             return entry.path();
         return entry.filePath();
