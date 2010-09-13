@@ -818,6 +818,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
+    v8::HandleScope handleScope;
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
@@ -840,7 +841,6 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
 {
     Q_D(QScriptEngine);
     v8::Context::Scope scope(*d);
-    v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
 }
 
@@ -1333,6 +1333,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
     return QScriptValuePrivate::get(d->newFunction(fun, 0, length));
 }
 
@@ -1364,6 +1365,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue &prototype, int length)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
     return QScriptValuePrivate::get(d->newFunction(fun, QScriptValuePrivate::get(prototype), length));
 }
 
@@ -1374,6 +1376,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, co
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
     return QScriptValuePrivate::get(d->newFunction(fun, arg));
 }
 
@@ -1542,7 +1545,6 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
 {
     Q_UNUSED(length);
 
-    v8::Context::Scope scope(m_context);
     v8::HandleScope handleScope;
 
     QScriptNativeFunctionData *data = new QScriptNativeFunctionData(this, fun);
@@ -1572,7 +1574,6 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
 QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     // See other newFunction() for commentary. They should have similar implementations.
-    v8::Context::Scope scope(m_context);
     v8::HandleScope handleScope;
 
     QScriptNativeFunctionWithArgData *data = new QScriptNativeFunctionWithArgData(this, fun, arg);
@@ -1650,7 +1651,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
         strippedFlags += QLatin1Char('g');
 
     Q_D(QScriptEngine);
-    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::Context::Scope contextScope(*d);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, strippedFlags)));
 }
@@ -1673,7 +1674,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *metaObject, const QScriptValue &ctor)
 {
     Q_D(QScriptEngine);
-    v8::Context::Scope contextScope(d_ptr->m_context);
+    v8::Context::Scope contextScope(*d);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(d->newQMetaObject(metaObject, ctor));
 }
