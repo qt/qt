@@ -372,11 +372,12 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \inlineimage flickable.gif
     \endfloat
 
-    The following example shows a large 
+    The following example shows a small view onto a large image in which the
+    user can drag or flick the image in order to view different parts of it.
 
-    \clearfloat
     \snippet doc/src/snippets/declarative/flickable.qml document
 
+    \clearfloat
     \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
