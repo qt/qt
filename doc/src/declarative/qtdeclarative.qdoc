@@ -63,10 +63,11 @@
   \macro QML_DECLARE_TYPEINFO(Type,Flags)
   \relates QDeclarativeEngine
 
-  Declares additional properties of a type.
+  Declares additional properties of the given \a Type as described by the
+  specified \a Flags.
   
   Current the only supported type info is \c QML_HAS_ATTACHED_PROPERTIES which
-  declares that the \c Type supports \l {Attached Properties}.
+  declares that the \a Type supports \l {Attached Properties}.
 */
 
 
