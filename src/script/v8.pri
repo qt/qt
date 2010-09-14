@@ -217,8 +217,10 @@ CONFIG(os_win32) {
 }
 
 #mode:debug
-CONFIG(mode_debug) {
-    $$V8DIR/objects-debug.cc \
-    $$V8DIR/prettyprinter.cc \
-    $$V8DIR/regexp-macro-assembler-tracer.cc
+CONFIG(debug) {
+DEFINES += DEBUG
+SOURCES += \
+    $$V8DIR/src/objects-debug.cc \
+    $$V8DIR/src/prettyprinter.cc \
+    $$V8DIR/src/regexp-macro-assembler-tracer.cc
 }
