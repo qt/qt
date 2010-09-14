@@ -371,7 +371,9 @@ static void addLink(const QString &linkTarget,
     }
 }
 
-
+/*!
+  The default constructor.
+ */
 DitaXmlGenerator::DitaXmlGenerator()
     : inLink(false),
       inContents(false),
@@ -390,11 +392,17 @@ DitaXmlGenerator::DitaXmlGenerator()
 {
 }
 
+/*!
+  The destructor has nothing to do.
+ */
 DitaXmlGenerator::~DitaXmlGenerator()
 {
     // nothing yet.
 }
 
+/*!
+  A lot of internal structures are initialized.
+ */
 void DitaXmlGenerator::initializeGenerator(const Config &config)
 {
     static const struct {
@@ -491,11 +499,17 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
 
 }
 
+/*!
+  All this does is call the same function in the base class.
+ */
 void DitaXmlGenerator::terminateGenerator()
 {
     Generator::terminateGenerator();
 }
 
+/*!
+  Returns "DITAXML".
+ */
 QString DitaXmlGenerator::format()
 {
     return "DITAXML";
@@ -587,7 +601,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::AutoLink:
         if ((noLinks > 0) && !inLink && !inContents && !inSectionHeading) {
-            const Node *node = 0;
+            const Node* node = 0;
             QString link = getLink(atom, relative, marker, &node);
             if (!link.isEmpty()) {
                 beginLink(link, node, relative, marker);
@@ -1528,15 +1542,12 @@ void DitaXmlGenerator::writeTargetAndHeader(const QString& target,
  */
 void DitaXmlGenerator::writeXrefListItem(const QString& link, const QString& text)
 {
-    qDebug() << "WXLI 1" << link;
     xmlWriter().writeStartElement("li");
     xmlWriter().writeStartElement("xref");
     xmlWriter().writeAttribute("href",link);
-    qDebug() << "WXLI 2";
     xmlWriter().writeCharacters(text);
     xmlWriter().writeEndElement(); // </xref>
     xmlWriter().writeEndElement(); // </li>
-    qDebug() << "WXLI 3";
 }
 
 /*!
@@ -1622,7 +1633,8 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     xmlWriter().writeEndElement(); // </topic>
 }
 
-#if 0    
+#if 0
+zzz
     /*
       Generate the TOC for the new doc format.
       Don't generate a TOC for the home page.
@@ -1677,7 +1689,8 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     }
 #endif
 
-#if 0        
+#if 0
+zzz
     sections = marker->sections(fake, CodeMarker::Summary, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
@@ -1713,7 +1726,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
 #endif
 
 /*!
-  Returns "xml" for this subclass of Generator.
+  Returns "xml" for this subclass of class Generator.
  */
 QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
 {
@@ -1721,6 +1734,7 @@ QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
 }
 
 /*!
+  zzz
   Output breadcrumb list in the html file.
  */
 void DitaXmlGenerator::generateBreadCrumbs(const QString& title,
@@ -1809,10 +1823,8 @@ void DitaXmlGenerator::generateBreadCrumbs(const QString& title,
 }
 
 /*!
-  Outputs an XML file header depending on which kind of DITA
+  Outputs an XML file header depending on which kind of DITA XML
   file is being generated.
-
-  \note This does not cover all cases yet.
  */
 void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
 {
@@ -1887,11 +1899,18 @@ void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
     xmlWriter().writeEndElement(); // <nameElement>
 }
 
+/*!
+  Writes a \a title as a <p> element with an \c {outputclass}
+  attribute of "h1 title".
+
+  Also generates and writes a \a subTitle as a <p> element,
+  if one is provided, but this probably doesn't work right.
+ */
 void DitaXmlGenerator::generateTitle(const QString& title,
-                                     const Text &subTitle,
+                                     const Text& subTitle,
                                      SubTitleSize subTitleSize,
-                                     const Node *relative,
-                                     CodeMarker *marker)
+                                     const Node* relative,
+                                     CodeMarker* marker)
 {
     if (!title.isEmpty()) {
         xmlWriter().writeStartElement("p");
@@ -1913,7 +1932,7 @@ void DitaXmlGenerator::generateTitle(const QString& title,
 }
 
 /*!
-  Outputs the brief command as a <shortdesc> element.
+  Outputs the \e brief command as a <shortdesc> element.
  */
 void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
@@ -1927,10 +1946,14 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
     }
 }
 
-void DitaXmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
+/*!
+  Writes the \c {#include ...} required to include the class
+  or namespace in a compilation.
+ */
+void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* marker)
 {
     if (!inner->includes().isEmpty()) {
-        xmlWriter().writeStartElement("pree");
+        xmlWriter().writeStartElement("pre");
         xmlWriter().writeAttribute("outputclass","highlightedcode");
         writeText(marker->markedUpIncludes(inner->includes()), marker, inner);
         xmlWriter().writeEndElement(); // </pre>
@@ -1938,13 +1961,15 @@ void DitaXmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *mark
 }
 
 /*!
+  zzz
   Generates a table of contents begining at \a node.
+  Currently just returns without writing anything.
  */
-void DitaXmlGenerator::generateTableOfContents(const Node *node,
-                                            CodeMarker *marker,
-                                            Doc::SectioningUnit sectioningUnit,
-                                            int numColumns,
-                                            const Node *relative)
+void DitaXmlGenerator::generateTableOfContents(const Node* node,
+                                               CodeMarker* marker,
+                                               Doc::SectioningUnit sectioningUnit,
+                                               int numColumns,
+                                               const Node* relative)
 
 {
     return;
@@ -2023,12 +2048,13 @@ void DitaXmlGenerator::generateTableOfContents(const Node *node,
 }
 
 /*!
+  zzz
   Revised for the new doc format.
   Generates a table of contents begining at \a node.
  */
-void DitaXmlGenerator::generateTableOfContents(const Node *node,
-                                            CodeMarker *marker,
-                                            QList<Section>* sections)
+void DitaXmlGenerator::generateTableOfContents(const Node* node,
+                                               CodeMarker* marker,
+                                               QList<Section>* sections)
 {
     QList<Atom*> toc;
     if (node->doc().hasTableOfContents()) 
@@ -2155,9 +2181,11 @@ QString DitaXmlGenerator::generateListOfAllMemberFile(const InnerNode* inner,
     generateHeader(inner, title);
     xmlWriter().writeStartElement("body");
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
-    out() << "<p>This is the complete list of members for ";
+    xmlWriter().writeStartElement("p");
+    xmlWriter().writeCharacters("This is the complete list of members for ");
     generateFullName(inner, 0, marker);
-    out() << ", including inherited members.</p>\n";
+    xmlWriter().writeCharacters(", including inherited members.");
+    xmlWriter().writeEndElement(); // </p>
 
     Section section = sections.first();
     generateSection(section.members, 0, marker, CodeMarker::SeparateList);
@@ -2200,16 +2228,16 @@ QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode* inner,
     if (status == CodeMarker::Compat) {
         xmlWriter().writeStartElement("p");
         xmlWriter().writeCharacters("<p><b>The following class members are part of the "
-                               "<xref href=\"qt3support.html\">Qt 3 support layer</xref>."
-                               "</b> They are provided to help you port old code to Qt 4. "
-                               "We advise against using them in new code.");
+                                    "<xref href=\"qt3support.html\">Qt 3 support layer</xref>."
+                                    "</b> They are provided to help you port old code to Qt 4. "
+                                    "We advise against using them in new code.");
         xmlWriter().writeEndElement(); // </p>
     }
     else {
         xmlWriter().writeStartElement("p");
         xmlWriter().writeCharacters("<b>The following class members are obsolete.</b> "
-                               "They are provided to keep old source code working. "
-                               "We strongly advise against using them in new code.");
+                                    "They are provided to keep old source code working. "
+                                    "We strongly advise against using them in new code.");
         xmlWriter().writeEndElement(); // </p>
     }
     xmlWriter().writeStartElement("p");
@@ -2252,9 +2280,12 @@ QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode* inner,
     return fileName;
 }
 
-void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
-                                           CodeMarker *marker,
-                                           const QMap<QString,const Node*> &classMap)
+/*!
+  Write the XML for the class hierarchy to the current XML stream.
+ */
+void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
+                                              CodeMarker* marker,
+                                              const QMap<QString,const Node*>& classMap)
 {
     if (classMap.isEmpty())
         return;
@@ -2262,7 +2293,7 @@ void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
     NodeMap topLevel;
     NodeMap::ConstIterator c = classMap.begin();
     while (c != classMap.end()) {
-        const ClassNode *classe = static_cast<const ClassNode *>(*c);
+        const ClassNode* classe = static_cast<const ClassNode*>(*c);
         if (classe->baseClasses().isEmpty())
             topLevel.insert(classe->name(), classe);
         ++c;
@@ -2271,18 +2302,18 @@ void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
     QStack<NodeMap > stack;
     stack.push(topLevel);
 
-    out() << "<ul>\n";
+    xmlWriter().writeStartElement("ul");
     while (!stack.isEmpty()) {
         if (stack.top().isEmpty()) {
             stack.pop();
-            out() << "</ul>\n";
+            xmlWriter().writeEndElement(); // </ul>
         }
         else {
             const ClassNode *child =
                 static_cast<const ClassNode *>(*stack.top().begin());
-            out() << "<li>";
+            xmlWriter().writeStartElement("li");
             generateFullName(child, relative, marker);
-            out() << "</li>\n";
+            xmlWriter().writeEndElement(); // </li>
             stack.top().erase(stack.top().begin());
 
             NodeMap newTop;
@@ -2292,12 +2323,16 @@ void DitaXmlGenerator::generateClassHierarchy(const Node *relative,
             }
             if (!newTop.isEmpty()) {
                 stack.push(newTop);
-                out() << "<ul>\n";
+                xmlWriter().writeStartElement("ul");
             }
         }
     }
 }
 
+/*!
+  Write XML for the contents of the \a nodeMap to the current
+  XML stream. 
+ */
 void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
                                              CodeMarker* marker,
                                              const NodeMap& nodeMap)
@@ -2578,6 +2613,9 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
     xmlWriter().writeEndElement(); // </p>
 }
 
+/*!
+  Write XML for a function index to the current XML stream.
+ */
 void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
                                              CodeMarker* marker)
 {
@@ -2624,22 +2662,25 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
     xmlWriter().writeEndElement(); // </ul>
 }
 
-void DitaXmlGenerator::generateLegaleseList(const Node *relative,
-                                         CodeMarker *marker)
+/*!
+  Write the legalese texts as XML to the current XML stream.
+ */
+void DitaXmlGenerator::generateLegaleseList(const Node* relative,
+                                            CodeMarker* marker)
 {
-    QMap<Text, const Node *>::ConstIterator it = legaleseTexts.begin();
+    QMap<Text, const Node*>::ConstIterator it = legaleseTexts.begin();
     while (it != legaleseTexts.end()) {
         Text text = it.key();
-        out() << "<hr />\n";
+        //out() << "<hr />\n";
         generateText(text, relative, marker);
-        out() << "<ul>\n";
+        xmlWriter().writeStartElement("ul");
         do {
-            out() << "<li>";
+            xmlWriter().writeStartElement("li");
             generateFullName(it.value(), relative, marker);
-            out() << "</li>\n";
+            xmlWriter().writeEndElement(); // </li>
             ++it;
         } while (it != legaleseTexts.end() && it.key() == text);
-        out() << "</ul>\n";
+        xmlWriter().writeEndElement(); //</ul>
     }
 }
 
@@ -2674,6 +2715,9 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
     writeText(marked, marker, relative);
 }
 
+/*!
+  Writher the XML for the overview list to the current XML stream.
+ */
 void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /* marker */)
 {
     QMap<const FakeNode*, QMap<QString, FakeNode*> > fakeNodeMap;
@@ -2753,42 +2797,60 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
     // pages in that group are listed for completeness.
 
     if (!fakeNodeMap.isEmpty()) {
-        foreach (const QString &groupTitle, groupTitlesMap.keys()) {
-            const FakeNode *groupNode = groupTitlesMap[groupTitle];
-            out() << QString("<h3><xref href=\"%1\">%2</xref></h3>\n").arg(
-                        linkForNode(groupNode, relative)).arg(
-                        protectEnc(groupNode->fullTitle()));
-
+        foreach (const QString& groupTitle, groupTitlesMap.keys()) {
+            const FakeNode* groupNode = groupTitlesMap[groupTitle];
+            xmlWriter().writeStartElement("p");
+            xmlWriter().writeAttribute("outputclass","h3");
+            xmlWriter().writeStartElement("xref");
+            xmlWriter().writeAttribute("href",linkForNode(groupNode, relative));
+            xmlWriter().writeCharacters(protectEnc(groupNode->fullTitle()));
+            xmlWriter().writeEndElement(); // </xref>
+            xmlWriter().writeEndElement(); // </p>
             if (fakeNodeMap[groupNode].count() == 0)
                 continue;
 
-            out() << "<ul>\n";
-
-            foreach (const FakeNode *fakeNode, fakeNodeMap[groupNode]) {
+            xmlWriter().writeStartElement("ul");
+            foreach (const FakeNode* fakeNode, fakeNodeMap[groupNode]) {
                 QString title = fakeNode->fullTitle();
                 if (title.startsWith("The "))
                     title.remove(0, 4);
-                out() << "<li><xref href=\"" << linkForNode(fakeNode, relative) << "\">"
-                      << protectEnc(title) << "</xref></li>\n";
+                xmlWriter().writeStartElement("li");
+                xmlWriter().writeStartElement("xref");
+                xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
+                xmlWriter().writeCharacters(protectEnc(title));
+                xmlWriter().writeEndElement(); // </xref>
+                xmlWriter().writeEndElement(); // </li>
             }
-            out() << "</ul>\n";
+            xmlWriter().writeEndElement(); // </ul>
         }
     }
 
     if (!uncategorizedNodeMap.isEmpty()) {
-        out() << QString("<h3>Miscellaneous</h3>\n");
-        out() << "<ul>\n";
+        xmlWriter().writeStartElement("p");
+        xmlWriter().writeAttribute("outputclass","h3");
+        xmlWriter().writeCharacters("Miscellaneous");
+        xmlWriter().writeEndElement(); // </p>
+        xmlWriter().writeStartElement("ul");
         foreach (const FakeNode *fakeNode, uncategorizedNodeMap) {
             QString title = fakeNode->fullTitle();
             if (title.startsWith("The "))
                 title.remove(0, 4);
-            out() << "<li><xref href=\"" << linkForNode(fakeNode, relative) << "\">"
-                  << protectEnc(title) << "</xref></li>\n";
+            xmlWriter().writeStartElement("li");
+            xmlWriter().writeStartElement("xref");
+            xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
+            xmlWriter().writeCharacters(protectEnc(title));
+            xmlWriter().writeEndElement(); // </xref>
+            xmlWriter().writeEndElement(); // </li>
         }
-        out() << "</ul>\n";
+        xmlWriter().writeEndElement(); // </ul>
     }
 }
 
+/*!
+  Write the XML for a standard section of a page, e.g.
+  "Public Functions" or "Protected Slots." The section
+  is written too the current XML stream as a table.
+ */
 void DitaXmlGenerator::generateSection(const NodeList& nl,
                                        const Node* relative,
                                        CodeMarker* marker,
@@ -2882,7 +2944,7 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
 }
 
 /*!
-  Writes the "inherited from" lists.
+  Writes the "inherited from" lists to the current XML stream.
  */
 void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
                                                     const Node* relative,
@@ -2957,6 +3019,10 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
     return marked;
 }
 
+/*!
+  Renamed from highlightedCode() in the html generator. Writes
+  the \a markedCode to the current XML stream.
+ */
 void DitaXmlGenerator::writeText(const QString& markedCode,
                                  CodeMarker* marker,
                                  const Node* relative,
@@ -3116,9 +3182,8 @@ void DitaXmlGenerator::generateLink(const Atom* atom,
             if (showBrokenLinks)
                 xmlWriter().writeEndElement(); // </i>
         }
-        else {
+        else
             xmlWriter().writeEndElement(); // </xref>
-        }
         inLink = false;
         xmlWriter().writeCharacters(protectEnc(atom->string().mid(k)));
     }
@@ -3128,17 +3193,14 @@ void DitaXmlGenerator::generateLink(const Atom* atom,
         bool tt = (func || atom->string().contains(camelCase));
         if (tt)
             xmlWriter().writeStartElement("tt");
-        if (func) {
+        if (func)
             xmlWriter().writeCharacters(protectEnc(atom->string().left(atom->string().length() - 2)));
-        }
-        else {
+        else
             xmlWriter().writeCharacters(protectEnc(atom->string()));
-        }
         xmlWriter().writeEndElement(); // </tt>
     }
-    else {
+    else
         xmlWriter().writeCharacters(protectEnc(atom->string()));
-    }
 }
 
 QString DitaXmlGenerator::cleanRef(const QString& ref)
@@ -3215,14 +3277,16 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
             prevRef = ref;
             break;
         }
-        else if (prevRef == ref) {
+        else if (prevRef == ref)
             break;
-        }
         clean += "x";
     }
     return clean;
 }
 
+/*!
+  Calls protect() with the \a string. Returns the result.
+ */
 QString DitaXmlGenerator::protectEnc(const QString& string)
 {
     return protect(string, outputEncoding);
@@ -3276,6 +3340,10 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
 #undef APPEND
 }
 
+/*!
+  Constructs a file name appropriate for the \a node
+  and returns the file name.
+ */
 QString DitaXmlGenerator::fileBase(const Node* node)
 {
     QString result;
@@ -3295,6 +3363,13 @@ QString DitaXmlGenerator::fileBase(const Node* node)
     return result;
 }
 
+/*!
+  Constructs a file name appropriate for the \a node
+  and returns the file name. If the \a node is not a
+  fake node, or if it is a fake node but it is neither
+  an external page node nor an image node, call the
+  PageGenerator::fileName() function.
+ */
 QString DitaXmlGenerator::fileName(const Node* node)
 {
     if (node->type() == Node::Fake) {
@@ -3393,15 +3468,11 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
 
 QString DitaXmlGenerator::refForAtom(Atom* atom, const Node* /* node */)
 {
-    if (atom->type() == Atom::SectionLeft) {
+    if (atom->type() == Atom::SectionLeft)
         return Doc::canonicalTitle(Text::sectionHeading(atom).toString());
-    }
-    else if (atom->type() == Atom::Target) {
+    if (atom->type() == Atom::Target)
         return Doc::canonicalTitle(atom->string());
-    }
-    else {
-        return QString();
-    }
+    return QString();
 }
 
 void DitaXmlGenerator::generateFullName(const Node* apparentNode,
@@ -3422,7 +3493,7 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
             xmlWriter().writeAttribute("outputclass","compat");
             break;
         default:
-            ;
+            break;
         }
     }
     xmlWriter().writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
@@ -3745,7 +3816,6 @@ const Node* DitaXmlGenerator::findNodeForTarget(const QString& target,
 const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
 {
     QPair<QString,QString> anchorPair;
-
     anchorPair.first = PageGenerator::fileName(node);
     if (node->type() == Node::Fake) {
         const FakeNode *fakeNode = static_cast<const FakeNode*>(node);
@@ -3765,40 +3835,34 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
     inObsoleteLink = false;
 
     if (atom->string().contains(":") &&
-            (atom->string().startsWith("file:")
-             || atom->string().startsWith("http:")
-             || atom->string().startsWith("https:")
-             || atom->string().startsWith("ftp:")
-             || atom->string().startsWith("mailto:"))) {
-
+        (atom->string().startsWith("file:")
+         || atom->string().startsWith("http:")
+         || atom->string().startsWith("https:")
+         || atom->string().startsWith("ftp:")
+         || atom->string().startsWith("mailto:"))) {
+        
         link = atom->string();
     }
     else {
         QStringList path;
-        if (atom->string().contains('#')) {
+        if (atom->string().contains('#'))
             path = atom->string().split('#');
-        }
-        else {
+        else
             path.append(atom->string());
-        }
 
-        Atom *targetAtom = 0;
-
+        Atom* targetAtom = 0;
         QString first = path.first().trimmed();
-        if (first.isEmpty()) {
+
+        if (first.isEmpty())
             *node = relative;
-        }
-        else if (first.endsWith(".html")) {
+        else if (first.endsWith(".html"))
             *node = myTree->root()->findNode(first, Node::Fake);
-        }
         else {
             *node = marker->resolveTarget(first, myTree, relative);
-            if (!*node) {
+            if (!*node)
                 *node = myTree->findFakeNodeByTitle(first);
-            }
-            if (!*node) {
+            if (!*node)
                 *node = myTree->findUnambiguousTarget(first, targetAtom);
-            }
         }
 
         if (*node) {
@@ -3807,36 +3871,26 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
             else
                 path.removeFirst();
         }
-        else {
+        else
             *node = relative;
-        }
 
-        if (*node) {
-            if ((*node)->status() == Node::Obsolete) {
-                if (relative) {
-                    if (relative->parent() != *node) {
-                        if (relative->status() != Node::Obsolete) {
-                            bool porting = false;
-                            if (relative->type() == Node::Fake) {
-                                const FakeNode* fake = static_cast<const FakeNode*>(relative);
-                                if (fake->title().startsWith("Porting"))
-                                    porting = true;
-                            }
-                            QString name = marker->plainFullName(relative);
-                            if (!porting && !name.startsWith("Q3")) {
-                                if (obsoleteLinks) {
-                                    relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
-                                                                       .arg(atom->string())
-                                                                       .arg(name));
-                                }
-                                inObsoleteLink = true;
-                            }
-                        }
-                    }
+        if (*node && (*node)->status() == Node::Obsolete) {
+            if (relative && (relative->parent() != *node) &&
+                (relative->status() != Node::Obsolete)) {
+                bool porting = false;
+                if (relative->type() == Node::Fake) {
+                    const FakeNode* fake = static_cast<const FakeNode*>(relative);
+                    if (fake->title().startsWith("Porting"))
+                        porting = true;
                 }
-                else {
-                    qDebug() << "Link to Obsolete entity"
-                             << (*node)->name() << "no relative";
+                QString name = marker->plainFullName(relative);
+                if (!porting && !name.startsWith("Q3")) {
+                    if (obsoleteLinks) {
+                        relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
+                                                           .arg(atom->string())
+                                                           .arg(name));
+                    }
+                    inObsoleteLink = true;
                 }
             }
         }
@@ -3958,15 +4012,15 @@ void DitaXmlGenerator::endLink()
     if (inLink) {
         if (link.isEmpty()) {
             if (showBrokenLinks)
-                xmlWriter().writeEndElement(); // i
+                xmlWriter().writeEndElement(); // </i>
         }
         else {
             if (inObsoleteLink) {
                 xmlWriter().writeStartElement("sup");
                 xmlWriter().writeCharacters("(obsolete)");
-                xmlWriter().writeEndElement(); // sup
+                xmlWriter().writeEndElement(); // </sup>
             }
-            xmlWriter().writeEndElement(); // xref
+            xmlWriter().writeEndElement(); // </xref>
         }
     }
     inLink = false;
@@ -3974,6 +4028,7 @@ void DitaXmlGenerator::endLink()
 }
 
 /*!
+  zzz
   Generates the summary for the \a section. Only used for
   sections of QML element documentation.
 
@@ -4017,6 +4072,7 @@ void DitaXmlGenerator::generateQmlSummary(const Section& section,
 }
 
 /*!
+  zzz
   Outputs the html detailed documentation for a section
   on a QML element reference page.
  */
@@ -4103,6 +4159,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node *node,
 }
 
 /*!
+  zzz
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
@@ -4153,6 +4210,7 @@ void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
 }
 
 /*!
+  zzz text
   Output the "[Xxx instantiates the C++ class QmlGraphicsXxx]"
   line for the QML element, if there should be one.
 
@@ -4164,7 +4222,8 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 {
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
-        out() << "<p class=\"centerAlign\">";
+        xmlWriter().writeStartElement("p");
+        xmlWriter().writeAttribute("outputclass","centerAlign");
         Text text;
         text << "[";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
@@ -4178,11 +4237,12 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
         text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
         text << "]";
         generateText(text, qcn, marker);
-        out() << "</p>";
+        xmlWriter().writeEndElement(); // </p>
     }
 }
 
 /*!
+  zzz text
   Output the "[QmlGraphicsXxx is instantiated by QML element Xxx]"
   line for the class, if there should be one.
 
@@ -4195,7 +4255,8 @@ void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
-            out() << "<p class=\"centerAlign\">";
+            xmlWriter().writeStartElement("p");
+            xmlWriter().writeAttribute("outputclass","centerAlign");
             Text text;
             text << "[";
             text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
@@ -4209,7 +4270,7 @@ void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
             text << "]";
             generateText(text, cn, marker);
-            out() << "</p>";
+            xmlWriter().writeEndElement(); // </p>
         }
     }
 }
@@ -5057,6 +5118,12 @@ void DitaXmlGenerator::endSubPage()
     PageGenerator::endSubPage();
 }
 
+/*!
+  Returns a reference to the XML stream writer currently in use.
+  There is one XML stream writer open for each XML file being
+  written, and they are kept on a stack. The one on top of the
+  stack is the one being written to at the moment.
+ */
 QXmlStreamWriter& DitaXmlGenerator::xmlWriter()
 {
     return *xmlWriterStack.top();
@@ -5065,6 +5132,7 @@ QXmlStreamWriter& DitaXmlGenerator::xmlWriter()
 QT_END_NAMESPACE
 
 #ifdef TO_BE_INCLUDED_IN_API_DESC
+zzzz
     Text subtitleText;
     if (rawTitle != fullTitle)
         subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")"
