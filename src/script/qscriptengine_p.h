@@ -143,7 +143,7 @@ private:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_v8Context;
     v8::Persistent<v8::Value> m_exception;
-    QScriptOriginalGlobalObject m_globalObject;
+    QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
@@ -198,7 +198,7 @@ inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
 */
 inline bool QScriptEnginePrivate::isError(const QScriptValuePrivate* value) const
 {
-    return m_globalObject.isError(value);
+    return m_originalGlobalObject.isError(value);
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)

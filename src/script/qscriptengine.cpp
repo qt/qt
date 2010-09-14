@@ -754,7 +754,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     : q_ptr(engine)
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
-    , m_globalObject(m_v8Context)
+    , m_originalGlobalObject(m_v8Context)
     , m_currentQsContext(0)
 {
     Q_ASSERT(!m_v8Context.IsEmpty());
