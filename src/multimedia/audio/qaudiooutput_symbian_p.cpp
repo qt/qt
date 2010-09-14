@@ -180,40 +180,33 @@ void QAudioOutputPrivate::suspend()
         || SymbianAudio::IdleState == m_internalState) {
         m_notifyTimer->stop();
         m_underflowTimer->stop();
-
         const qint64 samplesWritten = SymbianAudio::Utils::bytesToSamples(
                                           m_format, m_bytesWritten);
-
         const qint64 samplesPlayed = getSamplesPlayed();
-
-        m_bytesWritten = 0;
-
-        // CMMFDevSound::Pause() is not guaranteed to work correctly in all
-        // implementations, for play-mode DevSound sessions.  We therefore
-        // have to implement suspend() by calling CMMFDevSound::Stop().
-        // Because this causes buffered data to be dropped, we replace the
-        // lost data with silence following a call to resume(), in order to
-        // ensure that processedUSecs() returns the correct value.
-        m_devSound->stop();
-        m_devSoundBuffer = 0;
         m_totalSamplesPlayed += samplesPlayed;
-
-        // Calculate the amount of data dropped
-        const qint64 paddingSamples = samplesWritten - samplesPlayed;
-        Q_ASSERT(paddingSamples >= 0);
-        m_bytesPadding = SymbianAudio::Utils::samplesToBytes(m_format,
-                                                             paddingSamples);
-
-        setState(SymbianAudio::SuspendedState);
+        m_bytesWritten = 0;
+        const bool paused = m_devSound->pause();
+        if (paused) {
+            setState(SymbianAudio::SuspendedPausedState);
+        } else {
+            m_devSoundBuffer = 0;
+            // Calculate the amount of data dropped
+            const qint64 paddingSamples = samplesWritten - samplesPlayed;
+            Q_ASSERT(paddingSamples >= 0);
+            m_bytesPadding = SymbianAudio::Utils::samplesToBytes(m_format,
+                                                                 paddingSamples);
+            setState(SymbianAudio::SuspendedStoppedState);
+        }
     }
 }
 
 void QAudioOutputPrivate::resume()
 {
-    if (SymbianAudio::SuspendedState == m_internalState) {
-        if (!m_pullMode && m_devSoundBuffer)
-            bufferFilled();
-        startPlayback();
+    if (QAudio::SuspendedState == m_externalState) {
+        if (SymbianAudio::SuspendedPausedState == m_internalState)
+            m_devSound->resume();
+        else
+            startPlayback();
     }
 }
 
@@ -271,7 +264,7 @@ int QAudioOutputPrivate::notifyInterval() const
 qint64 QAudioOutputPrivate::processedUSecs() const
 {
     int samplesPlayed = 0;
-    if (m_devSound && SymbianAudio::SuspendedState != m_internalState)
+    if (m_devSound && QAudio::SuspendedState != m_externalState)
         samplesPlayed = getSamplesPlayed();
 
     // Protect against division by zero
