@@ -140,9 +140,6 @@ QScriptContext::QScriptContext()
 {
 }
 
-/*!
-  \internal
-*/
 QScriptContext::QScriptContext(QScriptContextPrivate* d)
     : d_ptr(d)
 {
@@ -211,11 +208,7 @@ QScriptContext::~QScriptContext()
 QScriptEngine *QScriptContext::engine() const
 {
     Q_D(const QScriptContext);
-    Q_UNIMPLEMENTED();
-    return 0;
-    // FIXME context without engine doesn't have sense, but default constructor make this
-    // situation possible. QScriptEnginePrivate::get does not accept null values.
-    //return QScriptEnginePrivate::get(d->engine);
+    return QScriptEnginePrivate::get(d->engine);
 }
 
 /*!

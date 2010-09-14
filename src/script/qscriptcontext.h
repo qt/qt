@@ -88,8 +88,8 @@ public:
 
     QString toString() const;
 
-    QScriptContext();
 private:
+    QScriptContext();
     QScriptContext(QScriptContextPrivate*);
 
     QExplicitlySharedDataPointer<QScriptContextPrivate> d_ptr;
