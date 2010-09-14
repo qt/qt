@@ -57,6 +57,10 @@
 #define Q_NO_SYMLINKS_TO_DIRS
 #endif
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#include "../network-settings.h"
+#endif
+
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
@@ -118,6 +122,10 @@ private slots:
     void longPath();
     void task185502_dirorder();
     void relativePaths();
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    void uncPaths_data();
+    void uncPaths();
+#endif
 };
 
 tst_QDirIterator::tst_QDirIterator()
@@ -531,6 +539,28 @@ void tst_QDirIterator::relativePaths()
         QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
     }
 }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+void tst_QDirIterator::uncPaths_data()
+{
+    QTest::addColumn<QString>("dirName");
+    QTest::newRow("uncserver")
+            <<QString("//" + QtNetworkSettings::winServerName());
+    QTest::newRow("uncserver/testshare")
+            <<QString("//" + QtNetworkSettings::winServerName() + "/testshare");
+    QTest::newRow("uncserver/testshare/tmp")
+            <<QString("//" + QtNetworkSettings::winServerName() + "/testshare/tmp");
+}
+void tst_QDirIterator::uncPaths()
+{
+    QFETCH(QString, dirName);
+    QDirIterator iterator(dirName, QDir::AllEntries|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    while(iterator.hasNext()) {
+        iterator.next();
+        QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QDirIterator)
 
