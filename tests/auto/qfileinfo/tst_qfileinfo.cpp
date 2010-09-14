@@ -608,7 +608,7 @@ void tst_QFileInfo::canonicalFilePath()
 #ifdef Q_OS_WIN
     typedef BOOL (WINAPI *PtrCreateSymbolicLink)(LPTSTR, LPTSTR, DWORD);
     PtrCreateSymbolicLink ptrCreateSymbolicLink =
-            (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLink");
+            (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLinkW");
 
     if (!ptrCreateSymbolicLink ||
         ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1) == 0) {
@@ -621,7 +621,7 @@ void tst_QFileInfo::canonicalFilePath()
     QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
 
     QCOMPARE(QDir::setCurrent(currentPath), true);
-    QFile::remove("res");
+    QDir::current().rmdir("res");
 #endif
 }
 
