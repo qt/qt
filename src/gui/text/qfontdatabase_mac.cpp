@@ -309,11 +309,10 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
             if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
                 QByteArray family_name = db->families[k]->name.toUtf8();
 #if defined(QT_MAC_USE_COCOA)
-                CTFontRef ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
+                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
                 if (ctFont) {
                     fontName = CTFontCopyFullName(ctFont);
                     familyName = CTFontCopyFamilyName(ctFont);
-                    CFRelease(ctFont);
                     goto FamilyFound;
                 }
 #else
@@ -337,7 +336,6 @@ FamilyFound:
 #ifdef QT_MAC_USE_COCOA
     fontDef.family = familyName;
     QFontEngine *engine = new QCoreTextFontEngineMulti(fontName, fontDef, d->kerning);
-    CFRelease(fontName);
 #else
     QCFString actualName;
     if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
