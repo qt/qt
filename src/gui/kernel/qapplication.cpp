@@ -65,6 +65,7 @@
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qgraphicssystemfactory_p.h"
+#include "private/qgraphicssystem_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
