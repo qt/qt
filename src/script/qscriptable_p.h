@@ -74,7 +74,7 @@ inline QScriptContextPrivate* QScriptablePrivate::context() const
 
 inline QScriptValuePrivate* QScriptablePrivate::thisObject() const
 {
-    context()->thisObject();
+    return context()->thisObject();
 }
 
 inline int QScriptablePrivate::argumentCount() const
