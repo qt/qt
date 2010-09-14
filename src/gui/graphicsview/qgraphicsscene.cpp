@@ -4984,14 +4984,15 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
-                         && !item->d_ptr->graphicsEffect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
             item->d_ptr->fullUpdatePending = 1;
         else if (!item->d_ptr->fullUpdatePending)
             item->d_ptr->needsRepaint |= rect;
+    } else if (item->d_ptr->graphicsEffect) {
+        invalidateChildren = true;
     }
 
     if (invalidateChildren) {
