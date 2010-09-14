@@ -1051,10 +1051,62 @@ void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject>
         o->setParent(prop->object);
 }
 
+static inline int children_count_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    return d->children.count();
+}
+
+static inline QObject *children_at_helper(QGraphicsObject *object, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    if (index >= 0 && index < d->children.count())
+        return d->children.at(index)->toGraphicsObject();
+    else
+        return 0;
+}
+
+static inline void children_clear_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    for (int index = 0 ;index < d->children.count();index++)
+        QGraphicsItemPrivate::get(d->children.at(index))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+}
+
+int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+{
+    return QDeclarativeItemPrivate::resources_count(prop) +
+           children_count_helper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+}
+
+QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+{
+    int resourcesCount = QDeclarativeItemPrivate::resources_count(prop);
+    if (i < resourcesCount)
+        return QDeclarativeItemPrivate::resources_at(prop, i);
+    const int j = i - resourcesCount;
+    QGraphicsObject *contentObject = static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    if (j < children_count_helper(contentObject))
+        children_at_helper(contentObject, j);
+    return 0;
+}
+
+void QDeclarativeFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    QDeclarativeItemPrivate::resources_clear(prop);
+   QGraphicsObject *contentObject =
+            static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    children_clear_helper(contentObject);
+}
+
 QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
 {
     Q_D(QDeclarativeFlickable);
-    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
+    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append,
+                                             QDeclarativeFlickablePrivate::data_count,
+                                             QDeclarativeFlickablePrivate::data_at,
+                                             QDeclarativeFlickablePrivate::data_clear
+                                             );
 }
 
 QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
