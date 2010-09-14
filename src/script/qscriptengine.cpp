@@ -1733,7 +1733,10 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
 
 QScriptContext *QScriptEngine::currentContext() const
 {
-    return QScriptContextPrivate::get(d_ptr->currentContext());
+    Q_UNIMPLEMENTED();
+    // FIXME this is a leak!
+    return new QScriptContext();
+    //return QScriptContextPrivate::get(d_ptr->currentContext());
 }
 
 QScriptContext *QScriptEngine::pushContext()
