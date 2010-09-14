@@ -146,7 +146,7 @@ public:
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
           swipeAngle(0),
-          started(false), velocityValue(0),
+          started(false), velocityValue(0)
     {
     }
 
