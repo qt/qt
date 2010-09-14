@@ -321,10 +321,11 @@ if($stub) {
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
-    if($ENV{EPOCROOT})
+    if($ENV{EPOCROOT}) {
         system ("$ENV{EPOCROOT}epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
-    else
+    } else {
         system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+    }
     print("\n");
 
     my $targetInsert = "";
