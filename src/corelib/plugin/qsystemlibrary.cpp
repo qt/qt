@@ -78,7 +78,7 @@
     (http://msdn.microsoft.com/en-us/library/ms886736.aspx)
 */
 #if defined(Q_OS_WINCE)
-HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory/*= true*/)
+HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
     return ::LoadLibrary(libraryName);
 }
@@ -101,7 +101,7 @@ static QString qSystemDirectory()
     return QString::fromWCharArray(fullPath.constData(), int(retLen));
 }
 
-HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory/*= true*/)
+HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
     QStringList searchOrder;
 
