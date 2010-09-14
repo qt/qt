@@ -4566,7 +4566,7 @@ void tst_QPainter::clipBoundingRect()
 
 void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
-#if !defined(Q_WS_MAC) || !defined(Q_MAC_USE_COCOA)
+#if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
     QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
 #endif
 
