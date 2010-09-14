@@ -983,6 +983,12 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& a
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
     int argc = convertArguments(&argv, arguments);
+    if (argc < 0) {
+        v8::Handle<v8::Value> exception = v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
+        engine()->setException(exception);
+        return new QScriptValuePrivate(engine(), exception);
+    }
+
     return construct(argc, argv.data());
 }
 
