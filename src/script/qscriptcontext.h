@@ -90,9 +90,8 @@ public:
 
 private:
     QScriptContext();
-    QScriptContext(QScriptContextPrivate*);
 
-    QExplicitlySharedDataPointer<QScriptContextPrivate> d_ptr;
+    QScriptContextPrivate *d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptContext)
     Q_DISABLE_COPY(QScriptContext)

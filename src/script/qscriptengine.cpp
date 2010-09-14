@@ -752,12 +752,14 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 
 QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine::ContextOwnership ownership)
     : q_ptr(engine)
-    , m_context(ownership == QScriptEngine::AdoptCurrentContext ?
+    , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
-    , m_globalObject(m_context)
+    , m_globalObject(m_v8Context)
+    , m_currentQsContext(0)
 {
-    Q_ASSERT(!m_context.IsEmpty());
-    v8::Context::Scope contextScope(m_context);
+    Q_ASSERT(!m_v8Context.IsEmpty());
+    m_baseQsContext.reset(new QScriptContextPrivate(this));
+    v8::Context::Scope contextScope(m_v8Context);
     v8::HandleScope handle_scope;
     m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
     m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
@@ -811,8 +813,8 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    m_context.Dispose();
-    m_context.Clear();
+    m_v8Context.Dispose();
+    m_v8Context.Clear();
     m_exception.Dispose();
 }
 
@@ -1280,7 +1282,6 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
 QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject *qtObject,
                                        ValueOwnership ownership, const QObjectWrapOptions &options)
 {
-    Q_D(QScriptEngine);
     if (!scriptObject.isObject())
         return newQObject(qtObject, ownership, options);
 
@@ -1449,13 +1450,7 @@ QScriptValue QScriptEngine::globalObject() const
 
 QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
 {
-    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_context->Global());
-}
-
-QScriptContextPrivate* QScriptEnginePrivate::currentContext()
-{
-    Q_UNIMPLEMENTED();
-    return new QScriptContextPrivate();
+    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_v8Context->Global());
 }
 
 /*!
@@ -1555,7 +1550,6 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
     // ### We need to create a FunctionTemplate and use the GetFunction() until we come up
     // with a way of creating instances of a Template that are Functions (for IsFunction()),
     // then we could share the templates and hold the 'dataJS' in an internal field.
-
     v8::Local<v8::FunctionTemplate> funTempl = v8::FunctionTemplate::New(QtNativeFunctionCallback<QScriptNativeFunctionData>, dataJS);
     v8::Persistent<v8::Function> function = v8::Persistent<v8::Function>::New(funTempl->GetFunction());
 
@@ -1733,18 +1727,24 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
 
 QScriptContext *QScriptEngine::currentContext() const
 {
-    return QScriptContextPrivate::get(d_ptr->currentContext());
+    Q_UNIMPLEMENTED();
+    return d_ptr->currentContext();
 }
 
 QScriptContext *QScriptEngine::pushContext()
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    Q_D(QScriptEngine);
+    return new QScriptContextPrivate(d);
 }
 
 void QScriptEngine::popContext()
 {
-    Q_UNIMPLEMENTED();
+    QScriptContextPrivate *ctx = d_ptr->currentContext();
+    if (!ctx->parentContext() || ctx->arguments) {
+        qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
+    } else {
+        delete ctx;
+    }
 }
 
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)

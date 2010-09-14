@@ -60,7 +60,7 @@ public:
     inline ~QV8Context()
     {
         if (m_mode == NotNullEngine || m_engine) {
-            m_engine->exitContext();
+            m_engine->exitV8Context();
         }
     }
 
@@ -69,7 +69,7 @@ private:
     {
         if (m_mode == NotNullEngine || m_engine) {
             Q_ASSERT(m_engine);
-            m_engine->enterContext();
+            m_engine->enterV8Context();
         }
     }
 

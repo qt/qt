@@ -26,11 +26,12 @@
 
 #include <v8.h>
 
-#include "qscriptconverter_p.h"
-#include "qscriptengine_p.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmath.h>
+#include <QtCore/qvarlengtharray.h>
 #include <qdebug.h>
+
+#include "qscriptvalue.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -164,6 +165,11 @@ public:
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
 };
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#include "qscriptengine_p.h"
+#include "qscriptconverter_p.h"
+QT_END_INCLUDE_NAMESPACE
 
 QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { Q_ASSERT(q.d_ptr.data()); return q.d_ptr.data(); }
 

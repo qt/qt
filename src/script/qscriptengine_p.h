@@ -34,13 +34,13 @@
 #include "qscriptqobject_p.h"
 #include "qscriptoriginalglobalobject_p.h"
 #include "qscriptvalue.h"
-
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDateTime;
 class QScriptEngine;
+class QScriptContextPrivate;
 
 class QScriptEnginePrivate
     : public QSharedData
@@ -59,8 +59,6 @@ public:
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
     QScriptValuePrivate* globalObject() const;
-
-    QScriptContextPrivate* currentContext();
 
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
@@ -136,11 +134,14 @@ public:
 
     v8::Handle<v8::String> qtDataId();
 
-    inline void enterContext() const;
-    inline void exitContext() const;
+    inline void enterV8Context() const;
+    inline void exitV8Context() const;
+
+    inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
+    inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
 private:
     QScriptEngine* q_ptr;
-    v8::Persistent<v8::Context> m_context;
+    v8::Persistent<v8::Context> m_v8Context;
     v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_globalObject;
     v8::Persistent<v8::String> m_qtDataId;
@@ -149,6 +150,9 @@ private:
     v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
+
+    QScriptContextPrivate *m_currentQsContext;
+    QScopedPointer<QScriptContextPrivate> m_baseQsContext;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)
@@ -184,7 +188,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(const QString& value)
 
 inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
 {
-    return m_context;
+    return m_v8Context;
 }
 
 /*!
@@ -248,14 +252,14 @@ inline bool QScriptEnginePrivate::hasUncaughtException() const
     return !m_exception.IsEmpty();
 }
 
-inline void QScriptEnginePrivate::enterContext() const
+inline void QScriptEnginePrivate::enterV8Context() const
 {
-    m_context->Enter();
+    m_v8Context->Enter();
 }
 
-inline void QScriptEnginePrivate::exitContext() const
+inline void QScriptEnginePrivate::exitV8Context() const
 {
-    m_context->Exit();
+    m_v8Context->Exit();
 }
 
 inline bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value) const
@@ -272,6 +276,14 @@ inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) co
 {
     return m_metaObjectTemplate->HasInstance(value);
 }
+
+/* set the current QScriptContext, and return the old value */
+QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptContextPrivate *ctx)
+{
+    qSwap(ctx, m_currentQsContext);
+    return ctx;
+}
+
 
 QT_END_NAMESPACE
 

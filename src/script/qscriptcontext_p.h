@@ -35,39 +35,61 @@
 // We mean it.
 //
 
-#include <QtCore/qobjectdefs.h>
-#include "qscriptvalue_p.h"
+#include "qscriptcontext.h"
+#include "qscriptvalue.h"
+#include "v8.h"
 
 QT_BEGIN_NAMESPACE
 
 class QScriptEnginePrivate;
 class QScriptContext;
 
-class QScriptContextPrivate : public QSharedData
+class QScriptContextPrivate : public QScriptContext
 {
     Q_DECLARE_PUBLIC(QScriptContext);
 public:
-    static QScriptContextPrivate *get(const QScriptContext *q) { Q_ASSERT(q->d_ptr.data()); return q->d_ptr.data(); }
+    static QScriptContextPrivate *get(const QScriptContext *q) { Q_ASSERT(q->d_ptr); return q->d_ptr; }
     static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
-    QScriptContextPrivate()
-        : q_ptr(0), engine(0), arguments(0)
-    {}
-    QScriptContextPrivate(QScriptContext *q)
-        : q_ptr(q), engine(0), arguments(0)
-    {}
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args = 0);
+    inline ~QScriptContextPrivate();
 
     inline QScriptValuePrivate *argument(int index) const;
     inline int argumentCount() const;
     inline QScriptValuePrivate *thisObject() const;
 
-    static QScriptContext *create(QScriptEnginePrivate *engine, const v8::Arguments *args);
-
-private:
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
     const v8::Arguments *arguments;
+    QScriptContextPrivate *parent;
 };
+
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#include "qscriptvalue_p.h"
+#include "qscriptengine_p.h"
+QT_END_INCLUDE_NAMESPACE
+
+
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
+: q_ptr(this), engine(engine), arguments(args), parent(engine->setCurrentQSContext(this))
+{
+}
+
+QScriptContextPrivate::~QScriptContextPrivate()
+{
+    if (!parent)
+        return;
+    QScriptContextPrivate *old = engine->setCurrentQSContext(parent);
+    if (old != this) {
+        qWarning("QScriptEngine::pushContext() doesn't match with popContext()");
+        old->parent = 0;
+        //old is most likely leaking.
+    }
+    Q_UNUSED(parent);
+}
+
+
 
 inline QScriptValuePrivate *QScriptContextPrivate::argument(int index) const
 {
@@ -104,7 +126,6 @@ inline QScriptValuePrivate *QScriptContextPrivate::thisObject() const
     Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
 }
-
 
 QT_END_NAMESPACE
 

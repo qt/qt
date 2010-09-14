@@ -36,8 +36,8 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-#include <qscriptengine_p.h>
-#include <qscriptcontext_p.h>
+#include "qscriptengine_p.h"
+#include "qscriptcontext_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -67,21 +67,19 @@ inline QScriptEnginePrivate* QScriptablePrivate::engine() const
 inline QScriptContextPrivate* QScriptablePrivate::context() const
 {
     if (!m_engine)
-        return new QScriptContextPrivate();
+        return 0;
 
     return m_engine->currentContext();
 }
 
 inline QScriptValuePrivate* QScriptablePrivate::thisObject() const
 {
-    QExplicitlySharedDataPointer<QScriptContextPrivate> context(this->context());
-    return context->thisObject();
+    context()->thisObject();
 }
 
 inline int QScriptablePrivate::argumentCount() const
 {
-    QExplicitlySharedDataPointer<QScriptContextPrivate> context(this->context());
-    return context->argumentCount();
+    return context()->argumentCount();
 }
 
 QT_END_NAMESPACE

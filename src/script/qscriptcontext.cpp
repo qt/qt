@@ -136,12 +136,7 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QScriptContext::QScriptContext()
-    : d_ptr(new QScriptContextPrivate())
-{
-}
-
-QScriptContext::QScriptContext(QScriptContextPrivate* d)
-    : d_ptr(d)
+    : d_ptr(static_cast<QScriptContextPrivate *>(this))
 {
 }
 
@@ -269,7 +264,8 @@ QScriptValue QScriptContext::argumentsObject() const
 */
 bool QScriptContext::isCalledAsConstructor() const
 {
-    Q_UNIMPLEMENTED();
+    if (d_ptr->arguments)
+        return d_ptr->arguments->IsConstructCall();
     return false;
 }
 
@@ -278,8 +274,7 @@ bool QScriptContext::isCalledAsConstructor() const
 */
 QScriptContext *QScriptContext::parentContext() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return d_ptr->parent;
 }
 
 /*!
@@ -451,15 +446,6 @@ QScriptValue QScriptContext::popScope()
 {
     Q_UNIMPLEMENTED();
     return QScriptValue();
-}
-
-QScriptContext *QScriptContextPrivate::create(QScriptEnginePrivate *engine, const v8::Arguments *args)
-{
-    QScriptContext *context = new QScriptContext();
-    QScriptContextPrivate *priv = get(context);
-    priv->engine = engine;
-    priv->arguments = args;
-    return context;
 }
 
 QT_END_NAMESPACE

@@ -82,13 +82,11 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     T *data = reinterpret_cast<T *>(wrap->Value());
 
     QScriptEnginePrivate *engine = data->engine;
-    QScriptContext *scriptContext = QScriptContextPrivate::create(engine, &arguments);
+    QScriptContextPrivate qScriptContext(engine, &arguments);
 
     // When 'v' gets out of scope, it'll delete 'result'.
-    QScriptValue v = data->call(scriptContext);
+    QScriptValue v = data->call(&qScriptContext);
     QScriptValuePrivate *result = QScriptValuePrivate::get(v);
-
-    delete scriptContext;
 
     if (!result->isValid()) {
         return handleScope.Close(engine->makeJSValue(QScriptValue::UndefinedValue));
