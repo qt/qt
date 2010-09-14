@@ -530,7 +530,7 @@
     the \c drawer, and the drawer's icon will undergo property changes to meet the
     current state.
 
-    \snippet examples/tutorial/gettingStarted/gsQml/texteditor.qml states
+    \snippet examples/tutorials/gettingStarted/gsQml/texteditor.qml states
 
     State changes are abrupt and needs smoother transitions. Transitions between states
     are defined using the \l {Transition}{Transition} element, which can then bind to

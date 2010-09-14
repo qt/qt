@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -40,20 +40,23 @@
 
 import Qt 4.7
 
-//![0]
+Item {
+    width: 100; height: 200
+
+Item {
+    x: 10; y: 10
+    width: 80; height: 180
+
+//! [rectangles]
 Rectangle {
-    width: 100; height: 100
-    color: "yellow"
-
-    Rectangle {
-        anchors.fill: parent
-        anchors.margins: 10
-        clip: true
-
-        Rectangle {
-            anchors.fill: parent
-            border.width: 1
-        }
-    }
+    color: "#00B000"
+    width: 80; height: 80
 }
-//![0]
+
+Rectangle {
+    color: "steelblue"
+    y: 100; width: 80; height: 80
+}
+//! [rectangles]
+}
+}

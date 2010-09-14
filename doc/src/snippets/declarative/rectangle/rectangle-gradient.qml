@@ -37,55 +37,38 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//![import]
+
 import Qt 4.7
-//![import]
 
-Column {
-
-//![0]
 Item {
-    id: container
-    width: 300; height: 300
+    width: 100; height: 300
 
-    Rectangle {
-        id: rect
-        width: 100; height: 100
-        color: "red"
+Item {
+    x: 10; y: 10
+    width: 80; height: 280
 
-        MouseArea { 
-           id: mouseArea
-           anchors.fill: parent 
-        }
-
-        states: State {
-           name: "resized"; when: mouseArea.pressed
-           PropertyChanges { target: rect; color: "blue"; height: container.height }
-        }
-    }
-}
-//![0]
-
-//![reset]
+//! [rectangles]
 Rectangle {
-    width: 300; height: 200
+    y: 0; width: 80; height: 80
+    color: "lightsteelblue"
+}
 
-    Text {
-        id: myText
-        width: 50
-        wrapMode: Text.WordWrap
-        text: "a text string that is longer than 50 pixels"
-
-        states: State {
-            name: "widerText"
-            PropertyChanges { target: myText; width: undefined }
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: myText.state = "widerText"
+Rectangle {
+    y: 100; width: 80; height: 80
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "lightsteelblue" }
+        GradientStop { position: 1.0; color: "blue" }
     }
 }
-//![reset]
+
+Rectangle {
+    y: 200; width: 80; height: 80
+    rotation: 90
+    gradient: Gradient {
+        GradientStop { position: 0.0; color: "lightsteelblue" }
+        GradientStop { position: 1.0; color: "blue" }
+    }
+}
+//! [rectangles]
+}
 }
