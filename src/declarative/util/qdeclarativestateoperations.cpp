@@ -52,6 +52,7 @@
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
@@ -61,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeParentChangePrivate : public QObjectPrivate
+class QDeclarativeParentChangePrivate : public QDeclarativeStateOperationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeParentChange)
 public:
@@ -580,7 +581,7 @@ void QDeclarativeParentChange::rewind()
     d->doChange(d->rewindParent, d->rewindStackBefore);
 }
 
-class QDeclarativeStateChangeScriptPrivate : public QObjectPrivate
+class QDeclarativeStateChangeScriptPrivate : public QDeclarativeStateOperationPrivate
 {
 public:
     QDeclarativeStateChangeScriptPrivate() {}
@@ -965,7 +966,7 @@ void QDeclarativeAnchorSet::resetCenterIn()
 }
 
 
-class QDeclarativeAnchorChangesPrivate : public QObjectPrivate
+class QDeclarativeAnchorChangesPrivate : public QDeclarativeStateOperationPrivate
 {
 public:
     QDeclarativeAnchorChangesPrivate()
