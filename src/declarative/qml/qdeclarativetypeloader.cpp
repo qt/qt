@@ -804,7 +804,7 @@ void QDeclarativeTypeData::done()
             error.setUrl(finalUrl());
             error.setLine(script.location.line);
             error.setColumn(script.location.column);
-            error.setDescription(typeLoader()->tr("Script %1 unavailable").arg(script.script->url().toString()));
+            error.setDescription(QDeclarativeTypeLoader::tr("Script %1 unavailable").arg(script.script->url().toString()));
             errors.prepend(error);
             setError(errors);
         }
@@ -822,7 +822,7 @@ void QDeclarativeTypeData::done()
             error.setUrl(finalUrl());
             error.setLine(type.location.line);
             error.setColumn(type.location.column);
-            error.setDescription(typeLoader()->tr("Type %1 unavailable").arg(typeName));
+            error.setDescription(QDeclarativeTypeLoader::tr("Type %1 unavailable").arg(typeName));
             errors.prepend(error);
             setError(errors);
         }
@@ -995,9 +995,9 @@ void QDeclarativeTypeData::resolveTypes()
             QString userTypeName = parserRef->name;
             userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
             if (typeNamespace)
-                error.setDescription(typeLoader()->tr("Namespace %1 cannot be used as a type").arg(userTypeName));
+                error.setDescription(QDeclarativeTypeLoader::tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(typeLoader()->tr("%1 %2").arg(userTypeName).arg(errorString));
+                error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(errorString));
 
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();
