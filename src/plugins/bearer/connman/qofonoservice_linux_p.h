@@ -329,4 +329,6 @@ Q_SIGNALS:
     void incomingMessage(const QString &message, const QVariantMap &info);
 };
 
+QT_END_NAMESPACE
+
 #endif //QOFONOSERVICE_H
