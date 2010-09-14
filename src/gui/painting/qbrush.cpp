@@ -1218,17 +1218,16 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
     \o QConicalGradient
     \endtable
 
-    The colors in a gradient is defined using stop points of the
-    QGradientStop type, i.e. a position and a color.  Use the
-    setColorAt() function to define a single stop
-    point. Alternatively, use the setStops() function to define
-    several stop points in one go. Note that the latter function \e
-    replaces the current set of stop points.
+    The colors in a gradient are defined using stop points of the
+    QGradientStop type; i.e., a position and a color. Use the setColorAt()
+    function to define a single stop point. Alternatively, use the
+    setStops() function to define several stop points in one go. Note that
+    the latter function \e replaces the current set of stop points.
 
     It is the gradient's complete set of stop points (accessible
     through the stops() function) that describes how the gradient area
-    should be filled. If no stop points have been specified, a
-    gradient of black at 0 to white at 1 is used.
+    should be filled. If no stop points have been specified, a gradient
+    of black at 0 to white at 1 is used.
 
     A diagonal linear gradient from black at (100, 100) to white at
     (200, 200) could be specified like this:

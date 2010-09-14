@@ -95,7 +95,12 @@ void QDeclarativePen::setWidth(int w)
     \qmlproperty real GradientStop::position
     \qmlproperty color GradientStop::color
 
-    Sets a \e color at a \e position in a gradient.
+    The position and color properties describe the color used at a given
+    position in a gradient, as represented by a gradient stop.
+
+    The default position is 0.0; the default color is black.
+
+    \sa Gradient
 */
 
 void QDeclarativeGradientStop::updateGradient()
@@ -107,20 +112,50 @@ void QDeclarativeGradientStop::updateGradient()
 /*!
     \qmlclass Gradient QDeclarativeGradient
     \ingroup qml-basic-visual-elements
-  \since 4.7
+    \since 4.7
     \brief The Gradient item defines a gradient fill.
 
-    A gradient is defined by two or more colors, which will be blended seemlessly.  The
-    colors are specified at their position in the range 0.0 - 1.0 via
-    the GradientStop item.  For example, the following code paints a
-    rectangle with a gradient starting with red, blending to yellow at 1/3 of the
-    size of the rectangle, and ending with Green:
+    A gradient is defined by two or more colors, which will be blended seamlessly.
+
+    The colors are specified as a set of GradientStop child items, each of
+    which defines a position on the gradient from 0.0 to 1.0 and a color.
+    The position of each GradientStop is defined by setting its
+    \l{GradientStop::}{position} property; its color is defined using its
+    \l{GradientStop::}{color} property.
+
+    A gradient without any gradient stops is rendered as a solid white fill.
+
+    Note that this item is not a visual representation of a gradient. To display a
+    gradient, use a visual element (like \l Rectangle) which supports the use
+    of gradients.
+
+    \section1 Example Usage
+
+    \beginfloatright
+    \inlineimage qml-gradient.png
+    \endfloat
+
+    The following example declares a \l Rectangle item with a gradient starting
+    with red, blending to yellow at one third of the height of the rectangle,
+    and ending with green:
 
     \snippet doc/src/snippets/declarative/gradient.qml code
 
-    Note that this item is not a visual representation of a gradient. To display a
-    gradient use a visual item (like rectangle) which supports having a gradient set
-    on it for display.
+    \clearfloat
+    \section1 Performance and Limitations
+
+    Calculating gradients can be computationally expensive compared to the use
+    of solid color fills or images. Consider using gradients for static items
+    in a user interface.
+
+    In Qt 4.7, only vertical, linear gradients can be applied to items. If you
+    need to apply different orientations of gradients, a combination of rotation
+    and clipping will need to be applied to the relevant items. This can
+    introduce additional performance requirements for your application.
+
+    The use of animations involving gradient stops may not give the desired
+    result. An alternative way to animate gradients is to use pre-generated
+    images or SVG drawings containing gradients.
 
     \sa GradientStop
 */
@@ -128,6 +163,10 @@ void QDeclarativeGradientStop::updateGradient()
 /*!
     \qmlproperty list<GradientStop> Gradient::stops
     This property holds the gradient stops describing the gradient.
+
+    By default, this property contains an empty list.
+
+    To set the gradient stops, define them as children of the Gradient element.
 */
 
 const QGradient *QDeclarativeGradient::gradient() const
