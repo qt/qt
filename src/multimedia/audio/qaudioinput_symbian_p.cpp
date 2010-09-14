@@ -174,22 +174,30 @@ void QAudioInputPrivate::suspend()
         || SymbianAudio::IdleState == m_internalState) {
         m_notifyTimer->stop();
         m_pullTimer->stop();
-        m_devSound->pause();
         const qint64 samplesRecorded = getSamplesRecorded();
         m_totalSamplesRecorded += samplesRecorded;
 
-        m_devSoundBuffer = 0;
-        m_devSoundBufferQ.clear();
-        m_devSoundBufferPos = 0;
-
-        setState(SymbianAudio::SuspendedState);
+        const bool paused = m_devSound->pause();
+        if (paused) {
+            if (m_devSoundBuffer)
+                m_devSoundBufferQ.append(m_devSoundBuffer);
+            m_devSoundBuffer = 0;
+            setState(SymbianAudio::SuspendedPausedState);
+        } else {
+            m_devSoundBuffer = 0;
+            m_devSoundBufferQ.clear();
+            m_devSoundBufferPos = 0;
+            setState(SymbianAudio::SuspendedStoppedState);
+        }
     }
 }
 
 void QAudioInputPrivate::resume()
 {
-    if (SymbianAudio::SuspendedState == m_internalState) {
-        if (!m_pullMode && !bytesReady())
+    if (QAudio::SuspendedState == m_externalState) {
+        if (SymbianAudio::SuspendedPausedState == m_internalState)
+            m_devSound->resume();
+        else
             m_devSound->start();
         startDataTransfer();
     }
@@ -245,7 +253,7 @@ int QAudioInputPrivate::notifyInterval() const
 qint64 QAudioInputPrivate::processedUSecs() const
 {
     int samplesPlayed = 0;
-    if (m_devSound && SymbianAudio::SuspendedState != m_internalState)
+    if (m_devSound && QAudio::SuspendedState != m_externalState)
         samplesPlayed = getSamplesRecorded();
 
     // Protect against division by zero
@@ -334,7 +342,7 @@ void QAudioInputPrivate::startDataTransfer()
         if (!m_pullMode)
             pushData();
     } else {
-        if (SymbianAudio::SuspendedState == m_internalState)
+        if (QAudio::SuspendedState == m_externalState)
             setState(SymbianAudio::ActiveState);
         else
             setState(SymbianAudio::IdleState);
@@ -442,7 +450,7 @@ void QAudioInputPrivate::devsoundBufferToBeEmptied(CMMFBuffer *baseBuffer)
 
     m_totalBytesReady += buffer->Data().Length();
 
-    if (SymbianAudio::SuspendedState == m_internalState) {
+    if (SymbianAudio::SuspendedPausedState == m_internalState) {
         m_devSoundBufferQ.append(buffer);
     } else {
         // Will be returned to DevSoundWrapper by bufferProcessed().
