@@ -173,6 +173,9 @@ public:
 
     // flickableData property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
+    static int data_count(QDeclarativeListProperty<QObject> *);
+    static QObject *data_at(QDeclarativeListProperty<QObject> *, int);
+    static void data_clear(QDeclarativeListProperty<QObject> *);
 };
 
 class QDeclarativeFlickableVisibleArea : public QObject
