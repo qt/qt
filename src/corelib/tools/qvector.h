@@ -293,9 +293,9 @@ public:
 
 #ifndef QT_NO_STL
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
-    { QVector<T> tmp; qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { QVector<T> tmp; tmp.reserve(vector.size()); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
-    { std::vector<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { std::vector<T> tmp; tmp.reserve(size()); qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
 
 private:

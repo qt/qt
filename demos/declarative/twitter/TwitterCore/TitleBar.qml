@@ -94,10 +94,21 @@ Item {
             }
         }
 
+        Image {
+            id: quitButton
+            x: 5
+            anchors.verticalCenter: parent.verticalCenter
+            source: "images/quit.png"
+            MouseArea {
+                anchors.fill: parent
+                onClicked: Qt.quit()
+            }
+        }
+
         Text {
             id: categoryText
             anchors {
-                left: imageBox.right; right: parent.right; leftMargin: 10; rightMargin: 10
+                left: quitButton.right; right: parent.right; leftMargin: 10; rightMargin: 10
                 verticalCenter: parent.verticalCenter
             }
             elide: Text.ElideLeft

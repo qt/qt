@@ -3708,7 +3708,7 @@ QByteArray QString::toUtf8() const
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
     UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    can be encoded in UCS-4. The vector is not null terminated.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3950,8 +3950,8 @@ QString QString::fromUtf8(const char *str, int size)
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
 
-    This function is comparatively slow.
-    Use QString(const ushort *, int) or QString(const ushort *) if possible.
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 

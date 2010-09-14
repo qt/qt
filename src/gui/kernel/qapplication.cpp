@@ -65,6 +65,7 @@
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qgraphicssystemfactory_p.h"
+#include "private/qgraphicssystem_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
@@ -93,6 +94,10 @@
 #include <private/qfont_p.h>
 
 #include <stdlib.h>
+
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
+#include <link.h>
+#endif
 
 #include "qapplication_p.h"
 #include "qevent_p.h"
@@ -768,6 +773,13 @@ QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
     : QCoreApplication(*new QApplicationPrivate(argc, argv, type))
 { Q_D(QApplication); d->construct();  QApplicationPrivate::app_compile_version = _internal;}
 
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
+static int qt_matchLibraryName(dl_phdr_info *info, size_t, void *data)
+{
+    const char *name = static_cast<const char *>(data);
+    return strstr(info->dlpi_name, name) != 0;
+}
+#endif
 
 /*!
     \internal
@@ -785,6 +797,19 @@ void QApplicationPrivate::construct(
     // the environment variable has the lowest precedence of runtime graphicssystem switches
     if (graphics_system_name.isEmpty())
         graphics_system_name = QString::fromLocal8Bit(qgetenv("QT_GRAPHICSSYSTEM"));
+
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
+    if (graphics_system_name.isEmpty()) {
+        bool linksWithMeeGoTouch = dl_iterate_phdr(qt_matchLibraryName, const_cast<char *>("libmeegotouchcore"));
+        bool linksWithMeeGoGraphicsSystemHelper = dl_iterate_phdr(qt_matchLibraryName, const_cast<char *>("libQtMeeGoGraphicsSystemHelper"));
+
+        if (linksWithMeeGoTouch && !linksWithMeeGoGraphicsSystemHelper) {
+            qWarning("Running non-meego graphics system enabled  MeeGo touch, forcing native graphicssystem\n");
+            graphics_system_name = QLatin1String("native");
+        }
+    }
+#endif
+
     // Must be called before initialize()
     qt_init(this, qt_appType
 #ifdef Q_WS_X11
@@ -1116,6 +1141,8 @@ QApplication::~QApplication()
     QApplicationPrivate::app_style = 0;
     delete QApplicationPrivate::app_icon;
     QApplicationPrivate::app_icon = 0;
+    delete QApplicationPrivate::graphics_system;
+    QApplicationPrivate::graphics_system = 0;
 #ifndef QT_NO_CURSOR
     d->cursor_list.clear();
 #endif

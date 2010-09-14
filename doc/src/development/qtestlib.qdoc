@@ -88,10 +88,6 @@
          \o Custom types can easily be added to the test data and test output.
     \endtable
 
-    Note: For higher-level GUI and application testing needs, please
-    see the \l{Third-Party Tools}{Qt testing products provided by
-    Nokia partners}.
-
 
     \section1 QTestLib API
 
@@ -218,12 +214,12 @@
 
     \section2 Creating a Benchmark
     
-    To create a benchmark, follow the instructions for crating a test and then add a
+    To create a benchmark, follow the instructions for creating a test and then add a
     QBENCHMARK macro to the test function that you want to benchmark.
     
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 12
     
-    The code insde the QBENCHMARK macro will be measured, and possibly also repeated
+    The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
     measurement back-end. Several back-ends are available. They can be selected on the
     command line:

@@ -631,10 +631,10 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
     if (glyph_width <= 0 || glyph_height <= 0)
         return QImage();
     QFixedPoint pt;
-    pt.x = 0;
+    pt.x = -glyph_x;
     pt.y = -glyph_y; // the baseline
     QPainterPath path;
-    QImage im(glyph_width + qAbs(glyph_x) + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
+    QImage im(glyph_width + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
     im.fill(Qt::transparent);
     QPainter p(&im);
     p.setRenderHint(QPainter::Antialiasing);
@@ -721,7 +721,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
         return;
 
     // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
-    // memory use when there is continous or random rotation
+    // memory use when there is continuous or random rotation
     if (m_glyphCaches.size() == 4)
         delete m_glyphCaches.takeLast().cache;
 

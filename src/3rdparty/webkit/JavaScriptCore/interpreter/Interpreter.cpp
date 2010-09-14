@@ -3465,17 +3465,17 @@ skip_id_custom_self:
                 goto vm_throw;
             }
             ASSERT(!callFrame->callee()->isHostFunction());
-            uint32_t expectedParams = callFrame->callee()->jsExecutable()->parameterCount();
-            uint32_t inplaceArgs = min(argCount, expectedParams);
-            uint32_t i = 0;
+            int32_t expectedParams = callFrame->callee()->jsExecutable()->parameterCount();
+            int32_t inplaceArgs = min(static_cast<int32_t>(argCount), expectedParams);
+            int32_t i = 0;
             Register* argStore = callFrame->registers() + argsOffset;
 
             // First step is to copy the "expected" parameters from their normal location relative to the callframe
             for (; i < inplaceArgs; i++)
                 argStore[i] = callFrame->registers()[i - RegisterFile::CallFrameHeaderSize - expectedParams];
             // Then we copy any additional arguments that may be further up the stack ('-1' to account for 'this')
-            for (; i < argCount; i++)
-                argStore[i] = callFrame->registers()[i - RegisterFile::CallFrameHeaderSize - expectedParams - argCount - 1];
+            for (; i < static_cast<int32_t>(argCount); i++)
+                argStore[i] = callFrame->registers()[i - RegisterFile::CallFrameHeaderSize - expectedParams - static_cast<int32_t>(argCount) - 1];
         } else if (!arguments.isUndefinedOrNull()) {
             if (!arguments.isObject()) {
                 exceptionValue = createInvalidParamError(callFrame, "Function.prototype.apply", arguments, vPC - callFrame->codeBlock()->instructions().begin(), callFrame->codeBlock());

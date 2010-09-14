@@ -5270,7 +5270,6 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
-    d->updateAll = false;
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
@@ -5279,6 +5278,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     QRegion *expose = 0;
     const quint32 oldRectAdjust = d->rectAdjust;
     if (view) {
+        d->updateAll = false;
         expose = &view->d_func()->exposedRegion;
         if (view->d_func()->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
             d->rectAdjust = 1;
@@ -6137,7 +6137,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                                 << g << item.data();
                     }
                     // remember the first item that received the override event
-                    // as it most likely become a target if noone else accepts
+                    // as it most likely become a target if no one else accepts
                     // the override event
                     if (!gestureTargets.contains(g) && item)
                         gestureTargets.insert(g, item.data());

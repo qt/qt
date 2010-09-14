@@ -101,7 +101,7 @@ QVariant v;
 
 MyCustomStruct c;
 if (v.canConvert<MyCustomStruct>())
-    c = v.value<MyCustomStruct>(v);
+    c = v.value<MyCustomStruct>();
 
 v = 7;
 int i = v.value<int>();                        // same as v.toInt()

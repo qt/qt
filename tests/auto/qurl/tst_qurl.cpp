@@ -2266,7 +2266,9 @@ void tst_QUrl::ipv6()
 
     QCOMPARE(url.isValid(), isValid);
     if (url.isValid()) {
-	QCOMPARE(url.toString(), ipv6Auth);
+        QCOMPARE(url.toString(), ipv6Auth);
+        url.setHost(url.host());
+        QCOMPARE(url.toString(), ipv6Auth);
     }
 };
 
@@ -2289,6 +2291,8 @@ void tst_QUrl::ipv6_2()
     QFETCH(QString, output);
 
     QUrl url(input);
+    QCOMPARE(url.toString(), output);
+    url.setHost(url.host());
     QCOMPARE(url.toString(), output);
 }
 

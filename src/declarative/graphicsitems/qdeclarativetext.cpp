@@ -429,6 +429,9 @@ void QDeclarativeText::setStyle(QDeclarativeText::TextStyle style)
     if (d->style == style)
         return;
 
+    // changing to/from Normal requires the boundingRect() to change
+    if (isComponentComplete() && (d->style == Normal || style == Normal))
+        prepareGeometryChange();
     d->style = style;
     d->markImgDirty();
     emit styleChanged(d->style);
@@ -494,8 +497,9 @@ void QDeclarativeText::setHAlign(HAlignment align)
     if (d->hAlign == align)
         return;
 
+    if (isComponentComplete())
+        prepareGeometryChange();
     d->hAlign = align;
-    update();
     emit horizontalAlignmentChanged(align);
 }
 
@@ -511,8 +515,9 @@ void QDeclarativeText::setVAlign(VAlignment align)
     if (d->vAlign == align)
         return;
 
+    if (isComponentComplete())
+        prepareGeometryChange();
     d->vAlign = align;
-    update();
     emit verticalAlignmentChanged(align);
 }
 
@@ -805,7 +810,6 @@ void QDeclarativeTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
-                q->prepareGeometryChange();
             QSize dsize = doc->size().toSize();
             if (dsize != cachedLayoutSize) {
                 q->prepareGeometryChange();
@@ -882,8 +886,6 @@ void QDeclarativeTextPrivate::drawOutline()
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
-    if (imgCache.size() != img.size())
-        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -902,8 +904,6 @@ void QDeclarativeTextPrivate::drawOutline(int yOffset)
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
-    if (imgCache.size() != img.size())
-        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -1054,8 +1054,6 @@ void QDeclarativeTextPrivate::checkImgCache()
         if (style != QDeclarativeText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
-    if (imgCache.size() != newImgCache.size())
-        q_func()->prepareGeometryChange();
     imgCache = newImgCache;
     if (!empty)
         switch (style) {
@@ -1208,6 +1206,16 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
     \qmlsignal Text::onLinkActivated(string link)
 
     This handler is called when the user clicks on a link embedded in the text.
+    The link must be in rich text or HTML format and the 
+    \a link string provides access to the particular link. 
+
+    \snippet doc/src/snippets/declarative/text/onLinkActivated.qml 0
+
+    The example code will display the text 
+    "The main website is at \l{http://qt.nokia.com}{Nokia Qt DF}."
+
+    Clicking on the highlighted link will output 
+    \tt{http://qt.nokia.com link activated} to the console.
 */
 
 /*!

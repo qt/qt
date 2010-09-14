@@ -527,7 +527,7 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
         int cursor = m_cursor;
         if (m_preeditCursor != -1)
             cursor += m_preeditCursor;
-        if(!m_blinkPeriod || m_blinkStatus)
+        if (!m_hideCursor && (!m_blinkPeriod || m_blinkStatus))
             m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
@@ -536,7 +536,7 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
     \internal
 
     Sets the selection to cover the word at the given cursor position.
-    The word boundries is defined by the behavior of QTextLayout::SkipWords
+    The word boundaries are defined by the behavior of QTextLayout::SkipWords
     cursor mode.
 */
 void QLineControl::selectWordAtPos(int cursor)
@@ -1211,7 +1211,7 @@ void QLineControl::internalRedo()
 /*!
     \internal
 
-    If the current cursor position differs from the last emited cursor
+    If the current cursor position differs from the last emitted cursor
     position, emits cursorPositionChanged().
 */
 void QLineControl::emitCursorPositionChanged()
