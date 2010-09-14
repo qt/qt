@@ -419,8 +419,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
     synthesisFlags = 0;
     ctfont = font;
     CFRetain(ctfont);
-    ATSFontRef atsfont = CTFontGetPlatformFont(ctfont, 0);
-    cgFont = CGFontCreateWithPlatformFont(&atsfont);
+    cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
     if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait)) {
          synthesisFlags |= SynthesizedBold;
@@ -440,8 +439,8 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
 
 QCoreTextFontEngine::~QCoreTextFontEngine()
 {
-    CFRelease(ctfont);
     CFRelease(cgFont);
+    CFRelease(ctfont);
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *, int, QGlyphLayout *, int *, QTextEngine::ShaperFlags) const
@@ -693,8 +692,6 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
     CGContextSetTextDrawingMode(ctx, kCGTextFill);
 
-    ATSFontRef atsfont = CTFontGetPlatformFont(ctfont, 0);
-    QCFType<CGFontRef> cgFont = CGFontCreateWithPlatformFont(&atsfont);
     CGContextSetFont(ctx, cgFont);
 
     qreal pos_x = -br.x.toReal() + subPixelPosition.toReal();
