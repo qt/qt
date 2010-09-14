@@ -2632,7 +2632,7 @@ void tst_QScriptEngine::collectGarbage()
 void tst_QScriptEngine::reportAdditionalMemoryCost()
 {
     QScriptEngine eng;
-    for (int x = 0; x < 1000; ++x) {
+    for (int x = 0; x < 100; ++x) {
         eng.reportAdditionalMemoryCost(0);
         eng.reportAdditionalMemoryCost(10);
         eng.reportAdditionalMemoryCost(1000);
