@@ -28,7 +28,7 @@
     <name>QHelp</name>
     <message>
         <source>Untitled</source>
-        <translation type="unfinished"></translation>
+        <translation>Ohne Titel</translation>
     </message>
 </context>
 <context>

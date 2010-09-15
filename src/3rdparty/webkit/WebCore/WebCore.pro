@@ -2192,6 +2192,9 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
                     CONFIG += x11
                     LIBS += -lXrender
                 }
+                maemo5 {
+                    DEFINES += MOZ_PLATFORM_MAEMO=5
+                }
                 SOURCES += \
                     plugins/qt/PluginContainerQt.cpp \
                     plugins/qt/PluginPackageQt.cpp \
@@ -2857,13 +2860,13 @@ contains(DEFINES, ENABLE_SYMBIAN_DIALOG_PROVIDERS) {
     }
 }
 
-!symbian-abld:!symbian-sbsv2 {
+!symbian {
     modfile.files = $$moduleFile
     modfile.path = $$[QMAKE_MKSPECS]/modules
 
     INSTALLS += modfile
 } else {
-    # INSTALLS is not implemented in qmake's mmp generators, copy headers manually
+    # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
 
     inst_modfile.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
     inst_modfile.input = moduleFile
@@ -2883,7 +2886,7 @@ HEADERS += $$WEBKIT_API_HEADERS
     exists($$OUTPUT_DIR/include/QtWebKit/classheaders.pri): include($$OUTPUT_DIR/include/QtWebKit/classheaders.pri)
     WEBKIT_INSTALL_HEADERS = $$WEBKIT_API_HEADERS $$WEBKIT_CLASS_HEADERS
 
-    !symbian {
+    !symbian-abld:!symbian-sbsv2 {
         headers.files = $$WEBKIT_INSTALL_HEADERS
 
         !isEmpty(INSTALL_HEADERS): headers.path = $$INSTALL_HEADERS/QtWebKit
@@ -2894,7 +2897,7 @@ HEADERS += $$WEBKIT_API_HEADERS
 
         INSTALLS += target headers
     } else {
-        # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
+        # INSTALLS is not implemented in qmake's mmp generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
         inst_headers.input = WEBKIT_INSTALL_HEADERS
         inst_headers.CONFIG = no_clean

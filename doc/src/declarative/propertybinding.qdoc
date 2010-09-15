@@ -94,10 +94,29 @@ Rectangle {
 }
 \endcode
 
-Imperatively assigning a value directly to a property will also implicitly remove a binding
-on a property.  A property can only have one value at a time, and if code explicitly sets
-this value the binding must be removed.  The \l Rectangle in the example below will have
-a width of 13, regardless of the otherItem's width.
+
+\section1 Effects of Property Assignment in JavaScript
+
+Assigning a property value from JavaScript does \e not create a property binding.
+For example:
+
+\code
+Rectangle {
+
+    Component.onCompleted: {
+        width = otherItem.width;
+    }
+}
+\endcode
+
+Instead of creating a property binding, this simply sets the \c width of the \l Rectangle
+to the value of \c other.width at the time the JavaScript code is invoked.  See 
+\l {Property Assignment vs Property Binding} for more details.
+
+Also note that assigning a value to a property that is currently bound will remove the binding.
+A property can only have one value at a time, and if any code explicitly sets
+this value, the binding is removed.  The \l Rectangle in the example below will have
+a width of 13, regardless of the \c otherItem's width.
 
 \code
 Rectangle {
@@ -109,7 +128,9 @@ Rectangle {
 }
 \endcode
 
-There is no way to create a property binding directly from imperative JavaScript code.
+There is no way to create a property binding directly from imperative JavaScript code,
+although it is possible to set up a \l Binding object (shown below).
+
 
 \section1 Binding Element
 
@@ -126,5 +147,7 @@ Binding {
     value: slider.value
 }
 \endqml
+
+
 */
 

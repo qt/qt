@@ -1298,7 +1298,6 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
 }
 
 void ModelNode::setListValue(const QScriptValue& valuelist) {
-    QScriptValueIterator it(valuelist);
     values.clear();
     int size = valuelist.property(QLatin1String("length")).toInt32();
     for (int i=0; i<size; i++) {

@@ -332,7 +332,7 @@ public:
     enum Type { In, Out, InOut, OutIn };
 
     QEasingCurveFunction(QEasingCurveFunction::Type type = In, qreal period = 0.3, qreal amplitude = 1.0,
-        qreal overshoot = 1.70158f)
+        qreal overshoot = 1.70158)
         : _t(type), _p(period), _a(amplitude), _o(overshoot)
     { }
     virtual ~QEasingCurveFunction() {}
@@ -359,9 +359,9 @@ QEasingCurveFunction *QEasingCurveFunction::copy() const
 bool QEasingCurveFunction::operator==(const QEasingCurveFunction& other)
 {
     return _t == other._t &&
-           _p == other._p &&
-           _a == other._a &&
-           _o == other._o;
+           qFuzzyCompare(_p, other._p) &&
+           qFuzzyCompare(_a, other._a) &&
+           qFuzzyCompare(_o, other._o);
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -400,8 +400,8 @@ struct ElasticEase : public QEasingCurveFunction
 
     qreal value(qreal t)
     {
-        qreal p = (_p < 0) ? 0.3f : _p;
-        qreal a = (_a < 0) ? 1.0f : _a;
+        qreal p = (_p < 0) ? qreal(0.3) : _p;
+        qreal a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
         case In:
             return easeInElastic(t, a, p);
@@ -420,7 +420,7 @@ struct ElasticEase : public QEasingCurveFunction
 struct BounceEase : public QEasingCurveFunction
 {
     BounceEase(Type type)
-        : QEasingCurveFunction(type, 0.3f, 1.0f)
+        : QEasingCurveFunction(type, qreal(0.3), qreal(1.0))
     { }
 
     QEasingCurveFunction *copy() const
@@ -432,7 +432,7 @@ struct BounceEase : public QEasingCurveFunction
 
     qreal value(qreal t)
     {
-        qreal a = (_a < 0) ? 1.0f : _a;
+        qreal a = (_a < 0) ? qreal(1.0) : _a;
         switch(_t) {
         case In:
             return easeInBounce(t, a);
@@ -451,7 +451,7 @@ struct BounceEase : public QEasingCurveFunction
 struct BackEase : public QEasingCurveFunction
 {
     BackEase(Type type)
-        : QEasingCurveFunction(type, 0.3f, 1.0f, 1.70158f)
+        : QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158))
     { }
 
     QEasingCurveFunction *copy() const
@@ -463,7 +463,7 @@ struct BackEase : public QEasingCurveFunction
 
     qreal value(qreal t)
     {
-        qreal o = (_o < 0) ? 1.70158f : _o;
+        qreal o = (_o < 0) ? qreal(1.70158) : _o;
         switch(_t) {
         case In:
             return easeInBack(t, o);
@@ -595,7 +595,7 @@ static QEasingCurveFunction *curveToFunctionObject(QEasingCurve::Type type)
         curveFunc = new BackEase(BackEase::OutIn);
         break;
     default:
-        curveFunc = new QEasingCurveFunction(QEasingCurveFunction::In, 0.3f, 1.0f, 1.70158f);     // ###
+        curveFunc = new QEasingCurveFunction(QEasingCurveFunction::In, qreal(0.3), qreal(1.0), qreal(1.70158));
     }
 
     return curveFunc;
@@ -657,9 +657,17 @@ bool QEasingCurve::operator==(const QEasingCurve &other) const
 {
     bool res = d_ptr->func == other.d_ptr->func
             && d_ptr->type == other.d_ptr->type;
-    if (res && d_ptr->config && other.d_ptr->config) {
+    if (res) {
+        if (d_ptr->config && other.d_ptr->config) {
         // catch the config content
-        res = d_ptr->config->operator==(*(other.d_ptr->config));
+            res = d_ptr->config->operator==(*(other.d_ptr->config));
+
+        } else if (d_ptr->config || other.d_ptr->config) {
+        // one one has a config object, which could contain default values
+            res = qFuzzyCompare(amplitude(), other.amplitude()) &&
+                  qFuzzyCompare(period(), other.period()) &&
+                  qFuzzyCompare(overshoot(), other.overshoot());
+        }
     }
     return res;
 }
@@ -681,7 +689,7 @@ bool QEasingCurve::operator==(const QEasingCurve &other) const
  */
 qreal QEasingCurve::amplitude() const
 {
-    return d_ptr->config ? d_ptr->config->_a : 1.0;
+    return d_ptr->config ? d_ptr->config->_a : qreal(1.0);
 }
 
 /*!
@@ -705,7 +713,7 @@ void QEasingCurve::setAmplitude(qreal amplitude)
  */
 qreal QEasingCurve::period() const
 {
-    return d_ptr->config ? d_ptr->config->_p : 0.3;
+    return d_ptr->config ? d_ptr->config->_p : qreal(0.3);
 }
 
 /*!
@@ -729,7 +737,7 @@ void QEasingCurve::setPeriod(qreal period)
  */
 qreal QEasingCurve::overshoot() const
 {
-    return d_ptr->config ? d_ptr->config->_o : 1.70158f;
+    return d_ptr->config ? d_ptr->config->_o : qreal(1.70158) ;
 }
 
 /*!

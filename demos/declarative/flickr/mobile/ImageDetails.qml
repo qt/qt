@@ -96,7 +96,7 @@ Flipable {
         Rectangle { anchors.fill: parent; color: "black"; opacity: 0.4 }
 
         Common.Progress {
-            anchors.centerIn: parent; width: 200; height: 18
+            anchors.centerIn: parent; width: 200; height: 22
             progress: bigImage.progress; visible: bigImage.status != Image.Ready
         }
 

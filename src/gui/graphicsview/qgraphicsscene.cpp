@@ -4984,14 +4984,15 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
-                         && !item->d_ptr->graphicsEffect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
             item->d_ptr->fullUpdatePending = 1;
         else if (!item->d_ptr->fullUpdatePending)
             item->d_ptr->needsRepaint |= rect;
+    } else if (item->d_ptr->graphicsEffect) {
+        invalidateChildren = true;
     }
 
     if (invalidateChildren) {
@@ -5270,7 +5271,6 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
-    d->updateAll = false;
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
@@ -5279,6 +5279,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     QRegion *expose = 0;
     const quint32 oldRectAdjust = d->rectAdjust;
     if (view) {
+        d->updateAll = false;
         expose = &view->d_func()->exposedRegion;
         if (view->d_func()->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
             d->rectAdjust = 1;

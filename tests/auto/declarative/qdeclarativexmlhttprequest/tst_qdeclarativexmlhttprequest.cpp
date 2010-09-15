@@ -45,6 +45,7 @@
 #include <QDebug>
 #include <QNetworkCookieJar>
 #include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 #define SERVER_PORT 14445
 
@@ -156,16 +157,6 @@ void tst_qdeclarativexmlhttprequest::domExceptionCodes()
     delete object;
 }
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false) 
-
-
 void tst_qdeclarativexmlhttprequest::callbackException_data()
 {
     QTest::addColumn<QString>("which");
@@ -193,7 +184,7 @@ void tst_qdeclarativexmlhttprequest::callbackException()
     object->setProperty("which", which);
     component.completeCreate();
 
-    TRY_WAIT(object->property("threw").toBool() == true);
+    QTRY_VERIFY(object->property("threw").toBool() == true);
 
     delete object;
 }
@@ -289,7 +280,7 @@ void tst_qdeclarativexmlhttprequest::open()
     QCOMPARE(object->property("responseText").toBool(), true);
     QCOMPARE(object->property("responseXML").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete server;
     delete object;
@@ -372,7 +363,7 @@ void tst_qdeclarativexmlhttprequest::setRequestHeader()
     object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -442,7 +433,7 @@ void tst_qdeclarativexmlhttprequest::setRequestHeader_illegalName()
     QCOMPARE(object->property("responseText").toBool(), true);
     QCOMPARE(object->property("responseXML").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -464,7 +455,7 @@ void tst_qdeclarativexmlhttprequest::setRequestHeader_sent()
 
     QCOMPARE(object->property("test").toBool(), true);
     
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -501,7 +492,7 @@ void tst_qdeclarativexmlhttprequest::send_alreadySent()
     QVERIFY(object != 0);
 
     QCOMPARE(object->property("test").toBool(), true);
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -523,7 +514,7 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
         object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+        QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
         delete object;
     }
@@ -542,7 +533,7 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
         object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+        QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
         delete object;
     }
@@ -566,7 +557,7 @@ void tst_qdeclarativexmlhttprequest::send_withdata()
     object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -601,7 +592,7 @@ void tst_qdeclarativexmlhttprequest::abort_unsent()
     QCOMPARE(object->property("responseText").toBool(), true);
     QCOMPARE(object->property("responseXML").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -622,7 +613,7 @@ void tst_qdeclarativexmlhttprequest::abort_opened()
     QCOMPARE(object->property("responseText").toBool(), true);
     QCOMPARE(object->property("responseXML").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -647,7 +638,7 @@ void tst_qdeclarativexmlhttprequest::abort()
     QCOMPARE(object->property("didNotSeeUnsent").toBool(), true);
     QCOMPARE(object->property("endStateUnsent").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     delete object;
 }
@@ -674,7 +665,7 @@ void tst_qdeclarativexmlhttprequest::getResponseHeader()
     QCOMPARE(object->property("readyState").toBool(), true);
     QCOMPARE(object->property("openedState").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("headersReceivedState").toBool(), true);
     QCOMPARE(object->property("headersReceivedNullHeader").toBool(), true);
@@ -722,7 +713,7 @@ void tst_qdeclarativexmlhttprequest::getResponseHeader_args()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("exceptionThrown").toBool() == true);
+    QTRY_VERIFY(object->property("exceptionThrown").toBool() == true);
 
     delete object;
 }
@@ -748,7 +739,7 @@ void tst_qdeclarativexmlhttprequest::getAllResponseHeaders()
     QCOMPARE(object->property("readyState").toBool(), true);
     QCOMPARE(object->property("openedState").toBool(), true);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("headersReceivedState").toBool(), true);
     QCOMPARE(object->property("headersReceivedHeader").toBool(), true);
@@ -790,7 +781,7 @@ void tst_qdeclarativexmlhttprequest::getAllResponseHeaders_args()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("exceptionThrown").toBool() == true);
+    QTRY_VERIFY(object->property("exceptionThrown").toBool() == true);
 
     delete object;
 }
@@ -813,7 +804,7 @@ void tst_qdeclarativexmlhttprequest::status()
     object->setProperty("expectedStatus", status);
     component.completeCreate();
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("unsentException").toBool(), true);
     QCOMPARE(object->property("openedException").toBool(), true);
@@ -853,7 +844,7 @@ void tst_qdeclarativexmlhttprequest::statusText()
     object->setProperty("expectedStatus", statusText);
     component.completeCreate();
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("unsentException").toBool(), true);
     QCOMPARE(object->property("openedException").toBool(), true);
@@ -894,7 +885,7 @@ void tst_qdeclarativexmlhttprequest::responseText()
     object->setProperty("expectedText", responseText);
     component.completeCreate();
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("unsent").toBool(), true);
     QCOMPARE(object->property("opened").toBool(), true);
@@ -931,7 +922,7 @@ void tst_qdeclarativexmlhttprequest::nonUtf8()
     object->setProperty("fileName", fileName);
     QMetaObject::invokeMethod(object, "startRequest");
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
     
     QCOMPARE(object->property("responseText").toString(), responseText);
 
@@ -1000,7 +991,7 @@ void tst_qdeclarativexmlhttprequest::redirects()
         object->setProperty("expectedText", "");
         component.completeCreate();
 
-        TRY_WAIT(object->property("done").toBool() == true);
+        QTRY_VERIFY(object->property("done").toBool() == true);
         QCOMPARE(object->property("dataOK").toBool(), true);
 
         delete object;
@@ -1019,7 +1010,7 @@ void tst_qdeclarativexmlhttprequest::redirects()
         object->setProperty("expectedText", "");
         component.completeCreate();
 
-        TRY_WAIT(object->property("done").toBool() == true);
+        QTRY_VERIFY(object->property("done").toBool() == true);
         QCOMPARE(object->property("dataOK").toBool(), true);
 
         delete object;
@@ -1056,7 +1047,7 @@ void tst_qdeclarativexmlhttprequest::responseXML_invalid()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlNull").toBool(), true);
 
@@ -1070,7 +1061,7 @@ void tst_qdeclarativexmlhttprequest::document()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlTest").toBool(), true);
 
@@ -1084,7 +1075,7 @@ void tst_qdeclarativexmlhttprequest::element()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlTest").toBool(), true);
 
@@ -1098,7 +1089,7 @@ void tst_qdeclarativexmlhttprequest::attr()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlTest").toBool(), true);
 
@@ -1112,7 +1103,7 @@ void tst_qdeclarativexmlhttprequest::text()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlTest").toBool(), true);
 
@@ -1126,7 +1117,7 @@ void tst_qdeclarativexmlhttprequest::cdata()
     QObject *object = component.create();
     QVERIFY(object != 0);
 
-    TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTRY_VERIFY(object->property("dataOK").toBool() == true);
 
     QCOMPARE(object->property("xmlTest").toBool(), true);
 

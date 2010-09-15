@@ -286,10 +286,13 @@ static inline uint detectProcessorFeatures()
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
-    asm ("cpuid"
-        : "=c" (feature_result)
+    long tmp;
+    asm ("xchg %%rbx, %1\n"
+         "cpuid\n"
+         "xchg %%rbx, %1\n"
+        : "=c" (feature_result), "=&r" (tmp)
         : "a" (1)
-        : "%ebx", "%edx"
+        : "%edx"
         );
 #elif defined (Q_OS_WIN64)
     {
