@@ -941,7 +941,7 @@ void QScriptValue::setProperty(const QString& name, const QScriptValue& value, c
 {
     Q_D(QScriptValue);
     QV8Context api(d->engine());
-    d->setProperty(name, QScriptValuePrivate::get(value), flags);
+    d->setProperty(name, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
 /*!
@@ -960,7 +960,7 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue& value, co
 {
     Q_D(QScriptValue);
     QV8Context api(d->engine());
-    d->setProperty(arrayIndex, QScriptValuePrivate::get(value), flags);
+    d->setProperty(arrayIndex, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
 /*!

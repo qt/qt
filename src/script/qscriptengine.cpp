@@ -1703,8 +1703,8 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
     QScriptValuePrivate *result = new QScriptValuePrivate(this, function);
 
     if (prototype) {
-        result->setProperty(QString::fromAscii("prototype"), prototype, QScriptValue::Undeletable);
-        prototype->setProperty(QString::fromAscii("constructor"), result, QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
+        result->setProperty(QString::fromAscii("prototype"), prototype, v8::DontDelete);
+        prototype->setProperty(QString::fromAscii("constructor"), result, v8::PropertyAttribute(v8::DontDelete | v8::DontEnum));
     }
 
     return result;

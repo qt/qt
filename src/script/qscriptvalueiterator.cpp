@@ -209,7 +209,7 @@ inline void QScriptValueIteratorPrivate::setValue(const QScriptValuePrivate* val
 {
     if (!isValid())
         return;
-    m_object->setProperty(QScriptConverter::toString(m_iterator.value()), const_cast<QScriptValuePrivate*>(value), QScriptValue::PropertyFlags(QScriptValue::ResolveLocal));
+    m_object->setProperty(QScriptConverter::toString(m_iterator.value()), const_cast<QScriptValuePrivate*>(value));
 }
 
 inline void QScriptValueIteratorPrivate::remove()

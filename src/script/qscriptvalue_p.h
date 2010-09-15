@@ -109,8 +109,8 @@ public:
     inline QScriptValuePrivate* prototype() const;
     inline void setPrototype(QScriptValuePrivate* prototype);
 
-    inline void setProperty(const QString& name, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags);
-    inline void setProperty(quint32 index, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags);
+    inline void setProperty(const QString& name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
+    inline void setProperty(quint32 index, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline QScriptValuePrivate* property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptValuePrivate* property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
@@ -754,9 +754,8 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
     }
 }
 
-inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags)
+inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
 {
-    Q_UNUSED(flags); // FIXME it should be used.
     if (!isObject())
         return;
 
@@ -776,18 +775,18 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
     }
 
     v8::HandleScope handleScope;
-    v8::Object::Cast(*m_value)->Set(QScriptConverter::toString(name), value->m_value);
+    v8::Object::Cast(*m_value)->Set(QScriptConverter::toString(name), value->m_value, attribs);
 }
 
-inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, const QScriptValue::PropertyFlags& flags)
+inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
 {
-    Q_UNUSED(flags); // FIXME it should be used.
     if (!isObject())
         return;
 
-    if (!isArray()) {
+    if (attribs) {
         // FIXME we dont need to convert index to a string.
-        setProperty(QString::number(index), value, flags);
+        //Object::Set(int,value) do not take attributes.
+        setProperty(QString::number(index), value, attribs);
         return;
     }
 
@@ -800,7 +799,7 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
     }
 
     v8::HandleScope handleScope;
-    v8::Array::Cast(*m_value)->Set(index, value->m_value);
+    v8::Object::Cast(*m_value)->Set(index, value->m_value);
 }
 
 inline QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const

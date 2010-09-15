@@ -138,17 +138,17 @@ public:
         return QString::fromLatin1(buf.constData());
     }
 
-    /*static JSPropertyAttributes toPropertyFlags(const QFlags<QScriptValue::PropertyFlag>& flags)
+    static v8::PropertyAttribute toPropertyAttributes(const QFlags<QScriptValue::PropertyFlag>& flags)
     {
-        JSPropertyAttributes attr = 0;
+        int attr = 0;
         if (flags.testFlag(QScriptValue::ReadOnly))
-            attr |= kJSPropertyAttributeReadOnly;
+            attr |= v8::ReadOnly;
         if (flags.testFlag(QScriptValue::Undeletable))
-            attr |= kJSPropertyAttributeDontDelete;
+            attr |= v8::DontDelete;
         if (flags.testFlag(QScriptValue::SkipInEnumeration))
-            attr |= kJSPropertyAttributeDontEnum;
-        return attr;
-    }*/
+            attr |= v8::DontEnum;
+        return v8::PropertyAttribute(attr);
+    }
 };
 
 QT_END_NAMESPACE
