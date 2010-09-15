@@ -2684,18 +2684,20 @@ void DitaXmlGenerator::generateLegaleseList(const Node* relative,
     }
 }
 
+/*!
+  Generate the text for the QML item described by \a node
+  and write it to the current XML stream.
+ */
 void DitaXmlGenerator::generateQmlItem(const Node* node,
                                        const Node* relative,
                                        CodeMarker* marker,
                                        bool summary)
 { 
     QString marked = marker->markedUpQmlItem(node,summary);
-    QRegExp templateTag("(<[^@>]*>)");
-    if (marked.indexOf(templateTag) != -1) {
-        QString contents = protectEnc(marked.mid(templateTag.pos(1),
-                                              templateTag.cap(1).length()));
-        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
-                        contents);
+    QRegExp tag("(<[^@>]*>)");
+    if (marked.indexOf(tag) != -1) {
+        QString tmp = protectEnc(marked.mid(tag.pos(1), tag.cap(1).length()));
+        marked.replace(tag.pos(1), tag.cap(1).length(), tmp);
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
@@ -2984,13 +2986,10 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
                                               CodeMarker::SynopsisStyle style)
 {
     QString marked = marker->markedUpSynopsis(node, relative, style);
-    QRegExp templateTag("(<[^@>]*>)");
-    if (marked.indexOf(templateTag) != -1) {
-        QString contents = protectEnc(marked.mid(templateTag.pos(1),
-                                                 templateTag.cap(1).length()));
-        marked.replace(templateTag.pos(1),
-                       templateTag.cap(1).length(),
-                       contents);
+    QRegExp tag("(<[^@>]*>)");
+    if (marked.indexOf(tag) != -1) {
+        QString tmp = protectEnc(marked.mid(tag.pos(1), tag.cap(1).length()));
+        marked.replace(tag.pos(1), tag.cap(1).length(), tmp);
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
@@ -4028,7 +4027,6 @@ void DitaXmlGenerator::endLink()
 }
 
 /*!
-  zzz
   Generates the summary for the \a section. Only used for
   sections of QML element documentation.
 
@@ -4039,35 +4037,17 @@ void DitaXmlGenerator::generateQmlSummary(const Section& section,
                                           CodeMarker* marker)
 {
     if (!section.members.isEmpty()) {
+        xmlWriter().writeStartElement("ul");
         NodeList::ConstIterator m;
-        int count = section.members.size();
-        bool twoColumn = false;
-        if (section.members.first()->type() == Node::QmlProperty) {
-            twoColumn = (count >= 5);
-        }
-        if (twoColumn)
-            out() << "<table class=\"qmlsummary\">\n";
-			        if (++numTableRows % 2 == 1)
-				out() << "<tr class=\"odd topAlign\">";
-				else
-				out() << "<tr class=\"even topAlign\">";
-            //      << "<tr><td class=\"topAlign\">";
-        out() << "<ul>\n";
-
-        int row = 0;
         m = section.members.begin();
         while (m != section.members.end()) {
-            if (twoColumn && row == (int) (count + 1) / 2)
-                out() << "</ul></td><td class=\"topAlign\"><ul>\n";
-            out() << "<li class=\"fn\">";
+            xmlWriter().writeStartElement("li");
+            xmlWriter().writeAttribute("outputclass", "fn");
             generateQmlItem(*m,relative,marker,true);
-            out() << "</li>\n";
-            row++;
+            xmlWriter().writeEndElement(); // </li>
             ++m;
         }
-        out() << "</ul>\n";
-        if (twoColumn)
-            out() << "</td></tr>\n</table>\n";
+        xmlWriter().writeEndElement(); // </ul>
     }
 }
 
@@ -4076,9 +4056,9 @@ void DitaXmlGenerator::generateQmlSummary(const Section& section,
   Outputs the html detailed documentation for a section
   on a QML element reference page.
  */
-void DitaXmlGenerator::generateDetailedQmlMember(const Node *node,
-                                              const InnerNode *relative,
-                                              CodeMarker *marker)
+void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
+                                                 const InnerNode* relative,
+                                                 CodeMarker* marker)
 {
     QString marked;
     const QmlPropertyNode* qpn = 0;
