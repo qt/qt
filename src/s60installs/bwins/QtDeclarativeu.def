@@ -1639,4 +1639,55 @@ EXPORTS
 	?baselineOffsetChanged@QDeclarativeItem@@IAEXM@Z @ 1638 NONAME ; void QDeclarativeItem::baselineOffsetChanged(float)
 	??6QDeclarativeInfo@@QAEAAV0@VQChar@@@Z @ 1639 NONAME ; class QDeclarativeInfo & QDeclarativeInfo::operator<<(class QChar)
 	?newObjects@QDeclarativeEngineDebug@@IAEXXZ @ 1640 NONAME ; void QDeclarativeEngineDebug::newObjects(void)
+	?qt_metacast@QDeclarativePropertyChanges@@UAEPAXPBD@Z @ 1641 NONAME ; void * QDeclarativePropertyChanges::qt_metacast(char const *)
+	?actions@QDeclarativePropertyChanges@@UAE?AV?$QList@VQDeclarativeAction@@@@XZ @ 1642 NONAME ; class QList<class QDeclarativeAction> QDeclarativePropertyChanges::actions(void)
+	??1QDeclarativePropertyChanges@@UAE@XZ @ 1643 NONAME ; QDeclarativePropertyChanges::~QDeclarativePropertyChanges(void)
+	??_EQDeclarativePropertyChanges@@UAE@I@Z @ 1644 NONAME ; QDeclarativePropertyChanges::~QDeclarativePropertyChanges(unsigned int)
+	?setObject@QDeclarativePropertyChanges@@QAEXPAVQObject@@@Z @ 1645 NONAME ; void QDeclarativePropertyChanges::setObject(class QObject *)
+	?staticMetaObject@QDeclarativePropertyChanges@@2UQMetaObject@@B @ 1646 NONAME ; struct QMetaObject const QDeclarativePropertyChanges::staticMetaObject
+	?removeEntryFromRevertList@QDeclarativeState@@QAE_NPAVQObject@@ABVQByteArray@@@Z @ 1647 NONAME ; bool QDeclarativeState::removeEntryFromRevertList(class QObject *, class QByteArray const &)
+	?restoreEntryValues@QDeclarativePropertyChanges@@QBE_NXZ @ 1648 NONAME ; bool QDeclarativePropertyChanges::restoreEntryValues(void) const
+	?setRestoreEntryValues@QDeclarativePropertyChanges@@QAEX_N@Z @ 1649 NONAME ; void QDeclarativePropertyChanges::setRestoreEntryValues(bool)
+	?changeValue@QDeclarativePropertyChanges@@QAEXABVQByteArray@@ABVQVariant@@@Z @ 1650 NONAME ; void QDeclarativePropertyChanges::changeValue(class QByteArray const &, class QVariant const &)
+	?metaObject@QDeclarativePropertyChanges@@UBEPBUQMetaObject@@XZ @ 1651 NONAME ; struct QMetaObject const * QDeclarativePropertyChanges::metaObject(void) const
+	?data_clear@QDeclarativeItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQObject@@@@@Z @ 1652 NONAME ; void QDeclarativeItemPrivate::data_clear(class QDeclarativeListProperty<class QObject> *)
+	?containsPropertyInRevertList@QDeclarativeState@@QBE_NPAVQObject@@ABVQByteArray@@@Z @ 1653 NONAME ; bool QDeclarativeState::containsPropertyInRevertList(class QObject *, class QByteArray const &) const
+	?containsValue@QDeclarativePropertyChanges@@QBE_NABVQByteArray@@@Z @ 1654 NONAME ; bool QDeclarativePropertyChanges::containsValue(class QByteArray const &) const
+	?bindingInRevertList@QDeclarativeState@@QBEPAVQDeclarativeAbstractBinding@@PAVQObject@@ABVQByteArray@@@Z @ 1655 NONAME ; class QDeclarativeAbstractBinding * QDeclarativeState::bindingInRevertList(class QObject *, class QByteArray const &) const
+	?d_func@QDeclarativePropertyChanges@@ABEPBVQDeclarativePropertyChangesPrivate@@XZ @ 1656 NONAME ; class QDeclarativePropertyChangesPrivate const * QDeclarativePropertyChanges::d_func(void) const
+	?containsProperty@QDeclarativePropertyChanges@@QBE_NABVQByteArray@@@Z @ 1657 NONAME ; bool QDeclarativePropertyChanges::containsProperty(class QByteArray const &) const
+	?trUtf8@QDeclarativePropertyChanges@@SA?AVQString@@PBD0H@Z @ 1658 NONAME ; class QString QDeclarativePropertyChanges::trUtf8(char const *, char const *, int)
+	?property@QDeclarativePropertyChanges@@QBE?AVQVariant@@ABVQByteArray@@@Z @ 1659 NONAME ; class QVariant QDeclarativePropertyChanges::property(class QByteArray const &) const
+	?containsExpression@QDeclarativePropertyChanges@@QBE_NABVQByteArray@@@Z @ 1660 NONAME ; bool QDeclarativePropertyChanges::containsExpression(class QByteArray const &) const
+	?d_func@QDeclarativeStateOperation@@ABEPBVQDeclarativeStateOperationPrivate@@XZ @ 1661 NONAME ; class QDeclarativeStateOperationPrivate const * QDeclarativeStateOperation::d_func(void) const
+	?d_func@QDeclarativePropertyChanges@@AAEPAVQDeclarativePropertyChangesPrivate@@XZ @ 1662 NONAME ; class QDeclarativePropertyChangesPrivate * QDeclarativePropertyChanges::d_func(void)
+	?state@QDeclarativeStateOperation@@QBEPAVQDeclarativeState@@XZ @ 1663 NONAME ; class QDeclarativeState * QDeclarativeStateOperation::state(void) const
+	?value@QDeclarativePropertyChanges@@QBE?AVQVariant@@ABVQByteArray@@@Z @ 1664 NONAME ; class QVariant QDeclarativePropertyChanges::value(class QByteArray const &) const
+	?qt_metacall@QDeclarativePropertyChanges@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1665 NONAME ; int QDeclarativePropertyChanges::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?trUtf8@QDeclarativePropertyChanges@@SA?AVQString@@PBD0@Z @ 1666 NONAME ; class QString QDeclarativePropertyChanges::trUtf8(char const *, char const *)
+	?attachToState@QDeclarativePropertyChanges@@QAEXXZ @ 1667 NONAME ; void QDeclarativePropertyChanges::attachToState(void)
+	?changeExpression@QDeclarativePropertyChanges@@QAEXABVQByteArray@@ABVQString@@@Z @ 1668 NONAME ; void QDeclarativePropertyChanges::changeExpression(class QByteArray const &, class QString const &)
+	?addEntryToRevertList@QDeclarativeState@@QAEXABVQDeclarativeAction@@@Z @ 1669 NONAME ; void QDeclarativeState::addEntryToRevertList(class QDeclarativeAction const &)
+	??0QDeclarativePropertyChanges@@QAE@XZ @ 1670 NONAME ; QDeclarativePropertyChanges::QDeclarativePropertyChanges(void)
+	?resources_clear@QDeclarativeItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQObject@@@@@Z @ 1671 NONAME ; void QDeclarativeItemPrivate::resources_clear(class QDeclarativeListProperty<class QObject> *)
+	?isExplicit@QDeclarativePropertyChanges@@QBE_NXZ @ 1672 NONAME ; bool QDeclarativePropertyChanges::isExplicit(void) const
+	?setState@QDeclarativeStateOperation@@QAEXPAVQDeclarativeState@@@Z @ 1673 NONAME ; void QDeclarativeStateOperation::setState(class QDeclarativeState *)
+	?detachFromState@QDeclarativePropertyChanges@@QAEXXZ @ 1674 NONAME ; void QDeclarativePropertyChanges::detachFromState(void)
+	?tr@QDeclarativePropertyChanges@@SA?AVQString@@PBD0H@Z @ 1675 NONAME ; class QString QDeclarativePropertyChanges::tr(char const *, char const *, int)
+	?addEntriesToRevertList@QDeclarativeState@@QAEXABV?$QList@VQDeclarativeAction@@@@@Z @ 1676 NONAME ; void QDeclarativeState::addEntriesToRevertList(class QList<class QDeclarativeAction> const &)
+	?expression@QDeclarativePropertyChanges@@QBE?AVQString@@ABVQByteArray@@@Z @ 1677 NONAME ; class QString QDeclarativePropertyChanges::expression(class QByteArray const &) const
+	?object@QDeclarativePropertyChanges@@QBEPAVQObject@@XZ @ 1678 NONAME ; class QObject * QDeclarativePropertyChanges::object(void) const
+	?valueInRevertList@QDeclarativeState@@QBE?AVQVariant@@PAVQObject@@ABVQByteArray@@@Z @ 1679 NONAME ; class QVariant QDeclarativeState::valueInRevertList(class QObject *, class QByteArray const &) const
+	?removeAllEntriesFromRevertList@QDeclarativeState@@QAEXPAVQObject@@@Z @ 1680 NONAME ; void QDeclarativeState::removeAllEntriesFromRevertList(class QObject *)
+	?d_func@QDeclarativeStateOperation@@AAEPAVQDeclarativeStateOperationPrivate@@XZ @ 1681 NONAME ; class QDeclarativeStateOperationPrivate * QDeclarativeStateOperation::d_func(void)
+	?changeValueInRevertList@QDeclarativeState@@QAE_NPAVQObject@@ABVQByteArray@@ABVQVariant@@@Z @ 1682 NONAME ; bool QDeclarativeState::changeValueInRevertList(class QObject *, class QByteArray const &, class QVariant const &)
+	?setIsExplicit@QDeclarativePropertyChanges@@QAEX_N@Z @ 1683 NONAME ; void QDeclarativePropertyChanges::setIsExplicit(bool)
+	?isStateActive@QDeclarativeState@@QBE_NXZ @ 1684 NONAME ; bool QDeclarativeState::isStateActive(void) const
+	?data_count@QDeclarativeItemPrivate@@SAHPAV?$QDeclarativeListProperty@VQObject@@@@@Z @ 1685 NONAME ; int QDeclarativeItemPrivate::data_count(class QDeclarativeListProperty<class QObject> *)
+	?removeProperty@QDeclarativePropertyChanges@@QAEXABVQByteArray@@@Z @ 1686 NONAME ; void QDeclarativePropertyChanges::removeProperty(class QByteArray const &)
+	?data_at@QDeclarativeItemPrivate@@SAPAVQObject@@PAV?$QDeclarativeListProperty@VQObject@@@@H@Z @ 1687 NONAME ; class QObject * QDeclarativeItemPrivate::data_at(class QDeclarativeListProperty<class QObject> *, int)
+	?tr@QDeclarativePropertyChanges@@SA?AVQString@@PBD0@Z @ 1688 NONAME ; class QString QDeclarativePropertyChanges::tr(char const *, char const *)
+	?changeBindingInRevertList@QDeclarativeState@@QAE_NPAVQObject@@ABVQByteArray@@PAVQDeclarativeAbstractBinding@@@Z @ 1689 NONAME ; bool QDeclarativeState::changeBindingInRevertList(class QObject *, class QByteArray const &, class QDeclarativeAbstractBinding *)
+	?getStaticMetaObject@QDeclarativePropertyChanges@@SAABUQMetaObject@@XZ @ 1690 NONAME ; struct QMetaObject const & QDeclarativePropertyChanges::getStaticMetaObject(void)
+	?weakPointer@QDeclarativeAbstractBinding@@QAE?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@XZ @ 1691 NONAME ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::weakPointer(void)
 
