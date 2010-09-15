@@ -123,7 +123,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QFETCH(QString, internalnativeFilePath);
     QFETCH(QString, filepath);
     QFETCH(QString, filename);
-    QFETCH(QString, basename);
+    QFETCH(QString, baseName);
     QFETCH(QString, completeBasename);
     QFETCH(QString, suffix);
     QFETCH(QString, completeSuffix);
@@ -137,7 +137,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry1.completeSuffix(), completeSuffix);
     QCOMPARE(entry1.isAbsolute(), absolute);
     QCOMPARE(entry1.isRelative(), !absolute);
-    QCOMPARE(entry1.baseName(), basename);
+    QCOMPARE(entry1.baseName(), baseName);
     QCOMPARE(entry1.completeBaseName(), completeBasename);
 
     QFileSystemEntry entry2(nativeFilePath, QFileSystemEntry::FromNativePath());
@@ -150,7 +150,7 @@ void tst_QFileSystemEntry::getSetCheck()
     // the object shouldnot change nativeFilePath.
     QCOMPARE(entry2.nativeFilePath(), nativeFilePath);
     QCOMPARE(entry2.fileName(), filename);
-    QCOMPARE(entry2.baseName(), basename);
+    QCOMPARE(entry2.baseName(), baseName);
     QCOMPARE(entry2.completeBaseName(), completeBasename);
 }
 
