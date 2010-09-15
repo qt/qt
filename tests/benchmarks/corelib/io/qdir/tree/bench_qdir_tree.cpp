@@ -55,12 +55,20 @@ class bench_QDir_tree
 
 public:
     bench_QDir_tree()
-        : prefix("./test-tree/")
+        : prefix("./test-tree/"),
+          musicprefix(QLatin1String("music")),
+          photoprefix(QLatin1String("photos")),
+          musicsize(0),
+          photosize(0)
     {
     }
 
 private:
     QByteArray prefix;
+    QString musicprefix;
+    QString photoprefix;
+    qint64 musicsize;
+    qint64 photosize;
 
 private slots:
     void initTestCase()
@@ -104,6 +112,23 @@ private slots:
                 QVERIFY(fs.createFile(line));
 
             line.clear();
+        }
+
+        //Use case: music collection - 10 files in 100 directories (albums)
+        QVERIFY(fs.createDirectory(musicprefix));
+        for (int i=0;i<1000;i++) {
+            if ((i % 10) == 0)
+                QVERIFY(fs.createDirectory(QString("%1/directory%2").arg(musicprefix).arg(i/10)));
+            qint64 size = fs.createFileWithContent(QString("%1/directory%2/file%3").arg(musicprefix).arg(i/10).arg(i)); 
+            QVERIFY(size > 0);
+            musicsize += size;
+        }
+        //Use case: photos - 1000 files in 1 directory
+        QVERIFY(fs.createDirectory(photoprefix));
+        for (int i=0;i<1000;i++) {
+            qint64 size = fs.createFileWithContent(QString("%1/file%2").arg(photoprefix).arg(i)); 
+            QVERIFY(size > 0);
+            photosize += size;
         }
     }
 
@@ -166,6 +191,31 @@ private slots:
         QCOMPARE(count, 11963);
     }
 
+    void thousandFiles_data() const
+    {
+        QTest::addColumn<QString>("dirName");
+        QTest::addColumn<qint64>("expectedSize");
+        QTest::newRow("music") << musicprefix << musicsize;
+        QTest::newRow("photos") << photoprefix << photosize;
+    }
+
+    void thousandFiles() const
+    {
+        QFETCH(QString, dirName);
+        QFETCH(qint64, expectedSize);
+        QBENCHMARK {
+            qint64 totalsize = 0;
+            int count = 0;
+            QDirIterator iter(dirName, QDir::Files, QDirIterator::Subdirectories);
+            while(iter.hasNext()) {
+                iter.next();
+                count++;
+                totalsize += iter.fileInfo().size();
+            }
+            QCOMPARE(count, 1000);
+            QCOMPARE(totalsize, expectedSize);
+        }
+    }
 private:
     FileSystem fs;
 };

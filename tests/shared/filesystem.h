@@ -87,6 +87,16 @@ struct FileSystem
         return false;
     }
 
+    qint64 createFileWithContent(const QString &fileName)
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            createdFiles << fileName;
+            return file.write(fileName.toUtf8());
+        }
+        return -1;
+    }
+
     bool createLink(const QString &destination, const QString &linkName)
     {
         if (QFile::link(destination, linkName)) {
