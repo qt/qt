@@ -1638,8 +1638,9 @@ static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *pro
 static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
-    for (int index = 0 ;index < d->children.count();index++)
-        QGraphicsItemPrivate::get(d->children.at(index))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    int childCount = d->children.count();
+    for (int index = 0 ;index < childCount; index++)
+        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
 }
 
 int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
@@ -1654,7 +1655,7 @@ QObject *QDeclarativeItemPrivate::data_at(QDeclarativeListProperty<QObject> *pro
         return resources_at(prop, i);
     const int j = i - resourcesCount;
     if (j < children_count_helper(prop))
-        children_at_helper(prop, j);
+        return children_at_helper(prop, j);
     return 0;
 }
 

@@ -1069,8 +1069,9 @@ static inline QObject *children_at_helper(QGraphicsObject *object, int index)
 static inline void children_clear_helper(QGraphicsObject *object)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
-    for (int index = 0 ;index < d->children.count();index++)
-        QGraphicsItemPrivate::get(d->children.at(index))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    int childCount = d->children.count();
+    for (int index = 0 ;index < childCount; index++)
+        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
 }
 
 int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
@@ -1087,7 +1088,7 @@ QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject>
     const int j = i - resourcesCount;
     QGraphicsObject *contentObject = static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
     if (j < children_count_helper(contentObject))
-        children_at_helper(contentObject, j);
+        return children_at_helper(contentObject, j);
     return 0;
 }
 

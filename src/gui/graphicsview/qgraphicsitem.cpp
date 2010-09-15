@@ -7679,8 +7679,9 @@ QGraphicsObject *QGraphicsItemPrivate::children_at(QDeclarativeListProperty<QGra
 void QGraphicsItemPrivate::children_clear(QDeclarativeListProperty<QGraphicsObject> *list)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
-    for (int index = 0 ;index < d->children.count();index++)
-        QGraphicsItemPrivate::get(d->children.at(index))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    int childCount = d->children.count();
+    for (int index = 0; index < childCount; index++)
+        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
 }
 
 /*!
