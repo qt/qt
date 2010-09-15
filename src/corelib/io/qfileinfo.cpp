@@ -397,7 +397,6 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
             return false;
 
         sensitive = QFileSystemEngine::isCaseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
-        // if both are native just compare the canonicalFilePath of both.
     } else {
         if (d->fileEngine->caseSensitive() != fileinfo.d_ptr->fileEngine->caseSensitive())
             return false;
