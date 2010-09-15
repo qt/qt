@@ -85,8 +85,8 @@ void QDeclarativePen::setWidth(int w)
 /*!
     \qmlclass GradientStop QDeclarativeGradientStop
     \ingroup qml-basic-visual-elements
-  \since 4.7
-    \brief The GradientStop item defines the color at a position in a Gradient
+    \since 4.7
+    \brief The GradientStop item defines the color at a position in a Gradient.
 
     \sa Gradient
 */
