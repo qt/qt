@@ -1067,11 +1067,7 @@ void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
         QString qml = list.at(i);
-        QFile f(dir.filePath(qml));
-        f.open(QIODevice::ReadOnly);
-        QByteArray data = f.readAll();
-        QDeclarativeComponent comp(canvas->engine());
-        comp.setData(data, QUrl());
+        QDeclarativeComponent comp(canvas->engine(), dir.filePath(qml));
         QObject *dummyData = comp.create();
 
         if(comp.isError()) {
