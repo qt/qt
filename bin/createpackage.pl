@@ -308,7 +308,7 @@ if($stub) {
     mkpath($systeminstall);
     my $stub_sis_name = $systeminstall."/".$stub_sis_name;
     # Create stub SIS.
-    system ("makesis -s $pkgoutput $stub_sis_name");
+    system ("$ENV{EPOCROOT}epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
 } else {
     if ($certtext eq "Self Signed"
         && !@certificates
@@ -321,7 +321,11 @@ if($stub) {
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
-    system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+    if($ENV{EPOCROOT}) {
+        system ("$ENV{EPOCROOT}epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+    } else {
+        system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+    }
     print("\n");
 
     my $targetInsert = "";
