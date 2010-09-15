@@ -815,11 +815,11 @@ void tst_QDir::canonicalPath_data()
 #endif
     QTest::newRow("nonexistant") << "testd" << QString();
 
+    QTest::newRow("rootPath") << QDir::rootPath() << QDir::rootPath();
+    QTest::newRow("rootPath + ./") << QDir::rootPath().append("./") << QDir::rootPath();
+    QTest::newRow("rootPath + ../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-    QTest::newRow("drive:/") << QDir::rootPath() << QDir::rootPath();
     QTest::newRow("drive:\\") << QDir::toNativeSeparators(QDir::rootPath()) << QDir::rootPath();
-    QTest::newRow("drive:/./") << QDir::rootPath().append("./") << QDir::rootPath();
-    QTest::newRow("drive:/../.. ") << QDir::rootPath().append("../..") << QDir::rootPath();
     QTest::newRow("drive:\\.\\") << QDir::toNativeSeparators(QDir::rootPath().append("./")) << QDir::rootPath();
     QTest::newRow("drive:\\..\\..") << QDir::toNativeSeparators(QDir::rootPath().append("../..")) << QDir::rootPath();
     QTest::newRow("drive:") << QDir().canonicalPath().left(2) << QDir().canonicalPath();
@@ -1106,24 +1106,24 @@ void tst_QDir::relativeFilePath_data()
     QTest::newRow("14") << "C:/foo/bar" << "/ding/dong" << "../../ding/dong";
     QTest::newRow("15") << "C:/foo/bar" << "D:/ding/dong" << "D:/ding/dong";
     QTest::newRow("16") << "C:" << "C:/ding/dong" << "ding/dong";
-    QTest::newRow("16") << "C:/" << "C:/ding/dong" << "ding/dong";
-    QTest::newRow("17") << "C:" << "C:" << "";
-    QTest::newRow("18") << "C:/" << "C:" << "";
-    QTest::newRow("19") << "C:" << "C:/" << "";
-    QTest::newRow("20") << "C:/" << "C:/" << "";
-    QTest::newRow("17") << "C:" << "C:file.txt" << "file.txt";
-    QTest::newRow("18") << "C:/" << "C:file.txt" << "file.txt";
-    QTest::newRow("19") << "C:" << "C:/file.txt" << "file.txt";
-    QTest::newRow("20") << "C:/" << "C:/file.txt" << "file.txt";
-    QTest::newRow("21") << "C:" << "D:" << "D:";
-    QTest::newRow("22") << "C:" << "D:/" << "D:/";
-    QTest::newRow("23") << "C:/" << "D:" << "D:";
-    QTest::newRow("24") << "C:/" << "D:/" << "D:/";
+    QTest::newRow("17") << "C:/" << "C:/ding/dong" << "ding/dong";
+    QTest::newRow("18") << "C:" << "C:" << "";
+    QTest::newRow("19") << "C:/" << "C:" << "";
+    QTest::newRow("20") << "C:" << "C:/" << "";
+    QTest::newRow("21") << "C:/" << "C:/" << "";
+    QTest::newRow("22") << "C:" << "C:file.txt" << "file.txt";
+    QTest::newRow("23") << "C:/" << "C:file.txt" << "file.txt";
+    QTest::newRow("24") << "C:" << "C:/file.txt" << "file.txt";
+    QTest::newRow("25") << "C:/" << "C:/file.txt" << "file.txt";
+    QTest::newRow("26") << "C:" << "D:" << "D:";
+    QTest::newRow("27") << "C:" << "D:/" << "D:/";
+    QTest::newRow("28") << "C:/" << "D:" << "D:";
+    QTest::newRow("29") << "C:/" << "D:/" << "D:/";
 # if !defined(Q_OS_SYMBIAN)
-    QTest::newRow("25") << "C:/foo/bar" << "//anotherHost/foo/bar" << "//anotherHost/foo/bar";
-    QTest::newRow("26") << "//anotherHost/foo" << "//anotherHost/foo/bar" << "bar";
-    QTest::newRow("27") << "//anotherHost/foo" << "bar" << "bar";
-    QTest::newRow("28") << "//anotherHost/foo" << "C:/foo/bar" << "C:/foo/bar";
+    QTest::newRow("30") << "C:/foo/bar" << "//anotherHost/foo/bar" << "//anotherHost/foo/bar";
+    QTest::newRow("31") << "//anotherHost/foo" << "//anotherHost/foo/bar" << "bar";
+    QTest::newRow("32") << "//anotherHost/foo" << "bar" << "bar";
+    QTest::newRow("33") << "//anotherHost/foo" << "C:/foo/bar" << "C:/foo/bar";
 # endif
 #endif
 }
