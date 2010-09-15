@@ -69,7 +69,7 @@
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-// Open C in Symbian doesn't support symbolic links to directories
+#define Q_NO_SYMLINKS
 #define Q_NO_SYMLINKS_TO_DIRS
 #endif
 
@@ -597,6 +597,7 @@ void tst_QDir::entryList()
     expected.removeAll("..");
 #endif
 
+#ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     QFile::link(SRCDIR "entryList/file", SRCDIR "entrylist/linktofile.lnk");
@@ -651,6 +652,7 @@ void tst_QDir::entryList()
     QFile::link("directory", SRCDIR "entrylist/linktodirectory.lnk");
     QFile::link("nothing", SRCDIR "entrylist/brokenlink.lnk");
 #endif
+#endif //Q_NO_SYMLINKS
 
 #ifdef Q_WS_MAC
     if (qstrcmp(QTest::currentDataTag(), "unprintablenames") == 0)

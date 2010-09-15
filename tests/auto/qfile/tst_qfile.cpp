@@ -1285,6 +1285,9 @@ static QString getWorkingDirectoryForLink(const QString &linkFileName)
 
 void tst_QFile::link()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myLink.lnk");
     QFileInfo info1("tst_qfile.cpp");
     QVERIFY(QFile::link("tst_qfile.cpp", "myLink.lnk"));
@@ -1324,6 +1327,9 @@ void tst_QFile::linkToDir()
 
 void tst_QFile::absolutePathLinkToRelativePath()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myDir/test.txt");
     QFile::remove("myDir/myLink.lnk");
     QDir dir;
@@ -1346,6 +1352,9 @@ void tst_QFile::absolutePathLinkToRelativePath()
 
 void tst_QFile::readBrokenLink()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support links", SkipAll);
+#endif
     QFile::remove("myLink2.lnk");
     QFileInfo info1("file12");
 #if defined(Q_OS_SYMBIAN)
@@ -2753,6 +2762,10 @@ void tst_QFile::map()
     QFETCH(int, size);
     QFETCH(QFile::FileError, error);
 
+#ifdef Q_OS_SYMBIAN
+    QSKIP("memory mapped files not supported on this platform", SkipAll);
+#endif
+
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
 
 #ifdef Q_WS_WINCE
@@ -2874,6 +2887,10 @@ void tst_QFile::mapResource()
     QFETCH(int, size);
     QFETCH(QFile::FileError, error);
 
+#ifdef Q_OS_SYMBIAN
+    QSKIP("memory mapped files not supported on this platform", SkipAll);
+#endif
+
     QFile file(fileName);
     uchar *memory = file.map(offset, size);
     QCOMPARE(file.error(), error);
@@ -2898,6 +2915,11 @@ void tst_QFile::mapOpenMode()
 {
     QFETCH(int, openMode);
     static const qint64 fileSize = 4096;
+
+#ifdef Q_OS_SYMBIAN
+    QSKIP("memory mapped files not supported on this platform", SkipAll);
+#endif
+
     QByteArray pattern(fileSize, 'A');
 
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
