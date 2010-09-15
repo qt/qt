@@ -917,15 +917,16 @@ QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisOb
     v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
 
     QScriptEnginePrivate *e = engine();
-    e->clearExceptions();
+
+    if (argc < 0) {
+        v8::Local<v8::Value> exeption = v8::Exception::TypeError(v8::String::New("Arguments must be an array"));
+        e->setException(exeption);
+        return new QScriptValuePrivate(e, exeption);
+    }
+
     v8::TryCatch tryCatch;
 
-    v8::Handle<v8::Value> result;
-
-    if (argc < 0)
-        v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
-    else
-        result = v8::Function::Cast(*m_value)->Call(recv, argc, argv);
+    v8::Handle<v8::Value> result = v8::Function::Cast(*m_value)->Call(recv, argc, argv);
 
     if (result.IsEmpty()) {
         result = tryCatch.Exception();
@@ -938,9 +939,14 @@ QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisOb
 inline QScriptValuePrivate* QScriptValuePrivate::construct(int argc, v8::Handle<v8::Value> *argv)
 {
     QScriptEnginePrivate *e = engine();
-    e->clearExceptions();
-    v8::TryCatch tryCatch;
 
+    if (argc < 0) {
+        v8::Local<v8::Value> exeption = v8::Exception::TypeError(v8::String::New("Arguments must be an array"));
+        e->setException(exeption);
+        return new QScriptValuePrivate(e, exeption);
+    }
+
+    v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = v8::Handle<v8::Function>::Cast(m_value)->NewInstance(argc, argv);
 
     if (result.IsEmpty()) {
@@ -983,11 +989,6 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& a
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
     int argc = convertArguments(&argv, arguments);
-    if (argc < 0) {
-        v8::Handle<v8::Value> exception = v8::ThrowException(v8::Exception::TypeError(v8::String::New("Arguments must be an array")));
-        engine()->setException(exception);
-        return new QScriptValuePrivate(engine(), exception);
-    }
 
     return construct(argc, argv.data());
 }
