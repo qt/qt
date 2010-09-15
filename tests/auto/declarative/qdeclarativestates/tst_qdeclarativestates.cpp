@@ -123,6 +123,7 @@ private slots:
     void anchorChanges5();
     void anchorChangesCrash();
     void anchorRewindBug();
+    void anchorRewindBug2();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -856,6 +857,32 @@ void tst_qdeclarativestates::anchorRewindBug()
     QVERIFY(!QDeclarativeItemPrivate::get(column)->heightValid);
     QVERIFY(!QDeclarativeItemPrivate::get(column)->widthValid);
     QCOMPARE(column->height(), 200.0);
+
+    delete rect;
+}
+
+// QTBUG-11834
+void tst_qdeclarativestates::anchorRewindBug2()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorRewindBug2.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *mover = rect->findChild<QDeclarativeRectangle*>("mover");
+
+    QVERIFY(mover != 0);
+    QCOMPARE(mover->y(), qreal(0.0));
+    QCOMPARE(mover->width(), qreal(50.0));
+
+    QDeclarativeItemPrivate::get(rect)->setState("anchored");
+    QCOMPARE(mover->y(), qreal(250.0));
+    QCOMPARE(mover->width(), qreal(200.0));
+
+    QDeclarativeItemPrivate::get(rect)->setState("");
+    QCOMPARE(mover->y(), qreal(0.0));
+    QCOMPARE(mover->width(), qreal(50.0));
 
     delete rect;
 }

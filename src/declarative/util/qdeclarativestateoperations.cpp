@@ -1031,6 +1031,11 @@ public:
     bool applyOrigVCenter;
     bool applyOrigBaseline;
 
+    QDeclarativeNullableValue<qreal> origWidth;
+    QDeclarativeNullableValue<qreal> origHeight;
+    qreal origX;
+    qreal origY;
+
     QList<QDeclarativeAbstractBinding*> oldBindings;
 
     QDeclarativeProperty leftProp;
@@ -1322,6 +1327,42 @@ void QDeclarativeAnchorChanges::reverse(Reason reason)
         QDeclarativePropertyPrivate::setBinding(d->vCenterProp, d->origVCenterBinding);
     if (d->origBaselineBinding)
         QDeclarativePropertyPrivate::setBinding(d->baselineProp, d->origBaselineBinding);
+
+    //restore any absolute geometry changed by the state's anchors
+    QDeclarativeAnchors::Anchors stateVAnchors = d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::Vertical_Mask;
+    QDeclarativeAnchors::Anchors origVAnchors = targetPrivate->anchors()->usedAnchors() & QDeclarativeAnchors::Vertical_Mask;
+    QDeclarativeAnchors::Anchors stateHAnchors = d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::Horizontal_Mask;
+    QDeclarativeAnchors::Anchors origHAnchors = targetPrivate->anchors()->usedAnchors() & QDeclarativeAnchors::Horizontal_Mask;
+
+    bool stateSetWidth = (stateHAnchors &&
+                          stateHAnchors != QDeclarativeAnchors::LeftAnchor &&
+                          stateHAnchors != QDeclarativeAnchors::RightAnchor &&
+                          stateHAnchors != QDeclarativeAnchors::HCenterAnchor);
+    bool origSetWidth = (origHAnchors &&
+                         origHAnchors != QDeclarativeAnchors::LeftAnchor &&
+                         origHAnchors != QDeclarativeAnchors::RightAnchor &&
+                         origHAnchors != QDeclarativeAnchors::HCenterAnchor);
+    if (d->origWidth.isValid() && stateSetWidth && !origSetWidth)
+        d->target->setWidth(d->origWidth.value);
+
+    bool stateSetHeight = (stateVAnchors &&
+                           stateVAnchors != QDeclarativeAnchors::TopAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::BottomAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::VCenterAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::BaselineAnchor);
+    bool origSetHeight = (origVAnchors &&
+                          origVAnchors != QDeclarativeAnchors::TopAnchor &&
+                          origVAnchors != QDeclarativeAnchors::BottomAnchor &&
+                          origVAnchors != QDeclarativeAnchors::VCenterAnchor &&
+                          origVAnchors != QDeclarativeAnchors::BaselineAnchor);
+    if (d->origHeight.isValid() && stateSetHeight && !origSetHeight)
+        d->target->setHeight(d->origHeight.value);
+
+    if (stateHAnchors && !origHAnchors)
+        d->target->setX(d->origX);
+
+    if (stateVAnchors && !origVAnchors)
+        d->target->setY(d->origY);
 }
 
 QString QDeclarativeAnchorChanges::typeName() const
@@ -1384,6 +1425,14 @@ void QDeclarativeAnchorChanges::saveOriginals()
     d->origVCenterBinding = QDeclarativePropertyPrivate::binding(d->vCenterProp);
     d->origBaselineBinding = QDeclarativePropertyPrivate::binding(d->baselineProp);
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
+    if (targetPrivate->widthValid)
+        d->origWidth = d->target->width();
+    if (targetPrivate->heightValid)
+        d->origHeight = d->target->height();
+    d->origX = d->target->x();
+    d->origY = d->target->y();
+
     d->applyOrigLeft = d->applyOrigRight = d->applyOrigHCenter = d->applyOrigTop
       = d->applyOrigBottom = d->applyOrigVCenter = d->applyOrigBaseline = false;
 
@@ -1415,6 +1464,11 @@ void QDeclarativeAnchorChanges::copyOriginals(QDeclarativeActionEvent *other)
     d->origBottomBinding = acp->origBottomBinding;
     d->origVCenterBinding = acp->origVCenterBinding;
     d->origBaselineBinding = acp->origBaselineBinding;
+
+    d->origWidth = acp->origWidth;
+    d->origHeight = acp->origHeight;
+    d->origX = acp->origX;
+    d->origY = acp->origY;
 
     d->oldBindings.clear();
     d->oldBindings << acp->leftBinding << acp->rightBinding << acp->hCenterBinding
