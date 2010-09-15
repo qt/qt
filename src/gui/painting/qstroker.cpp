@@ -609,7 +609,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             }
             QLineF miterLine(QPointF(qt_fixed_to_real(focal_x),
                                      qt_fixed_to_real(focal_y)), isect);
-            if (miterLine.length() > qt_fixed_to_real(m_strokeWidth * m_miterLimit) / 2) {
+            if (type == QLineF::NoIntersection || miterLine.length() > qt_fixed_to_real(m_strokeWidth * m_miterLimit) / 2) {
                 emitLineTo(qt_real_to_fixed(nextLine.x1()),
                            qt_real_to_fixed(nextLine.y1()));
             } else {

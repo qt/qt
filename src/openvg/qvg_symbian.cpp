@@ -112,25 +112,8 @@ static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
 
     VGImage vgImage = VG_INVALID_HANDLE;
 
-    TInt err = 0;
-
-    RSgDriver driver;
-    err = driver.Open();
-    if (err != KErrNone) {
+    if (sgImage.IsNull())
         return vgImage;
-    }
-
-    if (sgImage.IsNull()) {
-        driver.Close();
-        return vgImage;
-    }
-
-    TSgImageInfo sgImageInfo;
-    err = sgImage.GetInfo(sgImageInfo);
-    if (err != KErrNone) {
-        driver.Close();
-        return vgImage;
-    }
 
     const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
     EGLImageKHR eglImage = QEgl::eglCreateImageKHR(QEgl::display(),
@@ -139,22 +122,12 @@ static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
             (EGLClientBuffer)&sgImage,
             (EGLint*)KEglImageAttribs);
 
-    if (!eglImage || eglGetError() != EGL_SUCCESS) {
-        driver.Close();
+    if (!eglImage)
         return vgImage;
-    }
 
     vgImage = QVG::vgCreateEGLImageTargetKHR(eglImage);
-    if (!vgImage || vgGetError() != VG_NO_ERROR) {
-        QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
-        driver.Close();
-        return vgImage;
-    }
 
-    //setSerialNumber(++qt_vg_pixmap_serial);
-    // release stuff
     QEgl::eglDestroyImageKHR(QEgl::display(), eglImage);
-    driver.Close();
     return vgImage;
 }
 #endif

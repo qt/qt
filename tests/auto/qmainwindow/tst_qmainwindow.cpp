@@ -1449,8 +1449,7 @@ Q_DECLARE_METATYPE(MoveList)
 
 void MoveSeparator::apply(QMainWindow *mw) const
 {
-
-    QMainWindowLayout *l = qobject_cast<QMainWindowLayout*>(mw->layout());
+    QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(mw);
     QVERIFY(l);
 
     QList<int> path;

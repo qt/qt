@@ -743,8 +743,6 @@ bool QNetworkManagerSettingsConnection::isAutoConnect()
 
 quint64 QNetworkManagerSettingsConnection::getTimestamp()
 {
-    qDebug() << d->settingsMap.value(QLatin1String("connection"));
-
     return d->settingsMap.value(QLatin1String("connection"))
                          .value(QLatin1String("timestamp")).toUInt();
 }

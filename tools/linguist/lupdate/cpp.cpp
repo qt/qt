@@ -489,6 +489,7 @@ STRING(class);
 STRING(findMessage);
 STRING(friend);
 STRING(namespace);
+STRING(operator);
 STRING(qtTrId);
 STRING(return);
 STRING(struct);
@@ -752,6 +753,20 @@ uint CppParser::getToken()
             case 'n':
                 if (yyWord == strnamespace)
                     return Tok_namespace;
+                break;
+            case 'o':
+                if (yyWord == stroperator) {
+                    // Operator overload declaration/definition.
+                    // We need to prevent those characters from confusing the followup
+                    // parsing. Actually using them does not add value, so just eat them.
+                    while (isspace(yyCh))
+                       yyCh = getChar();
+                    while (yyCh == '+' || yyCh == '-' || yyCh == '*' || yyCh == '/' || yyCh == '%'
+                           || yyCh == '=' || yyCh == '<' || yyCh == '>' || yyCh == '!'
+                           || yyCh == '&' || yyCh == '|' || yyCh == '~' || yyCh == '^'
+                           || yyCh == '[' || yyCh == ']')
+                        yyCh = getChar();
+                }
                 break;
             case 'q':
                 if (yyWord == strqtTrId)
@@ -1678,6 +1693,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 functionContextUnresolved.clear(); // Pointless
                 prospectiveContext.clear();
                 pendingContext.clear();
+
+                yyTok = getToken();
             }
             break;
         case Tok_namespace:
@@ -1689,7 +1706,6 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 HashString ns = HashString(text);
                 yyTok = getToken();
                 if (yyTok == Tok_LeftBrace) {
-                    yyTok = getToken();
                     namespaceDepths.push(namespaces.count());
                     enterNamespace(&namespaces, ns);
 
@@ -1697,6 +1713,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     functionContextUnresolved.clear();
                     prospectiveContext.clear();
                     pendingContext.clear();
+                    yyTok = getToken();
                 } else if (yyTok == Tok_Equals) {
                     // e.g. namespace Is = OuterSpace::InnerSpace;
                     QList<HashString> fullName;

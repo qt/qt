@@ -2478,16 +2478,26 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
         QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/here"));
+        url.setAuthority("strange;hostname");
+        QVERIFY(!url.isValid());
         url.setAuthority("foobar@bar");
         QVERIFY(url.isValid());
+        url.setAuthority("strange;hostname");
+        QVERIFY(!url.isValid());
+        QVERIFY(url.errorString().contains("invalid hostname"));
     }
 
     {
         QUrl url = QUrl::fromEncoded("foo://stuff;1/g");
         QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/g"));
+        url.setHost("stuff;1");
+        QVERIFY(!url.isValid());
         url.setHost("stuff-1");
         QVERIFY(url.isValid());
+        url.setHost("stuff;1");
+        QVERIFY(!url.isValid());
+        QVERIFY(url.errorString().contains("invalid hostname"));
     }
 
 }
