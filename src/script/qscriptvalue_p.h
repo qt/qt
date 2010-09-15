@@ -117,9 +117,9 @@ public:
 
     inline int convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments);
 
-    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValueList& args);
-    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments);
-    inline QScriptValuePrivate* call(const QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv);
+    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, const QScriptValueList& args);
+    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, const QScriptValue& arguments);
+    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, int argc, v8::Handle< v8::Value >* argv);
     inline QScriptValuePrivate* construct(int argc, v8::Handle<v8::Value> *argv);
     inline QScriptValuePrivate* construct(const QScriptValueList& args);
     inline QScriptValuePrivate* construct(const QScriptValue& arguments);
@@ -879,7 +879,7 @@ inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::
     return argc;
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValueList& args)
+inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
@@ -897,7 +897,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
     return call(thisObject, argc, argv.data());
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, const QScriptValue& arguments)
+inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValue& arguments)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
@@ -910,13 +910,19 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate*
 }
 
 
-QScriptValuePrivate* QScriptValuePrivate::call(const QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv)
+QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv)
 {
+    QScriptEnginePrivate *e = engine();
+
     if (!thisObject || !thisObject->isObject())
         thisObject = m_engine->globalObject();
-    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
 
-    QScriptEnginePrivate *e = engine();
+    if (!thisObject->assignEngine(e)) {
+        qWarning("QScriptValue::call(): cannot call function with thisObject created in a different engine");
+        return new QScriptValuePrivate(e, QScriptValue::UndefinedValue);
+    }
+
+    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
 
     if (argc < 0) {
         v8::Local<v8::Value> exeption = v8::Exception::TypeError(v8::String::New("Arguments must be an array"));
