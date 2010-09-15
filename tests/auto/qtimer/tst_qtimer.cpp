@@ -271,10 +271,7 @@ void tst_QTimer::livelock()
     QCOMPARE(tester.timeoutsForFirst, 1);
     QCOMPARE(tester.timeoutsForExtra, 0);
     QCOMPARE(tester.timeoutsForSecond, 1);
-#if defined(Q_OS_MAC)
-    QEXPECT_FAIL("zero timer", "Posted events source are handled AFTER timers", Continue);
-    QEXPECT_FAIL("non-zero timer", "Posted events source are handled AFTER timers", Continue);
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
 		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
 #elif defined(Q_OS_WINCE)
