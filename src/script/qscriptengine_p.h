@@ -59,6 +59,7 @@ public:
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
     QScriptValuePrivate* globalObject() const;
+    void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
@@ -142,6 +143,7 @@ public:
 private:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_v8Context;
+    QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
     v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
@@ -150,7 +152,7 @@ private:
     v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
-
+    v8::Persistent<v8::ObjectTemplate> m_globalObjectTemplate;
     QScriptContextPrivate *m_currentQsContext;
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
 };

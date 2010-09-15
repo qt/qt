@@ -69,6 +69,7 @@ public:
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
+    inline void reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
 
     inline bool toBool() const;
     inline qsreal toNumber() const;
@@ -293,7 +294,6 @@ QScriptValuePrivate::~QScriptValuePrivate()
 {
     if (isJSBased()) {
         m_value.Dispose();
-        m_value.Clear();
     } else if (isStringBased()) {
         delete u.m_string;
     }
@@ -1035,6 +1035,18 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
     m_engine = engine;
     m_state = JSValue;
     return true;
+}
+
+void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value)
+{
+    if (isJSBased()) {
+        m_value.Dispose();
+        m_value.Clear();
+    } else if (isStringBased()) {
+        delete u.m_string;
+    }
+    m_state = JSValue;
+    m_value = v8::Persistent<v8::Value>::New(value);
 }
 
 QScriptEnginePrivate* QScriptValuePrivate::engine() const

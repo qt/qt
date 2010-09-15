@@ -814,7 +814,8 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_v8Context.Dispose();
-    m_v8Context.Clear();
+    for (int i = 0; i < m_v8Contexts.count(); ++i)
+        m_v8Contexts[i].Dispose();
     m_exception.Dispose();
 }
 
@@ -1453,6 +1454,146 @@ QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_v8Context->Global());
 }
 
+static v8::Handle<v8::Value> QtGlobalObjectNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    v8::Local<v8::Value> result = customGlobalObject->Get(property);
+    // always intercepts
+    if (result.IsEmpty())
+        return handleScope.Close(v8::Undefined());
+    return handleScope.Close(result);
+}
+
+static v8::Handle<v8::Value> QtGlobalObjectNamedPropertySetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    customGlobalObject->Set(property, value);
+    // always intercepts
+    return handleScope.Close(value);
+}
+
+static v8::Handle<v8::Integer> QtGlobalObjectNamedPropertyQuery(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+
+    // FIXME how we can access attributes of a property?
+    Q_UNIMPLEMENTED();
+    // always intercepts
+    return handleScope.Close(v8::Integer::New(v8::None));
+}
+
+static v8::Handle<v8::Boolean> QtGlobalObjectNamedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+
+    bool result = customGlobalObject->Delete(property);
+    // always intercepts
+    if (result)
+        return handleScope.Close(v8::True());
+    return handleScope.Close(v8::False());
+}
+
+static v8::Handle<v8::Array> QtGlobalObjectNamedPropertyEnumeration(const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    return handleScope.Close(customGlobalObject->GetPropertyNames());
+}
+
+static v8::Handle<v8::Value> QtGlobalObjectIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    v8::Local<v8::Value> result = customGlobalObject->Get(index);
+    // always intercepts
+    if (result.IsEmpty())
+        return handleScope.Close(v8::Undefined());
+    return handleScope.Close(result);
+}
+
+static v8::Handle<v8::Value> QtGlobalObjectIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    customGlobalObject->Set(index, value);
+    // always intercepts
+    return handleScope.Close(value);
+}
+
+static v8::Handle<v8::Integer> QtGlobalObjectIndexedPropertyQuery(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+
+    // FIXME how we can access attributes of a property?
+    Q_UNIMPLEMENTED();
+    // always intercepts
+    return handleScope.Close(v8::Integer::New(v8::None));
+}
+
+static v8::Handle<v8::Boolean> QtGlobalObjectIndexedPropertyDeleter(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+
+    bool result = customGlobalObject->Delete(index);
+    // always intercepts
+    if (result)
+        return handleScope.Close(v8::True());
+    return handleScope.Close(v8::False());
+}
+
+static v8::Handle<v8::Array> QtGlobalObjectIndexedPropertyEnumeration(const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(info.Data());
+    return handleScope.Close(customGlobalObject->GetPropertyNames());
+}
+
+void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectValue)
+{
+    // FIXME we need more test for this functionality. This algorithm do not remove the original global
+    // object (it is not possible as it is needed for example in the QScriptOriginalGlobalObject
+    // so it would be nice to check if we do not expose original global object in the new environment
+    if (!newGlobalObjectValue->isObject())
+        return;
+
+    // We need to leak this value, It needs to live as long as a Global Object, which means as long
+    // as this QSEP.
+    // FIXME check if a Persistent handle is removed with context in which it was created. We don't
+    // want to leak too much.
+    v8::Persistent<v8::Value>::New(static_cast<v8::Handle<v8::Value> >(*newGlobalObjectValue));
+    v8::Handle<v8::Value> securityToken = m_v8Context->GetSecurityToken();
+    if (m_globalObjectTemplate.IsEmpty()) {
+        // Initialize m_globalObjectTemplate
+        v8::Handle<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
+        v8::Persistent<v8::Value> newGlobalObject = *newGlobalObjectValue;
+        objectTemplate->SetNamedPropertyHandler(QtGlobalObjectNamedPropertyGetter,
+                                                QtGlobalObjectNamedPropertySetter,
+                                                QtGlobalObjectNamedPropertyQuery,
+                                                QtGlobalObjectNamedPropertyDeleter,
+                                                QtGlobalObjectNamedPropertyEnumeration,
+                                                newGlobalObject);
+        objectTemplate->SetIndexedPropertyHandler(QtGlobalObjectIndexedPropertyGetter,
+                                                QtGlobalObjectIndexedPropertySetter,
+                                                QtGlobalObjectIndexedPropertyQuery,
+                                                QtGlobalObjectIndexedPropertyDeleter,
+                                                QtGlobalObjectIndexedPropertyEnumeration,
+                                                newGlobalObject);
+        m_globalObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New(objectTemplate);
+    }
+    m_v8Context->Exit();
+    m_v8Contexts.append(m_v8Context);
+    m_v8Context = v8::Context::New(/* ExtensionConfiguration */ 0, m_globalObjectTemplate);
+    m_v8Context->Enter();
+    m_v8Context->SetSecurityToken(securityToken);
+    newGlobalObjectValue->reinitialize(this, m_v8Context->Global());
+}
+
 /*!
   \since 4.5
 
@@ -1467,8 +1608,10 @@ QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
 */
 void QScriptEngine::setGlobalObject(const QScriptValue &object)
 {
-    Q_UNUSED(object);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    v8::Context::Scope scope(*d);
+    v8::HandleScope handleScope;
+    d->setGlobalObject(QScriptValuePrivate::get(object));
 }
 
 
