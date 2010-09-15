@@ -80,12 +80,12 @@ public:
         if (state == StartState) {
             m_value = a.fromValue;
             if (QDeclarativePropertyPrivate::binding(m_property)) {
-                m_binding = QDeclarativePropertyPrivate::binding(m_property)->weakPointer();
+                m_binding = QDeclarativeAbstractBinding::getPointer(QDeclarativePropertyPrivate::binding(m_property));
             }
             m_reverseEvent = true;
         } else {
             m_value = a.toValue;
-            m_binding = a.toBinding->weakPointer();
+            m_binding = QDeclarativeAbstractBinding::getPointer(a.toBinding);
             m_reverseEvent = false;
         }
     }
@@ -97,7 +97,7 @@ public:
     QDeclarativeSimpleAction(const QDeclarativeSimpleAction &other)
         :  m_property(other.m_property),
         m_value(other.m_value),
-        m_binding(other.binding() ? other.binding()->weakPointer() : QDeclarativeAbstractBinding::Pointer()),
+        m_binding(QDeclarativeAbstractBinding::getPointer(other.binding())),
         m_specifiedObject(other.m_specifiedObject),
         m_specifiedProperty(other.m_specifiedProperty),
         m_event(other.m_event),
@@ -109,7 +109,7 @@ public:
     {
         m_property = other.m_property;
         m_value = other.m_value;
-        m_binding = other.binding() ? other.binding()->weakPointer() : QDeclarativeAbstractBinding::Pointer();
+        m_binding = QDeclarativeAbstractBinding::getPointer(other.binding());
         m_specifiedObject = other.m_specifiedObject;
         m_specifiedProperty = other.m_specifiedProperty;
         m_event = other.m_event;
@@ -140,7 +140,7 @@ public:
 
     void setBinding(QDeclarativeAbstractBinding *binding)
     {
-        m_binding = binding->weakPointer();        
+        m_binding = QDeclarativeAbstractBinding::getPointer(binding);
     }
 
     QDeclarativeAbstractBinding *binding() const

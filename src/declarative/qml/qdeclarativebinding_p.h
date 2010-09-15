@@ -88,13 +88,14 @@ public:
     void addToObject(QObject *);
     void removeFromObject();
 
-    Pointer weakPointer();
+    static Pointer getPointer(QDeclarativeAbstractBinding *p) { return p ? p->weakPointer() : Pointer(); }
 
 protected:
     virtual ~QDeclarativeAbstractBinding();
     void clear();
 
 private:
+    Pointer weakPointer();
 
     friend class QDeclarativeData;
     friend class QDeclarativeValueTypeProxyBinding;
