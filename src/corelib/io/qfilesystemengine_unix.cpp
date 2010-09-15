@@ -193,7 +193,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 }
 
 //static
-QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, , QFileSystemMetaData &data)
+QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     if (entry.isEmpty() || entry.isRoot())
         return entry;
