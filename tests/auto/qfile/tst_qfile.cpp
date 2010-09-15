@@ -2503,10 +2503,11 @@ void tst_QFile::standarderror()
 
 void tst_QFile::handle()
 {
-#ifndef Q_OS_WINCE
+    int fd;
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QFile file(SRCDIR "tst_qfile.cpp");
     QVERIFY(file.open(QIODevice::ReadOnly));
-    int fd = int(file.handle());
+    fd = int(file.handle());
     QVERIFY(fd > 2);
     QCOMPARE(int(file.handle()), fd);
     char c = '\0';
@@ -2533,6 +2534,7 @@ void tst_QFile::handle()
     QCOMPARE(c, '*');
 #endif
 
+    //test round trip of adopted stdio file handle
     QFile file2;
     FILE *fp = fopen(SRCDIR "tst_qfile.cpp", "r");
     file2.open(fp, QIODevice::ReadOnly);
@@ -2540,6 +2542,7 @@ void tst_QFile::handle()
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
     fclose(fp);
 
+    //test round trip of adopted posix file handle
 #ifdef Q_OS_UNIX
     QFile file3;
     fd = QT_OPEN(SRCDIR "tst_qfile.cpp", QT_OPEN_RDONLY);
@@ -2551,6 +2554,9 @@ void tst_QFile::handle()
 
 void tst_QFile::nativeHandleLeaks()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("test assumptions invalid for symbian", SkipAll);
+#else
     int fd1, fd2;
 
 #ifdef Q_OS_WIN
@@ -2591,6 +2597,7 @@ void tst_QFile::nativeHandleLeaks()
 
 #ifdef Q_OS_WIN
     QCOMPARE( handle2, handle1 );
+#endif
 #endif
 }
 
