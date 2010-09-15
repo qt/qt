@@ -171,13 +171,13 @@ void QFileSystemMetaData::fillFromTEntry(const TEntry& entry)
     entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
     knownFlagsMask |= QFileSystemMetaData::SymbianTEntryFlags;
     //Symbian doesn't have unix type file permissions
-    entryFlags |= QFileSystemMetaData::Permissions;
-    if(entry.IsReadOnly()) {
-        entryFlags &= ~(QFileSystemMetaData::WritePermissions);
+    entryFlags |= QFileSystemMetaData::ReadPermissions;
+    if(!entry.IsReadOnly()) {
+        entryFlags |= QFileSystemMetaData::WritePermissions;
     }
     //set the type
     if(entry.IsDir())
-        entryFlags |= QFileSystemMetaData::DirectoryType;
+        entryFlags |= (QFileSystemMetaData::DirectoryType | QFileSystemMetaData::ExecutePermissions);
     else
         entryFlags |= QFileSystemMetaData::FileType;
 
