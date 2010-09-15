@@ -86,6 +86,12 @@ private:
 
     // Platform-specific data
 #if defined(Q_OS_WIN)
+    QFileSystemEntry::NativePath dirPath;
+    HANDLE findFileHandle;
+    QStringList uncShares;
+    bool uncFallback;
+    int uncShareIndex;
+    bool onlyDirs;
 #elif defined (Q_OS_SYMBIAN)
     RDir dirHandle;
     TEntryArray entries;

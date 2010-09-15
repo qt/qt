@@ -12,7 +12,6 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator.cpp \
-           $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtemporaryfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.cpp \

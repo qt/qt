@@ -68,7 +68,6 @@ QTOBJS= \
 	qfsfileengine.o \
 	qfsfileengine_iterator.o \
 	qfsfileengine_win.o \
-	qfsfileengine_iterator_win.o \
 	qglobal.o \
 	qhash.o \
 	qiodevice.o \
@@ -210,9 +209,6 @@ qfilesystemiterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win
 
 qfsfileengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
-
-qfsfileengine_iterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_win.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_win.cpp
 
 qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp

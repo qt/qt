@@ -49,23 +49,14 @@ QT_BEGIN_NAMESPACE
 
 QFSFileEngineIterator::QFSFileEngineIterator(QDir::Filters filters, const QStringList &filterNames)
     : QAbstractFileEngineIterator(filters, filterNames)
-#ifdef Q_OS_UNIX
     , done(false)
-#endif
 {
-#ifndef Q_OS_UNIX
-    newPlatformSpecifics();
-#endif
 }
 
 QFSFileEngineIterator::~QFSFileEngineIterator()
 {
-#ifndef Q_OS_UNIX
-    deletePlatformSpecifics();
-#endif
 }
 
-#ifdef Q_OS_UNIX
 bool QFSFileEngineIterator::hasNext() const
 {
     if (!done && !nativeIterator) {
@@ -76,7 +67,6 @@ bool QFSFileEngineIterator::hasNext() const
 
     return !done;
 }
-#endif
 
 QString QFSFileEngineIterator::next()
 {
@@ -87,7 +77,6 @@ QString QFSFileEngineIterator::next()
     return currentFilePath();
 }
 
-#ifdef Q_OS_UNIX
 void QFSFileEngineIterator::advance() const
 {
     currentInfo = nextInfo;
@@ -101,24 +90,15 @@ void QFSFileEngineIterator::advance() const
         nativeIterator.reset();
     }
 }
-#endif
 
 QString QFSFileEngineIterator::currentFileName() const
 {
-#ifdef Q_OS_UNIX
     return currentInfo.fileName();
-#else
-    return currentEntry;
-#endif
 }
 
 QFileInfo QFSFileEngineIterator::currentFileInfo() const
 {
-#ifdef Q_OS_UNIX
     return currentInfo;
-#else
-    return QAbstractFileEngineIterator::currentFileInfo();
-#endif
 }
 
 QT_END_NAMESPACE
