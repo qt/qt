@@ -438,9 +438,13 @@ void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, bool setLi
     creationTime_ = findData.ftCreationTime;
     lastAccessTime_ = findData.ftLastAccessTime;
     lastWriteTime_ = findData.ftLastWriteTime;
-    size_ = findData.nFileSizeHigh;
-    size_ <<= 32;
-    size_ += findData.nFileSizeLow;
+    if (fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY) {
+        size_ = 0;
+    } else {
+        size_ = findData.nFileSizeHigh;
+        size_ <<= 32;
+        size_ += findData.nFileSizeLow;
+    }
     knownFlagsMask |=  Times | SizeAttribute;
     if (setLinkType) {
         knownFlagsMask |=  LinkType;
@@ -460,15 +464,19 @@ void QFileSystemMetaData::fillFromFindInfo(BY_HANDLE_FILE_INFORMATION &fileInfo)
     creationTime_ = fileInfo.ftCreationTime;
     lastAccessTime_ = fileInfo.ftLastAccessTime;
     lastWriteTime_ = fileInfo.ftLastWriteTime;
-    size_ = fileInfo.nFileSizeHigh;
-    size_ <<= 32;
-    size_ += fileInfo.nFileSizeLow;
+    if (fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY) {
+        size_ = 0;
+    } else {
+        size_ = fileInfo.nFileSizeHigh;
+        size_ <<= 32;
+        size_ += fileInfo.nFileSizeLow;
+    }
     knownFlagsMask |=  Times | SizeAttribute;
 }
 
 void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 {
-    data.size_ = -1;
+    data.size_ = 0;
     data.fileAttribute_ =  0;
 }
 
