@@ -71,7 +71,7 @@ QDirectFbScreen::QDirectFbScreen(int display)
     m_geometry = QRect(0,0,config.width,config.height);
     const int dpi = 72;
     const qreal inch = 25.4;
-    m_depth = 32;
+    m_depth = QDirectFbConvenience::colorDepthForSurface(config.pixelformat);
     m_physicalSize = QSize(qRound(config.width * inch / dpi), qRound(config.height *inch / dpi));
 
     cursor = new QDirectFBCursor(this);
