@@ -107,11 +107,10 @@ extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #endif
 
 struct QGLThreadContext {
-#ifdef QT_OPENGL_ES
     ~QGLThreadContext() {
-        eglReleaseThread();
+        if (context)
+            context->doneCurrent();
     }
-#endif
     QGLContext *context;
 };
 
