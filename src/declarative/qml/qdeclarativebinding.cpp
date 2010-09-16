@@ -48,6 +48,7 @@
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <QVariant>
 #include <QtCore/qdebug.h>
@@ -371,6 +372,18 @@ void QDeclarativeAbstractBinding::removeFromObject()
 
         m_object = 0;
     }
+}
+
+static void bindingDummyDeleter(QDeclarativeAbstractBinding *)
+{
+}
+
+QDeclarativeAbstractBinding::Pointer QDeclarativeAbstractBinding::weakPointer()
+{
+    if (m_selfPointer.isNull())
+        m_selfPointer = QSharedPointer<QDeclarativeAbstractBinding>(this, bindingDummyDeleter);
+
+    return m_selfPointer.toWeakRef();
 }
 
 void QDeclarativeAbstractBinding::clear()
