@@ -111,6 +111,8 @@ public:
 
 //### rename to QDeclarativeStateChange?
 class QDeclarativeStateGroup;
+class QDeclarativeState;
+class QDeclarativeStateOperationPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeStateOperation : public QObject
 {
     Q_OBJECT
@@ -121,8 +123,15 @@ public:
 
     virtual ActionList actions();
 
+    QDeclarativeState *state() const;
+    void setState(QDeclarativeState *state);
+
 protected:
     QDeclarativeStateOperation(QObjectPrivate &dd, QObject *parent = 0);
+
+private:
+    Q_DECLARE_PRIVATE(QDeclarativeStateOperation)
+    Q_DISABLE_COPY(QDeclarativeStateOperation)
 };
 
 typedef QDeclarativeStateOperation::ActionList QDeclarativeStateActions;
@@ -168,6 +177,18 @@ public:
 
     QDeclarativeStateGroup *stateGroup() const;
     void setStateGroup(QDeclarativeStateGroup *);
+
+    bool containsPropertyInRevertList(QObject *target, const QByteArray &name) const;
+    bool changeValueInRevertList(QObject *target, const QByteArray &name, const QVariant &revertValue);
+    bool changeBindingInRevertList(QObject *target, const QByteArray &name, QDeclarativeAbstractBinding *binding);
+    bool removeEntryFromRevertList(QObject *target, const QByteArray &name);
+    void addEntryToRevertList(const QDeclarativeAction &action);
+    void removeAllEntriesFromRevertList(QObject *target);
+    void addEntriesToRevertList(const QList<QDeclarativeAction> &actions);
+    QVariant valueInRevertList(QObject *target, const QByteArray &name) const;
+    QDeclarativeAbstractBinding *bindingInRevertList(QObject *target, const QByteArray &name) const;
+
+    bool isStateActive() const;
 
 Q_SIGNALS:
     void completed();
