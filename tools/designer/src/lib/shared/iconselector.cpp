@@ -583,7 +583,6 @@ IconThemeEditor::IconThemeEditor(QWidget *parent, bool wantResetButton) :
     mainHLayout->setMargin(0);
 
     // Vertically center theme preview label
-    d->m_themeLabel->setFrameStyle(QFrame::Box);
     d->m_themeLabel->setPixmap(d->m_emptyPixmap);
 
     QVBoxLayout *themeLabelVLayout = new QVBoxLayout;
@@ -608,6 +607,7 @@ IconThemeEditor::IconThemeEditor(QWidget *parent, bool wantResetButton) :
     }
 
     setLayout(mainHLayout);
+    setFocusProxy(d->m_themeLineEdit);
 }
 
 IconThemeEditor::~IconThemeEditor()

@@ -640,8 +640,8 @@ namespace qdesigner_internal
     static inline QPair<QIcon::Mode, QIcon::State> subPropertyFlagToIconModeState(unsigned flag)
     {
         switch (flag) {
-        case NormalOffIconMask:
-            return qMakePair(QIcon::Normal,   QIcon::Off);
+        case NormalOnIconMask:
+            return qMakePair(QIcon::Normal,   QIcon::On);
         case DisabledOffIconMask:
             return qMakePair(QIcon::Disabled, QIcon::Off);
         case DisabledOnIconMask:
@@ -654,11 +654,11 @@ namespace qdesigner_internal
             return qMakePair(QIcon::Selected, QIcon::Off);
         case SelectedOnIconMask:
             return qMakePair(QIcon::Selected, QIcon::On);
-        case NormalOnIconMask:
+        case NormalOffIconMask:
         default:
             break;
         }
-        return     qMakePair(QIcon::Normal,   QIcon::On);
+        return     qMakePair(QIcon::Normal,   QIcon::Off);
     }
 
     uint PropertySheetIconValue::mask() const
