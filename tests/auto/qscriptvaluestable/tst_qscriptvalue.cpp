@@ -340,7 +340,6 @@ void tst_QScriptValue::getPropertySimple()
         quint32 idx = engine.toStringHandle(propertyName).toArrayIndex(&ok);
         if (ok) {
             QScriptValue property = object.property(idx);
-            QEXPECT_FAIL("[4,5]", "FIXME: v8 returs undifined, not null", Continue);
             QCOMPARE(removeWhiteSpace(property.toString()), removeWhiteSpace(desc));
         }
     }

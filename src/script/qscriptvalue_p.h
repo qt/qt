@@ -833,12 +833,13 @@ inline QScriptValuePrivate* QScriptValuePrivate::property(quint32 index, const Q
     if (!isObject())
         return new QScriptValuePrivate();
 
-    if (!isArray())
-        // FIXME we dont need to convert Index to string.
-        return property(QString::number(index), mode);
-
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
+
+    if ((mode != QScriptValue::ResolveLocal && !self->Has(index))
+        || (mode == QScriptValue::ResolveLocal && !self->HasRealIndexedProperty(index)))
+        return new QScriptValuePrivate();
+
     v8::Handle<v8::Value> result = self->Get(index);
     return new QScriptValuePrivate(engine(), result);
 }
