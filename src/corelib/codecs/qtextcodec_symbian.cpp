@@ -115,11 +115,11 @@ static const QSymbianCodecInitData codecsData[] = {
     { /*271082494*/ 271082494,                                   0, "gsm7_turkish_single\0" },
     { /*271082495*/ 271082495,                                   0, "turkish_locking_gsm7ext\0" },
     { /*271082496*/ 271082496,                                   0, "turkish_locking_single\0" },
-    { /*271082503*/ 271082503,                                   0, "portuguese_gsm7_single\0" },                              
-    { /*271082504*/ 271082504,                                   0, "portuguese_locking_gsm7ext\0" },                          
-    { /*271082505*/ 271082505,                                   0, "portuguese_locking_single\0" },                           
-    { /*271082506*/ 271082506,                                   0, "spanish_gsm7_single\0" },                                 
-    { /*271085624*/ 271085624,                                 114, "GB18030\0" },                                             
+    { /*271082503*/ 271082503,                                   0, "portuguese_gsm7_single\0" },
+    { /*271082504*/ 271082504,                                   0, "portuguese_locking_gsm7ext\0" },
+    { /*271082505*/ 271082505,                                   0, "portuguese_locking_single\0" },
+    { /*271082506*/ 271082506,                                   0, "spanish_gsm7_single\0" },
+    { /*271085624*/ 271085624,                                 114, "GB18030\0" },
     { /*536929574*/ 536929574,                                  38, "EUC-KR\0" },
     { /*536936703*/ 536936703,                                   0, "CP949\0" },
     { /*536936705*/ 536936705,                                  37, "ISO-2022-KR\0" },
@@ -667,7 +667,7 @@ QSymbianTextCodec *QSymbianTextCodec::init()
             // We did not find the charsetId in our codecsData[], therefore we ask
             // the OS for the codec name. We first try to get a "standard name" and fall
             // back to array->At(i).Name(), if really needed. array->At(i).Name() is not
-            // guaranteed to be a correct name for QTextCodec::codecFromName(). 
+            // guaranteed to be a correct name for QTextCodec::codecFromName().
             QScopedPointer<HBufC8> buf;
             QT_TRAP_THROWING(buf.reset(converter->ConvertCharacterSetIdentifierToStandardNameL(charsetId, qt_s60GetRFs())))
             QByteArray name;
