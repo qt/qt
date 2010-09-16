@@ -83,6 +83,7 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
+                anchors.margins: -16 // Increase mouse area a lot outside the slider
                 drag.target: parent; drag.axis: Drag.XAxis
                 drag.minimumX: 2; drag.maximumX: container.width - 32
             }
