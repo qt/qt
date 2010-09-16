@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,9 +38,16 @@
 **
 ****************************************************************************/
 
+//! [document]
 import Qt 4.7
 
-Image {
-    source: "pics/qtlogo.png"
-    width: 20; height: 20
+Rectangle { 
+    width: 100; height: 100
+    color: "green"
+
+    MouseArea { 
+        anchors.fill: parent
+        onClicked: { parent.color = 'red' }
+    }
 }
+//! [document]

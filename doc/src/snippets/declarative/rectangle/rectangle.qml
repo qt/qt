@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,82 +38,15 @@
 **
 ****************************************************************************/
 
-//! [import]
+//! [document]
 import Qt 4.7
-//! [import]
 
 Rectangle {
-    width: childrenRect.width
-    height: childrenRect.height
-
-Row {
-
-//! [intro]
-Rectangle { 
-    width: 100; height: 100
-    color: "green"
-
-    MouseArea { 
-        anchors.fill: parent
-        onClicked: { parent.color = 'red' }
-    }
+    width: 100
+    height: 100
+    color: "red"
+    border.color: "black"
+    border.width: 5
+    radius: 10
 }
-//! [intro]
-
-//! [intro-extended]
-Rectangle {
-    width: 100; height: 100
-    color: "green"
-
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: {
-            if (mouse.button == Qt.RightButton)
-                parent.color = 'blue';
-            else
-                parent.color = 'red';
-        }
-    }
-}
-//! [intro-extended]
-
-//! [drag]
-Rectangle {
-    id: container
-    width: 600; height: 200
-
-    Rectangle {
-        id: rect
-        width: 50; height: 50
-        color: "red"
-        opacity: (600.0 - rect.x) / 600
-
-        MouseArea {
-            anchors.fill: parent
-            drag.target: rect
-            drag.axis: Drag.XAxis
-            drag.minimumX: 0
-            drag.maximumX: container.width - rect.width
-        }
-    }
-}
-//! [drag]
-
-//! [mousebuttons]
-Text {
-    text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
-    horizontalAlignment: Text.AlignHCenter
-    verticalAlignment: Text.AlignVCenter
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-    }
-}
-//! [mousebuttons]
-
-}
-
-}
+//! [document]

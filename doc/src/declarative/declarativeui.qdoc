@@ -30,7 +30,6 @@
 \page qtquick.html
 \ingroup qt-gui-concepts
 
-
 \brief Qt Quick provides a declarative framework for building highly
 dynamic, custom user interfaces.
 
