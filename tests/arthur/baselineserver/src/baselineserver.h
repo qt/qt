@@ -5,10 +5,12 @@
 #include <QTcpServer>
 #include <QThread>
 #include <QTcpSocket>
-#include "baselineprotocol.h"
 #include <QScopedPointer>
 #include <QTimer>
 #include <QDateTime>
+
+#include "baselineprotocol.h"
+#include "htmlpage.h"
 
 // #seconds between update checks
 #define HEARTBEAT 5
@@ -64,7 +66,7 @@ private slots:
 private:
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
-    QString pathForItem(const ImageItem &item, bool isBaseline = true);
+    QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true);
     QString logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
     QString engineForItem(const ImageItem &item);
@@ -74,6 +76,7 @@ private:
     bool connectionEstablished;
     QString runId;
     QString pathForRun;
+    HTMLPage report;
 };
 
 #endif // BASELINESERVER_H

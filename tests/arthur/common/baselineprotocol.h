@@ -6,6 +6,9 @@
 #include <QImage>
 #include <QVector>
 
+#define QLS QLatin1String
+#define QLC QLatin1Char
+
 #define FileFormat "png"
 
 struct PlatformInfo

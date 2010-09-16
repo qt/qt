@@ -7,9 +7,6 @@
 #include <QHostInfo>
 #include <QTextStream>
 
-#define QLS QLatin1String
-#define QLC QLatin1Char
-
 QString BaselineServer::storage;
 
 BaselineServer::BaselineServer(QObject *parent)
@@ -160,6 +157,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
+    report.start(BaselineServer::storagePath(), runId, plat);
 }
 
 
@@ -172,7 +170,7 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     QString prefix = pathForItem(item, isBaseline);
     qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.scriptName << "Storing in" << prefix;
 
-    QString dir = prefix.section(QDir::separator(), 0, -2);
+    QString dir = prefix.section(QLC('/'), 0, -2);
     QDir cwd;
     if (!cwd.exists(dir))
         cwd.mkpath(dir);
@@ -185,11 +183,21 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     checkSums << item.imageChecksums;
     file.close();
 
-    QByteArray msg(isBaseline ? "Baseline" : "Mismatching" );
-    msg += " image stored in "
-           + QHostInfo::localHostName().toLatin1() + '.'
-           + QHostInfo::localDomainName().toLatin1() + ':'
-           + prefix.toLatin1() + FileFormat;
+    if (!isBaseline)
+        report.addItem(pathForItem(item, true, false) + QLS(FileFormat),
+                       pathForItem(item, false, false) + QLS(FileFormat),
+                       item);
+
+    QByteArray msg(isBaseline ? "New baseline image stored: " :
+                                "Mismatch report: " );
+    msg += "http://"
+        + QHostInfo::localHostName().toLatin1() + '.'
+        + QHostInfo::localDomainName().toLatin1() + '/';
+    if (isBaseline)
+        msg += pathForItem(item, true, false).toLatin1() + FileFormat;
+    else
+        msg += report.filePath();
+
     proto.sendBlock(BaselineProtocol::Ack, msg);
 }
 
@@ -197,11 +205,12 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
 void BaselineHandler::receiveDisconnect()
 {
     qDebug() << runId << logtime() << "Client disconnected.";
+    report.end();
     QThread::currentThread()->exit(0);
 }
 
 
-QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
+QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
 {
     if (pathForRun.isNull()) {
         QString host = plat.hostname.section(QLC('.'), 0, 0);  // Filter away domain, if any
@@ -213,7 +222,7 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
             host.replace(QRegExp(QLS("^(bq|oslo?)-(.*)$")), QLS("\\2"));
             host.replace(QRegExp(QLS("^(.*)-\\d+$")), QLS("vm-\\1"));
         }
-        pathForRun = BaselineServer::storagePath() + host + QLC('/');
+        pathForRun = host + QLC('/');
     }
 
     QString storePath = pathForRun;
@@ -228,6 +237,8 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline)
     itemName.append(QLC('_'));
     itemName.append(QString::number(item.scriptChecksum, 16).rightJustified(4, QLC('0')));
 
+    if (absolute)
+        storePath.prepend(BaselineServer::storagePath());
     return storePath + itemName + QLC('.');
 }
 

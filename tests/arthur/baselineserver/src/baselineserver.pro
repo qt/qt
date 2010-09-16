@@ -19,7 +19,9 @@ TEMPLATE = app
 include(../../common/baselineprotocol.pri)
 
 SOURCES += main.cpp \
-    baselineserver.cpp
+    baselineserver.cpp \
+    htmlpage.cpp
 
 HEADERS += \
-    baselineserver.h
+    baselineserver.h \
+    htmlpage.h
