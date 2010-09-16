@@ -1272,7 +1272,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
 
     Returns the bounding rect of this item's children (excluding itself).
 */
-void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect, bool doClip)
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
 {
     Q_Q(QGraphicsItem);
 
@@ -1302,7 +1302,7 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
         }
     }
 
-    if (doClip && (flags & QGraphicsItem::ItemClipsChildrenToShape)){
+    if (flags & QGraphicsItem::ItemClipsChildrenToShape){
         if (x)
             *rect &= x->mapRect(q->boundingRect());
         else
@@ -1870,6 +1870,10 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // Item children clipping changes. Propagate the ancestor flag to
         // all children.
         d_ptr->updateAncestorFlag(ItemClipsChildrenToShape);
+        // The childrenBoundingRect is clipped to the boundingRect in case of ItemClipsChildrenToShape,
+        // which means we have to invalidate the cached childrenBoundingRect whenever this flag changes.
+        d_ptr->dirtyChildrenBoundingRect = 1;
+        d_ptr->markParentDirty(true);
     }
 
     if ((flags & ItemIgnoresTransformations) != (oldFlags & ItemIgnoresTransformations)) {
@@ -11168,14 +11172,8 @@ QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem syste
     }
 
     QRectF rect = item->boundingRect();
-    if (!item->d_ptr->children.isEmpty()) {
-        if (dirtyChildrenBoundingRect) {
-            childrenBoundingRect = QRectF();
-            item->d_ptr->childrenBoundingRectHelper(0, &childrenBoundingRect, true);
-            dirtyChildrenBoundingRect = false;
-        }
-        rect |= childrenBoundingRect;
-    }
+    if (!item->d_ptr->children.isEmpty())
+        rect |= item->childrenBoundingRect();
 
     if (deviceCoordinates) {
         Q_ASSERT(info->painter);

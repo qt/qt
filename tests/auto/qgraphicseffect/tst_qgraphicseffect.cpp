@@ -66,6 +66,7 @@ private slots:
     void source();
     void boundingRectFor();
     void boundingRect();
+    void boundingRect2();
     void draw();
     void opacity();
     void grayscale();
@@ -262,6 +263,31 @@ void tst_QGraphicsEffect::boundingRect()
     QVERIFY(!ptr);
 
     delete item;
+}
+
+void tst_QGraphicsEffect::boundingRect2()
+{
+    CustomEffect *effect = new CustomEffect;
+    QGraphicsRectItem *root = new QGraphicsRectItem;
+    root->setGraphicsEffect(effect);
+
+    QGraphicsRectItem *child = new QGraphicsRectItem;
+    QRectF childRect(0, 0, 100, 100);
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    child->setRect(childRect);
+    child->setParentItem(root);
+
+    QGraphicsRectItem *grandChild = new QGraphicsRectItem;
+    QRectF grandChildRect(0, 0, 200, 200);
+    grandChild->setRect(grandChildRect);
+    grandChild->setParentItem(child);
+
+    // Make sure the effect's bounding rect is clipped to the child's bounding rect.
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect));
+
+    // Disable ItemClipsChildrenToShape; effect's bounding rect is no longer clipped.
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
 }
 
 void tst_QGraphicsEffect::draw()
