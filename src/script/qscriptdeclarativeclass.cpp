@@ -217,9 +217,9 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
 */
 QScriptContext * QScriptDeclarativeClass::pushCleanContext(QScriptEngine *engine)
 {
-    Q_UNUSED(engine);
     Q_UNIMPLEMENTED();
-    return 0;
+    // FIXME this is not the right implementation, look at method description.
+    return engine->pushContext();
 }
 
 QScriptDeclarativeClass::~QScriptDeclarativeClass()
