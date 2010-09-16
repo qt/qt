@@ -1,9 +1,21 @@
-libconninet (0.42+0m6) unstable; urgency=low
+libconninet (0.45) unstable; urgency=low
 
-  * This entry has been added by BIFH queue processor
-    version has been changed to 0.42+0m6
+  * Fixes: NB#187470 - libconninet: add automake to build-deps
 
- -- Qing Jin <ext-qing.1.jin@nokia.com>  Thu, 22 Jul 2010 14:04:58 +0300
+ -- Markus Silvan <ext-markus.p.silvan@nokia.com>  Wed, 25 Aug 2010 09:02:55 +0300
+
+libconninet (0.44) unstable; urgency=low
+
+  * Added autoconf to build dependencies
+
+ -- Markus Silvan <ext-markus.p.silvan@nokia.com>  Wed, 25 Aug 2010 09:02:55 +0300
+
+libconninet (0.43) unstable; urgency=low
+
+  * Fixes: NB#184824 - Getting all proxy variables from gconf in one go
+    which will speedup the HTTP requests done by Qt4.7 webkit
+
+ -- Jukka Rissanen <jukka.rissanen@nokia.com>  Thu, 12 Aug 2010 10:15:20 +0300
 
 libconninet (0.42) unstable; urgency=low
 
