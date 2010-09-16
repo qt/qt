@@ -1689,5 +1689,27 @@ EXPORTS
 	?tr@QDeclarativePropertyChanges@@SA?AVQString@@PBD0@Z @ 1688 NONAME ; class QString QDeclarativePropertyChanges::tr(char const *, char const *)
 	?changeBindingInRevertList@QDeclarativeState@@QAE_NPAVQObject@@ABVQByteArray@@PAVQDeclarativeAbstractBinding@@@Z @ 1689 NONAME ; bool QDeclarativeState::changeBindingInRevertList(class QObject *, class QByteArray const &, class QDeclarativeAbstractBinding *)
 	?getStaticMetaObject@QDeclarativePropertyChanges@@SAABUQMetaObject@@XZ @ 1690 NONAME ; struct QMetaObject const & QDeclarativePropertyChanges::getStaticMetaObject(void)
-	?weakPointer@QDeclarativeAbstractBinding@@QAE?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@XZ @ 1691 NONAME ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::weakPointer(void)
+	?weakPointer@QDeclarativeAbstractBinding@@QAE?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@XZ @ 1691 NONAME ABSENT ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::weakPointer(void)
+	?getStaticMetaObject@QDeclarativeScriptAction@@SAABUQMetaObject@@XZ @ 1692 NONAME ; struct QMetaObject const & QDeclarativeScriptAction::getStaticMetaObject(void)
+	?qt_metacall@QDeclarativeScriptAction@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1693 NONAME ; int QDeclarativeScriptAction::qt_metacall(enum QMetaObject::Call, int, void * *)
+	??1QDeclarativeScriptAction@@UAE@XZ @ 1694 NONAME ; QDeclarativeScriptAction::~QDeclarativeScriptAction(void)
+	?stateChangeScriptName@QDeclarativeScriptAction@@QBE?AVQString@@XZ @ 1695 NONAME ; class QString QDeclarativeScriptAction::stateChangeScriptName(void) const
+	?script@QDeclarativeScriptAction@@QBE?AVQDeclarativeScriptString@@XZ @ 1696 NONAME ; class QDeclarativeScriptString QDeclarativeScriptAction::script(void) const
+	?qt_metacast@QDeclarativeScriptAction@@UAEPAXPBD@Z @ 1697 NONAME ; void * QDeclarativeScriptAction::qt_metacast(char const *)
+	?tr@QDeclarativeScriptAction@@SA?AVQString@@PBD0@Z @ 1698 NONAME ; class QString QDeclarativeScriptAction::tr(char const *, char const *)
+	?setStateChangeScriptName@QDeclarativeScriptAction@@QAEXABVQString@@@Z @ 1699 NONAME ; void QDeclarativeScriptAction::setStateChangeScriptName(class QString const &)
+	??_EQDeclarativeScriptAction@@UAE@I@Z @ 1700 NONAME ; QDeclarativeScriptAction::~QDeclarativeScriptAction(unsigned int)
+	?d_func@QDeclarativeScriptAction@@ABEPBVQDeclarativeScriptActionPrivate@@XZ @ 1701 NONAME ; class QDeclarativeScriptActionPrivate const * QDeclarativeScriptAction::d_func(void) const
+	?weakPointer@QDeclarativeAbstractBinding@@AAE?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@XZ @ 1702 NONAME ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::weakPointer(void)
+	?trUtf8@QDeclarativeScriptAction@@SA?AVQString@@PBD0H@Z @ 1703 NONAME ; class QString QDeclarativeScriptAction::trUtf8(char const *, char const *, int)
+	?trUtf8@QDeclarativeScriptAction@@SA?AVQString@@PBD0@Z @ 1704 NONAME ; class QString QDeclarativeScriptAction::trUtf8(char const *, char const *)
+	?qtAnimation@QDeclarativeScriptAction@@MAEPAVQAbstractAnimation@@XZ @ 1705 NONAME ; class QAbstractAnimation * QDeclarativeScriptAction::qtAnimation(void)
+	??0QDeclarativeScriptAction@@QAE@PAVQObject@@@Z @ 1706 NONAME ; QDeclarativeScriptAction::QDeclarativeScriptAction(class QObject *)
+	?tr@QDeclarativeScriptAction@@SA?AVQString@@PBD0H@Z @ 1707 NONAME ; class QString QDeclarativeScriptAction::tr(char const *, char const *, int)
+	?d_func@QDeclarativeScriptAction@@AAEPAVQDeclarativeScriptActionPrivate@@XZ @ 1708 NONAME ; class QDeclarativeScriptActionPrivate * QDeclarativeScriptAction::d_func(void)
+	?transition@QDeclarativeScriptAction@@MAEXAAV?$QList@VQDeclarativeAction@@@@AAV?$QList@VQDeclarativeProperty@@@@W4TransitionDirection@QDeclarativeAbstractAnimation@@@Z @ 1709 NONAME ; void QDeclarativeScriptAction::transition(class QList<class QDeclarativeAction> &, class QList<class QDeclarativeProperty> &, enum QDeclarativeAbstractAnimation::TransitionDirection)
+	?staticMetaObject@QDeclarativeScriptAction@@2UQMetaObject@@B @ 1710 NONAME ; struct QMetaObject const QDeclarativeScriptAction::staticMetaObject
+	?setScript@QDeclarativeScriptAction@@QAEXABVQDeclarativeScriptString@@@Z @ 1711 NONAME ; void QDeclarativeScriptAction::setScript(class QDeclarativeScriptString const &)
+	?metaObject@QDeclarativeScriptAction@@UBEPBUQMetaObject@@XZ @ 1712 NONAME ; struct QMetaObject const * QDeclarativeScriptAction::metaObject(void) const
+	?getPointer@QDeclarativeAbstractBinding@@SA?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@PAV1@@Z @ 1713 NONAME ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::getPointer(class QDeclarativeAbstractBinding *)
 
