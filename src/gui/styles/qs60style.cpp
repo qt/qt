@@ -1430,11 +1430,25 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
+            const bool singleSelection =
+                (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                 itemView->selectionMode() == QAbstractItemView::NoSelection);
+            const bool selectItems = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
 
-            // draw themed background for table unless background brush has been defined.
+            // draw themed background for itemview unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
                 if (itemView) {
+                    //With single item selection, use highlight focus as selection indicator.
+                    if (singleSelection && isSelected){
+                        voptAdj.state = voptAdj.state | State_HasFocus;
+                        if (!hasFocus && selectItems) {
+                            painter->save();
+                            painter->setOpacity(0.5);
+                        }
+                    }
                     drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);
+                    if (singleSelection && isSelected && !hasFocus && selectItems)
+                        painter->restore();
                 }
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
@@ -1444,27 +1458,19 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
              // Draw selection check mark. Show check mark only in multi selection modes.
-             if (itemView) {
-                 const bool singleSelection =
-                     (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                      itemView->selectionMode() == QAbstractItemView::NoSelection)||
-                     (itemView->selectionModel()->selectedIndexes().count() < 2 );
-
-                 const bool selectItemsOnly = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
-
+             if (itemView && !singleSelection) {
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
                  if (selectionRect.isValid())
                      checkMarkOption.rect = selectionRect;
                  // Draw selection mark.
-                 if (isSelected && !singleSelection && selectItemsOnly) {
+                 if (isSelected && selectItems) {
                      proxy()->drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                      // @todo: this should happen in the rect retrievel i.e. subElementRect()
                      if (textRect.right() > selectionRect.left())
                          textRect.setRight(selectionRect.left());
-                 } else if (singleSelection &&
-                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
+                 } else if (voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      checkMarkOption.state = checkMarkOption.state & ~State_HasFocus;
 
                      switch (vopt->checkState) {
@@ -1484,7 +1490,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
              // draw the text
             if (!voptAdj.text.isEmpty()) {
-                if (isSelected || hasFocus )
+                if (hasFocus)
                     painter->setPen(voptAdj.palette.highlightedText().color());
                 else
                     painter->setPen(voptAdj.palette.text().color());
@@ -2314,7 +2320,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QAbstractItemView::SelectionBehavior selectionBehavior =
                     itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
                 // Set the draw area for highlights (focus, select rect or pressed rect)
-                if (hasFocus || isSelected || isPressed) {
+                if (hasFocus || isPressed) {
                     if (selectionBehavior != QAbstractItemView::SelectItems) {
                         // set highlight rect so that it is continuous from cell to cell, yet sligthly
                         // smaller than cell rect
@@ -2344,7 +2350,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QRect elementRect = option->rect;
 
                 //draw item is drawn as pressed, if it already has focus.
-                if (isPressed && (hasFocus || isSelected)) {
+                if (isPressed && hasFocus) {
                     themeGraphicDefined = true;
                     element = tableView ? QS60StylePrivate::SE_TableItemPressed : QS60StylePrivate::SE_ListItemPressed;
                 } else if (hasFocus || (isSelected && selectionBehavior != QAbstractItemView::SelectItems)) {
@@ -2984,7 +2990,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_ItemViewItemText:
         case SE_ItemViewItemDecoration:
             if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-                const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
+                const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
                 const bool multiSelection = !listItem ? false :
                     listItem->selectionMode() == QAbstractItemView::MultiSelection ||
                     listItem->selectionMode() == QAbstractItemView::ExtendedSelection ||
@@ -3054,7 +3060,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             break;
         case SE_ItemViewItemCheckIndicator:
             if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
-                const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
+                const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
 
                 const bool singleSelection = listItem &&
                     (listItem->selectionMode() == QAbstractItemView::SingleSelection ||
