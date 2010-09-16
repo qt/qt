@@ -58,8 +58,10 @@ public:
         : prefix("./test-tree/"),
           musicprefix(QLatin1String("music")),
           photoprefix(QLatin1String("photos")),
+          sourceprefix(QLatin1String("source")),
           musicsize(0),
-          photosize(0)
+          photosize(0),
+          sourcesize(0)
     {
     }
 
@@ -67,8 +69,10 @@ private:
     QByteArray prefix;
     QString musicprefix;
     QString photoprefix;
+    QString sourceprefix;
     qint64 musicsize;
     qint64 photosize;
+    qint64 sourcesize;
 
 private slots:
     void initTestCase()
@@ -129,6 +133,17 @@ private slots:
             qint64 size = fs.createFileWithContent(QString("%1/file%2").arg(photoprefix).arg(i)); 
             QVERIFY(size > 0);
             photosize += size;
+        }
+        //Use case: source - 10 files in 10 subdirectories in 10 directories (1000 total)
+        QVERIFY(fs.createDirectory(sourceprefix));
+        for (int i=0;i<1000;i++) {
+            if ((i % 100) == 0)
+                QVERIFY(fs.createDirectory(QString("%1/directory%2").arg(sourceprefix).arg(i/100)));
+            if ((i % 10) == 0)
+                QVERIFY(fs.createDirectory(QString("%1/directory%2/subdirectory%3").arg(sourceprefix).arg(i/100).arg(i/10)));
+            qint64 size = fs.createFileWithContent(QString("%1/directory%2/subdirectory%3/file%4").arg(sourceprefix).arg(i/100).arg(i/10).arg(i)); 
+            QVERIFY(size > 0);
+            sourcesize += size;
         }
     }
 
@@ -197,6 +212,7 @@ private slots:
         QTest::addColumn<qint64>("expectedSize");
         QTest::newRow("music") << musicprefix << musicsize;
         QTest::newRow("photos") << photoprefix << photosize;
+        QTest::newRow("src") << sourceprefix << sourcesize;
     }
 
     void thousandFiles() const
