@@ -300,10 +300,10 @@ public:
     QDeclarativeListProperty<QGraphicsObject> childrenList();
     void setParentItemHelper(QGraphicsItem *parent, const QVariant *newParentVariant,
                              const QVariant *thisPointerVariant);
-    void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect, QGraphicsItem *topMostEffectItem);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
-    QRectF effectiveBoundingRect() const;
+    QRectF effectiveBoundingRect(QGraphicsItem *topMostEffectItem = 0) const;
     QRectF sceneEffectiveBoundingRect() const;
 
     QRectF effectiveBoundingRect(const QRectF &rect) const;

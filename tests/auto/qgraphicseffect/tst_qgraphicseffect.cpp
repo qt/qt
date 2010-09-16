@@ -288,6 +288,32 @@ void tst_QGraphicsEffect::boundingRect2()
     // Disable ItemClipsChildrenToShape; effect's bounding rect is no longer clipped.
     child->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
     QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
+
+    // Add root item to a scene, do the same tests as above. Results should be the same.
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect));
+
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
+
+    // Now add the scene to a view, results should be the same.
+    QGraphicsView view(&scene);
+
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect));
+
+    child->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
+
+    CustomEffect *childEffect = new CustomEffect;
+    child->setGraphicsEffect(childEffect);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childEffect->boundingRectFor(childRect | grandChildRect)));
+
+    child->setGraphicsEffect(0);
+    QCOMPARE(effect->boundingRect(), effect->boundingRectFor(childRect | grandChildRect));
 }
 
 void tst_QGraphicsEffect::draw()

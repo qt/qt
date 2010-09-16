@@ -1272,33 +1272,36 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, const Q
 
     Returns the bounding rect of this item's children (excluding itself).
 */
-void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
+void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect, QGraphicsItem *topMostEffectItem)
 {
     Q_Q(QGraphicsItem);
 
     QRectF childrenRect;
     QRectF *result = rect;
     rect = &childrenRect;
+    const bool setTopMostEffectItem = !topMostEffectItem;
 
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr.data();
+        if (setTopMostEffectItem)
+            topMostEffectItem = child;
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transformData) {
             // COMBINE
             QTransform matrix = childd->transformToParent();
             if (x)
                 matrix *= *x;
-            *rect |= matrix.mapRect(child->d_ptr->effectiveBoundingRect());
+            *rect |= matrix.mapRect(child->d_ptr->effectiveBoundingRect(topMostEffectItem));
             if (!childd->children.isEmpty())
-                childd->childrenBoundingRectHelper(&matrix, rect);
+                childd->childrenBoundingRectHelper(&matrix, rect, topMostEffectItem);
         } else {
             if (x)
-                *rect |= x->mapRect(child->d_ptr->effectiveBoundingRect());
+                *rect |= x->mapRect(child->d_ptr->effectiveBoundingRect(topMostEffectItem));
             else
-                *rect |= child->d_ptr->effectiveBoundingRect();
+                *rect |= child->d_ptr->effectiveBoundingRect(topMostEffectItem);
             if (!childd->children.isEmpty())
-                childd->childrenBoundingRectHelper(x, rect);
+                childd->childrenBoundingRectHelper(x, rect, topMostEffectItem);
         }
     }
 
@@ -2804,6 +2807,8 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
     Q_Q(const QGraphicsItem);
     QGraphicsEffect *effect = graphicsEffect;
     if (scene && effect && effect->isEnabled()) {
+        if (scene->d_func()->views.isEmpty())
+            return effect->boundingRectFor(rect);
         QRectF sceneRect = q->mapRectToScene(rect);
         QRectF sceneEffectRect;
         foreach (QGraphicsView *view, scene->views()) {
@@ -2827,12 +2832,12 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect(const QRectF &rect) const
 
     \sa boundingRect()
 */
-QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
+QRectF QGraphicsItemPrivate::effectiveBoundingRect(QGraphicsItem *topMostEffectItem) const
 {
 #ifndef QT_NO_GRAPHICSEFFECT
     Q_Q(const QGraphicsItem);
     QRectF brect = effectiveBoundingRect(q_ptr->boundingRect());
-    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren || topMostEffectItem == q)
         return brect;
 
     const QGraphicsItem *effectParent = parent;
@@ -2843,8 +2848,10 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
             const QRectF effectRectInParentSpace = effectParent->d_ptr->effectiveBoundingRect(brectInParentSpace);
             brect = effectParent->mapRectToItem(q, effectRectInParentSpace);
         }
-        if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+        if (effectParent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren
+            || topMostEffectItem == effectParent) {
             return brect;
+        }
         effectParent = effectParent->d_ptr->parent;
     }
 
@@ -4719,7 +4726,7 @@ QRectF QGraphicsItem::childrenBoundingRect() const
         return d_ptr->childrenBoundingRect;
 
     d_ptr->childrenBoundingRect = QRectF();
-    d_ptr->childrenBoundingRectHelper(0, &d_ptr->childrenBoundingRect);
+    d_ptr->childrenBoundingRectHelper(0, &d_ptr->childrenBoundingRect, 0);
     d_ptr->dirtyChildrenBoundingRect = 0;
     return d_ptr->childrenBoundingRect;
 }
