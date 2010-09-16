@@ -53,27 +53,76 @@
 #undef wakeup
 #endif
 
+#if defined(Q_OS_MAC)
+# include <mach/mach.h>
+# include <mach/task.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
+#if !defined(Q_OS_MAC)
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
         qWarning("%s: %s failure: %s", where, what, qPrintable(qt_error_string(code)));
 }
+#endif
 
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), lastSpinCount(0), owner(0), count(0), wakeup(false)
+    : QMutexData(mode), lastSpinCount(0), owner(0), count(0)
 {
+#if defined(Q_OS_MAC)
+    kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);
+    if (r != KERN_SUCCESS)
+        qWarning("QMutex: failed to create semaphore, error %d", r);
+#else
+    wakeup = false;
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
+#endif
 }
 
 QMutexPrivate::~QMutexPrivate()
 {
+#if defined(Q_OS_MAC)
+    kern_return_t r = semaphore_destroy(mach_task_self(), mach_semaphore);
+    if (r != KERN_SUCCESS)
+        qWarning("QMutex: failed to destroy semaphore, error %d", r);
+#else
     report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
     report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
+#endif
 }
+
+#if defined(Q_OS_MAC)
+
+bool QMutexPrivate::wait(int timeout)
+{
+    if (contenders.fetchAndAddAcquire(1) == 0) {
+        // lock acquired without waiting
+        return true;
+    }
+    bool returnValue;
+    if (timeout < 0) {
+        returnValue = semaphore_wait(mach_semaphore) == KERN_SUCCESS;
+    } else {
+        mach_timespec_t ts;
+        ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
+        ts.tv_sec = (timeout / 1000);
+        kern_return_t r = semaphore_timedwait(mach_semaphore, ts);
+        returnValue = r == KERN_SUCCESS;
+    }
+    contenders.deref();
+    return returnValue;
+}
+
+void QMutexPrivate::wakeUp()
+{
+    semaphore_signal(mach_semaphore);
+}
+
+#else // !Q_OS_MAC
 
 bool QMutexPrivate::wait(int timeout)
 {
@@ -116,6 +165,8 @@ void QMutexPrivate::wakeUp()
     report_error(pthread_cond_signal(&cond), "QMutex::unlock", "cv signal");
     report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
 }
+
+#endif // !Q_OS_MAC
 
 QT_END_NAMESPACE
 

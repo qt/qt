@@ -58,6 +58,10 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmutex.h>
 
+#if defined(Q_OS_MAC)
+# include <mach/semaphore.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMutexPrivate : public QMutexData {
@@ -72,7 +76,9 @@ public:
     Qt::HANDLE owner;
     uint count;
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_MAC)
+    semaphore_t mach_semaphore;
+#elif defined(Q_OS_UNIX)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
