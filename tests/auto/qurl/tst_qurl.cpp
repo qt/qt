@@ -2266,7 +2266,9 @@ void tst_QUrl::ipv6()
 
     QCOMPARE(url.isValid(), isValid);
     if (url.isValid()) {
-	QCOMPARE(url.toString(), ipv6Auth);
+        QCOMPARE(url.toString(), ipv6Auth);
+        url.setHost(url.host());
+        QCOMPARE(url.toString(), ipv6Auth);
     }
 };
 
@@ -2289,6 +2291,8 @@ void tst_QUrl::ipv6_2()
     QFETCH(QString, output);
 
     QUrl url(input);
+    QCOMPARE(url.toString(), output);
+    url.setHost(url.host());
     QCOMPARE(url.toString(), output);
 }
 
@@ -2474,16 +2478,26 @@ void tst_QUrl::isValid()
         QUrl url = QUrl::fromEncoded("http://strange;hostname/here");
         QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/here"));
+        url.setAuthority("strange;hostname");
+        QVERIFY(!url.isValid());
         url.setAuthority("foobar@bar");
         QVERIFY(url.isValid());
+        url.setAuthority("strange;hostname");
+        QVERIFY(!url.isValid());
+        QVERIFY(url.errorString().contains("invalid hostname"));
     }
 
     {
         QUrl url = QUrl::fromEncoded("foo://stuff;1/g");
         QVERIFY(!url.isValid());
         QCOMPARE(url.path(), QString("/g"));
+        url.setHost("stuff;1");
+        QVERIFY(!url.isValid());
         url.setHost("stuff-1");
         QVERIFY(url.isValid());
+        url.setHost("stuff;1");
+        QVERIFY(!url.isValid());
+        QVERIFY(url.errorString().contains("invalid hostname"));
     }
 
 }

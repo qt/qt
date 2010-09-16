@@ -296,8 +296,8 @@
 
     \section2  Using Data Models and Views
 
-    QML has different \l {Data Models}{data views} that display
-    \l {Data Models}{data models}. Our menu bar will display the menus in a list,
+    QML has different \l{QML Data Models}{data views} that display
+    \l{QML Data Models}{data models}. Our menu bar will display the menus in a list,
     with a header that displays a row of menu names. The list of menus are declared
     inside a \c VisualItemModel. The \l{VisualItemModel}{\c VisualItemModel}
     element contains items that already have views such as \c Rectangle elements
@@ -812,11 +812,11 @@
 
     The \c files list property is a list of all the filtered files in a directory.
     The \c Directory class is implemented to filter out invalid text files; only
-    files with a \c .txt extension are valid. Further, \l {QLists}{QLists} can be
-    used in QML files by declaring them as a \c QDeclarativeListProperty in C++.
-    The templated object needs to inherit from a \l {QObject}{QObject}, therefore,
-    the \c File class must also inherit from \c QObject. In the \c Directory class,
-    the list of \c File objects is stored in a \c QList called \c m_fileList.
+    files with a \c .txt extension are valid. Further, \l{QList}s can be
+    used in QML files by declaring them as a QDeclarativeListProperty in C++.
+    The templated object needs to inherit from a QObject, therefore,
+    the \c File class must also inherit from QObject. In the \c Directory class,
+    the list of \c File objects is stored in a QList called \c m_fileList.
 
     \code
         class File : public QObject{

@@ -518,7 +518,7 @@ void QWidgetPrivate::show_sys()
             if (q->windowState() & Qt::WindowMaximized) {
                 TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
                 id->SetExtent(r.iTl, r.Size());
-            } else if (!q->testAttribute(Qt::WA_Moved)) {
+            } else if (!q->testAttribute(Qt::WA_Moved) && q->windowType() != Qt::Dialog) {
                 id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
             }
         }

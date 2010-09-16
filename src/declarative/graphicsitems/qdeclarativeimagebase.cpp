@@ -129,27 +129,25 @@ QSize QDeclarativeImageBase::sourceSize() const
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);
-    if (d->progress != 0.0) {
-        d->progress = 0.0;
-        emit progressChanged(d->progress);
-    }
 
     if (d->url.isEmpty()) {
         d->pix.clear();
         d->status = Null;
+        d->progress = 0.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
+        emit progressChanged(d->progress);
         emit statusChanged(d->status);
         pixmapChange();
         update();
     } else {
-
-        d->status = Loading;
-        emit statusChanged(d->status);
-
         d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
 
         if (d->pix.isLoading()) {
+            d->progress = 0.0;
+            d->status = Loading;
+            emit progressChanged(d->progress);
+            emit statusChanged(d->status);
 
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
@@ -173,6 +171,9 @@ void QDeclarativeImageBase::requestFinished()
 {
     Q_D(QDeclarativeImageBase);
 
+    QDeclarativeImageBase::Status oldStatus = d->status;
+    qreal oldProgress = d->progress;
+
     if (d->pix.isError()) {
         d->status = Error;
         qmlInfo(this) << d->pix.error();
@@ -191,8 +192,10 @@ void QDeclarativeImageBase::requestFinished()
         emit sourceSizeChanged();
     }
 
-    emit statusChanged(d->status);
-    emit progressChanged(d->progress);
+    if (d->status != oldStatus)
+        emit statusChanged(d->status);
+    if (d->progress != oldProgress)
+        emit progressChanged(d->progress);
     pixmapChange();
     update();
 }

@@ -128,7 +128,7 @@ void WriteIncludes::acceptUI(DomUI *node)
 #ifdef QT_NO_QT3_SUPPORT
         qWarning("%s: Warning: The form file has external pixmaps or qPixmapFromMimeSource() set as a pixmap function. "
                  "This requires Qt 3 support, which is disabled. The resulting code will not compile.",
-                 qPrintable(m_uic->option().warningsPrefix()));
+                 qPrintable(m_uic->option().messagePrefix()));
 #endif
         add(QLatin1String("Q3MimeSourceFactory"));
     }

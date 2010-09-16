@@ -52,7 +52,7 @@
 #include <qbuffer.h>
 #include <qdir.h>
 #include <qstringlist.h>
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include "qfiledialog_win_p.h"
 
 #ifndef QT_NO_THREAD
@@ -100,10 +100,10 @@ static void qt_win_resolve_libs()
 
         triedResolve = true;
 #if !defined(Q_WS_WINCE)
-        QLibrary lib(QLatin1String("shell32"));
-        ptrSHBrowseForFolder = (PtrSHBrowseForFolder) lib.resolve("SHBrowseForFolderW");
-        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList) lib.resolve("SHGetPathFromIDListW");
-        ptrSHGetMalloc = (PtrSHGetMalloc) lib.resolve("SHGetMalloc");
+        QSystemLibrary lib(L"shell32");
+        ptrSHBrowseForFolder = (PtrSHBrowseForFolder)lib.resolve("SHBrowseForFolderW");
+        ptrSHGetPathFromIDList = (PtrSHGetPathFromIDList)lib.resolve("SHGetPathFromIDListW");
+        ptrSHGetMalloc = (PtrSHGetMalloc)lib.resolve("SHGetMalloc");
 #else
         // CE stores them in a different lib and does not use unicode version
         HINSTANCE handle = LoadLibrary(L"Ceshell");
@@ -409,7 +409,7 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
 {
     if (!pSHCreateItemFromParsingName) {
         // This function is available only in Vista & above.
-        QLibrary shellLib(QLatin1String("Shell32"));
+        QSystemLibrary shellLib(QLatin1String("Shell32"));
         pSHCreateItemFromParsingName = (PtrSHCreateItemFromParsingName)
             shellLib.resolve("SHCreateItemFromParsingName");
         if (!pSHCreateItemFromParsingName)

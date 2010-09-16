@@ -50,22 +50,22 @@ defineReplace(processSymbianLibrary) {
     return($$qt_library)
 }
 
-qt_libraries = $$split(LIBS, " ")
-LIBS =
-for(qt_library, qt_libraries) {
-    qt_newLib = $$processSymbianLibrary($$qt_library)
-    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
-    linux-gcce:qt_newLib = "-l:$$qt_newLib"
-    LIBS += $$qt_newLib
-}
-
-qt_libraries = $$split(QMAKE_LIBS, " ")
-QMAKE_LIBS =
-for(qt_library, qt_libraries) {
-    qt_newLib = $$processSymbianLibrary($$qt_library)
-    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
-    linux-gcce:qt_newLib = "-l:$$qt_newLib"
-    QMAKE_LIBS += $$qt_newLib
+# This part turn "-llibc" into "libc.dso", and moves -L entries to QMAKE_LIBDIR.
+libsToProcess = LIBS QMAKE_LIBS
+for(libToProcess, libsToProcess) {
+    qt_libraries = $$split($$libToProcess, " ")
+    eval($$libToProcess =)
+    for(qt_library, qt_libraries) {
+        contains(qt_library, "^-L.*") {
+            qt_library = $$replace(qt_library, "^-L", "")
+            QMAKE_LIBDIR += $$qt_library
+        } else {
+            qt_newLib = $$processSymbianLibrary($$qt_library)
+            contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+            linux-gcce:qt_newLib = "-l:$$qt_newLib"
+            eval($$libToProcess += \$\$qt_newLib)
+        }
+    }
 }
 
 elf2e32_LIBPATH =

@@ -54,7 +54,7 @@ Rectangle {
 
 //! [positioning the image]
     Image {
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
         x: 100; y: 150
         width: 150; height: 150
     }

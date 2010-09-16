@@ -43,3 +43,7 @@ embedded: SUBDIRS += makeqpf
 
 CONFIG+=ordered
 QTDIR_build:REQUIRES = "contains(QT_CONFIG, full-config)"
+
+!win32:!embedded:!mac:!symbian:CONFIG += x11
+
+x11:contains(QT_CONFIG, opengles2):contains(QT_CONFIG, egl):SUBDIRS += qmeegographicssystemhelper
