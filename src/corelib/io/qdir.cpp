@@ -175,13 +175,15 @@ public:
         return ret;
     }
 
-    inline void setPath(QString p)
+    inline void setPath(const QString &path)
     {
-        if ((p.endsWith(QLatin1Char('/')) || p.endsWith(QLatin1Char('\\')))
-                && p.length() > 1) {
+        QString p = QDir::fromNativeSeparators(path);
+        if (p.endsWith(QLatin1Char('/'))
+                && p.length() > 1
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-            if (!(p.length() == 3 && p.at(1) == QLatin1Char(':')))
+            && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
 #endif
+        ) {
                 p.truncate(p.length() - 1);
         }
 
