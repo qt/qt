@@ -943,10 +943,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             }
         }
         else {
-            out() << "<ol type=";
+            out() << "<ol class=";
             if (atom->string() == ATOM_LIST_UPPERALPHA) {
                 out() << "\"A\"";
-            } /* why type? */
+            } /* why type? changed to */
             else if (atom->string() == ATOM_LIST_LOWERALPHA) {
                 out() << "\"a\"";
             }
@@ -1966,7 +1966,7 @@ void HtmlGenerator::generateFooter(const Node *node)
     switch (application) {
     case Online:
         out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-        out() << "  <!-- <script type=\"text/javascript\">\n";
+        out() << "  <script type=\"text/javascript\">\n";
         out() << "  var _gaq = _gaq || [];\n";
         out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
         out() << "  _gaq.push(['_trackPageview']);\n";
@@ -1977,7 +1977,7 @@ void HtmlGenerator::generateFooter(const Node *node)
         out() << "'.google-analytics.com/ga.js';\n";
         out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
         out() << "  })();\n";
-        out() << "  </script> -->\n";
+        out() << "  </script>\n";
         out() << "</body>\n";
 	break;
     case Creator:
