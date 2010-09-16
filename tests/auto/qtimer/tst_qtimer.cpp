@@ -701,8 +701,8 @@ DontBlockEvents::DontBlockEvents()
 void DontBlockEvents::timerEvent(QTimerEvent* event)
 {
     if (event->timerId() == m_timer.timerId()) {
-        m_timer.start(0, this);
         QMetaObject::invokeMethod(this, "paintEvent", Qt::QueuedConnection);
+        m_timer.start(0, this);
         count++;
         QCOMPARE(count, 1);
         total++;
