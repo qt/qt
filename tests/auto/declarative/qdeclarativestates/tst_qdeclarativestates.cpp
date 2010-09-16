@@ -1247,8 +1247,6 @@ void tst_qdeclarativestates::extendsBug()
     QCOMPARE(greenRect->y(), qreal(100));
 }
 
-extern void qmlExecuteDeferred(QObject *object);
-
 void tst_qdeclarativestates::editProperties()
 {
     QDeclarativeEngine engine;
