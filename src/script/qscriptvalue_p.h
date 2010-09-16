@@ -793,6 +793,13 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
     if (!value->isJSBased())
         value->assignEngine(engine());
 
+    if (!value->isValid()) {
+        // Remove the property.
+        v8::HandleScope handleScope;
+        v8::Object::Cast(*m_value)->Delete(index);
+        return;
+    }
+
     if (engine() != value->engine()) {
         qWarning("QScriptValue::setProperty() failed: cannot set value created in a different engine");
         return;
