@@ -139,6 +139,9 @@ unless (GetOptions('i|install' => \$install,
     Usage();
 }
 
+my $epocroot = $ENV{EPOCROOT};
+$epocroot =~ s,[\\/]$,,x;
+
 my $certfilepath = abs_path(dirname($certfile));
 
 # Read params to variables
@@ -303,12 +306,12 @@ if ($preprocessonly) {
 }
 
 if($stub) {
-    if(!($ENV{EPOCROOT})) { die("EPOCROOT must be set to create stub sis files"); }
-    my $systeminstall = "$ENV{EPOCROOT}epoc32/data/z/system/install";
+    if(!($epocroot)) { die("EPOCROOT must be set to create stub sis files"); }
+    my $systeminstall = "$epocroot/epoc32/data/z/system/install";
     mkpath($systeminstall);
     my $stub_sis_name = $systeminstall."/".$stub_sis_name;
     # Create stub SIS.
-    system ("$ENV{EPOCROOT}epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
+    system ("$epocroot/epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
 } else {
     if ($certtext eq "Self Signed"
         && !@certificates
@@ -321,8 +324,8 @@ if($stub) {
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
-    if($ENV{EPOCROOT}) {
-        system ("$ENV{EPOCROOT}epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+    if($epocroot) {
+        system ("$epocroot/epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
     } else {
         system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
     }
