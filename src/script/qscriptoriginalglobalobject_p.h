@@ -49,6 +49,7 @@ class QScriptOriginalGlobalObject
 public:
     inline QScriptOriginalGlobalObject(v8::Handle<v8::Context> context);
     inline ~QScriptOriginalGlobalObject();
+    inline void destroy();
 
     inline bool isError(const QScriptValuePrivate* value) const;
 
@@ -85,6 +86,21 @@ inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::Object>
 
 QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
 {
+    // QScriptOriginalGlobalObject live as long as QScriptEnginePrivate that keeps it. In ~QSEP
+    // the v8 context is removed, so we need to remove our handlers before. It is why destroy method
+    // should be called before destructor.
+    Q_ASSERT_X(m_errorConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
+    Q_ASSERT_X(m_errorPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
+}
+
+inline void QScriptOriginalGlobalObject::destroy()
+{
+    m_errorConstructor.Dispose();
+    m_errorPrototype.Dispose();
+#ifndef QT_NO_DEBUG
+    m_errorConstructor.Clear();
+    m_errorPrototype.Clear();
+#endif
 }
 
 inline bool QScriptOriginalGlobalObject::isError(const QScriptValuePrivate* value) const

@@ -813,10 +813,26 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    // FIXME Do we really need to dispose all persistent handlers before context destruction?
+    m_originalGlobalObject.destroy();
+    if (!m_signalTemplate.IsEmpty())
+        m_signalTemplate.Dispose();
+    if (!m_variantTemplate.IsEmpty())
+        m_variantTemplate.Dispose();
+    if (!m_metaObjectTemplate.IsEmpty())
+        m_metaObjectTemplate.Dispose();
+    if (!m_globalObjectTemplate.IsEmpty())
+        m_globalObjectTemplate.Dispose();
+    QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::iterator i = m_qtClassTemplates.begin();
+    for (; i != m_qtClassTemplates.end(); ++i) {
+        if (!(*i).IsEmpty())
+            (*i).Dispose();
+    }
+    m_exception.Dispose();
+
     m_v8Context.Dispose();
     for (int i = 0; i < m_v8Contexts.count(); ++i)
         m_v8Contexts[i].Dispose();
-    m_exception.Dispose();
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
