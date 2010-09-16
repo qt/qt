@@ -1722,4 +1722,26 @@ EXPORTS
 	_ZNK27QDeclarativePropertyChanges8propertyERK10QByteArray @ 1721 NONAME
 	_ZTI27QDeclarativePropertyChanges @ 1722 NONAME
 	_ZTV27QDeclarativePropertyChanges @ 1723 NONAME
+	_ZN24QDeclarativeScriptAction10transitionER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyEN29QDeclarativeAbstractAnimation19TransitionDirectionE @ 1724 NONAME
+	_ZN24QDeclarativeScriptAction11qtAnimationEv @ 1725 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacallEN11QMetaObject4CallEiPPv @ 1726 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacastEPKc @ 1727 NONAME
+	_ZN24QDeclarativeScriptAction16staticMetaObjectE @ 1728 NONAME DATA 16
+	_ZN24QDeclarativeScriptAction19getStaticMetaObjectEv @ 1729 NONAME
+	_ZN24QDeclarativeScriptAction24setStateChangeScriptNameERK7QString @ 1730 NONAME
+	_ZN24QDeclarativeScriptAction9setScriptERK24QDeclarativeScriptString @ 1731 NONAME
+	_ZN24QDeclarativeScriptActionC1EP7QObject @ 1732 NONAME
+	_ZN24QDeclarativeScriptActionC2EP7QObject @ 1733 NONAME
+	_ZN24QDeclarativeScriptActionD0Ev @ 1734 NONAME
+	_ZN24QDeclarativeScriptActionD1Ev @ 1735 NONAME
+	_ZN24QDeclarativeScriptActionD2Ev @ 1736 NONAME
+	_ZNK24QDeclarativeScriptAction10metaObjectEv @ 1737 NONAME
+	_ZNK24QDeclarativeScriptAction21stateChangeScriptNameEv @ 1738 NONAME
+	_ZNK24QDeclarativeScriptAction6scriptEv @ 1739 NONAME
+	_ZTI24QDeclarativeScriptAction @ 1740 NONAME
+	_ZTV24QDeclarativeScriptAction @ 1741 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD0Ev @ 1742 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD1Ev @ 1743 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD0Ev @ 1744 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD1Ev @ 1745 NONAME
 
