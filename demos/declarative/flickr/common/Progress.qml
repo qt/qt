@@ -68,6 +68,6 @@ Item {
         text: Math.round(progress * 100) + "%"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
-        color: "white"; font.bold: true
+        color: "white"; font.bold: true; font.pixelSize: 15
     }
 }

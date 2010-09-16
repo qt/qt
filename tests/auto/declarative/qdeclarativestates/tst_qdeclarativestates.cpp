@@ -581,6 +581,21 @@ void tst_qdeclarativestates::parentChange()
         //do a non-qFuzzyCompare fuzzy compare
         QVERIFY(innerRect->y() < qreal(0.00001) && innerRect->y() > qreal(-0.00001));
     }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange6.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QDeclarativeItemPrivate::get(rect)->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(180));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(-105));
+        QCOMPARE(innerRect->y(), qreal(-105));
+    }
 }
 
 void tst_qdeclarativestates::parentChangeErrors()

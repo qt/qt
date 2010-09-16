@@ -489,15 +489,6 @@
 
     QNetworkAccessManager uses this API for HTTP level roaming.
 
-    \section1 Multimedia - playback and declarative elements
-
-    The Multimedia API provides media playback and playlist support
-    for Qt Applications. Play music and movies through a single interface
-    with selectable output for movies to widgets or graphics view.
-
-    Multimedia support for Quick is also available with the new multimedia
-    declarative elements.
-
     \section1 New Classes, Functions, Macros, etc.
 
     Links to new classes, elements, functions, macros, and other items

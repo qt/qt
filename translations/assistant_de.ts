@@ -75,7 +75,7 @@ Grund:
     </message>
     <message>
         <source>Error reading collection file &apos;%1&apos;: %2</source>
-        <translation>Fehler beim Lesen der Katalogdatei &apos;%1&apos;: %2</translation>
+        <translation type="obsolete">Fehler beim Lesen der Katalogdatei &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Cannot load sqlite database driver!</source>
@@ -107,6 +107,17 @@ Grund:
     <message>
         <source>Rename Folder</source>
         <translation>Ordner umbenennen</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkItem</name>
+    <message>
+        <source>New Folder</source>
+        <translation>Neuer Ordner</translation>
+    </message>
+    <message>
+        <source>Untitled</source>
+        <translation>Ohne Titel</translation>
     </message>
 </context>
 <context>
@@ -327,6 +338,39 @@ Grund:
         <translation>Die Katalogdatei &apos;%1&apos; existiert nicht.</translation>
     </message>
     <message>
+        <source>Usage: assistant [Options]
+
+-collectionFile file       Uses the specified collection
+                           file instead of the default one
+-showUrl url               Shows the document with the
+                           url.
+-enableRemoteControl       Enables Assistant to be
+                           remotely controlled.
+-show widget               Shows the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-activate widget           Activates the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-hide widget               Hides the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-register helpFile         Registers the specified help file
+                           (.qch) in the given collection
+                           file.
+-unregister helpFile       Unregisters the specified help file
+                           (.qch) from the give collection
+                           file.
+-setCurrentFilter filter   Set the filter as the active filter.
+-remove-search-index       Removes the full text search index.
+-rebuild-search-index      Re-builds the full text search index (potentially slow).
+-quiet                     Does not display any error or
+                           status message.
+-help                      Displays this help.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Missing collection file.</source>
         <translation>Fehlende Katalogdatei.</translation>
     </message>
@@ -375,6 +419,60 @@ Grund:
     </message>
 </context>
 <context>
+    <name>ConversionWizard</name>
+    <message>
+        <source>Help Conversion Wizard</source>
+        <translation>Konvertierungsassistant für Hilfedateien</translation>
+    </message>
+    <message>
+        <source>Converting %1...</source>
+        <translation>Konvertiere %1...</translation>
+    </message>
+    <message>
+        <source>Writing help collection file...</source>
+        <translation>Schreibe Hilfedatei...</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>Beendet.</translation>
+    </message>
+</context>
+<context>
+    <name>FilesPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Files:</source>
+        <translation>Dateien:</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <translation>Alle entfernen</translation>
+    </message>
+    <message>
+        <source>Unreferenced Files</source>
+        <translation>Unreferenzierte Dateien</translation>
+    </message>
+    <message>
+        <source>Remove files which are neither referenced by a keyword nor by the TOC.</source>
+        <translation>Entfernt Dateien, die weder vom Inhaltsverzeichnis noch von einem Schlüsselwort referenziert werden.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; When removing images or stylesheets, be aware that those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Warnhinweis:&lt;/b&gt; Beachten Sie beim Löschen von Bilddateien oder Stylesheet-Dateien, dass diese nicht direkt von den .adp- oder .dcf-Dateien referenziert werden.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; Be aware when removing images or stylesheets since those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;p&gt;&lt;b&gt;Warnhinweis:&lt;/b&gt; Be aware when removing images or stylesheets since those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FilterNameDialogClass</name>
     <message>
         <source>Add Filter Name</source>
@@ -383,6 +481,70 @@ Grund:
     <message>
         <source>Filter Name:</source>
         <translation>Filtername:</translation>
+    </message>
+</context>
+<context>
+    <name>FilterPage</name>
+    <message>
+        <source>Form</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Filter attributes for current documentation (comma separated list):</source>
+        <translation>Attribute der Filter für die angezeigte Dokumentation (durch Komma getrennte Liste):</translation>
+    </message>
+    <message>
+        <source>Custom Filters</source>
+        <translation>Benutzerdefinierte Filter</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Filter Settings</source>
+        <translation>Filtereinstellungen</translation>
+    </message>
+    <message>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both, the filter attributes and the custom filters are optional.</source>
+        <translation type="obsolete">Geben Sie die Attribute der Filter für die Dokumentation an. Wenn Attribute verwendet werden, sollte auch ein benutzerdefiniertes Filter festgelegt werden. Sowohl Filter-Attribute als auch benutzerdefinierte Filter sind jedoch optional.</translation>
+    </message>
+    <message>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both the filter attributes and the custom filters are optional.</source>
+        <translation>Geben Sie die Attribute der Filter für die Dokumentation an. Wenn Attribute verwendet werden, sollte auch ein benutzerdefiniertes Filter festgelegt werden. Sowohl Filter-Attribute als auch benutzerdefinierte Filter sind jedoch optional.</translation>
+    </message>
+    <message>
+        <source>Filter Name</source>
+        <translation>Filtername</translation>
+    </message>
+    <message>
+        <source>Filter Attributes</source>
+        <translation>Attribute des Filters</translation>
+    </message>
+    <message>
+        <source>The custom filter &apos;%1&apos; is defined multiple times.</source>
+        <translation>Das benutzerdefinierte Filter &apos;%1&apos; wurde mehrfach definiert.</translation>
+    </message>
+    <message>
+        <source>The attributes for custom filter &apos;%1&apos; are defined multiple times.</source>
+        <translation>Die Attribute des benutzerdefinierten Filters &apos;%1&apos; wurden mehrfach definiert.</translation>
+    </message>
+    <message>
+        <source>unfiltered</source>
+        <comment>list of available documentation</comment>
+        <translation>Ungefiltert</translation>
     </message>
 </context>
 <context>
@@ -402,6 +564,17 @@ Grund:
     <message>
         <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
         <translation>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Seitenende erreicht</translation>
+    </message>
+</context>
+<context>
+    <name>FinishPage</name>
+    <message>
+        <source>Converting File</source>
+        <translation>Konvertiere Datei</translation>
+    </message>
+    <message>
+        <source>Creating the new Qt help files from the old ADP file.</source>
+        <translation>Erzeuge die neuen Qt-Hilfedateien aus den alten ADP-Dateien.</translation>
     </message>
 </context>
 <context>
@@ -428,6 +601,59 @@ Grund:
     </message>
 </context>
 <context>
+    <name>GeneralPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Namespace:</source>
+        <translation>Namensraum:</translation>
+    </message>
+    <message>
+        <source>Virtual Folder:</source>
+        <translation>Virtueller Ordner:</translation>
+    </message>
+    <message>
+        <source>General Settings</source>
+        <translation>Allgemeine Einstellungen</translation>
+    </message>
+    <message>
+        <source>Specify the namespace and the virtual folder for the documentation.</source>
+        <translation>Geben Sie den Namensraum und den virtuellen Ordner für die Dokumentation an.</translation>
+    </message>
+    <message>
+        <source>Namespace Error</source>
+        <translation>Fehlerhafter Namensraum</translation>
+    </message>
+    <message>
+        <source>The namespace contains some invalid characters.</source>
+        <translation>Der Namensraum enthält einige ungültige Zeichen.</translation>
+    </message>
+    <message>
+        <source>Virtual Folder Error</source>
+        <translation>Fehlerhafter virtueller Ordner</translation>
+    </message>
+    <message>
+        <source>The virtual folder contains some invalid characters.</source>
+        <translation>Der virtuelle Ornder enthält einige ungültige Zeichen.</translation>
+    </message>
+</context>
+<context>
+    <name>HelpEngineWrapper</name>
+    <message>
+        <source>Unfiltered</source>
+        <translation>Ungefiltert</translation>
+    </message>
+</context>
+<context>
+    <name>HelpGenerator</name>
+    <message>
+        <source>Warning: %1</source>
+        <translation>Warnung: %1</translation>
+    </message>
+</context>
+<context>
     <name>HelpViewer</name>
     <message>
         <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
@@ -451,6 +677,40 @@ Grund:
     </message>
 </context>
 <context>
+    <name>HelpWindow</name>
+    <message>
+        <source>&lt;center&gt;&lt;b&gt;Wizard Assistant&lt;/b&gt;&lt;/center&gt;</source>
+        <translation>&lt;center&gt;&lt;b&gt;Assistent&lt;/b&gt;&lt;/center&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>IdentifierPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Create identifiers</source>
+        <translation>Bezeichner erzeugen</translation>
+    </message>
+    <message>
+        <source>Global prefix:</source>
+        <translation>Globaler Präfix:</translation>
+    </message>
+    <message>
+        <source>Inherit prefix from file names</source>
+        <translation>Präfixe aus Dateinamen entnehmen</translation>
+    </message>
+    <message>
+        <source>Identifiers</source>
+        <translation>Bezeichner</translation>
+    </message>
+    <message>
+        <source>This page allows you to create identifiers from the keywords found in the .adp or .dcf file.</source>
+        <translation>Diese Seite gestattet das Erzeugen von Bezeichnern aus den Schlüsselwörtern, die in den .adp- oder .dcf-Dateien gefunden werden.</translation>
+    </message>
+</context>
+<context>
     <name>IndexWindow</name>
     <message>
         <source>&amp;Look for:</source>
@@ -463,6 +723,53 @@ Grund:
     <message>
         <source>Open Link in New Tab</source>
         <translation>Link in neuem Reiter öffnen</translation>
+    </message>
+</context>
+<context>
+    <name>InputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>File name:</source>
+        <translation>Dateiname:</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <source>Input File</source>
+        <translation>Eingabedatei:</translation>
+    </message>
+    <message>
+        <source>Specify the .adp or .dcf file you want to convert to the new Qt help project format and/or collection format.</source>
+        <translation>Geben Sie die .adp- oder .dcf-Datei an, die Sie in die neuen Qt-Hilfedateiformate konvertieren möchten.</translation>
+    </message>
+    <message>
+        <source>Open file</source>
+        <translation>Datei öffnen</translation>
+    </message>
+    <message>
+        <source>Qt Help Files (*.adp *.dcf)</source>
+        <translation>Qt-Hilfedateien (*.adp *.dcf)</translation>
+    </message>
+    <message>
+        <source>File Open Error</source>
+        <translation>Fehler beim Öffnen der Datei</translation>
+    </message>
+    <message>
+        <source>The specified file could not be opened!</source>
+        <translation>Die angegebene Datei konnte nicht geöffnet werden.</translation>
+    </message>
+    <message>
+        <source>File Parsing Error</source>
+        <translation>Fehler beim Auslesen der Datei</translation>
+    </message>
+    <message>
+        <source>Parsing error in line %1!</source>
+        <translation>Fehler bei Zeile %1.</translation>
     </message>
 </context>
 <context>
@@ -681,6 +988,10 @@ Grund:
         <translation>Ctrl+Alt+Left</translation>
     </message>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>Die Datei &apos;%1&apos; konnte nicht registriert werden: %2</translation>
     </message>
@@ -775,6 +1086,92 @@ Grund:
     <message>
         <source>ALT+O</source>
         <translation>ALT+O</translation>
+    </message>
+</context>
+<context>
+    <name>OutputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Project file name:</source>
+        <translation>Name der Projektdatei:</translation>
+    </message>
+    <message>
+        <source>Collection file name:</source>
+        <translation>Name der Katalogdatei:</translation>
+    </message>
+    <message>
+        <source>Output File Names</source>
+        <translation>Ausgabedateien</translation>
+    </message>
+    <message>
+        <source>Specify the file names for the output files.</source>
+        <translation>Geben Sie die Namen der Ausgabedateien an.</translation>
+    </message>
+    <message>
+        <source>Convert...</source>
+        <translation>Konvertiere ...</translation>
+    </message>
+    <message>
+        <source>Qt Help Project File</source>
+        <translation>Qt-Hilfe-Projektdatei</translation>
+    </message>
+    <message>
+        <source>Qt Help Collection Project File</source>
+        <translation>Qt-Hilfe-Katalogdatei</translation>
+    </message>
+    <message>
+        <source>The specified file %1 already exist.
+
+Do you want to remove it?</source>
+        <translation>Die Datei %1 existiert bereits.
+
+Möchten Sie sie löschen?</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+</context>
+<context>
+    <name>PathPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>File filters:</source>
+        <translation>Dateifilter:</translation>
+    </message>
+    <message>
+        <source>Documentation source file paths:</source>
+        <translation>Pfade der Dokumentations-Quelldateien:</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Source File Paths</source>
+        <translation>Pfade der Quelldateien</translation>
+    </message>
+    <message>
+        <source>Specify the paths where the sources files are located. By default, all files in those directories matched by the file filter will be included.</source>
+        <translation>Geben Sie die Pfade an, unter denen sich die Quelldateien befinden. Es werden alle Dateien aus diesen Verzeichnissen aufgenommen, die dem Dateifilter entsprechen.</translation>
+    </message>
+    <message>
+        <source>Source File Path</source>
+        <translation>Pfade der Quelldateien</translation>
     </message>
 </context>
 <context>
@@ -909,6 +1306,147 @@ Grund:
     <message>
         <source>Blank Page</source>
         <translation>Leere Seite</translation>
+    </message>
+</context>
+<context>
+    <name>QCollectionGenerator</name>
+    <message>
+        <source>Unknown token at line %1.</source>
+        <translation>Unbekanntes Schlüsselwort bei Zeile %1.</translation>
+    </message>
+    <message>
+        <source>Unknown token at line %1. Expected &quot;QtHelpCollectionProject&quot;.</source>
+        <translation>Unbekanntes Schlüsselwort bei Zeile %1. Es wird &quot;QtHelpCollectionProject&quot; erwartet.</translation>
+    </message>
+    <message>
+        <source>Missing end tags.</source>
+        <translation>Es fehlen schließende Elemente.</translation>
+    </message>
+    <message>
+        <source>Missing input or output file for help file generation.</source>
+        <translation>Es fehlen einige der für die Erzeugung der Hilfedateien benötigte Eingabe- oder Ausgabedateien.</translation>
+    </message>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>Es wurde kein Name für die Ausgabedatei angegeben.</translation>
+    </message>
+    <message>
+        <source>Qt Collection Generator version 1.0 (Qt %1)
+</source>
+        <translation>Qt Collection Generator Version 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing collection config file.</source>
+        <translation>Die für den Katalog benötigte Konfigurationsdatei fehlt.</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qcollectiongenerator &lt;collection-config-file&gt; [options]
+
+  -o &lt;collection-file&gt;   Generates a collection file
+                         called &lt;collection-file&gt;. If
+                         this option is not specified
+                         a default name will be used.
+  -v                     Displays the version of
+                         qcollectiongenerator.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>Die Datei &apos;%1&apos; konnte nicht geöffnet werden.
+</translation>
+    </message>
+    <message>
+        <source>Reading collection config file...
+</source>
+        <translation>Lese Konfigurationsdatei des Katalogs...
+</translation>
+    </message>
+    <message>
+        <source>Collection config file error: %1
+</source>
+        <translation>Fehler in der Konfigurationsdatei des Katalogs %1</translation>
+    </message>
+    <message>
+        <source>Generating help for %1...
+</source>
+        <translation>Erzeuge Hilfe für %1...
+</translation>
+    </message>
+    <message>
+        <source>Creating collection file...
+</source>
+        <translation>Erzeuge Katalogdatei...
+</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be overwritten.
+</source>
+        <translation>Die Datei %1 konnte nicht überschrieben werden.</translation>
+    </message>
+    <message>
+        <source>Cannot open %1.
+</source>
+        <translation>Die Datei &apos;%1&apos; konnte nicht geöffnet werden.
+</translation>
+    </message>
+    <message>
+        <source>Cannot open referenced image file %1.
+</source>
+        <translation>Die referenzierte Bilddatei %1 konnte nicht geöffnet werden.
+</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpGenerator</name>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>Es wurde kein Name für die Ausgabedatei angegeben.</translation>
+    </message>
+    <message>
+        <source>Qt Help Generator version 1.0 (Qt %1)
+</source>
+        <translation>Qt Help Generator Version 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing Qt help project file.</source>
+        <translation>Die Qt-Hilfe-Projektdatei fehlt.</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qhelpgenerator &lt;help-project-file&gt; [options]
+
+  -o &lt;compressed-file&gt;   Generates a Qt compressed help
+                         file called &lt;compressed-file&gt;.
+                         If this option is not specified
+                         a default name will be used.
+  -c                     Checks whether all links in HTML files
+                         point to files in this help project.
+  -v                     Displays the version of 
+                         qhelpgenerator.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>Die Datei &apos;%1&apos; konnte nicht geöffnet werden.
+</translation>
+    </message>
+    <message>
+        <source>Could not create output directory: %1
+</source>
+        <translation>Der Ausgabeordner &apos;%1 konnte nicht erzeugt werden</translation>
     </message>
 </context>
 <context>

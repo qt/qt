@@ -52,6 +52,7 @@
 #include <private/qdeclarativeglobalscriptclass_p.h>
 #include "testtypes.h"
 #include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -2416,15 +2417,6 @@ void tst_qdeclarativeecmascript::function()
     delete o;
 }
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false) 
-
 // Test the "Qt.include" method
 void tst_qdeclarativeecmascript::include()
 {
@@ -2496,8 +2488,8 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
-    TRY_WAIT(o->property("done2").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done2").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
@@ -2524,7 +2516,7 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);

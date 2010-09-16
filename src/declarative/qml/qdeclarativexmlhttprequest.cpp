@@ -1640,8 +1640,8 @@ static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScri
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (!request->receivedXml() ||
-        request->readyState() != QDeclarativeXMLHttpRequest::Loading &&
-        request->readyState() != QDeclarativeXMLHttpRequest::Done)
+        (request->readyState() != QDeclarativeXMLHttpRequest::Loading &&
+         request->readyState() != QDeclarativeXMLHttpRequest::Done))
         return engine->nullValue();
     else  
         return Document::load(engine, request->rawResponseBody());

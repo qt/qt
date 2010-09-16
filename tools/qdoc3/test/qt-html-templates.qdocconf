@@ -89,7 +89,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "              <li class=\"defaultLink\"><a href=\"modules.html\">Modules</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"namespaces.html\">Namespaces</a></li>\n" \
 			  "              <li class=\"defaultLink\"><a href=\"qtglobal.html\">Global Declarations</a></li>\n" \
-			  "              <li class=\"defaultLink\"><a href=\"qmlelements.html\">QML elements</a></li>\n" \
+			  "              <li class=\"defaultLink\"><a href=\"qdeclarativeelements.html\">QML elements</a></li>\n" \
 			  "            </ul> \n" \
 			  "          </div>\n" \
 			  "        </div>\n" \

@@ -29,12 +29,13 @@
   \page qdeclarativeelements.html
   \target elements
   \title QML Elements
+  \brief A dictionary of standard QML elements.
 
-  This is a dictionary of all the QML elements available in the \l
-  {QtDeclarative} {Qt Declarative} module. 
+  This is a dictionary of all standard QML elements made available
+  in the QtDeclarative module.
 
-  To see the QML elements listed by
-  functional area, \l{Groups Of Related QML Elements} {look here}.
+  To see the QML elements listed by functional area, see the
+  \l{Groups Of Related QML Elements} page.
 
   \generatelist qmlclasses
 

@@ -2699,14 +2699,15 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
 
                 qreal scale = 1;
                 qreal rotation = 0;
-                if (ok && transform.type() != QTransform::TxRotate) {
+                bool isRotate = (transform.type() == QTransform::TxRotate) || (transform.m11() < 0);
+                if (ok && !isRotate) {
                     if (transform.m11() == transform.m22())
                         scale = transform.m11();
                     else {
                         qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under non-uniform scale");
                         ok = false;
                     }
-                } else if (ok && transform.type() == QTransform::TxRotate) {
+                } else if (ok && isRotate) {
                     if (transform.m11() == transform.m22())
                         scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
                     else {

@@ -63,11 +63,6 @@ class CFbsBitGc;
 
 class QSymbianBitmapDataAccess;
 
-class QS60PixmapData;
-void qt_symbian_register_pixmap(QS60PixmapData *pd);
-void qt_symbian_unregister_pixmap(QS60PixmapData *pd);
-void qt_symbian_release_pixmaps();
-
 class QSymbianFbsHeapLock
 {
 public:

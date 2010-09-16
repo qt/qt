@@ -555,7 +555,7 @@ QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
 }
 
 /*!
-    \qmlmethod int TextEdit::positionAt(x,y)
+    \qmlmethod int TextEdit::positionAt(int x, int y)
 
     Returns the text position closest to pixel position (\a x, \a y).
 
@@ -1018,7 +1018,7 @@ void QDeclarativeTextEdit::selectWord()
 }
 
 /*!
-    \qmlmethod void TextEdit::select(start,end)
+    \qmlmethod void TextEdit::select(int start, int end)
 
     Causes the text from \a start to \a end to be selected.
 

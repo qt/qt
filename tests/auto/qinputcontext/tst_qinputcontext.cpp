@@ -884,6 +884,27 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << QString("44")
             << QString("");
     events.clear();
+
+    // Test that the symbol key successfully does nothing when in number-only mode.
+    events << FepReplayEvent(EEventKeyDown, EStdKeyLeftFunc, 0, 0, 0);
+    events << FepReplayEvent(EEventKeyUp, EStdKeyLeftFunc, 0, 0, 0);
+    QTest::newRow("Dead symbols key")
+            << true
+            << Qt::InputMethodHints(Qt::ImhDigitsOnly)
+            << 0
+            << QLineEdit::Normal
+            << events
+            << QString("")
+            << QString("");
+    QTest::newRow("Dead symbols key and password")
+            << true
+            << Qt::InputMethodHints(Qt::ImhDigitsOnly)
+            << 0
+            << QLineEdit::Password
+            << events
+            << QString("")
+            << QString("");
+    events.clear();
 #endif
 }
 
