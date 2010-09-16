@@ -141,6 +141,22 @@ backslashed \ stuff.</source>
     </message>
 </context>
 <context>
+    <name>LotsaFun</name>
+    <message>
+        <location filename="main.cpp" line="318"/>
+        <source>this is inside operator&lt;&lt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NameSchpace::YetMoreFun</name>
+    <message>
+        <location filename="main.cpp" line="342"/>
+        <source>funStuff!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Plurals, QCoreApplication</name>
     <message numerus="yes">
         <location filename="main.cpp" line="81"/>

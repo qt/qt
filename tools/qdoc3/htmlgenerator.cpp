@@ -4185,36 +4185,16 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
                                        CodeMarker *marker)
 {
     if (!section.members.isEmpty()) {
-        NodeList::ConstIterator m;
-        int count = section.members.size();
-        bool twoColumn = false;
-        if (section.members.first()->type() == Node::QmlProperty) {
-            twoColumn = (count >= 5);
-            twoColumn = false;
-        }
-        if (twoColumn)
-            out() << "<table class=\"qmlsummary\">\n";
-			        if (++numTableRows % 2 == 1)
-				out() << "<tr class=\"odd topAlign\">";
-				else
-				out() << "<tr class=\"even topAlign\">";
-            //      << "<tr><td class=\"topAlign\">";
         out() << "<ul>\n";
-
-        int row = 0;
+        NodeList::ConstIterator m;
         m = section.members.begin();
         while (m != section.members.end()) {
-            if (twoColumn && row == (int) (count + 1) / 2)
-                out() << "</ul></td><td class=\"topAlign\"><ul>\n";
             out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
             out() << "</li>\n";
-            row++;
             ++m;
         }
         out() << "</ul>\n";
-        if (twoColumn)
-            out() << "</td></tr>\n</table>\n";
     }
 }
 

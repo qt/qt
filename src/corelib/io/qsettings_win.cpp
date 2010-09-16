@@ -535,6 +535,15 @@ bool QWinSettingsPrivate::readKey(HKEY parentHandle, const QString &rSubKey, QVa
             break;
         }
 
+        case REG_QWORD: {
+            Q_ASSERT(data.size() == sizeof(qint64));
+            qint64 i;
+            memcpy((char*)&i, data.constData(), sizeof(qint64));
+            if (value != 0)
+                *value = i;
+            break;
+        }
+
         default:
             qWarning("QSettings: Unknown data %d type in Windows registry", static_cast<int>(dataType));
             if (value != 0)
@@ -683,10 +692,19 @@ void QWinSettingsPrivate::set(const QString &uKey, const QVariant &value)
             break;
         }
 
-        case QVariant::Int: {
+        case QVariant::Int:
+        case QVariant::UInt: {
             type = REG_DWORD;
-            int i = value.toInt();
-            regValueBuff = QByteArray((const char*)&i, sizeof(int));
+            qint32 i = value.toInt();
+            regValueBuff = QByteArray((const char*)&i, sizeof(qint32));
+            break;
+        }
+
+        case QVariant::LongLong:
+        case QVariant::ULongLong: {
+            type = REG_QWORD;
+            qint64 i = value.toLongLong();
+            regValueBuff = QByteArray((const char*)&i, sizeof(qint64));
             break;
         }
 

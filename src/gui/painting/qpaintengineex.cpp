@@ -768,7 +768,7 @@ void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yR
         x1, y2 - (1 - KAPPA) * yRadius,
         x1, y2 - yRadius,
         x1, y1 + yRadius,                   // LineTo
-        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1, y1 + (1 - KAPPA) * yRadius,           // CurveTo
         x1 + (1 - KAPPA) * xRadius, y1,
         x1 + xRadius, y1
     };
