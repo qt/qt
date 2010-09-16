@@ -1378,6 +1378,8 @@ void PaintCommands::command_qt3_drawArc(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_drawText(QRegExp re)
 {
+    if (!m_shouldDrawText)
+        return;
     QStringList caps = re.capturedTexts();
     int x = convertToInt(caps.at(1));
     int y = convertToInt(caps.at(2));
