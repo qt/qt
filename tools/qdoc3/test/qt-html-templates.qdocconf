@@ -143,10 +143,10 @@ HTML.footer             = "" \
 			  "      </div>\n" \
 			  "    </div>\n" \
 			  "    </div> \n" \
-			  "  </div> \n" \
 			  "    <div class=\"ft\">\n" \
 			  "      <span></span>\n" \
 			  "    </div>\n" \
+			  "  </div> \n" \
 			  "  <div class=\"footer\">\n" \
 			  "    <p>\n" \
 			  "      <acronym title=\"Copyright\">&copy;</acronym> 2008-2010 Nokia Corporation and/or its\n" \
