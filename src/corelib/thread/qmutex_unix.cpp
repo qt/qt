@@ -77,6 +77,10 @@ QMutexPrivate::~QMutexPrivate()
 
 bool QMutexPrivate::wait(int timeout)
 {
+    if (contenders.fetchAndAddAcquire(1) == 0) {
+        // lock acquired without waiting
+        return true;
+    }
     report_error(pthread_mutex_lock(&mutex), "QMutex::lock", "mutex lock");
     int errorCode = 0;
     while (!wakeup) {
@@ -101,6 +105,7 @@ bool QMutexPrivate::wait(int timeout)
     }
     wakeup = false;
     report_error(pthread_mutex_unlock(&mutex), "QMutex::lock", "mutex unlock");
+    contenders.deref();
     return errorCode == 0;
 }
 

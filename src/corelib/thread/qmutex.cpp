@@ -157,15 +157,12 @@ void QMutex::lock()
             return;
         }
 
-        bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // didn't get the lock, wait for it
             isLocked = d->wait();
             Q_ASSERT_X(isLocked, "QMutex::lock",
                        "Internal error, infinite wait has timed out.");
-
-            // don't need to wait for the lock anymore
-            d->contenders.deref();
         }
 
         d->owner = self;
@@ -174,8 +171,7 @@ void QMutex::lock()
         return;
     }
 
-
-    bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
+    bool isLocked = d->contenders.testAndSetAcquire(0, 1);
     if (!isLocked) {
         lockInternal();
     }
@@ -211,7 +207,7 @@ bool QMutex::tryLock()
             return true;
         }
 
-        bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // some other thread has the mutex locked, or we tried to
             // recursively lock an non-recursive mutex
@@ -224,13 +220,7 @@ bool QMutex::tryLock()
         return isLocked;
     }
 
-    bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
-    if (!isLocked) {
-        // some other thread has the mutex locked, or we tried to
-        // recursively lock an non-recursive mutex
-        return isLocked;
-    }
-    return isLocked;
+    return d->contenders.testAndSetAcquire(0, 1);
 }
 
 /*! \overload
@@ -269,13 +259,10 @@ bool QMutex::tryLock(int timeout)
             return true;
         }
 
-        bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // didn't get the lock, wait for it
             isLocked = d->wait(timeout);
-
-            // don't need to wait for the lock anymore
-            d->contenders.deref();
             if (!isLocked)
                 return false;
         }
@@ -286,17 +273,9 @@ bool QMutex::tryLock(int timeout)
         return true;
     }
 
-    bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
-    if (!isLocked) {
-        // didn't get the lock, wait for it
-        isLocked = d->wait(timeout);
-
-        // don't need to wait for the lock anymore
-        d->contenders.deref();
-        if (!isLocked)
-            return false;
-    }
-    return true;
+    return (d->contenders.testAndSetAcquire(0, 1)
+            // didn't get the lock, wait for it
+            || d->wait(timeout));
 }
 
 
@@ -310,7 +289,6 @@ bool QMutex::tryLock(int timeout)
 void QMutex::unlock()
 {
     QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-
     if (d->recursive) {
         if (!--d->count) {
             d->owner = 0;
@@ -460,16 +438,13 @@ void QMutex::lockInternal()
     do {
         if (spinCount++ > maximumSpinCount) {
             // puts("spinning useless, sleeping");
-            bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+            bool isLocked = d->contenders.testAndSetAcquire(0, 1);
             if (!isLocked) {
 
                 // didn't get the lock, wait for it
                 isLocked = d->wait();
                 Q_ASSERT_X(isLocked, "QMutex::lock",
                             "Internal error, infinite wait has timed out.");
-
-                // don't need to wait for the lock anymore
-                d->contenders.deref();
             }
             // decrease the lastSpinCount since we didn't actually get the lock by spinning
             spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
