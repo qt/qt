@@ -65,7 +65,6 @@ public:
     QMutexPrivate(QMutex::RecursionMode mode);
     ~QMutexPrivate();
 
-    ulong self();
     bool wait(int timeout = -1);
     void wakeUp();
 
