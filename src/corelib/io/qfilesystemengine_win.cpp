@@ -1098,6 +1098,73 @@ QString QFileSystemEngine::homePath()
     return QDir::fromNativeSeparators(ret);
 }
 
+QString QFileSystemEngine::tempPath()
+{
+    QString ret;
+    wchar_t tempPath[MAX_PATH];
+    DWORD len = GetTempPath(MAX_PATH, tempPath);
+    if (len)
+        ret = QString::fromWCharArray(tempPath, len);
+    if (!ret.isEmpty()) {
+        while (ret.endsWith(QLatin1Char('\\')))
+            ret.chop(1);
+        ret = QDir::fromNativeSeparators(ret);
+    }
+    if (ret.isEmpty()) {
+#if !defined(Q_OS_WINCE)
+        ret = QLatin1String("c:/tmp");
+#else
+        ret = QLatin1String("/Temp");
+#endif
+    }
+    return ret;
+}
+
+bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
+{
+    QFileSystemMetaData meta;
+    fillMetaData(entry, meta, QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
+    if(!(meta.exists() && meta.isDirectory()))
+        return false;
+
+#if !defined(Q_OS_WINCE)
+    //TODO: this should really be using nativeFilePath(), but that returns a path in long format \\?\c:\foo
+    //which causes many problems later on when it's returned through currentPath()
+    return ::SetCurrentDirectory(reinterpret_cast<const wchar_t*>(QDir::toNativeSeparators(entry.filePath()).utf16())) != 0;
+#else
+    qfsPrivateCurrentDir = entry.filePath();
+    return true;
+#endif
+}
+
+QFileSystemEntry QFileSystemEngine::currentPath()
+{
+    QString ret;
+#if !defined(Q_OS_WINCE)
+    DWORD size = 0;
+    wchar_t currentName[PATH_MAX];
+    size = ::GetCurrentDirectory(PATH_MAX, currentName);
+    if (size != 0) {
+        if (size > PATH_MAX) {
+            wchar_t *newCurrentName = new wchar_t[size];
+            if (::GetCurrentDirectory(PATH_MAX, newCurrentName) != 0)
+                ret = QString::fromWCharArray(newCurrentName, size);
+            delete [] newCurrentName;
+        } else {
+            ret = QString::fromWCharArray(currentName, size);
+        }
+    }
+#else
+    Q_UNUSED(fileName);
+    //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
+    if (qfsPrivateCurrentDir.isEmpty())
+        qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();
+
+    ret = qfsPrivateCurrentDir;
+#endif
+    return QFileSystemEntry(ret, QFileSystemEntry::FromNativePath());
+}
+
 //static
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target)
 {

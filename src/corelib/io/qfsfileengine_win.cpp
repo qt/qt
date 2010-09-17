@@ -544,15 +544,7 @@ bool QFSFileEngine::caseSensitive() const
 
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
-    if (!QDir(path).exists())
-        return false;
-
-#if !defined(Q_OS_WINCE)
-    return ::SetCurrentDirectory((wchar_t*)path.utf16()) != 0;
-#else
-    qfsPrivateCurrentDir = QFSFileEnginePrivate::longFileName(path);
-    return true;
-#endif
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
 }
 
 QString QFSFileEngine::currentPath(const QString &fileName)
@@ -571,29 +563,14 @@ QString QFSFileEngine::currentPath(const QString &fileName)
     }
     if (ret.isEmpty()) {
         //just the pwd
-        DWORD size = 0;
-        wchar_t currentName[PATH_MAX];
-        size = ::GetCurrentDirectory(PATH_MAX, currentName);
-        if (size != 0) {
-            if (size > PATH_MAX) {
-                wchar_t *newCurrentName = new wchar_t[size];
-                if (::GetCurrentDirectory(PATH_MAX, newCurrentName) != 0)
-                    ret = QString::fromWCharArray(newCurrentName);
-                delete [] newCurrentName;
-            } else {
-                ret = QString::fromWCharArray(currentName);
-            }
-        }
+        ret = QFileSystemEngine::currentPath().filePath();
     }
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
-    return QDir::fromNativeSeparators(ret);
+    return ret;
 #else
     Q_UNUSED(fileName);
-    if (qfsPrivateCurrentDir.isEmpty())
-        qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();
-
-    return QDir::fromNativeSeparators(qfsPrivateCurrentDir);
+    return QFileSystemEngine::currentPath();
 #endif
 }
 
@@ -609,25 +586,7 @@ QString QFSFileEngine::rootPath()
 
 QString QFSFileEngine::tempPath()
 {
-    QString ret;
-    {
-        wchar_t tempPath[MAX_PATH];
-        if (GetTempPath(MAX_PATH, tempPath))
-            ret = QString::fromWCharArray(tempPath);
-        if (!ret.isEmpty()) {
-            while (ret.endsWith(QLatin1Char('\\')))
-                ret.chop(1);
-            ret = QDir::fromNativeSeparators(ret);
-        }
-    }
-    if (ret.isEmpty()) {
-#if !defined(Q_OS_WINCE)
-        ret = QLatin1String("c:/tmp");
-#else
-        ret = QLatin1String("/Temp");
-#endif
-    }
-    return ret;
+    return QFileSystemEngine::tempPath();
 }
 
 QFileInfoList QFSFileEngine::drives()

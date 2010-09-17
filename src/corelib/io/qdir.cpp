@@ -1779,12 +1779,7 @@ QChar QDir::separator()
 */
 bool QDir::setCurrent(const QString &path)
 {
-#ifdef QT_NO_FSFILEENGINE
-    Q_UNUSED(path);
-    return false;
-#else
-    return QFSFileEngine::setCurrentPath(path);
-#endif
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(fromNativeSeparators(path)));
 }
 
 /*!
@@ -1805,11 +1800,7 @@ bool QDir::setCurrent(const QString &path)
 */
 QString QDir::currentPath()
 {
-#ifdef QT_NO_FSFILEENGINE
-    return QString();
-#else
-    return QFSFileEngine::currentPath();
-#endif
+    return QFileSystemEngine::currentPath().filePath();
 }
 
 /*!
@@ -1867,11 +1858,7 @@ QString QDir::currentPath()
 */
 QString QDir::homePath()
 {
-#ifdef QT_NO_FSFILEENGINE
-    return QString();
-#else
-    return cleanPath(QFSFileEngine::homePath());
-#endif
+    return QFileSystemEngine::homePath();
 }
 
 /*!
@@ -1910,11 +1897,7 @@ QString QDir::homePath()
 */
 QString QDir::tempPath()
 {
-#ifdef QT_NO_FSFILEENGINE
-    return QString();
-#else
-    return cleanPath(QFSFileEngine::tempPath());
-#endif
+    return QFileSystemEngine::tempPath();
 }
 
 /*!
@@ -1941,11 +1924,7 @@ QString QDir::tempPath()
 */
 QString QDir::rootPath()
 {
-#ifdef QT_NO_FSFILEENGINE
-    return QString();
-#else
-    return QFSFileEngine::rootPath();
-#endif
+    return QFileSystemEngine::rootPath();
 }
 
 /*!

@@ -88,11 +88,13 @@ public:
                              QFileSystemMetaData::MetaDataFlags what);
     static bool fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                 QFileSystemMetaData::MetaDataFlags what);
-    static QString homePath();
-    static QString rootPath();
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
 #endif
+    //homePath, rootPath and tempPath shall return clean paths
+    static QString homePath();
+    static QString rootPath();
+    static QString tempPath();
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
@@ -105,6 +107,9 @@ public:
 
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
                                QFileSystemMetaData *data = 0);
+
+    static bool setCurrentPath(const QFileSystemEntry &entry);
+    static QFileSystemEntry currentPath();
 
     static QAbstractFileEngine *resolveEntryAndCreateLegacyEngine(QFileSystemEntry &entry,
                                                                   QFileSystemMetaData &data);

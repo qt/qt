@@ -246,7 +246,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     QByteArray orig = entry.nativeFilePath();
     QByteArray result;
     if (orig.isEmpty() || !orig.startsWith('/')) {
-        QFileSystemEntry cur(QFSFileEngine::currentPath());
+        QFileSystemEntry cur(currentPath());
         result = cur.nativeFilePath();
     }
     if (!orig.isEmpty() && !(orig.length() == 1 && orig[0] == '.')) {
@@ -548,4 +548,59 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     return false; // TODO implement;
 }
 
+QString QFileSystemEngine::homePath()
+{
+    QString home = QFile::decodeName(qgetenv("HOME"));
+    if (home.isNull())
+        home = rootPath();
+    return QDir::cleanPath(home);
+}
+
+QString QFileSystemEngine::rootPath()
+{
+    return QLatin1String("/");
+}
+
+QString QFileSystemEngine::tempPath()
+{
+    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
+    if (temp.isEmpty())
+        temp = QLatin1String("/tmp/");
+    return QDir::cleanPath(temp);
+}
+
+bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &path)
+{
+    int r;
+    r = QT_CHDIR(path.nativeFilePath());
+    return r >= 0;
+}
+
+QFileSystemEntry QFileSystemEngine::currentPath()
+{
+    QFileSystemEntry result;
+    QT_STATBUF st;
+    if (QT_STAT(".", &st) == 0) {
+#if defined(__GLIBC__) && !defined(PATH_MAX)
+        char *currentName = ::get_current_dir_name();
+        if (currentName) {
+            result = QFile::decodeName(QByteArray(currentName));
+            ::free(currentName);
+        }
+#else
+        char currentName[PATH_MAX+1];
+        if (::getcwd(currentName, PATH_MAX))
+            result = QFileSystemEntry(QByteArray(currentName), QFileSystemEntry::FromNativePath());
+# if defined(QT_DEBUG)
+        if (result.isEmpty())
+            qWarning("QFSFileEngine::currentPath: getcwd() failed");
+# endif
+#endif
+    } else {
+# if defined(QT_DEBUG)
+        qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
+# endif
+    }
+    return result;
+}
 QT_END_NAMESPACE

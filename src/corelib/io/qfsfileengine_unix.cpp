@@ -691,96 +691,27 @@ bool QFSFileEngine::caseSensitive() const
 
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
-    int r;
-    r = QT_CHDIR(QFile::encodeName(path));
-    return r >= 0;
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(QDir::fromNativeSeparators(path)));
 }
 
 QString QFSFileEngine::currentPath(const QString &)
 {
-    QString result;
-    QT_STATBUF st;
-#if defined(Q_OS_SYMBIAN)
-    char nativeCurrentName[PATH_MAX+1];
-    if (::getcwd(nativeCurrentName, PATH_MAX))
-        result = QDir::fromNativeSeparators(QFile::decodeName(QByteArray(nativeCurrentName)));
-    if (result.isEmpty()) {
-# if defined(QT_DEBUG)
-        qWarning("QFSFileEngine::currentPath: getcwd() failed");
-# endif
-    } else
-#endif
-    if (QT_STAT(".", &st) == 0) {
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-        char *currentName = ::get_current_dir_name();
-        if (currentName) {
-            result = QFile::decodeName(QByteArray(currentName));
-            ::free(currentName);
-        }
-#elif !defined(Q_OS_SYMBIAN)
-        char currentName[PATH_MAX+1];
-        if (::getcwd(currentName, PATH_MAX))
-            result = QFile::decodeName(QByteArray(currentName));
-# if defined(QT_DEBUG)
-        if (result.isNull())
-            qWarning("QFSFileEngine::currentPath: getcwd() failed");
-# endif
-#endif
-    } else {
-#if defined(Q_OS_SYMBIAN)
-        // If current dir returned by Open C doesn't exist,
-        // try to create it (can happen with application private dirs)
-        // Ignore mkdir failures; we want to be consistent with Open C
-        // current path regardless.
-        QT_MKDIR(QFile::encodeName(QLatin1String(nativeCurrentName)), 0777);
-#else
-# if defined(QT_DEBUG)
-        qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
-# endif
-#endif
-    }
-    return result;
+    return QFileSystemEngine::currentPath().filePath();
 }
 
 QString QFSFileEngine::homePath()
 {
-#if defined(Q_OS_SYMBIAN)
-    QString home = QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(PathInfo::PhoneMemoryRootPath())));
-#else
-    QString home = QFile::decodeName(qgetenv("HOME"));
-    if (home.isNull())
-        home = rootPath();
-#endif
-    return home;
+    return QFileSystemEngine::homePath();
 }
 
 QString QFSFileEngine::rootPath()
 {
-#if defined(Q_OS_SYMBIAN)
-    TChar drive;
-    TInt err = RFs::DriveToChar(RFs::GetSystemDrive(), drive); //RFs::GetSystemDriveChar not supported on S60 3.1
-    Q_ASSERT(err == KErrNone); //RFs::GetSystemDrive() shall always return a convertible drive number on a valid OS configuration
-    return QString(QChar(drive)).append(QLatin1String(":/"));
-#else
-    return QLatin1String("/");
-#endif
+    return QFileSystemEngine::rootPath();
 }
 
 QString QFSFileEngine::tempPath()
 {
-#if defined(Q_OS_SYMBIAN)
-    TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
-    QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
-    temp += QLatin1String( "temp/");
-
-    // Just to verify that folder really exist on hardware
-    QT_MKDIR(QFile::encodeName(temp), 0777);
-#else
-    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
-    if (temp.isEmpty())
-        temp = QLatin1String("/tmp/");
-#endif
-    return temp;
+    return QFileSystemEngine::tempPath();
 }
 
 QFileInfoList QFSFileEngine::drives()

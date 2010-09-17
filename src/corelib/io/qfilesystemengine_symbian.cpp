@@ -42,8 +42,11 @@
 #include "qfilesystemengine_p.h"
 #include "qfsfileengine.h"
 #include <QtCore/private/qcore_symbian_p.h>
+#include <QtCore/qcoreapplication.h>
 
 #include <f32file.h>
+#include <pathinfo.h>
+#include <wchar.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -121,7 +124,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     QString result;
     if (needsDrive || isDriveLetter || isDriveRelative || !isAbsolute || orig.isEmpty()) {
-        QFileSystemEntry cur(QFSFileEngine::currentPath());
+        QFileSystemEntry cur(currentPath());
         if(needsDrive)
             result = cur.filePath().left(2);
         else if(isDriveRelative && cur.filePath().at(0) != orig.at(0))
@@ -337,6 +340,68 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
     return err == KErrNone; // TODO error reporting
+}
+
+QString QFileSystemEngine::homePath()
+{
+    QString home = QDir::fromNativeSeparators(qt_TDesC2QString(PathInfo::PhoneMemoryRootPath()));
+    if(home.endsWith(QLatin1Char('/')))
+        home.chop(1);
+    return home;
+}
+
+QString QFileSystemEngine::rootPath()
+{
+    TChar drive;
+    TInt err = RFs::DriveToChar(RFs::GetSystemDrive(), drive); //RFs::GetSystemDriveChar not supported on S60 3.1
+    Q_ASSERT(err == KErrNone); //RFs::GetSystemDrive() shall always return a convertible drive number on a valid OS configuration
+    return QString(QChar(drive)).append(QLatin1String(":/"));
+}
+
+QString QFileSystemEngine::tempPath()
+{
+    return rootPath().append(QLatin1String("system/temp"));
+}
+
+//static
+bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
+{
+    QFileSystemMetaData meta;
+    QFileSystemEntry absname = absoluteName(entry);
+    fillMetaData(absname, meta, QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
+    if(!(meta.exists() && meta.isDirectory()))
+        return false;
+
+    RFs& fs = qt_s60GetRFs();
+    QString abspath = absname.nativeFilePath();
+    if(!abspath.endsWith(QLatin1Char('\\')))
+        abspath.append(QLatin1Char('\\'));
+    TInt r = fs.SetSessionPath(qt_QString2TPtrC(abspath));
+    //SetSessionPath succeeds for non existant directory, which is why it's checked above
+    if (r == KErrNone) {
+        __ASSERT_COMPILE(sizeof(wchar_t) == sizeof(unsigned short));
+        //attempt to set open C to the same path
+        r = ::wchdir(reinterpret_cast<const wchar_t *>(absname.filePath().utf16()));
+        if (r < 0)
+            qWarning("failed to sync path to open C");
+        return true;
+    }
+    return false;
+}
+
+//static
+QFileSystemEntry QFileSystemEngine::currentPath()
+{
+    TFileName fn;
+    QFileSystemEntry ret;
+    TInt r = qt_s60GetRFs().SessionPath(fn);
+    if(r == KErrNone) {
+        //remove terminating slash from non root paths (session path is clean, absolute and always ends in a \)
+        if(fn.Length() > 3 && fn[fn.Length() - 1] == '\\')
+            fn.SetLength(fn.Length() - 1);
+        ret = QFileSystemEntry(qt_TDesC2QString(fn), QFileSystemEntry::FromNativePath());
+    }
+    return ret;
 }
 
 QT_END_NAMESPACE
