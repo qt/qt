@@ -406,7 +406,7 @@ void tst_qdeclarativelistmodel::dynamic_worker_sync()
     // execute a set of commands on the worker list model, then check the
     // changes are reflected in the list model in the main thread
     if (QByteArray(QTest::currentDataTag()).startsWith("nested"))
-        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script");
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script");
 
     QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", 
             Q_ARG(QVariant, operations.mid(0, operations.length()-1))));
@@ -439,7 +439,7 @@ void tst_qdeclarativelistmodel::convertNestedToFlat_fail()
     model.append(nestedListValue(&s_eng));
     QCOMPARE(model.count(), 2);
 
-    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: List contains nested list values and cannot be used from a worker script");
+    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: QML ListModel: List contains list-type data and cannot be used from a worker script");
     QVERIFY(QMetaObject::invokeMethod(item, "evalExpressionViaWorker", Q_ARG(QVariant, script)));
     waitForWorker(item);
 
@@ -491,7 +491,7 @@ void tst_qdeclarativelistmodel::convertNestedToFlat_ok()
     QCOMPARE(model.count(), count+1);
 
     QScriptValue nested = nestedListValue(&s_eng);
-    const char *warning = "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script";
+    const char *warning = "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script";
 
     QTest::ignoreMessage(QtWarningMsg, warning);
     model.append(nested);
@@ -769,7 +769,7 @@ void tst_qdeclarativelistmodel::get_worker()
     model.append(sv);
     int role = roleFromName(&model, roleName);
 
-    const char *warning = "<Unknown File>: QML ListModel: Cannot add nested list values when modifying or after modification from a worker script";
+    const char *warning = "<Unknown File>: QML ListModel: Cannot add list-type data when modifying or after modification from a worker script";
     if (roleValue.type() == QVariant::List || roleValue.type() == QVariant::Map)
         QTest::ignoreMessage(QtWarningMsg, warning);
     QSignalSpy spy(&model, SIGNAL(itemsChanged(int, int, QList<int>)));
