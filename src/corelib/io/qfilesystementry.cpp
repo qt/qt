@@ -244,7 +244,10 @@ bool QFileSystemEntry::isAbsolute() const
     resolveFilePath();
     return (!m_filePath.isEmpty() && ((m_filePath.length() >= 3
                                        && (m_filePath[0].isLetter() && m_filePath[1].unicode() == ':' && m_filePath[2].unicode() == '/'))
-                                      || (m_filePath.length() >= 2 && (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/')))));
+#ifdef Q_OS_WIN
+                                      || (m_filePath.length() >= 2 && (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/')))
+#endif
+                                      ));
 }
 #else
 bool QFileSystemEntry::isRelative() const
