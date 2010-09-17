@@ -56,10 +56,11 @@ Rectangle {
             color: "white"
             text: "Hello world!"
             font.pixelSize: 60
+            smooth: true
 
             SequentialAnimation on font.letterSpacing {
                 loops: Animation.Infinite;
-                NumberAnimation { from: 100; to: 300; easing.type: Easing.InQuad; duration: 3000 }
+                NumberAnimation { from: 0; to: 150; easing.type: Easing.InQuad; duration: 3000 }
                 ScriptAction {
                     script: {
                         container.y = (screen.height / 4) + (Math.random() * screen.height / 2)

@@ -77,7 +77,6 @@ private slots:
 void tst_QDeclarativeDebugService::initTestCase()
 {
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3769...");
-    qputenv("QML_DEBUG_SERVER_PORT", "3769");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
@@ -184,6 +183,19 @@ void tst_QDeclarativeDebugService::objectToString()
     delete obj;
 }
 
-QTEST_MAIN(tst_QDeclarativeDebugService)
+
+int main(int argc, char *argv[])
+{
+    int _argc = argc + 1;
+    char **_argv = new char*[_argc];
+    for (int i = 0; i < argc; ++i)
+        _argv[i] = argv[i];
+    _argv[_argc - 1] = "-qmljsdebugger=port:3769";
+
+    QApplication app(_argc, _argv);
+    tst_QDeclarativeDebugService tc;
+    return QTest::qExec(&tc, _argc, _argv);
+    delete _argv;
+}
 
 #include "tst_qdeclarativedebugservice.moc"
