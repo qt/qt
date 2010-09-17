@@ -59,7 +59,7 @@ struct QSymbianCodecInitData {
    It is ordered by charsetId to allow binary search lookup
  */
 static const QSymbianCodecInitData codecsData[] = {
-    { /*268439485*/ KCharacterSetIdentifierShiftJis,            17, "Shift_JIS\0MS_Kanji\0csShiftJIS\0MS_KANJI\0SJIS\0" },
+    { /*268439485*/ KCharacterSetIdentifierShiftJis,            17, "Shift_JIS\0MS_Kanji\0csShiftJIS\0SJIS\0" },
     { /*268439486*/ KCharacterSetIdentifierGb2312,              57, "GB2312\0csGB2312\0CN-GB\0EUC-CN\0" },  // Note: ConvertCharacterSetIdentifierToMibEnumL returns Mib 0 instaead of 57
     { /*268439487*/ KCharacterSetIdentifierBig5,              2026, "Big5\0csBig5\0Big5-ETen\0CP950\0BIG-FIVE\0CN-BIG5\0" },
     { /*268440246*/ KCharacterSetIdentifierCodePage1252,      2252, "windows-1252\0Code Page 1252\0CP1252\0MS-ANSI\0" },
@@ -76,7 +76,7 @@ static const QSymbianCodecInitData codecsData[] = {
     { /*268458028*/ KCharacterSetIdentifierUtf7,               103, "UTF-7\0UNICODE-1-1-UTF-7\0CSUNICODE11UTF7\0" },
 //  { /*268458029*/ KCharacterSetIdentifierUtf8,               106, "UTF-8\0" },
     { /*268458030*/ KCharacterSetIdentifierImapUtf7,             0, "IMAP UTF-7\0" },
-    { /*268458031*/ KCharacterSetIdentifierJavaConformantUtf8,   0, "Java UTF-8\0JAVA UTF-8\0" },
+    { /*268458031*/ KCharacterSetIdentifierJavaConformantUtf8,   0, "JAVA UTF-8\0" },
     { /*268458454*/ 268458454,                                2250, "Windows-1250\0CP1250\0MS-EE\0" },
     { /*268458455*/ 268458455,                                2251, "Windows-1251\0CP1251\0MS-CYRL\0" },
     { /*268458456*/ 268458456,                                2253, "Windows-1253\0CP1253\0MS-GREEK\0" },
