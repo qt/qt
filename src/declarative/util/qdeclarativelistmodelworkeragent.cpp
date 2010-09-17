@@ -232,7 +232,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
                     emit m_orig->itemsMoved(change.index, change.to, change.count);
                     break;
                 case Change::Changed:
-                    emit m_orig->itemsChanged(change.index, change.to, orig->m_roles.keys());
+                    emit m_orig->itemsChanged(change.index, change.count, orig->m_roles.keys());
                     break;
                 }
             }
