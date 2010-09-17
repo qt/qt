@@ -141,11 +141,13 @@ void QDeclarativePathViewPrivate::releaseItem(QDeclarativeItem *item)
 {
     if (!item || !model)
         return;
-    if (QDeclarativePathViewAttached *att = attached(item))
-        att->setOnPath(false);
     QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
     itemPrivate->removeItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
-    model->release(item);
+    if (model->release(item) == 0) {
+        // item was not destroyed, and we no longer reference it.
+        if (QDeclarativePathViewAttached *att = attached(item))
+            att->setOnPath(false);
+    }
 }
 
 QDeclarativePathViewAttached *QDeclarativePathViewPrivate::attached(QDeclarativeItem *item)
