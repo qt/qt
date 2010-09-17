@@ -6,6 +6,7 @@ examples/*/*/*
 !examples/*/*/README
 examples/*/*/*[.]app
 !examples/declarative/*
+!examples/tutorials/*
 !examples/ja_JP/*/*
 demos/*/*
 !demos/spectrum/*
