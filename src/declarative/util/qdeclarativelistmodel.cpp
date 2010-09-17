@@ -58,6 +58,28 @@ Q_DECLARE_METATYPE(QListModelInterface *)
 
 QT_BEGIN_NAMESPACE
 
+template<typename T>
+void qdeclarativelistmodel_move(int from, int to, int n, T *items)
+{
+    if (n == 1) {
+        items->move(from, to);
+    } else {
+        T replaced;
+        int i=0;
+        typename T::ConstIterator it=items->begin(); it += from+n;
+        for (; i<to-from; ++i,++it)
+            replaced.append(*it);
+        i=0;
+        it=items->begin(); it += from;
+        for (; i<n; ++i,++it)
+            replaced.append(*it);
+        typename T::ConstIterator f=replaced.begin();
+        typename T::Iterator t=items->begin(); t += from;
+        for (; f != replaced.end(); ++f, ++t)
+            *t = *f;
+    }
+}
+
 QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListModelData::instructions() const
 {
     return (QDeclarativeListModelParser::ListInstruction *)((char *)this + sizeof(ListModelData));
@@ -947,23 +969,7 @@ void FlatListModel::setProperty(int index, const QString& property, const QVaria
 
 void FlatListModel::move(int from, int to, int n)
 {
-    if (n == 1) {
-        m_values.move(from, to);
-    } else {
-        QList<QHash<int, QVariant> > replaced;
-        int i=0;
-        QList<QHash<int, QVariant> >::ConstIterator it=m_values.begin(); it += from+n;
-        for (; i<to-from; ++i,++it)
-            replaced.append(*it);
-        i=0;
-        it=m_values.begin(); it += from;
-        for (; i<n; ++i,++it)
-            replaced.append(*it);
-        QList<QHash<int, QVariant> >::ConstIterator f=replaced.begin();
-        QList<QHash<int, QVariant> >::Iterator t=m_values.begin(); t += from;
-        for (; f != replaced.end(); ++f, ++t)
-            *t = *f;
-    }
+    qdeclarativelistmodel_move<QList<QHash<int, QVariant> > >(from, to, n, &m_values);
 }
 
 bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *row, QList<int> *roles)
@@ -1130,23 +1136,9 @@ bool NestedListModel::insert(int index, const QScriptValue& valuemap)
 
 void NestedListModel::move(int from, int to, int n)
 {
-    if (n==1) {
-        _root->values.move(from,to);
-    } else {
-        QList<QVariant> replaced;
-        int i=0;
-        QVariantList::const_iterator it=_root->values.begin(); it += from+n;
-        for (; i<to-from; ++i,++it)
-            replaced.append(*it);
-        i=0;
-        it=_root->values.begin(); it += from;
-        for (; i<n; ++i,++it)
-            replaced.append(*it);
-        QVariantList::const_iterator f=replaced.begin();
-        QVariantList::iterator t=_root->values.begin(); t += from;
-        for (; f != replaced.end(); ++f, ++t)
-            *t = *f;
-    }
+    if (!_root)
+        return;
+    qdeclarativelistmodel_move<QVariantList>(from, to, n, &_root->values);
 }
 
 bool NestedListModel::append(const QScriptValue& valuemap)
