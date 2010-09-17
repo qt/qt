@@ -1517,6 +1517,10 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
+        // We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
+        // Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
+        // symbian socket engine.
+        dictionary[ "IPV6" ]                = "no";
         dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "yes";
         dictionary[ "RTTI" ]                = "yes";
@@ -2677,11 +2681,11 @@ void Configure::generateOutputVars()
             qtConfig += "audio-backend";
     }
 
+    QString dst = buildPath + "/mkspecs/modules/qt_webkit_version.pri";
+    QFile::remove(dst);
     if (dictionary["WEBKIT"] == "yes") {
         // This include takes care of adding "webkit" to QT_CONFIG.
         QString src = sourcePath + "/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri";
-        QString dst = buildPath + "/mkspecs/modules/qt_webkit_version.pri";
-        QFile::remove(dst);
         QFile::copy(src, dst);
     }
 

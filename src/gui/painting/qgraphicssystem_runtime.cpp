@@ -94,7 +94,8 @@ QRuntimePixmapData::QRuntimePixmapData(const QRuntimeGraphicsSystem *gs, PixelTy
 
 QRuntimePixmapData::~QRuntimePixmapData()
 {
-    m_graphicsSystem->removePixmapData(this);
+    if (QApplicationPrivate::graphics_system)
+        m_graphicsSystem->removePixmapData(this);
     delete m_data;
 }
 
@@ -258,7 +259,8 @@ QRuntimeWindowSurface::QRuntimeWindowSurface(const QRuntimeGraphicsSystem *gs, Q
 
 QRuntimeWindowSurface::~QRuntimeWindowSurface()
 {
-    m_graphicsSystem->removeWindowSurface(this);
+    if (QApplicationPrivate::graphics_system)
+        m_graphicsSystem->removeWindowSurface(this);
 }
 
 QPaintDevice *QRuntimeWindowSurface::paintDevice()

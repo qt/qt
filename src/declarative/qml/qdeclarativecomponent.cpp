@@ -573,7 +573,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 }
 
 /*!
-    \qmlmethod object Component::createObject(parent)
+    \qmlmethod object Component::createObject(Item parent)
 
     Creates and returns an object instance of this component that will have the given 
     \a parent. Returns null if object creation fails.
@@ -607,10 +607,11 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
         ctxt = d->engine->rootContext();
     if (!ctxt)
         return QScriptValue(QScriptValue::NullValue);
-    QObject* ret = create(ctxt);
-    if (!ret)
+    QObject* ret = beginCreate(ctxt);
+    if (!ret) {
+        completeCreate();
         return QScriptValue(QScriptValue::NullValue);
-
+    }
 
     if (parent) {
         ret->setParent(parent);
@@ -631,6 +632,7 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
         if (needParent) 
             qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
     }
+    completeCreate();
 
     QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(d->engine);
     QDeclarativeData::get(ret, true)->setImplicitDestructible();

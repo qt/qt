@@ -400,11 +400,39 @@ QTabletDeviceDataList *qt_tablet_devices()
 extern bool qt_tabletChokeMouse;
 #endif
 
+typedef bool(*QX11FilterFunction)(XEvent *event);
+
+Q_GLOBAL_STATIC(QList<QX11FilterFunction>, x11Filters)
+
+Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func)
+{
+    Q_ASSERT(func);
+
+    if (QList<QX11FilterFunction> *list = x11Filters())
+        list->append(func);
+}
+
+Q_GUI_EXPORT void qt_removeX11EventFilter(QX11FilterFunction func)
+{
+    Q_ASSERT(func);
+
+    if (QList<QX11FilterFunction> *list = x11Filters())
+        list->removeOne(func);
+}
+
+
 static bool qt_x11EventFilter(XEvent* ev)
 {
     long unused;
     if (qApp->filterEvent(ev, &unused))
         return true;
+    if (const QList<QX11FilterFunction> *list = x11Filters()) {
+        for (QList<QX11FilterFunction>::const_iterator it = list->constBegin(); it != list->constEnd(); ++it) {
+            if ((*it)(ev))
+                return true;
+        }
+    }
+
     return qApp->x11EventFilter(ev);
 }
 
@@ -3642,6 +3670,11 @@ int QApplication::x11ProcessEvent(XEvent* event)
 
     case MapNotify:                                // window shown
         if (widget->isWindow()) {
+            // if we got a MapNotify when we were not waiting for it, it most
+            // likely means the user has already asked to hide the window before
+            // it ever being shown, so we try to withdraw a window after sending
+            // the QShowEvent.
+            bool pendingHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide) && widget->testAttribute(Qt::WA_WState_Hidden);
             widget->d_func()->topData()->waitingForMapNotify = 0;
 
             if (widget->windowType() != Qt::Popup) {
@@ -3661,6 +3694,8 @@ int QApplication::x11ProcessEvent(XEvent* event)
                     widget->setAttribute(Qt::WA_WState_Visible, true);
                 }
             }
+            if (pendingHide) // hide the window
+                XWithdrawWindow(X11->display, widget->internalWinId(), widget->x11Info().screen());
         }
         break;
 

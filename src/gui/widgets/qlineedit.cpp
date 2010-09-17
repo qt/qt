@@ -1929,7 +1929,11 @@ void QLineEdit::paintEvent(QPaintEvent *)
         // text doesn't fit, text document is to the left of lineRect; align
         // right
         d->hscroll = widthUsed - lineRect.width() + 1;
+    } else {
+        //in case the text is bigger than the lineedit, the hscroll can never be negative
+        d->hscroll = qMax(0, d->hscroll);
     }
+
     // the y offset is there to keep the baseline constant in case we have script changes in the text.
     QPoint topLeft = lineRect.topLeft() - QPoint(d->hscroll, d->control->ascent() - fm.ascent());
 

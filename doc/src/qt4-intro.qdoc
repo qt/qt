@@ -475,7 +475,8 @@
     \i Qt Creator has been improved to support interactive editing of
     QML UIs through drag-and-drop. The text editor supports the QML
     syntax and provides authoring assistance such as auto-completion,
-    error lookup, help lookup and easy preview of QML UI's.
+    error lookup, help lookup and easy preview of QML UI's. The Qt
+    Quick features in Qt Creator will be released with Qt Creator 2.1
     \endlist
 
     \section1 Network Bearer Management
@@ -488,14 +489,72 @@
 
     QNetworkAccessManager uses this API for HTTP level roaming.
 
-    \section1 Multimedia - playback and declarative elements
+    \section1 Feature Improvements in QtWebKit
 
-    The Multimedia API provides media playback and playlist support
-    for Qt Applications. Play music and movies through a single interface
-    with selectable output for movies to widgets or graphics view.
+    The QGraphicsWebView class has a new tiled backing store, which
+    improves scrolling and zooming performance. You can even create
+    animated zoom-in or zoom-out effects (see
+    QWebSettings::TiledBackingStoreEnabled).
 
-    Multimedia support for Quick is also available with the new multimedia
-    declarative elements.
+    On mobile platforms, it is often useful to avoid displaying
+    separate scrollbars for iframes and framesets. If you switch on
+    frame flattening, QtWebKit will resize frames to fit their content
+    to avoid separate scrollbars (see
+    QWebSettings::FrameFlatteningEnabled).
+
+    Qt 4.7 adds support for accelerated compositing, which enhances
+    the performance of CSS animations and transitions. Read more in
+    \l{http://labs.trolltech.com/blogs/2010/05/17/qtwebkit-now-accelerates-css-animations-3d-transforms/}{this blog}.
+
+    For hybrid QtWebKit and C++ projects, Qt 4.7 has added support for
+    transporting \l{QPixmap}s between Qt C++ and WebKit. We have also
+    improved the documentation hybrid development. Read more here:
+    \l{The QtWebKit Bridge}.
+
+    \section1 QtWebKit Performance Benchmarks
+
+    We have introduced a set of performance benchmarks for QtWebKit,
+    and made numerous improvements in rendering performance, page
+    loading performance, scrolling performance and CSS performance.
+    Here are some examples from the benchmarks run on a 64-bit Linux
+    workstation with the raster graphics system.
+
+    In a benchmark that measures the scrolling performance on popular
+    websites, we found out that Qt 4.7.0 on this platform is 350%
+    faster than Qt 4.6.0, thanks to several rendering related
+    improvements.
+
+    Our page loading benchmark shows an improvement of 16% in Qt 4.7.0
+    from Qt 4.6.0. This is due to improvements in text layout speed,
+    image decoding, resource loading and event handling.
+
+    Several CSS animation benchmarks indicate a speed improvement of
+    31% from Qt 4.6.0 to Qt 4.7.0. These benchmarks are effectively
+    showing the improvement we get from accelerated compositing (see
+    above).
+
+    \section1 Other Performance Related Improvements
+
+    In addition to the QtWebKit module, performance has been a focus
+    area in Qt 4.7 throughout the Qt framework. Here are a couple of
+    examples about performance related feature improvements.
+
+    On Mac OS X, Qt now uses a different widget implementation (called
+    "alien widgets"), which improves the responsiveness of
+    applications that have complex user interfaces with several
+    widgets.
+
+    Qt 4.7 introduces the QStaticText class, which can be used to
+    improve text rendering performance.  More info is available from
+    \l{http://labs.trolltech.com/blogs/2010/03/01/insanity-is-shaping-the-same-text-again-and-expecting-a-different-result/}{this blog}.
+
+    The QPainter class has a new API for rendering pixmap fragments
+    (QPainter::drawPixmapFragments), which can improve the rendering
+    performance of applications that need to render
+    \l{QPainter::drawPixmapFragments()}{pixmap fragments}.
+
+    Qt 4.7 has an updated version of the JavaScriptCore engine for the
+    QtScript module, which improves JavaScript execution performance.
 
     \section1 New Classes, Functions, Macros, etc.
 

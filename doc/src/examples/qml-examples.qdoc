@@ -230,7 +230,7 @@
 */
 
 /*!
-    \title Internationlization Example
+    \title Internationalization Example
     \example declarative/i18n
 
     This example shows how to enable text translation in QML.
@@ -375,7 +375,7 @@
     \title Models and Views: WebView Example
     \example declarative/modelviews/webview
 
-    These examples shows how to use the WebView element.
+    These examples show how to use the WebView element.
 
     \table
     \row
