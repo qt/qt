@@ -64,6 +64,10 @@ private slots:
     void baseName();
     void completeBaseName_data();
     void completeBaseName();
+#if defined(WIN_STUFF)
+    void absoluteOrRelative_data();
+    void absoluteOrRelative();
+#endif
 };
 
 #if defined(WIN_STUFF)
@@ -78,6 +82,7 @@ void tst_QFileSystemEntry::getSetCheck_data()
     QTest::addColumn<QString>("suffix");
     QTest::addColumn<QString>("completeSuffix");
     QTest::addColumn<bool>("absolute");
+    QTest::addColumn<bool>("relative");
 
     QString absPrefix = QLatin1String("\\\\?\\");
     QString relPrefix = absPrefix
@@ -88,33 +93,33 @@ void tst_QFileSystemEntry::getSetCheck_data()
             << QString("A:\\home\\qt\\in\\a\\dir.tar.gz")
             << absPrefix +  QString("A:\\home\\qt\\in\\a\\dir.tar.gz")
             << "A:/home/qt/in/a/dir.tar.gz"
-            << "dir.tar.gz" << "dir" << "dir.tar" << "gz" << "tar.gz" << true;
+            << "dir.tar.gz" << "dir" << "dir.tar" << "gz" << "tar.gz" << true << false;
 
     QTest::newRow("relative")
             << QString("in\\a\\dir.tar.gz")
             << relPrefix +  QString("in\\a\\dir.tar.gz")
             << "in/a/dir.tar.gz"
-            << "dir.tar.gz" << "dir" << "dir.tar" << "gz" << "tar.gz" << false;
+            << "dir.tar.gz" << "dir" << "dir.tar" << "gz" << "tar.gz" << false <<true;
 
     QTest::newRow("noSuffix")
             << QString("myDir\\myfile")
             << relPrefix + QString("myDir\\myfile")
-            << "myDir/myfile" << "myfile" << "myfile" << "myfile" << "" << "" << false;
+            << "myDir/myfile" << "myfile" << "myfile" << "myfile" << "" << "" << false <<true;
 
     QTest::newRow("noLongSuffix")
             << QString("myDir\\myfile.txt")
             << relPrefix + QString("myDir\\myfile.txt")
-            << "myDir/myfile.txt" << "myfile.txt" << "myfile" << "myfile" << "txt" << "txt" << false;
+            << "myDir/myfile.txt" << "myfile.txt" << "myfile" << "myfile" << "txt" << "txt" << false << true;
 
     QTest::newRow("endingSlash")
             << QString("myDir\\myfile.bla\\")
             << relPrefix + QString("myDir\\myfile.bla\\")
-            << "myDir/myfile.bla/" << "" << "" << "" << "" << "" << false;
+            << "myDir/myfile.bla/" << "" << "" << "" << "" << "" << false << true;
 
     QTest::newRow("absolutePath")
             << QString("A:dir\\without\\leading\\backslash.bat")
             << absPrefix + QString("A:\\dir\\without\\leading\\backslash.bat")
-            << "A:dir/without/leading/backslash.bat" << "backslash.bat" << "backslash" << "backslash" << "bat" << "bat" << true;
+            << "A:dir/without/leading/backslash.bat" << "backslash.bat" << "backslash" << "backslash" << "bat" << "bat" << false << false;
 }
 
 void tst_QFileSystemEntry::getSetCheck()
@@ -128,6 +133,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QFETCH(QString, suffix);
     QFETCH(QString, completeSuffix);
     QFETCH(bool, absolute);
+    QFETCH(bool, relative);
 
     QFileSystemEntry entry1(filepath);
     QCOMPARE(entry1.filePath(), filepath);
@@ -136,7 +142,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry1.suffix(), suffix);
     QCOMPARE(entry1.completeSuffix(), completeSuffix);
     QCOMPARE(entry1.isAbsolute(), absolute);
-    QCOMPARE(entry1.isRelative(), !absolute);
+    QCOMPARE(entry1.isRelative(), relative);
     QCOMPARE(entry1.baseName(), baseName);
     QCOMPARE(entry1.completeBaseName(), completeBasename);
 
@@ -144,7 +150,7 @@ void tst_QFileSystemEntry::getSetCheck()
     QCOMPARE(entry2.suffix(), suffix);
     QCOMPARE(entry2.completeSuffix(), completeSuffix);
     QCOMPARE(entry2.isAbsolute(), absolute);
-    QCOMPARE(entry2.isRelative(), !absolute);
+    QCOMPARE(entry2.isRelative(), relative);
     QCOMPARE(entry2.filePath(), filepath);
     // Since this entry was created using the native path,
     // the object shouldnot change nativeFilePath.
@@ -351,6 +357,31 @@ void tst_QFileSystemEntry::completeBaseName()
     QCOMPARE(fi2.completeBaseName(), expected);
 }
 
+#if defined(WIN_STUFF)
+void tst_QFileSystemEntry::absoluteOrRelative_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isAbsolute");
+    QTest::addColumn<bool>("isRelative");
+
+    QTest::newRow("data0") << "file.tar" << false << true;
+    QTest::newRow("data1") << "/path/file/file.tar.gz" << false << false;
+    QTest::newRow("data1") << "C:path/file/file.tar.gz" << false << false;
+    QTest::newRow("data3") << "C:/path/file" << true << false;
+    QTest::newRow("data3") << "//machine/share" << true << false;
+}
+
+void tst_QFileSystemEntry::absoluteOrRelative()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isAbsolute);
+    QFETCH(bool, isRelative);
+
+    QFileSystemEntry fi(path);
+    QCOMPARE(fi.isAbsolute(), isAbsolute);
+    QCOMPARE(fi.isRelative(), isRelative);
+}
+#endif
 
 QTEST_MAIN(tst_QFileSystemEntry)
 #include <tst_qfilesystementry.moc>

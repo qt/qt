@@ -225,17 +225,33 @@ QString QFileSystemEntry::completeSuffix() const
     return m_filePath.mid(qMax((qint16)0, m_lastSeparator) + m_firstDotInFileName + 1);
 }
 
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+bool QFileSystemEntry::isRelative() const
+{
+    resolveFilePath();
+    return (m_filePath.isEmpty() || (!m_filePath.isEmpty() && (m_filePath[0].unicode() != '/')
+        && (!(m_filePath.length() >= 2 && m_filePath[1].unicode() == ':'))));
+}
+
 bool QFileSystemEntry::isAbsolute() const
 {
     resolveFilePath();
-    return (!m_filePath.isEmpty() && (m_filePath[0].unicode() == '/')
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-        || (m_filePath.length() >= 2
-                && ((m_filePath[0].isLetter() && m_filePath[1].unicode() == ':')
-                    || (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/'))))
-#endif
-    );
+    return (!m_filePath.isEmpty() && ((m_filePath.length() >= 3
+                                       && (m_filePath[0].isLetter() && m_filePath[1].unicode() == ':' && m_filePath[2].unicode() == '/'))
+                                      || (m_filePath.length() >= 2 && (m_filePath.at(0) == QLatin1Char('/') && m_filePath.at(1) == QLatin1Char('/')))));
 }
+#else
+bool QFileSystemEntry::isRelative() const
+{
+    return !isAbsolute();
+}
+
+bool QFileSystemEntry::isAbsolute() const
+{
+    resolveFilePath();
+    return (!m_filePath.isEmpty() && (m_filePath[0].unicode() == '/'));
+}
+#endif
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 bool QFileSystemEntry::isDriveRoot() const

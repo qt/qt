@@ -545,18 +545,18 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     if (!entry.isRelative()) {
 #if !defined(Q_OS_WINCE)
-        if (entry.filePath().startsWith(QLatin1Char('/')) || // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-            entry.filePath().size() == 2 ||                  // It's a drive letter that needs to get a working dir appended
-            (entry.filePath().size() > 2 && entry.filePath().at(2) != QLatin1Char('/')) || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-            entry.filePath().contains(QLatin1String("/../")) || entry.filePath().contains(QLatin1String("/./")) ||
-            entry.filePath().endsWith(QLatin1String("/..")) || entry.filePath().endsWith(QLatin1String("/.")))
-        {
-            ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
-        } else
-#endif
-        {
+        if (entry.isAbsolute()
+            && !entry.filePath().contains(QLatin1String("/../"))
+            && !entry.filePath().contains(QLatin1String("/./"))
+            && !entry.filePath().endsWith(QLatin1String("/.."))
+            && !entry.filePath().endsWith(QLatin1String("/."))) {
             ret = entry.filePath();
+        }  else {
+            ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
         }
+#else
+        ret = entry.filePath();
+#endif
     } else {
         ret = QDir::cleanPath(QDir::currentPath() + QLatin1Char('/') + entry.filePath());
     }

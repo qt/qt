@@ -88,9 +88,7 @@ public:
     QString suffix() const;
     QString completeSuffix() const;
     bool isAbsolute() const;
-    bool isRelative() const {
-        return !isAbsolute();
-    }
+    bool isRelative() const;
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     bool isDriveRoot() const;

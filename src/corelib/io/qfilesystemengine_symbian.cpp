@@ -114,7 +114,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     const bool isDriveRelative = (orig.size() > 2 && orig.at(1).unicode() == ':' && orig.at(2).unicode() != '/');
     const bool isDirty = (orig.contains(QLatin1String("/../")) || orig.contains(QLatin1String("/./")) ||
             orig.endsWith(QLatin1String("/..")) || orig.endsWith(QLatin1String("/.")));
-    const bool isAbsolute = entry.isAbsolute();
+    const bool isAbsolute = !entry.isRelative();
     if (isAbsolute &&
         !(needsDrive || isDriveLetter || isDriveRelative || isDirty))
         return entry;
