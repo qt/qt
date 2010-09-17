@@ -112,15 +112,16 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
     QString orig = entry.filePath();
-    const bool needsDrive = (!orig.isEmpty() && orig.at(0).unicode() == '/');
-    const bool isDriveLetter = (orig.size() == 2 && orig.at(1).unicode() == ':');
-    const bool isDriveRelative = (orig.size() > 2 && orig.at(1).unicode() == ':' && orig.at(2).unicode() != '/');
+    const bool isAbsolute = entry.isAbsolute();
     const bool isDirty = (orig.contains(QLatin1String("/../")) || orig.contains(QLatin1String("/./")) ||
             orig.endsWith(QLatin1String("/..")) || orig.endsWith(QLatin1String("/.")));
-    const bool isAbsolute = !entry.isRelative();
-    if (isAbsolute &&
-        !(needsDrive || isDriveLetter || isDriveRelative || isDirty))
+    if (isAbsolute && !isDirty)
         return entry;
+
+    const bool isRelative = entry.isRelative();
+    const bool needsDrive = (!orig.isEmpty() && orig.at(0).unicode() == '/');
+    const bool isDriveLetter = !needsDrive && !isAbsolute && !isRelative && orig.length() == 2;
+    const bool isDriveRelative = !needsDrive && !isAbsolute && !isRelative && orig.length() > 2;
 
     QString result;
     if (needsDrive || isDriveLetter || isDriveRelative || !isAbsolute || orig.isEmpty()) {
