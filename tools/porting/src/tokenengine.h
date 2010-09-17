@@ -55,7 +55,7 @@ namespace TokenEngine {
 
 class TokenContainer;
 /*
-    A token is defined as a start-postion and a lenght. Since the actual text
+    A token is defined as a start-position and a length. Since the actual text
     storage is not reffered to here, Token needs to be used together with
     a TokenContainer in order to be useful.
 */

@@ -8798,7 +8798,7 @@ QPainterPath QPaintEngineState::clipPath() const
 }
 
 /*!
-    Returns wether clipping is enabled or not in the current paint
+    Returns whether clipping is enabled or not in the current paint
     engine state.
 
     This variable should only be used when the state() returns a

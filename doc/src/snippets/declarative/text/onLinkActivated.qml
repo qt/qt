@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,71 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import Qt 4.7
 
-#include <QtGui>
-#include "filereader.h"
+Rectangle {
+    width: 700; height: 400
 
-
-FileReader::FileReader(QWidget *parent)
-    : QWidget(parent)
-{
-    textEdit = new QTextEdit;
-
-    taxFileButton = new QPushButton("Tax File");
-    accountFileButton = new QPushButton("Accounts File");
-    reportFileButton = new QPushButton("Report File");
-
-//! [0]
-    signalMapper = new QSignalMapper(this);
-    signalMapper->setMapping(taxFileButton, QString("taxfile.txt"));
-    signalMapper->setMapping(accountFileButton, QString("accountsfile.txt"));
-    signalMapper->setMapping(reportFileButton, QString("reportfile.txt"));
-
-    connect(taxFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
-    connect(accountFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
-    connect(reportFileButton, SIGNAL(clicked()),
-        signalMapper, SLOT (map()));
-//! [0]
-
-//! [1]
-    connect(signalMapper, SIGNAL(mapped(QString)),
-        this, SLOT(readFile(QString)));
-//! [1]
-
-/*
-//! [2]
-    //slower due to signature normalization at runtime
-    
-    connect(signalMapper, SIGNAL(mapped(const QString &)),
-        this, SLOT(readFile(const QString &)));
-//! [2]
-*/
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
-    buttonLayout->addWidget(taxFileButton);
-    buttonLayout->addWidget(accountFileButton);
-    buttonLayout->addWidget(reportFileButton);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(textEdit);
-    mainLayout->addLayout(buttonLayout);
-
-    setLayout(mainLayout);
-}
-
-void FileReader::readFile(const QString &filename)
-{
-    QFile file(filename);
-    
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"),
-            file.errorString());
-        return;
+//![0]
+    Text {
+            textFormat: Text.RichText
+            text: "The main website is at <a href=\"http://qt.nokia.com\">Nokia Qt DF</a>."
+            onLinkActivated: console.log(link + " link activated")
     }
+//![0]
 
-
-    QTextStream in(&file);
-    textEdit->setPlainText(in.readAll());
 }
 

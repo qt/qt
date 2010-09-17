@@ -38,9 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QTimer>
-#include <QTime>
 #include <QBrush>
+#include <QTime>
 #include "mymodel.h"
 
 //! [quoting mymodel_a]

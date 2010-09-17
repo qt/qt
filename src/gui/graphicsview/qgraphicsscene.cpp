@@ -6138,7 +6138,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                                 << g << item.data();
                     }
                     // remember the first item that received the override event
-                    // as it most likely become a target if noone else accepts
+                    // as it most likely become a target if no one else accepts
                     // the override event
                     if (!gestureTargets.contains(g) && item)
                         gestureTargets.insert(g, item.data());
