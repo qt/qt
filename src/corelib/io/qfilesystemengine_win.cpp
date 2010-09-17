@@ -503,8 +503,13 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
-    // The caller has to verify whether the file exists or not.
-    return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
+    if (data.missingFlags(QFileSystemMetaData::ExistsAttribute))
+       QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
+
+    if (data.exists())
+        return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
+    else
+        return QFileSystemEntry();
 }
 
 //static
