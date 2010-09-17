@@ -154,10 +154,10 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     handler. You must call sync() or else the changes made to the list from the external
     thread will not be reflected in the list model in the main thread.
 
-    \section1 Limitations
+    \section1 Restrictions
 
-    If a list model is to be accessed from a WorkerScript, it \bold cannot
-    contain list data. So, the following model cannot be used from a WorkerScript
+    If a list model is to be accessed from a WorkerScript, it cannot
+    contain list-type data. So, the following model cannot be used from a WorkerScript
     because of the list contained in the "attributes" property:
 
     \code
@@ -174,7 +174,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     }
     \endcode
 
-    In addition, the WorkerScript cannot add any list data to the model.
+    In addition, the WorkerScript cannot add list-type data to the model.
 
     \sa {qmlmodels}{Data Models}, {declarative/threading/threadedlistmodel}{Threaded ListModel example}, QtDeclarative
 */
