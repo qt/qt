@@ -83,11 +83,11 @@ void QDeclarativeListModelWorkerAgent::Data::changedChange(int index, int count)
 }
 
 QDeclarativeListModelWorkerAgent::QDeclarativeListModelWorkerAgent(QDeclarativeListModel *model)
-: m_engine(0), m_ref(1), m_orig(model), m_copy(new QDeclarativeListModel(true, this))
+    : m_engine(0), 
+      m_ref(1), 
+      m_orig(model), 
+      m_copy(new QDeclarativeListModel(m_orig, this))
 {
-    m_copy->m_flat->m_roles = m_orig->m_flat->m_roles;
-    m_copy->m_flat->m_strings = m_orig->m_flat->m_strings;
-    m_copy->m_flat->m_values = m_orig->m_flat->m_values;
 }
 
 QDeclarativeListModelWorkerAgent::~QDeclarativeListModelWorkerAgent()

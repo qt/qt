@@ -98,14 +98,16 @@ private:
     friend class QDeclarativeListModelWorkerAgent;
     friend struct ModelNode;
 
+    // Constructs a flat list model for a worker agent
+    QDeclarativeListModel(const QDeclarativeListModel *orig, QDeclarativeListModelWorkerAgent *parent);
+
     QDeclarativeListModel(bool workerCopy, QObject *parent=0);
     bool flatten();
-    bool modifyCheck();
+    bool inWorkerThread() const;
 
     QDeclarativeListModelWorkerAgent *m_agent;
     NestedListModel *m_nested;
     FlatListModel *m_flat;
-    bool m_isWorkerCopy;
 };
 
 // ### FIXME
