@@ -46,7 +46,6 @@
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qvarlengtharray.h"
-#include <private/qpdf_p.h>
 #include <qmath.h>
 #include <qendian.h>
 #include <private/qharfbuzz_p.h>
@@ -667,11 +666,7 @@ void QFontEngine::removeGlyphFromCache(glyph_t)
 QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
-#ifndef QT_NO_PRINTER
-    QByteArray psname = QPdf::stripSpecialCharacters(fontDef.family.toUtf8());
-#else
-    QByteArray psname = fontDef.family.toUtf8();
-#endif
+    QByteArray psname = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
     psname += '-';
     psname += QByteArray::number(fontDef.style);
     psname += '-';
@@ -1079,6 +1074,23 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
     }
 
     return 0;
+}
+
+QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &family)
+{
+    QByteArray f = family;
+    f.replace(' ', "");
+    f.replace('(', "");
+    f.replace(')', "");
+    f.replace('<', "");
+    f.replace('>', "");
+    f.replace('[', "");
+    f.replace(']', "");
+    f.replace('{', "");
+    f.replace('}', "");
+    f.replace('/', "");
+    f.replace('%', "");
+    return f;
 }
 
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
