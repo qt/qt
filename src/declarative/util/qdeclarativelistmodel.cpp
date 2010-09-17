@@ -217,17 +217,21 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 */
 
 QDeclarativeListModel::QDeclarativeListModel(QObject *parent)
-: QListModelInterface(parent), m_agent(0), m_nested(new NestedListModel(this)), m_flat(0), m_isWorkerCopy(false)
+: QListModelInterface(parent), m_agent(0), m_nested(new NestedListModel(this)), m_flat(0)
 {
 }
 
-QDeclarativeListModel::QDeclarativeListModel(bool workerCopy, QObject *parent)
-: QListModelInterface(parent), m_agent(0), m_nested(0), m_flat(0), m_isWorkerCopy(workerCopy)
+QDeclarativeListModel::QDeclarativeListModel(const QDeclarativeListModel *orig, QDeclarativeListModelWorkerAgent *parent)
+: QListModelInterface(parent), m_agent(0), m_nested(0), m_flat(0)
 {
-    if (workerCopy)
-        m_flat = new FlatListModel(this);
-    else
-        m_nested = new NestedListModel(this);
+    m_flat = new FlatListModel(this);
+    m_flat->m_parentAgent = parent;
+
+    if (orig->m_flat) {
+        m_flat->m_roles = orig->m_flat->m_roles;
+        m_flat->m_strings = orig->m_flat->m_strings;
+        m_flat->m_values = orig->m_flat->m_values;
+    }
 }
 
 QDeclarativeListModel::~QDeclarativeListModel()
@@ -267,6 +271,11 @@ bool QDeclarativeListModel::flatten()
     delete m_nested;
     m_nested = 0;
     return true;
+}
+
+bool QDeclarativeListModel::inWorkerThread() const
+{
+    return m_flat && m_flat->m_parentAgent;
 }
 
 QDeclarativeListModelWorkerAgent *QDeclarativeListModel::agent()
@@ -333,7 +342,7 @@ void QDeclarativeListModel::clear()
     else
         m_nested->clear();
 
-    if (!m_isWorkerCopy) {
+    if (!inWorkerThread()) {
         emit itemsRemoved(0, cleared);
         emit countChanged();
     }
@@ -358,7 +367,7 @@ void QDeclarativeListModel::remove(int index)
     else
         m_nested->remove(index);
 
-    if (!m_isWorkerCopy) {
+    if (!inWorkerThread()) {
         emit itemsRemoved(index, 1);
         emit countChanged();
     }
@@ -392,7 +401,7 @@ void QDeclarativeListModel::insert(int index, const QScriptValue& valuemap)
     }
 
     bool ok = m_flat ?  m_flat->insert(index, valuemap) : m_nested->insert(index, valuemap);
-    if (ok && !m_isWorkerCopy) {
+    if (ok && !inWorkerThread()) {
         emit itemsInserted(index, 1);
         emit countChanged();
     }
@@ -438,7 +447,7 @@ void QDeclarativeListModel::move(int from, int to, int n)
     else
         m_nested->move(from, to, n);
 
-    if (!m_isWorkerCopy)
+    if (!inWorkerThread())
         emit itemsMoved(origfrom, origto, orign);
 }
 
@@ -529,7 +538,7 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
         else
             m_nested->set(index, valuemap, &roles);
 
-        if (!m_isWorkerCopy)
+        if (!inWorkerThread())
             emit itemsChanged(index, 1, roles);
     }
 }
@@ -560,7 +569,7 @@ void QDeclarativeListModel::setProperty(int index, const QString& property, cons
     else
         m_nested->setProperty(index, property, value, &roles);
 
-    if (!m_isWorkerCopy)
+    if (!inWorkerThread())
         emit itemsChanged(index, 1, roles);
 }
 
@@ -848,7 +857,7 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
 */
 
 FlatListModel::FlatListModel(QDeclarativeListModel *base)
-    : m_scriptEngine(0), m_listModel(base)
+    : m_scriptEngine(0), m_listModel(base), m_parentAgent(0)
 {
 }
 

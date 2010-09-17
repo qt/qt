@@ -102,6 +102,8 @@ private:
     QHash<QString, int> m_strings;
     QList<QHash<int, QVariant> > m_values;
     QDeclarativeListModel *m_listModel;
+
+    QDeclarativeListModelWorkerAgent *m_parentAgent;
 };
 
 class NestedListModel
