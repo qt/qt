@@ -209,8 +209,9 @@ Q_SIGNALS:
 
 protected:
     void run() {
+        m_mutex.lock();
+
         while (!m_quit) {
-            m_mutex.lock();
             if (!m_jobs.isEmpty())
                 m_currentJob = m_jobs.dequeue();
             m_mutex.unlock();
@@ -230,12 +231,13 @@ protected:
             m_mutex.lock();
             if (m_currentJob.queryId != -1 && m_abortQueryId != m_currentJob.queryId)
                 emit queryCompleted(r);
-            if (m_jobs.isEmpty())
+            if (m_jobs.isEmpty() && !m_quit)
                 m_condition.wait(&m_mutex);
             m_currentJob.queryId = -1;
             m_abortQueryId = -1;
-            m_mutex.unlock();
         }
+
+        m_mutex.unlock();
     }
 
 private:

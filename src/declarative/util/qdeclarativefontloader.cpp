@@ -210,11 +210,7 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
                 updateFontInfo(QString(), Error);
             }
         } else {
-            QDeclarativeFontObject *fo = d->fonts[d->url];
-            d->name = QFontDatabase::applicationFontFamilies(fo->id).at(0);
-            emit nameChanged();
-            d->status = QDeclarativeFontLoader::Ready;
-            emit statusChanged();
+            updateFontInfo(QFontDatabase::applicationFontFamilies(d->fonts[d->url]->id).at(0), Ready);
         }
     } else
 #endif
