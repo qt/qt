@@ -292,7 +292,7 @@ QDeclarativeListModelWorkerAgent *QDeclarativeListModel::agent()
         return m_agent;
 
     if (!flatten()) {
-        qmlInfo(this) << "List contains nested list values and cannot be used from a worker script";
+        qmlInfo(this) << "List contains list-type data and cannot be used from a worker script";
         return 0;
     }
 
@@ -1023,7 +1023,7 @@ bool FlatListModel::addValue(const QScriptValue &value, QHash<int, QVariant> *ro
         it.next();
         QScriptValue value = it.value();
         if (!value.isVariant() && !value.isRegExp() && !value.isDate() && value.isObject()) {
-            qmlInfo(m_listModel) << "Cannot add nested list values when modifying or after modification from a worker script";
+            qmlInfo(m_listModel) << "Cannot add list-type data when modifying or after modification from a worker script";
             return false;
         }
 
@@ -1129,7 +1129,7 @@ QScriptDeclarativeClass::Value FlatListScriptClass::property(Object *obj, const 
 void FlatListScriptClass::setProperty(Object *obj, const Identifier &name, const QScriptValue &value)
 {
     if (!value.isVariant() && !value.isRegExp() && !value.isDate() && value.isObject()) {
-        qmlInfo(m_model->m_listModel) << "Cannot add nested list values when modifying or after modification from a worker script";
+        qmlInfo(m_model->m_listModel) << "Cannot add list-type data when modifying or after modification from a worker script";
         return;
     }
 
