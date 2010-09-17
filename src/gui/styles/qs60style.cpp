@@ -1475,8 +1475,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
              const QIcon::State state = (voptAdj.state & State_Open) ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
-             // Draw selection check mark. Show check mark only in multi selection modes.
-             if (itemView && !singleSelection) {
+             // Draw selection check mark or checkbox
+             if (itemView && (!singleSelection || (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator))) {
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
