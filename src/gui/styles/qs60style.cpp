@@ -491,6 +491,24 @@ QPalette* QS60StylePrivate::themePalette()
     return m_themePalette;
 }
 
+bool QS60StylePrivate::equalToThemePalette(QColor color, QPalette::ColorRole role)
+{
+    if (!m_themePalette)
+        return false;
+    if (color == m_themePalette->color(role))
+        return true;
+    return false;
+}
+
+bool QS60StylePrivate::equalToThemePalette(qint64 cacheKey, QPalette::ColorRole role)
+{
+    if (!m_themePalette)
+        return false;
+    if (cacheKey == m_themePalette->brush(role).texture().cacheKey())
+        return true;
+    return false;
+}
+
 void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
     Q_UNUSED(app)
@@ -1457,8 +1475,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
              const QIcon::State state = (voptAdj.state & State_Open) ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
-             // Draw selection check mark. Show check mark only in multi selection modes.
-             if (itemView && !singleSelection) {
+             // Draw selection check mark or checkbox
+             if (itemView && (!singleSelection || (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator))) {
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
@@ -2050,7 +2068,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
     case CE_Splitter:
-        if (option->state & State_Sunken && option->state & State_Enabled) {
+        if (option->state & State_Sunken && option->state & State_Enabled && QS60StylePrivate::themePalette()) {
             painter->save();
             painter->setOpacity(0.5);
             painter->setBrush(QS60StylePrivate::themePalette()->light());
@@ -2077,7 +2095,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         case PE_FrameFocusRect: {
             //Draw themed highlight to radiobuttons and checkboxes.
             //For other widgets skip, unless palette has been modified. In that case, draw with commonstyle.
-            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
+            if (QS60StylePrivate::equalToThemePalette(option->palette.highlight().color(), QPalette::Highlight)) {
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
                         QS60StylePrivate::drawSkinElement(
@@ -2109,11 +2127,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
 
-            const QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
-            const QColor windowTextColor = option->palette.windowText().color();
-
-            if (themeColor != windowTextColor)
-                painter->setPen(windowTextColor);
+            if (QS60StylePrivate::equalToThemePalette(option->palette.windowText().color(), QPalette::WindowText))
+                painter->setPen(option->palette.windowText().color());
 
             QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags | QS60StylePrivate::SF_ColorSkinned );
             painter->restore();
@@ -2266,8 +2281,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             ) {
             //Need extra check since dialogs have their own theme background
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
-                option->palette.window().texture().cacheKey() ==
-                    QS60StylePrivate::m_themePalette->window().texture().cacheKey())
+                QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window))
                 //todo: for combobox listviews, the background should include area for menu scrollers,
                 //but this produces drawing issues as we need to turn clipping off.
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
@@ -2314,7 +2328,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             const bool hasFocus = (vopt->state & State_HasFocus);
             const bool isPressed = QS60StylePrivate::isWidgetPressed(widget);
 
-            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
+            if (QS60StylePrivate::equalToThemePalette(option->palette.highlight().color(), QPalette::Highlight)) {
                 QRect highlightRect = vopt->rect.adjusted(1,1,-1,-1);
                 const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
                 QAbstractItemView::SelectionBehavior selectionBehavior =
@@ -2439,7 +2453,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelItemViewRow: // ### Qt 5: remove
 #ifndef QT_NO_ITEMVIEWS
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
-            if (vopt->palette.base().texture().cacheKey() != QS60StylePrivate::m_themePalette->base().texture().cacheKey()) {
+            if (QS60StylePrivate::equalToThemePalette(vopt->palette.base().texture().cacheKey(), QPalette::Base)) {
                 //QPalette::Base has been changed, let commonstyle draw the item
                 commonStyleDraws = true;
             } else {

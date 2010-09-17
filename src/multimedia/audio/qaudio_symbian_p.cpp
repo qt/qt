@@ -313,7 +313,8 @@ QAudio::State stateNativeToQt(State nativeState)
         return QAudio::ActiveState;
     case IdleState:
         return QAudio::IdleState;
-    case SuspendedState:
+    case SuspendedPausedState:
+    case SuspendedStoppedState:
         return QAudio::SuspendedState;
     default:
         Q_ASSERT_X(false, Q_FUNC_INFO, "Invalid state");
@@ -432,15 +433,16 @@ bool DevSoundWrapper::isFormatSupported(const QAudioFormat &format) const
 
 int DevSoundWrapper::samplesProcessed() const
 {
-    Q_ASSERT(StateInitialized == m_state);
     int result = 0;
-    switch (m_mode) {
-    case QAudio::AudioInput:
-        result = m_devsound->SamplesRecorded();
-        break;
-    case QAudio::AudioOutput:
-        result = m_devsound->SamplesPlayed();
-        break;
+    if (StateInitialized == m_state) {
+        switch (m_mode) {
+        case QAudio::AudioInput:
+            result = m_devsound->SamplesRecorded();
+            break;
+        case QAudio::AudioOutput:
+            result = m_devsound->SamplesPlayed();
+            break;
+        }
     }
     return result;
 }
@@ -475,10 +477,22 @@ bool DevSoundWrapper::start()
     return (KErrNone == err);
 }
 
-void DevSoundWrapper::pause()
+bool DevSoundWrapper::pause()
 {
     Q_ASSERT(StateInitialized == m_state);
-    m_devsound->Pause();
+    const bool canPause = isResumeSupported();
+    if (canPause)
+        m_devsound->Pause();
+    else
+        stop();
+    return canPause;
+}
+
+void DevSoundWrapper::resume()
+{
+    Q_ASSERT(StateInitialized == m_state);
+    Q_ASSERT(isResumeSupported());
+    // TODO: QTBUG-13625
 }
 
 void DevSoundWrapper::stop()
@@ -555,6 +569,12 @@ void DevSoundWrapper::populateCapabilities()
             m_supportedSampleTypes += Utils::EncodingSampleType[i];
         }
     }
+}
+
+bool DevSoundWrapper::isResumeSupported() const
+{
+    // TODO: QTBUG-13625
+    return false;
 }
 
 void DevSoundWrapper::InitializeComplete(TInt aError)
