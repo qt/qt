@@ -150,7 +150,7 @@ class DitaXmlGenerator : public PageGenerator
     void generateBreadCrumbs(const QString& title,
                              const Node* node,
                              CodeMarker* marker);
-    void generateHeader(const Node* node);
+    void generateHeader(const Node* node, const QString& name);
     void generateTitle(const QString& title, 
                        const Text& subTitle, 
                        SubTitleSize subTitleSize,
@@ -184,10 +184,7 @@ class DitaXmlGenerator : public PageGenerator
     void generateFunctionIndex(const Node* relative, CodeMarker* marker);
     void generateLegaleseList(const Node* relative, CodeMarker* marker);
     void generateOverviewList(const Node* relative, CodeMarker* marker);
-    void generateSectionList(const Section& section, 
-                             const Node* relative,
-			     CodeMarker* marker, 
-                             CodeMarker::SynopsisStyle style);
+
 #ifdef QDOC_QML
     void generateQmlSummary(const Section& section,
                             const Node* relative,
@@ -215,8 +212,7 @@ class DitaXmlGenerator : public PageGenerator
                                 CodeMarker::SynopsisStyle style);
     void generateSectionInheritedList(const Section& section, 
                                       const Node* relative,
-                                      CodeMarker* marker,
-                                      bool nameAlignment = false);
+                                      CodeMarker* marker);
     void writeText(const QString& markedCode, 
                    CodeMarker* marker, 
                    const Node* relative,
@@ -262,16 +258,11 @@ class DitaXmlGenerator : public PageGenerator
                    const Node* relative, 
                    CodeMarker* marker);
     void endLink();
-    bool generatePageElement(QXmlStreamWriter& writer, 
-                             const Node* node, 
-                             CodeMarker* marker) const;
-    void generatePageElements(QXmlStreamWriter& writer, 
-                              const Node* node, 
-                              CodeMarker* marker) const;
-    void generatePageIndex(const QString& fileName, 
-                           CodeMarker* marker) const;
     QString writeGuidAttribute(QString text);
     QString lookupGuid(QString text);
+    virtual void beginSubPage(const Location& location, const QString& fileName);
+    virtual void endSubPage();
+    QXmlStreamWriter& xmlWriter();
 
  private:
     QMap<QString, QString> refMap;
@@ -324,7 +315,8 @@ class DitaXmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
-    QXmlStreamWriter    writer;
+
+    QStack<QXmlStreamWriter*> xmlWriterStack;
 };
 
 #define DITAXMLGENERATOR_ADDRESS           "address"
