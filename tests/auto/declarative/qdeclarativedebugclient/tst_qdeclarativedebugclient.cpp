@@ -76,7 +76,6 @@ void tst_QDeclarativeDebugClient::initTestCase()
 {
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3770...");
 
-    qputenv("QML_DEBUG_SERVER_PORT", "3770");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
@@ -151,7 +150,19 @@ void tst_QDeclarativeDebugClient::sendMessage()
     QCOMPARE(resp, msg);
 }
 
-QTEST_MAIN(tst_QDeclarativeDebugClient)
+int main(int argc, char *argv[])
+{
+    int _argc = argc + 1;
+    char **_argv = new char*[_argc];
+    for (int i = 0; i < argc; ++i)
+        _argv[i] = argv[i];
+    _argv[_argc - 1] = "-qmljsdebugger=port:3770";
+
+    QApplication app(_argc, _argv);
+    tst_QDeclarativeDebugClient tc;
+    return QTest::qExec(&tc, _argc, _argv);
+    delete _argv;
+}
 
 #include "tst_qdeclarativedebugclient.moc"
 
