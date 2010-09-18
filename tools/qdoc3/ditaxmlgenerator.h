@@ -263,6 +263,10 @@ class DitaXmlGenerator : public PageGenerator
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
     QXmlStreamWriter& xmlWriter();
+    void writeDetailSections(const Node* node,
+                             CodeMarker* marker,
+                             bool apiDesc,
+                             const QString& title);
 
  private:
     QMap<QString, QString> refMap;
@@ -315,6 +319,9 @@ class DitaXmlGenerator : public PageGenerator
     NewClassMaps newClassMaps;
     NewClassMaps newQmlClassMaps;
     static int id;
+    static bool inApiDesc;
+    static bool inSection;
+    static bool inDetailedDescription;
 
     QStack<QXmlStreamWriter*> xmlWriterStack;
 };
