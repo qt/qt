@@ -63,6 +63,7 @@ class FlatListModel;
 class NestedListModel;
 class QDeclarativeListModelWorkerAgent;
 struct ModelNode;
+class FlatListScriptClass;
 class Q_DECLARATIVE_EXPORT QDeclarativeListModel : public QListModelInterface
 {
     Q_OBJECT
@@ -96,16 +97,21 @@ Q_SIGNALS:
 private:
     friend class QDeclarativeListModelParser;
     friend class QDeclarativeListModelWorkerAgent;
+    friend class FlatListModel;
+    friend class FlatListScriptClass;
     friend struct ModelNode;
 
-    QDeclarativeListModel(bool workerCopy, QObject *parent=0);
+    // Constructs a flat list model for a worker agent
+    QDeclarativeListModel(const QDeclarativeListModel *orig, QDeclarativeListModelWorkerAgent *parent);
+
     bool flatten();
-    bool modifyCheck();
+    bool inWorkerThread() const;
+
+    inline bool canMove(int from, int to, int n) const { return !(from+n > count() || to+n > count() || from < 0 || to < 0 || n < 0); }
 
     QDeclarativeListModelWorkerAgent *m_agent;
     NestedListModel *m_nested;
     FlatListModel *m_flat;
-    bool m_isWorkerCopy;
 };
 
 // ### FIXME
