@@ -424,7 +424,9 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
     QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta - 10, -delta - 10, 0, 0));
 }
 
+QT_BEGIN_NAMESPACE
 void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
+QT_END_NAMESPACE
 
 void tst_QPixmapFilter::blurIndexed8()
 {
