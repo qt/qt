@@ -3071,10 +3071,7 @@ void Configure::generateConfigfiles()
         tmpStream << "/* Machine byte-order */" << endl;
         tmpStream << "#define Q_BIG_ENDIAN 4321" << endl;
         tmpStream << "#define Q_LITTLE_ENDIAN 1234" << endl;
-        if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-            tmpStream << "#define Q_BYTE_ORDER Q_BIG_ENDIAN" << endl;
-        else
-            tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
+        tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
