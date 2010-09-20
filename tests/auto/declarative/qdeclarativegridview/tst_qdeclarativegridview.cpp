@@ -604,6 +604,8 @@ void tst_QDeclarativeGridView::currentIndex()
     // no wrap
     gridview->setCurrentIndex(0);
     QCOMPARE(gridview->currentIndex(), 0);
+    // confirm that the velocity is updated
+    QTRY_VERIFY(gridview->verticalVelocity() != 0.0);
 
     gridview->moveCurrentIndexUp();
     QCOMPARE(gridview->currentIndex(), 0);

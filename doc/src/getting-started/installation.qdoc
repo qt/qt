@@ -951,6 +951,9 @@ applications using Qt for Symbian can start right away.
     \brief Setting up the Mac OS X environment for Qt.
     \previouspage General Qt Requirements
 
+    Qt requires Xcode to be installed on the system. Xcode should be
+    available on the Mac installation CD.
+
     \sa {Known Issues}
 */
 

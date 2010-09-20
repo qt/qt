@@ -1,3 +1,105 @@
+2010-09-09  Kristian Amlie  <kristian.amlie@nokia.com>
+
+        Reviewed by Andreas Kling.
+
+        [Qt] Fixed incorrect Symbian scoping.
+
+        The missing install functionality is only true for mmp based systems.
+
+        https://bugs.webkit.org/show_bug.cgi?id=45268
+
+        * WebCore.pro:
+
+2010-09-12  Oswald Buddenhagen  <oswald.buddenhagen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] fix qt_webkit_version.pri install for in-Qt builds
+
+        Always add the target, even if building inside Qt - as opposed to the
+        headers and libraries, there are no rules for that coming from
+        qbase.pri.
+
+        Task-number: QTBUG-13306
+
+        * WebCore.pro:
+
+2010-09-12  Oswald Buddenhagen  <oswald.buddenhagen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Let QtWebKit inject itself into the qt configuration
+
+        i.e., don't explicitly deal with qt_webkit_version.pri outside of the
+        webkit source directory.
+
+        Task-number: QTBUG-12379
+
+        * WebCore.pro:
+
+2010-08-20  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Ariya Hidayat.
+
+        [Qt] When using the raster graphics system on Maemo5, allow
+        Flash to render directly into the raster window surface.
+        wmode=transparent is now supported as a result of this change.
+        
+        https://bugs.webkit.org/show_bug.cgi?id=44043
+        
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::paintUsingImageSurfaceExtension):
+
+2010-08-18  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Implement Maemo5 local rendering NPAPI extension. See 
+        https://wiki.mozilla.org/Plugins:NokiaMaemoImageSurface for details.
+
+        With the local rendering extension, Flash will paint into a 16-bit surface.
+        For wmode=transparent, Flash expects the surface to contain the contents
+        beneath it. As it is tricky to implement the content propagation across all
+        graphics systems, transparent Flash is not supported. We just fill the surface 
+        with white and wmode=transparent behaves the same as wmode=opaque with a white 
+        background.
+
+        https://bugs.webkit.org/show_bug.cgi?id=44043
+
+        * WebCore.pro:
+        * plugins/PluginView.cpp:
+        (WebCore::PluginView::setValue):
+        (WebCore::PluginView::PluginView):
+        * plugins/PluginView.h:
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::paintUsingImageSurfaceExtension):
+        (WebCore::PluginView::paint):
+        (WebCore::PluginView::platformGetValueStatic):
+
+2010-08-17  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Antonio Gomes.
+
+        [Qt] On Maemo5, there is no libgdk-x11-2.0.so symlink. Look for 
+        libgdk-x11-2.0.so.0 instead on X11 and Maemo5.
+
+        https://bugs.webkit.org/show_bug.cgi?id=44043
+
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::getPluginDisplay):
+
+2010-08-17  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Kenneth Rohde Christiansen.
+        Set PluginQuirkRequiresDefaultScreenDepth for all Flash versions and not
+        just Flash 10.
+
+        https://bugs.webkit.org/show_bug.cgi?id=44043
+
+        * plugins/PluginPackage.cpp:
+        (WebCore::PluginPackage::determineQuirks):
+
 2010-08-10  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
 
         Reviewed by Simon Hausmann.

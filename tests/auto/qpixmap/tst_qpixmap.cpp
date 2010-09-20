@@ -742,6 +742,11 @@ void tst_QPixmap::testMetrics()
     QCOMPARE(bitmap.width(), 100);
     QCOMPARE(bitmap.height(), 100);
     QCOMPARE(bitmap.depth(), 1);
+
+    QPixmap null;
+
+    QCOMPARE(null.size().width(), null.width());
+    QCOMPARE(null.size().height(), null.height());
 }
 
 void tst_QPixmap::createMaskFromColor()

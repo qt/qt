@@ -20,11 +20,13 @@
   02110-1301 USA
 */
 
+#include <QVariant>
+#include <QStringList>
 #include <QDebug>
 #include <QWriteLocker>
 #include <QNetworkProxyFactory>
 #include <QNetworkProxy>
-#include <GConfItem>
+#include <gconf/gconf-value.h>
 #include <gconf/gconf-client.h>
 #include "proxyconf.h"
 
@@ -33,6 +35,92 @@
 
 
 namespace Maemo {
+
+static QString convertKey(const char *key)
+{
+    return QString::fromUtf8(key);
+}
+
+static QVariant convertValue(GConfValue *src)
+{
+    if (!src) {
+        return QVariant();
+    } else {
+        switch (src->type) {
+        case GCONF_VALUE_INVALID:
+            return QVariant(QVariant::Invalid);
+        case GCONF_VALUE_BOOL:
+            return QVariant((bool)gconf_value_get_bool(src));
+        case GCONF_VALUE_INT:
+            return QVariant(gconf_value_get_int(src));
+        case GCONF_VALUE_FLOAT:
+            return QVariant(gconf_value_get_float(src));
+        case GCONF_VALUE_STRING:
+            return QVariant(QString::fromUtf8(gconf_value_get_string(src)));
+        case GCONF_VALUE_LIST:
+            switch (gconf_value_get_list_type(src)) {
+            case GCONF_VALUE_STRING:
+                {
+                    QStringList result;
+                    for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
+                        result.append(QString::fromUtf8(gconf_value_get_string((GConfValue *)elts->data)));
+                    return QVariant(result);
+                }
+            default:
+                {
+                    QList<QVariant> result;
+                    for (GSList *elts = gconf_value_get_list(src); elts; elts = elts->next)
+                        result.append(convertValue((GConfValue *)elts->data));
+                    return QVariant(result);
+                }
+            }
+        case GCONF_VALUE_SCHEMA:
+        default:
+            return QVariant();
+        }
+    }
+}
+
+
+/* Fast version of GConfItem, allows reading subtree at a time */
+class GConfItemFast {
+public:
+  GConfItemFast(const QString &k) : key(k) {}
+  QHash<QString,QVariant> getEntries() const;
+
+private:
+  QString key;
+};
+
+#define withClient(c) for (GConfClient *c = gconf_client_get_default(); c; c=0)
+
+
+QHash<QString,QVariant> GConfItemFast::getEntries() const
+{
+    QHash<QString,QVariant> children;
+
+    withClient(client) {
+        QByteArray k = key.toUtf8();
+        GSList *entries = gconf_client_all_entries(client, k.data(), NULL);
+        for (GSList *e = entries; e; e = e->next) {
+	    char *key_name = strrchr(((GConfEntry *)e->data)->key, '/');
+	    if (!key_name)
+	        key_name = ((GConfEntry *)e->data)->key;
+	    else
+	        key_name++;
+	    QString key(convertKey(key_name));
+	    QVariant value = convertValue(((GConfEntry *)e->data)->value);
+	    gconf_entry_unref((GConfEntry *)e->data);
+	    //qDebug()<<"key="<<key<<"value="<<value;
+	    children.insert(key, value);
+        }
+        g_slist_free (entries);
+    }
+
+    return children;
+}
+
+
 
 class NetworkProxyFactory : QNetworkProxyFactory {
 public:
@@ -71,10 +159,6 @@ private:
     QString rtsp_host;
     quint16 rtsp_port;
 
-    QVariant getValue(QString& name);
-    QVariant getHttpValue(QString& name);
-    QVariant getValue(const char *name);
-    QVariant getHttpValue(const char *name);
     bool isHostExcluded(const QString &host);
 
 public:
@@ -86,51 +170,44 @@ public:
 };
 
 
-QVariant ProxyConfPrivate::getValue(QString& name)
+static QHash<QString,QVariant> getValues(const QString& prefix)
 {
-    GConfItem item(prefix + name);
-    return item.value();
+    GConfItemFast item(prefix);
+    return item.getEntries();
 }
 
-QVariant ProxyConfPrivate::getHttpValue(QString& name)
+static QHash<QString,QVariant> getHttpValues(const QString& prefix)
 {
-    GConfItem item(http_prefix + name);
-    return item.value();
+    GConfItemFast item(prefix);
+    return item.getEntries();
 }
-
-
-QVariant ProxyConfPrivate::getValue(const char *name)
-{
-    QString n = QString(name);
-    return getValue(n);
-}
-
-QVariant ProxyConfPrivate::getHttpValue(const char *name)
-{
-    QString n = QString(name);
-    return getHttpValue(n);
-}
-
 
 #define GET(var, type)				\
   do {						\
-    var = getValue(#var).to##type ();		\
-    /*qDebug()<<"var="<<var;*/			\
+    QVariant v = values.value(#var);		\
+    if (v.isValid())				\
+      var = v.to##type ();			\
   } while(0)
 
-#define GET2(var, name, type)			\
+#define GET_HTTP(var, name, type)		\
   do {						\
-    var = getHttpValue(#name).to##type ();	\
-    /*qDebug()<<"var="<<var;*/			\
+    QVariant v = httpValues.value(#name);	\
+    if (v.isValid())				\
+      var = v.to##type ();			\
   } while(0)
 
 
 void ProxyConfPrivate::readProxyData()
 {
+    QHash<QString,QVariant> values = getValues(prefix);
+    QHash<QString,QVariant> httpValues = getHttpValues(http_prefix);
+
+    //qDebug()<<"values="<<values;
+
     /* Read the proxy settings from /system/proxy* */
-    GET2(http_proxy, host, String);
-    GET2(http_port, port, Int);
-    GET2(ignore_hosts, ignore_hosts, List);
+    GET_HTTP(http_proxy, host, String);
+    GET_HTTP(http_port, port, Int);
+    GET_HTTP(ignore_hosts, ignore_hosts, List);
 
     GET(mode, String);
     GET(autoconfig_url, String);
@@ -271,8 +348,8 @@ ProxyConf::ProxyConf()
     : d_ptr(new ProxyConfPrivate)
 {
     g_type_init();
-    d_ptr->prefix = CONF_PROXY "/";
-    d_ptr->http_prefix = HTTP_PROXY "/";
+    d_ptr->prefix = CONF_PROXY;
+    d_ptr->http_prefix = HTTP_PROXY;
 }
 
 ProxyConf::~ProxyConf()

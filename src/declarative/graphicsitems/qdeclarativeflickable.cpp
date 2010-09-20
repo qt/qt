@@ -128,8 +128,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
     , flickingHorizontally(false), flickingVertically(false)
     , hMoved(false), vMoved(false)
     , movingHorizontally(false), movingVertically(false)
-    , stealMouse(false), pressed(false)
-    , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
+    , stealMouse(false), pressed(false), interactive(true), calcVelocity(false)
+    , deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , vTime(0), visibleArea(0)
     , flickableDirection(QDeclarativeFlickable::AutoFlickDirection)
@@ -372,11 +372,12 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \inlineimage flickable.gif
     \endfloat
 
-    The following example shows a large 
+    The following example shows a small view onto a large image in which the
+    user can drag or flick the image in order to view different parts of it.
 
-    \clearfloat
     \snippet doc/src/snippets/declarative/flickable.qml document
 
+    \clearfloat
     \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
@@ -981,7 +982,7 @@ void QDeclarativeFlickable::viewportMoved()
     qreal prevY = d->lastFlickablePosition.x();
     qreal prevX = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
-    if (d->pressed) {
+    if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
         if (elapsed > 0) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
@@ -1051,10 +1052,63 @@ void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject>
         o->setParent(prop->object);
 }
 
+static inline int children_count_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    return d->children.count();
+}
+
+static inline QObject *children_at_helper(QGraphicsObject *object, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    if (index >= 0 && index < d->children.count())
+        return d->children.at(index)->toGraphicsObject();
+    else
+        return 0;
+}
+
+static inline void children_clear_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    int childCount = d->children.count();
+    for (int index = 0 ;index < childCount; index++)
+        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+}
+
+int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+{
+    return QDeclarativeItemPrivate::resources_count(prop) +
+           children_count_helper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+}
+
+QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+{
+    int resourcesCount = QDeclarativeItemPrivate::resources_count(prop);
+    if (i < resourcesCount)
+        return QDeclarativeItemPrivate::resources_at(prop, i);
+    const int j = i - resourcesCount;
+    QGraphicsObject *contentObject = static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    if (j < children_count_helper(contentObject))
+        return children_at_helper(contentObject, j);
+    return 0;
+}
+
+void QDeclarativeFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    QDeclarativeItemPrivate::resources_clear(prop);
+   QGraphicsObject *contentObject =
+            static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    children_clear_helper(contentObject);
+}
+
 QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
 {
     Q_D(QDeclarativeFlickable);
-    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
+    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append,
+                                             QDeclarativeFlickablePrivate::data_count,
+                                             QDeclarativeFlickablePrivate::data_at,
+                                             QDeclarativeFlickablePrivate::data_clear
+                                             );
 }
 
 QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
