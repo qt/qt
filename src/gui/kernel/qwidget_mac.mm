@@ -114,6 +114,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 #define XCOORD_MAX 16383
 #define WRECT_MAX 8191
 
