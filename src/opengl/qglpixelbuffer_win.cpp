@@ -167,6 +167,11 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 #define WGL_FLOAT_COMPONENTS_NV        0x20B0
 #endif
 
+#ifndef WGL_ARB_multisample
+#define WGL_SAMPLE_BUFFERS_ARB         0x2041
+#define WGL_SAMPLES_ARB                0x2042
+#endif
+
 QGLFormat pfiToQGLFormat(HDC hdc, int pfi);
 
 static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f, int attribs[])
@@ -226,14 +231,12 @@ static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f
         attribs[i++] = WGL_FLOAT_COMPONENTS_NV;
         attribs[i++] = TRUE;
     }
-    // sample buffers doesn't work in conjunction with the render_texture extension
-    // so igonre that for now
-    // if (f.sampleBuffers()) {
-    //     attribs[i++] = WGL_SAMPLE_BUFFERS_ARB;
-    //     attribs[i++] = 1;
-    //     attribs[i++] = WGL_SAMPLES_ARB;
-    //     attribs[i++] = f.samples() == -1 ? 16 : f.samples();
-    // }
+    if (f.sampleBuffers()) {
+        attribs[i++] = WGL_SAMPLE_BUFFERS_ARB;
+        attribs[i++] = 1;
+        attribs[i++] = WGL_SAMPLES_ARB;
+        attribs[i++] = f.samples() == -1 ? 16 : f.samples();
+    }
     attribs[i] = 0;
 }
 
@@ -257,12 +260,17 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     dc = GetDC(dmy.winId());
     Q_ASSERT(dc);
 
-    PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
-        (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
+    // sample buffers doesn't work in conjunction with the render_texture extension
+    if (f.sampleBuffers()) {
+        has_render_texture = false;
+    } else {
+        PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
+                (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
 
-    if (wglGetExtensionsStringARB) {
-        QString extensions(QLatin1String(wglGetExtensionsStringARB(dc)));
-        has_render_texture = extensions.contains(QLatin1String("WGL_ARB_render_texture"));
+        if (wglGetExtensionsStringARB) {
+            QString extensions(QLatin1String(wglGetExtensionsStringARB(dc)));
+            has_render_texture = extensions.contains(QLatin1String("WGL_ARB_render_texture"));
+        }
     }
 
     int attribs[40];

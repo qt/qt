@@ -49,6 +49,8 @@
 #include <QtCore/qstringlist.h>
 
 #include <private/qobject_p.h>
+#include <private/qapplication_p.h>
+#include <QtGui/qapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,24 +149,41 @@ bool QDeclarativeDebugServer::hasDebuggingClient() const
 
 QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
 {
-    static bool envTested = false;
+    static bool commandLineTested = false;
     static QDeclarativeDebugServer *server = 0;
 
-    if (!envTested) {
-        envTested = true;
-        QByteArray env = qgetenv("QML_DEBUG_SERVER_PORT");
-        QByteArray block = qgetenv("QML_DEBUG_SERVER_BLOCK");
+    if (!commandLineTested) {
+        commandLineTested = true;
 
+#ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
+        QApplicationPrivate *appD = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+        // ### remove port definition when protocol is changed
+        int port = 0;
+        bool block = false;
         bool ok = false;
-        int port = env.toInt(&ok);
 
-        if (ok && port > 1024) {
-            server = new QDeclarativeDebugServer(port);
-            server->listen();
-            if (!block.isEmpty()) {
-                server->waitForConnection();
+        // format: qmljsdebugger=port:3768[,block]
+        if (!appD->qmljsDebugArguments.isEmpty()) {
+
+            if (appD->qmljsDebugArguments.indexOf(QLatin1String("port:")) == 0) {
+                int separatorIndex = appD->qmljsDebugArguments.indexOf(QLatin1Char(','));
+                port = appD->qmljsDebugArguments.mid(5, separatorIndex - 5).toInt(&ok);
+            }
+            block = appD->qmljsDebugArguments.contains(QLatin1String("block"));
+
+            if (ok) {
+                server = new QDeclarativeDebugServer(port);
+                server->listen();
+                if (block) {
+                    server->waitForConnection();
+                }
+            } else {
+                qWarning(QString("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                 "Format is -qmljsdebugger=port:<port>[,block]").arg(
+                             appD->qmljsDebugArguments).toAscii().constData());
             }
         }
+#endif
     }
 
     return server;

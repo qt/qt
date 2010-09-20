@@ -72,6 +72,7 @@ private slots:
     void convolutionBoundingRectFor();
     void convolutionDrawSubRect();
     void dropShadowBoundingRectFor();
+    void blurIndexed8();
 
     void testDefaultImplementations();
 };
@@ -423,6 +424,27 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
     QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta - 10, -delta - 10, 0, 0));
 }
 
+QT_BEGIN_NAMESPACE
+void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
+QT_END_NAMESPACE
+
+void tst_QPixmapFilter::blurIndexed8()
+{
+    QImage img(16, 32, QImage::Format_Indexed8);
+    img.setColorCount(256);
+    for (int i = 0; i < 256; ++i)
+        img.setColor(i, qRgb(i, i, i));
+
+    img.fill(255);
+
+    QImage original = img;
+    qt_blurImage(img, 10, true, false);
+    QCOMPARE(original.size(), img.size());
+
+    original = img;
+    qt_blurImage(img, 10, true, true);
+    QCOMPARE(original.size(), QSize(img.height(), img.width()));
+}
 
 QTEST_MAIN(tst_QPixmapFilter)
 #include "tst_qpixmapfilter.moc"
