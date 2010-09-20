@@ -847,17 +847,14 @@ QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> scrip
         v8::Handle<v8::Value> exception = tryCatch.Exception();
         setException(exception);
         return new QScriptValuePrivate(this, exception);
-    } else {
-        v8::Handle<v8::Value> result = script->Run();
-        if (result.IsEmpty()) {
-            v8::Handle<v8::Value> exception = tryCatch.Exception();
-            setException(exception);
-            return new QScriptValuePrivate(this, exception);
-        }
-        return new QScriptValuePrivate(this, result);
     }
-    Q_UNIMPLEMENTED();
-    return new QScriptValuePrivate();
+    v8::Handle<v8::Value> result = script->Run();
+    if (result.IsEmpty()) {
+        v8::Handle<v8::Value> exception = tryCatch.Exception();
+        setException(exception);
+        return new QScriptValuePrivate(this, exception);
+    }
+    return new QScriptValuePrivate(this, result);
 }
 
 QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
