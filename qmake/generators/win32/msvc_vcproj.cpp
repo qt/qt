@@ -272,7 +272,7 @@ bool VcprojGenerator::writeProjectMakefile()
            mergedProjects.at(0)->vcProject.Name ==
            mergedProjects.at(1)->vcProject.Name)
             mergedProjects.at(0)->writePrlFile();
-        mergedProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET"));
+        mergedProject.Name = project->first("QMAKE_PROJECT_NAME");
         mergedProject.Version = mergedProjects.at(0)->vcProject.Version;
         mergedProject.ProjectGUID = project->isEmpty("QMAKE_UUID") ? getProjectUUID().toString().toUpper() : project->first("QMAKE_UUID");
         mergedProject.Keyword = project->first("VCPROJ_KEYWORD");
@@ -460,8 +460,8 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                             }
                         }
 
-                        // We assume project filename is [QMAKE_ORIG_TARGET].vcproj
-                        QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_ORIG_TARGET") + project->first("VCPROJ_EXTENSION"));
+                        // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
+                        QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));
                         QString vcprojDir = qmake_getpwd();
 
                         // If file doesn't exsist, then maybe the users configuration

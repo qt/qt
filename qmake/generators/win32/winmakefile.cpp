@@ -290,6 +290,11 @@ void Win32MakefileGenerator::processVars()
     }
 
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
+    if (project->isEmpty("QMAKE_PROJECT_NAME"))
+        project->values("QMAKE_PROJECT_NAME") = project->values("QMAKE_ORIG_TARGET");
+    else if (project->first("TEMPLATE").startsWith("vc"))
+        project->values("MAKEFILE") = project->values("QMAKE_PROJECT_NAME");
+
     if (!project->values("QMAKE_INCDIR").isEmpty())
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
 
