@@ -130,6 +130,8 @@ class Generator
                              const Node *relative,
                              CodeMarker *marker) const;
 
+    virtual QString outFileName() { return QString(); }
+
     const QString& outputDir() { return outDir; }
     QString indent(int level, const QString& markedCode);
     QString plainCode(const QString& markedCode);
@@ -148,7 +150,6 @@ class Generator
     static void supplementAlsoList(const Node *node, QList<Text> &alsoList);
 
  private:
-    void generateOverload(const Node *node, CodeMarker *marker);
     void generateReimplementedFrom(const FunctionNode *func,
                                    CodeMarker *marker);
     void appendFullName(Text& text, 
