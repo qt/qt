@@ -215,7 +215,7 @@ EXPORTS
 	?clear@QDeclarativeListReference@@QBE_NXZ @ 214 NONAME ; bool QDeclarativeListReference::clear(void) const
 	?parentChanged@QDeclarativeItem@@IAEXPAV1@@Z @ 215 NONAME ; void QDeclarativeItem::parentChanged(class QDeclarativeItem *)
 	?columnNumber@QDeclarativeDebugFileReference@@QBEHXZ @ 216 NONAME ; int QDeclarativeDebugFileReference::columnNumber(void) const
-	??0QDeclarativeListModel@@AAE@_NPAVQObject@@@Z @ 217 NONAME ; QDeclarativeListModel::QDeclarativeListModel(bool, class QObject *)
+	??0QDeclarativeListModel@@AAE@_NPAVQObject@@@Z @ 217 NONAME ABSENT ; QDeclarativeListModel::QDeclarativeListModel(bool, class QObject *)
 	?apply@QDeclarativeState@@QAEXPAVQDeclarativeStateGroup@@PAVQDeclarativeTransition@@PAV1@@Z @ 218 NONAME ; void QDeclarativeState::apply(class QDeclarativeStateGroup *, class QDeclarativeTransition *, class QDeclarativeState *)
 	?isValid@QDeclarativeDomProperty@@QBE_NXZ @ 219 NONAME ; bool QDeclarativeDomProperty::isValid(void) const
 	?trUtf8@QDeclarativeDebugExpressionQuery@@SA?AVQString@@PBD0@Z @ 220 NONAME ; class QString QDeclarativeDebugExpressionQuery::trUtf8(char const *, char const *)
@@ -1712,4 +1712,7 @@ EXPORTS
 	?setScript@QDeclarativeScriptAction@@QAEXABVQDeclarativeScriptString@@@Z @ 1711 NONAME ; void QDeclarativeScriptAction::setScript(class QDeclarativeScriptString const &)
 	?metaObject@QDeclarativeScriptAction@@UBEPBUQMetaObject@@XZ @ 1712 NONAME ; struct QMetaObject const * QDeclarativeScriptAction::metaObject(void) const
 	?getPointer@QDeclarativeAbstractBinding@@SA?AV?$QWeakPointer@VQDeclarativeAbstractBinding@@@@PAV1@@Z @ 1713 NONAME ; class QWeakPointer<class QDeclarativeAbstractBinding> QDeclarativeAbstractBinding::getPointer(class QDeclarativeAbstractBinding *)
+	??0QDeclarativeListModel@@AAE@PBV0@PAVQDeclarativeListModelWorkerAgent@@@Z @ 1714 NONAME ; QDeclarativeListModel::QDeclarativeListModel(class QDeclarativeListModel const *, class QDeclarativeListModelWorkerAgent *)
+	?inWorkerThread@QDeclarativeListModel@@ABE_NXZ @ 1715 NONAME ; bool QDeclarativeListModel::inWorkerThread(void) const
+	?canMove@QDeclarativeListModel@@ABE_NHHH@Z @ 1716 NONAME ; bool QDeclarativeListModel::canMove(int, int, int) const
 
