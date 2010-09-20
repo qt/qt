@@ -43,6 +43,7 @@
 #include "qstatictext_p.h"
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
+#include <qabstracttextdocumentlayout.h>
 
 #include <QtGui/qapplication.h>
 
@@ -654,7 +655,9 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
 
         p->save();
         p->translate(topLeftPosition);
-        document.drawContents(p);
+        QAbstractTextDocumentLayout::PaintContext ctx;
+        ctx.palette.setColor(QPalette::Text, p->pen().color());
+        document.documentLayout()->draw(p, ctx);
         p->restore();
 
         if (textWidth >= 0.0)
