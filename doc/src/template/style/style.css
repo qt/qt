@@ -886,9 +886,9 @@
 	-webkit-column-gap:41px;
 	-moz-column-gap:41px;
 
-	column-rule: 1px solid #ccc;
-	-webkit-column-rule: 1px solid #ccc;
-	-moz-column-rule: 1px solid #ccc;
+	column-rule: 1px dashed #ccc;
+	-webkit-column-rule: 1px dashed #ccc;
+	-moz-column-rule: 1px dashed #ccc;
 	}	
 
 	.flowList dl{

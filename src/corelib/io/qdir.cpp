@@ -1550,10 +1550,11 @@ bool QDir::makeAbsolute() // ### What do the return values signify?
     QScopedPointer<QDirPrivate> dir(new QDirPrivate(*d_ptr.constData()));
     dir->setPath(absolutePath);
 
-    if (!(dir->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
+    d_ptr = dir.take();
+
+    if (!(d_ptr->fileEngine->fileFlags(QAbstractFileEngine::TypesMask) & QAbstractFileEngine::DirectoryType))
         return false;
 
-    d_ptr = dir.take();
     return true;
 }
 

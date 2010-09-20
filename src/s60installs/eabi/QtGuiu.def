@@ -12093,4 +12093,5 @@ EXPORTS
 	_ZN18QTapAndHoldGesture10setTimeoutEi @ 12092 NONAME
 	_ZN18QTapAndHoldGesture7timeoutEv @ 12093 NONAME
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12094 NONAME
+	_ZN20QGraphicsItemPrivate14children_clearEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 12095 NONAME
 

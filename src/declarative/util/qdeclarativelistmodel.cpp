@@ -69,49 +69,67 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     \since 4.7
     \brief The ListModel element defines a free-form list data source.
 
-    The ListModel is a simple hierarchy of elements containing data roles. The contents can
-    be defined dynamically, or explicitly in QML:
+    The ListModel is a simple container of ListElement definitions, each containing data roles.
+    The contents can be defined dynamically, or explicitly in QML.
 
-    For example:
+    The number of elements in the model can be obtained from its \l count property.
+    A number of familiar methods are also provided to manipulate the contents of the
+    model, including append(), insert(), move(), remove() and set(). These methods
+    accept dictionaries as their arguments; these are translated to ListElement objects
+    by the model.
+
+    Elements can be manipulated via the model using the setProperty() method, which
+    allows the roles of the specified element to be set and changed.
+
+    \section1 Example Usage
+
+    The following example shows a ListModel containing three elements, with the roles
+    "name" and "cost".
+
+    \beginfloatright
+    \inlineimage listmodel.png
+    \endfloat
 
     \snippet doc/src/snippets/declarative/listmodel.qml 0
 
-    Roles (properties) must begin with a lower-case letter. The above example defines a
-    ListModel containing three elements, with the roles "name" and "cost".
+    \clearfloat
+    Roles (properties) in each element must begin with a lower-case letter and
+    should be common to all elements in a model. The ListElement documentation
+    provides more guidelines for how elements should be defined.
 
-    Values must be simple constants - either strings (quoted and optionally within a call to QT_TR_NOOP),
-    bools (true, false), numbers, or enum values (like Text.AlignHCenter).
-
-    The defined model can be used in views such as ListView:
+    Since the example model contains an \c id property, it can be referenced
+    by views, such as the ListView in this example:
 
     \snippet doc/src/snippets/declarative/listmodel-simple.qml 0
     \dots 8
     \snippet doc/src/snippets/declarative/listmodel-simple.qml 1
-    \image listmodel.png
 
-    It is possible for roles to contain list data.  In the example below we create a list of fruit attributes:
+    It is possible for roles to contain list data.  In the following example we
+    create a list of fruit attributes:
 
     \snippet doc/src/snippets/declarative/listmodel-nested.qml model
 
-    The delegate below displays all the fruit attributes:
+    The delegate displays all the fruit attributes:
+
+    \beginfloatright
+    \inlineimage listmodel-nested.png
+    \endfloat
 
     \snippet doc/src/snippets/declarative/listmodel-nested.qml delegate
-    \image listmodel-nested.png
 
-
-    \section2 Modifying list models
+    \clearfloat
+    \section1 Modifying List Models
 
     The content of a ListModel may be created and modified using the clear(),
     append(), set() and setProperty() methods.  For example:
-    
+
     \snippet doc/src/snippets/declarative/listmodel-modify.qml delegate
 
-    Note that when creating content dynamically the set of available properties cannot be changed
-    once set. Whatever properties are first added to the model are the
-    only permitted properties in the model.
+    Note that when creating content dynamically the set of available properties
+    cannot be changed once set. Whatever properties are first added to the model
+    are the only permitted properties in the model.
 
-
-    \section2 Using threaded list models with WorkerScript
+    \section1 Using Threaded List Models with WorkerScript
 
     ListModel can be used together with WorkerScript access a list model
     from multiple threads. This is useful if list modifications are
@@ -127,16 +145,16 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     \snippet examples/declarative/threading/threadedlistmodel/dataloader.js 0
 
-working-with-data
-    worker script by calling \l WorkerScript::sendMessage(). When this message
-    is received, \l {WorkerScript::onMessage}{WorkerScript.onMessage()} is invoked in
-    \tt dataloader.js, which appends the current time to the list model.
+    The timer in the main example sends messages to the worker script by calling
+    \l WorkerScript::sendMessage(). When this message is received,
+    \l{WorkerScript::onMessage}{WorkerScript.onMessage()} is invoked in \c dataloader.js,
+    which appends the current time to the list model.
 
-    Note the call to sync() from the \l {WorkerScript::onMessage}{WorkerScript.onMessage()} handler.
-    You must call sync() or else the changes made to the list from the external
+    Note the call to sync() from the \l{WorkerScript::onMessage}{WorkerScript.onMessage()}
+    handler. You must call sync() or else the changes made to the list from the external
     thread will not be reflected in the list model in the main thread.
 
-    \section3 Limitations
+    \section1 Limitations
 
     If a list model is to be accessed from a WorkerScript, it \bold cannot
     contain list data. So, the following model cannot be used from a WorkerScript
@@ -770,6 +788,39 @@ bool QDeclarativeListModelParser::definesEmptyList(const QString &s)
     \ingroup qml-working-with-data
     \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
+
+    List elements are defined inside ListModel definitions, and represent items in a
+    list that will be displayed using ListView or \l Repeater items.
+
+    List elements are defined like other QML elements except that they contain
+    a collection of \e role definitions instead of properties. Using the same
+    syntax as property definitions, roles both define how the data is accessed
+    and include the data itself.
+
+    The names used for roles must begin with a lower-case letter and should be
+    common to all elements in a given model. Values must be simple constants; either
+    strings (quoted and optionally within a call to QT_TR_NOOP), boolean values
+    (true, false), numbers, or enumeration values (such as AlignText.AlignHCenter).
+
+    \section1 Referencing Roles
+
+    The role names are used by delegates to obtain data from list elements.
+    Each role name is accessible in the delegate's scope, and refers to the
+    corresponding role in the current element. Where a role name would be
+    ambiguous to use, it can be accessed via the \l{ListView::}{model}
+    property (e.g., \c{model.cost} instead of \c{cost}).
+
+    \section1 Example Usage
+
+    The following model defines a series of list elements, each of which
+    contain "name" and "cost" roles and their associated values.
+
+    \snippet doc/src/snippets/declarative/qml-data-models/listelements.qml model
+
+    The delegate obtains the name and cost for each element by simply referring
+    to \c name and \c cost:
+
+    \snippet doc/src/snippets/declarative/qml-data-models/listelements.qml view
 
     \sa ListModel
 */

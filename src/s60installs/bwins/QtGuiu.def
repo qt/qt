@@ -12885,4 +12885,5 @@ EXPORTS
 	??0QGraphicsViewPrivate@@QAE@XZ @ 12884 NONAME ; QGraphicsViewPrivate::QGraphicsViewPrivate(void)
 	?flushDetachedPixmaps@QPixmapCache@@SAXXZ @ 12885 NONAME ; void QPixmapCache::flushDetachedPixmaps(void)
 	?replayLastMouseEvent@QGraphicsViewPrivate@@QAEXXZ @ 12886 NONAME ; void QGraphicsViewPrivate::replayLastMouseEvent(void)
+	?children_clear@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12887 NONAME ; void QGraphicsItemPrivate::children_clear(class QDeclarativeListProperty<class QGraphicsObject> *)
 
