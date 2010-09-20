@@ -212,8 +212,8 @@ QDeclarativeLoader::~QDeclarativeLoader()
     \qmlproperty url Loader::source
     This property holds the URL of the QML component to instantiate.
 
-    Note the QML component must be an \l Item-based component. Loader cannot
-    load non-visual components.
+    Note the QML component must be an \l{Item}-based component. The loader
+    cannot load non-visual components.
 
     To unload the currently loaded item, set this property to an empty string,
     or set \l sourceComponent to \c undefined.
@@ -275,8 +275,8 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     }
     \endqml
 
-    To unload the currently loaded item, set this property to an empty string,
-    or set \l sourceComponent to \c undefined.
+    To unload the currently loaded item, set this property to an empty string
+    or \c undefined.
 
     \sa source, progress
 */
