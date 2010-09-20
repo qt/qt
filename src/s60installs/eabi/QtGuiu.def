@@ -12095,4 +12095,6 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12094 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate14children_clearEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 12095 NONAME
 	_ZN19QApplicationPrivate19qmljsDebugArgumentsE @ 12096 NONAME DATA 4
+	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFP13QGraphicsItem @ 12097 NONAME
+	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEP13QGraphicsItem @ 12098 NONAME
 
