@@ -134,15 +134,18 @@ static void qt_init_source(j_decompress_ptr)
 static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
 {
     my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
+    qint64 num_read = 0;
     if (src->memDevice) {
         src->next_input_byte = (const JOCTET *)(src->memDevice->data().constData() + src->memDevice->pos());
-        src->bytes_in_buffer = (size_t)(src->memDevice->data().size() - src->memDevice->pos());
-        return true;
+        num_read = src->memDevice->data().size() - src->memDevice->pos();
+        src->device->seek(src->memDevice->data().size());
+    } else {
+        src->next_input_byte = src->buffer;
+        num_read = src->device->read((char*)src->buffer, max_buf);
     }
-    src->next_input_byte = src->buffer;
-    int num_read = src->device->read((char*)src->buffer, max_buf);
     if (num_read <= 0) {
         // Insert a fake EOI marker - as per jpeglib recommendation
+        src->next_input_byte = src->buffer;
         src->buffer[0] = (JOCTET) 0xFF;
         src->buffer[1] = (JOCTET) JPEG_EOI;
         src->bytes_in_buffer = 2;
@@ -183,13 +186,7 @@ static void qt_term_source(j_decompress_ptr cinfo)
 {
     my_jpeg_source_mgr* src = (my_jpeg_source_mgr*)cinfo->src;
     if (!src->device->isSequential())
-    {
-        // read() isn't used for memDevice, so seek past everything that was used
-        if (src->memDevice)
-            src->device->seek(src->device->pos() + (src->memDevice->data().size() - src->memDevice->pos() - src->bytes_in_buffer));
-        else
-            src->device->seek(src->device->pos() - src->bytes_in_buffer);
-    }
+        src->device->seek(src->device->pos() - src->bytes_in_buffer);
 }
 
 #if defined(Q_C_CALLBACKS)
