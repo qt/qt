@@ -359,7 +359,7 @@ bool tst_QStaticText::supportsTransformations() const
     QPaintEngine::Type type = engine->type();
 
     if (type == QPaintEngine::OpenGL
-#if !defined Q_WS_WIN
+#if !defined(Q_WS_WIN) && !defined(Q_WS_X11)
         || type == QPaintEngine::Raster
 #endif
         )
