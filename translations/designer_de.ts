@@ -25,6 +25,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation>Selectable</translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation>Editable</translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation>DragEnabled</translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation>DropEnabled</translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation>UserCheckable</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation>Tristate</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>Unchecked</translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation>PartiallyChecked</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Checked</translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -851,6 +894,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>
@@ -2508,6 +2552,10 @@ Empty class name passed to widget factory method</extracomment>
 </context>
 <context>
     <name>QtLocalePropertyManager</name>
+    <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;Ungültig&gt;</translation>
+    </message>
     <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
@@ -4728,6 +4776,14 @@ Please select another name.</source>
     <message>
         <source>Scan for newly installed custom widget plugins.</source>
         <translation>Nach neu installierten Plugins mit benutzerdefinierten Widgets suchen.</translation>
+    </message>
+    <message>
+        <source>Loaded Plugins</source>
+        <translation>Geladene Plugins</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>Fehlgeschlagene Plugins</translation>
     </message>
     <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>

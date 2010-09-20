@@ -22,11 +22,9 @@ LIBS += -lcommdb \
         -lnetmeta
 
 is_using_gnupoc {
-    LIBS += -lconnmon \
-            -lapsettingshandlerui
+    LIBS += -lconnmon
 } else {
-    LIBS += -lConnMon \
-            -lApSettingsHandlerUI
+    LIBS += -lConnMon
 }
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer

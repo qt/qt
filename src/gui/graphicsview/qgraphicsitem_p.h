@@ -300,10 +300,10 @@ public:
     QDeclarativeListProperty<QGraphicsObject> childrenList();
     void setParentItemHelper(QGraphicsItem *parent, const QVariant *newParentVariant,
                              const QVariant *thisPointerVariant);
-    void childrenBoundingRectHelper(QTransform *x, QRectF *rect, bool doClip = true);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect, QGraphicsItem *topMostEffectItem);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
-    QRectF effectiveBoundingRect() const;
+    QRectF effectiveBoundingRect(QGraphicsItem *topMostEffectItem = 0) const;
     QRectF sceneEffectiveBoundingRect() const;
 
     QRectF effectiveBoundingRect(const QRectF &rect) const;
@@ -487,6 +487,7 @@ public:
     static void children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item);
     static int children_count(QDeclarativeListProperty<QGraphicsObject> *list);
     static QGraphicsObject *children_at(QDeclarativeListProperty<QGraphicsObject> *list, int);
+    static void children_clear(QDeclarativeListProperty<QGraphicsObject> *list);
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -660,7 +661,7 @@ class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
     QGraphicsItemEffectSourcePrivate(QGraphicsItem *i)
-        : QGraphicsEffectSourcePrivate(), dirtyChildrenBoundingRect(true), item(i), info(0)
+        : QGraphicsEffectSourcePrivate(), item(i), info(0)
     {}
 
     inline void detach()
@@ -710,9 +711,6 @@ public:
                    QPoint *offset,
                    QGraphicsEffect::PixmapPadMode mode) const;
     QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
-
-    mutable bool dirtyChildrenBoundingRect;
-    mutable QRectF childrenBoundingRect;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
@@ -871,12 +869,9 @@ inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
 #ifndef QT_NO_GRAPHICSEFFECT
         if (parentp->graphicsEffect) {
             if (updateBoundingRect) {
-                QGraphicsItemEffectSourcePrivate *sourcep =
-                    static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
-                                                                    ->source->d_func());
-                parentp->dirtyChildrenBoundingRect = 1;
+                static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
+                                                                ->source->d_func())->invalidateCache();
                 parentp->notifyInvalidated = 1;
-                sourcep->invalidateCache();
             }
             if (parentp->scene && parentp->graphicsEffect->isEnabled()) {
                 parentp->dirty = 1;

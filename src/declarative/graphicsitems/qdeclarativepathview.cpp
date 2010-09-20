@@ -404,14 +404,14 @@ QDeclarativePathView::~QDeclarativePathView()
     be instantiated, but not considered to be currently on the path.
     Usually, these items would be set invisible, for example:
 
-    \code
+    \qml
     Component {
         Rectangle {
             visible: PathView.onPath
             ...
         }
     }
-    \endcode
+    \endqml
 
     It is attached to each instance of the delegate.
 */

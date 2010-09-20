@@ -65,6 +65,7 @@
 #include "qcolormap.h"
 #include "qdebug.h"
 #include "private/qgraphicssystemfactory_p.h"
+#include "private/qgraphicssystem_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
@@ -4366,11 +4367,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     eventAccepted = ge.isAccepted();
                     for (int i = 0; i < gestures.size(); ++i) {
                         QGesture *g = gestures.at(i);
-                        if ((res && eventAccepted) || (!eventAccepted && ge.isAccepted(g))) {
+                        // Ignore res [event return value] because handling of multiple gestures
+                        // packed into a single QEvent depends on not consuming the event
+                        if (eventAccepted || ge.isAccepted(g)) {
                             // if the gesture was accepted, mark the target widget for it
                             gestureEvent->d_func()->targetWidgets[g->gestureType()] = w;
                             gestureEvent->setAccepted(g, true);
-                        } else if (!eventAccepted && !ge.isAccepted(g)) {
+                        } else {
                             // if the gesture was explicitly ignored by the application,
                             // put it back so a parent can get it
                             allGestures.append(g);
