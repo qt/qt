@@ -712,17 +712,21 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
     QPointF pa = a;
     QPointF pb = b;
 
-    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;    
-    if (squareCap)
-        offs += QPointF(offs.y(), offs.x());
+    if (squareCap) {
+        QPointF delta = pb - pa;
+        pa -= (0.5f * width) * delta;
+        pb += (0.5f * width) * delta;
+    }
+
+    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;
     const QRectF clip(d->clipRect.topLeft() - offs, d->clipRect.bottomRight() + QPoint(1, 1) + offs);
 
-    if (!clip.contains(a) || !clip.contains(b)) {
+    if (!clip.contains(pa) || !clip.contains(pb)) {
         qreal t1 = 0;
         qreal t2 = 1;
 
-        const qreal o[2] = { a.x(), a.y() };
-        const qreal d[2] = { b.x() - a.x(), b.y() - a.y() };
+        const qreal o[2] = { pa.x(), pa.y() };
+        const qreal d[2] = { pb.x() - pa.x(), pb.y() - pa.y() };
 
         const qreal low[2] = { clip.left(), clip.top() };
         const qreal high[2] = { clip.right(), clip.bottom() };
@@ -745,8 +749,12 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             if (t1 >= t2)
                 return;
         }
-        pa = a + (b - a) * t1;
-        pb = a + (b - a) * t2;
+
+        QPointF npa = pa + (pb - pa) * t1;
+        QPointF npb = pa + (pb - pa) * t2;
+
+        pa = npa;
+        pb = npb;
     }
 
     if (!d->antialiased) {
@@ -793,12 +801,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         pa = QPointF(x, y - dy);
         pb = QPointF(x, y + dy);
 
-        if (squareCap)
-            width = 1 / width + 1.0f;
-        else
-            width = 1 / width;
-
-        squareCap = false;
+        width = 1 / width;
     }
 
     if (q16Dot16Compare(pa.x(), pb.x())) {
@@ -807,11 +810,6 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
 
         const qreal dy = pb.y() - pa.y();
         const qreal halfWidth = 0.5f * width * dy;
-
-        if (squareCap) {
-            pa.ry() -= halfWidth;
-            pb.ry() += halfWidth;
-        }
 
         qreal left = pa.x() - halfWidth;
         qreal right = pa.x() + halfWidth;
@@ -892,11 +890,6 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         QPointF delta = pb - pa;
         delta *= 0.5f * width;
         const QPointF perp(delta.y(), -delta.x());
-
-        if (squareCap) {
-            pa -= delta;
-            pb += delta;
-        }
 
         QPointF top;
         QPointF left;
