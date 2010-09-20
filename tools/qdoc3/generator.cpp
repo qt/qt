@@ -327,6 +327,7 @@ bool Generator::generateText(const Text& text,
                              const Node *relative,
                              CodeMarker *marker)
 {
+    bool result = false;
     if (text.firstAtom() != 0) {
         int numAtoms = 0;
         startText(relative, marker);
@@ -336,9 +337,9 @@ bool Generator::generateText(const Text& text,
                          true,
                          numAtoms);
         endText(relative, marker);
-        return true;
+        result = true;
     }
-    return false;
+    return result;
 }
 
 #ifdef QDOC_QML
@@ -352,24 +353,26 @@ bool Generator::generateQmlText(const Text& text,
                                 const QString& /* qmlName */ )
 {
     const Atom* atom = text.firstAtom();
-    if (atom == 0)
-        return false;
+    bool result = false;
 
-    startText(relative, marker);
-    while (atom) {
-        if (atom->type() != Atom::QmlText)
-            atom = atom->next();
-        else {
-            atom = atom->next();
-            while (atom && (atom->type() != Atom::EndQmlText)) {
-                int n = 1 + generateAtom(atom, relative, marker);
-                while (n-- > 0)
-                    atom = atom->next();
+    if (atom != 0) {
+        startText(relative, marker);
+        while (atom) {
+            if (atom->type() != Atom::QmlText)
+                atom = atom->next();
+            else {
+                atom = atom->next();
+                while (atom && (atom->type() != Atom::EndQmlText)) {
+                    int n = 1 + generateAtom(atom, relative, marker);
+                    while (n-- > 0)
+                        atom = atom->next();
+                }
             }
         }
+        endText(relative, marker);
+        result = true;
     }
-    endText(relative, marker);
-    return true;
+    return result;
 }
 #endif
 
@@ -377,14 +380,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 {
     bool quiet = false;
 
-    if (node->type() == Node::Function) {
-#if 0
-        const FunctionNode *func = (const FunctionNode *) node;
-        if (func->isOverload() && func->metaness() != FunctionNode::Ctor)
-            generateOverload(node, marker);
-#endif
-    }
-    else if (node->type() == Node::Fake) {
+    if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
         if (fake->subType() == Node::Example) {
             generateExampleFiles(fake, marker);
@@ -501,18 +497,16 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                     ++a;
                 }
             }
-/* Something like this return value check should be implemented at some point. */
+            /*
+              Something like this return value check should
+              be implemented at some point.
+            */
             if (func->status() > Node::Obsolete && func->returnType() == "bool"
                     && func->reimplementedFrom() == 0 && !func->isOverload()) {
                 QString body = func->doc().body().toString();
                 if (!body.contains("return", Qt::CaseInsensitive))
                     node->doc().location().warning(tr("Undocumented return value"));
             }
-#if 0
-            // Now we put this at the top, before the other text.
-            if (func->reimplementedFrom() != 0)
-                generateReimplementedFrom(func, marker);
-#endif
         }
     }
 
@@ -1091,20 +1085,6 @@ void Generator::generateSince(const Node *node, CodeMarker *marker)
     }
 }
 
-/*!
-  No longer in use.
- */
-void Generator::generateOverload(const Node *node, CodeMarker *marker)
-{
-    Text text;
-    text << Atom::ParaLeft
-         << "This function overloads ";
-    QString t = node->name() + "()";
-    text << Atom::AutoLink << t
-         << Atom::ParaRight;
-    generateText(text, node, marker);
-}
-
 void Generator::generateReimplementedFrom(const FunctionNode *func,
                                           CodeMarker *marker)
 {
@@ -1153,8 +1133,8 @@ const Atom *Generator::generateAtomList(const Atom *atom,
 
             if (atom->type() == Atom::FormatEndif) {
                 if (generate && numAtoms0 == numAtoms) {
-                    relative->location().warning(tr("Output format %1 not handled")
-                                                 .arg(format()));
+                    relative->location().warning(tr("Output format %1 not handled %2")
+                                                 .arg(format()).arg(outFileName()));
                     Atom unhandledFormatAtom(Atom::UnhandledFormat, format());
                     generateAtomList(&unhandledFormatAtom,
                                      relative,
