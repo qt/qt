@@ -356,6 +356,37 @@ void QDeclarativeListModel::clear()
     }
 }
 
+QDeclarativeListModel *ModelNode::model(const NestedListModel *model)
+{
+    if (!modelCache) { 
+        modelCache = new QDeclarativeListModel;
+        QDeclarativeEngine::setContextForObject(modelCache,QDeclarativeEngine::contextForObject(model->m_listModel));
+        modelCache->m_nested->_root = this;  // ListModel defaults to nestable model
+
+        for (int i=0; i<values.count(); ++i) {
+            ModelNode *subNode = qvariant_cast<ModelNode *>(values.at(i));
+            if (subNode)
+                subNode->m_model = modelCache->m_nested;
+        }
+    }
+    return modelCache;
+}
+
+ModelObject *ModelNode::object(const NestedListModel *model)
+{
+    if (!objectCache) {
+        objectCache = new ModelObject(this, 
+                const_cast<NestedListModel*>(model), 
+                QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(model->m_listModel)));
+        QHash<QString, ModelNode *>::iterator it;
+        for (it = properties.begin(); it != properties.end(); ++it) {
+            objectCache->setValue(it.key().toUtf8(), model->valueForNode(*it));
+        }
+        objectCache->setNodeUpdatesEnabled(true);
+    }
+    return objectCache;
+}
+
 /*!
     \qmlmethod ListModel::remove(int index)
 
