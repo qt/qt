@@ -428,8 +428,10 @@ QScriptValueList QScriptContext::scopeChain() const
 */
 void QScriptContext::pushScope(const QScriptValue &object)
 {
-    Q_UNUSED(object);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptContext);
+    QV8Context api(d->engine);
+    v8::HandleScope handleScope;
+    d->engine->pushScope(QScriptValuePrivate::get(object));
 }
 
 /*!
@@ -444,8 +446,10 @@ void QScriptContext::pushScope(const QScriptValue &object)
 */
 QScriptValue QScriptContext::popScope()
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptContext);
+    QV8Context api(d->engine);
+    v8::HandleScope handleScope;
+    return QScriptValuePrivate::get(d->engine->popScope());
 }
 
 QT_END_NAMESPACE

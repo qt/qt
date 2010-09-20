@@ -75,6 +75,12 @@ private slots:
     void backtrace_data();
     void backtrace();
     void scopeChain();
+    void pushScopeEvaluate();
+    void pushScopeCall();
+    void popScopeSimple();
+    void pushAndPopGlobalObjectSimple();
+    void pushAndPopGlobalObject();
+    void pushAndPopIterative();
     void pushAndPopScope();
     void getSetActivationObject();
     void inheritActivationAndThisObject();
@@ -929,6 +935,89 @@ void tst_QScriptContext::scopeChain()
         QVERIFY(ret.at(0).isObject());
         QCOMPARE(ret.at(0).property("y").toInt32(), 456);
     }
+}
+
+void tst_QScriptContext::pushScopeEvaluate()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    object.setProperty("foo", 1234);
+    object.setProperty(1, 1234);
+    engine.currentContext()->pushScope(object);
+    object.setProperty("bar", 4321);
+    object.setProperty(2, 4321);
+    QVERIFY(engine.evaluate("foo").equals(1234));
+    QVERIFY(engine.evaluate("bar").equals(4321));
+    QVERIFY(engine.evaluate("this[1]").equals(1234));
+    QVERIFY(engine.evaluate("this[2]").equals(4321));
+}
+
+void tst_QScriptContext::pushScopeCall()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue thisObject = engine.newObject();
+    QScriptValue function = engine.evaluate("(function(property){return this[property]; })");
+    QVERIFY(function.isFunction());
+    object.setProperty("foo", 1234);
+    thisObject.setProperty("foo", "foo");
+    engine.currentContext()->pushScope(object);
+    object.setProperty("bar", 4321);
+    thisObject.setProperty("bar", "bar");
+    QVERIFY(function.call(QScriptValue(), QScriptValueList() << "foo").equals(1234));
+    QVERIFY(function.call(QScriptValue(), QScriptValueList() << "bar").equals(4321));
+    QVERIFY(function.call(thisObject, QScriptValueList() << "foo").equals("foo"));
+    QVERIFY(function.call(thisObject, QScriptValueList() << "bar").equals("bar"));
+}
+
+void tst_QScriptContext::popScopeSimple()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue globalObject = engine.globalObject();
+    engine.currentContext()->pushScope(object);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(object));
+    QVERIFY(engine.globalObject().strictlyEquals(globalObject));
+}
+
+void tst_QScriptContext::pushAndPopGlobalObjectSimple()
+{
+    QScriptEngine engine;
+    QScriptValue globalObject = engine.globalObject();
+    engine.currentContext()->pushScope(globalObject);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(globalObject));
+    QVERIFY(engine.globalObject().strictlyEquals(globalObject));
+}
+
+void tst_QScriptContext::pushAndPopIterative()
+{
+    QScriptEngine engine;
+    for (uint repeat = 0; repeat < 2; ++repeat) {
+        for (uint i = 1; i < 11; ++i) {
+            QScriptValue object = engine.newObject();
+            object.setProperty("x", i + 10 * repeat);
+            engine.currentContext()->pushScope(object);
+        }
+        for (uint i = 10; i > 0; --i) {
+            QScriptValue object = engine.currentContext()->popScope();
+            QVERIFY(object.property("x").equals(i + 10 * repeat));
+        }
+    }
+}
+
+void tst_QScriptContext::pushAndPopGlobalObject()
+{
+    // Mixing push of a scope and change a global object (white box test)
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue newGlobalObject = engine.newObject();
+    QScriptValue newGlobalObjectBis = engine.newObject();
+    engine.currentContext()->pushScope(object);
+    engine.setGlobalObject(newGlobalObject);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(object));
+    QEXPECT_FAIL("", "FIXME: calling setGlobalObject after pushScope will result in broken scope chain", Abort);
+    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObjectBis));
+    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObject));
 }
 
 void tst_QScriptContext::pushAndPopScope()

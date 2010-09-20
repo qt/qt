@@ -831,6 +831,10 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_exception.Dispose();
 
     m_v8Context.Dispose();
+    for (int i = 0; i < m_v8Scopes.count(); ++i) {
+        m_v8Scopes[i].second.Dispose();
+        m_v8Scopes[i].first.Dispose();
+    }
     for (int i = 0; i < m_v8Contexts.count(); ++i)
         m_v8Contexts[i].Dispose();
 }
@@ -1628,6 +1632,172 @@ void QScriptEngine::setGlobalObject(const QScriptValue &object)
     v8::Context::Scope scope(*d);
     v8::HandleScope handleScope;
     d->setGlobalObject(QScriptValuePrivate::get(object));
+}
+
+static v8::Handle<v8::Value> QtScopeObjectNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+    v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(scopeChain->Get(1));
+    v8::Local<v8::Value> result = scopeObject->Get(property);
+    if (result.IsEmpty())
+        return handleScope.Close(nextInScope->Get(property));
+    return handleScope.Close(result);
+}
+
+static v8::Handle<v8::Value> QtScopeObjectNamedPropertySetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+    v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(scopeChain->Get(1));
+
+    if (scopeObject->Set(property, value) || nextInScope->Set(property, value))
+        return handleScope.Close(value);
+    return handleScope.Close(v8::Handle<v8::Value>());
+}
+
+static v8::Handle<v8::Integer> QtScopeObjectNamedPropertyQuery(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+
+    // FIXME how we can access attributes of a property?
+    Q_UNIMPLEMENTED();
+    // always intercepts
+    return handleScope.Close(v8::Integer::New(v8::None));
+}
+
+static v8::Handle<v8::Boolean> QtScopeObjectNamedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+
+    bool result = scopeObject->Delete(property);
+    // always intercepts
+    if (result)
+        return handleScope.Close(v8::True());
+    return handleScope.Close(v8::False());
+}
+
+static v8::Handle<v8::Array> QtScopeObjectNamedPropertyEnumeration(const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(info.Data());
+    // FIXME it should return own properties plus all from nextInScope?
+    Q_UNIMPLEMENTED();
+    return handleScope.Close(info.This()->GetPropertyNames());
+}
+
+static v8::Handle<v8::Value> QtScopeObjectIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+    v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(scopeChain->Get(1));
+    v8::Local<v8::Value> result = scopeObject->Get(index);
+    if (result.IsEmpty())
+        return handleScope.Close(nextInScope->Get(index));
+    return handleScope.Close(result);
+}
+
+static v8::Handle<v8::Value> QtScopeObjectIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+    v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(scopeChain->Get(1));
+
+    if (scopeObject->Set(index, value) || nextInScope->Set(index, value))
+        return handleScope.Close(value);
+    return handleScope.Close(v8::Handle<v8::Value>());
+}
+
+static v8::Handle<v8::Integer> QtScopeObjectIndexedPropertyQuery(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    // FIXME how we can access attributes of a property?
+    Q_UNIMPLEMENTED();
+    // always intercepts
+    return handleScope.Close(v8::Integer::New(v8::None));
+}
+
+static v8::Handle<v8::Boolean> QtScopeObjectIndexedPropertyDeleter(uint32_t index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(info.Data());
+    v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
+
+    bool result = scopeObject->Delete(index);
+    // always intercepts
+    if (result)
+        return handleScope.Close(v8::True());
+    return handleScope.Close(v8::False());
+}
+
+static v8::Handle<v8::Array> QtScopeObjectIndexedPropertyEnumeration(const v8::AccessorInfo& info)
+{
+    Q_UNIMPLEMENTED();
+    v8::HandleScope handleScope;
+    //v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(info.Data());
+    // FIXME it should return own properties plus all from nextInScope?
+    return handleScope.Close(info.This()->GetPropertyNames());
+}
+
+void QScriptEnginePrivate::pushScope(QScriptValuePrivate* value)
+{
+    if (!value->isObject())
+        return;
+    v8::Handle<v8::Value> securityToken = m_v8Context->GetSecurityToken();
+    v8::Handle<v8::ObjectTemplate> scopeObjectTemplate;
+    {   // Initialize scopeObjectTemplate
+        v8::Handle<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
+        v8::Handle<v8::Value> globalObject = m_v8Context->Global();
+        v8::Handle<v8::Value> scopeObject = static_cast<v8::Handle<v8::Value> >(*value);
+        v8::Handle<v8::Array> scopeChain = v8::Array::New(2);
+        Q_ASSERT(!globalObject.IsEmpty());
+        Q_ASSERT(!scopeObject.IsEmpty());
+        Q_ASSERT(!scopeChain.IsEmpty());
+        scopeChain->Set(0, scopeObject);
+        scopeChain->Set(1, globalObject);
+        objectTemplate->SetNamedPropertyHandler(QtScopeObjectNamedPropertyGetter,
+                                                QtScopeObjectNamedPropertySetter,
+                                                QtScopeObjectNamedPropertyQuery,
+                                                QtScopeObjectNamedPropertyDeleter,
+                                                QtScopeObjectNamedPropertyEnumeration,
+                                                scopeChain);
+        objectTemplate->SetIndexedPropertyHandler(QtScopeObjectIndexedPropertyGetter,
+                                                QtScopeObjectIndexedPropertySetter,
+                                                QtScopeObjectIndexedPropertyQuery,
+                                                QtScopeObjectIndexedPropertyDeleter,
+                                                QtScopeObjectIndexedPropertyEnumeration,
+                                                scopeChain);
+        scopeObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New(objectTemplate);
+    }
+
+    m_v8Context->Exit();
+    m_v8Scopes.append(qMakePair(m_v8Context, v8::Persistent<v8::Value>::New(static_cast<v8::Handle<v8::Value> >(*value))));
+    m_v8Context = v8::Context::New(/* ExtensionConfiguration */ 0, scopeObjectTemplate);
+    m_v8Context->Enter();
+    m_v8Context->SetSecurityToken(securityToken);
+}
+
+QScriptValuePrivate* QScriptEnginePrivate::popScope()
+{
+    if (!m_v8Scopes.count())
+        return new QScriptValuePrivate();
+
+    // FIXME what would happen if setGlobalObject was called after pushScope?
+    m_v8Context.Dispose();
+    m_v8Context = m_v8Scopes[m_v8Scopes.size() - 1].first;
+    v8::Persistent<v8::Value> object = m_v8Scopes[m_v8Scopes.size() - 1].second;
+    m_v8Scopes.resize(m_v8Scopes.size() - 1);
+
+    // FIXME  we need more QSVP overloaded constructors, then we can skip redundant Dispose & New
+    QScriptValuePrivate *result = new QScriptValuePrivate(this, object);
+    object.Dispose();
+    return result;
 }
 
 

@@ -138,12 +138,16 @@ public:
     inline void enterV8Context() const;
     inline void exitV8Context() const;
 
+    void pushScope(QScriptValuePrivate* value);
+    QScriptValuePrivate* popScope();
+
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
 private:
     QScriptEngine* q_ptr;
     v8::Persistent<v8::Context> m_v8Context;
     QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
+    QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 8> m_v8Scopes;
     v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
