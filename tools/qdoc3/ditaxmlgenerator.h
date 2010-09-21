@@ -222,7 +222,7 @@ class DitaXmlGenerator : public PageGenerator
                           const Node* relative, 
                           CodeMarker* marker,
 			  const Node* actualNode = 0);
-    void generateDetailedMember(const Node* node, 
+    void generateDetailedMember(Node* node, 
                                 const InnerNode* relative, 
                                 CodeMarker* marker);
     void generateLink(const Atom* atom, 
@@ -231,10 +231,7 @@ class DitaXmlGenerator : public PageGenerator
     void generateStatus(const Node* node, CodeMarker* marker);
     
     QString registerRef(const QString& ref);
-    QString fileBase(const Node* node);
-#if 0
-    QString fileBase(const Node* node, const SectionIterator& section);
-#endif
+    QString fileBase(const Node* node) const;
     QString fileName(const Node* node);
     void findAllClasses(const InnerNode* node);
     void findAllFunctions(const InnerNode* node);
@@ -259,6 +256,7 @@ class DitaXmlGenerator : public PageGenerator
                    CodeMarker* marker);
     void endLink();
     QString writeGuidAttribute(QString text);
+    void writeGuidAttribute(Node* node);
     QString lookupGuid(QString text);
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();

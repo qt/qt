@@ -531,6 +531,17 @@ QString DitaXmlGenerator::writeGuidAttribute(QString text)
     return guid;
 }
 
+
+/*!
+  Write's the GUID for the \a node to the current XML stream
+  as an "id" attribute. If the \a node doesn't yet have a GUID,
+  one is generated.
+ */
+void DitaXmlGenerator::writeGuidAttribute(Node* node)
+{
+    xmlWriter().writeAttribute("id",node->guid());
+}
+
 /*!
   Looks up \a text in the GUID map. If it finds \a text,
   it returns the associated GUID. Otherwise it inserts
@@ -1863,7 +1874,7 @@ void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
             outputclass = "example";
             break;
         case Node::HeaderFile:
-            outputclass = "header";
+            outputclass = "headerfile";
             break;
         case Node::File:
             outputclass = "file";
@@ -3296,6 +3307,8 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         }
         else if (prevRef == ref)
             break;
+        else
+            qDebug() << "PREVREF:" << prevRef;
         clean += "x";
     }
     return clean;
@@ -3361,7 +3374,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
   Constructs a file name appropriate for the \a node
   and returns the file name.
  */
-QString DitaXmlGenerator::fileBase(const Node* node)
+QString DitaXmlGenerator::fileBase(const Node* node) const
 {
     QString result;
     result = PageGenerator::fileBase(node);
@@ -3470,8 +3483,10 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
         return QString();
 
     fn = fileName(node);
-    link += fn;
+    link += fn + "#" + node->guid();
+    return link;
 
+#if 0    
     if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
         ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
@@ -3481,6 +3496,7 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
         link += ref;
     }
     return link;
+#endif    
 }
 
 QString DitaXmlGenerator::refForAtom(Atom* atom, const Node* /* node */)
@@ -3517,7 +3533,7 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
     xmlWriter().writeEndElement(); // </xref>
 }
 
-void DitaXmlGenerator::generateDetailedMember(const Node* node,
+void DitaXmlGenerator::generateDetailedMember(Node* node,
                                               const InnerNode* relative,
                                               CodeMarker* marker)
 {
@@ -3527,7 +3543,7 @@ void DitaXmlGenerator::generateDetailedMember(const Node* node,
     if ((node->type() == Node::Enum) &&
         (en = static_cast<const EnumNode*>(node))->flagsType()) {
         xmlWriter().writeStartElement("p");
-        writeGuidAttribute(refForNode(node));
+        writeGuidAttribute(node);
         xmlWriter().writeAttribute("outputclass","h3 flags");
         marked = getMarkedUpSynopsis(en, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
@@ -3538,7 +3554,7 @@ void DitaXmlGenerator::generateDetailedMember(const Node* node,
     }
     else {
         xmlWriter().writeStartElement("p");
-        writeGuidAttribute(refForNode(node));
+        writeGuidAttribute(node);
         xmlWriter().writeAttribute("outputclass","h3 fn");
         marked = getMarkedUpSynopsis(node, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);

@@ -2645,7 +2645,7 @@ EXPORTS
 	?childItems@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2644 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::childItems(void) const
 	?children@QGraphicsItem@@QBE?AV?$QList@PAVQGraphicsItem@@@@XZ @ 2645 NONAME ; class QList<class QGraphicsItem *> QGraphicsItem::children(void) const
 	?childrenBoundingRect@QGraphicsItem@@QBE?AVQRectF@@XZ @ 2646 NONAME ; class QRectF QGraphicsItem::childrenBoundingRect(void) const
-	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@@Z @ 2647 NONAME ABSENT ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *)
 	?childrenCheckState@QTreeWidgetItem@@ABE?AVQVariant@@H@Z @ 2648 NONAME ; class QVariant QTreeWidgetItem::childrenCheckState(int) const
 	?childrenClippedToShape@QGraphicsItemPrivate@@QBE_NXZ @ 2649 NONAME ; bool QGraphicsItemPrivate::childrenClippedToShape(void) const
 	?childrenCollapsible@QSplitter@@QBE_NXZ @ 2650 NONAME ; bool QSplitter::childrenCollapsible(void) const
@@ -4078,7 +4078,7 @@ EXPORTS
 	?editorEvent@QAbstractItemDelegate@@UAE_NPAVQEvent@@PAVQAbstractItemModel@@ABVQStyleOptionViewItem@@ABVQModelIndex@@@Z @ 4077 NONAME ; bool QAbstractItemDelegate::editorEvent(class QEvent *, class QAbstractItemModel *, class QStyleOptionViewItem const &, class QModelIndex const &)
 	?editorEvent@QItemDelegate@@MAE_NPAVQEvent@@PAVQAbstractItemModel@@ABVQStyleOptionViewItem@@ABVQModelIndex@@@Z @ 4078 NONAME ; bool QItemDelegate::editorEvent(class QEvent *, class QAbstractItemModel *, class QStyleOptionViewItem const &, class QModelIndex const &)
 	?editorEvent@QStyledItemDelegate@@MAE_NPAVQEvent@@PAVQAbstractItemModel@@ABVQStyleOptionViewItem@@ABVQModelIndex@@@Z @ 4079 NONAME ; bool QStyledItemDelegate::editorEvent(class QEvent *, class QAbstractItemModel *, class QStyleOptionViewItem const &, class QModelIndex const &)
-	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@XZ @ 4080 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(void) const
+	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@XZ @ 4080 NONAME ABSENT ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(void) const
 	?effectiveOpacity@QGraphicsItem@@QBEMXZ @ 4081 NONAME ; float QGraphicsItem::effectiveOpacity(void) const
 	?effectiveOpacity@QGraphicsItemPrivate@@QBEMXZ @ 4082 NONAME ; float QGraphicsItemPrivate::effectiveOpacity(void) const
 	?effectiveRectFor@QWidgetPrivate@@QBE?AVQRect@@ABV2@@Z @ 4083 NONAME ; class QRect QWidgetPrivate::effectiveRectFor(class QRect const &) const
@@ -12886,4 +12886,10 @@ EXPORTS
 	?flushDetachedPixmaps@QPixmapCache@@SAXXZ @ 12885 NONAME ; void QPixmapCache::flushDetachedPixmaps(void)
 	?replayLastMouseEvent@QGraphicsViewPrivate@@QAEXXZ @ 12886 NONAME ; void QGraphicsViewPrivate::replayLastMouseEvent(void)
 	?children_clear@QGraphicsItemPrivate@@SAXPAV?$QDeclarativeListProperty@VQGraphicsObject@@@@@Z @ 12887 NONAME ; void QGraphicsItemPrivate::children_clear(class QDeclarativeListProperty<class QGraphicsObject> *)
+	?timeout@QTapAndHoldGesture@@SAHXZ @ 12888 NONAME ; int QTapAndHoldGesture::timeout(void)
+	?lastRightBearing@QFontEngine@@IAE?AUQFixed@@ABUQGlyphLayout@@_N@Z @ 12889 NONAME ; struct QFixed QFontEngine::lastRightBearing(struct QGlyphLayout const &, bool)
+	?childrenBoundingRectHelper@QGraphicsItemPrivate@@QAEXPAVQTransform@@PAVQRectF@@PAVQGraphicsItem@@@Z @ 12890 NONAME ; void QGraphicsItemPrivate::childrenBoundingRectHelper(class QTransform *, class QRectF *, class QGraphicsItem *)
+	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12891 NONAME ; void QTapAndHoldGesture::setTimeout(int)
+	?qmljsDebugArguments@QApplicationPrivate@@2VQString@@A @ 12892 NONAME ; class QString QApplicationPrivate::qmljsDebugArguments
+	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@PAVQGraphicsItem@@@Z @ 12893 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(class QGraphicsItem *) const
 

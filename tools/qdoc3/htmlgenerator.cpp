@@ -3417,7 +3417,7 @@ QString HtmlGenerator::protect(const QString &string, const QString &outputEncod
 #undef APPEND
 }
 
-QString HtmlGenerator::fileBase(const Node *node)
+QString HtmlGenerator::fileBase(const Node *node) const
 {
     QString result;
 
@@ -3440,7 +3440,7 @@ QString HtmlGenerator::fileBase(const Node *node)
 
 #if 0
 QString HtmlGenerator::fileBase(const Node *node,
-                                const SectionIterator& section)
+                                const SectionIterator& section) const
 {
     QStringList::ConstIterator s = section.sectionNumber().end();
     QStringList::ConstIterator b = section.baseNameStack().end();
