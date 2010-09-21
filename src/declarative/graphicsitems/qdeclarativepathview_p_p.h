@@ -123,6 +123,10 @@ public:
         return model && model->count() > 0 && model->isValid() && path;
     }
 
+    void handleMousePressEvent(QGraphicsSceneMouseEvent *event);
+    void handleMouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
+
     int calcCurrentIndex();
     void updateCurrent();
     static void fixOffsetCallback(void*);

@@ -152,27 +152,27 @@ public:
     QString number(int index) const { return list.at(index).second; }
 
     void addItem(const QString &name, const QString &number) {
-        emit beginInsertRows(QModelIndex(), list.count(), list.count());
+        beginInsertRows(QModelIndex(), list.count(), list.count());
         list.append(QPair<QString,QString>(name, number));
-        emit endInsertRows();
+        endInsertRows();
     }
 
     void insertItem(int index, const QString &name, const QString &number) {
-        emit beginInsertRows(QModelIndex(), index, index);
+        beginInsertRows(QModelIndex(), index, index);
         list.insert(index, QPair<QString,QString>(name, number));
-        emit endInsertRows();
+        endInsertRows();
     }
 
     void removeItem(int index) {
-        emit beginRemoveRows(QModelIndex(), index, index);
+        beginRemoveRows(QModelIndex(), index, index);
         list.removeAt(index);
-        emit endRemoveRows();
+        endRemoveRows();
     }
 
     void moveItem(int from, int to) {
-        emit beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
         list.move(from, to);
-        emit endMoveRows();
+        endMoveRows();
     }
 
     void modifyItem(int idx, const QString &name, const QString &number) {
@@ -410,6 +410,13 @@ void tst_QDeclarativePathView::dataModel()
     text = findItem<QDeclarativeText>(pathview, "myText", 3);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(3));
+
+    model.moveItem(3, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
+    QList<QDeclarativeItem*> items = findItems<QDeclarativeItem>(pathview, "wrapper");
+    foreach (QDeclarativeItem *item, items) {
+        QVERIFY(item->property("onPath").toBool());
+    }
 
     delete canvas;
 }
