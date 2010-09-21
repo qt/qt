@@ -95,7 +95,7 @@ private:
     int m_iterationCount;
 };
 
-class QWakeUpActiveObject : public CActive
+class QWakeUpActiveObject : public QActiveObject
 {
 public:
     QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher);
@@ -106,9 +106,6 @@ public:
 protected:
     void DoCancel();
     void RunL();
-
-private:
-    QEventDispatcherSymbian *m_dispatcher;
 };
 
 struct SymbianTimerInfo : public QSharedData

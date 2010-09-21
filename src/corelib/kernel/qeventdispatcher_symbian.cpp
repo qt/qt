@@ -178,8 +178,7 @@ void QActiveObject::reactivateAndComplete()
 }
 
 QWakeUpActiveObject::QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher)
-    : CActive(WAKE_UP_PRIORITY),
-      m_dispatcher(dispatcher)
+    : QActiveObject(WAKE_UP_PRIORITY, dispatcher)
 {
     CActiveScheduler::Add(this);
     iStatus = KRequestPending;
@@ -201,6 +200,9 @@ void QWakeUpActiveObject::DoCancel()
 
 void QWakeUpActiveObject::RunL()
 {
+    if (!okToRun())
+        return;
+
     iStatus = KRequestPending;
     SetActive();
     QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
