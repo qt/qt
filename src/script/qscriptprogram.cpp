@@ -23,6 +23,7 @@
 
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -136,5 +137,31 @@ bool QScriptProgram::operator!=(const QScriptProgram& other) const
 {
     return d_ptr != other.d_ptr && *d_ptr != *other.d_ptr;
 }
+
+/*!
+ *  \internal
+ *  Compiles script. The engine is used only for error checking (warn about engine mixing).
+ *  \attention It assumes that there is created a right context, handleScope and tryCatch on the stack.
+ */
+v8::Persistent<v8::Script> QScriptProgramPrivate::compiled(const QScriptEnginePrivate* engine)
+{
+    Q_ASSERT(engine);
+    if (isCompiled() && m_engine == engine)
+        return m_compiled;
+
+    if (m_engine) {
+        //Different engine, we need to dicard the old handle with the other isolate
+        QScriptIsolate api(m_engine);
+        m_compiled.Dispose();
+        m_compiled.Clear();
+    }
+
+    // Recompile the script
+    // FIXME maybe we can reuse the same script?
+    m_engine = const_cast<QScriptEnginePrivate*>(engine);
+    m_compiled = v8::Persistent<v8::Script>::New(v8::Script::Compile(QScriptConverter::toString(sourceCode()), QScriptConverter::toString(fileName())));
+    return m_compiled;
+}
+
 
 QT_END_NAMESPACE

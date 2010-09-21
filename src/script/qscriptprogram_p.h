@@ -60,13 +60,13 @@ public:
 
     inline int line() const;
     inline bool isCompiled() const;
-    inline v8::Persistent<v8::Script> compiled(const QScriptEnginePrivate* engine);
+    v8::Persistent<v8::Script> compiled(const QScriptEnginePrivate* engine);
 
     QBasicAtomicInt ref;
     QString m_program;
     QString m_fileName;
     int m_line;
-    QScriptEnginePrivate* m_engine;
+    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::Script> m_compiled;
 };
 
@@ -77,7 +77,6 @@ QScriptProgramPrivate* QScriptProgramPrivate::get(const QScriptProgram& program)
 
 QScriptProgramPrivate::QScriptProgramPrivate()
     : m_line(-1)
-    , m_engine(0)
 {}
 
 QScriptProgramPrivate::QScriptProgramPrivate(const QString& sourceCode,
@@ -86,7 +85,6 @@ QScriptProgramPrivate::QScriptProgramPrivate(const QString& sourceCode,
                    : m_program(sourceCode)
                    , m_fileName(fileName)
                    , m_line(firstLineNumber)
-                   , m_engine(0)
 {}
 
 QScriptProgramPrivate::~QScriptProgramPrivate()
@@ -137,25 +135,6 @@ int QScriptProgramPrivate::line() const
 bool QScriptProgramPrivate::isCompiled() const
 {
     return m_engine;
-}
-
-/*!
-  \internal
-  Compiles script. The engine is used only for error checking (warn about engine mixing).
-  \attention It assumes that there is created a right context, handleScope and tryCatch on the stack.
-*/
-inline v8::Persistent<v8::Script> QScriptProgramPrivate::compiled(const QScriptEnginePrivate* engine)
-{
-    Q_ASSERT(engine);
-    if (isCompiled() && engine == m_engine)
-        return m_compiled;
-
-    // Recompile the script
-    // FIXME maybe we can reuse the same script?
-    // FIXME check if we can destroy a Persistent in different context!
-    m_engine = const_cast<QScriptEnginePrivate*>(engine);
-    m_compiled = v8::Persistent<v8::Script>::New(v8::Script::Compile(QScriptConverter::toString(sourceCode()), QScriptConverter::toString(fileName())));
-    return m_compiled;
 }
 
 QT_END_NAMESPACE
