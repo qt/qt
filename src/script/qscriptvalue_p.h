@@ -1093,7 +1093,17 @@ inline QScriptValuePrivate::operator v8::Persistent<v8::Value>() const
   \internal
   Returns true if QSV have an engine associated.
 */
-bool QScriptValuePrivate::isJSBased() const { return m_state >= JSValue; }
+bool QScriptValuePrivate::isJSBased() const
+{
+#ifndef QT_NO_DEBUG
+    // internals check.
+    if (m_state >= JSValue)
+        Q_ASSERT(!m_value.IsEmpty());
+    else
+        Q_ASSERT(m_value.IsEmpty());
+#endif
+    return m_state >= JSValue;
+}
 
 /*!
   \internal
