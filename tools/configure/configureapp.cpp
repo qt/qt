@@ -279,6 +279,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
+    dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
 
     QString version;
@@ -961,6 +962,10 @@ void Configure::parseCmdLine()
             dictionary[ "DECLARATIVE" ] = "no";
         } else if (configCmdLine.at(i) == "-declarative") {
             dictionary[ "DECLARATIVE" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-declarative-debug") {
+            dictionary[ "DECLARATIVE_DEBUG" ] = "no";
+        } else if (configCmdLine.at(i) == "-declarative-debug") {
+            dictionary[ "DECLARATIVE_DEBUG" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-plugin-manifests") {
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if (configCmdLine.at(i) == "-plugin-manifests") {
@@ -1836,6 +1841,8 @@ bool Configure::displayHelp()
         desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
         desc("DECLARATIVE", "no",    "-no-declarative", "Do not build the declarative module");
         desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
+        desc("DECLARATIVE_DEBUG", "no",    "-no-declarative-debug", "Do not build the declarative debugging support");
+        desc("DECLARATIVE_DEBUG", "yes",   "-declarative-debug",    "Build the declarative debugging support");
 
         desc(                   "-arch <arch>",         "Specify an architecture.\n"
                                                         "Available values for <arch>:");
@@ -2273,6 +2280,8 @@ void Configure::autoDetection()
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
         dictionary["DECLARATIVE"] = dictionary["SCRIPT"] == "yes" ? "yes" : "no";
+    if (dictionary["DECLARATIVE_DEBUG"] == "auto")
+        dictionary["DECLARATIVE_DEBUG"] = dictionary["DECLARATIVE"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
@@ -3101,6 +3110,7 @@ void Configure::generateConfigfiles()
         if (dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
         if (dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
         if (dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
+        if (dictionary["DECLARATIVE_DEBUG"] == "no") qconfigList += "QDECLARATIVE_NO_DEBUG_PROTOCOL";
         if (dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if (dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if (dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
@@ -3398,6 +3408,7 @@ void Configure::displayConfig()
     cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
     cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
+    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
