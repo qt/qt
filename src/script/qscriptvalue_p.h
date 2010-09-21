@@ -678,12 +678,16 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
         }
     }
     if (isNumberBased()) {
-        if (other->isNumberBased())
-            return u.m_number == other->u.m_number;
         if (other->isJSBased()) {
             assignEngine(other->engine());
             return m_value->StrictEquals(other->m_value);
         }
+        if (m_state != other->m_state)
+            return false;
+        if (m_state == CNumber)
+            return u.m_number == other->u.m_number;
+        Q_ASSERT(m_state == CBool);
+        return u.m_bool == other->u.m_bool;
     }
 
     if (!isValid() && !other->isValid())
