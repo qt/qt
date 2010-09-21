@@ -1187,7 +1187,7 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                 if (propId != -1) {
                     if (data->hasValue(propId)) {
                         if (d->m_listModelInterface) {
-                            data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
+                            data->setValue(propId, d->m_listModelInterface->data(idx, role));
                         } else if (d->m_abstractItemModel) {
                             QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
                             data->setValue(propId, d->m_abstractItemModel->data(index, role));
@@ -1208,7 +1208,7 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                 if (data->hasValue(propId)) {
                     int role = roles.at(0);
                     if (d->m_listModelInterface) {
-                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
+                        data->setValue(propId, d->m_listModelInterface->data(idx, role));
                     } else if (d->m_abstractItemModel) {
                         QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
                         data->setValue(propId, d->m_abstractItemModel->data(index, role));
