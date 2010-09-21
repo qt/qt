@@ -13,7 +13,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Linguist
 
 qhp.Linguist.file                = linguist.qhp
-qhp.Linguist.namespace           = com.trolltech.linguist.470
+qhp.Linguist.namespace           = com.trolltech.linguist.471
 qhp.Linguist.virtualFolder       = qdoc
 qhp.Linguist.indexTitle          = Qt Linguist Manual
 qhp.Linguist.extraFiles          = images/bg_l.png \
@@ -50,7 +50,7 @@ qhp.Linguist.extraFiles          = images/bg_l.png \
 									style/style_ie8.css \
                              	    style/style.css
 
-qhp.Linguist.filterAttributes    = qt 4.7.0 tools linguist
+qhp.Linguist.filterAttributes    = qt 4.7.1 tools linguist
 qhp.Linguist.customFilters.Linguist.name = Qt Linguist Manual
 qhp.Linguist.customFilters.Linguist.filterAttributes = qt tools linguist
 qhp.Linguist.subprojects         = manual examples
