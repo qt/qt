@@ -1733,10 +1733,6 @@ void tst_QScriptValue::strictlyEquals()
     QEXPECT_FAIL("QScriptValue(QScriptValue::NullValue) <=> QScriptValue(engine, QScriptValue::NullValue)", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"null\")", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(QScriptValue::NullValue) <=> engine->nullValue()", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(true) <=> QScriptValue(true)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(true) <=> QScriptValue(0, true)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(false) <=> QScriptValue(false)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(false) <=> QScriptValue(0, false)", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::UndefinedValue)", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::UndefinedValue) <=> QScriptValue(0, QScriptValue::UndefinedValue)", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::UndefinedValue) <=> QScriptValue(engine, QScriptValue::UndefinedValue)", "FIXME: WebKit bug 43038", Continue);
@@ -1748,10 +1744,6 @@ void tst_QScriptValue::strictlyEquals()
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(engine, QScriptValue::NullValue)", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"null\")", "FIXME: WebKit bug 43038", Continue);
     QEXPECT_FAIL("QScriptValue(0, QScriptValue::NullValue) <=> engine->nullValue()", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, true) <=> QScriptValue(true)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, true) <=> QScriptValue(0, true)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, false) <=> QScriptValue(false)", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, false) <=> QScriptValue(0, false)", "FIXME: WebKit bug 43038", Continue);
     QCOMPARE(value.strictlyEquals(other), expected);
 }
 
