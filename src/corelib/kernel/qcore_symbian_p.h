@@ -55,10 +55,12 @@
 
 #include <e32std.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 #include <qstring.h>
 #include <qrect.h>
 #include <qhash.h>
 #include <f32file.h>
+#include <es_sock.h>
 
 #define QT_LSTRING2(x) L##x
 #define QT_LSTRING(x) QT_LSTRING2(x)
@@ -154,9 +156,74 @@ enum S60PluginFuncOrdinals
 Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs();
+Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer();
 
 // Defined in qlocale_symbian.cpp.
 Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
+
+/*!
+  \internal
+  This class exists in QtCore for the benefit of QSocketNotifier, which uses integer
+  file descriptors in its public API.
+  So we need a way to map between int and RSocket.
+  Additionally, it is used to host the global RSocketServ session
+*/
+class Q_CORE_EXPORT QSymbianSocketManager
+{
+public:
+    QSymbianSocketManager();
+    ~QSymbianSocketManager();
+
+    /*!
+      \internal
+      \return handle to the socket server
+    */
+    RSocketServ& getSocketServer();
+    /*!
+      \internal
+      Adds a symbian socket to the global map
+      \param an open socket
+      \return pseudo file descriptor, -1 if out of resources
+    */
+    int addSocket(RSocket *sock);
+    /*!
+      \internal
+      Removes a symbian socket from the global map
+      \param an open socket
+      \return true if the socket was in the map
+    */
+    bool removeSocket(RSocket *sock);
+    /*!
+      \internal
+      Get pseudo file descriptor for a socket
+      \param an open socket
+      \return integer handle, or -1 if not in map
+    */
+    int lookupSocket(RSocket *sock) const;
+    /*!
+      \internal
+      Get socket for a pseudo file descriptor
+      \param an open socket fd
+      \return socket handle or NULL if not in map
+    */
+    RSocket *lookupSocket(int fd) const;
+
+    /*!
+      \internal
+      Gets a reference to the singleton socket manager
+    */
+    static QSymbianSocketManager& instance();
+private:
+    int allocateSocket();
+
+    const static int max_sockets = 0x20000; //covers all TCP and UDP ports, probably run out of memory first
+    const static int socket_offset = 0x40000000; //hacky way of separating sockets from file descriptors
+    int iNextSocket;
+    QHash<RSocket *, int> socketMap;
+    QHash<int, RSocket *> reverseSocketMap;
+    mutable QMutex iMutex;
+    RSocketServ iSocketServ;
+};
 
 QT_END_NAMESPACE
 

@@ -210,4 +210,76 @@ Q_CORE_EXPORT RFs& qt_s60GetRFs()
     return qt_s60_RFsSession()->GetRFs();
 }
 
+QSymbianSocketManager::QSymbianSocketManager() :
+    iNextSocket(0)
+{
+    qt_symbian_throwIfError(iSocketServ.Connect());
+    qt_symbian_throwIfError(iSocketServ.ShareAuto());
+}
+
+QSymbianSocketManager::~QSymbianSocketManager()
+{
+    iSocketServ.Close();
+    if(!socketMap.isEmpty()) {
+        qWarning("leaked %d sockets on exit", socketMap.count());
+    }
+}
+
+RSocketServ& QSymbianSocketManager::getSocketServer() {
+    return iSocketServ;
+}
+
+int QSymbianSocketManager::addSocket(RSocket* sock) {
+    QMutexLocker l(&iMutex);
+    Q_ASSERT(!socketMap.contains(sock));
+    if(socketMap.contains(sock))
+        return socketMap.value(sock);
+    // allocate socket number
+    int guard = 0;
+    while(reverseSocketMap.contains(iNextSocket)) {
+        iNextSocket++;
+        iNextSocket %= max_sockets;
+        guard++;
+        if(guard > max_sockets)
+            return -1;
+    }
+    int id = iNextSocket;
+
+    socketMap[sock] = id;
+    reverseSocketMap[id] = sock;
+    return id + socket_offset;
+}
+
+bool QSymbianSocketManager::removeSocket(RSocket* sock) {
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return false;
+    int id = socketMap.value(sock);
+    socketMap.remove(sock);
+    reverseSocketMap.remove(id);
+    return true;
+}
+
+int QSymbianSocketManager::lookupSocket(RSocket* sock) const {
+    QMutexLocker l(&iMutex);
+    if(!socketMap.contains(sock))
+        return -1;
+    int id = socketMap.value(sock);
+    return id + socket_offset;
+}
+
+RSocket* QSymbianSocketManager::lookupSocket(int fd) const {
+    QMutexLocker l(&iMutex);
+    int id = fd + socket_offset;
+    if(!reverseSocketMap.contains(id))
+        return 0;
+    return reverseSocketMap.value(id);
+}
+
+Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
+
+QSymbianSocketManager& QSymbianSocketManager::instance()
+{
+    return *(qt_symbianSocketManager());
+}
 QT_END_NAMESPACE
