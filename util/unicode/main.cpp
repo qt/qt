@@ -1015,7 +1015,7 @@ static void readDerivedNormalizationProps()
 
             ++numLigatures;
             highestLigature = qMax(highestLigature, part1);
-            Ligature l = {(ushort)part1, (ushort)part2, codepoint};
+            Ligature l = {(ushort)part1, (ushort)part2, (ushort)codepoint};
             ligatureHashes[part2].append(l);
         }
     }
