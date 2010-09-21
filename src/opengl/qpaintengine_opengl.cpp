@@ -921,6 +921,7 @@ static inline QPainterPath strokeForPath(const QPainterPath &path, const QPen &c
     stroker.setCapStyle(cpen.capStyle());
     stroker.setJoinStyle(cpen.joinStyle());
     stroker.setMiterLimit(cpen.miterLimit());
+    stroker.setDashOffset(cpen.dashOffset());
 
     qreal width = cpen.widthF();
     if (width == 0)

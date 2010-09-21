@@ -552,9 +552,9 @@ EXPORTS
 	_ZN21QDeclarativeListModel6removeEi @ 551 NONAME
 	_ZN21QDeclarativeListModel7flattenEv @ 552 NONAME
 	_ZN21QDeclarativeListModelC1EP7QObject @ 553 NONAME
-	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME
+	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME ABSENT
 	_ZN21QDeclarativeListModelC2EP7QObject @ 555 NONAME
-	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME
+	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME ABSENT
 	_ZN21QDeclarativeListModelD0Ev @ 557 NONAME
 	_ZN21QDeclarativeListModelD1Ev @ 558 NONAME
 	_ZN21QDeclarativeListModelD2Ev @ 559 NONAME
@@ -1744,4 +1744,7 @@ EXPORTS
 	_ZThn12_N24QDeclarativeScriptActionD1Ev @ 1743 NONAME
 	_ZThn8_N24QDeclarativeScriptActionD0Ev @ 1744 NONAME
 	_ZThn8_N24QDeclarativeScriptActionD1Ev @ 1745 NONAME
+	_ZN21QDeclarativeListModelC1EPKS_P32QDeclarativeListModelWorkerAgent @ 1746 NONAME
+	_ZN21QDeclarativeListModelC2EPKS_P32QDeclarativeListModelWorkerAgent @ 1747 NONAME
+	_ZNK21QDeclarativeListModel14inWorkerThreadEv @ 1748 NONAME
 

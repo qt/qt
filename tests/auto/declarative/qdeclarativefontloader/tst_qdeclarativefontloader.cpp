@@ -39,8 +39,10 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativecontext.h>
 #include <private/qdeclarativefontloader_p.h>
 #include "../../../shared/util.h"
 #include "../shared/testhttpserver.h"
@@ -67,6 +69,7 @@ private slots:
     void webFont();
     void redirWebFont();
     void failWebFont();
+    void changeFont();
 
 private slots:
 
@@ -179,6 +182,45 @@ void tst_qdeclarativefontloader::failWebFont()
     QVERIFY(fontObject->source() != QUrl(""));
     QTRY_COMPARE(fontObject->name(), QString(""));
     QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Error);
+}
+
+void tst_qdeclarativefontloader::changeFont()
+{
+    QString componentStr = "import Qt 4.7\nFontLoader { source: font }";
+    QDeclarativeContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("font", QUrl::fromLocalFile(SRCDIR "/data/tarzeau_ocr_a.ttf"));
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeFontLoader *fontObject = qobject_cast<QDeclarativeFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+
+    QSignalSpy nameSpy(fontObject, SIGNAL(nameChanged()));
+    QSignalSpy statusSpy(fontObject, SIGNAL(statusChanged()));
+
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
+    QCOMPARE(nameSpy.count(), 0);
+    QCOMPARE(statusSpy.count(), 0);
+    QTRY_COMPARE(fontObject->name(), QString("OCRA"));
+
+    ctxt->setContextProperty("font", "http://localhost:14448/daniel.ttf");
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Loading);
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
+    QCOMPARE(nameSpy.count(), 1);
+    QCOMPARE(statusSpy.count(), 2);
+    QTRY_COMPARE(fontObject->name(), QString("Daniel"));
+
+    ctxt->setContextProperty("font", QUrl::fromLocalFile(SRCDIR "/data/tarzeau_ocr_a.ttf"));
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
+    QCOMPARE(nameSpy.count(), 2);
+    QCOMPARE(statusSpy.count(), 2);
+    QTRY_COMPARE(fontObject->name(), QString("OCRA"));
+
+    ctxt->setContextProperty("font", "http://localhost:14448/daniel.ttf");
+    QTRY_VERIFY(fontObject->status() == QDeclarativeFontLoader::Ready);
+    QCOMPARE(nameSpy.count(), 3);
+    QCOMPARE(statusSpy.count(), 2);
+    QTRY_COMPARE(fontObject->name(), QString("Daniel"));
 }
 
 QTEST_MAIN(tst_qdeclarativefontloader)
