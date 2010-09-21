@@ -52,7 +52,7 @@ HEADERS += \
     $$PWD/qscriptvalueiterator.h \
     $$PWD/qscriptable.h \
     $$PWD/qscriptable_p.h \
-    $$PWD/qv8context_p.h \
+    $$PWD/qscriptisolate_p.h \
 
 SOURCES += \
     $$PWD/qscriptdeclarativeclass.cpp \

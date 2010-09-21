@@ -23,9 +23,10 @@
 
 #include "qscriptvalueiterator.h"
 
-#include "qv8context_p.h"
+#include "qscriptisolate_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -375,7 +376,7 @@ QScriptString QScriptValueIterator::scriptName() const
 QScriptValue QScriptValueIterator::value() const
 {
     Q_D(const QScriptValueIterator);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->value());
 }
 
@@ -388,7 +389,7 @@ QScriptValue QScriptValueIterator::value() const
 void QScriptValueIterator::setValue(const QScriptValue& value)
 {
     Q_D(QScriptValueIterator);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     d->setValue(QScriptValuePrivate::get(value));
 }
 
@@ -401,7 +402,7 @@ void QScriptValueIterator::setValue(const QScriptValue& value)
 void QScriptValueIterator::remove()
 {
     Q_D(QScriptValueIterator);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     d->remove();
 }
 
@@ -414,7 +415,7 @@ void QScriptValueIterator::remove()
 QScriptValue::PropertyFlags QScriptValueIterator::flags() const
 {
     Q_D(const QScriptValueIterator);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->flags();
 }
 

@@ -191,10 +191,6 @@ QScriptValuePrivate::QScriptValuePrivate()
 {
 }
 
-// ### Until "Isolates" are supported in V8, we don't have a way to
-// create values for a specific engine, because in practice only one
-// engine is allowed to exist.
-
 QScriptValuePrivate::QScriptValuePrivate(bool value)
     : m_state(CBool), u(value)
 {
@@ -229,7 +225,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, bool valu
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }
@@ -238,7 +233,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, int value
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }
@@ -247,7 +241,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, uint valu
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }
@@ -256,7 +249,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, qsreal va
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }
@@ -265,7 +257,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, const QSt
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }
@@ -274,7 +265,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptVa
     : m_engine(engine), m_state(JSValue)
 {
     Q_ASSERT(engine);
-    v8::Context::Scope contextScope(*engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
 }

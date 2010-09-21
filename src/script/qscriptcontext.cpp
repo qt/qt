@@ -24,7 +24,7 @@
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
 #include "qscriptengine.h"
-#include "qv8context_p.h"
+#include "qscriptisolate_p.h"
 
 #include <QtCore/qstringlist.h>
 
@@ -217,7 +217,7 @@ QScriptEngine *QScriptContext::engine() const
 QScriptValue QScriptContext::argument(int index) const
 {
     Q_D(const QScriptContext);
-    QV8Context api(d->engine);
+    QScriptIsolate api(d->engine);
     return QScriptValuePrivate::get(d->argument(index));
 }
 
@@ -350,7 +350,7 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
 QScriptValue QScriptContext::thisObject() const
 {
     Q_D(const QScriptContext);
-    QV8Context api(d->engine);
+    QScriptIsolate api(d->engine);
     return QScriptValuePrivate::get(d->thisObject());
 }
 
@@ -429,7 +429,7 @@ QScriptValueList QScriptContext::scopeChain() const
 void QScriptContext::pushScope(const QScriptValue &object)
 {
     Q_D(QScriptContext);
-    QV8Context api(d->engine);
+    QScriptIsolate api(d->engine);
     v8::HandleScope handleScope;
     d->engine->pushScope(QScriptValuePrivate::get(object));
 }
@@ -447,7 +447,7 @@ void QScriptContext::pushScope(const QScriptValue &object)
 QScriptValue QScriptContext::popScope()
 {
     Q_D(QScriptContext);
-    QV8Context api(d->engine);
+    QScriptIsolate api(d->engine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->engine->popScope());
 }

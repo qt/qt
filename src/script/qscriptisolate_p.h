@@ -33,34 +33,34 @@ QT_BEGIN_NAMESPACE
 
 /**
   \internal
-  Class used to switch to the right context. It does the same thing as v8::Context::Scope but
+  Class used to switch to the right isolate. It does the same thing as v8::Isolate::Scope but
   it checks for a null engine.
   \attention We decided to put context switching "up" which means that it should be as high
   as possible on call stack. And it should be switched at most once per public API function call.
 */
-class QV8Context {
+class QScriptIsolate {
 public:
     // OperationMode was introduced to reduce number of checking for a null engine pointer. If we
     // know that given pointer is not null than we should pass NotNullEngine as constructor argument
     // that would nicely remove checking on compilation time.
     enum OperationMode {Default, NotNullEngine};
-    inline QV8Context(QScriptEnginePrivate* engine, const OperationMode mode = Default)
+    inline QScriptIsolate(QScriptEnginePrivate* engine, const OperationMode mode = Default)
         : m_engine(engine)
         , m_mode(mode)
     {
         init();
     }
-    inline QV8Context(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
+    inline QScriptIsolate(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
         : m_engine(engine)
         , m_mode(mode)
     {
         init();
     }
 
-    inline ~QV8Context()
+    inline ~QScriptIsolate()
     {
         if (m_mode == NotNullEngine || m_engine) {
-            m_engine->exitV8Context();
+            m_engine->exitIsolate();
         }
     }
 
@@ -69,11 +69,11 @@ private:
     {
         if (m_mode == NotNullEngine || m_engine) {
             Q_ASSERT(m_engine);
-            m_engine->enterV8Context();
+            m_engine->enterIsolate();
         }
     }
 
-    Q_DISABLE_COPY(QV8Context);
+    Q_DISABLE_COPY(QScriptIsolate);
     QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
     const OperationMode m_mode;
 };

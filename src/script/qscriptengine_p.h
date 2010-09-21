@@ -30,10 +30,10 @@
 #include <private/qobject_p.h>
 
 #include "qscriptconverter_p.h"
-#include "qscriptprogram_p.h"
 #include "qscriptqobject_p.h"
 #include "qscriptoriginalglobalobject_p.h"
 #include "qscriptvalue.h"
+#include "qscriptprogram_p.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
@@ -135,8 +135,8 @@ public:
 
     v8::Handle<v8::String> qtDataId();
 
-    inline void enterV8Context() const;
-    inline void exitV8Context() const;
+    inline void enterIsolate() const;
+    inline void exitIsolate() const;
 
     void pushScope(QScriptValuePrivate* value);
     QScriptValuePrivate* popScope();
@@ -145,6 +145,7 @@ public:
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
 private:
     QScriptEngine* q_ptr;
+    v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
     QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
     QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 8> m_v8Scopes;
@@ -259,14 +260,16 @@ inline bool QScriptEnginePrivate::hasUncaughtException() const
     return !m_exception.IsEmpty();
 }
 
-inline void QScriptEnginePrivate::enterV8Context() const
+inline void QScriptEnginePrivate::enterIsolate() const
 {
+    m_isolate->Enter();
     m_v8Context->Enter();
 }
 
-inline void QScriptEnginePrivate::exitV8Context() const
+inline void QScriptEnginePrivate::exitIsolate() const
 {
     m_v8Context->Exit();
+    m_isolate->Exit();
 }
 
 inline bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value) const

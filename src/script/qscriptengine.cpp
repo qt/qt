@@ -32,7 +32,8 @@
 #include "qscriptvalue_p.h"
 #include "qscriptsyntaxcheckresult_p.h"
 #include "qscriptqobject_p.h"
-#include "qv8context_p.h"
+#include "qscriptisolate_p.h"
+#include "qscriptprogram_p.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmetaobject.h>
@@ -748,10 +749,16 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     return persistent;
 }
 
-
+static inline v8::Isolate *createEnterIsolate()
+{
+    v8::Isolate *isolate = v8::Isolate::New();
+    isolate->Enter();
+    return isolate;
+}
 
 QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine::ContextOwnership ownership)
     : q_ptr(engine)
+    , m_isolate(createEnterIsolate())
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(m_v8Context)
@@ -759,11 +766,14 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
 {
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
-    v8::Context::Scope contextScope(m_v8Context);
-    v8::HandleScope handle_scope;
-    m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
-    m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
-    m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
+    {
+        v8::Context::Scope contextScope(m_v8Context);
+        v8::HandleScope handle_scope;
+        m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
+        m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
+        m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
+    }
+    m_isolate->Exit();
 }
 
 // Creates a template for Qt signal wrapper objects.
@@ -813,6 +823,7 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    m_isolate->Enter();
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_originalGlobalObject.destroy();
     if (!m_signalTemplate.IsEmpty())
@@ -837,6 +848,11 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     }
     for (int i = 0; i < m_v8Contexts.count(); ++i)
         m_v8Contexts[i].Dispose();
+
+    m_isolate->Exit();
+
+    //FIXME Dispose crashes, but need to be done
+    //m_isolate->Dispose();
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
@@ -860,7 +876,7 @@ QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> scrip
 QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
 }
@@ -1162,7 +1178,7 @@ void QScriptEngine::reportAdditionalMemoryCost(int cost)
 QScriptValue QScriptEngine::evaluate(const QString& program, const QString& fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->evaluate(program, fileName, lineNumber));
 }
@@ -1207,7 +1223,7 @@ void QScriptEngine::abortEvaluation(const QScriptValue &result)
 QScriptValue QScriptEngine::nullValue()
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Null()));
 }
@@ -1215,7 +1231,7 @@ QScriptValue QScriptEngine::nullValue()
 QScriptValue QScriptEngine::undefinedValue()
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(new QScriptValuePrivate(d, v8::Undefined()));
 }
@@ -1223,7 +1239,7 @@ QScriptValue QScriptEngine::undefinedValue()
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newObject());
 }
@@ -1231,7 +1247,7 @@ QScriptValue QScriptEngine::newObject()
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newArray(length));
 }
@@ -1263,7 +1279,7 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
 {
     // FIXME move this code to private.
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     if (!object)
         return QScriptValue::NullValue;
@@ -1353,7 +1369,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, int length)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newFunction(fun, 0, length));
 }
@@ -1386,7 +1402,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, in
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, const QScriptValue &prototype, int length)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newFunction(fun, QScriptValuePrivate::get(prototype), length));
 }
@@ -1398,7 +1414,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionSignature fun, co
 QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->newFunction(fun, arg));
 }
@@ -1416,7 +1432,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(d->newVariant(value));
 }
@@ -1461,7 +1477,7 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
-    QV8Context api(d_ptr);
+    QScriptIsolate api(d_ptr);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(d->globalObject());
 }
@@ -1626,7 +1642,7 @@ void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectV
 void QScriptEngine::setGlobalObject(const QScriptValue &object)
 {
     Q_D(QScriptEngine);
-    v8::Context::Scope scope(*d);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     d->setGlobalObject(QScriptValuePrivate::get(object));
 }
@@ -1844,7 +1860,7 @@ QScriptString QScriptEngine::toStringHandle(const QString& str)
 QScriptValue QScriptEngine::toObject(const QScriptValue& value)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(QScriptValuePrivate::get(value)->toObject(d));
 }
@@ -1919,7 +1935,7 @@ QScriptValue QScriptEngine::newObject(QScriptClass *, const QScriptValue &)
 QScriptValue QScriptEngine::newDate(const QDateTime &dt)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtDateTimeToJS(dt)));
 }
@@ -1932,7 +1948,7 @@ QScriptValue QScriptEngine::newDate(const QDateTime &dt)
 QScriptValue QScriptEngine::newDate(double date)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(v8::Date::New(date)));
 }
@@ -1946,7 +1962,7 @@ QScriptValue QScriptEngine::newDate(double date)
 QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(regexp)));
 }
@@ -1969,7 +1985,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
         strippedFlags += QLatin1Char('g');
 
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, strippedFlags)));
 }
@@ -1992,7 +2008,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newQMetaObject(const QMetaObject *metaObject, const QScriptValue &ctor)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(d->newQMetaObject(metaObject, ctor));
 }
@@ -2016,7 +2032,7 @@ QScriptValue QScriptEngine::objectById(qint64) const
 QScriptValue QScriptEngine::create(int type, const void *ptr)
 {
     Q_D(QScriptEngine);
-    QV8Context api(d, QV8Context::NotNullEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     return d->scriptValueFromInternal(d->metaTypeToJS(type, ptr));
 }

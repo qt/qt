@@ -21,7 +21,7 @@
 **
 ****************************************************************************/
 
-#include "qv8context_p.h"
+#include "qscriptisolate_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptstring.h"
@@ -132,10 +132,12 @@ QScriptValue::QScriptValue(QScriptValuePrivate* d)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, bool value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -146,10 +148,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, bool value)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, int value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -160,10 +164,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, int value)
  */
 QScriptValue::QScriptValue(QScriptEngine* engine, uint value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -174,10 +180,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, uint value)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, qsreal value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -188,10 +196,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, qsreal value)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, const QString& value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -202,10 +212,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, const QString& value)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, const char* value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), QString::fromUtf8(value));
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(QString::fromUtf8(value));
+    }
 }
 
 /*!
@@ -216,10 +228,12 @@ QScriptValue::QScriptValue(QScriptEngine* engine, const char* value)
 */
 QScriptValue::QScriptValue(QScriptEngine* engine, SpecialValue value)
 {
-    if (engine)
+    if (engine) {
+        QScriptIsolate api(QScriptEnginePrivate::get(engine), QScriptIsolate::NotNullEngine);
         d_ptr = new QScriptValuePrivate(QScriptEnginePrivate::get(engine), value);
-    else
+    } else {
         d_ptr = new QScriptValuePrivate(value);
+    }
 }
 
 /*!
@@ -248,7 +262,7 @@ QScriptValue::~QScriptValue()
 bool QScriptValue::isValid() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isValid();
 }
 
@@ -261,7 +275,7 @@ bool QScriptValue::isValid() const
 bool QScriptValue::isBool() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isBool();
 }
 
@@ -275,7 +289,7 @@ bool QScriptValue::isBool() const
 bool QScriptValue::isBoolean() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isBool();
 }
 
@@ -288,7 +302,7 @@ bool QScriptValue::isBoolean() const
 bool QScriptValue::isNumber() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isNumber();
 }
 
@@ -301,7 +315,7 @@ bool QScriptValue::isNumber() const
 bool QScriptValue::isNull() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isNull();
 }
 
@@ -314,7 +328,7 @@ bool QScriptValue::isNull() const
 bool QScriptValue::isString() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isString();
 }
 
@@ -327,7 +341,7 @@ bool QScriptValue::isString() const
 bool QScriptValue::isUndefined() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isUndefined();
 }
 
@@ -340,7 +354,7 @@ bool QScriptValue::isUndefined() const
 bool QScriptValue::isError() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isError();
 }
 
@@ -353,7 +367,7 @@ bool QScriptValue::isError() const
 bool QScriptValue::isArray() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isArray();
  }
 
@@ -369,7 +383,7 @@ bool QScriptValue::isArray() const
 bool QScriptValue::isObject() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isObject();
 }
 
@@ -382,7 +396,7 @@ bool QScriptValue::isObject() const
 bool QScriptValue::isFunction() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isCallable();
 }
 
@@ -395,7 +409,7 @@ bool QScriptValue::isFunction() const
 bool QScriptValue::isVariant() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isVariant();
 }
 
@@ -414,7 +428,7 @@ bool QScriptValue::isVariant() const
 QString QScriptValue::toString() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toString();
 }
 
@@ -433,7 +447,7 @@ QString QScriptValue::toString() const
 qsreal QScriptValue::toNumber() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toNumber();
 }
 
@@ -452,7 +466,7 @@ qsreal QScriptValue::toNumber() const
 bool QScriptValue::toBool() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toBool();
 }
 
@@ -464,7 +478,7 @@ bool QScriptValue::toBool() const
 bool QScriptValue::toBoolean() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toBool();
 }
 
@@ -483,7 +497,7 @@ bool QScriptValue::toBoolean() const
 qsreal QScriptValue::toInteger() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toInteger();
 }
 
@@ -502,7 +516,7 @@ qsreal QScriptValue::toInteger() const
 qint32 QScriptValue::toInt32() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toInt32();
 }
 
@@ -521,7 +535,7 @@ qint32 QScriptValue::toInt32() const
 quint32 QScriptValue::toUInt32() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toUInt32();
 }
 
@@ -540,7 +554,7 @@ quint32 QScriptValue::toUInt32() const
 quint16 QScriptValue::toUInt16() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toUInt16();
 }
 
@@ -552,7 +566,7 @@ quint16 QScriptValue::toUInt16() const
 QScriptValue QScriptValue::toObject() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->toObject());
 }
 
@@ -581,7 +595,7 @@ QScriptValue QScriptValue::toObject() const
 QVariant QScriptValue::toVariant() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toVariant();
 }
 
@@ -612,7 +626,7 @@ QVariant QScriptValue::toVariant() const
 QScriptValue QScriptValue::call(const QScriptValue& thisObject, const QScriptValueList& args)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->call(QScriptValuePrivate::get(thisObject), args);
 }
 
@@ -642,7 +656,7 @@ QScriptValue QScriptValue::call(const QScriptValue& thisObject, const QScriptVal
 QScriptValue QScriptValue::call(const QScriptValue &thisObject, const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->call(QScriptValuePrivate::get(thisObject), arguments);
 }
 
@@ -667,7 +681,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject, const QScriptVal
 QScriptValue QScriptValue::construct(const QScriptValueList &args)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->construct(args));
 }
 
@@ -689,7 +703,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->construct(arguments));
 }
 
@@ -702,7 +716,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 QScriptEngine* QScriptValue::engine() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     QScriptEnginePrivate* engine = d->engine();
     if (engine)
         return QScriptEnginePrivate::get(engine);
@@ -719,7 +733,7 @@ QScriptEngine* QScriptValue::engine() const
 QScriptValue QScriptValue::prototype() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->prototype());
 }
 
@@ -737,7 +751,7 @@ QScriptValue QScriptValue::prototype() const
 void QScriptValue::setPrototype(const QScriptValue& prototype)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     d->setPrototype(QScriptValuePrivate::get(prototype));
 }
 
@@ -782,7 +796,7 @@ bool QScriptValue::equals(const QScriptValue& other) const
 {
     Q_D(const QScriptValue);
     QScriptValuePrivate* otherValue = QScriptValuePrivate::get(other);
-    QV8Context api(d->engine() ? d->engine() : otherValue->engine());
+    QScriptIsolate api(d->engine() ? d->engine() : otherValue->engine());
     return d_ptr->equals(otherValue);
 }
 
@@ -812,7 +826,7 @@ bool QScriptValue::strictlyEquals(const QScriptValue& other) const
 {
     Q_D(const QScriptValue);
     QScriptValuePrivate* o = QScriptValuePrivate::get(other);
-    QV8Context api(d->engine() ? d->engine() : o->engine());
+    QScriptIsolate api(d->engine() ? d->engine() : o->engine());
     return d_ptr->strictlyEquals(o);
 }
 
@@ -849,7 +863,7 @@ bool QScriptValue::lessThan(const QScriptValue &other) const
 bool QScriptValue::instanceOf(const QScriptValue &other) const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->instanceOf(QScriptValuePrivate::get(other));
 }
 
@@ -871,7 +885,7 @@ bool QScriptValue::instanceOf(const QScriptValue &other) const
 QScriptValue QScriptValue::property(const QString& name, const ResolveFlags& mode) const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->property(name, mode));
 }
 
@@ -909,7 +923,7 @@ QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlag
 QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode) const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return QScriptValuePrivate::get(d->property(arrayIndex, mode));
 }
 
@@ -940,7 +954,7 @@ QScriptValue QScriptValue::property(quint32 arrayIndex, const ResolveFlags& mode
 void QScriptValue::setProperty(const QString& name, const QScriptValue& value, const PropertyFlags& flags)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     d->setProperty(name, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
@@ -959,7 +973,7 @@ void QScriptValue::setProperty(const QString& name, const QScriptValue& value, c
 void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue& value, const PropertyFlags& flags)
 {
     Q_D(QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     d->setProperty(arrayIndex, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
@@ -989,7 +1003,7 @@ void QScriptValue::setProperty(const QScriptString& name, const QScriptValue& va
 QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString& name, const ResolveFlags& mode) const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->propertyFlags(name, mode);
 }
 
@@ -1018,7 +1032,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& nam
 QObject *QScriptValue::toQObject() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->toQObject();
 }
 
@@ -1043,7 +1057,7 @@ const QMetaObject *QScriptValue::toQMetaObject() const
 QDateTime QScriptValue::toDateTime() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     if (!d_ptr->isDate())
         return QDateTime();
 
@@ -1061,7 +1075,7 @@ QDateTime QScriptValue::toDateTime() const
 QRegExp QScriptValue::toRegExp() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     if (!d_ptr->isRegExp())
         return QRegExp();
 
@@ -1078,7 +1092,7 @@ QRegExp QScriptValue::toRegExp() const
 bool QScriptValue::isDate() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isDate();
 }
 
@@ -1091,7 +1105,7 @@ bool QScriptValue::isDate() const
 bool QScriptValue::isRegExp() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isRegExp();
 }
 
@@ -1107,7 +1121,7 @@ bool QScriptValue::isRegExp() const
 bool QScriptValue::isQObject() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isQObject();
 }
 
@@ -1120,7 +1134,7 @@ bool QScriptValue::isQObject() const
 bool QScriptValue::isQMetaObject() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     return d->isQMetaObject();
 }
 
@@ -1154,7 +1168,7 @@ void QScriptValue::setScope(const QScriptValue &)
 QScriptValue QScriptValue::data() const
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     if (!d_ptr->isObject())
         return QScriptValue();
     v8::HandleScope handleScope;
@@ -1176,7 +1190,7 @@ QScriptValue QScriptValue::data() const
 void QScriptValue::setData(const QScriptValue &value)
 {
     Q_D(const QScriptValue);
-    QV8Context api(d->engine());
+    QScriptIsolate api(d->engine());
     if (!d_ptr->isObject())
         return;
     v8::HandleScope handleScope;
