@@ -272,14 +272,12 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptVa
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Value> value)
-    : m_engine(engine), m_state(JSValue)
+    : m_engine(engine), m_state(JSValue), m_value(v8::Persistent<v8::Value>::New(value))
 {
     Q_ASSERT(engine);
-    // this can happen if a method in V8 returns an undefined value
-    if (value.IsEmpty())
-        m_state = Invalid;
-    else
-        m_value = v8::Persistent<v8::Value>::New(value);
+    // It shouldn't happen, v8 shows errors by returning an empty handler. This is important debug
+    // information and it can't be simply ignored.
+    Q_ASSERT(!value.IsEmpty());
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
