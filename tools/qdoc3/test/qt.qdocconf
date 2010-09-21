@@ -103,6 +103,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/freetype \
                           $QTDIR/src/3rdparty/harfbuzz \
                           $QTDIR/src/3rdparty/kdebase \
+                          $QTDIR/src/3rdparty/libconninet \
                           $QTDIR/src/3rdparty/libjpeg \
                           $QTDIR/src/3rdparty/libmng \
                           $QTDIR/src/3rdparty/libpng \

@@ -60,7 +60,7 @@ Source *Preprocessor::parse(const TokenEngine::TokenContainer &tokenContainer,
                             const QVector<Type> &tokenTypeList, TypedPool<Item> *memoryPool)
 {
     m_memoryPool = memoryPool;
-    Source *m_source = createNode<Source>(m_memoryPool); //node whith no parent
+    Source *m_source = createNode<Source>(m_memoryPool); //node with no parent
     m_tokenContainer = tokenContainer;
     m_tokenTypeList = tokenTypeList;
     lexerTokenIndex = 0;
@@ -538,7 +538,7 @@ bool Preprocessor::parsePragmaDirective(Item *group)
 }
 /*
     Reads a preprocessor line from the source by advancing lexerTokenIndex and
-    returing a TokenSection containg the read line. Text lines separated by
+    returning a TokenSection containing the read line. Text lines separated by
     an escaped newline are joined.
 */
 TokenSection Preprocessor::readLine()

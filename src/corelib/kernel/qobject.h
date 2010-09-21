@@ -351,7 +351,7 @@ inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QStrin
 { return o->findChild<T>(name); }
 
 template<typename T>
-inline QList<T> qFindChildren(const QObject *o, const QString &name = QString())
+inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &name = QString())
 {
     return o->findChildren<T>(name);
 }

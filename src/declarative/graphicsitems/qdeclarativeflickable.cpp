@@ -128,8 +128,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
     , flickingHorizontally(false), flickingVertically(false)
     , hMoved(false), vMoved(false)
     , movingHorizontally(false), movingVertically(false)
-    , stealMouse(false), pressed(false)
-    , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
+    , stealMouse(false), pressed(false), interactive(true), calcVelocity(false)
+    , deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , vTime(0), visibleArea(0)
     , flickableDirection(QDeclarativeFlickable::AutoFlickDirection)
@@ -372,11 +372,12 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \inlineimage flickable.gif
     \endfloat
 
-    The following example shows a large 
+    The following example shows a small view onto a large image in which the
+    user can drag or flick the image in order to view different parts of it.
 
-    \clearfloat
     \snippet doc/src/snippets/declarative/flickable.qml document
 
+    \clearfloat
     \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
@@ -981,7 +982,7 @@ void QDeclarativeFlickable::viewportMoved()
     qreal prevY = d->lastFlickablePosition.x();
     qreal prevX = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
-    if (d->pressed) {
+    if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
         if (elapsed > 0) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;

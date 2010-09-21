@@ -37,36 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-//! [dragfilter]
 import Qt 4.7
 
 Rectangle {
-    width: 480
-    height: 320
-    Rectangle {
-        x: 30; y: 30
-        width: 300; height: 240
-        color: "lightsteelblue"
+    width: 700; height: 400
 
-        MouseArea {
-            anchors.fill: parent
-            drag.target: parent;
-            drag.axis: "XAxis"
-            drag.minimumX: 30
-            drag.maximumX: 150
-            drag.filterChildren: true
-
-            Rectangle {
-                color: "yellow"
-                x: 50; y : 50
-                width: 100; height: 100
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: console.log("Clicked")
-                }
-            }
-        }
+//![0]
+    Text {
+            textFormat: Text.RichText
+            text: "The main website is at <a href=\"http://qt.nokia.com\">Nokia Qt DF</a>."
+            onLinkActivated: console.log(link + " link activated")
     }
+//![0]
+
 }
-//! [dragfilter]
+

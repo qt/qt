@@ -184,7 +184,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
 // get or create a QGesture object that will represent the state for a given object, used by the recognizer
 QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recognizer, Qt::GestureType type)
 {
-    // if the widget is being deleted we should be carefull and not to
+    // if the widget is being deleted we should be careful not to
     // create a new state, as it will create QWeakPointer which doesnt work
     // from the destructor.
     if (object->isWidgetType()) {

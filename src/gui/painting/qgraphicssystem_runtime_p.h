@@ -177,6 +177,7 @@ private:
 
     friend class QRuntimePixmapData;
     friend class QRuntimeWindowSurface;
+    friend class QMeeGoGraphicsSystem;
 };
 
 QT_END_NAMESPACE

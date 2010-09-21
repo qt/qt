@@ -579,7 +579,7 @@ int QPixmap::height() const
 */
 QSize QPixmap::size() const
 {
-    return data ? QSize(data->width(), data->height()) : QSize();
+    return data ? QSize(data->width(), data->height()) : QSize(0, 0);
 }
 
 /*!
@@ -1177,8 +1177,12 @@ Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(pd)->handle();
+    if (pd) {
+        if (pd->classId() == QPixmapData::X11Class)
+            return static_cast<const QX11PixmapData*>(pd)->handle();
+        else
+            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
+    }
 #endif
     return 0;
 }

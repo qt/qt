@@ -509,6 +509,7 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, c
 
     m_dash_stroker.setDashPattern(pen.dashPattern());
     m_dash_stroker.setStrokeWidth(cosmetic ? width * m_inv_scale : width);
+    m_dash_stroker.setDashOffset(pen.dashOffset());
     m_dash_stroker.setMiterLimit(pen.miterLimit());
     m_dash_stroker.setClipRect(clip);
 

@@ -806,10 +806,10 @@ void Semantic::parseNameUse(NameAST* name)
 }
 
 /*
-    looks up name used in basescope. If name->isGlobal() is true or if classOrNamespaceList()
+    Looks up name used in basescope. If name->isGlobal() is true or if classOrNamespaceList()
     returns a non-empty list, the C++ qualified name lookup rules are used. Otherwise the
     unquialified name lookup rules are used.  Returns the a list of members that was found,
-    In most cases this list will contain zero or one element, exept in the case of overloaded functions.
+    In most cases this list will contain zero or one element, except in the case of overloaded functions.
     TODO: Argument-dependent name lookup
 */
 QList<CodeModel::Member *> Semantic::nameLookup(CodeModel::Scope *baseScope, const NameAST* name)

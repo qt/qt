@@ -400,11 +400,39 @@ QTabletDeviceDataList *qt_tablet_devices()
 extern bool qt_tabletChokeMouse;
 #endif
 
+typedef bool(*QX11FilterFunction)(XEvent *event);
+
+Q_GLOBAL_STATIC(QList<QX11FilterFunction>, x11Filters)
+
+Q_GUI_EXPORT void qt_installX11EventFilter(QX11FilterFunction func)
+{
+    Q_ASSERT(func);
+
+    if (QList<QX11FilterFunction> *list = x11Filters())
+        list->append(func);
+}
+
+Q_GUI_EXPORT void qt_removeX11EventFilter(QX11FilterFunction func)
+{
+    Q_ASSERT(func);
+
+    if (QList<QX11FilterFunction> *list = x11Filters())
+        list->removeOne(func);
+}
+
+
 static bool qt_x11EventFilter(XEvent* ev)
 {
     long unused;
     if (qApp->filterEvent(ev, &unused))
         return true;
+    if (const QList<QX11FilterFunction> *list = x11Filters()) {
+        for (QList<QX11FilterFunction>::const_iterator it = list->constBegin(); it != list->constEnd(); ++it) {
+            if ((*it)(ev))
+                return true;
+        }
+    }
+
     return qApp->x11EventFilter(ev);
 }
 
