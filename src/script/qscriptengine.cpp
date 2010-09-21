@@ -1747,9 +1747,8 @@ void QScriptEnginePrivate::pushScope(QScriptValuePrivate* value)
     if (!value->isObject())
         return;
     v8::Handle<v8::Value> securityToken = m_v8Context->GetSecurityToken();
-    v8::Handle<v8::ObjectTemplate> scopeObjectTemplate;
+    v8::Handle<v8::ObjectTemplate> scopeObjectTemplate = v8::ObjectTemplate::New();
     {   // Initialize scopeObjectTemplate
-        v8::Handle<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
         v8::Handle<v8::Value> globalObject = m_v8Context->Global();
         v8::Handle<v8::Value> scopeObject = static_cast<v8::Handle<v8::Value> >(*value);
         v8::Handle<v8::Array> scopeChain = v8::Array::New(2);
@@ -1758,19 +1757,18 @@ void QScriptEnginePrivate::pushScope(QScriptValuePrivate* value)
         Q_ASSERT(!scopeChain.IsEmpty());
         scopeChain->Set(0, scopeObject);
         scopeChain->Set(1, globalObject);
-        objectTemplate->SetNamedPropertyHandler(QtScopeObjectNamedPropertyGetter,
+        scopeObjectTemplate->SetNamedPropertyHandler(QtScopeObjectNamedPropertyGetter,
                                                 QtScopeObjectNamedPropertySetter,
                                                 QtScopeObjectNamedPropertyQuery,
                                                 QtScopeObjectNamedPropertyDeleter,
                                                 QtScopeObjectNamedPropertyEnumeration,
                                                 scopeChain);
-        objectTemplate->SetIndexedPropertyHandler(QtScopeObjectIndexedPropertyGetter,
+        scopeObjectTemplate->SetIndexedPropertyHandler(QtScopeObjectIndexedPropertyGetter,
                                                 QtScopeObjectIndexedPropertySetter,
                                                 QtScopeObjectIndexedPropertyQuery,
                                                 QtScopeObjectIndexedPropertyDeleter,
                                                 QtScopeObjectIndexedPropertyEnumeration,
                                                 scopeChain);
-        scopeObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New(objectTemplate);
     }
 
     m_v8Context->Exit();
