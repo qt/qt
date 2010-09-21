@@ -3010,9 +3010,10 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
+#if 0    
     marked.replace("<@param>","<i>");
     marked.replace("</@param>","</i>");
-
+#endif
     if (style == CodeMarker::Summary) {
         marked.replace("<@name>","");   // was "<b>"
         marked.replace("</@name>","");  // was "</b>"
@@ -3023,10 +3024,12 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
         extraRegExp.setMinimal(true);
         marked.replace(extraRegExp,"");
     }
+#if 0    
     else {
         marked.replace("<@extra>","<tt>");
         marked.replace("</@extra>","</tt>");
     }
+#endif    
 
     if (style != CodeMarker::Detailed) {
         marked.replace("<@type>","");
@@ -3062,15 +3065,19 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
         "<@type>",         "<@type>",
         "<@headerfile>",   "<@headerfile>",
         "<@func>",         "<@func>",
+        "<@param>",        "<@param>",
+        "<@extra>",        "<@extra>",
         "</@link>",        "</@link>",
         "</@type>",        "</@type>",
         "</@headerfile>",  "</@headerfile>",
-        "</@func>",        "</@func>"
+        "</@func>",        "</@func>",
+        "</@param>",        "</@param>",
+        "</@extra>",        "</@extra>"
     };
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle) {
             bool handled = false;
-            for (int k = 0; k != 8; ++k) {
+            for (int k = 0; k != 12; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
@@ -3104,7 +3111,10 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
     src = html;
     html = QString();
-    static const QString markTags[] = { "link", "type", "headerfile", "func" };
+    static const QString markTags[] = {
+        // 0       1         2           3       4        5
+        "link", "type", "headerfile", "func", "param", "extra"
+    };
     bool done = false;
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
@@ -3120,10 +3130,10 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             }
             i += 2;
             bool handled = false;
-            for (int k = 0; k != 4; ++k) {
+            for (int k = 0; k != 6; ++k) {
                 if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
                     const Node* n = 0;
-                    if (k == 0) {
+                    if (k == 0) { // <@link>
                         if (!html.isEmpty()) {
                             xmlWriter().writeCharacters(html);
                             html.clear();
@@ -3131,6 +3141,24 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                         n = CodeMarker::nodeForString(par1.toString());
                         QString link = linkForNode(n, relative);
                         addLink(link, arg);
+                    }
+                    else if (k == 4) { // <@param>
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        xmlWriter().writeStartElement("i");
+                        xmlWriter().writeCharacters(arg.toString());
+                        xmlWriter().writeEndElement(); // </i>
+                    }
+                    else if (k == 5) { // <@extra>
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        xmlWriter().writeStartElement("tt");
+                        xmlWriter().writeCharacters(arg.toString());
+                        xmlWriter().writeEndElement(); // </tt>
                     }
                     else {
                         if (!html.isEmpty()) {
