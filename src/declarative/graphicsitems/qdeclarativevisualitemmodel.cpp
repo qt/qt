@@ -621,7 +621,7 @@ QDeclarativeVisualDataModelParts::QDeclarativeVisualDataModelParts(QDeclarativeV
 
 QDeclarativeVisualDataModelPrivate::QDeclarativeVisualDataModelPrivate(QDeclarativeContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
-, m_context(ctxt), m_parts(0), m_delegateDataType(0), m_metaDataCreated(false)
+, m_context(ctxt), m_modelDataPropId(-1), m_parts(0), m_delegateDataType(0), m_metaDataCreated(false)
 , m_metaDataCacheable(false), m_delegateValidated(false), m_completePending(false), m_listAccessor(0)
 {
 }
@@ -1202,11 +1202,11 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                     qmlInfo(this) << "Changing role not present in item: " << roleName;
                 }
             }
-            if (roles.count() == 1) {
+            if (d->m_roles.count() == 1) {
                 // Handle the modelData role we add if there is just one role.
                 int propId = data->modelDataPropertyId();
                 if (data->hasValue(propId)) {
-                    int role = roles.at(0);
+                    int role = d->m_roles.at(0);
                     if (d->m_listModelInterface) {
                         data->setValue(propId, d->m_listModelInterface->data(idx, role));
                     } else if (d->m_abstractItemModel) {

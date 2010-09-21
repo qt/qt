@@ -98,6 +98,7 @@ private slots:
     void get_worker_data();
     void get_nested();
     void get_nested_data();
+    void crash_model_with_multiple_roles();
 };
 int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, const QString &roleName)
 {
@@ -884,6 +885,21 @@ void tst_qdeclarativelistmodel::get_nested()
 void tst_qdeclarativelistmodel::get_nested_data()
 {
     get_data();
+}
+
+//QTBUG-13754
+void tst_qdeclarativelistmodel::crash_model_with_multiple_roles()
+{
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/multipleroles.qml"));
+    QObject *rootItem = component.create();
+    QVERIFY(component.errorString().isEmpty());
+    QVERIFY(rootItem != 0);
+    QDeclarativeListModel *model = rootItem->findChild<QDeclarativeListModel*>("listModel");
+    QVERIFY(model != 0);
+
+    // used to cause a crash in QDeclarativeVisualDataModel
+    model->setProperty(0, "black", true);
 }
 
 QTEST_MAIN(tst_qdeclarativelistmodel)
