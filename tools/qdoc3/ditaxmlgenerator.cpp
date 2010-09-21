@@ -358,19 +358,21 @@ QString DitaXmlGenerator::sinceTitles[] =
 
 static bool showBrokenLinks = false;
 
-static void addLink(const QString &linkTarget,
-                    const QStringRef &nestedStuff,
-                    QString *res)
+/*!
+  Appends an <xref> element to the current XML stream
+  with the \a href attribute and the \a text.
+ */
+void DitaXmlGenerator::addLink(const QString& href,
+                               const QStringRef& text)
 {
-    if (!linkTarget.isEmpty()) {
-        *res += "<xref href=\"";
-        *res += linkTarget;
-        *res += "\">";
-        *res += nestedStuff;
-        *res += "</xref>";
+    if (!href.isEmpty()) {
+        xmlWriter().writeStartElement("xref");
+        xmlWriter().writeAttribute("href", href);
+        xmlWriter().writeCharacters(text.toString());
+        xmlWriter().writeEndElement(); // </xref>
     }
     else {
-        *res += nestedStuff;
+        xmlWriter().writeCharacters(text.toString());
     }
 }
 
@@ -2240,14 +2242,14 @@ QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode* inner,
         xmlWriter().writeAttribute("href","qt3support.html");
         xmlWriter().writeCharacters("Qt 3 support layer");
         xmlWriter().writeEndElement(); // </xref>
-        xmlWriter().writeCharacters(".");
+        xmlWriter().writeCharacters(". ");
         xmlWriter().writeEndElement(); // </b>
-        xmlWriter().writeCharacters(" They are provided to help you port old code to Qt 4. "
+        xmlWriter().writeCharacters("They are provided to help you port old code to Qt 4. "
                                     "We advise against using them in new code.");
     }
     else {
         xmlWriter().writeStartElement("b");
-        xmlWriter().writeCharacters("The following class members are obsolete.");
+        xmlWriter().writeCharacters("The following class members are obsolete. ");
         xmlWriter().writeEndElement(); // </b>
         xmlWriter().writeCharacters("They are provided to keep old source code working. "
                                     "We strongly advise against using them in new code.");
@@ -3008,9 +3010,10 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
     }
     marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
                    "<i>\\1<sub>\\2</sub></i>");
+#if 0    
     marked.replace("<@param>","<i>");
     marked.replace("</@param>","</i>");
-
+#endif
     if (style == CodeMarker::Summary) {
         marked.replace("<@name>","");   // was "<b>"
         marked.replace("</@name>","");  // was "</b>"
@@ -3021,10 +3024,12 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
         extraRegExp.setMinimal(true);
         marked.replace(extraRegExp,"");
     }
+#if 0    
     else {
         marked.replace("<@extra>","<tt>");
         marked.replace("</@extra>","</tt>");
     }
+#endif    
 
     if (style != CodeMarker::Detailed) {
         marked.replace("<@type>","");
@@ -3050,106 +3055,29 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     const QChar charLangle = '<';
     const QChar charAt = '@';
 
-    // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
-    static const QString linkTag("link");
-    bool done = false;
-    for (int i = 0, n = src.size(); i < n;) {
-        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
-            if (nameAlignment && !done) {// && (i != 0)) Why was this here?
-                if (!html.isEmpty()) {
-                    xmlWriter().writeCharacters(html);
-                    html.clear();
-                }
-                xmlWriter().writeEndElement(); // </<entry>
-                xmlWriter().writeStartElement("entry");
-                xmlWriter().writeAttribute("outputclass=","memItemRight bottomAlign");
-                done = true;
-            }
-            i += 2;
-            if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
-                html += "<b>";
-                QString link = linkForNode(
-                    CodeMarker::nodeForString(par1.toString()), relative);
-                addLink(link, arg, &html);
-                html += "</b>";
-            }
-            else {
-                html += charLangle;
-                html += charAt;
-            }
-        }
-        else {
-            html += src.at(i++);
-        }
-    }
-
-    // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
-    src = html;
-    html = QString();
-    static const QString typeTags[] = { "type", "headerfile", "func" };
-    for (int i = 0, n = src.size(); i < n;) {
-        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
-            i += 2;
-            bool handled = false;
-            for (int k = 0; k != 3; ++k) {
-                if (parseArg(src, typeTags[k], &i, n, &arg, &par1)) {
-                    par1 = QStringRef();
-                    QString link = linkForNode(
-                            marker->resolveTarget(arg.toString(), myTree, relative),
-                            relative);
-                    addLink(link, arg, &html);
-                    handled = true;
-                    break;
-                }
-            }
-            if (!handled) {
-                html += charLangle;
-                html += charAt;
-            }
-        }
-        else {
-            html += src.at(i++);
-        }
-    }
-
-    // replace all
-    // "<@comment>" -> "<span class=\"comment\">";
-    // "<@preprocessor>" -> "<span class=\"preprocessor\">";
-    // "<@string>" -> "<span class=\"string\">";
-    // "<@char>" -> "<span class=\"char\">";
-    // "</@(?:comment|preprocessor|string|char)>" -> "</span>"
-    src = html;
-    html = QString();
+    /*
+      First strip out all the extraneous markup. The table
+      below contains the markup we want to keep. Everything
+      else that begins with "<@" or "</@" is stripped out.
+     */
     static const QString spanTags[] = {
-        "<@comment>",      "<span class=\"comment\">",
-        "<@preprocessor>", "<span class=\"preprocessor\">",
-        "<@string>",       "<span class=\"string\">",
-        "<@char>",         "<span class=\"char\">",
-        "</@comment>",     "</span>",
-        "</@preprocessor>","</span>",
-        "</@string>",      "</span>",
-        "</@char>",        "</span>"
-        // "<@char>",      "<font color=blue>",
-        // "</@char>",     "</font>",
-        // "<@func>",      "<font color=green>",
-        // "</@func>",     "</font>",
-        // "<@id>",        "<i>",
-        // "</@id>",       "</i>",
-        // "<@keyword>",   "<b>",
-        // "</@keyword>",  "</b>",
-        // "<@number>",    "<font color=yellow>",
-        // "</@number>",   "</font>",
-        // "<@op>",        "<b>",
-        // "</@op>",       "</b>",
-        // "<@param>",     "<i>",
-        // "</@param>",    "</i>",
-        // "<@string>",    "<font color=green>",
-        // "</@string>",  "</font>",
+        "<@link ",         "<@link ",
+        "<@type>",         "<@type>",
+        "<@headerfile>",   "<@headerfile>",
+        "<@func>",         "<@func>",
+        "<@param>",        "<@param>",
+        "<@extra>",        "<@extra>",
+        "</@link>",        "</@link>",
+        "</@type>",        "</@type>",
+        "</@headerfile>",  "</@headerfile>",
+        "</@func>",        "</@func>",
+        "</@param>",        "</@param>",
+        "</@extra>",        "</@extra>"
     };
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle) {
             bool handled = false;
-            for (int k = 0; k != 8; ++k) {
+            for (int k = 0; k != 12; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
@@ -3178,8 +3106,83 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
             ++i;
         }
     }
-    if (!html.isEmpty())
+
+    // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
+    // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
+    src = html;
+    html = QString();
+    static const QString markTags[] = {
+        // 0       1         2           3       4        5
+        "link", "type", "headerfile", "func", "param", "extra"
+    };
+    bool done = false;
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            if (nameAlignment && !done) {
+                if (!html.isEmpty()) {
+                    xmlWriter().writeCharacters(html);
+                    html.clear();
+                }
+                xmlWriter().writeEndElement(); // </<entry>
+                xmlWriter().writeStartElement("entry");
+                xmlWriter().writeAttribute("outputclass=","memItemRight bottomAlign");
+                done = true;
+            }
+            i += 2;
+            bool handled = false;
+            for (int k = 0; k != 6; ++k) {
+                if (parseArg(src, markTags[k], &i, n, &arg, &par1)) {
+                    const Node* n = 0;
+                    if (k == 0) { // <@link>
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        n = CodeMarker::nodeForString(par1.toString());
+                        QString link = linkForNode(n, relative);
+                        addLink(link, arg);
+                    }
+                    else if (k == 4) { // <@param>
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        xmlWriter().writeStartElement("i");
+                        xmlWriter().writeCharacters(arg.toString());
+                        xmlWriter().writeEndElement(); // </i>
+                    }
+                    else if (k == 5) { // <@extra>
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        xmlWriter().writeStartElement("tt");
+                        xmlWriter().writeCharacters(arg.toString());
+                        xmlWriter().writeEndElement(); // </tt>
+                    }
+                    else {
+                        if (!html.isEmpty()) {
+                            xmlWriter().writeCharacters(html);
+                            html.clear();
+                        }
+                        par1 = QStringRef();
+                        marker->resolveTarget(arg.toString(), myTree, relative);
+                        QString link = linkForNode(n,relative);
+                        addLink(link, arg);
+                    }
+                    handled = true;
+                    break;
+                }
+            }
+        }
+        else {
+            html += src.at(i++);
+        }
+    }
+
+    if (!html.isEmpty()) {
         xmlWriter().writeCharacters(html);
+    }
 }
 
 void DitaXmlGenerator::generateLink(const Atom* atom,
