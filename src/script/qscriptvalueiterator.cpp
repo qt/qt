@@ -117,10 +117,11 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
     : m_object(const_cast<QScriptValuePrivate*>(value))
     , m_iterator(m_names)
 {
+    Q_ASSERT(value);
+    QScriptIsolate api(engine());
     if (!m_object->isObject())
         m_object = 0;
     else {
-        v8::Context::Scope contextScope(*engine());
         v8::HandleScope scope;
         Handle<Value> tmp = *value;
         Handle<Object> obj = Handle<Object>::Cast(tmp);
