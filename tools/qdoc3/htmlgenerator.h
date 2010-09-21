@@ -241,9 +241,9 @@ class HtmlGenerator : public PageGenerator
     void generateStatus(const Node *node, CodeMarker *marker);
     
     QString registerRef(const QString& ref);
-    QString fileBase(const Node *node);
+    QString fileBase(const Node *node) const;
 #if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
+    QString fileBase(const Node *node, const SectionIterator& section) const;
 #endif
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);

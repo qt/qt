@@ -3361,7 +3361,7 @@ QString DitaXmlGenerator::protect(const QString& string, const QString& outputEn
   Constructs a file name appropriate for the \a node
   and returns the file name.
  */
-QString DitaXmlGenerator::fileBase(const Node* node)
+QString DitaXmlGenerator::fileBase(const Node* node) const
 {
     QString result;
     result = PageGenerator::fileBase(node);
