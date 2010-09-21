@@ -719,6 +719,10 @@ void DontBlockEvents::paintEvent()
 
 void tst_QTimer::QTBUG13633_dontBlockEvents()
 {
+#ifdef Q_OS_SYMBIAN
+    QEXPECT_FAIL("", "Expect failure because of QTBUG-13773", Abort);
+    QVERIFY2(false, "This test hangs on Symbian");
+#endif
     DontBlockEvents t;
     QTest::qWait(60);
     QVERIFY(t.total > 2);
