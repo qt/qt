@@ -267,6 +267,7 @@ class DitaXmlGenerator : public PageGenerator
                              CodeMarker* marker,
                              bool apiDesc,
                              const QString& title);
+    void addLink(const QString& href, const QStringRef& text);
 
  private:
     QMap<QString, QString> refMap;
