@@ -1169,12 +1169,7 @@ QScriptValue QScriptValue::data() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    if (!d_ptr->isObject())
-        return QScriptValue();
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
-    v8::Handle<v8::Value> value = self->GetHiddenValue(d_ptr->engine()->qtDataId());
-    return d_ptr->engine()->scriptValueFromInternal(value);
+    return QScriptValuePrivate::get(d->data());
 }
 
 /*!
@@ -1191,16 +1186,7 @@ void QScriptValue::setData(const QScriptValue &value)
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    if (!d_ptr->isObject())
-        return;
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Object> self(v8::Object::Cast(*d_ptr->m_value));
-    v8::Handle<v8::Value> jsValue = d_ptr->engine()->scriptValueToInternal(value);
-    v8::Handle<v8::String> dataId = d_ptr->engine()->qtDataId();
-    if (jsValue.IsEmpty())
-        self->DeleteHiddenValue(dataId);
-    else
-        self->SetHiddenValue(dataId, jsValue);
+    d->setData(QScriptValuePrivate::get(value));
 }
 
 /*!

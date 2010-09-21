@@ -115,6 +115,8 @@ public:
     inline QScriptValuePrivate* property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline void setData(QScriptValuePrivate* value) const;
+    inline QScriptValuePrivate* data() const;
 
     inline int convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments);
 
@@ -856,6 +858,31 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
         return QScriptValue::PropertyFlags(0);
     Q_UNIMPLEMENTED();
     return QScriptValue::PropertyFlags(0);
+}
+
+inline QScriptValuePrivate* QScriptValuePrivate::data() const
+{
+    if (!isObject())
+        return new QScriptValuePrivate();
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
+    v8::Handle<v8::Value> value = self->GetHiddenValue(engine()->qtDataId());
+    if (value.IsEmpty())
+        return new QScriptValuePrivate();
+    return new QScriptValuePrivate(engine(), value);
+}
+
+inline void QScriptValuePrivate::setData(QScriptValuePrivate* data) const
+{
+    if (!isObject())
+        return;
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
+    v8::Handle<v8::String> dataId = engine()->qtDataId();
+    if (!data->assignEngine(engine()))
+        self->DeleteHiddenValue(dataId);
+    else
+        self->SetHiddenValue(dataId, data->m_value);
 }
 
 inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments)
