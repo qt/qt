@@ -25,7 +25,9 @@ SOURCES += socket/qabstractsocketengine.cpp \
            socket/qlocalsocket.cpp \
            socket/qlocalserver.cpp
 
-unix:SOURCES += socket/qnativesocketengine_unix.cpp \
+unix:!symbian:SOURCES += socket/qnativesocketengine_unix.cpp
+symbian:SOURCES += socket/qnativesocketengine_symbian.cpp
+unix:SOURCES +=  \
                 socket/qlocalsocket_unix.cpp \
                 socket/qlocalserver_unix.cpp
 unix:HEADERS += \

@@ -63,6 +63,7 @@
 #ifdef Q_OS_SYMBIAN
 #include <private/qeventdispatcher_symbian_p.h>
 #include <unistd.h>
+#include <es_sock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -196,6 +197,11 @@ public:
     ~QNativeSocketEnginePrivate();
 
     int socketDescriptor;
+#ifdef Q_OS_SYMBIAN
+    mutable RSocket nativeSocket;
+    RSocketServ socketServer; //TODO: shared ref
+    RConnection connection; //TODO: shared ref
+#endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
@@ -233,6 +239,9 @@ public:
         UnknownSocketErrorString = -1
     };
 
+#ifdef Q_OS_SYMBIAN
+    void setError(TInt symbianError);
+#endif
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
     // native functions
