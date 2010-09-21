@@ -2,6 +2,7 @@ QT += script
 CONFIG += uitools
 RESOURCES += calculator.qrc
 SOURCES += main.cpp
+QMAKE_PROJECT_NAME = scripted_calculator
 
 contains(QT_CONFIG, scripttools): QT += scripttools
 

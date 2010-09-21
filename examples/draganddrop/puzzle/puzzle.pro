@@ -7,6 +7,8 @@ SOURCES     = main.cpp \
               pieceslist.cpp \
               puzzlewidget.cpp
 
+QMAKE_PROJECT_NAME = dndpuzzle
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/puzzle
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
