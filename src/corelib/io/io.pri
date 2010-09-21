@@ -9,6 +9,7 @@ HEADERS +=  \
         io/qdataurl_p.h \
         io/qdebug.h \
         io/qdir.h \
+        io/qdir_p.h \
         io/qdiriterator.h \
         io/qfile.h \
         io/qfileinfo.h \

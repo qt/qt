@@ -41,6 +41,7 @@
 
 #include "qplatformdefs.h"
 #include "qdir.h"
+#include "qdir_p.h"
 #include "qabstractfileengine.h"
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
@@ -85,153 +86,123 @@ static QString driveSpec(const QString &path)
 }
 
 //************* QDirPrivate
-class QDirPrivate
-    : public QSharedData
-{
-public:
-    QDirPrivate(const QString &path,
-            const QStringList &nameFilters_ = QStringList(),
-            QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
-            QDir::Filters filters_ = QDir::AllEntries)
-        : QSharedData()
-        , nameFilters(nameFilters_)
-        , sort(sort_)
-        , filters(filters_)
+QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, QDir::SortFlags sort_, QDir::Filters filters_)
+    : QSharedData()
+    , nameFilters(nameFilters_)
+    , sort(sort_)
+    , filters(filters_)
 #ifdef QT3_SUPPORT
-        , filterSepChar(0)
-        , matchAllDirs(false)
+    , filterSepChar(0)
+    , matchAllDirs(false)
 #endif
-        , fileListsInitialized(false)
-    {
-        setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
+    , fileListsInitialized(false)
+{
+    setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
 
-        bool empty = nameFilters.isEmpty();
-        if (!empty) {
-            empty = true;
-            for (int i = 0; i < nameFilters.size(); ++i) {
-                if (!nameFilters.at(i).isEmpty()) {
-                    empty = false;
-                    break;
-                }
+    bool empty = nameFilters.isEmpty();
+    if (!empty) {
+        empty = true;
+        for (int i = 0; i < nameFilters.size(); ++i) {
+            if (!nameFilters.at(i).isEmpty()) {
+                empty = false;
+                break;
             }
         }
-        if (empty)
-            nameFilters = QStringList(QString::fromLatin1("*"));
     }
+    if (empty)
+        nameFilters = QStringList(QString::fromLatin1("*"));
+}
 
-    QDirPrivate(const QDirPrivate &copy)
-        : QSharedData(copy)
-        , nameFilters(copy.nameFilters)
-        , sort(copy.sort)
-        , filters(copy.filters)
+QDirPrivate::QDirPrivate(const QDirPrivate &copy)
+    : QSharedData(copy)
+    , nameFilters(copy.nameFilters)
+    , sort(copy.sort)
+    , filters(copy.filters)
 #ifdef QT3_SUPPORT
-        , filterSepChar(copy.filterSepChar)
-        , matchAllDirs(copy.matchAllDirs)
+    , filterSepChar(copy.filterSepChar)
+    , matchAllDirs(copy.matchAllDirs)
 #endif
-        , fileListsInitialized(false)
-        , dirEntry(copy.dirEntry)
-        , metaData(copy.metaData)
-    {
+    , fileListsInitialized(false)
+    , dirEntry(copy.dirEntry)
+    , metaData(copy.metaData)
+{
+}
+
+bool QDirPrivate::exists() const
+{
+    if (fileEngine.isNull()) {
+        if (!metaData.hasFlags(QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType))
+            QFileSystemEngine::fillMetaData(dirEntry, metaData,
+                    QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
+        return metaData.exists() && metaData.isDirectory();
     }
+    const QAbstractFileEngine::FileFlags info =
+        fileEngine->fileFlags(QAbstractFileEngine::DirectoryType
+                                       | QAbstractFileEngine::ExistsFlag
+                                       | QAbstractFileEngine::Refresh);
+    if (!(info & QAbstractFileEngine::DirectoryType))
+        return false;
+    return info & QAbstractFileEngine::ExistsFlag;
+}
 
-    bool exists() const
-    {
-        if (fileEngine.isNull()) {
-            if (!metaData.hasFlags(QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType))
-                QFileSystemEngine::fillMetaData(dirEntry, metaData,
-                        QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
-            return metaData.exists() && metaData.isDirectory();
-        }
-        const QAbstractFileEngine::FileFlags info =
-            fileEngine->fileFlags(QAbstractFileEngine::DirectoryType
-                                           | QAbstractFileEngine::ExistsFlag
-                                           | QAbstractFileEngine::Refresh);
-        if (!(info & QAbstractFileEngine::DirectoryType))
-            return false;
-        return info & QAbstractFileEngine::ExistsFlag;
-    }
+// static
+inline QChar QDirPrivate::getFilterSepChar(const QString &nameFilter)
+{
+    QChar sep(QLatin1Char(';'));
+    int i = nameFilter.indexOf(sep, 0);
+    if (i == -1 && nameFilter.indexOf(QLatin1Char(' '), 0) != -1)
+        sep = QChar(QLatin1Char(' '));
+    return sep;
+}
 
-    void initFileEngine();
-    void initFileLists(const QDir &dir) const;
+// static
+inline QStringList QDirPrivate::splitFilters(const QString &nameFilter, QChar sep)
+{
+    if (sep == 0)
+        sep = getFilterSepChar(nameFilter);
+    QStringList ret = nameFilter.split(sep);
+    for (int i = 0; i < ret.count(); ++i)
+        ret[i] = ret[i].trimmed();
+    return ret;
+}
 
-    static void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *);
-
-    static inline QChar getFilterSepChar(const QString &nameFilter)
-    {
-        QChar sep(QLatin1Char(';'));
-        int i = nameFilter.indexOf(sep, 0);
-        if (i == -1 && nameFilter.indexOf(QLatin1Char(' '), 0) != -1)
-            sep = QChar(QLatin1Char(' '));
-        return sep;
-    }
-
-    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = 0)
-    {
-        if (sep == 0)
-            sep = getFilterSepChar(nameFilter);
-        QStringList ret = nameFilter.split(sep);
-        for (int i = 0; i < ret.count(); ++i)
-            ret[i] = ret[i].trimmed();
-        return ret;
-    }
-
-    inline void setPath(const QString &path)
-    {
-        QString p = QDir::fromNativeSeparators(path);
-        if (p.endsWith(QLatin1Char('/'))
-                && p.length() > 1
+inline void QDirPrivate::setPath(const QString &path)
+{
+    QString p = QDir::fromNativeSeparators(path);
+    if (p.endsWith(QLatin1Char('/'))
+            && p.length() > 1
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
-            && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
+        && (!(p.length() == 3 && p.at(1).unicode() == ':' && p.at(0).isLetter()))
 #endif
-        ) {
-                p.truncate(p.length() - 1);
-        }
-
-        dirEntry = QFileSystemEntry(p);
-        initFileEngine();
-        clearFileLists();
-        absoluteDirEntry = QFileSystemEntry();
+    ) {
+            p.truncate(p.length() - 1);
     }
 
-    inline void clearFileLists()
-    {
-        fileListsInitialized = false;
-        files.clear();
-        fileInfos.clear();
+    dirEntry = QFileSystemEntry(p);
+    initFileEngine();
+    clearFileLists();
+    absoluteDirEntry = QFileSystemEntry();
+}
+
+inline void QDirPrivate::clearFileLists()
+{
+    fileListsInitialized = false;
+    files.clear();
+    fileInfos.clear();
+}
+
+inline void QDirPrivate::resolveAbsoluteEntry() const
+{
+    if (!absoluteDirEntry.isEmpty() || dirEntry.isEmpty())
+        return;
+
+    if (dirEntry.isRelative()) {
+        QFileSystemEntry answer = QFileSystemEngine::absoluteName(dirEntry);
+        absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(answer.filePath()));
+    } else {
+        absoluteDirEntry = dirEntry;
     }
-
-    inline void resolveAbsoluteEntry() const
-    {
-        if (!absoluteDirEntry.isEmpty() || dirEntry.isEmpty())
-            return;
-
-        if (dirEntry.isRelative()) {
-            QFileSystemEntry answer = QFileSystemEngine::absoluteName(dirEntry);
-            absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(answer.filePath()));
-        } else {
-            absoluteDirEntry = dirEntry;
-        }
-    }
-
-    QStringList nameFilters;
-    QDir::SortFlags sort;
-    QDir::Filters filters;
-
-#ifdef QT3_SUPPORT
-    QChar filterSepChar;
-    bool matchAllDirs;
-#endif
-
-    QScopedPointer<QAbstractFileEngine> fileEngine;
-
-    mutable bool fileListsInitialized;
-    mutable QStringList files;
-    mutable QFileInfoList fileInfos;
-
-    QFileSystemEntry dirEntry;
-    mutable QFileSystemEntry absoluteDirEntry;
-    mutable QFileSystemMetaData metaData;
-};
+}
 
 /* For sorting */
 struct QDirSortItem
@@ -343,7 +314,6 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
         }
     }
 }
-
 inline void QDirPrivate::initFileLists(const QDir &dir) const
 {
     if (!fileListsInitialized) {

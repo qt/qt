@@ -90,6 +90,7 @@
 */
 
 #include "qdiriterator.h"
+#include "qdir_p.h"
 
 #include "qabstractfileengine.h"
 
@@ -119,8 +120,8 @@ public:
 class QDirIteratorPrivate
 {
 public:
-    QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
-                        QDir::Filters filters, QDirIterator::IteratorFlags flags);
+    QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
+                        QDir::Filters filters, QDirIterator::IteratorFlags flags, bool resolveEngine = true);
 
     void advance();
 
@@ -131,7 +132,7 @@ public:
 
     QScopedPointer<QAbstractFileEngine> engine;
 
-    const QString path;
+    QFileSystemEntry dirEntry;
     const QStringList nameFilters;
     const QDir::Filters filters;
     const QDirIterator::IteratorFlags iteratorFlags;
@@ -153,9 +154,9 @@ public:
 /*!
     \internal
 */
-QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList &nameFilters,
-                                         QDir::Filters filters, QDirIterator::IteratorFlags flags)
-    : path(path)
+QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
+                                         QDir::Filters filters, QDirIterator::IteratorFlags flags, bool resolveEngine)
+    : dirEntry(entry)
       , nameFilters(nameFilters.contains(QLatin1String("*")) ? QStringList() : nameFilters)
       , filters(QDir::NoFilter == filters ? QDir::AllEntries : filters)
       , iteratorFlags(flags)
@@ -168,17 +169,10 @@ QDirIteratorPrivate::QDirIteratorPrivate(const QString &path, const QStringList 
                     (filters & QDir::CaseSensitive) ? Qt::CaseSensitive : Qt::CaseInsensitive,
                     QRegExp::Wildcard));
 #endif
-
-#ifdef Q_OS_UNIX
-    QFileSystemEntry fileEntry(path);
     QFileSystemMetaData metaData;
-
-    engine.reset(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(fileEntry, metaData));
-    QFileInfo fileInfo(new QFileInfoPrivate(fileEntry, metaData));
-#else
-    engine.reset(QAbstractFileEngine::create(path));
-    QFileInfo fileInfo(path);
-#endif
+    if (resolveEngine)
+        engine.reset(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, metaData));
+    QFileInfo fileInfo(new QFileInfoPrivate(dirEntry, metaData));
 
     // Populate fields for hasNext() and next()
     pushDirectory(fileInfo);
@@ -411,8 +405,11 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(dir.path(), dir.nameFilters(), dir.filter(), flags))
 {
+    // little trick to get hold of the QDirPrivate while there is no API on QDir to give it to us
+    class MyQDir : public QDir { public: const QDirPrivate *priv() const { return d_ptr.constData(); } };
+    const QDirPrivate *other = static_cast<const MyQDir*>(&dir)->priv();
+    d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, !other->fileEngine.isNull()));
 }
 
 /*!
@@ -432,7 +429,7 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, QStringList(), filters, flags))
+    : d(new QDirIteratorPrivate(QFileSystemEntry(path), QStringList(), filters, flags))
 {
 }
 
@@ -449,7 +446,7 @@ QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorF
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, QStringList(), QDir::NoFilter, flags))
+    : d(new QDirIteratorPrivate(QFileSystemEntry(path), QStringList(), QDir::NoFilter, flags))
 {
 }
 
@@ -471,7 +468,7 @@ QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
 */
 QDirIterator::QDirIterator(const QString &path, const QStringList &nameFilters,
                            QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, nameFilters, filters, flags))
+    : d(new QDirIteratorPrivate(QFileSystemEntry(path), nameFilters, filters, flags))
 {
 }
 
@@ -552,7 +549,7 @@ QFileInfo QDirIterator::fileInfo() const
 */
 QString QDirIterator::path() const
 {
-    return d->path;
+    return d->dirEntry.filePath();
 }
 
 QT_END_NAMESPACE

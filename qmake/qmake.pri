@@ -98,6 +98,7 @@ bootstrap { #Qt code
         qdatetime.h \
         qdatetime_p.h \
         qdir.h \
+        qdir_p.h \
         qdiriterator.h \
         qfile.h \
         qabstractfileengine.h \
