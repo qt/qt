@@ -515,29 +515,10 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
     free_in_buffer = max_buf;
 }
 
-static bool can_write_format(QImage::Format fmt)
-{
-    switch (fmt) {
-    case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
-    case QImage::Format_Indexed8:
-    case QImage::Format_RGB888:
-    case QImage::Format_RGB32:
-    case QImage::Format_ARGB32:
-    case QImage::Format_ARGB32_Premultiplied:
-        return true;
-        break;
-    default:
-        break;
-    }
-    return false;
-}
 
-static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int sourceQuality)
+static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQuality)
 {
     bool success = false;
-    const QImage image = can_write_format(sourceImage.format()) ?
-                         sourceImage : sourceImage.convertToFormat(QImage::Format_RGB888);
     const QVector<QRgb> cmap = image.colorTable();
 
     struct jpeg_compress_struct cinfo;
@@ -614,7 +595,7 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
             case QImage::Format_Mono:
             case QImage::Format_MonoLSB:
                 if (gray) {
-                    const uchar* data = image.scanLine(cinfo.next_scanline);
+                    const uchar* data = image.constScanLine(cinfo.next_scanline);
                     if (image.format() == QImage::Format_MonoLSB) {
                         for (int i=0; i<w; i++) {
                             bool bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
@@ -627,7 +608,7 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
                         }
                     }
                 } else {
-                    const uchar* data = image.scanLine(cinfo.next_scanline);
+                    const uchar* data = image.constScanLine(cinfo.next_scanline);
                     if (image.format() == QImage::Format_MonoLSB) {
                         for (int i=0; i<w; i++) {
                             bool bit = !!(*(data + (i >> 3)) & (1 << (i & 7)));
@@ -647,13 +628,13 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
                 break;
             case QImage::Format_Indexed8:
                 if (gray) {
-                    const uchar* pix = image.scanLine(cinfo.next_scanline);
+                    const uchar* pix = image.constScanLine(cinfo.next_scanline);
                     for (int i=0; i<w; i++) {
                         *row = qRed(cmap[*pix]);
                         ++row; ++pix;
                     }
                 } else {
-                    const uchar* pix = image.scanLine(cinfo.next_scanline);
+                    const uchar* pix = image.constScanLine(cinfo.next_scanline);
                     for (int i=0; i<w; i++) {
                         *row++ = qRed(cmap[*pix]);
                         *row++ = qGreen(cmap[*pix]);
@@ -663,12 +644,12 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
                 }
                 break;
             case QImage::Format_RGB888:
-                memcpy(row, image.scanLine(cinfo.next_scanline), w * 3);
+                memcpy(row, image.constScanLine(cinfo.next_scanline), w * 3);
                 break;
             case QImage::Format_RGB32:
             case QImage::Format_ARGB32:
             case QImage::Format_ARGB32_Premultiplied: {
-                QRgb* rgb = (QRgb*)image.scanLine(cinfo.next_scanline);
+                const QRgb* rgb = (const QRgb*)image.constScanLine(cinfo.next_scanline);
                 for (int i=0; i<w; i++) {
                     *row++ = qRed(*rgb);
                     *row++ = qGreen(*rgb);
@@ -678,8 +659,12 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
                 break;
             }
             default:
-                qWarning("QJpegHandler: unable to write image of format %i",
-                         image.format());
+                for (int i=0; i<w; i++) {
+                    QRgb pix = image.pixel(i, cinfo.next_scanline);
+                    *row++ = qRed(pix);
+                    *row++ = qGreen(pix);
+                    *row++ = qBlue(pix);
+                }
                 break;
             }
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
