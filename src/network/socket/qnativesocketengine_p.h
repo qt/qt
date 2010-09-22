@@ -64,6 +64,7 @@
 #include <private/qeventdispatcher_symbian_p.h>
 #include <unistd.h>
 #include <es_sock.h>
+#include <in_sock.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -201,6 +202,7 @@ public:
     mutable RSocket nativeSocket;
     RSocketServ socketServer; //TODO: shared ref
     RConnection connection; //TODO: shared ref
+    mutable RTimer selectTimer;
 #endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
@@ -240,6 +242,8 @@ public:
     };
 
 #ifdef Q_OS_SYMBIAN
+    void getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr);
+    void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
     void setError(TInt symbianError);
 #endif
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;

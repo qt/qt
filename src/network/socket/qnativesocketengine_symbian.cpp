@@ -48,6 +48,7 @@
 #include "qvarlengtharray.h"
 #include <es_sock.h>
 #include <in_sock.h>
+#include <QtCore/private/qcore_symbian_p.h>
 #ifndef QT_NO_IPV6IFNAME
 #include <net/if.h>
 #endif
@@ -93,60 +94,7 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
 }
 #endif
 
-static void qt_ignore_sigpipe()
-{
-#ifndef Q_NO_POSIX_SIGNALS
-    // Set to ignore SIGPIPE once only.
-    static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (atom.testAndSetRelaxed(0, 1)) {
-        struct sigaction noaction;
-        memset(&noaction, 0, sizeof(noaction));
-        noaction.sa_handler = SIG_IGN;
-        ::sigaction(SIGPIPE, &noaction, 0);
-    }
-#else
-    // Posix signals are not supported by the underlying platform
-    // so we don't need to ignore sigpipe signal explicitly
-#endif
-}
-
-/*
-    Extracts the port and address from a sockaddr, and stores them in
-    \a port and \a addr if they are non-null.
-*/
-static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *port, QHostAddress *addr)
-{
-#if !defined(QT_NO_IPV6)
-    if (s->a.sa_family == AF_INET6) {
-        Q_IPV6ADDR tmp;
-        memcpy(&tmp, &s->a6.sin6_addr, sizeof(tmp));
-        if (addr) {
-            QHostAddress tmpAddress;
-            tmpAddress.setAddress(tmp);
-            *addr = tmpAddress;
-#ifndef QT_NO_IPV6IFNAME
-            char scopeid[IFNAMSIZ];
-            if (::if_indextoname(s->a6.sin6_scope_id, scopeid)) {
-                addr->setScopeId(QLatin1String(scopeid));
-            } else
-#endif
-            addr->setScopeId(QString::number(s->a6.sin6_scope_id));
-        }
-        if (port)
-            *port = ntohs(s->a6.sin6_port);
-        return;
-    }
-#endif
-    if (port)
-        *port = ntohs(s->a4.sin_port);
-    if (addr) {
-        QHostAddress tmpAddress;
-        tmpAddress.setAddress(ntohl(s->a4.sin_addr.s_addr));
-        *addr = tmpAddress;
-    }
-}
-
-static inline void qt_socket_getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr)
+void QNativeSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr)
 {
 #if !defined(QT_NO_IPV6)
     if (a.Family() == KAfInet6) {
@@ -157,13 +105,12 @@ static inline void qt_socket_getPortAndAddress(const TInetAddr& a, quint16 *port
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
 #ifndef QT_NO_IPV6IFNAME
-            char scopeid[IFNAMSIZ];
-            //TODO: rather than using posix api, the symbian way is
-            //to use GetOpt with TSoInetIfQuery and KSoInetIfQueryByIndex
-            //which means this should be in a member function to have access to the nativeSocket
-            if (::if_indextoname(a.Scope(), scopeid)) {
-                addr->setScopeId(QLatin1String(scopeid));
-            } else
+            TPckgBuf<TSoInetIfQuery> query;
+            query().iSrcAddr = a;
+            TInt err = nativeSocket.GetOpt(KSoInetIfQueryBySrcAddr, KSolInetIfQuery, query);
+            if(!err)
+                addr->setScopeId(qt_TDesC2QString(query().iName));
+            else
 #endif
             addr->setScopeId(QString::number(a.Scope()));
         }
@@ -176,7 +123,7 @@ static inline void qt_socket_getPortAndAddress(const TInetAddr& a, quint16 *port
         *port = a.Port();
     if (addr) {
         QHostAddress tmpAddress;
-        tmpAddress.setAddress(a.Address()); //TODO: byte order ok?
+        tmpAddress.setAddress(a.Address());
         *addr = tmpAddress;
     }
 }
@@ -218,7 +165,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
-    socketDescriptor = nativeSocket.SubSessionHandle(); //TODO
+    socketDescriptor = QSymbianSocketManager::instance().addSocket(&nativeSocket);
     return true;
 }
 
@@ -245,15 +192,16 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
         n = KSONonBlockingIO;
         break;
     case QNativeSocketEngine::BroadcastSocketOption:
-        n = SO_BROADCAST; //TODO
-        break;
+        return true; //symbian doesn't support or require this option
     case QNativeSocketEngine::AddressReusable:
-        n = SO_REUSEADDR; //TODO
+        level = KSolInetIp;
+        n = KSoReuseAddr;
         break;
     case QNativeSocketEngine::BindExclusively:
         return true;
     case QNativeSocketEngine::ReceiveOutOfBandData:
-        n = SO_OOBINLINE; //TODO
+        level = KSolInetTcp;
+        n = KSoTcpOobInline;
         break;
     case QNativeSocketEngine::LowDelayOption:
         level = KSolInetTcp;
@@ -297,18 +245,19 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         n = KSOSendBuf;
         break;
     case QNativeSocketEngine::BroadcastSocketOption:
-        n = SO_BROADCAST; //TODO
-        break;
+        return true;
     case QNativeSocketEngine::NonBlockingSocketOption:
         n = KSONonBlockingIO;
         break;
     case QNativeSocketEngine::AddressReusable:
-        n = SO_REUSEADDR; //TODO
+        level = KSolInetIp;
+        n = KSoReuseAddr;
         break;
     case QNativeSocketEngine::BindExclusively:
         return true;
     case QNativeSocketEngine::ReceiveOutOfBandData:
-        n = SO_OOBINLINE; //TODO
+        level = KSolInetTcp;
+        n = KSoTcpOobInline;
         break;
     case QNativeSocketEngine::LowDelayOption:
         level = KSolInetTcp;
@@ -323,13 +272,19 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     return (KErrNone == nativeSocket.SetOpt(n, level, v));
 }
 
-static TInetAddr qt_QHostAddressToTInetAddr(const QHostAddress &addr)
+void QNativeSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
 {
-    TInetAddr nativeAddr;
+    nativeAddr.SetPort(port);
 #if !defined(QT_NO_IPV6)
     if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
 #ifndef QT_NO_IPV6IFNAME
-        nativeAddr.SetScope(::if_nametoindex(addr.scopeId().toLatin1().data())); //TODO - if_nametoindex
+        TPckgBuf<TSoInetIfQuery> query;
+        query().iName = qt_QString2TPtrC(addr.scopeId());
+        TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
+        if(!err)
+            nativeAddr.SetScope(query().iIndex);
+        else
+            nativeAddr.SetScope(0);
 #else
         nativeAddr.SetScope(addr.scopeId().toInt());
 #endif
@@ -344,7 +299,6 @@ static TInetAddr qt_QHostAddressToTInetAddr(const QHostAddress &addr)
     } else {
         qWarning("unsupported network protocol (%d)", addr.protocol());
     }
-    return nativeAddr;
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
@@ -353,8 +307,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     qDebug("QNativeSocketEnginePrivate::nativeConnect() : %d ", socketDescriptor);
 #endif
 
-    TInetAddr nativeAddr = qt_QHostAddressToTInetAddr(addr);
-    nativeAddr.SetPort(port);
+    TInetAddr nativeAddr;
+    setPortAndAddress(nativeAddr, port, addr);
     //TODO: async connect with active object - from here to end of function is a mess
     TRequestStatus status;
     nativeSocket.Connect(nativeAddr, status);
@@ -413,8 +367,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
 
 bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16 port)
 {
-    TInetAddr nativeAddr = qt_QHostAddressToTInetAddr(address);
-    nativeAddr.SetPort(port);
+    TInetAddr nativeAddr;
+    setPortAndAddress(nativeAddr, port, address);
 
     TInt err = nativeSocket.Bind(nativeAddr);
 
@@ -535,7 +489,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     if (status.Int()) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
     } else if (port || address) {
-        qt_socket_getPortAndAddress(addr, port, address);
+        getPortAndAddress(addr, port, address);
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -555,9 +509,9 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
                                                    const QHostAddress &host, quint16 port)
 {
     TPtrC8 buffer((TUint8*)data, (int)len);
-    TInetAddr addr = qt_QHostAddressToTInetAddr(host);
+    TInetAddr addr;
+    setPortAndAddress(addr, port, host);
     TSockXfrLength sentBytes;
-    addr.SetPort(port);
     TRequestStatus status; //TODO: OMG sync send!
     nativeSocket.SendTo(buffer, addr, 0, status, sentBytes);
     User::WaitForRequest(status);
@@ -592,12 +546,17 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     if (socketDescriptor == -1)
         return false;
 
-    //TODO: work out how to initialise nativeSocket from socketDescriptor
+    if (!nativeSocket.SubSessionHandle()) {
+        RSocket *s = QSymbianSocketManager::instance().lookupSocket(socketDescriptor);
+        if (!s)
+            return false;
+        nativeSocket = *s; //TODO: badwrongfun (address is different, so this is broken)
+    }
 
     // Determine local address
     TSockAddr addr;
     nativeSocket.LocalName(addr);
-    qt_socket_getPortAndAddress(addr, &localPort, &localAddress);
+    getPortAndAddress(addr, &localPort, &localAddress);
 
     // Determine protocol family
     switch (addr.Family()) {
@@ -616,7 +575,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 
     // Determine the remote address
     nativeSocket.RemoteName(addr);
-    qt_socket_getPortAndAddress(addr, &peerPort, &peerAddress);
+    getPortAndAddress(addr, &peerPort, &peerAddress);
 
     // Determine the socket type (UDP/TCP)
     TProtocolDesc protocol;
@@ -662,6 +621,7 @@ void QNativeSocketEnginePrivate::nativeClose()
 
     //TODO: call nativeSocket.Shutdown(EImmediate) in some cases?
     nativeSocket.Close();
+    QSymbianSocketManager::instance().removeSocket(&nativeSocket);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
@@ -744,13 +704,68 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
 
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
-//TODO: implement
+    bool readyRead = false;
+    bool readyWrite = false;
+    if (selectForRead)
+        return nativeSelect(timeout, true, false, &readyRead, &readyWrite);
+    else
+        return nativeSelect(timeout, false, true, &readyRead, &readyWrite);
 }
 
+/*!
+ \internal
+ \param timeout timeout in milliseconds
+ \param checkRead caller is interested if the socket is ready to read
+ \param checkWrite caller is interested if the socket is ready for write
+ \param selectForRead (out) should set to true if ready to read
+ \param selectForWrite (out) should set to true if ready to write
+ \return 0 on timeout, >0 on success, <0 on error
+ */
 int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
     //TODO: implement
+    //as above, but checking both read and write status at the same time
+    if (!selectTimer.Handle())
+        qt_symbian_throwIfError(selectTimer.CreateLocal());
+    TRequestStatus timerStat;
+    selectTimer.HighRes(timerStat, timeout * 1000);
+    TRequestStatus* readStat = 0;
+    TRequestStatus* writeStat = 0;
+    TRequestStatus* array[3];
+    array[0] = &timerStat;
+    int count = 1;
+    if (checkRead) {
+        //TODO: get from read AO
+        //readStat = ?
+        array[count++] = readStat;
+    }
+    if (checkWrite) {
+        //TODO: get from write AO
+        //writeStat = ?
+        array[count++] = writeStat;
+    }
+
+    User::WaitForNRequest(array, count);
+    //IMPORTANT - WaitForNRequest only decrements the thread semaphore once, although more than one status may have completed.
+    if (timerStat.Int() != KRequestPending) {
+        //timed out
+        return 0;
+    }
+    selectTimer.Cancel();
+    User::WaitForRequest(timerStat);
+
+    if(readStat && readStat->Int() != KRequestPending) {
+        Q_ASSERT(checkRead && selectForRead);
+        //TODO: cancel the AO, but call its RunL anyway? looking for an UnsetActive()
+        *selectForRead = true;
+    }
+    if(writeStat && writeStat->Int() != KRequestPending) {
+        Q_ASSERT(checkWrite && selectForWrite);
+        //TODO: cancel the AO, but call its RunL anyway? looking for an UnsetActive()
+        *selectForWrite = true;
+    }
+    return 1;
 }
 
 QT_END_NAMESPACE
