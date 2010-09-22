@@ -53,7 +53,6 @@
 #include "qtextdocument_p.h"
 #include "qtextcursor.h"
 #include "qfont_p.h"
-#include "private/qunicodetables_p.h"
 #include "private/qfunctions_p.h"
 
 #ifndef QT_NO_TEXTHTMLPARSER

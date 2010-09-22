@@ -64,7 +64,6 @@
 #include "qbitmap.h"
 #include "qregion.h"
 #include "qimagewriter.h"
-#include <private/qunicodetables_p.h>
 #include <private/qpainterpath_p.h>
 #include <qdebug.h>
 #include <private/qdrawhelper_p.h>

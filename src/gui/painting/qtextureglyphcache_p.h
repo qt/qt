@@ -64,6 +64,10 @@
 #  undef m_type
 #endif
 
+#ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
+#define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
+#endif
+
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
 
@@ -132,6 +136,8 @@ public:
     inline bool isNull() const { return m_h == 0; }
 
     QHash<GlyphAndSubPixelPosition, Coord> coords;
+    virtual int maxTextureWidth() const { return QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH; }
+    virtual int maxTextureHeight() const { return 32768; }
 
     QImage textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const;
 
