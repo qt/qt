@@ -150,7 +150,9 @@ class DitaXmlGenerator : public PageGenerator
     void generateBreadCrumbs(const QString& title,
                              const Node* node,
                              CodeMarker* marker);
-    void generateHeader(const Node* node, const QString& name);
+    void generateHeader(const Node* node, 
+                        const QString& name,
+                        bool subpage = false);
     void generateTitle(const QString& title, 
                        const Text& subTitle, 
                        SubTitleSize subTitleSize,
@@ -261,10 +263,10 @@ class DitaXmlGenerator : public PageGenerator
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
     QXmlStreamWriter& xmlWriter();
-    void writeDetailSections(const Node* node,
-                             CodeMarker* marker,
-                             bool apiDesc,
-                             const QString& title);
+    void writeDetailedDescription(const Node* node,
+                                  CodeMarker* marker,
+                                  bool apiDesc,
+                                  const QString& title);
     void addLink(const QString& href, const QStringRef& text);
 
  private:
