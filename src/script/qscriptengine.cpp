@@ -1701,6 +1701,7 @@ static v8::Handle<v8::Array> QtScopeObjectNamedPropertyEnumeration(const v8::Acc
     v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(info.Data());
     // FIXME it should return own properties plus all from nextInScope?
     Q_UNIMPLEMENTED();
+    return v8::Handle<v8::Array>();
     return handleScope.Close(info.This()->GetPropertyNames());
 }
 
@@ -1753,6 +1754,7 @@ static v8::Handle<v8::Boolean> QtScopeObjectIndexedPropertyDeleter(uint32_t inde
 static v8::Handle<v8::Array> QtScopeObjectIndexedPropertyEnumeration(const v8::AccessorInfo& info)
 {
     Q_UNIMPLEMENTED();
+    return v8::Handle<v8::Array>();
     v8::HandleScope handleScope;
     //v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(info.Data());
     // FIXME it should return own properties plus all from nextInScope?
