@@ -106,7 +106,6 @@
 #ifdef Q_WS_MAC
 #include "qmacstyle_mac.h"
 #include "private/qt_mac_p.h"
-#include "private/qunicodetables_p.h"
 #undef check
 #endif
 

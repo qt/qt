@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qstringmatcher.h"
-#include "qunicodetables_p.h"
 
 QT_BEGIN_NAMESPACE
 

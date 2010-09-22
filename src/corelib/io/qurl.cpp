@@ -176,7 +176,6 @@
  */
 #include "qplatformdefs.h"
 #include "qurl.h"
-#include "private/qunicodetables_p.h"
 #include "qatomic.h"
 #include "qbytearray.h"
 #include "qdir.h"
