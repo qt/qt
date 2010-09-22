@@ -938,18 +938,23 @@ QString QFSFileEngine::owner(FileOwner own) const
     return QString();
 }
 
-#ifdef Q_OS_SYMBIAN
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
-    //TODO: connect up error reporting properly
     if (!QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), 0)) {
-        setError(QFile::PermissionsError, QString());
+        setError(QFile::PermissionsError,
+#ifdef Q_OS_SYMBIAN
+    //TODO: connect up error reporting properly
+    QString());
+#else
+    qt_error_string(errno));
+#endif
         return false;
     }
     return true;
 }
 
+#ifdef Q_OS_SYMBIAN
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
@@ -983,44 +988,6 @@ bool QFSFileEngine::setSize(qint64 size)
     return ret;
 }
 #else
-bool QFSFileEngine::setPermissions(uint perms)
-{
-    Q_D(QFSFileEngine);
-    bool ret = false;
-    mode_t mode = 0;
-    if (perms & ReadOwnerPerm)
-        mode |= S_IRUSR;
-    if (perms & WriteOwnerPerm)
-        mode |= S_IWUSR;
-    if (perms & ExeOwnerPerm)
-        mode |= S_IXUSR;
-    if (perms & ReadUserPerm)
-        mode |= S_IRUSR;
-    if (perms & WriteUserPerm)
-        mode |= S_IWUSR;
-    if (perms & ExeUserPerm)
-        mode |= S_IXUSR;
-    if (perms & ReadGroupPerm)
-        mode |= S_IRGRP;
-    if (perms & WriteGroupPerm)
-        mode |= S_IWGRP;
-    if (perms & ExeGroupPerm)
-        mode |= S_IXGRP;
-    if (perms & ReadOtherPerm)
-        mode |= S_IROTH;
-    if (perms & WriteOtherPerm)
-        mode |= S_IWOTH;
-    if (perms & ExeOtherPerm)
-        mode |= S_IXOTH;
-    if (d->fd != -1)
-        ret = fchmod(d->fd, mode) == 0;
-    else
-        ret = ::chmod(d->fileEntry.nativeFilePath().constData(), mode) == 0;
-    if (!ret)
-        setError(QFile::PermissionsError, qt_error_string(errno));
-    return ret;
-}
-
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
