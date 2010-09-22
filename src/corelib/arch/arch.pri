@@ -23,6 +23,7 @@ vxworks:HEADERS += arch/qatomic_vxworks.h
                        arch/qatomic_arm.h \
                        arch/qatomic_armv5.h \
                        arch/qatomic_armv6.h \
+                       arch/qatomic_armv7.h \
                        arch/qatomic_i386.h \
                        arch/qatomic_mips.h \
                        arch/qatomic_s390.h \
