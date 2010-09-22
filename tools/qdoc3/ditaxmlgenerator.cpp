@@ -1590,17 +1590,17 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 writeFunctions((*s),cn,marker);
             }
             else if ((*s).name == "Member Type Documentation") {
-                writeEnumerations((*s),cn,marker);
-                writeTypedefs((*s),cn,marker);
+                writeEnumerations((*s),marker);
+                writeTypedefs((*s),marker);
             }
             else if ((*s).name == "Member Variable Documentation") {
-                writeDataMembers((*s),cn,marker);
+                writeDataMembers((*s),marker);
             }
             else if ((*s).name == "Property Documentation") {
-                writeProperties((*s),cn,marker);
+                writeProperties((*s),marker);
             }
             else if ((*s).name == "Macro Documentation") {
-                writeMacros((*s),cn,marker);
+                writeMacros((*s),marker);
             }
             ++s;
         }
@@ -4626,7 +4626,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 xmlWriter().writeCharacters(marker->plainFullName(rfn));
                 xmlWriter().writeEndElement(); // </cxxFunctionReimplemented>
             }
-            writeParameters(fn,marker);
+            writeParameters(fn);
             writeLocation(fn);
             xmlWriter().writeEndElement(); // <cxxFunctionDefinition>
 
@@ -4650,7 +4650,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
 /*!
   This function writes the <cxxFunctionParameters> element.
  */
-void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marker)
+void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
@@ -4688,7 +4688,6 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
   This function writes the enum types.
  */
 void DitaXmlGenerator::writeEnumerations(const Section& s, 
-                                         const ClassNode* cn, 
                                          CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4804,7 +4803,6 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
   This function writes the output for the \typedef commands.
  */
 void DitaXmlGenerator::writeTypedefs(const Section& s, 
-                                     const ClassNode* cn, 
                                      CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4865,7 +4863,6 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
   This is the Q_PROPERTYs.
  */
 void DitaXmlGenerator::writeProperties(const Section& s, 
-                                       const ClassNode* cn, 
                                        CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4975,7 +4972,6 @@ void DitaXmlGenerator::writeProperties(const Section& s,
   This function outputs the nodes resulting from \variable commands.
  */
 void DitaXmlGenerator::writeDataMembers(const Section& s, 
-                                        const ClassNode* cn, 
                                         CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -5057,7 +5053,6 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
   This function writes a \macro as a <cxxDefine>.
  */
 void DitaXmlGenerator::writeMacros(const Section& s, 
-                                   const ClassNode* cn, 
                                    CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();

@@ -121,22 +121,12 @@ class DitaXmlGenerator : public PageGenerator
     void writeFunctions(const Section& s, 
                         const ClassNode* cn, 
                         CodeMarker* marker);
-    void writeParameters(const FunctionNode* fn, CodeMarker* marker);
-    void writeEnumerations(const Section& s, 
-                           const ClassNode* cn, 
-                           CodeMarker* marker);
-    void writeTypedefs(const Section& s, 
-                       const ClassNode* cn, 
-                       CodeMarker* marker);
-    void writeDataMembers(const Section& s, 
-                          const ClassNode* cn, 
-                          CodeMarker* marker);
-    void writeProperties(const Section& s, 
-                         const ClassNode* cn, 
-                         CodeMarker* marker);
-    void writeMacros(const Section& s, 
-                     const ClassNode* cn, 
-                     CodeMarker* marker);
+    void writeParameters(const FunctionNode* fn);
+    void writeEnumerations(const Section& s, CodeMarker* marker);
+    void writeTypedefs(const Section& s, CodeMarker* marker);
+    void writeDataMembers(const Section& s, CodeMarker* marker);
+    void writeProperties(const Section& s, CodeMarker* marker);
+    void writeMacros(const Section& s, CodeMarker* marker);
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
 
  private:
