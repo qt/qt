@@ -2219,12 +2219,8 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
         QTextCharFormat format;
 
         if (eng->hasFormats() || selection) {
-            format = eng->format(&si);
-            if (suppressColors) {
-                format.clearForeground();
-                format.clearBackground();
-                format.clearProperty(QTextFormat::TextUnderlineColor);
-            }
+            if (!suppressColors)
+                format = eng->format(&si);
             if (selection)
                 format.merge(selection->format);
 
