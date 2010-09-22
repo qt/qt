@@ -64,7 +64,6 @@
 #include "q3stylesheet.h"
 #include "qtextstream.h"
 #include <private/qtextengine_p.h>
-#include <private/qunicodetables_p.h>
 
 #include <stdlib.h>
 

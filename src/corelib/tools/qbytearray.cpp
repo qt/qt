@@ -46,7 +46,6 @@
 #include "qlist.h"
 #include "qlocale.h"
 #include "qlocale_p.h"
-#include "qunicodetables_p.h"
 #include "qscopedpointer.h"
 #include <qdatastream.h>
 
