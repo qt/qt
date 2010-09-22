@@ -83,7 +83,6 @@ public:
                                const QVariant &argument = QVariant());
 
 protected:
-    QScriptClass(QScriptEngine *engine, QScriptClassPrivate &dd);
     QScopedPointer<QScriptClassPrivate> d_ptr;
 
 private:

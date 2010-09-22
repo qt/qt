@@ -21,8 +21,11 @@
 **
 ****************************************************************************/
 
+#include "qscriptclass_p.h"
 #include "qscriptclass.h"
+#include "qscriptengine_p.h"
 #include "qscriptstring.h"
+#include "qscriptvalue_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -113,38 +116,14 @@ QT_BEGIN_NAMESPACE
     \sa queryProperty()
 */
 
-class QScriptClassPrivate
-{
-    Q_DECLARE_PUBLIC(QScriptClass)
-public:
-    QScriptClassPrivate() {}
-    virtual ~QScriptClassPrivate() {}
-
-    QScriptEngine *engine;
-
-    QScriptClass *q_ptr;
-};
-
 /*!
   Constructs a QScriptClass object to be used in the given \a engine.
 
   The engine does not take ownership of the QScriptClass object.
 */
 QScriptClass::QScriptClass(QScriptEngine *engine)
-    : d_ptr(new QScriptClassPrivate)
+    : d_ptr(new QScriptClassPrivate(QScriptEnginePrivate::get(engine), this))
 {
-    d_ptr->q_ptr = this;
-    d_ptr->engine = engine;
-}
-
-/*!
-  \internal
-*/
-QScriptClass::QScriptClass(QScriptEngine *engine, QScriptClassPrivate &dd)
-    : d_ptr(&dd)
-{
-    d_ptr->q_ptr = this;
-    d_ptr->engine = engine;
 }
 
 /*!
@@ -163,7 +142,7 @@ QScriptClass::~QScriptClass()
 */
 QScriptEngine *QScriptClass::engine() const
 {
-    return d_ptr->engine;
+    return QScriptEnginePrivate::get(d_ptr->engine());
 }
 
 /*!
@@ -375,4 +354,8 @@ QVariant QScriptClass::extension(Extension extension, const QVariant &argument)
     return QVariant();
 }
 
+QScriptValuePrivate* QScriptClassPrivate::prototype() const
+{
+    return QScriptValuePrivate::get(q_ptr->prototype());
+}
 QT_END_NAMESPACE

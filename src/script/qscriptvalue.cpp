@@ -1216,9 +1216,18 @@ QScriptClass *QScriptValue::scriptClass() const
 
   \sa scriptClass(), setData()
 */
-void QScriptValue::setScriptClass(QScriptClass *)
+void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
-    Q_UNIMPLEMENTED();
+    if (!scriptclass)
+        return;
+    Q_D(QScriptValue);
+    QScriptClassPrivate* dclass = QScriptClassPrivate::get(scriptclass);
+    // Of course this->engine() need to be the same as scriptclass->engine(), we
+    // are not checking that because implementation use only engine from scriptclass.
+    // Note that this method works on QScriptClass's engine instance not QScriptValue one.
+    // QScriptClass is always bounded to engine, so we can use NotNullEngine flag.
+    QScriptIsolate api(dclass->engine(), QScriptIsolate::NotNullEngine);
+    d->setScriptClass(dclass);
 }
 
 /*!

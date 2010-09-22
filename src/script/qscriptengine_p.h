@@ -41,6 +41,7 @@ QT_BEGIN_NAMESPACE
 class QDateTime;
 class QScriptEngine;
 class QScriptContextPrivate;
+class QScriptClassPrivate;
 
 class QScriptEnginePrivate
     : public QSharedData
@@ -63,6 +64,8 @@ public:
 
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
+    QScriptValuePrivate* newObject(QScriptClassPrivate* scriptclass);
+    QScriptValuePrivate* newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
     QScriptValuePrivate *newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptValuePrivate *newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
 

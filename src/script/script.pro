@@ -32,6 +32,7 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/qscriptclass.h \
+    $$PWD/qscriptclass_p.h \
     $$PWD/qscriptclasspropertyiterator.h \
     $$PWD/qscriptcontext.h \
     $$PWD/qscriptcontext_p.h \
