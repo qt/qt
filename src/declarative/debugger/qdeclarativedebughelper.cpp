@@ -1,8 +1,3 @@
-#include "private/qdeclarativedebughelper_p.h"
-#include "private/qdeclarativeengine_p.h"
-
-#include <QtScript/QScriptEngine>
-
 /****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -43,6 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include <QtScript/QScriptEngine>
 
 #include "private/qdeclarativedebughelper_p.h"
 
