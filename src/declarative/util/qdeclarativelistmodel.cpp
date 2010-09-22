@@ -310,14 +310,6 @@ QString QDeclarativeListModel::toString(int role) const
     return m_flat ? m_flat->toString(role) : m_nested->toString(role);
 }
 
-QHash<int,QVariant> QDeclarativeListModel::data(int index, const QList<int> &roles) const
-{
-    if (index >= count() || index < 0)
-        return QHash<int, QVariant>();
-
-    return m_flat ? m_flat->data(index, roles) : m_nested->data(index, roles);
-}
-
 QVariant QDeclarativeListModel::data(int index, int role) const
 {
     if (index >= count() || index < 0)
@@ -920,19 +912,6 @@ FlatListModel::~FlatListModel()
     qDeleteAll(m_nodeData);
 }
 
-QHash<int,QVariant> FlatListModel::data(int index, const QList<int> &roles) const
-{
-    Q_ASSERT(index >= 0 && index < m_values.count());
-
-    QHash<int, QVariant> row;
-    for (int i=0; i<roles.count(); i++) {
-        int role = roles[i];
-        if (m_values[index].contains(role))
-            row.insert(role, m_values[index][role]);
-    }
-    return row;
-}
-
 QVariant FlatListModel::data(int index, int role) const
 {
     Q_ASSERT(index >= 0 && index < m_values.count());
@@ -970,11 +949,6 @@ void FlatListModel::remove(int index)
 {
     m_values.removeAt(index);
     removedNode(index);
-}
-
-bool FlatListModel::append(const QScriptValue &value)
-{
-    return insert(m_values.count(), value);
 }
 
 bool FlatListModel::insert(int index, const QScriptValue &value)
@@ -1348,17 +1322,6 @@ void NestedListModel::move(int from, int to, int n)
     if (!_root)
         return;
     qdeclarativelistmodel_move<QVariantList>(from, to, n, &_root->values);
-}
-
-bool NestedListModel::append(const QScriptValue& valuemap)
-{
-    if (!_root) {
-        _root = new ModelNode(this);
-        m_ownsRoot = true;
-    }
-
-    insert(count(), valuemap);
-    return true;
 }
 
 QScriptValue NestedListModel::get(int index) const

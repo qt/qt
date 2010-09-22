@@ -79,7 +79,6 @@ public:
     FlatListModel(QDeclarativeListModel *base);
     ~FlatListModel();
 
-    QHash<int,QVariant> data(int index, const QList<int> &roles) const;
     QVariant data(int index, int role) const;
 
     QList<int> roles() const;
@@ -88,7 +87,6 @@ public:
     int count() const;
     void clear();
     void remove(int index);
-    bool append(const QScriptValue&);
     bool insert(int index, const QScriptValue&);
     QScriptValue get(int index) const;
     void set(int index, const QScriptValue&, QList<int> *roles);
@@ -189,7 +187,6 @@ public:
     int count() const;
     void clear();
     void remove(int index);
-    bool append(const QScriptValue&);
     bool insert(int index, const QScriptValue&);
     QScriptValue get(int index) const;
     void set(int index, const QScriptValue&, QList<int> *roles);
