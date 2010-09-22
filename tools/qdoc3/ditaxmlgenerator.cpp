@@ -1525,12 +1525,56 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         xmlWriter().writeEndElement(); // </ul>
         xmlWriter().writeEndElement(); // </apiDesc>
 
+        bool needOtherSection = false;
         QList<Section> summarySections;
         summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-
+        s = summarySections.begin();
+        while (s != summarySections.end()) {
+            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                if (!s->inherited.isEmpty())
+                    needOtherSection = true;
+            }
+            else {
+                if (!s->members.isEmpty()) {
+                    xmlWriter().writeStartElement("section");
+                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeStartElement("title");
+                    xmlWriter().writeCharacters(protectEnc((*s).name));
+                    xmlWriter().writeEndElement(); // </title>
+                    generateSection(s->members, inner, marker, CodeMarker::Summary);
+                    generateSectionInheritedList(*s, inner, marker);
+                    xmlWriter().writeEndElement(); // </section>
+                }
+                if (!s->reimpMembers.isEmpty()) {
+                    QString name = QString("Reimplemented ") + (*s).name;
+                    xmlWriter().writeStartElement("section");
+                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeStartElement("title");
+                    xmlWriter().writeCharacters(protectEnc(name));
+                    xmlWriter().writeEndElement(); // </title>
+                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                    generateSectionInheritedList(*s, inner, marker);
+                    xmlWriter().writeEndElement(); // </section>
+                }
+            }
+            ++s;
+        }
+        if (needOtherSection) {
+            xmlWriter().writeStartElement("section");
+            xmlWriter().writeAttribute("outputclass","h3");
+            xmlWriter().writeStartElement("title");
+            xmlWriter().writeCharacters("Additional Inherited Members");
+            xmlWriter().writeEndElement(); // </title>
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                if (s->members.isEmpty())
+                    generateSectionInheritedList(*s, inner, marker);
+                ++s;
+            }
+        }
+        
         writeDetailedDescription(cn, marker, false, QString("Detailed Description"));
 
-        // zzz writeSections() gores here.
         // not included: <example> or <apiImpl>
 
         xmlWriter().writeEndElement(); // </cxxClassDetail>
@@ -3022,7 +3066,7 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
 }
 
 /*!
-  Writes the "inherited from" lists to the current XML stream.
+  Writes the "inherited from" list to the current XML stream.
  */
 void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
                                                     const Node* relative,
@@ -3031,19 +3075,26 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
     if (section.inherited.isEmpty())
         return;
     xmlWriter().writeStartElement("ul");
-    QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
+    QList<QPair<ClassNode*,int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         xmlWriter().writeStartElement("li");
         xmlWriter().writeAttribute("outputclass","fn");
-        QString text = (*p).second + " ";
+        QString text;
+        text.setNum((*p).second);
+        text += " ";
         if ((*p).second == 1)
             text += section.singularMember;
         else
             text += section.pluralMember;
-        text += " inherited from <xref href=\"" + fileName((*p).first) + "#";
-        text += DitaXmlGenerator::cleanRef(section.name.toLower()) + "\">";
-        text += protectEnc(marker->plainFullName((*p).first, relative)) + "</xref>";
+        text += " inherited from ";
         xmlWriter().writeCharacters(text);
+        xmlWriter().writeStartElement("xref");
+        text = fileName((*p).first) + "#";
+        text += DitaXmlGenerator::cleanRef(section.name.toLower());
+        xmlWriter().writeAttribute("href",text);
+        text = protectEnc(marker->plainFullName((*p).first, relative));
+        xmlWriter().writeCharacters(text);
+        xmlWriter().writeEndElement(); // </xref>
         ++p;
     }
     xmlWriter().writeEndElement(); // </ul>
@@ -5177,14 +5228,14 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
         if (apiDesc) {
             inApiDesc = true;
             xmlWriter().writeStartElement(APIDESC);
-            xmlWriter().writeAttribute("id",node->guid());
+            // zzz xmlWriter().writeAttribute("id",node->guid());
             if (!title.isEmpty())
                 xmlWriter().writeAttribute("spectitle",title);
         }
         else {
             inSection = true;
             xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("id",node->guid());
+            // zzz xmlWriter().writeAttribute("id",node->guid());
             if (!title.isEmpty()) {
                 xmlWriter().writeStartElement("title");
                 xmlWriter().writeCharacters(title);
