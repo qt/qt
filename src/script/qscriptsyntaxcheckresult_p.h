@@ -61,18 +61,25 @@ QScriptSyntaxCheckResultPrivate::QScriptSyntaxCheckResultPrivate(const QString& 
     , m_errorColumnNumber(-1)
  {
     // FIXME do we really need to create a new context to parse a script?
-    v8::Persistent<v8::Context> context = v8::Context::New();
-    v8::Context::Scope contextScope(context);
-    v8::HandleScope handleScope;
-    v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = v8::Script::Compile(QScriptConverter::toString(program), v8::String::New("QScriptEngine_checkSyntax"));
-    if (script.IsEmpty()) {
-        v8::Local<v8::Message> exception = tryCatch.Message();
-        m_errorMessage = QScriptConverter::toString(exception->Get()->ToString());
-        m_errorLineNumber = exception->GetLineNumber();
-        m_errorColumnNumber = exception->GetStartColumn();
+    v8::Isolate *isolate = v8::Isolate::New();
+    isolate->Enter();
+    {
+        v8::Persistent<v8::Context> context = v8::Context::New();
+        v8::Context::Scope contextScope(context);
+        v8::HandleScope handleScope;
+        v8::TryCatch tryCatch;
+        v8::Handle<v8::Script> script = v8::Script::Compile(QScriptConverter::toString(program), v8::String::New("QScriptEngine_checkSyntax"));
+        if (script.IsEmpty()) {
+            v8::Local<v8::Message> exception = tryCatch.Message();
+            m_errorMessage = QScriptConverter::toString(exception->Get()->ToString());
+            m_errorLineNumber = exception->GetLineNumber();
+            m_errorColumnNumber = exception->GetStartColumn();
+        }
+        context.Dispose();
     }
-    context.Dispose();
+    isolate->Exit();
+    //FIXME we need to dispose the isolate.
+    //isolate->Dispose();
 }
 
 QScriptSyntaxCheckResult::State QScriptSyntaxCheckResultPrivate::state() const
