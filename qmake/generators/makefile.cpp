@@ -1794,10 +1794,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 const QString c = Option::fixPathToLocalOS(cmdline.at(argv0), true);
                 if(exists(c)) {
                     cmdline[argv0] = escapeFilePath(Option::fixPathToLocalOS(cmdline.at(argv0), false));
-                    tmp_dep_cmd = cmdline.join(" ");
                 } else {
                     cmdline[argv0] = escapeFilePath(cmdline.at(argv0));
                 }
+                QFileInfo cmdFileInfo(cmdline[argv0]);
+                if (!cmdFileInfo.isAbsolute() || cmdFileInfo.exists())
+                    tmp_dep_cmd = cmdline.join(" ");
             }
             dep_cd_cmd = QLatin1String("cd ")
                  + escapeFilePath(Option::fixPathToLocalOS(Option::output_dir, false))

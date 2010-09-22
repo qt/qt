@@ -866,6 +866,32 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             if (do_vectorpath_cache)
                 path.makeCacheable();
 
+            if (!device->format().stencil()) {
+                // If there is no stencil buffer, triangulate the path instead.
+
+                QRectF bbox = path.controlPointRect();
+                // If the path doesn't fit within these limits, it is possible that the triangulation will fail.
+                bool withinLimits = (bbox.left() > -0x8000 * inverseScale)
+                                  && (bbox.right() < 0x8000 * inverseScale)
+                                  && (bbox.top() > -0x8000 * inverseScale)
+                                  && (bbox.bottom() < 0x8000 * inverseScale);
+                if (withinLimits) {
+                    QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
+
+                    QVarLengthArray<float> vertices(polys.vertices.size());
+                    for (int i = 0; i < polys.vertices.size(); ++i)
+                        vertices[i] = float(inverseScale * polys.vertices.at(i));
+
+                    prepareForDraw(currentBrush.isOpaque());
+                    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertices.constData());
+                    glDrawElements(GL_TRIANGLES, polys.indices.size(), GL_UNSIGNED_INT, polys.indices.constData());
+                } else {
+                    // We can't handle big, concave painter paths with OpenGL without stencil buffer.
+                    qWarning("Painter path exceeds +/-32767 pixels.");
+                }
+                return;
+            }
+
             // The path is too complicated & needs the stencil technique
             vertexCoordinateArray.clear();
             vertexCoordinateArray.addPath(path, inverseScale, false);

@@ -266,10 +266,10 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 
     int n = (count128 + 3) / 4;
     switch (count128 & 0x3) {
-    case 0: do { _mm_store_si128(dst128++, value128);
-    case 3:      _mm_store_si128(dst128++, value128);
-    case 2:      _mm_store_si128(dst128++, value128);
-    case 1:      _mm_store_si128(dst128++, value128);
+    case 0: do { _mm_stream_si128(dst128++, value128);
+    case 3:      _mm_stream_si128(dst128++, value128);
+    case 2:      _mm_stream_si128(dst128++, value128);
+    case 1:      _mm_stream_si128(dst128++, value128);
     } while (--n > 0);
     }
 
@@ -300,11 +300,14 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
         const __m128i half = _mm_set1_epi16(0x80);
         const __m128i minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
 
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+
         for (; x < length-3; x += 4) {
-            __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
             BYTE_MUL_SSE2(dstVector, dstVector, minusAlphaOfColorVector, colorMask, half);
             dstVector = _mm_add_epi8(colorVector, dstVector);
-            _mm_storeu_si128((__m128i *)&dst[x], dstVector);
+            _mm_store_si128((__m128i *)&dst[x], dstVector);
         }
         for (;x < length; ++x)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);

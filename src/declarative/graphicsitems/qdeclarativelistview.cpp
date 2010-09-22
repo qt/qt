@@ -1394,11 +1394,14 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     QAbstractListModel.
 
     A ListView has a \l model, which defines the data to be displayed, and
-    a \l delegate, which defines how the data should be displayed. Items in a 
-    ListView are laid out horizontally or vertically. List views are inherently flickable
-    as ListView inherits from \l Flickable.
+    a \l delegate, which defines how the data should be displayed. Items in a
+    ListView are laid out horizontally or vertically. List views are inherently
+    flickable because ListView inherits from \l Flickable.
 
-    For example, if there is a simple list model defined in a file \c ContactModel.qml like this:
+    \section1 Example Usage
+
+    The following example shows the definition of a simple list model defined
+    in a file called \c ContactModel.qml:
 
     \snippet doc/src/snippets/declarative/listview/ContactModel.qml 0
 
@@ -1416,7 +1419,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     An improved list view is shown below. The delegate is visually improved and is moved 
     into a separate \c contactDelegate component.
-    
+
     \snippet doc/src/snippets/declarative/listview/listview.qml classdocs advanced
     \image listview-highlight.png
 
@@ -2732,7 +2735,9 @@ void QDeclarativeListView::trackedPositionChanged()
         }
         if (viewPos != pos) {
             cancelFlick();
+            d->calcVelocity = true;
             d->setPosition(pos);
+            d->calcVelocity = false;
         }
     }
 }

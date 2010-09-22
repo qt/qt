@@ -54,6 +54,7 @@
 QT_BEGIN_HEADER
 
 Q_DECLARE_METATYPE(Qt::GestureState)
+Q_DECLARE_METATYPE(Qt::GestureType)
 
 QT_BEGIN_NAMESPACE
 
@@ -112,6 +113,8 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset)
     Q_PROPERTY(QPointF delta READ delta STORED false)
     Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration)
+    Q_PRIVATE_PROPERTY(QPanGesture::d_func(), qreal horizontalVelocity READ horizontalVelocity WRITE setHorizontalVelocity)
+    Q_PRIVATE_PROPERTY(QPanGesture::d_func(), qreal verticalVelocity READ verticalVelocity WRITE setVerticalVelocity)
 
 public:
     QPanGesture(QObject *parent = 0);
@@ -210,6 +213,7 @@ class Q_GUI_EXPORT QSwipeGesture : public QGesture
     Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection STORED false)
     Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection STORED false)
     Q_PROPERTY(qreal swipeAngle READ swipeAngle WRITE setSwipeAngle)
+    Q_PRIVATE_PROPERTY(QSwipeGesture::d_func(), qreal velocity READ velocity WRITE setVelocity)
 
 public:
     enum SwipeDirection { NoDirection, Left, Right, Up, Down };

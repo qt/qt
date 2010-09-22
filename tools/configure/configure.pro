@@ -92,6 +92,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qiodevice.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtextstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtemporaryfile.cpp \
+           $$QT_SOURCE_TREE/src/corelib/plugin/qsystemlibrary.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbitarray.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qdatetime.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qmap.cpp \

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,22 +38,16 @@
 **
 ****************************************************************************/
 
+//! [document]
 import Qt 4.7
 
-//![0]
-Rectangle {
+Rectangle { 
     width: 100; height: 100
-    color: "yellow"
+    color: "green"
 
-    Rectangle {
+    MouseArea { 
         anchors.fill: parent
-        anchors.margins: 10
-        clip: true
-
-        Rectangle {
-            anchors.fill: parent
-            border.width: 1
-        }
+        onClicked: { parent.color = 'red' }
     }
 }
-//![0]
+//! [document]

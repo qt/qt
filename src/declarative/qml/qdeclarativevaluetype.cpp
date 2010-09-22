@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_IMPORT extern int qt_defaultDpi();
+Q_GUI_EXPORT int qt_defaultDpi();
 
 template<typename T>
 int qmlRegisterValueTypeEnums(const char *qmlName)

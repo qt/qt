@@ -324,6 +324,10 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
         fboFormat.setStencil(true);
     } else if (attachment == QGLFramebufferObject::Depth) {
         fboFormat.setDepth(true);
+        fboFormat.setStencil(false);
+    } else {
+        fboFormat.setDepth(false);
+        fboFormat.setStencil(false);
     }
 
     GLenum format = f->format().internalTextureFormat();

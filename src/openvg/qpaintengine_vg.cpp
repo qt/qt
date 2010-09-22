@@ -196,7 +196,9 @@ public:
 #endif
 
     QTransform transform;   // Currently active transform.
-    bool simpleTransform;   // True if the transform is simple (non-projective).
+    bool affineTransform;   // True if the transform is non-projective.
+    bool simpleTransform;   // True if the transform is simple translate
+                            // or 0, 90, 180, and 270 degree rotation
     qreal penScale;         // Pen scaling factor from "transform".
 
     QTransform pathTransform;  // Calculated VG path transformation.
@@ -372,6 +374,7 @@ void QVGPaintEnginePrivate::init()
     roundRectPath = 0;
 #endif
 
+    affineTransform = true;
     simpleTransform = true;
     pathTransformSet = false;
     penScale = 1.0;
@@ -524,11 +527,58 @@ void QVGPaintEnginePrivate::setTransform
     vgLoadMatrix(mat);
 }
 
+// Determine if a co-ordinate transform is simple enough to allow
+// rectangle-based clipping with vgMask() and rounding translation
+// to integers. Simple transforms most often result from origin translations.
+static inline bool transformIsSimple(const QTransform& transform)
+{
+    QTransform::TransformationType type = transform.type();
+    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+        return true;
+    } else if (type == QTransform::TxScale) {
+        // Check for 0 and 180 degree rotations.
+        // (0 might happen after 4 rotations of 90 degrees).
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m12 == 0.0f && m21 == 0.0f) {
+            if (m11 == 1.0f && m22 == 1.0f)
+                return true; // 0 degrees
+            else if (m11 == -1.0f && m22 == -1.0f)
+                return true; // 180 degrees.
+            if(m11 == 1.0f && m22 == -1.0f)
+                return true; // 0 degrees inverted y.
+            else if(m11 == -1.0f && m22 == 1.0f)
+                return true; // 180 degrees inverted y.
+        }
+    } else if (type == QTransform::TxRotate) {
+        // Check for 90, and 270 degree rotations.
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m11 == 0.0f && m22 == 0.0f) {
+            if (m12 == 1.0f && m21 == -1.0f)
+                return true; // 90 degrees.
+            else if (m12 == -1.0f && m21 == 1.0f)
+                return true; // 270 degrees.
+            else if (m12 == -1.0f && m21 == -1.0f)
+                return true; // 90 degrees inverted y.
+            else if (m12 == 1.0f && m21 == 1.0f)
+                return true; // 270 degrees inverted y.
+        }
+    }
+    return false;
+}
+
 Q_DECL_IMPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale);
 
 void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
 {
     VGfloat devh = pdev->height();
+
+    simpleTransform = transformIsSimple(transform);
 
     // Construct the VG transform by combining the Qt transform with
     // the following viewport transformation:
@@ -552,9 +602,9 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
         // so we will have to convert the co-ordinates ourselves.
         // Change the matrix to just the viewport transformation.
         pathTransform = viewport;
-        simpleTransform = false;
+        affineTransform = false;
     } else {
-        simpleTransform = true;
+        affineTransform = true;
     }
     pathTransformSet = false;
 
@@ -583,7 +633,7 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
     // Size is sufficient segments for drawRoundedRect() paths.
     QVarLengthArray<VGubyte, 20> segments;
 
-    if (sizeof(qreal) == sizeof(VGfloat) && elements && simpleTransform) {
+    if (sizeof(qreal) == sizeof(VGfloat) && elements && affineTransform) {
         // If Qt was compiled with qreal the same size as VGfloat,
         // then convert the segment types and use the incoming
         // points array directly.
@@ -618,7 +668,7 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
     int curvePos = 0;
     QPointF temp;
 
-    if (elements && simpleTransform) {
+    if (elements && affineTransform) {
         // Convert the members of the element array.
         for (int i = 0; i < count; ++i) {
             switch (elements[i]) {
@@ -662,7 +712,7 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
             }
             points += 2;
         }
-    } else if (elements && !simpleTransform) {
+    } else if (elements && !affineTransform) {
         // Convert the members of the element array after applying the
         // current transform to the path locally.
         for (int i = 0; i < count; ++i) {
@@ -711,7 +761,7 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
             }
             points += 2;
         }
-    } else if (count > 0 && simpleTransform) {
+    } else if (count > 0 && affineTransform) {
         // If there is no element array, then the path is assumed
         // to be a MoveTo followed by several LineTo's.
         coords.append(points[0]);
@@ -724,7 +774,7 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
             segments.append(VG_LINE_TO_ABS);
             --count;
         }
-    } else if (count > 0 && !simpleTransform) {
+    } else if (count > 0 && !affineTransform) {
         // Convert a simple path, and apply the transform locally.
         temp = transform.map(QPointF(points[0], points[1]));
         coords.append(temp.x());
@@ -785,7 +835,7 @@ VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path)
     bool haveStart = false;
     bool haveEnd = false;
 
-    if (simpleTransform) {
+    if (affineTransform) {
         // Convert the members of the element array.
         for (int i = 0; i < count; ++i) {
             switch (elements[i].type) {
@@ -958,7 +1008,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
         x1, y2 - (1 - KAPPA) * yRadius,
         x1, y2 - yRadius,
         x1, y1 + yRadius,                   // LineTo
-        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1, y1 + (1 - KAPPA) * yRadius,     // CurveTo
         x1 + (1 - KAPPA) * xRadius, y1,
         x1 + xRadius, y1
     };
@@ -1560,36 +1610,6 @@ void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     vgDestroyPath(vgpath);
 }
 
-// Determine if a co-ordinate transform is simple enough to allow
-// rectangle-based clipping with vgMask().  Simple transforms most
-// often result from origin translations.
-static inline bool clipTransformIsSimple(const QTransform& transform)
-{
-    QTransform::TransformationType type = transform.type();
-    if (type == QTransform::TxNone || type == QTransform::TxTranslate)
-        return true;
-    if (type == QTransform::TxRotate) {
-        // Check for 0, 90, 180, and 270 degree rotations.
-        // (0 might happen after 4 rotations of 90 degrees).
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
-        if (m11 == 0.0f && m22 == 0.0f) {
-            if (m12 == 1.0f && m21 == -1.0f)
-                return true;    // 90 degrees.
-            else if (m12 == -1.0f && m21 == 1.0f)
-                return true;    // 270 degrees.
-        } else if (m12 == 0.0f && m21 == 0.0f) {
-            if (m11 == -1.0f && m22 == -1.0f)
-                return true;    // 180 degrees.
-            else if (m11 == 1.0f && m22 == 1.0f)
-                return true;    // 0 degrees.
-        }
-    }
-    return false;
-}
-
 #if defined(QVG_SCISSOR_CLIP)
 
 void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
@@ -1607,7 +1627,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     // We aren't using masking, so handle simple QRectF's only.
     if (path.shape() == QVectorPath::RectangleHint &&
-            path.elementCount() == 4 && clipTransformIsSimple(d->transform)) {
+            path.elementCount() == 4 && d->simpleTransform) {
         // Clipping region that resulted from QPainter::setClipRect(QRectF).
         // Convert it into a QRect and apply.
         const qreal *points = path.points();
@@ -1757,7 +1777,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
     // We don't have vgRenderToMask(), so handle simple QRectF's only.
     if (path.shape() == QVectorPath::RectangleHint &&
-            path.elementCount() == 4 && clipTransformIsSimple(d->transform)) {
+            path.elementCount() == 4 && d->simpleTransform) {
         // Clipping region that resulted from QPainter::setClipRect(QRectF).
         // Convert it into a QRect and apply.
         const qreal *points = path.points();
@@ -1809,7 +1829,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
     // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
+    if (op != Qt::NoClip && !d->simpleTransform) {
         QPaintEngineEx::clip(rect, op);
         return;
     }
@@ -1928,7 +1948,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     d->dirty |= QPaintEngine::DirtyClipRegion;
 
     // If we have a non-simple transform, then use path-based clipping.
-    if (op != Qt::NoClip && !clipTransformIsSimple(d->transform)) {
+    if (op != Qt::NoClip && !d->simpleTransform) {
         QPaintEngineEx::clip(region, op);
         return;
     }
@@ -2505,14 +2525,14 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
     // Check to see if we can use vgClear() for faster filling.
     if (brush.style() == Qt::SolidPattern && brush.isOpaque() &&
-            clipTransformIsSimple(d->transform) && d->opacity == 1.0f &&
+            d->simpleTransform && d->opacity == 1.0f &&
             clearRect(rect, brush.color())) {
         return;
     }
 
 #if !defined(QVG_NO_MODIFY_PATH)
     VGfloat coords[8];
-    if (d->simpleTransform) {
+    if (d->affineTransform) {
         coords[0] = rect.x();
         coords[1] = rect.y();
         coords[2] = rect.x() + rect.width();
@@ -2547,14 +2567,14 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     Q_D(QVGPaintEngine);
 
     // Check to see if we can use vgClear() for faster filling.
-    if (clipTransformIsSimple(d->transform) && d->opacity == 1.0f && color.alpha() == 255 &&
+    if (d->simpleTransform && d->opacity == 1.0f && color.alpha() == 255 &&
             clearRect(rect, color)) {
         return;
     }
 
 #if !defined(QVG_NO_MODIFY_PATH)
     VGfloat coords[8];
-    if (d->simpleTransform) {
+    if (d->affineTransform) {
         coords[0] = rect.x();
         coords[1] = rect.y();
         coords[2] = rect.x() + rect.width();
@@ -2587,7 +2607,7 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad, Qt::SizeMode mode)
 {
     Q_D(QVGPaintEngine);
-    if (d->simpleTransform) {
+    if (d->affineTransform) {
         QVGPainterState *s = state();
         VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
         d->draw(vgpath, s->pen, s->brush);
@@ -2606,7 +2626,7 @@ void QVGPaintEngine::drawRects(const QRect *rects, int rectCount)
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = rects->x();
             coords[1] = rects->y();
             coords[2] = rects->x() + rects->width();
@@ -2647,7 +2667,7 @@ void QVGPaintEngine::drawRects(const QRectF *rects, int rectCount)
     QVGPainterState *s = state();
     for (int i = 0; i < rectCount; ++i, ++rects) {
         VGfloat coords[8];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = rects->x();
             coords[1] = rects->y();
             coords[2] = rects->x() + rects->width();
@@ -2685,7 +2705,7 @@ void QVGPaintEngine::drawLines(const QLine *lines, int lineCount)
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = lines->x1();
             coords[1] = lines->y1();
             coords[2] = lines->x2();
@@ -2713,7 +2733,7 @@ void QVGPaintEngine::drawLines(const QLineF *lines, int lineCount)
     QVGPainterState *s = state();
     for (int i = 0; i < lineCount; ++i, ++lines) {
         VGfloat coords[4];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = lines->x1();
             coords[1] = lines->y1();
             coords[2] = lines->x2();
@@ -2739,7 +2759,7 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
     // Based on the description of vguEllipse() in the OpenVG specification.
     // We don't use vguEllipse(), to avoid unnecessary library dependencies.
     Q_D(QVGPaintEngine);
-    if (d->simpleTransform) {
+    if (d->affineTransform) {
         QVGPainterState *s = state();
         VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
                                    VG_PATH_DATATYPE_F,
@@ -2812,7 +2832,7 @@ void QVGPaintEngine::drawPoints(const QPointF *points, int pointCount)
 
     for (int i = 0; i < pointCount; ++i, ++points) {
         VGfloat coords[4];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = points->x();
             coords[1] = points->y();
             coords[2] = coords[0];
@@ -2846,7 +2866,7 @@ void QVGPaintEngine::drawPoints(const QPoint *points, int pointCount)
 
     for (int i = 0; i < pointCount; ++i, ++points) {
         VGfloat coords[4];
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords[0] = points->x();
             coords[1] = points->y();
             coords[2] = coords[0];
@@ -2880,7 +2900,7 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords.append(points->x());
             coords.append(points->y());
         } else {
@@ -2927,7 +2947,7 @@ void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDr
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
-        if (d->simpleTransform) {
+        if (d->affineTransform) {
             coords.append(points->x());
             coords.append(points->y());
         } else {
@@ -2962,7 +2982,7 @@ void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDr
 
 void QVGPaintEnginePrivate::setImageOptions()
 {
-    if (opacity != 1.0f && simpleTransform) {
+    if (opacity != 1.0f && affineTransform) {
         if (opacity != paintOpacity) {
             VGfloat values[4];
             values[0] = 1.0f;
@@ -3009,7 +3029,10 @@ static void drawVGImage(QVGPaintEnginePrivate *d,
     QTransform transform(d->imageTransform);
     VGfloat scaleX = sr.width() == 0.0f ? 0.0f : r.width() / sr.width();
     VGfloat scaleY = sr.height() == 0.0f ? 0.0f : r.height() / sr.height();
-    transform.translate(r.x(), r.y());
+    if (d->simpleTransform)
+        transform.translate(qRound(r.x()), qRound(r.y()));
+    else
+        transform.translate(r.x(), r.y());
     transform.scale(scaleX, scaleY);
     d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
@@ -3027,7 +3050,10 @@ static void drawVGImage(QVGPaintEnginePrivate *d,
         return;
 
     QTransform transform(d->imageTransform);
-    transform.translate(pos.x(), pos.y());
+    if(d->simpleTransform)
+        transform.translate(qRound(pos.x()), qRound(pos.y()));
+    else
+        transform.translate(pos.x(), pos.y());
     d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
     d->setImageOptions();
@@ -3070,7 +3096,7 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
         if (!vgpd->isValid())
             return;
-        if (d->simpleTransform)
+        if (d->affineTransform)
             drawVGImage(d, r, vgpd->toVGImage(), vgpd->size(), sr);
         else
             drawVGImage(d, r, vgpd->toVGImage(d->opacity), vgpd->size(), sr);
@@ -3089,7 +3115,7 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
         if (!vgpd->isValid())
             return;
-        if (d->simpleTransform)
+        if (d->affineTransform)
             drawVGImage(d, pos, vgpd->toVGImage());
         else
             drawVGImage(d, pos, vgpd->toVGImage(d->opacity));
@@ -3104,7 +3130,7 @@ void QVGPaintEngine::drawImage
 {
     Q_D(QVGPaintEngine);
     VGImage vgImg;
-    if (d->simpleTransform || d->opacity == 1.0f)
+    if (d->affineTransform || d->opacity == 1.0f)
         vgImg = toVGImageSubRect(image, sr.toRect(), flags);
     else
         vgImg = toVGImageWithOpacitySubRect(image, d->opacity, sr.toRect());
@@ -3127,7 +3153,7 @@ void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
     VGImage vgImg;
-    if (d->simpleTransform || d->opacity == 1.0f)
+    if (d->affineTransform || d->opacity == 1.0f)
         vgImg = toVGImage(image);
     else
         vgImg = toVGImageWithOpacity(image, d->opacity);
@@ -3160,7 +3186,7 @@ void QVGPaintEngine::drawPixmapFragments(const QPainter::PixmapFragment *drawing
     QPixmapData *pd = pixmap.pixmapData();
     if (!pd)
         return; // null QPixmap
-    if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
+    if (pd->classId() != QPixmapData::OpenVGClass || !d->affineTransform) {
         QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
         return;
     }
@@ -3385,7 +3411,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 
     // If we are not using a simple transform, then fall back
     // to the default Qt path stroking algorithm.
-    if (!d->simpleTransform) {
+    if (!d->affineTransform) {
         QPaintEngineEx::drawTextItem(p, textItem);
         return;
     }
