@@ -1314,7 +1314,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     QGLRect srcRect(src.left(), top, src.right(), bottom);
 
     bool isBitmap = pixmap.isQBitmap();
-    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
+    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel() && !pixmap.pixmapData()->hasMask();
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
