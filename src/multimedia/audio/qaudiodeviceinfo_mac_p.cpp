@@ -82,9 +82,9 @@ bool QAudioDeviceInfoInternal::isFormatSupported(const QAudioFormat& format) con
 
     return format.isValid()
             && format.codec() == QString::fromLatin1("audio/pcm")
-            && self->supportedSampleRates().contains(format.sampleRate())
-            && self->supportedChannelCounts().contains(format.channelCount())
-            && self->supportedSampleSizes().contains(format.sampleSize());
+            && self->frequencyList().contains(format.frequency())
+            && self->channelsList().contains(format.channels())
+            && self->sampleSizeList().contains(format.sampleSize());
 }
 
 QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
