@@ -937,6 +937,7 @@ void tst_QDir::cd()
     QFETCH(QString, newDir);
 
     QDir d = startDir;
+    bool notUsed = d.exists(); // make sure we cache this before so we can see if 'cd' fails to flush this
     QCOMPARE(d.cd(cdDir), successExpected);
     if (successExpected)
         QCOMPARE(d.absolutePath(), newDir);
