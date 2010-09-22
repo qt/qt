@@ -1673,24 +1673,6 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     q_dbus_connection_set_dispatch_status_function(connection, qDBusUpdateDispatchStatus, this, 0);
 
     // Initialize the match rules
-    // We want all messages that have us as destination
-    // signals don't have destinations, but connectSignal() takes care of them
-    if (service) {
-        QVarLengthArray<char, 56> filter;
-        filter.append("destination='", 13);
-        filter.append(service, qstrlen(service));
-        filter.append("\'\0", 2);
-
-        QDBusErrorInternal error;
-        q_dbus_bus_add_match(connection, filter.constData(), error);
-        if (handleError(error)) {
-            closeConnection();
-            return;
-        }
-
-    } else {
-        qWarning("QDBusConnectionPrivate::setConnection: Unable to get base service");
-    }
 
     connectSignal(dbusServiceString(), QString(), QString(), QLatin1String("NameAcquired"), QStringList(), QString(),
                   this, SLOT(registerService(QString)));
