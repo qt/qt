@@ -543,14 +543,14 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                 GL_STENCIL_INDEX8_EXT, size.width(), size.height());
 #else
             glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
-                GL_STENCIL_INDEX_EXT, size.width(), size.height());
+                GL_STENCIL_INDEX, size.width(), size.height());
 #endif
         } else {
 #ifdef QT_OPENGL_ES
             glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX8_EXT,
                                   size.width(), size.height());
 #else
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX_EXT,
+            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX,
                                   size.width(), size.height());
 #endif
         }
