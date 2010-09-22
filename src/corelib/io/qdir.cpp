@@ -179,6 +179,7 @@ inline void QDirPrivate::setPath(const QString &path)
     }
 
     dirEntry = QFileSystemEntry(p);
+    metaData.clear();
     initFileEngine();
     clearFileLists();
     absoluteDirEntry = QFileSystemEntry();
