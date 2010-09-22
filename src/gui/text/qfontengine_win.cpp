@@ -1296,6 +1296,7 @@ QFontEngineMultiWin::QFontEngineMultiWin(QFontEngineWin *first, const QStringLis
     engines[0] = first;
     first->ref.ref();
     fontDef = engines[0]->fontDef;
+    cache_cost = first->cache_cost;
 }
 
 void QFontEngineMultiWin::loadEngine(int at)
@@ -1317,6 +1318,8 @@ void QFontEngineMultiWin::loadEngine(int at)
     engines[at] = new QFontEngineWin(fam, hfont, stockFont, lf);
     engines[at]->ref.ref();
     engines[at]->fontDef = fontDef;
+
+    // TODO: increase cost in QFontCache for the font engine loaded here
 }
 
 QT_END_NAMESPACE

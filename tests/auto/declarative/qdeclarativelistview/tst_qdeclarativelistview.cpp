@@ -1016,6 +1016,8 @@ void tst_QDeclarativeListView::currentIndex()
     // no wrap
     listview->setCurrentIndex(0);
     QCOMPARE(listview->currentIndex(), 0);
+    // confirm that the velocity is updated
+    QTRY_VERIFY(listview->verticalVelocity() != 0.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 1);

@@ -32,9 +32,9 @@ qhp.Qt.customFilters.Qt.filterAttributes = qt 4.8.0
 qhp.Qt.extraFiles          = index.html \
                              images/bg_l.png \
                              images/bg_l_blank.png \
-							 images/bg_ll_blank.png \
-							 images/bg_ul_blank.png \
-							 images/header_bg.png \
+                             images/bg_ll_blank.png \
+                             images/bg_ul_blank.png \
+                             images/header_bg.png \
                              images/bg_r.png \
                              images/box_bg.png \
                              images/breadcrumb.png \
@@ -73,6 +73,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/freetype \
                           $QT_SOURCE_TREE/src/3rdparty/harfbuzz \
                           $QT_SOURCE_TREE/src/3rdparty/kdebase \
+                          $QT_SOURCE_TREE/src/3rdparty/libconninet \
                           $QT_SOURCE_TREE/src/3rdparty/libjpeg \
                           $QT_SOURCE_TREE/src/3rdparty/libmng \
                           $QT_SOURCE_TREE/src/3rdparty/libpng \

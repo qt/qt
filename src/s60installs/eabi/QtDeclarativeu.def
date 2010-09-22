@@ -552,9 +552,9 @@ EXPORTS
 	_ZN21QDeclarativeListModel6removeEi @ 551 NONAME
 	_ZN21QDeclarativeListModel7flattenEv @ 552 NONAME
 	_ZN21QDeclarativeListModelC1EP7QObject @ 553 NONAME
-	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME
+	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME ABSENT
 	_ZN21QDeclarativeListModelC2EP7QObject @ 555 NONAME
-	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME
+	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME ABSENT
 	_ZN21QDeclarativeListModelD0Ev @ 557 NONAME
 	_ZN21QDeclarativeListModelD1Ev @ 558 NONAME
 	_ZN21QDeclarativeListModelD2Ev @ 559 NONAME
@@ -1675,4 +1675,76 @@ EXPORTS
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer22QDeclarativeObjectDataE @ 1674 NONAME
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer26QDeclarativeObjectPropertyE @ 1675 NONAME
 	_ZN23QDeclarativeEngineDebug10newObjectsEv @ 1676 NONAME
+	_ZN17QDeclarativeState20addEntryToRevertListERK18QDeclarativeAction @ 1677 NONAME
+	_ZN17QDeclarativeState22addEntriesToRevertListERK5QListI18QDeclarativeActionE @ 1678 NONAME
+	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME
+	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME
+	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME
+	_ZN17QDeclarativeState30removeAllEntriesFromRevertListEP7QObject @ 1682 NONAME
+	_ZN23QDeclarativeItemPrivate10data_clearEP24QDeclarativeListPropertyI7QObjectE @ 1683 NONAME
+	_ZN23QDeclarativeItemPrivate10data_countEP24QDeclarativeListPropertyI7QObjectE @ 1684 NONAME
+	_ZN23QDeclarativeItemPrivate15resources_clearEP24QDeclarativeListPropertyI7QObjectE @ 1685 NONAME
+	_ZN23QDeclarativeItemPrivate7data_atEP24QDeclarativeListPropertyI7QObjectEi @ 1686 NONAME
+	_ZN26QDeclarativeStateOperation8setStateEP17QDeclarativeState @ 1687 NONAME
+	_ZN27QDeclarativeAbstractBinding11weakPointerEv @ 1688 NONAME
+	_ZN27QDeclarativePropertyChanges11changeValueERK10QByteArrayRK8QVariant @ 1689 NONAME
+	_ZN27QDeclarativePropertyChanges11qt_metacallEN11QMetaObject4CallEiPPv @ 1690 NONAME
+	_ZN27QDeclarativePropertyChanges11qt_metacastEPKc @ 1691 NONAME
+	_ZN27QDeclarativePropertyChanges13attachToStateEv @ 1692 NONAME
+	_ZN27QDeclarativePropertyChanges13setIsExplicitEb @ 1693 NONAME
+	_ZN27QDeclarativePropertyChanges14removePropertyERK10QByteArray @ 1694 NONAME
+	_ZN27QDeclarativePropertyChanges15detachFromStateEv @ 1695 NONAME
+	_ZN27QDeclarativePropertyChanges16changeExpressionERK10QByteArrayRK7QString @ 1696 NONAME
+	_ZN27QDeclarativePropertyChanges16staticMetaObjectE @ 1697 NONAME DATA 16
+	_ZN27QDeclarativePropertyChanges19getStaticMetaObjectEv @ 1698 NONAME
+	_ZN27QDeclarativePropertyChanges21setRestoreEntryValuesEb @ 1699 NONAME
+	_ZN27QDeclarativePropertyChanges7actionsEv @ 1700 NONAME
+	_ZN27QDeclarativePropertyChanges9setObjectEP7QObject @ 1701 NONAME
+	_ZN27QDeclarativePropertyChangesC1Ev @ 1702 NONAME
+	_ZN27QDeclarativePropertyChangesC2Ev @ 1703 NONAME
+	_ZN27QDeclarativePropertyChangesD0Ev @ 1704 NONAME
+	_ZN27QDeclarativePropertyChangesD1Ev @ 1705 NONAME
+	_ZN27QDeclarativePropertyChangesD2Ev @ 1706 NONAME
+	_ZNK17QDeclarativeState13isStateActiveEv @ 1707 NONAME
+	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME
+	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME
+	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME
+	_ZNK26QDeclarativeStateOperation5stateEv @ 1711 NONAME
+	_ZNK27QDeclarativePropertyChanges10expressionERK10QByteArray @ 1712 NONAME
+	_ZNK27QDeclarativePropertyChanges10isExplicitEv @ 1713 NONAME
+	_ZNK27QDeclarativePropertyChanges10metaObjectEv @ 1714 NONAME
+	_ZNK27QDeclarativePropertyChanges13containsValueERK10QByteArray @ 1715 NONAME
+	_ZNK27QDeclarativePropertyChanges16containsPropertyERK10QByteArray @ 1716 NONAME
+	_ZNK27QDeclarativePropertyChanges18containsExpressionERK10QByteArray @ 1717 NONAME
+	_ZNK27QDeclarativePropertyChanges18restoreEntryValuesEv @ 1718 NONAME
+	_ZNK27QDeclarativePropertyChanges5valueERK10QByteArray @ 1719 NONAME
+	_ZNK27QDeclarativePropertyChanges6objectEv @ 1720 NONAME
+	_ZNK27QDeclarativePropertyChanges8propertyERK10QByteArray @ 1721 NONAME
+	_ZTI27QDeclarativePropertyChanges @ 1722 NONAME
+	_ZTV27QDeclarativePropertyChanges @ 1723 NONAME
+	_ZN24QDeclarativeScriptAction10transitionER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyEN29QDeclarativeAbstractAnimation19TransitionDirectionE @ 1724 NONAME
+	_ZN24QDeclarativeScriptAction11qtAnimationEv @ 1725 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacallEN11QMetaObject4CallEiPPv @ 1726 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacastEPKc @ 1727 NONAME
+	_ZN24QDeclarativeScriptAction16staticMetaObjectE @ 1728 NONAME DATA 16
+	_ZN24QDeclarativeScriptAction19getStaticMetaObjectEv @ 1729 NONAME
+	_ZN24QDeclarativeScriptAction24setStateChangeScriptNameERK7QString @ 1730 NONAME
+	_ZN24QDeclarativeScriptAction9setScriptERK24QDeclarativeScriptString @ 1731 NONAME
+	_ZN24QDeclarativeScriptActionC1EP7QObject @ 1732 NONAME
+	_ZN24QDeclarativeScriptActionC2EP7QObject @ 1733 NONAME
+	_ZN24QDeclarativeScriptActionD0Ev @ 1734 NONAME
+	_ZN24QDeclarativeScriptActionD1Ev @ 1735 NONAME
+	_ZN24QDeclarativeScriptActionD2Ev @ 1736 NONAME
+	_ZNK24QDeclarativeScriptAction10metaObjectEv @ 1737 NONAME
+	_ZNK24QDeclarativeScriptAction21stateChangeScriptNameEv @ 1738 NONAME
+	_ZNK24QDeclarativeScriptAction6scriptEv @ 1739 NONAME
+	_ZTI24QDeclarativeScriptAction @ 1740 NONAME
+	_ZTV24QDeclarativeScriptAction @ 1741 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD0Ev @ 1742 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD1Ev @ 1743 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD0Ev @ 1744 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD1Ev @ 1745 NONAME
+	_ZN21QDeclarativeListModelC1EPKS_P32QDeclarativeListModelWorkerAgent @ 1746 NONAME
+	_ZN21QDeclarativeListModelC2EPKS_P32QDeclarativeListModelWorkerAgent @ 1747 NONAME
+	_ZNK21QDeclarativeListModel14inWorkerThreadEv @ 1748 NONAME
 

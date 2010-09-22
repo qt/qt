@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
     
 class QDeclarativePropertyChangesPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativePropertyChanges : public QDeclarativeStateOperation
+class Q_DECLARATIVE_EXPORT QDeclarativePropertyChanges : public QDeclarativeStateOperation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativePropertyChanges)
@@ -74,6 +74,20 @@ public:
     void setIsExplicit(bool);
 
     virtual ActionList actions();
+
+    bool containsProperty(const QByteArray &name) const;
+    bool containsValue(const QByteArray &name) const;
+    bool containsExpression(const QByteArray &name) const;
+    void changeValue(const QByteArray &name, const QVariant &value);
+    void changeExpression(const QByteArray &name, const QString &expression);
+    void removeProperty(const QByteArray &name);
+    QVariant value(const QByteArray &name) const;
+    QString expression(const QByteArray &name) const;
+
+    void detachFromState();
+    void attachToState();
+
+    QVariant property(const QByteArray &name) const;
 };
 
 class QDeclarativePropertyChangesParser : public QDeclarativeCustomParser

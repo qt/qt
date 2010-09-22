@@ -44,6 +44,7 @@
 
 #include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeengine_p.h>
+#include <private/qgraphicsitem_p.h>
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativeopenmetaobject_p.h>
@@ -1619,6 +1620,51 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
     }
 }
 
+static inline int children_count_helper(QDeclarativeListProperty<QObject> *prop)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    return d->children.count();
+}
+
+static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *prop, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    if (index >= 0 && index < d->children.count())
+        return d->children.at(index)->toGraphicsObject();
+    else
+        return 0;
+}
+
+static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    int childCount = d->children.count();
+    for (int index = 0 ;index < childCount; index++)
+        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+}
+
+int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+{
+    return resources_count(prop) + children_count_helper(prop);
+}
+
+QObject *QDeclarativeItemPrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+{
+    int resourcesCount = resources_count(prop);
+    if (i < resourcesCount)
+        return resources_at(prop, i);
+    const int j = i - resourcesCount;
+    if (j < children_count_helper(prop))
+        return children_at_helper(prop, j);
+    return 0;
+}
+
+void QDeclarativeItemPrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    resources_clear(prop);
+    children_clear_helper(prop);
+}
+
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
 {
     const QObjectList children = prop->object->children();
@@ -1636,6 +1682,13 @@ void QDeclarativeItemPrivate::resources_append(QDeclarativeListProperty<QObject>
 int QDeclarativeItemPrivate::resources_count(QDeclarativeListProperty<QObject> *prop)
 {
     return prop->object->children().count();
+}
+
+void QDeclarativeItemPrivate::resources_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    const QObjectList children = prop->object->children();
+    for (int index = 0; index < children.count(); index++)
+        children.at(index)->setParent(0);
 }
 
 int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsTransform> *list)
@@ -1724,7 +1777,11 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
 
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
-    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append,
+                                             QDeclarativeItemPrivate::data_count,
+                                             QDeclarativeItemPrivate::data_at,
+                                             QDeclarativeItemPrivate::data_clear
+                                             );
 }
 
 /*!
@@ -2413,7 +2470,9 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
                                              QDeclarativeItemPrivate::resources_count,
-                                             QDeclarativeItemPrivate::resources_at);
+                                             QDeclarativeItemPrivate::resources_at,
+                                             QDeclarativeItemPrivate::resources_clear
+                                             );
 }
 
 /*!
@@ -2484,7 +2543,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \qmlproperty bool Item::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
   If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
@@ -2494,9 +2553,9 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \property QDeclarativeItem::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle. If you set
   clipping during an item's paint operation, remember to re-set it to 
   prevent clipping the rest of your scene.

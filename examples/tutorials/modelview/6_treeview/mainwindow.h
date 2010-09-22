@@ -42,8 +42,12 @@
 #define MAINWINDOW_H
 
 #include <QtGui/QMainWindow>
-#include <QtGui/QTreeView>
-#include <QtGui/QStandardItemModel>
+
+QT_BEGIN_NAMESPACE // QT_BEGIN_NAMESPACE / QT_END_NAMESPACE are not needed in Qt user code
+class QTreeView; //forward declarations
+class QStandardItemModel;
+class QStandardItem;
+QT_END_NAMESPACE
 
 
 class MainWindow : public QMainWindow

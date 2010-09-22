@@ -2230,6 +2230,14 @@ void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
     \brief whether the proxy model is dynamically sorted and filtered
     whenever the contents of the source model change
 
+    Note that you should not update the source model through the proxy
+    model when dynamicSortFilter is true. For instance, if you set the
+    proxy model on a QComboBox, then using functions that update the
+    model, e.g., \l{QComboBox::}{addItem()}, will not work as
+    expected. An alternative is to set dynamicSortFilter to false and
+    call \l{QSortFilterProxyModel::}{sort()} after adding items to the
+    QComboBox.
+
     The default value is false.
 */
 bool QSortFilterProxyModel::dynamicSortFilter() const

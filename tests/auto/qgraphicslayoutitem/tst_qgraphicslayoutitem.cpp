@@ -75,6 +75,7 @@ private slots:
     void setPreferredSize_data();
     void setPreferredSize();
     void setSizePolicy_data();
+    void setPreferredSize2();
     void setSizePolicy();
 };
 
@@ -341,6 +342,13 @@ void tst_QGraphicsLayoutItem::setPreferredSize()
     } else {
         QVERIFY(!layoutItem.updateGeometryCalled);
     }
+}
+
+void tst_QGraphicsLayoutItem::setPreferredSize2()
+{
+    SubQGraphicsLayoutItem layoutItem;
+    layoutItem.setPreferredSize(QSizeF(30, -1));
+    QCOMPARE(layoutItem.preferredWidth(), qreal(30));
 }
 
 void tst_QGraphicsLayoutItem::setSizePolicy_data()

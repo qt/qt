@@ -141,6 +141,7 @@ public:
     bool stealMouse : 1;
     bool pressed : 1;
     bool interactive : 1;
+    bool calcVelocity : 1;
     QElapsedTimer lastPosTime;
     QPointF lastPos;
     QPointF pressPos;
@@ -173,7 +174,7 @@ public:
     // flickableData property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
     static int data_count(QDeclarativeListProperty<QObject> *);
-    static QObject * data_at(QDeclarativeListProperty<QObject> *, int);
+    static QObject *data_at(QDeclarativeListProperty<QObject> *, int);
     static void data_clear(QDeclarativeListProperty<QObject> *);
 };
 

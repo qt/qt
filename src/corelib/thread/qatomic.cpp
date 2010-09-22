@@ -48,10 +48,9 @@
 
     For atomic operations on pointers, see the QAtomicPointer class.
 
-    An complex operation that completes without interruption is said
-    to be \e atomic. The QAtomicInt class provides atomic reference
-    counting, test-and-set, fetch-and-store, and fetch-and-add for
-    integers.
+    An \e atomic operation is a complex operation that completes without interruption. 
+    The QAtomicInt class provides atomic reference counting, test-and-set, fetch-and-store,
+    and fetch-and-add for integers.
 
     \section1 Non-atomic convenience operators
 
@@ -635,9 +634,8 @@
 
     For atomic operations on integers, see the QAtomicInt class.
 
-    An complex operation that completes without interruption is said
-    to be \e atomic. The QAtomicPointer class provides atomic
-    test-and-set, fetch-and-store, and fetch-and-add for pointers.
+    An \e atomic operation is a complex operation that completes without interruption.
+    The QAtomicPointer class provides atomic test-and-set, fetch-and-store, and fetch-and-add for pointers.
 
     \section1 Non-atomic convenience operators
 

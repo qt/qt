@@ -480,7 +480,7 @@ QScriptValue QScriptContext::activationObject() const
   If \a activation is not an object, this function does nothing.
 
   \note For a context corresponding to a JavaScript function, this is only
-  guarenteed to work if there was an QScriptEngineAgent active on the
+  guaranteed to work if there was an QScriptEngineAgent active on the
   engine while the function was evaluated.
 */
 void QScriptContext::setActivationObject(const QScriptValue &activation)
