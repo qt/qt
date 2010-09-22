@@ -324,13 +324,16 @@ void tst_QDeclarativeDebug::initTestCase()
     bool ok = m_conn->waitForConnected();
     Q_ASSERT(ok);
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
-
     m_dbg = new QDeclarativeEngineDebug(m_conn, this);
+    QTRY_VERIFY(m_dbg->status() == QDeclarativeEngineDebug::Enabled);
 }
 
 void tst_QDeclarativeDebug::cleanupTestCase()
 {
+    delete m_dbg;
+    delete m_conn;
     qDeleteAll(m_components);
+    delete m_engine;
 }
 
 void tst_QDeclarativeDebug::setMethodBody()
