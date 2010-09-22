@@ -13,7 +13,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = qmake
 
 qhp.qmake.file                = qmake.qhp
-qhp.qmake.namespace           = com.trolltech.qmake.470
+qhp.qmake.namespace           = com.trolltech.qmake.471
 qhp.qmake.virtualFolder       = qdoc
 qhp.qmake.indexTitle          = QMake Manual
 qhp.qmake.extraFiles          = images/bg_l.png \
@@ -50,7 +50,7 @@ qhp.qmake.extraFiles          = images/bg_l.png \
                              style/style_ie8.css \
                              style/style.css
 
-qhp.qmake.filterAttributes    = qt 4.7.0 tools qmake
+qhp.qmake.filterAttributes    = qt 4.7.1 tools qmake
 qhp.qmake.customFilters.qmake.name = qmake Manual
 qhp.qmake.customFilters.qmake.filterAttributes = qt tools qmake
 qhp.qmake.subprojects         = manual
