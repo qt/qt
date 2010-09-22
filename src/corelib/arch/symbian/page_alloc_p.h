@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Symbian application wrapper of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,20 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <e32std.h>
-#include <qglobal.h>
-#include <u32std.h>
 
-Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo);
+#ifndef __KERNEL_MODE__ 
 
+const int MAXSMALLPAGEBITS = 68<<3;
+#define MINPAGEPOWER	PAGESHIFT+2
 
-/* \internal
- *
- * Uses link-time symbol preemption to capture a call from the application
- * startup. On return, there is some kind of heap allocator installed on the
- * thread.
-*/ 
-TInt UserHeap::SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
+struct paged_bitmap
 {
-    return qt_symbian_SetupThreadHeap(aNotFirst, aInfo);
-}
+	public:
+		inline paged_bitmap() : iBase(0), iNbits(0) {}
+		void Init(unsigned char* p, unsigned size, unsigned bit);
+//
+		inline unsigned char* Addr() const;
+		inline unsigned Size() const;
+//
+		inline void Set(unsigned ix, unsigned bit);
+		inline unsigned operator[](unsigned ix) const;
+		bool Is(unsigned ix, unsigned len, unsigned bit) const;
+		void Set(unsigned ix, unsigned len, unsigned val);
+		void Setn(unsigned ix, unsigned len, unsigned bit);
+		unsigned Bits(unsigned ix, unsigned len) const;	// little endian
+		int Find(unsigned start, unsigned bit) const;
+	private:
+		unsigned char* iBase;
+		unsigned iNbits;
+};
+
+#endif  // __KERNEL_MODE__

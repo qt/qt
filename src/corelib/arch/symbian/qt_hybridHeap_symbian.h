@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Symbian application wrapper of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,20 +38,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <e32std.h>
+
+#ifndef QT_HYBRIDHEAP_SYMBIAN_H
+#define QT_HYBRIDHEAP_SYMBIAN_H
+
 #include <qglobal.h>
-#include <u32std.h>
 
-Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo);
+#ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
+#include "common_p.h"
+#ifdef __KERNEL_MODE__
+#include <kernel/kern_priv.h>
+#endif
+#include "dla_p.h"
+#ifndef __KERNEL_MODE__
+#include "slab_p.h"
+#include "page_alloc_p.h"
+#endif
+#include "heap_hybrid_p.h"
 
-/* \internal
- *
- * Uses link-time symbol preemption to capture a call from the application
- * startup. On return, there is some kind of heap allocator installed on the
- * thread.
-*/ 
-TInt UserHeap::SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
-{
-    return qt_symbian_SetupThreadHeap(aNotFirst, aInfo);
-}
+// disabling Symbian import/export macros to prevent code copied from Symbian^4 from exporting symbols
+#undef UIMPORT_C
+#define UIMPORT_C
+#undef IMPORT_C
+#define IMPORT_C
+#undef UEXPORT_C
+#define UEXPORT_C
+#undef EXPORT_C
+#define EXPORT_C
+#undef IMPORT_D
+#define IMPORT_D
+
+#undef SYMBIAN4_DEBUG_FUNCTIONS_SUPPORTED
+
+#endif /* QT_USE_NEW_SYMBIAN_ALLOCATOR */
+
+#endif /* QT_HYBRIDHEAP_SYMBIAN_H */

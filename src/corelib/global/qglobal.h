@@ -2451,9 +2451,11 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 #endif
 
+#ifndef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
 //Enable the (backported) new allocator. When it is available in OS,
 //this flag should be disabled for that OS version onward
 #define QT_USE_NEW_SYMBIAN_ALLOCATOR
+#endif
 
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
