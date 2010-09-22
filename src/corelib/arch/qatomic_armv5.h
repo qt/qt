@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QATOMIC_ARM_H
-#define QATOMIC_ARM_H
+#ifndef QATOMIC_ARMV5_H
+#define QATOMIC_ARMV5_H
 
 QT_BEGIN_HEADER
 
@@ -428,4 +428,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QATOMIC_ARM_H
+#endif // QATOMIC_ARMV5_H

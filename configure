@@ -3019,6 +3019,9 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     sh4al)
         CFG_ARCH=sh4a
         ;;
+    arm*)
+        CFG_ARCH=arm
+        ;;
     *)
         CFG_ARCH="$CFG_EMBEDDED"
         ;;
@@ -3030,6 +3033,16 @@ elif echo "$XPLATFORM" | grep symbian > /dev/null; then
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
 fi
+
+# for compatibility
+COMPAT_ARCH=
+case "$CFG_ARCH" in
+arm*)
+    # previously, armv6 was a different arch
+    CFG_ARCH=arm
+    COMPAT_ARCH=armv6
+    ;;
+esac
 
 if [ -d "$relpath/src/corelib/arch/$CFG_ARCH" ]; then
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -3055,9 +3068,9 @@ if [ "$CFG_HOST_ARCH" != "$CFG_ARCH" ]; then
 fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo "System architecture: '$CFG_ARCH'"
+    echo "Target architecture: '$CFG_ARCH'"
     if [ "$PLATFORM_QWS" = "yes" ]; then
-	echo "Host architecture: '$CFG_HOST_ARCH'"
+       echo "Host architecture: '$CFG_HOST_ARCH'"
     fi
 fi
 
@@ -4849,7 +4862,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
+if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -6444,7 +6457,7 @@ elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
 fi
 
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
-    if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
+    if [ "$CFG_ARCH" = "arm" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
@@ -7521,10 +7534,20 @@ if [ ! -z "$COMPAT_COMPILER" ]; then
     fi
 fi
 
+# is this arch compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_ARCH=
+if [ ! -z "$COMPAT_ARCH" ]; then
+    QT_BUILD_KEY_COMPAT_ARCH="$CFG_USER_BUILD_KEY $COMPAT_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_ARCH $QT_NAMESPACE"
+    fi
+fi
+
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_ARCH=`echo $QT_BUILD_KEY_COMPAT_ARCH | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7577,6 +7600,11 @@ if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
     echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
+if [ -n "$QT_BUILD_KEY_COMPAT_ARCH" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT3 \"$QT_BUILD_KEY_COMPAT_ARCH\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
