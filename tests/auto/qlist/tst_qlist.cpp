@@ -666,7 +666,7 @@ void tst_QList::testSTLIterators() const
 
 void tst_QList::initializeList() const
 {
-#ifdef QT_CXX0X_INITIALIZERLIST
+#ifdef Q_COMPILER_INITIALIZER_LISTS
     QList<int> v1{2,3,4};
     QCOMPARE(v1, QList<int>() << 2 << 3 << 4);
     QCOMPARE(v1, (QList<int>{2,3,4}));
