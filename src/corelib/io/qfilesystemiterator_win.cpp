@@ -85,17 +85,15 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
 
     if (findFileHandle == INVALID_HANDLE_VALUE && !uncFallback) {
         haveData = true;
+        int infoLevel = 0 ;         // FindExInfoStandard;
         DWORD dwAdditionalFlags  = 0;
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
             dwAdditionalFlags = 2;  // FIND_FIRST_EX_LARGE_FETCH
+            infoLevel = 1 ;         // FindExInfoBasic;
+        }
         int searchOps =  0;         // FindExSearchNameMatch
         if (onlyDirs)
             searchOps = 1 ;         // FindExSearchLimitToDirectories
-#if !defined(Q_OS_WINCE)
-        int infoLevel = 1 ;         // FindExInfoBasic;
-#else
-        int infoLevel = 0;          // FindExInfoStandard;
-#endif
         findFileHandle = FindFirstFileEx((const wchar_t *)nativePath.utf16(), FINDEX_INFO_LEVELS(infoLevel), &findData,
                                          FINDEX_SEARCH_OPS(searchOps), 0, dwAdditionalFlags);
         if (findFileHandle == INVALID_HANDLE_VALUE) {
