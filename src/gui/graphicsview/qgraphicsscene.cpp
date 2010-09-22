@@ -5305,6 +5305,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
+    const qreal opacity = painter->opacity();
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
@@ -5338,6 +5339,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         topLevelItems.at(i)->d_ptr->itemDiscovered = 0;
 
     painter->setWorldTransform(viewTransform);
+    painter->setOpacity(opacity);
 }
 
 /*!
