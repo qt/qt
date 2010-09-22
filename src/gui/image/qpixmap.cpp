@@ -1170,15 +1170,24 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 
     \warning This function is X11 specific; using it is non-portable.
 
+    \warning Since 4.8, pixmaps do not have an X11 handle unless
+    created with \l {QPixmap::}{fromX11Pixmap()}, or if the native
+    graphics system is explicitly enabled.
+
     \sa detach()
+    \sa QApplication::setGraphicsSystem()
 */
 
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(pd)->handle();
+    if (pd) {
+        if (pd->classId() == QPixmapData::X11Class)
+            return static_cast<const QX11PixmapData*>(pd)->handle();
+        else
+            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
+    }
 #endif
     return 0;
 }
