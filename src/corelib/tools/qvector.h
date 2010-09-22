@@ -439,7 +439,7 @@ QVector<T>::QVector(int asize, const T &t)
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
-    p = malloc(args.size());
+    d = malloc(args.size());
     d->ref = 1;
     d->alloc = d->size = args.size();
     d->sharable = true;
