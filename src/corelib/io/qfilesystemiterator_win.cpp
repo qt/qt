@@ -129,6 +129,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     } else {
         QString fileName = QString::fromWCharArray(findData.cFileName);
         fileEntry = QFileSystemEntry(dirPath + fileName);
+        metaData = QFileSystemMetaData();
         if (!fileName.endsWith(QLatin1String(".lnk"))) {
             metaData = QFileSystemMetaData();
             metaData.fillFromFindData(findData, true);
