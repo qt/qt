@@ -74,7 +74,6 @@
 #include "qevent_p.h"
 #include "qvarlengtharray.h"
 #include "qdebug.h"
-#include <private/qunicodetables_p.h>
 #include <private/qcrashhandler_p.h>
 #include <private/qcolor_p.h>
 #include <private/qcursor_p.h>
