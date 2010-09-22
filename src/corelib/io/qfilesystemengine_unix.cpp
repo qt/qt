@@ -102,6 +102,7 @@ static inline bool _q_isMacHidden(const char *nativePath)
 #else
 static inline bool _q_isMacHidden(const char *nativePath)
 {
+    Q_UNUSED(nativePath);
     // no-op
     return false;
 }
@@ -294,6 +295,8 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
                 return QCFString::toQString((CFStringRef)name);
         }
     }
+#else
+    Q_UNUSED(entry);
 #endif
     return QString();
 }
