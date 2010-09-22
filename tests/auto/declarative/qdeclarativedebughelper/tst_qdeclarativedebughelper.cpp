@@ -42,6 +42,8 @@
 
 #include <QDeclarativeEngine>
 #include <private/qdeclarativeengine_p.h>
+#include <QAbstractAnimation>
+#include <private/qabstractanimation_p.h>
 
 // We have copied the header which is used in the qmljsdebugger (part of QtCreator)
 // to catch BC changes. Don't update it unless you know what you are doing!
@@ -51,6 +53,21 @@ class tst_qdeclarativedebughelper : public QObject {
     Q_OBJECT
 private slots:
     void getScriptEngine();
+    void setAnimationSlowDownFactor();
+};
+
+class TestAnimation : public QAbstractAnimation {
+public:
+    int updateCalled;
+
+    TestAnimation() : updateCalled(0) {}
+
+    virtual void updateCurrentTime(int /*currentTime*/) {
+        updateCalled++;
+    }
+    virtual int duration() const {
+        return 100;
+    }
 };
 
 void tst_qdeclarativedebughelper::getScriptEngine()
@@ -60,6 +77,36 @@ void tst_qdeclarativedebughelper::getScriptEngine()
     QScriptEngine *scriptEngine = QDeclarativeDebugHelper::getScriptEngine(&engine);
     QVERIFY(scriptEngine);
     QCOMPARE(scriptEngine, QDeclarativeEnginePrivate::getScriptEngine(&engine));
+}
+
+void tst_qdeclarativedebughelper::setAnimationSlowDownFactor()
+{
+    TestAnimation animation;
+
+    // first check whether setup works
+    QCOMPARE(animation.updateCalled, 0);
+    animation.start();
+    QTest::qWait(animation.totalDuration() + 50);
+#ifdef Q_OS_WIN
+    if (animation.state() != QAbstractAnimation::Stopped)
+        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution", Abort);
+#endif
+    QCOMPARE(animation.state(), QAbstractAnimation::Stopped);
+    QVERIFY(animation.updateCalled > 1);
+
+    // check if we can pause all animations
+    animation.updateCalled = 0;
+    QDeclarativeDebugHelper::setAnimationSlowDownFactor(0.0);
+    animation.start();
+    QTest::qWait(animation.totalDuration() + 50);
+    QVERIFY(animation.updateCalled <= 1); // updateCurrentTime seems to be called at  least once
+
+    // now run them again
+    animation.updateCalled = 0;
+    QDeclarativeDebugHelper::setAnimationSlowDownFactor(2.0);
+    animation.start();
+    QTest::qWait(animation.totalDuration() + 50);
+    QVERIFY(animation.updateCalled > 1);
 }
 
 QTEST_MAIN(tst_qdeclarativedebughelper)
