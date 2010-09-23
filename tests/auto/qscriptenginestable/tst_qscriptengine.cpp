@@ -177,7 +177,6 @@ void tst_QScriptEngine::newFunction()
         QEXPECT_FAIL("", "JSCallbackObject::getOwnPropertyDescriptor() doesn't return correct information yet", Continue);
         QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QEXPECT_FAIL("", "WebKit bug: 40613 (The JSObjectSetProperty doesn't overwrite property flags)", Continue);
         QCOMPARE(proto.propertyFlags("constructor"), QScriptValue::PropertyFlags(QScriptValue::Undeletable | QScriptValue::SkipInEnumeration));
 
         QCOMPARE(fun.call().isNull(), true);
