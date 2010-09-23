@@ -324,6 +324,7 @@
   {
     void*    buffer;
     long     buffer_size;
+    long     buffer_allocated_size;
     int      band_size;
     void*    memory;
     PWorker  worker;
@@ -1767,7 +1768,7 @@
     // If raster object and raster buffer are allocated, but
     // raster size isn't of the minimum size, indicate out of
     // memory.
-    if (raster && raster->buffer && raster->buffer_size < MINIMUM_POOL_SIZE )
+    if (raster->buffer_allocated_size < MINIMUM_POOL_SIZE )
       return ErrRaster_OutOfMemory;
 
     /* return immediately if the outline is empty */
@@ -1906,6 +1907,7 @@
         rast->buffer_size = 0;
         rast->worker      = NULL;
       }
+      rast->buffer_allocated_size = pool_size;
     }
   }
 
