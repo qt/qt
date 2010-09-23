@@ -82,7 +82,7 @@ public:
     QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher);
     ~QActiveObject();
 
-    bool okToRun();
+    bool maybeQueueForLater();
 
     void reactivateAndComplete();
 
