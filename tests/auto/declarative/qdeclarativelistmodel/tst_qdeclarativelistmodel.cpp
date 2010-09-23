@@ -91,6 +91,7 @@ private slots:
     void enumerate();
     void error_data();
     void error();
+    void syncError();
     void set();
     void get();
     void get_data();
@@ -659,6 +660,21 @@ void tst_qdeclarativelistmodel::error()
         QCOMPARE(errors.count(),1);
         QCOMPARE(errors.at(0).description(),error);
     }
+}
+
+void tst_qdeclarativelistmodel::syncError()
+{
+    QString qml = "import Qt 4.7\nListModel { id: lm; Component.onCompleted: lm.sync() }";
+    QString error = "file:dummy.qml:2:1: QML ListModel: List sync() can only be called from a WorkerScript";
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+    component.setData(qml.toUtf8(),
+                      QUrl::fromLocalFile(QString("dummy.qml")));
+    QTest::ignoreMessage(QtWarningMsg,error.toUtf8());
+    QObject *obj = component.create();
+    QVERIFY(obj);
+    delete obj;
 }
 
 /*
