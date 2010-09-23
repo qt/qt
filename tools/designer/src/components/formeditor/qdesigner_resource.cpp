@@ -1377,34 +1377,6 @@ DomLayoutItem *QDesignerResource::createDom(QLayoutItem *item, DomLayout *ui_lay
     } else {
         return 0;
     }
-
-    if (m_chain.size() && item->widget()) {
-        if (QGridLayout *grid = qobject_cast<QGridLayout*>(m_chain.top())) {
-            const int index = Utils::indexOfWidget(grid, item->widget());
-
-            int row, column, rowspan, colspan;
-            grid->getItemPosition(index, &row, &column, &rowspan, &colspan);
-            ui_item->setAttributeRow(row);
-            ui_item->setAttributeColumn(column);
-
-            if (colspan != 1)
-                ui_item->setAttributeColSpan(colspan);
-
-            if (rowspan != 1)
-                ui_item->setAttributeRowSpan(rowspan);
-        } else {
-            if (QFormLayout *form = qobject_cast<QFormLayout*>(m_chain.top())) {
-                const int index = Utils::indexOfWidget(form, item->widget());
-                int row, column, colspan;
-                getFormLayoutItemPosition(form, index, &row, &column, 0, &colspan);
-                ui_item->setAttributeRow(row);
-                ui_item->setAttributeColumn(column);
-                if (colspan != 1)
-                    ui_item->setAttributeColSpan(colspan);
-            }
-        }
-    }
-
     return ui_item;
 }
 
