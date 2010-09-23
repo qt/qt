@@ -1655,7 +1655,7 @@ static v8::Handle<v8::Value> QtScopeObjectNamedPropertyGetter(v8::Local<v8::Stri
     v8::Local<v8::Object> scopeObject = v8::Local<v8::Object>::Cast(scopeChain->Get(0));
     v8::Local<v8::Object> nextInScope = v8::Local<v8::Object>::Cast(scopeChain->Get(1));
     v8::Local<v8::Value> result = scopeObject->Get(property);
-    if (result.IsEmpty())
+    if (result.IsEmpty() || result->IsUndefined())
         return handleScope.Close(nextInScope->Get(property));
     return handleScope.Close(result);
 }
