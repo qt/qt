@@ -575,7 +575,13 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     if (permissions & QFile::ExeOther)
         mode |= S_IXOTH;
 
-    return ::chmod(entry.nativeFilePath().constData(), mode) == 0;
+    bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
+    if (success && data) {
+        data->entryFlags &= ~QFileSystemMetaData::Permissions;
+        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
+        data->knownFlagsMask |= QFileSystemMetaData::Permissions;
+    }
+    return success;
 }
 
 QString QFileSystemEngine::homePath()
