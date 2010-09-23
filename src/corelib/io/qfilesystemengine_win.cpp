@@ -1154,6 +1154,8 @@ QFileSystemEntry QFileSystemEngine::currentPath()
             ret = QString::fromWCharArray(currentName, size);
         }
     }
+    if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+        ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
 #else
     Q_UNUSED(fileName);
     //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
