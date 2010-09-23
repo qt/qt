@@ -91,6 +91,7 @@ private slots:
     void enumerate();
     void error_data();
     void error();
+    void syncError();
     void set();
     void get();
     void get_data();
@@ -260,7 +261,7 @@ void tst_qdeclarativelistmodel::dynamic_data()
     QTest::newRow("set2") << "{append({'foo':123});set(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
-    QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index 0 out of range";
+    QTest::newRow("set4a") << "{set(0,{'foo':456});count}" << 1 << "";
     QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index -1 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3]);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
@@ -659,6 +660,21 @@ void tst_qdeclarativelistmodel::error()
         QCOMPARE(errors.count(),1);
         QCOMPARE(errors.at(0).description(),error);
     }
+}
+
+void tst_qdeclarativelistmodel::syncError()
+{
+    QString qml = "import Qt 4.7\nListModel { id: lm; Component.onCompleted: lm.sync() }";
+    QString error = "file:dummy.qml:2:1: QML ListModel: List sync() can only be called from a WorkerScript";
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+    component.setData(qml.toUtf8(),
+                      QUrl::fromLocalFile(QString("dummy.qml")));
+    QTest::ignoreMessage(QtWarningMsg,error.toUtf8());
+    QObject *obj = component.create();
+    QVERIFY(obj);
+    delete obj;
 }
 
 /*

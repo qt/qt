@@ -1351,7 +1351,7 @@ EXPORTS
 	_ZNK21QDeclarativeDomObject8propertyERK10QByteArray @ 1350 NONAME
 	_ZNK21QDeclarativeListModel10metaObjectEv @ 1351 NONAME
 	_ZNK21QDeclarativeListModel3getEi @ 1352 NONAME
-	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME
+	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME ABSENT
 	_ZNK21QDeclarativeListModel4dataEii @ 1354 NONAME
 	_ZNK21QDeclarativeListModel5countEv @ 1355 NONAME
 	_ZNK21QDeclarativeListModel5rolesEv @ 1356 NONAME
@@ -1831,4 +1831,6 @@ EXPORTS
 	_ZThn8_N29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1830 NONAME
 	_ZThn8_N29QDeclarativeAbstractAnimationD0Ev @ 1831 NONAME
 	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1832 NONAME
+	_ZN23QDeclarativeDebugHelper15getScriptEngineEP18QDeclarativeEngine @ 1833 NONAME
+	_ZN23QDeclarativeDebugHelper26setAnimationSlowDownFactorEf @ 1834 NONAME
 
