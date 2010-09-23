@@ -54,7 +54,11 @@
 #include <e32ver.h>
 #include <e32hal.h>
 #include <e32panic.h>
-#include <u32exec.h>
+// backport of Symbian^4 allocator to Symbian^3 SDK does not contain u32exec.h
+//#include <u32exec.h>
+// but the following are needed
+#include <u32std.h>
+#include <e32btrace.h>
 #endif
 
 GLREF_C void Panic(TCdtPanic aPanic);
