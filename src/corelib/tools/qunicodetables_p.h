@@ -162,20 +162,6 @@ namespace QUnicodeTables {
     enum { ScriptSentinel = 32 };
 
 
-    // see http://www.unicode.org/reports/tr14/tr14-19.html
-    // we don't use the XX, AI and CB properties and map them to AL instead.
-    // as we don't support any EBDIC based OS'es, NL is ignored and mapped to AL as well.
-    enum LineBreakClass {
-        LineBreak_OP, LineBreak_CL, LineBreak_QU, LineBreak_GL, LineBreak_NS,
-        LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR, LineBreak_PO,
-        LineBreak_NU, LineBreak_AL, LineBreak_ID, LineBreak_IN, LineBreak_HY,
-        LineBreak_BA, LineBreak_BB, LineBreak_B2, LineBreak_ZW, LineBreak_CM,
-        LineBreak_WJ, LineBreak_H2, LineBreak_H3, LineBreak_JL, LineBreak_JV,
-        LineBreak_JT, LineBreak_SA, LineBreak_SG,
-        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
-    };
-
-
     enum GraphemeBreak {
         GraphemeBreakOther,
         GraphemeBreakCR,
@@ -214,6 +200,20 @@ namespace QUnicodeTables {
         SentenceBreakATerm,
         SentenceBreakSTerm,
         SentenceBreakClose
+    };
+
+
+    // see http://www.unicode.org/reports/tr14/tr14-19.html
+    // we don't use the XX, AI and CB properties and map them to AL instead.
+    // as we don't support any EBDIC based OS'es, NL is ignored and mapped to AL as well.
+    enum LineBreakClass {
+        LineBreak_OP, LineBreak_CL, LineBreak_QU, LineBreak_GL, LineBreak_NS,
+        LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR, LineBreak_PO,
+        LineBreak_NU, LineBreak_AL, LineBreak_ID, LineBreak_IN, LineBreak_HY,
+        LineBreak_BA, LineBreak_BB, LineBreak_B2, LineBreak_ZW, LineBreak_CM,
+        LineBreak_WJ, LineBreak_H2, LineBreak_H3, LineBreak_JL, LineBreak_JV,
+        LineBreak_JT, LineBreak_SA, LineBreak_SG,
+        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
     };
 
 

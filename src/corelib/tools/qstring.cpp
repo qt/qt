@@ -6941,30 +6941,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     return result;
 }
 
-/*! \internal
- */
-void QString::updateProperties() const
+static bool isStringRightToLeft(const ushort *p, const ushort *end)
 {
-    ushort *p = d->data;
-    ushort *end = p + d->size;
-    d->simpletext = true;
-    while (p < end) {
-        ushort uc = *p;
-        // sort out regions of complex text formatting
-        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
-            d->simpletext = false;
-        }
-        p++;
-    }
-
-    d->righttoleft = isRightToLeft();
-    d->clean = true;
-}
-
-bool QString::isRightToLeft() const
-{
-    ushort *p = d->data;
-    const ushort * const end = p + d->size;
     bool righttoleft = false;
     while (p < end) {
         switch(QChar::direction(*p))
@@ -6982,6 +6960,31 @@ bool QString::isRightToLeft() const
     }
  end:
     return righttoleft;
+}
+
+/*! \internal
+ */
+void QString::updateProperties() const
+{
+    ushort *p = d->data;
+    ushort *end = p + d->size;
+    d->simpletext = true;
+    while (p < end) {
+        ushort uc = *p;
+        // sort out regions of complex text formatting
+        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
+            d->simpletext = false;
+        }
+        p++;
+    }
+
+    d->righttoleft = isStringRightToLeft(d->data, d->data + d->size);
+    d->clean = true;
+}
+
+bool QString::isRightToLeft() const
+{
+    return isStringRightToLeft(d->data, d->data + d->size);
 }
 
 /*! \fn bool QString::isSimpleText() const

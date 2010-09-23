@@ -13,7 +13,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Designer
 
 qhp.Designer.file                = designer.qhp
-qhp.Designer.namespace           = com.trolltech.designer.470
+qhp.Designer.namespace           = com.trolltech.designer.471
 qhp.Designer.virtualFolder       = qdoc
 qhp.Designer.indexTitle          = Qt Designer Manual
 qhp.Designer.extraFiles          = images/bg_l.png \
@@ -50,7 +50,7 @@ qhp.Designer.extraFiles          = images/bg_l.png \
 									style/style_ie8.css \
                              	    style/style.css
 
-qhp.Designer.filterAttributes    = qt 4.7.0 tools designer
+qhp.Designer.filterAttributes    = qt 4.7.1 tools designer
 qhp.Designer.customFilters.Designer.name = Qt Designer Manual
 qhp.Designer.customFilters.Designer.filterAttributes = qt tools designer
 qhp.Designer.subprojects         = manual examples

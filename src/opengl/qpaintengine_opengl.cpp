@@ -4735,9 +4735,11 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
         font_cache = new QGLFontGlyphHash;
 //         qDebug() << "new context" << context << font_cache;
         qt_context_cache.insert(context, font_cache);
-        if (context->isValid() && context->device()->devType() == QInternal::Widget) {
-            QWidget *widget = static_cast<QWidget *>(context->device());
-            connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
+        if (context->isValid()) {
+            if (context->device()->devType() == QInternal::Widget) {
+                QWidget *widget = static_cast<QWidget *>(context->device());
+                connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
+            }
             connect(QGLSignalProxy::instance(),
                     SIGNAL(aboutToDestroyContext(const QGLContext*)),
                     SLOT(cleanupContext(const QGLContext*)));

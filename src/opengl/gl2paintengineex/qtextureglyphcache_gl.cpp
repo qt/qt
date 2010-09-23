@@ -129,7 +129,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     GLuint oldTexture = m_texture;
     createTextureData(width, height);
-    
+
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
@@ -281,4 +281,13 @@ int QGLTextureGlyphCache::glyphPadding() const
     return 1;
 }
 
+int QGLTextureGlyphCache::maxTextureWidth() const
+{
+    return ctx->d_ptr->maxTextureSize();
+}
+
+int QGLTextureGlyphCache::maxTextureHeight() const
+{
+    return ctx->d_ptr->maxTextureSize();
+}
 QT_END_NAMESPACE
