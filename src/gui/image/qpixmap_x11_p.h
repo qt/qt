@@ -82,7 +82,6 @@ public:
 
     void fill(const QColor &color);
     QBitmap mask() const;
-    bool hasMask() const;
     void setMask(const QBitmap &mask);
     bool hasAlphaChannel() const;
     void setAlphaChannel(const QPixmap &alphaChannel);

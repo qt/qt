@@ -1321,16 +1321,6 @@ QBitmap QX11PixmapData::mask() const
     return mask;
 }
 
-bool QX11PixmapData::hasMask() const
-{
-    return
-#ifndef QT_NO_XRENDER
-        (picture && d == 32) ||
-#endif
-        (d == 1) || x11_mask;
-}
-
-
 /*!
     Sets a mask bitmap.
 

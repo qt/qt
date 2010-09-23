@@ -1798,13 +1798,27 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     Returns true if this pixmap has an alpha channel, \e or has a
     mask, otherwise returns false.
 
-    \warning This is potentially an expensive operation.
-
     \sa hasAlphaChannel(), mask()
 */
 bool QPixmap::hasAlpha() const
 {
-    return data && (data->hasAlphaChannel() || !data->mask().isNull());
+#if defined(Q_WS_X11)
+    if (data && data->hasAlphaChannel())
+        return true;
+    QPixmapData *pd = pixmapData();
+    if (pd && pd->classId() == QPixmapData::X11Class) {
+        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pd);
+#ifndef QT_NO_XRENDER
+        if (x11Data->picture && x11Data->d == 32)
+            return true;
+#endif
+        if (x11Data->d == 1 || x11Data->x11_mask)
+            return true;
+    }
+    return false;
+#else
+    return data && data->hasAlphaChannel();
+#endif
 }
 
 /*!

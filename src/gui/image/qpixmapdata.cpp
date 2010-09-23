@@ -239,11 +239,6 @@ QBitmap QPixmapData::mask() const
     return QBitmap::fromImage(mask);
 }
 
-bool QPixmapData::hasMask() const
-{
-    return hasAlphaChannel();
-}
-
 QPixmap QPixmapData::transformed(const QTransform &matrix,
                                  Qt::TransformationMode mode) const
 {
