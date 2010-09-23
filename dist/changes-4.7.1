@@ -26,6 +26,11 @@ Optimizations
  - Improved the benchmarking library's timing code
     * Uses a faster access to the system clock
 
+ - Introduction of SSSE3 for alpha blending of images.
+
+ - On x86 and 86_64, the memory access has been improved for alpha blending
+   and for some composition functions.
+
  * See list of Important Behavior Changes below
 
 
@@ -107,7 +112,7 @@ Qt for Unix (X11 and Mac OS X)
 
 Qt for Linux/X11
 ----------------
-
+ - The configure script now detects all vector extensions of x86 and x86_64
 
 Qt for Windows
 --------------
@@ -115,7 +120,7 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
-
+ - The configure script now detects all vector extensions of x86 and x86_64
 
 Qt for Symbian
 --------------
