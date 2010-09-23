@@ -868,12 +868,11 @@ inline bool QScriptValuePrivate::deleteProperty(const QString& name)
 
 inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
-    Q_UNUSED(name); // FIXME it should be used.
-    Q_UNUSED(mode); // FIXME it should be used.
     if (!isObject())
         return QScriptValue::PropertyFlags(0);
-    Q_UNIMPLEMENTED();
-    return QScriptValue::PropertyFlags(0);
+
+    v8::HandleScope handleScope;
+    return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), QScriptConverter::toString(name), mode);
 }
 
 inline QScriptValuePrivate* QScriptValuePrivate::data() const

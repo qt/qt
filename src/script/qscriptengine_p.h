@@ -91,6 +91,7 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
     inline bool isError(const QScriptValuePrivate* value) const;
+    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode);
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
     v8::Handle<v8::Value> qtDateTimeToJS(const QDateTime &dt);
@@ -209,6 +210,11 @@ inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
 inline bool QScriptEnginePrivate::isError(const QScriptValuePrivate* value) const
 {
     return m_originalGlobalObject.isError(value);
+}
+
+inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode)
+{
+    return m_originalGlobalObject.getPropertyFlags(object, property, mode);
 }
 
 QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)

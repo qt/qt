@@ -25,6 +25,7 @@
 #define QSCRIPTORIGINALGLOBALOBJECT_P_H
 
 #include "QtCore/qglobal.h"
+#include "qscriptvalue.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
@@ -52,28 +53,39 @@ public:
     inline void destroy();
 
     inline bool isError(const QScriptValuePrivate* value) const;
+    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode);
 
 private:
     bool isType(const QScriptValuePrivate* value, v8::Handle<v8::Object> constructor, v8::Handle<v8::Value> prototype) const;
-    inline void initializeMember(v8::Handle<v8::Object> globalObject, v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype);
+    inline void initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype);
 
     // Copy of constructors and prototypes used in isType functions.
     v8::Persistent<v8::Object> m_errorConstructor;
     v8::Persistent<v8::Value> m_errorPrototype;
+    v8::Persistent<v8::Function> m_ownPropertyDescriptor;
+    v8::Persistent<v8::Object> m_globalObject;
 };
 
 QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context> context)
 {
     v8::Context::Scope contextScope(context);
     v8::HandleScope handleScope;
-    v8::Local<v8::Object> globalObject = context->Global();
-    initializeMember(globalObject, v8::String::New("prototype"), v8::String::New("Error"), m_errorConstructor, m_errorPrototype);
+    m_globalObject = v8::Persistent<v8::Object>::New(context->Global());
+    initializeMember(v8::String::New("prototype"), v8::String::New("Error"), m_errorConstructor, m_errorPrototype);
+
+    {   // Initialize m_ownPropertyDescriptor.
+        v8::Handle<v8::Value> objectConstructor = m_globalObject->Get(v8::String::New("Object"));
+        Q_ASSERT(objectConstructor->IsObject());
+        v8::Handle<v8::Value> ownPropertyDescriptor = objectConstructor->ToObject()->Get(v8::String::New("getOwnPropertyDescriptor"));
+        Q_ASSERT(!ownPropertyDescriptor.IsEmpty());
+        m_ownPropertyDescriptor = v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyDescriptor));
+    }
 }
 
-inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::Object> globalObject, v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype)
+inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype)
 {
     // Save references to the Type constructor and prototype.
-    v8::Handle<v8::Value> typeConstructor = globalObject->Get(type);
+    v8::Handle<v8::Value> typeConstructor = m_globalObject->Get(type);
     Q_ASSERT(typeConstructor->IsObject());
     constructor = v8::Persistent<v8::Object>::New(typeConstructor->ToObject());
 
@@ -91,21 +103,61 @@ QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
     // should be called before destructor.
     Q_ASSERT_X(m_errorConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_errorPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
+    Q_ASSERT_X(m_ownPropertyDescriptor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
+    Q_ASSERT_X(m_globalObject.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
 }
 
 inline void QScriptOriginalGlobalObject::destroy()
 {
     m_errorConstructor.Dispose();
     m_errorPrototype.Dispose();
+    m_ownPropertyDescriptor.Dispose();
+    m_globalObject.Dispose();
 #ifndef QT_NO_DEBUG
     m_errorConstructor.Clear();
     m_errorPrototype.Clear();
+    m_ownPropertyDescriptor.Clear();
+    m_globalObject.Clear();
 #endif
 }
 
 inline bool QScriptOriginalGlobalObject::isError(const QScriptValuePrivate* value) const
 {
     return isType(value, m_errorConstructor, m_errorPrototype);
+}
+
+inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode)
+{
+    Q_ASSERT(object->IsObject());
+    Q_ASSERT(!property.IsEmpty());
+    // FIXME do we need try catch here?
+    v8::Handle<v8::Value> argv[] = {object, property};
+    v8::Handle<v8::Object> descriptor = v8::Handle<v8::Object>::Cast(m_ownPropertyDescriptor->Call(m_globalObject, /* argc */ 2, argv));
+    if (descriptor.IsEmpty()) {
+        // exception ?
+        return QScriptValue::PropertyFlag(0);
+    }
+    if (!descriptor->IsObject()) {
+        // Property isn't owned by this object.
+        v8::Handle<v8::Value> prototype = object->GetPrototype();
+        if (mode == QScriptValue::ResolveLocal || prototype->IsNull())
+            return QScriptValue::PropertyFlag(0);
+        return getPropertyFlags(v8::Handle<v8::Object>::Cast(prototype), property, QScriptValue::ResolvePrototype);
+    }
+    v8::Local<v8::String> writableName = v8::String::New("writable");
+    v8::Local<v8::String> configurableName = v8::String::New("configurable");
+    v8::Local<v8::String> enumerableName = v8::String::New("enumerable");
+
+    unsigned flags = 0;
+
+    if (!descriptor->Get(writableName)->BooleanValue())
+        flags |= QScriptValue::ReadOnly;
+    if (!descriptor->Get(configurableName)->BooleanValue())
+        flags |= QScriptValue::Undeletable;
+    if (!descriptor->Get(enumerableName)->BooleanValue())
+        flags |= QScriptValue::SkipInEnumeration;
+
+    return QScriptValue::PropertyFlag(flags);
 }
 
 QT_END_NAMESPACE

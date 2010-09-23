@@ -1445,7 +1445,6 @@ void tst_QScriptValue::propertyFlag_data()
 
 void tst_QScriptValue::propertyFlag()
 {
-    QSKIP("FIXME: getting flags is not Implemented yet", SkipAll);
     QScriptEngine engine;
     QFETCH(QString, name);
     QFETCH(int, flag);
