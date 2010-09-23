@@ -664,14 +664,19 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pd);
-        pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
-                                                     RootWindow(x11Data->xinfo.display(),
-                                                                x11Data->xinfo.screen()),
-                                                      w, h, 1);
-        GC gc = XCreateGC(X11->display, pmData->x11_mask, 0, 0);
-        XCopyArea(X11->display, x11Data->x11_mask, pmData->x11_mask, gc, 0, 0, qMin(width(), w), qMin(height(), h), 0, 0);
-        XFreeGC(X11->display, gc);
+        QPixmapData *newPd = pm.pixmapData();
+        QX11PixmapData *pmData = (newPd && newPd->classId() == QPixmapData::X11Class)
+                                 ? static_cast<QX11PixmapData*>(newPd) : 0;
+        if (pmData) {
+            pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
+                                                         RootWindow(x11Data->xinfo.display(),
+                                                                    x11Data->xinfo.screen()),
+                                                         w, h, 1);
+            GC gc = XCreateGC(X11->display, pmData->x11_mask, 0, 0);
+            XCopyArea(X11->display, x11Data->x11_mask, pmData->x11_mask, gc, 0, 0,
+                      qMin(width(), w), qMin(height(), h), 0, 0);
+            XFreeGC(X11->display, gc);
+        }
     }
 #endif
     *this = pm;
@@ -836,7 +841,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
                   % HexString<quint64>(info.size())
                   % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
 
-    // Note: If no extension is provided, we try to match the 
+    // Note: If no extension is provided, we try to match the
     // file against known plugin extensions
     if (!info.completeSuffix().isEmpty() && !info.exists())
         return false;
