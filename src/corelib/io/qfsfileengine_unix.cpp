@@ -892,50 +892,9 @@ uint QFSFileEngine::ownerId(FileOwner own) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    int size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (size_max == -1)
-        size_max = 1024;
-    QVarLengthArray<char, 1024> buf(size_max);
-#endif
-
-    if (own == OwnerUser) {
-        struct passwd *pw = 0;
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-        struct passwd entry;
-        getpwuid_r(ownerId(own), &entry, buf.data(), buf.size(), &pw);
-#else
-        pw = getpwuid(ownerId(own));
-#endif
-        if (pw)
-            return QFile::decodeName(QByteArray(pw->pw_name));
-    } else if (own == OwnerGroup) {
-#if !defined(Q_OS_SYMBIAN)
-        struct group *gr = 0;
-#if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-        size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
-        if (size_max == -1)
-            size_max = 1024;
-        buf.resize(size_max);
-        struct group entry;
-        // Some large systems have more members than the POSIX max size
-        // Loop over by doubling the buffer size (upper limit 250k)
-        for (unsigned size = size_max; size < 256000; size += size)
-        {
-            buf.resize(size);
-            // ERANGE indicates that the buffer was too small
-            if (!getgrgid_r(ownerId(own), &entry, buf.data(), buf.size(), &gr)
-                || errno != ERANGE)
-                break;
-        }
-#else
-        gr = getgrgid(ownerId(own));
-#endif
-        if (gr)
-            return QFile::decodeName(QByteArray(gr->gr_name));
-#endif
-    }
-    return QString();
+    if (own == OwnerUser)
+        return QFileSystemEngine::resolveUserName(ownerId(own));
+    return QFileSystemEngine::resolveGroupName(ownerId(own));
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
