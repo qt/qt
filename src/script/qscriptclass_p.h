@@ -48,7 +48,6 @@ public:
 
     inline QScriptClassPrivate(QScriptEnginePrivate* engine, QScriptClass* q);
     inline QScriptEnginePrivate* engine() const;
-    QScriptValuePrivate* prototype() const;
 
     inline QScriptClass* userCallback() const;
 private:

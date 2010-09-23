@@ -1878,16 +1878,26 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertyGetter(v8::Local<v8::St
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> classdata = v8::Local<v8::Object>::Cast(info.Data());
-    QScriptClassPrivate* scriptclass = static_cast<QScriptClassPrivate*>(classdata->GetPointerFromInternalField(0));
-    QScriptValuePrivate* object = new QScriptValuePrivate(scriptclass->engine(), info.This());
+    QScriptClassPrivate *scriptclass = static_cast<QScriptClassPrivate *>(classdata->GetPointerFromInternalField(0));
+    QScriptValuePrivate *original = static_cast<QScriptValuePrivate *>(classdata->GetPointerFromInternalField(1));
+    if (original) {
+        // for compatibility with the old back-end, normal JS properties
+        // are queried first.
+        //FIXME: don't convert to QString
+        QExplicitlySharedDataPointer<QScriptValuePrivate> originalResult(original->property(QScriptConverter::toString(property), QScriptValue::ResolveLocal));
+        if (originalResult->isValid())
+            return originalResult->m_value;
+    }
+
+    QExplicitlySharedDataPointer<QScriptValuePrivate> object(new QScriptValuePrivate(scriptclass->engine(), info.This()));
     uint id;
-    QScriptClass::QueryFlags userFlags = scriptclass->userCallback()->queryProperty(QScriptValuePrivate::get(object),
+    QScriptClass::QueryFlags userFlags = scriptclass->userCallback()->queryProperty(QScriptValuePrivate::get(object.data()),
                                                                 QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
                                                                 QScriptClass::HandlesReadAccess,
                                                                 &id);
     if (!userFlags & QScriptClass::HandlesReadAccess)
         return handleScope.Close(v8::Undefined());
-    QScriptValue userResult = scriptclass->userCallback()->property(QScriptValuePrivate::get(object),
+    QScriptValue userResult = scriptclass->userCallback()->property(QScriptValuePrivate::get(object.data()),
                                                                 QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
                                                                 id);
     QScriptValuePrivate* result = QScriptValuePrivate::get(userResult);
@@ -1902,8 +1912,8 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertySetter(v8::Local<v8::St
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> classdata = v8::Local<v8::Object>::Cast(info.Data());
-    QScriptClassPrivate* scriptclass = static_cast<QScriptClassPrivate*>(classdata->GetPointerFromInternalField(0));
-    QScriptValuePrivate* object = new QScriptValuePrivate(scriptclass->engine(), info.This());
+    QScriptClassPrivate *scriptclass = static_cast<QScriptClassPrivate*>(classdata->GetPointerFromInternalField(0));
+    QScriptValuePrivate *object = new QScriptValuePrivate(scriptclass->engine(), info.This());
     QScriptValue obj = QScriptValuePrivate::get(object);
     uint id;
     QScriptClass::QueryFlags userFlags = scriptclass->userCallback()->queryProperty(QScriptValuePrivate::get(object),
@@ -1971,12 +1981,12 @@ static v8::Handle<v8::Boolean> QtClassInstanceIndexedPropertyDeleter(uint32_t in
 
 QScriptValuePrivate* QScriptEnginePrivate::newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data)
 {
-    QScriptValuePrivate* object = newObject(scriptclass);
+    QScriptValuePrivate* object = newScriptClassObject(scriptclass);
     object->setData(data);
     return object;
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newObject(QScriptClassPrivate* scriptclass)
+QScriptValuePrivate* QScriptEnginePrivate::newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate *previousValue)
 {
     if (this != scriptclass->engine()) {
         qWarning("QScriptEngine::newObject: this engine and ScriptClass engine doesn't match");
@@ -1985,10 +1995,14 @@ QScriptValuePrivate* QScriptEnginePrivate::newObject(QScriptClassPrivate* script
     v8::Handle<v8::ObjectTemplate> newObjectTemplate = v8::ObjectTemplate::New();
     {
         v8::Handle<v8::ObjectTemplate> classDataTemplate = v8::ObjectTemplate::New();
-        classDataTemplate->SetInternalFieldCount(1);
+        classDataTemplate->SetInternalFieldCount(2);
         v8::Handle<v8::Object> classdata = classDataTemplate->NewInstance();
         // FIXME: Does it leak engine!?
         classdata->SetPointerInInternalField(0, scriptclass);
+        classdata->SetPointerInInternalField(1, previousValue);
+        if (previousValue) {
+            previousValue->ref.ref();  //FIXME: LEAK !
+        }
         newObjectTemplate->SetNamedPropertyHandler(QtClassInstanceNamedPropertyGetter,
                                                      QtClassInstanceNamedPropertySetter,
                                                      QtClassInstanceNamedPropertyQuery,
@@ -2003,7 +2017,8 @@ QScriptValuePrivate* QScriptEnginePrivate::newObject(QScriptClassPrivate* script
                                                        classdata);
     }
     QScriptValuePrivate* object = new QScriptValuePrivate(this, newObjectTemplate->NewInstance());
-    object->setPrototype(scriptclass->prototype());
+    QScriptValue prototype = QScriptClassPrivate::get(scriptclass)->prototype();
+    object->setPrototype(QScriptValuePrivate::get(prototype));
     return object;
 }
 

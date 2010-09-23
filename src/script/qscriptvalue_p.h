@@ -765,8 +765,17 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     // obj1.setScriptClass(scriptclass);
     // QVERIFY(obj1.strictlyEquals(obj2);
     v8::HandleScope scope;
-    QScriptValuePrivate* newObject = scriptclass->engine()->newObject(scriptclass);
-    reinitialize(scriptclass->engine(), *newObject);
+
+    QScriptValuePrivate *previousValue = 0;
+    if (isObject()) {
+        previousValue = new QScriptValuePrivate(engine(), m_value);
+        m_value.Clear();
+        m_state = QScriptValuePrivate::CUndefined;
+    }
+    QScriptValuePrivate *newObject = scriptclass->engine()->newScriptClassObject(scriptclass, previousValue);
+    reinitialize(newObject->engine(), *newObject);
+    newObject->m_value.Clear();
+    newObject->m_state = QScriptValuePrivate::CUndefined;
     delete newObject;
 }
 

@@ -354,8 +354,4 @@ QVariant QScriptClass::extension(Extension extension, const QVariant &argument)
     return QVariant();
 }
 
-QScriptValuePrivate* QScriptClassPrivate::prototype() const
-{
-    return QScriptValuePrivate::get(q_ptr->prototype());
-}
 QT_END_NAMESPACE

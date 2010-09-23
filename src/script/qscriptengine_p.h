@@ -64,7 +64,7 @@ public:
 
     QScriptValuePrivate* newArray(uint length);
     QScriptValuePrivate* newObject();
-    QScriptValuePrivate* newObject(QScriptClassPrivate* scriptclass);
+    QScriptValuePrivate* newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* previousValue = 0);
     QScriptValuePrivate* newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
     QScriptValuePrivate *newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptValuePrivate *newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
