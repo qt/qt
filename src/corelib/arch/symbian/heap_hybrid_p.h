@@ -94,9 +94,8 @@ class RHybridHeap : public RHeap
 	{
 
 public:
-// MGR CHANGE
-typedef void (*TWalkFunc)(TAny*, RHeap::TCellType, TAny*, TInt);
-
+    // declaration copied from RHeap to make it visible
+    typedef void (*TWalkFunc)(TAny*, RHeap::TCellType, TAny*, TInt);
 
 	struct HeapInfo
 		{

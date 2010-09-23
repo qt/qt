@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qt_hybridheap_symbian.h"
+#include "qt_hybridheap_symbian_p.h"
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
@@ -79,11 +79,11 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             __DEBUG_ONLY(DoSetAllocFail((TAllocFail)(TInt)a1, (TInt)a2));
             break;
 
-#ifdef SYMBIAN4_DEBUG_FUNCTIONS_SUPPORTED
+#ifndef SYMBIAN4_ALLOCATOR_UNWANTED_CODE
         case RAllocator::EGetFail:
             __DEBUG_ONLY(r = iFailType);
             break;
-#endif // SYMBIAN4_DEBUG_FUNCTIONS_SUPPORTED
+#endif // SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
         case RAllocator::ESetBurstFail:
 #if _DEBUG
@@ -107,7 +107,7 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             break;
             }
 
-#ifdef SYMBIAN4_DEBUG_FUNCTIONS_SUPPORTED
+#ifndef SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 		case RAllocator::EGetSize:
 			{
 			r = iChunkSize - sizeof(RHybridHeap);
@@ -193,7 +193,7 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             break;
 			}
 #endif  // __KERNEL_MODE            
-#endif // SYMBIAN4_DEBUG_FUNCTIONS_SUPPORTED
+#endif // SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
         default:
             return KErrNotSupported;

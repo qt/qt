@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qt_hybridheap_symbian.h"
+#include "qt_hybridheap_symbian_p.h"
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 

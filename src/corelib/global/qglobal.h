@@ -2451,7 +2451,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 #endif
 
-#ifndef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
+#if !defined(SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS) && !defined(__WINSCW__)
 //Enable the (backported) new allocator. When it is available in OS,
 //this flag should be disabled for that OS version onward
 #define QT_USE_NEW_SYMBIAN_ALLOCATOR
