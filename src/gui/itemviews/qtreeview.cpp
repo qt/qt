@@ -3435,6 +3435,10 @@ void QTreeViewPrivate::updateScrollBars()
     if (!viewportSize.isValid())
         viewportSize = QSize(0, 0);
 
+    if (viewItems.isEmpty()) {
+        q->doItemsLayout();
+    }
+
     int itemsInViewport = 0;
     if (uniformRowHeights) {
         if (defaultItemHeight <= 0)
