@@ -531,7 +531,10 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
 {
-    return false; // TODO implement;
+    Q_UNUSED(source);
+    Q_UNUSED(target);
+    // # we can implement this using sendfile(2)
+    return false;
 }
 
 //static
