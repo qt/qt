@@ -39,75 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVETIMER_H
-#define QDECLARATIVETIMER_H
+#ifndef QDECLARATIVEDEBUGHELPER_P_H
+#define QDECLARATIVEDEBUGHELPER_P_H
 
-#include <qdeclarative.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qabstractanimation.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+class QScriptEngine;
+class QDeclarativeEngine;
 
-class QDeclarativeTimerPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeTimer : public QObject, public QDeclarativeParserStatus
+// Helper methods to access private API through a stable interface
+// This is used in the qmljsdebugger library of QtCreator.
+class Q_DECLARATIVE_EXPORT QDeclarativeDebugHelper
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeTimer)
-    Q_INTERFACES(QDeclarativeParserStatus)
-    Q_PROPERTY(int interval READ interval WRITE setInterval NOTIFY intervalChanged)
-    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
-    Q_PROPERTY(bool repeat READ isRepeating WRITE setRepeating NOTIFY repeatChanged)
-    Q_PROPERTY(bool triggeredOnStart READ triggeredOnStart WRITE setTriggeredOnStart NOTIFY triggeredOnStartChanged)
-    Q_PROPERTY(QObject *parent READ parent CONSTANT)
-
 public:
-    QDeclarativeTimer(QObject *parent=0);
-
-    void setInterval(int interval);
-    int interval() const;
-
-    bool isRunning() const;
-    void setRunning(bool running);
-
-    bool isRepeating() const;
-    void setRepeating(bool repeating);
-
-    bool triggeredOnStart() const;
-    void setTriggeredOnStart(bool triggeredOnStart);
-
-protected:
-    void classBegin();
-    void componentComplete();
-
-public Q_SLOTS:
-    void start();
-    void stop();
-    void restart();
-
-Q_SIGNALS:
-    void triggered();
-    void runningChanged();
-    void intervalChanged();
-    void repeatChanged();
-    void triggeredOnStartChanged();
-
-private:
-    void update();
-
-private Q_SLOTS:
-    void ticked();
-    void finished();
+    static QScriptEngine *getScriptEngine(QDeclarativeEngine *engine);
+    static void setAnimationSlowDownFactor(qreal factor);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeTimer)
-
 QT_END_HEADER
 
-#endif
+#endif // QDECLARATIVEDEBUGHELPER_P_H
