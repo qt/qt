@@ -612,8 +612,6 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     }
 
     if (newMode == TextDrawingMode) {
-        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
-        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
         shaderManager->setHasComplexGeometry(true);
     } else {
         shaderManager->setHasComplexGeometry(false);
