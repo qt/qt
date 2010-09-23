@@ -724,6 +724,7 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_interrupt(false),
       m_wakeUpDone(0),
       m_iterationCount(0),
+      m_insideTimerEvent(false),
       m_noSocketEvents(false)
 {
 #ifdef QT_SYMBIAN_PRIORITY_DROP
@@ -774,6 +775,9 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 {
     bool handledAnyEvent = false;
     bool oldNoSocketEventsValue = m_noSocketEvents;
+    bool oldInsideTimerEventValue = m_insideTimerEvent;
+
+    m_insideTimerEvent = false;
 
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
@@ -864,6 +868,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
     }
 
     m_noSocketEvents = oldNoSocketEventsValue;
+    m_insideTimerEvent = oldInsideTimerEventValue;
 
     return handledAnyEvent;
 }
@@ -884,10 +889,13 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     }
 
     timerInfo->inTimerEvent = true;
+    bool oldInsideTimerEventValue = m_insideTimerEvent;
+    m_insideTimerEvent = true;
 
     QTimerEvent event(timerInfo->timerId);
     QCoreApplication::sendEvent(timerInfo->receiver, &event);
 
+    m_insideTimerEvent = oldInsideTimerEventValue;
     timerInfo->inTimerEvent = false;
 
     return;
@@ -1054,6 +1062,14 @@ void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject
     m_timerList.insert(timerId, timer);
 
     timer->timerAO->Start();
+
+    if (m_insideTimerEvent)
+        // If we are inside a timer event, we need to prevent event starvation
+        // by preventing newly created timers from running in the same event processing
+        // iteration. Do this by calling the okToRun() function to "fake" that we have
+        // already run once. This will cause the next run to be added to the deferred
+        // queue instead.
+        timer->timerAO->okToRun();
 }
 
 bool QEventDispatcherSymbian::unregisterTimer ( int timerId )

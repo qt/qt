@@ -274,6 +274,7 @@ private:
     QAtomicInt m_wakeUpDone;
 
     unsigned char m_iterationCount;
+    bool m_insideTimerEvent;
     bool m_noSocketEvents;
     QList<QSocketActiveObject *> m_deferredSocketEvents;
 
