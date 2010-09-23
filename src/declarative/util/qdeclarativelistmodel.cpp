@@ -552,7 +552,8 @@ QScriptValue QDeclarativeListModel::get(int index) const
         fruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
-    The \a index must be an element in the list.
+    If \a index is equal to count() then a new item is appended to the
+    list. Otherwise, \a index must be an element in the list.
 
     \sa append()
 */
@@ -562,7 +563,7 @@ void QDeclarativeListModel::set(int index, const QScriptValue& valuemap)
         qmlInfo(this) << tr("set: value is not an object");
         return;
     }
-    if (count() == 0 || index > count() || index < 0) {
+    if (index > count() || index < 0) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }
