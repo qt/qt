@@ -703,6 +703,10 @@ inline bool QScriptValuePrivate::instanceOf(QScriptValuePrivate* other) const
 {
     if (!isObject() || !other->isFunction())
         return false;
+    if (engine() != other->engine()) {
+        qWarning("QScriptValue::instanceof: cannot perform operation on a value created in a different engine");
+        return false;
+    }
     v8::HandleScope handleScope;
     return instanceOf(v8::Handle<v8::Object>::Cast(other->m_value));
 }
