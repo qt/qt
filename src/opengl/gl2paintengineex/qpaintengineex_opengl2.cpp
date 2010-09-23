@@ -1470,7 +1470,7 @@ namespace {
     {
     public:
         QOpenGLStaticTextUserData()
-            : QStaticTextUserData(OpenGLUserData)
+            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0)
         {
         }
 
@@ -1478,6 +1478,7 @@ namespace {
         {
         }
 
+        QSize cacheSize;
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
     };
@@ -1542,6 +1543,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
         textureCoordinates = &userData->textureCoordinateArray;
+
+        QSize size(cache->width(), cache->height());
+        if (userData->cacheSize != size) {
+            recreateVertexArrays = true;
+            userData->cacheSize = size;
+        }
     }
 
 
