@@ -3124,7 +3124,6 @@ void fpe_steepSlopes()
     p.setRenderHint(QPainter::Antialiasing, antialiased);
     p.setTransform(transform);
 
-    QEXPECT_FAIL("steep line 3 aa", "needs to be fixed", Continue);
     p.drawLine(line);
 }
 
