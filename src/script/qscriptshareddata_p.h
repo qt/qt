@@ -49,9 +49,10 @@ public:
         // FIXME shouldn't it be uint or something longer?
         mutable int m_ref;
         ReferenceCounter(int ref) : m_ref(ref) {}
+        ~ReferenceCounter() { Q_ASSERT_X(!m_ref, Q_FUNC_INFO, "Memory problem found"); }
     public:
-        bool ref() { return m_ref++; }
-        bool deref() { return m_ref--; }
+        bool ref() { return ++m_ref; }
+        bool deref() { return --m_ref; }
         friend class QScriptSharedData;
     };
 
