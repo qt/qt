@@ -43,9 +43,6 @@
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
-// enables btrace code compiling into 
-#define ENABLE_BTRACE
-
 // if non zero this causes the iSlabs to be configured only when the chunk size exceeds this level
 #define DELAYED_SLAB_THRESHOLD (64*1024)		// 64KB seems about right based on trace data
 #define SLAB_CONFIG 0xabe						// Use slabs of size 48, 40, 32, 24, 20, 16, 12, and 8 bytes
@@ -95,6 +92,7 @@
 #define __INIT_COUNTERS(i)	iCellCount=i,iTotalAllocSize=i
 #define __POWER_OF_2(x)		(!((x)&((x)-1)))
 
+#ifdef ENABLE_BTRACE
 #define __DL_BFR_CHECK(M,P) \
 		  if ( MEMORY_MONITORED ) \
              if ( !IS_ALIGNED(P) || ((TUint8*)(P)<M->iSeg.iBase) || ((TUint8*)(P)>(M->iSeg.iBase+M->iSeg.iSize))) \
@@ -113,6 +111,11 @@
 			if ( ((TUint32)P &  ((1 << iPageSize)-1)) || ((TUint8*)P<iMemBase) || ((TUint8*)(P)>(TUint8*)this))  \
 				BTraceContext12(BTrace::EHeap, BTrace::EHeapCorruption, (TUint32)this, (TUint32)P, (TUint32)0), HEAP_PANIC(ETHeapBadCellAddress)
 
+#endif
+#else
+#define __DL_BFR_CHECK(M,P)
+#define __SLAB_BFR_CHECK(S,P,B)
+#define __PAGE_BFR_CHECK(P)
 #endif
 
 #ifdef _MSC_VER
@@ -2832,6 +2835,7 @@ inline void* RHybridHeap::Bitmap2addr(unsigned pos) const
    { return iMemBase + (1 << (PAGESHIFT-1))*pos; }
 
 
+#ifndef QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -3070,6 +3074,7 @@ Note that the size of the heap cannot be adjusted by more than aMaxLength.
 
 	return ChunkHeap(createInfo);
 	}
+#endif // QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
 EXPORT_C RHeap* UserHeap::ChunkHeap(RChunk aChunk, TInt aMinLength, TInt aGrowBy, TInt aMaxLength, TInt aAlign, TBool aSingleThread, TUint32 aMode)
 /**
@@ -3279,8 +3284,10 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 	GET_PAGE_SIZE(page_size);
 	TInt minLength = _ALIGN_UP(aInfo.iHeapInitialSize, page_size);
 	TInt maxLength = Max(aInfo.iHeapMaxSize, minLength);
+#ifndef QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 	if (UserTestDebugMaskBit(96)) // 96 == KUSERHEAPTRACE in nk_trace.h
 		aInfo.iFlags |= ETraceHeapAllocs;
+#endif // QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 	// Create the thread's heap chunk.
 	RChunk c;
 	TChunkCreateInfo createInfo;
@@ -3293,6 +3300,7 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 	maxLength = 2*maxLength;
 	createInfo.SetDisconnected(0, 0, maxLength);
 #endif	
+#ifndef QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 	// Set the paging policy of the heap chunk based on the thread's paging policy.
 	TUint pagingflags = aInfo.iFlags & EThreadCreateFlagPagingMask;
 	switch (pagingflags)
@@ -3308,6 +3316,7 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 			// paging policy is used.
 			break;
 		}
+#endif // QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 	
 	TInt r = c.Create(createInfo);
 	if (r!=KErrNone)
@@ -3319,6 +3328,7 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 	if ( !aHeap )
 		return KErrNoMemory;
 	
+#ifdef ENABLE_BTRACE
 	if (aInfo.iFlags & ETraceHeapAllocs)
 		{
 		aHeap->iFlags |= RHeap::ETraceAllocs;
@@ -3328,6 +3338,7 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 		}
 	if (aInfo.iFlags & EMonitorHeapMemory)
 		aHeap->iFlags |= RHeap::EMonitorMemory;
+#endif // ENABLE_BTRACE
 	
 	return KErrNone;
 }

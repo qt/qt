@@ -14,4 +14,5 @@ HEADERS +=  $$QT_ARCH_CPP/dla_p.h \
             $$QT_ARCH_CPP/slab_p.h \
             $$QT_ARCH_CPP/qt_hybridHeap_symbian_p.h
 
-exists($$EPOCROOT/epoc32/include/u32std.h):DEFINES += QT_SYMBIAN_HAVE_U32STD_H
+exists($${EPOCROOT}epoc32/include/platform/u32std.h):DEFINES += QT_SYMBIAN_HAVE_U32STD_H
+exists($${EPOCROOT}epoc32/include/platform/e32btrace.h):DEFINES += QT_SYMBIAN_HAVE_E32BTRACE_H

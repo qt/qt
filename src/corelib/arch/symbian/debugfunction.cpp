@@ -42,11 +42,18 @@
 #include "qt_hybridheap_symbian_p.h"
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
+#define RAllocator RHybridHeap
 
 #define GM  (&iGlobalMallocState)
+#ifdef ENABLE_BTRACE
 #define __HEAP_CORRUPTED_TRACE(t,p,l) BTraceContext12(BTrace::EHeap, BTrace::EHeapCorruption, (TUint32)t, (TUint32)p, (TUint32)l);
 #define __HEAP_CORRUPTED_TEST(c,x, p,l) if (!c) { if (iFlags & (EMonitorMemory+ETraceAllocs) )  __HEAP_CORRUPTED_TRACE(this,p,l)  HEAP_PANIC(x); }
 #define __HEAP_CORRUPTED_TEST_STATIC(c,t,x,p,l) if (!c) { if (t && (t->iFlags & (EMonitorMemory+ETraceAllocs) )) __HEAP_CORRUPTED_TRACE(t,p,l) HEAP_PANIC(x); }
+#else
+#define __HEAP_CORRUPTED_TRACE(t,p,l)
+#define __HEAP_CORRUPTED_TEST(c,x, p,l)
+#define __HEAP_CORRUPTED_TEST_STATIC(c,t,x,p,l)
+#endif
 
 TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
 {
@@ -79,11 +86,9 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             __DEBUG_ONLY(DoSetAllocFail((TAllocFail)(TInt)a1, (TInt)a2));
             break;
 
-#ifndef SYMBIAN4_ALLOCATOR_UNWANTED_CODE
         case RAllocator::EGetFail:
             __DEBUG_ONLY(r = iFailType);
             break;
-#endif // SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
         case RAllocator::ESetBurstFail:
 #if _DEBUG
@@ -107,7 +112,6 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             break;
             }
 
-#ifndef SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 		case RAllocator::EGetSize:
 			{
 			r = iChunkSize - sizeof(RHybridHeap);
@@ -193,8 +197,7 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             break;
 			}
 #endif  // __KERNEL_MODE            
-#endif // SYMBIAN4_ALLOCATOR_UNWANTED_CODE
-
+            
         default:
             return KErrNotSupported;
             

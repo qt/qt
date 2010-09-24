@@ -94,8 +94,15 @@ class RHybridHeap : public RHeap
 	{
 
 public:
-    // declaration copied from RHeap to make it visible
+    // declarations copied from Symbian^4 RAllocator and RHeap
     typedef void (*TWalkFunc)(TAny*, RHeap::TCellType, TAny*, TInt);
+	enum TFlags {ESingleThreaded=1, EFixedSize=2, ETraceAllocs=4, EMonitorMemory=8,};
+	enum TAllocDebugOp
+		{
+		ECount, EMarkStart, EMarkEnd, ECheck, ESetFail, ECopyDebugInfo, ESetBurstFail, EGetFail,
+		EGetSize=48, EGetMaxLength, EGetBase, EAlignInteger, EAlignAddr
+		};
+	enum TDebugOp { EWalk = 128, EHybridHeap };
 
 	struct HeapInfo
 		{
