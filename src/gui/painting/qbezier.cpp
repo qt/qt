@@ -293,36 +293,6 @@ static ShiftResult good_offset(const QBezier *b1, const QBezier *b2, qreal offse
     return Ok;
 }
 
-static inline QLineF qline_shifted(const QPointF &p1, const QPointF &p2, qreal offset)
-{
-    QLineF l(p1, p2);
-    QLineF ln = l.normalVector().unitVector();
-    l.translate(ln.dx() * offset, ln.dy() * offset);
-    return l;
-}
-
-static bool qbezier_is_line(QPointF *points, int pointCount)
-{
-    Q_ASSERT(pointCount > 2);
-
-    qreal dx13 = points[2].x() - points[0].x();
-    qreal dy13 = points[2].y() - points[0].y();
-
-    qreal dx12 = points[1].x() - points[0].x();
-    qreal dy12 = points[1].y() - points[0].y();
-
-    if (pointCount == 3) {
-        return qFuzzyCompare(dx12 * dy13, dx13 * dy12);
-    } else if (pointCount == 4) {
-        qreal dx14 = points[3].x() - points[0].x();
-        qreal dy14 = points[3].y() - points[0].y();
-
-        return (qFuzzyCompare(dx12 * dy13, dx13 * dy12) && qFuzzyCompare(dx12 * dy14, dx14 * dy12));
-    }
-
-    return false;
-}
-
 static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qreal threshold)
 {
     int map[4];
@@ -352,17 +322,6 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
     map[3] = np - 1;
     if (np == 1)
         return Discard;
-
-    // We need to specialcase lines of 3 or 4 points due to numerical
-    // instability in intersections below
-    if (np > 2 && qbezier_is_line(points, np)) {
-        if (points[0] == points[np-1])
-            return Discard;
-
-        QLineF l = qline_shifted(points[0], points[np-1], offset);
-        *shifted = QBezier::fromPoints(l.p1(), l.pointAt(qreal(0.33)), l.pointAt(qreal(0.66)), l.p2());
-        return Ok;
-    }
 
     QRectF b = orig->bounds();
     if (np == 4 && b.width() < .1*offset && b.height() < .1*offset) {

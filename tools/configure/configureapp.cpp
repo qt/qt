@@ -958,6 +958,8 @@ void Configure::parseCmdLine()
             dictionary[ "WEBKIT" ] = "no";
         } else if (configCmdLine.at(i) == "-webkit") {
             dictionary[ "WEBKIT" ] = "yes";
+        } else if (configCmdLine.at(i) == "-webkit-debug") {
+            dictionary[ "WEBKIT" ] = "debug";
         } else if (configCmdLine.at(i) == "-no-declarative") {
             dictionary[ "DECLARATIVE" ] = "no";
         } else if (configCmdLine.at(i) == "-declarative") {
@@ -1651,7 +1653,7 @@ bool Configure::displayHelp()
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
-                    "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
+                    "[-no-webkit] [-webkit] [-webkit-debug] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1835,6 +1837,7 @@ bool Configure::displayHelp()
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
+        desc("WEBKIT", "debug", "-webkit-debug",        "Compile in the WebKit module with debug symbols.");
         desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
         desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
@@ -2692,10 +2695,12 @@ void Configure::generateOutputVars()
 
     QString dst = buildPath + "/mkspecs/modules/qt_webkit_version.pri";
     QFile::remove(dst);
-    if (dictionary["WEBKIT"] == "yes") {
+    if (dictionary["WEBKIT"] != "no") {
         // This include takes care of adding "webkit" to QT_CONFIG.
         QString src = sourcePath + "/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri";
         QFile::copy(src, dst);
+        if (dictionary["WEBKIT"] == "debug")
+            qtConfig += "webkit-debug";
     }
 
     if (dictionary["DECLARATIVE"] == "yes") {
@@ -3406,7 +3411,12 @@ void Configure::displayConfig()
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
     cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
-    cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
+    {
+        QString webkit = dictionary[ "WEBKIT" ];
+        if (webkit == "debug")
+            webkit = "yes (debug)";
+        cout << "WebKit support.............." << webkit;
+    }
     cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
     cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
