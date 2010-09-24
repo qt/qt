@@ -51,7 +51,7 @@ public:
         ReferenceCounter(int ref) : m_ref(ref) {}
     public:
         bool ref() { return m_ref++; }
-        bool deref() { return m_ref++; }
+        bool deref() { return m_ref--; }
         friend class QScriptSharedData;
     };
 
