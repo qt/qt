@@ -44,6 +44,12 @@
 
 #include <qglobal.h>
 
+#if !defined(SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS) && !defined(__WINSCW__)
+//Enable the (backported) new allocator. When it is available in OS,
+//this flag should be disabled for that OS version onward
+#define QT_USE_NEW_SYMBIAN_ALLOCATOR
+#endif
+
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
 #include "common_p.h"
