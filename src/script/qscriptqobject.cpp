@@ -693,9 +693,13 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
 {
 //    qDebug() << "QtLazyPropertyGetter(" << qtStringFromJS(property) << ")";
     v8::Local<v8::Object> self = info.This();
+    if (self->InternalFieldCount() != 1 || !self->GetPointerFromInternalField(0)) //FIXME: should not be necessary
+        return v8::Handle<v8::Value>();
+
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QObject *qobject = data->cppObject();
+
 
     if (QScriptDeclarativeClassObject *declarativeClassObject = qobject_cast<QScriptDeclarativeClassObject *>(qobject)) {
         QScriptDeclarativeClass::PersistentIdentifier identifier =
@@ -705,7 +709,10 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
         if (fl & QScriptClass::HandlesReadAccess) {
             QScriptValue result = declarativeClassObject->scriptClass->property(declarativeClassObject->obj.data(), identifier.identifier)
                 .toScriptValue(QScriptEnginePrivate::get(engine));
-            return *QScriptValuePrivate::get(result);
+            QScriptValuePrivate* result_private = QScriptValuePrivate::get(result);
+            //FIXME: check the result value of assignEngine;
+            result_private->assignEngine(engine);
+            return *result_private;
         }
     }
 
@@ -775,19 +782,27 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo& info)
 {
-#if 0
     v8::Local<v8::Object> self = info.This();
+    if (self->InternalFieldCount() != 1 || !self->GetPointerFromInternalField(0)) //FIXME: should not be necessary
+        return v8::Handle<v8::Value>();
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QObject *qobject = data->cppObject();
 
-    QByteArray name = engine->qtStringFromJS(property).toLatin1();
-    qDebug() << qobject << name;
+    if (QScriptDeclarativeClassObject *declarativeClassObject = qobject_cast<QScriptDeclarativeClassObject *>(qobject)) {
+        QScriptDeclarativeClass::PersistentIdentifier identifier =
+        declarativeClassObject->scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
+        QScriptClass::QueryFlags fl = declarativeClassObject->scriptClass->queryProperty(declarativeClassObject->obj.data(),
+                                                                                         identifier.identifier, QScriptClass::HandlesWriteAccess);
+        if (fl & QScriptClass::HandlesWriteAccess) {
+            declarativeClassObject->scriptClass->setProperty(declarativeClassObject->obj.data(), identifier.identifier,
+                                                             QScriptValuePrivate::get(new QScriptValuePrivate(engine, value)));
+            return value;
+        }
+    }
+
+
     Q_UNIMPLEMENTED();
-#endif
-    Q_UNUSED(property);
-    Q_UNUSED(value);
-    Q_UNUSED(info);
     return v8::Handle<v8::Value>();
 }
 
