@@ -212,21 +212,21 @@ my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60inst
 
 # Check some pre-conditions and print error messages if needed.
 unless (length($templatepkg)) {
-    print "\nError: Template PKG filename is not defined!\n";
+    print "\nERROR: Template PKG filename is not defined!\n";
     Usage();
 }
 
 # Check template exist
 stat($templatepkg);
 unless( -e _ ) {
-    print "\nError: Package description file '$templatepkg' does not exist!\n";
+    print "\nERROR: Package description file '$templatepkg' does not exist!\n";
     Usage();
 }
 
 # Check certifcate preconditions and set default certificate variables if needed
 if (length($certificate)) {
     unless(length($key)) {
-        print "\nError: Custom certificate key file parameter missing.!\n";
+        print "\nERROR: Custom certificate key file parameter missing.!\n";
         Usage();
     }
 } else {
@@ -261,7 +261,7 @@ if (length($certfile)) {
 
         # Do some validation
         unless(scalar(@certinfo) >= 2 && scalar(@certinfo) <= 3 && length($certinfo[0]) && length($certinfo[1]) ) {
-            print "\nError: $certfile line '$_' does not contain valid information!\n";
+            print "\nERROR: $certfile line '$_' does not contain valid information!\n";
             Usage();
         }
 
@@ -280,14 +280,14 @@ if (!$preservePkgOutput) {
 
 local $/;
 # read template file
-open( TEMPLATE, $templatepkg) or die "Error '$templatepkg': $!\n";
+open( TEMPLATE, $templatepkg) or die "ERROR: '$templatepkg': $!";
 $_=<TEMPLATE>;
 close (TEMPLATE);
 
 # If the pkg file does not contain macros, there is no need for platform or target.
 if (m/\$\(PLATFORM\)/) {
     unless (length($platform) && length($target)) {
-        print "\nError: Platform or target is not defined!\n";
+        print "\nERROR: Platform or target is not defined!\n";
         Usage();
     }
 }
@@ -297,7 +297,7 @@ s/\$\(PLATFORM\)/$platform/gm;
 s/\$\(TARGET\)/$target/gm;
 
 #write the output
-open( OUTPUT, ">$pkgoutput" ) or die "Error '$pkgoutput' $!\n";
+open( OUTPUT, ">$pkgoutput" ) or die "ERROR: '$pkgoutput' $!";
 print OUTPUT $_;
 close OUTPUT;
 
@@ -306,7 +306,7 @@ if ($preprocessonly) {
 }
 
 if($stub) {
-    if(!($epocroot)) { die("EPOCROOT must be set to create stub sis files"); }
+    if(!($epocroot)) { die("ERROR: EPOCROOT must be set to create stub sis files"); }
     my $systeminstall = "$epocroot/epoc32/data/z/system/install";
     mkpath($systeminstall);
     my $stub_sis_name = $systeminstall."/".$stub_sis_name;
@@ -319,15 +319,15 @@ if($stub) {
         && !$onlyUnsigned) {
         print("Auto-patching capabilities for self signed package.\n");
         my $patch_capabilities = File::Spec->catfile(dirname($0), "patch_capabilities");
-        system ("$patch_capabilities $pkgoutput");
+        system ("$patch_capabilities $pkgoutput") and die ("ERROR: Automatic patching failed");
     }
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
     if($epocroot) {
-        system ("$epocroot/epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+        system ("$epocroot/epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
     } else {
-        system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
+        system ("makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
     }
     print("\n");
 
@@ -354,7 +354,7 @@ if($stub) {
     my $relcert = File::Spec->abs2rel($certificate);
     my $relkey = File::Spec->abs2rel($key);
     # The 'and' is because system uses 0 to indicate success.
-    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase") and die ("signsis failed");
+    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase") and die ("ERROR: signsis failed");
 
     # Check if creating signed SIS Succeeded
     stat($signed_sis_name);

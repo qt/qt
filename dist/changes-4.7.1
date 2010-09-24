@@ -26,6 +26,11 @@ Optimizations
  - Improved the benchmarking library's timing code
     * Uses a faster access to the system clock
 
+ - Introduction of SSSE3 for alpha blending of images.
+
+ - On x86 and 86_64, the memory access has been improved for alpha blending
+   and for some composition functions.
+
  * See list of Important Behavior Changes below
 
 
@@ -40,6 +45,15 @@ QtCore
 QtGui
 -----
 
+ - QGraphicsWidget
+	* [QTBUG-13188] Make sure a font that has propagated from a parent can
+	  be set on a QPainter.
+	  
+	  
+ - QStaticText
+    * [QTBUG-12614] Fix crash with zero-width string.
+	* [QTBUG-12540] Fix rendering of large glyphs with OpenGL2 paint engine.
+
 
 QtDBus
 ------
@@ -51,6 +65,10 @@ QtMultimedia
 
 QtNetwork
 ---------
+ - QSslConfiguration
+    * [QTBUG-13265] fix crash with empty configuration
+ - QSslCertificate
+    * [QTBUG-12489] support dates > 2049
 
 
 QtOpenGL
@@ -72,6 +90,12 @@ QtSql
 QtSvg
 -----
 
+QtXmlPatterns
+-------------
+ - XML Schema internals:
+    * [QTBUG-11559] Only parse 3 digits of time fraction
+
+
 
 Qt Plugins
 ----------
@@ -88,7 +112,7 @@ Qt for Unix (X11 and Mac OS X)
 
 Qt for Linux/X11
 ----------------
-
+ - The configure script now detects all vector extensions of x86 and x86_64
 
 Qt for Windows
 --------------
@@ -96,7 +120,7 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
-
+ - The configure script now detects all vector extensions of x86 and x86_64
 
 Qt for Symbian
 --------------
@@ -110,6 +134,7 @@ Qt for Symbian
  - Designer
 
  - uic
+  * Improve warnings and error reports
 
 ****************************************************************************
 *                     Important Behavior Changes                           *
