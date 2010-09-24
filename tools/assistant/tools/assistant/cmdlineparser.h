@@ -61,6 +61,7 @@ public:
 
     void setCollectionFile(const QString &file);
     QString collectionFile() const;
+    bool collectionFileGiven() const;
     QString cloneFile() const;
     QUrl url() const;
     bool enableRemoteControl() const;
