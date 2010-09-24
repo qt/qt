@@ -35,6 +35,7 @@
 // We mean it.
 //
 
+#include <QtCore/QSet>
 #include <QtCore/qobjectdefs.h>
 #include "qscriptdeclarativeclass_p.h"
 
@@ -50,6 +51,8 @@ public:
     QScriptEngine *engine;
     QScriptDeclarativeClass *q_ptr;
     QScriptContext *context;
+    //FIXME: avoid global statics
+    static QSet<QString> identifiers;
     bool supportsCall:1;
 
     static QScriptDeclarativeClassPrivate *get(QScriptDeclarativeClass *c) {

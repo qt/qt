@@ -79,7 +79,7 @@ public:
 #endif
     };
 
-    typedef void* Identifier;
+    typedef const void *Identifier;
 
     struct Object { virtual ~Object() {} };
 
@@ -112,7 +112,7 @@ public:
         PersistentIdentifier &operator=(const PersistentIdentifier &other);
 
     private:
-        PersistentIdentifier(const QString &s) : identifier(&str), str(s) {}
+        explicit PersistentIdentifier(const QString *s) : identifier(s), str(*s) {}
         QScriptEnginePrivate *engine;
         QString str;
         friend class QScriptDeclarativeClass;

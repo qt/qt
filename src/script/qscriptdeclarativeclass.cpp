@@ -111,13 +111,14 @@ QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier()
 }
 
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(const PersistentIdentifier &other)
-    : identifier(&str), str(other.str)
+    : identifier(other.identifier), str(other.str)
 {
 }
 
 QScriptDeclarativeClass::PersistentIdentifier &
 QScriptDeclarativeClass::PersistentIdentifier::operator=(const PersistentIdentifier &other)
 {
+    identifier = other.identifier;
     str = other.str;
     return *this;
 }
@@ -167,24 +168,24 @@ QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptVa
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
 {
-    return v.property(*reinterpret_cast<QString *>(name));
+    return v.property(*reinterpret_cast<const QString *>(name));
 }
 
 QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Identifier &name)
 {
-    return v.property(*reinterpret_cast<QString *>(name));
+    return v.property(*reinterpret_cast<const QString *>(name));
 }
 
 QScriptDeclarativeClass::Value
 QScriptDeclarativeClass::functionValue(const QScriptValue &v, const Identifier &name)
 {
-    return Value(static_cast<QScriptEngine *>(0) , v.property(*reinterpret_cast<QString *>(name)));
+    return Value(static_cast<QScriptEngine *>(0) , v.property(*reinterpret_cast<const QString *>(name)));
 }
 
 QScriptDeclarativeClass::Value
 QScriptDeclarativeClass::propertyValue(const QScriptValue &v, const Identifier &name)
 {
-    return Value(static_cast<QScriptEngine *>(0), v.property(*reinterpret_cast<QString *>(name)));
+    return Value(static_cast<QScriptEngine *>(0), v.property(*reinterpret_cast<const QString *>(name)));
 }
 
 /*
@@ -241,22 +242,23 @@ void QScriptDeclarativeClass::setSupportsCall(bool c)
     d_ptr->supportsCall = c;
 }
 
+QSet<QString> QScriptDeclarativeClassPrivate::identifiers;
+
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
-    return PersistentIdentifier(str);
+    return PersistentIdentifier(&(*d_ptr->identifiers.insert(str)));
 }
 
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const Identifier &id)
 {
-    return PersistentIdentifier(toString(id));
+    return PersistentIdentifier(createPersistentIdentifier(toString(id)));
 }
 
 QString QScriptDeclarativeClass::toString(const Identifier &identifier)
 {
-    Q_UNUSED(identifier);
-    return *reinterpret_cast<QString *>(identifier);
+    return *reinterpret_cast<const QString *>(identifier);
 }
 
 quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)
