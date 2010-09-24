@@ -86,6 +86,10 @@
 // disabling code ported from Symbian^4 that we don't want/can't have in earlier platforms
 #define QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
+#if defined(SYMBIAN_VERSION_9_2) || defined(SYMBIAN_VERSION_9_1)
+#define NO_NAMED_LOCAL_CHUNKS
+#endif
+
 #ifndef QT_SYMBIAN_HAVE_U32STD_H
 struct SThreadCreateInfo
     {

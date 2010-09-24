@@ -3284,12 +3284,13 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 	GET_PAGE_SIZE(page_size);
 	TInt minLength = _ALIGN_UP(aInfo.iHeapInitialSize, page_size);
 	TInt maxLength = Max(aInfo.iHeapMaxSize, minLength);
-#ifndef QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
+#ifdef ENABLE_BTRACE
 	if (UserTestDebugMaskBit(96)) // 96 == KUSERHEAPTRACE in nk_trace.h
 		aInfo.iFlags |= ETraceHeapAllocs;
-#endif // QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
+#endif // ENABLE_BTRACE
 	// Create the thread's heap chunk.
 	RChunk c;
+#ifndef NO_NAMED_LOCAL_CHUNKS
 	TChunkCreateInfo createInfo;
 
 	createInfo.SetThreadHeap(0, maxLength, KLitDollarHeap());	// Initialise with no memory committed.	
@@ -3300,7 +3301,7 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 	maxLength = 2*maxLength;
 	createInfo.SetDisconnected(0, 0, maxLength);
 #endif	
-#ifndef QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
+#ifdef SYMBIAN_WRITABLE_DATA_PAGING
 	// Set the paging policy of the heap chunk based on the thread's paging policy.
 	TUint pagingflags = aInfo.iFlags & EThreadCreateFlagPagingMask;
 	switch (pagingflags)
@@ -3316,9 +3317,12 @@ EXPORT_C TInt UserHeap::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RHeap*
 			// paging policy is used.
 			break;
 		}
-#endif // QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
+#endif // SYMBIAN_WRITABLE_DATA_PAGING
 	
 	TInt r = c.Create(createInfo);
+#else
+	TInt r = c.CreateDisconnectedLocal(0, 0, maxLength * 2);
+#endif
 	if (r!=KErrNone)
 		return r;
 	

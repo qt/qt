@@ -67,6 +67,7 @@ Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCre
     return r;
 }
 
+#ifndef NO_NAMED_LOCAL_CHUNKS
 void TChunkCreateInfo::SetThreadHeap(TInt aInitialSize, TInt aMaxSize, const TDesC& aName)
 {
     iType = TChunkCreate::ENormal | TChunkCreate::EData;
@@ -77,6 +78,7 @@ void TChunkCreateInfo::SetThreadHeap(TInt aInitialSize, TInt aMaxSize, const TDe
     iName = &aName;
     iOwnerType = EOwnerThread;
 }
+#endif // NO_NAMED_LOCAL_CHUNKS
 
 void Panic(TCdtPanic reason)
 {

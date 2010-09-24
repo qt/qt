@@ -103,6 +103,11 @@ public:
 		EGetSize=48, EGetMaxLength, EGetBase, EAlignInteger, EAlignAddr
 		};
 	enum TDebugOp { EWalk = 128, EHybridHeap };
+	enum TAllocFail
+		{
+		/*ERandom, ETrueRandom, EDeterministic, ENone, EFailNext, EReset, EBurstRandom,
+		EBurstTrueRandom, EBurstDeterministic, EBurstFailNext,*/ ECheckFailure = 10,
+		};
 
 	struct HeapInfo
 		{
