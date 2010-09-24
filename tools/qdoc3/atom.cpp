@@ -190,6 +190,7 @@ static const struct {
     { "FormattingLeft", Atom::FormattingLeft },
     { "FormattingRight", Atom::FormattingRight },
     { "GeneratedList", Atom::GeneratedList },
+    { "GuidLink", Atom::GuidLink},
     { "Image", Atom::Image },
     { "ImageText", Atom::ImageText },
     { "InlineImage", Atom::InlineImage },

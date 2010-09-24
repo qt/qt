@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-  ditaxmlgenerator.h
-*/
-
 #ifndef DITAXMLGENERATOR_H
 #define DITAXMLGENERATOR_H
 
@@ -61,7 +57,8 @@ typedef QMap<Node*, NodeMultiMap> ParentMaps;
 typedef QMap<QString, const Node*> NodeMap;
 typedef QMap<QString, NodeMap> NewClassMaps;
 
-class HelpProjectWriter;
+typedef QMap<QString, QString> GuidMap;
+typedef QMap<QString, GuidMap*> GuidMaps;
 
 class DitaXmlGenerator : public PageGenerator
 {
@@ -107,6 +104,7 @@ class DitaXmlGenerator : public PageGenerator
     virtual void generateFakeNode(const FakeNode* fake, CodeMarker* marker);
     virtual QString fileExtension(const Node* node) const;
     virtual QString refForNode(const Node* node);
+    virtual QString guidForNode(const Node* node);
     virtual QString linkForNode(const Node* node, const Node* relative);
     virtual QString refForAtom(Atom* atom, const Node* node);
     
@@ -250,6 +248,8 @@ class DitaXmlGenerator : public PageGenerator
     QString writeGuidAttribute(QString text);
     void writeGuidAttribute(Node* node);
     QString lookupGuid(QString text);
+    QString lookupGuid(const QString& fileName, const QString& text);
+    GuidMap* lookupGuidMap(const QString& fileName);
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
     QXmlStreamWriter& xmlWriter();
@@ -262,6 +262,7 @@ class DitaXmlGenerator : public PageGenerator
  private:
     QMap<QString, QString> refMap;
     QMap<QString, QString> name2guidMap;
+    GuidMaps guidMaps;
     int codeIndent;
     bool inLink;
     bool inObsoleteLink;

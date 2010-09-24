@@ -83,6 +83,7 @@ class Atom
         FormattingLeft,
         FormattingRight,
         GeneratedList,
+        GuidLink,
         Image, 
         ImageText,
         InlineImage,

@@ -257,7 +257,12 @@ QString PageGenerator::fileBase(const Node *node) const
     return res;
 }
 
-QString PageGenerator::fileName(const Node *node) const
+/*!
+  If the \a node has a URL, return the URL as the file name.
+  Otherwise, construct the file name from the fileBase() and
+  the fileExtension(), and return the constructed name.
+ */
+QString PageGenerator::fileName(const Node* node) const
 {
     if (!node->url().isEmpty())
         return node->url();
@@ -268,9 +273,12 @@ QString PageGenerator::fileName(const Node *node) const
     return name;
 }
 
+/*!
+  Return the current output file name.
+ */
 QString PageGenerator::outFileName()
 {
-    return QFileInfo(static_cast<QFile *>(out().device())->fileName()).fileName();
+    return QFileInfo(static_cast<QFile*>(out().device())->fileName()).fileName();
 }
 
 /*!
@@ -302,6 +310,11 @@ void PageGenerator::endSubPage()
     delete outStreamStack.pop();
 }
 
+/*!
+  Used for writing to the current output stream. Returns a
+  reference to the crrent output stream, which is then used
+  with the \c {<<} operator for writing.
+ */
 QTextStream &PageGenerator::out()
 {
     return *outStreamStack.top();
