@@ -24,6 +24,7 @@
 #include "qscriptclass_p.h"
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
+#include "qscriptcontextinfo.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptfunction_p.h"
@@ -41,6 +42,10 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdatetime.h>
+
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qfile.h>
+#include <QtCore/qfileinfo.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
 
@@ -2242,8 +2247,192 @@ void QScriptEngine::popContext()
 
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)
 {
-    Q_UNUSED(object);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    d->installTranslatorFunctions(QScriptValuePrivate::get(object));
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTranslate(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 2) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate() requires at least two arguments")));
+    }
+    if (!arguments[0]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate(): first argument (context) must be a string")));
+    }
+    if (!arguments[1]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate(): second argument (text) must be a string")));
+    }
+    if ((arguments.Length() > 2) && !arguments[2]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate(): third argument (comment) must be a string")));
+    }
+    if ((arguments.Length() > 3) && !arguments[3]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate(): fourth argument (encoding) must be a string")));
+    }
+    if ((arguments.Length() > 4) && !arguments[4]->IsNumber()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTranslate(): fifth argument (n) must be a number")));
+    }
+
+    QString context(QScriptConverter::toString(arguments[0]->ToString()));
+    QString text(QScriptConverter::toString(arguments[1]->ToString()));
+    QString comment;
+    if (arguments.Length() > 2)
+        comment = QScriptConverter::toString(arguments[2]->ToString());
+    QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
+    if (arguments.Length() > 3) {
+        QString encStr(QScriptConverter::toString(arguments[3]->ToString()));
+        if (encStr == QLatin1String("CodecForTr"))
+            encoding = QCoreApplication::CodecForTr;
+        else if (encStr == QLatin1String("UnicodeUTF8"))
+            encoding = QCoreApplication::UnicodeUTF8;
+        else
+            qWarning() << QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr);
+    }
+    int n = -1;
+    if (arguments.Length() > 4)
+        n = arguments[4]->Int32Value();
+    QString result = QCoreApplication::translate(context.toLatin1().constData(),
+                                         text.toLatin1().constData(),
+                                         comment.toLatin1().constData(),
+                                         encoding, n);
+    return QScriptConverter::toString(result);
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTranslateNoOp(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 2)
+        return v8::Undefined();
+    return arguments[1];
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTr(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 1) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTr() requires at least one argument")));
+    }
+    if (!arguments[0]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTr(): first argument (text) must be a string")));
+    }
+    if ((arguments.Length() > 1) && !arguments[1]->IsString()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTr(): second argument (comment) must be a string")));
+    }
+    if ((arguments.Length() > 2) && !arguments[2]->IsNumber()) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTr(): third argument (n) must be a number")));
+    }
+
+    QString context;
+    // This engine should be always valid, because this function can be called if and only if the engine is still alive.
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Handle<v8::Object>::Cast(arguments.Data())->GetPointerFromInternalField(0));
+    QScriptContext *ctx = engine->currentContext();
+    if (ctx && ctx->parentContext())
+        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
+    QString text(QScriptConverter::toString(arguments[0]->ToString()));
+    QString comment;
+    if (arguments.Length() > 1)
+        comment = QScriptConverter::toString(arguments[1]->ToString());
+    int n = -1;
+    if (arguments.Length() > 2)
+        n = arguments[2]->Int32Value();
+
+    QString result = QCoreApplication::translate(context.toLatin1().constData(),
+                                         text.toLatin1().constData(),
+                                         comment.toLatin1().constData(),
+                                         QCoreApplication::CodecForTr, n);
+    return QScriptConverter::toString(result);
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTrNoOp(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 1)
+        return v8::Undefined();
+    return arguments[0];
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTrId(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 1) {
+        return v8::ThrowException(v8::Exception::Error(v8::String::New("qsTrId() requires at least one argument")));
+    }
+    if (!arguments[0]->IsString()) {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("qsTrId(): first argument (id) must be a string")));
+    }
+    if ((arguments.Length() > 1) && !arguments[1]->IsNumber()) {
+        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("qsTrId(): second argument (n) must be a number")));
+    }
+    v8::Handle<v8::String> id = arguments[0]->ToString();
+    int n = -1;
+    if (arguments.Length() > 1)
+        n = arguments[1]->Int32Value();
+    return QScriptConverter::toString(qtTrId(QScriptConverter::toString(id).ascii(), n));
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionQsTrIdNoOp(const v8::Arguments& arguments)
+{
+    if (arguments.Length() < 1)
+        return v8::Undefined();
+    return arguments[0];
+}
+
+v8::Handle<v8::Value> QtTranslateFunctionStringArg(const v8::Arguments& arguments)
+{
+    QString value(QScriptConverter::toString(arguments.This()->ToString()));
+    v8::Handle<v8::Value> arg;
+    if (arguments.Length() != 0)
+        arg = arguments[0];
+    else
+        arg = v8::Undefined();
+    QString result;
+    if (arg->IsString())
+        result = value.arg(QScriptConverter::toString(arg->ToString()));
+    else if (arg->IsNumber())
+        result = value.arg(arg->NumberValue());
+    return QScriptConverter::toString(result);
+}
+
+void QScriptEnginePrivate::installTranslatorFunctions(QScriptValuePrivate* object)
+{
+    if (object->isObject())
+        installTranslatorFunctions(*object);
+    else
+        installTranslatorFunctions(m_v8Context->Global());
+
+    // FIXME That is strange operation, I believe that Qt5 should change it. Why we are installing
+    // arg funciton on String prototype even if it could be not accessible? why we are support
+    // String.prototype.arg even if it doesn't exist after setGlobalObject call?
+    m_originalGlobalObject.installArgFunctionOnOrgStringPrototype(v8::FunctionTemplate::New(QtTranslateFunctionStringArg)->GetFunction());
+
+    // FIXME Should we install arg function on each context?
+    // FIXME We should be able to avoid a custom global object interceptor and have direct access to
+    // hidden String prototype, but it is not possible without modyfication in the v8 api.
+    if (m_v8Contexts.count()) {
+        v8::Handle<v8::Value> stringConstructor = m_v8Context->Global()->Get(v8::String::New("String"));
+        if (stringConstructor.IsEmpty() || !stringConstructor->IsObject()) {
+            return;
+        }
+        v8::Handle<v8::Value> stringPtototype = v8::Handle<v8::Object>::Cast(stringConstructor)->Get(v8::String::New("prototype"));
+        if (stringPtototype.IsEmpty() || !stringPtototype->IsObject()) {
+            return;
+        }
+        v8::Handle<v8::Object>::Cast(stringPtototype)->Set(v8::String::New("arg"), v8::FunctionTemplate::New(QtTranslateFunctionStringArg)->GetFunction());
+    }
+}
+
+void QScriptEnginePrivate::installTranslatorFunctions(v8::Handle<v8::Value> value)
+{
+    Q_ASSERT(value->IsObject());
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+
+    v8::Handle<v8::ObjectTemplate> dataTemplate = v8::ObjectTemplate::New();
+    dataTemplate->SetInternalFieldCount(1);
+    v8::Handle<v8::Object> data = dataTemplate->NewInstance();
+    data->SetPointerInInternalField(0, this);
+    object->Set(v8::String::New("qsTranslate"), v8::FunctionTemplate::New(QtTranslateFunctionQsTranslate)->GetFunction());
+    object->Set(v8::String::New("QT_TRANSLATE_NOOP"), v8::FunctionTemplate::New(QtTranslateFunctionQsTranslateNoOp)->GetFunction());
+    object->Set(v8::String::New("qsTr"), v8::FunctionTemplate::New(QtTranslateFunctionQsTr, data)->GetFunction());
+    object->Set(v8::String::New("QT_TR_NOOP"), v8::FunctionTemplate::New(QtTranslateFunctionQsTrNoOp)->GetFunction());
+    object->Set(v8::String::New("qsTrId"), v8::FunctionTemplate::New(QtTranslateFunctionQsTrId)->GetFunction());
+    object->Set(v8::String::New("QT_TRID_NOOP"), v8::FunctionTemplate::New(QtTranslateFunctionQsTrIdNoOp)->GetFunction());
 }
 
 QScriptValue QScriptEngine::importExtension(const QString &extension)

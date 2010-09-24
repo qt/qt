@@ -128,6 +128,9 @@ public:
     inline bool isQtMetaObject(v8::Handle<v8::Value> value) const;
     QVariant &variantValue(v8::Handle<v8::Value> value);
 
+    void installTranslatorFunctions(QScriptValuePrivate* object);
+    void installTranslatorFunctions(v8::Handle<v8::Value> object);
+
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
     v8::Handle<v8::Value> scriptValueToInternal(const QScriptValue &);
 
@@ -302,7 +305,6 @@ QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptContextP
     qSwap(ctx, m_currentQsContext);
     return ctx;
 }
-
 
 QT_END_NAMESPACE
 
