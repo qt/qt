@@ -293,11 +293,17 @@ int QGLTextureGlyphCache::glyphPadding() const
 
 int QGLTextureGlyphCache::maxTextureWidth() const
 {
-    return ctx->d_ptr->maxTextureSize();
+    if (ctx == 0)
+        return QImageTextureGlyphCache::maxTextureWidth();
+    else
+        return ctx->d_ptr->maxTextureSize();
 }
 
 int QGLTextureGlyphCache::maxTextureHeight() const
 {
-    return ctx->d_ptr->maxTextureSize();
+    if (ctx == 0)
+        return QImageTextureGlyphCache::maxTextureHeight();
+    else
+        return ctx->d_ptr->maxTextureSize();
 }
 QT_END_NAMESPACE
