@@ -31,6 +31,7 @@
 
 #include <QtCore/qdebug.h>
 #include "qscriptvalue_p.h"
+#include "qscriptdeclarativeobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -310,7 +311,7 @@ static void QtMetaPropertyFastSetter(v8::Local<v8::String> /*property*/,
 // that don't inherit QScriptable.
 // - info.Holder() is a QObject wrapper
 // - info.Data() is the meta-property index
-static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> /*property*/,
+static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property,
                                                   const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder();
@@ -695,6 +696,18 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QObject *qobject = data->cppObject();
+
+    if (QScriptDeclarativeClassObject *declarativeClassObject = qobject_cast<QScriptDeclarativeClassObject *>(qobject)) {
+        QScriptDeclarativeClass::PersistentIdentifier identifier =
+            declarativeClassObject->scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
+        QScriptClass::QueryFlags fl = declarativeClassObject->scriptClass->queryProperty(declarativeClassObject->obj.data(),
+                                                                                         identifier.identifier, QScriptClass::HandlesReadAccess);
+        if (fl & QScriptClass::HandlesReadAccess) {
+            QScriptValue result = declarativeClassObject->scriptClass->property(declarativeClassObject->obj.data(), identifier.identifier)
+                .toScriptValue(QScriptEnginePrivate::get(engine));
+            return *QScriptValuePrivate::get(result);
+        }
+    }
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
 
