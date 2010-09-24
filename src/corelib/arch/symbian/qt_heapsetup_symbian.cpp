@@ -43,6 +43,8 @@
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
+extern const TInt KHeapShrinkHysRatio = 0x800;
+
 /*
  * \internal
  * Called from the qtmain.lib application wrapper.
