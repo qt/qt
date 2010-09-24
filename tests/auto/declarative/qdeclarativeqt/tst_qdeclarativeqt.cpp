@@ -50,6 +50,7 @@
 #include <QVector3D>
 #include <QCryptographicHash>
 #include <QDeclarativeItem>
+#include <QSignalSpy>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -84,6 +85,7 @@ private slots:
     void btoa();
     void atob();
     void fontFamilies();
+    void quit();
 
 private:
     QDeclarativeEngine engine;
@@ -514,6 +516,18 @@ void tst_qdeclarativeqt::fontFamilies()
 
     QFontDatabase database;
     QCOMPARE(object->property("test2"), QVariant::fromValue(database.families()));
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::quit()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("quit.qml"));
+
+    QSignalSpy spy(&engine, SIGNAL(quit()));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(spy.count(), 1);
 
     delete object;
 }
