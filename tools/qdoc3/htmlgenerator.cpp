@@ -933,7 +933,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 else
                         out() << "<tr class=\"even\">";
 
-                out() << "<tr><th class=\"tblConst\">Constant</th>"
+                out() << "<th class=\"tblConst\">Constant</th>"
                       << "<th class=\"tblval\">Value</th>"
                       << "<th class=\"tbldscr\">Description</th></tr>\n";
             }
