@@ -693,6 +693,7 @@ void HelpEngineWrapper::setBrowserWritingSystem(QFontDatabase::WritingSystem sys
 
 void HelpEngineWrapper::handleCurrentFilterChanged(const QString &filter)
 {
+    TRACE_OBJ
     const QString &filterToReport
         = filter == Unfiltered ? TrUnfiltered : filter;
     emit currentFilterChanged(filterToReport);
@@ -700,12 +701,20 @@ void HelpEngineWrapper::handleCurrentFilterChanged(const QString &filter)
 
 bool HelpEngineWrapper::showTabs() const
 {
+    TRACE_OBJ
     return d->m_helpEngine->customValue(ShowTabsKey, false).toBool();
 }
 
 void HelpEngineWrapper::setShowTabs(bool show)
 {
+    TRACE_OBJ
     d->m_helpEngine->setCustomValue(ShowTabsKey, show);
+}
+
+bool HelpEngineWrapper::fullTextSearchFallbackEnabled() const
+{
+    TRACE_OBJ
+    return CollectionConfiguration::fullTextSearchFallbackEnabled(*d->m_helpEngine);
 }
 
 // -- TimeoutForwarder

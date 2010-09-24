@@ -189,6 +189,8 @@ public:
 
     static const QString TrUnfiltered;
 
+    bool fullTextSearchFallbackEnabled() const;
+
 signals:
 
     // For asynchronous doc updates triggered by external actions.
