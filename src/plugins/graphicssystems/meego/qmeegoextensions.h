@@ -42,12 +42,12 @@
 #ifndef MEXTENSIONS_H
 #define MEXTENSIONS_H
 
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include <private/qgl_p.h>
 #include <private/qeglcontext_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 /* Extensions decls */
 

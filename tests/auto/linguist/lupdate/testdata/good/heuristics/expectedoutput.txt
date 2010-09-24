@@ -1,4 +1,3 @@
-*.*Function 'eval' is not implemented
 Updating 'project\.ts'\.\.\.
     Found 3 source text\(s\) \(3 new and 0 already existing\)
     Removed 5 obsolete entries

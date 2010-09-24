@@ -3436,8 +3436,7 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
             break;
         }
         case QEvent::MouseButtonRelease: {
-            const QWidget *w = QApplication::widgetAt(QCursor::pos());
-            if (w && d->m_pressedWidget) {
+            if (d->m_pressedWidget) {
                 d->m_pressedWidget->update();
                 d->m_pressedWidget = 0;
             }
