@@ -91,6 +91,7 @@ private slots:
     void enumerate();
     void error_data();
     void error();
+    void syncError();
     void set();
     void get();
     void get_data();
@@ -98,6 +99,7 @@ private slots:
     void get_worker_data();
     void get_nested();
     void get_nested_data();
+    void crash_model_with_multiple_roles();
 };
 int tst_qdeclarativelistmodel::roleFromName(const QDeclarativeListModel *model, const QString &roleName)
 {
@@ -259,7 +261,7 @@ void tst_qdeclarativelistmodel::dynamic_data()
     QTest::newRow("set2") << "{append({'foo':123});set(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
-    QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index 0 out of range";
+    QTest::newRow("set4a") << "{set(0,{'foo':456});count}" << 1 << "";
     QTest::newRow("set4c") << "{set(-1,{'foo':456})}" << 0 << "<Unknown File>: QML ListModel: set: index -1 out of range";
     QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
     QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3]);count}" << 1 << "<Unknown File>: QML ListModel: set: value is not an object";
@@ -660,6 +662,21 @@ void tst_qdeclarativelistmodel::error()
     }
 }
 
+void tst_qdeclarativelistmodel::syncError()
+{
+    QString qml = "import Qt 4.7\nListModel { id: lm; Component.onCompleted: lm.sync() }";
+    QString error = "file:dummy.qml:2:1: QML ListModel: List sync() can only be called from a WorkerScript";
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine);
+    component.setData(qml.toUtf8(),
+                      QUrl::fromLocalFile(QString("dummy.qml")));
+    QTest::ignoreMessage(QtWarningMsg,error.toUtf8());
+    QObject *obj = component.create();
+    QVERIFY(obj);
+    delete obj;
+}
+
 /*
     Test model changes from set() are available to the view
 */
@@ -884,6 +901,21 @@ void tst_qdeclarativelistmodel::get_nested()
 void tst_qdeclarativelistmodel::get_nested_data()
 {
     get_data();
+}
+
+//QTBUG-13754
+void tst_qdeclarativelistmodel::crash_model_with_multiple_roles()
+{
+    QDeclarativeEngine eng;
+    QDeclarativeComponent component(&eng, QUrl::fromLocalFile(SRCDIR "/data/multipleroles.qml"));
+    QObject *rootItem = component.create();
+    QVERIFY(component.errorString().isEmpty());
+    QVERIFY(rootItem != 0);
+    QDeclarativeListModel *model = rootItem->findChild<QDeclarativeListModel*>("listModel");
+    QVERIFY(model != 0);
+
+    // used to cause a crash in QDeclarativeVisualDataModel
+    model->setProperty(0, "black", true);
 }
 
 QTEST_MAIN(tst_qdeclarativelistmodel)

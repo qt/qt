@@ -1351,7 +1351,7 @@ EXPORTS
 	_ZNK21QDeclarativeDomObject8propertyERK10QByteArray @ 1350 NONAME
 	_ZNK21QDeclarativeListModel10metaObjectEv @ 1351 NONAME
 	_ZNK21QDeclarativeListModel3getEi @ 1352 NONAME
-	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME
+	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME ABSENT
 	_ZNK21QDeclarativeListModel4dataEii @ 1354 NONAME
 	_ZNK21QDeclarativeListModel5countEv @ 1355 NONAME
 	_ZNK21QDeclarativeListModel5rolesEv @ 1356 NONAME
@@ -1747,4 +1747,90 @@ EXPORTS
 	_ZN21QDeclarativeListModelC1EPKS_P32QDeclarativeListModelWorkerAgent @ 1746 NONAME
 	_ZN21QDeclarativeListModelC2EPKS_P32QDeclarativeListModelWorkerAgent @ 1747 NONAME
 	_ZNK21QDeclarativeListModel14inWorkerThreadEv @ 1748 NONAME
+	_ZN17QDeclarativeTimer10classBeginEv @ 1749 NONAME
+	_ZN17QDeclarativeTimer10setRunningEb @ 1750 NONAME
+	_ZN17QDeclarativeTimer11qt_metacallEN11QMetaObject4CallEiPPv @ 1751 NONAME
+	_ZN17QDeclarativeTimer11qt_metacastEPKc @ 1752 NONAME
+	_ZN17QDeclarativeTimer11setIntervalEi @ 1753 NONAME
+	_ZN17QDeclarativeTimer12setRepeatingEb @ 1754 NONAME
+	_ZN17QDeclarativeTimer13repeatChangedEv @ 1755 NONAME
+	_ZN17QDeclarativeTimer14runningChangedEv @ 1756 NONAME
+	_ZN17QDeclarativeTimer15intervalChangedEv @ 1757 NONAME
+	_ZN17QDeclarativeTimer16staticMetaObjectE @ 1758 NONAME DATA 16
+	_ZN17QDeclarativeTimer17componentCompleteEv @ 1759 NONAME
+	_ZN17QDeclarativeTimer19getStaticMetaObjectEv @ 1760 NONAME
+	_ZN17QDeclarativeTimer19setTriggeredOnStartEb @ 1761 NONAME
+	_ZN17QDeclarativeTimer23triggeredOnStartChangedEv @ 1762 NONAME
+	_ZN17QDeclarativeTimer4stopEv @ 1763 NONAME
+	_ZN17QDeclarativeTimer5startEv @ 1764 NONAME
+	_ZN17QDeclarativeTimer6tickedEv @ 1765 NONAME
+	_ZN17QDeclarativeTimer6updateEv @ 1766 NONAME
+	_ZN17QDeclarativeTimer7restartEv @ 1767 NONAME
+	_ZN17QDeclarativeTimer8finishedEv @ 1768 NONAME
+	_ZN17QDeclarativeTimer9triggeredEv @ 1769 NONAME
+	_ZN17QDeclarativeTimerC1EP7QObject @ 1770 NONAME
+	_ZN17QDeclarativeTimerC2EP7QObject @ 1771 NONAME
+	_ZN29QDeclarativeAbstractAnimation10classBeginEv @ 1772 NONAME
+	_ZN29QDeclarativeAbstractAnimation10setRunningEb @ 1773 NONAME
+	_ZN29QDeclarativeAbstractAnimation10transitionER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyENS_19TransitionDirectionE @ 1774 NONAME
+	_ZN29QDeclarativeAbstractAnimation11currentTimeEv @ 1775 NONAME
+	_ZN29QDeclarativeAbstractAnimation11qt_metacallEN11QMetaObject4CallEiPPv @ 1776 NONAME
+	_ZN29QDeclarativeAbstractAnimation11qt_metacastEPKc @ 1777 NONAME
+	_ZN29QDeclarativeAbstractAnimation13pausedChangedEb @ 1778 NONAME
+	_ZN29QDeclarativeAbstractAnimation14runningChangedEb @ 1779 NONAME
+	_ZN29QDeclarativeAbstractAnimation14setCurrentTimeEi @ 1780 NONAME
+	_ZN29QDeclarativeAbstractAnimation16loopCountChangedEi @ 1781 NONAME
+	_ZN29QDeclarativeAbstractAnimation16setDefaultTargetERK20QDeclarativeProperty @ 1782 NONAME
+	_ZN29QDeclarativeAbstractAnimation16staticMetaObjectE @ 1783 NONAME DATA 16
+	_ZN29QDeclarativeAbstractAnimation16timelineCompleteEv @ 1784 NONAME
+	_ZN29QDeclarativeAbstractAnimation17componentCompleteEv @ 1785 NONAME
+	_ZN29QDeclarativeAbstractAnimation17setAlwaysRunToEndEb @ 1786 NONAME
+	_ZN29QDeclarativeAbstractAnimation18componentFinalizedEv @ 1787 NONAME
+	_ZN29QDeclarativeAbstractAnimation19getStaticMetaObjectEv @ 1788 NONAME
+	_ZN29QDeclarativeAbstractAnimation20notifyRunningChangedEb @ 1789 NONAME
+	_ZN29QDeclarativeAbstractAnimation21alwaysRunToEndChangedEb @ 1790 NONAME
+	_ZN29QDeclarativeAbstractAnimation21setDisableUserControlEv @ 1791 NONAME
+	_ZN29QDeclarativeAbstractAnimation4stopEv @ 1792 NONAME
+	_ZN29QDeclarativeAbstractAnimation5pauseEv @ 1793 NONAME
+	_ZN29QDeclarativeAbstractAnimation5startEv @ 1794 NONAME
+	_ZN29QDeclarativeAbstractAnimation6resumeEv @ 1795 NONAME
+	_ZN29QDeclarativeAbstractAnimation7restartEv @ 1796 NONAME
+	_ZN29QDeclarativeAbstractAnimation7startedEv @ 1797 NONAME
+	_ZN29QDeclarativeAbstractAnimation8completeEv @ 1798 NONAME
+	_ZN29QDeclarativeAbstractAnimation8setGroupEP26QDeclarativeAnimationGroup @ 1799 NONAME
+	_ZN29QDeclarativeAbstractAnimation8setLoopsEi @ 1800 NONAME
+	_ZN29QDeclarativeAbstractAnimation9completedEv @ 1801 NONAME
+	_ZN29QDeclarativeAbstractAnimation9setPausedEb @ 1802 NONAME
+	_ZN29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1803 NONAME
+	_ZN29QDeclarativeAbstractAnimationC2EP7QObject @ 1804 NONAME
+	_ZN29QDeclarativeAbstractAnimationC2ER36QDeclarativeAbstractAnimationPrivateP7QObject @ 1805 NONAME
+	_ZN29QDeclarativeAbstractAnimationD0Ev @ 1806 NONAME
+	_ZN29QDeclarativeAbstractAnimationD1Ev @ 1807 NONAME
+	_ZN29QDeclarativeAbstractAnimationD2Ev @ 1808 NONAME
+	_ZNK17QDeclarativeTimer10metaObjectEv @ 1809 NONAME
+	_ZNK17QDeclarativeTimer11isRepeatingEv @ 1810 NONAME
+	_ZNK17QDeclarativeTimer16triggeredOnStartEv @ 1811 NONAME
+	_ZNK17QDeclarativeTimer8intervalEv @ 1812 NONAME
+	_ZNK17QDeclarativeTimer9isRunningEv @ 1813 NONAME
+	_ZNK29QDeclarativeAbstractAnimation10metaObjectEv @ 1814 NONAME
+	_ZNK29QDeclarativeAbstractAnimation14alwaysRunToEndEv @ 1815 NONAME
+	_ZNK29QDeclarativeAbstractAnimation5groupEv @ 1816 NONAME
+	_ZNK29QDeclarativeAbstractAnimation5loopsEv @ 1817 NONAME
+	_ZNK29QDeclarativeAbstractAnimation8isPausedEv @ 1818 NONAME
+	_ZNK29QDeclarativeAbstractAnimation9isRunningEv @ 1819 NONAME
+	_ZTI17QDeclarativeTimer @ 1820 NONAME
+	_ZTI29QDeclarativeAbstractAnimation @ 1821 NONAME
+	_ZTV17QDeclarativeTimer @ 1822 NONAME
+	_ZTV29QDeclarativeAbstractAnimation @ 1823 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimation10classBeginEv @ 1824 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimation17componentCompleteEv @ 1825 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimationD0Ev @ 1826 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimationD1Ev @ 1827 NONAME
+	_ZThn8_N17QDeclarativeTimer10classBeginEv @ 1828 NONAME
+	_ZThn8_N17QDeclarativeTimer17componentCompleteEv @ 1829 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1830 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimationD0Ev @ 1831 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1832 NONAME
+	_ZN23QDeclarativeDebugHelper15getScriptEngineEP18QDeclarativeEngine @ 1833 NONAME
+	_ZN23QDeclarativeDebugHelper26setAnimationSlowDownFactorEf @ 1834 NONAME
 

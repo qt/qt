@@ -24,3 +24,6 @@ linux*:!static:!linux-armcc:!linux-gcce {
    prog=$$quote(if (/program interpreter: (.*)]/) { print $1; })
    DEFINES += ELF_INTERPRETER=\\\"$$system(readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
+
+# Compensate for lack of platform defines in Symbian3 and Symbian4
+symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))
