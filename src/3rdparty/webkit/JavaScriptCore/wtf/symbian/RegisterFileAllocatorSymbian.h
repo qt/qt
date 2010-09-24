@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,36 +26,44 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "RegisterFile.h"
+#ifndef RegisterFileAllocatorSymbian_h
+#define RegisterFileAllocatorSymbian_h
 
-namespace JSC {
+#include "SymbianDefines.h"
 
-RegisterFile::~RegisterFile()
-{
-#if HAVE(MMAP)
-    munmap(m_buffer, ((m_max - m_start) + m_maxGlobals) * sizeof(Register));
-#elif HAVE(VIRTUALALLOC)
-#if OS(WINCE)
-    VirtualFree(m_buffer, DWORD(m_commitEnd) - DWORD(m_buffer), MEM_DECOMMIT);
-#endif
-    VirtualFree(m_buffer, 0, MEM_RELEASE);
-#elif OS(SYMBIAN)
-    delete m_registerFileAllocator;
-#else
-    fastFree(m_buffer);
-#endif
-}
+namespace WTF {
 
-void RegisterFile::releaseExcessCapacity()
-{
-#if HAVE(MMAP) && HAVE(MADV_FREE) && !HAVE(VIRTUALALLOC)
-    while (madvise(m_start, (m_max - m_start) * sizeof(Register), MADV_FREE) == -1 && errno == EAGAIN) { }
-#elif HAVE(VIRTUALALLOC)
-    VirtualFree(m_start, (m_max - m_start) * sizeof(Register), MEM_DECOMMIT);
-    m_commitEnd = m_start;
-#endif
-    m_maxUsed = m_start;
-}
+/**
+ *  Allocates contiguous regions of size poolSize.
+ *  poolSize must be a multiple of system page size (typically 4K on Symbian/ARM)
+ *
+ *  @param reservationSize Virtual address range to be reserved upon creation of chunk (bytes).
+ *  @param poolSize Size of a single allocation.
+ */
+class RegisterFileAllocator {
 
-} // namespace JSC
+public:
+    RegisterFileAllocator(
+            TUint32 reservationSize, TUint32 poolSize = SYMBIAN_REGFILEALLOC_DEFAULTPOOLSIZE);
+    ~RegisterFileAllocator();
+    void* buffer() const;
+    void grow(void* newEnd);
+    void shrink(void* newEnd);
+
+private:
+    RChunk   m_chunk; // Symbian chunk that lets us reserve/commit/decommit
+
+    // all following values are in numbers of bytes
+    TInt     m_pageSize; // cached value of system page size, typically 4K on Symbian
+    TUint32  m_reserved; // total number of reserved bytes in virtual memory
+    TUint32  m_poolSize; // size of one memory pool, set by default to 64K in wtf/symbian/SymbianDefines.h
+
+    void* m_buffer; // pointer to base of the chunk
+    void* m_comEnd; // pointer to end of currently committed memory
+    void* m_resEnd; // pointer to end of reserved memory
+
+};
+
+} // end of namespace
+
+#endif // RegisterFileAllocatorSymbian_h
