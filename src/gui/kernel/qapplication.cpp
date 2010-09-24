@@ -711,6 +711,12 @@ void QApplicationPrivate::process_cmdline()
             done.
     \endlist
 
+    \section1 X11 Notes
+
+    If QApplication fails to open the X11 display, it will terminate
+    the process. This behavior is consistent with most X11
+    applications.
+
     \sa arguments()
 */
 
