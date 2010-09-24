@@ -530,11 +530,11 @@ public:
 #ifndef QT_NO_GESTURES
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
+#endif
 #if defined(Q_WS_X11) || defined(Q_WS_WIN)
     QPixmap *move_cursor;
     QPixmap *copy_cursor;
     QPixmap *link_cursor;
-#endif
 #endif
 #if defined(Q_WS_WIN)
     QPixmap *ignore_cursor;

@@ -1443,7 +1443,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 void
 DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* marker)
 {
-    QList<Section> sections;
     QList<Section>::ConstIterator s;
 
     const ClassNode* cn = 0;
@@ -1487,8 +1486,95 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         writeLocation(cn);
         xmlWriter().writeEndElement(); // <cxxClassDefinition>
 
-        writeDetailSections(cn, marker, true, QString("Detailed Description"));
-        // zzz writeSections() gores here.
+        xmlWriter().writeStartElement(APIDESC);
+        xmlWriter().writeAttribute("spectitle",title);
+        Text brief = cn->doc().briefText();
+        if (!brief.isEmpty()) {
+            xmlWriter().writeStartElement("p");
+            generateText(brief, cn, marker);
+            xmlWriter().writeEndElement(); // </p>
+        }
+        generateIncludes(cn, marker);
+        generateStatus(cn, marker);
+        generateInherits(cn, marker);
+        generateInheritedBy(cn, marker);
+        generateThreadSafeness(cn, marker);
+        generateSince(cn, marker);
+        
+        xmlWriter().writeStartElement("ul");
+        
+        QString membersLink = generateListOfAllMemberFile(inner, marker);
+        if (!membersLink.isEmpty()) {
+            writeXrefListItem(membersLink,"List of all members, including inherited members");
+        }
+        
+        QString obsoleteLink = generateLowStatusMemberFile(inner,
+                                                           marker,
+                                                           CodeMarker::Obsolete);
+        if (!obsoleteLink.isEmpty()) {
+            writeXrefListItem(obsoleteLink,"Obsolete members");
+        }
+
+        QString compatLink = generateLowStatusMemberFile(inner,
+                                                         marker,
+                                                         CodeMarker::Compat);
+        if (!compatLink.isEmpty()) {
+            writeXrefListItem(compatLink,"Qt 3 support members");
+        }
+
+        xmlWriter().writeEndElement(); // </ul>
+        xmlWriter().writeEndElement(); // </apiDesc>
+
+        bool needOtherSection = false;
+        QList<Section> summarySections;
+        summarySections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
+        s = summarySections.begin();
+        while (s != summarySections.end()) {
+            if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
+                if (!s->inherited.isEmpty())
+                    needOtherSection = true;
+            }
+            else {
+                if (!s->members.isEmpty()) {
+                    xmlWriter().writeStartElement("section");
+                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeStartElement("title");
+                    xmlWriter().writeCharacters(protectEnc((*s).name));
+                    xmlWriter().writeEndElement(); // </title>
+                    generateSection(s->members, inner, marker, CodeMarker::Summary);
+                    generateSectionInheritedList(*s, inner, marker);
+                    xmlWriter().writeEndElement(); // </section>
+                }
+                if (!s->reimpMembers.isEmpty()) {
+                    QString name = QString("Reimplemented ") + (*s).name;
+                    xmlWriter().writeStartElement("section");
+                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeStartElement("title");
+                    xmlWriter().writeCharacters(protectEnc(name));
+                    xmlWriter().writeEndElement(); // </title>
+                    generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
+                    generateSectionInheritedList(*s, inner, marker);
+                    xmlWriter().writeEndElement(); // </section>
+                }
+            }
+            ++s;
+        }
+        if (needOtherSection) {
+            xmlWriter().writeStartElement("section");
+            xmlWriter().writeAttribute("outputclass","h3");
+            xmlWriter().writeStartElement("title");
+            xmlWriter().writeCharacters("Additional Inherited Members");
+            xmlWriter().writeEndElement(); // </title>
+            s = summarySections.begin();
+            while (s != summarySections.end()) {
+                if (s->members.isEmpty())
+                    generateSectionInheritedList(*s, inner, marker);
+                ++s;
+            }
+        }
+        
+        writeDetailedDescription(cn, marker, false, QString("Detailed Description"));
+
         // not included: <example> or <apiImpl>
 
         xmlWriter().writeEndElement(); // </cxxClassDetail>
@@ -1496,24 +1582,25 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         // not included: <related-links>
         // not included: <cxxClassNested>
 
-        sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
-        s = sections.begin();
-        while (s != sections.end()) {
+        QList<Section> detailSections;
+        detailSections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
+        s = detailSections.begin();
+        while (s != detailSections.end()) {
             if ((*s).name == "Member Function Documentation") {
                 writeFunctions((*s),cn,marker);
             }
             else if ((*s).name == "Member Type Documentation") {
-                writeEnumerations((*s),cn,marker);
-                writeTypedefs((*s),cn,marker);
+                writeEnumerations((*s),marker);
+                writeTypedefs((*s),marker);
             }
             else if ((*s).name == "Member Variable Documentation") {
-                writeDataMembers((*s),cn,marker);
+                writeDataMembers((*s),marker);
             }
             else if ((*s).name == "Property Documentation") {
-                writeProperties((*s),cn,marker);
+                writeProperties((*s),marker);
             }
             else if ((*s).name == "Macro Documentation") {
-                writeMacros((*s),cn,marker);
+                writeMacros((*s),marker);
             }
             ++s;
         }
@@ -1631,7 +1718,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
             ++s;
         }
         
-        writeDetailSections(fake, marker, false, QString("Detailed Description"));
+        writeDetailedDescription(fake, marker, false, QString("Detailed Description"));
 
         if (cn)
             generateQmlText(cn->doc().body(), cn, marker, fake->name());
@@ -1660,10 +1747,10 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     if (!fake->doc().isEmpty()) {
         xmlWriter().writeStartElement("body");
         if (fake->subType() == Node::Module) {
-            writeDetailSections(fake, marker, false, QString("Detailed Description"));
+            writeDetailedDescription(fake, marker, false, QString("Detailed Description"));
         }
         else
-            writeDetailSections(fake, marker, false, QString());
+            writeDetailedDescription(fake, marker, false, QString());
         generateAlsoList(fake, marker);
 
         if (!fake->groupMembers().isEmpty()) {
@@ -1832,10 +1919,15 @@ void DitaXmlGenerator::generateBreadCrumbs(const QString& title,
 }
 
 /*!
-  Outputs an XML file header depending on which kind of DITA XML
-  file is being generated.
+  Writes an XML file header to the current XML stream. This
+  depends on which kind of DITA XML file is being generated,
+  which is determined by the \a node type and subtype and the
+  \a subpage flag. If the \subpage flag is true, a \c{<topic>}
+  header is written, regardless of the type of \a node.
  */
-void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
+void DitaXmlGenerator::generateHeader(const Node* node,
+                                      const QString& name,
+                                      bool subpage)
 {
     if (!node)
         return;
@@ -1848,16 +1940,7 @@ void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
     QString version;
     QString outputclass;
 
-    if (node->type() == Node::Class) {
-        mainElement = "cxxClass";
-        nameElement = "apiName";
-        dtd = "dtd/cxxClass.dtd";
-        version = "0.6.0";
-        doctype = "<!DOCTYPE " + mainElement +
-            " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
-            version + "//EN\" \"" + dtd + "\">";
-    }
-    else if (node->type() == Node::Fake) {
+    if (node->type() == Node::Fake || subpage) {
         mainElement = "topic";
         nameElement = "title";
         dtd = "dtd/topic.dtd";
@@ -1894,6 +1977,15 @@ void DitaXmlGenerator::generateHeader(const Node* node, const QString& name)
         default:
             outputclass = "page";
         }
+    }
+    else if (node->type() == Node::Class) {
+        mainElement = "cxxClass";
+        nameElement = "apiName";
+        dtd = "dtd/cxxClass.dtd";
+        version = "0.6.0";
+        doctype = "<!DOCTYPE " + mainElement +
+            " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
+            version + "//EN\" \"" + dtd + "\">";
     }
 
     xmlWriter().writeDTD(doctype);
@@ -1949,7 +2041,7 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
         ++noLinks;
         xmlWriter().writeStartElement(SHORTDESC);
         generateText(brief, node, marker);
-        xmlWriter().writeEndElement(); // shortdesc
+        xmlWriter().writeEndElement(); // </shortdesc>
         --noLinks;
     }
 }
@@ -2186,7 +2278,7 @@ QString DitaXmlGenerator::generateListOfAllMemberFile(const InnerNode* inner,
     QString fileName = fileBase(inner) + "-members." + fileExtension(inner);
     beginSubPage(inner->location(), fileName);
     QString title = "List of All Members for " + inner->name();
-    generateHeader(inner, title);
+    generateHeader(inner, title, true);
     xmlWriter().writeStartElement("body");
     xmlWriter().writeStartElement("section");
     if (!title.isEmpty()) {
@@ -2235,7 +2327,7 @@ QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode* inner,
         fileName = fileBase(inner) + "-obsolete." + fileExtension(inner);
     }
     beginSubPage(inner->location(), fileName);
-    generateHeader(inner, title);
+    generateHeader(inner, title, true);
     xmlWriter().writeStartElement("body");
     xmlWriter().writeStartElement("section");
     if (!title.isEmpty()) {
@@ -2974,7 +3066,7 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
 }
 
 /*!
-  Writes the "inherited from" lists to the current XML stream.
+  Writes the "inherited from" list to the current XML stream.
  */
 void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
                                                     const Node* relative,
@@ -2983,19 +3075,26 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
     if (section.inherited.isEmpty())
         return;
     xmlWriter().writeStartElement("ul");
-    QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
+    QList<QPair<ClassNode*,int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         xmlWriter().writeStartElement("li");
         xmlWriter().writeAttribute("outputclass","fn");
-        QString text = (*p).second + " ";
+        QString text;
+        text.setNum((*p).second);
+        text += " ";
         if ((*p).second == 1)
             text += section.singularMember;
         else
             text += section.pluralMember;
-        text += " inherited from <xref href=\"" + fileName((*p).first) + "#";
-        text += DitaXmlGenerator::cleanRef(section.name.toLower()) + "\">";
-        text += protectEnc(marker->plainFullName((*p).first, relative)) + "</xref>";
+        text += " inherited from ";
         xmlWriter().writeCharacters(text);
+        xmlWriter().writeStartElement("xref");
+        text = fileName((*p).first) + "#";
+        text += DitaXmlGenerator::cleanRef(section.name.toLower());
+        xmlWriter().writeAttribute("href",text);
+        text = protectEnc(marker->plainFullName((*p).first, relative));
+        xmlWriter().writeCharacters(text);
+        xmlWriter().writeEndElement(); // </xref>
         ++p;
     }
     xmlWriter().writeEndElement(); // </ul>
@@ -4527,11 +4626,11 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 xmlWriter().writeCharacters(marker->plainFullName(rfn));
                 xmlWriter().writeEndElement(); // </cxxFunctionReimplemented>
             }
-            writeParameters(fn,marker);
+            writeParameters(fn);
             writeLocation(fn);
             xmlWriter().writeEndElement(); // <cxxFunctionDefinition>
 
-            writeDetailSections(fn, marker, true, QString());
+            writeDetailedDescription(fn, marker, true, QString());
             // generateAlsoList(inner, marker);
 
             // not included: <example> or <apiImpl>
@@ -4551,7 +4650,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
 /*!
   This function writes the <cxxFunctionParameters> element.
  */
-void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marker)
+void DitaXmlGenerator::writeParameters(const FunctionNode* fn)
 {
     const QList<Parameter>& parameters = fn->parameters();
     if (!parameters.isEmpty()) {
@@ -4589,7 +4688,6 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn, CodeMarker* marke
   This function writes the enum types.
  */
 void DitaXmlGenerator::writeEnumerations(const Section& s, 
-                                         const ClassNode* cn, 
                                          CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4687,7 +4785,7 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
             writeLocation(en);
             xmlWriter().writeEndElement(); // <cxxEnumerationDefinition>
 
-            writeDetailSections(en, marker, true, QString());
+            writeDetailedDescription(en, marker, true, QString());
 
             // not included: <example> or <apiImpl>
 
@@ -4705,7 +4803,6 @@ void DitaXmlGenerator::writeEnumerations(const Section& s,
   This function writes the output for the \typedef commands.
  */
 void DitaXmlGenerator::writeTypedefs(const Section& s, 
-                                     const ClassNode* cn, 
                                      CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4747,7 +4844,7 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
             writeLocation(tn);
             xmlWriter().writeEndElement(); // <cxxTypedefDefinition>
 
-            writeDetailSections(tn, marker, true, QString());
+            writeDetailedDescription(tn, marker, true, QString());
 
             // not included: <example> or <apiImpl>
 
@@ -4766,7 +4863,6 @@ void DitaXmlGenerator::writeTypedefs(const Section& s,
   This is the Q_PROPERTYs.
  */
 void DitaXmlGenerator::writeProperties(const Section& s, 
-                                       const ClassNode* cn, 
                                        CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4858,7 +4954,7 @@ void DitaXmlGenerator::writeProperties(const Section& s,
             writeLocation(pn);
             xmlWriter().writeEndElement(); // <cxxVariableDefinition>
 
-            writeDetailSections(pn, marker, true, QString());
+            writeDetailedDescription(pn, marker, true, QString());
             
             // not included: <example> or <apiImpl>
 
@@ -4876,7 +4972,6 @@ void DitaXmlGenerator::writeProperties(const Section& s,
   This function outputs the nodes resulting from \variable commands.
  */
 void DitaXmlGenerator::writeDataMembers(const Section& s, 
-                                        const ClassNode* cn, 
                                         CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -4940,7 +5035,7 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
             writeLocation(vn);
             xmlWriter().writeEndElement(); // <cxxVariableDefinition>
 
-            writeDetailSections(vn, marker, true, QString());
+            writeDetailedDescription(vn, marker, true, QString());
 
             // not included: <example> or <apiImpl>
 
@@ -4958,7 +5053,6 @@ void DitaXmlGenerator::writeDataMembers(const Section& s,
   This function writes a \macro as a <cxxDefine>.
  */
 void DitaXmlGenerator::writeMacros(const Section& s, 
-                                   const ClassNode* cn, 
                                    CodeMarker* marker)
 {
     NodeList::ConstIterator m = s.members.begin();
@@ -5034,7 +5128,7 @@ void DitaXmlGenerator::writeMacros(const Section& s,
                 writeLocation(fn);
                 xmlWriter().writeEndElement(); // <cxxDefineDefinition>
 
-                writeDetailSections(fn, marker, true, QString());
+                writeDetailedDescription(fn, marker, true, QString());
 
                 // not included: <example> or <apiImpl>
 
@@ -5110,35 +5204,33 @@ QXmlStreamWriter& DitaXmlGenerator::xmlWriter()
 }
 
 /*!
-  Writes the \e {Detailed Description} section(s) for \a node
-  to the current XML stream using the code \a marker. if the
-  \a apiDesc flag is true, then the first section of the
-  sequence of sections written will be an \c {apiDesc>}
-  element with a \e {spectitle} attribute of \e {Detailed
-  Description}. Otherwise, the first section will be a
-  \c {<section>} element with a \c {<title>} element of
-  \e {Detailed Description}. This function calls the
-  Generator::generateBody() function to write the XML for
-  the section list.
+  Writes the \e {Detailed Description} section(s) for \a node to the
+  current XML stream using the code \a marker. if the \a apiDesc flag
+  is true, then the first section of the sequence of sections written
+  will be an \c {apiDesc>} element with a \e {spectitle} attribute of
+  \e {Detailed Description}. Otherwise, the first section will be a
+  \c {<section>} element with a \c {<title>} element of \e {Detailed
+  Description}. This function calls the Generator::generateBody()
+  function to write the XML for the section list.
  */
-void DitaXmlGenerator::writeDetailSections(const Node* node,
-                                           CodeMarker* marker,
-                                           bool apiDesc,
-                                           const QString& title)
+void DitaXmlGenerator::writeDetailedDescription(const Node* node,
+                                                CodeMarker* marker,
+                                                bool apiDesc,
+                                                const QString& title)
 {
     if (!node->doc().isEmpty()) {
         inDetailedDescription = true;
         if (apiDesc) {
             inApiDesc = true;
             xmlWriter().writeStartElement(APIDESC);
-            xmlWriter().writeAttribute("id",node->guid());
+            // zzz xmlWriter().writeAttribute("id",node->guid());
             if (!title.isEmpty())
                 xmlWriter().writeAttribute("spectitle",title);
         }
         else {
             inSection = true;
             xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("id",node->guid());
+            // zzz xmlWriter().writeAttribute("id",node->guid());
             if (!title.isEmpty()) {
                 xmlWriter().writeStartElement("title");
                 xmlWriter().writeCharacters(title);

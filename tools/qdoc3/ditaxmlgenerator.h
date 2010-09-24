@@ -121,22 +121,12 @@ class DitaXmlGenerator : public PageGenerator
     void writeFunctions(const Section& s, 
                         const ClassNode* cn, 
                         CodeMarker* marker);
-    void writeParameters(const FunctionNode* fn, CodeMarker* marker);
-    void writeEnumerations(const Section& s, 
-                           const ClassNode* cn, 
-                           CodeMarker* marker);
-    void writeTypedefs(const Section& s, 
-                       const ClassNode* cn, 
-                       CodeMarker* marker);
-    void writeDataMembers(const Section& s, 
-                          const ClassNode* cn, 
-                          CodeMarker* marker);
-    void writeProperties(const Section& s, 
-                         const ClassNode* cn, 
-                         CodeMarker* marker);
-    void writeMacros(const Section& s, 
-                     const ClassNode* cn, 
-                     CodeMarker* marker);
+    void writeParameters(const FunctionNode* fn);
+    void writeEnumerations(const Section& s, CodeMarker* marker);
+    void writeTypedefs(const Section& s, CodeMarker* marker);
+    void writeDataMembers(const Section& s, CodeMarker* marker);
+    void writeProperties(const Section& s, CodeMarker* marker);
+    void writeMacros(const Section& s, CodeMarker* marker);
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
 
  private:
@@ -150,7 +140,9 @@ class DitaXmlGenerator : public PageGenerator
     void generateBreadCrumbs(const QString& title,
                              const Node* node,
                              CodeMarker* marker);
-    void generateHeader(const Node* node, const QString& name);
+    void generateHeader(const Node* node, 
+                        const QString& name,
+                        bool subpage = false);
     void generateTitle(const QString& title, 
                        const Text& subTitle, 
                        SubTitleSize subTitleSize,
@@ -261,10 +253,10 @@ class DitaXmlGenerator : public PageGenerator
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
     QXmlStreamWriter& xmlWriter();
-    void writeDetailSections(const Node* node,
-                             CodeMarker* marker,
-                             bool apiDesc,
-                             const QString& title);
+    void writeDetailedDescription(const Node* node,
+                                  CodeMarker* marker,
+                                  bool apiDesc,
+                                  const QString& title);
     void addLink(const QString& href, const QStringRef& text);
 
  private:

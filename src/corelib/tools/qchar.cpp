@@ -1630,21 +1630,4 @@ static void canonicalOrderHelper(QString *str, QChar::UnicodeVersion version, in
     }
 }
 
-int QT_FASTCALL QUnicodeTables::script(unsigned int uc)
-{
-    if (uc > 0xffff)
-        return Common;
-    int script = uc_scripts[uc >> 7];
-    if (script < ScriptSentinel)
-        return script;
-    script = (((script - ScriptSentinel) * UnicodeBlockSize) + UnicodeBlockCount);
-    script = uc_scripts[script + (uc & 0x7f)];
-    return script;
-}
-
-Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL QUnicodeTables::lineBreakClass(uint ucs4)
-{
-    return (QUnicodeTables::LineBreakClass) qGetProp(ucs4)->line_break_class;
-}
-
 QT_END_NAMESPACE
