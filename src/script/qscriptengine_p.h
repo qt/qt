@@ -30,6 +30,7 @@
 #include <private/qobject_p.h>
 
 #include "qscriptconverter_p.h"
+#include "qscriptshareddata_p.h"
 #include "qscriptqobject_p.h"
 #include "qscriptoriginalglobalobject_p.h"
 #include "qscriptvalue.h"
@@ -44,7 +45,7 @@ class QScriptContextPrivate;
 class QScriptClassPrivate;
 
 class QScriptEnginePrivate
-    : public QSharedData
+    : public QScriptSharedData
 {
     Q_DECLARE_PUBLIC(QScriptEngine)
 public:

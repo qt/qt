@@ -54,6 +54,7 @@ HEADERS += \
     $$PWD/qscriptable.h \
     $$PWD/qscriptable_p.h \
     $$PWD/qscriptisolate_p.h \
+    $$PWD/qscriptshareddata_p.h \
 
 SOURCES += \
     $$PWD/qscriptdeclarativeclass.cpp \

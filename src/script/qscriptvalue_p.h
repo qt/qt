@@ -31,6 +31,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <qdebug.h>
 
+#include "qscriptshareddata_p.h"
 #include "qscriptvalue.h"
 #include "qscriptclass_p.h"
 
@@ -46,7 +47,7 @@ class QScriptClassPrivate;
     //    inline void* operator new(size_t, QScriptEnginePrivate*);
     //    inline void operator delete(void*);
 */
-class QScriptValuePrivate : public QSharedData
+class QScriptValuePrivate : public QScriptSharedData
 {
 public:
 

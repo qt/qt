@@ -35,6 +35,7 @@
 // We mean it.
 //
 
+#include "qscriptshareddata_p.h"
 #include "qscriptconverter_p.h"
 #include "qscriptstring.h"
 #include <QtCore/qnumeric.h>
@@ -43,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScriptStringPrivate : public QSharedData {
+class QScriptStringPrivate : public QScriptSharedData {
 public:
     static inline QScriptString get(QScriptStringPrivate* d);
     static inline QScriptStringPrivate* get(const QScriptString& p);
