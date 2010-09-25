@@ -276,12 +276,10 @@ inline bool QScriptEnginePrivate::hasUncaughtException() const
 inline void QScriptEnginePrivate::enterIsolate() const
 {
     m_isolate->Enter();
-    m_v8Context->Enter();
 }
 
 inline void QScriptEnginePrivate::exitIsolate() const
 {
-    m_v8Context->Exit();
     m_isolate->Exit();
 }
 
