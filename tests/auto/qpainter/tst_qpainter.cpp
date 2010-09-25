@@ -4543,6 +4543,14 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
 
+    // Test a basic float rectangle
+    p.setClipRect(QRectF(100, 100, 200, 100));
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRect(QRectF(120, 120, 20, 20), Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
     // Test a basic path + region
     QPainterPath path;
     path.addRect(100, 100, 200, 100);
