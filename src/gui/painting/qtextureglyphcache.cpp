@@ -202,18 +202,18 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = listItemCoordinates.begin();
+    int requiredWidth = m_w;
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
         m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
 
-        if (m_cx + c.w > m_w) {
-            int new_width = m_w*2;
+        if (m_cx + c.w > requiredWidth) {
+            int new_width = requiredWidth*2;
             while (new_width < m_cx + c.w)
                 new_width *= 2;
             if (new_width <= maxTextureWidth()) {
-                resizeTextureData(new_width, m_h);
-                m_w = new_width;
+                requiredWidth = new_width;
             } else {
                 // no room on the current line, start new glyph strip
                 m_cx = 0;
@@ -238,21 +238,23 @@ void QTextureGlyphCache::fillInPendingGlyphs()
     if (m_pendingGlyphs.isEmpty())
         return;
 
-    int requiredHeight = 0;
+    int requiredHeight = m_h;
+    int requiredWidth = m_w; // Use a minimum size to avoid a lot of initial reallocations
     {
         QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = m_pendingGlyphs.begin();
         while (iter != m_pendingGlyphs.end()) {
             Coord c = iter.value();
             requiredHeight = qMax(requiredHeight, c.y + c.h);
+            requiredWidth = qMax(requiredWidth, c.x + c.w);
             ++iter;
         }
     }
 
-    if (requiredHeight > m_h) {
+    if (isNull() || requiredHeight > m_h || requiredWidth > m_w) {
         if (isNull())
-            createCache(m_w, qt_next_power_of_two(requiredHeight));
+            createCache(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
         else
-            resizeCache(m_w, qt_next_power_of_two(requiredHeight));
+            resizeCache(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
     }
 
     {
