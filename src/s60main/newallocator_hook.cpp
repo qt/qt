@@ -40,7 +40,8 @@
 ****************************************************************************/
 #include <e32std.h>
 #include <qglobal.h>
-#include <u32std.h>
+
+struct SStdEpocThreadCreateInfo;
 
 Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo);
 
