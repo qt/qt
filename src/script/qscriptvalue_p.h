@@ -966,9 +966,11 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisO
 }
 
 
-QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv)
+QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObjectPtr, int argc, v8::Handle<v8::Value> *argv)
 {
     QScriptEnginePrivate *e = engine();
+
+    QExplicitlySharedDataPointer<QScriptValuePrivate> thisObject(thisObjectPtr);
 
     if (!thisObject || !thisObject->isObject())
         thisObject = m_engine->globalObject();
