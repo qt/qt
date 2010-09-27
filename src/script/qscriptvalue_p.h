@@ -971,21 +971,22 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
 }
 
 
-QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObjectPtr, int argc, v8::Handle<v8::Value> *argv)
+QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, int argc, v8::Handle<v8::Value> *argv)
 {
     QScriptEnginePrivate *e = engine();
 
-    QScriptSharedDataPointer<QScriptValuePrivate> thisObject(thisObjectPtr);
+    v8::Handle<v8::Object> recv;
 
-    if (!thisObject || !thisObject->isObject())
-        thisObject = m_engine->globalObject();
+    if (!thisObject || !thisObject->isObject()) {
+        recv = v8::Handle<v8::Object>(v8::Object::Cast(*e->globalObject()));
+    } else {
+        if (!thisObject->assignEngine(e)) {
+            qWarning("QScriptValue::call(): cannot call function with thisObject created in a different engine");
+            return new QScriptValuePrivate(e, QScriptValue::UndefinedValue);
+        }
 
-    if (!thisObject->assignEngine(e)) {
-        qWarning("QScriptValue::call(): cannot call function with thisObject created in a different engine");
-        return new QScriptValuePrivate(e, QScriptValue::UndefinedValue);
+        recv = v8::Handle<v8::Object>(v8::Object::Cast(*thisObject->m_value));
     }
-
-    v8::Handle<v8::Object> recv(v8::Object::Cast(*thisObject->m_value));
 
     if (argc < 0) {
         v8::Local<v8::Value> exeption = v8::Exception::TypeError(v8::String::New("Arguments must be an array"));

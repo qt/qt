@@ -35,6 +35,8 @@
 // We mean it.
 //
 
+#include <QtCore/QVarLengthArray>
+#include <QtCore/QPair>
 #include "qscriptcontext.h"
 #include "qscriptvalue.h"
 #include "v8.h"
@@ -62,6 +64,7 @@ public:
     QScriptEnginePrivate *engine;
     const v8::Arguments *arguments;
     QScriptContextPrivate *parent;
+    QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 4> v8Scopes;
 };
 
 
@@ -86,7 +89,8 @@ QScriptContextPrivate::~QScriptContextPrivate()
         old->parent = 0;
         //old is most likely leaking.
     }
-    Q_UNUSED(parent);
+    while (!v8Scopes.isEmpty())
+        popScope();
 }
 
 

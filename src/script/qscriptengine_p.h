@@ -60,7 +60,7 @@ public:
     QScriptPassPointer<QScriptValuePrivate> evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
-    QScriptPassPointer<QScriptValuePrivate> globalObject() const;
+    v8::Handle<v8::Value> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
     QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
@@ -151,12 +151,12 @@ public:
 
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
+    v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
 private:
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
     QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
-    QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 8> m_v8Scopes;
     v8::Persistent<v8::Value> m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
