@@ -67,7 +67,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                         , \
                                             $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                         )
-        installer_sis_target.depends = $${baseTarget}.sis
+        installer_sis_target.depends = sis
 
         ok_installer_sis_target.target = ok_installer_sis
         ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
@@ -154,7 +154,7 @@ equals(GENERATE_SIS_TARGETS, true) {
         installer_sis_target.target = installer_sis
         installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                             $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-        installer_sis_target.depends = $${sis_destdir}/$${baseTarget}.sis
+        installer_sis_target.depends = sis
 
         !isEmpty(sis_destdir):!equals(sis_destdir, "."):!equals(sis_destdir, "./") {
             sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir
