@@ -1088,7 +1088,7 @@
 
     For example:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 146
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 152
 
     This will add the specified statements to the \c prj_exports section of the 
     generated \c bld.inf file.
