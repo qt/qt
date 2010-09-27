@@ -1715,4 +1715,6 @@ EXPORTS
 	??0QDeclarativeListModel@@AAE@PBV0@PAVQDeclarativeListModelWorkerAgent@@@Z @ 1714 NONAME ; QDeclarativeListModel::QDeclarativeListModel(class QDeclarativeListModel const *, class QDeclarativeListModelWorkerAgent *)
 	?inWorkerThread@QDeclarativeListModel@@ABE_NXZ @ 1715 NONAME ; bool QDeclarativeListModel::inWorkerThread(void) const
 	?canMove@QDeclarativeListModel@@ABE_NHHH@Z @ 1716 NONAME ; bool QDeclarativeListModel::canMove(int, int, int) const
+	?getScriptEngine@QDeclarativeDebugHelper@@SAPAVQScriptEngine@@PAVQDeclarativeEngine@@@Z @ 1717 NONAME ; class QScriptEngine * QDeclarativeDebugHelper::getScriptEngine(class QDeclarativeEngine *)
+	?setAnimationSlowDownFactor@QDeclarativeDebugHelper@@SAXM@Z @ 1718 NONAME ; void QDeclarativeDebugHelper::setAnimationSlowDownFactor(float)
 
